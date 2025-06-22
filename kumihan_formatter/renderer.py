@@ -286,7 +286,7 @@ class Renderer:
     def _create_compound_keyword_html(self, keywords: List[str], content: str, attributes: dict) -> str:
         """複合キーワードのHTMLを生成"""
         # ネスト順序の決定（外側から内側へ）
-        nesting_order = ["見出し", "div", "strong", "em"]
+        nesting_order = ["div", "見出し", "strong", "em"]  # 見出しを内側に移動
         sorted_keywords = []
         
         for order_prefix in nesting_order:
@@ -304,7 +304,10 @@ class Renderer:
         # 内側から外側へ向かってネスト
         result = content
         for keyword in reversed(sorted_keywords):
-            keyword_attrs = attributes if keyword == sorted_keywords[0] else {}
+            # 属性は一番内側のハイライト要素に適用
+            keyword_attrs = {}
+            if keyword == "ハイライト" and "color" in attributes:
+                keyword_attrs = attributes
             result = self._create_single_keyword_html(keyword, result, keyword_attrs)
         
         return result
