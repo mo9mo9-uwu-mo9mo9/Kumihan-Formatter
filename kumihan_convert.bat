@@ -1,7 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
-chcp 65001 > nul
-title Kumihan-Formatter - CoC6th シナリオ組版ツール
+rem Try to set UTF-8 code page, but don't fail if it doesn't work
+chcp 65001 > nul 2>&1
+if errorlevel 1 (
+    rem Fallback: Try to set UTF-8 via environment
+    set PYTHONIOENCODING=utf-8
+)
+title Kumihan-Formatter - CoC6th Text to HTML Converter
 
 echo.
 echo ==========================================
@@ -180,7 +185,8 @@ if not exist "%~1" (
 echo 🔄 変換を開始します...
 echo.
 
-rem 変換実行
+rem 変換実行（エンコーディング設定付き）
+set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "%~1" -o "!OUTPUT_DIR!"
 if errorlevel 1 (
     echo.
@@ -246,7 +252,8 @@ echo.
 echo 🔄 変換を開始します...
 echo.
 
-rem 変換実行
+rem 変換実行（エンコーディング設定付き）
+set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "%input_file%" -o "!OUTPUT_DIR!"
 if errorlevel 1 (
     echo.

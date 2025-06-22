@@ -17,7 +17,36 @@ from .renderer import render
 from .config import load_config
 from .sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
 
-console = Console()
+# Windows環境でのエンコーディング問題対応
+def setup_windows_encoding():
+    """Windows環境でのエンコーディング設定"""
+    if sys.platform == 'win32':
+        # 標準出力のエンコーディングをUTF-8に設定
+        if hasattr(sys.stdout, 'reconfigure'):
+            try:
+                sys.stdout.reconfigure(encoding='utf-8')
+                sys.stderr.reconfigure(encoding='utf-8')
+            except:
+                pass
+        
+        # 環境変数でPythonのエンコーディングを強制
+        os.environ['PYTHONIOENCODING'] = 'utf-8'
+        
+        # Windows用コンソール設定
+        try:
+            import locale
+            locale.setlocale(locale.LC_ALL, '')
+        except:
+            pass
+
+# Windows環境のセットアップを実行
+setup_windows_encoding()
+
+# 安全なConsole設定
+try:
+    console = Console(force_terminal=True, legacy_windows=True)
+except:
+    console = Console()
 
 
 def copy_images(input_path, output_path, ast):
