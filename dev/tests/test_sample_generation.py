@@ -33,18 +33,18 @@ class TestSampleGeneration:
     def test_showcase_content_is_valid(self):
         """ショーケースサンプルの内容が有効であることを確認"""
         # 必要な要素が含まれていることを確認
-        assert ":::目次:::" in SHOWCASE_SAMPLE
-        assert ":::見出し1" in SHOWCASE_SAMPLE
-        assert ":::太字" in SHOWCASE_SAMPLE
-        assert ":::枠線" in SHOWCASE_SAMPLE
-        assert ":::ハイライト" in SHOWCASE_SAMPLE
-        assert ".png:::" in SHOWCASE_SAMPLE
-        assert ".jpg:::" in SHOWCASE_SAMPLE
+        assert ";;;目次;;;" in SHOWCASE_SAMPLE
+        assert ";;;見出し1" in SHOWCASE_SAMPLE
+        assert ";;;太字" in SHOWCASE_SAMPLE
+        assert ";;;枠線" in SHOWCASE_SAMPLE
+        assert ";;;ハイライト" in SHOWCASE_SAMPLE
+        assert ".png;;;" in SHOWCASE_SAMPLE
+        assert ".jpg;;;" in SHOWCASE_SAMPLE
         
         # キーワード付きリストが含まれていることを確認
-        assert "- :太字:" in SHOWCASE_SAMPLE
-        assert "- :枠線:" in SHOWCASE_SAMPLE
-        assert "- :ハイライト color=" in SHOWCASE_SAMPLE
+        assert "- ;;;太字;;;" in SHOWCASE_SAMPLE
+        assert "- ;;;枠線;;;" in SHOWCASE_SAMPLE
+        assert "- ;;;ハイライト color=" in SHOWCASE_SAMPLE
     
     def test_sample_images_are_valid(self):
         """サンプル画像データが有効であることを確認"""

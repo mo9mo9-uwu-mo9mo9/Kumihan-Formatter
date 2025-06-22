@@ -10,7 +10,7 @@ class TestTOCFeature:
     
     def test_toc_marker_parsing(self):
         """目次マーカーのパーステスト"""
-        text = ":::目次:::"
+        text = ";;;目次;;;"
         ast = parse(text)
         
         assert len(ast) == 1
@@ -19,19 +19,19 @@ class TestTOCFeature:
     
     def test_heading_id_assignment(self):
         """見出しへのID自動付与テスト"""
-        text = """:::見出し1
+        text = """;;;見出し1
 タイトル
-:::
+;;;
 
-:::見出し2
+;;;見出し2
 サブタイトル
-:::
+;;;
 
 通常のテキスト
 
-:::見出し3
+;;;見出し3
 セクション
-:::"""
+;;;"""
         
         ast = parse(text)
         heading_nodes = [node for node in ast if node.type.startswith("h")]
@@ -43,9 +43,9 @@ class TestTOCFeature:
     
     def test_compound_heading_id(self):
         """複合見出しへのID付与テスト"""
-        text = """:::見出し2+太字
+        text = """;;;見出し2+太字
 重要なセクション
-:::"""
+;;;"""
         
         ast = parse(text)
         # 複合ブロックの場合、最外側のノードを確認
@@ -54,25 +54,25 @@ class TestTOCFeature:
     
     def test_toc_generation(self):
         """目次HTML生成テスト"""
-        text = """:::目次:::
+        text = """;;;目次;;;
 
-:::見出し1
+;;;見出し1
 第1章
-:::
+;;;
 
 本文テキスト
 
-:::見出し2
+;;;見出し2
 セクション1.1
-:::
+;;;
 
-:::見出し2
+;;;見出し2
 セクション1.2
-:::
+;;;
 
-:::見出し3
+;;;見出し3
 サブセクション
-:::"""
+;;;"""
         
         ast = parse(text)
         html = render(ast)
@@ -94,9 +94,9 @@ class TestTOCFeature:
     
     def test_no_toc_marker(self):
         """目次マーカーがない場合のテスト"""
-        text = """:::見出し1
+        text = """;;;見出し1
 タイトル
-:::
+;;;
 
 本文"""
         
@@ -112,27 +112,27 @@ class TestTOCFeature:
     
     def test_toc_with_nested_headings(self):
         """ネストされた見出しの目次テスト"""
-        text = """:::目次:::
+        text = """;;;目次;;;
 
-:::見出し1
+;;;見出し1
 大見出し
-:::
+;;;
 
-:::見出し2
+;;;見出し2
 中見出し1
-:::
+;;;
 
-:::見出し3
+;;;見出し3
 小見出し1
-:::
+;;;
 
-:::見出し3
+;;;見出し3
 小見出し2
-:::
+;;;
 
-:::見出し2
+;;;見出し2
 中見出し2
-:::"""
+;;;"""
         
         ast = parse(text)
         html = render(ast)
@@ -143,11 +143,11 @@ class TestTOCFeature:
     
     def test_toc_javascript_toggle(self):
         """JavaScriptトグル機能の存在確認"""
-        text = """:::目次:::
+        text = """;;;目次;;;
 
-:::見出し1
+;;;見出し1
 テスト
-:::"""
+;;;"""
         
         ast = parse(text)
         html = render(ast)
@@ -160,7 +160,7 @@ class TestTOCFeature:
     
     def test_empty_toc(self):
         """見出しがない場合の目次テスト"""
-        text = """:::目次:::
+        text = """;;;目次;;;
 
 これは通常のテキストです。
 見出しはありません。"""

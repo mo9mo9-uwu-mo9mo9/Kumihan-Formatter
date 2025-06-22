@@ -14,7 +14,7 @@ def test_convert_file():
     """convert_file関数のテスト"""
     # テスト用の一時ファイルを作成
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
-        f.write("これはテストです。\n\n:::太字\n太字のテキストです。\n:::")
+        f.write("これはテストです。\n\n;;;太字\n太字のテキストです。\n;;;")
         temp_input = Path(f.name)
     
     try:
