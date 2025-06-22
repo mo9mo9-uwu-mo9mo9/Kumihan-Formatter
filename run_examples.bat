@@ -97,18 +97,14 @@ rem Sample 1: basic
 echo [1/3] Basic sample (sample.txt)
 set "OUTPUT_DIR=%OUTPUT_BASE%\basic"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
-echo [DEBUG] Converting basic sample to %OUTPUT_DIR%
 
 set PYTHONIOENCODING=utf-8
-echo [DEBUG] Executing: %PYTHON_CMD% -m kumihan_formatter "examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
-%PYTHON_CMD% -m kumihan_formatter "examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview 2>&1
-set CONVERT_RESULT=%errorlevel%
-echo [DEBUG] Command finished with exit code: %CONVERT_RESULT%
-if %CONVERT_RESULT% neq 0 (
-    echo [ERROR] Failed to convert basic sample (exit code: %CONVERT_RESULT%)
+%PYTHON_CMD% -m kumihan_formatter "examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
+if errorlevel 1 (
+    echo Error: Failed to convert basic sample
     goto error_end
 ) else (
-    echo [OK] Basic sample completed -> %OUTPUT_DIR%
+    echo OK: Basic sample completed -> %OUTPUT_DIR%
 )
 echo.
 
