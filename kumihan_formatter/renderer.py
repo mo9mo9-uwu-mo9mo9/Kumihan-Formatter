@@ -166,7 +166,8 @@ class Renderer:
                 
                 current_list_type = 'bullet'
                 item_content = stripped[2:].strip()  # '- 'を除去
-                bullet_items.append(f"<li>{item_content}</li>")
+                processed_content = self._process_keyword_in_text(item_content)
+                bullet_items.append(f"<li>{processed_content}</li>")
             elif re.match(r'^\d+\.\s+', stripped):
                 # 番号付きリスト項目
                 if current_list_type == 'bullet':
@@ -180,7 +181,8 @@ class Renderer:
                 match = re.match(r'^\d+\.\s+(.*)$', stripped)
                 if match:
                     item_content = match.group(1).strip()
-                    numbered_items.append(f"<li>{item_content}</li>")
+                    processed_content = self._process_keyword_in_text(item_content)
+                    numbered_items.append(f"<li>{processed_content}</li>")
             elif stripped:
                 # 非リスト内容 - 現在のリストを閉じる
                 if current_list_type == 'bullet' and bullet_items:
@@ -209,10 +211,109 @@ class Renderer:
         
         return '\n'.join(result_parts)
     
+    def _process_keyword_in_text(self, text: str) -> str:
+        """テキスト内のキーワードマーカーを処理"""
+        # キーワード付きテキストのパターン（;;;キーワード;;; テキスト）
+        keyword_pattern = r';;;([^;]+);;;\s*(.*)'
+        match = re.match(keyword_pattern, text)
+        
+        if match:
+            keywords_str = match.group(1)
+            content = match.group(2)
+            
+            # キーワードと属性を解析
+            keywords, attributes = self._parse_marker_keywords(keywords_str)
+            
+            # 複合キーワードまたは単一キーワードの処理
+            if len(keywords) > 1:
+                return self._create_compound_keyword_html(keywords, content, attributes)
+            elif len(keywords) == 1:
+                return self._create_single_keyword_html(keywords[0], content, attributes)
+            else:
+                return f'<span style="background-color:#ffe6e6">[ERROR: キーワードが指定されていません] {content}</span>'
+        
+        return text
+    
+    def _parse_marker_keywords(self, marker_content: str):
+        """マーカーのキーワードと属性を解析（パーサーと同じロジック）"""
+        # color=#hexのような属性を抽出
+        attributes = {}
+        color_match = re.search(r'color=(#[0-9a-fA-F]{3,6})', marker_content)
+        if color_match:
+            attributes["color"] = color_match.group(1)
+            # color属性を削除するが、残りの部分は保持
+            marker_content = marker_content[:color_match.start()] + marker_content[color_match.end():]
+            marker_content = marker_content.strip()
+        
+        # キーワードを+または＋で分割
+        keywords = re.split(r'[+＋]', marker_content)
+        keywords = [k.strip() for k in keywords if k.strip()]
+        
+        return keywords, attributes
+    
+    def _create_single_keyword_html(self, keyword: str, content: str, attributes: dict) -> str:
+        """単一キーワードのHTMLを生成"""
+        # デフォルトのブロックキーワード定義（パーサーと同期）
+        block_keywords = {
+            "太字": {"tag": "strong"},
+            "イタリック": {"tag": "em"},
+            "枠線": {"tag": "div", "class": "box"},
+            "ハイライト": {"tag": "div", "class": "highlight"},
+            "見出し1": {"tag": "h1"},
+            "見出し2": {"tag": "h2"},
+            "見出し3": {"tag": "h3"},
+            "見出し4": {"tag": "h4"},
+            "見出し5": {"tag": "h5"},
+        }
+        
+        if keyword not in block_keywords:
+            return f'<span style="background-color:#ffe6e6">[ERROR: 未知のキーワード: {keyword}] {content}</span>'
+        
+        block_def = block_keywords[keyword]
+        tag = block_def["tag"]
+        
+        # 属性の構築
+        attrs = []
+        if "class" in block_def:
+            attrs.append(f'class="{block_def["class"]}"')
+        if "color" in attributes:
+            if block_def.get("class") == "highlight":
+                attrs.append(f'style="background-color:{attributes["color"]}"')
+        
+        attr_str = f' {" ".join(attrs)}' if attrs else ''
+        return f'<{tag}{attr_str}>{content}</{tag}>'
+    
+    def _create_compound_keyword_html(self, keywords: List[str], content: str, attributes: dict) -> str:
+        """複合キーワードのHTMLを生成"""
+        # ネスト順序の決定（外側から内側へ）
+        nesting_order = ["見出し", "div", "strong", "em"]
+        sorted_keywords = []
+        
+        for order_prefix in nesting_order:
+            for keyword in keywords:
+                if keyword.startswith(order_prefix) or (
+                    order_prefix == "div" and keyword in ["枠線", "ハイライト"]
+                ) or (
+                    order_prefix == "strong" and keyword == "太字"
+                ) or (
+                    order_prefix == "em" and keyword == "イタリック"
+                ):
+                    if keyword not in sorted_keywords:
+                        sorted_keywords.append(keyword)
+        
+        # 内側から外側へ向かってネスト
+        result = content
+        for keyword in reversed(sorted_keywords):
+            keyword_attrs = attributes if keyword == sorted_keywords[0] else {}
+            result = self._create_single_keyword_html(keyword, result, keyword_attrs)
+        
+        return result
+    
     def _render_content(self, content: Any) -> str:
         """コンテンツをHTMLに変換"""
         if isinstance(content, str):
-            return content
+            # 文字列の場合、キーワード処理を適用
+            return self._process_keyword_in_text(content)
         
         if isinstance(content, list):
             parts = []
