@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "kumihan-formatter"
 version = "0.1.0"
 description = "CoC6th同人シナリオなどのテキストファイルをワンコマンドで配布可能なHTMLに自動組版するCLIツール"
-authors = [{name = "Gohta Okuno", email = "gohta.okuno@example.com"}]
+authors = [{name = "Anonymous", email = "noreply@example.com"}]
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
