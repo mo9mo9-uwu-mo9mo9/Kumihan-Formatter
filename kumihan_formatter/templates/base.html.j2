@@ -110,11 +110,15 @@
 
         /* リスト項目内のブロック要素のスタイリング調整 */
         li .box {
-            margin: 0.5em 0;  /* 上下マージンを調整 */
+            margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+            padding-left: 1.5em;  /* 内容をマーカー分インデント */
+            padding-right: 1em;   /* 右側のパディング */
         }
 
         li .highlight {
-            margin: 0.5em 0;  /* 上下マージンを調整 */
+            margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+            padding-left: 1.5em;  /* 内容をマーカー分インデント */
+            padding-right: 1em;   /* 右側のパディング */
         }
 
         /* リスト項目内の見出しの調整 */
@@ -139,28 +143,21 @@
             display: inline;  /* インライン表示を明示 */
         }
 
-        /* リスト項目とマーカーの関係調整 */
-        li .box, li .highlight {
-            position: relative;
-            z-index: 1;  /* ブロック要素を前面に */
-        }
-
         /* マーカー位置の詳細調整 */
         ul {
             list-style-type: disc;  /* 標準的な丸マーカー */
+            list-style-position: outside;  /* マーカーを外側に配置 */
         }
         
         ol {
             list-style-type: decimal;  /* 標準的な番号マーカー */
+            list-style-position: outside;  /* マーカーを外側に配置 */
         }
         
-        /* 枠線付きリスト項目の特別調整 */
-        li:has(.box) {
-            list-style-position: outside;
-        }
-        
-        li:has(.highlight) {
-            list-style-position: outside;
+        /* ブロック要素を含むリスト項目の特別処理 */
+        li {
+            position: relative;
+            overflow: visible;  /* マーカーが見切れないように */
         }
 
         /* カスタムマーカー用スタイル */
