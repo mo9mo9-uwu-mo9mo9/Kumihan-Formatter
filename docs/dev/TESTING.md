@@ -39,7 +39,7 @@ dev/tests/
 ```python
 def test_combined_markers():
     parser = Parser()
-    text = ":::太字+イタリック\n内容\n:::"
+    text = ";;;太字+イタリック\n内容\n;;;"
     result = parser.parse(text)
     
     assert len(result) == 1
