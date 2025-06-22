@@ -14,19 +14,19 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 
 ### ステップ2: 初回セットアップ
 **Windows**
-- `setup.bat` をダブルクリック
+- `WINDOWS/` フォルダ内の `初回セットアップ.bat` をダブルクリック
 
 **macOS**  
-- `setup.command` をダブルクリック
+- `MAC/` フォルダ内の `初回セットアップ.command` をダブルクリック
 
 *自動で必要な環境がセットアップされます（数分かかります）*
 
 ### ステップ3: 変換開始
 **Windows**
-- `kumihan_convert.bat` をダブルクリック
+- `WINDOWS/` フォルダ内の `変換ツール.bat` をダブルクリック
 
 **macOS**
-- `kumihan_convert.command` をダブルクリック
+- `MAC/` フォルダ内の `変換ツール.command` をダブルクリック
 
 **.txtファイル**をドラッグ&ドロップするだけで変換完了！
 
@@ -85,10 +85,10 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 ## 🎯 サンプルを試してみる
 
 **Windows**
-- `run_examples.bat` をダブルクリック
+- `WINDOWS/` フォルダ内の `サンプル実行.bat` をダブルクリック
 
 **macOS**
-- `run_examples.command` をダブルクリック
+- `MAC/` フォルダ内の `サンプル実行.command` をダブルクリック
 
 サンプルファイルが変換され、`examples/output/` フォルダに結果が保存されます。
 
@@ -105,7 +105,7 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 ### 仮想環境エラー
 ```  
 💡 もう一度セットアップを実行してください
-→ setup.bat (Windows) または setup.command (macOS) をダブルクリック
+→ WINDOWS/初回セットアップ.bat (Windows) または MAC/初回セットアップ.command (macOS) をダブルクリック
 ```
 
 ### 変換がうまくいかない
@@ -119,10 +119,16 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 
 ## 📖 もっと詳しく
 
+### 📚 基本レベル
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - はじめての方向け詳細ガイド
+- **[examples/](examples/)** - サンプルファイル集
+
+### 📖 応用レベル  
 - **[USER_GUIDE.md](docs/USER_GUIDE.md)** - 全機能の使い方
 - **[SYNTAX_REFERENCE.md](docs/SYNTAX_REFERENCE.md)** - 完全記法リファレンス
-- **[examples/](examples/)** - サンプルファイル集
+
+### ⚙️ 上級者向け
+- **[ADVANCED.md](docs/ADVANCED.md)** - カスタマイズ・設定ファイル（JSON/YAML）
 
 ## 🤝 フィードバック・お問い合わせ
 
