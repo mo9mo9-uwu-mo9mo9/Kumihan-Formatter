@@ -12,23 +12,28 @@
 - ⚡ **高速変換** - ワンコマンドで即座に変換完了
 - 🖱️ **初心者にやさしい** - ダブルクリックで使える簡単操作
 
-## 🚀 5分で始める
+## 🚀 2つの簡単な使い方
 
-### 🖱️ マウスだけで使いたい方（推奨）
+### 🖱️ 基本的な変換（推奨）
 1. **Windows**: `kumihan_convert.bat` をダブルクリック
 2. **macOS**: `kumihan_convert.command` をダブルクリック
-3. 変換したい `.txt` ファイルを選択するだけ！
+3. 変換したい `.txt` ファイルをドラッグ&ドロップ
 
-### ⌨️ コマンドで使いたい方
+### 📚 サンプル体験
+1. **Windows**: `run_examples.bat` をダブルクリック
+2. **macOS**: `run_examples.command` をダブルクリック
+3. 全機能のサンプルを一括生成
+
+### ⌨️ コマンドライン（上級者向け）
 ```bash
-# 1. インストール
+# インストール
 pip install -e .
 
-# 2. サンプルで機能確認
-kumihan --generate-sample
-
-# 3. 自分のファイルを変換
+# 基本変換
 kumihan your_file.txt
+
+# サンプル生成
+kumihan --generate-sample
 ```
 
 ### 📖 詳細ガイド
@@ -52,6 +57,7 @@ kumihan your_file.txt
 - [アーキテクチャ](docs/dev/ARCHITECTURE.md) - 内部構造の解説
 - [コントリビューション](docs/dev/CONTRIBUTING.md) - 開発参加ガイド
 - [テストガイド](docs/dev/TESTING.md) - テストの実行方法
+- [テストパターン生成](docs/user/USAGE_GENERATE_TEST.md) - 全記法の動作確認用
 - [CLAUDE.md](CLAUDE.md) - Claude Code向けプロジェクト仕様書（ルートに配置）
 
 ### 上級者向け
