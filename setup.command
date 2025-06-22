@@ -16,36 +16,8 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Check Git installation
-echo "[1/5] Checking Git installation..."
-if command -v git &> /dev/null; then
-    GIT_VERSION=$(git --version | cut -d' ' -f3)
-    echo "[OK] Git found: $GIT_VERSION"
-else
-    echo "[WARNING] Git not found"
-    echo ""
-    echo "Git is recommended for updating Kumihan-Formatter."
-    echo "To install Git:"
-    echo "  1. Visit: https://git-scm.com/downloads"
-    echo "  2. Download and install Git for macOS"
-    echo "  3. Restart this setup after installation"
-    echo ""
-    echo "You can continue setup without Git, but updates will be manual."
-    echo "Continue anyway? [y/N]"
-    read -p "> " git_choice
-    if [[ ! "$git_choice" =~ ^[Yy]$ ]]; then
-        echo ""
-        echo "Setup cancelled. Please install Git and run setup again."
-        echo ""
-        read -p "Press any key to exit..."
-        exit 1
-    fi
-    echo ""
-    echo "[OK] Continuing without Git (manual updates only)"
-fi
-
 # Check Python version
-echo "[2/5] Checking Python installation..."
+echo "[1/4] Checking Python installation..."
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     REQUIRED_VERSION="3.9"
@@ -97,7 +69,7 @@ else
 fi
 
 # Create virtual environment
-echo "[3/5] Creating virtual environment..."
+echo "[2/4] Creating virtual environment..."
 if [ -d ".venv" ]; then
     echo "[OK] Virtual environment already exists"
 else
@@ -112,7 +84,7 @@ else
 fi
 
 # Activate virtual environment
-echo "[4/5] Activating virtual environment..."
+echo "[3/4] Activating virtual environment..."
 source .venv/bin/activate
 if [ $? -ne 0 ]; then
     echo "[ERROR] Failed to activate virtual environment"
@@ -124,7 +96,7 @@ else
 fi
 
 # Install dependencies
-echo "[5/5] Installing dependencies..."
+echo "[4/4] Installing dependencies..."
 echo "This may take a moment..."
 if python -m pip install -e ".[dev]" --quiet; then
     echo "[OK] Dependencies installed successfully"
@@ -153,11 +125,8 @@ echo "  - Double-click: run_examples.command"
 echo "  - See generated samples in examples/output/"
 echo ""
 echo "For updates:"
-if command -v git &> /dev/null; then
-    echo "  - Run: git pull origin main (to get latest updates)"
-else
-    echo "  - Manual download from GitHub required (Git not installed)"
-fi
+echo "  - Download latest version from GitHub releases"
+echo "  - Or visit: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter"
 echo ""
 echo "For help:"
 echo "  - Read: LAUNCH_GUIDE.md"
