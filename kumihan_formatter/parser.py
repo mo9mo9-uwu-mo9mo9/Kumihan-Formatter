@@ -73,13 +73,19 @@ class Parser:
             self.current += 1
             return None
         
+        # エスケープ処理（### で ;;; を表示）
+        if line.strip().startswith("###"):
+            escaped_line = line.replace("###", ";;;")
+            self.current += 1
+            return Node(type="p", content=[escaped_line])
+        
         # コメント行チェック（# で始まる行は無視）
         if line.strip().startswith("#"):
             self.current += 1
             return None
         
         # ブロックマーカーのチェック
-        if line.strip().startswith(":::"):
+        if line.strip().startswith(";;;"):
             return self._parse_block_marker()
         
         # リストのチェック
@@ -99,11 +105,11 @@ class Parser:
         marker_line = self.lines[self.current].strip()
         
         # 開始マーカーの解析
-        if not marker_line.startswith(":::"):
+        if not marker_line.startswith(";;;"):
             return None
         
-        # 画像の単一行記法のチェック (:::filename.ext:::)
-        if marker_line.endswith(":::") and len(marker_line) > 6:
+        # 画像の単一行記法のチェック (;;;filename.ext;;;)
+        if marker_line.endswith(";;;") and len(marker_line) > 6:
             # 画像記法の可能性をチェック
             content = marker_line[3:-3].strip()
             # 画像拡張子のパターン
@@ -116,7 +122,7 @@ class Parser:
                 )
         
         # 目次マーカーのチェック
-        if marker_line == ":::目次:::":
+        if marker_line == ";;;目次;;;":
             self.current += 1
             return Node(
                 type="toc",
@@ -134,7 +140,7 @@ class Parser:
         
         while self.current < len(self.lines):
             line = self.lines[self.current]
-            if line.strip() == ":::":
+            if line.strip() == ";;;":
                 self.current += 1
                 break
             content_lines.append(line)
@@ -144,7 +150,7 @@ class Parser:
             error_node = Node(
                 type="error",
                 content="\n".join(content_lines),
-                attributes={"message": f"閉じマーカー ':::' が見つかりません（開始: ':::{marker_content}'）", "line": start_line + 1}
+                attributes={"message": f"閉じマーカー ';;;' が見つかりません（開始: ';;;{marker_content}'）", "line": start_line + 1}
             )
             return error_node
         
@@ -313,8 +319,8 @@ class Parser:
             
             item_content = line.strip()[2:]  # "- "を削除
             
-            # キーワード付きリストのチェック
-            keyword_match = re.match(r'^:([^:]+):\s*(.*)$', item_content)
+            # キーワード付きリストのチェック（;;;キーワード;;; テキスト形式）
+            keyword_match = re.match(r'^;;;([^;]+);;;\s*(.*)$', item_content)
             if keyword_match:
                 keywords_str = keyword_match.group(1)
                 text_content = keyword_match.group(2)
@@ -371,7 +377,7 @@ class Parser:
             line = self.lines[self.current]
             
             # 空行またはマーカーの開始で段落終了
-            if not line.strip() or line.strip().startswith(":::") or line.strip().startswith("- ") or re.match(r'^\s*\d+\.\s+', line):
+            if not line.strip() or line.strip().startswith(";;;") or line.strip().startswith("- ") or re.match(r'^\s*\d+\.\s+', line):
                 break
             
             lines.append(line)
