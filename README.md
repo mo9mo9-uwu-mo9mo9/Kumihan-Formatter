@@ -1,117 +1,138 @@
 # Kumihan-Formatter
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツールです。
 
-**CoC6th同人シナリオ**などのテキストファイルを、**ワンコマンドで配布可能なHTML**に自動組版するクロスプラットフォームCLIツールです。
+![バージョン](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.9+-green.svg)
+![プラットフォーム](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
-## 🎯 特徴
+## 🚀 3ステップで始める
 
-- 📝 **シンプルな記法** - 直感的なブロック記法で簡単組版
-- 🎨 **美しい出力** - CSS知識不要でプロ品質のHTML
-- ⚡ **高速変換** - ワンコマンドで即座に変換完了
-- 🖱️ **初心者にやさしい** - ダブルクリックで使える簡単操作
+### ステップ1: ダウンロード
+1. [最新版をダウンロード](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases) 
+2. zipファイルを解凍してフォルダを開く
 
-## 🚀 超簡単3ステップ
+### ステップ2: 初回セットアップ
+**Windows**
+- `setup.bat` をダブルクリック
 
-### ⚡ ステップ1: 初回セットアップ（1回だけ）
-**Windows**: `setup.bat` をダブルクリック  
-**macOS**: `setup.command` をダブルクリック
+**macOS**  
+- `setup.command` をダブルクリック
 
-→ 自動で環境構築完了！
+*自動で必要な環境がセットアップされます（数分かかります）*
 
-### 📝 ステップ2: 基本的な変換
-**Windows**: `kumihan_convert.bat` をダブルクリック  
-**macOS**: `kumihan_convert.command` をダブルクリック  
+### ステップ3: 変換開始
+**Windows**
+- `kumihan_convert.bat` をダブルクリック
 
-→ `.txt` ファイルをドラッグ&ドロップで変換
+**macOS**
+- `kumihan_convert.command` をダブルクリック
 
-### 🎨 ステップ3: サンプル体験（お好みで）
-**Windows**: `run_examples.bat` をダブルクリック  
-**macOS**: `run_examples.command` をダブルクリック  
+**.txtファイル**をドラッグ&ドロップするだけで変換完了！
 
-→ 全機能のサンプルを一括生成
+## 💡 こんな方におすすめ
 
-### ⌨️ コマンドライン（上級者向け）
-```bash
-# インストール
-pip install -e .
+- **CoC6thシナリオ**を美しく配布したい同人作家の方
+- **HTMLの知識はない**けれど、きれいな文書を作りたい方  
+- **Word等の組版ソフトを使わず**に、テキストファイルから直接変換したい方
+- **即売会やBooth**で配布可能な形式がほしい方
 
-# 基本変換
-kumihan your_file.txt
+## ✨ 何ができるの？
 
-# サンプル生成
-kumihan --generate-sample
+### 入力（.txtファイル）
 ```
-
-### 📖 詳細ガイド
-- **初回実行**: [FIRST_RUN.md](FIRST_RUN.md) - エラー解決法も含む詳細手順
-- **基本的な使い方**: [クイックスタート](docs/user/QUICK_START.txt) - 5分で理解
-- **マウス操作**: [ダブルクリックガイド](docs/user/DOUBLE_CLICK_GUIDE.md) - コマンド不要
-
-## 📚 ドキュメント
-
-### ユーザー向け
-- [クイックスタート](docs/user/QUICK_START.txt) - 5分で始める使い方
-- [インストールガイド](docs/user/INSTALL.md) - 詳細なインストール方法
-- [記法一覧](docs/user/SYNTAX_CHEATSHEET.txt) - すべての記法をコンパクトに
-- [ユーザーマニュアル](docs/user/USER_MANUAL.txt) - 完全な使用ガイド（1566行）
-- [CLIリファレンス](docs/user/CLI_REFERENCE.md) - コマンドラインオプション詳細
-- [ダブルクリックガイド](docs/user/DOUBLE_CLICK_GUIDE.md) - マウスだけで使う方法
-
-### 開発者向け
-- [開発者情報](dev/README.md) - 開発環境セットアップと基本情報
-- [プロジェクト構造](docs/STRUCTURE.md) - ディレクトリ構成の詳細
-- [アーキテクチャ](docs/dev/ARCHITECTURE.md) - 内部構造の解説
-- [コントリビューション](docs/dev/CONTRIBUTING.md) - 開発参加ガイド
-- [テストガイド](docs/dev/TESTING.md) - テストの実行方法
-- [テストパターン生成](docs/user/USAGE_GENERATE_TEST.md) - 全記法の動作確認用
-- [CLAUDE.md](CLAUDE.md) - Claude Code向けプロジェクト仕様書（ルートに配置）
-
-### 上級者向け
-- [設定ガイド](docs/user/CONFIG_GUIDE.md) - カスタマイズ方法（通常は不要）
-
-## 📝 記法の例
-
-```text
 ;;;見出し1
-第1章：はじめに
+クトゥルフ神話TRPG シナリオサンプル
 ;;;
 
-これは通常の段落です。
+このシナリオは、フォーマッターのテスト用サンプルです。
+
+;;;見出し2
+シナリオ概要
+;;;
 
 ;;;太字
-重要な情報
+探索者たちは、とある不可解な事件の調査を依頼されます。
 ;;;
+
+- 推奨人数: 2〜4人
+- プレイ時間: 3〜4時間
+- 推奨技能: 図書館、目星、心理学
 
 ;;;枠線
-- 項目1
-- 項目2
-- 項目3
+舞台は1920年代のアメリカ、マサチューセッツ州アーカム。
+霧深い港町で、奇妙な失踪事件が相次いでいる。
 ;;;
-
-# エスケープ記法
-###で始まる行は ;;; として表示されます
 ```
 
-→ 美しいHTMLに自動変換されます！
+### 出力（美しいHTML）
+- **プロ品質の組版**：きれいなフォント、適切な行間、美しいレイアウト
+- **印刷対応**：A4サイズで美しく印刷可能
+- **配布可能**：HTMLファイル単体で完結、どこでも表示可能
 
-## 📁 サンプルファイル
+## 🔧 基本的な記法
 
-- [examples/](examples/) - 入力・出力・設定の各種サンプル
-  - [入力サンプル](examples/input/) - 基本的な記法から高度な記法まで
-  - [出力サンプル](examples/output/) - 変換結果の確認用
-  - [設定サンプル](examples/config/) - カスタマイズ用設定ファイル
+| 記法 | 効果 |
+|------|------|
+| `;;;太字\n内容\n;;;` | **太字で強調** |
+| `;;;枠線\n内容\n;;;` | 枠線で囲んで強調 |
+| `;;;見出し1\nタイトル\n;;;` | 大見出し |
+| `;;;見出し2\nサブタイトル\n;;;` | 中見出し |
+| `- 項目` | 箇条書きリスト |
 
-## 🤝 コントリビューション
+[→ 詳しい記法を見る](docs/SYNTAX_REFERENCE.md)
 
-バグ報告・機能要望は[Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)へ。
-プルリクエストも歓迎します。
+## 🎯 サンプルを試してみる
+
+**Windows**
+- `run_examples.bat` をダブルクリック
+
+**macOS**
+- `run_examples.command` をダブルクリック
+
+サンプルファイルが変換され、`examples/output/` フォルダに結果が保存されます。
+
+## 🛠️ うまくいかない時は
+
+よくある問題と解決策：
+
+### Python が見つからないエラー
+```
+💡 Python 3.9以上が必要です
+→ https://python.org からダウンロードしてインストール
+```
+
+### 仮想環境エラー
+```  
+💡 もう一度セットアップを実行してください
+→ setup.bat (Windows) または setup.command (macOS) をダブルクリック
+```
+
+### 変換がうまくいかない
+```
+💡 ファイル名を確認してください
+→ .txt ファイルのみ対応しています
+→ ファイル名に特殊文字が含まれていませんか？
+```
+
+[→ 詳しいトラブルシューティング](docs/TROUBLESHOOTING.md)
+
+## 📖 もっと詳しく
+
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - はじめての方向け詳細ガイド
+- **[USER_GUIDE.md](docs/USER_GUIDE.md)** - 全機能の使い方
+- **[SYNTAX_REFERENCE.md](docs/SYNTAX_REFERENCE.md)** - 完全記法リファレンス
+- **[examples/](examples/)** - サンプルファイル集
+
+## 🤝 フィードバック・お問い合わせ
+
+- **バグ報告・機能要望**: [GitHub Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
+- **使い方がわからない**: [Discussions](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/discussions)
 
 ## 📄 ライセンス
 
-MIT License - 詳細は[LICENSE](LICENSE)を参照
+MIT License - 自由に改変・利用可能です（再配布は禁止）
 
 ---
 
-**Kumihan-Formatter** - 美しい組版を、誰でも簡単に。
+**Kumihan-Formatter** - 美しい組版を、誰でも簡単に。 ✨
