@@ -2,22 +2,26 @@
 
 ## 📚 ユーザー向けドキュメント
 
-### 基本
-- [クイックスタート](user/QUICK_START.txt) - 5分で始める基本的な使い方
-- [インストールガイド](user/INSTALL.md) - 詳細なインストール手順
-- [記法一覧](user/SYNTAX_CHEATSHEET.txt) - すべての記法をコンパクトに
-- [ユーザーマニュアル](user/USER_MANUAL.txt) - 完全な使用ガイド（1566行）
+### 🚀 はじめての方
+- [初回実行ガイド](user/FIRST_RUN.md) - 最初に読むファイル
+- [起動ガイド](user/LAUNCH_GUIDE.md) - スクリプトの使い方
+- [クイックスタート](QUICKSTART.md) - 5分で始める基本的な使い方
+- [トラブルシューティング](user/TROUBLESHOOTING.md) - Windows・macOS問題解決
 
-### 使い方
+### 📖 基本的な使い方
+- [記法リファレンス](SYNTAX_REFERENCE.md) - すべての記法を詳しく
 - [ダブルクリックガイド](user/DOUBLE_CLICK_GUIDE.md) - マウスだけで使う方法
-- [CLIリファレンス](user/CLI_REFERENCE.md) - コマンドラインの詳細
-- [テスト生成機能](user/USAGE_GENERATE_TEST.md) - テストパターン生成
+- [記法チートシート](user/SYNTAX_CHEATSHEET.txt) - 記法をコンパクトに
 
-### 上級者向け
-- [設定ガイド](user/CONFIG_GUIDE.md) - カスタマイズ方法（通常は不要）
+### 🔧 詳細・上級者向け
+- [CLIリファレンス](user/CLI_REFERENCE.md) - コマンドラインの詳細
+- [設定ガイド](user/CONFIG_GUIDE.md) - カスタマイズ方法
+- [テスト生成機能](user/USAGE_GENERATE_TEST.md) - テストパターン生成
+- [ユーザーマニュアル](user/USER_MANUAL.txt) - 完全ガイド（1566行）
 
 ## 🔧 開発者向けドキュメント
 
+- [開発ガイドライン](dev/CLAUDE.md) - Claude Code向け開発指針
 - [アーキテクチャ](dev/ARCHITECTURE.md) - システム設計と内部構造
 - [コントリビューション](dev/CONTRIBUTING.md) - 開発参加ガイド
 - [テストガイド](dev/TESTING.md) - テストの書き方と実行方法
@@ -25,28 +29,34 @@
 ## 📋 ドキュメントマップ
 
 ```
-初めての方
+🚀 初めての方
   ↓
-クイックスタート → 記法一覧
+初回実行ガイド → クイックスタート → 記法リファレンス
   ↓
 ダブルクリックガイド（非技術者）
 または
 CLIリファレンス（技術者）
 
-開発者
+🔧 開発者
   ↓
-コントリビューション → アーキテクチャ
+開発ガイドライン → コントリビューション → アーキテクチャ
   ↓
 テストガイド
 ```
 
 ## 🔍 目的別ガイド
 
+### 「初めてツールを使う」
+→ [初回実行ガイド](user/FIRST_RUN.md)
+
 ### 「とりあえず使ってみたい」
-→ [クイックスタート](user/QUICK_START.txt)
+→ [クイックスタート](QUICKSTART.md)
+
+### 「問題が発生した」
+→ [トラブルシューティング](user/TROUBLESHOOTING.md)
 
 ### 「どんな記法があるか知りたい」
-→ [記法一覧](user/SYNTAX_CHEATSHEET.txt)
+→ [記法リファレンス](SYNTAX_REFERENCE.md)
 
 ### 「コマンドラインは苦手」
 → [ダブルクリックガイド](user/DOUBLE_CLICK_GUIDE.md)
@@ -62,7 +72,8 @@ CLIリファレンス（技術者）
 
 ## 📝 メンテナンス情報
 
-最終更新: 2025-01-21
-- Phase 3: 本格的なドキュメント再構成完了
-- ユーザー向けと開発者向けの分離
-- README.mdのシンプル化
+最終更新: 2025-06-22
+- Issue #40: ルートディレクトリのドキュメント散乱を解決
+- docs/user/とdocs/dev/の統合ドキュメント構造完成
+- Windows・macOS統合トラブルシューティング追加
+- 段階的学習導線の構築完了
