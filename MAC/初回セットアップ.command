@@ -131,7 +131,7 @@ if [[ "$choice" =~ ^[Yy]$ ]]; then
         echo "[ERROR] 変換ツール.command が見つかりません"
         echo ""
         echo "手動で起動してください:"
-        echo "  - Double-click: 変換ツール.command"
+        echo "  - Double-click: MAC/変換ツール.command"
         echo ""
         read -p "Press any key to exit..."
     fi
