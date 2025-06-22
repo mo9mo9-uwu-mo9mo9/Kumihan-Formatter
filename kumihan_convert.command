@@ -20,30 +20,30 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "=========================================="
-echo " Kumihan-Formatter - Text to HTML Converter"
+echo " Kumihan-Formatter - テキスト → HTML 変換ツール"
 echo "=========================================="
-echo "Convert .txt files to beautiful HTML"
-echo "Usage: Enter file path or drag and drop"
-echo "First run will auto-setup environment"
-echo "=========================================="
+echo ".txtファイルを美しいHTMLに変換"
+echo "使い方：ファイルパスを入力またはドラッグ&ドロップ"
+echo "初回実行時は環境を自動セットアップします"
+echo "==========================================
 echo ""
 
 # Check if setup has been completed
 if [ ! -d ".venv" ]; then
-    echo -e "${YELLOW}[WARNING] Setup not completed yet!${NC}"
+    echo -e "${YELLOW}[警告] セットアップがまだ完了していません！${NC}"
     echo ""
-    echo "Please run the setup first:"
-    echo "  1. Double-click: setup.command"
-    echo "  2. Wait for setup to complete"
-    echo "  3. Then run this script again"
+    echo "最初にセットアップを実行してください："
+    echo "  1. ダブルクリック: setup.command"
+    echo "  2. セットアップが完了するまで待機"
+    echo "  3. その後このスクリプトを再実行"
     echo ""
-    echo "For help, see: LAUNCH_GUIDE.md"
+    echo "ヘルプについては: LAUNCH_GUIDE.md を参照"
     echo ""
     echo "Press any key to exit..."
     read -n 1
     exit 1
 fi
-echo -e "${GREEN}[OK] Setup detected, proceeding...${NC}"
+echo -e "${GREEN}[OK] セットアップを検出、続行します...${NC}"
 
 # Pythonのバージョン確認
 if ! command -v python3 &> /dev/null; then

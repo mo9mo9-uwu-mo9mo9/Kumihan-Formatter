@@ -5,11 +5,11 @@
 
 echo ""
 echo "=========================================="
-echo " Kumihan-Formatter - Initial Setup"
+echo " Kumihan-Formatter - 初回セットアップ"
 echo "=========================================="
-echo "This will automatically set up everything you need"
-echo "to start using Kumihan-Formatter immediately."
-echo "=========================================="
+echo "必要な環境を自動でセットアップします"
+echo "すぐにKumihan-Formatterを使用できるようになります。"
+echo "==========================================
 echo ""
 
 # Get script directory
@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Check Python version
-echo "[1/4] Checking Python installation..."
+echo "[1/4] Python インストールを確認中..."
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     REQUIRED_VERSION="3.9"
@@ -25,16 +25,16 @@ if command -v python3 &> /dev/null; then
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
         PYTHON_CMD="python3"
-        echo "[OK] Python found: $PYTHON_VERSION"
+        echo "[OK] Python が見つかりました: $PYTHON_VERSION"
     else
-        echo "[ERROR] Python $REQUIRED_VERSION or higher required (current: $PYTHON_VERSION)"
+        echo "[エラー] Python $REQUIRED_VERSION 以上が必要です (現在: $PYTHON_VERSION)"
         echo ""
-        echo "Please install Python $REQUIRED_VERSION or higher:"
+        echo "Python $REQUIRED_VERSION 以上をインストールしてください："
         echo "https://www.python.org/downloads/"
         echo ""
-        echo "After installing Python, run this setup again."
+        echo "Python インストール後、再度このセットアップを実行してください。"
         echo ""
-        read -p "Press any key to exit..."
+        read -p "何かキーを押して終了してください..."
         exit 1
     fi
 elif command -v python &> /dev/null; then
@@ -44,93 +44,93 @@ elif command -v python &> /dev/null; then
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
         PYTHON_CMD="python"
-        echo "[OK] Python found: $PYTHON_VERSION"
+        echo "[OK] Python が見つかりました: $PYTHON_VERSION"
     else
-        echo "[ERROR] Python $REQUIRED_VERSION or higher required (current: $PYTHON_VERSION)"
+        echo "[エラー] Python $REQUIRED_VERSION 以上が必要です (現在: $PYTHON_VERSION)"
         echo ""
-        echo "Please install Python $REQUIRED_VERSION or higher:"
+        echo "Python $REQUIRED_VERSION 以上をインストールしてください："
         echo "https://www.python.org/downloads/"
         echo ""
-        echo "After installing Python, run this setup again."
+        echo "Python インストール後、再度このセットアップを実行してください。"
         echo ""
-        read -p "Press any key to exit..."
+        read -p "何かキーを押して終了してください..."
         exit 1
     fi
 else
-    echo "[ERROR] Python not found"
+    echo "[エラー] Python が見つかりません"
     echo ""
-    echo "Please install Python 3.9 or higher:"
+    echo "Python 3.9 以上をインストールしてください："
     echo "https://www.python.org/downloads/"
     echo ""
-    echo "After installing Python, run this setup again."
+    echo "Python インストール後、再度このセットアップを実行してください。"
     echo ""
-    read -p "Press any key to exit..."
+    read -p "何かキーを押して終了してください..."
     exit 1
 fi
 
 # Create virtual environment
-echo "[2/4] Creating virtual environment..."
+echo "[2/4] 仮想環境を作成中..."
 if [ -d ".venv" ]; then
-    echo "[OK] Virtual environment already exists"
+    echo "[OK] 仮想環境は既に存在します"
 else
     if $PYTHON_CMD -m venv .venv; then
-        echo "[OK] Virtual environment created"
+        echo "[OK] 仮想環境を作成しました"
     else
-        echo "[ERROR] Failed to create virtual environment"
+        echo "[エラー] 仮想環境の作成に失敗しました"
         echo ""
-        read -p "Press any key to exit..."
+        read -p "何かキーを押して終了してください..."
         exit 1
     fi
 fi
 
 # Activate virtual environment
-echo "[3/4] Activating virtual environment..."
+echo "[3/4] 仮想環境をアクティベート中..."
 source .venv/bin/activate
 if [ $? -ne 0 ]; then
-    echo "[ERROR] Failed to activate virtual environment"
+    echo "[エラー] 仮想環境のアクティベートに失敗しました"
     echo ""
-    read -p "Press any key to exit..."
+    read -p "何かキーを押して終了してください..."
     exit 1
 else
-    echo "[OK] Virtual environment activated"
+    echo "[OK] 仮想環境をアクティベートしました"
 fi
 
 # Install dependencies
-echo "[4/4] Installing dependencies..."
-echo "This may take a moment..."
+echo "[4/4] 依存関係をインストール中..."
+echo "しばらくお待ちください..."
 if python -m pip install -e ".[dev]" --quiet; then
-    echo "[OK] Dependencies installed successfully"
+    echo "[OK] 依存関係のインストールが完了しました"
 else
-    echo "[ERROR] Failed to install dependencies"
+    echo "[エラー] 依存関係のインストールに失敗しました"
     echo ""
-    echo "Please check your internet connection and try again."
+    echo "インターネット接続を確認して、再度お試しください。"
     echo ""
-    read -p "Press any key to exit..."
+    read -p "何かキーを押して終了してください..."
     exit 1
 fi
 
 echo ""
 echo "=========================================="
-echo " Setup Complete!"
-echo "=========================================="
+echo " セットアップ完了！"
+echo "==========================================
 echo ""
-echo "You can now use Kumihan-Formatter:"
+echo "これでKumihan-Formatterを使用できます："
 echo ""
-echo "For basic conversion:"
-echo "  - Double-click: kumihan_convert.command"
-echo "  - Drag and drop .txt files to convert"
+echo "基本的な変換の場合："
+echo "  - ダブルクリック: kumihan_convert.command"
+echo "  - .txtファイルをドラッグ&ドロップで変換"
 echo ""
-echo "To try examples:"
-echo "  - Double-click: run_examples.command"
-echo "  - See generated samples in examples/output/"
+echo "サンプルを試す場合："
+echo "  - ダブルクリック: run_examples.command"
+echo "  - examples/output/ でサンプル結果を確認"
 echo ""
-echo "For updates:"
-echo "  - Download latest version from GitHub releases"
-echo "  - Or visit: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter"
+echo "アップデートの場合："
+echo "  - GitHub releases から最新版をダウンロード"
+echo "  - または: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter"
 echo ""
-echo "For help:"
-echo "  - Read: LAUNCH_GUIDE.md"
-echo "  - Read: FIRST_RUN.md"
+echo "ヘルプの場合："
+echo "  - 参照: LAUNCH_GUIDE.md"
+echo "  - 参照: FIRST_RUN.md"
 echo ""
-echo "Press any key to exit..."
+echo "何かキーを押して終了してください..."
 read -p ""
