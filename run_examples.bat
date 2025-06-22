@@ -1,7 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
-chcp 65001 > nul
-title Kumihan-Formatter - サンプル実行スクリプト
+rem Try to set UTF-8 code page, but don't fail if it doesn't work
+chcp 65001 > nul 2>&1
+if errorlevel 1 (
+    rem Fallback: Try to set UTF-8 via environment
+    set PYTHONIOENCODING=utf-8
+)
+title Kumihan-Formatter - Sample Execution Script
 
 echo.
 echo ==========================================
@@ -63,6 +68,7 @@ echo 📝 [1/3] 基本サンプル (sample.txt)
 set "OUTPUT_DIR=%OUTPUT_BASE%\basic"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
+set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo ❌ エラー: basic サンプルの変換に失敗
@@ -77,6 +83,7 @@ echo 📝 [2/3] 高度なサンプル (comprehensive-sample.txt)
 set "OUTPUT_DIR=%OUTPUT_BASE%\advanced"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
+set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "examples\input\comprehensive-sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo ❌ エラー: advanced サンプルの変換に失敗
@@ -91,6 +98,7 @@ echo 📝 [3/3] 機能ショーケース (--generate-sample)
 set "OUTPUT_DIR=%OUTPUT_BASE%\showcase"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
+set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter --generate-sample -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo ❌ エラー: showcase サンプルの変換に失敗
