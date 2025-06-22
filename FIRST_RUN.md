@@ -144,19 +144,13 @@ kumihan /path/to/your/file.txt
 kumihan ./your_file.txt
 ```
 
-## 🔧 デスクトップランチャーの設定
+## 🗂️ 起動ファイルの選び方
 
-### Windows
-```bash
-setup_desktop_launcher.bat
-```
-→ デスクトップにショートカットが作成されます
+どのファイルを使うか迷ったときは **[LAUNCH_GUIDE.md](LAUNCH_GUIDE.md)** をご覧ください。
 
-### macOS
-```bash
-./setup_desktop_launcher.command
-```
-→ デスクトップにエイリアスが作成されます
+**基本的には:**
+- **メイン変換**: `kumihan_convert.bat` (Windows) / `kumihan_convert.command` (macOS)
+- **サンプル体験**: `run_examples.bat` (Windows) / `run_examples.command` (macOS)
 
 ## 📚 次のステップ
 
