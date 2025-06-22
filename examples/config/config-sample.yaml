@@ -1,0 +1,57 @@
+# Kumihan-Formatter 設定ファイルサンプル
+# このファイルは YAML 形式で記述します
+
+# カスタムマーカーの定義
+markers:
+  # 既存のマーカーを上書き
+  太字:
+    tag: strong
+    class: bold-custom
+  
+  # 新しいカスタムマーカーを追加
+  警告:
+    tag: div
+    class: warning
+  
+  重要:
+    tag: div
+    class: important
+  
+  注釈:
+    tag: aside
+    class: note
+  
+  コード:
+    tag: code
+    class: code-block
+
+# テーマ設定（default, dark, sepia から選択）
+theme: dark
+
+# フォント設定
+font_family: "Noto Sans JP, Yu Gothic, Meiryo, sans-serif"
+
+# CSS設定の詳細カスタマイズ
+css:
+  max_width: "900px"
+  line_height: "2.0"
+  # テーマ設定を上書きする場合
+  # background_color: "#f0f0f0"
+  # container_background: "#ffffff"
+  # text_color: "#444444"
+
+# カスタムテーマの定義
+themes:
+  custom_blue:
+    name: "ブルーテーマ"
+    css:
+      background_color: "#e3f2fd"
+      container_background: "#ffffff"
+      text_color: "#1565c0"
+  
+  high_contrast:
+    name: "ハイコントラスト"
+    css:
+      background_color: "#000000"
+      container_background: "#ffffff"
+      text_color: "#000000"
