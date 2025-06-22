@@ -254,7 +254,7 @@ class Parser:
             )
         
         # ネスト順序の決定（外側から内側へ）
-        nesting_order = ["見出し", "div", "strong", "em"]
+        nesting_order = ["div", "見出し", "strong", "em"]  # 見出しを内側に移動
         sorted_keywords = []
         
         for order_prefix in nesting_order:
@@ -277,7 +277,8 @@ class Parser:
             block_def = self.BLOCK_KEYWORDS[keyword]
             
             node_attrs = {}
-            if keyword == sorted_keywords[0] and attributes:  # 最外側のノードに属性を適用
+            # 属性は一番内側のハイライト要素に適用
+            if keyword == "ハイライト" and attributes:
                 node_attrs.update(attributes)
             
             if "class" in block_def:
