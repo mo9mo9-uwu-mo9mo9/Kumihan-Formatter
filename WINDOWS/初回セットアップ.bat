@@ -83,23 +83,46 @@ echo ==========================================
 echo  Setup Complete!
 echo ==========================================
 echo.
-echo You can now use Kumihan-Formatter:
+echo 🎉 セットアップが完了しました！
 echo.
-echo For basic conversion:
-echo   - Double-click: 変換ツール.bat
-echo   - Drag and drop .txt files to convert
+echo 次のステップ:
+echo   1. 変換ツールを起動
+echo   2. .txtファイルをドラッグ&ドロップ
+echo   3. HTMLファイルが生成されます
 echo.
-echo To try examples:
-echo   - Double-click: サンプル実行.bat
-echo   - See generated samples in examples/output/
-echo.
-echo For updates:
-echo   - Download latest version from GitHub releases
-echo   - Or visit: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
-echo.
-echo For help:
-echo   - Read: docs/user/LAUNCH_GUIDE.md
-echo   - Read: docs/user/FIRST_RUN.md
-echo.
-echo Press any key to exit...
-pause > nul
+set /p choice="📱 変換ツールを今すぐ起動しますか？ [Y/N]: "
+if /i "%choice%"=="y" (
+    echo.
+    echo 🚀 変換ツールを起動しています...
+    if exist "変換ツール.bat" (
+        call "変換ツール.bat"
+    ) else (
+        echo [ERROR] 変換ツール.bat が見つかりません
+        echo.
+        echo 手動で起動してください:
+        echo   - Double-click: 変換ツール.bat
+        echo.
+        pause
+    )
+) else (
+    echo.
+    echo 💡 後で使用する場合:
+    echo    WINDOWS/変換ツール.bat をダブルクリック
+    echo.
+    echo その他の使用方法:
+    echo.
+    echo To try examples:
+    echo   - Double-click: サンプル実行.bat
+    echo   - See generated samples in examples/output/
+    echo.
+    echo For updates:
+    echo   - Download latest version from GitHub releases
+    echo   - Or visit: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
+    echo.
+    echo For help:
+    echo   - Read: docs/user/LAUNCH_GUIDE.md
+    echo   - Read: docs/user/FIRST_RUN.md
+    echo.
+    echo Press any key to exit...
+    pause > nul
+)
