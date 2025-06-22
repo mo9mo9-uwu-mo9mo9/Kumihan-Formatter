@@ -6,33 +6,33 @@ if errorlevel 1 (
     rem Fallback: Try to set UTF-8 via environment
     set PYTHONIOENCODING=utf-8
 )
-title Kumihan-Formatter - CoC6th Text to HTML Converter
+title Kumihan-Formatter - テキスト → HTML 変換ツール
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - Text to HTML Converter
+echo  Kumihan-Formatter - テキスト → HTML 変換ツール
 echo ==========================================
-echo Convert .txt files to beautiful HTML
-echo Usage: Drag and drop .txt file to this window
-echo First run will auto-setup environment
+echo .txtファイルを美しいHTMLに変換
+echo 使い方：この画面に.txtファイルをドラッグ&ドロップ
+echo 初回実行時は環境を自動セットアップします
 echo ==========================================
 echo.
 
 rem Check if setup has been completed
 if not exist ".venv\Scripts\activate.bat" (
-    echo [WARNING] Setup not completed yet!
+    echo [警告] セットアップがまだ完了していません！
     echo.
-    echo Please run the setup first:
-    echo   1. Double-click: setup.bat
-    echo   2. Wait for setup to complete
-    echo   3. Then run this script again
+    echo 最初にセットアップを実行してください：
+    echo   1. ダブルクリック: setup.bat
+    echo   2. セットアップが完了するまで待機
+    echo   3. その後このスクリプトを再実行
     echo.
-    echo For help, see: LAUNCH_GUIDE.md
+    echo ヘルプについては: LAUNCH_GUIDE.md を参照
     echo.
     pause
     exit /b 1
 )
-echo [OK] Setup detected, proceeding...
+echo [OK] セットアップを検出、続行します...
 
 rem Pythonのパスとバージョンを確認
 python --version > nul 2>&1

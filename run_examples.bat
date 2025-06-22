@@ -6,166 +6,166 @@ rem This script works with both UTF-8 and Shift-JIS environments
 rem Try to set UTF-8 encoding, but don't fail if it doesn't work
 chcp 65001 > nul 2>&1
 
-title Kumihan-Formatter - Sample Execution Script
+title Kumihan-Formatter - サンプル一括実行スクリプト
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - Sample Batch Run
+echo  Kumihan-Formatter - サンプル一括実行
 echo ==========================================
-echo Convert all sample files to HTML
-echo Output: examples/output/
+echo すべてのサンプルファイルをHTMLに変換
+echo 出力先: examples/output/
 echo ==========================================
 echo.
 
 rem Check if setup has been completed
 if not exist ".venv\Scripts\activate.bat" (
-    echo [WARNING] Setup not completed yet!
+    echo [警告] セットアップがまだ完了していません！
     echo.
-    echo Please run the setup first:
-    echo   1. Double-click: setup.bat
-    echo   2. Wait for setup to complete
-    echo   3. Then run this script again
+    echo 最初にセットアップを実行してください：
+    echo   1. ダブルクリック: setup.bat
+    echo   2. セットアップが完了するまで待機
+    echo   3. その後このスクリプトを再実行
     echo.
-    echo For help, see: LAUNCH_GUIDE.md
+    echo ヘルプについては: LAUNCH_GUIDE.md を参照
     echo.
     pause
     exit /b 1
 )
-echo [OK] Setup detected, proceeding...
+echo [OK] セットアップを検出、続行します...
 
 rem Check Python version
-echo [DEBUG] Checking Python installation...
+echo [デバッグ] Python インストールを確認中...
 python --version > nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python not found
+    echo [エラー] Python が見つかりません
     echo.
-    echo Please install Python 3.9 or higher:
+    echo Python 3.9 以上をインストールしてください：
     echo https://www.python.org/downloads/
     echo.
     pause
     exit /b 1
 ) else (
     for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-    echo [OK] Python found: !PYTHON_VERSION!
+    echo [OK] Python が見つかりました: !PYTHON_VERSION!
 )
 
 rem Check virtual environment
-echo [DEBUG] Checking virtual environment...
+echo [デバッグ] 仮想環境を確認中...
 if exist ".venv\Scripts\activate.bat" (
-    echo [DEBUG] Virtual environment found, activating...
+    echo [デバッグ] 仮想環境を発見、アクティベート中...
     call .venv\Scripts\activate.bat
     if errorlevel 1 (
-        echo [ERROR] Failed to activate virtual environment
+        echo [エラー] 仮想環境のアクティベートに失敗
         echo.
         pause
         exit /b 1
     )
     set PYTHON_CMD=python
-    echo [OK] Virtual environment activated
+    echo [OK] 仮想環境をアクティベートしました
 ) else (
-    echo [WARNING] Virtual environment not found
-    echo Please run kumihan_convert.bat first to complete setup
+    echo [警告] 仮想環境が見つかりません
+    echo 最初に kumihan_convert.bat を実行してセットアップを完了してください
     echo.
     pause
     exit /b 1
 )
 
 rem Check dependencies
-echo [DEBUG] Checking dependencies...
+echo [デバッグ] 依存関係を確認中...
 %PYTHON_CMD% -c "import click, jinja2, rich" 2>nul
 if errorlevel 1 (
-    echo [ERROR] Required libraries missing
-    echo Please run kumihan_convert.bat first to complete setup
+    echo [エラー] 必要なライブラリが不足しています
+    echo 最初に kumihan_convert.bat を実行してセットアップを完了してください
     echo.
     pause
     exit /b 1
 )
 
-echo [OK] Environment verified
+echo [OK] 環境確認完了
 echo.
 
 rem Prepare output directory
-echo [DEBUG] Preparing output directory...
+echo [デバッグ] 出力ディレクトリを準備中...
 set "OUTPUT_BASE=examples\output"
 if not exist "%OUTPUT_BASE%" mkdir "%OUTPUT_BASE%"
-echo [OK] Output directory ready: %OUTPUT_BASE%
+echo [OK] 出力ディレクトリの準備完了: %OUTPUT_BASE%
 
-echo [DEBUG] Starting sample conversion...
+echo [デバッグ] サンプル変換を開始...
 echo.
 
 rem Sample 1: basic
-echo [1/3] Basic sample (sample.txt)
+echo [1/3] 基本サンプル (sample.txt)
 set "OUTPUT_DIR=%OUTPUT_BASE%\basic"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
-    echo Error: Failed to convert basic sample
+    echo エラー: 基本サンプルの変換に失敗
     goto error_end
 ) else (
-    echo OK: Basic sample completed -> %OUTPUT_DIR%
+    echo OK: 基本サンプル完了 -> %OUTPUT_DIR%
 )
 echo.
 
 rem Sample 2: advanced
-echo [2/3] Advanced sample (comprehensive-sample.txt)
+echo [2/3] 高度なサンプル (comprehensive-sample.txt)
 set "OUTPUT_DIR=%OUTPUT_BASE%\advanced"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter "examples\input\comprehensive-sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
-    echo Error: Failed to convert advanced sample
+    echo エラー: 高度なサンプルの変換に失敗
     goto error_end
 ) else (
-    echo OK: Advanced sample completed -> %OUTPUT_DIR%
+    echo OK: 高度なサンプル完了 -> %OUTPUT_DIR%
 )
 echo.
 
 rem Sample 3: showcase
-echo [3/3] Feature showcase (--generate-sample)
+echo [3/3] 機能ショーケース (--generate-sample)
 set "OUTPUT_DIR=%OUTPUT_BASE%\showcase"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
 %PYTHON_CMD% -m kumihan_formatter --generate-sample -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
-    echo Error: Failed to convert showcase sample
+    echo エラー: ショーケースサンプルの変換に失敗
     goto error_end
 ) else (
-    echo OK: Showcase sample completed -> %OUTPUT_DIR%
+    echo OK: ショーケースサンプル完了 -> %OUTPUT_DIR%
 )
 echo.
 
 echo ==========================================
-echo All samples converted successfully!
+echo すべてのサンプル変換が完了しました！
 echo ==========================================
 echo.
-echo Generated files:
-echo   examples\output\basic\        - Basic syntax samples
-echo   examples\output\advanced\     - Advanced syntax samples
-echo   examples\output\showcase\     - Feature showcase
+echo 生成されたファイル:
+echo   examples\output\basic\        - 基本的な記法のサンプル
+echo   examples\output\advanced\     - 高度な記法のサンプル
+echo   examples\output\showcase\     - 機能ショーケース
 echo.
-echo Please check HTML files in your browser
+echo HTMLファイルをブラウザで確認してください
 echo.
-echo Open output folder? [Y/N]
+echo 出力フォルダを開きますか？ [Y/N]
 set /p choice="> "
 if /i "%choice%"=="y" (
     explorer "%OUTPUT_BASE%"
 )
 
 echo.
-echo Press any key to exit...
+echo 何かキーを押して終了してください...
 pause > nul
 exit /b 0
 
 :error_end
 echo.
-echo Troubleshooting:
-echo   1. Run kumihan_convert.bat first to complete setup
-echo   2. Check error messages and fix issues
-echo   3. Refer to FIRST_RUN.md for help
+echo トラブルシューティング:
+echo   1. 最初に kumihan_convert.bat を実行してセットアップを完了
+echo   2. エラーメッセージを確認して問題を修正
+echo   3. ヘルプについては FIRST_RUN.md を参照
 echo.
 pause
 exit /b 1
