@@ -27,7 +27,7 @@ if not exist "../.venv\Scripts\activate.bat" (
     echo   2. Wait for setup to complete
     echo   3. Then run this script again
     echo.
-    echo For help, see: ../LAUNCH_GUIDE.md
+    echo For help, see: ../docs/user/LAUNCH_GUIDE.md
     echo.
     pause
     exit /b 1

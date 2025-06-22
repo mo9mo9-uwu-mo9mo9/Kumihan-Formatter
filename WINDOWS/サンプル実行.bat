@@ -26,7 +26,7 @@ if not exist "../.venv\Scripts\activate.bat" (
     echo   2. Wait for setup to complete
     echo   3. Then run this script again
     echo.
-    echo For help, see: ../LAUNCH_GUIDE.md
+    echo For help, see: ../docs/user/LAUNCH_GUIDE.md
     echo.
     pause
     exit /b 1
@@ -165,7 +165,7 @@ echo.
 echo Troubleshooting:
 echo   1. Run 変換ツール.bat first to complete setup
 echo   2. Check error messages and fix issues
-echo   3. Refer to ../FIRST_RUN.md for help
+echo   3. Refer to ../docs/user/FIRST_RUN.md for help
 echo.
 pause
 exit /b 1
