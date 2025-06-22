@@ -100,7 +100,7 @@ if /i "%choice%"=="y" (
         echo [ERROR] 変換ツール.bat が見つかりません
         echo.
         echo 手動で起動してください:
-        echo   - Double-click: 変換ツール.bat
+        echo   - Double-click: WINDOWS/変換ツール.bat
         echo.
         pause
     )
