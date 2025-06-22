@@ -20,12 +20,29 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "=========================================="
-echo " Kumihan-Formatter - サンプル一括実行"
+echo " Kumihan-Formatter - Sample Batch Run"
 echo "=========================================="
-echo "📝 全サンプルファイルを一括変換します"
-echo "🎯 出力先: examples/output/"
+echo "Convert all sample files to HTML"
+echo "Output: examples/output/"
 echo "=========================================="
 echo ""
+
+# Check if setup has been completed
+if [ ! -d ".venv" ]; then
+    echo -e "${YELLOW}[WARNING] Setup not completed yet!${NC}"
+    echo ""
+    echo "Please run the setup first:"
+    echo "  1. Double-click: setup.command"
+    echo "  2. Wait for setup to complete"
+    echo "  3. Then run this script again"
+    echo ""
+    echo "For help, see: LAUNCH_GUIDE.md"
+    echo ""
+    echo "Press any key to exit..."
+    read -n 1
+    exit 1
+fi
+echo -e "${GREEN}[OK] Setup detected, proceeding...${NC}"
 
 # Pythonのバージョン確認
 if ! command -v python3 &> /dev/null; then

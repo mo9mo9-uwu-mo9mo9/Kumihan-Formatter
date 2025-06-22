@@ -2,6 +2,17 @@
 
 どのファイルを使えばいいか迷ったときの**簡単な選択ガイド**です。
 
+## ⚡ 初回利用時（重要！）
+
+**まず最初にセットアップを実行してください:**
+
+**Windows**: `setup.bat` をダブルクリック  
+**macOS**: `setup.command` をダブルクリック
+
+→ 1回実行すれば、後は他のファイルが使えるようになります！
+
+---
+
 ## 🎯 目的別ファイル選択
 
 ### 📝 テキストファイルをHTMLに変換したい
@@ -44,21 +55,25 @@ run_examples.command をダブルクリック
 
 ## 🗂️ ファイル一覧（整理済み）
 
-| ファイル名 | 用途 | 使用頻度 |
-|----------|------|---------|
-| `kumihan_convert.bat` | **メイン変換ツール（Windows）** | ⭐⭐⭐ |
-| `kumihan_convert.command` | **メイン変換ツール（macOS）** | ⭐⭐⭐ |
-| `run_examples.bat` | **サンプル実行（Windows）** | ⭐⭐ |
-| `run_examples.command` | **サンプル実行（macOS）** | ⭐⭐ |
+| ファイル名 | 用途 | 使用頻度 | 実行順序 |
+|----------|------|---------|----------|
+| `setup.bat` | **初回セットアップ（Windows）** | ⭐⭐⭐ | **1番目** |
+| `setup.command` | **初回セットアップ（macOS）** | ⭐⭐⭐ | **1番目** |
+| `kumihan_convert.bat` | **メイン変換ツール（Windows）** | ⭐⭐⭐ | 2番目 |
+| `kumihan_convert.command` | **メイン変換ツール（macOS）** | ⭐⭐⭐ | 2番目 |
+| `run_examples.bat` | **サンプル実行（Windows）** | ⭐⭐ | 3番目 |
+| `run_examples.command` | **サンプル実行（macOS）** | ⭐⭐ | 3番目 |
 
 ## 💡 使い分け
 
-### 🔰 初心者の方
-1. まず `run_examples` で機能を体験
-2. 慣れたら `kumihan_convert` で自分のファイルを変換
+### 🔰 初心者の方（推奨フロー）
+1. **最初に** `setup` でセットアップ
+2. `run_examples` で機能を体験  
+3. 慣れたら `kumihan_convert` で自分のファイルを変換
 
 ### 🏃‍♂️ すぐに使いたい方
-- `kumihan_convert` を直接使用
+1. **最初に** `setup` でセットアップ
+2. `kumihan_convert` を直接使用
 
 ## ❓ トラブル時
 
@@ -69,4 +84,4 @@ run_examples.command をダブルクリック
 
 ---
 
-**🎉 迷ったときは `kumihan_convert` から始めてください！**
+**🎉 迷ったときは `setup` → `kumihan_convert` の順で実行してください！**

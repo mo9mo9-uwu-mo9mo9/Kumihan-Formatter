@@ -14,60 +14,46 @@ python3 --version
 ```
 → `Python 3.9.x` 以降が表示されればOK
 
-## 🎯 3ステップで始める
+## 🎯 超簡単2ステップで始める
 
-### ステップ1: インストール
+### ⚡ ステップ1: 初回セットアップ（1回だけ）
 
-```bash
-# プロジェクトディレクトリに移動
-cd Kumihan-Formatter
-
-# インストール実行
-pip install -e .
-```
-
-💡 **エラーが出た場合:**
-- `pip3 install -e .` を試してください
-- 権限エラーの場合: `pip install -e . --user`
-
-### ステップ2: 機能を体験
-
-```bash
-# サンプル生成（どんなことができるか確認）
-kumihan --generate-sample
-```
+**Windows**: `setup.bat` をダブルクリック  
+**macOS**: `setup.command` をダブルクリック
 
 ✅ **成功の確認:**
-- `showcase.txt` と `showcase.html` が生成される
-- ブラウザが自動で開いて結果が表示される
+- `[OK] Dependencies installed successfully` が表示される
+- `Setup Complete!` のメッセージが表示される
 
-### ステップ3: 自分のファイルを変換
+### 🎉 ステップ2: すぐに使える！
 
-```bash
-# 基本的なサンプルを変換
-kumihan examples/input/sample.txt
+**変換したい場合:**
+- **Windows**: `kumihan_convert.bat` をダブルクリック
+- **macOS**: `kumihan_convert.command` をダブルクリック
 
-# より高度なサンプルを変換
-kumihan examples/input/comprehensive-sample.txt
-```
+**サンプルを試したい場合:**
+- **Windows**: `run_examples.bat` をダブルクリック  
+- **macOS**: `run_examples.command` をダブルクリック
 
 🎉 **おめでとうございます！** これで基本的な使い方をマスターしました。
 
-## 🖱️ マウスだけで使う方法（推奨）
+## ✨ より詳しい使い方
 
-コマンドが苦手な方は、**ダブルクリック**だけで使えます：
+### 🎨 サンプルで機能体験
+セットアップ後、すぐに全機能を体験できます：
 
-### Windows
-1. `kumihan_convert.bat` をダブルクリック
-2. 変換したい `.txt` ファイルを選択
-3. 自動的にHTMLが生成されます
+**Windows**: `run_examples.bat` をダブルクリック  
+**macOS**: `run_examples.command` をダブルクリック
 
-### macOS
-1. `kumihan_convert.command` をダブルクリック
-2. 変換したい `.txt` ファイルを選択
-3. 自動的にHTMLが生成されます
+→ `examples/output/` フォルダに結果が生成されます
 
-詳細は [ダブルクリックガイド](docs/user/DOUBLE_CLICK_GUIDE.md) をご覧ください。
+### 📝 自分のファイルを変換
+セットアップ後、いつでもファイル変換できます：
+
+**Windows**: `kumihan_convert.bat` をダブルクリック  
+**macOS**: `kumihan_convert.command` をダブルクリック
+
+→ `.txt` ファイルをドラッグ&ドロップするだけ
 
 ## 🎨 基本的な記法（コピペして試そう！）
 

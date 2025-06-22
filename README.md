@@ -12,17 +12,25 @@
 - ⚡ **高速変換** - ワンコマンドで即座に変換完了
 - 🖱️ **初心者にやさしい** - ダブルクリックで使える簡単操作
 
-## 🚀 2つの簡単な使い方
+## 🚀 超簡単3ステップ
 
-### 🖱️ 基本的な変換（推奨）
-1. **Windows**: `kumihan_convert.bat` をダブルクリック
-2. **macOS**: `kumihan_convert.command` をダブルクリック
-3. 変換したい `.txt` ファイルをドラッグ&ドロップ
+### ⚡ ステップ1: 初回セットアップ（1回だけ）
+**Windows**: `setup.bat` をダブルクリック  
+**macOS**: `setup.command` をダブルクリック
 
-### 📚 サンプル体験
-1. **Windows**: `run_examples.bat` をダブルクリック
-2. **macOS**: `run_examples.command` をダブルクリック
-3. 全機能のサンプルを一括生成
+→ 自動で環境構築完了！
+
+### 📝 ステップ2: 基本的な変換
+**Windows**: `kumihan_convert.bat` をダブルクリック  
+**macOS**: `kumihan_convert.command` をダブルクリック  
+
+→ `.txt` ファイルをドラッグ&ドロップで変換
+
+### 🎨 ステップ3: サンプル体験（お好みで）
+**Windows**: `run_examples.bat` をダブルクリック  
+**macOS**: `run_examples.command` をダブルクリック  
+
+→ 全機能のサンプルを一括生成
 
 ### ⌨️ コマンドライン（上級者向け）
 ```bash

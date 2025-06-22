@@ -17,6 +17,22 @@ echo Output: examples/output/
 echo ==========================================
 echo.
 
+rem Check if setup has been completed
+if not exist ".venv\Scripts\activate.bat" (
+    echo [WARNING] Setup not completed yet!
+    echo.
+    echo Please run the setup first:
+    echo   1. Double-click: setup.bat
+    echo   2. Wait for setup to complete
+    echo   3. Then run this script again
+    echo.
+    echo For help, see: LAUNCH_GUIDE.md
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] Setup detected, proceeding...
+
 rem Check Python version
 echo [DEBUG] Checking Python installation...
 python --version > nul 2>&1
