@@ -13,7 +13,7 @@ class TestImageEmbedding:
     
     def test_simple_image_syntax(self):
         """単純な画像記法のテスト"""
-        text = ":::test.png:::"
+        text = ";;;test.png;;;"
         ast = parse(text)
         
         assert len(ast) == 1
@@ -25,7 +25,7 @@ class TestImageEmbedding:
         """画像とテキストの混在テスト"""
         text = """これは画像のテストです。
 
-:::sample.jpg:::
+;;;sample.jpg;;;
 
 画像の後のテキストです。"""
         ast = parse(text)
@@ -38,13 +38,13 @@ class TestImageEmbedding:
     
     def test_multiple_images(self):
         """複数画像のテスト"""
-        text = """:::image1.png:::
+        text = """;;;image1.png;;;
 
 何かテキスト
 
-:::image2.jpeg:::
+;;;image2.jpeg;;;
 
-:::image3.gif:::"""
+;;;image3.gif;;;"""
         ast = parse(text)
         
         # 画像ノードを抽出
@@ -59,7 +59,7 @@ class TestImageEmbedding:
         extensions = ["png", "jpg", "jpeg", "gif", "webp", "svg"]
         
         for ext in extensions:
-            text = f":::test.{ext}:::"
+            text = f";;;test.{ext};;;"
             ast = parse(text)
             assert len(ast) == 1
             assert ast[0].type == "image"
@@ -68,7 +68,7 @@ class TestImageEmbedding:
     def test_invalid_image_syntax(self):
         """無効な画像記法のテスト"""
         # 拡張子が画像でない場合は通常のブロックとして扱われる
-        text = ":::test.txt:::"
+        text = ";;;test.txt;;;"
         ast = parse(text)
         
         # エラーノードになることを確認
@@ -77,7 +77,7 @@ class TestImageEmbedding:
     
     def test_image_rendering(self):
         """画像のHTMLレンダリングテスト"""
-        text = ":::photo.jpg:::"
+        text = ";;;photo.jpg;;;"
         ast = parse(text)
         html = render(ast)
         
@@ -87,7 +87,7 @@ class TestImageEmbedding:
     def test_image_with_special_characters(self):
         """特殊文字を含むファイル名のテスト"""
         # アンダースコア、ハイフンを含むファイル名
-        text = ":::test_image-001.png:::"
+        text = ";;;test_image-001.png;;;"
         ast = parse(text)
         
         assert len(ast) == 1
@@ -98,10 +98,10 @@ class TestImageEmbedding:
         """パストラバーサル攻撃の防止テスト"""
         # パス区切り文字を含む場合は画像として認識しない
         dangerous_patterns = [
-            ":::../../../etc/passwd:::",
-            ":::images/../../secret.png:::",
-            ":::C:\\Windows\\System32\\file.png:::",
-            ":::/etc/passwd:::"
+            ";;;../../../etc/passwd;;;",
+            ";;;images/../../secret.png;;;",
+            ";;;C:\\Windows\\System32\\file.png;;;",
+            ";;;/etc/passwd;;;"
         ]
         
         for pattern in dangerous_patterns:
@@ -116,16 +116,16 @@ class TestImageEmbedding:
 
 これはテストドキュメントです。
 
-:::枠線
+;;;枠線
 重要な情報
-:::
+;;;
 
-:::demo.png:::
+;;;demo.png;;;
 
 - リスト項目1
 - リスト項目2
 
-:::highlight.jpg:::
+;;;highlight.jpg;;;
 
 最後のテキスト"""
         

@@ -37,13 +37,13 @@ def test_parse_list():
 
 def test_parse_single_block_marker():
     """単一ブロックマーカーのパース"""
-    text = """:::太字
+    text = """;;;太字
 これは太字のテキストです。
-:::
+;;;
 
-:::枠線
+;;;枠線
 枠線で囲まれたテキスト
-:::"""
+;;;"""
     
     result = parse(text)
     assert len(result) == 2
@@ -54,9 +54,9 @@ def test_parse_single_block_marker():
 
 def test_parse_compound_block_marker():
     """複合ブロックマーカーのパース"""
-    text = """:::見出し2+太字
+    text = """;;;見出し2+太字
 こんにちは
-:::"""
+;;;"""
     
     result = parse(text)
     assert len(result) == 1
@@ -70,9 +70,9 @@ def test_parse_compound_block_marker():
 
 def test_parse_error_unknown_keyword():
     """未知のキーワードのエラー処理"""
-    text = """:::不明なキーワード
+    text = """;;;不明なキーワード
 テキスト
-:::"""
+;;;"""
     
     result = parse(text)
     assert len(result) == 1
@@ -82,20 +82,20 @@ def test_parse_error_unknown_keyword():
 
 def test_parse_error_missing_closing_marker():
     """閉じマーカー不足のエラー処理"""
-    text = """:::太字
+    text = """;;;太字
 閉じマーカーなし"""
     
     result = parse(text)
     assert len(result) == 1
     assert result[0].type == "error"
-    assert "閉じマーカー ':::' が見つかりません" in result[0].attributes["message"]
+    assert "閉じマーカー ';;;' が見つかりません" in result[0].attributes["message"]
 
 
 def test_parse_error_unknown_keyword_with_suggestions():
     """未知のキーワードで候補提案のテスト"""
-    text = """:::太文字
+    text = """;;;太文字
 テキスト
-:::"""
+;;;"""
     
     result = parse(text)
     assert len(result) == 1
@@ -106,9 +106,9 @@ def test_parse_error_unknown_keyword_with_suggestions():
 
 def test_parse_error_compound_unknown_keyword_with_suggestions():
     """複合キーワードで未知キーワードの候補提案テスト"""
-    text = """:::見出し1+太文字
+    text = """;;;見出し1+太文字
 テキスト
-:::"""
+;;;"""
     
     result = parse(text)
     assert len(result) == 1
@@ -120,13 +120,13 @@ def test_parse_error_compound_unknown_keyword_with_suggestions():
 
 def test_parse_error_detailed_closing_marker_message():
     """閉じマーカー不足の詳細エラーメッセージテスト"""
-    text = """:::見出し2+太字
+    text = """;;;見出し2+太字
 閉じマーカーなし"""
     
     result = parse(text)
     assert len(result) == 1
     assert result[0].type == "error"
-    assert "閉じマーカー ':::' が見つかりません" in result[0].attributes["message"]
+    assert "閉じマーカー ';;;' が見つかりません" in result[0].attributes["message"]
 
 
 def test_parse_comments_ignored():
@@ -140,9 +140,9 @@ def test_parse_comments_ignored():
 
 # 段落の間のコメント
 
-:::太字
+;;;太字
 太字のテスト
-:::
+;;;
 
 # 最後のコメント"""
     
@@ -175,9 +175,9 @@ def test_parse_mixed_comments_and_content():
 # 作成者: テスト
 # 日付: 2025-06-21
 
-:::見出し1
+;;;見出し1
 メインタイトル
-:::
+;;;
 
 # セクション1のコメント
 
@@ -188,9 +188,9 @@ def test_parse_mixed_comments_and_content():
 - 項目2
 
 # 注意事項
-:::枠線
+;;;枠線
 重要な情報
-:::
+;;;
 
 # フッター"""
     
@@ -201,9 +201,9 @@ def test_parse_mixed_comments_and_content():
 
 def test_keyword_list_single():
     """単一キーワード付きリストのテスト"""
-    text = """- :太字: 強調されたリスト項目
-- :枠線: 枠線で囲まれたリスト項目
-- :イタリック: 斜体のリスト項目"""
+    text = """- ;;;太字;;; 強調されたリスト項目
+- ;;;枠線;;; 枠線で囲まれたリスト項目
+- ;;;イタリック;;; 斜体のリスト項目"""
     
     result = parse(text)
     assert len(result) == 1
@@ -235,9 +235,9 @@ def test_keyword_list_single():
 
 def test_keyword_list_compound():
     """複合キーワード付きリストのテスト"""
-    text = """- :太字+枠線: 太字かつ枠線のリスト項目
-- :見出し2+太字: 見出しかつ太字のリスト項目
-- :ハイライト color=#ff0+太字: 色付きハイライトと太字"""
+    text = """- ;;;太字+枠線;;; 太字かつ枠線のリスト項目
+- ;;;見出し2+太字;;; 見出しかつ太字のリスト項目
+- ;;;ハイライト color=#ff0+太字;;; 色付きハイライトと太字"""
     
     result = parse(text)
     assert len(result) == 1
@@ -278,9 +278,9 @@ def test_keyword_list_compound():
 def test_keyword_list_mixed_with_normal():
     """通常のリスト項目とキーワード付きリストの混在テスト"""
     text = """- 通常のリスト項目
-- :太字: 太字のリスト項目
+- ;;;太字;;; 太字のリスト項目
 - また通常の項目
-- :枠線: 枠線付きの項目"""
+- ;;;枠線;;; 枠線付きの項目"""
     
     result = parse(text)
     assert len(result) == 1
@@ -306,8 +306,8 @@ def test_keyword_list_mixed_with_normal():
 
 def test_keyword_list_invalid_keyword():
     """無効なキーワード付きリストのテスト"""
-    text = """- :存在しないキーワード: テキスト
-- :太字+存在しない: 複合で一部無効"""
+    text = """- ;;;存在しないキーワード;;; テキスト
+- ;;;太字+存在しない;;; 複合で一部無効"""
     
     result = parse(text)
     assert len(result) == 1
@@ -369,10 +369,10 @@ def test_numbered_list_mixed_with_bullet():
 
 def test_numbered_list_in_block():
     """ブロック内の番号付きリストのテスト"""
-    text = """:::枠線
+    text = """;;;枠線
 1. ブロック内項目1
 2. ブロック内項目2
-:::"""
+;;;"""
     
     ast = parse(text)
     
@@ -397,3 +397,33 @@ def test_numbered_list_with_space_indents():
     assert ast[0].content[0].content[0] == "インデント項目1"
     assert ast[0].content[1].content[0] == "インデント項目2"
     assert ast[0].content[2].content[0] == "異なるインデント項目3"
+
+
+def test_escape_format_symbols():
+    """フォーマット記号のエスケープテスト"""
+    text = """###で始まる行は;;;に変換されます
+
+通常の;;;は記号として扱われます
+
+###太字
+
+この行は ;;; 太字と表示されます"""
+    
+    result = parse(text)
+    assert len(result) == 4
+    
+    # 最初の段落: エスケープされた ;;;
+    assert result[0].type == "p"
+    assert result[0].content[0] == ";;;で始まる行は;;;に変換されます"
+    
+    # 2番目の段落: 通常のテキスト内の ;;;
+    assert result[1].type == "p"
+    assert result[1].content[0] == "通常の;;;は記号として扱われます"
+    
+    # 3番目の段落: エスケープされた ;;;太字
+    assert result[2].type == "p"
+    assert result[2].content[0] == ";;;太字"
+    
+    # 4番目の段落: 通常のテキスト
+    assert result[3].type == "p"
+    assert result[3].content[0] == "この行は ;;; 太字と表示されます"
