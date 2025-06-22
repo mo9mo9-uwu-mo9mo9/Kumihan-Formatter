@@ -10,13 +10,29 @@ title Kumihan-Formatter - CoC6th Text to HTML Converter
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - CoC6th シナリオ組版
+echo  Kumihan-Formatter - Text to HTML Converter
 echo ==========================================
-echo 📝 .txtファイルを美しいHTMLに自動変換
-echo 🎯 使い方: このウィンドウに.txtファイルをドラッグ&ドロップ
-echo 💡 初回実行時は自動セットアップが行われます
+echo Convert .txt files to beautiful HTML
+echo Usage: Drag and drop .txt file to this window
+echo First run will auto-setup environment
 echo ==========================================
 echo.
+
+rem Check if setup has been completed
+if not exist ".venv\Scripts\activate.bat" (
+    echo [WARNING] Setup not completed yet!
+    echo.
+    echo Please run the setup first:
+    echo   1. Double-click: setup.bat
+    echo   2. Wait for setup to complete
+    echo   3. Then run this script again
+    echo.
+    echo For help, see: LAUNCH_GUIDE.md
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] Setup detected, proceeding...
 
 rem Pythonのパスとバージョンを確認
 python --version > nul 2>&1

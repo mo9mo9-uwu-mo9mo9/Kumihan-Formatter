@@ -20,13 +20,30 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "=========================================="
-echo " Kumihan-Formatter - CoC6th シナリオ組版"
+echo " Kumihan-Formatter - Text to HTML Converter"
 echo "=========================================="
-echo "📝 .txtファイルを美しいHTMLに自動変換"
-echo "🎯 使い方: ファイルパスを入力するかドラッグ&ドロップ"
-echo "💡 初回実行時は自動セットアップが行われます"
+echo "Convert .txt files to beautiful HTML"
+echo "Usage: Enter file path or drag and drop"
+echo "First run will auto-setup environment"
 echo "=========================================="
 echo ""
+
+# Check if setup has been completed
+if [ ! -d ".venv" ]; then
+    echo -e "${YELLOW}[WARNING] Setup not completed yet!${NC}"
+    echo ""
+    echo "Please run the setup first:"
+    echo "  1. Double-click: setup.command"
+    echo "  2. Wait for setup to complete"
+    echo "  3. Then run this script again"
+    echo ""
+    echo "For help, see: LAUNCH_GUIDE.md"
+    echo ""
+    echo "Press any key to exit..."
+    read -n 1
+    exit 1
+fi
+echo -e "${GREEN}[OK] Setup detected, proceeding...${NC}"
 
 # Pythonのバージョン確認
 if ! command -v python3 &> /dev/null; then
