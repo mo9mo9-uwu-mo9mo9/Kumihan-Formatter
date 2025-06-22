@@ -262,7 +262,9 @@ def main(input_file, output, no_preview, watch, config, generate_test, test_outp
     try:
         # サンプル生成モードの処理
         if generate_sample_flag:
-            generate_sample(sample_output)
+            # -o/--output オプションが指定されている場合は、それを優先
+            output_dir = output if output != "dist" else sample_output
+            generate_sample(output_dir)
             return
         
         # テストファイル生成モードの処理
