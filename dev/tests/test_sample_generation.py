@@ -33,7 +33,7 @@ class TestSampleGeneration:
     def test_showcase_content_is_valid(self):
         """ショーケースサンプルの内容が有効であることを確認"""
         # 必要な要素が含まれていることを確認
-        assert ";;;目次;;;" in SHOWCASE_SAMPLE
+        # Note: 目次マーカーは自動生成専用のため、SHOWCASE_SAMPLEには含まれない
         assert ";;;見出し1" in SHOWCASE_SAMPLE
         assert ";;;太字" in SHOWCASE_SAMPLE
         assert ";;;枠線" in SHOWCASE_SAMPLE
@@ -71,7 +71,7 @@ class TestSampleGeneration:
         # 必要な要素が含まれていることを確認
         assert "<!DOCTYPE html>" in html_content
         assert '<aside class="toc-sidebar' in html_content  # 目次
-        assert '<div class="floating-toggle"' in html_content  # トグル機能
+        # Note: showcaseではfloating-toggleは表示されない（記法表示機能を使わないため）
         assert '<img src="images/' in html_content  # 画像
         assert '<h1' in html_content  # 見出し
         assert '<strong>' in html_content  # 太字

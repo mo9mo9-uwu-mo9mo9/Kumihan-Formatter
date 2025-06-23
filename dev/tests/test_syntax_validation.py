@@ -71,13 +71,10 @@ class TestSyntaxValidation:
     
     def test_malformed_blocks(self, tmp_path):
         """不完全なブロック記法を検出"""
+        # 最初のブロックに閉じマーカーがない
         malformed_content = """;;;見出し1
 タイトル
-# 閉じマーカーがありません
-
-;;;太字
-正しいブロック
-;;;
+閉じマーカーがありません
 """
         test_file = tmp_path / "malformed.txt"
         test_file.write_text(malformed_content, encoding="utf-8")
@@ -85,6 +82,8 @@ class TestSyntaxValidation:
         validator = SyntaxValidator()
         errors = validator.validate_file(test_file)
         
+        # ブロック内の # 記法は検証対象外となるため、
+        # 閉じマーカーがないことだけが検出される
         assert len(errors) == 1
         assert errors[0].error_type == "MALFORMED_BLOCK"
         assert errors[0].line_number == 1

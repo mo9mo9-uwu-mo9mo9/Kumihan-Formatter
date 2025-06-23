@@ -57,8 +57,21 @@ class SyntaxValidator:
     def _check_unsupported_syntax(self, file_path: Path, lines: List[str]) -> List[ValidationError]:
         """非サポート記法のチェック"""
         errors = []
+        in_block = False
         
         for line_num, line in enumerate(lines, 1):
+            # ブロック内かどうかを確認
+            stripped = line.strip()
+            if stripped.startswith(';;;') and not stripped.endswith(';;;'):
+                in_block = True
+            elif stripped == ';;;' and in_block:
+                in_block = False
+                continue
+            
+            # ブロック内では非サポート記法チェックをスキップ
+            if in_block:
+                continue
+            
             # 行頭 # 記法のチェック
             if re.match(r'^#[^!]', line):
                 errors.append(ValidationError(
