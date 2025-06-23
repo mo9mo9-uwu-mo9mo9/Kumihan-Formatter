@@ -151,3 +151,13 @@ test-block-*/
 expanded_test*/
 final-test/
 debug_output/
+
+# Temporary development files
+kumihan_sample/
+test_issue_*/
+test_docs_html/
+final_test_docs/
+
+# Generated documentation (temporary)
+docs_html/
+*_html/
