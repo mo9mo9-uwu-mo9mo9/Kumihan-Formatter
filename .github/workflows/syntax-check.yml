@@ -29,6 +29,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # 基本パッケージをインストール
+        pip install jinja2 click
         # プロジェクト自体をインストール（sample_content モジュール用）
         pip install -e .
     
@@ -63,6 +65,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # 基本パッケージをインストール
+        pip install jinja2 click
+        # プロジェクト自体をインストール
         pip install -e .
     
     - name: Check for new syntax patterns
