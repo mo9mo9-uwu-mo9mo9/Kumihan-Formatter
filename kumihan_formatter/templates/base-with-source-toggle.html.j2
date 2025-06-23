@@ -547,9 +547,6 @@
             // ボタン状態をリセット
             resetButtonStates();
             document.getElementById('html-btn').classList.add('active');
-            
-            // HTMLシンタックスハイライトを適用
-            applyHTMLSyntaxHighlighting();
         }
         
         // ヘルパー関数：全てのコンテンツを隠す
@@ -582,32 +579,6 @@
             sourceContent.innerHTML = text;
         }
         
-        // HTMLシンタックスハイライト
-        function applyHTMLSyntaxHighlighting() {
-            const htmlContent = document.querySelector('#html-code');
-            if (!htmlContent) return;
-            
-            // 既にハイライト済みの場合はスキップ
-            if (htmlContent.getAttribute('data-highlighted') === 'true') {
-                return;
-            }
-            
-            let text = htmlContent.textContent;
-            
-            // HTMLタグのハイライト（エスケープされたHTML用）
-            text = text.replace(/&lt;(\/?[\w\d-]+)([^&]*?)&gt;/g, function(match, tagName, attributes) {
-                const highlightedTag = `<span style="color: #d73a49; font-weight: bold;">&lt;${tagName}</span>`;
-                const highlightedAttrs = attributes.replace(/(\w+)=&quot;([^&]*?)&quot;/g, 
-                    '<span style="color: #005cc5;">$1</span>=<span style="color: #032f62;">&quot;$2&quot;</span>');
-                return highlightedTag + highlightedAttrs + '<span style="color: #d73a49; font-weight: bold;">&gt;</span>';
-            });
-            
-            // テキストコンテンツをハイライト
-            text = text.replace(/&gt;([^&<]+?)&lt;/g, '&gt;<span style="color: #24292e;">$1</span>&lt;');
-            
-            htmlContent.innerHTML = text;
-            htmlContent.setAttribute('data-highlighted', 'true');
-        }
         
         
         // 目次機能（TOC）
