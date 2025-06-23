@@ -248,9 +248,7 @@ def generate_sample(output_dir: str = "kumihan_sample"):
     console.print(f"[green]   🌐 HTML: {html_path.name}[/green]")
     console.print(f"[green]   🖼️  画像: {len(SAMPLE_IMAGES)}個[/green]")
     
-    # ブラウザで開く
-    console.print(f"\n[cyan]🌐 ブラウザでプレビューを開いています...[/cyan]")
-    webbrowser.open(f"file://{html_path.absolute()}")
+    # ブラウザでは開かない（--no-previewと同じ動作）
     
     return output_path
 
