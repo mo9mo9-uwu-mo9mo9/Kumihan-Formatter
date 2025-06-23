@@ -223,16 +223,16 @@ def generate_sample(output_dir: str = "kumihan_sample"):
         with open(image_path, "wb") as f:
             f.write(image_data)
     
-    # HTMLに変換（サンプルではソーストグル機能をデフォルトで有効化）
+    # HTMLに変換（デフォルトは通常のテンプレート）
     with Progress() as progress:
         # パース
         task = progress.add_task("[cyan]テキストを解析中", total=100)
         ast = parse(SHOWCASE_SAMPLE)
         progress.update(task, completed=100)
         
-        # レンダリング（ソーストグル機能付き）
+        # レンダリング（通常のテンプレートを使用）
         task = progress.add_task("[cyan]HTMLを生成中", total=100)
-        html = render(ast, template="base-with-source-toggle.html.j2", source_text=SHOWCASE_SAMPLE, source_filename="showcase.txt")
+        html = render(ast)  # デフォルトテンプレート（base.html.j2）を使用
         progress.update(task, completed=100)
     
     # HTMLファイルを保存
