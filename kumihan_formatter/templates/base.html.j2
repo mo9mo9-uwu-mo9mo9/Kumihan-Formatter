@@ -22,12 +22,13 @@
         }
 
         .container {
-            max-width: {% if css_vars.max_width %}{{ css_vars.max_width }}{% else %}800px{% endif %};
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0;
             background-color: {% if css_vars.container_background %}{{ css_vars.container_background }}{% else %}white{% endif %};
-            padding: 40px;
+            padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 5px;
+            height: fit-content;
         }
 
         /* 段落 */
@@ -302,23 +303,25 @@
         
         .layout-wrapper {
             display: grid;
-            grid-template-columns: minmax(350px, 25%) 1fr;
-            max-width: 95%;
-            margin: 0 auto;
-            gap: 40px;
-            padding: 20px 2.5%;
+            grid-template-columns: minmax(400px, 30%) 1fr;
+            max-width: 100%;
+            margin: 0;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
         }
         
         .toc-sidebar {
             position: sticky;
-            top: 20px;
+            top: 10px;
             height: fit-content;
-            max-height: calc(100vh - 40px);
+            max-height: calc(100vh - 20px);
             overflow-y: auto;
             background-color: {% if css_vars.container_background %}{{ css_vars.container_background }}{% else %}white{% endif %};
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 5px;
+            margin: 0;
         }
         
         .toc-sidebar.collapsed .toc-content {
@@ -398,20 +401,18 @@
         /* レスポンシブ対応（大画面） */
         @media (min-width: 2000px) {
             .layout-wrapper {
-                max-width: 98%;
-                grid-template-columns: minmax(400px, 30%) 1fr;
-                gap: 50px;
-                padding: 20px 1%;
+                grid-template-columns: minmax(500px, 35%) 1fr;
+                gap: 30px;
+                padding: 15px;
             }
         }
         
         /* レスポンシブ対応（中画面） */
         @media (max-width: 1200px) {
             .layout-wrapper {
-                grid-template-columns: minmax(280px, 22%) 1fr;
-                max-width: 90%;
-                gap: 30px;
-                padding: 20px 5%;
+                grid-template-columns: minmax(300px, 25%) 1fr;
+                gap: 15px;
+                padding: 10px;
             }
         }
         
