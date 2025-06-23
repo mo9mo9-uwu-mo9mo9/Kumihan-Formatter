@@ -6,8 +6,8 @@
 
 **まず最初にセットアップを実行してください:**
 
-**Windows**: `setup.bat` をダブルクリック  
-**macOS**: `setup.command` をダブルクリック
+**Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック  
+**macOS**: `MAC/初回セットアップ.command` をダブルクリック
 
 → 1回実行すれば、後は他のファイルが使えるようになります！
 
@@ -19,12 +19,12 @@
 
 **Windows:**
 ```
-kumihan_convert.bat をダブルクリック
+WINDOWS/変換ツール.bat をダブルクリック
 ```
 
 **macOS:**
 ```
-kumihan_convert.command をダブルクリック
+MAC/変換ツール.command をダブルクリック
 ```
 
 **使い方:**
@@ -38,12 +38,12 @@ kumihan_convert.command をダブルクリック
 
 **Windows:**
 ```
-run_examples.bat をダブルクリック
+WINDOWS/サンプル実行.bat をダブルクリック
 ```
 
 **macOS:**
 ```
-run_examples.command をダブルクリック
+MAC/サンプル実行.command をダブルクリック
 ```
 
 **使い方:**

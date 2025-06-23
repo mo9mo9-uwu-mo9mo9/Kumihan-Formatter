@@ -5,6 +5,7 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 ![バージョン](https://img.shields.io/badge/version-0.1.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9+-green.svg)
 ![プラットフォーム](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
+![テスト](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/actions/workflows/test.yml/badge.svg)
 
 ## ✨ 特長
 
@@ -135,6 +136,12 @@ Pythonは、このツールを動かすためのエンジンのようなもの�
 - `MAC/` フォルダ内の `サンプル実行.command` をダブルクリック
 
 サンプルファイルが変換され、`examples/output/` フォルダに結果が保存されます。
+
+### 🆕 最新機能
+- **上書き確認**: 既存のサンプル出力がある場合、上書き前に確認されます
+- **想定エラー表示**: 学習用のサンプルエラーは「想定されたエラー」として明示されます
+- **目次機能**: 自動的に見出しから目次を生成（`;;;目次;;;`マーカー使用）
+- **ソーストグル**: 記法と結果を切り替え表示（`--with-source-toggle`オプション）
 
 ## 🛠️ うまくいかない時は
 
