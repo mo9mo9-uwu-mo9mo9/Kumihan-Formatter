@@ -311,6 +311,11 @@
             min-height: 100vh;
         }
         
+        /* 右サイドバーが存在する場合の3カラムレイアウト */
+        .layout-wrapper.has-right-sidebar {
+            grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
+        }
+        
         .toc-sidebar {
             position: sticky;
             top: 10px;
@@ -392,6 +397,51 @@
             font-weight: bold;
         }
         
+        /* 右サイドバー（注釈・補足情報用） */
+        .right-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: {% if css_vars.container_background %}{{ css_vars.container_background }}{% else %}white{% endif %};
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+            display: none; /* デフォルトは非表示 */
+        }
+        
+        /* 右サイドバーが有効な場合に表示 */
+        .layout-wrapper.has-right-sidebar .right-sidebar {
+            display: block;
+        }
+        
+        .right-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .right-sidebar .annotation {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .right-sidebar .note {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            font-size: 14px;
+        }
         
         /* スムーススクロール */
         html {
@@ -405,6 +455,10 @@
                 gap: 30px;
                 padding: 15px;
             }
+            
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(400px, 30%) 1fr minmax(300px, 25%);
+            }
         }
         
         /* レスポンシブ対応（中画面） */
@@ -414,11 +468,16 @@
                 gap: 15px;
                 padding: 10px;
             }
+            
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
+            }
         }
         
         /* レスポンシブ対応（タブレット） */
         @media (max-width: 900px) {
-            .layout-wrapper {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
@@ -428,15 +487,21 @@
                 max-height: none;
                 order: -1;
             }
+            
+            .right-sidebar {
+                order: 1;
+            }
         }
         
-        /* 印刷時はTOCを非表示 */
+        /* 印刷時はサイドバーを非表示 */
         @media print {
-            .toc-sidebar {
+            .toc-sidebar,
+            .right-sidebar {
                 display: none;
             }
             
-            .layout-wrapper {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
                 display: block;
             }
         }
@@ -507,7 +572,7 @@
 </head>
 <body>
     {% if has_toc %}
-    <div class="layout-wrapper">
+    <div class="layout-wrapper{% if has_right_sidebar %} has-right-sidebar{% endif %}">
         <!-- 左サイドバー（目次） -->
         <aside class="toc-sidebar left">
             <button class="toc-toggle">目次</button>
@@ -522,6 +587,13 @@
             {{ body_content | safe }}
         </main>
         
+        <!-- 右サイドバー（注釈・補足情報） -->
+        {% if has_right_sidebar %}
+        <aside class="right-sidebar">
+            <h3>注釈・補足</h3>
+            {{ right_sidebar_content | safe }}
+        </aside>
+        {% endif %}
     </div>
     {% else %}
     <div class="container">
