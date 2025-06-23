@@ -87,6 +87,25 @@ echo.
 rem Prepare output directory
 echo [DEBUG] Preparing output directory...
 set "OUTPUT_BASE=..\examples\output"
+
+rem Check if output directory exists and is not empty
+if exist "%OUTPUT_BASE%" (
+    dir /b "%OUTPUT_BASE%" | findstr . > nul
+    if not errorlevel 1 (
+        echo [WARNING] Output directory already exists and contains files
+        echo    Existing files will be overwritten: %OUTPUT_BASE%
+        echo.
+        set /p confirm="Continue? [Y/N]: "
+        if /i not "!confirm!"=="y" (
+            echo Process cancelled.
+            echo.
+            echo Press any key to exit...
+            pause > nul
+            exit /b 0
+        )
+    )
+)
+
 if not exist "%OUTPUT_BASE%" mkdir "%OUTPUT_BASE%"
 echo [OK] Output directory ready: %OUTPUT_BASE%
 
