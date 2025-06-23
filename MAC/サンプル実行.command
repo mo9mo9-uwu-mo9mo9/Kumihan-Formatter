@@ -28,7 +28,7 @@ echo "=========================================="
 echo ""
 
 # Check if setup has been completed
-if [ ! -d ".venv" ]; then
+if [ ! -d "../.venv" ]; then
     echo -e "${YELLOW}[WARNING] Setup not completed yet!${NC}"
     echo ""
     echo "Please run the setup first:"
