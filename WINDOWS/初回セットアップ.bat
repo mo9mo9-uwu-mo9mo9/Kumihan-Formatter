@@ -10,77 +10,77 @@ title Kumihan-Formatter - Initial Setup
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - Initial Setup
+echo  Kumihan-Formatter - 初回セットアップ
 echo ==========================================
-echo This will automatically set up everything you need
-echo to start using Kumihan-Formatter immediately.
+echo 必要な環境を自動でセットアップします
+echo すぐにKumihan-Formatterを使用できるようになります。
 echo ==========================================
 echo.
 
 rem Check Python version
-echo [1/4] Checking Python installation...
+echo [1/4] Python インストールを確認中...
 python --version > nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python not found
+    echo [エラー] Python が見つかりません
     echo.
-    echo Please install Python 3.9 or higher:
+    echo Python 3.9 以上をインストールしてください：
     echo https://www.python.org/downloads/
     echo.
-    echo After installing Python, run this setup again.
+    echo Python インストール後、再度このセットアップを実行してください。
     echo.
     pause
     exit /b 1
 ) else (
     for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-    echo [OK] Python found: !PYTHON_VERSION!
+    echo [OK] Python が見つかりました: !PYTHON_VERSION!
 )
 
 rem Create virtual environment
-echo [2/4] Creating virtual environment...
+echo [2/4] 仮想環境を作成中...
 if exist "../.venv" (
-    echo [OK] Virtual environment already exists
+    echo [OK] 仮想環境は既に存在します
 ) else (
     python -m venv ../.venv
     if errorlevel 1 (
-        echo [ERROR] Failed to create virtual environment
+        echo [エラー] 仮想環境の作成に失敗しました
         echo.
         pause
         exit /b 1
     ) else (
-        echo [OK] Virtual environment created
+        echo [OK] 仮想環境を作成しました
     )
 )
 
 rem Activate virtual environment
-echo [3/4] Activating virtual environment...
+echo [3/4] 仮想環境をアクティベート中...
 call ..\.venv\Scripts\activate.bat
 if errorlevel 1 (
-    echo [ERROR] Failed to activate virtual environment
+    echo [エラー] 仮想環境のアクティベートに失敗しました
     echo.
     pause
     exit /b 1
 ) else (
-    echo [OK] Virtual environment activated
+    echo [OK] 仮想環境をアクティベートしました
 )
 
 rem Install dependencies
-echo [4/4] Installing dependencies...
-echo This may take a moment...
+echo [4/4] 依存関係をインストール中...
+echo しばらくお待ちください...
 python -m pip install -e "../[dev]" --quiet
 if errorlevel 1 (
-    echo [ERROR] Failed to install dependencies
+    echo [エラー] 依存関係のインストールに失敗しました
     echo.
-    echo Please check your internet connection and try again.
+    echo インターネット接続を確認して、再度お試しください。
     echo.
     pause
     exit /b 1
 ) else (
-    echo [OK] Dependencies installed successfully
+    echo [OK] 依存関係のインストールが完了しました
 )
 
 echo.
 echo ==========================================
-echo  Setup Complete!
+echo  セットアップ完了！
 echo ==========================================
 echo.
 echo 🎉 セットアップが完了しました！
@@ -97,10 +97,10 @@ if /i "%choice%"=="y" (
     if exist "変換ツール.bat" (
         call "変換ツール.bat"
     ) else (
-        echo [ERROR] 変換ツール.bat が見つかりません
+        echo [エラー] 変換ツール.bat が見つかりません
         echo.
         echo 手動で起動してください:
-        echo   - Double-click: WINDOWS/変換ツール.bat
+        echo   - ダブルクリック: WINDOWS/変換ツール.bat
         echo.
         pause
     )
