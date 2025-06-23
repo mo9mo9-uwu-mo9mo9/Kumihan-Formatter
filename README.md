@@ -2,7 +2,7 @@
 
 CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツールです。
 
-![バージョン](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![バージョン](https://img.shields.io/badge/version-0.3.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9+-green.svg)
 ![プラットフォーム](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 ![テスト](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/actions/workflows/test.yml/badge.svg)
@@ -137,11 +137,13 @@ Pythonは、このツールを動かすためのエンジンのようなもの�
 
 サンプルファイルが変換され、`examples/output/` フォルダに結果が保存されます。
 
-### 🆕 最新機能
-- **上書き確認**: 既存のサンプル出力がある場合、上書き前に確認されます
-- **想定エラー表示**: 学習用のサンプルエラーは「想定されたエラー」として明示されます
-- **目次機能**: 自動的に見出しから目次を生成（`;;;目次;;;`マーカー使用）
-- **ソーストグル**: 記法と結果を切り替え表示（`--with-source-toggle`オプション）
+### ✨ 主な機能
+- **目次自動生成**: `;;;目次;;;`マーカーで見出しから目次を自動生成
+- **ソーストグル表示**: 記法と結果を切り替え表示（`--with-source-toggle`オプション）
+- **上書き保護**: 既存ファイルの上書き前に確認
+- **エラー表示改善**: 学習用サンプルのエラーを「想定されたエラー」として明示
+- **ライブプレビュー**: 変更を即座に確認（開発者向け）
+- **テーマ・設定**: JSON/YAMLでカスタマイズ可能（上級者向け）
 
 ## 🛠️ うまくいかない時は
 
