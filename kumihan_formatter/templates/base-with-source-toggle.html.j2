@@ -140,6 +140,39 @@
             color: inherit;
         }
         
+        /* HTMLヘッダー */
+        .html-header {
+            background: #f6f8fa;
+            border-bottom: 1px solid #e1e4e8;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .copy-btn {
+            background: #0366d6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: #0256cc;
+        }
+        
+        .copy-btn:active {
+            background: #024daa;
+        }
+        
+        .copy-btn.copied {
+            background: #28a745;
+        }
+        
         /* シンタックスハイライト */
         .source-content .keyword {
             color: #d73a49;
@@ -289,8 +322,13 @@
             }
             
             .floating-btn {
-                padding: 6px 10px;
-                font-size: 11px;
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+            
+            .toggle-group {
+                flex-direction: column;
+                gap: 2px;
             }
             
             .file-label {
@@ -442,6 +480,9 @@
             <button class="floating-btn" id="source-btn" onclick="showSource()">
                 📝 記法
             </button>
+            <button class="floating-btn" id="html-btn" onclick="showHTML()">
+                🏷️ HTML
+            </button>
         </div>
         <div class="file-label">{{ source_filename or "sample.txt" }}</div>
     </div>
@@ -471,6 +512,14 @@
                 <div class="source-content hidden" id="source-content">
                     <pre><code>{{ source_text | e }}</code></pre>
                 </div>
+                
+                <!-- HTML表示 -->
+                <div class="source-content hidden" id="html-content">
+                    <div class="html-header">
+                        <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
+                    </div>
+                    <pre><code id="html-code">{{ body_content | e }}</code></pre>
+                </div>
             </div>
         </main>
     </div>
@@ -488,6 +537,14 @@
             <div class="source-content hidden" id="source-content">
                 <pre><code>{{ source_text | e }}</code></pre>
             </div>
+            
+            <!-- HTML表示 -->
+            <div class="source-content hidden" id="html-content">
+                <div class="html-header">
+                    <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
+                </div>
+                <pre><code id="html-code">{{ body_content | e }}</code></pre>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -495,23 +552,42 @@
     <script>
         // GitHub風タブ切り替え機能
         function showPreview() {
-            // プレビューを表示、ソースを非表示
+            // プレビューを表示、他を非表示
             document.getElementById('preview-content').classList.remove('hidden');
             document.getElementById('source-content').classList.remove('active');
+            document.getElementById('html-content').classList.remove('active');
             
             // フローティングボタンの状態を切り替え
             document.getElementById('preview-btn').classList.add('active');
             document.getElementById('source-btn').classList.remove('active');
+            document.getElementById('html-btn').classList.remove('active');
         }
         
         function showSource() {
-            // ソースを表示、プレビューを非表示
+            // ソースを表示、他を非表示
             document.getElementById('preview-content').classList.add('hidden');
             document.getElementById('source-content').classList.add('active');
+            document.getElementById('html-content').classList.remove('active');
             
             // フローティングボタンの状態を切り替え
             document.getElementById('preview-btn').classList.remove('active');
             document.getElementById('source-btn').classList.add('active');
+            document.getElementById('html-btn').classList.remove('active');
+        }
+        
+        function showHTML() {
+            // HTMLを表示、他を非表示
+            document.getElementById('preview-content').classList.add('hidden');
+            document.getElementById('source-content').classList.remove('active');
+            document.getElementById('html-content').classList.add('active');
+            
+            // フローティングボタンの状態を切り替え
+            document.getElementById('preview-btn').classList.remove('active');
+            document.getElementById('source-btn').classList.remove('active');
+            document.getElementById('html-btn').classList.add('active');
+            
+            // HTMLシンタックスハイライトを適用
+            applyHTMLSyntaxHighlighting();
         }
         
         // シンタックスハイライト（シンプル版）
@@ -528,6 +604,87 @@
             text = text.replace(/^- (.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">-</span> $1');
             
             sourceContent.innerHTML = text;
+        }
+        
+        // HTMLシンタックスハイライト
+        function applyHTMLSyntaxHighlighting() {
+            const htmlContent = document.querySelector('#html-code');
+            if (!htmlContent) return;
+            
+            let text = htmlContent.textContent;
+            
+            // HTMLタグのハイライト
+            text = text.replace(/&lt;(\/?[\w\d-]+)([^&]*?)&gt;/g, function(match, tagName, attributes) {
+                const highlightedTag = `<span style="color: #d73a49; font-weight: bold;">&lt;${tagName}</span>`;
+                const highlightedAttrs = attributes.replace(/(\w+)=&quot;([^&]*?)&quot;/g, 
+                    '<span style="color: #005cc5;">$1</span>=<span style="color: #032f62;">&quot;$2&quot;</span>');
+                return highlightedTag + highlightedAttrs + '<span style="color: #d73a49; font-weight: bold;">&gt;</span>';
+            });
+            
+            // 改行とインデントを保持
+            text = text.replace(/\n/g, '<br>');
+            text = text.replace(/  /g, '&nbsp;&nbsp;');
+            
+            htmlContent.innerHTML = text;
+        }
+        
+        // HTMLコピー機能
+        function copyHTML() {
+            const htmlCode = document.querySelector('#html-code');
+            const copyBtn = document.querySelector('.copy-btn');
+            
+            if (!htmlCode || !copyBtn) return;
+            
+            // HTMLコンテンツを取得（ハイライト前のテキスト）
+            const htmlText = {{ body_content | tojson }};
+            
+            // クリップボードにコピー
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(htmlText).then(() => {
+                    showCopySuccess(copyBtn);
+                }).catch(() => {
+                    // フォールバック
+                    fallbackCopy(htmlText, copyBtn);
+                });
+            } else {
+                // フォールバック
+                fallbackCopy(htmlText, copyBtn);
+            }
+        }
+        
+        function showCopySuccess(button) {
+            const originalText = button.textContent;
+            button.textContent = '✅ コピー完了';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        }
+        
+        function fallbackCopy(text, button) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess(button);
+            } catch (err) {
+                console.error('コピーに失敗しました:', err);
+                button.textContent = '❌ コピー失敗';
+                setTimeout(() => {
+                    button.textContent = '📋 HTMLをコピー';
+                }, 2000);
+            } finally {
+                document.body.removeChild(textArea);
+            }
         }
         
         // 目次機能（TOC）
