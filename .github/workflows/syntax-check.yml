@@ -1,0 +1,179 @@
+name: Syntax Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'examples/**/*.txt'
+      - 'kumihan_formatter/sample_content.py'
+      - 'dev/tools/syntax_validator.py'
+      - 'dev/tests/test_syntax_validation.py'
+  push:
+    branches: [ main ]
+    paths:
+      - 'examples/**/*.txt'
+      - 'kumihan_formatter/sample_content.py'
+
+jobs:
+  syntax-validation:
+    name: Syntax Validation Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        # プロジェクト自体をインストール（sample_content モジュール用）
+        pip install -e .
+    
+    - name: Run syntax validation tests
+      run: |
+        echo "🔍 記法検証テストを実行中..."
+        python -m pytest dev/tests/test_syntax_validation.py -v --tb=short
+    
+    - name: Validate example files directly
+      run: |
+        echo "📁 サンプルファイルの記法チェック..."
+        python dev/tools/syntax_validator.py examples/*.txt
+    
+    - name: Check for syntax errors in sample content
+      run: |
+        echo "📝 sample_content.py 内のサンプルテキストをチェック..."
+        # sample_content.py から SHOWCASE_SAMPLE を抽出して検証
+        python -c "
+from kumihan_formatter.sample_content import SHOWCASE_SAMPLE
+import tempfile
+from pathlib import Path
+import sys
+sys.path.append('dev/tools')
+from syntax_validator import SyntaxValidator
+
+# 一時ファイルに保存して検証
+with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+    f.write(SHOWCASE_SAMPLE)
+    temp_path = Path(f.name)
+
+validator = SyntaxValidator()
+errors = validator.validate_file(temp_path)
+
+if errors:
+    print(f'❌ SHOWCASE_SAMPLE に {len(errors)} 個のエラーが見つかりました:')
+    for error in errors:
+        print(f'   Line {error.line_number}: {error.message}')
+        if error.suggestion:
+            print(f'      💡 {error.suggestion}')
+    sys.exit(1)
+else:
+    print('✅ SHOWCASE_SAMPLE: 記法エラーなし')
+
+# 一時ファイルを削除
+import os
+os.unlink(temp_path)
+"
+
+  syntax-quality-check:
+    name: Advanced Syntax Quality Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Check for new syntax patterns
+      run: |
+        echo "🔍 新しい記法パターンをチェック中..."
+        
+        # 変更されたテキストファイルを取得
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\\.txt$' || true)
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "✅ テキストファイルの変更なし"
+          exit 0
+        fi
+        
+        echo "変更されたファイル: $CHANGED_FILES"
+        
+        # 各ファイルの記法をチェック
+        for file in $CHANGED_FILES; do
+          if [ -f "$file" ]; then
+            echo "📝 $file をチェック中..."
+            python dev/tools/syntax_validator.py "$file"
+          fi
+        done
+    
+    - name: Report syntax complexity
+      run: |
+        echo "📊 記法の複雑度をレポート..."
+        python -c "
+import re
+from pathlib import Path
+
+def analyze_syntax_complexity(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 複合マーカーの使用頻度
+    complex_markers = re.findall(r';;;[^;]*\+[^;]*;;;', content)
+    
+    # color属性の使用頻度  
+    color_attrs = re.findall(r'color=#[a-fA-F0-9]{3,6}', content)
+    
+    # ネストしたリストの深度
+    lines = content.splitlines()
+    max_indent = 0
+    for line in lines:
+        if line.strip().startswith('-'):
+            indent = len(line) - len(line.lstrip())
+            max_indent = max(max_indent, indent)
+    
+    return {
+        'complex_markers': len(complex_markers),
+        'color_attributes': len(color_attrs),
+        'max_list_depth': max_indent // 2  # 2スペース = 1レベル
+    }
+
+# 変更されたファイルを分析
+import subprocess
+try:
+    result = subprocess.run(['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'], 
+                          capture_output=True, text=True)
+    changed_files = [f for f in result.stdout.strip().split('\n') 
+                    if f.endswith('.txt') and Path(f).exists()]
+    
+    if not changed_files:
+        print('✅ 分析対象のテキストファイルなし')
+    else:
+        for file_path in changed_files:
+            stats = analyze_syntax_complexity(file_path)
+            print(f'📈 {file_path}:')
+            print(f'   複合マーカー: {stats[\"complex_markers\"]} 個')
+            print(f'   色指定: {stats[\"color_attributes\"]} 個')
+            print(f'   リスト最大深度: {stats[\"max_list_depth\"]} レベル')
+            
+            # 複雑度の警告
+            if stats['complex_markers'] > 10:
+                print(f'   ⚠️  複合マーカーが多用されています ({stats[\"complex_markers\"]} 個)')
+            if stats['max_list_depth'] > 3:
+                print(f'   ⚠️  リストの入れ子が深すぎます ({stats[\"max_list_depth\"]} レベル)')
+                
+except Exception as e:
+    print(f'分析エラー: {e}')
+"
