@@ -86,6 +86,24 @@ echo ""
 
 # 出力ディレクトリの準備
 OUTPUT_BASE="../examples/output"
+
+# 既存ディレクトリのチェック
+if [ -d "$OUTPUT_BASE" ] && [ "$(ls -A $OUTPUT_BASE)" ]; then
+    echo -e "${YELLOW}⚠️  警告: 出力ディレクトリが既に存在します${NC}"
+    echo -e "${YELLOW}   既存のファイルは上書きされます: $OUTPUT_BASE${NC}"
+    echo ""
+    echo -e "${CYAN}続行しますか？ [Y/n]: ${NC}"
+    read -n 1 choice
+    echo ""
+    if [[ ! $choice =~ ^[Yy]$ ]] && [ ! -z "$choice" ]; then
+        echo -e "${YELLOW}処理を中止しました${NC}"
+        echo ""
+        echo "何かキーを押して終了してください..."
+        read -n 1
+        exit 0
+    fi
+fi
+
 mkdir -p "$OUTPUT_BASE"
 
 echo -e "${CYAN}🚀 サンプル変換を開始します...${NC}"

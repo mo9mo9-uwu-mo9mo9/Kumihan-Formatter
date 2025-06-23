@@ -177,8 +177,16 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
         # エラーの統計情報を表示
         error_count = sum(1 for node in ast if getattr(node, 'type', None) == 'error')
         if error_count > 0:
-            console.print(f"[yellow]⚠️  警告: {error_count}個のエラーが検出されました[/yellow]")
-            console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
+            # サンプルファイルかどうかをチェック
+            is_sample = input_path.name in ['02-basic.txt', '03-comprehensive.txt']
+            
+            if is_sample:
+                console.print(f"[yellow]⚠️  {error_count}個のエラーが検出されました（想定されたエラーです）[/yellow]")
+                console.print("[yellow]   これらのエラーは、記法の学習用にわざと含まれています[/yellow]")
+                console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
+            else:
+                console.print(f"[yellow]⚠️  警告: {error_count}個のエラーが検出されました[/yellow]")
+                console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
         
         console.print(f"[green]✅ 完了:[/green] {output_file}")
         
