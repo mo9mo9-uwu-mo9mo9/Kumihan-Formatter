@@ -20,7 +20,7 @@
             line-height: {% if css_vars.line_height %}{{ css_vars.line_height }}{% else %}1.8{% endif %};
             color: {% if css_vars.text_color %}{{ css_vars.text_color }}{% else %}#333{% endif %};
             background-color: {% if css_vars.background_color %}{{ css_vars.background_color }}{% else %}#f9f9f9{% endif %};
-            padding: 20px;
+            {% if has_toc %}padding: 0;{% else %}padding: 20px;{% endif %}
         }
 
         /* ========== GitHub風トグル機能 ========== */
@@ -160,10 +160,122 @@
             font-style: italic;
         }
         
+        /* ========== 目次（TOC）機能 ========== */
+        
+        /* TOCレイアウト用スタイル */
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 100%;
+            margin: 0;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+        
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+        
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+        
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        .toc-list li {
+            margin: 5px 0;
+        }
+        
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+        
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+        
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             body {
+                {% if has_toc %}padding: 0;{% else %}padding: 10px;{% endif %}
+            }
+            
+            /* 目次有効時のモバイルレイアウト */
+            .layout-wrapper {
+                grid-template-columns: 1fr;
+                gap: 10px;
                 padding: 10px;
+            }
+            
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
             }
             
             .main-container {
@@ -190,6 +302,21 @@
             .source-content pre {
                 padding: 15px;
                 font-size: 12px;
+            }
+        }
+        
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .layout-wrapper {
+                display: block;
+            }
+            
+            .floating-toggle {
+                display: none;
             }
         }
         
@@ -319,7 +446,36 @@
         <div class="file-label">{{ source_filename or "sample.txt" }}</div>
     </div>
 
-    <!-- メインコンテンツエリア -->
+    {% if has_toc %}
+    <!-- 目次有効時のレイアウト -->
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                {{ toc_html | safe }}
+            </nav>
+        </aside>
+        
+        <!-- メインコンテンツ -->
+        <main class="main-container">
+            <!-- コンテンツ表示エリア -->
+            <div class="content-display">
+                <!-- プレビュー表示 -->
+                <div class="preview-content active" id="preview-content">
+                    {{ body_content | safe }}
+                </div>
+                
+                <!-- ソース表示 -->
+                <div class="source-content hidden" id="source-content">
+                    <pre><code>{{ source_text | e }}</code></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+    {% else %}
+    <!-- 目次なし時のレイアウト -->
     <div class="main-container">
         <!-- コンテンツ表示エリア -->
         <div class="content-display">
@@ -334,6 +490,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
     
     <script>
         // GitHub風タブ切り替え機能
@@ -373,9 +530,72 @@
             sourceContent.innerHTML = text;
         }
         
+        // 目次機能（TOC）
+        function setupTOC() {
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+            
+            if (!tocToggle || !tocSidebar) return;
+            
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+            
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+                
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+                
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+            
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            
+            function updateActiveLink() {
+                let currentHeading = null;
+                
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+            
+            // 初期状態を設定
+            updateActiveLink();
+        }
+        
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
             applySyntaxHighlighting();
+            setupTOC();
         });
     </script>
 </body>
