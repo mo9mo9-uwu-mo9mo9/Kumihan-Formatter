@@ -73,6 +73,23 @@
             border-color: #007bff;
         }
         
+        .sync-toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #28a745;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .sync-toggle-btn:hover {
+            background: #218838;
+            border-color: #218838;
+        }
         
         /* コンテンツコンテナ */
         .content-wrapper {
@@ -326,7 +343,7 @@
     <div class="source-result-controls">
         <div class="control-row">
             <h2 class="controls-title">📝 記法と🎨結果を比較</h2>
-            <p class="controls-subtitle">記法の学習と結果確認が同時にできます</p>
+            <p class="controls-subtitle">改行処理の直感性を実際に確認できます</p>
         </div>
         
         <!-- モバイル用トグルボタン -->
@@ -338,6 +355,11 @@
             </div>
         </div>
         
+        <!-- スクロール同期トグル（デスクトップのみ） -->
+        <div class="control-row desktop-only">
+            <button id="sync-toggle" class="sync-toggle-btn" onclick="toggleScrollSync()">🔗 同期ON</button>
+            <span style="font-size: 12px; color: #6c757d; margin-left: 10px;">スクロール位置を自動同期</span>
+        </div>
     </div>
     
     <!-- メインコンテンツ -->
@@ -414,10 +436,66 @@
             sourceContent.innerHTML = text;
         }
         
+        // スクロール同期機能
+        let isScrollingSynced = true;
+        let scrollTimeout;
+        
+        function setupScrollSync() {
+            const sourceContent = document.getElementById('source-content');
+            const resultContent = document.querySelector('.result-content');
+            
+            if (!sourceContent || !resultContent) return;
+            
+            // スクロール同期のオン/オフを切り替える
+            function toggleScrollSync() {
+                isScrollingSynced = !isScrollingSynced;
+                const syncButton = document.getElementById('sync-toggle');
+                if (syncButton) {
+                    syncButton.textContent = isScrollingSynced ? '🔗 同期ON' : '🔗 同期OFF';
+                    syncButton.style.opacity = isScrollingSynced ? '1' : '0.6';
+                }
+            }
+            
+            // スクロール位置を同期
+            function syncScroll(source, target) {
+                if (!isScrollingSynced) return;
+                
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const sourceScrollPercentage = source.scrollTop / (source.scrollHeight - source.clientHeight);
+                    const targetScrollTop = sourceScrollPercentage * (target.scrollHeight - target.clientHeight);
+                    
+                    // 一時的にイベントリスナーを無効化して無限ループを防ぐ
+                    target.removeEventListener('scroll', targetScrollHandler);
+                    target.scrollTop = targetScrollTop;
+                    
+                    setTimeout(() => {
+                        target.addEventListener('scroll', targetScrollHandler);
+                    }, 50);
+                }, 10);
+            }
+            
+            // イベントハンドラー
+            function sourceScrollHandler() {
+                syncScroll(sourceContent, resultContent);
+            }
+            
+            function targetScrollHandler() {
+                syncScroll(resultContent, sourceContent);
+            }
+            
+            // スクロールイベントを設定
+            sourceContent.addEventListener('scroll', sourceScrollHandler);
+            resultContent.addEventListener('scroll', targetScrollHandler);
+            
+            // 同期トグルボタンをグローバルに公開
+            window.toggleScrollSync = toggleScrollSync;
+        }
         
         // ページ読み込み時にシンタックスハイライトを適用
         document.addEventListener('DOMContentLoaded', function() {
             applySyntaxHighlighting();
+            setupScrollSync();
             
             // レスポンシブ対応：画面サイズ変更時の処理
             window.addEventListener('resize', function() {
