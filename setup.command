@@ -118,12 +118,12 @@ echo ""
 # セットアップ完了後の変換ツール自動起動オプション
 echo "🎉 セットアップが完了しました！"
 echo ""
-echo "次のステップ:"
-echo "  1. 変換ツールを起動"
-echo "  2. .txtファイルをドラッグ&ドロップ"
-echo "  3. HTMLファイルが生成されます"
+echo "次のステップを選択してください:"
+echo "  Y: 変換ツールを今すぐ起動"
+echo "  N: 後で使用（使用方法を表示）"
+echo "  S: サンプルを確認（出力例を見る）"
 echo ""
-echo -n "📱 変換ツールを今すぐ起動しますか？ [y/N]: "
+echo -n "📱 選択してください [Y/N/S]: "
 read choice
 echo ""
 if [[ "$choice" =~ ^[Yy]$ ]]; then
@@ -138,9 +138,39 @@ if [[ "$choice" =~ ^[Yy]$ ]]; then
         echo "何かキーを押して終了してください..."
         read -n 1
     fi
+elif [[ "$choice" =~ ^[Ss]$ ]]; then
+    echo "📊 サンプルを実行しています..."
+    echo ""
+    if [ -f "MAC/サンプル実行.command" ]; then
+        ./MAC/サンプル実行.command
+        echo ""
+        echo "サンプル確認が完了しました！"
+        echo ""
+        echo -n "🚀 今度は変換ツールを試しますか？ [y/N]: "
+        read convert_choice
+        if [[ "$convert_choice" =~ ^[Yy]$ ]]; then
+            echo ""
+            echo "🚀 変換ツールを起動しています..."
+            if [ -f "MAC/変換ツール.command" ]; then
+                exec ./MAC/変換ツール.command
+            else
+                echo "❌ エラー: MAC/変換ツール.command が見つかりません"
+                echo "手動で MAC/変換ツール.command をダブルクリックしてください"
+            fi
+        fi
+    else
+        echo "❌ エラー: MAC/サンプル実行.command が見つかりません"
+        echo "手動で MAC/サンプル実行.command をダブルクリックしてください"
+    fi
+    echo ""
+    echo "何かキーを押して終了してください..."
+    read -p " "
 else
     echo "💡 後で使用する場合:"
     echo "   MAC/変換ツール.command をダブルクリックしてください"
+    echo ""
+    echo "📊 サンプルを確認する場合:"
+    echo "   MAC/サンプル実行.command をダブルクリックしてください"
     echo ""
     echo "何かキーを押して終了してください..."
     read -p " "
