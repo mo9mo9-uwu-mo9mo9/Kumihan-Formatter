@@ -96,7 +96,7 @@ if [ $VENV_CREATED -eq 1 ]; then
     echo -e "${BLUE}📚 新規仮想環境に依存関係をインストール中...${NC}"
     echo -e "${BLUE}⏳ パッケージをインストール中... (しばらくお待ちください)${NC}"
     
-    if $PYTHON_CMD -m pip install -e ".[dev]" --quiet; then
+    if $PYTHON_CMD -m pip install -e "../[dev]" --quiet; then
         echo -e "${GREEN}✅ 依存関係のインストールが完了しました${NC}"
     else
         echo -e "${RED}❌ エラー: 依存関係のインストールに失敗しました${NC}"
@@ -116,7 +116,7 @@ else
         echo -e "${YELLOW}📚 必要なライブラリが不足しています。自動でインストールします...${NC}"
         echo -e "${BLUE}⏳ パッケージをインストール中... (しばらくお待ちください)${NC}"
         
-        if $PYTHON_CMD -m pip install -e ".[dev]" --quiet; then
+        if $PYTHON_CMD -m pip install -e "../[dev]" --quiet; then
             echo -e "${GREEN}✅ 依存関係のインストールが完了しました${NC}"
         else
             echo -e "${RED}❌ エラー: 依存関係のインストールに失敗しました${NC}"
