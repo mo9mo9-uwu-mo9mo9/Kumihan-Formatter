@@ -19,7 +19,7 @@ class Renderer:
             autoescape=select_autoescape(['html', 'xml'])
         )
         
-    def render(self, ast: List[Node], config=None, template=None, title=None) -> str:
+    def render(self, ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None) -> str:
         """ASTをHTMLに変換"""
         # 見出しノードを収集
         headings = self._collect_headings(ast)
@@ -47,14 +47,22 @@ class Renderer:
             css_vars = config.get_css_variables()
             theme_name = config.get_theme_name()
         
-        return template_obj.render(
-            title=title or "組版結果",
-            body_content=body_content,
-            css_vars=css_vars,
-            theme_name=theme_name,
-            has_toc=has_toc,
-            toc_html=toc_html
-        )
+        # テンプレートのレンダリング用データ
+        render_data = {
+            "title": title or "組版結果",
+            "body_content": body_content,
+            "css_vars": css_vars,
+            "theme_name": theme_name,
+            "has_toc": has_toc,
+            "toc_html": toc_html,
+        }
+        
+        # ソーステキストが提供されている場合は追加
+        if source_text is not None:
+            render_data["source_text"] = source_text
+            render_data["source_filename"] = source_filename
+        
+        return template_obj.render(**render_data)
     
     def _render_nodes(self, nodes: List[Node]) -> str:
         """ノードリストをHTMLに変換"""
