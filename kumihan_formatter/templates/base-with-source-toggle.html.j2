@@ -144,38 +144,6 @@
             color: inherit;
         }
         
-        /* HTMLヘッダー */
-        .html-header {
-            background: #f6f8fa;
-            border-bottom: 1px solid #e1e4e8;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .copy-btn {
-            background: #0366d6;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        
-        .copy-btn:hover {
-            background: #0256cc;
-        }
-        
-        .copy-btn:active {
-            background: #024daa;
-        }
-        
-        .copy-btn.copied {
-            background: #28a745;
-        }
         
         /* シンタックスハイライト */
         .source-content .keyword {
@@ -519,9 +487,6 @@
                 
                 <!-- HTML表示 -->
                 <div class="source-content" id="html-content">
-                    <div class="html-header">
-                        <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
-                    </div>
                     <pre><code id="html-code">{{ body_content | e }}</code></pre>
                 </div>
             </div>
@@ -544,9 +509,6 @@
             
             <!-- HTML表示 -->
             <div class="source-content" id="html-content">
-                <div class="html-header">
-                    <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
-                </div>
                 <pre><code id="html-code">{{ body_content | e }}</code></pre>
             </div>
         </div>
@@ -651,64 +613,6 @@
             htmlContent.setAttribute('data-highlighted', 'true');
         }
         
-        // HTMLコピー機能
-        function copyHTML() {
-            const htmlCode = document.querySelector('#html-code');
-            const copyBtn = document.querySelector('.copy-btn');
-            
-            if (!htmlCode || !copyBtn) return;
-            
-            // HTMLコンテンツを取得（ハイライト前のテキスト）
-            const htmlText = {{ body_content | tojson }};
-            
-            // クリップボードにコピー
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(htmlText).then(() => {
-                    showCopySuccess(copyBtn);
-                }).catch(() => {
-                    // フォールバック
-                    fallbackCopy(htmlText, copyBtn);
-                });
-            } else {
-                // フォールバック
-                fallbackCopy(htmlText, copyBtn);
-            }
-        }
-        
-        function showCopySuccess(button) {
-            const originalText = button.textContent;
-            button.textContent = '✅ コピー完了';
-            button.classList.add('copied');
-            
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.classList.remove('copied');
-            }, 2000);
-        }
-        
-        function fallbackCopy(text, button) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showCopySuccess(button);
-            } catch (err) {
-                console.error('コピーに失敗しました:', err);
-                button.textContent = '❌ コピー失敗';
-                setTimeout(() => {
-                    button.textContent = '📋 HTMLをコピー';
-                }, 2000);
-            } finally {
-                document.body.removeChild(textArea);
-            }
-        }
         
         // 目次機能（TOC）
         function setupTOC() {
