@@ -390,7 +390,8 @@ def cli():
 @click.option("--generate-sample", "generate_sample_flag", is_flag=True, help="機能ショーケースサンプルを生成")
 @click.option("--sample-output", default="kumihan_sample", help="サンプル出力ディレクトリ")
 @click.option("--with-source-toggle", is_flag=True, help="記法と結果を切り替えるトグル機能付きで出力")
-def convert(input_file, output, no_preview, watch, config, generate_test, test_output, pattern_count, double_click_mode, show_test_cases, generate_sample_flag, sample_output, with_source_toggle):
+@click.option("--experimental", type=str, help="実験的機能を有効化 (例: scroll-sync)")
+def convert(input_file, output, no_preview, watch, config, generate_test, test_output, pattern_count, double_click_mode, show_test_cases, generate_sample_flag, sample_output, with_source_toggle, experimental):
     """テキストファイルをHTMLに変換します"""
     
     try:
@@ -513,8 +514,17 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
             response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
             use_source_toggle = response.lower() in ['y', 'yes', '']
         
+        # テンプレート選択（実験的機能の考慮）
+        template_name = None
+        if use_source_toggle:
+            if experimental == "scroll-sync":
+                console.print("[yellow]⚡ 実験的機能を有効化:[/yellow] スクロール同期")
+                console.print("[dim]   この機能は実験的で、予期しない動作をする可能性があります[/dim]")
+                template_name = "experimental/base-with-scroll-sync.html.j2"
+            else:
+                template_name = "base-with-source-toggle.html.j2"
+        
         # 初回変換
-        template_name = "base-with-source-toggle.html.j2" if use_source_toggle else None
         output_file = convert_file(input_file, output, config_obj, show_test_cases=show_test_cases, template=template_name, include_source=use_source_toggle)
         
         # ブラウザでプレビュー
