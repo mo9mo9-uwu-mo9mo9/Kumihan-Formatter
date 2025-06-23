@@ -371,7 +371,7 @@ class Parser:
         return Node(type="ol", content=items)
     
     def _parse_paragraph(self) -> Node:
-        """段落をパース"""
+        """段落をパース（連続する行をまとめて1段落として処理）"""
         lines = []
         
         while self.current < len(self.lines):
@@ -381,10 +381,11 @@ class Parser:
             if not line.strip() or line.strip().startswith(";;;") or line.strip().startswith("- ") or re.match(r'^\s*\d+\.\s+', line):
                 break
             
-            lines.append(line)
+            lines.append(line.strip())
             self.current += 1
         
-        content = "\n".join(lines)
+        # 連続する行を<br>タグで結合
+        content = "<br>".join(lines)
         parsed_content = [content]
         
         return Node(type="p", content=parsed_content)
