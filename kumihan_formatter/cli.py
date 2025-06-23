@@ -8,6 +8,13 @@ import shutil
 import base64
 from pathlib import Path
 
+# macOSでのエンコーディング問題を修正
+if sys.platform == 'darwin':
+    if sys.stdout.encoding != 'utf-8':
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 import click
 from rich.console import Console
 from rich.progress import Progress

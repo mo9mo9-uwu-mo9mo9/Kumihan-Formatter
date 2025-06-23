@@ -3,6 +3,18 @@
 # Kumihan-Formatter - One-time Setup Script
 # This script automatically sets up everything needed to use Kumihan-Formatter
 
+# ターミナルの設定とエンコーディング修正
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
+export PYTHONIOENCODING=utf-8
+
+# macOSのターミナルエンコーディング設定
+if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]] || [[ -z "$TERM_PROGRAM" ]]; then
+    export LESSCHARSET=utf-8
+    # ターミナルのエンコーディングを明示的に設定
+    printf '\033]1337;SetProfile=Default\007' 2>/dev/null || true
+fi
+
 echo ""
 echo "=========================================="
 echo " Kumihan-Formatter - Initial Setup"
