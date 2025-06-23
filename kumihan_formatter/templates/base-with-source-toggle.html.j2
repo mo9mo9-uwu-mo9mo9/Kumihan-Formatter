@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        /* 既存のbase.html.j2のスタイルをベースに、トグル機能用スタイルを追加 */
+        
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基本スタイル */
+        body {
+            font-family: {% if css_vars.font_family %}"{{ css_vars.font_family }}"{% else %}"Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif{% endif %};
+            line-height: {% if css_vars.line_height %}{{ css_vars.line_height }}{% else %}1.8{% endif %};
+            color: {% if css_vars.text_color %}{{ css_vars.text_color }}{% else %}#333{% endif %};
+            background-color: {% if css_vars.background_color %}{{ css_vars.background_color }}{% else %}#f9f9f9{% endif %};
+            padding: 20px;
+        }
+
+        /* ========== 新機能: ソース・結果トグル ========== */
+        
+        /* トグルコントロール */
+        .source-result-controls {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .control-row {
+            margin-bottom: 15px;
+        }
+        
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-btn {
+            padding: 12px 24px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .toggle-btn:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        
+        .toggle-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .sync-toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #28a745;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .sync-toggle-btn:hover {
+            background: #218838;
+            border-color: #218838;
+        }
+        
+        /* コンテンツコンテナ */
+        .content-wrapper {
+            display: grid;
+            gap: 20px;
+            max-width: 100%;
+        }
+        
+        /* デスクトップ: 横並び表示 */
+        @media (min-width: 768px) {
+            .content-wrapper.side-by-side {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .toggle-buttons {
+                display: none; /* デスクトップでは常に両方表示 */
+            }
+            
+            .source-result-controls {
+                text-align: center;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            }
+            
+            .controls-title {
+                font-size: 18px;
+                font-weight: bold;
+                color: #495057;
+                margin: 0;
+            }
+            
+            .controls-subtitle {
+                font-size: 14px;
+                color: #6c757d;
+                margin-top: 5px;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+        }
+        
+        /* モバイル: 切り替え表示 */
+        @media (max-width: 767px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .source-view.mobile-hidden,
+            .result-view.mobile-hidden {
+                display: none;
+            }
+            
+            .controls-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: #495057;
+                margin-bottom: 15px;
+            }
+            
+            .desktop-only {
+                display: none; /* モバイルでは非表示 */
+            }
+        }
+        
+        /* ソースビュー */
+        .source-view {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .source-header {
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .source-content {
+            background: #f8f9fa;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            color: #212529;
+            border: none;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* 結果ビュー */
+        .result-view {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .result-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .result-content {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* シンタックスハイライト */
+        .source-content .keyword {
+            color: #d73a49;
+            font-weight: bold;
+        }
+        
+        .source-content .marker {
+            color: #005cc5;
+            font-weight: bold;
+        }
+        
+        .source-content .content-text {
+            color: #24292e;
+        }
+        
+        .source-content .comment {
+            color: #6a737d;
+            font-style: italic;
+        }
+        
+        /* ========== 既存のスタイル（簡略版） ========== */
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background-color: {% if css_vars.container_background %}{{ css_vars.container_background }}{% else %}white{% endif %};
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        /* 段落 */
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+        }
+
+        /* 見出し */
+        h1, h2, h3, h4, h5 {
+            margin-top: 2em;
+            margin-bottom: 1em;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 2em;
+            border-bottom: 3px solid #333;
+            padding-bottom: 0.3em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            border-bottom: 2px solid #666;
+            padding-bottom: 0.2em;
+        }
+
+        h3 {
+            font-size: 1.3em;
+        }
+
+        h4 {
+            font-size: 1.1em;
+        }
+
+        h5 {
+            font-size: 1em;
+        }
+
+        /* リスト */
+        ul, ol {
+            margin-bottom: 1.5em;
+            padding-left: 2em;
+            list-style-position: outside;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+            position: relative;
+        }
+
+        /* インライン要素 */
+        strong {
+            font-weight: bold;
+            color: #000;
+        }
+
+        em {
+            font-style: italic;
+        }
+
+        /* 枠線 */
+        .box {
+            border: 2px solid #333;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+
+        /* ハイライト */
+        .highlight {
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 5px;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+            
+            .source-content,
+            .result-content {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ソース・結果トグルコントロール -->
+    <div class="source-result-controls">
+        <div class="control-row">
+            <h2 class="controls-title">📝 記法と🎨結果を比較</h2>
+            <p class="controls-subtitle">改行処理の直感性を実際に確認できます</p>
+        </div>
+        
+        <!-- モバイル用トグルボタン -->
+        <div class="control-row">
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" onclick="showResult()">🎨 結果を表示</button>
+                <button class="toggle-btn" onclick="showSource()">📝 記法を表示</button>
+                <button class="toggle-btn" onclick="showBoth()">↔️ 両方表示</button>
+            </div>
+        </div>
+        
+        <!-- スクロール同期トグル（デスクトップのみ） -->
+        <div class="control-row desktop-only">
+            <button id="sync-toggle" class="sync-toggle-btn" onclick="toggleScrollSync()">🔗 同期ON</button>
+            <span style="font-size: 12px; color: #6c757d; margin-left: 10px;">スクロール位置を自動同期</span>
+        </div>
+    </div>
+    
+    <!-- メインコンテンツ -->
+    <div class="content-wrapper side-by-side">
+        <!-- ソースビュー -->
+        <div class="source-view mobile-hidden" id="source-view">
+            <div class="source-header">
+                📝 生の記法 ({{ source_filename or "sample.txt" }})
+            </div>
+            <div class="source-content" id="source-content">{{ source_text | e }}</div>
+        </div>
+        
+        <!-- 結果ビュー -->
+        <div class="result-view" id="result-view">
+            <div class="result-header">
+                🎨 変換結果 (HTML)
+            </div>
+            <div class="result-content">
+                {{ body_content | safe }}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // モバイル表示制御
+        function showResult() {
+            document.getElementById('source-view').classList.add('mobile-hidden');
+            document.getElementById('result-view').classList.remove('mobile-hidden');
+            updateActiveButton('result');
+        }
+        
+        function showSource() {
+            document.getElementById('result-view').classList.add('mobile-hidden');
+            document.getElementById('source-view').classList.remove('mobile-hidden');
+            updateActiveButton('source');
+        }
+        
+        function showBoth() {
+            document.getElementById('source-view').classList.remove('mobile-hidden');
+            document.getElementById('result-view').classList.remove('mobile-hidden');
+            updateActiveButton('both');
+        }
+        
+        function updateActiveButton(activeType) {
+            // モバイルでのみ実行
+            if (window.innerWidth <= 767) {
+                const buttons = document.querySelectorAll('.toggle-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                
+                if (activeType === 'result') {
+                    buttons[0].classList.add('active');
+                } else if (activeType === 'source') {
+                    buttons[1].classList.add('active');
+                } else if (activeType === 'both') {
+                    buttons[2].classList.add('active');
+                }
+            }
+        }
+        
+        // 簡単なシンタックスハイライト
+        function applySyntaxHighlighting() {
+            const sourceContent = document.getElementById('source-content');
+            let text = sourceContent.textContent;
+            
+            // ブロックマーカーのハイライト
+            text = text.replace(/^;;;(.*)$/gm, '<span class="marker">;;;$1</span>');
+            
+            // コメント行のハイライト
+            text = text.replace(/^#(.*)$/gm, '<span class="comment">#$1</span>');
+            
+            // リスト項目のハイライト  
+            text = text.replace(/^- (.*)$/gm, '<span class="marker">-</span> <span class="content-text">$1</span>');
+            
+            sourceContent.innerHTML = text;
+        }
+        
+        // スクロール同期機能
+        let isScrollingSynced = true;
+        let scrollTimeout;
+        
+        function setupScrollSync() {
+            const sourceContent = document.getElementById('source-content');
+            const resultContent = document.querySelector('.result-content');
+            
+            if (!sourceContent || !resultContent) return;
+            
+            // スクロール同期のオン/オフを切り替える
+            function toggleScrollSync() {
+                isScrollingSynced = !isScrollingSynced;
+                const syncButton = document.getElementById('sync-toggle');
+                if (syncButton) {
+                    syncButton.textContent = isScrollingSynced ? '🔗 同期ON' : '🔗 同期OFF';
+                    syncButton.style.opacity = isScrollingSynced ? '1' : '0.6';
+                }
+            }
+            
+            // スクロール位置を同期
+            function syncScroll(source, target) {
+                if (!isScrollingSynced) return;
+                
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const sourceScrollPercentage = source.scrollTop / (source.scrollHeight - source.clientHeight);
+                    const targetScrollTop = sourceScrollPercentage * (target.scrollHeight - target.clientHeight);
+                    
+                    // 一時的にイベントリスナーを無効化して無限ループを防ぐ
+                    target.removeEventListener('scroll', targetScrollHandler);
+                    target.scrollTop = targetScrollTop;
+                    
+                    setTimeout(() => {
+                        target.addEventListener('scroll', targetScrollHandler);
+                    }, 50);
+                }, 10);
+            }
+            
+            // イベントハンドラー
+            function sourceScrollHandler() {
+                syncScroll(sourceContent, resultContent);
+            }
+            
+            function targetScrollHandler() {
+                syncScroll(resultContent, sourceContent);
+            }
+            
+            // スクロールイベントを設定
+            sourceContent.addEventListener('scroll', sourceScrollHandler);
+            resultContent.addEventListener('scroll', targetScrollHandler);
+            
+            // 同期トグルボタンをグローバルに公開
+            window.toggleScrollSync = toggleScrollSync;
+        }
+        
+        // ページ読み込み時にシンタックスハイライトを適用
+        document.addEventListener('DOMContentLoaded', function() {
+            applySyntaxHighlighting();
+            setupScrollSync();
+            
+            // レスポンシブ対応：画面サイズ変更時の処理
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 767) {
+                    // デスクトップでは両方表示
+                    showBoth();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
