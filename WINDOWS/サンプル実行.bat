@@ -99,7 +99,7 @@ set "OUTPUT_DIR=%OUTPUT_BASE%\basic"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
-%PYTHON_CMD% -m kumihan_formatter "..\examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\input\sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo Error: Failed to convert basic sample
     goto error_end
@@ -114,7 +114,7 @@ set "OUTPUT_DIR=%OUTPUT_BASE%\advanced"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
-%PYTHON_CMD% -m kumihan_formatter "..\examples\input\comprehensive-sample.txt" -o "%OUTPUT_DIR%" --no-preview
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\input\comprehensive-sample.txt" -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo Error: Failed to convert advanced sample
     goto error_end
@@ -129,7 +129,7 @@ set "OUTPUT_DIR=%OUTPUT_BASE%\showcase"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
-%PYTHON_CMD% -m kumihan_formatter --generate-sample -o "%OUTPUT_DIR%" --no-preview
+%PYTHON_CMD% -m kumihan_formatter convert --generate-sample -o "%OUTPUT_DIR%" --no-preview
 if errorlevel 1 (
     echo Error: Failed to convert showcase sample
     goto error_end

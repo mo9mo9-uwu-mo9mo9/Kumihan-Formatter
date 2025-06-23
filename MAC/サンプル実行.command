@@ -96,7 +96,7 @@ echo -e "${BLUE}📝 [1/3] 基本サンプル (sample.txt)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/basic"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter "../examples/input/sample.txt" -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/input/sample.txt" -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}✅ basic サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}❌ エラー: basic サンプルの変換に失敗${NC}"
@@ -109,7 +109,7 @@ echo -e "${BLUE}📝 [2/3] 高度なサンプル (comprehensive-sample.txt)${NC}
 OUTPUT_DIR="$OUTPUT_BASE/advanced"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter "../examples/input/comprehensive-sample.txt" -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/input/comprehensive-sample.txt" -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}✅ advanced サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}❌ エラー: advanced サンプルの変換に失敗${NC}"
@@ -122,7 +122,7 @@ echo -e "${BLUE}📝 [3/3] 機能ショーケース (--generate-sample)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/showcase"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter --generate-sample -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter convert --generate-sample -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}✅ showcase サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}❌ エラー: showcase サンプルの変換に失敗${NC}"
