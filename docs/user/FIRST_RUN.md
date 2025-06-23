@@ -18,8 +18,8 @@ python3 --version
 
 ### ⚡ ステップ1: 初回セットアップ（1回だけ）
 
-**Windows**: `setup.bat` をダブルクリック  
-**macOS**: `setup.command` をダブルクリック
+**Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック  
+**macOS**: `MAC/初回セットアップ.command` をダブルクリック
 
 ✅ **成功の確認:**
 - `[OK] Dependencies installed successfully` が表示される
@@ -28,12 +28,12 @@ python3 --version
 ### 🎉 ステップ2: すぐに使える！
 
 **変換したい場合:**
-- **Windows**: `kumihan_convert.bat` をダブルクリック
-- **macOS**: `kumihan_convert.command` をダブルクリック
+- **Windows**: `WINDOWS/変換ツール.bat` をダブルクリック
+- **macOS**: `MAC/変換ツール.command` をダブルクリック
 
 **サンプルを試したい場合:**
-- **Windows**: `run_examples.bat` をダブルクリック  
-- **macOS**: `run_examples.command` をダブルクリック
+- **Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック  
+- **macOS**: `MAC/サンプル実行.command` をダブルクリック
 
 🎉 **おめでとうございます！** これで基本的な使い方をマスターしました。
 
@@ -42,8 +42,8 @@ python3 --version
 ### 🎨 サンプルで機能体験
 セットアップ後、すぐに全機能を体験できます：
 
-**Windows**: `run_examples.bat` をダブルクリック  
-**macOS**: `run_examples.command` をダブルクリック
+**Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック  
+**macOS**: `MAC/サンプル実行.command` をダブルクリック
 
 → `examples/output/` フォルダに結果が生成されます
 

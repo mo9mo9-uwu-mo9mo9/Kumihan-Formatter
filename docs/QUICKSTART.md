@@ -32,9 +32,16 @@
 
 ### 1-3. フォルダを開く
 解凍したフォルダの中に以下のファイルがあることを確認：
-- `setup.bat` または `setup.command`
-- `kumihan_convert.bat` または `kumihan_convert.command`
-- `run_examples.bat` または `run_examples.command`
+
+**Windows**
+- `WINDOWS/初回セットアップ.bat`
+- `WINDOWS/変換ツール.bat`  
+- `WINDOWS/サンプル実行.bat`
+
+**macOS**
+- `MAC/初回セットアップ.command`
+- `MAC/変換ツール.command`
+- `MAC/サンプル実行.command`
 
 ---
 
@@ -43,11 +50,11 @@
 ### 2-1. セットアップを開始
 
 **Windows**
-- `setup.bat` をダブルクリック
+- `WINDOWS/初回セットアップ.bat` をダブルクリック
 - 黒い画面（コマンドプロンプト）が開く
 
 **macOS**
-- `setup.command` をダブルクリック
+- `MAC/初回セットアップ.command` をダブルクリック
 - ターミナル画面が開く
 
 ### 2-2. セットアップの流れ
