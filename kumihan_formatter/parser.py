@@ -108,6 +108,15 @@ class Parser:
         if not marker_line.startswith(";;;"):
             return None
         
+        # 目次マーカーのチェック（最優先）
+        if marker_line == ";;;目次;;;":
+            self.current += 1
+            return Node(
+                type="toc",
+                content="",
+                attributes={}
+            )
+        
         # 画像の単一行記法のチェック (;;;filename.ext;;;)
         if marker_line.endswith(";;;") and len(marker_line) > 6:
             content = marker_line[3:-3].strip()
@@ -139,15 +148,6 @@ class Parser:
                     content="",
                     attributes={"message": "キーワードが指定されていません"}
                 )
-        
-        # 目次マーカーのチェック
-        if marker_line == ";;;目次;;;":
-            self.current += 1
-            return Node(
-                type="toc",
-                content="",
-                attributes={}
-            )
         
         # キーワードと属性の抽出
         marker_content = marker_line[3:].strip()
