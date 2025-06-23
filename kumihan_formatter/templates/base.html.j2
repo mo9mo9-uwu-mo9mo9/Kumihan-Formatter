@@ -302,11 +302,11 @@
         
         .layout-wrapper {
             display: grid;
-            grid-template-columns: minmax(280px, 20%) 1fr;
-            max-width: 1800px;
+            grid-template-columns: minmax(350px, 25%) 1fr;
+            max-width: 95%;
             margin: 0 auto;
-            gap: 30px;
-            padding: 20px;
+            gap: 40px;
+            padding: 20px 2.5%;
         }
         
         .toc-sidebar {
@@ -398,18 +398,20 @@
         /* レスポンシブ対応（大画面） */
         @media (min-width: 2000px) {
             .layout-wrapper {
-                max-width: 2200px;
-                grid-template-columns: minmax(320px, 18%) 1fr;
-                gap: 40px;
+                max-width: 98%;
+                grid-template-columns: minmax(400px, 30%) 1fr;
+                gap: 50px;
+                padding: 20px 1%;
             }
         }
         
         /* レスポンシブ対応（中画面） */
         @media (max-width: 1200px) {
             .layout-wrapper {
-                grid-template-columns: 250px 1fr;
-                max-width: 1200px;
-                gap: 20px;
+                grid-template-columns: minmax(280px, 22%) 1fr;
+                max-width: 90%;
+                gap: 30px;
+                padding: 20px 5%;
             }
         }
         
