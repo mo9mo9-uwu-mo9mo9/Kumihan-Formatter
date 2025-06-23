@@ -509,21 +509,12 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         # ソーストグル機能の確認（--with-source-toggleが指定されていない場合）
         use_source_toggle = with_source_toggle
         
-        # サンプルファイルの自動検出
-        is_sample_file = 'examples' in str(input_path.resolve()).replace('\\', '/')
-        
         if not with_source_toggle:
-            if is_sample_file:
-                # サンプルファイルの場合は自動でソーストグル機能をON
-                console.print("[cyan]📚 サンプルファイルを検出:[/cyan] ソーストグル機能を自動で有効化")
-                console.print("[dim]   記法と結果を並べて表示して学習効果を最大化します[/dim]")
-                use_source_toggle = True
-            else:
-                # 通常ファイルの場合はYes/No確認
-                console.print("\n[cyan]💡 記法と結果を並べて表示する機能があります[/cyan]")
-                console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
-                response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
-                use_source_toggle = response.lower() in ['y', 'yes', '']
+            # すべてのファイルでYes/No確認
+            console.print("\n[cyan]💡 記法と結果を並べて表示する機能があります[/cyan]")
+            console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
+            response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
+            use_source_toggle = response.lower() in ['y', 'yes', '']
         
         # テンプレート選択（実験的機能の考慮）
         template_name = None
