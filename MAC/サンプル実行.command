@@ -57,7 +57,7 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # 仮想環境の確認
-if [ -d ".venv" ]; then
+if [ -d "../.venv" ]; then
     echo -e "${BLUE}🔧 仮想環境をアクティベート中...${NC}"
     source ../.venv/bin/activate
     PYTHON_CMD="python"
