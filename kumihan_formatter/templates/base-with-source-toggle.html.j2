@@ -35,50 +35,63 @@
             overflow: hidden;
         }
         
-        /* トグルヘッダー */
-        .toggle-header {
+        /* フローティングトグルボタン */
+        .floating-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .toggle-group {
+            display: flex;
             background: #f6f8fa;
-            border-bottom: 1px solid #d1d9e0;
-            padding: 0;
+            border-radius: 6px;
+            padding: 2px;
         }
         
-        /* トグルタブ */
-        .toggle-tabs {
-            display: flex;
-        }
-        
-        .tab-btn {
+        .floating-btn {
             background: transparent;
             border: none;
-            padding: 12px 16px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: 500;
             color: #656d76;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            border-radius: 4px;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
         
-        .tab-btn:hover {
+        .floating-btn:hover {
             color: #24292f;
-            background: rgba(0,0,0,0.03);
+            background: rgba(0,0,0,0.05);
         }
         
-        .tab-btn.active {
+        .floating-btn.active {
+            background: white;
             color: #24292f;
-            border-bottom-color: #fd7e14;
             font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        /* ファイル情報 */
-        .file-info {
-            padding: 12px 16px;
-            font-size: 12px;
+        .file-label {
+            font-size: 10px;
             color: #656d76;
+            text-align: center;
+            padding: 2px 4px;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         /* コンテンツ表示エリア */
@@ -157,14 +170,20 @@
                 border-radius: 4px;
             }
             
-            .tab-btn {
-                padding: 10px 12px;
-                font-size: 13px;
+            .floating-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 6px;
             }
             
-            .file-info {
-                padding: 10px 12px;
+            .floating-btn {
+                padding: 6px 10px;
                 font-size: 11px;
+            }
+            
+            .file-label {
+                font-size: 9px;
+                max-width: 100px;
             }
             
             .preview-content,
@@ -287,23 +306,21 @@
     </style>
 </head>
 <body>
+    <!-- フローティングトグルボタン -->
+    <div class="floating-toggle">
+        <div class="toggle-group">
+            <button class="floating-btn active" id="preview-btn" onclick="showPreview()">
+                🎨 プレビュー
+            </button>
+            <button class="floating-btn" id="source-btn" onclick="showSource()">
+                📝 記法
+            </button>
+        </div>
+        <div class="file-label">{{ source_filename or "sample.txt" }}</div>
+    </div>
+
     <!-- メインコンテンツエリア -->
     <div class="main-container">
-        <!-- GitHub風トグルヘッダー -->
-        <div class="toggle-header">
-            <div class="toggle-tabs">
-                <button class="tab-btn active" id="preview-tab" onclick="showPreview()">
-                    🎨 プレビュー
-                </button>
-                <button class="tab-btn" id="source-tab" onclick="showSource()">
-                    📝 記法
-                </button>
-            </div>
-            <div class="file-info">
-                {{ source_filename or "sample.txt" }}
-            </div>
-        </div>
-        
         <!-- コンテンツ表示エリア -->
         <div class="content-display">
             <!-- プレビュー表示 -->
@@ -325,9 +342,9 @@
             document.getElementById('preview-content').classList.remove('hidden');
             document.getElementById('source-content').classList.remove('active');
             
-            // タブの状態を切り替え
-            document.getElementById('preview-tab').classList.add('active');
-            document.getElementById('source-tab').classList.remove('active');
+            // フローティングボタンの状態を切り替え
+            document.getElementById('preview-btn').classList.add('active');
+            document.getElementById('source-btn').classList.remove('active');
         }
         
         function showSource() {
@@ -335,9 +352,9 @@
             document.getElementById('preview-content').classList.add('hidden');
             document.getElementById('source-content').classList.add('active');
             
-            // タブの状態を切り替え
-            document.getElementById('preview-tab').classList.remove('active');
-            document.getElementById('source-tab').classList.add('active');
+            // フローティングボタンの状態を切り替え
+            document.getElementById('preview-btn').classList.remove('active');
+            document.getElementById('source-btn').classList.add('active');
         }
         
         // シンタックスハイライト（シンプル版）
