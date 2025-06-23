@@ -9,7 +9,7 @@ echo " Kumihan-Formatter - 初回セットアップ"
 echo "=========================================="
 echo "必要な環境を自動でセットアップします"
 echo "すぐにKumihan-Formatterを使用できるようになります。"
-echo "==========================================
+echo "=========================================="
 echo ""
 
 # Get script directory
@@ -112,25 +112,7 @@ fi
 echo ""
 echo "=========================================="
 echo " セットアップ完了！"
-echo "==========================================
-echo ""
-echo "これでKumihan-Formatterを使用できます："
-echo ""
-echo "基本的な変換の場合："
-echo "  - ダブルクリック: kumihan_convert.command"
-echo "  - .txtファイルをドラッグ&ドロップで変換"
-echo ""
-echo "サンプルを試す場合："
-echo "  - ダブルクリック: run_examples.command"
-echo "  - examples/output/ でサンプル結果を確認"
-echo ""
-echo "アップデートの場合："
-echo "  - GitHub releases から最新版をダウンロード"
-echo "  - または: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter"
-echo ""
-echo "ヘルプの場合："
-echo "  - 参照: LAUNCH_GUIDE.md"
-echo "  - 参照: FIRST_RUN.md"
+echo "=========================================="
 echo ""
 
 # セットアップ完了後の変換ツール自動起動オプション
@@ -147,19 +129,19 @@ echo ""
 if [[ "$choice" =~ ^[Yy]$ ]]; then
     echo "🚀 変換ツールを起動しています..."
     echo ""
-    if [ -f "kumihan_convert.command" ]; then
-        exec ./kumihan_convert.command
+    if [ -f "MAC/変換ツール.command" ]; then
+        exec ./MAC/変換ツール.command
     else
-        echo "❌ エラー: kumihan_convert.command が見つかりません"
-        echo "手動で kumihan_convert.command をダブルクリックしてください"
+        echo "❌ エラー: MAC/変換ツール.command が見つかりません"
+        echo "手動で MAC/変換ツール.command をダブルクリックしてください"
         echo ""
         echo "何かキーを押して終了してください..."
         read -n 1
     fi
 else
     echo "💡 後で使用する場合:"
-    echo "   kumihan_convert.command をダブルクリックしてください"
+    echo "   MAC/変換ツール.command をダブルクリックしてください"
     echo ""
     echo "何かキーを押して終了してください..."
-    read -p ""
+    read -p " "
 fi
