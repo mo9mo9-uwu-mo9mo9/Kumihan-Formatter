@@ -444,7 +444,7 @@ class Renderer:
         return '\n'.join(toc_lines)
 
 
-def render(ast: List[Node], config=None, template=None, title=None) -> str:
+def render(ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None) -> str:
     """ASTをHTMLに変換する"""
     renderer = Renderer()
-    return renderer.render(ast, config, template=template, title=title)
+    return renderer.render(ast, config, template=template, title=title, source_text=source_text, source_filename=source_filename)
