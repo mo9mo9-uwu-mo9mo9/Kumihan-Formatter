@@ -508,17 +508,17 @@
             <!-- コンテンツ表示エリア -->
             <div class="content-display">
                 <!-- プレビュー表示 -->
-                <div class="preview-content active" id="preview-content">
+                <div class="preview-content" id="preview-content">
                     {{ body_content | safe }}
                 </div>
                 
                 <!-- ソース表示 -->
-                <div class="source-content hidden" id="source-content">
+                <div class="source-content" id="source-content">
                     <pre><code>{{ source_text | e }}</code></pre>
                 </div>
                 
                 <!-- HTML表示 -->
-                <div class="source-content hidden" id="html-content">
+                <div class="source-content" id="html-content">
                     <div class="html-header">
                         <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
                     </div>
@@ -533,17 +533,17 @@
         <!-- コンテンツ表示エリア -->
         <div class="content-display">
             <!-- プレビュー表示 -->
-            <div class="preview-content active" id="preview-content">
+            <div class="preview-content" id="preview-content">
                 {{ body_content | safe }}
             </div>
             
             <!-- ソース表示 -->
-            <div class="source-content hidden" id="source-content">
+            <div class="source-content" id="source-content">
                 <pre><code>{{ source_text | e }}</code></pre>
             </div>
             
             <!-- HTML表示 -->
-            <div class="source-content hidden" id="html-content">
+            <div class="source-content" id="html-content">
                 <div class="html-header">
                     <button class="copy-btn" onclick="copyHTML()">📋 HTMLをコピー</button>
                 </div>
@@ -774,6 +774,8 @@
         
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
+            // 初期状態: プレビューを表示
+            showPreview();
             applySyntaxHighlighting();
             setupTOC();
         });
