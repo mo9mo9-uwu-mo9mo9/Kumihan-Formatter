@@ -24,8 +24,10 @@ class Renderer:
         # 見出しノードを収集
         headings = self._collect_headings(ast)
         
-        # 目次が必要かチェック
-        has_toc = any(node.type == "toc" for node in ast)
+        # 目次が必要かチェック（目次マーカーまたは見出しが2つ以上ある場合）
+        has_toc_marker = any(node.type == "toc" for node in ast)
+        has_multiple_headings = len(headings) >= 2
+        has_toc = has_toc_marker or has_multiple_headings
         
         # ASTをHTMLに変換（目次マーカーは除去）
         filtered_ast = [node for node in ast if node.type != "toc"]
@@ -37,7 +39,13 @@ class Renderer:
             toc_html = self._generate_toc_html(headings)
         
         # テンプレートを使用してHTMLを生成
-        template_name = template or "base.html.j2"
+        # ソース表示機能が必要な場合は専用テンプレートを使用
+        if template:
+            template_name = template
+        elif source_text is not None:
+            template_name = "base-with-source-toggle.html.j2"
+        else:
+            template_name = "base.html.j2"
         template_obj = self.env.get_template(template_name)
         
         # 設定からCSS変数を取得
