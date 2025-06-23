@@ -448,9 +448,6 @@
             <button class="floating-btn" id="source-btn" onclick="showSource()">
                 📝 記法
             </button>
-            <button class="floating-btn" id="html-btn" onclick="showHTML()">
-                🏷️ HTML
-            </button>
         </div>
         <div class="file-label">{{ source_filename or "sample.txt" }}</div>
     </div>
@@ -481,10 +478,6 @@
                     <pre><code>{{ source_text | e }}</code></pre>
                 </div>
                 
-                <!-- HTML表示 -->
-                <div class="source-content" id="html-content">
-                    <pre><code id="html-code">{{ body_content | e }}</code></pre>
-                </div>
             </div>
         </main>
     </div>
@@ -503,10 +496,6 @@
                 <pre><code>{{ source_text | e }}</code></pre>
             </div>
             
-            <!-- HTML表示 -->
-            <div class="source-content" id="html-content">
-                <pre><code id="html-code">{{ body_content | e }}</code></pre>
-            </div>
         </div>
     </div>
     {% endif %}
@@ -537,30 +526,17 @@
             document.getElementById('source-btn').classList.add('active');
         }
         
-        function showHTML() {
-            // 全てのコンテンツを隠す
-            hideAllContent();
-            
-            // HTMLを表示
-            document.getElementById('html-content').classList.add('active');
-            
-            // ボタン状態をリセット
-            resetButtonStates();
-            document.getElementById('html-btn').classList.add('active');
-        }
         
         // ヘルパー関数：全てのコンテンツを隠す
         function hideAllContent() {
             document.getElementById('preview-content').classList.add('hidden');
             document.getElementById('source-content').classList.remove('active');
-            document.getElementById('html-content').classList.remove('active');
         }
         
         // ヘルパー関数：全てのボタン状態をリセット
         function resetButtonStates() {
             document.getElementById('preview-btn').classList.remove('active');
             document.getElementById('source-btn').classList.remove('active');
-            document.getElementById('html-btn').classList.remove('active');
         }
         
         // シンタックスハイライト（シンプル版）

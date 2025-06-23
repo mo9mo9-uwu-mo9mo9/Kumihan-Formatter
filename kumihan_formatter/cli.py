@@ -230,9 +230,9 @@ def generate_sample(output_dir: str = "kumihan_sample"):
         ast = parse(SHOWCASE_SAMPLE)
         progress.update(task, completed=100)
         
-        # レンダリング（showcaseは基本テンプレートを使用）
+        # レンダリング（showcaseもソース表示テンプレートを使用）
         task = progress.add_task("[cyan]HTMLを生成中", total=100)
-        html = render(ast, template="base.html.j2", title="showcase")
+        html = render(ast, template="base-with-source-toggle.html.j2", title="showcase", source_text=SHOWCASE_SAMPLE, source_filename="showcase.txt")
         progress.update(task, completed=100)
     
     # HTMLファイルを保存
