@@ -32,7 +32,8 @@ class TestSampleGeneration:
     
     def test_showcase_content_is_valid(self):
         """ショーケースサンプルの内容が有効であることを確認"""
-        # 必要な要素が含まれていることを確認（目次はトグル機能があるため不要）
+        # 必要な要素が含まれていることを確認
+        assert ";;;目次;;;" in SHOWCASE_SAMPLE
         assert ";;;見出し1" in SHOWCASE_SAMPLE
         assert ";;;太字" in SHOWCASE_SAMPLE
         assert ";;;枠線" in SHOWCASE_SAMPLE

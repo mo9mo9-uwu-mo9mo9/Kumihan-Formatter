@@ -2,6 +2,8 @@
 
 SHOWCASE_SAMPLE = """# Kumihan-Formatter ショーケース
 
+;;;目次;;;
+
 ;;;見出し1
 第1章：Kumihan-Formatterでできること
 ;;;
