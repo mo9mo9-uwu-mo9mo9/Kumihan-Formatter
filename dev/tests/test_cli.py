@@ -47,7 +47,7 @@ def test_cli_basic():
                 temp_input,
                 '-o', temp_dir,
                 '--no-preview'
-            ])
+            ], input='n\n')  # ソーストグルプロンプトに対して 'n' を入力
             
             assert result.exit_code == 0
             assert "完了" in result.output
@@ -85,7 +85,7 @@ def test_cli_preview(mock_browser):
                 'convert',
                 temp_input,
                 '-o', temp_dir
-            ])
+            ], input='n\n')  # ソーストグルプロンプトに対して 'n' を入力
             
             assert result.exit_code == 0
             mock_browser.assert_called_once()
@@ -109,7 +109,7 @@ def test_cli_no_preview():
                     temp_input,
                     '-o', temp_dir,
                     '--no-preview'
-                ])
+                ], input='n\n')  # ソーストグルプロンプトに対して 'n' を入力
                 
                 assert result.exit_code == 0
                 mock_browser.assert_not_called()
