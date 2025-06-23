@@ -19,7 +19,7 @@ class Renderer:
             autoescape=select_autoescape(['html', 'xml'])
         )
         
-    def render(self, ast: List[Node], config=None) -> str:
+    def render(self, ast: List[Node], config=None, template=None, title=None) -> str:
         """ASTをHTMLに変換"""
         # 見出しノードを収集
         headings = self._collect_headings(ast)
@@ -37,7 +37,8 @@ class Renderer:
             toc_html = self._generate_toc_html(headings)
         
         # テンプレートを使用してHTMLを生成
-        template = self.env.get_template("base.html.j2")
+        template_name = template or "base.html.j2"
+        template_obj = self.env.get_template(template_name)
         
         # 設定からCSS変数を取得
         css_vars = {}
@@ -46,8 +47,8 @@ class Renderer:
             css_vars = config.get_css_variables()
             theme_name = config.get_theme_name()
         
-        return template.render(
-            title="組版結果",
+        return template_obj.render(
+            title=title or "組版結果",
             body_content=body_content,
             css_vars=css_vars,
             theme_name=theme_name,
@@ -435,7 +436,7 @@ class Renderer:
         return '\n'.join(toc_lines)
 
 
-def render(ast: List[Node], config=None) -> str:
+def render(ast: List[Node], config=None, template=None, title=None) -> str:
     """ASTをHTMLに変換する"""
     renderer = Renderer()
-    return renderer.render(ast, config)
+    return renderer.render(ast, config, template=template, title=title)
