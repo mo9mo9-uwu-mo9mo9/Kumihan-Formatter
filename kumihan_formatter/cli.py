@@ -106,7 +106,7 @@ def copy_images(input_path, output_path, ast):
             console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
 
 
-def convert_file(input_file, output, config=None, show_stats=True, show_test_cases=False):
+def convert_file(input_file, output, config=None, show_stats=True, show_test_cases=False, template=None):
     """単一ファイルの変換処理"""
     input_path = Path(input_file)
     
@@ -148,7 +148,7 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
         task = progress.add_task("[yellow]HTMLを生成中", total=100)
         
         start_time = time.time()
-        html = render(ast, config)
+        html = render(ast, config, template=template)
         elapsed = time.time() - start_time
         
         if elapsed < 0.5:
@@ -243,7 +243,136 @@ def generate_sample(output_dir: str = "kumihan_sample"):
     return output_path
 
 
-@click.command()
+def convert_docs(docs_dir="docs", output_dir="docs_html"):
+    """ドキュメントファイルをHTMLに変換"""
+    docs_path = Path(docs_dir)
+    output_path = Path(output_dir)
+    
+    console.print(f"[cyan]📚 ドキュメント変換開始: {docs_path}[/cyan]")
+    
+    # 対象ファイルの定義
+    target_files = [
+        ("readme.txt", "README"),
+        ("quickstart.txt", "クイックスタートガイド"),
+    ]
+    
+    # ユーザーマニュアルがあれば追加
+    user_manual = docs_path / "user" / "USER_MANUAL.txt"
+    if user_manual.exists():
+        target_files.append((str(user_manual), "ユーザーマニュアル"))
+    
+    # 出力ディレクトリを作成
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    converted_files = []
+    
+    with Progress() as progress:
+        task = progress.add_task("[cyan]ドキュメント変換中", total=len(target_files))
+        
+        for i, (file_path, title) in enumerate(target_files):
+            file_path = docs_path / file_path if not Path(file_path).is_absolute() else Path(file_path)
+            
+            if file_path.exists():
+                console.print(f"[yellow]📄 変換中: {title}[/yellow]")
+                
+                # ファイルを読み込み
+                with open(file_path, "r", encoding="utf-8") as f:
+                    text = f.read()
+                
+                # パース
+                ast = parse(text)
+                
+                # ドキュメント用テンプレートでレンダリング
+                html = render(ast, template="docs.html.j2", title=title)
+                
+                # HTMLファイル名を決定
+                if file_path.name == "readme.txt":
+                    output_file = output_path / "readme.html"
+                elif file_path.name == "quickstart.txt":
+                    output_file = output_path / "quickstart.html"
+                elif "USER_MANUAL" in file_path.name:
+                    output_file = output_path / "user-manual.html"
+                else:
+                    output_file = output_path / f"{file_path.stem}.html"
+                
+                # HTMLファイルを保存
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(html)
+                
+                converted_files.append((title, output_file))
+                console.print(f"[green]  ✅ 完了: {output_file.name}[/green]")
+            else:
+                console.print(f"[yellow]  ⚠️  スキップ: {file_path} (ファイルが見つかりません)[/yellow]")
+            
+            progress.update(task, completed=i + 1)
+    
+    # 結果表示
+    console.print(f"\n[green]✅ ドキュメント変換完了![/green]")
+    console.print(f"[green]   📁 出力先: {output_path.absolute()}[/green]")
+    console.print(f"[green]   📄 変換済みファイル: {len(converted_files)}個[/green]")
+    
+    for title, file_path in converted_files:
+        console.print(f"[dim]   - {title}: {file_path.name}[/dim]")
+    
+    # インデックスファイルを作成
+    index_html = generate_docs_index(converted_files, output_path)
+    console.print(f"[green]   📑 インデックス: {index_html.name}[/green]")
+    
+    # ブラウザで開く
+    console.print(f"\n[cyan]🌐 ブラウザでドキュメントを表示中...[/cyan]")
+    webbrowser.open(f"file://{index_html.absolute()}")
+    
+    return output_path
+
+
+def generate_docs_index(converted_files, output_path):
+    """ドキュメント用インデックスページを生成"""
+    index_content = """;;;見出し1
+Kumihan-Formatter ドキュメント
+;;;
+
+このページでは、Kumihan-Formatterのすべてのドキュメントにアクセスできます。
+
+;;;見出し2
+📖 利用可能なドキュメント
+;;;
+
+"""
+    
+    for title, file_path in converted_files:
+        # HTMLファイルへのリンクを追加（実際のリンクは手動で修正が必要）
+        index_content += f";;;枠線\n**{title}**\n{file_path.name}\n;;;\n\n"
+    
+    index_content += """;;;見出し2
+🔗 その他のリソース
+;;;
+
+- GitHub リポジトリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
+- Issues（バグ報告・要望）: GitHub Issues
+- Discussions（質問・相談）: GitHub Discussions
+
+;;;太字+ハイライト color=#e3f2fd
+すべてのドキュメントはKumihan-Formatterを使って生成されています
+;;;"""
+    
+    # インデックスファイルをHTMLに変換
+    ast = parse(index_content)
+    html = render(ast, template="docs.html.j2", title="ドキュメント一覧")
+    
+    index_file = output_path / "index.html"
+    with open(index_file, "w", encoding="utf-8") as f:
+        f.write(html)
+    
+    return index_file
+
+
+@click.group()
+def cli():
+    """Kumihan-Formatter - 美しい組版を、誰でも簡単に。"""
+    pass
+
+
+@cli.command()
 @click.argument("input_file", type=click.Path(exists=True), required=False)
 @click.option("-o", "--output", default="dist", help="出力ディレクトリ")
 @click.option("--no-preview", is_flag=True, help="HTML生成後にブラウザを開かない")
@@ -256,7 +385,7 @@ def generate_sample(output_dir: str = "kumihan_sample"):
 @click.option("--show-test-cases", is_flag=True, help="テストケース名を表示（テスト用ファイル変換時）")
 @click.option("--generate-sample", "generate_sample_flag", is_flag=True, help="機能ショーケースサンプルを生成")
 @click.option("--sample-output", default="kumihan_sample", help="サンプル出力ディレクトリ")
-def main(input_file, output, no_preview, watch, config, generate_test, test_output, pattern_count, double_click_mode, show_test_cases, generate_sample_flag, sample_output):
+def convert(input_file, output, no_preview, watch, config, generate_test, test_output, pattern_count, double_click_mode, show_test_cases, generate_sample_flag, sample_output):
     """テキストファイルをHTMLに変換します"""
     
     try:
@@ -326,7 +455,7 @@ def main(input_file, output, no_preview, watch, config, generate_test, test_outp
                 if config:
                     config_obj.validate_config()
                 
-                test_output_file = convert_file(output_file, output or "dist", config_obj, show_stats=False, show_test_cases=show_test_cases)
+                test_output_file = convert_file(output_file, output or "dist", config_obj, show_stats=False, show_test_cases=show_test_cases, template=None)
                 
                 if double_click_mode:
                     console.print(f"[green]✅ HTML変換成功:[/green] {test_output_file}")
@@ -372,7 +501,7 @@ def main(input_file, output, no_preview, watch, config, generate_test, test_outp
         console.print(f"[green]📖 読み込み中:[/green] {input_path}")
         
         # 初回変換
-        output_file = convert_file(input_file, output, config_obj, show_test_cases=show_test_cases)
+        output_file = convert_file(input_file, output, config_obj, show_test_cases=show_test_cases, template=None)
         
         # ブラウザでプレビュー
         if not no_preview:
@@ -411,7 +540,7 @@ def main(input_file, output, no_preview, watch, config, generate_test, test_outp
                         
                         try:
                             console.print(f"\n[blue]🔄 ファイルが変更されました:[/blue] {modified_path.name}")
-                            convert_file(self.input_file, self.output, self.config, show_stats=False, show_test_cases=self.show_test_cases)
+                            convert_file(self.input_file, self.output, self.config, show_stats=False, show_test_cases=self.show_test_cases, template=None)
                             console.print(f"[green]🔄 自動更新完了:[/green] {time.strftime('%H:%M:%S')}")
                         except Exception as e:
                             console.print(f"[red]❌ 自動更新エラー:[/red] {e}")
@@ -449,5 +578,25 @@ def main(input_file, output, no_preview, watch, config, generate_test, test_outp
         sys.exit(1)
 
 
+@cli.command()
+@click.option("-o", "--output", default="docs_html", help="出力ディレクトリ")
+@click.option("--docs-dir", default="docs", help="ドキュメントディレクトリ")
+@click.option("--no-preview", is_flag=True, help="HTML生成後にブラウザを開かない")
+def docs(output, docs_dir, no_preview):
+    """ドキュメントをHTMLに変換します"""
+    try:
+        output_path = convert_docs(docs_dir, output)
+        
+        if not no_preview and output_path:
+            index_file = output_path / "index.html"
+            if index_file.exists():
+                console.print(f"[cyan]🌐 ブラウザでドキュメントを表示中...[/cyan]")
+                webbrowser.open(f"file://{index_file.absolute()}")
+        
+    except Exception as e:
+        console.print(f"[red]❌ ドキュメント変換エラー:[/red] {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    main()
+    cli()

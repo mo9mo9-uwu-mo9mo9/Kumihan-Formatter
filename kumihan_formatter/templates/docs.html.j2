@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Kumihan-Formatter Documentation</title>
+    <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基本スタイル（ドキュメント専用） */
+        body {
+            font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        /* ヘッダー（ドキュメント用） */
+        .doc-header {
+            text-align: center;
+            margin-bottom: 2em;
+            padding-bottom: 1em;
+            border-bottom: 3px solid #4a90e2;
+        }
+
+        .doc-header h1 {
+            color: #4a90e2;
+            font-size: 2.2em;
+            margin-bottom: 0.3em;
+        }
+
+        .doc-subtitle {
+            color: #666;
+            font-size: 1.1em;
+            font-weight: normal;
+        }
+
+        /* 段落 */
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+        }
+
+        /* 見出し（ドキュメント用スタイル） */
+        h1, h2, h3, h4, h5 {
+            margin-top: 2em;
+            margin-bottom: 1em;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #4a90e2;
+            border-bottom: 3px solid #4a90e2;
+            padding-bottom: 0.3em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: #5a9bd4;
+            border-bottom: 2px solid #5a9bd4;
+            padding-bottom: 0.2em;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            color: #6bb6ff;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            color: #7cc7ff;
+        }
+
+        h5 {
+            font-size: 1em;
+            color: #8dd8ff;
+        }
+
+        /* リスト */
+        ul, ol {
+            margin-bottom: 1.5em;
+            padding-left: 2em;
+            list-style-position: outside;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+            position: relative;
+        }
+
+        /* インライン要素 */
+        strong {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        em {
+            font-style: italic;
+        }
+
+        /* 枠線（ドキュメント用スタイル） */
+        .box {
+            border: 2px solid #4a90e2;
+            border-left: 5px solid #4a90e2;
+            padding: 1.2em;
+            margin: 1.5em 0;
+            border-radius: 8px;
+            background-color: #f8fbff;
+        }
+
+        /* ハイライト（ドキュメント用スタイル） */
+        .highlight {
+            padding: 1.2em;
+            margin: 1.5em 0;
+            border-radius: 8px;
+            border-left: 5px solid #ffa726;
+        }
+
+        /* 特別なハイライト色 */
+        .highlight[style*="background-color:#d4edda"] {
+            border-left-color: #28a745;
+        }
+
+        .highlight[style*="background-color:#f8d7da"] {
+            border-left-color: #dc3545;
+        }
+
+        .highlight[style*="background-color:#fff3cd"] {
+            border-left-color: #ffc107;
+        }
+
+        .highlight[style*="background-color:#e3f2fd"] {
+            border-left-color: #2196f3;
+        }
+
+        /* ネストしたブロック要素の調整 */
+        .box .highlight {
+            margin: 0.8em 0;
+        }
+
+        .highlight .box {
+            margin: 0.8em 0;
+        }
+
+        /* リスト項目内のブロック要素 */
+        li .box {
+            margin: 0.8em -1.5em 0.8em -1.5em;
+            padding-left: 1.8em;
+            padding-right: 1.2em;
+        }
+
+        li .highlight {
+            margin: 0.8em -1.5em 0.8em -1.5em;
+            padding-left: 1.8em;
+            padding-right: 1.2em;
+        }
+
+        /* リスト項目内の見出し */
+        li h1, li h2, li h3, li h4, li h5 {
+            margin: 0.5em 0;
+            padding: 0;
+        }
+
+        li h1 {
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 0.2em;
+        }
+
+        li h2 {
+            border-bottom: 1px solid #5a9bd4;
+            padding-bottom: 0.1em;
+        }
+
+        /* マーカー位置調整 */
+        ul {
+            list-style-type: disc;
+            list-style-position: outside;
+        }
+        
+        ol {
+            list-style-type: decimal;
+            list-style-position: outside;
+        }
+
+        /* フッター（ドキュメント用） */
+        .doc-footer {
+            margin-top: 3em;
+            padding-top: 2em;
+            border-top: 2px solid #eee;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .doc-footer .logo {
+            font-weight: bold;
+            color: #4a90e2;
+            font-size: 1.1em;
+        }
+
+        /* 目次スタイル（ドキュメント用） */
+        {% if has_toc %}
+        body {
+            padding: 0;
+        }
+        
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .toc-sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+        
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        .toc-toggle:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 8px;
+            color: white;
+        }
+        
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        .toc-list li {
+            margin: 5px 0;
+        }
+        
+        .toc-list a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .toc-list a:hover {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .toc-list a.active {
+            background-color: rgba(255,255,255,0.3);
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+        {% endif %}
+
+        /* レスポンシブ対応 */
+        @media (max-width: 1200px) {
+            {% if has_toc %}
+            .layout-wrapper {
+                grid-template-columns: 250px 1fr;
+            }
+            {% endif %}
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            {% if has_toc %}
+            .layout-wrapper {
+                display: block;
+            }
+            
+            .toc-sidebar {
+                position: relative;
+                margin-bottom: 20px;
+                max-height: none;
+            }
+            {% endif %}
+        }
+
+        /* 印刷用スタイル */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .doc-header {
+                border-bottom: 2px solid #333;
+            }
+
+            h1, h2 {
+                page-break-after: avoid;
+                color: #333 !important;
+                border-color: #333 !important;
+            }
+
+            p, ul {
+                page-break-inside: avoid;
+            }
+
+            {% if has_toc %}
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .layout-wrapper {
+                display: block;
+            }
+            {% endif %}
+
+            .doc-footer {
+                border-top: 1px solid #333;
+            }
+        }
+    </style>
+    {% if has_toc %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // トグルボタンの機能
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+            
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('docs-toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+            
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+                
+                // 状態を保存
+                localStorage.setItem('docs-toc-collapsed', isCollapsed);
+                
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+            
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            
+            function updateActiveLink() {
+                let currentHeading = null;
+                
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 150) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+            
+            // 初期状態を設定
+            updateActiveLink();
+        });
+    </script>
+    {% endif %}
+</head>
+<body>
+    {% if has_toc %}
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>📖 {{ title }}</h3>
+                {{ toc_html | safe }}
+            </nav>
+        </aside>
+        
+        <!-- メインコンテンツ -->
+        <main class="container">
+            <header class="doc-header">
+                <h1>{{ title }}</h1>
+                <p class="doc-subtitle">Kumihan-Formatter Documentation</p>
+            </header>
+            
+            {{ body_content | safe }}
+            
+            <footer class="doc-footer">
+                <p class="logo">Kumihan-Formatter</p>
+                <p>美しい組版を、誰でも簡単に。</p>
+            </footer>
+        </main>
+    </div>
+    {% else %}
+    <div class="container">
+        <header class="doc-header">
+            <h1>{{ title }}</h1>
+            <p class="doc-subtitle">Kumihan-Formatter Documentation</p>
+        </header>
+        
+        {{ body_content | safe }}
+        
+        <footer class="doc-footer">
+            <p class="logo">Kumihan-Formatter</p>
+            <p>美しい組版を、誰でも簡単に。</p>
+        </footer>
+    </div>
+    {% endif %}
+</body>
+</html>
