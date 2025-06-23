@@ -2,167 +2,58 @@ name: Monthly Documentation Review
 
 on:
   schedule:
-    # Every first Monday of the month at 9:00 JST (00:00 UTC)
     - cron: '0 0 * * MON'
-  workflow_dispatch: # Manual execution possible
+  workflow_dispatch:
 
 jobs:
   create-review-issue:
-    name: Create Monthly Documentation Review Issue
+    name: Create Monthly Review Issue
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # Get full history
     
-    - name: Check if first Monday of month
+    - name: Check if first Monday
       id: check_date
       run: |
-        # Get today's date
         TODAY=$(date +%d)
-        
-        # Check if it's the first Monday (between 1-7 days)
         if [ "$TODAY" -le 7 ]; then
           echo "is_first_monday=true" >> $GITHUB_OUTPUT
-          echo "Today is the first Monday of the month"
         else
           echo "is_first_monday=false" >> $GITHUB_OUTPUT
-          echo "Today is not the first Monday of the month"
         fi
     
-    - name: Get recent commits
-      if: steps.check_date.outputs.is_first_monday == 'true'
-      id: recent_commits
-      run: |
-        # Get commits from the past month
-        MONTH_AGO=$(date -d '1 month ago' +%Y-%m-%d)
-        echo "Getting commits since $MONTH_AGO"
-        
-        # Filter feature addition and fix commits
-        FEATURE_COMMITS=$(git log --since="$MONTH_AGO" --pretty=format:"- %s (%h)" --grep="feat:" --grep="fix:" --grep="docs:" | head -20)
-        
-        # File change statistics
-        CHANGED_FILES=$(git diff --name-only --since="$MONTH_AGO" HEAD | grep -E "\.(py|md|txt|toml)$" | sort | uniq)
-        
-        # Save results to file (avoid GitHub Actions output limit)
-        echo "Recent feature/fix commits:" > /tmp/commits.txt
-        echo "$FEATURE_COMMITS" >> /tmp/commits.txt
-        echo "" >> /tmp/commits.txt
-        echo "Changed files:" >> /tmp/commits.txt
-        echo "$CHANGED_FILES" >> /tmp/commits.txt
-        
-        echo "commits_file=/tmp/commits.txt" >> $GITHUB_OUTPUT
-    
-    - name: Check documentation freshness
-      if: steps.check_date.outputs.is_first_monday == 'true'
-      id: doc_check
-      run: |
-        echo "Checking documentation freshness..."
-        
-        # Last update date of each document
-        README_DATE=$(git log -1 --format="%ad" --date=short README.md)
-        SPEC_DATE=$(git log -1 --format="%ad" --date=short SPEC.md)
-        CLAUDE_DATE=$(git log -1 --format="%ad" --date=short CLAUDE.md)
-        
-        # Version information consistency check
-        PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-        INIT_VERSION=$(grep '__version__ = ' kumihan_formatter/__init__.py | sed 's/__version__ = "\(.*\)"/\1/')
-        README_VERSION=$(grep -o 'version-[0-9.]*-blue' README.md | sed 's/version-\(.*\)-blue/\1/')
-        
-        # Save check results to file
-        echo "Documentation Status:" > /tmp/doc_status.txt
-        echo "- README.md: Last updated $README_DATE" >> /tmp/doc_status.txt
-        echo "- SPEC.md: Last updated $SPEC_DATE" >> /tmp/doc_status.txt
-        echo "- CLAUDE.md: Last updated $CLAUDE_DATE" >> /tmp/doc_status.txt
-        echo "" >> /tmp/doc_status.txt
-        echo "Version Consistency:" >> /tmp/doc_status.txt
-        
-        if [ "$PYPROJECT_VERSION" = "$INIT_VERSION" ] && [ "$PYPROJECT_VERSION" = "$README_VERSION" ]; then
-          echo "✅ All versions are consistent: $PYPROJECT_VERSION" >> /tmp/doc_status.txt
-        else
-          echo "❌ Version inconsistency detected:" >> /tmp/doc_status.txt
-          echo "  - pyproject.toml: $PYPROJECT_VERSION" >> /tmp/doc_status.txt
-          echo "  - __init__.py: $INIT_VERSION" >> /tmp/doc_status.txt
-          echo "  - README.md: $README_VERSION" >> /tmp/doc_status.txt
-        fi
-        
-        echo "doc_status_file=/tmp/doc_status.txt" >> $GITHUB_OUTPUT
-    
-    - name: Create issue
+    - name: Create documentation review issue
       if: steps.check_date.outputs.is_first_monday == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Get current year and month
         YEAR_MONTH=$(date +"%Y-%m")
         
-        # Create issue body
-        cat > /tmp/issue_body.md << 'EOF'
-# Monthly Documentation Review - REPLACE_YEAR_MONTH
+        gh issue create \
+          --title "Monthly Documentation Review - $YEAR_MONTH" \
+          --body "## Monthly Documentation Review
 
 This issue was automatically generated for periodic documentation quality checks.
 
-## Checklist for This Month
+### Review Checklist
 
-### 1. Documentation Freshness Check
-EOF
-        
-        # Add documentation status
-        echo '```' >> /tmp/issue_body.md
-        cat ${{ steps.doc_check.outputs.doc_status_file }} >> /tmp/issue_body.md
-        echo '```' >> /tmp/issue_body.md
-        
-        cat >> /tmp/issue_body.md << 'EOF'
+- [ ] Check if new features are reflected in README.md
+- [ ] Check if specification changes are reflected in SPEC.md
+- [ ] Check if roadmap matches reality (CLAUDE.md)
+- [ ] Check if sample files reflect the latest features
+- [ ] Check version information consistency
+- [ ] Check external link validity
 
-### 2. Recent Changes Review
-
-```
-EOF
-        
-        # Add recent commits
-        cat ${{ steps.recent_commits.outputs.commits_file }} >> /tmp/issue_body.md
-        
-        cat >> /tmp/issue_body.md << 'EOF'
-```
-
-### 3. Review Points
-
-- [ ] Are new features reflected in README.md?
-- [ ] Are specification changes reflected in SPEC.md?
-- [ ] Does the roadmap match reality (CLAUDE.md)?
-- [ ] Do sample files reflect the latest features?
-- [ ] Version information consistency
-- [ ] External link validity
-
-### 4. Recommended Actions
-
-Please consider the following:
+### Recommended Actions
 
 - Update outdated information
 - Add usage examples for new features
 - Improve documentation structure
 - Enhance usability
 
-## Automation Improvements
-
-If you notice any issues during this monthly review, consider:
-
-- Improving checklists
-- Adding automatic checks
-- Reviewing documentation management processes
-
 ---
 
-This issue was automatically generated by the [monthly-docs-review.yml](/.github/workflows/monthly-docs-review.yml) workflow.
-EOF
-        
-        # Replace year-month placeholder
-        sed -i "s/REPLACE_YEAR_MONTH/$YEAR_MONTH/g" /tmp/issue_body.md
-        
-        # Create issue
-        gh issue create \
-          --title "月次ドキュメントレビュー - $YEAR_MONTH" \
-          --body-file /tmp/issue_body.md \
+This issue was automatically generated by the monthly-docs-review workflow." \
           --label "ドキュメント" \
           --label "優先度:中" \
           --assignee mo9mo9-uwu-mo9mo9
