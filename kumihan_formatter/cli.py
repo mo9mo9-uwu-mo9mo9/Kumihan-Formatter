@@ -215,16 +215,16 @@ def generate_sample(output_dir: str = "kumihan_sample"):
         with open(image_path, "wb") as f:
             f.write(image_data)
     
-    # HTMLに変換
+    # HTMLに変換（サンプルではソーストグル機能をデフォルトで有効化）
     with Progress() as progress:
         # パース
         task = progress.add_task("[cyan]テキストを解析中", total=100)
         ast = parse(SHOWCASE_SAMPLE)
         progress.update(task, completed=100)
         
-        # レンダリング
+        # レンダリング（ソーストグル機能付き）
         task = progress.add_task("[cyan]HTMLを生成中", total=100)
-        html = render(ast)
+        html = render(ast, template="base-with-source-toggle.html.j2", source_text=SHOWCASE_SAMPLE, source_filename="showcase.txt")
         progress.update(task, completed=100)
     
     # HTMLファイルを保存
@@ -505,9 +505,17 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         input_path = Path(input_file)
         console.print(f"[green]📖 読み込み中:[/green] {input_path}")
         
+        # ソーストグル機能の確認（--with-source-toggleが指定されていない場合）
+        use_source_toggle = with_source_toggle
+        if not with_source_toggle:
+            console.print("\n[cyan]💡 記法と結果を並べて表示する機能があります[/cyan]")
+            console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
+            response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
+            use_source_toggle = response.lower() in ['y', 'yes', '']
+        
         # 初回変換
-        template_name = "base-with-source-toggle.html.j2" if with_source_toggle else None
-        output_file = convert_file(input_file, output, config_obj, show_test_cases=show_test_cases, template=template_name, include_source=with_source_toggle)
+        template_name = "base-with-source-toggle.html.j2" if use_source_toggle else None
+        output_file = convert_file(input_file, output, config_obj, show_test_cases=show_test_cases, template=template_name, include_source=use_source_toggle)
         
         # ブラウザでプレビュー
         if not no_preview:
@@ -557,7 +565,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
             console.print("[dim]   ファイルを編集すると自動的に再生成されます[/dim]")
             console.print("[dim]   停止するには Ctrl+C を押してください[/dim]")
             
-            event_handler = FileChangeHandler(input_file, output, config_obj, show_test_cases, template_name, with_source_toggle)
+            event_handler = FileChangeHandler(input_file, output, config_obj, show_test_cases, template_name, use_source_toggle)
             observer = Observer()
             observer.schedule(event_handler, path=str(input_path.parent), recursive=False)
             observer.start()
