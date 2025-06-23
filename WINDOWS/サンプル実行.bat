@@ -92,8 +92,12 @@ rem Check if output directory exists and is not empty
 if exist "%OUTPUT_BASE%" (
     dir /b "%OUTPUT_BASE%" | findstr . > nul
     if not errorlevel 1 (
-        echo [WARNING] Output directory already exists and contains files
-        echo    Existing files will be overwritten: %OUTPUT_BASE%
+        echo [WARNING] Output directory contains files
+        echo    The following files will be overwritten:
+        echo.
+        for /f "delims=" %%i in ('dir /b "%OUTPUT_BASE%"') do (
+            echo      - %%i
+        )
         echo.
         set /p confirm="Continue? [Y/N]: "
         if /i not "!confirm!"=="y" (
