@@ -92,11 +92,11 @@ echo -e "${CYAN}🚀 サンプル変換を開始します...${NC}"
 echo ""
 
 # サンプル1: basic
-echo -e "${BLUE}📝 [1/3] 基本サンプル (sample.txt)${NC}"
+echo -e "${BLUE}📝 [1/3] 基本サンプル (02-basic.txt)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/basic"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/input/sample.txt" -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/02-basic.txt" -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}✅ basic サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}❌ エラー: basic サンプルの変換に失敗${NC}"
@@ -105,11 +105,11 @@ fi
 echo ""
 
 # サンプル2: advanced
-echo -e "${BLUE}📝 [2/3] 高度なサンプル (comprehensive-sample.txt)${NC}"
+echo -e "${BLUE}📝 [2/3] 高度なサンプル (03-comprehensive.txt)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/advanced"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/input/comprehensive-sample.txt" -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/03-comprehensive.txt" -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}✅ advanced サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}❌ エラー: advanced サンプルの変換に失敗${NC}"
