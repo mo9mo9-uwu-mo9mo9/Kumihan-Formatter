@@ -1,0 +1,168 @@
+name: Monthly Documentation Review
+
+on:
+  schedule:
+    # 毎月第1月曜日の9:00 JST (00:00 UTC)
+    - cron: '0 0 * * MON'
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  create-review-issue:
+    name: Create Monthly Documentation Review Issue
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # 全履歴を取得
+    
+    - name: Check if first Monday of month
+      id: check_date
+      run: |
+        # 今日の日付を取得
+        TODAY=$(date +%d)
+        
+        # 第1月曜日かチェック（1-7日の間）
+        if [ "$TODAY" -le 7 ]; then
+          echo "is_first_monday=true" >> $GITHUB_OUTPUT
+          echo "Today is the first Monday of the month"
+        else
+          echo "is_first_monday=false" >> $GITHUB_OUTPUT
+          echo "Today is not the first Monday of the month"
+        fi
+    
+    - name: Get recent commits
+      if: steps.check_date.outputs.is_first_monday == 'true'
+      id: recent_commits
+      run: |
+        # 過去1ヶ月のコミットを取得
+        MONTH_AGO=$(date -d '1 month ago' +%Y-%m-%d)
+        echo "Getting commits since $MONTH_AGO"
+        
+        # 機能追加・修正のコミットをフィルタ
+        FEATURE_COMMITS=$(git log --since="$MONTH_AGO" --pretty=format:"- %s (%h)" --grep="feat:" --grep="fix:" --grep="docs:" | head -20)
+        
+        # ファイル変更の統計
+        CHANGED_FILES=$(git diff --name-only --since="$MONTH_AGO" HEAD | grep -E "\.(py|md|txt|toml)$" | sort | uniq)
+        
+        # 結果をファイルに保存（GitHub Actionsの出力制限回避）
+        echo "Recent feature/fix commits:" > /tmp/commits.txt
+        echo "$FEATURE_COMMITS" >> /tmp/commits.txt
+        echo "" >> /tmp/commits.txt
+        echo "Changed files:" >> /tmp/commits.txt
+        echo "$CHANGED_FILES" >> /tmp/commits.txt
+        
+        echo "commits_file=/tmp/commits.txt" >> $GITHUB_OUTPUT
+    
+    - name: Check documentation freshness
+      if: steps.check_date.outputs.is_first_monday == 'true'
+      id: doc_check
+      run: |
+        echo "Checking documentation freshness..."
+        
+        # 各ドキュメントの最終更新日
+        README_DATE=$(git log -1 --format="%ad" --date=short README.md)
+        SPEC_DATE=$(git log -1 --format="%ad" --date=short SPEC.md)
+        CLAUDE_DATE=$(git log -1 --format="%ad" --date=short CLAUDE.md)
+        
+        # バージョン情報の整合性チェック
+        PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        INIT_VERSION=$(grep '__version__ = ' kumihan_formatter/__init__.py | sed 's/__version__ = "\(.*\)"/\1/')
+        README_VERSION=$(grep -o 'version-[0-9.]*-blue' README.md | sed 's/version-\(.*\)-blue/\1/')
+        
+        # チェック結果をファイルに保存
+        echo "Documentation Status:" > /tmp/doc_status.txt
+        echo "- README.md: Last updated $README_DATE" >> /tmp/doc_status.txt
+        echo "- SPEC.md: Last updated $SPEC_DATE" >> /tmp/doc_status.txt
+        echo "- CLAUDE.md: Last updated $CLAUDE_DATE" >> /tmp/doc_status.txt
+        echo "" >> /tmp/doc_status.txt
+        echo "Version Consistency:" >> /tmp/doc_status.txt
+        
+        if [ "$PYPROJECT_VERSION" = "$INIT_VERSION" ] && [ "$PYPROJECT_VERSION" = "$README_VERSION" ]; then
+          echo "✅ All versions are consistent: $PYPROJECT_VERSION" >> /tmp/doc_status.txt
+        else
+          echo "❌ Version inconsistency detected:" >> /tmp/doc_status.txt
+          echo "  - pyproject.toml: $PYPROJECT_VERSION" >> /tmp/doc_status.txt
+          echo "  - __init__.py: $INIT_VERSION" >> /tmp/doc_status.txt
+          echo "  - README.md: $README_VERSION" >> /tmp/doc_status.txt
+        fi
+        
+        echo "doc_status_file=/tmp/doc_status.txt" >> $GITHUB_OUTPUT
+    
+    - name: Create issue
+      if: steps.check_date.outputs.is_first_monday == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # 現在の年月を取得
+        YEAR_MONTH=$(date +%Y年%m月)
+        
+        # Issue本文を作成
+        cat > /tmp/issue_body.md << 'EOF'
+# 月次ドキュメントレビュー - REPLACE_YEAR_MONTH
+        
+このIssueは定期的なドキュメント品質チェックのために自動生成されました。
+        
+## 📋 今月のチェック項目
+        
+### 1. ドキュメントの最新性確認
+EOF
+        
+        # ドキュメント状況を追加
+        echo '```' >> /tmp/issue_body.md
+        cat ${{ steps.doc_check.outputs.doc_status_file }} >> /tmp/issue_body.md
+        echo '```' >> /tmp/issue_body.md
+        
+        cat >> /tmp/issue_body.md << 'EOF'
+        
+### 2. 最近の変更内容レビュー
+        
+```
+EOF
+        
+        # 最近のコミットを追加
+        cat ${{ steps.recent_commits.outputs.commits_file }} >> /tmp/issue_body.md
+        
+        cat >> /tmp/issue_body.md << 'EOF'
+```
+        
+### 3. 確認すべきポイント
+        
+- [ ] 新機能がREADME.mdに反映されているか
+- [ ] 仕様変更がSPEC.mdに反映されているか
+- [ ] ロードマップが実態と合っているか（CLAUDE.md）
+- [ ] サンプルファイルが最新の機能を反映しているか
+- [ ] バージョン情報の整合性
+- [ ] 外部リンクの有効性
+        
+### 4. 推奨アクション
+        
+以下を検討してください：
+        
+- 古くなった情報の更新
+- 新機能の使用例追加
+- ドキュメント構造の改善
+- ユーザビリティの向上
+        
+## 🔧 自動化の改善
+        
+この月次レビューで気づいた点があれば、以下を検討：
+        
+- チェックリストの改善
+- 自動チェックの追加
+- ドキュメント管理プロセスの見直し
+        
+---
+        
+このIssueは [monthly-docs-review.yml](/.github/workflows/monthly-docs-review.yml) ワークフローによって自動生成されました。
+EOF
+        
+        # 年月を置換
+        sed -i "s/REPLACE_YEAR_MONTH/$YEAR_MONTH/g" /tmp/issue_body.md
+        
+        # Issueを作成
+        gh issue create \
+          --title "月次ドキュメントレビュー - $YEAR_MONTH" \
+          --body-file /tmp/issue_body.md \
+          --label "ドキュメント" \
+          --label "優先度:中" \
+          --assignee mo9mo9-uwu-mo9mo9
