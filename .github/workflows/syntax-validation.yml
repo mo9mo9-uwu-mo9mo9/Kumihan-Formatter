@@ -1,0 +1,36 @@
+name: Syntax Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'examples/**/*.txt'
+      - 'kumihan_formatter/sample_content.py'
+  workflow_dispatch:
+
+jobs:
+  validate-syntax:
+    name: Validate Syntax
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Validate example files
+      run: |
+        echo "Validating syntax of example files..."
+        python dev/tools/syntax_validator.py examples/*.txt
+    
+    - name: Validate sample content
+      run: |
+        echo "Validating SHOWCASE_SAMPLE syntax..."
+        python dev/tools/sample_content_validator.py

@@ -1,0 +1,93 @@
+name: Syntax Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'examples/**/*.txt'
+      - 'kumihan_formatter/sample_content.py'
+      - 'dev/tools/syntax_validator.py'
+      - 'dev/tests/test_syntax_validation.py'
+  push:
+    branches: [ main ]
+    paths:
+      - 'examples/**/*.txt'
+      - 'kumihan_formatter/sample_content.py'
+
+jobs:
+  syntax-validation:
+    name: Syntax Validation Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # プロジェクト自体をインストール（sample_content モジュール用）
+        pip install -e .
+    
+    - name: Run syntax validation tests
+      run: |
+        echo "🔍 記法検証テストを実行中..."
+        python dev/tests/simple_syntax_test.py
+    
+    - name: Validate example files directly
+      run: |
+        echo "📁 サンプルファイルの記法チェック..."
+        python dev/tools/syntax_validator.py examples/*.txt
+    
+    - name: Check for syntax errors in sample content
+      run: |
+        python dev/tools/sample_content_validator.py
+
+  syntax-quality-check:
+    name: Advanced Syntax Quality Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Check for new syntax patterns
+      run: |
+        echo "🔍 新しい記法パターンをチェック中..."
+        
+        # 変更されたテキストファイルを取得
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\\.txt$' || true)
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "✅ テキストファイルの変更なし"
+          exit 0
+        fi
+        
+        echo "変更されたファイル: $CHANGED_FILES"
+        
+        # 各ファイルの記法をチェック
+        for file in $CHANGED_FILES; do
+          if [ -f "$file" ]; then
+            echo "📝 $file をチェック中..."
+            python dev/tools/syntax_validator.py "$file"
+          fi
+        done
+    
+    - name: Report syntax complexity
+      run: |
+        echo "📊 記法の複雑度をレポート..."
+        python dev/tools/complexity_analyzer.py
