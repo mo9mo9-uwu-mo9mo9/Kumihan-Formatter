@@ -1,6 +1,8 @@
 """サンプルコンテンツの定義"""
 
-SHOWCASE_SAMPLE = """;;;見出し1
+SHOWCASE_SAMPLE = """;;;目次;;;
+
+;;;見出し1
 第1章：Kumihan-Formatterでできること
 ;;;
 

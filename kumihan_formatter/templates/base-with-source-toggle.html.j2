@@ -120,6 +120,10 @@
             display: block;
         }
         
+        .source-content.hidden {
+            display: none;
+        }
+        
         .source-content pre {
             margin: 0;
             padding: 20px;
@@ -552,42 +556,56 @@
     <script>
         // GitHub風タブ切り替え機能
         function showPreview() {
-            // プレビューを表示、他を非表示
-            document.getElementById('preview-content').classList.remove('hidden');
-            document.getElementById('source-content').classList.remove('active');
-            document.getElementById('html-content').classList.remove('active');
+            // 全てのコンテンツを隠す
+            hideAllContent();
             
-            // フローティングボタンの状態を切り替え
+            // プレビューを表示
+            document.getElementById('preview-content').classList.remove('hidden');
+            
+            // ボタン状態をリセット
+            resetButtonStates();
             document.getElementById('preview-btn').classList.add('active');
-            document.getElementById('source-btn').classList.remove('active');
-            document.getElementById('html-btn').classList.remove('active');
         }
         
         function showSource() {
-            // ソースを表示、他を非表示
-            document.getElementById('preview-content').classList.add('hidden');
-            document.getElementById('source-content').classList.add('active');
-            document.getElementById('html-content').classList.remove('active');
+            // 全てのコンテンツを隠す
+            hideAllContent();
             
-            // フローティングボタンの状態を切り替え
-            document.getElementById('preview-btn').classList.remove('active');
+            // ソースを表示
+            document.getElementById('source-content').classList.add('active');
+            
+            // ボタン状態をリセット
+            resetButtonStates();
             document.getElementById('source-btn').classList.add('active');
-            document.getElementById('html-btn').classList.remove('active');
         }
         
         function showHTML() {
-            // HTMLを表示、他を非表示
-            document.getElementById('preview-content').classList.add('hidden');
-            document.getElementById('source-content').classList.remove('active');
+            // 全てのコンテンツを隠す
+            hideAllContent();
+            
+            // HTMLを表示
             document.getElementById('html-content').classList.add('active');
             
-            // フローティングボタンの状態を切り替え
-            document.getElementById('preview-btn').classList.remove('active');
-            document.getElementById('source-btn').classList.remove('active');
+            // ボタン状態をリセット
+            resetButtonStates();
             document.getElementById('html-btn').classList.add('active');
             
             // HTMLシンタックスハイライトを適用
             applyHTMLSyntaxHighlighting();
+        }
+        
+        // ヘルパー関数：全てのコンテンツを隠す
+        function hideAllContent() {
+            document.getElementById('preview-content').classList.add('hidden');
+            document.getElementById('source-content').classList.remove('active');
+            document.getElementById('html-content').classList.remove('active');
+        }
+        
+        // ヘルパー関数：全てのボタン状態をリセット
+        function resetButtonStates() {
+            document.getElementById('preview-btn').classList.remove('active');
+            document.getElementById('source-btn').classList.remove('active');
+            document.getElementById('html-btn').classList.remove('active');
         }
         
         // シンタックスハイライト（シンプル版）
@@ -611,9 +629,14 @@
             const htmlContent = document.querySelector('#html-code');
             if (!htmlContent) return;
             
+            // 既にハイライト済みの場合はスキップ
+            if (htmlContent.getAttribute('data-highlighted') === 'true') {
+                return;
+            }
+            
             let text = htmlContent.textContent;
             
-            // HTMLタグのハイライト
+            // HTMLタグのハイライト（エスケープされたHTML用）
             text = text.replace(/&lt;(\/?[\w\d-]+)([^&]*?)&gt;/g, function(match, tagName, attributes) {
                 const highlightedTag = `<span style="color: #d73a49; font-weight: bold;">&lt;${tagName}</span>`;
                 const highlightedAttrs = attributes.replace(/(\w+)=&quot;([^&]*?)&quot;/g, 
@@ -621,11 +644,11 @@
                 return highlightedTag + highlightedAttrs + '<span style="color: #d73a49; font-weight: bold;">&gt;</span>';
             });
             
-            // 改行とインデントを保持
-            text = text.replace(/\n/g, '<br>');
-            text = text.replace(/  /g, '&nbsp;&nbsp;');
+            // テキストコンテンツをハイライト
+            text = text.replace(/&gt;([^&<]+?)&lt;/g, '&gt;<span style="color: #24292e;">$1</span>&lt;');
             
             htmlContent.innerHTML = text;
+            htmlContent.setAttribute('data-highlighted', 'true');
         }
         
         // HTMLコピー機能
