@@ -150,9 +150,9 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
         start_time = time.time()
         # ソーステキストを含める場合
         if include_source:
-            html = render(ast, config, template=template, source_text=text, source_filename=input_path.name)
+            html = render(ast, config, template=template, title=input_path.stem, source_text=text, source_filename=input_path.name)
         else:
-            html = render(ast, config, template=template)
+            html = render(ast, config, template=template, title=input_path.stem)
         elapsed = time.time() - start_time
         
         if elapsed < 0.5:
@@ -223,16 +223,16 @@ def generate_sample(output_dir: str = "kumihan_sample"):
         with open(image_path, "wb") as f:
             f.write(image_data)
     
-    # HTMLに変換（デフォルトは通常のテンプレート）
+    # HTMLに変換（トグル機能付きテンプレートを使用）
     with Progress() as progress:
         # パース
         task = progress.add_task("[cyan]テキストを解析中", total=100)
         ast = parse(SHOWCASE_SAMPLE)
         progress.update(task, completed=100)
         
-        # レンダリング（通常のテンプレートを使用）
+        # レンダリング（トグル機能付きテンプレートを使用）
         task = progress.add_task("[cyan]HTMLを生成中", total=100)
-        html = render(ast)  # デフォルトテンプレート（base.html.j2）を使用
+        html = render(ast, template="base-with-source-toggle.html.j2", title="showcase", source_text=SHOWCASE_SAMPLE, source_filename="showcase.txt")
         progress.update(task, completed=100)
     
     # HTMLファイルを保存

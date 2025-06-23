@@ -89,8 +89,14 @@ OUTPUT_BASE="../examples/output"
 
 # 既存ディレクトリのチェック
 if [ -d "$OUTPUT_BASE" ] && [ "$(ls -A $OUTPUT_BASE)" ]; then
-    echo -e "${YELLOW}⚠️  警告: 出力ディレクトリが既に存在します${NC}"
-    echo -e "${YELLOW}   既存のファイルは上書きされます: $OUTPUT_BASE${NC}"
+    echo -e "${YELLOW}⚠️  警告: 出力ディレクトリ内にファイルが存在します${NC}"
+    echo -e "${YELLOW}   以下のファイルが上書きされます:${NC}"
+    echo ""
+    for file in "$OUTPUT_BASE"/*; do
+        if [ -e "$file" ]; then
+            echo -e "${YELLOW}     - $(basename "$file")${NC}"
+        fi
+    done
     echo ""
     echo -e "${CYAN}続行しますか？ [Y/n]: ${NC}"
     read -n 1 choice
