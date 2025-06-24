@@ -39,10 +39,10 @@ jobs:
         echo "Getting commits since $MONTH_AGO"
         
         # Filter feature addition and fix commits
-        FEATURE_COMMITS=$(git log --since="$MONTH_AGO" --pretty=format:"- %s (%h)" --grep="feat:" --grep="fix:" --grep="docs:" | head -20)
+        FEATURE_COMMITS=$(git log --since="$MONTH_AGO" --pretty=format:"- %s (%h)" --grep="feat:" --grep="fix:" --grep="docs:" --all-match=false | head -20)
         
         # File change statistics
-        CHANGED_FILES=$(git diff --name-only --since="$MONTH_AGO" HEAD | grep -E "\.(py|md|txt|toml)$" | sort | uniq)
+        CHANGED_FILES=$(git log --since="$MONTH_AGO" --name-only --pretty=format: | grep -E "\.(py|md|txt|toml)$" | sort | uniq)
         
         # Save results to file (avoid GitHub Actions output limit)
         echo "Recent feature/fix commits:" > /tmp/commits.txt
@@ -164,5 +164,5 @@ CHECKLIST_EOF
           --title "Monthly Documentation Review - $YEAR_MONTH" \
           --body-file /tmp/issue_body.md \
           --label "ドキュメント" \
-          --label "優先度:中" \
+          --label "通常" \
           --assignee mo9mo9-uwu-mo9mo9
