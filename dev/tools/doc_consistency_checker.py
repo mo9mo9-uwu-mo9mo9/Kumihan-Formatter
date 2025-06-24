@@ -8,7 +8,6 @@
 
 import re
 import json
-import yaml
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Any
 from dataclasses import dataclass
@@ -103,6 +102,9 @@ class DocumentConsistencyChecker:
                         matches = re.finditer(pattern, line)
                         for match in matches:
                             version = match.group(1)
+                            # bumpversionの設定変数を除外
+                            if version in ['{current_version}', '{new_version}']:
+                                continue
                             if file_path not in version_occurrences:
                                 version_occurrences[file_path] = []
                             version_occurrences[file_path].append((i, version))
@@ -120,6 +122,11 @@ class DocumentConsistencyChecker:
         for file_path, versions in version_occurrences.items():
             for line_num, version in versions:
                 all_versions.add(version)
+                # CHANGELOG.mdは履歴なので古いバージョンがあっても問題なし
+                if file_path == 'CHANGELOG.md':
+                    continue
+                
+                # 現在のバージョンファイルでバージョンが違う場合のみエラー
                 if version != self.current_version:
                     self.issues.append(ConsistencyIssue(
                         file_path=file_path,
@@ -386,7 +393,14 @@ def main():
     # 重要度highの問題があれば終了コード1で終了
     high_issues = [i for i in issues if i.severity == 'high']
     if high_issues:
+        print(f"\n❌ {len(high_issues)}件の重大な問題が発見されました。修正が必要です。")
         sys.exit(1)
+    elif issues:
+        print(f"\n⚠️  {len(issues)}件の軽微な問題が発見されましたが、処理は正常終了します。")
+        sys.exit(0)
+    else:
+        print("\n✅ 問題は発見されませんでした。")
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
