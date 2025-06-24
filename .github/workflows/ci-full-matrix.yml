@@ -44,17 +44,17 @@ jobs:
           python dev/tests/simple_syntax_test.py
         else
           python -c "import kumihan_formatter; print('Package import test passed')"
-          python -m kumihan_formatter.cli --help
+          python -m kumihan_formatter --help
         fi
     
     - name: Test sample generation
       run: |
         # サンプル生成テスト
-        echo "n" | python -m kumihan_formatter.cli --generate-sample -o dist/test-output
+        echo "n" | python -m kumihan_formatter convert --generate-sample -o dist/test-output
         
     - name: Test basic conversion
       run: |
         # 基本変換テスト
-        if [ -f "examples/sample.txt" ]; then
-          python -m kumihan_formatter.cli examples/sample.txt -o dist/test-output --no-preview
+        if [ -f "examples/01-quickstart.txt" ]; then
+          echo "n" | python -m kumihan_formatter convert examples/01-quickstart.txt -o dist/test-output --no-preview
         fi
