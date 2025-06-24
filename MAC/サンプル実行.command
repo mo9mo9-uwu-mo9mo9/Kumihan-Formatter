@@ -96,25 +96,30 @@ echo ""
 OUTPUT_BASE="../dist/samples"
 
 # 既存ディレクトリのチェック
-if [ -d "$OUTPUT_BASE" ] && [ -n "$(ls -A "$OUTPUT_BASE" 2>/dev/null)" ]; then
-    echo -e "${YELLOW}[警告]  警告: 出力ディレクトリ内にファイルが存在します${NC}"
-    echo -e "${YELLOW}   以下のファイルが上書きされます:${NC}"
-    echo ""
-    for file in "$OUTPUT_BASE"/*; do
-        if [ -e "$file" ]; then
-            echo -e "${YELLOW}     - $(basename "$file")${NC}"
-        fi
-    done
-    echo ""
-    echo -e "${CYAN}続行しますか？ [Y/n]: ${NC}"
-    read -n 1 choice
-    echo ""
-    if [[ ! $choice =~ ^[Yy]$ ]] && [ ! -z "$choice" ]; then
-        echo -e "${YELLOW}処理を中止しました${NC}"
+if [ -d "$OUTPUT_BASE" ]; then
+    # ファイルやディレクトリの存在をチェック
+    shopt -s nullglob
+    files=("$OUTPUT_BASE"/*)
+    shopt -u nullglob
+    
+    if [ ${#files[@]} -gt 0 ]; then
+        echo -e "${YELLOW}[警告]  警告: 出力ディレクトリ内にファイルが存在します${NC}"
+        echo -e "${YELLOW}   以下のファイルが上書きされます:${NC}"
         echo ""
-        echo "何かキーを押して終了してください..."
-        read -n 1
-        exit 0
+        for file in "${files[@]}"; do
+            echo -e "${YELLOW}     - $(basename "$file")${NC}"
+        done
+        echo ""
+        echo -e "${CYAN}続行しますか？ [Y/n]: ${NC}"
+        read -n 1 choice
+        echo ""
+        if [[ ! $choice =~ ^[Yy]$ ]] && [ ! -z "$choice" ]; then
+            echo -e "${YELLOW}処理を中止しました${NC}"
+            echo ""
+            echo "何かキーを押して終了してください..."
+            read -n 1
+            exit 0
+        fi
     fi
 fi
 
