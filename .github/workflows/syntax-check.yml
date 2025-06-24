@@ -36,12 +36,12 @@ jobs:
     
     - name: Run syntax validation tests
       run: |
-        echo "🔍 記法検証テストを実行中..."
+        echo "[検証] 記法検証テストを実行中..."
         python dev/tests/simple_syntax_test.py
     
     - name: Validate example files directly
       run: |
-        echo "📁 サンプルファイルの記法チェック..."
+        echo "[検証] サンプルファイルの記法チェック..."
         python dev/tools/syntax_validator.py examples/*.txt
     
     - name: Check for syntax errors in sample content
@@ -72,13 +72,13 @@ jobs:
     
     - name: Check for new syntax patterns
       run: |
-        echo "🔍 新しい記法パターンをチェック中..."
+        echo "[検証] 新しい記法パターンをチェック中..."
         
         # 変更されたテキストファイルを取得
         CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\\.txt$' || true)
         
         if [ -z "$CHANGED_FILES" ]; then
-          echo "✅ テキストファイルの変更なし"
+          echo "[完了] テキストファイルの変更なし"
           exit 0
         fi
         
@@ -87,12 +87,12 @@ jobs:
         # 各ファイルの記法をチェック
         for file in $CHANGED_FILES; do
           if [ -f "$file" ]; then
-            echo "📝 $file をチェック中..."
+            echo "[処理] $file をチェック中..."
             python dev/tools/syntax_validator.py "$file"
           fi
         done
     
     - name: Report syntax complexity
       run: |
-        echo "📊 記法の複雑度をレポート..."
+        echo "[統計] 記法の複雑度をレポート..."
         python dev/tools/complexity_analyzer.py
