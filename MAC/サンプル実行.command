@@ -130,8 +130,8 @@ echo -e "${CYAN}出力先: ../dist/samples/ (自動作成されます)${NC}"
 echo ""
 
 # 記法表示機能の選択を事前に確認
-echo -e "${CYAN}記法と結果を並べて表示する機能があります${NC}"
-echo -e "${CYAN}改行処理などの動作を実際に確認しながら記法を学習できます${NC}"
+echo -e "${CYAN}Kumihan記法をHTML表示に切り替える機能があります${NC}"
+echo -e "${CYAN}記法学習に便利な機能で、ボタン一つで記法とプレビューが切り替えられます${NC}"
 echo -n "この機能を使用しますか？ (Y/n): "
 read -n 1 choice
 echo ""
@@ -140,10 +140,10 @@ echo ""
 # 選択に基づいてフラグを設定
 if [[ $choice =~ ^[Yy]$ ]] || [ -z "$choice" ]; then
     SOURCE_TOGGLE_FLAG="--with-source-toggle"
-    echo -e "${GREEN}記法表示機能を有効にして変換します${NC}"
+    echo -e "${GREEN}Kumihan記法切り替え機能を有効にして変換します${NC}"
 else
     SOURCE_TOGGLE_FLAG=""
-    echo -e "${YELLOW}記法表示機能なしで変換します${NC}"
+    echo -e "${YELLOW}通常モードで変換します（記法切り替え機能なし）${NC}"
 fi
 echo ""
 
