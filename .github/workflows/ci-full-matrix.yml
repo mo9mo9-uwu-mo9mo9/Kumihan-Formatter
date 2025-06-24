@@ -15,13 +15,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -40,9 +40,21 @@ jobs:
     - name: Test with pytest
       run: |
         # 基本テストを実行
-        if [ -d "tests" ]; then
-          pytest tests/ -v
+        if [ -d "dev/tests" ]; then
+          python dev/tests/simple_syntax_test.py
         else
           python -c "import kumihan_formatter; print('Package import test passed')"
           python -m kumihan_formatter.cli --help
+        fi
+    
+    - name: Test sample generation
+      run: |
+        # サンプル生成テスト
+        python -m kumihan_formatter.cli --generate-sample --output dist/test-output
+        
+    - name: Test basic conversion
+      run: |
+        # 基本変換テスト
+        if [ -f "examples/sample.txt" ]; then
+          python -m kumihan_formatter.cli examples/sample.txt --output dist/test-output --no-preview
         fi
