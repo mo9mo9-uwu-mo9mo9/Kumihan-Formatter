@@ -82,7 +82,7 @@ class Config:
             config_file = Path(config_path)
             
             if not config_file.exists():
-                console.print(f"[yellow]⚠️  設定ファイルが見つかりません:[/yellow] {config_path}")
+                console.print(f"[yellow][警告]  設定ファイルが見つかりません:[/yellow] {config_path}")
                 console.print("[dim]   デフォルト設定を使用します[/dim]")
                 return False
             
@@ -92,28 +92,28 @@ class Config:
                 elif config_file.suffix.lower() == '.json':
                     user_config = json.load(f)
                 else:
-                    console.print(f"[red]❌ 未対応の設定ファイル形式:[/red] {config_file.suffix}")
+                    console.print(f"[red][エラー] 未対応の設定ファイル形式:[/red] {config_file.suffix}")
                     console.print("[dim]   .yaml, .yml, .json のみサポートしています[/dim]")
                     return False
             
             if not isinstance(user_config, dict):
-                console.print("[red]❌ 設定ファイルの形式が正しくありません[/red]")
+                console.print("[red][エラー] 設定ファイルの形式が正しくありません[/red]")
                 return False
             
             # 設定をマージ
             self._merge_config(user_config)
-            console.print(f"[green]✅ 設定ファイルを読み込みました:[/green] {config_path}")
+            console.print(f"[green][完了] 設定ファイルを読み込みました:[/green] {config_path}")
             
             return True
             
         except yaml.YAMLError as e:
-            console.print(f"[red]❌ YAML解析エラー:[/red] {e}")
+            console.print(f"[red][エラー] YAML解析エラー:[/red] {e}")
             return False
         except json.JSONDecodeError as e:
-            console.print(f"[red]❌ JSON解析エラー:[/red] {e}")
+            console.print(f"[red][エラー] JSON解析エラー:[/red] {e}")
             return False
         except Exception as e:
-            console.print(f"[red]❌ 設定ファイル読み込みエラー:[/red] {e}")
+            console.print(f"[red][エラー] 設定ファイル読み込みエラー:[/red] {e}")
             return False
     
     def _merge_config(self, user_config: Dict[str, Any]):
@@ -135,7 +135,7 @@ class Config:
                 self.config["theme"] = user_config["theme"]
                 console.print(f"[dim]   テーマ: {self.config['themes'][user_config['theme']]['name']}[/dim]")
             else:
-                console.print(f"[yellow]⚠️  未知のテーマ:[/yellow] {user_config['theme']}")
+                console.print(f"[yellow][警告]  未知のテーマ:[/yellow] {user_config['theme']}")
         
         # フォント設定
         if "font_family" in user_config:
@@ -182,7 +182,7 @@ class Config:
             errors.append(f"テーマ '{current_theme}' が定義されていません")
         
         if errors:
-            console.print("[red]❌ 設定検証エラー:[/red]")
+            console.print("[red][エラー] 設定検証エラー:[/red]")
             for error in errors:
                 console.print(f"[red]   - {error}[/red]")
             return False

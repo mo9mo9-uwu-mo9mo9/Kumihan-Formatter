@@ -50,7 +50,7 @@ jobs:
     - name: Test sample generation
       run: |
         # サンプル生成テスト
-        python -m kumihan_formatter.cli --generate-sample --output dist/test-output
+        echo "n" | python -m kumihan_formatter.cli --generate-sample --output dist/test-output
         
     - name: Test basic conversion
       run: |

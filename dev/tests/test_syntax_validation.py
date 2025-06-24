@@ -149,11 +149,11 @@ class TestSampleFilesValidation:
             
             # ファイルごとのエラー詳細を出力
             if errors:
-                print(f"\n❌ {txt_file.name}: {len(errors)} エラー")
+                print(f"\n[エラー] {txt_file.name}: {len(errors)} エラー")
                 for error in errors:
                     print(f"   Line {error.line_number}: {error.message}")
                     if error.suggestion:
-                        print(f"      💡 {error.suggestion}")
+                        print(f"      [ヒント] {error.suggestion}")
         
         # 全サンプルファイルでエラーがないことを確認
         assert len(all_errors) == 0, f"サンプルファイルに {len(all_errors)} 個のエラーがあります"
@@ -175,11 +175,11 @@ class TestSampleFilesValidation:
             errors = validator.validate_file(temp_path)
             
             if errors:
-                print(f"\n❌ SHOWCASE_SAMPLE: {len(errors)} エラー")
+                print(f"\n[エラー] SHOWCASE_SAMPLE: {len(errors)} エラー")
                 for error in errors:
                     print(f"   Line {error.line_number}: {error.message}")
                     if error.suggestion:
-                        print(f"      💡 {error.suggestion}")
+                        print(f"      [ヒント] {error.suggestion}")
             
             assert len(errors) == 0, f"SHOWCASE_SAMPLE に {len(errors)} 個のエラーがあります"
         

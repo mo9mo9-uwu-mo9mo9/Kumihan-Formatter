@@ -53,22 +53,22 @@ def main():
     changed_files = get_changed_txt_files()
     
     if not changed_files:
-        print('✅ 分析対象のテキストファイルなし')
+        print('[完了] 分析対象のテキストファイルなし')
         return
     
     for file_path in changed_files:
         try:
             stats = analyze_syntax_complexity(file_path)
-            print(f'📈 {file_path}:')
+            print(f'[グラフ] {file_path}:')
             print(f'   複合マーカー: {stats["complex_markers"]} 個')
             print(f'   色指定: {stats["color_attributes"]} 個')
             print(f'   リスト最大深度: {stats["max_list_depth"]} レベル')
             
             # 複雑度の警告
             if stats['complex_markers'] > 10:
-                print(f'   ⚠️  複合マーカーが多用されています ({stats["complex_markers"]} 個)')
+                print(f'   [警告]  複合マーカーが多用されています ({stats["complex_markers"]} 個)')
             if stats['max_list_depth'] > 3:
-                print(f'   ⚠️  リストの入れ子が深すぎます ({stats["max_list_depth"]} レベル)')
+                print(f'   [警告]  リストの入れ子が深すぎます ({stats["max_list_depth"]} レベル)')
                 
         except Exception as e:
             print(f'{file_path} の分析エラー: {e}')

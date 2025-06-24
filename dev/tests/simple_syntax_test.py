@@ -45,12 +45,12 @@ def test_valid_syntax():
         errors = validator.validate_file(temp_path)
         
         if len(errors) > 0:
-            print(f"❌ 正しい記法でエラーが検出されました: {len(errors)} 個")
+            print(f"[エラー] 正しい記法でエラーが検出されました: {len(errors)} 個")
             for error in errors:
                 print(f"   Line {error.line_number}: {error.message}")
             return False
         else:
-            print("✅ 正しい記法テスト: PASS")
+            print("[完了] 正しい記法テスト: PASS")
             return True
     finally:
         os.unlink(temp_path)
@@ -76,10 +76,10 @@ def test_invalid_syntax():
         errors = validator.validate_file(temp_path)
         
         if len(errors) >= 2:  # # 記法と **太字** 記法の2つのエラーを期待
-            print("✅ 不正な記法検出テスト: PASS")
+            print("[完了] 不正な記法検出テスト: PASS")
             return True
         else:
-            print(f"❌ 期待される不正記法が検出されませんでした: {len(errors)} 個")
+            print(f"[エラー] 期待される不正記法が検出されませんでした: {len(errors)} 個")
             return False
     finally:
         os.unlink(temp_path)
@@ -101,15 +101,15 @@ def test_examples_files():
         all_errors.extend(errors)
         
         if errors:
-            print(f"❌ {txt_file.name}: {len(errors)} エラー")
+            print(f"[エラー] {txt_file.name}: {len(errors)} エラー")
             for error in errors:
                 print(f"   Line {error.line_number}: {error.message}")
     
     if len(all_errors) == 0:
-        print("✅ examples/ ファイルテスト: PASS")
+        print("[完了] examples/ ファイルテスト: PASS")
         return True
     else:
-        print(f"❌ examples/ に {len(all_errors)} 個のエラーがあります")
+        print(f"[エラー] examples/ に {len(all_errors)} 個のエラーがあります")
         return False
 
 
@@ -130,10 +130,10 @@ def test_sample_content():
         errors = validator.validate_file(temp_path)
         
         if len(errors) == 0:
-            print("✅ SHOWCASE_SAMPLE テスト: PASS")
+            print("[完了] SHOWCASE_SAMPLE テスト: PASS")
             return True
         else:
-            print(f"❌ SHOWCASE_SAMPLE に {len(errors)} 個のエラーがあります")
+            print(f"[エラー] SHOWCASE_SAMPLE に {len(errors)} 個のエラーがあります")
             for error in errors:
                 print(f"   Line {error.line_number}: {error.message}")
             return False
@@ -143,7 +143,7 @@ def test_sample_content():
 
 def main():
     """全テストを実行"""
-    print("🔍 記法検証テストを開始...")
+    print("[検証] 記法検証テストを開始...")
     
     tests = [
         test_valid_syntax,
@@ -160,15 +160,15 @@ def main():
             if test():
                 passed += 1
         except Exception as e:
-            print(f"❌ テスト {test.__name__} でエラー: {e}")
+            print(f"[エラー] テスト {test.__name__} でエラー: {e}")
     
-    print(f"\n📊 テスト結果: {passed}/{total} 通過")
+    print(f"\n[統計] テスト結果: {passed}/{total} 通過")
     
     if passed == total:
-        print("✅ 全テスト通過")
+        print("[完了] 全テスト通過")
         sys.exit(0)
     else:
-        print("❌ テスト失敗あり")
+        print("[エラー] テスト失敗あり")
         sys.exit(1)
 
 

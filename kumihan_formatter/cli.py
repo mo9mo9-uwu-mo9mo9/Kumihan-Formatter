@@ -354,7 +354,7 @@ Kumihan-Formatter ドキュメント
 このページでは、Kumihan-Formatterのすべてのドキュメントにアクセスできます。
 
 ;;;見出し2
-📖 利用可能なドキュメント
+[ドキュメント] 利用可能なドキュメント
 ;;;
 
 """
@@ -364,7 +364,7 @@ Kumihan-Formatter ドキュメント
         index_content += f";;;枠線\n**{title}**\n{file_path.name}\n;;;\n\n"
     
     index_content += """;;;見出し2
-🔗 その他のリソース
+[リンク] その他のリソース
 ;;;
 
 - GitHub リポジトリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
@@ -529,7 +529,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
             config_obj.validate_config()
         
         input_path = Path(input_file)
-        console.print(f"[green]📖 読み込み中:[/green] {input_path}")
+        console.print(f"[green][ドキュメント] 読み込み中:[/green] {input_path}")
         
         # ソーストグル機能の確認（--with-source-toggleが指定されていない場合）
         use_source_toggle = with_source_toggle
@@ -545,7 +545,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         template_name = None
         if use_source_toggle:
             if experimental == "scroll-sync":
-                console.print("[yellow]⚡ 実験的機能を有効化:[/yellow] スクロール同期")
+                console.print("[yellow][実験] 実験的機能を有効化:[/yellow] スクロール同期")
                 console.print("[dim]   この機能は実験的で、予期しない動作をする可能性があります[/dim]")
                 template_name = "experimental/base-with-scroll-sync.html.j2"
             else:
