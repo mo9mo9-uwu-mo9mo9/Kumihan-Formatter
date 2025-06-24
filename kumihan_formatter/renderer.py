@@ -19,7 +19,7 @@ class Renderer:
             autoescape=select_autoescape(['html', 'xml'])
         )
         
-    def render(self, ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None) -> str:
+    def render(self, ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None, navigation_html=None) -> str:
         """ASTをHTMLに変換"""
         # 見出しノードを収集
         headings = self._collect_headings(ast)
@@ -63,6 +63,7 @@ class Renderer:
             "theme_name": theme_name,
             "has_toc": has_toc,
             "toc_html": toc_html,
+            "navigation_html": navigation_html or "",
         }
         
         # ソーステキストが提供されている場合は追加
@@ -477,7 +478,7 @@ class Renderer:
         return '\n'.join(toc_lines)
 
 
-def render(ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None) -> str:
+def render(ast: List[Node], config=None, template=None, title=None, source_text=None, source_filename=None, navigation_html=None) -> str:
     """ASTをHTMLに変換する"""
     renderer = Renderer()
-    return renderer.render(ast, config, template=template, title=title, source_text=source_text, source_filename=source_filename)
+    return renderer.render(ast, config, template=template, title=title, source_text=source_text, source_filename=source_filename, navigation_html=navigation_html)

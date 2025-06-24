@@ -38,6 +38,10 @@ jobs:
       run: |
         python dev/tools/doc_consistency_checker.py --format text
     
+    - name: Run ZIP feature validation
+      run: |
+        python dev/tools/zip_feature_validator.py --format text
+    
     - name: Generate JSON report for artifacts
       run: |
         python dev/tools/doc_consistency_checker.py --format json --output doc-consistency-report.json
