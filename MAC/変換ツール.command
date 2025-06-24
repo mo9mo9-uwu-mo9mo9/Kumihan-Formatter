@@ -229,8 +229,41 @@ if [ -z "$input_file" ]; then
     exit 1
 fi
 
-# クォートを除去
-input_file=$(echo "$input_file" | sed 's/^"//;s/"$//')
+# セキュリティ: 入力パスの検証
+validate_file_path() {
+    local file="$1"
+    
+    # 危険な文字をチェック（コマンドインジェクション対策）
+    # 各文字を個別にチェック
+    if [[ "$file" == *";"* ]] || [[ "$file" == *"&"* ]] || [[ "$file" == *"|"* ]] || \
+       [[ "$file" == *"<"* ]] || [[ "$file" == *">"* ]] || [[ "$file" == *"\`"* ]] || \
+       [[ "$file" == *"$"* ]] || [[ "$file" == *"("* ]] || [[ "$file" == *")"* ]] || \
+       [[ "$file" == *"{"* ]] || [[ "$file" == *"}"* ]] || [[ "$file" == *"["* ]] || \
+       [[ "$file" == *"]"* ]] || [[ "$file" == *"\\"* ]] || [[ "$file" == *"!"* ]]; then
+        echo -e "${RED}[エラー] セキュリティエラー: ファイルパスに無効な文字が含まれています${NC}"
+        echo "   使用できない文字: ; & | < > \` \$ ( ) { } [ ] \\ !"
+        echo ""
+        echo "何かキーを押して終了してください..."
+        read -n 1
+        exit 1
+    fi
+    
+    # パストラバーサル攻撃対策
+    if [[ "$file" =~ \.\./|/\.\. ]]; then
+        echo -e "${RED}[エラー] セキュリティエラー: 相対パス参照は許可されていません${NC}"
+        echo ""
+        echo "何かキーを押して終了してください..."
+        read -n 1
+        exit 1
+    fi
+}
+
+# クォートを安全に除去
+input_file="${input_file#\"}"
+input_file="${input_file%\"}"
+
+# 入力検証
+validate_file_path "$input_file"
 
 # ファイルの存在確認
 if [ ! -f "$input_file" ]; then
