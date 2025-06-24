@@ -69,7 +69,7 @@ examples/
 ### 🎯 初心者におすすめ
 ```bash
 # 最初に試す（超シンプル）
-kumihan examples/01-quickstart.txt
+kumihan convert examples/01-quickstart.txt
 
 # 一括でサンプル実行（Windows）
 run_examples.bat
@@ -90,13 +90,13 @@ kumihan_convert.command
 ### ⌨️ コマンドで詳細制御
 ```bash
 # 基本的な変換
-kumihan examples/02-basic.txt
+kumihan convert examples/02-basic.txt
 
 # 出力先を指定
-kumihan examples/02-basic.txt -o my_output/
+kumihan convert examples/02-basic.txt -o my_output/
 
 # 設定ファイルを使用
-kumihan examples/03-comprehensive.txt --config examples/config.yaml
+kumihan convert examples/03-comprehensive.txt --config examples/config.yaml
 ```
 
 ## 学習の順序
@@ -112,8 +112,8 @@ kumihan examples/03-comprehensive.txt --config examples/config.yaml
 
 1. **段落**: 空行で区切る
 2. **リスト**: `- ` で開始
-3. **キーワード付きリスト**: `- :キーワード: 内容`
-4. **ブロック**: `;;;キーワード` で囲む
-5. **複合キーワード**: `;;;太字+枠線` のように`+`で結合
+3. **キーワード付きリスト**: `- ;;;キーワード;;; 内容`
+4. **ブロック**: `;;;キーワード\n内容\n;;;` で囲む
+5. **複合キーワード**: `;;;太字+枠線\n内容\n;;;` のように`+`で結合
 
 詳細な記法については、`docs/user/USER_MANUAL.txt` を参照してください。
