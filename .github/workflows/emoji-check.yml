@@ -17,6 +17,7 @@ on:
       - '**/*.sh'
       - '**/*.command'
       - '**/*.bat'
+  workflow_dispatch: # 手動実行を可能にする
 
 jobs:
   emoji-check:
