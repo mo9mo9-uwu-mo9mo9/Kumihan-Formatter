@@ -31,11 +31,7 @@ class TestFileGenerator:
     
     def generate_header(self) -> str:
         """ファイルヘッダーを生成"""
-        return """# Kumihan-Formatter テスト用記法網羅ファイル (自動生成)
-# すべての記法組み合わせを網羅的にテストするために使用します
-# 対象記法: ブロック記法、キーワード付きリスト、混在パターン
-
-"""
+        return ""
     
     def _get_test_case_name(self, category: str, description: str) -> str:
         """テストケース名を生成"""
@@ -61,7 +57,7 @@ class TestFileGenerator:
             pattern_id = f"single_{keyword}"
             if pattern_id not in self.generated_patterns:
                 test_name = self._get_test_case_name("単一ブロック", keyword)
-                patterns.append(f"""# {test_name}
+                patterns.append(f"""
 ;;;{keyword}
 {keyword}のテストコンテンツです。
 この記法は{info['tag']}タグに変換されます。
@@ -76,7 +72,7 @@ class TestFileGenerator:
                     pattern_id = f"single_highlight_{color}"
                     if pattern_id not in self.generated_patterns:
                         test_name = self._get_test_case_name("色指定ハイライト", f"color={color}")
-                        patterns.append(f"""# {test_name}
+                        patterns.append(f"""
 ;;;ハイライト color={color}
 色指定ハイライト（{color}）のテストです。
 背景色が{color}で表示されます。
@@ -101,7 +97,7 @@ class TestFileGenerator:
             if pattern_id not in self.generated_patterns:
                 combo_str = "+".join(combo)
                 test_name = self._get_test_case_name("複合ブロック(2)", combo_str)
-                patterns.append(f"""# {test_name}
+                patterns.append(f"""
 ;;;{combo_str}
 {combo[0]}と{combo[1]}を組み合わせたテストです。
 ネスト構造で適用されます。
@@ -119,7 +115,7 @@ class TestFileGenerator:
             if pattern_id not in self.generated_patterns:
                 combo_str = "+".join(combo)
                 test_name = self._get_test_case_name("複合ブロック(3)", combo_str)
-                patterns.append(f"""# {test_name}
+                patterns.append(f"""
 ;;;{combo_str}
 {combo[0]}、{combo[1]}、{combo[2]}の組み合わせです。
 複雑なネスト構造のテストケースです。
@@ -137,7 +133,7 @@ class TestFileGenerator:
             if pattern_id not in self.generated_patterns:
                 combo_str = "+".join(combo)
                 test_name = self._get_test_case_name("複合ブロック(4)", combo_str)
-                patterns.append(f"""# {test_name}
+                patterns.append(f"""
 ;;;{combo_str}
 {len(combo)}つのキーワードを組み合わせた複合パターンです。
 {', '.join(combo)}が同時に適用されます。
@@ -160,7 +156,7 @@ class TestFileGenerator:
                 if pattern_id not in self.generated_patterns:
                     combo_str = "+".join(combo)
                     test_name = self._get_test_case_name(f"複合ブロック({combo_size})", combo_str)
-                    patterns.append(f"""# {test_name}
+                    patterns.append(f"""
 ;;;{combo_str}
 {len(combo)}つのキーワードを組み合わせた最大複合パターンです。
 {', '.join(combo)}が同時に適用されます。
@@ -179,43 +175,43 @@ class TestFileGenerator:
         
         # 単一キーワード付きリスト（全キーワード）
         test_name = self._get_test_case_name("キーワード付きリスト", "単一キーワード全パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 """)
         
         for keyword in keywords:  # 全キーワードを使用
-            patterns.append(f"- :{keyword}: {keyword}を適用したリスト項目です\n")
+            patterns.append(f"- ;;;{keyword};;; {keyword}を適用したリスト項目です\n")
         
         patterns.append("- 通常のリスト項目（キーワードなし）\n\n")
         
         # 2つの組み合わせ（有効なパターンのみ）
         test_name = self._get_test_case_name("キーワード付きリスト", "複合キーワード(2)有効パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 """)
         
         for combo in itertools.combinations(keywords, 2):
             if not self._is_valid_combination(combo):
                 continue  # 複数見出し組み合わせをスキップ
             combo_str = "+".join(combo)
-            patterns.append(f"- :{combo_str}: {combo_str}を適用したリスト項目です\n")
+            patterns.append(f"- ;;;{combo_str};;; {combo_str}を適用したリスト項目です\n")
         
         patterns.append("- 通常のリスト項目\n\n")
         
         # 3つの組み合わせ（有効なパターンのみ）
         test_name = self._get_test_case_name("キーワード付きリスト", "複合キーワード(3)有効パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 """)
         
         for combo in itertools.combinations(keywords, 3):
             if not self._is_valid_combination(combo):
                 continue  # 複数見出し組み合わせをスキップ
             combo_str = "+".join(combo)
-            patterns.append(f"- :{combo_str}: {combo_str}を適用したリスト項目です\n")
+            patterns.append(f"- ;;;{combo_str};;; {combo_str}を適用したリスト項目です\n")
         
         patterns.append("- 通常のリスト項目\n\n")
         
         # 4つの組み合わせ（有効な代表パターン）
         test_name = self._get_test_case_name("キーワード付きリスト", "複合キーワード(4)有効パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 """)
         
         valid_count = 0
@@ -225,24 +221,24 @@ class TestFileGenerator:
             if valid_count >= 20:  # 最初の20パターンのみ
                 break
             combo_str = "+".join(combo)
-            patterns.append(f"- :{combo_str}: {combo_str}を適用したリスト項目です\n")
+            patterns.append(f"- ;;;{combo_str};;; {combo_str}を適用したリスト項目です\n")
             valid_count += 1
         
         patterns.append("- 通常のリスト項目\n\n")
         
         # 色指定付きリスト（全色）
         test_name = self._get_test_case_name("キーワード付きリスト", "色指定全パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 """)
         
         for color in self.HIGHLIGHT_COLORS:  # 全色を使用
-            patterns.append(f"- :ハイライト color={color}: 色指定（{color}）付きリスト項目\n")
+            patterns.append(f"- ;;;ハイライト color={color};;; 色指定（{color}）付きリスト項目\n")
         
         # 色指定+複合キーワード
         for color in self.HIGHLIGHT_COLORS[:3]:  # 最初の3色
             for combo in [("ハイライト", "太字"), ("ハイライト", "枠線"), ("ハイライト", "イタリック")]:
                 combo_str = "+".join(combo)
-                patterns.append(f"- :{combo_str} color={color}: {combo_str}+色指定（{color}）項目\n")
+                patterns.append(f"- ;;;{combo_str} color={color};;; {combo_str}+色指定（{color}）項目\n")
         
         patterns.append("\n")
         
@@ -254,7 +250,7 @@ class TestFileGenerator:
         
         # 基本的な番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "基本パターン")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 1. 最初の番号付き項目
 2. 2番目の番号付き項目
 3. 3番目の番号付き項目
@@ -265,7 +261,7 @@ class TestFileGenerator:
         
         # 番号付きリストと箇条書きリストの混在
         test_name = self._get_test_case_name("番号付きリスト", "箇条書きとの混在")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 - 箇条書き項目1
 - 箇条書き項目2
 - 箇条書き項目3
@@ -281,7 +277,7 @@ class TestFileGenerator:
         
         # ブロック内の番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "枠線ブロック内")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線
 1. 枠線内の番号付き項目1
 2. 枠線内の番号付き項目2
@@ -293,7 +289,7 @@ class TestFileGenerator:
         
         # ハイライトブロック内の番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "ハイライトブロック内")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;ハイライト color=#dfd
 1. ハイライト内の番号付き項目1
 2. ハイライト内の番号付き項目2
@@ -304,7 +300,7 @@ class TestFileGenerator:
         
         # 複合ブロック内の番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "複合ブロック内")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線+ハイライト color=#fdd
 1. 複合ブロック内の番号付き項目1
 2. 複合ブロック内の番号付き項目2
@@ -315,7 +311,7 @@ class TestFileGenerator:
         
         # ブロック内での番号付きリストと箇条書きリストの混在
         test_name = self._get_test_case_name("番号付きリスト", "ブロック内混在")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線
 説明テキストが最初にあります。
 
@@ -335,7 +331,7 @@ class TestFileGenerator:
         
         # 見出しブロック内の番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "見出しブロック内")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;見出し2
 1. 見出しブロック内の番号付き項目1
 2. 見出しブロック内の番号付き項目2
@@ -345,7 +341,7 @@ class TestFileGenerator:
         
         # 複数のブロックでの番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "複数ブロック")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線
 1. 最初のブロック内番号付き項目1
 2. 最初のブロック内番号付き項目2
@@ -365,7 +361,7 @@ class TestFileGenerator:
         
         # スペースインデント付き番号付きリスト
         test_name = self._get_test_case_name("番号付きリスト", "インデント付き")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
   1. インデント付き番号付き項目1
   2. インデント付き番号付き項目2
    3. 異なるインデント番号付き項目3
@@ -380,7 +376,7 @@ class TestFileGenerator:
         patterns = []
         
         test_name = self._get_test_case_name("混在パターン", "基本的な記法混在")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 
 通常の段落テキストです。
 
@@ -391,8 +387,8 @@ class TestFileGenerator:
 以下はリストです：
 
 - 通常のリスト項目
-- :枠線: 枠線付きリスト項目
-- :太字+イタリック: 複合キーワード付きリスト項目
+- ;;;枠線;;; 枠線付きリスト項目
+- ;;;太字+イタリック;;; 複合キーワード付きリスト項目
 - 最後の通常項目
 
 番号付きリストも含めます：
@@ -418,7 +414,7 @@ class TestFileGenerator:
         
         # エラーケースのテスト
         test_name = self._get_test_case_name("エラーケース", "無効なキーワード")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 
 ;;;存在しないキーワード
 このキーワードは定義されていないため、エラーとして表示されるはずです。
@@ -428,8 +424,8 @@ class TestFileGenerator:
 一部のキーワードが無効な複合パターンです。
 ;;;
 
-- :無効キーワード: 無効キーワード付きリスト項目
-- :太字+無効キーワード: 複合で一部無効なリスト項目
+- ;;;無効キーワード;;; 無効キーワード付きリスト項目
+- ;;;太字+無効キーワード;;; 複合で一部無効なリスト項目
 
 """)
         
@@ -441,19 +437,19 @@ class TestFileGenerator:
         
         # 大量のリスト項目テスト
         test_name = self._get_test_case_name("パフォーマンステスト", "大量リスト項目")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 
 """)
         
         for i in range(100):  # 100項目に増加
             keyword = list(self.BLOCK_KEYWORDS.keys())[i % len(self.BLOCK_KEYWORDS)]
-            patterns.append(f"- :{keyword}: 項目{i+1}の内容です\n")
+            patterns.append(f"- ;;;{keyword};;; 項目{i+1}の内容です\n")
         
         patterns.append("\n")
         
         # 大量の番号付きリスト項目テスト
         test_name = self._get_test_case_name("パフォーマンステスト", "大量番号付きリスト")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 
 """)
         
@@ -464,7 +460,7 @@ class TestFileGenerator:
         
         # ブロック内大量番号付きリスト
         test_name = self._get_test_case_name("パフォーマンステスト", "ブロック内大量番号付きリスト")
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線
 """)
         
@@ -476,7 +472,7 @@ class TestFileGenerator:
         # 長いコンテンツのブロック
         test_name = self._get_test_case_name("パフォーマンステスト", "長いコンテンツ")
         long_content = "この文章は長いコンテンツのテストです。" * 50  # 50倍に増加
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;枠線+太字
 {long_content}
 ;;;
@@ -489,7 +485,7 @@ class TestFileGenerator:
         valid_keywords = [k for k, v in self.BLOCK_KEYWORDS.items() if v["category"] != "heading"]
         valid_keywords.append("見出し1")  # 見出しは1つだけ追加
         deep_combo = "+".join(valid_keywords)
-        patterns.append(f"""# {test_name}
+        patterns.append(f"""
 ;;;{deep_combo}
 {len(valid_keywords)}つのキーワードを組み合わせた深いネスト構造のテストです。
 処理性能とネスト表示の確認を行います（有効な組み合わせのみ）。
@@ -502,7 +498,6 @@ class TestFileGenerator:
     def generate_image_patterns(self) -> List[str]:
         """画像記法のパターンを生成"""
         patterns = []
-        patterns.append(f"\n# {self._get_test_case_name('画像記法', '基本パターン')}\n\n")
         
         # 各種画像拡張子のテスト
         extensions = ["png", "jpg", "jpeg", "gif", "webp", "svg"]
@@ -513,23 +508,19 @@ class TestFileGenerator:
                 self.generated_patterns.add(pattern)
         
         # 画像とテキストの混在
-        patterns.append(f"\n# {self._get_test_case_name('画像記法', 'テキストとの混在')}\n\n")
         patterns.append("画像の前のテキスト\n\n")
         patterns.append(";;;sample_photo.png;;;\n\n")
         patterns.append("画像の後のテキスト\n\n")
         
         # 複数画像
-        patterns.append(f"\n# {self._get_test_case_name('画像記法', '複数画像の連続')}\n\n")
         patterns.append(";;;image1.png;;;\n\n")
         patterns.append(";;;image2.jpg;;;\n\n")
         patterns.append(";;;image3.gif;;;\n\n")
         
         # 他の記法との組み合わせ
-        patterns.append(f"\n# {self._get_test_case_name('画像記法', 'ブロック内での使用')}\n\n")
         patterns.append(";;;枠線\n重要な画像：\n\n;;;important.png;;;\n\nこの画像は重要です。\n;;;\n\n")
         
         # リスト内の画像
-        patterns.append(f"\n# {self._get_test_case_name('画像記法', 'リスト内での使用')}\n\n")
         patterns.append("- 画像付きリスト項目\n")
         patterns.append("- ;;;icon.png;;;\n")
         patterns.append("- 次の項目\n\n")
@@ -566,11 +557,7 @@ class TestFileGenerator:
             f.write("".join(self.generate_performance_test_patterns()))
             
             # フッター
-            f.write(f"""# テストファイル終了
-# 生成パターン数: {len(self.generated_patterns)}
-# テストケース総数: {self.test_case_counter}
-# すべてのパターンが正常に処理されることを確認してください。
-""")
+            f.write("")
         
         return output_file
     

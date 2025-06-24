@@ -113,6 +113,22 @@ if exist "%OUTPUT_BASE%" (
 if not exist "%OUTPUT_BASE%" mkdir "%OUTPUT_BASE%"
 echo [OK] Output directory ready: %OUTPUT_BASE%
 
+rem Kumihan記法表示機能の選択
+echo Kumihan記法をHTML表示に切り替える機能があります
+echo 記法学習に便利な機能で、ボタン一つで記法とプレビューが切り替えられます
+set /p choice="この機能を使用しますか？ [Y/N]: "
+echo.
+
+rem 選択に基づいてフラグを設定
+if /i "%choice%"=="y" (
+    set "SOURCE_TOGGLE_FLAG=--with-source-toggle"
+    echo [OK] Kumihan記法切り替え機能を有効にして変換します
+) else (
+    set "SOURCE_TOGGLE_FLAG="
+    echo [OK] 通常モードで変換します（記法切り替え機能なし）
+)
+echo.
+
 echo [DEBUG] Starting sample conversion...
 echo.
 
