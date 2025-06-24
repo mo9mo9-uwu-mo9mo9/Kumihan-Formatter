@@ -3,13 +3,15 @@
 ## 基本構文
 
 ```bash
-kumihan [オプション] [入力ファイル]
+kumihan convert [オプション] [入力ファイル]
+kumihan docs [オプション]
 ```
 
 または
 
 ```bash
-python -m kumihan_formatter [オプション] [入力ファイル]
+python -m kumihan_formatter convert [オプション] [入力ファイル]
+python -m kumihan_formatter docs [オプション]
 ```
 
 ## コマンド一覧
