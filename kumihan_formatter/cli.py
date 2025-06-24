@@ -23,6 +23,7 @@ from .parser import parse
 from .renderer import render
 from .config import load_config
 from .sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
+from .markdown_converter import convert_markdown_to_html
 
 # Windows環境でのエンコーディング問題対応
 def setup_windows_encoding():
@@ -671,6 +672,133 @@ def docs(output, docs_dir, no_preview):
         
     except Exception as e:
         console.print(f"[red][エラー] ドキュメント変換エラー:[/red] {e}")
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("source_dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.option("-o", "--output", default="zip_distribution", help="ZIP配布用出力ディレクトリ")
+@click.option("--zip-name", default="kumihan-formatter-distribution", help="ZIPファイル名（拡張子なし）")
+@click.option("--convert-markdown", is_flag=True, default=True, help="Markdownファイルを自動でHTMLに変換（デフォルト: 有効）")
+@click.option("--no-zip", is_flag=True, help="ZIPファイルを作成せず、ディレクトリのみ作成")
+@click.option("--include-originals", is_flag=True, help="元のMarkdownファイルも同梱")
+@click.option("--no-preview", is_flag=True, help="生成後にブラウザでプレビューしない")
+def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_originals, no_preview):
+    """配布用ZIPパッケージを作成します
+    
+    指定されたディレクトリ内の.mdファイルを自動でHTMLに変換し、
+    適切なナビゲーション付きで配布用ZIPを作成します。
+    同人作家など技術知識のないユーザー向けに最適化されています。
+    """
+    import zipfile
+    import tempfile
+    
+    try:
+        source_path = Path(source_dir)
+        output_path = Path(output)
+        
+        console.print(f"[green][ZIP配布] 配布パッケージ作成開始:[/green] {source_path}")
+        
+        # 作業用一時ディレクトリを作成
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir) / "distribution"
+            temp_path.mkdir(parents=True, exist_ok=True)
+            
+            console.print("[cyan][コピー] ソースファイルをコピー中...[/cyan]")
+            
+            # ソースディレクトリの全内容をコピー
+            for item in source_path.rglob("*"):
+                if item.is_file():
+                    relative_path = item.relative_to(source_path)
+                    dest_path = temp_path / relative_path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(item, dest_path)
+            
+            # Markdownファイルの変換処理
+            if convert_markdown:
+                console.print("[yellow][変換] Markdownファイルを検索・HTML変換中...[/yellow]")
+                
+                # Markdownファイルを検出
+                md_files = list(temp_path.rglob("*.md"))
+                
+                if md_files:
+                    console.print(f"[blue][検出] {len(md_files)}個のMarkdownファイルを発見[/blue]")
+                    
+                    # HTML変換を実行
+                    converted_files = convert_markdown_to_html(temp_path, temp_path)
+                    
+                    console.print(f"[green][変換完了] {len(converted_files)}個のHTMLファイルを生成[/green]")
+                    
+                    # 元のMarkdownファイルを削除（include_originalsが無効な場合）
+                    if not include_originals:
+                        console.print("[yellow][クリーンアップ] 元のMarkdownファイルを削除中...[/yellow]")
+                        for md_file in md_files:
+                            if md_file.exists():
+                                md_file.unlink()
+                        console.print("[green][完了] 元ファイルのクリーンアップ完了[/green]")
+                    else:
+                        console.print("[blue][保持] 元のMarkdownファイルも配布パッケージに同梱[/blue]")
+                else:
+                    console.print("[yellow][情報] Markdownファイルが見つかりませんでした[/yellow]")
+            else:
+                console.print("[blue][スキップ] Markdown変換をスキップ[/blue]")
+            
+            # 出力ディレクトリを準備
+            output_path.mkdir(parents=True, exist_ok=True)
+            
+            if no_zip:
+                # ZIPファイルを作成せず、ディレクトリのみコピー
+                final_dir = output_path / zip_name
+                if final_dir.exists():
+                    shutil.rmtree(final_dir)
+                shutil.copytree(temp_path, final_dir)
+                console.print(f"[green][完了] 配布ディレクトリを作成:[/green] {final_dir}")
+                
+                # プレビュー
+                if not no_preview:
+                    index_file = final_dir / "index.html"
+                    if index_file.exists():
+                        console.print("[blue][プレビュー] ブラウザでプレビューを表示中...[/blue]")
+                        webbrowser.open(index_file.resolve().as_uri())
+                
+            else:
+                # ZIPファイルを作成
+                zip_file_path = output_path / f"{zip_name}.zip"
+                
+                console.print(f"[cyan][圧縮] ZIPファイル作成中:[/cyan] {zip_file_path.name}")
+                
+                with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
+                    for file_path in temp_path.rglob("*"):
+                        if file_path.is_file():
+                            archive_name = file_path.relative_to(temp_path)
+                            zipf.write(file_path, archive_name)
+                
+                # ZIPファイル情報を表示
+                zip_size = zip_file_path.stat().st_size
+                size_mb = zip_size / (1024 * 1024)
+                console.print(f"[green][完了] ZIPファイル作成完了:[/green] {zip_file_path}")
+                console.print(f"[dim]   ファイルサイズ: {size_mb:.2f} MB[/dim]")
+                
+                # ZIPの中身をプレビュー用に展開
+                if not no_preview:
+                    preview_dir = output_path / f"{zip_name}_preview"
+                    if preview_dir.exists():
+                        shutil.rmtree(preview_dir)
+                    
+                    with zipfile.ZipFile(zip_file_path, 'r') as zipf:
+                        zipf.extractall(preview_dir)
+                    
+                    index_file = preview_dir / "index.html"
+                    if index_file.exists():
+                        console.print("[blue][プレビュー] ブラウザでプレビューを表示中...[/blue]")
+                        webbrowser.open(index_file.resolve().as_uri())
+            
+            console.print("[green][成功] 配布パッケージの作成が完了しました！[/green]")
+            
+    except Exception as e:
+        console.print(f"[red][エラー] 配布パッケージ作成エラー:[/red] {e}")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
         sys.exit(1)
 
 

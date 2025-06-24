@@ -62,6 +62,8 @@ class DocumentConsistencyChecker:
             'D&D', 'ドラッグ&ドロップ',
             'バッチファイル', '.bat', '.command',
             'HTML出力', 'PDF出力', 'EPUB出力',
+            'ZIP配布版', 'zip-dist', 'Markdown変換', 'ナビゲーション',
+            'convert_markdown_to_html', 'markdown_converter',
             'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8',
             'v0.1.0', 'v0.2.0', 'v0.3.0', 'v0.4.0', 'v1.0.0'
         ]
