@@ -445,8 +445,87 @@
             }
         }
 
+        /* ナビゲーション用スタイル */
+        .kumihan-nav {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .breadcrumb {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .page-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-prev, .nav-next, .nav-index {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-prev:hover, .nav-next:hover, .nav-index:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .nav-index {
+            background-color: #28a745;
+        }
+
+        .nav-index:hover {
+            background-color: #1e7e34;
+        }
+
+        .nav-disabled {
+            background-color: #6c757d;
+            color: #ffffff;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .page-nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .nav-prev, .nav-next, .nav-index {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
         /* 印刷用スタイル */
         @media print {
+            .kumihan-nav {
+                display: none;
+            }
+
             body {
                 background-color: white;
                 padding: 0;
@@ -757,6 +836,9 @@
         
         <!-- メインコンテンツ -->
         <main class="container">
+            {% if navigation_html %}
+            {{ navigation_html | safe }}
+            {% endif %}
             {{ body_content | safe }}
         </main>
         
@@ -770,6 +852,9 @@
     </div>
     {% else %}
     <div class="container">
+        {% if navigation_html %}
+        {{ navigation_html | safe }}
+        {% endif %}
         {{ body_content | safe }}
     </div>
     {% endif %}
