@@ -23,7 +23,7 @@ except ImportError as e:
 
 def main():
     """sample_content.py 内のサンプルテキストを検証"""
-    print("📝 sample_content.py 内のサンプルテキストをチェック...")
+    print("[処理] sample_content.py 内のサンプルテキストをチェック...")
     
     # 一時ファイルに保存して検証
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
@@ -43,14 +43,14 @@ def main():
             filtered_errors.append(error)
 
         if filtered_errors:
-            print(f"❌ SHOWCASE_SAMPLE に {len(filtered_errors)} 個のエラーが見つかりました:")
+            print(f"[エラー] SHOWCASE_SAMPLE に {len(filtered_errors)} 個のエラーが見つかりました:")
             for error in filtered_errors:
                 print(f"   Line {error.line_number}: {error.message}")
                 if error.suggestion:
-                    print(f"      💡 {error.suggestion}")
+                    print(f"      [ヒント] {error.suggestion}")
             sys.exit(1)
         else:
-            print("✅ SHOWCASE_SAMPLE: 記法エラーなし")
+            print("[完了] SHOWCASE_SAMPLE: 記法エラーなし")
 
     finally:
         # 一時ファイルを削除

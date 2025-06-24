@@ -100,7 +100,7 @@ class SyntaxValidator:
                     line_number=line_num,
                     error_type="EMOJI_USAGE",
                     message="絵文字の使用は推奨されません",
-                    suggestion="代替表記を使用してください（例: 🔍→[検証], ✅→[完了], ❌→[エラー]）"
+                    suggestion="代替表記を使用してください（例: [検証], [完了], [エラー]）"
                 ))
         
         return errors
@@ -169,10 +169,10 @@ class SyntaxValidator:
 def format_error_report(errors: List[ValidationError]) -> str:
     """エラーレポートのフォーマット"""
     if not errors:
-        return "✅ 記法エラーはありません"
+        return "[完了] 記法エラーはありません"
     
     report = []
-    report.append(f"❌ {len(errors)} 個のエラーが見つかりました:\n")
+    report.append(f"[エラー] {len(errors)} 個のエラーが見つかりました:\n")
     
     # ファイル別にグループ化
     files = {}
@@ -182,12 +182,12 @@ def format_error_report(errors: List[ValidationError]) -> str:
         files[error.file_path].append(error)
     
     for file_path, file_errors in files.items():
-        report.append(f"📁 {file_path}:")
+        report.append(f"[フォルダ] {file_path}:")
         for error in file_errors:
             line_info = f"Line {error.line_number}: " if error.line_number > 0 else ""
             report.append(f"   {line_info}{error.message}")
             if error.suggestion:
-                report.append(f"      💡 {error.suggestion}")
+                report.append(f"      [ヒント] {error.suggestion}")
         report.append("")
     
     return "\n".join(report)
@@ -218,7 +218,7 @@ def main():
     
     for file_path in args.files:
         if not file_path.exists():
-            print(f"⚠️  ファイルが見つかりません: {file_path}", file=sys.stderr)
+            print(f"[警告] ファイルが見つかりません: {file_path}", file=sys.stderr)
             continue
         
         if not file_path.suffix.lower() == '.txt':
@@ -232,9 +232,9 @@ def main():
         if not args.quiet or errors:
             file_errors = [e for e in errors if e.file_path == str(file_path)]
             if file_errors:
-                print(f"❌ {file_path}: {len(file_errors)} エラー")
+                print(f"[エラー] {file_path}: {len(file_errors)} エラー")
             else:
-                print(f"✅ {file_path}: OK")
+                print(f"[完了] {file_path}: OK")
     
     # 総合レポート
     if all_errors:
@@ -243,7 +243,7 @@ def main():
         sys.exit(1)
     else:
         if not args.quiet:
-            print(f"\n✅ 検証完了: {len(args.files)} ファイル、エラーなし")
+            print(f"\n[完了] 検証完了: {len(args.files)} ファイル、エラーなし")
 
 
 if __name__ == "__main__":
