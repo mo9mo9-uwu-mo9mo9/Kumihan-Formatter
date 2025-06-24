@@ -92,6 +92,10 @@ class Renderer:
         if node.type == "image":
             return self._render_image(node)
         
+        # 折りたたみブロック（details）ノードの特別処理
+        if node.type == "details":
+            return self._render_details(node)
+        
         # ブロック内リストの特別処理
         if node.attributes and node.attributes.get("contains_list"):
             return self._render_block_with_list(node)
@@ -118,6 +122,20 @@ class Renderer:
         img_path = f"images/{filename}"
         
         return f'<img src="{img_path}" alt="{alt_text}" />'
+    
+    def _render_details(self, node: Node) -> str:
+        """折りたたみブロック（details）ノードをHTMLに変換"""
+        # summary属性からタイトルを取得
+        summary_text = node.attributes.get("summary", "詳細を表示")
+        
+        # その他の属性を処理（summaryは除外）
+        attributes = self._format_attributes(node.attributes, exclude_keys=['summary'])
+        
+        # コンテンツをレンダリング
+        content = self._render_content(node.content)
+        
+        # details要素を生成（デフォルトで閉じた状態）
+        return f'<details{attributes}><summary>{summary_text}</summary>{content}</details>'
     
     def _render_error(self, node: Node) -> str:
         """エラーノードをHTMLに変換"""

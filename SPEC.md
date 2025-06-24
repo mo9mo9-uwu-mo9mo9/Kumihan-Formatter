@@ -31,6 +31,8 @@
 | ハイライト | `<div class="highlight">` | デフォルト色 |
 | ハイライト color=#hex | `<div class="highlight" style="background-color:#hex">` | 色指定可 |
 | 見出しN | `<hN>` | N = 1–5 |
+| 折りたたみ | `<details><summary>詳細を表示</summary>` | HTML5折りたたみブロック |
+| ネタバレ | `<details><summary>ネタバレを表示</summary>` | ネタバレ隠し専用 |
 | 目次 | `<div class="toc">` | 見出しから自動生成される目次 |
 | 画像 alt=説明 | `<img src="images/filename" alt="説明">` | ファイル名はコンテンツ部分 |
 
@@ -49,12 +51,15 @@
 
 実装による自動ネスト順序（外側から内側）：
 
-1. **div系**（`枠線`, `ハイライト`）- 最外側
-2. **見出し**（`見出し1`〜`見出し5`）
-3. **太字**（`太字`）
-4. **イタリック**（`イタリック`）- 最内側
+1. **details系**（`折りたたみ`, `ネタバレ`）- 最外側
+2. **div系**（`枠線`, `ハイライト`）
+3. **見出し**（`見出し1`〜`見出し5`）
+4. **太字**（`太字`）
+5. **イタリック**（`イタリック`）- 最内側
 
-**実装例**: `見出し2＋太字＋ハイライト color=#ffe6e6` → `<div class="highlight" style="background-color:#ffe6e6"><h2><strong>…</strong></h2></div>`
+**実装例**: 
+- `見出し2＋太字＋ハイライト color=#ffe6e6` → `<div class="highlight" style="background-color:#ffe6e6"><h2><strong>…</strong></h2></div>`
+- `ネタバレ＋太字＋枠線` → `<details><summary>ネタバレを表示</summary><div class="box"><strong>…</strong></div></details>`
 
 ---
 
@@ -91,6 +96,39 @@
 ↓
 ```html
 <div class="highlight" style="background-color:#ffe6e6">注意事項</div>
+```
+
+### 折りたたみブロック例
+```
+;;;折りたたみ
+詳細情報はこちら
+;;;
+```
+↓
+```html
+<details><summary>詳細を表示</summary>詳細情報はこちら</details>
+```
+
+### ネタバレブロック例
+```
+;;;ネタバレ
+重要なネタバレ情報
+;;;
+```
+↓
+```html
+<details><summary>ネタバレを表示</summary>重要なネタバレ情報</details>
+```
+
+### 複合折りたたみ例
+```
+;;;ネタバレ+太字
+最終的な真実
+;;;
+```
+↓
+```html
+<details><summary>ネタバレを表示</summary><strong>最終的な真実</strong></details>
 ```
 
 ### 番号付きリスト例

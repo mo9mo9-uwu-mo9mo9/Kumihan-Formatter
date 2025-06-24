@@ -32,6 +32,8 @@ class Parser:
         "見出し3": {"tag": "h3"},
         "見出し4": {"tag": "h4"},
         "見出し5": {"tag": "h5"},
+        "折りたたみ": {"tag": "details", "summary": "詳細を表示"},
+        "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
     }
     
     def __init__(self, config=None):
@@ -242,6 +244,10 @@ class Parser:
         if "class" in block_def:
             node_attrs["class"] = block_def["class"]
         
+        # detailsタグの場合はsummary属性を設定
+        if "summary" in block_def:
+            node_attrs["summary"] = block_def["summary"]
+        
         # 見出しの場合はIDを自動付与
         if node_type in ["h1", "h2", "h3", "h4", "h5"]:
             self.heading_counter += 1
@@ -273,12 +279,14 @@ class Parser:
             )
         
         # ネスト順序の決定（外側から内側へ）
-        nesting_order = ["div", "見出し", "strong", "em"]  # 見出しを内側に移動
+        nesting_order = ["details", "div", "見出し", "strong", "em"]  # detailsを最外側に追加
         sorted_keywords = []
         
         for order_prefix in nesting_order:
             for keyword in keywords:
                 if keyword.startswith(order_prefix) or (
+                    order_prefix == "details" and keyword in ["折りたたみ", "ネタバレ"]
+                ) or (
                     order_prefix == "div" and keyword in ["枠線", "ハイライト"]
                 ) or (
                     order_prefix == "strong" and keyword == "太字"
@@ -302,6 +310,10 @@ class Parser:
             
             if "class" in block_def:
                 node_attrs["class"] = block_def["class"]
+            
+            # detailsタグの場合はsummary属性を設定
+            if "summary" in block_def:
+                node_attrs["summary"] = block_def["summary"]
             
             # 見出しの場合はIDを自動付与
             if block_def["tag"] in ["h1", "h2", "h3", "h4", "h5"]:

@@ -27,6 +27,8 @@ class Config:
             "見出し3": {"tag": "h3"},
             "見出し4": {"tag": "h4"},
             "見出し5": {"tag": "h5"},
+            "折りたたみ": {"tag": "details", "summary": "詳細を表示"},
+            "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
         },
         "theme": "default",
         "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
