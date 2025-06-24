@@ -120,60 +120,79 @@ fi
 
 mkdir -p "$OUTPUT_BASE"
 
-echo -e "${CYAN}🚀 サンプル変換を開始します...${NC}"
+echo -e "${CYAN}サンプル変換を開始します...${NC}"
+echo -e "${CYAN}出力先: ../examples/output/ (自動作成されます)${NC}"
+echo ""
+
+# 記法表示機能の選択を事前に確認
+echo -e "${CYAN}記法と結果を並べて表示する機能があります${NC}"
+echo -e "${CYAN}改行処理などの動作を実際に確認しながら記法を学習できます${NC}"
+echo -n "この機能を使用しますか？ (Y/n): "
+read -n 1 choice
+echo ""
+echo ""
+
+# 選択に基づいてフラグを設定
+if [[ $choice =~ ^[Yy]$ ]] || [ -z "$choice" ]; then
+    SOURCE_TOGGLE_FLAG="--with-source-toggle"
+    echo -e "${GREEN}記法表示機能を有効にして変換します${NC}"
+else
+    SOURCE_TOGGLE_FLAG=""
+    echo -e "${YELLOW}記法表示機能なしで変換します${NC}"
+fi
 echo ""
 
 # サンプル1: basic
-echo -e "${BLUE}📝 [1/3] 基本サンプル (02-basic.txt)${NC}"
+echo -e "${BLUE}[1/3] 基本サンプル (02-basic.txt)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/basic"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/02-basic.txt" -o "$OUTPUT_DIR" --no-preview; then
-    echo -e "${GREEN}✅ basic サンプル完了 → $OUTPUT_DIR${NC}"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/02-basic.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}basic サンプル完了 → $OUTPUT_DIR${NC}"
 else
-    echo -e "${RED}❌ エラー: basic サンプルの変換に失敗${NC}"
+    echo -e "${RED}エラー: basic サンプルの変換に失敗${NC}"
     exit 1
 fi
 echo ""
 
 # サンプル2: advanced
-echo -e "${BLUE}📝 [2/3] 高度なサンプル (03-comprehensive.txt)${NC}"
+echo -e "${BLUE}[2/3] 高度なサンプル (03-comprehensive.txt)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/advanced"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/03-comprehensive.txt" -o "$OUTPUT_DIR" --no-preview; then
-    echo -e "${GREEN}✅ advanced サンプル完了 → $OUTPUT_DIR${NC}"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/03-comprehensive.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}advanced サンプル完了 → $OUTPUT_DIR${NC}"
 else
-    echo -e "${RED}❌ エラー: advanced サンプルの変換に失敗${NC}"
+    echo -e "${RED}エラー: advanced サンプルの変換に失敗${NC}"
     exit 1
 fi
 echo ""
 
 # サンプル3: showcase
-echo -e "${BLUE}📝 [3/3] 機能ショーケース (--generate-sample)${NC}"
+echo -e "${BLUE}[3/3] 機能ショーケース (--generate-sample)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/showcase"
 mkdir -p "$OUTPUT_DIR"
 
-if $PYTHON_CMD -m kumihan_formatter convert --generate-sample -o "$OUTPUT_DIR" --no-preview; then
-    echo -e "${GREEN}✅ showcase サンプル完了 → $OUTPUT_DIR${NC}"
+if $PYTHON_CMD -m kumihan_formatter convert --generate-sample -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}showcase サンプル完了 → $OUTPUT_DIR${NC}"
 else
-    echo -e "${RED}❌ エラー: showcase サンプルの変換に失敗${NC}"
+    echo -e "${RED}エラー: showcase サンプルの変換に失敗${NC}"
     exit 1
 fi
 echo ""
 
 echo "=========================================="
-echo -e "${GREEN}✅ 全サンプルの変換が完了しました！${NC}"
+echo -e "${GREEN}全サンプルの変換が完了しました！${NC}"
 echo "=========================================="
 echo ""
-echo -e "${CYAN}📁 生成されたファイル:${NC}"
+echo -e "${CYAN}生成されたファイル:${NC}"
 echo "  ../examples/output/basic/        - 基本的な記法のサンプル"
 echo "  ../examples/output/advanced/     - 高度な記法のサンプル"
 echo "  ../examples/output/showcase/     - 全機能のショーケース"
 echo ""
-echo -e "${YELLOW}🌐 HTMLファイルをブラウザで確認してください${NC}"
+echo -e "${YELLOW}HTMLファイルをブラウザで確認してください${NC}"
 echo ""
-echo "📁 出力フォルダを開きますか？ [y/N]"
+echo "出力フォルダを開きますか？ [y/N]"
 read -n 1 choice
 echo ""
 if [[ $choice =~ ^[Yy]$ ]]; then

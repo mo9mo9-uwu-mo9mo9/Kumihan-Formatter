@@ -68,7 +68,7 @@ def copy_images(input_path, output_path, ast):
     source_images_dir = input_path.parent / "images"
     
     if not source_images_dir.exists():
-        console.print(f"[yellow]⚠️  警告: images フォルダが見つかりません:[/yellow] {source_images_dir}")
+        console.print(f"[yellow]警告: images フォルダが見つかりません:[/yellow] {source_images_dir}")
         return
     
     # 出力先の images ディレクトリを作成
@@ -100,15 +100,15 @@ def copy_images(input_path, output_path, ast):
     
     # 結果をレポート
     if copied_files:
-        console.print(f"[green]🖼️  {len(copied_files)}個の画像ファイルをコピーしました[/green]")
+        console.print(f"[green]{len(copied_files)}個の画像ファイルをコピーしました[/green]")
     
     if missing_files:
-        console.print(f"[red]❌ {len(missing_files)}個の画像ファイルが見つかりません:[/red]")
+        console.print(f"[red][エラー] {len(missing_files)}個の画像ファイルが見つかりません:[/red]")
         for filename in missing_files:
             console.print(f"[red]   - {filename}[/red]")
     
     if duplicate_files:
-        console.print(f"[yellow]⚠️  同名の画像ファイルが複数回参照されています:[/yellow]")
+        console.print(f"[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]")
         for filename, count in duplicate_files.items():
             console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
 
@@ -127,14 +127,14 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
         test_case_pattern = r'# \[TEST-(\d+)\] ([^:]+): (.+)'
         test_cases = re.findall(test_case_pattern, text)
         if test_cases:
-            console.print(f"[blue]🧪 テストケース検出: {len(test_cases)}個[/blue]")
+            console.print(f"[blue][テスト] テストケース検出: {len(test_cases)}個[/blue]")
             for i, (num, category, description) in enumerate(test_cases[:5]):  # 最初の5個のみ表示
                 console.print(f"[dim]   - [TEST-{num}] {category}: {description}[/dim]")
             if len(test_cases) > 5:
                 console.print(f"[dim]   ... 他 {len(test_cases) - 5}個[/dim]")
     
     # パース処理
-    console.print("[cyan]📝 パース中...[/cyan]")
+    console.print("[cyan][処理] パース中...[/cyan]")
     with Progress() as progress:
         file_size = len(text)
         task = progress.add_task("[cyan]テキストを解析中", total=100)
@@ -150,7 +150,7 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
         progress.update(task, completed=100)
     
     # レンダリング処理
-    console.print("[yellow]🎨 HTML生成中...[/yellow]")
+    console.print("[yellow][生成] HTML生成中...[/yellow]")
     with Progress() as progress:
         task = progress.add_task("[yellow]HTMLを生成中", total=100)
         
@@ -188,14 +188,14 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
             is_sample = input_path.name in ['02-basic.txt', '03-comprehensive.txt']
             
             if is_sample:
-                console.print(f"[yellow]⚠️  {error_count}個のエラーが検出されました（想定されたエラーです）[/yellow]")
+                console.print(f"[yellow][警告]  {error_count}個のエラーが検出されました（想定されたエラーです）[/yellow]")
                 console.print("[yellow]   これらのエラーは、記法の学習用にわざと含まれています[/yellow]")
                 console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
             else:
-                console.print(f"[yellow]⚠️  警告: {error_count}個のエラーが検出されました[/yellow]")
+                console.print(f"[yellow][警告]  警告: {error_count}個のエラーが検出されました[/yellow]")
                 console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
         
-        console.print(f"[green]✅ 完了:[/green] {output_file}")
+        console.print(f"[green][完了] 完了:[/green] {output_file}")
         
         # 統計情報の表示
         total_nodes = len(ast)
@@ -205,11 +205,11 @@ def convert_file(input_file, output, config=None, show_stats=True, show_test_cas
     return output_file
 
 
-def generate_sample(output_dir: str = "kumihan_sample"):
+def generate_sample(output_dir: str = "kumihan_sample", use_source_toggle: bool = False):
     """サンプルファイルを生成"""
     output_path = Path(output_dir)
     
-    console.print(f"[cyan]📝 サンプルを生成中: {output_path}[/cyan]")
+    console.print(f"[cyan][処理] サンプルを生成中: {output_path}[/cyan]")
     
     # 出力ディレクトリを作成
     output_path.mkdir(parents=True, exist_ok=True)
@@ -237,9 +237,12 @@ def generate_sample(output_dir: str = "kumihan_sample"):
         ast = parse(SHOWCASE_SAMPLE)
         progress.update(task, completed=100)
         
-        # レンダリング（showcaseは基本テンプレートを使用）
+        # レンダリング（テンプレート選択）
         task = progress.add_task("[cyan]HTMLを生成中", total=100)
-        html = render(ast, template="base.html.j2", title="showcase")
+        if use_source_toggle:
+            html = render(ast, template="base-with-source-toggle.html.j2", title="showcase", source_text=SHOWCASE_SAMPLE, source_filename="showcase.txt")
+        else:
+            html = render(ast, template="base.html.j2", title="showcase")
         progress.update(task, completed=100)
     
     # HTMLファイルを保存
@@ -249,11 +252,11 @@ def generate_sample(output_dir: str = "kumihan_sample"):
     
     # 画像はすでに正しい場所にあるため、追加のコピーは不要
     
-    console.print(f"[green]✅ サンプル生成完了！[/green]")
-    console.print(f"[green]   📁 出力先: {output_path.absolute()}[/green]")
-    console.print(f"[green]   📄 テキスト: {sample_txt.name}[/green]")
-    console.print(f"[green]   🌐 HTML: {html_path.name}[/green]")
-    console.print(f"[green]   🖼️  画像: {len(SAMPLE_IMAGES)}個[/green]")
+    console.print(f"[green][完了] サンプル生成完了！[/green]")
+    console.print(f"[green]   [フォルダ] 出力先: {output_path.absolute()}[/green]")
+    console.print(f"[green]   [ファイル] テキスト: {sample_txt.name}[/green]")
+    console.print(f"[green]   [ブラウザ] HTML: {html_path.name}[/green]")
+    console.print(f"[green]   [画像]  画像: {len(SAMPLE_IMAGES)}個[/green]")
     
     # ブラウザでは開かない（--no-previewと同じ動作）
     
@@ -265,7 +268,7 @@ def convert_docs(docs_dir="docs", output_dir="docs_html"):
     docs_path = Path(docs_dir)
     output_path = Path(output_dir)
     
-    console.print(f"[cyan]📚 ドキュメント変換開始: {docs_path}[/cyan]")
+    console.print(f"[cyan][ドキュメント] ドキュメント変換開始: {docs_path}[/cyan]")
     
     # 対象ファイルの定義
     target_files = [
@@ -290,7 +293,7 @@ def convert_docs(docs_dir="docs", output_dir="docs_html"):
             file_path = docs_path / file_path if not Path(file_path).is_absolute() else Path(file_path)
             
             if file_path.exists():
-                console.print(f"[yellow]📄 変換中: {title}[/yellow]")
+                console.print(f"[yellow][ファイル] 変換中: {title}[/yellow]")
                 
                 # ファイルを読み込み
                 with open(file_path, "r", encoding="utf-8") as f:
@@ -317,26 +320,26 @@ def convert_docs(docs_dir="docs", output_dir="docs_html"):
                     f.write(html)
                 
                 converted_files.append((title, output_file))
-                console.print(f"[green]  ✅ 完了: {output_file.name}[/green]")
+                console.print(f"[green]  [完了] 完了: {output_file.name}[/green]")
             else:
-                console.print(f"[yellow]  ⚠️  スキップ: {file_path} (ファイルが見つかりません)[/yellow]")
+                console.print(f"[yellow]  [警告]  スキップ: {file_path} (ファイルが見つかりません)[/yellow]")
             
             progress.update(task, completed=i + 1)
     
     # 結果表示
-    console.print(f"\n[green]✅ ドキュメント変換完了![/green]")
-    console.print(f"[green]   📁 出力先: {output_path.absolute()}[/green]")
-    console.print(f"[green]   📄 変換済みファイル: {len(converted_files)}個[/green]")
+    console.print(f"\n[green][完了] ドキュメント変換完了![/green]")
+    console.print(f"[green]   [フォルダ] 出力先: {output_path.absolute()}[/green]")
+    console.print(f"[green]   [ファイル] 変換済みファイル: {len(converted_files)}個[/green]")
     
     for title, file_path in converted_files:
         console.print(f"[dim]   - {title}: {file_path.name}[/dim]")
     
     # インデックスファイルを作成
     index_html = generate_docs_index(converted_files, output_path)
-    console.print(f"[green]   📑 インデックス: {index_html.name}[/green]")
+    console.print(f"[green]    インデックス: {index_html.name}[/green]")
     
     # ブラウザで開く
-    console.print(f"\n[cyan]🌐 ブラウザでドキュメントを表示中...[/cyan]")
+    console.print(f"\n[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
     webbrowser.open(f"file://{index_html.absolute()}")
     
     return output_path
@@ -412,7 +415,16 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         if generate_sample_flag:
             # -o/--output オプションが指定されている場合は、それを優先
             output_dir = output if output != "dist" else sample_output
-            generate_sample(output_dir)
+            
+            # 記法表示機能の確認（--with-source-toggleが指定されていない場合）
+            use_source_toggle = with_source_toggle
+            if not with_source_toggle:
+                console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
+                console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
+                response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
+                use_source_toggle = response.lower() in ['y', 'yes', '']
+            
+            generate_sample(output_dir, use_source_toggle)
             return
         
         # テストファイル生成モードの処理
@@ -425,10 +437,10 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
             from generate_test_file import TestFileGenerator
             
             if double_click_mode:
-                console.print("[cyan]🔧 テスト用記法網羅ファイルを生成中...[/cyan]")
+                console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
                 console.print("[dim]   すべての記法パターンを網羅したテストファイルを作成します[/dim]")
             else:
-                console.print("[cyan]🔧 テスト用記法網羅ファイルを生成中...[/cyan]")
+                console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
             
             # 進捗表示付きでファイル生成
             with Progress() as progress:
@@ -450,13 +462,13 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
                 progress.update(task, completed=100)
             
             if double_click_mode:
-                console.print(f"[green]✅ テストファイルを生成しました:[/green] {output_file}")
-                console.print(f"[dim]   📊 生成パターン数: {stats['total_patterns']}[/dim]")
-                console.print(f"[dim]   🏷️  単一キーワード数: {stats['single_keywords']}[/dim]")
-                console.print(f"[dim]   🎨 ハイライト色数: {stats['highlight_colors']}[/dim]")
-                console.print(f"[dim]   🔢 最大組み合わせ数: {stats['max_combinations']}[/dim]")
+                console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
+                console.print(f"[dim]   [統計] 生成パターン数: {stats['total_patterns']}[/dim]")
+                console.print(f"[dim]   [キーワード]  単一キーワード数: {stats['single_keywords']}[/dim]")
+                console.print(f"[dim]   [生成] ハイライト色数: {stats['highlight_colors']}[/dim]")
+                console.print(f"[dim]    最大組み合わせ数: {stats['max_combinations']}[/dim]")
             else:
-                console.print(f"[green]✅ テストファイルを生成しました:[/green] {output_file}")
+                console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
                 console.print(f"[dim]   - 生成パターン数: {stats['total_patterns']}[/dim]")
                 console.print(f"[dim]   - 単一キーワード数: {stats['single_keywords']}[/dim]")
                 console.print(f"[dim]   - ハイライト色数: {stats['highlight_colors']}[/dim]")
@@ -464,10 +476,10 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
             
             # 生成したファイルをHTMLに変換してテスト
             if double_click_mode:
-                console.print("\n[yellow]🧪 生成されたファイルをHTMLに変換中...[/yellow]")
+                console.print("\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]")
                 console.print("[dim]   すべての記法が正しく処理されるかテストしています[/dim]")
             else:
-                console.print("\n[yellow]🧪 生成されたファイルのテスト変換を実行中...[/yellow]")
+                console.print("\n[yellow][テスト] 生成されたファイルのテスト変換を実行中...[/yellow]")
                 
             try:
                 config_obj = load_config(config)
@@ -477,37 +489,37 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
                 test_output_file = convert_file(output_file, output or "dist", config_obj, show_stats=False, show_test_cases=show_test_cases, template=None)
                 
                 if double_click_mode:
-                    console.print(f"[green]✅ HTML変換成功:[/green] {test_output_file}")
-                    console.print("[dim]   📄 テストファイル (.txt) と変換結果 (.html) の両方が生成されました[/dim]")
+                    console.print(f"[green][完了] HTML変換成功:[/green] {test_output_file}")
+                    console.print("[dim]   [ファイル] テストファイル (.txt) と変換結果 (.html) の両方が生成されました[/dim]")
                     
                     # ファイルサイズ情報を表示
                     txt_size = output_file.stat().st_size
                     html_size = test_output_file.stat().st_size
-                    console.print(f"[dim]   📏 テキストファイル: {txt_size:,} バイト[/dim]")
-                    console.print(f"[dim]   📏 HTMLファイル: {html_size:,} バイト[/dim]")
+                    console.print(f"[dim]    テキストファイル: {txt_size:,} バイト[/dim]")
+                    console.print(f"[dim]    HTMLファイル: {html_size:,} バイト[/dim]")
                 else:
-                    console.print(f"[green]✅ テスト変換成功:[/green] {test_output_file}")
+                    console.print(f"[green][完了] テスト変換成功:[/green] {test_output_file}")
                 
                 if not no_preview:
                     if double_click_mode:
-                        console.print("[blue]🌐 ブラウザで結果を表示中...[/blue]")
+                        console.print("[blue][ブラウザ] ブラウザで結果を表示中...[/blue]")
                     else:
-                        console.print("[blue]🌐 ブラウザで開いています...[/blue]")
+                        console.print("[blue][ブラウザ] ブラウザで開いています...[/blue]")
                     webbrowser.open(test_output_file.resolve().as_uri())
                 
             except Exception as e:
-                console.print(f"[red]❌ テスト変換でエラーが発生:[/red] {e}")
+                console.print(f"[red][エラー] テスト変換でエラーが発生:[/red] {e}")
                 if double_click_mode:
-                    console.print("[yellow]⚠️  生成されたテストファイルに問題がある可能性があります[/yellow]")
+                    console.print("[yellow][警告]  生成されたテストファイルに問題がある可能性があります[/yellow]")
                     console.print("[dim]   テキストファイルは正常に生成されましたが、HTML変換で問題が発生しました[/dim]")
                 else:
-                    console.print("[yellow]⚠️  生成されたテストファイルに問題がある可能性があります[/yellow]")
+                    console.print("[yellow][警告]  生成されたテストファイルに問題がある可能性があります[/yellow]")
             
             return
         
         # 通常の変換処理
         if not input_file:
-            console.print("[red]❌ エラー:[/red] 入力ファイルが指定されていません")
+            console.print("[red][エラー] エラー:[/red] 入力ファイルが指定されていません")
             console.print("[dim]   テストファイル生成には --generate-test オプションを使用してください[/dim]")
             sys.exit(1)
         
@@ -524,7 +536,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         
         if not with_source_toggle:
             # すべてのファイルでYes/No確認
-            console.print("\n[cyan]💡 記法と結果を並べて表示する機能があります[/cyan]")
+            console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
             console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
             response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
             use_source_toggle = response.lower() in ['y', 'yes', '']
@@ -544,7 +556,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         
         # ブラウザでプレビュー
         if not no_preview:
-            console.print("[blue]🌐 ブラウザで開いています...[/blue]")
+            console.print("[blue][ブラウザ] ブラウザで開いています...[/blue]")
             webbrowser.open(output_file.resolve().as_uri())
         
         # ウォッチモードの処理
@@ -553,7 +565,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
                 from watchdog.observers import Observer
                 from watchdog.events import FileSystemEventHandler
             except ImportError:
-                console.print("[red]❌ エラー:[/red] watchdog ライブラリがインストールされていません")
+                console.print("[red][エラー] エラー:[/red] watchdog ライブラリがインストールされていません")
                 console.print("[dim]   pip install watchdog を実行してください[/dim]")
                 sys.exit(1)
             
@@ -580,13 +592,13 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
                         self.last_modified = current_time
                         
                         try:
-                            console.print(f"\n[blue]🔄 ファイルが変更されました:[/blue] {modified_path.name}")
+                            console.print(f"\n[blue][更新] ファイルが変更されました:[/blue] {modified_path.name}")
                             convert_file(self.input_file, self.output, self.config, show_stats=False, show_test_cases=self.show_test_cases, template=self.template_name, include_source=self.include_source)
-                            console.print(f"[green]🔄 自動更新完了:[/green] {time.strftime('%H:%M:%S')}")
+                            console.print(f"[green][更新] 自動更新完了:[/green] {time.strftime('%H:%M:%S')}")
                         except Exception as e:
-                            console.print(f"[red]❌ 自動更新エラー:[/red] {e}")
+                            console.print(f"[red][エラー] 自動更新エラー:[/red] {e}")
             
-            console.print(f"\n[cyan]👀 ファイル監視を開始:[/cyan] {input_path}")
+            console.print(f"\n[cyan][監視] ファイル監視を開始:[/cyan] {input_path}")
             console.print("[dim]   ファイルを編集すると自動的に再生成されます[/dim]")
             console.print("[dim]   停止するには Ctrl+C を押してください[/dim]")
             
@@ -599,22 +611,22 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
                 while True:
                     time.sleep(1)
             except KeyboardInterrupt:
-                console.print("\n[yellow]👋 ファイル監視を停止しました[/yellow]")
+                console.print("\n[yellow] ファイル監視を停止しました[/yellow]")
                 observer.stop()
             observer.join()
             
     except FileNotFoundError as e:
-        console.print(f"[red]❌ ファイルエラー:[/red] ファイルが見つかりません: {input_file}")
+        console.print(f"[red][エラー] ファイルエラー:[/red] ファイルが見つかりません: {input_file}")
         sys.exit(1)
     except UnicodeDecodeError as e:
-        console.print(f"[red]❌ エンコーディングエラー:[/red] ファイルを UTF-8 として読み込めません")
+        console.print(f"[red][エラー] エンコーディングエラー:[/red] ファイルを UTF-8 として読み込めません")
         console.print(f"[dim]   ファイル: {input_file}[/dim]")
         sys.exit(1)
     except PermissionError as e:
-        console.print(f"[red]❌ 権限エラー:[/red] ファイルにアクセスできません: {e}")
+        console.print(f"[red][エラー] 権限エラー:[/red] ファイルにアクセスできません: {e}")
         sys.exit(1)
     except Exception as e:
-        console.print(f"[red]❌ 予期しないエラー:[/red] {e}")
+        console.print(f"[red][エラー] 予期しないエラー:[/red] {e}")
         console.print("[dim]   詳細なエラー情報が必要な場合は、GitHubのissueで報告してください[/dim]")
         sys.exit(1)
 
@@ -631,11 +643,11 @@ def docs(output, docs_dir, no_preview):
         if not no_preview and output_path:
             index_file = output_path / "index.html"
             if index_file.exists():
-                console.print(f"[cyan]🌐 ブラウザでドキュメントを表示中...[/cyan]")
+                console.print(f"[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
                 webbrowser.open(f"file://{index_file.absolute()}")
         
     except Exception as e:
-        console.print(f"[red]❌ ドキュメント変換エラー:[/red] {e}")
+        console.print(f"[red][エラー] ドキュメント変換エラー:[/red] {e}")
         sys.exit(1)
 
 
