@@ -137,25 +137,25 @@ python -m kumihan_formatter.cli examples/sample.txt -o /tmp/out
 * **コードスタイル**: black + isort + flake8
 * **コミット規約**: Conventional Commits (`feat:`, `fix:` など)
 
-### 📝 記法ルール
+### 📝 Kumihan記法ルール
 
-サンプルファイルや文書作成時は以下のルールに従ってください：
+サンプルファイルや文書作成時は以下のKumihan記法ルールに従ってください：
 
-#### ✅ 推奨記法
+#### ✅ 推奨Kumihan記法
 - **見出し**: `;;;見出し1\n内容\n;;;` 形式を使用
 - **複合マーカー**: `;;;太字+ハイライト color=#ff0000;;;` の順序を守る
 - **色指定**: [STYLE_GUIDE.md](STYLE_GUIDE.md) の推奨カラーパレット使用
 - **構造化**: 論理的な見出し階層と適切なリスト使用
 
 #### ❌ 禁止記法
-- **Markdown記法**: `# 見出し`、`**太字**` 等は使用禁止
+- **Markdown記法**: `# 見出し`、`**太字**` 等は使用禁止（Kumihan記法を使用）
 - **不完全なブロック**: 閉じマーカー `;;;` の忘れは禁止
 - **目次マーカー**: `;;;目次;;;` の手動使用は禁止（自動生成）
 - **color属性の誤順序**: `;;;ハイライト color=#xxx+太字;;;` は禁止
 
-### 🔍 記法検証の実行
+### 🔍 Kumihan記法検証の実行
 
-プルリクエスト前に必ず記法検証を実行してください：
+プルリクエスト前に必ずKumihan記法検証を実行してください：
 
 ```bash
 # 新規作成・変更したテキストファイルの検証
@@ -168,9 +168,9 @@ python -m pytest dev/tests/test_syntax_validation.py -v
 # GitHub Actionsにより、PRマージ時に自動実行されます
 ```
 
-### 📚 記法ガイドライン参照
-- [SPEC.md](SPEC.md) - 完全な記法仕様
-- [STYLE_GUIDE.md](STYLE_GUIDE.md) - 記法スタイルガイド
+### 📚 Kumihan記法ガイドライン参照
+- [SPEC.md](SPEC.md) - 完全なKumihan記法仕様
+- [STYLE_GUIDE.md](STYLE_GUIDE.md) - Kumihan記法スタイルガイド
 - [examples/](examples/) - 実践的なサンプル集
 
 ---
