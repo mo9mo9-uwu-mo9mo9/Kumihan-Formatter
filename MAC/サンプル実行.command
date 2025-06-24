@@ -54,7 +54,7 @@ echo -e "${GREEN}[OK] Setup detected, proceeding...${NC}"
 
 # Pythonのバージョン確認
 if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}❌ エラー: Python 3 が見つかりません${NC}"
+    echo -e "${RED}[エラー] エラー: Python 3 が見つかりません${NC}"
     echo ""
     echo "Python 3.9 以上をインストールしてください："
     echo "https://www.python.org/downloads/"
@@ -66,12 +66,12 @@ fi
 
 # 仮想環境の確認
 if [ -d "../.venv" ]; then
-    echo -e "${BLUE}🔧 仮想環境をアクティベート中...${NC}"
+    echo -e "${BLUE}[設定] 仮想環境をアクティベート中...${NC}"
     source ../.venv/bin/activate
     PYTHON_CMD="python"
 else
-    echo -e "${RED}⚠️  仮想環境が見つかりません${NC}"
-    echo -e "${YELLOW}💡 kumihan_convert.command を先に実行してセットアップを完了してください${NC}"
+    echo -e "${RED}[警告]  仮想環境が見つかりません${NC}"
+    echo -e "${YELLOW}[ヒント] kumihan_convert.command を先に実行してセットアップを完了してください${NC}"
     echo ""
     echo "何かキーを押して終了してください..."
     read -n 1
@@ -79,17 +79,17 @@ else
 fi
 
 # 依存関係の確認
-echo -e "${BLUE}🔍 依存関係を確認中...${NC}"
+echo -e "${BLUE}[検証] 依存関係を確認中...${NC}"
 if ! $PYTHON_CMD -c "import click, jinja2, rich" 2>/dev/null; then
-    echo -e "${RED}❌ エラー: 必要なライブラリが不足しています${NC}"
-    echo -e "${YELLOW}💡 kumihan_convert.command を先に実行してセットアップを完了してください${NC}"
+    echo -e "${RED}[エラー] エラー: 必要なライブラリが不足しています${NC}"
+    echo -e "${YELLOW}[ヒント] kumihan_convert.command を先に実行してセットアップを完了してください${NC}"
     echo ""
     echo "何かキーを押して終了してください..."
     read -n 1
     exit 1
 fi
 
-echo -e "${GREEN}✅ 環境確認完了${NC}"
+echo -e "${GREEN}[完了] 環境確認完了${NC}"
 echo ""
 
 # 出力ディレクトリの準備
@@ -97,7 +97,7 @@ OUTPUT_BASE="../examples/output"
 
 # 既存ディレクトリのチェック
 if [ -d "$OUTPUT_BASE" ] && [ "$(ls -A $OUTPUT_BASE)" ]; then
-    echo -e "${YELLOW}⚠️  警告: 出力ディレクトリ内にファイルが存在します${NC}"
+    echo -e "${YELLOW}[警告]  警告: 出力ディレクトリ内にファイルが存在します${NC}"
     echo -e "${YELLOW}   以下のファイルが上書きされます:${NC}"
     echo ""
     for file in "$OUTPUT_BASE"/*; do
