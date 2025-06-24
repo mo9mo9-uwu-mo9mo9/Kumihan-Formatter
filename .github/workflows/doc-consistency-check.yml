@@ -1,0 +1,51 @@
+name: ドキュメント整合性チェック
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '*.md'
+      - 'docs/**/*.md'
+      - 'pyproject.toml'
+      - 'kumihan_formatter/__init__.py'
+      - 'examples/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '*.md'
+      - 'docs/**/*.md'
+      - 'pyproject.toml'
+      - 'kumihan_formatter/__init__.py'
+      - 'examples/**'
+
+jobs:
+  doc-consistency-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyyaml
+    
+    - name: Run documentation consistency check
+      run: |
+        python dev/tools/doc_consistency_checker.py --format text
+    
+    - name: Generate JSON report for artifacts
+      run: |
+        python dev/tools/doc_consistency_checker.py --format json --output doc-consistency-report.json
+    
+    - name: Upload consistency report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: doc-consistency-report
+        path: doc-consistency-report.json
