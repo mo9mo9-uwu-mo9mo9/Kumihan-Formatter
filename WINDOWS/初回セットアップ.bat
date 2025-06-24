@@ -83,17 +83,17 @@ echo ==========================================
 echo  セットアップ完了！
 echo ==========================================
 echo.
-echo 🎉 セットアップが完了しました！
+echo [完了] セットアップが完了しました！
 echo.
 echo 次のステップを選択してください:
 echo   Y: 変換ツールを今すぐ起動
 echo   N: 後で使用（使用方法を表示）
 echo   S: サンプルを確認（出力例を見る）
 echo.
-set /p choice="📱 選択してください [Y/N/S]: "
+set /p choice="[選択] 選択してください [Y/N/S]: "
 if /i "%choice%"=="y" (
     echo.
-    echo 🚀 変換ツールを起動しています...
+    echo [開始] 変換ツールを起動しています...
     if exist "変換ツール.bat" (
         call "変換ツール.bat"
     ) else (
@@ -106,26 +106,26 @@ if /i "%choice%"=="y" (
     )
 ) else if /i "%choice%"=="s" (
     echo.
-    echo 📊 サンプルを実行しています...
+    echo [統計] サンプルを実行しています...
     echo.
     if exist "サンプル実行.bat" (
         call "サンプル実行.bat"
         echo.
         echo サンプル確認が完了しました！
         echo.
-        set /p convert_choice="🚀 今度は変換ツールを試しますか？ [Y/N]: "
+        set /p convert_choice="[開始] 今度は変換ツールを試しますか？ [Y/N]: "
         if /i "!convert_choice!"=="y" (
             echo.
-            echo 🚀 変換ツールを起動しています...
+            echo [開始] 変換ツールを起動しています...
             if exist "変換ツール.bat" (
                 call "変換ツール.bat"
             ) else (
-                echo ❌ エラー: 変換ツール.bat が見つかりません
+                echo [エラー] エラー: 変換ツール.bat が見つかりません
                 echo 手動で 変換ツール.bat をダブルクリックしてください
             )
         )
     ) else (
-        echo ❌ エラー: サンプル実行.bat が見つかりません
+        echo [エラー] エラー: サンプル実行.bat が見つかりません
         echo 手動で サンプル実行.bat をダブルクリックしてください
     )
     echo.
@@ -133,10 +133,10 @@ if /i "%choice%"=="y" (
     pause > nul
 ) else (
     echo.
-    echo 💡 後で使用する場合:
+    echo [ヒント] 後で使用する場合:
     echo    変換ツール.bat をダブルクリック
     echo.
-    echo 📊 サンプルを確認する場合:
+    echo [統計] サンプルを確認する場合:
     echo    サンプル実行.bat をダブルクリック
     echo.
     echo Press any key to exit...
