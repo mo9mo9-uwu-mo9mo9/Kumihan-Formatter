@@ -31,7 +31,7 @@ echo "=========================================="
 echo " Kumihan-Formatter - Sample Batch Run"
 echo "=========================================="
 echo "Convert all sample files to HTML"
-echo "Output: ../examples/output/"
+echo "Output: ../dist/samples/"
 echo "=========================================="
 echo ""
 
@@ -96,7 +96,7 @@ echo ""
 OUTPUT_BASE="../dist/samples"
 
 # 既存ディレクトリのチェック
-if [ -d "$OUTPUT_BASE" ] && [ "$(ls -A $OUTPUT_BASE)" ]; then
+if [ -d "$OUTPUT_BASE" ] && [ -n "$(ls -A "$OUTPUT_BASE" 2>/dev/null)" ]; then
     echo -e "${YELLOW}[警告]  警告: 出力ディレクトリ内にファイルが存在します${NC}"
     echo -e "${YELLOW}   以下のファイルが上書きされます:${NC}"
     echo ""
