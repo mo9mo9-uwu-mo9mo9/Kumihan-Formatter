@@ -86,7 +86,7 @@ echo.
 
 rem Prepare output directory
 echo [DEBUG] Preparing output directory...
-set "OUTPUT_BASE=..\examples\output"
+set "OUTPUT_BASE=..\dist\samples"
 
 rem Check if output directory exists and is not empty
 if exist "%OUTPUT_BASE%" (
@@ -116,9 +116,24 @@ echo [OK] Output directory ready: %OUTPUT_BASE%
 echo [DEBUG] Starting sample conversion...
 echo.
 
-rem Sample 1: basic
-echo [1/3] Basic sample (02-basic.txt)
-set "OUTPUT_DIR=%OUTPUT_BASE%\basic"
+rem Sample 1: quickstart
+echo [1/4] Quickstart sample (01-quickstart.txt)
+set "OUTPUT_DIR=%OUTPUT_BASE%\01-quickstart"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\01-quickstart.txt" -o "%OUTPUT_DIR%" --no-preview
+if errorlevel 1 (
+    echo Error: Failed to convert quickstart sample
+    goto error_end
+) else (
+    echo OK: Quickstart sample completed -> %OUTPUT_DIR%
+)
+echo.
+
+rem Sample 2: basic
+echo [2/4] Basic sample (02-basic.txt)
+set "OUTPUT_DIR=%OUTPUT_BASE%\02-basic"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
@@ -131,9 +146,9 @@ if errorlevel 1 (
 )
 echo.
 
-rem Sample 2: advanced
-echo [2/3] Advanced sample (03-comprehensive.txt)
-set "OUTPUT_DIR=%OUTPUT_BASE%\advanced"
+rem Sample 3: advanced
+echo [3/4] Advanced sample (03-comprehensive.txt)
+set "OUTPUT_DIR=%OUTPUT_BASE%\03-advanced"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
@@ -146,9 +161,9 @@ if errorlevel 1 (
 )
 echo.
 
-rem Sample 3: showcase
-echo [3/3] Feature showcase (--generate-sample)
-set "OUTPUT_DIR=%OUTPUT_BASE%\showcase"
+rem Sample 4: showcase
+echo [4/4] Feature showcase (--generate-sample)
+set "OUTPUT_DIR=%OUTPUT_BASE%\04-showcase"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 set PYTHONIOENCODING=utf-8
@@ -166,9 +181,10 @@ echo All samples converted successfully!
 echo ==========================================
 echo.
 echo Generated files:
-echo   ..\examples\output\basic\        - Basic syntax samples
-echo   ..\examples\output\advanced\     - Advanced syntax samples
-echo   ..\examples\output\showcase\     - Feature showcase
+echo   ..\dist\samples\01-quickstart\  - Quickstart tutorial
+echo   ..\dist\samples\02-basic\       - Basic syntax samples
+echo   ..\dist\samples\03-advanced\    - Advanced syntax samples
+echo   ..\dist\samples\04-showcase\    - Feature showcase
 echo.
 echo Please check HTML files in your browser
 echo.

@@ -142,9 +142,22 @@ else
 fi
 echo ""
 
-# サンプル1: basic
-echo -e "${BLUE}[1/3] 基本サンプル (02-basic.txt)${NC}"
-OUTPUT_DIR="$OUTPUT_BASE/basic"
+# サンプル1: quickstart
+echo -e "${BLUE}[1/4] クイックスタートサンプル (01-quickstart.txt)${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/01-quickstart"
+mkdir -p "$OUTPUT_DIR"
+
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/01-quickstart.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}quickstart サンプル完了 → $OUTPUT_DIR${NC}"
+else
+    echo -e "${RED}エラー: quickstart サンプルの変換に失敗${NC}"
+    exit 1
+fi
+echo ""
+
+# サンプル2: basic
+echo -e "${BLUE}[2/4] 基本サンプル (02-basic.txt)${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/02-basic"
 mkdir -p "$OUTPUT_DIR"
 
 if $PYTHON_CMD -m kumihan_formatter convert "../examples/02-basic.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
@@ -155,9 +168,9 @@ else
 fi
 echo ""
 
-# サンプル2: advanced
-echo -e "${BLUE}[2/3] 高度なサンプル (03-comprehensive.txt)${NC}"
-OUTPUT_DIR="$OUTPUT_BASE/advanced"
+# サンプル3: advanced
+echo -e "${BLUE}[3/4] 高度なサンプル (03-comprehensive.txt)${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/03-advanced"
 mkdir -p "$OUTPUT_DIR"
 
 if $PYTHON_CMD -m kumihan_formatter convert "../examples/03-comprehensive.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
@@ -168,9 +181,9 @@ else
 fi
 echo ""
 
-# サンプル3: showcase
-echo -e "${BLUE}[3/3] 機能ショーケース (--generate-sample)${NC}"
-OUTPUT_DIR="$OUTPUT_BASE/showcase"
+# サンプル4: showcase
+echo -e "${BLUE}[4/4] 機能ショーケース (--generate-sample)${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/04-showcase"
 mkdir -p "$OUTPUT_DIR"
 
 if $PYTHON_CMD -m kumihan_formatter convert --generate-sample -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
@@ -186,9 +199,10 @@ echo -e "${GREEN}全サンプルの変換が完了しました！${NC}"
 echo "=========================================="
 echo ""
 echo -e "${CYAN}生成されたファイル:${NC}"
-echo "  ../dist/samples/basic/        - 基本的な記法のサンプル"
-echo "  ../dist/samples/advanced/     - 高度な記法のサンプル"
-echo "  ../dist/samples/showcase/     - 全機能のショーケース"
+echo "  ../dist/samples/01-quickstart/  - クイックスタートチュートリアル"
+echo "  ../dist/samples/02-basic/       - 基本的な記法のサンプル"
+echo "  ../dist/samples/03-advanced/    - 高度な記法のサンプル"
+echo "  ../dist/samples/04-showcase/    - 全機能のショーケース"
 echo ""
 echo -e "${YELLOW}HTMLファイルをブラウザで確認してください${NC}"
 echo ""
