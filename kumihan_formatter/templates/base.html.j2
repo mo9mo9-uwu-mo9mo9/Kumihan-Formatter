@@ -22,8 +22,8 @@
         }
 
         .container {
-            max-width: 100%;
-            margin: 0;
+            max-width: 800px;
+            margin: 0 auto;
             background-color: {% if css_vars.container_background %}{{ css_vars.container_background }}{% else %}white{% endif %};
             padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -477,8 +477,8 @@
         .layout-wrapper {
             display: grid;
             grid-template-columns: minmax(300px, 25%) 1fr;
-            max-width: 100%;
-            margin: 0;
+            max-width: 1400px;
+            margin: 0 auto;
             gap: 20px;
             padding: 10px;
             min-height: 100vh;
