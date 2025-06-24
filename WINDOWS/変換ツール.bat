@@ -242,8 +242,29 @@ if "%input_file%"=="" (
     exit /b 1
 )
 
-rem クォートを除去
-set input_file=%input_file:"=%
+rem セキュリティ: 入力パスの検証
+:validate_input
+rem 危険な文字をチェック（コマンドインジェクション対策）
+echo %input_file% | findstr /R "[;&|<>^`$(){}[\]\\!]" >nul
+if %errorlevel% equ 0 (
+    echo [エラー] セキュリティエラー: ファイルパスに無効な文字が含まれています
+    echo   使用できない文字: ; ^& ^| ^< ^> ` $ ^( ^) { } [ ] \ !
+    echo.
+    pause
+    exit /b 1
+)
+
+rem パストラバーサル攻撃対策
+echo %input_file% | findstr /C:".." >nul
+if %errorlevel% equ 0 (
+    echo [エラー] セキュリティエラー: 相対パス参照は許可されていません
+    echo.
+    pause
+    exit /b 1
+)
+
+rem クォートを安全に除去
+set "input_file=%input_file:"=%"
 
 rem ファイルの存在確認
 if not exist "%input_file%" (
