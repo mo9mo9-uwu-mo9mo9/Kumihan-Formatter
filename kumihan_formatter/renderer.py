@@ -128,6 +128,13 @@ class Renderer:
         # summary属性からタイトルを取得
         summary_text = node.attributes.get("summary", "詳細を表示")
         
+        # ネタバレブロックの場合、spoilerクラスを追加
+        if summary_text == "ネタバレを表示":
+            if "class" in node.attributes:
+                node.attributes["class"] += " spoiler"
+            else:
+                node.attributes["class"] = "spoiler"
+        
         # その他の属性を処理（summaryは除外）
         attributes = self._format_attributes(node.attributes, exclude_keys=['summary'])
         

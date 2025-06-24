@@ -98,6 +98,22 @@
             margin: 1em 0;
             border-radius: 5px;
             background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 60px;
+        }
+        
+        /* 枠線内の段落は左揃え */
+        .box p {
+            text-align: left;
+            margin: 0;
+        }
+        
+        /* 枠線内のリストも左揃え */
+        .box ul, .box ol {
+            text-align: left;
+            margin: 0;
         }
 
         /* ハイライト */
@@ -105,6 +121,22 @@
             padding: 1em;
             margin: 1em 0;
             border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 60px;
+        }
+        
+        /* ハイライト内の段落は左揃え */
+        .highlight p {
+            text-align: left;
+            margin: 0;
+        }
+        
+        /* ハイライト内のリストも左揃え */
+        .highlight ul, .highlight ol {
+            text-align: left;
+            margin: 0;
         }
 
         /* ネストしたブロック要素の調整 */
@@ -250,6 +282,147 @@
 
         .bold-custom {
             color: #74b9ff;
+        }
+        {% endif %}
+
+        /* 折りたたみブロック（details要素）のスタイル */
+        details {
+            margin: 1em 0;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        details:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        details summary {
+            padding: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #e9ecef;
+            border-radius: 8px 8px 0 0;
+            user-select: none;
+            transition: background-color 0.2s ease;
+            position: relative;
+            padding-left: 2.5em;
+            list-style: none;
+        }
+        
+        /* Webkit browsers */
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid #ddd;
+            border-radius: 8px 8px 0 0;
+        }
+
+        details summary:hover {
+            background-color: #dee2e6;
+        }
+
+        /* 展開アイコン */
+        details summary::before {
+            content: '▶';
+            position: absolute;
+            left: 1em;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.2s ease;
+            font-size: 0.8em;
+        }
+
+        details[open] summary::before {
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        /* 折りたたみコンテンツ */
+        details > *:not(summary) {
+            padding: 1em;
+            padding-top: 0.5em;
+        }
+        
+        /* 折りたたみブロック内の段落のマージンを調整 */
+        details > p {
+            margin-bottom: 0.8em;
+        }
+        
+        details > p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+        details .highlight,
+        details .box {
+            min-height: auto;
+            padding: 0.8em;
+        }
+        
+        /* 折りたたみブロック内の段落のマージンを調整 */
+        details .highlight p,
+        details .box p {
+            margin-bottom: 0.5em;
+        }
+        
+        details .highlight p:last-child,
+        details .box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ネタバレブロック専用スタイル */
+        details.spoiler {
+            border-color: #f0ad4e;
+            background-color: #fff3cd;
+        }
+
+        details.spoiler summary {
+            background-color: #f0ad4e;
+            color: #856404;
+        }
+
+        details.spoiler summary:hover {
+            background-color: #ec971f;
+        }
+
+        details.spoiler summary::after {
+            content: ' ⚠️';
+            margin-left: 0.5em;
+        }
+
+        /* ダークテーマでの折りたたみブロック調整 */
+        {% if css_vars.background_color == '#1a1a1a' %}
+        details {
+            background-color: #2d2d2d;
+            border-color: #404040;
+        }
+
+        details summary {
+            background-color: #363636;
+            color: #e0e0e0;
+        }
+
+        details summary:hover {
+            background-color: #404040;
+        }
+
+        details.spoiler {
+            background-color: #3a2f1a;
+            border-color: #5a4a2a;
+        }
+
+        details.spoiler summary {
+            background-color: #5a4a2a;
+            color: #f0ad4e;
+        }
+
+        details.spoiler summary:hover {
+            background-color: #6a5a3a;
         }
         {% endif %}
 
