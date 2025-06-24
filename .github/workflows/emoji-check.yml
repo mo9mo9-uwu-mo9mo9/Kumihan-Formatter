@@ -35,10 +35,25 @@ jobs:
         python -m pip install --upgrade pip
         # emoji_checker.py は標準ライブラリのみ使用
     
-    - name: Run emoji checker on all files
+    - name: Run emoji checker on project files
       run: |
-        echo "[検証] 絵文字使用チェックを実行中..."
-        python dev/tools/emoji_checker.py --check-all --extensions .py .sh .command .bat
+        echo "[検証] プロジェクトファイルの絵文字使用チェックを実行中..."
+        
+        # プロジェクトファイルをチェック（.venvとemoji_checker.py自体を除外）
+        find . -name "*.py" -not -path "./.venv/*" -not -path "./dev/tools/emoji_checker.py" -exec python dev/tools/emoji_checker.py {} \; || HAS_EMOJI_PY=1
+        find . -name "*.sh" -not -path "./.venv/*" -exec python dev/tools/emoji_checker.py {} \; || HAS_EMOJI_SH=1  
+        find . -name "*.command" -not -path "./.venv/*" -exec python dev/tools/emoji_checker.py {} \; || HAS_EMOJI_CMD=1
+        find . -name "*.bat" -not -path "./.venv/*" -exec python dev/tools/emoji_checker.py {} \; || HAS_EMOJI_BAT=1
+        
+        # 絵文字が検出された場合はエラーで終了
+        if [ "${HAS_EMOJI_PY:-0}" -eq 1 ] || [ "${HAS_EMOJI_SH:-0}" -eq 1 ] || [ "${HAS_EMOJI_CMD:-0}" -eq 1 ] || [ "${HAS_EMOJI_BAT:-0}" -eq 1 ]; then
+          echo ""
+          echo "[エラー] 絵文字使用が検出されました"
+          echo "修正方法: docs/dev/EMOJI_POLICY.md を参照"
+          exit 1
+        fi
+        
+        echo "[完了] プロジェクトファイルに絵文字使用なし"
     
     - name: Check changed files only (PR only)
       if: github.event_name == 'pull_request'
