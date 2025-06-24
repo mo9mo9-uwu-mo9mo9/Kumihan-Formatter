@@ -56,6 +56,123 @@ except:
     console = Console()
 
 
+def _handle_sample_generation(output: str, sample_output: str, with_source_toggle: bool) -> bool:
+    """サンプル生成モードの処理"""
+    output_dir = output if output != "dist" else sample_output
+    
+    use_source_toggle = with_source_toggle
+    if not with_source_toggle:
+        console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
+        console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
+        response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
+        use_source_toggle = response.lower() in ['y', 'yes', '']
+    
+    generate_sample(output_dir, use_source_toggle)
+    return True
+
+
+def _handle_test_generation(test_output: str, pattern_count: int, double_click_mode: bool, 
+                           output: str, no_preview: bool, show_test_cases: bool, config: str) -> bool:
+    """テストファイル生成モードの処理"""
+    # generate_test_file.pyの新しいパスを設定
+    dev_tools_path = Path(__file__).parent.parent / "dev" / "tools"
+    if dev_tools_path not in sys.path:
+        sys.path.insert(0, str(dev_tools_path))
+    
+    from generate_test_file import TestFileGenerator
+    
+    if double_click_mode:
+        console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
+        console.print("[dim]   すべての記法パターンを網羅したテストファイルを作成します[/dim]")
+    else:
+        console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
+    
+    # 進捗表示付きでファイル生成
+    with Progress() as progress:
+        task = progress.add_task("[cyan]パターン生成中", total=100)
+        
+        generator = TestFileGenerator(max_combinations=pattern_count)
+        
+        # 生成開始
+        for i in range(0, 51, 10):
+            progress.update(task, completed=i)
+            time.sleep(0.1)
+        
+        output_file = generator.generate_file(test_output)
+        stats = generator.get_statistics()
+        
+        for i in range(51, 101, 10):
+            progress.update(task, completed=i)
+            time.sleep(0.05)
+        progress.update(task, completed=100)
+    
+    _display_test_stats(stats, output_file, double_click_mode)
+    _test_generated_file(output_file, output, config, show_test_cases, no_preview, double_click_mode)
+    return True
+
+
+def _display_test_stats(stats: dict, output_file: Path, double_click_mode: bool) -> None:
+    """テスト統計情報の表示"""
+    if double_click_mode:
+        console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
+        console.print(f"[dim]   [統計] 生成パターン数: {stats['total_patterns']}[/dim]")
+        console.print(f"[dim]   [キーワード]  単一キーワード数: {stats['single_keywords']}[/dim]")
+        console.print(f"[dim]   [生成] ハイライト色数: {stats['highlight_colors']}[/dim]")
+        console.print(f"[dim]    最大組み合わせ数: {stats['max_combinations']}[/dim]")
+    else:
+        console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
+        console.print(f"[dim]   - 生成パターン数: {stats['total_patterns']}[/dim]")
+        console.print(f"[dim]   - 単一キーワード数: {stats['single_keywords']}[/dim]")
+        console.print(f"[dim]   - ハイライト色数: {stats['highlight_colors']}[/dim]")
+        console.print(f"[dim]   - 最大組み合わせ数: {stats['max_combinations']}[/dim]")
+
+
+def _test_generated_file(output_file: Path, output: str, config: str, show_test_cases: bool, 
+                        no_preview: bool, double_click_mode: bool) -> None:
+    """生成されたテストファイルの変換テスト"""
+    if double_click_mode:
+        console.print("\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]")
+        console.print("[dim]   すべての記法が正しく処理されるかテストしています[/dim]")
+    else:
+        console.print("\n[yellow][テスト] 生成されたファイルのテスト変換を実行中...[/yellow]")
+        
+    try:
+        config_obj = load_config(config)
+        if config:
+            config_obj.validate_config()
+        
+        test_output_file = convert_file(output_file, output or "dist", config_obj, 
+                                      show_stats=False, show_test_cases=show_test_cases, template=None)
+        
+        _display_test_results(test_output_file, output_file, double_click_mode)
+        
+        if not no_preview:
+            if double_click_mode:
+                console.print("[blue][ブラウザ] ブラウザで結果を表示中...[/blue]")
+            else:
+                console.print("[blue][ブラウザ] ブラウザで開いています...[/blue]")
+            webbrowser.open(test_output_file.resolve().as_uri())
+            
+    except Exception as e:
+        console.print(f"[red][エラー] テスト変換中にエラーが発生しました: {e}[/red]")
+        raise click.ClickException(f"テスト変換中にエラーが発生しました: {e}")
+
+
+def _display_test_results(test_output_file: Path, output_file: Path, double_click_mode: bool) -> None:
+    """テスト結果の表示"""
+    if double_click_mode:
+        console.print(f"[green][完了] HTML変換成功:[/green] {test_output_file}")
+        console.print("[dim]   [ファイル] テストファイル (.txt) と変換結果 (.html) の両方が生成されました[/dim]")
+        
+        # ファイルサイズ情報を表示
+        txt_size = output_file.stat().st_size
+        html_size = test_output_file.stat().st_size
+        console.print(f"[dim]    テキストファイル: {txt_size:,} バイト[/dim]")
+        console.print(f"[dim]    HTMLファイル: {html_size:,} バイト[/dim]")
+    else:
+        console.print(f"[green][完了] テスト変換成功:[/green] {test_output_file}")
+
+
 def copy_images(input_path, output_path, ast):
     """画像ファイルを出力ディレクトリにコピー"""
     # ASTから画像ノードを抽出
@@ -113,7 +230,8 @@ def copy_images(input_path, output_path, ast):
             console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
 
 
-def convert_file(input_file, output, config=None, show_stats=True, show_test_cases=False, template=None, include_source=False):
+def convert_file(input_file: str, output: str, config=None, show_stats: bool = True, 
+                show_test_cases: bool = False, template: str = None, include_source: bool = False) -> Path:
     """単一ファイルの変換処理"""
     input_path = Path(input_file)
     
@@ -413,108 +531,13 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
     try:
         # サンプル生成モードの処理
         if generate_sample_flag:
-            # -o/--output オプションが指定されている場合は、それを優先
-            output_dir = output if output != "dist" else sample_output
-            
-            # 記法表示機能の確認（--with-source-toggleが指定されていない場合）
-            use_source_toggle = with_source_toggle
-            if not with_source_toggle:
-                console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
-                console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
-                response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
-                use_source_toggle = response.lower() in ['y', 'yes', '']
-            
-            generate_sample(output_dir, use_source_toggle)
+            _handle_sample_generation(output, sample_output, with_source_toggle)
             return
         
         # テストファイル生成モードの処理
         if generate_test:
-            # generate_test_file.pyの新しいパスを設定
-            dev_tools_path = Path(__file__).parent.parent / "dev" / "tools"
-            if dev_tools_path not in sys.path:
-                sys.path.insert(0, str(dev_tools_path))
-            
-            from generate_test_file import TestFileGenerator
-            
-            if double_click_mode:
-                console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
-                console.print("[dim]   すべての記法パターンを網羅したテストファイルを作成します[/dim]")
-            else:
-                console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
-            
-            # 進捗表示付きでファイル生成
-            with Progress() as progress:
-                task = progress.add_task("[cyan]パターン生成中", total=100)
-                
-                generator = TestFileGenerator(max_combinations=pattern_count)
-                
-                # 生成開始
-                for i in range(0, 51, 10):
-                    progress.update(task, completed=i)
-                    time.sleep(0.1)
-                
-                output_file = generator.generate_file(test_output)
-                stats = generator.get_statistics()
-                
-                for i in range(51, 101, 10):
-                    progress.update(task, completed=i)
-                    time.sleep(0.05)
-                progress.update(task, completed=100)
-            
-            if double_click_mode:
-                console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
-                console.print(f"[dim]   [統計] 生成パターン数: {stats['total_patterns']}[/dim]")
-                console.print(f"[dim]   [キーワード]  単一キーワード数: {stats['single_keywords']}[/dim]")
-                console.print(f"[dim]   [生成] ハイライト色数: {stats['highlight_colors']}[/dim]")
-                console.print(f"[dim]    最大組み合わせ数: {stats['max_combinations']}[/dim]")
-            else:
-                console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
-                console.print(f"[dim]   - 生成パターン数: {stats['total_patterns']}[/dim]")
-                console.print(f"[dim]   - 単一キーワード数: {stats['single_keywords']}[/dim]")
-                console.print(f"[dim]   - ハイライト色数: {stats['highlight_colors']}[/dim]")
-                console.print(f"[dim]   - 最大組み合わせ数: {stats['max_combinations']}[/dim]")
-            
-            # 生成したファイルをHTMLに変換してテスト
-            if double_click_mode:
-                console.print("\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]")
-                console.print("[dim]   すべての記法が正しく処理されるかテストしています[/dim]")
-            else:
-                console.print("\n[yellow][テスト] 生成されたファイルのテスト変換を実行中...[/yellow]")
-                
-            try:
-                config_obj = load_config(config)
-                if config:
-                    config_obj.validate_config()
-                
-                test_output_file = convert_file(output_file, output or "dist", config_obj, show_stats=False, show_test_cases=show_test_cases, template=None)
-                
-                if double_click_mode:
-                    console.print(f"[green][完了] HTML変換成功:[/green] {test_output_file}")
-                    console.print("[dim]   [ファイル] テストファイル (.txt) と変換結果 (.html) の両方が生成されました[/dim]")
-                    
-                    # ファイルサイズ情報を表示
-                    txt_size = output_file.stat().st_size
-                    html_size = test_output_file.stat().st_size
-                    console.print(f"[dim]    テキストファイル: {txt_size:,} バイト[/dim]")
-                    console.print(f"[dim]    HTMLファイル: {html_size:,} バイト[/dim]")
-                else:
-                    console.print(f"[green][完了] テスト変換成功:[/green] {test_output_file}")
-                
-                if not no_preview:
-                    if double_click_mode:
-                        console.print("[blue][ブラウザ] ブラウザで結果を表示中...[/blue]")
-                    else:
-                        console.print("[blue][ブラウザ] ブラウザで開いています...[/blue]")
-                    webbrowser.open(test_output_file.resolve().as_uri())
-                
-            except Exception as e:
-                console.print(f"[red][エラー] テスト変換でエラーが発生:[/red] {e}")
-                if double_click_mode:
-                    console.print("[yellow][警告]  生成されたテストファイルに問題がある可能性があります[/yellow]")
-                    console.print("[dim]   テキストファイルは正常に生成されましたが、HTML変換で問題が発生しました[/dim]")
-                else:
-                    console.print("[yellow][警告]  生成されたテストファイルに問題がある可能性があります[/yellow]")
-            
+            _handle_test_generation(test_output, pattern_count, double_click_mode, 
+                                  output, no_preview, show_test_cases, config)
             return
         
         # 通常の変換処理
