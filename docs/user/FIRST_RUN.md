@@ -45,7 +45,7 @@ python3 --version
 **Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック  
 **macOS**: `MAC/サンプル実行.command` をダブルクリック
 
-→ `examples/output/` フォルダに結果が生成されます
+→ `dist/samples/` フォルダに結果が生成されます
 
 ### 📝 自分のファイルを変換
 セットアップ後、いつでもファイル変換できます：

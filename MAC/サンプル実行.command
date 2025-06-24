@@ -93,7 +93,7 @@ echo -e "${GREEN}[完了] 環境確認完了${NC}"
 echo ""
 
 # 出力ディレクトリの準備
-OUTPUT_BASE="../examples/output"
+OUTPUT_BASE="../dist/samples"
 
 # 既存ディレクトリのチェック
 if [ -d "$OUTPUT_BASE" ] && [ "$(ls -A $OUTPUT_BASE)" ]; then
@@ -121,7 +121,7 @@ fi
 mkdir -p "$OUTPUT_BASE"
 
 echo -e "${CYAN}サンプル変換を開始します...${NC}"
-echo -e "${CYAN}出力先: ../examples/output/ (自動作成されます)${NC}"
+echo -e "${CYAN}出力先: ../dist/samples/ (自動作成されます)${NC}"
 echo ""
 
 # 記法表示機能の選択を事前に確認
@@ -186,9 +186,9 @@ echo -e "${GREEN}全サンプルの変換が完了しました！${NC}"
 echo "=========================================="
 echo ""
 echo -e "${CYAN}生成されたファイル:${NC}"
-echo "  ../examples/output/basic/        - 基本的な記法のサンプル"
-echo "  ../examples/output/advanced/     - 高度な記法のサンプル"
-echo "  ../examples/output/showcase/     - 全機能のショーケース"
+echo "  ../dist/samples/basic/        - 基本的な記法のサンプル"
+echo "  ../dist/samples/advanced/     - 高度な記法のサンプル"
+echo "  ../dist/samples/showcase/     - 全機能のショーケース"
 echo ""
 echo -e "${YELLOW}HTMLファイルをブラウザで確認してください${NC}"
 echo ""

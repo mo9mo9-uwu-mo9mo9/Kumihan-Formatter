@@ -13,7 +13,7 @@ echo ==========================================
 echo  Kumihan-Formatter - Sample Batch Run
 echo ==========================================
 echo Convert all sample files to HTML
-echo Output: examples/output/
+echo Output: dist/samples/
 echo ==========================================
 echo.
 
