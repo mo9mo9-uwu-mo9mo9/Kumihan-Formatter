@@ -105,29 +105,42 @@ Kumihan-Formatter 記法リファレンス
 ## 🔄 ソーストグル機能
 
 ### 記法と結果の切り替え表示
+
+ソーストグル機能を使うと、記法テキストと変換結果をHTML内で切り替えて表示できます。記法学習や動作確認に最適です。
+
+### CLIでの有効化
 ```bash
-# CLIオプションで有効化
+# 基本的な使用
 python -m kumihan_formatter convert sample.txt --with-source-toggle
+
+# 実験的機能：スクロール同期
+python -m kumihan_formatter convert sample.txt --with-source-toggle --experimental scroll-sync
 ```
 
-または
-
+### バッチファイルでの有効化
 ```bash
 # Windows
-変換ツール.bat を実行後、Yを選択
+変換ツール.bat を実行後、「この機能を使用しますか？」でYを選択
 
 # macOS  
-変換ツール.command を実行後、Yを選択
-```
-この文字は斜体で表示されます
-;;;
+変換ツール.command を実行後、「この機能を使用しますか？」でYを選択
 ```
 
-### 太字 + イタリック
+### 機能の特徴
+- **並列表示**: 記法テキストと変換結果を左右または上下に表示
+- **リアルタイム切り替え**: ボタンクリックで即座に切り替え
+- **記法学習**: 実際の記法を見ながら結果を確認可能
+- **実験的機能**: スクロール同期で記法と結果の対応箇所をハイライト
+
+### 使用例
 ```
-;;;太字+イタリック
-この文字は太字の斜体で表示されます
+記法テキスト表示時:
+;;;太字
+この文字は太字になります
 ;;;
+
+結果表示時:
+この文字は太字になります（実際に太字で表示）
 ```
 
 ---
@@ -272,7 +285,24 @@ python -m kumihan_formatter convert sample.txt --with-source-toggle
 
 ### 基本的な画像
 ```
-;;;画像ファイル名.jpg;;;
+;;;画像 alt=画像の説明
+ファイル名.jpg
+;;;
+```
+
+### alt属性付きの例
+```
+;;;画像 alt=サンプル画像
+sample.png
+;;;
+
+;;;画像 alt=キャラクターイラスト
+character.jpg
+;;;
+
+;;;画像 alt=フローチャート図
+flowchart.svg
+;;;
 ```
 
 ### 対応画像形式
@@ -285,6 +315,7 @@ python -m kumihan_formatter convert sample.txt --with-source-toggle
 - 画像ファイルは `images/` フォルダに配置
 - ファイル名のみを記述（パス不要）
 - HTMLと同じフォルダに自動でコピーされる
+- alt属性は必須（アクセシビリティ対応）
 
 ---
 
