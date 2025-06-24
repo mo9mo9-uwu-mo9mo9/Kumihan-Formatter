@@ -253,8 +253,18 @@ class Parser:
             self.heading_counter += 1
             node_attrs["id"] = f"heading-{self.heading_counter}"
         
-        # コンテンツをそのまま使用
-        parsed_content = [content]
+        # コンテンツを再帰的にパース（見出しは除く）
+        if content.strip():
+            if node_type in ["h1", "h2", "h3", "h4", "h5"]:
+                # 見出しの場合はコンテンツをそのまま使用
+                parsed_content = [content]
+            else:
+                # その他のブロックは再帰的にパース
+                temp_parser = Parser()
+                temp_parser.BLOCK_KEYWORDS = self.BLOCK_KEYWORDS
+                parsed_content = temp_parser.parse(content)
+        else:
+            parsed_content = []
         
         return Node(type=node_type, content=parsed_content, attributes=node_attrs)
     
@@ -296,8 +306,22 @@ class Parser:
                     if keyword not in sorted_keywords:
                         sorted_keywords.append(keyword)
         
-        # コンテンツをそのまま使用
-        parsed_content = [content]
+        # 最外側のキーワードを取得（最初にネストされるもの）
+        outermost_keyword = sorted_keywords[-1] if sorted_keywords else None
+        outermost_tag = self.BLOCK_KEYWORDS.get(outermost_keyword, {}).get("tag", "") if outermost_keyword else ""
+        
+        # コンテンツを再帰的にパース（最外側が見出しの場合は除く）
+        if content.strip():
+            if outermost_tag in ["h1", "h2", "h3", "h4", "h5"]:
+                # 最外側が見出しの場合はコンテンツをそのまま使用
+                parsed_content = [content]
+            else:
+                # その他の場合は再帰的にパース
+                temp_parser = Parser()
+                temp_parser.BLOCK_KEYWORDS = self.BLOCK_KEYWORDS
+                parsed_content = temp_parser.parse(content)
+        else:
+            parsed_content = []
         
         # 内側から外側へ向かってネスト
         for keyword in reversed(sorted_keywords):
