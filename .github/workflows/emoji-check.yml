@@ -1,0 +1,131 @@
+name: Emoji Usage Check
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.sh'
+      - '**/*.command'
+      - '**/*.bat'
+      - '**/*.md'
+      - 'dev/tools/emoji_checker.py'
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.sh'
+      - '**/*.command'
+      - '**/*.bat'
+
+jobs:
+  emoji-check:
+    name: Check for Emoji Usage
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # emoji_checker.py は標準ライブラリのみ使用
+    
+    - name: Run emoji checker on all files
+      run: |
+        echo "[検証] 絵文字使用チェックを実行中..."
+        python dev/tools/emoji_checker.py --check-all --extensions .py .sh .command .bat
+    
+    - name: Check changed files only (PR only)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "[検証] 変更されたファイルの絵文字チェック..."
+        
+        # 変更されたファイルを取得
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\\.(py|sh|command|bat)$' || true)
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "[完了] 対象ファイルの変更なし"
+          exit 0
+        fi
+        
+        echo "チェック対象ファイル: $CHANGED_FILES"
+        
+        # 各ファイルを個別にチェック
+        HAS_VIOLATIONS=0
+        for file in $CHANGED_FILES; do
+          if [ -f "$file" ]; then
+            echo "[処理] $file をチェック中..."
+            if ! python dev/tools/emoji_checker.py "$file"; then
+              HAS_VIOLATIONS=1
+            fi
+          fi
+        done
+        
+        if [ $HAS_VIOLATIONS -eq 1 ]; then
+          echo ""
+          echo "[エラー] 絵文字使用が検出されました"
+          echo ""
+          echo "修正方法:"
+          echo "  1. 検出された絵文字を [タグ] 形式に置換してください"
+          echo "  2. 詳細は docs/dev/EMOJI_POLICY.md を参照"
+          echo "  3. 推奨代替表現: 🔍→[検証], ✅→[完了], ❌→[エラー]"
+          exit 1
+        fi
+        
+        echo "[完了] 絵文字使用違反なし"
+
+  markdown-emoji-advisory:
+    name: Markdown Emoji Advisory Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Check markdown files for emoji usage
+      run: |
+        echo "[検証] Markdownファイルの絵文字使用をチェック..."
+        
+        # 変更されたMarkdownファイルを取得（README.md除く）
+        CHANGED_MD_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\\.md$' | grep -v 'README.md' || true)
+        
+        if [ -z "$CHANGED_MD_FILES" ]; then
+          echo "[完了] 対象Markdownファイルの変更なし"
+          exit 0
+        fi
+        
+        echo "チェック対象ファイル: $CHANGED_MD_FILES"
+        
+        # 各ファイルを警告レベルでチェック
+        HAS_VIOLATIONS=0
+        for file in $CHANGED_MD_FILES; do
+          if [ -f "$file" ]; then
+            echo "[処理] $file をチェック中..."
+            if ! python dev/tools/emoji_checker.py "$file"; then
+              HAS_VIOLATIONS=1
+            fi
+          fi
+        done
+        
+        if [ $HAS_VIOLATIONS -eq 1 ]; then
+          echo ""
+          echo "[警告] 技術文書で絵文字使用が検出されました"
+          echo ""
+          echo "推奨事項:"
+          echo "  - 技術文書では絵文字の使用を避けることを推奨します"
+          echo "  - README.md 以外では [タグ] 形式を使用してください"
+          echo "  - 詳細: docs/dev/EMOJI_POLICY.md"
+          echo ""
+          echo "このチェックは警告のみで、ビルドは継続されます"
+        fi
+        
+        echo "[完了] Markdownファイルチェック完了"

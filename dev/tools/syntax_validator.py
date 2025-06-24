@@ -91,6 +91,17 @@ class SyntaxValidator:
                     message="**太字** 記法は非サポートです",
                     suggestion=";;;太字;;; ブロック記法を使用してください"
                 ))
+            
+            # 絵文字のチェック
+            emoji_pattern = re.compile(r'[\U00002600-\U000027BF]|[\U0001F300-\U0001F5FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F700-\U0001F77F]|[\U0001F780-\U0001F7FF]|[\U0001F800-\U0001F8FF]|[\U0001F900-\U0001F9FF]|[\U0001FA00-\U0001FA6F]|[\U0001FA70-\U0001FAFF]|[\U00002700-\U000027BF]')
+            if emoji_pattern.search(line):
+                errors.append(ValidationError(
+                    file_path=str(file_path),
+                    line_number=line_num,
+                    error_type="EMOJI_USAGE",
+                    message="絵文字の使用は推奨されません",
+                    suggestion="代替表記を使用してください（例: 🔍→[検証], ✅→[完了], ❌→[エラー]）"
+                ))
         
         return errors
     
