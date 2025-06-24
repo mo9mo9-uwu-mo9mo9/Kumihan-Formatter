@@ -50,11 +50,11 @@ jobs:
     - name: Test sample generation
       run: |
         # サンプル生成テスト
-        echo "n" | python -m kumihan_formatter.cli --generate-sample --output dist/test-output
+        echo "n" | python -m kumihan_formatter.cli --generate-sample -o dist/test-output
         
     - name: Test basic conversion
       run: |
         # 基本変換テスト
         if [ -f "examples/sample.txt" ]; then
-          python -m kumihan_formatter.cli examples/sample.txt --output dist/test-output --no-preview
+          python -m kumihan_formatter.cli examples/sample.txt -o dist/test-output --no-preview
         fi
