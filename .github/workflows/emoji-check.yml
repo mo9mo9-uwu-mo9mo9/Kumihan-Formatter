@@ -1,4 +1,4 @@
-name: Emoji Usage Check
+name: Code Quality / Emoji Check
 
 on:
   pull_request:
@@ -9,15 +9,7 @@ on:
       - '**/*.command'
       - '**/*.bat'
       - '**/*.md'
-      - 'dev/tools/emoji_checker.py'
-  push:
-    branches: [ main ]
-    paths:
-      - '**/*.py'
-      - '**/*.sh'
-      - '**/*.command'
-      - '**/*.bat'
-  workflow_dispatch: # 手動実行を可能にする
+  workflow_dispatch:  # 手動実行を可能にする
 
 jobs:
   emoji-check:

@@ -1,4 +1,4 @@
-name: Documentation Check
+name: Docs / Consistency Check
 
 on:
   pull_request:
@@ -7,9 +7,12 @@ on:
       - 'kumihan_formatter/**'
       - 'examples/**'
       - 'pyproject.toml'
-      - 'README.md'
-      - 'SPEC.md'
-      - 'CLAUDE.md'
+      - '**/*.md'
+  push:
+    branches: [ main ]
+    paths:
+      - 'pyproject.toml'
+      - 'kumihan_formatter/__init__.py'
 
 jobs:
   version-consistency:
