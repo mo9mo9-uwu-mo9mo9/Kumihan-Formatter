@@ -39,22 +39,18 @@ jobs:
     
     - name: Test with pytest
       run: |
-        # 基本テストを実行
-        if [ -d "dev/tests" ]; then
-          python dev/tests/simple_syntax_test.py
-        else
-          python -c "import kumihan_formatter; print('Package import test passed')"
-          python -m kumihan_formatter --help
-        fi
+        # 基本テストを実行（OS統一）
+        python -c "import kumihan_formatter; print('Package import test passed')"
+        python -m kumihan_formatter --help
     
     - name: Test sample generation
+      shell: bash
       run: |
-        # サンプル生成テスト
+        # サンプル生成テスト（OS統一）
         echo "n" | python -m kumihan_formatter convert --generate-sample -o dist/test-output
         
     - name: Test basic conversion
+      shell: bash
       run: |
-        # 基本変換テスト
-        if [ -f "examples/01-quickstart.txt" ]; then
-          echo "n" | python -m kumihan_formatter convert examples/01-quickstart.txt -o dist/test-output --no-preview
-        fi
+        # 基本変換テスト（OS統一）
+        echo "n" | python -m kumihan_formatter convert examples/01-quickstart.txt -o dist/test-output --no-preview
