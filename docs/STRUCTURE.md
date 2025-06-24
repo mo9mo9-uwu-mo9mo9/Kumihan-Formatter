@@ -94,14 +94,14 @@ Kumihan-Formatter/
 
 ### 出力ディレクトリ
 - **正式な出力**: `dist/`（ユーザーが指定可能）
-- **サンプル出力**: `examples/output/`
+- **サンプル出力**: `dist/samples/`
 - **テスト出力**: `*-output/`、`test_*/`など（.gitignoreで除外）
 
 ## 新機能追加時の配置ガイド
 
 1. **機能コード**: `kumihan_formatter/` 内の適切なモジュールに追加
 2. **テストコード**: `dev/tests/test_機能名.py` として追加
-3. **サンプル**: `examples/input/` に入力例、`examples/output/` に出力例
+3. **サンプル**: `examples/input/` に入力例、`dist/samples/` に出力例
 4. **ドキュメント**: ユーザー向けは `docs/user/`、開発者向けは `docs/dev/`
 
 ## 注意事項

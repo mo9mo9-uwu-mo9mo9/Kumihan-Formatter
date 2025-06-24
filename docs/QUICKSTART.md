@@ -109,7 +109,7 @@
 
 サンプルを試す：
   - ダブルクリック: run_examples.bat
-  - examples/output/ でサンプル結果を確認
+  - dist/samples/ でサンプル結果を確認
 
 何かキーを押して終了してください...
 ```
@@ -138,20 +138,20 @@
 ==========================================
 
 [1/3] 基本サンプル (sample.txt)
-✅ basic サンプル完了 → examples/output/basic
+✅ basic サンプル完了 → dist/samples/basic
 
 [2/3] 高度なサンプル (comprehensive-sample.txt)  
-✅ advanced サンプル完了 → examples/output/advanced
+✅ advanced サンプル完了 → dist/samples/advanced
 
 [3/3] 機能ショーケース (--generate-sample)
-✅ showcase サンプル完了 → examples/output/showcase
+✅ showcase サンプル完了 → dist/samples/showcase
 
 ✅ 全サンプルの変換が完了しました！
 ```
 
 ### 3-3. 結果を確認
 
-1. プロジェクトフォルダ内の `examples/output/` を開く
+1. プロジェクトフォルダ内の `dist/samples/` を開く
 2. 以下の3つのフォルダが作成されていることを確認：
    - `basic/` - 基本的な記法のサンプル
    - `advanced/` - 高度な記法のサンプル  
