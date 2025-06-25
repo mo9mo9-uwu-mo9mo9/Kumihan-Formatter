@@ -175,6 +175,41 @@ python -m pytest dev/tests/test_syntax_validation.py -v
 
 ---
 
+## 📦 配布管理
+
+### .distignore ファイル
+
+`zip_dist`コマンドは、`.distignore`ファイルを使用して配布物から開発用ファイルを自動除外します。
+
+#### 仕組み
+- プロジェクトルートの`.distignore`ファイルに除外パターンを記述
+- `zip_dist`コマンド実行時に自動的に読み込まれる
+- fnmatchパターンマッチングを使用（`*.pyc`、`dev/`など）
+
+#### 除外されるファイル（主要なもの）
+- 開発関連: `dev/`、`__pycache__/`、`*.pyc`、`.venv/`
+- ビルド関連: `build/`、`dist/`、`*.egg-info/`
+- IDE設定: `.vscode/`、`.idea/`
+- Git関連: `.git/`、`.gitignore`
+- Claude設定: `.claude/`、`CLAUDE.md`
+- CI/CD: `.github/`
+- テスト関連: `test_*/`、`tests/`
+- その他: `.env`、`*.log`、`pyproject.toml`など
+
+#### 使用例
+```bash
+# 配布用ZIPを作成（開発ファイルは自動除外）
+python -m kumihan_formatter.cli zip-dist . -o dist_output
+
+# 除外ファイル数の確認
+# 例: 「66個のファイルをコピー、3859個のファイルを除外」
+```
+
+#### カスタマイズ
+`.distignore`ファイルを編集して、プロジェクト固有の除外ルールを追加できます。
+
+---
+
 ## 🔮 拡張フック（今後検討）
 
 * テーマ / フォント / レイアウト切替（JSON スキーマ）

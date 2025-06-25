@@ -1,0 +1,83 @@
+# 配布物から除外するファイル・ディレクトリのリスト
+# このファイルは zip_dist コマンドで使用されます
+
+# 開発関連
+dev/
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ビルド関連
+build/
+dist/
+*.egg
+
+# IDE・エディタ設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Git関連
+.git/
+.gitignore
+.gitattributes
+
+# Claude設定（重要：配布物からは除外）
+.claude/
+CLAUDE.md
+
+# CI/CD
+.github/
+
+# ドキュメント（開発者向け）
+CONTRIBUTING.md
+docs/dev/
+
+# テスト関連
+test_*/
+*_test/
+tests/
+examples/test_*.txt
+
+# OS固有
+.DS_Store
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+
+# その他の開発ファイル
+.env
+.env.*
+*.log
+*.bak
+*.tmp
+*.temp
+.bumpversion.cfg
+Makefile
+pyproject.toml
+poetry.lock
+requirements-dev.txt
+.pre-commit-config.yaml
+
+# 一時ファイル
+*_preview/
+temp_*/
+tmp_*/
