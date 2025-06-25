@@ -6,6 +6,7 @@ import time
 import webbrowser
 import shutil
 import base64
+import fnmatch
 from pathlib import Path
 
 # macOSでのエンコーディング問題を修正
@@ -675,6 +676,63 @@ def docs(output, docs_dir, no_preview):
         sys.exit(1)
 
 
+def load_distignore_patterns():
+    """
+    .distignoreファイルから除外パターンを読み込む
+    
+    Returns:
+        list: 除外パターンのリスト
+    """
+    patterns = []
+    distignore_path = Path(".distignore")
+    
+    if distignore_path.exists():
+        with open(distignore_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                # コメント行と空行をスキップ
+                if line and not line.startswith("#"):
+                    patterns.append(line)
+    
+    return patterns
+
+
+def should_exclude(path: Path, patterns: list, base_path: Path) -> bool:
+    """
+    指定されたパスが除外パターンに一致するかチェック
+    
+    Args:
+        path: チェックするパス
+        patterns: 除外パターンのリスト
+        base_path: 基準となるパス
+    
+    Returns:
+        bool: 除外すべきならTrue
+    """
+    relative_path = path.relative_to(base_path)
+    
+    for pattern in patterns:
+        # ディレクトリパターンの処理
+        if pattern.endswith('/'):
+            # ディレクトリ自体または配下のファイルをチェック
+            dir_pattern = pattern.rstrip('/')
+            if path.is_dir() and fnmatch.fnmatch(str(relative_path), dir_pattern):
+                return True
+            # ディレクトリ配下のファイルもチェック
+            for part in relative_path.parts:
+                if fnmatch.fnmatch(part, dir_pattern):
+                    return True
+        else:
+            # ファイルパターンの処理
+            if fnmatch.fnmatch(str(relative_path), pattern):
+                return True
+            # ファイル名のみでもマッチング
+            if fnmatch.fnmatch(path.name, pattern):
+                return True
+    
+    return False
+
+
 @cli.command()
 @click.argument("source_dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("-o", "--output", default="zip_distribution", help="ZIP配布用出力ディレクトリ")
@@ -699,6 +757,11 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
         
         console.print(f"[green][ZIP配布] 配布パッケージ作成開始:[/green] {source_path}")
         
+        # 除外パターンを読み込み
+        exclude_patterns = load_distignore_patterns()
+        if exclude_patterns:
+            console.print(f"[blue][除外設定] .distignoreから{len(exclude_patterns)}個の除外パターンを読み込みました[/blue]")
+        
         # 作業用一時ディレクトリを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir) / "distribution"
@@ -706,13 +769,26 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
             
             console.print("[cyan][コピー] ソースファイルをコピー中...[/cyan]")
             
-            # ソースディレクトリの全内容をコピー
+            # ソースディレクトリの全内容をコピー（除外パターンを適用）
+            copied_count = 0
+            excluded_count = 0
+            
             for item in source_path.rglob("*"):
                 if item.is_file():
+                    # 除外チェック
+                    if should_exclude(item, exclude_patterns, source_path):
+                        excluded_count += 1
+                        continue
+                    
                     relative_path = item.relative_to(source_path)
                     dest_path = temp_path / relative_path
                     dest_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(item, dest_path)
+                    copied_count += 1
+            
+            console.print(f"[green][コピー完了] {copied_count}個のファイルをコピー[/green]")
+            if excluded_count > 0:
+                console.print(f"[yellow][除外] {excluded_count}個のファイルを除外[/yellow]")
             
             # Markdownファイルの変換処理
             if convert_markdown:

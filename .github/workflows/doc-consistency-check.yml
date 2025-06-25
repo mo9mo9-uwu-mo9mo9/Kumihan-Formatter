@@ -8,7 +8,10 @@ on:
       - 'docs/**/*.md'
       - 'pyproject.toml'
       - 'kumihan_formatter/__init__.py'
+      - 'kumihan_formatter/**/*.py'
       - 'examples/**'
+      - '.distignore'
+      - 'dev/tools/**/*.py'
   pull_request:
     branches: [ main ]
     paths:
@@ -16,7 +19,10 @@ on:
       - 'docs/**/*.md'
       - 'pyproject.toml'
       - 'kumihan_formatter/__init__.py'
+      - 'kumihan_formatter/**/*.py'
       - 'examples/**'
+      - '.distignore'
+      - 'dev/tools/**/*.py'
 
 jobs:
   doc-consistency-check:
@@ -33,6 +39,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -e .
     
     - name: Run documentation consistency check
       run: |
