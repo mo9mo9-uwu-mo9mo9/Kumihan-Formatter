@@ -383,127 +383,41 @@ def generate_sample(output_dir: str = "kumihan_sample", use_source_toggle: bool 
     return output_path
 
 
-def convert_docs(docs_dir="docs", output_dir="docs_html"):
-    """ドキュメントファイルをHTMLに変換"""
+def convert_docs_new(docs_dir="docs", output_dir="docs_html", no_preview=False):
+    """ドキュメントファイルをHTMLに変換（新しいMarkdownConverter使用）"""
+    from .markdown_converter import convert_markdown_to_html
+    
     docs_path = Path(docs_dir)
     output_path = Path(output_dir)
     
     console.print(f"[cyan][ドキュメント] ドキュメント変換開始: {docs_path}[/cyan]")
     
-    # 対象ファイルの定義
-    target_files = [
-        ("readme.txt", "README"),
-        ("quickstart.txt", "クイックスタートガイド"),
-    ]
+    # 新しいMarkdownConverterでMarkdownファイルを変換
+    markdown_files = convert_markdown_to_html(docs_path, output_path)
     
-    # ユーザーマニュアルがあれば追加
-    user_manual = docs_path / "user" / "USER_MANUAL.txt"
-    if user_manual.exists():
-        target_files.append((str(user_manual), "ユーザーマニュアル"))
-    
-    # 出力ディレクトリを作成
-    output_path.mkdir(parents=True, exist_ok=True)
-    
-    converted_files = []
-    
-    with Progress() as progress:
-        task = progress.add_task("[cyan]ドキュメント変換中", total=len(target_files))
-        
-        for i, (file_path, title) in enumerate(target_files):
-            file_path = docs_path / file_path if not Path(file_path).is_absolute() else Path(file_path)
-            
-            if file_path.exists():
-                console.print(f"[yellow][ファイル] 変換中: {title}[/yellow]")
-                
-                # ファイルを読み込み
-                with open(file_path, "r", encoding="utf-8") as f:
-                    text = f.read()
-                
-                # パース
-                ast = parse(text)
-                
-                # ドキュメント用テンプレートでレンダリング
-                html = render(ast, template="docs.html.j2", title=title)
-                
-                # HTMLファイル名を決定
-                if file_path.name == "readme.txt":
-                    output_file = output_path / "readme.html"
-                elif file_path.name == "quickstart.txt":
-                    output_file = output_path / "quickstart.html"
-                elif "USER_MANUAL" in file_path.name:
-                    output_file = output_path / "user-manual.html"
-                else:
-                    output_file = output_path / f"{file_path.stem}.html"
-                
-                # HTMLファイルを保存
-                with open(output_file, "w", encoding="utf-8") as f:
-                    f.write(html)
-                
-                converted_files.append((title, output_file))
-                console.print(f"[green]  [完了] 完了: {output_file.name}[/green]")
-            else:
-                console.print(f"[yellow]  [警告]  スキップ: {file_path} (ファイルが見つかりません)[/yellow]")
-            
-            progress.update(task, completed=i + 1)
+    if not markdown_files:
+        console.print(f"[yellow][警告] Markdownファイルが見つかりませんでした[/yellow]")
+        return output_path
     
     # 結果表示
     console.print(f"\n[green][完了] ドキュメント変換完了![/green]")
     console.print(f"[green]   [フォルダ] 出力先: {output_path.absolute()}[/green]")
-    console.print(f"[green]   [ファイル] 変換済みファイル: {len(converted_files)}個[/green]")
+    console.print(f"[green]   [ファイル] 変換済みファイル: {len(markdown_files)}個[/green]")
     
-    for title, file_path in converted_files:
-        console.print(f"[dim]   - {title}: {file_path.name}[/dim]")
+    for md_file in markdown_files:
+        console.print(f"[dim]   - {md_file.japanese_name}: {md_file.html_path.name}[/dim]")
     
-    # インデックスファイルを作成
-    index_html = generate_docs_index(converted_files, output_path)
-    console.print(f"[green]    インデックス: {index_html.name}[/green]")
+    console.print(f"[green]    インデックス: index.html[/green]")
     
-    # ブラウザで開く
-    console.print(f"\n[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
-    webbrowser.open(f"file://{index_html.absolute()}")
+    # ブラウザで開く（no_previewフラグを考慮）
+    if not no_preview:
+        index_html = output_path / "index.html"
+        console.print(f"\n[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
+        webbrowser.open(f"file://{index_html.absolute()}")
     
     return output_path
 
 
-def generate_docs_index(converted_files, output_path):
-    """ドキュメント用インデックスページを生成"""
-    index_content = """;;;見出し1
-Kumihan-Formatter ドキュメント
-;;;
-
-このページでは、Kumihan-Formatterのすべてのドキュメントにアクセスできます。
-
-;;;見出し2
-[ドキュメント] 利用可能なドキュメント
-;;;
-
-"""
-    
-    for title, file_path in converted_files:
-        # HTMLファイルへのリンクを追加（実際のリンクは手動で修正が必要）
-        index_content += f";;;枠線\n**{title}**\n{file_path.name}\n;;;\n\n"
-    
-    index_content += """;;;見出し2
-[リンク] その他のリソース
-;;;
-
-- GitHub リポジトリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
-- Issues（バグ報告・要望）: GitHub Issues
-- Discussions（質問・相談）: GitHub Discussions
-
-;;;太字+ハイライト color=#e3f2fd
-すべてのドキュメントはKumihan-Formatterを使って生成されています
-;;;"""
-    
-    # インデックスファイルをHTMLに変換
-    ast = parse(index_content)
-    html = render(ast, template="docs.html.j2", title="ドキュメント一覧")
-    
-    index_file = output_path / "index.html"
-    with open(index_file, "w", encoding="utf-8") as f:
-        f.write(html)
-    
-    return index_file
 
 
 @click.group()
@@ -663,16 +577,13 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
 def docs(output, docs_dir, no_preview):
     """ドキュメントをHTMLに変換します"""
     try:
-        output_path = convert_docs(docs_dir, output)
-        
-        if not no_preview and output_path:
-            index_file = output_path / "index.html"
-            if index_file.exists():
-                console.print(f"[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
-                webbrowser.open(f"file://{index_file.absolute()}")
+        # convert_docs関数では--no-previewを考慮した処理をします
+        output_path = convert_docs_new(docs_dir, output, no_preview)
         
     except Exception as e:
         console.print(f"[red][エラー] ドキュメント変換エラー:[/red] {e}")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
         sys.exit(1)
 
 

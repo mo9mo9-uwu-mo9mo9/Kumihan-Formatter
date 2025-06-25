@@ -140,163 +140,34 @@ class MarkdownConverter:
             return md_path.stem.replace('_', ' ').replace('-', ' ').title()
     
     def convert_markdown_to_kumihan(self, content: str) -> str:
-        """MarkdownファイルをKumihan記法に変換"""
-        # 既にKumihan記法で書かれているかチェック（厳密化）
+        """MarkdownファイルをHTML形式に直接変換（Kumihan記法経由なし）"""
+        # 既にKumihan記法で書かれているかチェック
         lines = content.split('\n')
         kumihan_block_count = 0
-        kumihan_pair_count = 0  # 正しいペア数をカウント
         in_code_block = False
-        in_table = False
-        in_kumihan_block = False
         
-        for i, line in enumerate(lines):
+        for line in lines:
             stripped_line = line.strip()
             
             # コードブロックの開始・終了
             if stripped_line.startswith('```'):
                 in_code_block = not in_code_block
                 continue
-            
-            # テーブルの検出
-            if re.match(r'^\s*\|.*\|\s*$', line):
-                in_table = True
-                continue
-            elif in_table and stripped_line == '':
-                in_table = False
-                continue
-            elif in_table:
+                
+            # コードブロック内は除外
+            if in_code_block:
                 continue
                 
-            # コードブロック内やテーブル内は除外
-            if in_code_block or in_table:
-                continue
-            
-            # Kumihan記法ブロックの開始
-            if stripped_line.startswith(';;;') and any(pattern in stripped_line for pattern in ['見出し', '太字', '枠線', ';;;ハイライト', 'コードブロック', 'イタリック']):
-                if not in_kumihan_block:
-                    in_kumihan_block = True
-                    kumihan_block_count += 1
-                continue
-            
-            # Kumihan記法ブロックの終了
-            if stripped_line == ';;;':
-                if in_kumihan_block:
-                    in_kumihan_block = False
-                    kumihan_pair_count += 1
-                continue
+            # Kumihan記法ブロックの検出
+            if stripped_line.startswith(';;;') and any(pattern in stripped_line for pattern in ['見出し', '太字', '枠線', 'ハイライト']):
+                kumihan_block_count += 1
         
-        # 厳密な判定：ペアが正しく3個以上あればKumihan記法と判定
-        # ただし、Markdown見出しが混在している場合は部分変換を行う
-        # Markdown見出しの数を正確にカウント（コードブロック内を除外）
-        markdown_heading_count = 0
-        temp_in_code_block = False
-        for line in lines:
-            if line.strip().startswith('```'):
-                temp_in_code_block = not temp_in_code_block
-                continue
-            if not temp_in_code_block and re.match(r'^\s*#{1,5}\s+', line):
-                markdown_heading_count += 1
-        
-        if kumihan_pair_count >= 3:
-            # Kumihan記法メインだが、Markdown見出しが混在している場合の処理
-            if markdown_heading_count > 0:
-                return self._convert_mixed_format(content)
+        # Kumihan記法が3個以上ある場合はそのまま返す（Kumihanファイル）
+        if kumihan_block_count >= 3:
             return content
         
-        lines = content.split('\n')
-        converted_lines = []
-        in_code_block = False
-        in_table = False
-        
-        for line in lines:
-            # コードブロックの処理
-            if line.strip().startswith('```'):
-                if not in_code_block:
-                    # コードブロック開始
-                    in_code_block = True
-                    converted_lines.append(';;;コードブロック')
-                    continue
-                else:
-                    # コードブロック終了
-                    in_code_block = False
-                    converted_lines.append(';;;')
-                    continue
-            
-            if in_code_block:
-                # コードブロック内はそのまま
-                converted_lines.append(line)
-                continue
-            
-            # テーブルの検出と除去
-            if re.match(r'^\s*\|.*\|\s*$', line):
-                in_table = True
-                continue
-            elif in_table and line.strip() == '':
-                in_table = False
-                continue
-            elif in_table:
-                continue
-            
-            # 見出しの変換
-            if line.startswith('# '):
-                title = line[2:].strip()
-                converted_lines.append(';;;見出し1')
-                converted_lines.append(title)
-                converted_lines.append(';;;')
-                continue
-            elif line.startswith('## '):
-                title = line[3:].strip()
-                converted_lines.append(';;;見出し2')
-                converted_lines.append(title)
-                converted_lines.append(';;;')
-                continue
-            elif line.startswith('### '):
-                title = line[4:].strip()
-                converted_lines.append(';;;見出し3')
-                converted_lines.append(title)
-                converted_lines.append(';;;')
-                continue
-            elif line.startswith('#### '):
-                title = line[5:].strip()
-                converted_lines.append(';;;見出し4')
-                converted_lines.append(title)
-                converted_lines.append(';;;')
-                continue
-            elif line.startswith('##### '):
-                title = line[6:].strip()
-                converted_lines.append(';;;見出し5')
-                converted_lines.append(title)
-                converted_lines.append(';;;')
-                continue
-            
-            # バッジ記法の除去（shields.ioなど）- 行全体をスキップ
-            if re.match(r'^\s*!\[.*\]\(.*\)\s*$', line):
-                continue
-            
-            # Markdownリンクの変換 [text](url) → text
-            line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)
-            
-            # 太字の変換 **text** → text（プレーンテキストに）
-            line = re.sub(r'\*\*(.*?)\*\*', r'\1', line)
-            
-            # インラインコードの変換 `code` → code（プレーンテキストに）
-            line = re.sub(r'`([^`]+)`', r'\1', line)
-            
-            # 箇条書きの変換（- で始まる行）
-            if re.match(r'^\s*-\s+', line):
-                # そのまま保持（Kumihanパーサーがリストとして処理）
-                converted_lines.append(line)
-                continue
-            
-            # 空行はそのまま保持
-            if line.strip() == '':
-                converted_lines.append(line)
-                continue
-            
-            # その他の行はそのまま
-            converted_lines.append(line)
-        
-        return '\n'.join(converted_lines)
+        # Markdownを直接HTMLに変換
+        return self._convert_markdown_to_html(content)
     
     def _convert_mixed_format(self, content: str) -> str:
         """Kumihan記法とMarkdown記法が混在したファイルの変換"""
@@ -357,6 +228,62 @@ class MarkdownConverter:
             converted_lines.append(line)
         
         return '\n'.join(converted_lines)
+    
+    def _convert_markdown_to_html(self, content: str) -> str:
+        """MarkdownをHTMLに直接変換"""
+        import markdown
+        from markdown.extensions import toc, tables, fenced_code, codehilite
+        
+        # Markdown拡張機能を設定
+        extensions = [
+            'toc',
+            'tables', 
+            'fenced_code',
+            'codehilite',
+            'attr_list',
+            'def_list'
+        ]
+        
+        extension_configs = {
+            'toc': {
+                'title': '目次',
+                'anchorlink': True,
+                'permalink': True
+            },
+            'codehilite': {
+                'use_pygments': False,
+                'css_class': 'code-block'
+            }
+        }
+        
+        # MarkdownをHTMLに変換
+        md = markdown.Markdown(
+            extensions=extensions,
+            extension_configs=extension_configs
+        )
+        
+        html_content = md.convert(content)
+        
+        # 生成されたHTMLを返す（Kumihanパーサーを経由しない）
+        return f'__DIRECT_HTML__{html_content}__END_DIRECT_HTML__'
+    
+    def _render_direct_html(self, html_content: str, title: str, navigation_html: str) -> str:
+        """直接HTMLをKumihanテンプレートでラップ"""
+        from jinja2 import Environment, FileSystemLoader
+        
+        # Kumihanテンプレートを使用
+        template_dir = Path(__file__).parent / 'templates'
+        env = Environment(loader=FileSystemLoader(template_dir))
+        template = env.get_template('base.html.j2')
+        
+        # HTMLコンテンツをレンダリング
+        return template.render(
+            title=title,
+            content=html_content,
+            navigation_html=navigation_html,
+            config=self.config,
+            css_vars={}  # 空のCSS変数を提供
+        )
     
     def convert_markdown_links(self, content: str, current_file: MarkdownFile) -> str:
         """Markdownリンクを適切なHTMLリンクに変換"""
@@ -496,21 +423,32 @@ class MarkdownConverter:
         # Markdownコンテンツを読み込み
         content = md_file.source_path.read_text(encoding='utf-8')
         
-        # Markdown記法をKumihan記法に変換（先に実行）
-        content = self.convert_markdown_to_kumihan(content)
+        # Markdown記法を処理（Kumihan or 直接HTML）
+        processed_content = self.convert_markdown_to_kumihan(content)
         
-        # MarkdownリンクをKumihan記法に変換（後で実行）
-        content = self.convert_markdown_links(content, md_file)
-        
-        
-        # Kumihan記法でパース
-        ast = parse(content)
-        
-        # ナビゲーションHTMLを生成
-        nav_html = self.generate_navigation_html(nav_info)
-        
-        # HTMLを生成（ナビゲーション付き）
-        html_content = render(ast, self.config, title=md_file.title, navigation_html=nav_html)
+        # 直接HTML変換かどうかチェック
+        if processed_content.startswith('__DIRECT_HTML__'):
+            # 直接HTML変換の場合
+            direct_html = processed_content.replace('__DIRECT_HTML__', '').replace('__END_DIRECT_HTML__', '')
+            
+            # ナビゲーションHTMLを生成
+            nav_html = self.generate_navigation_html(nav_info)
+            
+            # Kumihanテンプレートで直接HTMLをラップ
+            html_content = self._render_direct_html(direct_html, md_file.title, nav_html)
+        else:
+            # 従来のKumihan記法処理
+            # MarkdownリンクをKumihan記法に変換
+            processed_content = self.convert_markdown_links(processed_content, md_file)
+            
+            # Kumihan記法でパース
+            ast = parse(processed_content)
+            
+            # ナビゲーションHTMLを生成
+            nav_html = self.generate_navigation_html(nav_info)
+            
+            # HTMLを生成（ナビゲーション付き）
+            html_content = render(ast, self.config, title=md_file.title, navigation_html=nav_html)
         
         # HTMLファイルを出力
         md_file.html_path.parent.mkdir(parents=True, exist_ok=True)
