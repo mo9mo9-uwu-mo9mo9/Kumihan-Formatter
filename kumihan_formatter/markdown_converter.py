@@ -22,6 +22,8 @@ class MarkdownFile:
     relative_path: Path
     html_path: Path
     title: str
+    japanese_name: str  # 日本語表示名
+    file_number: int    # ファイル番号
     nav_info: Optional[Dict] = None
 
 @dataclass
@@ -44,28 +46,77 @@ class MarkdownConverter:
         """Markdownファイルを検出してリストを作成"""
         markdown_files = []
         
+        # ファイル名と日本語名のマッピング
+        name_mapping = {
+            'readme.md': ('README', 1),
+            'quickstart.md': ('クイックスタートガイド', 2),
+            'spec.md': ('記法リファレンス', 3),
+            'contributing.md': ('開発者ガイド', 4),
+            'changelog.md': ('変更履歴', 5),
+        }
+        
+        # 開発者向けドキュメントの除外パターン
+        exclude_patterns = {
+            'analysis/',
+            'dev/',
+            'generated/',
+        }
+        
+        # プロジェクトルートのREADME.mdも検索
+        project_root = source_dir.parent
+        root_readme = project_root / "README.md"
+        if root_readme.exists():
+            # READMEを最優先で追加
+            markdown_files.append(MarkdownFile(
+                source_path=root_readme,
+                relative_path=Path("README.md"),
+                html_path=self.output_dir / "01_README.html",
+                title=self._extract_title(root_readme),
+                japanese_name="README",
+                file_number=1
+            ))
+        
         for md_path in source_dir.rglob("*.md"):
             # 相対パスを計算
             relative_path = md_path.relative_to(source_dir)
             
-            # HTML出力パスを決定
-            html_path = self.output_dir / relative_path.with_suffix('.html')
+            # 開発者向けドキュメントを除外
+            should_exclude = False
+            for exclude_pattern in exclude_patterns:
+                if str(relative_path).startswith(exclude_pattern):
+                    should_exclude = True
+                    break
             
-            # タイトルを抽出（ファイルの最初の見出しまたはファイル名）
+            if should_exclude:
+                continue
+            
+            # 日本語名とファイル番号を決定
+            file_key = relative_path.name.lower()
+            if file_key in name_mapping:
+                japanese_name, file_number = name_mapping[file_key]
+            else:
+                # 未知のファイルは末尾に配置
+                japanese_name = self._extract_title(md_path)
+                file_number = 99
+            
+            # HTML出力パスを決定（番号付き日本語名）
+            html_filename = f"{file_number:02d}_{japanese_name}.html"
+            html_path = self.output_dir / html_filename
+            
+            # タイトルを抽出
             title = self._extract_title(md_path)
             
             markdown_files.append(MarkdownFile(
                 source_path=md_path,
                 relative_path=relative_path,
                 html_path=html_path,
-                title=title
+                title=title,
+                japanese_name=japanese_name,
+                file_number=file_number
             ))
         
-        # ファイルをソート（READMEを最初に、その後はアルファベット順）
-        markdown_files.sort(key=lambda f: (
-            0 if f.relative_path.name.lower() == 'readme.md' else 1,
-            str(f.relative_path)
-        ))
+        # ファイルを番号順でソート
+        markdown_files.sort(key=lambda f: f.file_number)
         
         return markdown_files
     
@@ -87,6 +138,225 @@ class MarkdownConverter:
         
         except Exception:
             return md_path.stem.replace('_', ' ').replace('-', ' ').title()
+    
+    def convert_markdown_to_kumihan(self, content: str) -> str:
+        """MarkdownファイルをKumihan記法に変換"""
+        # 既にKumihan記法で書かれているかチェック（厳密化）
+        lines = content.split('\n')
+        kumihan_block_count = 0
+        kumihan_pair_count = 0  # 正しいペア数をカウント
+        in_code_block = False
+        in_table = False
+        in_kumihan_block = False
+        
+        for i, line in enumerate(lines):
+            stripped_line = line.strip()
+            
+            # コードブロックの開始・終了
+            if stripped_line.startswith('```'):
+                in_code_block = not in_code_block
+                continue
+            
+            # テーブルの検出
+            if re.match(r'^\s*\|.*\|\s*$', line):
+                in_table = True
+                continue
+            elif in_table and stripped_line == '':
+                in_table = False
+                continue
+            elif in_table:
+                continue
+                
+            # コードブロック内やテーブル内は除外
+            if in_code_block or in_table:
+                continue
+            
+            # Kumihan記法ブロックの開始
+            if stripped_line.startswith(';;;') and any(pattern in stripped_line for pattern in ['見出し', '太字', '枠線', ';;;ハイライト', 'コードブロック', 'イタリック']):
+                if not in_kumihan_block:
+                    in_kumihan_block = True
+                    kumihan_block_count += 1
+                continue
+            
+            # Kumihan記法ブロックの終了
+            if stripped_line == ';;;':
+                if in_kumihan_block:
+                    in_kumihan_block = False
+                    kumihan_pair_count += 1
+                continue
+        
+        # 厳密な判定：ペアが正しく3個以上あればKumihan記法と判定
+        # ただし、Markdown見出しが混在している場合は部分変換を行う
+        # Markdown見出しの数を正確にカウント（コードブロック内を除外）
+        markdown_heading_count = 0
+        temp_in_code_block = False
+        for line in lines:
+            if line.strip().startswith('```'):
+                temp_in_code_block = not temp_in_code_block
+                continue
+            if not temp_in_code_block and re.match(r'^\s*#{1,5}\s+', line):
+                markdown_heading_count += 1
+        
+        if kumihan_pair_count >= 3:
+            # Kumihan記法メインだが、Markdown見出しが混在している場合の処理
+            if markdown_heading_count > 0:
+                return self._convert_mixed_format(content)
+            return content
+        
+        lines = content.split('\n')
+        converted_lines = []
+        in_code_block = False
+        in_table = False
+        
+        for line in lines:
+            # コードブロックの処理
+            if line.strip().startswith('```'):
+                if not in_code_block:
+                    # コードブロック開始
+                    in_code_block = True
+                    converted_lines.append(';;;コードブロック')
+                    continue
+                else:
+                    # コードブロック終了
+                    in_code_block = False
+                    converted_lines.append(';;;')
+                    continue
+            
+            if in_code_block:
+                # コードブロック内はそのまま
+                converted_lines.append(line)
+                continue
+            
+            # テーブルの検出と除去
+            if re.match(r'^\s*\|.*\|\s*$', line):
+                in_table = True
+                continue
+            elif in_table and line.strip() == '':
+                in_table = False
+                continue
+            elif in_table:
+                continue
+            
+            # 見出しの変換
+            if line.startswith('# '):
+                title = line[2:].strip()
+                converted_lines.append(';;;見出し1')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            elif line.startswith('## '):
+                title = line[3:].strip()
+                converted_lines.append(';;;見出し2')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            elif line.startswith('### '):
+                title = line[4:].strip()
+                converted_lines.append(';;;見出し3')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            elif line.startswith('#### '):
+                title = line[5:].strip()
+                converted_lines.append(';;;見出し4')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            elif line.startswith('##### '):
+                title = line[6:].strip()
+                converted_lines.append(';;;見出し5')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            
+            # バッジ記法の除去（shields.ioなど）- 行全体をスキップ
+            if re.match(r'^\s*!\[.*\]\(.*\)\s*$', line):
+                continue
+            
+            # Markdownリンクの変換 [text](url) → text
+            line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)
+            
+            # 太字の変換 **text** → text（プレーンテキストに）
+            line = re.sub(r'\*\*(.*?)\*\*', r'\1', line)
+            
+            # インラインコードの変換 `code` → code（プレーンテキストに）
+            line = re.sub(r'`([^`]+)`', r'\1', line)
+            
+            # 箇条書きの変換（- で始まる行）
+            if re.match(r'^\s*-\s+', line):
+                # そのまま保持（Kumihanパーサーがリストとして処理）
+                converted_lines.append(line)
+                continue
+            
+            # 空行はそのまま保持
+            if line.strip() == '':
+                converted_lines.append(line)
+                continue
+            
+            # その他の行はそのまま
+            converted_lines.append(line)
+        
+        return '\n'.join(converted_lines)
+    
+    def _convert_mixed_format(self, content: str) -> str:
+        """Kumihan記法とMarkdown記法が混在したファイルの変換"""
+        lines = content.split('\n')
+        converted_lines = []
+        in_code_block = False
+        in_kumihan_block = False
+        
+        for line in lines:
+            stripped_line = line.strip()
+            
+            # コードブロックの処理
+            if stripped_line.startswith('```'):
+                if not in_code_block:
+                    # コードブロック開始
+                    in_code_block = True
+                    # 言語指定があるかチェック
+                    lang = stripped_line[3:].strip()
+                    if lang:
+                        converted_lines.append(f';;;コードブロック {lang}')
+                    else:
+                        converted_lines.append(';;;コードブロック')
+                    continue
+                else:
+                    # コードブロック終了
+                    in_code_block = False
+                    converted_lines.append(';;;')
+                    continue
+            
+            if in_code_block:
+                # コードブロック内はそのまま保持（Kumihan記法を無効化）
+                converted_lines.append(line)
+                continue
+            
+            # Kumihan記法ブロックの追跡
+            if stripped_line.startswith(';;;') and any(pattern in stripped_line for pattern in ['見出し', '太字', '枠線', 'ハイライト', 'コードブロック']):
+                in_kumihan_block = True
+                converted_lines.append(line)
+                continue
+            elif stripped_line == ';;;':
+                in_kumihan_block = False
+                converted_lines.append(line)
+                continue
+            elif in_kumihan_block:
+                converted_lines.append(line)
+                continue
+            
+            # Markdown見出しをKumihan記法に変換
+            if re.match(r'^#{1,5}\s+', line):
+                level = len(line) - len(line.lstrip('#'))
+                title = line.lstrip('#').strip()
+                converted_lines.append(f';;;見出し{level}')
+                converted_lines.append(title)
+                converted_lines.append(';;;')
+                continue
+            
+            # その他の行はそのまま
+            converted_lines.append(line)
+        
+        return '\n'.join(converted_lines)
     
     def convert_markdown_links(self, content: str, current_file: MarkdownFile) -> str:
         """Markdownリンクを適切なHTMLリンクに変換"""
@@ -187,58 +457,31 @@ class MarkdownConverter:
     
     def generate_index_page(self, markdown_files: List[MarkdownFile], 
                           index_path: Path, title: str = "ドキュメント一覧") -> None:
-        """インデックスページを生成"""
+        """インデックスページを生成（HTMLテンプレート使用）"""
+        from jinja2 import Environment, FileSystemLoader
         
-        # ディレクトリ別にファイルを分類
-        directories = {}
-        root_files = []
-        
+        # ファイル情報を整理
+        file_data_list = []
         for md_file in markdown_files:
-            if md_file.relative_path.parent == Path('.'):
-                root_files.append(md_file)
-            else:
-                dir_name = str(md_file.relative_path.parent)
-                if dir_name not in directories:
-                    directories[dir_name] = []
-                directories[dir_name].append(md_file)
+            # HTMLのURLを相対パスとして計算（同一フォルダなのでファイル名のみ）
+            html_url = md_file.html_path.name
+            file_data = {
+                'title': md_file.title,
+                'japanese_name': md_file.japanese_name,
+                'file_number': md_file.file_number,
+                'html_url': html_url
+            }
+            file_data_list.append(file_data)
         
-        # インデックスHTMLコンテンツを生成
-        content_lines = [f'# {title}']
-        content_lines.append('')
-        content_lines.append('このドキュメント集では、以下の情報をご確認いただけます。')
-        content_lines.append('')
+        # Jinja2テンプレートでHTMLを生成
+        template_dir = Path(__file__).parent / 'templates'
+        env = Environment(loader=FileSystemLoader(template_dir))
+        template = env.get_template('docs_index.html.j2')
         
-        # ルートファイル
-        if root_files:
-            content_lines.append('## 📄 メインドキュメント')
-            content_lines.append('')
-            for md_file in root_files:
-                html_url = md_file.html_path.relative_to(index_path.parent)
-                content_lines.append(f'- [{md_file.title}]({html_url})')
-            content_lines.append('')
-        
-        # ディレクトリ別ファイル
-        for dir_name, files in directories.items():
-            dir_title = dir_name.replace('_', ' ').replace('-', ' ').title()
-            content_lines.append(f'## 📁 {dir_title}')
-            content_lines.append('')
-            for md_file in files:
-                html_url = md_file.html_path.relative_to(index_path.parent)
-                content_lines.append(f'- [{md_file.title}]({html_url})')
-            content_lines.append('')
-        
-        # フッター情報
-        content_lines.extend([
-            '---',
-            '',
-            '💡 **使い方**: 各リンクをクリックして詳細をご確認ください。',
-            '🔧 **Kumihan-Formatter** で生成されたドキュメントです。'
-        ])
-        
-        # Kumihan記法でHTMLに変換
-        kumihan_content = '\n'.join(content_lines)
-        ast = parse(kumihan_content)
-        html_content = render(ast, self.config, title=title)
+        html_content = template.render(
+            title=title,
+            markdown_files=file_data_list
+        )
         
         # インデックスファイルを書き込み
         index_path.parent.mkdir(parents=True, exist_ok=True)
@@ -253,8 +496,12 @@ class MarkdownConverter:
         # Markdownコンテンツを読み込み
         content = md_file.source_path.read_text(encoding='utf-8')
         
-        # Markdownリンクを変換
+        # Markdown記法をKumihan記法に変換（先に実行）
+        content = self.convert_markdown_to_kumihan(content)
+        
+        # MarkdownリンクをKumihan記法に変換（後で実行）
         content = self.convert_markdown_links(content, md_file)
+        
         
         # Kumihan記法でパース
         ast = parse(content)
@@ -282,22 +529,9 @@ class MarkdownConverter:
         for md_file in markdown_files:
             self.convert_file(md_file, markdown_files)
         
-        # ルートインデックスページを生成
+        # ルートインデックスページを生成（全ファイルを同一フォルダに配置）
         root_index = self.output_dir / 'index.html'
         self.generate_index_page(markdown_files, root_index)
-        
-        # ディレクトリ別インデックスページを生成
-        directories = set()
-        for md_file in markdown_files:
-            if md_file.relative_path.parent != Path('.'):
-                directories.add(md_file.relative_path.parent)
-        
-        for directory in directories:
-            dir_files = [f for f in markdown_files 
-                        if f.relative_path.parent == directory]
-            dir_index = self.output_dir / directory / 'index.html'
-            dir_title = str(directory).replace('_', ' ').replace('-', ' ').title()
-            self.generate_index_page(dir_files, dir_index, f"{dir_title} - ドキュメント")
         
         return markdown_files
 
