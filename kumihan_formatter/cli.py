@@ -24,7 +24,6 @@ from .parser import parse
 from .renderer import render
 from .config import load_config
 from .sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
-from .markdown_converter import convert_markdown_to_html
 
 # Windows環境でのエンコーディング問題対応
 def setup_windows_encoding():
@@ -383,127 +382,8 @@ def generate_sample(output_dir: str = "kumihan_sample", use_source_toggle: bool 
     return output_path
 
 
-def convert_docs(docs_dir="docs", output_dir="docs_html"):
-    """ドキュメントファイルをHTMLに変換"""
-    docs_path = Path(docs_dir)
-    output_path = Path(output_dir)
-    
-    console.print(f"[cyan][ドキュメント] ドキュメント変換開始: {docs_path}[/cyan]")
-    
-    # 対象ファイルの定義
-    target_files = [
-        ("readme.txt", "README"),
-        ("quickstart.txt", "クイックスタートガイド"),
-    ]
-    
-    # ユーザーマニュアルがあれば追加
-    user_manual = docs_path / "user" / "USER_MANUAL.txt"
-    if user_manual.exists():
-        target_files.append((str(user_manual), "ユーザーマニュアル"))
-    
-    # 出力ディレクトリを作成
-    output_path.mkdir(parents=True, exist_ok=True)
-    
-    converted_files = []
-    
-    with Progress() as progress:
-        task = progress.add_task("[cyan]ドキュメント変換中", total=len(target_files))
-        
-        for i, (file_path, title) in enumerate(target_files):
-            file_path = docs_path / file_path if not Path(file_path).is_absolute() else Path(file_path)
-            
-            if file_path.exists():
-                console.print(f"[yellow][ファイル] 変換中: {title}[/yellow]")
-                
-                # ファイルを読み込み
-                with open(file_path, "r", encoding="utf-8") as f:
-                    text = f.read()
-                
-                # パース
-                ast = parse(text)
-                
-                # ドキュメント用テンプレートでレンダリング
-                html = render(ast, template="docs.html.j2", title=title)
-                
-                # HTMLファイル名を決定
-                if file_path.name == "readme.txt":
-                    output_file = output_path / "readme.html"
-                elif file_path.name == "quickstart.txt":
-                    output_file = output_path / "quickstart.html"
-                elif "USER_MANUAL" in file_path.name:
-                    output_file = output_path / "user-manual.html"
-                else:
-                    output_file = output_path / f"{file_path.stem}.html"
-                
-                # HTMLファイルを保存
-                with open(output_file, "w", encoding="utf-8") as f:
-                    f.write(html)
-                
-                converted_files.append((title, output_file))
-                console.print(f"[green]  [完了] 完了: {output_file.name}[/green]")
-            else:
-                console.print(f"[yellow]  [警告]  スキップ: {file_path} (ファイルが見つかりません)[/yellow]")
-            
-            progress.update(task, completed=i + 1)
-    
-    # 結果表示
-    console.print(f"\n[green][完了] ドキュメント変換完了![/green]")
-    console.print(f"[green]   [フォルダ] 出力先: {output_path.absolute()}[/green]")
-    console.print(f"[green]   [ファイル] 変換済みファイル: {len(converted_files)}個[/green]")
-    
-    for title, file_path in converted_files:
-        console.print(f"[dim]   - {title}: {file_path.name}[/dim]")
-    
-    # インデックスファイルを作成
-    index_html = generate_docs_index(converted_files, output_path)
-    console.print(f"[green]    インデックス: {index_html.name}[/green]")
-    
-    # ブラウザで開く
-    console.print(f"\n[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
-    webbrowser.open(f"file://{index_html.absolute()}")
-    
-    return output_path
 
 
-def generate_docs_index(converted_files, output_path):
-    """ドキュメント用インデックスページを生成"""
-    index_content = """;;;見出し1
-Kumihan-Formatter ドキュメント
-;;;
-
-このページでは、Kumihan-Formatterのすべてのドキュメントにアクセスできます。
-
-;;;見出し2
-[ドキュメント] 利用可能なドキュメント
-;;;
-
-"""
-    
-    for title, file_path in converted_files:
-        # HTMLファイルへのリンクを追加（実際のリンクは手動で修正が必要）
-        index_content += f";;;枠線\n**{title}**\n{file_path.name}\n;;;\n\n"
-    
-    index_content += """;;;見出し2
-[リンク] その他のリソース
-;;;
-
-- GitHub リポジトリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
-- Issues（バグ報告・要望）: GitHub Issues
-- Discussions（質問・相談）: GitHub Discussions
-
-;;;太字+ハイライト color=#e3f2fd
-すべてのドキュメントはKumihan-Formatterを使って生成されています
-;;;"""
-    
-    # インデックスファイルをHTMLに変換
-    ast = parse(index_content)
-    html = render(ast, template="docs.html.j2", title="ドキュメント一覧")
-    
-    index_file = output_path / "index.html"
-    with open(index_file, "w", encoding="utf-8") as f:
-        f.write(html)
-    
-    return index_file
 
 
 @click.group()
@@ -656,24 +536,6 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         sys.exit(1)
 
 
-@cli.command()
-@click.option("-o", "--output", default="docs_html", help="出力ディレクトリ")
-@click.option("--docs-dir", default="docs", help="ドキュメントディレクトリ")
-@click.option("--no-preview", is_flag=True, help="HTML生成後にブラウザを開かない")
-def docs(output, docs_dir, no_preview):
-    """ドキュメントをHTMLに変換します"""
-    try:
-        output_path = convert_docs(docs_dir, output)
-        
-        if not no_preview and output_path:
-            index_file = output_path / "index.html"
-            if index_file.exists():
-                console.print(f"[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
-                webbrowser.open(f"file://{index_file.absolute()}")
-        
-    except Exception as e:
-        console.print(f"[red][エラー] ドキュメント変換エラー:[/red] {e}")
-        sys.exit(1)
 
 
 def load_distignore_patterns():
@@ -741,7 +603,7 @@ def should_exclude(path: Path, patterns: list, base_path: Path) -> bool:
 @click.argument("source_dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("-o", "--output", default="zip_distribution", help="ZIP配布用出力ディレクトリ")
 @click.option("--zip-name", default="kumihan-formatter-distribution", help="ZIPファイル名（拡張子なし）")
-@click.option("--convert-markdown", is_flag=True, default=True, help="Markdownファイルを自動でHTMLに変換（デフォルト: 有効）")
+@click.option("--convert-markdown", is_flag=True, default=False, help="[削除済み] この機能は削除されました")
 @click.option("--no-zip", is_flag=True, help="ZIPファイルを作成せず、ディレクトリのみ作成")
 @click.option("--include-originals", is_flag=True, help="元のMarkdownファイルも同梱")
 @click.option("--no-preview", is_flag=True, help="生成後にブラウザでプレビューしない")
@@ -794,34 +656,10 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
             if excluded_count > 0:
                 console.print(f"[yellow][除外] {excluded_count}個のファイルを除外[/yellow]")
             
-            # Markdownファイルの変換処理
+            # Markdown変換機能は削除されました
             if convert_markdown:
-                console.print("[yellow][変換] Markdownファイルを検索・HTML変換中...[/yellow]")
-                
-                # Markdownファイルを検出
-                md_files = list(temp_path.rglob("*.md"))
-                
-                if md_files:
-                    console.print(f"[blue][検出] {len(md_files)}個のMarkdownファイルを発見[/blue]")
-                    
-                    # HTML変換を実行
-                    converted_files = convert_markdown_to_html(temp_path, temp_path)
-                    
-                    console.print(f"[green][変換完了] {len(converted_files)}個のHTMLファイルを生成[/green]")
-                    
-                    # 元のMarkdownファイルを削除（include_originalsが無効な場合）
-                    if not include_originals:
-                        console.print("[yellow][クリーンアップ] 元のMarkdownファイルを削除中...[/yellow]")
-                        for md_file in md_files:
-                            if md_file.exists():
-                                md_file.unlink()
-                        console.print("[green][完了] 元ファイルのクリーンアップ完了[/green]")
-                    else:
-                        console.print("[blue][保持] 元のMarkdownファイルも配布パッケージに同梱[/blue]")
-                else:
-                    console.print("[yellow][情報] Markdownファイルが見つかりませんでした[/yellow]")
-            else:
-                console.print("[blue][スキップ] Markdown変換をスキップ[/blue]")
+                console.print("[yellow][情報] Markdown変換機能は削除されました[/yellow]")
+                console.print("[dim]   Markdownファイルは変換されずにそのままコピーされます[/dim]")
             
             # 出力ディレクトリを準備
             output_path.mkdir(parents=True, exist_ok=True)
