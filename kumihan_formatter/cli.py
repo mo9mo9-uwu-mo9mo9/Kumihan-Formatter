@@ -710,21 +710,25 @@ def should_exclude(path: Path, patterns: list, base_path: Path) -> bool:
         bool: 除外すべきならTrue
     """
     relative_path = path.relative_to(base_path)
+    relative_str = str(relative_path)
     
     for pattern in patterns:
         # ディレクトリパターンの処理
         if pattern.endswith('/'):
-            # ディレクトリ自体または配下のファイルをチェック
+            # ディレクトリ配下のファイルをチェック
             dir_pattern = pattern.rstrip('/')
-            if path.is_dir() and fnmatch.fnmatch(str(relative_path), dir_pattern):
+            
+            # 完全パスマッチング
+            if relative_str.startswith(dir_pattern + '/') or relative_str == dir_pattern:
                 return True
-            # ディレクトリ配下のファイルもチェック
+            
+            # 部分マッチング（ディレクトリ名）
             for part in relative_path.parts:
                 if fnmatch.fnmatch(part, dir_pattern):
                     return True
         else:
             # ファイルパターンの処理
-            if fnmatch.fnmatch(str(relative_path), pattern):
+            if fnmatch.fnmatch(relative_str, pattern):
                 return True
             # ファイル名のみでもマッチング
             if fnmatch.fnmatch(path.name, pattern):
