@@ -41,26 +41,12 @@ class ZipFeatureValidator:
         self.project_root = project_root
         self.issues: List[ValidationIssue] = []
         
-        # 検証対象機能の定義
+        # 検証対象機能の定義（Markdown変換機能は削除済み）
         self.required_features = {
-            'markdown_converter': {
-                'file': 'kumihan_formatter/markdown_converter.py',
-                'functions': [
-                    'convert_markdown_to_html',
-                    'MarkdownConverter.convert_markdown_links',
-                    'MarkdownConverter.generate_navigation',
-                    'MarkdownConverter.generate_index_page'
-                ]
-            },
             'cli_zip_command': {
                 'file': 'kumihan_formatter/cli.py',
-                'functions': ['zip_dist'],
-                'imports': ['from .markdown_converter import convert_markdown_to_html']
-            },
-            'renderer_navigation': {
-                'file': 'kumihan_formatter/renderer.py',
-                'parameters': ['navigation_html'],
-                'template_vars': ['navigation_html']
+                'functions': ['zip_dist']
+                # 注意: Markdown変換関連のインポートは削除済み
             },
             'template_navigation': {
                 'file': 'kumihan_formatter/templates/base.html.j2',
@@ -68,11 +54,10 @@ class ZipFeatureValidator:
             }
         }
         
-        # Issue #108関連のキーワード
+        # ZIP配布関連のキーワード（Markdown変換機能は削除済み）
         self.issue_keywords = [
-            'ZIP配布版', 'Markdown変換', 'ナビゲーション',
-            'index.html', '同人作家', 'Booth配布',
-            'リンク統合', '自動変換'
+            'ZIP配布版', 'ナビゲーション',
+            'index.html', '同人作家', 'Booth配布'
         ]
 
     def validate_core_functions(self) -> None:
@@ -227,13 +212,10 @@ class ZipFeatureValidator:
     def _check_issue_requirements(self, issue_content: str) -> None:
         """Issue #108の要件との整合性をチェック"""
         
-        # 必須機能の実装状況をチェック
+        # 必須機能の実装状況をチェック（Markdown変換機能は削除済み）
         required_implementations = {
-            'ZIP配布': 'zip_dist関数',
-            'Markdown変換': 'convert_markdown_to_html関数',
-            'ナビゲーション': 'generate_navigation関数',
-            'インデックス': 'generate_index_page関数',
-            'リンク変換': 'convert_markdown_links関数'
+            'ZIP配布': 'zip_dist関数'
+            # 注意: Markdown変換関連機能は削除済み
         }
         
         for requirement, implementation in required_implementations.items():
@@ -252,9 +234,9 @@ class ZipFeatureValidator:
     def _check_implementation_exists(self, implementation_name: str) -> bool:
         """指定された実装が存在するかチェック"""
         implementation_files = [
-            'kumihan_formatter/markdown_converter.py',
             'kumihan_formatter/cli.py',
             'kumihan_formatter/renderer.py'
+            # 注意: markdown_converter.pyは削除済み
         ]
         
         for file_path in implementation_files:
@@ -299,15 +281,17 @@ class ZipFeatureValidator:
 [戻る](test.md)
 """, encoding='utf-8')
             
-            # Markdown変換機能は削除されたため、このテストはスキップ
-            self.issues.append(ValidationIssue(
-                file_path="markdown_converter.py",
-                line_number=0,
-                issue_type="feature_removed",
-                description="Markdown変換機能は削除されました",
-                severity="low",
-                suggestion="この検証は不要になりました"
-            ))
+            # Markdown変換機能は削除されたため、このテストは正常にスキップ
+            # テスト用ディレクトリが存在することを確認
+            if not temp_path.exists():
+                self.issues.append(ValidationIssue(
+                    file_path="",
+                    line_number=0,
+                    issue_type="test_setup_error",
+                    description="テスト用ディレクトリの作成に失敗しました",
+                    severity="medium",
+                    suggestion="テスト環境の設定を確認してください"
+                ))
 
     def run_all_validations(self) -> List[ValidationIssue]:
         """全ての検証を実行"""
