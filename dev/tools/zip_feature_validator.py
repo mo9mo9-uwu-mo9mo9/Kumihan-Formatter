@@ -20,7 +20,8 @@ import os
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from kumihan_formatter.markdown_converter import convert_markdown_to_html
+# markdown_converter.pyは削除されました
+# from kumihan_formatter.markdown_converter import convert_markdown_to_html
 from kumihan_formatter.cli import zip_dist
 
 @dataclass
@@ -298,55 +299,15 @@ class ZipFeatureValidator:
 [戻る](test.md)
 """, encoding='utf-8')
             
-            try:
-                # Markdown変換テスト
-                result = convert_markdown_to_html(temp_path, temp_path)
-                
-                if not result:
-                    self.issues.append(ValidationIssue(
-                        file_path="markdown_converter.py",
-                        line_number=0,
-                        issue_type="conversion_failure",
-                        description="Markdown変換が失敗しました",
-                        severity="high",
-                        suggestion="convert_markdown_to_html関数を確認してください"
-                    ))
-                
-                # 生成されたHTMLファイルの確認
-                expected_files = ['test.html', 'section2.html', 'index.html']
-                for expected_file in expected_files:
-                    html_file = temp_path / expected_file
-                    if not html_file.exists():
-                        self.issues.append(ValidationIssue(
-                            file_path="",
-                            line_number=0,
-                            issue_type="missing_output_file",
-                            description=f"期待されるHTMLファイルが生成されませんでした: {expected_file}",
-                            severity="medium",
-                            suggestion="HTML生成ロジックを確認してください"
-                        ))
-                    else:
-                        # HTMLファイルの内容チェック
-                        html_content = html_file.read_text(encoding='utf-8')
-                        if 'kumihan-nav' not in html_content:
-                            self.issues.append(ValidationIssue(
-                                file_path=expected_file,
-                                line_number=0,
-                                issue_type="missing_navigation",
-                                description=f"ナビゲーション要素が見つかりません: {expected_file}",
-                                severity="medium",
-                                suggestion="ナビゲーション生成機能を確認してください"
-                            ))
-            
-            except Exception as e:
-                self.issues.append(ValidationIssue(
-                    file_path="",
-                    line_number=0,
-                    issue_type="test_execution_error",
-                    description=f"テスト実行エラー: {e}",
-                    severity="high",
-                    suggestion="実装コードを確認してください"
-                ))
+            # Markdown変換機能は削除されたため、このテストはスキップ
+            self.issues.append(ValidationIssue(
+                file_path="markdown_converter.py",
+                line_number=0,
+                issue_type="feature_removed",
+                description="Markdown変換機能は削除されました",
+                severity="low",
+                suggestion="この検証は不要になりました"
+            ))
 
     def run_all_validations(self) -> List[ValidationIssue]:
         """全ての検証を実行"""

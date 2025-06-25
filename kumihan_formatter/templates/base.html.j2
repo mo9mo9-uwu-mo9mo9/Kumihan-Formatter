@@ -107,13 +107,29 @@
         /* 枠線内の段落は左揃え */
         .box p {
             text-align: left;
-            margin: 0;
+            margin: 0.5em 0;
         }
         
         /* 枠線内のリストも左揃え */
         .box ul, .box ol {
             text-align: left;
             margin: 0;
+        }
+        
+        /* 枠線内のコードブロックは中央寄せ */
+        .box .code-block {
+            align-self: center;
+            margin: 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        /* 枠線内のコードブロック内の段落 */
+        .box .code-block p {
+            margin: 0;
+            text-align: left;
         }
 
         /* ハイライト */
@@ -130,13 +146,65 @@
         /* ハイライト内の段落は左揃え */
         .highlight p {
             text-align: left;
-            margin: 0;
+            margin: 0.5em 0;
         }
         
         /* ハイライト内のリストも左揃え */
         .highlight ul, .highlight ol {
             text-align: left;
             margin: 0;
+        }
+        
+        /* ハイライト内のコードブロックは中央寄せ */
+        .highlight .code-block {
+            align-self: center;
+            margin: 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        /* ハイライト内のコードブロック内の段落 */
+        .highlight .code-block p {
+            margin: 0;
+            text-align: left;
+        }
+
+        /* コードブロック */
+        .code-block {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-left: 4px solid #007acc;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            min-height: 60px;
+        }
+        
+        /* コードブロック内の段落 */
+        .code-block p {
+            margin: 0;
+            text-align: left;
+        }
+
+        /* インラインコード */
+        .inline-code {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85em;
         }
 
         /* ネストしたブロック要素の調整 */
@@ -146,6 +214,10 @@
 
         .highlight .box {
             margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+        }
+
+        .box .code-block {
+            margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
         }
 
         /* さらに深いネスト（3層以上）の調整 */
