@@ -49,6 +49,11 @@ CLAUDE.md
 # ドキュメント（開発者向け）
 CONTRIBUTING.md
 docs/dev/
+docs/analysis/
+docs/generated/
+
+# 配布設定ファイル（配布後不要）
+.distignore
 
 # テスト関連
 test_*/
