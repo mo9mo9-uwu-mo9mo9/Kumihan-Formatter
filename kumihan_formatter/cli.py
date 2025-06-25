@@ -24,7 +24,6 @@ from .parser import parse
 from .renderer import render
 from .config import load_config
 from .sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
-from .markdown_converter import convert_markdown_to_html
 
 # Windows環境でのエンコーディング問題対応
 def setup_windows_encoding():
@@ -383,39 +382,6 @@ def generate_sample(output_dir: str = "kumihan_sample", use_source_toggle: bool 
     return output_path
 
 
-def convert_docs_new(docs_dir="docs", output_dir="docs_html", no_preview=False):
-    """ドキュメントファイルをHTMLに変換（新しいMarkdownConverter使用）"""
-    from .markdown_converter import convert_markdown_to_html
-    
-    docs_path = Path(docs_dir)
-    output_path = Path(output_dir)
-    
-    console.print(f"[cyan][ドキュメント] ドキュメント変換開始: {docs_path}[/cyan]")
-    
-    # 新しいMarkdownConverterでMarkdownファイルを変換
-    markdown_files = convert_markdown_to_html(docs_path, output_path)
-    
-    if not markdown_files:
-        console.print(f"[yellow][警告] Markdownファイルが見つかりませんでした[/yellow]")
-        return output_path
-    
-    # 結果表示
-    console.print(f"\n[green][完了] ドキュメント変換完了![/green]")
-    console.print(f"[green]   [フォルダ] 出力先: {output_path.absolute()}[/green]")
-    console.print(f"[green]   [ファイル] 変換済みファイル: {len(markdown_files)}個[/green]")
-    
-    for md_file in markdown_files:
-        console.print(f"[dim]   - {md_file.japanese_name}: {md_file.html_path.name}[/dim]")
-    
-    console.print(f"[green]    インデックス: index.html[/green]")
-    
-    # ブラウザで開く（no_previewフラグを考慮）
-    if not no_preview:
-        index_html = output_path / "index.html"
-        console.print(f"\n[cyan][ブラウザ] ブラウザでドキュメントを表示中...[/cyan]")
-        webbrowser.open(f"file://{index_html.absolute()}")
-    
-    return output_path
 
 
 
@@ -570,21 +536,6 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         sys.exit(1)
 
 
-@cli.command()
-@click.option("-o", "--output", default="docs_html", help="出力ディレクトリ")
-@click.option("--docs-dir", default="docs", help="ドキュメントディレクトリ")
-@click.option("--no-preview", is_flag=True, help="HTML生成後にブラウザを開かない")
-def docs(output, docs_dir, no_preview):
-    """ドキュメントをHTMLに変換します"""
-    try:
-        # convert_docs関数では--no-previewを考慮した処理をします
-        output_path = convert_docs_new(docs_dir, output, no_preview)
-        
-    except Exception as e:
-        console.print(f"[red][エラー] ドキュメント変換エラー:[/red] {e}")
-        import traceback
-        console.print(f"[dim]{traceback.format_exc()}[/dim]")
-        sys.exit(1)
 
 
 def load_distignore_patterns():
@@ -652,7 +603,7 @@ def should_exclude(path: Path, patterns: list, base_path: Path) -> bool:
 @click.argument("source_dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("-o", "--output", default="zip_distribution", help="ZIP配布用出力ディレクトリ")
 @click.option("--zip-name", default="kumihan-formatter-distribution", help="ZIPファイル名（拡張子なし）")
-@click.option("--convert-markdown", is_flag=True, default=True, help="Markdownファイルを自動でHTMLに変換（デフォルト: 有効）")
+@click.option("--convert-markdown", is_flag=True, default=False, help="[削除済み] この機能は削除されました")
 @click.option("--no-zip", is_flag=True, help="ZIPファイルを作成せず、ディレクトリのみ作成")
 @click.option("--include-originals", is_flag=True, help="元のMarkdownファイルも同梱")
 @click.option("--no-preview", is_flag=True, help="生成後にブラウザでプレビューしない")
@@ -705,34 +656,10 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
             if excluded_count > 0:
                 console.print(f"[yellow][除外] {excluded_count}個のファイルを除外[/yellow]")
             
-            # Markdownファイルの変換処理
+            # Markdown変換機能は削除されました
             if convert_markdown:
-                console.print("[yellow][変換] Markdownファイルを検索・HTML変換中...[/yellow]")
-                
-                # Markdownファイルを検出
-                md_files = list(temp_path.rglob("*.md"))
-                
-                if md_files:
-                    console.print(f"[blue][検出] {len(md_files)}個のMarkdownファイルを発見[/blue]")
-                    
-                    # HTML変換を実行
-                    converted_files = convert_markdown_to_html(temp_path, temp_path)
-                    
-                    console.print(f"[green][変換完了] {len(converted_files)}個のHTMLファイルを生成[/green]")
-                    
-                    # 元のMarkdownファイルを削除（include_originalsが無効な場合）
-                    if not include_originals:
-                        console.print("[yellow][クリーンアップ] 元のMarkdownファイルを削除中...[/yellow]")
-                        for md_file in md_files:
-                            if md_file.exists():
-                                md_file.unlink()
-                        console.print("[green][完了] 元ファイルのクリーンアップ完了[/green]")
-                    else:
-                        console.print("[blue][保持] 元のMarkdownファイルも配布パッケージに同梱[/blue]")
-                else:
-                    console.print("[yellow][情報] Markdownファイルが見つかりませんでした[/yellow]")
-            else:
-                console.print("[blue][スキップ] Markdown変換をスキップ[/blue]")
+                console.print("[yellow][情報] Markdown変換機能は削除されました[/yellow]")
+                console.print("[dim]   Markdownファイルは変換されずにそのままコピーされます[/dim]")
             
             # 出力ディレクトリを準備
             output_path.mkdir(parents=True, exist_ok=True)
