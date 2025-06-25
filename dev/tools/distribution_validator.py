@@ -129,19 +129,29 @@ def extract_and_analyze_zip(zip_path: Path) -> Tuple[Set[str], Dict]:
     
     file_paths = set()
     
-    with zipfile.ZipFile(zip_path, 'r') as zipf:
-        for file_info in zipf.filelist:
-            if not file_info.is_dir():
-                file_paths.add(file_info.filename)
-                analysis["total_files"] += 1
-                analysis["total_size"] += file_info.file_size
-                
-                # ファイル拡張子の集計
-                ext = Path(file_info.filename).suffix.lower()
-                if ext:
-                    analysis["file_types"][ext] = analysis["file_types"].get(ext, 0) + 1
-                else:
-                    analysis["file_types"]["(no extension)"] = analysis["file_types"].get("(no extension)", 0) + 1
+    # ZIPファイルサイズチェック
+    zip_size = zip_path.stat().st_size
+    if zip_size > 100 * 1024 * 1024:  # 100MB
+        print("⚠️  大容量ファイルのため処理に時間がかかる可能性があります")
+    
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zipf:
+            for file_info in zipf.filelist:
+                if not file_info.is_dir():
+                    file_paths.add(file_info.filename)
+                    analysis["total_files"] += 1
+                    analysis["total_size"] += file_info.file_size
+                    
+                    # ファイル拡張子の集計
+                    ext = Path(file_info.filename).suffix.lower()
+                    if ext:
+                        analysis["file_types"][ext] = analysis["file_types"].get(ext, 0) + 1
+                    else:
+                        analysis["file_types"]["(no extension)"] = analysis["file_types"].get("(no extension)", 0) + 1
+    except zipfile.BadZipFile:
+        raise ValueError(f"不正なZIPファイルです: {zip_path}")
+    except PermissionError:
+        raise ValueError(f"ZIPファイルへのアクセス権限がありません: {zip_path}")
     
     return file_paths, analysis
 
