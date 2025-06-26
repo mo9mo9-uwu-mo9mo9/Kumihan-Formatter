@@ -1,10 +1,14 @@
 name: Coverage Report
 
+# 一時的に無効化: パフォーマンス問題調査中
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # 手動実行のみ
 
 jobs:
   coverage:
