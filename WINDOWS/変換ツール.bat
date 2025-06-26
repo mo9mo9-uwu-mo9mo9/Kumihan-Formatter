@@ -23,7 +23,7 @@ if not exist "../.venv\Scripts\activate.bat" (
     echo [WARNING] Setup not completed yet!
     echo.
     echo Please run the setup first:
-    echo   1. Double-click: 初回セットアップ.bat
+    echo   1. Double-click: Windows用初回セットアップ.bat (in project root)
     echo   2. Wait for setup to complete
     echo   3. Then run this script again
     echo.
