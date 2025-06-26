@@ -23,7 +23,7 @@ class SampleCommand:
     """Sample generation command implementation"""
     
     def __init__(self):
-        self.file_ops = FileOperations()
+        self.file_ops = FileOperations(ui=ui)
         self.path_validator = PathValidator()
     
     def execute(self, output_dir: str = "kumihan_sample", 
