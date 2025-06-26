@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from .core.ast_nodes import Node
-from .core.html_renderer import HTMLRenderer
+from .core.rendering import HTMLRenderer
 from .core.template_manager import TemplateManager, RenderContext
 from .core.toc_generator import TOCGenerator
 

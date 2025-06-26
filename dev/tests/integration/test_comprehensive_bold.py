@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 
 from kumihan_formatter.core.keyword_parser import KeywordParser
 from kumihan_formatter.core.block_parser import BlockParser
-from kumihan_formatter.core.html_renderer import HTMLRenderer
+from kumihan_formatter.core.rendering import HTMLRenderer
 from kumihan_formatter.parser import Parser
 from kumihan_formatter.core.template_manager import TemplateManager, RenderContext
 
