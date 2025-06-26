@@ -45,7 +45,7 @@ jobs:
         # CLIテスト
         python -m kumihan_formatter --help
         
-        # 基本的な変換テスト
-        echo "n" | python -m kumihan_formatter convert --generate-sample -o /tmp/test-output
+        # 基本的な変換テスト（リファクタリング後の新しいコマンド構造）
+        echo "n" | python -m kumihan_formatter generate-sample -o /tmp/test-output
         
         echo "✅ Quick tests passed"

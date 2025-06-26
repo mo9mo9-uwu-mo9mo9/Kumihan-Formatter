@@ -22,7 +22,7 @@ sys.path.insert(0, str(project_root))
 
 # markdown_converter.pyは削除されました
 # from kumihan_formatter.markdown_converter import convert_markdown_to_html
-from kumihan_formatter.cli import zip_dist
+from kumihan_formatter.commands.zip_dist import ZipDistCommand
 
 @dataclass
 class ValidationIssue:
@@ -44,8 +44,8 @@ class ZipFeatureValidator:
         # 検証対象機能の定義（Markdown変換機能は削除済み）
         self.required_features = {
             'cli_zip_command': {
-                'file': 'kumihan_formatter/cli.py',
-                'functions': ['zip_dist']
+                'file': 'kumihan_formatter/commands/zip_dist.py',
+                'functions': ['ZipDistCommand']
                 # 注意: Markdown変換関連のインポートは削除済み
             },
             'template_navigation': {
@@ -161,11 +161,12 @@ class ZipFeatureValidator:
                     ))
 
     def _find_function_definition(self, content: str, func_name: str) -> bool:
-        """関数定義の検索"""
-        # クラスメソッドと通常の関数の両方をチェック
+        """関数またはクラス定義の検索"""
+        # クラス、クラスメソッド、通常の関数の全てをチェック
         patterns = [
             rf'def\s+{re.escape(func_name)}\s*\(',  # 通常の関数
-            rf'def\s+{re.escape(func_name.split(".")[-1])}\s*\('  # クラスメソッド
+            rf'def\s+{re.escape(func_name.split(".")[-1])}\s*\(',  # クラスメソッド
+            rf'class\s+{re.escape(func_name)}\s*[\(:]'  # クラス定義
         ]
         
         for pattern in patterns:
