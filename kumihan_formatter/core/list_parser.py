@@ -35,7 +35,7 @@ class ListParser:
             line = lines[current_index].strip()
             
             # Check if this is a list item
-            if not line.startswith('- '):
+            if not (line.startswith('- ') or line.startswith('・')):
                 break
             
             # Parse the list item
@@ -94,8 +94,13 @@ class ListParser:
                 return list_item(""), 1
             content = match.group(1)
         else:
-            # Remove bullet prefix ("- ")
-            content = line[2:] if line.startswith('- ') else line
+            # Remove bullet prefix ("- " or "・")
+            if line.startswith('- '):
+                content = line[2:]
+            elif line.startswith('・'):
+                content = line[1:]
+            else:
+                content = line
         
         # Check for keyword syntax in list item
         if content.startswith(';;;') and ';;; ' in content:
@@ -157,7 +162,7 @@ class ListParser:
         """
         line = line.strip()
         
-        if line.startswith('- '):
+        if line.startswith('- ') or line.startswith('・'):
             return 'ul'
         elif re.match(r'^\d+\.\s', line):
             return 'ol'
@@ -197,6 +202,8 @@ class ListParser:
             line = line.strip()
             if line.startswith('- '):
                 items.append(line[2:])
+            elif line.startswith('・'):
+                items.append(line[1:])
             elif re.match(r'^\d+\.\s', line):
                 match = re.match(r'^\d+\.\s(.*)$', line)
                 if match:
@@ -299,11 +306,13 @@ class ListValidator:
         """Validate keyword syntax in a list item"""
         issues = []
         
-        # Extract content after "- "
-        if not line.startswith('- '):
+        # Extract content after "- " or "・"
+        if line.startswith('- '):
+            content = line[2:]
+        elif line.startswith('・'):
+            content = line[1:]
+        else:
             return issues
-        
-        content = line[2:]
         
         # Check keyword format
         if content.startswith(';;;'):

@@ -35,6 +35,64 @@ def test_parse_list():
     assert all(item.type == "li" for item in result[0].content)
 
 
+def test_parse_nakaguro_list():
+    """中黒リストのパース"""
+    text = """・項目1
+・項目2
+・項目3"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "ul"
+    assert len(result[0].content) == 3
+    assert all(item.type == "li" for item in result[0].content)
+    assert result[0].content[0].content == "項目1"
+    assert result[0].content[1].content == "項目2"
+    assert result[0].content[2].content == "項目3"
+
+
+def test_parse_mixed_list_types():
+    """ハイフンと中黒リストの混在"""
+    text = """- ハイフン項目1
+・中黒項目1
+- ハイフン項目2
+・中黒項目2"""
+    
+    result = parse(text)
+    # 現在の実装では、混在しても1つのリストとして認識される
+    assert len(result) == 1
+    assert result[0].type == "ul"
+    assert len(result[0].content) == 4
+    assert result[0].content[0].content == "ハイフン項目1"
+    assert result[0].content[1].content == "中黒項目1"
+    assert result[0].content[2].content == "ハイフン項目2"
+    assert result[0].content[3].content == "中黒項目2"
+
+
+def test_parse_nakaguro_list_with_keywords():
+    """中黒リストのキーワード付き"""
+    text = """・;;;太字;;; 太字の項目
+・;;;枠線;;; 枠線付きの項目
+・;;;太字+ハイライト color=#f0fff0;;; 複合マーカーの項目"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "ul"
+    assert len(result[0].content) == 3
+    # 各項目の内容をチェック
+    item1 = result[0].content[0]
+    assert item1.type == "li"
+    assert "strong" in str(item1.content)
+    
+    item2 = result[0].content[1]
+    assert item2.type == "li"
+    assert "box" in str(item2.content)
+    
+    item3 = result[0].content[2]
+    assert item3.type == "li"
+    assert "highlight" in str(item3.content)
+
+
 def test_parse_single_block_marker():
     """単一ブロックマーカーのパース"""
     text = """;;;太字
