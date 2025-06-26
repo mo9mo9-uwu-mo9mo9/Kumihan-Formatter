@@ -232,9 +232,79 @@ class KeywordParser:
         if not content.strip():
             return [""]
         
+        # Process inline keyword markup in list items
+        processed_content = self._process_inline_keywords(content)
+        
         # Return content as text, not as paragraph node
         # The rendering will be handled by the specific keyword handler
-        return [content.strip()]
+        return [processed_content.strip()]
+    
+    def _process_inline_keywords(self, content: str) -> str:
+        """Process inline keyword markup (e.g., ;;;keyword;;; text) in content"""
+        import re
+        
+        # Pattern to match ;;;keyword;;; text at the start of lines or after list markers
+        pattern = r'(^|\n)([\s]*[-*]?\s*)(;;;([^;]+);;;\s+)(.+?)(?=\n|$)'
+        
+        def replace_keyword(match):
+            prefix = match.group(1)  # \n or start
+            list_marker = match.group(2)  # list marker and spaces
+            full_marker = match.group(3)  # ;;;keyword;;; 
+            keyword_part = match.group(4)  # keyword content
+            text_content = match.group(5)  # text after keyword
+            
+            # Parse keywords
+            keywords, attributes, errors = self.parse_marker_keywords(keyword_part)
+            
+            if errors or not keywords:
+                # If there are errors, return original text
+                return prefix + list_marker + full_marker + text_content
+            
+            # Apply styling to text content
+            if len(keywords) == 1:
+                # Single keyword - apply simple styling
+                styled_text = self._apply_simple_styling(keywords[0], text_content, attributes)
+            else:
+                # Multiple keywords - apply compound styling  
+                styled_text = self._apply_compound_styling(keywords, text_content, attributes)
+            
+            return prefix + list_marker + styled_text
+        
+        return re.sub(pattern, replace_keyword, content, flags=re.MULTILINE)
+    
+    def _apply_simple_styling(self, keyword: str, text: str, attributes: dict) -> str:
+        """Apply simple styling to text based on keyword"""
+        if keyword == "太字":
+            return f"<strong>{text}</strong>"
+        elif keyword == "イタリック":
+            return f"<em>{text}</em>"
+        elif keyword == "ハイライト":
+            style = ""
+            if "color" in attributes:
+                color = attributes["color"]
+                if not color.startswith('#'):
+                    color = '#' + color
+                style = f' style="background-color:{color}"'
+            return f'<span class="highlight"{style}>{text}</span>'
+        elif keyword == "枠線":
+            return f'<span class="box-inline">{text}</span>'
+        elif keyword.startswith("見出し"):
+            level = keyword[-1]
+            return f'<span class="heading-{level}">{text}</span>'
+        else:
+            return text
+    
+    def _apply_compound_styling(self, keywords: List[str], text: str, attributes: dict) -> str:
+        """Apply compound styling to text"""
+        # Sort keywords by nesting order
+        sorted_keywords = self._sort_keywords_by_nesting_order(keywords)
+        
+        # Apply styling from inner to outer
+        result = text
+        for keyword in reversed(sorted_keywords):
+            result = self._apply_simple_styling(keyword, result, attributes)
+        
+        return result
     
     def _sort_keywords_by_nesting_order(self, keywords: List[str]) -> List[str]:
         """Sort keywords by their nesting order"""
