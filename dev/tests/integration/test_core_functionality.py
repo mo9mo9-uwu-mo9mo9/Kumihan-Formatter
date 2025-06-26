@@ -6,7 +6,7 @@ This test suite can run independently without external dependencies like Jinja2
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 
 from kumihan_formatter.core.keyword_parser import KeywordParser
 from kumihan_formatter.core.block_parser import BlockParser
