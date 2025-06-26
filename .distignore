@@ -52,6 +52,21 @@ docs/dev/
 docs/analysis/
 docs/generated/
 
+# ヘルプファイル（GitHubページ参照方針により除外）
+README.md
+docs/
+CHANGELOG.md
+SPEC.md
+STYLE_GUIDE.md
+CONTRIBUTING.md
+REFACTORING_SUMMARY.md
+BRANCH_CLEANUP.md
+SYNTAX_CHECKER_README.md
+quickstart.txt
+readme.txt
+docs/*.txt
+docs/*.md
+
 # 配布設定ファイル（配布後不要）
 .distignore
 
