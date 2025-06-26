@@ -75,8 +75,8 @@ jobs:
     - name: Test sample generation
       shell: bash
       run: |
-        # サンプル生成テスト
-        echo "n" | python -m kumihan_formatter convert --generate-sample -o dist/test-output
+        # サンプル生成テスト（リファクタリング後の新しいコマンド構造）
+        echo "n" | python -m kumihan_formatter generate-sample -o dist/test-output
         
     - name: Test basic conversion
       shell: bash
