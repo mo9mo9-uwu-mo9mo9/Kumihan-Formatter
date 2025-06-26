@@ -16,6 +16,7 @@ from rich.progress import Progress
 
 from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
+from ..core.error_system import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
 from ..parser import parse
 from ..renderer import render
 from ..config import load_config
@@ -28,6 +29,7 @@ class ConvertCommand:
         self.file_ops = FileOperations()
         self.path_validator = PathValidator()
         self.error_handler = ErrorHandler()
+        self.friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
     
     def execute(self, input_file: Optional[str], output: str, no_preview: bool,
                 watch: bool, config: Optional[str], show_test_cases: bool,
@@ -86,17 +88,29 @@ class ConvertCommand:
             
             return output_file
             
-        except FileNotFoundError:
-            self.error_handler.handle_file_not_found(input_file or "")
+        except FileNotFoundError as e:
+            error = self.friendly_error_handler.handle_exception(
+                e, context={"file_path": input_file or ""}
+            )
+            self.friendly_error_handler.display_error(error, verbose=True)
             sys.exit(1)
-        except UnicodeDecodeError:
-            self.error_handler.handle_encoding_error(input_file or "")
+        except UnicodeDecodeError as e:
+            error = self.friendly_error_handler.handle_exception(
+                e, context={"file_path": input_file or ""}
+            )
+            self.friendly_error_handler.display_error(error, verbose=True)
             sys.exit(1)
         except PermissionError as e:
-            self.error_handler.handle_permission_error(str(e))
+            error = self.friendly_error_handler.handle_exception(
+                e, context={"file_path": input_file or "", "operation": "読み取り"}
+            )
+            self.friendly_error_handler.display_error(error, verbose=True)
             sys.exit(1)
         except Exception as e:
-            self.error_handler.handle_unexpected_error(str(e))
+            error = self.friendly_error_handler.handle_exception(
+                e, context={"input_file": input_file, "operation": "ファイル変換"}
+            )
+            self.friendly_error_handler.display_error(error, verbose=True)
             sys.exit(1)
     
     def _convert_file(self, input_path: Path, output: str, config=None,

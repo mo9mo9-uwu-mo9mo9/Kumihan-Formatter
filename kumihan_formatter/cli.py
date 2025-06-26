@@ -14,6 +14,7 @@ from .commands.zip_dist import create_zip_dist_command
 from .commands.sample import create_sample_command, create_test_command
 from .commands.check_syntax import create_check_syntax_command
 from .ui.console_ui import ui
+from .core.error_system import ErrorHandler as FriendlyErrorHandler
 
 
 def setup_encoding():
@@ -42,6 +43,8 @@ cli.add_command(create_check_syntax_command(), name="check-syntax")
 
 def main():
     """Main entry point with enhanced error handling"""
+    friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
+    
     try:
         # Handle legacy command routing
         if len(sys.argv) > 1:
@@ -59,9 +62,23 @@ def main():
         
     except KeyboardInterrupt:
         ui.info("操作が中断されました")
+        ui.dim("Ctrl+C で中断されました")
         sys.exit(130)
+    except click.ClickException as e:
+        # Click自体のエラーは元の処理を維持
+        e.show()
+        sys.exit(e.exit_code)
+    except (FileNotFoundError, UnicodeDecodeError, PermissionError) as e:
+        # 一般的なエラーは新システムで処理
+        error = friendly_error_handler.handle_exception(e)
+        friendly_error_handler.display_error(error, verbose=True)
+        sys.exit(1)
     except Exception as e:
-        ui.unexpected_error(str(e))
+        # その他の予期しないエラー
+        error = friendly_error_handler.handle_exception(
+            e, context={"operation": "CLI実行", "args": sys.argv}
+        )
+        friendly_error_handler.display_error(error, verbose=True)
         sys.exit(1)
 
 
