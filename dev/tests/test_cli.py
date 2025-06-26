@@ -7,7 +7,8 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from kumihan_formatter.cli import cli, convert_file
+from kumihan_formatter.cli import cli
+from kumihan_formatter.commands.convert import ConvertCommand
 
 
 def test_convert_file():
@@ -19,7 +20,9 @@ def test_convert_file():
     
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_file = convert_file(str(temp_input), temp_dir, show_stats=False)
+            # 新しいConvertCommandクラスを使用
+            convert_command = ConvertCommand()
+            output_file = convert_command._convert_file(temp_input, temp_dir, show_stats=False)
             
             assert output_file.exists()
             assert output_file.suffix == '.html'
@@ -27,6 +30,7 @@ def test_convert_file():
             # HTMLの内容をチェック
             content = output_file.read_text(encoding='utf-8')
             assert '<p>これはテストです。</p>' in content
+            # 正しい太字ブロックの形式（strongタグが内容を直接包含）
             assert '<strong>太字のテキストです。</strong>' in content
     finally:
         temp_input.unlink()
@@ -117,60 +121,47 @@ def test_cli_no_preview():
         Path(temp_input).unlink()
 
 
-@patch('webbrowser.open')
-def test_docs_command(mock_browser):
-    """docs コマンドのテスト"""
+def test_zip_dist_command():
+    """zip-dist コマンドのテスト"""
     runner = CliRunner()
     
-    # 一時的なドキュメントディレクトリとファイルを作成
-    with tempfile.TemporaryDirectory() as temp_docs_dir:
+    # 一時的なソースディレクトリを作成
+    with tempfile.TemporaryDirectory() as temp_source_dir:
         with tempfile.TemporaryDirectory() as temp_output_dir:
-            # テスト用ドキュメントファイルを作成
-            docs_path = Path(temp_docs_dir)
-            readme_file = docs_path / "readme.txt"
-            with open(readme_file, 'w', encoding='utf-8') as f:
-                f.write(";;;見出し1\nテストREADME\n;;;\n\nこれはテスト用のREADMEです。")
+            # テスト用ファイルを作成
+            source_path = Path(temp_source_dir)
+            test_file = source_path / "test.txt"
+            with open(test_file, 'w', encoding='utf-8') as f:
+                f.write("テスト用ファイルです。")
             
-            quickstart_file = docs_path / "quickstart.txt"
-            with open(quickstart_file, 'w', encoding='utf-8') as f:
-                f.write(";;;見出し1\nクイックスタート\n;;;\n\nテスト用のクイックスタートです。")
-            
-            # docs コマンドを実行
+            # zip-dist コマンドを実行
             result = runner.invoke(cli, [
-                'docs',
-                '--docs-dir', str(docs_path),
+                'zip-dist',
+                str(source_path),
                 '-o', temp_output_dir,
+                '--no-zip',
                 '--no-preview'
             ])
             
             assert result.exit_code == 0
-            assert "ドキュメント変換完了" in result.output
-            
-            # 出力ファイルが生成されていることを確認
-            output_path = Path(temp_output_dir)
-            assert (output_path / "readme.html").exists()
-            assert (output_path / "quickstart.html").exists()
-            assert (output_path / "index.html").exists()
+            assert "配布パッケージの作成が完了しました" in result.output
 
 
-def test_docs_command_with_preview():
-    """docs コマンド（プレビューあり）のテスト"""
+def test_generate_sample_command():
+    """generate-sample コマンドのテスト"""
     runner = CliRunner()
     
-    with tempfile.TemporaryDirectory() as temp_docs_dir:
-        with tempfile.TemporaryDirectory() as temp_output_dir:
-            docs_path = Path(temp_docs_dir)
-            readme_file = docs_path / "readme.txt"
-            with open(readme_file, 'w', encoding='utf-8') as f:
-                f.write(";;;見出し1\nテストREADME\n;;;\n\nプレビューテスト。")
-            
-            with patch('webbrowser.open') as mock_browser:
-                result = runner.invoke(cli, [
-                    'docs',
-                    '--docs-dir', str(docs_path),
-                    '-o', temp_output_dir
-                ])
-                
-                assert result.exit_code == 0
-                # ドキュメント変換では複数回ブラウザが開かれる可能性がある
-                assert mock_browser.called
+    with tempfile.TemporaryDirectory() as temp_dir:
+        result = runner.invoke(cli, [
+            'generate-sample',
+            '--output', temp_dir
+        ], input='n\n')  # ソーストグルプロンプトに対して 'n' を入力
+        
+        assert result.exit_code == 0
+        assert "サンプル生成完了" in result.output
+        
+        # 生成されたファイルの確認
+        output_path = Path(temp_dir)
+        assert (output_path / "showcase.txt").exists()
+        assert (output_path / "showcase.html").exists()
+        assert (output_path / "images").exists()
