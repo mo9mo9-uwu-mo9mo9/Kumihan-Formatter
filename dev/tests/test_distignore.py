@@ -6,7 +6,7 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-from kumihan_formatter.cli import load_distignore_patterns, should_exclude
+from kumihan_formatter.commands.zip_dist import load_distignore_patterns, should_exclude
 
 
 class TestDistignore:
