@@ -26,7 +26,7 @@ class ConvertCommand:
     """Convert command implementation"""
     
     def __init__(self):
-        self.file_ops = FileOperations()
+        self.file_ops = FileOperations(ui=ui)
         self.path_validator = PathValidator()
         self.error_handler = ErrorHandler()
         self.friendly_error_handler = FriendlyErrorHandler(console_ui=ui)

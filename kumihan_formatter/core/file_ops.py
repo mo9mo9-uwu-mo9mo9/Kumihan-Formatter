@@ -9,13 +9,25 @@ import shutil
 import fnmatch
 import base64
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional, Any
+from typing import List, Dict, Tuple, Optional, Any, Protocol
 
-from ..ui.console_ui import ui
+
+class UIProtocol(Protocol):
+    """UI interface protocol to avoid circular dependency"""
+    def warning(self, message: str, details: str = None) -> None: ...
+    def file_copied(self, count: int) -> None: ...
+    def files_missing(self, files: list) -> None: ...
+    def duplicate_files(self, duplicates: dict) -> None: ...
+    def info(self, message: str, details: str = None) -> None: ...
+    def hint(self, message: str, details: str = None) -> None: ...
 
 
 class FileOperations:
     """File operations utility class"""
+    
+    def __init__(self, ui: Optional[UIProtocol] = None):
+        """Initialize with optional UI instance for dependency injection"""
+        self.ui = ui
     
     @staticmethod
     def load_distignore_patterns() -> List[str]:
@@ -78,8 +90,7 @@ class FileOperations:
         
         return False
 
-    @staticmethod
-    def copy_images(input_path: Path, output_path: Path, ast: List[Any]) -> None:
+    def copy_images(self, input_path: Path, output_path: Path, ast: List[Any]) -> None:
         """Copy image files to output directory"""
         # Extract image nodes from AST
         image_nodes = [node for node in ast if getattr(node, 'type', None) == 'image']
@@ -91,7 +102,8 @@ class FileOperations:
         source_images_dir = input_path.parent / "images"
         
         if not source_images_dir.exists():
-            ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
+            if self.ui:
+                self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
             return
         
         # Create output images directory
@@ -122,14 +134,14 @@ class FileOperations:
                 missing_files.append(filename)
         
         # Report results
-        if copied_files:
-            ui.file_copied(len(copied_files))
+        if copied_files and self.ui:
+            self.ui.file_copied(len(copied_files))
         
-        if missing_files:
-            ui.files_missing(missing_files)
+        if missing_files and self.ui:
+            self.ui.files_missing(missing_files)
         
-        if duplicate_files:
-            ui.duplicate_files(duplicate_files)
+        if duplicate_files and self.ui:
+            self.ui.duplicate_files(duplicate_files)
 
     @staticmethod
     def create_sample_images(images_dir: Path, sample_images: Dict[str, str]) -> None:
@@ -222,8 +234,7 @@ class FileOperations:
             }
         return {'size_bytes': 0, 'size_mb': 0.0, 'size_formatted': '0', 'is_large': False}
 
-    @staticmethod
-    def check_large_file_warning(path: Path, max_size_mb: float = 50.0) -> bool:
+    def check_large_file_warning(self, path: Path, max_size_mb: float = 50.0) -> bool:
         """
         大規模ファイルの警告表示とユーザー確認
         
@@ -234,16 +245,17 @@ class FileOperations:
         Returns:
             bool: 続行するかどうか
         """
-        size_info = FileOperations.get_file_size_info(path)
+        size_info = self.get_file_size_info(path)
         
         if size_info['size_mb'] > max_size_mb:
-            ui.warning(
-                f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",
-                f"処理に時間がかかる可能性があります（推奨: {max_size_mb}MB以下）"
-            )
-            
-            # 自動的に続行（バッチ処理対応）
-            ui.info("大規模ファイル処理を開始します")
+            if self.ui:
+                self.ui.warning(
+                    f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",
+                    f"処理に時間がかかる可能性があります（推奨: {max_size_mb}MB以下）"
+                )
+                
+                # 自動的に続行（バッチ処理対応）
+                self.ui.info("大規模ファイル処理を開始します")
             return True
         
         return True
