@@ -3,8 +3,16 @@ name: CI / Full Test Matrix
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'pyproject.toml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'pyproject.toml'
   workflow_dispatch:  # 手動実行を許可
 
 jobs:
