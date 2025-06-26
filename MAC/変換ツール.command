@@ -41,7 +41,7 @@ if [ ! -d "../.venv" ]; then
     echo -e "${YELLOW}[WARNING] Setup not completed yet!${NC}"
     echo ""
     echo "Please run the setup first:"
-    echo "  1. Double-click: 初回セットアップ.command"
+    echo "  1. Double-click: macOS用初回セットアップ.command (in project root)"
     echo "  2. Wait for setup to complete"
     echo "  3. Then run this script again"
     echo ""
