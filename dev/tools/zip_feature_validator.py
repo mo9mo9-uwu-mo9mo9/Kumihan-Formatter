@@ -22,7 +22,7 @@ sys.path.insert(0, str(project_root))
 
 # markdown_converter.pyは削除されました
 # from kumihan_formatter.markdown_converter import convert_markdown_to_html
-from kumihan_formatter.cli import zip_dist
+from kumihan_formatter.commands.zip_dist import ZipDistCommand
 
 @dataclass
 class ValidationIssue:
@@ -44,8 +44,8 @@ class ZipFeatureValidator:
         # 検証対象機能の定義（Markdown変換機能は削除済み）
         self.required_features = {
             'cli_zip_command': {
-                'file': 'kumihan_formatter/cli.py',
-                'functions': ['zip_dist']
+                'file': 'kumihan_formatter/commands/zip_dist.py',
+                'functions': ['ZipDistCommand']
                 # 注意: Markdown変換関連のインポートは削除済み
             },
             'template_navigation': {

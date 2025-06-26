@@ -266,11 +266,8 @@ class TOCValidator:
     
     def _validate_heading_hierarchy(self, entries: List[TOCEntry]) -> None:
         """Validate that heading levels follow proper hierarchy"""
-        prev_level = 0
         
         def check_hierarchy(entry_list: List[TOCEntry], parent_level: int = 0) -> None:
-            nonlocal prev_level
-            
             for entry in entry_list:
                 # Check if level jump is too large
                 if entry.level > parent_level + 1 and parent_level > 0:
