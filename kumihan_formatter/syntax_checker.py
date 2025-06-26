@@ -9,6 +9,10 @@ from pathlib import Path
 from typing import List, Dict, Any, NamedTuple
 from dataclasses import dataclass
 from enum import Enum
+from .core.error_system import (
+    ErrorCatalog, SmartSuggestions, UserFriendlyError, 
+    create_syntax_error_from_validation
+)
 
 
 class ErrorSeverity(Enum):
@@ -49,6 +53,35 @@ class KumihanSyntaxChecker:
     def __init__(self):
         self.errors: List[SyntaxError] = []
         self.current_file = ""
+    
+    def get_friendly_errors(self) -> List[UserFriendlyError]:
+        """既存のSyntaxErrorをUserFriendlyErrorに変換"""
+        friendly_errors = []
+        
+        for error in self.errors:
+            if error.error_type == "encoding":
+                friendly_error = ErrorCatalog.create_encoding_error(self.current_file)
+            elif error.error_type == "file-not-found":
+                friendly_error = ErrorCatalog.create_file_not_found_error(self.current_file)
+            elif error.error_type in ["invalid-keyword", "unknown-keyword"]:
+                # 記法エラーの場合、スマート提案を含める
+                invalid_content = error.context.replace(";;;", "").strip()
+                friendly_error = ErrorCatalog.create_syntax_error(
+                    line_num=error.line_number,
+                    invalid_content=invalid_content,
+                    file_path=self.current_file
+                )
+            else:
+                # その他のエラーは一般的な記法エラーとして処理
+                friendly_error = ErrorCatalog.create_syntax_error(
+                    line_num=error.line_number,
+                    invalid_content=error.message,
+                    file_path=self.current_file
+                )
+            
+            friendly_errors.append(friendly_error)
+        
+        return friendly_errors
     
     def check_file(self, file_path: Path) -> List[SyntaxError]:
         """Check a single file for syntax errors"""
