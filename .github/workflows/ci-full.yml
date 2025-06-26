@@ -153,3 +153,5 @@ jobs:
         
         echo ""
         echo "All checks completed."
+        echo ""
+        echo "📊 For comprehensive end-to-end testing, see the E2E Tests workflow."
