@@ -14,7 +14,7 @@ from .commands.zip_dist import create_zip_dist_command
 from .commands.sample import create_sample_command, create_test_command
 from .commands.check_syntax import create_check_syntax_command
 from .ui.console_ui import ui
-from .core.error_system import ErrorHandler as FriendlyErrorHandler
+from .core.error_handling import ErrorHandler as FriendlyErrorHandler
 
 
 def setup_encoding():

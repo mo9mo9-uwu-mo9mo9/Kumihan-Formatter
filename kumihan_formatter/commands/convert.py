@@ -16,7 +16,7 @@ from rich.progress import Progress
 
 from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
-from ..core.error_system import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
+from ..core.error_handling import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
 from ..parser import parse
 from ..renderer import render
 from ..config import load_config

@@ -30,7 +30,14 @@ Issue #121のPhase 2として、Kumihan-Formatterの大規模なリファクタ�
 - `kumihan_formatter/core/toc_generator.py` (387行) - 目次生成
 
 #### 品質向上機能
-- `kumihan_formatter/core/validation.py` (525行) - 包括的バリデーション
+- `kumihan_formatter/core/validators/` (複数ファイル) - 包括的バリデーション
+  - `document_validator.py` - メインバリデーター
+  - `syntax_validator.py` - 記法検証
+  - `structure_validator.py` - 構造検証
+  - `performance_validator.py` - パフォーマンス検証
+  - `file_validator.py` - ファイル検証
+  - `validation_reporter.py` - レポート生成
+  - `error_recovery.py` - エラー回復
 
 ## 🔧 技術的改善
 

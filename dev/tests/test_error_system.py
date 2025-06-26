@@ -12,7 +12,7 @@ import tempfile
 import os
 
 # Import the error system
-from kumihan_formatter.core.error_system import (
+from kumihan_formatter.core.error_handling import (
     ErrorLevel, ErrorCategory, ErrorSolution, UserFriendlyError,
     SmartSuggestions, ErrorCatalog, ErrorHandler,
     create_syntax_error_from_validation, format_file_size_error

@@ -10,7 +10,7 @@ from typing import List
 import click
 
 from ..ui.console_ui import ui
-from ..syntax_checker import check_files, format_error_report, ErrorSeverity
+from ..core.syntax import check_files, format_error_report, ErrorSeverity
 
 
 class CheckSyntaxCommand:
