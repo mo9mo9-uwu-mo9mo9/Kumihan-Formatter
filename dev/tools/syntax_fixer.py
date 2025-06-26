@@ -62,6 +62,9 @@ class SyntaxFixer:
             fixed_content, marker_changes = self._fix_consecutive_markers(fixed_content)
             changes_made.extend(marker_changes)
             
+            fixed_content, color_changes = self._fix_color_attribute_order(fixed_content)
+            changes_made.extend(color_changes)
+            
             fixed_content, cleanup_changes = self._cleanup_empty_markers(fixed_content)
             changes_made.extend(cleanup_changes)
             
@@ -324,6 +327,50 @@ class SyntaxFixer:
             combined_keyword += f' {color_attr}'
         
         return f';;;{combined_keyword};;;'
+    
+    def _fix_color_attribute_order(self, content: str) -> tuple[str, List[str]]:
+        """color属性の順序問題を修正"""
+        lines = content.split('\n')
+        fixed_lines = []
+        changes = []
+        
+        for i, line in enumerate(lines):
+            # color属性の後に+があるパターンを検出
+            # パターン1: ;;;(何か) color=#xxx+(何か);;; (完全マーカー)
+            # パターン2: ;;;(何か) color=#xxx+(何か) (ブロック開始行)
+            color_pattern1 = r';;;([^;]*?)\s*color=(#[a-fA-F0-9]+)\+([^;]*?);;;'
+            color_pattern2 = r';;;([^;]*?)\s*color=(#[a-fA-F0-9]+)\+([^;]*?)$'
+            
+            match = re.search(color_pattern1, line) or re.search(color_pattern2, line)
+            if match:
+                before_color = match.group(1).strip()  # color属性前の部分
+                color_value = match.group(2)          # color値
+                after_color = match.group(3).strip()  # color属性後のキーワード
+                
+                # +記号を除去
+                if before_color.endswith('+'):
+                    before_color = before_color[:-1].strip()
+                
+                # 正しい順序に修正
+                if before_color and after_color:
+                    # 両方にキーワード: after+before color=xxx
+                    correct_order = f";;;{after_color}+{before_color} color={color_value};;;"
+                elif after_color:
+                    # 後ろにのみキーワード: after+ハイライト color=xxx
+                    correct_order = f";;;{after_color}+ハイライト color={color_value};;;"
+                else:
+                    # 修正不要
+                    correct_order = line
+                
+                if correct_order != line:
+                    fixed_lines.append(correct_order)
+                    changes.append(f"color属性順序を修正: 行 {i+1}")
+                else:
+                    fixed_lines.append(line)
+            else:
+                fixed_lines.append(line)
+        
+        return '\n'.join(fixed_lines), changes
     
     def _cleanup_empty_markers(self, content: str) -> tuple[str, List[str]]:
         """不要な空マーカーを削除"""
