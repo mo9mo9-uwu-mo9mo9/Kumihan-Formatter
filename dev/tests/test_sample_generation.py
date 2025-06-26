@@ -3,7 +3,7 @@
 import shutil
 from pathlib import Path
 import pytest
-from kumihan_formatter.commands.sample import generate_sample
+from kumihan_formatter.commands.sample import SampleCommand
 from kumihan_formatter.sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
 
 
@@ -15,7 +15,8 @@ class TestSampleGeneration:
         output_dir = tmp_path / "test_sample"
         
         # サンプルを生成
-        result = generate_sample(str(output_dir))
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
         
         # ディレクトリが作成されたことを確認
         assert output_dir.exists()
@@ -61,7 +62,8 @@ class TestSampleGeneration:
         output_dir = tmp_path / "test_sample"
         
         # サンプルを生成
-        generate_sample(str(output_dir))
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
         
         # HTMLファイルを読み込む
         html_path = output_dir / "showcase.html"
@@ -83,7 +85,8 @@ class TestSampleGeneration:
         output_dir = tmp_path / "test_sample"
         
         # サンプルを生成
-        generate_sample(str(output_dir))
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
         
         # クリーンアップ
         if output_dir.exists():
