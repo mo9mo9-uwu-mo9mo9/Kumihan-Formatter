@@ -161,11 +161,12 @@ class ZipFeatureValidator:
                     ))
 
     def _find_function_definition(self, content: str, func_name: str) -> bool:
-        """関数定義の検索"""
-        # クラスメソッドと通常の関数の両方をチェック
+        """関数またはクラス定義の検索"""
+        # クラス、クラスメソッド、通常の関数の全てをチェック
         patterns = [
             rf'def\s+{re.escape(func_name)}\s*\(',  # 通常の関数
-            rf'def\s+{re.escape(func_name.split(".")[-1])}\s*\('  # クラスメソッド
+            rf'def\s+{re.escape(func_name.split(".")[-1])}\s*\(',  # クラスメソッド
+            rf'class\s+{re.escape(func_name)}\s*[\(:]'  # クラス定義
         ]
         
         for pattern in patterns:
