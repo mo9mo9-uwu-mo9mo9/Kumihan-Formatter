@@ -603,15 +603,13 @@ def should_exclude(path: Path, patterns: list, base_path: Path) -> bool:
 @click.argument("source_dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("-o", "--output", default="zip_distribution", help="ZIP配布用出力ディレクトリ")
 @click.option("--zip-name", default="kumihan-formatter-distribution", help="ZIPファイル名（拡張子なし）")
-@click.option("--convert-markdown", is_flag=True, default=False, help="[削除済み] この機能は削除されました")
 @click.option("--no-zip", is_flag=True, help="ZIPファイルを作成せず、ディレクトリのみ作成")
-@click.option("--include-originals", is_flag=True, help="元のMarkdownファイルも同梱")
 @click.option("--no-preview", is_flag=True, help="生成後にブラウザでプレビューしない")
-def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_originals, no_preview):
+def zip_dist(source_dir, output, zip_name, no_zip, no_preview):
     """配布用ZIPパッケージを作成します
     
-    指定されたディレクトリ内の.mdファイルを自動でHTMLに変換し、
-    適切なナビゲーション付きで配布用ZIPを作成します。
+    指定されたディレクトリの内容を配布用ZIPファイルとして整理・パッケージ化します。
+    開発用ファイルは自動的に除外され、エンドユーザー向けの配布物が作成されます。
     同人作家など技術知識のないユーザー向けに最適化されています。
     """
     import zipfile
@@ -656,10 +654,7 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
             if excluded_count > 0:
                 console.print(f"[yellow][除外] {excluded_count}個のファイルを除外[/yellow]")
             
-            # Markdown変換機能は削除されました
-            if convert_markdown:
-                console.print("[yellow][情報] Markdown変換機能は削除されました[/yellow]")
-                console.print("[dim]   Markdownファイルは変換されずにそのままコピーされます[/dim]")
+            # ファイルコピー完了
             
             # 出力ディレクトリを準備
             output_path.mkdir(parents=True, exist_ok=True)
@@ -672,12 +667,21 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
                 shutil.copytree(temp_path, final_dir)
                 console.print(f"[green][完了] 配布ディレクトリを作成:[/green] {final_dir}")
                 
-                # プレビュー
+                # プレビュー（index.htmlまたはREADME.htmlがあれば表示）
                 if not no_preview:
-                    index_file = final_dir / "index.html"
-                    if index_file.exists():
+                    preview_files = ["index.html", "README.html", "readme.html"]
+                    preview_file = None
+                    for filename in preview_files:
+                        candidate = final_dir / filename
+                        if candidate.exists():
+                            preview_file = candidate
+                            break
+                    
+                    if preview_file:
                         console.print("[blue][プレビュー] ブラウザでプレビューを表示中...[/blue]")
-                        webbrowser.open(index_file.resolve().as_uri())
+                        webbrowser.open(preview_file.resolve().as_uri())
+                    else:
+                        console.print("[dim][情報] プレビュー用HTMLファイルが見つかりませんでした[/dim]")
                 
             else:
                 # ZIPファイルを作成
@@ -706,10 +710,20 @@ def zip_dist(source_dir, output, zip_name, convert_markdown, no_zip, include_ori
                     with zipfile.ZipFile(zip_file_path, 'r') as zipf:
                         zipf.extractall(preview_dir)
                     
-                    index_file = preview_dir / "index.html"
-                    if index_file.exists():
+                    # プレビューファイルを探す
+                    preview_files = ["index.html", "README.html", "readme.html"]
+                    preview_file = None
+                    for filename in preview_files:
+                        candidate = preview_dir / filename
+                        if candidate.exists():
+                            preview_file = candidate
+                            break
+                    
+                    if preview_file:
                         console.print("[blue][プレビュー] ブラウザでプレビューを表示中...[/blue]")
-                        webbrowser.open(index_file.resolve().as_uri())
+                        webbrowser.open(preview_file.resolve().as_uri())
+                    else:
+                        console.print("[dim][情報] プレビュー用HTMLファイルが見つかりませんでした[/dim]")
             
             console.print("[green][成功] 配布パッケージの作成が完了しました！[/green]")
             
