@@ -6,7 +6,7 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-from kumihan_formatter.commands.zip_dist import load_distignore_patterns, should_exclude
+from kumihan_formatter.core.file_ops import FileOperations
 
 
 class TestDistignore:
@@ -33,7 +33,8 @@ test_*/
         original_cwd = os.getcwd()
         try:
             os.chdir(tmp_path)
-            patterns = load_distignore_patterns()
+            file_ops = FileOperations()
+            patterns = file_ops.load_distignore_patterns()
             
             # 期待されるパターンのみが読み込まれていることを確認
             expected_patterns = ["dev/", "*.pyc", "__pycache__/", ".git/", "*.log", "test_*/"]
@@ -64,7 +65,8 @@ test_*/
             if expected and "." not in path.name:
                 path.mkdir(parents=True, exist_ok=True)
             
-            result = should_exclude(path, patterns, base_path)
+            file_ops = FileOperations()
+            result = file_ops.should_exclude(path, patterns, base_path)
             assert result == expected, f"Path {path} should {'be excluded' if expected else 'not be excluded'}"
     
     def test_should_exclude_file_patterns(self, tmp_path):
@@ -84,7 +86,8 @@ test_*/
         ]
         
         for path, expected in test_cases:
-            result = should_exclude(path, patterns, base_path)
+            file_ops = FileOperations()
+            result = file_ops.should_exclude(path, patterns, base_path)
             assert result == expected, f"Path {path} should {'be excluded' if expected else 'not be excluded'}"
     
     def test_should_exclude_complex_patterns(self, tmp_path):
@@ -116,7 +119,8 @@ test_*/
         ]
         
         for path, expected in test_cases:
-            result = should_exclude(path, patterns, base_path)
+            file_ops = FileOperations()
+            result = file_ops.should_exclude(path, patterns, base_path)
             assert result == expected, f"Path {path} should {'be excluded' if expected else 'not be excluded'}"
     
     def test_empty_distignore(self):
@@ -133,4 +137,5 @@ test_*/
         ]
         
         for path in test_paths:
-            assert not should_exclude(path, patterns, base_path), f"Path {path} should not be excluded with empty patterns"
+            file_ops = FileOperations()
+        assert not file_ops.should_exclude(path, patterns, base_path), f"Path {path} should not be excluded with empty patterns"
