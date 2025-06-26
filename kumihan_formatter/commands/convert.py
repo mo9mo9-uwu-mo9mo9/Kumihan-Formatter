@@ -284,10 +284,9 @@ def create_convert_command():
                 with_source_toggle, experimental):
         """テキストファイルをHTMLに変換します"""
         
-        # Confirm source toggle feature if not specified
+        # Determine source toggle usage
+        # Only ask for confirmation if the flag was not explicitly provided
         use_source_toggle = with_source_toggle
-        if not with_source_toggle and input_file:
-            use_source_toggle = ui.confirm_source_toggle()
         
         # Template selection (considering experimental features)
         template_name = None
