@@ -200,13 +200,12 @@ def create_sample_command():
     @click.command()
     @click.option("-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ")
     @click.option("--with-source-toggle", is_flag=True, help="記法と結果を切り替えるトグル機能付きで出力")
-    def generate_sample(output, with_source_toggle):
+    @click.option("--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）")
+    def generate_sample(output, with_source_toggle, quiet):
         """機能ショーケースサンプルを生成します"""
         
-        # Confirm source toggle if not specified
+        # Determine source toggle usage
         use_source_toggle = with_source_toggle
-        if not with_source_toggle:
-            use_source_toggle = ui.confirm_source_toggle()
         
         command = SampleCommand()
         command.execute(output, use_source_toggle)
