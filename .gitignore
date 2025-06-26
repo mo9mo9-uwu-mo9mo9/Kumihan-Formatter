@@ -163,3 +163,7 @@ final_test_docs/
 # Generated documentation (temporary)
 docs_html/
 *_html/
+
+# Claude Code使用状況追跡ファイル（個人用・非公開）
+uploads/
+usage_tracking*.json
