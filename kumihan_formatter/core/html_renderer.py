@@ -239,6 +239,9 @@ class HTMLRenderer:
             return ''
         elif isinstance(content, str):
             return escape(content)
+        elif isinstance(content, Node):
+            # Handle single Node objects
+            return self._render_node_with_depth(content, depth + 1)
         elif isinstance(content, list):
             parts = []
             for item in content:
