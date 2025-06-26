@@ -46,7 +46,7 @@ def test_unified_utils():
     print("\n=== Unified Utils Test ===")
     
     try:
-        from kumihan_formatter.core.utils import (
+        from kumihan_formatter.core.utilities import (
             TextProcessor, FileSystemHelper, StringSimilarity, 
             DataStructureHelper, SimpleCache
         )
