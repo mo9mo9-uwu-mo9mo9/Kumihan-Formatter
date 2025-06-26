@@ -179,6 +179,12 @@ class ConsoleUI:
             self.console.print(f"[dim]   - 処理したブロック数: {stats['total_nodes']}[/dim]")
         if 'file_size' in stats:
             self.console.print(f"[dim]   - ファイルサイズ: {stats['file_size']} 文字[/dim]")
+        
+        # Enhanced stats for large files
+        if 'input_size_mb' in stats and stats['input_size_mb'] > 1:
+            self.console.print(f"[dim]   - 入力サイズ: {stats['input_size_mb']:.1f}MB[/dim]")
+        if 'output_size_mb' in stats and stats['output_size_mb'] > 1:
+            self.console.print(f"[dim]   - 出力サイズ: {stats['output_size_mb']:.1f}MB[/dim]")
     
     def test_statistics(self, stats: dict, double_click_mode: bool = False) -> None:
         """Display test generation statistics"""
@@ -339,6 +345,25 @@ class ConsoleUI:
     def test_conversion_error(self, error: str) -> None:
         """Display test conversion error"""
         self.console.print(f"[red][エラー] テスト変換中にエラーが発生しました: {error}[/red]")
+    
+    # Large file processing
+    def large_file_detected(self, size_mb: float, estimated_time: str) -> None:
+        """Display large file detection"""
+        self.console.print(f"[yellow][検出] 大規模ファイル: {size_mb:.1f}MB[/yellow]")
+        self.console.print(f"[dim]   推定処理時間: {estimated_time}[/dim]")
+    
+    def large_file_processing_start(self) -> None:
+        """Display large file processing start"""
+        self.console.print("[blue][大規模] 大規模ファイル処理を開始します[/blue]")
+        self.console.print("[dim]   メモリ使用量を最適化して処理中...[/dim]")
+    
+    def memory_optimization_info(self, optimization_type: str) -> None:
+        """Display memory optimization info"""
+        self.console.print(f"[cyan][最適化] {optimization_type}[/cyan]")
+    
+    def performance_warning(self, warning: str) -> None:
+        """Display performance warning"""
+        self.console.print(f"[yellow][パフォーマンス] {warning}[/yellow]")
     
     # Generic progress
     def create_progress(self) -> Progress:
