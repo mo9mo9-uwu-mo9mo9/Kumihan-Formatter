@@ -238,7 +238,7 @@ class HTMLRenderer:
         if content is None:
             return ''
         elif isinstance(content, str):
-            return escape(content)
+            return self._process_text_content(content)
         elif isinstance(content, Node):
             # Handle single Node objects
             return self._render_node_with_depth(content, depth + 1)
@@ -248,12 +248,12 @@ class HTMLRenderer:
                 if isinstance(item, Node):
                     parts.append(self._render_node_with_depth(item, depth + 1))
                 elif isinstance(item, str):
-                    parts.append(escape(item))
+                    parts.append(self._process_text_content(item))
                 else:
-                    parts.append(escape(str(item)))
+                    parts.append(self._process_text_content(str(item)))
             return ''.join(parts)
         else:
-            return escape(str(content))
+            return self._process_text_content(str(content))
     
     def _render_node_with_depth(self, node: Node, depth: int = 0) -> str:
         """Render a single node with depth tracking"""
@@ -282,6 +282,25 @@ class HTMLRenderer:
             return f'<{tag} {attributes}>{content}</{tag}>'
         else:
             return f'<{tag}>{content}</{tag}>'
+    
+    def _process_text_content(self, text: str) -> str:
+        """
+        Process text content, converting newlines to <br> tags
+        
+        Args:
+            text: Raw text content
+        
+        Returns:
+            str: Processed HTML with proper line breaks
+        """
+        # Escape HTML entities first
+        escaped_text = escape(text)
+        
+        # Convert newlines to <br> tags
+        # Use regex to handle various line ending types
+        processed_text = re.sub(r'\r?\n', '<br>', escaped_text)
+        
+        return processed_text
     
     def _render_attributes(self, attributes: Dict[str, Any]) -> str:
         """Render HTML attributes"""
@@ -365,7 +384,7 @@ class CompoundElementRenderer:
         sorted_keywords = self._sort_by_nesting_order(keywords)
         
         # Build nested HTML from inner to outer
-        current_html = escape(content)
+        current_html = self.html_renderer._process_text_content(content)
         
         for keyword in reversed(sorted_keywords):
             current_html = self._wrap_with_keyword(current_html, keyword, attributes)
