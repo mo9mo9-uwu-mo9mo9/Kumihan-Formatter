@@ -3,8 +3,14 @@
 Kumihan-Formatter 記法検証スクリプト
 
 使用方法:
+    # 基本的な記法チェック（検証のみ）
     python dev/tools/syntax_validator.py <file.txt>
     python dev/tools/syntax_validator.py examples/*.txt
+    
+    # 自動修正機能付きの新ツール（推奨）
+    python dev/tools/syntax_fixer.py examples/*.txt --fix --preview
+    
+注意: macOSではD&D機能が制限されるため、コマンドライン使用を推奨
 """
 
 import re
