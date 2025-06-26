@@ -13,6 +13,9 @@ examples/
 ├── 05-table-of-contents.txt  # 目次生成サンプル
 ├── config.yaml              # 設定ファイルサンプル
 ├── images/                  # サンプル画像フォルダ
+├── templates/               # 🆕 シナリオテンプレート集
+├── elements/                # 🆕 要素別テンプレート集  
+├── showcase/                # 🆕 完成版サンプルシナリオ
 └── README.md                # 本ファイル
 ```
 
@@ -117,3 +120,34 @@ kumihan convert examples/03-comprehensive.txt --config examples/config.yaml
 5. **複合キーワード**: `;;;太字+枠線\n内容\n;;;` のように`+`で結合
 
 詳細な記法については、`docs/user/USER_MANUAL.txt` を参照してください。
+
+## 🆕 CoC6thシナリオ作成支援
+
+### 📋 テンプレート集 (templates/)
+コピー&ペーストで使える実用的なシナリオテンプレート
+- **basic-scenario.txt** - 初心者向け汎用テンプレート
+- **closed-scenario.txt** - クローズド型シナリオ
+- **city-scenario.txt** - シティアドベンチャー型
+- **combat-scenario.txt** - 戦闘重視型
+
+### 🧩 要素別テンプレート (elements/)
+シナリオ作成に必要な個別要素のテンプレート
+- **npc-template.txt** - NPC作成ガイド
+- **item-template.txt** - アイテム・クリーチャー設計
+- **skill-template.txt** - 技能ロール・判定システム
+
+### 🎯 完成版シナリオ (showcase/)
+実際にプレイできる完全なサンプルシナリオ
+- **complete-scenario.txt** - 「深夜図書館の怪」（3-4時間・初心者向け）
+
+### 活用方法
+```bash
+# テンプレートをHTMLに変換
+kumihan convert examples/templates/basic-scenario.txt
+
+# 完成版シナリオを確認
+kumihan convert examples/showcase/complete-scenario.txt
+
+# 要素別テンプレートを参照
+kumihan convert examples/elements/npc-template.txt
+```
