@@ -203,6 +203,9 @@ Pythonは、このツールを動かすためのエンジンのようなもの�
 ### ⚙️ 上級者向け
 - **[ADVANCED.md](docs/ADVANCED.md)** - カスタマイズ・設定ファイル（JSON/YAML）
 
+### 🛠️ 開発者向け
+- **[記法ツール使用ガイド](docs/dev/SYNTAX_TOOLS.md)** - 記法チェック・自動修正ツール（macOS D&D制限対応）
+
 ## 🤝 フィードバック・お問い合わせ
 
 - **バグ報告・機能要望**: [GitHub Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
