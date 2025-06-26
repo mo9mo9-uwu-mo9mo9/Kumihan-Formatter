@@ -74,3 +74,31 @@ replace = 'version = "{new_version}"'
 filename = "kumihan_formatter/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
+
+# テストカバレッジ設定
+[tool.coverage.run]
+source = ["kumihan_formatter"]
+omit = [
+    "*/tests/*",
+    "*/dev/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "kumihan_formatter/cli_original.py",  # レガシーファイル
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
