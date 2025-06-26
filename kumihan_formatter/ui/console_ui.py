@@ -200,7 +200,7 @@ class ConsoleUI:
     
     def confirm_source_toggle(self) -> bool:
         """Confirm source toggle feature usage"""
-        self.hint("記法と結果を並べて表示する機能があります", 
+        self.hint("記法と結果を切り替えて表示する機能があります", 
                  "改行処理などの動作を実際に確認しながら記法を学習できます")
         response = self.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
         return response.lower() in ['y', 'yes', '']

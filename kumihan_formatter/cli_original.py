@@ -63,7 +63,7 @@ def _handle_sample_generation(output: str, sample_output: str, with_source_toggl
     
     use_source_toggle = with_source_toggle
     if not with_source_toggle:
-        console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
+        console.print("\n[cyan][ヒント] 記法と結果を切り替えて表示する機能があります[/cyan]")
         console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
         response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
         use_source_toggle = response.lower() in ['y', 'yes', '']
@@ -441,7 +441,7 @@ def convert(input_file, output, no_preview, watch, config, generate_test, test_o
         
         if not with_source_toggle:
             # すべてのファイルでYes/No確認
-            console.print("\n[cyan][ヒント] 記法と結果を並べて表示する機能があります[/cyan]")
+            console.print("\n[cyan][ヒント] 記法と結果を切り替えて表示する機能があります[/cyan]")
             console.print("[dim]   改行処理などの動作を実際に確認しながら記法を学習できます[/dim]")
             response = console.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
             use_source_toggle = response.lower() in ['y', 'yes', '']
