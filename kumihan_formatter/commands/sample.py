@@ -198,7 +198,7 @@ def create_sample_command():
     """Create the sample generation click command"""
     
     @click.command()
-    @click.option("--output", default="kumihan_sample", help="サンプル出力ディレクトリ")
+    @click.option("-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ")
     @click.option("--with-source-toggle", is_flag=True, help="記法と結果を切り替えるトグル機能付きで出力")
     def generate_sample(output, with_source_toggle):
         """機能ショーケースサンプルを生成します"""
