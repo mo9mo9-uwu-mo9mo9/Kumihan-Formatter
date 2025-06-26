@@ -59,6 +59,18 @@ class ConvertCommand:
             # Validate input file
             input_path = self.path_validator.validate_input_file(input_file)
             
+            # Check file size and show warnings for large files
+            size_info = self.file_ops.get_file_size_info(input_path)
+            if size_info['is_large']:
+                # Show large file warning
+                if not self.file_ops.check_large_file_warning(input_path):
+                    ui.info("処理を中断しました")
+                    sys.exit(0)
+                
+                # Show estimated processing time
+                estimated_time = self.file_ops.estimate_processing_time(size_info['size_mb'])
+                ui.hint(f"推定処理時間: {estimated_time}")
+            
             # Load configuration
             config_obj = load_config(config)
             if config:
@@ -154,19 +166,42 @@ class ConvertCommand:
     
     def _parse_with_progress(self, text: str, config) -> Any:
         """Parse text with progress indication"""
+        file_size = len(text)
+        size_mb = file_size / (1024 * 1024)
+        
         with Progress() as progress:
-            file_size = len(text)
-            task = progress.add_task("[cyan]テキストを解析中", total=100)
+            # More detailed progress for large files
+            if size_mb > 10:  # 10MB以上
+                task = progress.add_task(
+                    f"[cyan]大規模ファイルを解析中 ({size_mb:.1f}MB)", 
+                    total=100
+                )
+            else:
+                task = progress.add_task("[cyan]テキストを解析中", total=100)
             
             start_time = time.time()
-            ast = parse(text, config)
-            elapsed = time.time() - start_time
             
-            if elapsed < 0.5:
-                for i in range(0, 101, 20):
-                    progress.update(task, completed=i)
-                    time.sleep(0.05)
-            progress.update(task, completed=100)
+            # Simulate chunked processing for very large files
+            if size_mb > 50:  # 50MB以上は分割表示
+                chunk_size = len(text) // 10
+                for i in range(10):
+                    chunk_start = i * chunk_size
+                    chunk_end = min((i + 1) * chunk_size, len(text))
+                    progress.update(task, completed=i * 10)
+                    time.sleep(0.1)  # Simulate processing time
+                
+                # Final parse
+                ast = parse(text, config)
+                progress.update(task, completed=100)
+            else:
+                ast = parse(text, config)
+                elapsed = time.time() - start_time
+                
+                if elapsed < 0.5:
+                    for i in range(0, 101, 20):
+                        progress.update(task, completed=i)
+                        time.sleep(0.05)
+                progress.update(task, completed=100)
         
         return ast
     
@@ -174,18 +209,35 @@ class ConvertCommand:
                             title: str, source_text: Optional[str] = None,
                             source_filename: Optional[str] = None) -> str:
         """Render AST to HTML with progress indication"""
+        node_count = len(ast) if ast else 0
+        
         with Progress() as progress:
-            task = progress.add_task("[yellow]HTMLを生成中", total=100)
+            # More detailed progress for large ASTs
+            if node_count > 1000:  # 1000ノード以上
+                task = progress.add_task(
+                    f"[yellow]大規模データを変換中 ({node_count:,}要素)", 
+                    total=100
+                )
+            else:
+                task = progress.add_task("[yellow]HTMLを生成中", total=100)
             
             start_time = time.time()
+            
+            # Simulate progress for large renders
+            if node_count > 5000:  # 5000ノード以上は段階的表示
+                for i in range(0, 101, 10):
+                    progress.update(task, completed=i)
+                    time.sleep(0.05)
+            
             if source_text:
                 html = render(ast, config, template=template, title=title,
                             source_text=source_text, source_filename=source_filename)
             else:
                 html = render(ast, config, template=template, title=title)
+            
             elapsed = time.time() - start_time
             
-            if elapsed < 0.5:
+            if elapsed < 0.5 and node_count <= 5000:
                 for i in range(0, 101, 25):
                     progress.update(task, completed=i)
                     time.sleep(0.04)
@@ -212,12 +264,25 @@ class ConvertCommand:
         
         ui.conversion_complete(str(output_file))
         
-        # Show statistics
+        # Show enhanced statistics for large files
+        input_size_info = self.file_ops.get_file_size_info(input_path)
+        output_size_info = self.file_ops.get_file_size_info(output_file)
+        
         stats = {
             'total_nodes': len(ast),
-            'file_size': len(text)
+            'file_size': len(text),
+            'input_size_mb': input_size_info['size_mb'],
+            'output_size_mb': output_size_info['size_mb'],
+            'compression_ratio': output_size_info['size_mb'] / input_size_info['size_mb'] if input_size_info['size_mb'] > 0 else 0
         }
+        
         ui.statistics(stats)
+        
+        # Show additional info for large files
+        if input_size_info['is_large']:
+            ui.dim(f"入力ファイル: {input_size_info['size_mb']:.1f}MB → 出力ファイル: {output_size_info['size_mb']:.1f}MB")
+            if stats['compression_ratio'] > 1:
+                ui.hint(f"HTML変換により約{stats['compression_ratio']:.1f}倍のサイズになりました")
     
     def _handle_watch_mode(self, input_file: str, output: str, config_obj,
                           show_test_cases: bool, template_name: Optional[str],

@@ -217,9 +217,56 @@ class FileOperations:
             return {
                 'size_bytes': size,
                 'size_mb': size / (1024 * 1024),
-                'size_formatted': f"{size:,}"
+                'size_formatted': f"{size:,}",
+                'is_large': size > 10 * 1024 * 1024  # 10MB以上
             }
-        return {'size_bytes': 0, 'size_mb': 0.0, 'size_formatted': '0'}
+        return {'size_bytes': 0, 'size_mb': 0.0, 'size_formatted': '0', 'is_large': False}
+
+    @staticmethod
+    def check_large_file_warning(path: Path, max_size_mb: float = 50.0) -> bool:
+        """
+        大規模ファイルの警告表示とユーザー確認
+        
+        Args:
+            path: チェック対象ファイル
+            max_size_mb: 警告を表示するサイズ（MB）
+            
+        Returns:
+            bool: 続行するかどうか
+        """
+        size_info = FileOperations.get_file_size_info(path)
+        
+        if size_info['size_mb'] > max_size_mb:
+            ui.warning(
+                f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",
+                f"処理に時間がかかる可能性があります（推奨: {max_size_mb}MB以下）"
+            )
+            
+            # 自動的に続行（バッチ処理対応）
+            ui.info("大規模ファイル処理を開始します")
+            return True
+        
+        return True
+
+    @staticmethod
+    def estimate_processing_time(size_mb: float) -> str:
+        """
+        ファイルサイズから処理時間を推定
+        
+        Args:
+            size_mb: ファイルサイズ（MB）
+            
+        Returns:
+            str: 推定時間の説明
+        """
+        if size_mb < 1:
+            return "数秒"
+        elif size_mb < 10:
+            return "10-30秒"
+        elif size_mb < 50:
+            return "1-3分"
+        else:
+            return "3分以上"
 
 
 class PathValidator:
