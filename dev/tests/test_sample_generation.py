@@ -3,7 +3,7 @@
 import shutil
 from pathlib import Path
 import pytest
-from kumihan_formatter.cli import generate_sample
+from kumihan_formatter.commands.sample import generate_sample
 from kumihan_formatter.sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
 
 
