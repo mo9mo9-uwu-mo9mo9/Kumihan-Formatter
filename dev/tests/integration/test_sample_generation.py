@@ -3,7 +3,7 @@
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 
 def test_minimal_sample_generation():
     """Test minimal sample generation without full dependencies"""
