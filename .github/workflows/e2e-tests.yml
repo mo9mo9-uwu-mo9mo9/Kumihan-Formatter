@@ -93,7 +93,7 @@ jobs:
     
     - name: Upload E2E Test Results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: e2e-test-results-${{ matrix.os }}-py${{ matrix.python-version }}
         path: |
@@ -116,7 +116,7 @@ jobs:
     
     steps:
     - name: Download all test artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: ./test-artifacts
     
@@ -168,6 +168,6 @@ jobs:
         echo "Running basic performance validation..."
         
         # 簡単なパフォーマンステスト
-        time python -m kumihan_formatter.cli examples/sample.txt -o temp_perf_output --no-preview
+        time python -m kumihan_formatter.cli examples/01-quickstart.txt -o temp_perf_output --no-preview
         
         echo "E2E performance check completed"
