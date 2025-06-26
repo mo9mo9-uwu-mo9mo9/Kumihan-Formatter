@@ -187,12 +187,12 @@ fi
 echo ""
 
 # サンプル4: showcase
-echo -e "${BLUE}[4/4] 機能ショーケース (--generate-sample)${NC}"
+echo -e "${BLUE}[4/4] 機能ショーケース (generate-sample)${NC}"
 OUTPUT_DIR="$OUTPUT_BASE/04-showcase"
 mkdir -p "$OUTPUT_DIR"
 
 # Showcaseサンプルは記法表示機能を使用しない（CLAUDE.md仕様）
-if $PYTHON_CMD -m kumihan_formatter convert --generate-sample -o "$OUTPUT_DIR" --no-preview; then
+if $PYTHON_CMD -m kumihan_formatter generate-sample -o "$OUTPUT_DIR" --no-preview; then
     echo -e "${GREEN}showcase サンプル完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: showcase サンプルの変換に失敗${NC}"
