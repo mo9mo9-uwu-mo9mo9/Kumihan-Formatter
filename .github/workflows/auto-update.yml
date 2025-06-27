@@ -1,0 +1,63 @@
+name: Auto Update PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'main'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Check if update needed
+        id: check
+        run: |
+          git fetch origin main
+          BEHIND_COUNT=$(git rev-list --count HEAD..origin/main)
+          echo "behind_count=$BEHIND_COUNT" >> $GITHUB_OUTPUT
+          if [ $BEHIND_COUNT -gt 0 ]; then
+            echo "PR is $BEHIND_COUNT commits behind main"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "PR is up to date"
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Update PR branch
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 現在のブランチ名を取得
+          BRANCH_NAME="${{ github.head_ref }}"
+          
+          # mainブランチをフェッチしてリベース
+          git fetch origin main
+          git rebase origin/main
+          
+          # Force pushでリモートを更新
+          git push --force-with-lease origin HEAD:$BRANCH_NAME
+      
+      - name: Add comment
+        if: steps.check.outputs.needs_update == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🔄 このPRはmainブランチより遅れていたため、自動的に更新されました。'
+            })
