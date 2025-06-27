@@ -176,8 +176,11 @@ class TestOutputQuality:
             for path in paths:
                 assert '\\' not in path, f"Windows path separator found in HTML: {path}"
         
-        # 3. エンコーディングの一貫性
-        assert 'charset=UTF-8' in html_content or 'charset=utf-8' in html_content, "Missing UTF-8 charset declaration"
+        # 3. エンコーディングの一貫性（引用符付きも対応）
+        charset_found = any(pattern in html_content for pattern in [
+            'charset=UTF-8', 'charset=utf-8', 'charset="UTF-8"', 'charset="utf-8"'
+        ])
+        assert charset_found, "Missing UTF-8 charset declaration"
         
         # 4. CSSの一貫性
         # フォント指定でプラットフォーム依存性がないことを確認
