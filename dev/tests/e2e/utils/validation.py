@@ -97,11 +97,25 @@ class HTMLValidator:
         html_sample = str(self.soup)[:1000] if self.soup else "No soup"
         print(f"DEBUG: HTML sample: {html_sample}")
         
-        # 見出し要素
+        # 見出し要素 - より堅牢な検出
         headings = body.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
         print(f"DEBUG: Found headings: {[str(h) for h in headings]}")
-        results['heading_count'] = len(headings)
-        results['has_h1'] = len(body.find_all('h1')) > 0
+        
+        # フォールバック: 正規表現でも検索
+        import re
+        if len(headings) == 0:
+            heading_pattern = r'<h[1-6][^>]*>.*?</h[1-6]>'
+            regex_headings = re.findall(heading_pattern, str(body), re.DOTALL)
+            print(f"DEBUG: Regex fallback found: {len(regex_headings)} headings")
+            if len(regex_headings) > 0:
+                results['heading_count'] = len(regex_headings)
+                results['has_h1'] = any('<h1' in h for h in regex_headings)
+            else:
+                results['heading_count'] = len(headings)
+                results['has_h1'] = len(body.find_all('h1')) > 0
+        else:
+            results['heading_count'] = len(headings)
+            results['has_h1'] = len(body.find_all('h1')) > 0
         
         # 段落要素
         paragraphs = body.find_all('p')
