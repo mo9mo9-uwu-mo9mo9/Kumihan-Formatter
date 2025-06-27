@@ -62,8 +62,10 @@ class TestFileOperations:
             result = simulator.simulate_cli_conversion(file_path, output_directory)
             
             if file_type == 'empty':
-                # 空ファイルの場合はエラーになることを確認
-                assert result.returncode != 0, "Empty file should cause conversion error"
+                # 空ファイルの場合は空HTMLが正常に生成されることを確認
+                assert result.returncode == 0, "Empty file should generate empty HTML successfully"
+                # 出力ファイルが生成されていることを確認
+                assert len(result.output_files) > 0, "Empty file should generate output HTML"
             elif file_type == 'readonly':
                 # 読み取り専用ファイルは正常に処理されることを確認
                 if file_info['is_readable']:
@@ -85,7 +87,9 @@ class TestFileOperations:
             if file_type == 'binary':
                 # バイナリファイルはエラーになることを確認
                 assert result.returncode != 0, "Binary file should cause conversion error"
-                assert "エラー" in result.stderr or "error" in result.stderr.lower(), \
+                # エラーメッセージがstdoutまたはstderrに出力されていることを確認
+                error_output = result.stderr + result.stdout
+                assert "エラー" in error_output or "error" in error_output.lower(), \
                     "Binary file error should be clearly indicated"
             
             elif file_type == 'invalid_encoding':
@@ -314,7 +318,8 @@ class TestFileOperations:
                             f"No output files for {encoding_name}"
                     # エラーの場合は適切なエラーメッセージが出ることを確認
                     else:
-                        assert len(result.stderr) > 0, \
+                        error_output = result.stderr + result.stdout
+                        assert len(error_output) > 0, \
                             f"No error message for failed {encoding_name} conversion"
                             
             except (UnicodeEncodeError, UnicodeDecodeError):

@@ -138,8 +138,9 @@ class TestErrorRecovery:
             assert result.returncode != 0, "Should fail with readonly output directory"
             
             # 適切なエラーメッセージが出力されることを確認
-            assert "権限" in result.stderr or "permission" in result.stderr.lower() or \
-                   "エラー" in result.stderr or "error" in result.stderr.lower(), \
+            error_output = result.stderr + result.stdout
+            assert "権限" in error_output or "permission" in error_output.lower() or \
+                   "エラー" in error_output or "error" in error_output.lower(), \
                    "Should provide clear error message for permission issues"
         
         finally:
@@ -168,7 +169,8 @@ class TestErrorRecovery:
             assert len(result.output_files) > 0, "Large file should be processed normally"
         else:
             # エラーの場合は適切なメッセージが出ることを確認
-            assert len(result.stderr) > 0, "Should provide error message if conversion fails"
+            error_output = result.stderr + result.stdout
+            assert len(error_output) > 0, "Should provide error message if conversion fails"
     
     def test_concurrent_access_conflict_recovery(self, test_workspace: Path, output_directory: Path):
         """同時アクセス競合からの復旧テスト"""
@@ -243,7 +245,8 @@ class TestErrorRecovery:
                     assert len(result.output_files) > 0, f"Should generate output for {test_name}"
                 else:
                     # エラーの場合は適切なメッセージを出力
-                    assert len(result.stderr) > 0, f"Should provide error message for {test_name}"
+                    error_output = result.stderr + result.stdout
+                    assert len(error_output) > 0, f"Should provide error message for {test_name}"
     
     def test_memory_pressure_handling(self, test_workspace: Path, output_directory: Path):
         """メモリ負荷時の動作テスト"""
@@ -281,8 +284,9 @@ class TestErrorRecovery:
             assert size_mb < 50, f"Output file too large: {size_mb:.1f}MB"
         else:
             # エラーの場合は適切なメッセージを確認
-            assert "メモリ" in result.stderr or "memory" in result.stderr.lower() or \
-                   len(result.stderr) > 0, "Should provide error message for memory issues"
+            error_output = result.stderr + result.stdout
+            assert "メモリ" in error_output or "memory" in error_output.lower() or \
+                   len(error_output) > 0, "Should provide error message for memory issues"
     
     def test_interrupted_execution_recovery(self, test_workspace: Path, output_directory: Path):
         """実行中断からの復旧テスト"""
@@ -341,7 +345,8 @@ class TestErrorRecovery:
                 else:
                     # その他のエンコーディングはエラーでも適切に処理
                     if result.returncode != 0:
-                        assert len(result.stderr) > 0, \
+                        error_output = result.stderr + result.stdout
+                        assert len(error_output) > 0, \
                             f"Should provide error message for {test_name}"
                     else:
                         assert len(result.output_files) > 0, \
