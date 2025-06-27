@@ -45,6 +45,38 @@ class KeywordParser:
         # 簡素化: 固定マーカーセットのみ使用
         self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS.copy()
     
+    def _normalize_marker_syntax(self, marker_content: str) -> str:
+        """
+        Normalize marker syntax for user-friendly input
+        
+        Accepts:
+        - Full-width spaces (　) -> half-width spaces ( )
+        - No space before attributes -> add space
+        - Multiple spaces -> single space
+        
+        Args:
+            marker_content: Raw marker content
+        
+        Returns:
+            str: Normalized marker content
+        """
+        # Replace full-width spaces with half-width spaces
+        normalized = marker_content.replace('　', ' ')
+        
+        # Add space before color= if missing
+        normalized = re.sub(r'([^\s])color=', r'\1 color=', normalized)
+        
+        # Add space before alt= if missing  
+        normalized = re.sub(r'([^\s])alt=', r'\1 alt=', normalized)
+        
+        # Normalize multiple spaces to single space
+        normalized = re.sub(r'\s+', ' ', normalized)
+        
+        # Clean up leading/trailing spaces
+        normalized = normalized.strip()
+        
+        return normalized
+    
     def parse_marker_keywords(self, marker_content: str) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """
         Parse keywords and attributes from marker content
@@ -55,6 +87,9 @@ class KeywordParser:
         Returns:
             tuple: (keywords, attributes, errors)
         """
+        # Normalize marker content for user-friendly input
+        marker_content = self._normalize_marker_syntax(marker_content)
+        
         keywords = []
         attributes = {}
         errors = []
