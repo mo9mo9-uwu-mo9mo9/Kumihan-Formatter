@@ -17,6 +17,7 @@ from rich.progress import Progress
 from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
 from ..core.error_handling import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
+from ..core.syntax import check_files, ErrorSeverity
 from ..parser import parse
 from ..renderer import render
 from ..config import load_config
@@ -33,7 +34,8 @@ class ConvertCommand:
     
     def execute(self, input_file: Optional[str], output: str, no_preview: bool,
                 watch: bool, config: Optional[str], show_test_cases: bool,
-                template_name: Optional[str], include_source: bool) -> Path:
+                template_name: Optional[str], include_source: bool,
+                syntax_check: bool = True) -> Path:
         """
         Execute convert command
         
@@ -46,6 +48,7 @@ class ConvertCommand:
             show_test_cases: Show test cases
             template_name: Template name to use
             include_source: Include source toggle
+            syntax_check: Enable syntax check before conversion
         
         Returns:
             Path to output file
@@ -78,6 +81,13 @@ class ConvertCommand:
             
             ui.processing_start("読み込み中", str(input_path))
             
+            # Syntax check before conversion
+            if syntax_check:
+                if not self._perform_syntax_check(input_path):
+                    ui.error("記法エラーが検出されました。変換を中止します。")
+                    ui.dim("--no-syntax-check オプションで記法チェックをスキップできます")
+                    sys.exit(1)
+            
             # Initial conversion
             output_file = self._convert_file(
                 input_path, output, config_obj, 
@@ -95,7 +105,7 @@ class ConvertCommand:
             if watch:
                 self._handle_watch_mode(
                     input_file, output, config_obj, show_test_cases,
-                    template_name, include_source
+                    template_name, include_source, syntax_check
                 )
             
             return output_file
@@ -124,6 +134,58 @@ class ConvertCommand:
             )
             self.friendly_error_handler.display_error(error, verbose=True)
             sys.exit(1)
+    
+    def _perform_syntax_check(self, input_path: Path) -> bool:
+        """
+        Perform syntax check on input file
+        
+        Args:
+            input_path: Path to input file
+            
+        Returns:
+            bool: True if no errors, False if errors found
+        """
+        ui.info("記法チェック", f"{input_path.name} の記法を検証中...")
+        
+        try:
+            # Run syntax check
+            results = check_files([input_path], verbose=False)
+            
+            if not results:
+                ui.success("記法チェック", "記法エラーは見つかりませんでした")
+                return True
+            
+            # Check for errors (not warnings)
+            error_count = sum(1 for errors in results.values() 
+                            for error in errors if error.severity == ErrorSeverity.ERROR)
+            warning_count = sum(1 for errors in results.values() 
+                              for error in errors if error.severity == ErrorSeverity.WARNING)
+            
+            if error_count > 0:
+                ui.error("記法エラー", f"{error_count} 個のエラーが見つかりました")
+                
+                # Show first few errors
+                for file_path, errors in results.items():
+                    for error in errors[:3]:  # Show first 3 errors
+                        if error.severity == ErrorSeverity.ERROR:
+                            ui.dim(f"  行 {error.line_number}: {error.message}")
+                
+                if sum(len(errors) for errors in results.values()) > 3:
+                    ui.dim(f"  ... 他 {sum(len(errors) for errors in results.values()) - 3} 個の問題")
+                
+                ui.dim("詳細は check-syntax コマンドで確認してください")
+                return False
+            
+            elif warning_count > 0:
+                ui.warning("記法警告", f"{warning_count} 個の警告がありますが、変換を続行します")
+                return True
+            
+            return True
+            
+        except Exception as e:
+            ui.warning("記法チェック", f"記法チェック中にエラーが発生しました: {e}")
+            ui.dim("記法チェックをスキップして変換を続行します")
+            return True  # Continue conversion on check failure
     
     def _convert_file(self, input_path: Path, output: str, config=None,
                      show_stats: bool = True, show_test_cases: bool = False,
@@ -286,7 +348,7 @@ class ConvertCommand:
     
     def _handle_watch_mode(self, input_file: str, output: str, config_obj,
                           show_test_cases: bool, template_name: Optional[str],
-                          include_source: bool) -> None:
+                          include_source: bool, syntax_check: bool = True) -> None:
         """Handle watch mode for automatic file regeneration"""
         try:
             from watchdog.observers import Observer
@@ -305,6 +367,7 @@ class ConvertCommand:
                 self.show_test_cases = show_test_cases
                 self.template_name = template_name
                 self.include_source = include_source
+                self.syntax_check = syntax_check
                 self.last_modified = 0
             
             def on_modified(self, event):
@@ -321,6 +384,13 @@ class ConvertCommand:
                     
                     try:
                         ui.watch_file_changed(modified_path.name)
+                        
+                        # Syntax check in watch mode
+                        if self.syntax_check:
+                            if not self.command._perform_syntax_check(self.input_file):
+                                ui.watch_update_error("記法エラーにより変換をスキップしました")
+                                return
+                        
                         self.command._convert_file(
                             self.input_file, self.output, self.config,
                             show_stats=False, show_test_cases=self.show_test_cases,
@@ -358,9 +428,10 @@ def create_convert_command():
     @click.option("--config", type=click.Path(exists=True), help="設定ファイルのパス")
     @click.option("--show-test-cases", is_flag=True, help="テストケース名を表示（テスト用ファイル変換時）")
     @click.option("--with-source-toggle", is_flag=True, help="記法と結果を切り替えるトグル機能付きで出力")
+    @click.option("--no-syntax-check", is_flag=True, help="変換前の記法チェックをスキップ")
     @click.option("--experimental", type=str, help="実験的機能を有効化 (例: scroll-sync)")
     def convert(input_file, output, no_preview, watch, config, show_test_cases, 
-                with_source_toggle, experimental):
+                with_source_toggle, no_syntax_check, experimental):
         """テキストファイルをHTMLに変換します"""
         
         # Determine source toggle usage
@@ -379,7 +450,8 @@ def create_convert_command():
         command = ConvertCommand()
         command.execute(
             input_file, output, no_preview, watch, config,
-            show_test_cases, template_name, use_source_toggle
+            show_test_cases, template_name, use_source_toggle,
+            syntax_check=not no_syntax_check
         )
     
     return convert
