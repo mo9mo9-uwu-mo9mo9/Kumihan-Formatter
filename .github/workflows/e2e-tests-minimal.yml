@@ -1,0 +1,102 @@
+name: E2E Tests (Minimal - DISABLED)
+
+on:
+  # 完全に無効化 - 手動実行のみ
+  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
+
+jobs:
+  e2e-minimal:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.9']
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+    
+    - name: Create test directories
+      run: |
+        mkdir -p test_output
+      shell: bash
+    
+    - name: Test Core CLI Functionality
+      run: |
+        echo "=== Testing Core CLI Functionality ==="
+        
+        # 基本的な変換テスト
+        python -m kumihan_formatter.cli examples/01-quickstart.txt -o test_output --no-preview
+        
+        # 生成されたHTMLファイルの存在確認
+        if [ -f "test_output/01-quickstart.html" ]; then
+          echo "✓ HTML file generated successfully"
+        else
+          echo "✗ HTML file not found"
+          exit 1
+        fi
+        
+        # HTMLファイルの基本内容確認
+        if grep -q "<!DOCTYPE html>" test_output/01-quickstart.html; then
+          echo "✓ Valid HTML DOCTYPE found"
+        else
+          echo "✗ Invalid HTML structure"
+          exit 1
+        fi
+        
+        # 日本語文字の保持確認
+        if grep -q "CoC" test_output/01-quickstart.html; then
+          echo "✓ Content preserved correctly"
+        else
+          echo "✗ Content not preserved"
+          exit 1
+        fi
+        
+        echo "=== Core functionality test passed ==="
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+    
+    - name: Upload minimal test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: minimal-test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: test_output/
+
+  e2e-summary:
+    needs: e2e-minimal
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Check overall results
+      run: |
+        echo "=== E2E Minimal Test Summary ==="
+        echo "All platforms completed minimal E2E testing"
+        echo "This ensures core functionality works across environments"

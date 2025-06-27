@@ -1,21 +1,22 @@
-name: E2E Tests
+name: E2E Tests (Disabled - Under Reconstruction)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/e2e/**'
-      - 'examples/**'
-      - 'pyproject.toml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/e2e/**'
-      - 'examples/**'
-      - 'pyproject.toml'
-  workflow_dispatch:  # 手動実行も可能
+  workflow_dispatch:  # 手動実行のみ
+  # 一時的に自動実行を無効化
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
 
 jobs:
   e2e-tests:

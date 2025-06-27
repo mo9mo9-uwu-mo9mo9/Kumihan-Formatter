@@ -14,7 +14,14 @@ class HTMLValidator:
     
     def __init__(self, html_content: str):
         self.html_content = html_content
-        self.soup = BeautifulSoup(html_content, 'html.parser')
+        # より確実なパーサーを使用
+        try:
+            self.soup = BeautifulSoup(html_content, 'lxml')
+            parser_used = 'lxml'
+        except:
+            self.soup = BeautifulSoup(html_content, 'html.parser')
+            parser_used = 'html.parser'
+        print(f"DEBUG: Using parser: {parser_used}")
     
     def validate_basic_structure(self) -> Dict[str, bool]:
         """基本的なHTML構造を検証"""
@@ -86,10 +93,29 @@ class HTMLValidator:
         if not body:
             return {'error': 'body element not found'}
         
-        # 見出し要素
+        # デバッグ: HTML内容の一部を出力
+        html_sample = str(self.soup)[:1000] if self.soup else "No soup"
+        print(f"DEBUG: HTML sample: {html_sample}")
+        
+        # 見出し要素 - より堅牢な検出
         headings = body.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-        results['heading_count'] = len(headings)
-        results['has_h1'] = len(body.find_all('h1')) > 0
+        print(f"DEBUG: Found headings: {[str(h) for h in headings]}")
+        
+        # フォールバック: 正規表現でも検索
+        import re
+        if len(headings) == 0:
+            heading_pattern = r'<h[1-6][^>]*>.*?</h[1-6]>'
+            regex_headings = re.findall(heading_pattern, str(body), re.DOTALL)
+            print(f"DEBUG: Regex fallback found: {len(regex_headings)} headings")
+            if len(regex_headings) > 0:
+                results['heading_count'] = len(regex_headings)
+                results['has_h1'] = any('<h1' in h for h in regex_headings)
+            else:
+                results['heading_count'] = len(headings)
+                results['has_h1'] = len(body.find_all('h1')) > 0
+        else:
+            results['heading_count'] = len(headings)
+            results['has_h1'] = len(body.find_all('h1')) > 0
         
         # 段落要素
         paragraphs = body.find_all('p')
