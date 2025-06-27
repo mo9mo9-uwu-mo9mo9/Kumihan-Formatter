@@ -1,3 +1,3 @@
 """Kumihan-Formatter - テキストファイルをHTMLに自動組版するCLIツール"""
 
-__version__ = "0.3.0"# Test comment
+__version__ = "0.3.0"
