@@ -44,11 +44,14 @@ class UserActionSimulator:
             cmd.append("--no-syntax-check")
         
         try:
+            # Windowsでのエンコーディング問題を修正
             result = subprocess.run(
                 cmd,
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',  # デコードエラーを置換文字で対処
                 timeout=60  # 1分でタイムアウト
             )
             
@@ -95,11 +98,14 @@ class UserActionSimulator:
         cmd = [str(batch_file), str(input_file)]
         
         try:
+            # Windowsでのエンコーディング問題を修正
             result = subprocess.run(
                 cmd,
                 cwd=batch_file.parent,
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',  # デコードエラーを置換文字で対処
                 timeout=120  # 2分でタイムアウト
             )
             
@@ -147,11 +153,14 @@ class UserActionSimulator:
         cmd = [str(command_file), str(input_file)]
         
         try:
+            # macOSでのエンコーディング問題を修正
             result = subprocess.run(
                 cmd,
                 cwd=command_file.parent,
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',  # デコードエラーを置換文字で対処
                 timeout=120  # 2分でタイムアウト
             )
             
