@@ -31,7 +31,7 @@
 | イタリック | `<em>` | |
 | 枠線 | `<div class="box">` | 標準枠線 + padding |
 | ハイライト | `<div class="highlight">` | デフォルト色 |
-| ハイライト color=#hex | `<div class="highlight" style="background-color:#hex">` | 色指定可 |
+| ハイライトcolor=#hex | `<div class="highlight" style="background-color:#hex">` | 色指定可 |
 | 見出しN | `<hN>` | N = 1–5 |
 | 折りたたみ | `<details><summary>詳細を表示</summary>` | HTML5折りたたみブロック |
 | ネタバレ | `<details><summary>ネタバレを表示</summary>` | ネタバレ隠し専用 |
