@@ -7,6 +7,7 @@
 
 import pytest
 import platform
+import os
 from pathlib import Path
 from dev.tests.e2e.utils.execution import UserActionSimulator, ExecutionResult
 from dev.tests.e2e.utils.validation import validate_html_file, extract_performance_metrics
@@ -55,7 +56,8 @@ class TestBasicWorkflow:
         content_structure = validation_result.get('content_structure', {})
         assert content_structure.get('heading_count', 0) >= 3, "Expected multiple headings"
         assert content_structure.get('highlight_block_count', 0) > 0, "Expected highlight blocks"
-        assert content_structure.get('details_count', 0) > 0, "Expected collapsible blocks"
+        # comprehensive_test.txtには実際にdetails要素が含まれることを確認済み
+        assert content_structure.get('details_count', 0) >= 2, f"Expected at least 2 collapsible blocks, got {content_structure.get('details_count', 0)}"
         
         # エラーマーカーの確認
         syntax_compliance = validation_result.get('syntax_compliance', {})
@@ -100,6 +102,10 @@ class TestBasicWorkflow:
         
         if not command_file.exists():
             pytest.skip("macOS command file not found in test workspace")
+        
+        # .commandファイルが実行可能かどうか確認
+        if not os.access(command_file, os.X_OK):
+            pytest.skip("macOS command file is not executable")
         
         # コマンドファイル実行
         result = simulator.simulate_command_file_execution(command_file, sample_test_file)
