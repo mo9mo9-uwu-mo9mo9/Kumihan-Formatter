@@ -12,6 +12,8 @@ import stat
 
 def create_test_files_with_permissions(base_dir: Path) -> Dict[str, Path]:
     """様々な権限設定のテストファイルを作成"""
+    # ベースディレクトリを作成
+    base_dir.mkdir(parents=True, exist_ok=True)
     test_files = {}
     
     # 通常のファイル
@@ -46,6 +48,8 @@ def create_test_files_with_permissions(base_dir: Path) -> Dict[str, Path]:
 
 def create_invalid_files(base_dir: Path) -> Dict[str, Path]:
     """無効なファイルを作成"""
+    # ベースディレクトリを作成
+    base_dir.mkdir(parents=True, exist_ok=True)
     invalid_files = {}
     
     # バイナリファイル（.txt拡張子だが実際はバイナリ）

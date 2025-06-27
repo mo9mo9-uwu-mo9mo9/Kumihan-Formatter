@@ -26,7 +26,8 @@ class UserActionSimulator:
         self.workspace = workspace
         self.project_root = workspace.parent.parent.parent.parent  # conftest.pyのPROJECT_ROOTと同じ計算
     
-    def simulate_cli_conversion(self, input_file: Path, output_dir: Path) -> ExecutionResult:
+    def simulate_cli_conversion(self, input_file: Path, output_dir: Path, 
+                                  skip_syntax_check: bool = False) -> ExecutionResult:
         """CLIでの変換をシミュレート"""
         start_time = time.time()
         
@@ -37,6 +38,10 @@ class UserActionSimulator:
             "-o", str(output_dir),
             "--no-preview"  # ブラウザを開かない
         ]
+        
+        # 記法チェックスキップオプション
+        if skip_syntax_check:
+            cmd.append("--no-syntax-check")
         
         try:
             result = subprocess.run(
