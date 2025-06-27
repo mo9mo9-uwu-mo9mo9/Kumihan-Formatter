@@ -4,7 +4,7 @@ This module handles Jinja2 template loading, caching, and rendering.
 """
 
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from jinja2 import Environment, FileSystemLoader, select_autoescape, Template
 
 
@@ -189,6 +189,11 @@ class RenderContext:
     def navigation(self, nav_html: str) -> 'RenderContext':
         """Add navigation HTML"""
         self._context['navigation_html'] = nav_html
+        return self
+    
+    def css_vars(self, css_vars: Dict[str, str]) -> 'RenderContext':
+        """Set CSS variables for styling"""
+        self._context['css_vars'] = css_vars
         return self
     
     def custom(self, key: str, value: Any) -> 'RenderContext':
