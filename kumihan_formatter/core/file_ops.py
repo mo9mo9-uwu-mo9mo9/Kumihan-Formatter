@@ -20,6 +20,10 @@ class UIProtocol(Protocol):
     def duplicate_files(self, duplicates: dict) -> None: ...
     def info(self, message: str, details: str = None) -> None: ...
     def hint(self, message: str, details: str = None) -> None: ...
+    def file_error(self, file_path: str, message: str) -> None: ...
+    def encoding_error(self, file_path: str) -> None: ...
+    def permission_error(self, error: str) -> None: ...
+    def unexpected_error(self, error: str) -> None: ...
 
 
 class FileOperations:
@@ -315,22 +319,26 @@ class PathValidator:
 class ErrorHandler:
     """Centralized error handling for file operations"""
     
-    @staticmethod
-    def handle_file_not_found(file_path: str) -> None:
+    def __init__(self, ui: Optional[UIProtocol] = None):
+        """Initialize with optional UI instance"""
+        self.ui = ui
+    
+    def handle_file_not_found(self, file_path: str) -> None:
         """Handle file not found error"""
-        ui.file_error(file_path, "ファイルが見つかりません")
+        if self.ui:
+            self.ui.file_error(file_path, "ファイルが見つかりません")
     
-    @staticmethod
-    def handle_encoding_error(file_path: str) -> None:
+    def handle_encoding_error(self, file_path: str) -> None:
         """Handle encoding error"""
-        ui.encoding_error(file_path)
+        if self.ui:
+            self.ui.encoding_error(file_path)
     
-    @staticmethod
-    def handle_permission_error(error: str) -> None:
+    def handle_permission_error(self, error: str) -> None:
         """Handle permission error"""
-        ui.permission_error(error)
+        if self.ui:
+            self.ui.permission_error(error)
     
-    @staticmethod
-    def handle_unexpected_error(error: str) -> None:
+    def handle_unexpected_error(self, error: str) -> None:
         """Handle unexpected error"""
-        ui.unexpected_error(error)
+        if self.ui:
+            self.ui.unexpected_error(error)
