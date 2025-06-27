@@ -67,7 +67,7 @@ $ python -m kumihan_formatter.cli \
 |------|-------------|
 | `-o, --output DIR` | 出力フォルダ (default: ./dist) |
 | `--no-preview` | HTML 生成後にブラウザを開かない |
-| `--config FILE` | YAML/JSON 設定ファイルを指定 |
+| `--with-source-toggle` | ソースと結果を切り替えるボタン付きで出力 |
 
 ---
 

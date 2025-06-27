@@ -41,11 +41,9 @@ class KeywordParser:
     ]
     
     def __init__(self, config=None):
-        """Initialize keyword parser with configuration"""
-        if config:
-            self.BLOCK_KEYWORDS = config.get_markers()
-        else:
-            self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS.copy()
+        """Initialize keyword parser with fixed keywords"""
+        # 簡素化: 固定マーカーセットのみ使用
+        self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS.copy()
     
     def parse_marker_keywords(self, marker_content: str) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """

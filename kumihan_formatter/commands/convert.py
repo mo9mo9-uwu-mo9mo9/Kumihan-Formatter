@@ -20,7 +20,7 @@ from ..core.error_handling import ErrorHandler as FriendlyErrorHandler, ErrorCat
 from ..core.syntax import check_files, ErrorSeverity
 from ..parser import parse
 from ..renderer import render
-from ..config import load_config
+# from ..config import load_config  # 簡素化: 使用しない
 
 
 class ConvertCommand:
@@ -44,7 +44,7 @@ class ConvertCommand:
             output: Output directory
             no_preview: Skip browser preview
             watch: Enable watch mode
-            config: Config file path
+            config: Config file path (deprecated - ignored)
             show_test_cases: Show test cases
             template_name: Template name to use
             include_source: Include source toggle
@@ -74,10 +74,8 @@ class ConvertCommand:
                 estimated_time = self.file_ops.estimate_processing_time(size_info['size_mb'])
                 ui.hint(f"推定処理時間: {estimated_time}")
             
-            # Load configuration
-            config_obj = load_config(config)
-            if config:
-                config_obj.validate_config()
+            # 簡素化: 設定ファイルは使用しない
+            config_obj = None
             
             ui.processing_start("読み込み中", str(input_path))
             
@@ -425,12 +423,12 @@ def create_convert_command():
     @click.option("-o", "--output", default="dist", help="出力ディレクトリ")
     @click.option("--no-preview", is_flag=True, help="HTML生成後にブラウザを開かない")
     @click.option("--watch", is_flag=True, help="ファイルの変更を監視して自動再生成")
-    @click.option("--config", type=click.Path(exists=True), help="設定ファイルのパス")
+    # @click.option("--config", type=click.Path(exists=True), help="設定ファイルのパス")  # 簡素化: 削除
     @click.option("--show-test-cases", is_flag=True, help="テストケース名を表示（テスト用ファイル変換時）")
     @click.option("--with-source-toggle", is_flag=True, help="記法と結果を切り替えるトグル機能付きで出力")
     @click.option("--no-syntax-check", is_flag=True, help="変換前の記法チェックをスキップ")
     @click.option("--experimental", type=str, help="実験的機能を有効化 (例: scroll-sync)")
-    def convert(input_file, output, no_preview, watch, config, show_test_cases, 
+    def convert(input_file, output, no_preview, watch, show_test_cases, 
                 with_source_toggle, no_syntax_check, experimental):
         """テキストファイルをHTMLに変換します"""
         
@@ -449,7 +447,7 @@ def create_convert_command():
         
         command = ConvertCommand()
         command.execute(
-            input_file, output, no_preview, watch, config,
+            input_file, output, no_preview, watch, None,
             show_test_cases, template_name, use_source_toggle,
             syntax_check=not no_syntax_check
         )

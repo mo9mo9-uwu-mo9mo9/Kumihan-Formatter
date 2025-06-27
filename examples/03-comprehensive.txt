@@ -185,29 +185,29 @@ Kumihan-Formatterの場合：
 ;;;
 
 ;;;見出し2
-設定ファイル利用時の拡張マーカー
+基本機能による表現例
 ;;;
 
 ;;;見出し3
-カスタムマーカーの例
+固定マーカーを活用した例
 ;;;
 
-設定ファイルを使用することで、以下のようなカスタムマーカーを定義できます：
+初心者向けに簡素化されたKumihan-Formatterでは、設定不要で以下の表現が可能です：
 
-;;;警告
-これは警告マーカーです。設定ファイルで定義されたカスタムマーカーの例です。
+;;;ハイライト color=#ffcccc
+これは警告風の表示です。赤系のハイライトで注意を促します。
 ;;;
 
-;;;重要
-これは重要マーカーです。特に重要な情報を強調表示します。
+;;;太字+ハイライト color=#ffffcc
+これは重要な情報です。太字とハイライトを組み合わせて強調します。
 ;;;
 
-;;;注釈
-これは注釈マーカーです。補足情報や詳細説明に使用できます。
+;;;枠線
+これは注釈や補足情報です。枠線で囲んで他の内容と区別します。
 ;;;
 
-;;;コード
-これはコードマーカーです。プログラムコードやコマンドラインの例を表示する際に使用します。
+;;;枠線+太字
+これはコード例やコマンドラインです。枠線と太字でコードブロック風に表示します。
 ;;;
 
 ;;;見出し2
@@ -300,7 +300,7 @@ CoC6thシナリオでネタバレを隠したい場合：
 - ステップ2: 設定ファイルを編集
 - ステップ3: システムを再起動
 
-;;;警告
+;;;ハイライト color=#ffcccc
 ステップ2で設定を間違えると、システムが正常に動作しない可能性があります。
 ;;;
 
@@ -308,7 +308,7 @@ CoC6thシナリオでネタバレを隠したい場合：
 設定例
 ;;;
 
-;;;コード
+;;;枠線+太字
 config.yaml の例:
 theme: dark
 font_family: "Noto Sans JP"
@@ -384,12 +384,12 @@ Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed 
 
 このファイルを変換するには：
 
-;;;コード
+;;;枠線+太字
 基本変換:
 python -m kumihan_formatter.cli comprehensive-sample.txt
 
-ダークテーマで変換:
-python -m kumihan_formatter.cli comprehensive-sample.txt --config config-sample.yaml
+ソース表示付きで変換:
+python -m kumihan_formatter.cli comprehensive-sample.txt --with-source-toggle
 
 ファイル監視モードで変換:
 python -m kumihan_formatter.cli comprehensive-sample.txt --watch
