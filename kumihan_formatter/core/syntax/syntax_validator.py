@@ -90,22 +90,60 @@ class KumihanSyntaxValidator:
             # Check for block markers
             if stripped.startswith(';;;'):
                 if stripped == ';;;':
-                    # Block end marker
+                    # Could be either block end marker OR start of empty block
                     if not in_block:
-                        self._add_error(
-                            line_num, 1, ErrorSeverity.ERROR,
-                            ErrorTypes.UNMATCHED_BLOCK_END,
-                            "ブロック開始マーカーなしに ;;; が見つかりました",
-                            line
-                        )
+                        # Look ahead to see if this is start of an empty block
+                        next_line_idx = line_num
+                        is_empty_block_start = False
+                        has_content = False
+                        
+                        # Check if there's content after this ;;; and before next ;;;
+                        while next_line_idx < len(lines):
+                            next_line = lines[next_line_idx].strip()
+                            if next_line and not next_line.startswith(';;;'):
+                                # Found content, so this is likely start of empty block
+                                has_content = True
+                            elif next_line == ';;;':
+                                # Found closing marker - if we had content, it's a valid empty block
+                                if has_content:
+                                    is_empty_block_start = True
+                                break
+                            next_line_idx += 1
+                        
+                        # If we reached end of file and found content, it's an unclosed empty block
+                        if has_content and next_line_idx >= len(lines):
+                            is_empty_block_start = True
+                        
+                        if is_empty_block_start:
+                            # Start of empty block
+                            in_block = True
+                            block_start_line = line_num
+                            block_keywords = []
+                        else:
+                            # Unmatched end marker
+                            self._add_error(
+                                line_num, 1, ErrorSeverity.ERROR,
+                                ErrorTypes.UNMATCHED_BLOCK_END,
+                                "ブロック開始マーカーなしに ;;; が見つかりました",
+                                line
+                            )
                     else:
+                        # End of block
                         in_block = False
                         block_keywords.clear()
                 else:
                     # Block start marker or keyword line
                     if in_block:
-                        # Check for multi-line syntax error
-                        self._check_multiline_syntax(line_num, stripped, block_start_line, block_keywords)
+                        # If we're in an empty block, this is a new block (not multi-line syntax)
+                        if not block_keywords:
+                            # End the empty block and start a new one
+                            in_block = True
+                            block_start_line = line_num
+                            block_keywords = SyntaxRules.parse_keywords(stripped[3:])
+                            self._validate_block_keywords(line_num, stripped)
+                        else:
+                            # Check for multi-line syntax error
+                            self._check_multiline_syntax(line_num, stripped, block_start_line, block_keywords)
                     else:
                         # Start of new block
                         in_block = True
@@ -148,12 +186,7 @@ class KumihanSyntaxValidator:
         keyword_part = line[3:].strip()
         
         if not keyword_part:
-            self._add_error(
-                line_num, 4, ErrorSeverity.ERROR,
-                ErrorTypes.EMPTY_KEYWORD,
-                "キーワードが指定されていません",
-                line
-            )
+            # Allow empty keywords for simple blocks
             return
         
         # Parse compound keywords
