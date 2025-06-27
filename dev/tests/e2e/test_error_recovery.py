@@ -80,7 +80,7 @@ class TestErrorRecovery:
         # assert '[ERROR:' in html_content, "Should contain error markers for malformed syntax"
         
         # 正常な部分は適切に変換されていることを確認
-        assert '<h1>' in html_content, "Valid parts should be converted correctly"
+        assert '<h1' in html_content, "Valid parts should be converted correctly (H1 tag)"
         assert '<div class="box">' in html_content, "Valid box syntax should work"
     
     def test_file_access_error_recovery(self, test_workspace: Path, output_directory: Path):
