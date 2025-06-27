@@ -1,21 +1,22 @@
-name: E2E Tests (Minimal)
+name: E2E Tests (Minimal - DISABLED)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/e2e/**'
-      - 'examples/**'
-      - 'pyproject.toml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/e2e/**'
-      - 'examples/**'
-      - 'pyproject.toml'
+  # 完全に無効化 - 手動実行のみ
   workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'dev/tests/e2e/**'
+  #     - 'examples/**'
+  #     - 'pyproject.toml'
 
 jobs:
   e2e-minimal:
