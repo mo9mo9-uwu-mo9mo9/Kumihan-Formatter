@@ -485,3 +485,96 @@ def test_escape_format_symbols():
     # 4番目の段落: 通常のテキスト
     assert result[3].type == "p"
     assert result[3].content[0] == "この行は ;;; 太字と表示されます"
+
+
+def test_tolerant_syntax_full_width_space():
+    """全角スペースを含む記法のテスト"""
+    text = """;;;ハイライト　color=#ff0000
+黄色のハイライト
+;;;"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "div"
+    assert result[0].attributes["class"] == "highlight"
+    assert "background-color:#ff0000" in result[0].attributes.get("style", "")
+
+
+def test_tolerant_syntax_no_space_before_attribute():
+    """属性前にスペースがない記法のテスト"""
+    text = """;;;ハイライトcolor=#00ff00
+緑のハイライト
+;;;"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "div"
+    assert result[0].attributes["class"] == "highlight"
+    assert "background-color:#00ff00" in result[0].attributes.get("style", "")
+
+
+def test_tolerant_syntax_multiple_spaces():
+    """複数スペースを含む記法のテスト"""
+    text = """;;;ハイライト  color=#0000ff
+青のハイライト
+;;;"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "div"
+    assert result[0].attributes["class"] == "highlight"
+    assert "background-color:#0000ff" in result[0].attributes.get("style", "")
+
+
+def test_tolerant_syntax_compound_keywords():
+    """複合キーワードでの寛容な記法のテスト"""
+    # 全角スペース + スペースなし
+    text = """;;;太字　+ハイライトcolor=#ffff00
+複合スタイル
+;;;"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    # 外側がハイライト、内側が太字
+    assert result[0].type == "div"
+    assert result[0].attributes["class"] == "highlight"
+    assert "background-color:#ffff00" in result[0].attributes.get("style", "")
+    assert result[0].content[0].type == "strong"
+
+
+def test_tolerant_syntax_compatibility():
+    """後方互換性のテスト（正しい記法も動作する）"""
+    text = """;;;ハイライト color=#ff0000
+従来の正しい記法
+;;;"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "div"
+    assert result[0].attributes["class"] == "highlight"
+    assert "background-color:#ff0000" in result[0].attributes.get("style", "")
+
+
+def test_tolerant_syntax_list_items():
+    """リスト項目での寛容な記法のテスト"""
+    text = """- ;;;太字　+　ハイライトcolor=#ffdddd;;; 全角スペース付きリスト項目
+- ;;;枠線+太字;;; スペースなしリスト項目"""
+    
+    result = parse(text)
+    assert len(result) == 1
+    assert result[0].type == "ul"
+    assert len(result[0].content) == 2
+    
+    # 1番目の項目（全角スペース + スペースなし）
+    li1 = result[0].content[0]
+    assert li1.type == "li"
+    # ハイライト > 太字の順
+    assert li1.content[0].type == "div"
+    assert li1.content[0].attributes["class"] == "highlight"
+    
+    # 2番目の項目（スペースなし）
+    li2 = result[0].content[1]
+    assert li2.type == "li"
+    # 枠線 > 太字の順
+    assert li2.content[0].type == "div"
+    assert li2.content[0].attributes["class"] == "box"

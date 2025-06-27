@@ -52,7 +52,7 @@ Kumihan-Formatterでは「改行したら、そのまま改行される」直感
 他のツールとの比較
 ;;;
 
-;;;ハイライトcolor=#e6f3ff
+;;;ハイライト color=#e6f3ff
 Markdownの場合：
 - 改行: 行末に2つのスペース + 改行
 - 段落: 空行で区切る
@@ -104,19 +104,19 @@ Kumihan-Formatterの場合：
 色付きハイライト
 ;;;
 
-;;;ハイライトcolor=#ff0
+;;;ハイライト color=#ffff00
 これは黄色のハイライトです。警告や注意を促す際に使用します。
 ;;;
 
-;;;ハイライトcolor=#fdd
+;;;ハイライト color=#ffdddd
 これは淡いピンクのハイライトです。エラーや重要な警告に適しています。
 ;;;
 
-;;;ハイライトcolor=#dfd
+;;;ハイライト color=#ddffdd
 これは淡い緑のハイライトです。成功メッセージや完了通知に使用できます。
 ;;;
 
-;;;ハイライトcolor=#ddf
+;;;ハイライト color=#ddddff
 これは淡い青のハイライトです。情報提供や補足説明に適しています。
 ;;;
 
@@ -180,7 +180,7 @@ Kumihan-Formatterの場合：
 枠線とハイライトを組み合わせたブロックです。最も注意を引きたい情報に使用します。
 ;;;
 
-;;;ハイライト+太字color=#ffe
+;;;太字+ハイライト color=#ffffe0
 黄色のハイライトに太字を組み合わせたブロックです。警告メッセージなどに適しています。
 ;;;
 
@@ -249,7 +249,7 @@ NPC情報
 
 年齢：45歳、職業：考古学者
 
-;;;ハイライトcolor=#fdd
+;;;ハイライト color=#ffdddd
 注意：このNPCは重要な手がかりを持っているが、信頼性に問題がある。
 ;;;
 
@@ -354,7 +354,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
 通常のテキストでも同様の処理速度を維持します。Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
 
-;;;ハイライトcolor=#e6f3ff
+;;;ハイライト color=#e6f3ff
 Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.
 ;;;
 
@@ -395,7 +395,7 @@ python -m kumihan_formatter.cli comprehensive-sample.txt --with-source-toggle
 python -m kumihan_formatter.cli comprehensive-sample.txt --watch
 ;;;
 
-;;;ハイライトcolor=#d4edda
+;;;ハイライト color=#d4edda
 変換が完了すると、このテキストファイルが美しくレイアウトされたHTMLファイルに変換されます！
 ;;;
 
