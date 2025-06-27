@@ -62,8 +62,9 @@ class TestFileOperations:
             result = simulator.simulate_cli_conversion(file_path, output_directory)
             
             if file_type == 'empty':
-                # 空ファイルの場合はエラーになることを確認
-                assert result.returncode != 0, "Empty file should cause conversion error"
+                # 空ファイルの場合は成功することを確認（自動記法チェック導入により）
+                assert result.returncode == 0, "Empty file should succeed with auto syntax check"
+                assert len(result.output_files) > 0, "Empty file should generate basic HTML"
             elif file_type == 'readonly':
                 # 読み取り専用ファイルは正常に処理されることを確認
                 if file_info['is_readable']:
@@ -85,7 +86,8 @@ class TestFileOperations:
             if file_type == 'binary':
                 # バイナリファイルはエラーになることを確認
                 assert result.returncode != 0, "Binary file should cause conversion error"
-                assert "エラー" in result.stderr or "error" in result.stderr.lower(), \
+                # エラーメッセージはstdoutに出力される（記法チェック結果）
+                assert "エラー" in result.stdout or "error" in result.stdout.lower(), \
                     "Binary file error should be clearly indicated"
             
             elif file_type == 'invalid_encoding':

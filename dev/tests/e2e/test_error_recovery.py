@@ -137,9 +137,10 @@ class TestErrorRecovery:
             # 権限エラーで失敗することを確認
             assert result.returncode != 0, "Should fail with readonly output directory"
             
-            # 適切なエラーメッセージが出力されることを確認
-            assert "権限" in result.stderr or "permission" in result.stderr.lower() or \
-                   "エラー" in result.stderr or "error" in result.stderr.lower(), \
+            # 適切なエラーメッセージが出力されることを確認（stdoutまたはstderr）
+            error_text = result.stdout + result.stderr
+            assert "権限" in error_text or "permission" in error_text.lower() or \
+                   "エラー" in error_text or "error" in error_text.lower(), \
                    "Should provide clear error message for permission issues"
         
         finally:
@@ -242,8 +243,8 @@ class TestErrorRecovery:
                 if result.returncode == 0:
                     assert len(result.output_files) > 0, f"Should generate output for {test_name}"
                 else:
-                    # エラーの場合は適切なメッセージを出力
-                    assert len(result.stderr) > 0, f"Should provide error message for {test_name}"
+                    # エラーの場合は適切なメッセージを出力（stdoutに記法チェック結果が出力）
+                    assert len(result.stdout) > 0 or len(result.stderr) > 0, f"Should provide error message for {test_name}"
     
     def test_memory_pressure_handling(self, test_workspace: Path, output_directory: Path):
         """メモリ負荷時の動作テスト"""
@@ -341,7 +342,8 @@ class TestErrorRecovery:
                 else:
                     # その他のエンコーディングはエラーでも適切に処理
                     if result.returncode != 0:
-                        assert len(result.stderr) > 0, \
+                        # エラーメッセージはstdoutまたはstderrに出力
+                        assert len(result.stdout) > 0 or len(result.stderr) > 0, \
                             f"Should provide error message for {test_name}"
                     else:
                         assert len(result.output_files) > 0, \
