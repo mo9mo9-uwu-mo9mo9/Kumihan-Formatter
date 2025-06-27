@@ -437,9 +437,10 @@ class MarkerValidator:
         # Extract marker content (opening marker format: ;;;keyword)
         marker_content = line.strip()[3:].strip()
         
+        # Allow empty markers (;;; with no keywords)
         if not marker_content:
-            errors.append("空のマーカーです")
-            return False, errors
+            # Empty marker is valid - no keywords to validate
+            return True, errors
         
         # Parse keywords
         keywords, attributes, parse_errors = self.keyword_parser.parse_marker_keywords(marker_content)

@@ -63,6 +63,12 @@ class BlockParser:
         content_lines = lines[start_index + 1:end_index]
         content = '\n'.join(content_lines).strip()
         
+        # Handle empty marker (;;; with no keywords)
+        if not marker_content:
+            # Create a simple paragraph node for empty markers
+            from .ast_nodes import paragraph
+            return paragraph(content), end_index + 1
+        
         # Parse keywords and attributes
         keywords, attributes, parse_errors = self.keyword_parser.parse_marker_keywords(marker_content)
         
@@ -193,10 +199,10 @@ class BlockParser:
     def is_opening_marker(self, line: str) -> bool:
         """Check if a line is an opening block marker"""
         line = line.strip()
-        # Opening marker: ;;;keyword (does not end with ;;;)
+        # Opening marker: ;;;keyword OR just ;;; (for empty blocks)
+        # But not ;;;something;;; (single-line markers)
         return (line.startswith(';;;') and 
-                not line.endswith(';;;') and 
-                len(line) > 3)  # More than just ;;;
+                not (line.endswith(';;;') and line.count(';;;') > 1))
     
     def is_closing_marker(self, line: str) -> bool:
         """Check if a line is a closing block marker"""
