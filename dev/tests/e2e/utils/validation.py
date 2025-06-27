@@ -86,8 +86,13 @@ class HTMLValidator:
         if not body:
             return {'error': 'body element not found'}
         
+        # デバッグ: HTML内容の一部を出力
+        html_sample = str(self.soup)[:1000] if self.soup else "No soup"
+        print(f"DEBUG: HTML sample: {html_sample}")
+        
         # 見出し要素
         headings = body.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+        print(f"DEBUG: Found headings: {[str(h) for h in headings]}")
         results['heading_count'] = len(headings)
         results['has_h1'] = len(body.find_all('h1')) > 0
         
