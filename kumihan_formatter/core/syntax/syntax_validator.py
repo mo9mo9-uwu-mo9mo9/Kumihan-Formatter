@@ -90,43 +90,15 @@ class KumihanSyntaxValidator:
             # Check for block markers
             if stripped.startswith(';;;'):
                 if stripped == ';;;':
-                    # Could be either block end marker OR start of empty block
+                    # Standalone ;;; marker
                     if not in_block:
-                        # Look ahead to see if this is start of an empty block
-                        next_line_idx = line_num
-                        is_empty_block_start = False
-                        has_content = False
-                        
-                        # Check if there's content after this ;;; and before next ;;;
-                        while next_line_idx < len(lines):
-                            next_line = lines[next_line_idx].strip()
-                            if next_line and not next_line.startswith(';;;'):
-                                # Found content, so this is likely start of empty block
-                                has_content = True
-                            elif next_line == ';;;':
-                                # Found closing marker - if we had content, it's a valid empty block
-                                if has_content:
-                                    is_empty_block_start = True
-                                break
-                            next_line_idx += 1
-                        
-                        # If we reached end of file and found content, it's an unclosed empty block
-                        if has_content and next_line_idx >= len(lines):
-                            is_empty_block_start = True
-                        
-                        if is_empty_block_start:
-                            # Start of empty block
-                            in_block = True
-                            block_start_line = line_num
-                            block_keywords = []
-                        else:
-                            # Unmatched end marker
-                            self._add_error(
-                                line_num, 1, ErrorSeverity.ERROR,
-                                ErrorTypes.UNMATCHED_BLOCK_END,
-                                "ブロック開始マーカーなしに ;;; が見つかりました",
-                                line
-                            )
+                        # Standalone ;;; without being in a block is always an error
+                        self._add_error(
+                            line_num, 1, ErrorSeverity.ERROR,
+                            ErrorTypes.UNMATCHED_BLOCK_END,
+                            "ブロック開始マーカーなしに ;;; が見つかりました",
+                            line
+                        )
                     else:
                         # End of block
                         in_block = False

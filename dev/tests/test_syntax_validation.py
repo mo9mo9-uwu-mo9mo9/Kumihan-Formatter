@@ -42,6 +42,29 @@ class TestSyntaxValidation:
         
         assert len(errors) == 0
     
+    def test_standalone_marker_error(self, tmp_path):
+        """単独の;;;マーカーがエラーとして検出されることを確認"""
+        invalid_content = """;;;見出し1
+タイトル
+;;;
+
+これは段落です。
+;;;
+
+;;;太字
+テキスト
+;;;
+"""
+        test_file = tmp_path / "standalone.txt"
+        test_file.write_text(invalid_content, encoding="utf-8")
+        
+        validator = SyntaxValidator()
+        errors = validator.validate_file(test_file)
+        
+        # 6行目に単独の;;;があるのでエラーが1つあるはず
+        assert len(errors) >= 1
+        assert any(error.line_number == 6 for error in errors)
+    
     def test_unsupported_markdown_syntax(self, tmp_path):
         """非サポートのMarkdown記法を検出"""
         invalid_content = """# これは非サポート記法です
