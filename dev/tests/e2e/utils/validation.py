@@ -14,7 +14,14 @@ class HTMLValidator:
     
     def __init__(self, html_content: str):
         self.html_content = html_content
-        self.soup = BeautifulSoup(html_content, 'html.parser')
+        # より確実なパーサーを使用
+        try:
+            self.soup = BeautifulSoup(html_content, 'lxml')
+            parser_used = 'lxml'
+        except:
+            self.soup = BeautifulSoup(html_content, 'html.parser')
+            parser_used = 'html.parser'
+        print(f"DEBUG: Using parser: {parser_used}")
     
     def validate_basic_structure(self) -> Dict[str, bool]:
         """基本的なHTML構造を検証"""
