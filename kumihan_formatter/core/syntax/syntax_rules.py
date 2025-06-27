@@ -75,24 +75,36 @@ class SyntaxRules:
     @classmethod
     def extract_base_keyword(cls, keyword: str) -> str:
         """Extract base keyword from keyword with attributes"""
+        # Check for color attribute (with or without space)
         if 'color=' in keyword:
-            return keyword.split('color=')[0].strip()
+            if ' color=' in keyword:
+                return keyword.split(' color=')[0].strip()
+            else:
+                return keyword.split('color=')[0].strip()
+        # Check for alt attribute (with or without space)
         elif 'alt=' in keyword:
-            return keyword.split('alt=')[0].strip()
+            if ' alt=' in keyword:
+                return keyword.split(' alt=')[0].strip()
+            else:
+                return keyword.split('alt=')[0].strip()
         else:
             return keyword
     
     @classmethod
     def extract_color_value(cls, keyword: str) -> str:
         """Extract color value from keyword with color attribute"""
-        if 'color=' in keyword:
+        if ' color=' in keyword:
+            return keyword.split(' color=')[1].strip()
+        elif 'color=' in keyword:
             return keyword.split('color=')[1].strip()
         return ""
     
     @classmethod
     def extract_alt_value(cls, keyword: str) -> str:
         """Extract alt value from keyword with alt attribute"""
-        if 'alt=' in keyword:
+        if ' alt=' in keyword:
+            return keyword.split(' alt=')[1].strip()
+        elif 'alt=' in keyword:
             return keyword.split('alt=')[1].strip()
         return ""
     
