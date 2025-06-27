@@ -16,14 +16,15 @@ class Parser:
     """Main text parser that coordinates specialized parsers"""
     
     def __init__(self, config=None):
-        """Initialize parser with configuration"""
-        self.config = config
+        """Initialize parser with fixed markers"""
+        # 簡素化: configは無視して固定マーカーのみ使用
+        self.config = None
         self.lines = []
         self.current = 0
         self.errors = []
         
         # Initialize specialized parsers
-        self.keyword_parser = KeywordParser(config)
+        self.keyword_parser = KeywordParser()
         self.list_parser = ListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
     

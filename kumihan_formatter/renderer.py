@@ -11,6 +11,7 @@ from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
 from .core.template_manager import TemplateManager, RenderContext
 from .core.toc_generator import TOCGenerator
+from .simple_config import create_simple_config
 
 
 class Renderer:
@@ -64,11 +65,13 @@ class Renderer:
         )
         
         # Build rendering context
+        simple_config = create_simple_config()
         context = (RenderContext()
                   .title(title or "Document")
                   .body_content(body_content)
                   .toc_html(toc_data['html'])
-                  .has_toc(should_show_toc))
+                  .has_toc(should_show_toc)
+                  .css_vars(simple_config.get_css_variables()))
         
         # Add source toggle if needed
         if source_text and source_filename:
