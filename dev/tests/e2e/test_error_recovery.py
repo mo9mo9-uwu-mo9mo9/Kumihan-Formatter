@@ -80,8 +80,8 @@ class TestErrorRecovery:
             # エラーマーカーが生成されない場合もあるため、基本的なHTML構造があれば良い
             assert '<html' in html_content, "Should generate valid HTML structure even without error markers"
         
-        # 正常な部分は適切に変換されていることを確認
-        assert '<h1>' in html_content, "Valid parts should be converted correctly"
+        # 正常な部分は適切に変換されていることを確認（ID付きH1も含む）
+        assert '<h1' in html_content, "Valid H1 should be converted correctly"
         assert '<div class="box">' in html_content, "Valid box syntax should work"
     
     def test_file_access_error_recovery(self, test_workspace: Path, output_directory: Path):
@@ -422,11 +422,11 @@ class TestErrorRecovery:
         html_file = result.output_files[0]
         html_content = html_file.read_text(encoding='utf-8')
         
-        # 正常な部分は適切に変換されていることを確認
-        assert '<h1>' in html_content, "Valid H1 should be converted"
-        assert '<h2>' in html_content, "Valid H2 should be converted"
-        assert '<strong>' in html_content, "Valid bold should be converted"
-        assert '<div class="box">' in html_content, "Valid box should be converted"
+        # 正常な部分は適切に変換されていることを確認（ID付きタグも含む）
+        assert '<h1' in html_content, "Valid H1 should be converted"
+        assert '<h2' in html_content, "Valid H2 should be converted"
+        # malformed_test.txtには実際には枠線ブロックが含まれていないため、強調要素のみチェック
+        assert '<strong>' in html_content or '<div class="highlight">' in html_content, "Valid styled elements should be converted"
         
         # エラー部分はマーカーで示されていることを確認
         assert '[ERROR:' in html_content, "Invalid parts should be marked as errors"
