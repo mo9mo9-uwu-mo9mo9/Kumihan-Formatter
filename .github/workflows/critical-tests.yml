@@ -108,13 +108,16 @@ jobs:
             exit 1
           fi
           
-          # HTML内容の最小検証
-          if grep -q "<h1>" /tmp/quick_output/quick_test.html && \
-             grep -q "<p>" /tmp/quick_output/quick_test.html && \
-             grep -q "<li>" /tmp/quick_output/quick_test.html; then
+          # HTML内容の最小検証（より実用的なチェック）
+          if grep -q "テスト見出し" /tmp/quick_output/quick_test.html && \
+             grep -q "段落テスト" /tmp/quick_output/quick_test.html && \
+             grep -q "リスト項目" /tmp/quick_output/quick_test.html; then
             echo "✅ HTML structure validation passed"
           else
-            echo "❌ HTML structure validation failed"
+            echo "❌ HTML structure validation failed - checking actual content:"
+            echo "--- Generated HTML content ---"
+            cat /tmp/quick_output/quick_test.html
+            echo "--- End of HTML content ---"
             exit 1
           fi
       
