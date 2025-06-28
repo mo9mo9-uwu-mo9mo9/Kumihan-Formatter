@@ -190,7 +190,7 @@ class SyntaxFixer:
         return errors
     
     def _check_malformed_blocks(self, file_path: Path, content: str) -> List[ValidationError]:
-        """不完全なブロック記法のチェック"""
+        """不完全なブロック記法のチェック（強化版）"""
         errors = []
         lines = content.splitlines()
         
@@ -202,13 +202,21 @@ class SyntaxFixer:
                 # 複数行ブロックの開始を検出
                 j = i + 1
                 found_close = False
+                content_lines = 0
+                
                 while j < len(lines):
-                    if lines[j].strip() == ';;;':
+                    next_line = lines[j].strip()
+                    if next_line == ';;;':
                         found_close = True
+                        break
+                    elif next_line and not next_line.startswith(';;;'):
+                        content_lines += 1
+                    elif next_line.startswith(';;;') and not next_line.endswith(';;;'):
+                        # 新しいブロック開始 = 前のブロックが閉じられていない
                         break
                     j += 1
                 
-                if not found_close:
+                if not found_close and content_lines > 0:
                     errors.append(ValidationError(
                         file_path=str(file_path),
                         line_number=i + 1,
@@ -216,6 +224,24 @@ class SyntaxFixer:
                         message=f"閉じマーカー ';;;' が見つかりません",
                         suggestion="ブロックの最後に ;;; を追加してください"
                     ))
+                
+                # 見出しブロックの特別処理
+                if re.match(r'^;;;見出し[1-5]$', line):
+                    # 見出しブロックで内容があるのに閉じマーカーがない場合
+                    if j < len(lines) and lines[j].strip() and not lines[j].strip().startswith(';;;'):
+                        # 次の行が内容で、その後に閉じマーカーがないパターン
+                        k = j + 1
+                        while k < len(lines) and lines[k].strip() == '':
+                            k += 1
+                        if k < len(lines) and lines[k].strip().startswith(';;;') and not lines[k].strip() == ';;;':
+                            errors.append(ValidationError(
+                                file_path=str(file_path),
+                                line_number=i + 1,
+                                error_type="MISSING_HEADING_CLOSER",
+                                message=f"見出しブロックに閉じマーカーがありません",
+                                suggestion=f"行 {j+1} の後に ;;; を追加してください"
+                            ))
+                
                 i = j + 1 if found_close else len(lines)
             else:
                 i += 1
@@ -223,7 +249,7 @@ class SyntaxFixer:
         return errors
     
     def _fix_malformed_blocks(self, content: str) -> tuple[str, List[str]]:
-        """不完全なブロック構造を修正"""
+        """不完全なブロック構造を修正（強化版）"""
         lines = content.split('\n')
         fixed_lines = []
         changes = []
@@ -233,28 +259,68 @@ class SyntaxFixer:
             line = lines[i]
             stripped = line.strip()
             
-            # 見出しブロックの開始を検出
-            if re.match(r'^;;;見出し[1-5]$', stripped):
+            # 各種ブロックの開始を検出（見出し、太字、枠線、ハイライト等）
+            if re.match(r'^;;;(見出し[1-5]|太字|枠線|ハイライト|ネタバレ|折りたたみ)', stripped):
                 fixed_lines.append(line)
                 i += 1
                 
-                # 内容行を追加
-                if i < len(lines) and lines[i].strip() and not lines[i].strip().startswith(';;;'):
-                    fixed_lines.append(lines[i])
-                    i += 1
+                # 内容行を収集
+                content_lines = []
+                while i < len(lines):
+                    current_line = lines[i]
+                    current_stripped = current_line.strip()
+                    
+                    # 閉じマーカーを発見
+                    if current_stripped == ';;;':
+                        fixed_lines.extend(content_lines)
+                        fixed_lines.append(current_line)
+                        i += 1
+                        break
+                    # 新しいブロック開始 = 前のブロックが閉じられていない
+                    elif current_stripped.startswith(';;;') and not current_stripped.endswith(';;;'):
+                        # 閉じマーカーを追加してから新しいブロックを処理
+                        fixed_lines.extend(content_lines)
+                        fixed_lines.append(';;;')
+                        changes.append(f"ブロックに閉じマーカーを追加: {stripped}")
+                        break
+                    # 内容行
+                    else:
+                        content_lines.append(current_line)
+                        i += 1
                 
-                # 閉じマーカーがない場合は追加
-                if i >= len(lines) or lines[i].strip() != ';;;':
+                # ファイル終端でブロックが終わっていない場合
+                if i >= len(lines) and content_lines:
+                    fixed_lines.extend(content_lines)
                     fixed_lines.append(';;;')
-                    changes.append(f"見出しブロックに閉じマーカーを追加: {stripped}")
+                    changes.append(f"ファイル終端でブロックに閉じマーカーを追加: {stripped}")
+            
+            # 複合マーカー（color属性付き）の処理
+            elif re.match(r'^;;;.*\+.*color=', stripped):
+                # Color属性順序の修正
+                fixed_line, color_fix = self._fix_single_color_line(line)
+                if color_fix:
+                    fixed_lines.append(fixed_line)
+                    changes.append(color_fix)
                 else:
-                    fixed_lines.append(lines[i])
-                    i += 1
+                    fixed_lines.append(line)
+                i += 1
+            
             else:
                 fixed_lines.append(line)
                 i += 1
         
         return '\n'.join(fixed_lines), changes
+    
+    def _fix_single_color_line(self, line: str) -> tuple[str, str]:
+        """単一行のcolor属性順序を修正"""
+        # ;;;ハイライト+太字 color=#xxx パターンを修正
+        pattern = r';;;ハイライト\+太字(\s+color=#[a-fA-F0-9]{6})'
+        match = re.search(pattern, line)
+        if match:
+            color_value = match.group(1)
+            fixed_line = re.sub(pattern, f';;;太字+ハイライト{color_value}', line)
+            return fixed_line, f"color属性順序を修正: ハイライト+太字 → 太字+ハイライト"
+        return line, ""
     
     def _fix_consecutive_markers(self, content: str) -> tuple[str, List[str]]:
         """連続するマーカーを統合"""
@@ -373,40 +439,62 @@ class SyntaxFixer:
         return '\n'.join(fixed_lines), changes
     
     def _cleanup_empty_markers(self, content: str) -> tuple[str, List[str]]:
-        """不要な空マーカーを削除"""
+        """不要な空マーカーを削除（強化版）"""
         lines = content.split('\n')
         fixed_lines = []
         changes = []
-        prev_was_empty_marker = False
         
-        for i, line in enumerate(lines):
+        i = 0
+        while i < len(lines):
+            line = lines[i]
             stripped = line.strip()
             
             # 空の;;;マーカー
             if stripped == ';;;':
-                # 連続する空マーカーを削除
-                if prev_was_empty_marker:
-                    changes.append(f"重複する空マーカーを削除: 行 {i+1}")
-                    continue
-                
-                # 前の行を確認してブロックの終了マーカーかどうか判定
+                # 前後の文脈を詳細に解析
                 prev_line = lines[i-1].strip() if i > 0 else ""
                 next_line = lines[i+1].strip() if i+1 < len(lines) else ""
                 
-                # ブロック内容の後の閉じマーカーは保持
-                if prev_line and not prev_line.startswith(';;;'):
+                # 必要な閉じマーカーかチェック
+                is_needed_closer = False
+                
+                # パターン1: ブロック内容の後の正当な閉じマーカー
+                if prev_line and not prev_line.startswith(';;;') and prev_line != "":
+                    is_needed_closer = True
+                
+                # パターン2: 複数行ブロックの終了マーカー
+                j = i - 1
+                while j >= 0 and lines[j].strip() == "":
+                    j -= 1
+                if j >= 0:
+                    prev_content_line = lines[j].strip()
+                    if prev_content_line and not prev_content_line.startswith(';;;'):
+                        # さらに前を確認してブロック開始があるか
+                        k = j - 1
+                        while k >= 0:
+                            check_line = lines[k].strip()
+                            if check_line.startswith(';;;') and not check_line.endswith(';;;'):
+                                is_needed_closer = True
+                                break
+                            elif check_line == ';;;':
+                                break
+                            k -= 1
+                
+                if is_needed_closer:
                     fixed_lines.append(line)
-                    prev_was_empty_marker = True
-                # 空行の後で次も空行または新しいブロックの場合は削除
-                elif prev_line == '' and (next_line == '' or (next_line.startswith(';;;') and next_line != ';;;')):
-                    changes.append(f"不要な空マーカーを削除: 行 {i+1}")
-                    continue
                 else:
-                    fixed_lines.append(line)
-                    prev_was_empty_marker = True
+                    # 不要なマーカーを削除
+                    changes.append(f"不要な空マーカーを削除: 行 {i+1}")
+                    # 連続する空マーカーもスキップ
+                    j = i + 1
+                    while j < len(lines) and lines[j].strip() == ';;;':
+                        changes.append(f"連続する不要な空マーカーを削除: 行 {j+1}")
+                        j += 1
+                    i = j - 1
             else:
                 fixed_lines.append(line)
-                prev_was_empty_marker = False
+            
+            i += 1
         
         return '\n'.join(fixed_lines), changes
 
@@ -503,10 +591,38 @@ def format_error_report(errors: List[ValidationError]) -> str:
     return "\n".join(report)
 
 
+def create_backup(file_path: Path) -> Path:
+    """バックアップファイルを作成"""
+    import time
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    backup_path = file_path.with_suffix(f".backup_{timestamp}.txt")
+    
+    with open(file_path, 'r', encoding='utf-8') as src:
+        content = src.read()
+    
+    with open(backup_path, 'w', encoding='utf-8') as dst:
+        dst.write(content)
+    
+    return backup_path
+
+
+def show_progress_bar(current: int, total: int, file_name: str, width: int = 40) -> None:
+    """プログレスバーを表示"""
+    progress = current / total
+    filled = int(width * progress)
+    bar = "█" * filled + "░" * (width - filled)
+    percent = progress * 100
+    
+    # ファイル名を適切な長さに調整
+    display_name = file_name[:30] + "..." if len(file_name) > 33 else file_name
+    
+    print(f"\r進捗: [{bar}] {percent:5.1f}% ({current:3d}/{total:3d}) {display_name}", end="", flush=True)
+
+
 def main():
     """メイン関数"""
     parser = argparse.ArgumentParser(
-        description="Kumihan-Formatter 記法検証・自動修正ツール",
+        description="Kumihan-Formatter 記法検証・自動修正ツール（強化版）",
         epilog="例: python dev/tools/syntax_fixer.py examples/*.txt --fix --preview"
     )
     parser.add_argument(
@@ -530,13 +646,26 @@ def main():
         action='store_true',
         help='詳細出力を抑制'
     )
+    parser.add_argument(
+        '--batch', '-b',
+        action='store_true',
+        help='大量ファイルのバッチ処理モード（進捗表示）'
+    )
+    parser.add_argument(
+        '--backup',
+        action='store_true',
+        help='修正前にバックアップファイルを作成'
+    )
     
     args = parser.parse_args()
     
     fixer = SyntaxFixer()
     fix_results = []
     validation_errors = []
+    backup_files = []
     
+    # ファイルのフィルタリング（.txtファイルのみ）
+    valid_files = []
     for file_path in args.files:
         if not file_path.exists():
             print(f"⚠️  ファイルが見つかりません: {file_path}", file=sys.stderr)
@@ -547,37 +676,81 @@ def main():
                 print(f"⏭️  スキップ: {file_path} (.txt ファイルではありません)")
             continue
         
-        if args.fix:
-            # 自動修正モード
-            result = fixer.fix_file(file_path, preview_only=args.preview)
-            fix_results.append(result)
+        valid_files.append(file_path)
+    
+    if not valid_files:
+        print("❌ 処理対象のファイルがありません")
+        sys.exit(1)
+    
+    # バッチモードの初期化
+    if args.batch and len(valid_files) > 1:
+        print(f"📦 バッチ処理開始: {len(valid_files)} ファイル")
+        if args.fix and args.backup:
+            print("💾 バックアップ作成モード有効")
+        print()
+    
+    # メインファイル処理ループ
+    for i, file_path in enumerate(valid_files, 1):
+        # バッチモードでのプログレスバー表示
+        if args.batch and len(valid_files) > 1 and not args.quiet:
+            show_progress_bar(i, len(valid_files), file_path.name)
+        
+        try:
+            # バックアップ作成（修正モード且つバックアップ有効時）
+            if args.fix and args.backup and not args.preview:
+                backup_path = create_backup(file_path)
+                backup_files.append(backup_path)
             
-            if args.preview and result.original_content != result.fixed_content:
-                show_diff_preview(result.original_content, result.fixed_content, str(file_path))
-            
-            if not args.quiet:
-                if result.errors_fixed > 0:
-                    mode = "プレビュー" if args.preview else "修正"
-                    print(f"🔧 {file_path}: {result.errors_fixed} 箇所{mode}")
-                else:
-                    print(f"✨ {file_path}: 修正不要")
-        else:
-            # 検証のみモード
-            errors = fixer.validate_file(file_path)
-            validation_errors.extend(errors)
-            
-            if not args.quiet:
-                file_errors = [e for e in errors if e.file_path == str(file_path)]
-                if file_errors:
-                    print(f"❌ {file_path}: {len(file_errors)} エラー")
-                else:
-                    print(f"✅ {file_path}: OK")
+            if args.fix:
+                # 自動修正モード
+                result = fixer.fix_file(file_path, preview_only=args.preview)
+                fix_results.append(result)
+                
+                if args.preview and result.original_content != result.fixed_content:
+                    show_diff_preview(result.original_content, result.fixed_content, str(file_path))
+                
+                if not args.quiet and not args.batch:
+                    if result.errors_fixed > 0:
+                        mode = "プレビュー" if args.preview else "修正"
+                        print(f"🔧 {file_path}: {result.errors_fixed} 箇所{mode}")
+                    else:
+                        print(f"✨ {file_path}: 修正不要")
+            else:
+                # 検証のみモード
+                errors = fixer.validate_file(file_path)
+                validation_errors.extend(errors)
+                
+                if not args.quiet and not args.batch:
+                    file_errors = [e for e in errors if e.file_path == str(file_path)]
+                    if file_errors:
+                        print(f"❌ {file_path}: {len(file_errors)} エラー")
+                    else:
+                        print(f"✅ {file_path}: OK")
+        
+        except Exception as e:
+            if args.batch:
+                print(f"\n❌ エラー: {file_path}: {e}")
+            else:
+                print(f"❌ エラー: {file_path}: {e}", file=sys.stderr)
+    
+    # バッチモード完了表示
+    if args.batch and len(valid_files) > 1:
+        print("\n📦 バッチ処理完了")
+        if backup_files:
+            print(f"💾 作成されたバックアップ: {len(backup_files)} ファイル")
     
     # 結果レポート
     if args.fix:
         if fix_results and not args.quiet:
             print("\n" + "="*60)
-            print(format_fix_report(fix_results, args.files))
+            print(format_fix_report(fix_results, valid_files))
+            
+            if backup_files:
+                print(f"\n💾 バックアップファイル:")
+                for backup_file in backup_files[:5]:  # 最初の5つのみ表示
+                    print(f"   📄 {backup_file}")
+                if len(backup_files) > 5:
+                    print(f"   ... 他 {len(backup_files) - 5} ファイル")
             
             if args.preview:
                 print("\n💡 実際の修正を行うには --preview を外して実行してください")
@@ -588,7 +761,7 @@ def main():
             print("\n💡 自動修正を行うには --fix オプションを使用してください")
             sys.exit(1)
         elif not args.quiet:
-            print(f"\n✅ 検証完了: {len(args.files)} ファイル、エラーなし")
+            print(f"\n✅ 検証完了: {len(valid_files)} ファイル、エラーなし")
 
 
 if __name__ == "__main__":

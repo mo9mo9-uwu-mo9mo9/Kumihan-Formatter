@@ -404,3 +404,5 @@ python -m kumihan_formatter.cli comprehensive-sample.txt --watch
 ;;;太字
 Kumihan-Formatter - 美しい組版を、誰でも簡単に。
 ;;;
+Kumihan-Formatter - 美しい組版を、誰でも簡単に。
+;;;
