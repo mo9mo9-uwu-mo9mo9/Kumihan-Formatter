@@ -7,69 +7,70 @@ formats (text, JSON), and managing error presentation.
 import json
 import sys
 from pathlib import Path
-from typing import List, Dict
-from .syntax_errors import SyntaxError, ErrorSeverity
+from typing import Dict, List
+
+from .syntax_errors import ErrorSeverity, SyntaxError
 from .syntax_validator import KumihanSyntaxValidator
 
 
 class SyntaxReporter:
     """Handles formatting and reporting of syntax validation results"""
-    
+
     @staticmethod
     def check_files(file_paths: List[Path], verbose: bool = False) -> Dict[str, List[SyntaxError]]:
         """Check multiple files for syntax errors"""
         validator = KumihanSyntaxValidator()
         results = {}
-        
+
         for file_path in file_paths:
             if verbose:
                 print(f"Checking {file_path}...")
-            
+
             errors = validator.validate_file(file_path)
             if errors:
                 results[str(file_path)] = errors
-        
+
         return results
-    
+
     @staticmethod
     def format_error_report(results: Dict[str, List[SyntaxError]], show_suggestions: bool = True) -> str:
         """Format error report as string"""
         if not results:
             return "✅ 記法エラーは見つかりませんでした。"
-        
+
         report = []
         total_errors = sum(len(errors) for errors in results.values())
-        
+
         report.append(f"🔍 {len(results)} ファイルで {total_errors} 個の記法エラーが見つかりました:\n")
-        
+
         for file_path, errors in results.items():
             report.append(f"📁 {file_path}")
-            
+
             # Group by severity
             by_severity = {}
             for error in errors:
                 if error.severity not in by_severity:
                     by_severity[error.severity] = []
                 by_severity[error.severity].append(error)
-            
+
             for severity in [ErrorSeverity.ERROR, ErrorSeverity.WARNING, ErrorSeverity.INFO]:
                 if severity in by_severity:
                     for error in by_severity[severity]:
                         icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[severity.value]
                         report.append(f"  {icon} Line {error.line_number}: {error.message}")
-                        
+
                         if error.context:
                             report.append(f"     Context: {error.context}")
-                        
+
                         if show_suggestions and error.suggestion:
                             report.append(f"     💡 Suggestion: {error.suggestion}")
-                        
+
                         report.append("")
-            
+
             report.append("")
-        
+
         return "\n".join(report)
-    
+
     @staticmethod
     def format_json_report(results: Dict[str, List[SyntaxError]]) -> str:
         """Format error report as JSON"""
@@ -83,31 +84,30 @@ class SyntaxReporter:
                     "type": error.error_type,
                     "message": error.message,
                     "context": error.context,
-                    "suggestion": error.suggestion
+                    "suggestion": error.suggestion,
                 }
                 for error in errors
             ]
         return json.dumps(json_results, ensure_ascii=False, indent=2)
-    
+
     @staticmethod
     def get_error_counts(results: Dict[str, List[SyntaxError]]) -> Dict[str, int]:
         """Get counts of errors by severity"""
         counts = {"ERROR": 0, "WARNING": 0, "INFO": 0, "TOTAL": 0}
-        
+
         for errors in results.values():
             for error in errors:
                 counts[error.severity.value] += 1
                 counts["TOTAL"] += 1
-        
+
         return counts
-    
+
     @staticmethod
     def should_exit_with_error(results: Dict[str, List[SyntaxError]]) -> bool:
         """Determine if process should exit with error code"""
-        error_count = sum(1 for errors in results.values() 
-                         for error in errors if error.severity == ErrorSeverity.ERROR)
+        error_count = sum(1 for errors in results.values() for error in errors if error.severity == ErrorSeverity.ERROR)
         return error_count > 0
-    
+
     @staticmethod
     def print_summary(results: Dict[str, List[SyntaxError]]) -> None:
         """Print summary of validation results"""
@@ -122,23 +122,23 @@ class SyntaxReporter:
 def main():
     """CLI entry point for syntax checker"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Kumihan記法 構文チェッカー")
     parser.add_argument("files", nargs="+", type=Path, help="チェックするファイルパス")
     parser.add_argument("-v", "--verbose", action="store_true", help="詳細な出力")
     parser.add_argument("--no-suggestions", action="store_true", help="修正提案を表示しない")
     parser.add_argument("--format", choices=["text", "json"], default="text", help="出力形式")
-    
+
     args = parser.parse_args()
-    
+
     # Check files
     results = SyntaxReporter.check_files(args.files, args.verbose)
-    
+
     if args.format == "json":
         print(SyntaxReporter.format_json_report(results))
     else:
         print(SyntaxReporter.format_error_report(results, not args.no_suggestions))
-    
+
     # Exit with appropriate code
     if SyntaxReporter.should_exit_with_error(results):
         sys.exit(1)
