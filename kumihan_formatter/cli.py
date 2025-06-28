@@ -15,6 +15,7 @@ from .commands.sample import create_sample_command, create_test_command
 from .commands.check_syntax import create_check_syntax_command
 from .ui.console_ui import ui
 from .core.error_handling import ErrorHandler as FriendlyErrorHandler
+from .core.error_reporting import ErrorReport, ErrorReportBuilder
 
 
 def setup_encoding():
