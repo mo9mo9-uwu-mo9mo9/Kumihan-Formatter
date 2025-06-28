@@ -570,7 +570,7 @@ class ConvertCommand:
             output_path = Path(output_dir)
             output_path.mkdir(parents=True, exist_ok=True)
             
-            report_file = output_path / f"{input_path.stem}_errors.json"
+            report_file = output_path / f"{input_path.stem}_errors.txt"
             error_report.to_file_report(report_file)
             
             ui.info(f"詳細エラーレポートを保存しました: {report_file}")

@@ -88,24 +88,61 @@ class DetailedError:
     
     def __str__(self) -> str:
         """人間が読みやすい形式でエラーを表示"""
+        # 絵文字とユーザーフレンドリーなメッセージ
+        severity_icons = {
+            ErrorSeverity.INFO: "ℹ️",
+            ErrorSeverity.WARNING: "⚠️",
+            ErrorSeverity.ERROR: "❌",
+            ErrorSeverity.CRITICAL: "🚨"
+        }
+        
+        # メインメッセージ
+        icon = severity_icons.get(self.severity, "❓")
         lines = [
-            f"[{self.severity.value.upper()}] {self.title}",
-            f"  {self.message}"
+            f"{icon} {self.title}",
+            f"   {self.message}"
         ]
         
+        # ファイル位置情報（分かりやすく）
         if self.file_path and self.location:
-            lines.append(f"  場所: {self.file_path.name} {self.location}")
+            lines.append(f"   📍 ファイル: {self.file_path.name} ({self.location})")
         
+        # 問題箇所の表示（視覚的に強調）
         if self.highlighted_line:
             lines.extend([
-                "  問題行:",
-                f"    {self.highlighted_line}"
+                "",
+                "   🔍 問題箇所:",
+                f"   ┌─ {self.location if self.location else '不明'}",
+                f"   │ {self.highlighted_line.strip()}",
+                "   └─"
             ])
         
+        # コンテキスト行の表示
+        if self.context_lines:
+            lines.extend([
+                "",
+                "   📝 周辺コード:"
+            ])
+            for i, context_line in enumerate(self.context_lines):
+                prefix = "   → " if i == len(self.context_lines) // 2 else "     "
+                lines.append(f"{prefix}{context_line.rstrip()}")
+        
+        # 修正提案（アクション指向）
         if self.fix_suggestions:
-            lines.append("  修正提案:")
+            lines.extend([
+                "",
+                "   💡 修正方法:"
+            ])
             for i, suggestion in enumerate(self.fix_suggestions, 1):
-                lines.append(f"    {i}. {suggestion}")
+                confidence_emoji = "🎯" if suggestion.confidence >= 0.9 else "💭" if suggestion.confidence >= 0.7 else "🤔"
+                lines.append(f"   {confidence_emoji} {i}. {suggestion}")
+        
+        # ヘルプリンク
+        if self.help_url:
+            lines.extend([
+                "",
+                f"   📚 詳細: {self.help_url}"
+            ])
         
         return "\n".join(lines)
 
@@ -164,59 +201,192 @@ class ErrorReport:
         """コンソール表示用の文字列を生成"""
         lines = []
         
-        # ヘッダー
+        # 美しいヘッダー
         if self.source_file:
-            lines.append(f"=== {self.source_file.name} のエラーレポート ===")
+            lines.extend([
+                "╭─────────────────────────────────────────╮",
+                f"│  📄 {self.source_file.name} の記法チェック結果        │",
+                "╰─────────────────────────────────────────╯"
+            ])
         else:
-            lines.append("=== エラーレポート ===")
+            lines.extend([
+                "╭─────────────────────────────────────────╮",
+                "│  📋 記法チェック結果                      │",
+                "╰─────────────────────────────────────────╯"
+            ])
         
-        lines.append(f"実行時刻: {self.generation_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append(f"結果: {self.get_summary()}")
-        lines.append("")
+        # サマリー情報（分かりやすく）
+        error_count = len(self.errors)
+        warning_count = len(self.warnings)
+        info_count = len(self.info)
         
-        # エラー表示
+        if error_count == 0 and warning_count == 0:
+            lines.extend([
+                "",
+                "🎉 素晴らしい！記法エラーは見つかりませんでした！",
+                "✨ あなたのファイルはKumihan記法に完全に準拠しています。"
+            ])
+        else:
+            lines.append("")
+            lines.append(f"📊 チェック結果: {self.get_summary()}")
+        
+        lines.append(f"⏰ チェック実行時刻: {self.generation_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # エラー表示（重要度順）
         if self.errors:
-            lines.append("🚫 エラー:")
-            for error in self.errors:
+            lines.extend([
+                "",
+                "=" * 50,
+                "🚨 修正が必要な問題",
+                "=" * 50
+            ])
+            for i, error in enumerate(self.errors, 1):
+                lines.append(f"\n【問題 {i}】")
                 lines.append(str(error))
-                lines.append("")
         
         # 警告表示
         if self.warnings:
-            lines.append("⚠️  警告:")
-            for warning in self.warnings:
+            lines.extend([
+                "",
+                "=" * 50,
+                "⚠️  改善推奨事項",
+                "=" * 50
+            ])
+            for i, warning in enumerate(self.warnings, 1):
+                lines.append(f"\n【改善案 {i}】")
                 lines.append(str(warning))
-                lines.append("")
         
         # 情報表示（オプション）
         if show_info and self.info:
-            lines.append("ℹ️  情報:")
-            for info in self.info:
+            lines.extend([
+                "",
+                "=" * 50,
+                "ℹ️  参考情報",
+                "=" * 50
+            ])
+            for i, info in enumerate(self.info, 1):
+                lines.append(f"\n【情報 {i}】")
                 lines.append(str(info))
-                lines.append("")
+        
+        # フッター（次のアクション提案）
+        if error_count > 0:
+            lines.extend([
+                "",
+                "🔧 次のステップ:",
+                "   1. 上記の修正提案を参考にファイルを修正してください",
+                "   2. 修正後、再度チェックを実行してください",
+                "   3. 困った場合は SPEC.md を参照してください"
+            ])
+        elif warning_count > 0:
+            lines.extend([
+                "",
+                "✅ 次のステップ:",
+                "   • 警告事項は修正推奨ですが、必須ではありません",
+                "   • より良い記法のために修正をご検討ください"
+            ])
         
         return "\n".join(lines)
     
     def to_file_report(self, output_path: Path) -> None:
-        """詳細レポートをファイルに出力"""
-        report_data = {
-            "metadata": {
-                "source_file": str(self.source_file) if self.source_file else None,
-                "generation_time": self.generation_time.isoformat(),
-                "summary": self.get_summary(),
-                "counts": {
-                    "errors": len(self.errors),
-                    "warnings": len(self.warnings),
-                    "info": len(self.info)
-                }
-            },
-            "errors": [self._error_to_dict(error) for error in self.errors],
-            "warnings": [self._error_to_dict(error) for error in self.warnings],
-            "info": [self._error_to_dict(error) for error in self.info]
-        }
+        """詳細レポートをテキストファイルに出力"""
+        lines = []
         
+        # ヘッダー情報
+        lines.append("=" * 60)
+        lines.append("Kumihan-Formatter エラーレポート")
+        lines.append("=" * 60)
+        lines.append("")
+        
+        # メタデータ
+        if self.source_file:
+            lines.append(f"📁 対象ファイル: {self.source_file}")
+        lines.append(f"🕒 実行時刻: {self.generation_time.strftime('%Y年%m月%d日 %H:%M:%S')}")
+        lines.append(f"📊 結果概要: {self.get_summary()}")
+        lines.append("")
+        
+        # 統計情報
+        lines.append("📈 統計情報:")
+        lines.append(f"   エラー: {len(self.errors)}個")
+        lines.append(f"   警告: {len(self.warnings)}個")
+        lines.append(f"   情報: {len(self.info)}個")
+        lines.append("")
+        
+        # エラー詳細
+        if self.errors:
+            lines.append("🚫 エラー詳細:")
+            lines.append("-" * 40)
+            for i, error in enumerate(self.errors, 1):
+                lines.append(f"[エラー {i}]")
+                lines.append(self._format_error_for_file(error))
+                lines.append("")
+        
+        # 警告詳細
+        if self.warnings:
+            lines.append("⚠️  警告詳細:")
+            lines.append("-" * 40)
+            for i, warning in enumerate(self.warnings, 1):
+                lines.append(f"[警告 {i}]")
+                lines.append(self._format_error_for_file(warning))
+                lines.append("")
+        
+        # 情報詳細
+        if self.info:
+            lines.append("ℹ️  情報詳細:")
+            lines.append("-" * 40)
+            for i, info in enumerate(self.info, 1):
+                lines.append(f"[情報 {i}]")
+                lines.append(self._format_error_for_file(info))
+                lines.append("")
+        
+        # フッター
+        lines.append("=" * 60)
+        lines.append("Kumihan記法の詳細: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/blob/main/SPEC.md")
+        lines.append("問題報告: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues")
+        lines.append("=" * 60)
+        
+        # ファイルに書き込み
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(report_data, f, ensure_ascii=False, indent=2)
+            f.write('\n'.join(lines))
+    
+    def _format_error_for_file(self, error: DetailedError) -> str:
+        """ファイル出力用にエラーをフォーマット"""
+        lines = []
+        
+        # 基本情報
+        lines.append(f"タイトル: {error.title}")
+        lines.append(f"メッセージ: {error.message}")
+        lines.append(f"重要度: {error.severity.value}")
+        lines.append(f"カテゴリ: {error.category.value}")
+        
+        # 位置情報
+        if error.location:
+            lines.append(f"位置: {error.location}")
+        
+        # 問題箇所
+        if error.highlighted_line:
+            lines.append(f"問題行: {error.highlighted_line.strip()}")
+        
+        # コンテキスト行
+        if error.context_lines:
+            lines.append("周辺コード:")
+            for context_line in error.context_lines:
+                lines.append(f"  {context_line}")
+        
+        # 修正提案
+        if error.fix_suggestions:
+            lines.append("修正提案:")
+            for i, suggestion in enumerate(error.fix_suggestions, 1):
+                confidence_text = "高" if suggestion.confidence >= 0.9 else "中" if suggestion.confidence >= 0.7 else "低"
+                lines.append(f"  {i}. {suggestion.description} (信頼度: {confidence_text})")
+                if suggestion.original_text and suggestion.suggested_text:
+                    lines.append(f"     変更前: {suggestion.original_text}")
+                    lines.append(f"     変更後: {suggestion.suggested_text}")
+        
+        # ヘルプURL
+        if error.help_url:
+            lines.append(f"詳細情報: {error.help_url}")
+        
+        return "\n".join(lines)
     
     def _error_to_dict(self, error: DetailedError) -> Dict[str, Any]:
         """DetailedErrorを辞書形式に変換"""
@@ -262,9 +432,15 @@ class ErrorReportBuilder:
         file_path: Path,
         line_number: int,
         problem_text: str,
-        suggestions: Optional[List[FixSuggestion]] = None
+        suggestions: Optional[List[FixSuggestion]] = None,
+        context_lines_count: int = 3
     ) -> DetailedError:
-        """記法エラーを作成"""
+        """記法エラーを作成（コンテキスト行を自動取得）"""
+        # コンテキスト行を自動取得
+        context_lines = ErrorReportBuilder._get_context_lines(
+            file_path, line_number, context_lines_count
+        )
+        
         return DetailedError(
             error_id=f"syntax_{line_number}_{hash(problem_text) % 10000}",
             severity=ErrorSeverity.ERROR,
@@ -274,6 +450,7 @@ class ErrorReportBuilder:
             file_path=file_path,
             location=ErrorLocation(line=line_number),
             highlighted_line=problem_text,
+            context_lines=context_lines,
             fix_suggestions=suggestions or [],
             help_url="https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/blob/main/SPEC.md"
         )
@@ -351,3 +528,139 @@ class ErrorReportBuilder:
         # 編集距離でソート
         similarities.sort(key=lambda x: x[1])
         return [candidate for candidate, _ in similarities]
+    
+    @staticmethod
+    def _get_context_lines(file_path: Path, line_number: int, context_count: int = 3) -> List[str]:
+        """指定した行の周辺コンテキストを取得"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                all_lines = f.readlines()
+            
+            # 行番号は1ベース、配列は0ベース
+            target_line_index = line_number - 1
+            start_index = max(0, target_line_index - context_count)
+            end_index = min(len(all_lines), target_line_index + context_count + 1)
+            
+            context_lines = []
+            for i in range(start_index, end_index):
+                line_content = all_lines[i].rstrip()
+                if i == target_line_index:
+                    # 問題行を明確にマーク
+                    context_lines.append(f"{i + 1:3d} →│ {line_content}")
+                else:
+                    context_lines.append(f"{i + 1:3d}  │ {line_content}")
+            
+            return context_lines
+        
+        except (FileNotFoundError, UnicodeDecodeError, IndexError):
+            return [f"{line_number:3d} →│ （コンテキストを取得できませんでした）"]
+    
+    @staticmethod
+    def create_enhanced_syntax_error(
+        title: str,
+        message: str,
+        file_path: Path,
+        line_number: int,
+        problem_text: str,
+        error_type: str,
+        suggestions: Optional[List[FixSuggestion]] = None
+    ) -> DetailedError:
+        """改良版記法エラー作成（より詳細なエラー分析）"""
+        
+        # エラータイプに基づいてカテゴリ決定
+        category_map = {
+            'keyword': ErrorCategory.KEYWORD,
+            'marker': ErrorCategory.SYNTAX,
+            'block': ErrorCategory.STRUCTURE,
+            'attribute': ErrorCategory.ATTRIBUTE,
+            'file': ErrorCategory.FILE
+        }
+        category = category_map.get(error_type.lower(), ErrorCategory.SYNTAX)
+        
+        # エラータイプ別の具体的な修正提案を生成
+        auto_suggestions = ErrorReportBuilder._generate_smart_suggestions(
+            error_type, problem_text
+        )
+        
+        # 手動提案と自動提案をマージ
+        all_suggestions = (suggestions or []) + auto_suggestions
+        
+        # コンテキスト行を取得
+        context_lines = ErrorReportBuilder._get_context_lines(file_path, line_number)
+        
+        return DetailedError(
+            error_id=f"enhanced_{error_type}_{line_number}_{hash(problem_text) % 10000}",
+            severity=ErrorSeverity.ERROR,
+            category=category,
+            title=title,
+            message=message,
+            file_path=file_path,
+            location=ErrorLocation(line=line_number),
+            highlighted_line=problem_text,
+            context_lines=context_lines,
+            fix_suggestions=all_suggestions,
+            help_url="https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/blob/main/SPEC.md",
+            additional_info={"error_type": error_type}
+        )
+    
+    @staticmethod
+    def _generate_smart_suggestions(error_type: str, problem_text: str) -> List[FixSuggestion]:
+        """エラータイプ別のスマート修正提案を生成"""
+        suggestions = []
+        
+        if error_type == 'unclosed_block':
+            suggestions.append(FixSuggestion(
+                description="ブロックの最後に ;;; を追加する",
+                original_text="（ブロック内容）",
+                suggested_text="（ブロック内容）\n;;;",
+                action_type="insert",
+                confidence=0.95
+            ))
+        
+        elif error_type == 'empty_block':
+            suggestions.extend([
+                FixSuggestion(
+                    description="ブロック内にコンテンツを追加する",
+                    original_text=problem_text,
+                    suggested_text="何らかの内容",
+                    action_type="replace",
+                    confidence=0.8
+                ),
+                FixSuggestion(
+                    description="空のブロックを削除する",
+                    original_text=problem_text,
+                    suggested_text="",
+                    action_type="delete",
+                    confidence=0.9
+                )
+            ])
+        
+        elif error_type == 'invalid_keyword':
+            # 一般的なスペルミスの修正提案
+            common_fixes = {
+                '見だし': '見出し',
+                'ハイライド': 'ハイライト',
+                '太時': '太字',
+                'イタリク': 'イタリック'
+            }
+            
+            for wrong, correct in common_fixes.items():
+                if wrong in problem_text:
+                    suggestions.append(FixSuggestion(
+                        description=f"'{wrong}' を '{correct}' に修正する",
+                        original_text=problem_text.replace(wrong, f"[{wrong}]"),
+                        suggested_text=problem_text.replace(wrong, correct),
+                        action_type="replace",
+                        confidence=0.9
+                    ))
+        
+        elif error_type == 'color_attribute_error':
+            suggestions.append(FixSuggestion(
+                description="color属性は最後に配置してください",
+                original_text=problem_text,
+                suggested_text=";;;ハイライト color=#ff0000;;;",
+                action_type="replace",
+                confidence=0.85
+            ))
+        
+        return suggestions
