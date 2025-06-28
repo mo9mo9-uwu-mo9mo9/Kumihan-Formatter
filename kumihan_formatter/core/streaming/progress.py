@@ -6,6 +6,9 @@ from typing import Optional, Callable, Dict, Any, List
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Type alias for progress callbacks
+ProgressCallback = Callable[['ProgressInfo'], None]
+
 
 class ProgressState(Enum):
     """進捗状態"""
