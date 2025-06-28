@@ -1,0 +1,139 @@
+name: Critical Tests (Tier 0)
+
+# 🚨 必須テスト - 常に実行される最小限の検証セット
+# - パスフィルターなし（すべての変更で実行）
+# - GitHub branch protection の必須チェックとして設定
+# - 実行時間: 2-3分以内を目標
+
+on:
+  push:
+    branches: [ main ]
+    # paths指定なし - すべての変更で実行
+  pull_request:
+    branches: [ main ]
+    # paths指定なし - すべての変更で実行
+    types: [opened, synchronize, ready_for_review]
+  workflow_dispatch:  # 手動実行
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  critical-tests:
+    name: Critical Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # 高速実行を保証
+    
+    steps:
+      - name: Display execution context
+        run: |
+          echo "## 🚨 Critical Tests (Tier 0) Execution" >> $GITHUB_STEP_SUMMARY
+          echo "**Purpose**: Mandatory checks for ALL changes" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: Fast validation (< 3 min)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Coverage (Tier 0)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Syntax Check**: Critical syntax errors only" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Import Test**: Package importability" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Quick Test**: Basic functionality smoke test" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ **No**: Full test matrix, coverage reports, extensive validation" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'  # 単一バージョンで高速化
+      
+      - name: Install minimal dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+      
+      - name: Critical syntax check
+        run: |
+          echo "🔍 Critical syntax errors only..."
+          # E9: ランタイムエラー, F63: 無効な変数比較, F7: 構文エラー, F82: 未定義変数
+          flake8 kumihan_formatter --count --select=E9,F63,F7,F82 --show-source --statistics
+          echo "✅ Critical syntax check passed"
+      
+      - name: Package import test
+        run: |
+          echo "📦 Testing package importability..."
+          python -c "
+          import sys
+          try:
+              import kumihan_formatter
+              import kumihan_formatter.cli
+              import kumihan_formatter.parser
+              import kumihan_formatter.renderer
+              import kumihan_formatter.config
+              print('✅ All core modules imported successfully')
+          except ImportError as e:
+              print(f'❌ Import error: {e}')
+              sys.exit(1)
+          "
+      
+      - name: CLI availability test
+        run: |
+          echo "🖥️ Testing CLI availability..."
+          python -m kumihan_formatter --help > /dev/null
+          echo "✅ CLI is accessible"
+      
+      - name: Quick functionality test
+        run: |
+          echo "⚡ Quick functionality smoke test..."
+          
+          # 最小限のテストファイル作成
+          echo ";;;見出し1
+          テスト見出し
+          ;;;
+          
+          これは段落テストです。
+          
+          - リスト項目1
+          - リスト項目2" > /tmp/quick_test.txt
+          
+          # 基本変換テスト（対話なし）
+          echo "n" | python -m kumihan_formatter convert /tmp/quick_test.txt -o /tmp/quick_output --no-preview
+          
+          # 出力ファイル存在確認
+          if [ -f "/tmp/quick_output/quick_test.html" ]; then
+            echo "✅ Basic conversion successful"
+          else
+            echo "❌ Basic conversion failed"
+            exit 1
+          fi
+          
+          # HTML内容の最小検証（より実用的なチェック）
+          if grep -q "テスト見出し" /tmp/quick_output/quick_test.html && \
+             grep -q "段落テスト" /tmp/quick_output/quick_test.html && \
+             grep -q "リスト項目" /tmp/quick_output/quick_test.html; then
+            echo "✅ HTML structure validation passed"
+          else
+            echo "❌ HTML structure validation failed - checking actual content:"
+            echo "--- Generated HTML content ---"
+            cat /tmp/quick_output/quick_test.html
+            echo "--- End of HTML content ---"
+            exit 1
+          fi
+      
+      - name: Critical tests summary
+        if: always()
+        run: |
+          echo ""
+          echo "🚨 Critical Tests (Tier 0) completed"
+          echo ""
+          echo "✅ These tests ensure:"
+          echo "  - No critical syntax errors that prevent execution"
+          echo "  - Package can be imported without dependency issues"
+          echo "  - CLI is accessible and responsive"  
+          echo "  - Basic conversion functionality works"
+          echo ""
+          echo "📈 For comprehensive testing, see:"
+          echo "  - Quality Tests (Tier 1): Extended validation"
+          echo "  - Full Tests (Tier 2): Complete test matrix"
+          echo "  - Coverage Report: Detailed code coverage"
