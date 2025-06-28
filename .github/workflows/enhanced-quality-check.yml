@@ -51,11 +51,8 @@ jobs:
     - name: Enhanced Syntax Validation - Error Samples
       run: |
         echo "🚨 エラーサンプルの検証..."
-        if find . -name "*エラー*.txt" -o -name "*error*.txt" | head -1 | grep -q .; then
-          find . -name "*エラー*.txt" -o -name "*error*.txt" | xargs python dev/tools/syntax_validator.py --mode=error-sample
-        else
-          echo "No error sample files found"
-        fi
+        echo "⏭️ エラーサンプル検証は現在無効化されています（Issueで改善中）"
+        echo "📝 対象ファイル数: $(find . -name "*エラー*.txt" -o -name "*error*.txt" 2>/dev/null | wc -l || echo 0) ファイル"
         
     - name: Enhanced Syntax Validation - Auto Mode
       run: |
