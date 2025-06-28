@@ -1,7 +1,8 @@
-name: ドキュメント変更用チェック
+name: ドキュメント変更用チェック (Temporarily Disabled)
 
 on:
-  pull_request:
+  # pull_request: # Temporarily disabled to reduce workflow congestion
+  workflow_dispatch:
     branches: [ main ]
     paths:
       - 'docs/**'

@@ -1,28 +1,9 @@
-name: ドキュメント整合性チェック
+name: ドキュメント整合性チェック (Replaced by docs-unified.yml)
 
 on:
-  push:
-    branches: [ main, develop ]
-    paths:
-      - '*.md'
-      - 'docs/**/*.md'
-      - 'pyproject.toml'
-      - 'kumihan_formatter/__init__.py'
-      - 'kumihan_formatter/**/*.py'
-      - 'examples/**'
-      - '.distignore'
-      - 'dev/tools/**/*.py'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '*.md'
-      - 'docs/**/*.md'
-      - 'pyproject.toml'
-      - 'kumihan_formatter/__init__.py'
-      - 'kumihan_formatter/**/*.py'
-      - 'examples/**'
-      - '.distignore'
-      - 'dev/tools/**/*.py'
+  # push: # Replaced by docs-unified.yml
+  # pull_request: # Replaced by docs-unified.yml
+  workflow_dispatch: # Manual execution only
 
 jobs:
   doc-consistency-check:
