@@ -1,24 +1,43 @@
-# GitHub Actions ワークフローステータス
+# GitHub Actions ワークフロー運用ガイド
 
-最終更新: 2025-06-28 (Phase 3実装)
+**最終更新**: 2025-06-28 (Issue #278 最適化完了)
+**ステータス**: 🎯 最適化完了・安定運用中
 
-## 🚦 ワークフローステータス一覧
+## 🚨 Issue #278 対応完了
 
-| ワークフロー | ステータス | トリガー | 説明 |
-|------------|----------|--------|------|
-| **quality-monitoring.yml** | ✅ 有効 | push (main, develop, feature/**, fix/**), pull_request | 品質メトリクス収集・分析 |
-| **enhanced-quality-check.yml** | ✅ 有効 | push/pull_request (特定パス変更時) | 詳細な記法検証・パフォーマンステスト |
-| **ci.yml** | ✅ 有効 | push/pull_request (main) | 基本的な機能テスト |
-| **ci-full.yml** | ✅ 有効 | push/pull_request (main) | 完全なテストスイート実行 |
-| **sample-syntax-check.yml** | ✅ 有効 | push/pull_request (サンプルファイル変更時) | サンプルファイル記法チェック |
-| **coverage.yml** | ✅ 有効 | push (main) | テストカバレッジ測定 |
-| **docs-check.yml** | ✅ 有効 | push/pull_request (ドキュメント変更時) | ドキュメント整合性チェック |
-| **docs-validation.yml** | ✅ 有効 | push/pull_request (ドキュメント変更時) | ドキュメント検証 |
-| **doc-consistency-check.yml** | ✅ 有効 | push/pull_request (ドキュメント変更時) | ドキュメント一貫性チェック |
-| **emoji-check.yml** | ✅ 有効 | push/pull_request | 絵文字使用チェック |
-| **auto-update.yml** | ✅ 有効 | schedule (毎週月曜), workflow_dispatch | 自動アップデート |
-| **e2e-tests.yml** | ⏸️ 無効 | workflow_dispatch のみ | E2Eテスト（再構築中） |
-| **e2e-tests-minimal.yml** | ⏸️ 無効 | workflow_dispatch のみ | 最小限E2Eテスト（再構築中） |
+**問題**: GitHub Actionsワークフロー詰まり（同時実行制限）
+**解決**: Phase 1-3の包括的最適化を実装
+
+### 📊 最適化結果
+- **ワークフロー削減**: 11個 → 7個 (-36%)
+- **同時実行制限**: 解決（concurrency制御追加）
+- **安定性**: 大幅向上（詰まり問題解決）
+- **リソース効率**: 最適化済み
+
+## 🚦 現在のワークフロー構成 (最適化済み)
+
+### 🔴 **アクティブ・必須ワークフロー (7個)**
+
+| ワークフロー | ステータス | トリガー | 説明 | 優先度 |
+|------------|----------|--------|------|------|
+| **ci.yml** | ✅ 必須 | PR/push(main) | Quick Test - 🔴 PR必須チェック | Critical |
+| **ci-full.yml** | ✅ 有効 | PR/push(main) | Full Test Matrix | High |
+| **coverage.yml** | ✅ 有効 | PR/push(main) | Coverage Report | High |
+| **docs-unified.yml** | ✅ 新規 | PR/push | 統合ドキュメントチェック | Medium |
+| **auto-update.yml** | ✅ 有効 | PR | PR自動更新 | Medium |
+| **emoji-check.yml** | ✅ 有効 | PR | 絵文字チェック | Low |
+| **sample-syntax-check.yml** | ✅ 有効 | PR (samples) | サンプル記法チェック | Medium |
+
+### 🟡 **無効化済みワークフロー (6個)**
+
+| ワークフロー | ステータス | 理由 | 復旧予定 |
+|------------|----------|------|---------|
+| **quality-monitoring.yml** | ⏸️ 無効 | 同時実行制限対策 | Phase 4 |
+| **enhanced-quality-check.yml** | ⏸️ 無効 | 同時実行制限対策 | Phase 4 |
+| **docs-validation.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
+| **docs-check.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
+| **doc-consistency-check.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
+| **e2e-tests.yml** | ⏸️ 無効 | 再構築中 | 未定 |
 
 ## 📊 Phase 3実装内容
 

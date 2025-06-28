@@ -1,18 +1,9 @@
-name: Docs / Consistency Check
+name: Docs / Consistency Check (Replaced by docs-unified.yml)
 
 on:
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'kumihan_formatter/**'
-      - 'examples/**'
-      - 'pyproject.toml'
-      - '**/*.md'
-  push:
-    branches: [ main ]
-    paths:
-      - 'pyproject.toml'
-      - 'kumihan_formatter/__init__.py'
+  # pull_request: # Replaced by docs-unified.yml
+  # push: # Replaced by docs-unified.yml
+  workflow_dispatch: # Manual execution only
 
 jobs:
   version-consistency:
