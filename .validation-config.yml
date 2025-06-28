@@ -1,0 +1,71 @@
+# Validation Configuration for Enhanced Syntax Validator
+# ファイルパターンによる検証モード自動判定設定
+
+validation_modes:
+  # 厳格モード - examples配下の一般サンプル
+  strict:
+    patterns:
+      - "examples/*.txt"
+      - "examples/templates/*.txt"
+      - "examples/showcase/*.txt"
+    description: "一般向けサンプルファイル用の厳格チェック"
+    rules:
+      - check_formatting
+      - check_emoji_usage
+      - check_consecutive_empty_lines
+      - check_block_structure
+      - check_consecutive_markers
+
+  # エラーサンプル専用モード
+  error_sample:
+    patterns:
+      - "**/記法エラーサンプル.txt"
+      - "**/error-*.txt"
+      - "**/エラー*.txt"
+      - "**/*error*.txt"
+      - "dev/tests/test_files/malformed*.txt"
+    description: "意図的なエラーを含むサンプル用の特別チェック"
+    rules:
+      - check_consecutive_markers
+      - check_block_structure
+      - verify_error_detection
+    expected_errors: true
+
+  # 寛容モード - 開発・記法ツール配下
+  tolerant:
+    patterns:
+      - "記法ツール/**/*.txt"
+      - "dev/tools/**/*.txt"
+      - "test_*.txt"
+      - "temp_*.txt"
+      - "debug_*.txt"
+    description: "開発用・実験用ファイル用の寛容チェック"
+    rules:
+      - check_basic_syntax_only
+    allow_experimental: true
+
+# 品質ゲート設定
+quality_gates:
+  syntax_check_pass_rate: 95      # 記法チェック合格率95%以上
+  max_errors_per_file: 10         # ファイル当たり最大エラー数
+  max_warnings_per_file: 20       # ファイル当たり最大警告数
+  error_sample_min_errors: 1      # エラーサンプルの最小エラー数
+
+# 除外パターン
+exclusions:
+  files:
+    - "*.bak"
+    - "*.tmp"
+    - "*~"
+    - ".DS_Store"
+  directories:
+    - ".git"
+    - "__pycache__"
+    - ".venv"
+    - "node_modules"
+
+# 通知設定
+notifications:
+  slack_webhook: null  # 将来の拡張用
+  email: null          # 将来の拡張用
+  github_comment: true # GitHub PR コメント
