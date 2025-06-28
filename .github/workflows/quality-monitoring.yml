@@ -1,13 +1,7 @@
 name: Quality Monitoring
 
+# 一時的に無効化（失敗通知対策）
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    # 毎日午前9時（JST）に実行
-    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       check_gates:

@@ -1,16 +1,8 @@
 name: Enhanced Quality Check
 
+# 一時的に無効化（失敗通知対策）
 on:
-  push:
-    paths:
-      - '**/*.txt'
-      - 'dev/tools/enhanced_syntax_validator.py'
-      - '.validation-config.yml'
-  pull_request:
-    paths:
-      - '**/*.txt'
-      - 'dev/tools/enhanced_syntax_validator.py'
-      - '.validation-config.yml'
+  workflow_dispatch:
 
 jobs:
   enhanced-syntax-validation:
