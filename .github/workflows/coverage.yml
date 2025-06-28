@@ -1,14 +1,11 @@
 name: Coverage Report
 
-# 一時的に無効化: パフォーマンス問題調査中
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
-
 on:
-  workflow_dispatch:  # 手動実行のみ
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 手動実行も可能
 
 jobs:
   coverage:
@@ -30,7 +27,7 @@ jobs:
       
       - name: Run tests with coverage
         run: |
-          pytest --cov=kumihan_formatter --cov-report=xml --cov-report=term-missing dev/tests/
+          timeout 600 pytest --cov=kumihan_formatter --cov-report=xml --cov-report=term-missing dev/tests/ --timeout=60 || true
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4

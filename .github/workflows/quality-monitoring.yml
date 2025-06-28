@@ -92,15 +92,31 @@ jobs:
         python dev/tools/quality_metrics.py . --format=json --output=quality-reports/metrics.json
         python dev/tools/quality_metrics.py . --format=detailed --output=quality-reports/metrics.txt
     
+    - name: Record quality snapshot (Phase 3)
+      run: |
+        echo "📷 品質スナップショット記録..."
+        python dev/tools/quality_trend_tracker.py record \
+          --metrics-file=quality-reports/metrics.json \
+          --commit="${{ github.sha }}" \
+          --branch="${{ github.ref_name }}" \
+          --environment="ci"
+    
+    - name: Generate quality trend report (Phase 3)
+      run: |
+        echo "📈 品質トレンドレポート生成..."
+        python dev/tools/quality_trend_tracker.py report \
+          --days=30 \
+          --output=quality-reports/trend-report.md
+    
     - name: Check quality gates
       if: github.event.inputs.check_gates == 'true' || github.event_name == 'push'
       run: |
         echo "🚪 品質ゲートチェック実行..."
-        # Phase 2: 調整された品質ゲートでチェック
-        # Phase 3: 品質ゲートチェック（失敗してもワークフロー継続）
-        python dev/tools/quality_gates.py --config=.validation-config.yml --format=detailed || {
+        # 品質メトリクスツールでゲートチェック実行
+        python dev/tools/quality_metrics.py . --check-gates || {
           echo "⚠️ 品質ゲート基準未達成 - 改善が推奨されます"
           echo "詳細は上記のレポートを確認してください"
+          exit 0  # ワークフロー継続（警告のみ）
         }
     
     - name: Generate quality report
@@ -136,7 +152,18 @@ jobs:
         path: quality-reports/
         retention-days: 30
     
-    - name: Comment PR with quality metrics
+    - name: Generate PR quality report (Phase 3)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "📊 PR品質レポート生成..."
+        python dev/tools/quality_report_generator.py pr-report \
+          --current-metrics=quality-reports/metrics.json \
+          --pr-number="${{ github.event.number }}" \
+          --pr-title="${{ github.event.pull_request.title }}" \
+          --base-branch="${{ github.event.pull_request.base.ref }}" \
+          --output=quality-reports/pr-report.md
+
+    - name: Comment PR with enhanced quality report (Phase 3)
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
@@ -144,39 +171,44 @@ jobs:
           const fs = require('fs');
           
           try {
-            const metricsText = fs.readFileSync('quality-reports/metrics.txt', 'utf8');
-            const metricsJson = JSON.parse(fs.readFileSync('quality-reports/metrics.json', 'utf8'));
+            // Phase 3: 強化された品質レポート
+            let prReport = '';
+            try {
+              prReport = fs.readFileSync('quality-reports/pr-report.md', 'utf8');
+            } catch (err) {
+              console.log('PR レポートが見つかりません、フォールバック使用');
+              // フォールバック: 従来の形式
+              const metricsJson = JSON.parse(fs.readFileSync('quality-reports/metrics.json', 'utf8'));
+              const qualityScore = metricsJson.overall_quality_score;
+              const emoji = qualityScore >= 90 ? '🌟' : qualityScore >= 80 ? '✅' : qualityScore >= 70 ? '⚠️' : '🚨';
+              
+              prReport = `## ${emoji} 品質メトリクス レポート
+              
+**総合品質スコア**: ${qualityScore}/100
+**記法合格率**: ${metricsJson.syntax_pass_rate.toFixed(1)}%
+**テスト合格率**: ${metricsJson.test_pass_rate.toFixed(1)}%
+**平均変換時間**: ${metricsJson.conversion_time_avg.toFixed(2)}秒
+
+📥 [詳細レポートをダウンロード](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            }
             
-            const qualityScore = metricsJson.overall_quality_score;
-            const emoji = qualityScore >= 90 ? '🌟' : qualityScore >= 80 ? '✅' : qualityScore >= 70 ? '⚠️' : '🚨';
-            
-            const comment = `## ${emoji} 品質メトリクス レポート
-            
-            **総合品質スコア**: ${qualityScore}/100
-            **記法合格率**: ${metricsJson.syntax_pass_rate.toFixed(1)}%
-            **テスト合格率**: ${metricsJson.test_pass_rate.toFixed(1)}%
-            **平均変換時間**: ${metricsJson.conversion_time_avg.toFixed(2)}秒
-            
-            <details>
-            <summary>📄 詳細レポート</summary>
-            
-            \`\`\`
-            ${metricsText}
-            \`\`\`
-            
-            </details>
-            
-            📥 [詳細レポートをダウンロード](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            `;
+            // トレンドレポートの追加
+            let trendReport = '';
+            try {
+              trendReport = fs.readFileSync('quality-reports/trend-report.md', 'utf8');
+              prReport += '\n\n<details>\n<summary>📈 品質トレンド分析</summary>\n\n```\n' + trendReport + '\n```\n\n</details>';
+            } catch (err) {
+              console.log('トレンドレポートが見つかりません');
+            }
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
+              body: prReport
             });
           } catch (error) {
-            console.log('品質メトリクスのコメント生成に失敗:', error);
+            console.log('品質レポートコメント生成に失敗:', error);
           }
 
   quality-trend-analysis:

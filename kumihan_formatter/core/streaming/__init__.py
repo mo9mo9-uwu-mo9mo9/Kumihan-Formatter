@@ -1,6 +1,6 @@
 """ストリーミングパーサモジュール"""
 
-from .interfaces import StreamingParser, ChunkProcessor, ParseResult
+from .interfaces import StreamingParser, ChunkProcessor, ParseResult, StreamingParserConfig
 from .parser import KumihanStreamingParser
 from .chunk_manager import ChunkManager, ChunkMetadata
 from .memory_manager import MemoryManager, MemoryConfig
@@ -11,6 +11,7 @@ __all__ = [
     'StreamingParser',
     'ChunkProcessor', 
     'ParseResult',
+    'StreamingParserConfig',
     
     # 実装
     'KumihanStreamingParser',
