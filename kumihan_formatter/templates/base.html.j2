@@ -74,11 +74,29 @@
             margin-bottom: 1.5em;
             padding-left: 2em;
             list-style-position: outside;  /* マーカーを外側に配置 */
+            line-height: 1.8;
         }
 
         li {
-            margin-bottom: 0.5em;
+            margin-bottom: 0.8em;
             position: relative;  /* ブロック要素の位置調整用 */
+            line-height: 1.8;
+        }
+
+        /* リスト項目内の改行を適切に処理 */
+        li br {
+            line-height: 1.9;
+        }
+
+        /* ネストしたリスト */
+        li ul, li ol {
+            margin: 0.6em 0;
+            padding-left: 1.5em;
+        }
+
+        /* リスト項目内のスタイル要素 */
+        li strong, li em {
+            line-height: inherit;
         }
 
         /* インライン要素 */
@@ -361,28 +379,37 @@
         details {
             margin: 1em 0;
             padding: 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
             background-color: #f8f9fa;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: box-shadow 0.2s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         details:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            border-color: #c6d2e0;
+        }
+
+        details[open] {
+            border-color: #9bb5d1;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
         details summary {
-            padding: 1em;
-            font-weight: bold;
+            padding: 1.2em 1.5em;
+            font-weight: 600;
             cursor: pointer;
-            background-color: #e9ecef;
+            background: linear-gradient(135deg, #e9ecef 0%, #f0f3f6 100%);
             border-radius: 8px 8px 0 0;
             user-select: none;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
-            padding-left: 2.5em;
+            padding-left: 3em;
             list-style: none;
+            color: #495057;
+            font-size: 1.05em;
         }
         
         /* Webkit browsers */
@@ -391,42 +418,58 @@
         }
 
         details[open] summary {
-            border-bottom: 1px solid #ddd;
+            border-bottom: 2px solid #d0dae6;
             border-radius: 8px 8px 0 0;
+            background: linear-gradient(135deg, #d6dde6 0%, #e1e8f0 100%);
         }
 
         details summary:hover {
-            background-color: #dee2e6;
+            background: linear-gradient(135deg, #dee2e6 0%, #e8ebf0 100%);
+            transform: translateY(-1px);
+        }
+
+        details[open] summary:hover {
+            background: linear-gradient(135deg, #c8d2dd 0%, #d3dce8 100%);
         }
 
         /* 展開アイコン */
         details summary::before {
             content: '▶';
             position: absolute;
-            left: 1em;
+            left: 1.2em;
             top: 50%;
             transform: translateY(-50%);
-            transition: transform 0.2s ease;
-            font-size: 0.8em;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            color: #6c757d;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         details[open] summary::before {
             transform: translateY(-50%) rotate(90deg);
+            color: #495057;
         }
 
         /* 折りたたみコンテンツ */
         details > *:not(summary) {
-            padding: 1em;
-            padding-top: 0.5em;
+            padding: 1.2em 1.5em;
+            padding-top: 1em;
+            background-color: #ffffff;
+            line-height: 1.7;
         }
         
         /* 折りたたみブロック内の段落のマージンを調整 */
         details > p {
-            margin-bottom: 0.8em;
+            margin-bottom: 1em;
         }
         
         details > p:last-child {
             margin-bottom: 0;
+        }
+
+        /* 折りたたみブロック内の改行を適切に表示 */
+        details br {
+            line-height: 1.8;
         }
         
         /* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */

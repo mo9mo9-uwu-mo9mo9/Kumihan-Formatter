@@ -54,14 +54,20 @@ def process_text_content(text: str) -> str:
     Returns:
         str: Processed HTML with proper line breaks
     """
+    if not text:
+        return text
+        
     # Check if text already contains HTML tags (from inline processing)
     if contains_html_tags(text):
         # Only convert newlines, don't escape HTML
-        processed_text = re.sub(r'\r?\n', '<br>', text)
+        processed_text = re.sub(r'\r?\n', '<br>\n', text)
     else:
         # Escape HTML entities first, then convert newlines
         escaped_text = escape(text)
-        processed_text = re.sub(r'\r?\n', '<br>', escaped_text)
+        processed_text = re.sub(r'\r?\n', '<br>\n', escaped_text)
+    
+    # Clean up multiple consecutive br tags
+    processed_text = re.sub(r'(<br>\s*){3,}', '<br>\n<br>\n', processed_text)
     
     return processed_text
 
@@ -83,12 +89,15 @@ def process_block_content(text: str) -> str:
     if contains_html_tags(text):
         # Process text with existing HTML tags
         processed_text = _convert_list_markers_with_html(text)
-        processed_text = re.sub(r'\r?\n', '<br>', processed_text)
+        processed_text = re.sub(r'\r?\n', '<br>\n', processed_text)
     else:
         # First convert list markers, then escape HTML, then convert newlines
         processed_text = _convert_list_markers(text)
         processed_text = escape(processed_text)
-        processed_text = re.sub(r'\r?\n', '<br>', processed_text)
+        processed_text = re.sub(r'\r?\n', '<br>\n', processed_text)
+    
+    # Clean up multiple consecutive br tags
+    processed_text = re.sub(r'(<br>\s*){3,}', '<br>\n<br>\n', processed_text)
     
     return processed_text
 
