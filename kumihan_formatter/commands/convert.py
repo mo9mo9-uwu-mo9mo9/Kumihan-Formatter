@@ -18,6 +18,7 @@ from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
 from ..core.error_handling import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
 from ..core.syntax import check_files, ErrorSeverity
+from ..core.error_reporting import ErrorReport, ErrorReportBuilder, DetailedError
 from ..parser import parse
 from ..renderer import render
 # from ..config import load_config  # 簡素化: 使用しない
@@ -81,10 +82,22 @@ class ConvertCommand:
             
             # Syntax check before conversion
             if syntax_check:
-                if not self._perform_syntax_check(input_path):
+                error_report = self._perform_enhanced_syntax_check(input_path)
+                if error_report.has_errors():
+                    # 詳細なエラーレポートを表示
                     ui.error("記法エラーが検出されました。変換を中止します。")
+                    ui.info("\n=== 詳細エラーレポート ===")
+                    print(error_report.to_console_output())
+                    
+                    # エラーレポートファイルを生成
+                    self._save_error_report(error_report, input_path, output)
+                    
                     ui.dim("--no-syntax-check オプションで記法チェックをスキップできます")
                     sys.exit(1)
+                elif error_report.has_warnings():
+                    # 警告のみの場合は続行するが表示
+                    ui.warning("記法に関する警告があります:")
+                    print(error_report.to_console_output())
             
             # Initial conversion
             output_file = self._convert_file(
@@ -413,6 +426,163 @@ class ConvertCommand:
             ui.watch_stopped()
             observer.stop()
         observer.join()
+    
+    def _perform_enhanced_syntax_check(self, input_path: Path) -> ErrorReport:
+        """拡張された記法チェックを実行してエラーレポートを返す"""
+        error_report = ErrorReport(source_file=input_path)
+        
+        try:
+            # 既存の記法チェックを実行
+            results = check_files([input_path])
+            
+            # resultsは辞書形式 {file_path: [SyntaxError, ...]}
+            for file_path_str, syntax_errors in results.items():
+                for syntax_error in syntax_errors:
+                    # SyntaxErrorからDetailedErrorに変換
+                    detailed_error = self._convert_syntax_error_to_detailed(syntax_error, input_path)
+                    error_report.add_error(detailed_error)
+            
+            # 追加の詳細チェック
+            self._add_enhanced_checks(input_path, error_report)
+            
+        except Exception as e:
+            # チェック中にエラーが発生した場合
+            critical_error = ErrorReportBuilder.create_syntax_error(
+                title="記法チェック中にエラーが発生",
+                message=f"記法チェック処理中に予期しないエラーが発生しました: {str(e)}",
+                file_path=input_path,
+                line_number=1,
+                problem_text="（不明）"
+            )
+            critical_error.severity = self._get_critical_severity()
+            error_report.add_error(critical_error)
+        
+        return error_report
+    
+    def _convert_syntax_error_to_detailed(self, syntax_error, input_path: Path) -> DetailedError:
+        """既存のSyntaxErrorをDetailedErrorに変換"""
+        from ..core.error_reporting import ErrorSeverity, ErrorCategory, ErrorLocation, FixSuggestion
+        
+        # エラータイプに基づいてカテゴリを決定
+        if hasattr(syntax_error, 'error_type'):
+            error_type_str = str(syntax_error.error_type).lower()
+            if 'keyword' in error_type_str:
+                category = ErrorCategory.KEYWORD
+            elif 'marker' in error_type_str:
+                category = ErrorCategory.SYNTAX
+            elif 'block' in error_type_str:
+                category = ErrorCategory.STRUCTURE
+            else:
+                category = ErrorCategory.SYNTAX
+        else:
+            category = ErrorCategory.SYNTAX
+        
+        # 修正提案を作成
+        suggestions = []
+        if hasattr(syntax_error, 'suggestion') and syntax_error.suggestion:
+            suggestions.append(FixSuggestion(
+                description=syntax_error.suggestion,
+                confidence=0.8
+            ))
+        
+        # 詳細エラーを作成
+        return DetailedError(
+            error_id=f"syntax_{syntax_error.line_number}_{hash(syntax_error.message) % 10000}",
+            severity=ErrorSeverity.ERROR,
+            category=category,
+            title=str(syntax_error.error_type) if hasattr(syntax_error, 'error_type') else "記法エラー",
+            message=syntax_error.message,
+            file_path=input_path,
+            location=ErrorLocation(line=syntax_error.line_number),
+            fix_suggestions=suggestions,
+            help_url="https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/blob/main/SPEC.md"
+        )
+    
+    def _add_enhanced_checks(self, input_path: Path, error_report: ErrorReport) -> None:
+        """追加の詳細チェックを実行"""
+        try:
+            with open(input_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            for line_num, line in enumerate(lines, 1):
+                line_stripped = line.strip()
+                
+                # 単独の;;;マーカーチェック
+                if line_stripped == ';;;':
+                    error = ErrorReportBuilder.create_syntax_error(
+                        title="単独の;;;マーカー",
+                        message="ブロック開始マーカーなしに ;;; が見つかりました",
+                        file_path=input_path,
+                        line_number=line_num,
+                        problem_text=line_stripped,
+                        suggestions=[
+                            FixSuggestion(
+                                description="この行を削除する",
+                                original_text=line_stripped,
+                                suggested_text="",
+                                action_type="delete",
+                                confidence=0.9
+                            ),
+                            FixSuggestion(
+                                description="内容を追加してブロックを完成させる",
+                                original_text=line_stripped,
+                                suggested_text="何らかの内容\n;;;",
+                                action_type="replace",
+                                confidence=0.7
+                            )
+                        ]
+                    )
+                    error_report.add_error(error)
+                
+                # 不完全なマーカーチェック
+                if line_stripped.startswith(';;;') and line_stripped != ';;;':
+                    # 開始マーカーと思われるが、対応する終了マーカーを探す
+                    found_end = False
+                    for check_line_num in range(line_num, len(lines)):
+                        if lines[check_line_num].strip() == ';;;':
+                            found_end = True
+                            break
+                    
+                    if not found_end:
+                        error = ErrorReportBuilder.create_syntax_error(
+                            title="未閉じブロック",
+                            message=f"ブロック開始マーカー '{line_stripped}' に対応する閉じマーカー ;;; が見つかりません",
+                            file_path=input_path,
+                            line_number=line_num,
+                            problem_text=line_stripped,
+                            suggestions=[
+                                FixSuggestion(
+                                    description="ブロックの最後に ;;; を追加する",
+                                    action_type="insert",
+                                    confidence=0.9
+                                )
+                            ]
+                        )
+                        error_report.add_error(error)
+        
+        except Exception as e:
+            # ファイル読み込みエラーなど
+            pass
+    
+    def _save_error_report(self, error_report: ErrorReport, input_path: Path, output_dir: str) -> None:
+        """エラーレポートをファイルに保存"""
+        try:
+            output_path = Path(output_dir)
+            output_path.mkdir(parents=True, exist_ok=True)
+            
+            report_file = output_path / f"{input_path.stem}_errors.json"
+            error_report.to_file_report(report_file)
+            
+            ui.info(f"詳細エラーレポートを保存しました: {report_file}")
+            ui.dim("このファイルには問題箇所と修正提案が含まれています")
+            
+        except Exception as e:
+            ui.warning(f"エラーレポートの保存に失敗しました: {e}")
+    
+    def _get_critical_severity(self):
+        """Critical重要度を取得"""
+        from ..core.error_reporting import ErrorSeverity
+        return ErrorSeverity.CRITICAL
 
 
 def create_convert_command():
