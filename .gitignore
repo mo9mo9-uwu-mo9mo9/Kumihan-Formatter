@@ -170,3 +170,7 @@ usage_tracking*.json
 
 # Kumihan-Formatter cache files
 .kumihan_cache/
+
+# E2Eテスト結果（GitHub Actions一時ファイル）
+e2e_test_results/
+e2e_test_results_previous/
