@@ -66,6 +66,83 @@ def process_text_content(text: str) -> str:
     return processed_text
 
 
+def process_block_content(text: str) -> str:
+    """
+    Process block content, converting list markers and newlines
+    
+    Args:
+        text: Raw block content
+    
+    Returns:
+        str: Processed HTML with list markers converted and line breaks
+    """
+    if not text:
+        return text
+    
+    # Check if text already contains HTML tags (from inline processing)
+    if contains_html_tags(text):
+        # Process text with existing HTML tags
+        processed_text = _convert_list_markers_with_html(text)
+        processed_text = re.sub(r'\r?\n', '<br>', processed_text)
+    else:
+        # First convert list markers, then escape HTML, then convert newlines
+        processed_text = _convert_list_markers(text)
+        processed_text = escape(processed_text)
+        processed_text = re.sub(r'\r?\n', '<br>', processed_text)
+    
+    return processed_text
+
+
+def _convert_list_markers(text: str) -> str:
+    """
+    Convert list markers (- and ・) in plain text
+    
+    Args:
+        text: Plain text content
+    
+    Returns:
+        str: Text with list markers converted
+    """
+    lines = text.split('\n')
+    converted_lines = []
+    
+    for line in lines:
+        # Convert line-starting list markers
+        if re.match(r'^(\s*)-\s', line):
+            # Replace - with ・ (middle dot)
+            converted_line = re.sub(r'^(\s*)-\s', r'\1・ ', line)
+            converted_lines.append(converted_line)
+        else:
+            converted_lines.append(line)
+    
+    return '\n'.join(converted_lines)
+
+
+def _convert_list_markers_with_html(text: str) -> str:
+    """
+    Convert list markers in text that may contain HTML tags
+    
+    Args:
+        text: Text content that may contain HTML
+    
+    Returns:
+        str: Text with list markers converted
+    """
+    lines = text.split('\n')
+    converted_lines = []
+    
+    for line in lines:
+        # Convert line-starting list markers, being careful with HTML
+        if re.match(r'^(\s*)-\s', line):
+            # Replace - with ・ (middle dot)
+            converted_line = re.sub(r'^(\s*)-\s', r'\1・ ', line)
+            converted_lines.append(converted_line)
+        else:
+            converted_lines.append(line)
+    
+    return '\n'.join(converted_lines)
+
+
 def contains_html_tags(text: str) -> bool:
     """
     Check if text contains HTML tags
