@@ -9,6 +9,8 @@ on:
       - 'examples/**'
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/ci-full.yml'      # 緊急修正: CI関連ワークフロー変更時は必須
+      - '.github/workflows/coverage.yml'     # 緊急修正: CI関連ワークフロー変更時は必須
     paths-ignore:
       # Phase2.5: AI開発機動力確保のため軽微変更は除外
       - 'docs/**'
@@ -25,6 +27,8 @@ on:
       - 'examples/**'
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/ci-full.yml'      # 緊急修正: CI関連ワークフロー変更時は必須
+      - '.github/workflows/coverage.yml'     # 緊急修正: CI関連ワークフロー変更時は必須
     paths-ignore:
       # Phase2.5: AI開発機動力確保のため軽微変更は除外
       - 'docs/**'
