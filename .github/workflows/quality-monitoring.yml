@@ -8,18 +8,19 @@ on:
         required: false
         default: 'true'
         type: boolean
+  # push: # Temporarily disabled to reduce workflow congestion
   # pull_request: # Temporarily disabled to reduce workflow congestion
-  # Phase 3: 段階的復旧 - pull_request追加
+  # Phase 3: 段階的復旧 - push/pull_request追加時に下記コメントアウト解除
+  # push:
+  #   branches: [ 
+  #     main,
+  #     develop,
+  #     'feature/**',
+  #     'fix/**'
+  #   ]
   # pull_request:
   #   branches: [ main, develop ]
   #   types: [ opened, synchronize, reopened ]
-  push:
-    branches: [ 
-      main,
-      develop,
-      'feature/**',
-      'fix/**'
-    ]
 
 env:
   PYTHON_VERSION: '3.9'

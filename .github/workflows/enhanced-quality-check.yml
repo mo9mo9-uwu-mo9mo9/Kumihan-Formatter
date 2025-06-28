@@ -2,8 +2,16 @@ name: Enhanced Quality Check (Temporarily Disabled)
 
 on:
   workflow_dispatch:
+  # push: # Temporarily disabled to reduce workflow congestion
   # pull_request: # Temporarily disabled to reduce workflow congestion
-  # Phase 3: 完全自動化復旧
+  # Phase 3: 完全自動化復旧 - push/pull_request追加時に下記コメントアウト解除
+  # push:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - '**/*.txt'
+  #     - 'dev/tools/**/*.py'
+  #     - '.validation-config.yml'
+  #     - 'kumihan_formatter/**/*.py'
   # pull_request:
   #   branches: [ main, develop ]
   #   paths:
@@ -11,13 +19,6 @@ on:
   #     - 'dev/tools/**/*.py'
   #     - '.validation-config.yml'
   #     - 'kumihan_formatter/**/*.py'
-  push:
-    branches: [ main, develop ]
-    paths:
-      - '**/*.txt'
-      - 'dev/tools/**/*.py'
-      - '.validation-config.yml'
-      - 'kumihan_formatter/**/*.py'
 
 jobs:
   enhanced-syntax-validation:
