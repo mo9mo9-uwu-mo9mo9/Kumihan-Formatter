@@ -1,8 +1,14 @@
 name: Enhanced Quality Check
 
-# 一時的に無効化（失敗通知対策）
 on:
   workflow_dispatch:
+  # Phase 2: 段階的復旧テスト  
+  push:
+    branches: [ feature/github-actions-phase2-config ]
+    paths:
+      - '**/*.txt'
+      - 'dev/tools/syntax_validator.py'
+      - '.validation-config.yml'
 
 jobs:
   enhanced-syntax-validation:
