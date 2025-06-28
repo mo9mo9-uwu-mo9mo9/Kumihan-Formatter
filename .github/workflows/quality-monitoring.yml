@@ -8,9 +8,12 @@ on:
         required: false
         default: 'true'
         type: boolean
-  # テスト用に限定的に再有効化
+  # Phase 2: 段階的復旧テスト
   push:
-    branches: [ fix/github-actions-phase1-emergency ]
+    branches: [ 
+      fix/github-actions-phase1-emergency,
+      feature/github-actions-phase2-config
+    ]
 
 env:
   PYTHON_VERSION: '3.9'
@@ -88,8 +91,8 @@ jobs:
       if: github.event.inputs.check_gates == 'true' || github.event_name == 'push'
       run: |
         echo "🚪 品質ゲートチェック実行..."
-        # Phase 1テスト中は失敗を許容
-        python dev/tools/quality_metrics.py . --check-gates || echo "⚠️ 品質ゲート失敗（Phase 1テスト中のため継続）"
+        # Phase 2: 調整された品質ゲートでチェック
+        python dev/tools/quality_gates.py --config=.validation-config.yml --ci-mode || echo "⚠️ 品質ゲート失敗（Phase 2調整中）"
     
     - name: Generate quality report
       run: |
