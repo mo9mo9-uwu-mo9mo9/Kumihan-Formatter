@@ -18,10 +18,8 @@ on:
       - '.github/workflows/coverage.yml'
     paths-ignore:
       # Phase2.5: 軽微な変更では実行しない（AI開発機動力確保）
-      - '**/*test*.py'        # テストファイルのみ変更
-      - '**/test_*.py'        # テストファイルのみ変更
-      - '**/__init__.py'      # __init__.pyのみ変更
-      - '**/*.md'             # ドキュメント変更
+      - '**/*.md'             # ドキュメント変更のみ除外
+      # NOTE: テストファイル変更時もカバレッジ測定は重要（品質保証）
   workflow_dispatch:  # 手動実行（重要なオプション）
     inputs:
       force_run:

@@ -7,12 +7,18 @@ on:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
+      - '.github/workflows/ci.yml'           # 緊急修正: CI相互依存関係
+      - '.github/workflows/ci-full.yml'      # 緊急修正: CI相互依存関係
+      - '.github/workflows/coverage.yml'     # 緊急修正: CI相互依存関係
   pull_request:
     branches: [ main ]
     paths:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
+      - '.github/workflows/ci.yml'           # 緊急修正: CI相互依存関係
+      - '.github/workflows/ci-full.yml'      # 緊急修正: CI相互依存関係
+      - '.github/workflows/coverage.yml'     # 緊急修正: CI相互依存関係
 
   workflow_dispatch:  # 手動実行を許可
 
