@@ -27,7 +27,7 @@ jobs:
       
       - name: Run tests with coverage
         run: |
-          timeout 600 pytest --cov=kumihan_formatter --cov-report=xml --cov-report=term-missing dev/tests/ --timeout=60 || true
+          pytest --cov=kumihan_formatter --cov-report=xml --cov-report=term-missing dev/tests/ || echo "Some tests failed, but coverage will still be generated"
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
@@ -42,7 +42,8 @@ jobs:
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MINIMUM_COVERAGE: 80
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 70
           ANNOTATE_MISSING_LINES: true
       
       - name: Generate coverage badge

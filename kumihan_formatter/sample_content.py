@@ -123,7 +123,7 @@ Kumihan-Formatterは、テキストファイルを美しいHTMLに変換する�
 ;;;
 
 キャラクター画像：
-;;;character.jpg;;;
+;;;character.png;;;
 
 アイテムイラスト：
 ;;;item_icon.png;;;
@@ -240,7 +240,7 @@ Kumihan-Formatterを使えば、このような美しく構造化された文書
 # サンプル画像のBase64エンコードデータ（小さなプレースホルダー画像）
 SAMPLE_IMAGES = {
     "scenario_map.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNkYPhfz8DAUMvAwMAIAD94AgN1mm7aAAAAAElFTkSuQmCC""",
-    "character.jpg": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8/5+hnoGBgYGBgYGBEQAHDgIBD+kkcQAAAABJRU5ErkJggg==""",
+    "character.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8/5+hnoGBgYGBgYGBEQAHDgIBD+kkcQAAAABJRU5ErkJggg==""",
     "item_icon.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNkYPjfwMDAwMDAwMAIBgAKBAIBG7mFmAAAAABJRU5ErkJggg==""",
     "flowchart.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNk+M9Qz8DAwMDAwMAIBgAGjAIBhagGmgAAAABJRU5ErkJggg==""",
 }
