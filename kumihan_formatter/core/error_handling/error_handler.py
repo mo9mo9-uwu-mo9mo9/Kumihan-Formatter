@@ -10,7 +10,26 @@ from .error_factories import ErrorFactory
 
 
 class ErrorHandler:
-    """エラーハンドラ - 例外をユーザーフレンドリーエラーに変換"""
+    """
+    エラーハンドラー（例外をユーザーフレンドリーエラーに変換）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#エラーハンドリング・検証
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - ErrorFactory: エラーオブジェクト生成
+    - UserFriendlyError: エラー情報の表現
+    - ErrorLevel: エラーレベル分類
+    - console_ui: エラー表示UI
+
+    責務:
+    - 例外の捕捉とユーザーフレンドリーな変換
+    - エラー履歴の管理と分析
+    - コンソールUIでのエラー表示制御
+    - 初心者向けの分かりやすいエラーメッセージ生成
+    """
     
     def __init__(self, console_ui=None):
         """エラーハンドラを初期化"""

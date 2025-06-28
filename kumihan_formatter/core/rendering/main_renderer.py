@@ -15,7 +15,27 @@ from .html_formatter import HTMLFormatter
 
 
 class HTMLRenderer:
-    """Main HTML renderer that coordinates specialized renderers"""
+    """
+    HTML出力のメインレンダラー（特化レンダラーを統括）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#Kumihan記法基本構文
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - ElementRenderer: 基本要素のレンダリング
+    - CompoundElementRenderer: 複合要素のレンダリング
+    - HTMLFormatter: HTML出力フォーマット調整
+    - Node: 入力となるASTノード
+    - Renderer: このクラスを使用する上位レンダラー
+
+    責務:
+    - NodeからHTMLへの変換統括
+    - ネスト順序の制御（NESTING_ORDER準拠）
+    - 特化レンダラーの調整
+    - HTMLエスケープとセキュリティ対応
+    """
     
     # Maintain the original nesting order for backward compatibility
     NESTING_ORDER = [

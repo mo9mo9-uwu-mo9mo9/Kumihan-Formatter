@@ -12,7 +12,26 @@ from .ast_nodes import Node, NodeBuilder, error_node
 
 
 class KeywordParser:
-    """Parser for Kumihan syntax keywords"""
+    """
+    Kumihan記法キーワードパーサー（記法解析の中核）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#ブロックキーワード→タグ対照表
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - NodeBuilder: ASTノード構築
+    - Node: 生成するASTノード
+    - error_node: エラー時のノード生成
+    - Parser: このクラスを使用する上位パーサー
+
+    責務:
+    - Kumihan記法キーワードの解析
+    - 複合キーワードの分解とネスト構造構築
+    - ハイライト色属性など特殊属性の処理
+    - 不正キーワードのエラー処理とサジェスト
+    """
     
     # Default block keyword definitions
     DEFAULT_BLOCK_KEYWORDS = {

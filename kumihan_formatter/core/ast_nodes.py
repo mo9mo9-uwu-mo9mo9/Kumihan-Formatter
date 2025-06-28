@@ -10,10 +10,24 @@ from typing import Any, Dict, List, Optional, Union
 
 @dataclass
 class Node:
-    """Base AST node class
-    
-    Represents a single element in the parsed document structure.
-    All content elements (paragraphs, blocks, lists, etc.) are represented as nodes.
+    """
+    AST基本ノードクラス（すべての要素の基盤）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#構文例
+    - アーキテクチャ: /CONTRIBUTING.md#データフロー
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - NodeBuilder: このクラスのインスタンス構築
+    - Parser系: このクラスを生成
+    - Renderer系: このクラスを消費
+    - paragraph, heading等: ファクトリー関数
+
+    責務:
+    - 解析済み文書構造の単一要素表現
+    - パーサーとレンダラー間のデータ交換
+    - 要素タイプ・内容・属性の統一的管理
     """
     type: str
     content: Any
@@ -120,7 +134,24 @@ class Node:
 
 
 class NodeBuilder:
-    """Builder class for creating nodes with fluent interface"""
+    """
+    Nodeインスタンス構築用ビルダークラス（流暢なインターフェース提供）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#複合キーワードのルール
+    - アーキテクチャ: /CONTRIBUTING.md#データフロー
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - Node: 構築対象のクラス
+    - KeywordParser: このクラスを使用してNode構築
+    - error_node: エラー時の代替ファクトリー
+
+    責務:
+    - 流暢なインターフェースでのNode構築
+    - 属性やCSSクラスの段階的設定
+    - メソッドチェーンによる直感的なAPI提供
+    """
     
     def __init__(self, node_type: str):
         self._type = node_type
