@@ -8,11 +8,16 @@ on:
         required: false
         default: 'true'
         type: boolean
-  # Phase 2: 段階的復旧テスト
+  # Phase 3: 段階的復旧 - pull_request追加
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
   push:
     branches: [ 
-      fix/github-actions-phase1-emergency,
-      feature/github-actions-phase2-config
+      main,
+      develop,
+      'feature/**',
+      'fix/**'
     ]
 
 env:
@@ -92,7 +97,11 @@ jobs:
       run: |
         echo "🚪 品質ゲートチェック実行..."
         # Phase 2: 調整された品質ゲートでチェック
-        python dev/tools/quality_gates.py --config=.validation-config.yml --ci-mode || echo "⚠️ 品質ゲート失敗（Phase 2調整中）"
+        # Phase 3: 品質ゲートチェック（失敗してもワークフロー継続）
+        python dev/tools/quality_gates.py --config=.validation-config.yml --format=detailed || {
+          echo "⚠️ 品質ゲート基準未達成 - 改善が推奨されます"
+          echo "詳細は上記のレポートを確認してください"
+        }
     
     - name: Generate quality report
       run: |

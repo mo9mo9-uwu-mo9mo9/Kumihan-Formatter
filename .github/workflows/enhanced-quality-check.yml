@@ -2,13 +2,21 @@ name: Enhanced Quality Check
 
 on:
   workflow_dispatch:
-  # Phase 2: 段階的復旧テスト  
-  push:
-    branches: [ feature/github-actions-phase2-config ]
+  # Phase 3: 完全自動化復旧
+  pull_request:
+    branches: [ main, develop ]
     paths:
       - '**/*.txt'
-      - 'dev/tools/syntax_validator.py'
+      - 'dev/tools/**/*.py'
       - '.validation-config.yml'
+      - 'kumihan_formatter/**/*.py'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.txt'
+      - 'dev/tools/**/*.py'
+      - '.validation-config.yml'
+      - 'kumihan_formatter/**/*.py'
 
 jobs:
   enhanced-syntax-validation:
