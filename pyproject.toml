@@ -59,6 +59,8 @@ testpaths = ["dev/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+timeout = 30
+addopts = "--tb=short --disable-warnings -v"
 
 # バージョン管理設定
 [tool.bumpversion]
