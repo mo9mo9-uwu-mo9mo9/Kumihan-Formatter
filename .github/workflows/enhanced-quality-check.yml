@@ -23,12 +23,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .[dev]
+        pip install pyyaml  # 設定ファイル読み込み用
         
     - name: Enhanced Syntax Validation - Examples
       run: |
         echo "🔍 Examplesファイルの厳格チェック..."
         if find examples -name "*.txt" -type f | head -1 | grep -q .; then
-          find examples -name "*.txt" -type f | xargs python dev/tools/enhanced_syntax_validator.py --mode=strict
+          find examples -name "*.txt" -type f | xargs python dev/tools/syntax_validator.py --mode=strict
         else
           echo "No examples files found"
         fi
@@ -37,7 +38,7 @@ jobs:
       run: |
         echo "🚨 エラーサンプルの検証..."
         if find . -name "*エラー*.txt" -o -name "*error*.txt" | head -1 | grep -q .; then
-          find . -name "*エラー*.txt" -o -name "*error*.txt" | xargs python dev/tools/enhanced_syntax_validator.py --mode=error-sample
+          find . -name "*エラー*.txt" -o -name "*error*.txt" | xargs python dev/tools/syntax_validator.py --mode=error-sample
         else
           echo "No error sample files found"
         fi
@@ -46,7 +47,7 @@ jobs:
       run: |
         echo "🔄 自動モード判定による全ファイルチェック..."
         if find . -name "*.txt" -type f -not -path "./.git/*" -not -path "./.venv/*" | head -1 | grep -q .; then
-          find . -name "*.txt" -type f -not -path "./.git/*" -not -path "./.venv/*" | head -10 | xargs python dev/tools/enhanced_syntax_validator.py
+          find . -name "*.txt" -type f -not -path "./.git/*" -not -path "./.venv/*" | head -10 | xargs python dev/tools/syntax_validator.py
         else
           echo "No text files found"
         fi
@@ -70,10 +71,10 @@ jobs:
         # 品質ツールの実行可能性チェック
         echo ""
         echo "🛠️ 品質ツール状況:"
-        if [ -f "dev/tools/enhanced_syntax_validator.py" ]; then
-          echo "  ✅ Enhanced Syntax Validator: 利用可能"
+        if [ -f "dev/tools/syntax_validator.py" ]; then
+          echo "  ✅ Syntax Validator: 利用可能"
         else
-          echo "  ❌ Enhanced Syntax Validator: 未インストール"
+          echo "  ❌ Syntax Validator: 未インストール"
         fi
         
         if [ -f "dev/tools/syntax_fixer.py" ]; then
@@ -109,6 +110,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .[dev]
+        pip install pyyaml  # 設定ファイル読み込み用
         
     - name: Performance Test
       run: |
@@ -118,7 +120,7 @@ jobs:
         if [ -f "examples/01-quickstart.txt" ]; then
           echo "📊 変換時間ベンチマーク:"
           start_time=$(date +%s.%N)
-          python -m kumihan_formatter.cli examples/01-quickstart.txt -o /tmp/bench_output --no-preview --quiet
+          python -m kumihan_formatter.cli convert examples/01-quickstart.txt -o /tmp/bench_output --no-preview
           end_time=$(date +%s.%N)
           duration=$(echo "$end_time - $start_time" | bc)
           echo "  📝 examples/01-quickstart.txt: ${duration}s"
