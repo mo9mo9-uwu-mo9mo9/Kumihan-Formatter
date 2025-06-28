@@ -10,10 +10,13 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
     paths-ignore:
+      # Phase2.5: AI開発機動力確保のため軽微変更は除外
       - 'docs/**'
       - '*.md'
       - '.github/workflows/docs-*.yml'
       - '.github/workflows/emoji-*.yml'
+      - '.github/workflows/quality-*.yml'
+      - '.github/workflows/enhanced-*.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -23,10 +26,13 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
     paths-ignore:
+      # Phase2.5: AI開発機動力確保のため軽微変更は除外
       - 'docs/**'
       - '*.md'
       - '.github/workflows/docs-*.yml'
       - '.github/workflows/emoji-*.yml'
+      - '.github/workflows/quality-*.yml'
+      - '.github/workflows/enhanced-*.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
