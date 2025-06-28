@@ -199,9 +199,11 @@ class BlockParser:
     def is_opening_marker(self, line: str) -> bool:
         """Check if a line is an opening block marker"""
         line = line.strip()
-        # Opening marker: ;;;keyword OR just ;;; (for empty blocks)
-        # But not ;;;something;;; (single-line markers)
+        # Opening marker: ;;;keyword but NOT just ;;;
+        # ;;; alone is always a closing marker
+        # Also not ;;;something;;; (single-line markers)
         return (line.startswith(';;;') and 
+                line != ';;;' and
                 not (line.endswith(';;;') and line.count(';;;') > 1))
     
     def is_closing_marker(self, line: str) -> bool:
