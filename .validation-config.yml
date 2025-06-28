@@ -1,71 +1,81 @@
-# Validation Configuration for Enhanced Syntax Validator
-# ファイルパターンによる検証モード自動判定設定
+# Kumihan-Formatter 検証設定ファイル
+# 各ファイルパターンに対する検証モードの自動判定設定
 
-validation_modes:
-  # 厳格モード - examples配下の一般サンプル
-  strict:
-    patterns:
-      - "examples/*.txt"
-      - "examples/templates/*.txt"
-      - "examples/showcase/*.txt"
-    description: "一般向けサンプルファイル用の厳格チェック"
-    rules:
-      - check_formatting
-      - check_emoji_usage
-      - check_consecutive_empty_lines
-      - check_block_structure
-      - check_consecutive_markers
+file_patterns:
+  # 厳格モード - 高品質が要求されるファイル
+  strict_mode:
+    - "examples/*.txt"                    # サンプルファイル
+    - "examples/templates/*.txt"          # テンプレートファイル
+    - "examples/showcase/*.txt"           # ショーケースファイル
+    - "dev/tests/fixtures/*.txt"          # テスト用フィクスチャ
+    - "docs/*.txt"                        # ドキュメント内のテキスト
+  
+  # エラーサンプル - 意図的なエラーを含むファイル
+  error_samples:
+    - "**/記法エラーサンプル.txt"
+    - "**/error-*.txt"
+    - "**/invalid-*.txt"
+    - "記法ツール/**/サンプルファイル/記法エラーサンプル.txt"
+    - "dev/tests/error-samples/*.txt"
+  
+  # 寛容モード - 一般的なファイル（デフォルト）
+  tolerant_mode:
+    - "記法ツール/**/*.txt"               # ツール関連ファイル
+    - "temp/*.txt"                        # 一時ファイル
+    - "draft/*.txt"                       # 下書きファイル
 
-  # エラーサンプル専用モード
-  error_sample:
-    patterns:
-      - "**/記法エラーサンプル.txt"
-      - "**/error-*.txt"
-      - "**/エラー*.txt"
-      - "**/*error*.txt"
-      - "dev/tests/test_files/malformed*.txt"
-    description: "意図的なエラーを含むサンプル用の特別チェック"
-    rules:
-      - check_consecutive_markers
-      - check_block_structure
-      - verify_error_detection
-    expected_errors: true
+# 厳格モードでの追加ルール
+strict_rules:
+  require_closing_markers: true           # 閉じマーカーの必須チェック
+  check_attribute_order: true             # 属性順序のチェック
+  detect_markdown_syntax: true            # Markdown記法の検出
+  check_empty_blocks: true                # 空ブロックのチェック
+  emoji_detection: true                   # 絵文字使用の検出
+  complex_single_line_warning: true       # 複雑な単一行記法の警告
 
-  # 寛容モード - 開発・記法ツール配下
-  tolerant:
-    patterns:
-      - "記法ツール/**/*.txt"
-      - "dev/tools/**/*.txt"
-      - "test_*.txt"
-      - "temp_*.txt"
-      - "debug_*.txt"
-    description: "開発用・実験用ファイル用の寛容チェック"
-    rules:
-      - check_basic_syntax_only
-    allow_experimental: true
+# エラーサンプル検証設定
+error_sample_rules:
+  minimum_error_count: 3                  # 最低エラー数
+  expected_error_types:                   # 期待されるエラータイプ
+    - "MALFORMED_BLOCK"                   # 未閉じブロック
+    - "INVALID_MARKER"                    # 不正マーカー
+    - "UNSUPPORTED_SYNTAX"                # 非サポート記法
 
-# 品質ゲート設定
-quality_gates:
-  syntax_check_pass_rate: 95      # 記法チェック合格率95%以上
-  max_errors_per_file: 10         # ファイル当たり最大エラー数
-  max_warnings_per_file: 20       # ファイル当たり最大警告数
-  error_sample_min_errors: 1      # エラーサンプルの最小エラー数
+# 品質メトリクス設定
+quality_metrics:
+  max_file_size: 1048576                  # 最大ファイルサイズ (1MB)
+  max_lines: 10000                        # 最大行数
+  max_block_nesting: 5                    # 最大ブロックネスト数
+  performance_threshold: 5.0              # パフォーマンス閾値（秒）
 
 # 除外パターン
 exclusions:
-  files:
-    - "*.bak"
-    - "*.tmp"
-    - "*~"
-    - ".DS_Store"
-  directories:
-    - ".git"
-    - "__pycache__"
-    - ".venv"
-    - "node_modules"
+  file_patterns:
+    - "**/.git/**"
+    - "**/__pycache__/**"
+    - "**/node_modules/**"
+    - "**/.venv/**"
+    - "**/dist/**"
+    - "**/build/**"
+  
+  # 特定の警告を無視するファイル
+  ignore_warnings:
+    emoji_usage:
+      - "examples/emoji-sample.txt"       # 絵文字サンプルファイル
+    markdown_syntax:
+      - "README.md"                       # READMEファイル
+      - "docs/*.md"                       # ドキュメントファイル
 
-# 通知設定
-notifications:
-  slack_webhook: null  # 将来の拡張用
-  email: null          # 将来の拡張用
-  github_comment: true # GitHub PR コメント
+# レポート設定
+reporting:
+  format: "detailed"                      # detailed, summary, json
+  show_suggestions: true                  # 修正提案の表示
+  group_by_file: true                     # ファイル別のグループ化
+  show_line_context: true                 # 行コンテキストの表示
+  max_errors_per_file: 50                 # ファイル当たりの最大エラー表示数
+
+# 自動修正設定（将来の拡張用）
+auto_fix:
+  enabled: false                          # 自動修正の有効化
+  backup_original: true                   # 元ファイルのバックアップ
+  safe_fixes_only: true                   # 安全な修正のみ実行
