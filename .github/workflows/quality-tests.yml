@@ -13,8 +13,7 @@ on:
       - 'dev/tests/**'
       - 'pyproject.toml'
       - 'examples/**/*.txt'  # サンプルファイル変更時も実行
-      - '.github/workflows/critical-tests.yml'  # テスト設定変更時
-      - '.github/workflows/quality-tests.yml'
+      - '.github/workflows/**'  # 全ワークフロー変更時に実行
   pull_request:
     branches: [ main ]
     types: [ready_for_review, synchronize]  # ドラフト中は実行しない
@@ -23,8 +22,7 @@ on:
       - 'dev/tests/**'
       - 'pyproject.toml'
       - 'examples/**/*.txt'
-      - '.github/workflows/critical-tests.yml'
-      - '.github/workflows/quality-tests.yml'
+      - '.github/workflows/**'  # 全ワークフロー変更時に実行
     paths-ignore:
       - '**/*.md'  # ドキュメント変更のみでは実行しない
       - 'docs/**'

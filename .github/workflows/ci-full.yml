@@ -12,9 +12,7 @@ on:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
-      - '.github/workflows/critical-tests.yml'  # テスト設定変更時
-      - '.github/workflows/quality-tests.yml'
-      - '.github/workflows/ci-full.yml'
+      - '.github/workflows/**'  # 全ワークフロー変更時に実行
   pull_request:
     branches: [ main ]
     types: [ready_for_review]  # ready_for_reviewのみ（synchronizeでは実行しない）
@@ -22,9 +20,7 @@ on:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
-      - '.github/workflows/critical-tests.yml'
-      - '.github/workflows/quality-tests.yml'
-      - '.github/workflows/ci-full.yml'
+      - '.github/workflows/**'  # 全ワークフロー変更時に実行
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
