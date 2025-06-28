@@ -208,14 +208,13 @@ if errorlevel 1 (
 echo.
 
 rem サンプル4: showcase
-echo %BLUE%[4/4] 機能ショーケース (--generate-sample)%NC%
+echo %BLUE%[4/12] 機能ショーケース (generate-sample)%NC%
 set "OUTPUT_DIR=%OUTPUT_BASE%\04-showcase"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 rem Showcaseサンプルは記法表示機能を使用しない（CLAUDE.md仕様）
 set PYTHONIOENCODING=utf-8
-rem Showcase: 記法表示機能は使用しない（CLAUDE.md仕様）
-%PYTHON_CMD% -m kumihan_formatter convert --generate-sample -o "%OUTPUT_DIR%" --no-preview
+%PYTHON_CMD% -m kumihan_formatter generate-sample -o "%OUTPUT_DIR%" --quiet
 if errorlevel 1 (
     echo %RED%エラー: showcase サンプルの変換に失敗%NC%
     goto error_end
@@ -224,15 +223,143 @@ if errorlevel 1 (
 )
 echo.
 
+rem === 🆕 実践的サンプル集 ===
+echo %CYAN%=== 🎲 CoC6th実践的サンプル集 ===%NC%
+echo.
+
+rem サンプル5: 基本シナリオテンプレート
+echo %BLUE%[5/12] 基本シナリオテンプレート (templates/basic-scenario.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\05-basic-scenario"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\templates\basic-scenario.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: 基本シナリオテンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%基本シナリオテンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル6: クローズド型シナリオテンプレート
+echo %BLUE%[6/12] クローズド型シナリオテンプレート (templates/closed-scenario.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\06-closed-scenario"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\templates\closed-scenario.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: クローズド型テンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%クローズド型テンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル7: シティ型シナリオテンプレート
+echo %BLUE%[7/12] シティ型シナリオテンプレート (templates/city-scenario.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\07-city-scenario"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\templates\city-scenario.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: シティ型テンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%シティ型テンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル8: 戦闘重視型シナリオテンプレート
+echo %BLUE%[8/12] 戦闘重視型シナリオテンプレート (templates/combat-scenario.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\08-combat-scenario"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\templates\combat-scenario.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: 戦闘重視型テンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%戦闘重視型テンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル9: NPCテンプレート
+echo %BLUE%[9/12] NPCテンプレート (elements/npc-template.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\09-npc-template"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\elements\npc-template.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: NPCテンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%NPCテンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル10: アイテム・クリーチャーテンプレート
+echo %BLUE%[10/12] アイテム・クリーチャーテンプレート (elements/item-template.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\10-item-template"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\elements\item-template.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: アイテムテンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%アイテムテンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル11: 技能ロールテンプレート
+echo %BLUE%[11/12] 技能ロールテンプレート (elements/skill-template.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\11-skill-template"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\elements\skill-template.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: 技能ロールテンプレートの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%技能ロールテンプレート完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
+rem サンプル12: 完成版サンプルシナリオ「深夜図書館の怪」
+echo %BLUE%[12/12] 完成版サンプルシナリオ「深夜図書館の怪」 (showcase/complete-scenario.txt)%NC%
+set "OUTPUT_DIR=%OUTPUT_BASE%\12-complete-scenario"
+if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+set PYTHONIOENCODING=utf-8
+%PYTHON_CMD% -m kumihan_formatter convert "..\examples\showcase\complete-scenario.txt" -o "%OUTPUT_DIR%" --no-preview %SOURCE_TOGGLE_FLAG%
+if errorlevel 1 (
+    echo %RED%エラー: 完成版シナリオの変換に失敗%NC%
+    goto error_end
+) else (
+    echo %GREEN%完成版シナリオ完了 -> %OUTPUT_DIR%%NC%
+)
+echo.
+
 echo ==========================================
 echo %GREEN%全サンプルの変換が完了しました！%NC%
 echo ==========================================
 echo.
 echo %CYAN%生成されたファイル:%NC%
-echo   ../dist/samples/01-quickstart/  - クイックスタートチュートリアル
-echo   ../dist/samples/02-basic/       - 基本的な記法のサンプル
-echo   ../dist/samples/03-advanced/    - 高度な記法のサンプル
-echo   ../dist/samples/04-showcase/    - 全機能のショーケース
+echo.
+echo %YELLOW%📚 学習用サンプル%NC%
+echo   01-quickstart/   - クイックスタートチュートリアル
+echo   02-basic/        - 基本的な記法のサンプル
+echo   03-advanced/     - 高度な記法のサンプル
+echo   04-showcase/     - 全機能のショーケース
+echo.
+echo %YELLOW%🎲 CoC6th実践用テンプレート%NC%
+echo   05-basic-scenario/    - 基本シナリオテンプレート
+echo   06-closed-scenario/   - クローズド型シナリオテンプレート
+echo   07-city-scenario/     - シティ型シナリオテンプレート
+echo   08-combat-scenario/   - 戦闘重視型シナリオテンプレート
+echo   09-npc-template/      - NPCテンプレート
+echo   10-item-template/     - アイテム・クリーチャーテンプレート
+echo   11-skill-template/    - 技能ロールテンプレート
+echo   12-complete-scenario/ - 完成版サンプルシナリオ「深夜図書館の怪」
 echo.
 echo %YELLOW%HTMLファイルをブラウザで確認してください%NC%
 echo.

@@ -206,8 +206,10 @@ echo ""
 
 # サンプル5: 基本シナリオテンプレート
 echo -e "${BLUE}[5/12] 基本シナリオテンプレート (templates/basic-scenario.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/basic-scenario.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}基本シナリオテンプレート完了 → $OUTPUT_BASE/basic-scenario.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/05-basic-scenario"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/basic-scenario.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}基本シナリオテンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: 基本シナリオテンプレートの変換に失敗${NC}"
     exit 1
@@ -216,8 +218,10 @@ echo ""
 
 # サンプル6: クローズド型シナリオテンプレート
 echo -e "${BLUE}[6/12] クローズド型シナリオテンプレート (templates/closed-scenario.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/closed-scenario.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}クローズド型テンプレート完了 → $OUTPUT_BASE/closed-scenario.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/06-closed-scenario"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/closed-scenario.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}クローズド型テンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: クローズド型テンプレートの変換に失敗${NC}"
     exit 1
@@ -226,8 +230,10 @@ echo ""
 
 # サンプル7: シティ型シナリオテンプレート
 echo -e "${BLUE}[7/12] シティ型シナリオテンプレート (templates/city-scenario.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/city-scenario.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}シティ型テンプレート完了 → $OUTPUT_BASE/city-scenario.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/07-city-scenario"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/city-scenario.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}シティ型テンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: シティ型テンプレートの変換に失敗${NC}"
     exit 1
@@ -236,8 +242,10 @@ echo ""
 
 # サンプル8: 戦闘重視型シナリオテンプレート
 echo -e "${BLUE}[8/12] 戦闘重視型シナリオテンプレート (templates/combat-scenario.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/combat-scenario.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}戦闘重視型テンプレート完了 → $OUTPUT_BASE/combat-scenario.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/08-combat-scenario"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/templates/combat-scenario.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}戦闘重視型テンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: 戦闘重視型テンプレートの変換に失敗${NC}"
     exit 1
@@ -246,8 +254,10 @@ echo ""
 
 # サンプル9: NPCテンプレート
 echo -e "${BLUE}[9/12] NPCテンプレート (elements/npc-template.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/npc-template.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}NPCテンプレート完了 → $OUTPUT_BASE/npc-template.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/09-npc-template"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/npc-template.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}NPCテンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: NPCテンプレートの変換に失敗${NC}"
     exit 1
@@ -256,8 +266,10 @@ echo ""
 
 # サンプル10: アイテム・クリーチャーテンプレート
 echo -e "${BLUE}[10/12] アイテム・クリーチャーテンプレート (elements/item-template.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/item-template.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}アイテムテンプレート完了 → $OUTPUT_BASE/item-template.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/10-item-template"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/item-template.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}アイテムテンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: アイテムテンプレートの変換に失敗${NC}"
     exit 1
@@ -266,8 +278,10 @@ echo ""
 
 # サンプル11: 技能ロールテンプレート
 echo -e "${BLUE}[11/12] 技能ロールテンプレート (elements/skill-template.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/skill-template.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}技能ロールテンプレート完了 → $OUTPUT_BASE/skill-template.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/11-skill-template"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/elements/skill-template.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}技能ロールテンプレート完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: 技能ロールテンプレートの変換に失敗${NC}"
     exit 1
@@ -276,8 +290,10 @@ echo ""
 
 # サンプル12: 完成版サンプルシナリオ「深夜図書館の怪」
 echo -e "${BLUE}[12/12] 完成版サンプルシナリオ「深夜図書館の怪」 (showcase/complete-scenario.txt)${NC}"
-if $PYTHON_CMD -m kumihan_formatter convert "../examples/showcase/complete-scenario.txt" -o "$OUTPUT_BASE" --no-preview $SOURCE_TOGGLE_FLAG; then
-    echo -e "${GREEN}完成版シナリオ完了 → $OUTPUT_BASE/complete-scenario.html${NC}"
+OUTPUT_DIR="$OUTPUT_BASE/12-complete-scenario"
+mkdir -p "$OUTPUT_DIR"
+if $PYTHON_CMD -m kumihan_formatter convert "../examples/showcase/complete-scenario.txt" -o "$OUTPUT_DIR" --no-preview $SOURCE_TOGGLE_FLAG; then
+    echo -e "${GREEN}完成版シナリオ完了 → $OUTPUT_DIR${NC}"
 else
     echo -e "${RED}エラー: 完成版シナリオの変換に失敗${NC}"
     exit 1
@@ -290,21 +306,21 @@ echo "=========================================="
 echo ""
 echo -e "${CYAN}生成されたファイル:${NC}"
 echo ""
-echo -e "${YELLOW}📚 基本サンプル${NC}"
-echo "  ../dist/samples/01-quickstart/  - クイックスタートチュートリアル"
-echo "  ../dist/samples/02-basic/       - 基本的な記法のサンプル"
-echo "  ../dist/samples/03-advanced/    - 高度な記法のサンプル"
-echo "  ../dist/samples/04-showcase/    - 全機能のショーケース"
+echo -e "${YELLOW}📚 学習用サンプル${NC}"
+echo "  01-quickstart/   - クイックスタートチュートリアル"
+echo "  02-basic/        - 基本的な記法のサンプル"
+echo "  03-advanced/     - 高度な記法のサンプル"
+echo "  04-showcase/     - 全機能のショーケース"
 echo ""
-echo -e "${YELLOW}🎲 CoC6th実践的テンプレート集${NC}"
-echo "  ../dist/samples/basic-scenario.html     - 基本シナリオテンプレート"
-echo "  ../dist/samples/closed-scenario.html    - クローズド型シナリオテンプレート"
-echo "  ../dist/samples/city-scenario.html      - シティ型シナリオテンプレート"
-echo "  ../dist/samples/combat-scenario.html    - 戦闘重視型シナリオテンプレート"
-echo "  ../dist/samples/npc-template.html       - NPCテンプレート"
-echo "  ../dist/samples/item-template.html      - アイテム・クリーチャーテンプレート"
-echo "  ../dist/samples/skill-template.html     - 技能ロールテンプレート"
-echo "  ../dist/samples/complete-scenario.html  - 完成版サンプルシナリオ「深夜図書館の怪」"
+echo -e "${YELLOW}🎲 CoC6th実践用テンプレート${NC}"
+echo "  05-basic-scenario/    - 基本シナリオテンプレート"
+echo "  06-closed-scenario/   - クローズド型シナリオテンプレート"
+echo "  07-city-scenario/     - シティ型シナリオテンプレート"
+echo "  08-combat-scenario/   - 戦闘重視型シナリオテンプレート"
+echo "  09-npc-template/      - NPCテンプレート"
+echo "  10-item-template/     - アイテム・クリーチャーテンプレート"
+echo "  11-skill-template/    - 技能ロールテンプレート"
+echo "  12-complete-scenario/ - 完成版サンプルシナリオ「深夜図書館の怪」"
 echo ""
 echo -e "${YELLOW}HTMLファイルをブラウザで確認してください${NC}"
 echo ""
