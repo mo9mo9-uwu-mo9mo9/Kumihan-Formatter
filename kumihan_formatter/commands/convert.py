@@ -500,71 +500,11 @@ class ConvertCommand:
     
     def _add_enhanced_checks(self, input_path: Path, error_report: ErrorReport) -> None:
         """追加の詳細チェックを実行"""
-        from ..core.error_reporting import FixSuggestion
-        
-        try:
-            with open(input_path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-            
-            for line_num, line in enumerate(lines, 1):
-                line_stripped = line.strip()
-                
-                # 単独の;;;マーカーチェック
-                if line_stripped == ';;;':
-                    error = ErrorReportBuilder.create_syntax_error(
-                        title="単独の;;;マーカー",
-                        message="ブロック開始マーカーなしに ;;; が見つかりました",
-                        file_path=input_path,
-                        line_number=line_num,
-                        problem_text=line_stripped,
-                        suggestions=[
-                            FixSuggestion(
-                                description="この行を削除する",
-                                original_text=line_stripped,
-                                suggested_text="",
-                                action_type="delete",
-                                confidence=0.9
-                            ),
-                            FixSuggestion(
-                                description="内容を追加してブロックを完成させる",
-                                original_text=line_stripped,
-                                suggested_text="何らかの内容\n;;;",
-                                action_type="replace",
-                                confidence=0.7
-                            )
-                        ]
-                    )
-                    error_report.add_error(error)
-                
-                # 不完全なマーカーチェック
-                if line_stripped.startswith(';;;') and line_stripped != ';;;':
-                    # 開始マーカーと思われるが、対応する終了マーカーを探す
-                    found_end = False
-                    for check_line_num in range(line_num, len(lines)):
-                        if lines[check_line_num].strip() == ';;;':
-                            found_end = True
-                            break
-                    
-                    if not found_end:
-                        error = ErrorReportBuilder.create_syntax_error(
-                            title="未閉じブロック",
-                            message=f"ブロック開始マーカー '{line_stripped}' に対応する閉じマーカー ;;; が見つかりません",
-                            file_path=input_path,
-                            line_number=line_num,
-                            problem_text=line_stripped,
-                            suggestions=[
-                                FixSuggestion(
-                                    description="ブロックの最後に ;;; を追加する",
-                                    action_type="insert",
-                                    confidence=0.9
-                                )
-                            ]
-                        )
-                        error_report.add_error(error)
-        
-        except Exception:
-            # ファイル読み込みエラーなど
-            pass
+        # 注意: 単独の;;;チェックは削除しました
+        # ブロック終了マーカーとしての;;;は正当な使い方であり、
+        # また;;;目次;;;や;;;画像.jpg;;;のような単一行マーカーも正当です。
+        # 記法チェックはcore/syntax/syntax_validator.pyで適切に行われています。
+        pass
     
     def _save_error_report(self, error_report: ErrorReport, input_path: Path, output_dir: str) -> None:
         """エラーレポートをファイルに保存"""
