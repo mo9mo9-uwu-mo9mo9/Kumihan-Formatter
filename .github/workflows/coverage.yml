@@ -3,8 +3,18 @@ name: Coverage Report
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/coverage.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/coverage.yml'
   workflow_dispatch:  # 手動実行も可能
 
 concurrency:
@@ -14,6 +24,7 @@ concurrency:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Phase2最適化: タイムアウト設定追加
     
     steps:
       - name: Checkout code

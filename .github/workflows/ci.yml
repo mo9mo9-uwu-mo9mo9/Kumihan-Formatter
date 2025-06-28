@@ -3,8 +3,25 @@ name: CI / Quick Test
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'examples/**'
+      - 'pyproject.toml'
+      - '.github/workflows/ci.yml'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/docs-*.yml'
+      - '.github/workflows/emoji-*.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'examples/**'
+      - 'pyproject.toml'
+      - '.github/workflows/ci.yml'
     paths-ignore:
       - 'docs/**'
       - '*.md'
@@ -19,6 +36,7 @@ jobs:
   quick-test:
     name: Quick Test (Python 3.9)
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Phase2最適化: タイムアウト設定追加
     
     steps:
     - uses: actions/checkout@v4

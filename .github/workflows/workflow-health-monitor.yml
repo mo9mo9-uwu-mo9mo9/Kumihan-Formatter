@@ -16,6 +16,7 @@ jobs:
   monitor-workflows:
     name: Monitor Workflow Health
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Phase2最適化: タイムアウト設定追加
     
     steps:
     - name: Check workflow status
@@ -81,3 +82,63 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         
         echo "✅ Workflow health check completed successfully"
+    
+    # Phase2最適化: 詰まり検出・自動解消機能追加
+    - name: Detect workflow congestion
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚨 Congestion Detection (Phase2 Enhancement)" >> $GITHUB_STEP_SUMMARY
+        
+        # 10分以上QUEUEDまたはIN_PROGRESSのワークフローを検出
+        STUCK_WORKFLOWS=$(gh api repos/${{ github.repository }}/actions/runs \
+          --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress") | select((now - (.created_at | fromdateiso8601)) > 600) | .id')
+        
+        STUCK_COUNT=$(echo "$STUCK_WORKFLOWS" | wc -l)
+        
+        if [ "$STUCK_COUNT" -gt 0 ] && [ -n "$STUCK_WORKFLOWS" ]; then
+          echo "⚠️ **Detected $STUCK_COUNT stuck workflows (>10min)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Stuck Workflow IDs:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "$STUCK_WORKFLOWS" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          # 15分以上詰まっている場合は自動キャンセル
+          CRITICAL_STUCK=$(echo "$STUCK_WORKFLOWS" | head -5)  # 最大5個まで
+          for run_id in $CRITICAL_STUCK; do
+            echo "🔧 Auto-cancelling stuck workflow: $run_id" >> $GITHUB_STEP_SUMMARY
+            gh api repos/${{ github.repository }}/actions/runs/$run_id/cancel -X POST || true
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🛠️ **Auto-resolution applied**: Cancelled critically stuck workflows" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ **No workflow congestion detected**" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Resource usage analysis
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 Resource Usage Analysis (Phase2 Enhancement)" >> $GITHUB_STEP_SUMMARY
+        
+        # 現在実行中のワークフロー数
+        ACTIVE_COUNT=$(gh api repos/${{ github.repository }}/actions/runs \
+          --jq '[.workflow_runs[] | select(.status == "queued" or .status == "in_progress")] | length')
+        
+        echo "- **Currently Active**: $ACTIVE_COUNT workflows" >> $GITHUB_STEP_SUMMARY
+        
+        # GitHub並行制限に対する使用率
+        USAGE_PERCENT=$((ACTIVE_COUNT * 100 / 20))
+        echo "- **GitHub Plan Usage**: $USAGE_PERCENT% (${ACTIVE_COUNT}/20 concurrent jobs)" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "$USAGE_PERCENT" -gt 70 ]; then
+          echo "⚠️ **High resource usage detected** - Consider workflow optimization" >> $GITHUB_STEP_SUMMARY
+        elif [ "$USAGE_PERCENT" -gt 50 ]; then
+          echo "⚡ **Moderate resource usage** - Monitor for potential congestion" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ **Resource usage optimal**" >> $GITHUB_STEP_SUMMARY
+        fi

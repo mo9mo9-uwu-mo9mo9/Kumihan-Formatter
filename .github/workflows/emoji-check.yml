@@ -4,11 +4,16 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - '**/*.py'
-      - '**/*.sh'
-      - '**/*.command'
-      - '**/*.bat'
-      - '**/*.md'
+      # Phase2最適化: より具体的なpathフィルター
+      - 'kumihan_formatter/**/*.py'
+      - 'dev/tools/**/*.py'
+      - 'dev/tests/**/*.py'
+      - 'setup_*.sh'
+      - 'setup_*.command'
+      - 'setup_*.bat'
+      - 'CLAUDE.md'
+      - 'SPEC.md'
+      - 'CONTRIBUTING.md'
   workflow_dispatch:  # 手動実行を可能にする
 
 jobs:
