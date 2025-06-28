@@ -9,14 +9,14 @@ import time
 import webbrowser
 import re
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 
 import click
 from rich.progress import Progress
 
 from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
-from ..core.error_handling import ErrorHandler as FriendlyErrorHandler, ErrorCatalog
+from ..core.error_handling import ErrorHandler as FriendlyErrorHandler
 from ..core.syntax import check_files, ErrorSeverity
 from ..core.error_reporting import ErrorReport, ErrorReportBuilder, DetailedError
 from ..parser import parse
@@ -256,10 +256,10 @@ class ConvertCommand:
             
             # Simulate chunked processing for very large files
             if size_mb > 50:  # 50MB以上は分割表示
-                chunk_size = len(text) // 10
+                # chunk_size = len(text) // 10  # For future chunked processing
                 for i in range(10):
-                    chunk_start = i * chunk_size
-                    chunk_end = min((i + 1) * chunk_size, len(text))
+                    # chunk_start = i * chunk_size  # Simulate chunked processing
+                    # chunk_end = min((i + 1) * chunk_size, len(text))
                     progress.update(task, completed=i * 10)
                     time.sleep(0.1)  # Simulate processing time
                 
@@ -500,6 +500,8 @@ class ConvertCommand:
     
     def _add_enhanced_checks(self, input_path: Path, error_report: ErrorReport) -> None:
         """追加の詳細チェックを実行"""
+        from ..core.error_reporting import FixSuggestion
+        
         try:
             with open(input_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
@@ -560,7 +562,7 @@ class ConvertCommand:
                         )
                         error_report.add_error(error)
         
-        except Exception as e:
+        except Exception:
             # ファイル読み込みエラーなど
             pass
     
