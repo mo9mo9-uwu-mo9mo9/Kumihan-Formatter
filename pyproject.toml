@@ -36,6 +36,8 @@ dev = [
     "isort>=5.0",
     "flake8>=6.0",
     "beautifulsoup4>=4.9",
+    "psutil>=5.9",
+    "hypothesis>=6.0",
 ]
 
 [tool.setuptools.packages.find]
