@@ -39,7 +39,7 @@ else:
     composite = lambda func: func
     assume = lambda x: None
 
-from kumihan_formatter.parser import KumihanParser
+from kumihan_formatter.parser import Parser
 from kumihan_formatter.core.ast_nodes import Node
 
 
@@ -121,7 +121,7 @@ class TestParserProperties:
     
     def setup_method(self):
         """Setup for each test method"""
-        self.parser = KumihanParser()
+        self.parser = Parser()
     
     @given(kumihan_document())
     @settings(max_examples=50, deadline=5000)  # Reasonable limits for CI
@@ -241,7 +241,7 @@ class TestParserInvariants:
     
     def setup_method(self):
         """Setup for each test method"""
-        self.parser = KumihanParser()
+        self.parser = Parser()
     
     @given(kumihan_document())
     @settings(max_examples=30)
@@ -293,7 +293,7 @@ class TestParserPerformance:
     
     def setup_method(self):
         """Setup for each test method"""
-        self.parser = KumihanParser()
+        self.parser = Parser()
     
     @given(st.integers(min_value=1, max_value=100))
     @settings(max_examples=10)
