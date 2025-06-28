@@ -14,10 +14,11 @@ on:
       - 'dev/tests/**'
       - 'pyproject.toml'
 
+  workflow_dispatch:  # 手動実行を許可
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-  workflow_dispatch:  # 手動実行を許可
 
 jobs:
   full-test:
