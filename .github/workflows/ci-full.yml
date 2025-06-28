@@ -1,4 +1,9 @@
-name: CI / Full Test Matrix
+name: Full Tests (Tier 2)
+
+# 🌐 完全テストマトリックス - 包括的なクロスプラットフォーム検証
+# - 条件制御: 重要なリリース前、または手動実行
+# - 全OS・Pythonバージョン組み合わせでテスト
+# - 実行時間: 15-25分程度
 
 on:
   push:
@@ -7,20 +12,31 @@ on:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
-      - '.github/workflows/ci.yml'           # 緊急修正: CI相互依存関係
-      - '.github/workflows/ci-full.yml'      # 緊急修正: CI相互依存関係
-      - '.github/workflows/coverage.yml'     # 緊急修正: CI相互依存関係
+      - '.github/workflows/critical-tests.yml'  # テスト設定変更時
+      - '.github/workflows/quality-tests.yml'
+      - '.github/workflows/ci-full.yml'
   pull_request:
     branches: [ main ]
+    types: [ready_for_review]  # ready_for_reviewのみ（synchronizeでは実行しない）
     paths:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
-      - '.github/workflows/ci.yml'           # 緊急修正: CI相互依存関係
-      - '.github/workflows/ci-full.yml'      # 緊急修正: CI相互依存関係
-      - '.github/workflows/coverage.yml'     # 緊急修正: CI相互依存関係
+      - '.github/workflows/critical-tests.yml'
+      - '.github/workflows/quality-tests.yml'
+      - '.github/workflows/ci-full.yml'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'  # 軽微なサンプル変更では実行しない
 
   workflow_dispatch:  # 手動実行を許可
+    inputs:
+      force_run:
+        description: '強制実行（パスフィルター無視）'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,9 +44,10 @@ concurrency:
 
 jobs:
   full-test:
-    name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    name: Full Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20  # Phase2最適化: タイムアウト設定追加
+    timeout-minutes: 20
+    needs: []  # 独立実行（Critical Tests, Quality Testsとは並列）
     strategy:
       fail-fast: false  # 1つ失敗しても他は継続
       matrix:
@@ -51,6 +68,20 @@ jobs:
             python-version: "3.9"
 
     steps:
+    - name: Display execution context
+      run: |
+        echo "## 🌐 Full Tests (Tier 2) Execution" >> $GITHUB_STEP_SUMMARY
+        echo "**Purpose**: Comprehensive cross-platform validation" >> $GITHUB_STEP_SUMMARY
+        echo "**OS**: ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Python**: ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Coverage (Tier 2)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Cross-platform**: Windows, macOS, Ubuntu" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Multi-Python**: 3.9, 3.10, 3.11, 3.12" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Complete validation**: All test suites" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Production simulation**: Real-world usage patterns" >> $GITHUB_STEP_SUMMARY
+        
     - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
@@ -114,7 +145,7 @@ jobs:
         echo "✅ All tests passed on ${{ matrix.os }} with Python ${{ matrix.python-version }}"
 
   syntax-validation:
-    name: Syntax Validation
+    name: Full Syntax Validation
     runs-on: ubuntu-latest
     needs: []  # 並列実行
     
@@ -147,7 +178,7 @@ jobs:
         python dev/tests/simple_syntax_test.py
 
   summary:
-    name: CI Summary
+    name: Full Tests Summary
     runs-on: ubuntu-latest
     needs: [full-test, syntax-validation]
     if: always()
@@ -155,7 +186,7 @@ jobs:
     steps:
     - name: Check results
       run: |
-        echo "## CI Summary"
+        echo "## 🌐 Full Tests (Tier 2) Summary"
         echo ""
         
         if [ "${{ needs.full-test.result }}" == "success" ]; then
@@ -165,12 +196,16 @@ jobs:
         fi
         
         if [ "${{ needs.syntax-validation.result }}" == "success" ]; then
-          echo "✅ Syntax validation: PASSED"
+          echo "✅ Full syntax validation: PASSED"
         else
-          echo "❌ Syntax validation: FAILED"
+          echo "❌ Full syntax validation: FAILED"
         fi
         
         echo ""
-        echo "All checks completed."
+        echo "🏆 Comprehensive cross-platform validation completed."
         echo ""
-        echo "📊 For comprehensive end-to-end testing, see the E2E Tests workflow."
+        echo "📈 Test hierarchy status:"
+        echo "  - 🚨 Critical Tests (Tier 0): Always executed"
+        echo "  - 🔍 Quality Tests (Tier 1): Conditional execution"
+        echo "  - 🌐 Full Tests (Tier 2): Complete validation"
+        echo "  - 📊 Coverage Report: Detailed analysis"
