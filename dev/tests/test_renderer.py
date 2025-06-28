@@ -99,3 +99,77 @@ def test_render_mixed_lists_in_block():
     assert "・ 箇条書き項目1<br>・ 箇条書き項目2" in result
     assert "1. 番号付き項目1<br>2. 番号付き項目2" in result
     assert "</div>" in result
+
+
+def test_render_with_source_toggle():
+    """ソース表示機能付きレンダリング"""
+    from kumihan_formatter.renderer import Renderer
+    renderer = Renderer()
+    
+    ast = [Node(type="p", content=["テスト段落"])]
+    result = renderer.render(
+        ast, 
+        source_text="テスト段落", 
+        source_filename="test.txt"
+    )
+    # ソーストグル機能が含まれていることを確認
+    assert 'source_text' in result or 'ソース' in result or 'source' in result
+
+
+def test_render_with_navigation():
+    """ナビゲーション付きレンダリング"""
+    from kumihan_formatter.renderer import Renderer
+    renderer = Renderer()
+    
+    ast = [Node(type="p", content=["テスト段落"])]
+    result = renderer.render(
+        ast,
+        navigation_html="<nav>ナビゲーション</nav>"
+    )
+    # ナビゲーションが含まれていることを確認
+    assert 'ナビゲーション' in result or '<nav>' in result
+
+
+def test_render_with_custom_context():
+    """カスタムコンテキスト付きレンダリング"""
+    from kumihan_formatter.renderer import Renderer
+    renderer = Renderer()
+    
+    ast = [Node(type="p", content=["テスト段落"])]
+    result = renderer.render_with_context(
+        ast,
+        custom_context={"custom_var": "テスト値"}
+    )
+    # レンダリングが成功することを確認
+    assert "テスト段落" in result
+
+
+def test_get_toc_data():
+    """目次データ取得のテスト"""
+    from kumihan_formatter.renderer import Renderer
+    renderer = Renderer()
+    
+    ast = [
+        Node(type="h1", content=["見出し1"]),
+        Node(type="h2", content=["見出し2"])
+    ]
+    
+    toc_data = renderer.get_toc_data(ast)
+    assert isinstance(toc_data, dict)
+    assert 'html' in toc_data
+    assert 'has_toc' in toc_data
+
+
+def test_render_nodes_only():
+    """ノードのみレンダリング（テンプレートなし）"""
+    from kumihan_formatter.renderer import Renderer
+    renderer = Renderer()
+    
+    ast = [Node(type="p", content=["テスト段落"])]
+    result = renderer.render_nodes_only(ast)
+    
+    # HTMLタグは含まれるがテンプレートは含まれない
+    assert "テスト段落" in result
+    assert "<p>" in result
+    # 完全なHTMLドキュメント構造は含まれない
+    assert "<!DOCTYPE html>" not in result

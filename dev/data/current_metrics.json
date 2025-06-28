@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-06-28T23:48:42.210291",
+  "project_name": "Kumihan-Formatter",
+  "total_files": 465,
+  "txt_files": 50,
+  "total_lines": 17394,
+  "total_size_bytes": 7068538,
+  "syntax_errors": 0,
+  "syntax_pass_rate": 100.0,
+  "conversion_time_avg": 0.02194380760192871,
+  "conversion_time_max": 0.02538013458251953,
+  "html_size_avg": 29589.5,
+  "html_size_max": 38920,
+  "test_pass_rate": 93.02325581395348,
+  "test_coverage": 75.0,
+  "overall_quality_score": 97.8,
+  "file_details": [],
+  "error_details": []
+}
