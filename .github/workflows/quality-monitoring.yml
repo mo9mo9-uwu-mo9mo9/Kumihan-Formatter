@@ -1,4 +1,4 @@
-name: Quality Monitoring
+name: Quality Monitoring (Temporarily Disabled)
 
 on:
   workflow_dispatch:
@@ -8,10 +8,11 @@ on:
         required: false
         default: 'true'
         type: boolean
+  # pull_request: # Temporarily disabled to reduce workflow congestion
   # Phase 3: 段階的復旧 - pull_request追加
-  pull_request:
-    branches: [ main, develop ]
-    types: [ opened, synchronize, reopened ]
+  # pull_request:
+  #   branches: [ main, develop ]
+  #   types: [ opened, synchronize, reopened ]
   push:
     branches: [ 
       main,

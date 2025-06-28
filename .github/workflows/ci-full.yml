@@ -13,6 +13,10 @@ on:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
   workflow_dispatch:  # 手動実行を許可
 
 jobs:
