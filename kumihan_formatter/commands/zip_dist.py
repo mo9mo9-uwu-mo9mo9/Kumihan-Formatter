@@ -16,6 +16,7 @@ import click
 
 from ..ui.console_ui import ui
 from ..core.file_ops import FileOperations, PathValidator, ErrorHandler
+from ..core.distribution_manager import create_user_distribution
 
 
 class ZipDistCommand:
@@ -27,7 +28,8 @@ class ZipDistCommand:
         self.error_handler = ErrorHandler()
     
     def execute(self, source_dir: str, output: str, zip_name: str, 
-                no_zip: bool, no_preview: bool) -> None:
+                no_zip: bool, no_preview: bool, convert_docs: bool = True,
+                include_developer_docs: bool = False) -> None:
         """
         Execute ZIP distribution command
         
@@ -37,6 +39,8 @@ class ZipDistCommand:
             zip_name: ZIP file name (without extension)
             no_zip: If True, create directory only
             no_preview: If True, skip browser preview
+            convert_docs: If True, convert markdown docs to user-friendly formats
+            include_developer_docs: If True, include developer documentation
         """
         try:
             # Validate paths
@@ -52,7 +56,8 @@ class ZipDistCommand:
             
             # Process files
             self._process_files(source_path, output_path, zip_name, 
-                              exclude_patterns, no_zip, no_preview)
+                              exclude_patterns, no_zip, no_preview, 
+                              convert_docs, include_developer_docs)
             
             ui.zip_final_success()
             
@@ -61,15 +66,27 @@ class ZipDistCommand:
             sys.exit(1)
     
     def _process_files(self, source_path: Path, output_path: Path, zip_name: str,
-                      exclude_patterns: list, no_zip: bool, no_preview: bool) -> None:
+                      exclude_patterns: list, no_zip: bool, no_preview: bool,
+                      convert_docs: bool, include_developer_docs: bool) -> None:
         """Process and package files"""
         # Create temporary working directory
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir) / "distribution"
             temp_path.mkdir(parents=True, exist_ok=True)
             
-            # Copy files with exclusions
-            self._copy_source_files(source_path, temp_path, exclude_patterns)
+            if convert_docs:
+                # Enhanced document processing with user-friendly conversion
+                ui.info("エンドユーザー向け文書変換を実行中...")
+                stats = create_user_distribution(
+                    source_path, temp_path, 
+                    convert_docs=True,
+                    include_developer_docs=include_developer_docs,
+                    ui=ui
+                )
+                ui.info(f"文書変換完了: HTML {stats['converted_to_html']}件, TXT {stats['converted_to_txt']}件")
+            else:
+                # Traditional file copy with exclusions
+                self._copy_source_files(source_path, temp_path, exclude_patterns)
             
             # Create final output
             if no_zip:
@@ -167,14 +184,25 @@ def create_zip_dist_command():
     @click.option("--zip-name", default="kumihan-formatter-distribution", help="ZIPファイル名（拡張子なし）")
     @click.option("--no-zip", is_flag=True, help="ZIPファイルを作成せず、ディレクトリのみ作成")
     @click.option("--no-preview", is_flag=True, help="生成後にブラウザでプレビューしない")
-    def zip_dist(source_dir, output, zip_name, no_zip, no_preview):
+    @click.option("--no-convert-docs", is_flag=True, help="文書変換をスキップ（従来の単純コピー方式）")
+    @click.option("--include-dev-docs", is_flag=True, help="開発者向け文書も配布に含める")
+    def zip_dist(source_dir, output, zip_name, no_zip, no_preview, no_convert_docs, include_dev_docs):
         """配布用ZIPパッケージを作成します
         
         指定されたディレクトリの内容を配布用ZIPファイルとして整理・パッケージ化します。
         開発用ファイルは自動的に除外され、エンドユーザー向けの配布物が作成されます。
         同人作家など技術知識のないユーザー向けに最適化されています。
+        
+        新機能：
+        - Markdownファイルを読みやすいHTML・TXTファイルに自動変換
+        - ユーザー向けと開発者向け文書を適切に分離
+        - 美しい文書インデックスページを自動生成
         """
         command = ZipDistCommand()
-        command.execute(source_dir, output, zip_name, no_zip, no_preview)
+        command.execute(
+            source_dir, output, zip_name, no_zip, no_preview,
+            convert_docs=not no_convert_docs,
+            include_developer_docs=include_dev_docs
+        )
     
     return zip_dist

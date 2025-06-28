@@ -52,20 +52,13 @@ docs/dev/
 docs/analysis/
 docs/generated/
 
-# ヘルプファイル（GitHubページ参照方針により除外）
-README.md
-docs/
+# ヘルプファイル（新しい文書変換システムで処理されるため、従来の除外は不要）
+# 注意: README.md等は新しい配布システムで自動的にHTML/TXT変換されます
+# 従来の除外方式との互換性のため、--no-convert-docs フラグ使用時のみ以下が適用されます
 CHANGELOG.md
-SPEC.md
-STYLE_GUIDE.md
-CONTRIBUTING.md
 REFACTORING_SUMMARY.md
 BRANCH_CLEANUP.md
 SYNTAX_CHECKER_README.md
-quickstart.txt
-readme.txt
-docs/*.txt
-docs/*.md
 
 # 配布設定ファイル（配布後不要）
 .distignore
