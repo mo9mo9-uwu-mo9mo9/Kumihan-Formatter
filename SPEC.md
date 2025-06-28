@@ -23,7 +23,7 @@
 | `;;;キーワード\n内容\n;;;` | 単一ブロックタグ |
 | `;;;キー1＋キー2\n内容\n;;;` | **複合ブロックタグ**（順不同・全適用） |
 | `;;;目次;;;` | 目次マーカー（見出しから自動生成） |
-| `;;;画像 alt=説明;;;filename` | `<img src="images/filename" alt="説明">` |
+| `;;;filename.jpg;;;` | `<img src="images/filename.jpg" alt="filename.jpg">` |
 
 ---
 
@@ -40,7 +40,8 @@
 | 折りたたみ | `<details><summary>詳細を表示</summary>` | HTML5折りたたみブロック |
 | ネタバレ | `<details><summary>ネタバレを表示</summary>` | ネタバレ隠し専用 |
 | 目次 | `<div class="toc">` | 見出しから自動生成される目次 |
-| 画像 alt=説明 | `<img src="images/filename" alt="説明">` | ファイル名はコンテンツ部分 |
+| 画像（簡易） | `<img src="images/filename" alt="filename">` | ファイル名のみ指定 |
+| 画像（詳細） | `<img src="images/filename" alt="説明">` | 複数行でalt明示 |
 
 ---
 
@@ -216,7 +217,16 @@
 </ul>
 ```
 
-### 画像埋め込み例
+### 画像埋め込み例（簡易記法）
+```
+;;;sample.png;;;
+```
+↓
+```html
+<img src="images/sample.png" alt="sample.png" />
+```
+
+### 画像埋め込み例（詳細記法）
 ```
 ;;;画像 alt=サンプル画像
 sample.png

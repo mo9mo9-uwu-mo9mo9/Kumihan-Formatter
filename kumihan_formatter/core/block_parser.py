@@ -48,7 +48,8 @@ class BlockParser:
             return toc_marker(), start_index + 1
         
         # Handle image markers
-        if marker_content.startswith("画像") or ";;;画像" in opening_line:
+        if (marker_content.startswith("画像") or ";;;画像" in opening_line or 
+            self._is_simple_image_marker(opening_line)):
             return self._parse_image_block(lines, start_index)
         
         # Find closing marker
@@ -149,6 +150,26 @@ class BlockParser:
         filename = content_lines[0].strip() if content_lines else content
         
         return image_node(filename, alt_text), end_index + 1
+    
+    def _is_simple_image_marker(self, line: str) -> bool:
+        """
+        Check if a line is a simple image marker (;;;filename.ext;;;)
+        """
+        line = line.strip()
+        if not (line.startswith(';;;') and line.endswith(';;;') and line.count(';;;') >= 2):
+            return False
+        
+        parts = line.split(';;;')
+        if len(parts) < 3:
+            return False
+        
+        filename = parts[1].strip()
+        if not filename:
+            return False
+        
+        # Check for common image extensions
+        image_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']
+        return any(filename.lower().endswith(ext) for ext in image_extensions)
     
     def parse_paragraph(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
         """
