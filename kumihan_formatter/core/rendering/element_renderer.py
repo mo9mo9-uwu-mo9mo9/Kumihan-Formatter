@@ -9,7 +9,7 @@ from html import escape
 
 from ..ast_nodes import Node
 from .html_utils import (
-    escape_html, render_attributes, process_text_content,
+    escape_html, render_attributes, process_text_content, process_block_content,
     create_simple_tag, create_self_closing_tag
 )
 
@@ -39,7 +39,7 @@ class ElementRenderer:
     
     def render_div(self, node: Node) -> str:
         """Render div node"""
-        content = self._render_content(node.content, 0)
+        content = self._render_div_content(node.content, 0)
         attributes = render_attributes(node.attributes)
         
         if attributes:
@@ -236,6 +236,49 @@ class ElementRenderer:
             return ''.join(parts)
         else:
             return process_text_content(str(content))
+    
+    def _render_div_content(self, content: Any, depth: int = 0) -> str:
+        """
+        Render div content with list marker conversion
+        
+        Args:
+            content: Content to render
+            depth: Current recursion depth
+        
+        Returns:
+            str: Rendered content with list markers converted
+        """
+        max_depth = 100  # Prevent infinite recursion
+        
+        if depth > max_depth:
+            return '[ERROR: Maximum recursion depth reached]'
+            
+        if content is None:
+            return ''
+        elif isinstance(content, str):
+            return process_block_content(content)
+        elif isinstance(content, Node):
+            # Handle single Node objects using main renderer if available
+            if self._main_renderer:
+                return self._main_renderer._render_node_with_depth(content, depth + 1)
+            else:
+                return f"{{NODE:{content.type}}}"
+        elif isinstance(content, list):
+            parts = []
+            for item in content:
+                if isinstance(item, Node):
+                    # Handle nested nodes using main renderer if available
+                    if self._main_renderer:
+                        parts.append(self._main_renderer._render_node_with_depth(item, depth + 1))
+                    else:
+                        parts.append(f"{{NODE:{item.type}}}")
+                elif isinstance(item, str):
+                    parts.append(process_block_content(item))
+                else:
+                    parts.append(process_block_content(str(item)))
+            return ''.join(parts)
+        else:
+            return process_block_content(str(content))
     
     def reset_counters(self) -> None:
         """Reset internal counters"""
