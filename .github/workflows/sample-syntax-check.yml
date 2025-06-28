@@ -35,18 +35,18 @@ jobs:
     - name: サンプルファイル記法検証
       run: |
         echo "🔍 サンプルファイルの記法チェックを実行中..."
-        python dev/tools/syntax_fixer.py 記法ツール/サンプルファイル/*.txt
+        python dev/tools/syntax_fixer.py --fix 記法ツール/サンプルファイル/*.txt
         
     - name: examplesフォルダ記法検証
       run: |
         echo "🔍 examplesフォルダの記法チェックを実行中..."
-        find examples -name "*.txt" -type f | xargs python dev/tools/syntax_fixer.py
+        find examples -name "*.txt" -type f | xargs python dev/tools/syntax_fixer.py --fix
         
     - name: テンプレートファイル記法検証
       run: |
         echo "🔍 テンプレートファイルの記法チェックを実行中..."
         if [ -d "examples/elements" ]; then
-          python dev/tools/syntax_fixer.py examples/elements/*.txt
+          python dev/tools/syntax_fixer.py --fix examples/elements/*.txt
         fi
         
     - name: チェック結果サマリー
