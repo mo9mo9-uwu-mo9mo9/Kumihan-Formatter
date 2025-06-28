@@ -12,7 +12,26 @@ from .keyword_parser import KeywordParser
 
 
 class ListParser:
-    """Parser for list structures (ordered and unordered)"""
+    """
+    リスト構造パーサー（順序付き・順序なしリスト解析）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#Kumihan記法基本構文（リスト部分）
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - KeywordParser: キーワード付きリスト項目の処理で使用
+    - Node: リスト・リスト項目ノードの生成
+    - unordered_list, ordered_list, list_item: ファクトリー関数
+    - Parser: このクラスを使用する上位パーサー
+
+    責務:
+    - "- " および "・" 形式の順序なしリスト解析
+    - "1. " 形式の順序付きリスト解析
+    - キーワード付きリスト項目の処理（;;;キーワード;;; 記法）
+    - ネストリスト構造の解析（将来拡張用）
+    """
     
     def __init__(self, keyword_parser: KeywordParser):
         self.keyword_parser = keyword_parser

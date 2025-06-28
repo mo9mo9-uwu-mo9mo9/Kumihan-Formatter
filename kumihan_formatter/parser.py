@@ -13,7 +13,25 @@ from .core.block_parser import BlockParser
 
 
 class Parser:
-    """Main text parser that coordinates specialized parsers"""
+    """
+    Kumihan記法のメインパーサー（各特化パーサーを統括）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - KeywordParser: キーワード解析を委譲
+    - ListParser: リスト解析を委譲（KeywordParser使用）
+    - BlockParser: ブロック解析を委譲（KeywordParser使用）
+    - Node: 生成するASTノード
+
+    責務:
+    - テキスト全体の解析フロー制御
+    - 行タイプ判定と適切なパーサーへの委譲
+    - AST構造の構築統括
+    """
     
     def __init__(self, config=None):
         """Initialize parser with fixed markers"""

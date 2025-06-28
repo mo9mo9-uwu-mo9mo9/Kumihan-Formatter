@@ -45,7 +45,26 @@ class ValidationError:
 
 
 class SyntaxValidator:
-    """記法検証クラス"""
+    """
+    Kumihan記法検証クラス（品質保証の中核ツール）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#Kumihan記法基本構文
+    - アーキテクチャ: /CONTRIBUTING.md#テスト戦略
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - ValidationMode: 検証モード定義（tolerant/strict/error-sample）
+    - ValidationError: 検証エラー情報
+    - QualityAnalyzer: 品質メトリクス収集で使用
+    - .validation-config.yml: 設定ファイル
+
+    責務:
+    - Kumihan記法の構文検証（3モード対応）
+    - ファイルパターンによる自動モード判定
+    - エラー詳細レポートの生成
+    - 品質ゲートシステムとの連携
+    """
     
     def __init__(self, mode: ValidationMode = ValidationMode.TOLERANT, config_path: Path = None):
         self.errors = []

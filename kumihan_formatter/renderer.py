@@ -15,7 +15,26 @@ from .simple_config import create_simple_config
 
 
 class Renderer:
-    """Main HTML renderer that coordinates specialized renderers"""
+    """
+    Kumihan記法のメインレンダラー（各特化レンダラーを統括）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - HTMLRenderer: HTML出力の中核処理
+    - TemplateManager: Jinja2テンプレート管理
+    - TOCGenerator: 目次生成処理
+    - SimpleConfig: 設定値取得
+    - Node: 入力となるASTノード
+
+    責務:
+    - レンダリング全体フロー制御
+    - AST→HTML変換の統括
+    - テンプレート適用とHTML出力
+    """
     
     def __init__(self, template_dir: Optional[Path] = None):
         """

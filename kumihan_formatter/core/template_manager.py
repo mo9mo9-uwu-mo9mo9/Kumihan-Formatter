@@ -9,7 +9,26 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape, Template
 
 
 class TemplateManager:
-    """Manages Jinja2 templates for HTML rendering"""
+    """
+    Jinja2テンプレート管理クラス（HTML出力の制御）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
+
+    関連クラス:
+    - Renderer: このクラスを使用してHTML生成
+    - RenderContext: レンダリング文脈の構築
+    - Environment: Jinja2テンプレートエンジン
+    - SimpleConfig: 設定値の取得
+
+    責務:
+    - Jinja2テンプレートの読み込み・キャッシュ
+    - テンプレート選択とレンダリング実行
+    - HTMLエスケープとセキュリティ設定
+    - カスタムテンプレートディレクトリ対応
+    """
     
     def __init__(self, template_dir: Optional[Path] = None):
         """
