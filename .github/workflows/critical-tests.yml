@@ -13,10 +13,6 @@ on:
       - 'kumihan_formatter/**'
       - 'pyproject.toml'
       - '.github/workflows/critical-tests.yml'
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'examples/**'
   pull_request:
     branches: [ main ]
     # PR時は全変更で実行（品質保証） - パスフィルターなし
