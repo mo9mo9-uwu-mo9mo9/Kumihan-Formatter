@@ -1,98 +1,100 @@
-#!/usr/bin/env python3
-"""Test sample generation to reproduce RecursionError"""
+"""サンプル生成機能のテスト"""
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+import shutil
+from pathlib import Path
+import pytest
+from kumihan_formatter.commands.sample import SampleCommand
+from kumihan_formatter.sample_content import SHOWCASE_SAMPLE, SAMPLE_IMAGES
 
-def test_minimal_sample_generation():
-    """Test minimal sample generation without full dependencies"""
+
+class TestSampleGeneration:
+    """サンプル生成機能のテストクラス"""
     
-    print("=== Minimal Sample Generation Test ===")
+    def test_generate_sample_creates_files(self, tmp_path):
+        """サンプル生成で必要なファイルが作成されることを確認"""
+        output_dir = tmp_path / "test_sample"
+        
+        # サンプルを生成
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
+        
+        # ディレクトリが作成されたことを確認
+        assert output_dir.exists()
+        assert output_dir.is_dir()
+        
+        # 必要なファイルが存在することを確認
+        assert (output_dir / "showcase.txt").exists()
+        assert (output_dir / "showcase.html").exists()
+        assert (output_dir / "images").exists()
+        
+        # 画像ファイルが作成されたことを確認
+        for image_name in SAMPLE_IMAGES.keys():
+            assert (output_dir / "images" / image_name).exists()
     
-    try:
-        from kumihan_formatter.parser import Parser
-        from kumihan_formatter.renderer import Renderer
+    def test_showcase_content_is_valid(self):
+        """ショーケースサンプルの内容が有効であることを確認"""
+        # 必要な要素が含まれていることを確認
+        # Note: 目次マーカーは自動生成専用のため、SHOWCASE_SAMPLEには含まれない
+        assert ";;;見出し1" in SHOWCASE_SAMPLE
+        assert ";;;太字" in SHOWCASE_SAMPLE
+        assert ";;;枠線" in SHOWCASE_SAMPLE
+        assert ";;;ハイライト" in SHOWCASE_SAMPLE
+        assert ".png;;;" in SHOWCASE_SAMPLE
+        assert ".jpg;;;" in SHOWCASE_SAMPLE
         
-        # Use a smaller sample to isolate the issue
-        sample_text = """;;;見出し1
-第1章：テストドキュメント
-;;;
-
-これは段落です。
-
-;;;太字+イタリック
-複合スタイル
-;;;
-
-;;;見出し2
-第2章：リスト
-;;;
-
-- 項目1
-- 項目2"""
-        
-        print("Testing parser...")
-        parser = Parser()
-        ast = parser.parse(sample_text)
-        print(f"Parser completed: {len(ast)} nodes")
-        
-        print("Testing renderer...")
-        renderer = Renderer()
-        html = renderer.render(ast, title="test")
-        print(f"Renderer completed: {len(html)} characters")
-        
-        print("✅ Sample generation completed successfully")
-        return True
-        
-    except RecursionError as e:
-        print(f"❌ RecursionError in sample generation: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-    except Exception as e:
-        print(f"❌ Other error in sample generation: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-def test_full_sample_content():
-    """Test with full SHOWCASE_SAMPLE content"""
+        # キーワード付きリストが含まれていることを確認
+        assert "- ;;;太字;;;" in SHOWCASE_SAMPLE
+        assert "- ;;;枠線;;;" in SHOWCASE_SAMPLE
+        assert "- ;;;ハイライト color=" in SHOWCASE_SAMPLE
     
-    print("\n=== Full Sample Content Test ===")
+    def test_sample_images_are_valid(self):
+        """サンプル画像データが有効であることを確認"""
+        assert len(SAMPLE_IMAGES) == 4
+        
+        expected_images = ["scenario_map.png", "character.jpg", "item_icon.png", "flowchart.png"]
+        for image_name in expected_images:
+            assert image_name in SAMPLE_IMAGES
+            # Base64データが存在することを確認
+            assert len(SAMPLE_IMAGES[image_name]) > 0
     
-    try:
-        from kumihan_formatter.sample_content import SHOWCASE_SAMPLE
-        from kumihan_formatter.parser import Parser
-        from kumihan_formatter.renderer import Renderer
+    def test_generated_html_is_valid(self, tmp_path):
+        """生成されたHTMLが有効であることを確認"""
+        output_dir = tmp_path / "test_sample"
         
-        print(f"Sample content length: {len(SHOWCASE_SAMPLE)} characters")
-        print("Testing full sample parsing...")
+        # サンプルを生成
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
         
-        parser = Parser()
-        ast = parser.parse(SHOWCASE_SAMPLE)
-        print(f"Parsing completed: {len(ast)} nodes")
+        # HTMLファイルを読み込む
+        html_path = output_dir / "showcase.html"
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
         
-        print("Testing full sample rendering...")
-        renderer = Renderer()
-        html = renderer.render(ast, title="showcase")
-        print(f"Rendering completed: {len(html)} characters")
+        # 必要な要素が含まれていることを確認
+        assert "<!DOCTYPE html>" in html_content
+        assert '<aside class="toc-sidebar' in html_content  # 目次
+        # Note: showcaseではfloating-toggleは表示されない（記法表示機能を使わないため）
+        assert '<img src="images/' in html_content  # 画像
+        assert '<h1' in html_content  # 見出し
+        assert '<strong>' in html_content  # 太字
+        assert '<div class="box">' in html_content  # 枠線
+        assert '<div class="highlight"' in html_content  # ハイライト
+    
+    def test_cleanup_after_test(self, tmp_path):
+        """テスト後のクリーンアップ"""
+        output_dir = tmp_path / "test_sample"
         
-        print("✅ Full sample generation completed successfully")
-        return True
+        # サンプルを生成
+        command = SampleCommand()
+        command.execute(str(output_dir), use_source_toggle=False)
         
-    except RecursionError as e:
-        print(f"❌ RecursionError in full sample: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-    except Exception as e:
-        print(f"❌ Other error in full sample: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
+        # クリーンアップ
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        
+        # ディレクトリが削除されたことを確認
+        assert not output_dir.exists()
+
 
 if __name__ == "__main__":
-    success1 = test_minimal_sample_generation()
-    success2 = test_full_sample_content()
-    sys.exit(0 if (success1 and success2) else 1)
+    pytest.main([__file__, "-v"])
