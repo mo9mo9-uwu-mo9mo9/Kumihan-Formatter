@@ -224,8 +224,13 @@ class ConvertCommand:
         
         # Write output
         output_path = Path(output)
-        self.file_ops.ensure_directory(output_path)
         output_file = output_path / f"{input_path.stem}.html"
+        
+        # Remove existing output file if it exists
+        if output_file.exists():
+            output_file.unlink()
+        
+        self.file_ops.ensure_directory(output_path)
         self.file_ops.write_text_file(output_file, html)
         
         # Copy images

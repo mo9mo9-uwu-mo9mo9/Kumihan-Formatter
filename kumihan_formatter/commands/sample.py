@@ -42,6 +42,11 @@ class SampleCommand:
         
         ui.sample_generation(str(output_path))
         
+        # Remove existing output directory if it exists
+        if output_path.exists():
+            import shutil
+            shutil.rmtree(output_path)
+        
         # Create output directory
         self.file_ops.ensure_directory(output_path)
         
@@ -170,6 +175,12 @@ class TestFileCommand:
             config_obj = load_config(config)
             if config:
                 config_obj.validate_config()
+            
+            # Ensure the output directory is clean
+            output_dir = Path(output or "dist")
+            test_html_file = output_dir / f"{output_file.stem}.html"
+            if test_html_file.exists():
+                test_html_file.unlink()
             
             convert_command = ConvertCommand()
             test_output_file = convert_command._convert_file(
