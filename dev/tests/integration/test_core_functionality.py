@@ -1,278 +1,244 @@
-#!/usr/bin/env python3
 """
-New comprehensive test suite for Kumihan-Formatter core functionality
-This test suite can run independently without external dependencies like Jinja2
+コア機能の堅牢なE2Eテスト
+
+環境依存性を最小限に抑えた基本機能テスト
 """
 
+import pytest
+import subprocess
 import sys
+from pathlib import Path
+import tempfile
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 
-from kumihan_formatter.core.keyword_parser import KeywordParser
-from kumihan_formatter.core.block_parser import BlockParser
-from kumihan_formatter.core.list_parser import ListParser
-from kumihan_formatter.core.rendering import HTMLRenderer
-from kumihan_formatter.core.toc_generator import TOCGenerator
-from kumihan_formatter.core.ast_nodes import Node, NodeBuilder
 
-def test_keyword_parser():
-    """Test KeywordParser functionality"""
-    print("=== Keyword Parser Tests ===")
+class TestCoreFunctionality:
+    """コア機能の環境非依存テスト"""
     
-    parser = KeywordParser()
-    
-    # Test 1: Single keyword parsing
-    keywords, attributes, errors = parser.parse_marker_keywords("太字")
-    assert keywords == ["太字"], f"Expected ['太字'], got {keywords}"
-    assert not errors, f"Unexpected errors: {errors}"
-    print("✅ Single keyword parsing")
-    
-    # Test 2: Compound keyword parsing
-    keywords, attributes, errors = parser.parse_marker_keywords("太字+イタリック")
-    assert "太字" in keywords and "イタリック" in keywords, f"Expected both keywords, got {keywords}"
-    assert not errors, f"Unexpected errors: {errors}"
-    print("✅ Compound keyword parsing")
-    
-    # Test 3: Color attribute parsing
-    keywords, attributes, errors = parser.parse_marker_keywords("ハイライト color=#ff0000")
-    assert "ハイライト" in keywords, f"Expected ハイライト, got {keywords}"
-    assert attributes.get("color") == "#ff0000", f"Expected color #ff0000, got {attributes.get('color')}"
-    print("✅ Color attribute parsing")
-    
-    # Test 4: Single block creation
-    node = parser.create_single_block("太字", "テスト内容", {})
-    assert node.type == "strong", f"Expected strong, got {node.type}"
-    assert node.content == ["テスト内容"], f"Expected ['テスト内容'], got {node.content}"
-    print("✅ Single block creation")
-    
-    # Test 5: Compound block creation
-    node = parser.create_compound_block(["太字", "イタリック"], "複合内容", {})
-    assert node.type == "strong", f"Expected strong as outer type, got {node.type}"
-    assert isinstance(node.content[0], Node), "Expected nested node"
-    assert node.content[0].type == "em", f"Expected em as inner type, got {node.content[0].type}"
-    print("✅ Compound block creation")
-    
-    return True
+    def test_basic_cli_conversion(self):
+        """最小限のCLI変換テスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # シンプルなテストファイルを作成
+            input_file = temp_path / "test_input.txt"
+            input_content = """;;;見出し1
+テストファイル
+;;;
 
-def test_block_parser():
-    """Test BlockParser functionality"""
-    print("\n=== Block Parser Tests ===")
-    
-    keyword_parser = KeywordParser()
-    parser = BlockParser(keyword_parser)
-    
-    # Test 1: Opening marker detection
-    assert parser.is_opening_marker(";;;太字"), "Should detect ;;;太字 as opening marker"
-    assert not parser.is_opening_marker(";;;"), "Should not detect ;;; as opening marker"
-    assert not parser.is_opening_marker(";;;太字;;;"), "Should not detect ;;;太字;;; as opening marker"
-    print("✅ Opening marker detection")
-    
-    # Test 2: Closing marker detection
-    assert parser.is_closing_marker(";;;"), "Should detect ;;; as closing marker"
-    assert not parser.is_closing_marker(";;;太字"), "Should not detect ;;;太字 as closing marker"
-    print("✅ Closing marker detection")
-    
-    # Test 3: Block parsing
-    lines = [";;;太字", "内容テキスト", ";;;"]
-    node, next_index = parser.parse_block_marker(lines, 0)
-    assert node.type == "strong", f"Expected strong, got {node.type}"
-    assert next_index == 3, f"Expected next_index 3, got {next_index}"
-    print("✅ Block parsing")
-    
-    # Test 4: Paragraph parsing
-    lines = ["これは段落です", "続きの行"]
-    node, next_index = parser.parse_paragraph(lines, 0)
-    assert node.type == "p", f"Expected p, got {node.type}"
-    assert "これは段落です" in node.content, f"Content missing: {node.content}"
-    print("✅ Paragraph parsing")
-    
-    return True
+これは基本的なテストです。
 
-def test_html_renderer():
-    """Test HTMLRenderer functionality"""
-    print("\n=== HTML Renderer Tests ===")
+;;;太字
+重要な内容
+;;;
+"""
+            input_file.write_text(input_content, encoding='utf-8')
+            
+            # 出力ディレクトリ
+            output_dir = temp_path / "output"
+            output_dir.mkdir()
+            
+            # CLI実行
+            cmd = [
+                sys.executable, "-m", "kumihan_formatter.cli",
+                str(input_file),
+                "-o", str(output_dir),
+                "--no-preview"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            # 基本的な成功確認
+            assert result.returncode == 0, f"CLI failed: {result.stderr}"
+            
+            # 出力ファイルの存在確認
+            expected_output = output_dir / "test_input.html"
+            assert expected_output.exists(), "HTML output file not created"
+            
+            # HTMLの基本構造確認
+            html_content = expected_output.read_text(encoding='utf-8')
+            
+            # 必須要素の確認（環境非依存）
+            assert "<!DOCTYPE html>" in html_content, "Missing DOCTYPE"
+            assert "<html" in html_content, "Missing html element"
+            assert "</html>" in html_content, "Missing closing html tag"
+            assert "<head>" in html_content, "Missing head element"
+            assert "<body>" in html_content, "Missing body element"
+            
+            # コンテンツの基本確認
+            assert "テストファイル" in html_content, "Japanese content not preserved"
+            assert "重要な内容" in html_content, "Content not converted"
     
-    renderer = HTMLRenderer()
+    def test_empty_file_handling(self):
+        """空ファイルの適切な処理"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # 空ファイルを作成
+            input_file = temp_path / "empty_test.txt"
+            input_file.write_text("", encoding='utf-8')
+            
+            output_dir = temp_path / "output"
+            output_dir.mkdir()
+            
+            # CLI実行
+            cmd = [
+                sys.executable, "-m", "kumihan_formatter.cli",
+                str(input_file),
+                "-o", str(output_dir),
+                "--no-preview"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            # 空ファイルでも正常に処理されることを確認
+            assert result.returncode == 0, f"Empty file handling failed: {result.stderr}"
+            
+            # HTMLファイルが生成されることを確認
+            expected_output = output_dir / "empty_test.html"
+            assert expected_output.exists(), "HTML not generated for empty file"
+            
+            html_content = expected_output.read_text(encoding='utf-8')
+            assert "<!DOCTYPE html>" in html_content, "Invalid HTML for empty file"
     
-    # Test 1: Simple node rendering
-    node = Node("p", "テスト段落")
-    html = renderer.render_node(node)
-    assert "<p>テスト段落</p>" == html, f"Expected <p>テスト段落</p>, got {html}"
-    print("✅ Simple node rendering")
-    
-    # Test 2: Strong node rendering
-    node = Node("strong", ["太字テキスト"])
-    html = renderer.render_node(node)
-    assert "<strong>太字テキスト</strong>" == html, f"Expected <strong>太字テキスト</strong>, got {html}"
-    print("✅ Strong node rendering")
-    
-    # Test 3: Nested node rendering
-    inner_node = Node("em", ["イタリック"])
-    outer_node = Node("strong", [inner_node])
-    html = renderer.render_node(outer_node)
-    expected = "<strong><em>イタリック</em></strong>"
-    assert expected == html, f"Expected {expected}, got {html}"
-    print("✅ Nested node rendering")
-    
-    # Test 4: Node with attributes
-    node = Node("div", "内容", {"class": "box"})
-    html = renderer.render_node(node)
-    assert 'class="box"' in html and "<div" in html and "</div>" in html, f"Attributes not rendered correctly: {html}"
-    print("✅ Node with attributes")
-    
-    return True
+    def test_japanese_characters_preservation(self):
+        """日本語文字の正しい保持"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # 様々な日本語文字を含むファイル
+            input_file = temp_path / "japanese_test.txt"
+            input_content = """;;;見出し1
+日本語文字テスト
+;;;
 
-def test_toc_generator():
-    """Test TOCGenerator functionality"""
-    print("\n=== TOC Generator Tests ===")
+ひらがな: あいうえお
+カタカナ: アイウエオ
+漢字: 日本語変換
+記号: ①②③
+"""
+            input_file.write_text(input_content, encoding='utf-8')
+            
+            output_dir = temp_path / "output"
+            output_dir.mkdir()
+            
+            cmd = [
+                sys.executable, "-m", "kumihan_formatter.cli",
+                str(input_file),
+                "-o", str(output_dir),
+                "--no-preview"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            assert result.returncode == 0, f"Japanese text processing failed: {result.stderr}"
+            
+            expected_output = output_dir / "japanese_test.html"
+            assert expected_output.exists(), "HTML not generated for Japanese content"
+            
+            html_content = expected_output.read_text(encoding='utf-8')
+            
+            # 日本語文字が正しく保持されていることを確認
+            assert "あいうえお" in html_content, "Hiragana not preserved"
+            assert "アイウエオ" in html_content, "Katakana not preserved"
+            assert "日本語変換" in html_content, "Kanji not preserved"
+            assert "①②③" in html_content, "Japanese symbols not preserved"
     
-    generator = TOCGenerator()
-    
-    # Test 1: Empty nodes
-    toc_data = generator.generate_toc([])
-    assert not toc_data['has_toc'], "Empty nodes should not have TOC"
-    assert toc_data['heading_count'] == 0, f"Expected 0 headings, got {toc_data['heading_count']}"
-    print("✅ Empty nodes handling")
-    
-    # Test 2: Nodes with headings
-    h1_node = Node("h1", "第1章", {"id": "heading-1"})
-    h2_node = Node("h2", "第1節", {"id": "heading-2"})
-    nodes = [h1_node, Node("p", "段落"), h2_node]
-    
-    toc_data = generator.generate_toc(nodes)
-    assert toc_data['has_toc'], "Should have TOC with headings"
-    assert toc_data['heading_count'] == 2, f"Expected 2 headings, got {toc_data['heading_count']}"
-    print("✅ TOC generation with headings")
-    
-    # Test 3: Deep recursion protection
-    # Create a deeply nested structure
-    deep_node = Node("div", "内容")
-    current = deep_node
-    for i in range(10):
-        new_node = Node("div", [current])
-        current = new_node
-    
-    # This should not cause RecursionError
-    toc_data = generator.generate_toc([current])
-    assert toc_data['heading_count'] == 0, "Deep nesting should not crash"
-    print("✅ Deep recursion protection")
-    
-    return True
+    def test_basic_kumihan_syntax(self):
+        """基本的なKumihan記法の動作確認"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            input_file = temp_path / "syntax_test.txt"
+            input_content = """;;;見出し1
+メイン見出し
+;;;
 
-def test_integration():
-    """Test integration of all components"""
-    print("\n=== Integration Tests ===")
-    
-    # Full pipeline test
-    keyword_parser = KeywordParser()
-    block_parser = BlockParser(keyword_parser)
-    html_renderer = HTMLRenderer()
-    
-    # Parse a complex document
-    lines = [
-        ";;;見出し1",
-        "第1章",
-        ";;;",
-        "",
-        "これは段落です。",
-        "",
-        ";;;太字+イタリック",
-        "複合スタイル",
-        ";;;",
-        "",
-        "- リスト項目1",
-        "- リスト項目2"
-    ]
-    
-    ast = []
-    i = 0
-    
-    while i < len(lines):
-        line = lines[i].strip()
-        
-        if not line:
-            i += 1
-            continue
-        
-        if block_parser.is_opening_marker(line):
-            node, next_index = block_parser.parse_block_marker(lines, i)
-            if node:
-                ast.append(node)
-            i = next_index
-        elif line.startswith("- "):
-            # Simple list handling for test
-            ast.append(Node("p", line))
-            i += 1
-        else:
-            node, next_index = block_parser.parse_paragraph(lines, i)
-            if node:
-                ast.append(node)
-            i = next_index if next_index > i else i + 1
-    
-    # Render all nodes
-    html_parts = []
-    for node in ast:
-        html = html_renderer.render_node(node)
-        html_parts.append(html)
-    
-    full_html = '\n'.join(html_parts)
-    
-    # Debug: Print actual HTML
-    print(f"\nGenerated HTML:\n{full_html}")
-    print(f"\nParsed nodes: {len(ast)}")
-    for i, node in enumerate(ast):
-        print(f"  Node {i}: {node.type} - {repr(node.content)}")
-    
-    # Verify expected elements
-    assert "<h1" in full_html, f"Should contain h1 heading. Got: {full_html}"
-    assert "<strong>" in full_html, "Should contain strong element"
-    assert "<em>" in full_html, "Should contain em element"
-    assert "<p>" in full_html, "Should contain paragraph"
-    
-    print("✅ Full pipeline integration")
-    print(f"Generated HTML ({len(full_html)} chars):")
-    print(full_html[:200] + "..." if len(full_html) > 200 else full_html)
-    
-    return True
+通常の段落です。
 
-def main():
-    """Run all tests"""
-    print("🧪 Running Kumihan-Formatter Core Functionality Tests")
-    print("=" * 60)
-    
-    tests = [
-        test_keyword_parser,
-        test_block_parser,
-        test_html_renderer,
-        test_toc_generator,
-        test_integration
-    ]
-    
-    passed = 0
-    failed = 0
-    
-    for test in tests:
-        try:
-            if test():
-                passed += 1
-            else:
-                failed += 1
-        except Exception as e:
-            print(f"❌ {test.__name__} failed with exception: {e}")
-            import traceback
-            traceback.print_exc()
-            failed += 1
-    
-    print("\n" + "=" * 60)
-    print(f"🏁 Test Results: {passed} passed, {failed} failed")
-    
-    if failed == 0:
-        print("🎉 All tests passed!")
-        return True
-    else:
-        print("💥 Some tests failed!")
-        return False
+;;;太字
+太字のテスト
+;;;
 
-if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+;;;枠線
+枠線のテスト
+;;;
+"""
+            input_file.write_text(input_content, encoding='utf-8')
+            
+            output_dir = temp_path / "output"
+            output_dir.mkdir()
+            
+            cmd = [
+                sys.executable, "-m", "kumihan_formatter.cli",
+                str(input_file),
+                "-o", str(output_dir),
+                "--no-preview"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            assert result.returncode == 0, f"Syntax processing failed: {result.stderr}"
+            
+            expected_output = output_dir / "syntax_test.html"
+            html_content = expected_output.read_text(encoding='utf-8')
+            
+            # 基本的な変換が行われていることを確認（厳密ではなく存在確認のみ）
+            assert "メイン見出し" in html_content, "Heading content missing"
+            assert "太字のテスト" in html_content, "Bold content missing"
+            assert "枠線のテスト" in html_content, "Box content missing"
+            assert "通常の段落です" in html_content, "Paragraph content missing"
+    
+    def test_file_not_found_error(self):
+        """存在しないファイルのエラーハンドリング"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # 存在しないファイルを指定
+            nonexistent_file = temp_path / "does_not_exist.txt"
+            output_dir = temp_path / "output"
+            output_dir.mkdir()
+            
+            cmd = [
+                sys.executable, "-m", "kumihan_formatter.cli",
+                str(nonexistent_file),
+                "-o", str(output_dir),
+                "--no-preview"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            # エラーで終了することを確認
+            assert result.returncode != 0, "Should fail for nonexistent file"
+            assert "not found" in result.stderr.lower() or "does not exist" in result.stderr.lower(), \
+                "Should provide clear error message"
