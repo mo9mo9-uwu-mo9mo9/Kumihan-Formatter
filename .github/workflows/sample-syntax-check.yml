@@ -47,7 +47,11 @@ jobs:
     - name: サンプルファイル記法検証
       run: |
         echo "🔍 サンプルファイルの記法チェックを実行中..."
-        python dev/tools/syntax_fixer.py --fix 記法ツール/サンプルファイル/*.txt
+        if [ -d "記法ツール/サンプルファイル" ]; then
+          python dev/tools/syntax_fixer.py --fix 記法ツール/サンプルファイル/*.txt
+        else
+          echo "⚠️ 記法ツール/サンプルファイル ディレクトリが見つかりません"
+        fi
         
     - name: examplesフォルダ記法検証
       run: |
