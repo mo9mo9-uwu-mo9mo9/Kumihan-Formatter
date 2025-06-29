@@ -7,6 +7,7 @@ Kumihan-Formatter への貢献ガイドライン
 ### 1. Issue の作成
 - バグ報告や機能提案は Issue で行ってください
 - 既存の Issue を確認してから新規作成してください
+- Issue には適切な Label を付与して管理してください
 
 ### 2. Pull Request
 - `main` ブランチへの直接コミットは避けてください
