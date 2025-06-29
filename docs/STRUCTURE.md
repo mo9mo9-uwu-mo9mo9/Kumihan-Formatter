@@ -9,15 +9,88 @@ Kumihan-Formatter/
 │
 ├── kumihan_formatter/      # メインパッケージ
 │   ├── __init__.py        # パッケージ初期化
+│   ├── __main__.py        # パッケージ実行エントリポイント
 │   ├── cli.py             # CLIエントリポイント
-│   ├── parser.py          # テキスト解析エンジン
-│   ├── renderer.py        # HTML生成エンジン
-│   ├── config.py          # 設定ファイル管理
+│   ├── parser.py          # 解析統括クラス
+│   ├── renderer.py        # レンダリング統括クラス
+│   ├── config.py          # 基本設定管理
+│   ├── simple_config.py   # 簡易設定クラス
 │   ├── sample_content.py  # サンプルコンテンツ定義
+│   ├── commands/          # CLIサブコマンド群
+│   │   ├── __init__.py
+│   │   ├── convert.py     # 変換コマンド
+│   │   ├── sample.py      # サンプル生成コマンド
+│   │   ├── check_syntax.py # 構文チェックコマンド
+│   │   └── zip_dist.py    # 配布ZIP作成コマンド
+│   ├── core/              # 核心機能モジュール群
+│   │   ├── __init__.py
+│   │   ├── ast_nodes.py   # AST ノード定義
+│   │   ├── keyword_parser.py # キーワード解析エンジン
+│   │   ├── list_parser.py # リスト解析エンジン
+│   │   ├── block_parser.py # ブロック解析エンジン
+│   │   ├── template_manager.py # テンプレート管理
+│   │   ├── toc_generator.py # 目次生成
+│   │   ├── config_manager.py # 拡張設定管理
+│   │   ├── file_ops.py    # ファイル操作
+│   │   ├── performance.py # パフォーマンス監視
+│   │   ├── error_reporting.py # エラー報告
+│   │   ├── doc_classifier.py # ドキュメント分類
+│   │   ├── distribution_manager.py # 配布管理
+│   │   ├── markdown_converter.py # Markdown変換
+│   │   ├── rendering/     # レンダリング系
+│   │   │   ├── __init__.py
+│   │   │   ├── main_renderer.py # メインレンダラー
+│   │   │   ├── element_renderer.py # 要素レンダラー
+│   │   │   ├── compound_renderer.py # 複合要素レンダラー
+│   │   │   ├── html_formatter.py # HTML整形
+│   │   │   └── html_utils.py # HTML ユーティリティ
+│   │   ├── error_handling/ # エラー処理系
+│   │   │   ├── __init__.py
+│   │   │   ├── error_handler.py # エラーハンドラー
+│   │   │   ├── error_factories.py # エラーファクトリー
+│   │   │   ├── error_types.py # エラー型定義
+│   │   │   ├── error_recovery.py # エラー回復
+│   │   │   └── smart_suggestions.py # 賢い修正提案
+│   │   ├── syntax/        # 構文検証系
+│   │   │   ├── __init__.py
+│   │   │   ├── syntax_validator.py # 構文検証
+│   │   │   ├── syntax_rules.py # 構文ルール
+│   │   │   ├── syntax_errors.py # 構文エラー
+│   │   │   └── syntax_reporter.py # 構文報告
+│   │   ├── validators/    # 検証系
+│   │   │   ├── __init__.py
+│   │   │   ├── document_validator.py # ドキュメント検証
+│   │   │   ├── file_validator.py # ファイル検証
+│   │   │   ├── structure_validator.py # 構造検証
+│   │   │   ├── syntax_validator.py # 構文検証
+│   │   │   ├── performance_validator.py # パフォーマンス検証
+│   │   │   ├── validation_issue.py # 検証問題
+│   │   │   └── validation_reporter.py # 検証報告
+│   │   ├── utilities/     # ユーティリティ系
+│   │   │   ├── __init__.py
+│   │   │   ├── converters.py # 変換ユーティリティ
+│   │   │   ├── data_structures.py # データ構造
+│   │   │   ├── file_system.py # ファイルシステム
+│   │   │   ├── logging.py # ログ
+│   │   │   ├── string_similarity.py # 文字列類似度
+│   │   │   └── text_processor.py # テキスト処理
+│   │   └── common/        # 共通基盤
+│   │       ├── __init__.py
+│   │       ├── error_framework.py # エラーフレームワーク
+│   │       ├── smart_cache.py # スマートキャッシュ
+│   │       └── validation_mixin.py # 検証ミックスイン
 │   ├── templates/         # HTMLテンプレート
-│   │   └── base.html.j2   # ベーステンプレート
-│   └── utils/             # ユーティリティ関数
-│       └── __init__.py
+│   │   ├── base.html.j2   # ベーステンプレート
+│   │   ├── base-with-source-toggle.html.j2 # ソース表示機能付き
+│   │   ├── docs.html.j2   # ドキュメント用
+│   │   └── experimental/  # 実験的テンプレート
+│   │       └── base-with-scroll-sync.html.j2
+│   ├── ui/                # ユーザーインターフェース
+│   │   ├── __init__.py
+│   │   └── console_ui.py  # コンソールUI
+│   └── utils/             # 汎用ユーティリティ
+│       ├── __init__.py
+│       └── marker_utils.py # マーカーユーティリティ
 │
 ├── dev/                   # 開発用ファイル（開発者のみ）
 │   ├── tests/            # テストコード
@@ -99,10 +172,28 @@ Kumihan-Formatter/
 
 ## 新機能追加時の配置ガイド
 
-1. **機能コード**: `kumihan_formatter/` 内の適切なモジュールに追加
-2. **テストコード**: `dev/tests/test_機能名.py` として追加
-3. **サンプル**: `examples/input/` に入力例、`dist/samples/` に出力例
-4. **ドキュメント**: ユーザー向けは `docs/user/`、開発者向けは `docs/dev/`
+### 1. 機能コードの配置
+- **解析機能**: `kumihan_formatter/core/` 内の適切なサブディレクトリ
+- **レンダリング機能**: `kumihan_formatter/core/rendering/`
+- **検証機能**: `kumihan_formatter/core/validators/` または `kumihan_formatter/core/syntax/`
+- **CLIサブコマンド**: `kumihan_formatter/commands/`
+- **ユーティリティ**: `kumihan_formatter/core/utilities/`
+
+### 2. テストコードの配置
+- **ユニットテスト**: `dev/tests/test_機能名.py`
+- **統合テスト**: `dev/tests/integration/`
+- **E2Eテスト**: `dev/tests/e2e/`
+
+### 3. サンプル・出力の配置
+- **入力サンプル**: `examples/input/`
+- **出力サンプル**: `dist/samples/`
+- **テストデータ**: `dev/test_data/`
+
+### 4. ドキュメントの配置
+- **ユーザー向け**: `docs/user/`
+- **開発者向け**: `docs/dev/`
+- **アーキテクチャ**: `docs/dev/ARCHITECTURE.md`
+- **クラス依存関係**: `docs/CLASS_DEPENDENCY_MAP.md`
 
 ## 注意事項
 
