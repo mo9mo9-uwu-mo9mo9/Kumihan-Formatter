@@ -1,16 +1,24 @@
 name: サンプルファイル記法チェック
 
+# Phase2-A最適化: 段階的チェックとブランチ別最適化
 on:
   push:
+    branches: [ main ]
+    # Phase2-A: mainブランチではサンプル品質に関わる変更のみ実行
     paths:
-      - '記法ツール/サンプルファイル/*.txt'
       - 'examples/**/*.txt'
       - 'dev/tools/syntax_fixer.py'
+      - '.github/workflows/sample-syntax-check.yml'
+    paths-ignore:
+      - 'examples/**/README*'
   pull_request:
+    branches: [ main ]
+    # PR時はサンプル関連の幅広いチェックを実行
     paths:
       - '記法ツール/サンプルファイル/*.txt'
       - 'examples/**/*.txt'
       - 'dev/tools/syntax_fixer.py'
+      - '.github/workflows/sample-syntax-check.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -56,8 +64,16 @@ jobs:
     - name: チェック結果サマリー
       if: always()
       run: |
-        echo "✅ 全ての記法チェックが完了しました"
-        echo "📊 チェック対象:"
-        echo "  - 記法ツール/サンプルファイル: $(ls 記法ツール/サンプルファイル/*.txt 2>/dev/null | wc -l) ファイル"
-        echo "  - examples: $(find examples -name '*.txt' -type f | wc -l) ファイル"
-        echo "  - templates: $(find examples/elements -name '*.txt' -type f 2>/dev/null | wc -l) ファイル"
+        echo "## 📋 Sample Syntax Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Optimization**: Phase2-A (branch-specific scope)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ 全ての記法チェックが完了しました" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 チェック対象" >> $GITHUB_STEP_SUMMARY
+        echo "- **記法ツール/サンプルファイル**: $(ls 記法ツール/サンプルファイル/*.txt 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "- **examples**: $(find examples -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "- **templates**: $(find examples/elements -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ⚡ Phase2-A Optimization" >> $GITHUB_STEP_SUMMARY
+        echo "- **mainブランチ**: Core samples only" >> $GITHUB_STEP_SUMMARY
+        echo "- **PRブランチ**: Comprehensive sample validation" >> $GITHUB_STEP_SUMMARY

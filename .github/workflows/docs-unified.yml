@@ -1,22 +1,28 @@
 name: Docs / Unified Checks
 
+# Phase2-A最適化: ブランチ別の最適化とパスフィルターの改善
 on:
   pull_request:
     branches: [ main ]
+    # PR時はドキュメント関連の変更でのみ実行
     paths:
-      - 'kumihan_formatter/**'
-      - 'examples/**'
       - 'pyproject.toml'
+      - 'kumihan_formatter/__init__.py'  # バージョン整合性チェック
       - '**/*.md'
       - 'docs/**'
       - '.distignore'
-      - 'dev/tools/**/*.py'
+      - '.github/workflows/docs-unified.yml'
+    paths-ignore:
+      - 'examples/**'  # サンプル変更ではスキップ
   push:
     branches: [ main ]
+    # Phase2-A: mainブランチではバージョン関連のみ実行
     paths:
       - 'pyproject.toml'
       - 'kumihan_formatter/__init__.py'
-      - '**/*.md'
+      - '.github/workflows/docs-unified.yml'
+    paths-ignore:
+      - '**/*.md'  # mainブランチでのドキュメント変更はスキップ
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -125,9 +131,11 @@ jobs:
     - name: Generate summary
       run: |
         echo "## 📋 Documentation Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Optimization**: Phase2-A (branch-specific path filtering)" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Version consistency verified" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Required files present" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Basic markdown validation completed" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚡ **Optimization**: Selective execution based on change type" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ contains(github.event.pull_request.title, 'feat:') }}" = "true" ]; then
           echo "- 🔍 Feature documentation requirements checked" >> $GITHUB_STEP_SUMMARY
