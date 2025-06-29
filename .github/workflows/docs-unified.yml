@@ -137,6 +137,6 @@ jobs:
         echo "- ✅ Basic markdown validation completed" >> $GITHUB_STEP_SUMMARY
         echo "- ⚡ **Optimization**: Selective execution based on change type" >> $GITHUB_STEP_SUMMARY
         
-        if [ "${{ contains(github.event.pull_request.title, 'feat:') }}" = "true" ]; then
+        if [ "\${{ contains(github.event.pull_request.title, 'feat:') }}" = "true" ]; then
           echo "- 🔍 Feature documentation requirements checked" >> $GITHUB_STEP_SUMMARY
         fi
