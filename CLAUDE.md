@@ -6,6 +6,7 @@
 
 # インポート
 @./PREAMBLE.md  &#x20;
+@./CONTRIBUTING.md
 
 ---
 
