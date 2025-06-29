@@ -1,45 +1,65 @@
 # GitHub Actions ワークフロー運用ガイド
 
-**最終更新**: 2025-06-28 (Issue #278 最適化完了)
-**ステータス**: 🎯 最適化完了・安定運用中
+**最終更新**: 2025-06-29 (Issue #284 Phase 1実装完了)
+**ステータス**: 🎯 最適化継続中・Phase 1完了
 
-## 🚨 Issue #278 対応完了
+## 🚨 Issue #284 Phase 1対応完了
 
-**問題**: GitHub Actionsワークフロー詰まり（同時実行制限）
-**解決**: Phase 1-3の包括的最適化を実装
+**問題**: GitHub Actionsワークフロー詰まり（同時実行制限）継続
+**対応**: Phase 1緊急対策実装
 
 ### 📊 最適化結果
-- **ワークフロー削減**: 11個 → 7個 (-36%)
-- **同時実行制限**: 解決（concurrency制御追加）
-- **安定性**: 大幅向上（詰まり問題解決）
-- **リソース効率**: 最適化済み
+- **ワークフロー削減**: 17個 → 9個 (-47%)
+- **Concurrency制御**: 全アクティブワークフローに追加
+- **Timeout設定**: 適切な値を設定（テスト:10分、品質:15分、監視:5分）
+- **無効化ワークフロー**: 物理削除完了（8個）
 
-## 🚦 現在のワークフロー構成 (最適化済み)
+## 🚦 現在のワークフロー構成 (Phase 1最適化済み)
 
-### 🔴 **アクティブ・必須ワークフロー (7個)**
+### 🔴 **アクティブ・必須ワークフロー (9個)**
 
 | ワークフロー | ステータス | トリガー | 説明 | 優先度 |
 |------------|----------|--------|------|------|
-| **ci.yml** | ✅ 必須 | PR/push(main) | Quick Test - 🔴 PR必須チェック | Critical |
+| **critical-tests.yml** | ✅ 必須 | PR/push(main) | Critical Test - 🔴 PR必須チェック | Critical |
 | **ci-full.yml** | ✅ 有効 | PR/push(main) | Full Test Matrix | High |
 | **coverage.yml** | ✅ 有効 | PR/push(main) | Coverage Report | High |
 | **docs-unified.yml** | ✅ 新規 | PR/push | 統合ドキュメントチェック | Medium |
 | **auto-update.yml** | ✅ 有効 | PR | PR自動更新 | Medium |
 | **emoji-check.yml** | ✅ 有効 | PR | 絵文字チェック | Low |
 | **sample-syntax-check.yml** | ✅ 有効 | PR (samples) | サンプル記法チェック | Medium |
+| **quality-tests.yml** | ✅ 有効 | PR/push(main) | 品質テスト | High |
+| **workflow-health-monitor.yml** | ✅ 有効 | schedule | ワークフロー健全性監視 | Low |
 
-### 🟡 **無効化済みワークフロー (6個)**
+### 🗑️ **削除されたワークフロー (8個) - Phase 1**
 
-| ワークフロー | ステータス | 理由 | 復旧予定 |
-|------------|----------|------|---------|
-| **quality-monitoring.yml** | ⏸️ 無効 | 同時実行制限対策 | Phase 4 |
-| **enhanced-quality-check.yml** | ⏸️ 無効 | 同時実行制限対策 | Phase 4 |
-| **docs-validation.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
-| **docs-check.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
-| **doc-consistency-check.yml** | ⏸️ 無効 | docs-unified.ymlに統合 | 不要 |
-| **e2e-tests.yml** | ⏸️ 無効 | 再構築中 | 未定 |
+| ワークフロー | 削除日 | 理由 |
+|------------|--------|------|
+| **ci.yml** | 2025-06-29 | レガシー（テスト階層システムに置換） |
+| **quality-monitoring.yml** | 2025-06-29 | 一時無効化から削除 |
+| **enhanced-quality-check.yml** | 2025-06-29 | 一時無効化から削除 |
+| **docs-validation.yml** | 2025-06-29 | docs-unified.ymlに統合 |
+| **docs-check.yml** | 2025-06-29 | docs-unified.ymlに統合 |
+| **doc-consistency-check.yml** | 2025-06-29 | docs-unified.ymlに統合 |
+| **e2e-tests.yml** | 2025-06-29 | 再構築中のため削除 |
+| **e2e-tests-minimal.yml** | 2025-06-29 | 無効化のため削除 |
 
-## 📊 Phase 3実装内容
+## 📊 Phase 1実装内容（Issue #284）
+
+### ✅ 実装済み (2025-06-29)
+1. **Concurrency制御追加**
+   - 全アクティブワークフローに`concurrency`設定を追加
+   - `cancel-in-progress: true`で重複実行を自動キャンセル
+
+2. **Timeout設定追加**
+   - テストジョブ: 10分
+   - 品質・カバレッジジョブ: 15分
+   - 監視・自動更新ジョブ: 5分
+
+3. **無効化ワークフロー削除**
+   - 8個の非アクティブワークフローを物理削除
+   - リポジトリのクリーンアップ完了
+
+## 📊 過去の実装内容（Issue #278）
 
 ### ✅ 実装済み
 1. **quality-monitoring.yml**

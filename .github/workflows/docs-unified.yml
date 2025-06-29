@@ -26,6 +26,7 @@ jobs:
   unified-docs-check:
     name: Unified Documentation Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     steps:
     - uses: actions/checkout@v4
