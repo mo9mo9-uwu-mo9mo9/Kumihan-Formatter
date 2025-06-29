@@ -41,6 +41,23 @@ class ValidationResult:
 
 
 class ConfigValidator:
+    """
+    設定値検証・スキーマチェック
+
+    設計ドキュメント:
+    - 仕様: /SPEC.md#出力形式オプション
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 設定詳細: /docs/configuration.md
+
+    関連クラス:
+    - EnhancedConfig: 検証対象の設定管理クラス
+    - ValidationResult: 検証結果の格納
+
+    責務:
+    - 設定値の型・範囲チェック
+    - 必須項目の存在確認
+    - キーワード定義の妥当性検証
+    """
     """Advanced configuration validator"""
     
     # Required configuration schema
@@ -166,6 +183,25 @@ class ConfigValidator:
 
 
 class EnhancedConfig:
+    """
+    拡張設定管理（複数設定ソース統合・環境別設定）
+
+    設計ドキュメント:
+    - 仕様: /SPEC.md#出力形式オプション
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 設定詳細: /docs/configuration.md
+
+    関連クラス:
+    - ConfigValidator: 設定値の検証
+    - Parser: 設定を使用する主要クラス
+    - Renderer: 設定に基づくHTML生成
+
+    責務:
+    - 設定ファイルの読み込み・マージ
+    - 環境変数による設定上書き
+    - デフォルト値の提供
+    - 設定値へのアクセスインターフェース
+    """
     """Enhanced configuration manager with advanced features"""
     
     # Default configuration

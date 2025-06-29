@@ -296,7 +296,22 @@ class SpecialBlockParser:
 
 
 class BlockValidator:
-    """Validator for block structure and syntax"""
+    """
+    ブロック構造と構文の検証
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#ブロック構造
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+
+    関連クラス:
+    - BlockParser: 検証対象のパーサー
+    - MarkerValidator: マーカー構文検証と連携
+
+    責務:
+    - ブロックの入れ子構造検証
+    - マーカー対応の検証
+    - エラーメッセージの生成
+    """
     
     def __init__(self, block_parser: BlockParser):
         self.block_parser = block_parser

@@ -9,7 +9,25 @@ from typing import List, Optional
 
 
 class HTMLFormatter:
-    """Utilities for HTML formatting and pretty-printing"""
+    """
+    HTML整形・フォーマット（Pretty-print、バリデーション）
+
+    設計ドキュメント:
+    - 仕様: /SPEC.md#出力形式オプション
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - レンダリング詳細: /docs/rendering.md
+
+    関連クラス:
+    - Renderer: このクラスを使用してHTML出力を整形
+    - Node: 整形対象のASTノード
+    - TemplateManager: テンプレートベースの整形と連携
+
+    責務:
+    - HTML文字列のインデント整形
+    - タグの改行・圧縮制御
+    - 空白文字の正規化
+    - HTML妥当性チェック
+    """
     
     def __init__(self, indent_size: int = 2):
         """
