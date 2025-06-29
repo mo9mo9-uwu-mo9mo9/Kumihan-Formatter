@@ -74,9 +74,9 @@ jobs:
         echo "✅ 全ての記法チェックが完了しました" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📊 チェック対象" >> $GITHUB_STEP_SUMMARY
-        echo "- **記法ツール/サンプルファイル**: $(ls 記法ツール/サンプルファイル/*.txt 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
-        echo "- **examples**: $(find examples -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
-        echo "- **templates**: $(find examples/elements -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "- **記法ツール/サンプルファイル**: \$(ls 記法ツール/サンプルファイル/*.txt 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "- **examples**: \$(find examples -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
+        echo "- **templates**: \$(find examples/elements -name '*.txt' -type f 2>/dev/null | wc -l || echo 0) ファイル" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### ⚡ Phase2-A Optimization" >> $GITHUB_STEP_SUMMARY
         echo "- **mainブランチ**: Core samples only" >> $GITHUB_STEP_SUMMARY

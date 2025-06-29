@@ -71,8 +71,8 @@ jobs:
       run: |
         echo "## 🌐 Full Tests (Tier 2) Execution" >> $GITHUB_STEP_SUMMARY
         echo "**Purpose**: Comprehensive cross-platform validation" >> $GITHUB_STEP_SUMMARY
-        echo "**OS**: ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Python**: ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**OS**: \${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Python**: \${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
         echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
         echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -116,10 +116,7 @@ jobs:
       shell: bash
       run: |
         echo "Running pytest with proper configuration..."
-        pytest dev/tests/ -v --tb=short || {
-          echo "Pytest execution failed, but continuing CI..."
-          echo "This may indicate test environment issues that need investigation"
-        }
+        pytest dev/tests/ -v --tb=short || echo "Pytest execution failed, but continuing CI..."
     
     - name: Test package functionality
       shell: bash
@@ -142,7 +139,7 @@ jobs:
         # 基本変換テスト
         echo "n" | python -m kumihan_formatter convert examples/01-quickstart.txt -o dist/test-output --no-preview
         
-        echo "✅ All tests passed on ${{ matrix.os }} with Python ${{ matrix.python-version }}"
+        echo "✅ All tests passed on \${{ matrix.os }} with Python \${{ matrix.python-version }}"
 
   syntax-validation:
     name: Full Syntax Validation
@@ -189,13 +186,13 @@ jobs:
         echo "## 🌐 Full Tests (Tier 2) Summary"
         echo ""
         
-        if [ "${{ needs.full-test.result }}" == "success" ]; then
+        if [ "\${{ needs.full-test.result }}" == "success" ]; then
           echo "✅ Full test matrix: PASSED"
         else
           echo "❌ Full test matrix: FAILED"
         fi
         
-        if [ "${{ needs.syntax-validation.result }}" == "success" ]; then
+        if [ "\${{ needs.syntax-validation.result }}" == "success" ]; then
           echo "✅ Full syntax validation: PASSED"
         else
           echo "❌ Full syntax validation: FAILED"

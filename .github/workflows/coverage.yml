@@ -54,7 +54,7 @@ jobs:
           echo "## 📊 Coverage Report Execution Context" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**PR State**: ${{ github.event.pull_request.draft && 'Draft' || 'Ready for Review' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**PR State**: \${{ github.event.pull_request.draft && 'Draft' || 'Ready for Review' }}" >> $GITHUB_STEP_SUMMARY
           echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Phase2-A Optimization" >> $GITHUB_STEP_SUMMARY
