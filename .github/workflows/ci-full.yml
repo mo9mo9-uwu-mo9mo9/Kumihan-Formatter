@@ -55,19 +55,16 @@ jobs:
       matrix:
         # Phase2最適化: 並列度を10→6に削減（GitHubプラン制限の30%以下）
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.9", "3.12"]  # LTS + Latest のみ
+        python-version: ["3.12"]  # Latest のみ（各OSで共通）
         include:
-          # 中間バージョンはUbuntuでのみテスト（最も安定したOS）
+          # Ubuntuでは複数バージョンでテスト（最も安定したOS）
           - os: ubuntu-latest
-            python-version: "3.10"
+            python-version: "3.9"   # LTS
           - os: ubuntu-latest
-            python-version: "3.11"
-        exclude:
-          # Windows/macOSでは古いPythonバージョンはスキップ
-          - os: windows-latest
-            python-version: "3.9"
-          - os: macos-latest
-            python-version: "3.9"
+            python-version: "3.10"  # 中間バージョン
+          - os: ubuntu-latest
+            python-version: "3.11"  # 中間バージョン
+        # excludeは不要（明確な設計になるよう削除）
 
     steps:
     - name: Display execution context
