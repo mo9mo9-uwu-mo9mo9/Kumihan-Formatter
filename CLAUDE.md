@@ -152,119 +152,18 @@ GUI は提供せず、Python 3.9 以上が導入されている **Windows / macO
 
 ---
 
-## 4 🚨 **絶対に守るべき禁止事項**
+## 4 🚨 **基本的なワークフロー**
 
-### 🔄 **ワークフロー違反の絶対禁止**
-**任意のコード変更作業を開始する前に、以下を必ず実行してください：**
+### 🔄 **シンプルなワークフロー**
+**コード変更時の基本手順：**
 
-1. **現在のブランチ確認**: `git branch` で現在のブランチを確認
-2. **mainブランチでの作業禁止**: mainブランチにいる場合は即座に作業用ブランチを作成
-3. **事前同期**: mainブランチを最新に同期してから作業ブランチを作成
-4. **作業用ブランチ作成**: `git checkout -b feature/作業内容` で新ブランチを作成
-5. **PR必須**: 作業完了後は必ずプルリクエストを作成
-6. **Claude自身がPRレビューを実行**: 人間より優れているため、Claude自身が必ずレビューを行う（絶対遵守）
-7. **レビュー後にマージ**: レビュー完了後にmainブランチにマージ
-8. **自動ブランチ削除**: マージ後に作業ブランチは自動削除される（GitHub設定により）
-9. **Issue更新の実行**: マージ後には作業内容に適したIssue管理を必ず実行（絶対遵守）
-   - Issue作成（新機能・バグ報告等）
-   - Issue Close（作業完了時）
-   - Issue削除（不要になった場合）
-   - Issueコメント追加（進捗報告・作業完了報告等）
-
-#### 🚨 **自動マージ失敗防止**
-**以下の手順を厳守することで、自動マージ失敗を防止します：**
-
-1. **mainブランチ最新化**: 作業開始前に `git pull origin main` で最新に同期
-2. **ブランチ作成**: 最新のmainから作業ブランチを作成
-3. **定期同期**: 作業中にmainが更新された場合は適宜リベース
-4. **PR作成前チェック**: mainより遅れていないか確認
-5. **自動マージ設定**: PR作成時に `--auto --squash` フラグを必ず使用
-
-**🛠️ 自動マージ対応コマンド例:**
-```bash
-# 1. mainブランチを最新に同期
-git checkout main && git pull origin main
-
-# 2. 作業ブランチ作成（最新mainから）
-git checkout -b feature/作業内容
-
-# 3. ファイル変更・テスト実行
-# ...変更作業...
-
-# 4. コミット・プッシュ
-git add . && git commit -m "作業内容"
-git push -u origin feature/作業内容
-
-# 5. PR作成（自動マージ有効化）
-gh pr create --title "タイトル" --body "説明" && gh pr merge --auto --squash
-```
-
-**⚠️ 違反例（絶対禁止）:**
-- mainブランチでの直接ファイル変更
-- PR作成なしでのmainブランチへの直接マージ
-- 作業用ブランチを作らずにコミット
-- mainブランチの同期を怠る（自動マージ失敗の主原因）
-- マージ後のIssue更新を怠る
-
-**✅ 正しい手順:**
-```bash
-git checkout main && git pull origin main  # main最新化
-git checkout -b feature/作業内容  # 作業用ブランチ作成
-# ファイル変更・テスト実行
-git add . && git commit -m "作業内容"
-git push -u origin feature/作業内容
-# PR作成→自動マージ有効化→Claude自身がレビュー→mainにマージ
-# マージ後に作業ブランチは自動削除される（GitHub設定）
-# マージ後にIssue更新（Close、コメント追加等）
-```
-
-#### 🛠️ **事前チェックツール**
-自動マージ失敗を防ぐため、PR作成前に事前チェックツールを実行してください：
-
-```bash
-# 事前チェック実行（推奨）
-python dev/tools/pre_commit_check.py
-
-# チェック項目:
-# - mainブランチとの同期状況
-# - 未コミットの変更確認
-# - 基本的な構文エラー
-# - 必要ファイルの存在確認
-```
-
-#### 🚑 **自動マージ失敗時のリカバリ**
-自動マージが失敗した場合の対処法：
-
-1. **ブランチが遅れている場合:**
-   ```bash
-   git checkout main
-   git pull origin main
-   git checkout feature/ブランチ名
-   git rebase main
-   git push --force-with-lease origin feature/ブランチ名
-   ```
-
-2. **コンフリクトがある場合:**
-   ```bash
-   git checkout feature/ブランチ名
-   git rebase main
-   # コンフリクト解決
-   git add .
-   git rebase --continue
-   git push --force-with-lease origin feature/ブランチ名
-   ```
-
-3. **PR再作成が必要な場合:**
-   ```bash
-   gh pr close [PR番号]
-   gh pr create --title "タイトル" --body "説明" && gh pr merge --auto --squash
-   ```
-
-4. **緊急時の手動マージ:**
-   ```bash
-   # 最後の手段（自動マージ設定を無視）
-   gh pr merge [PR番号] --squash
-   ```
+1. **作業ブランチ作成**: `git checkout -b feature/作業内容`
+2. **変更・テスト**: コードを変更し、動作確認
+3. **コミット**: `git add . && git commit -m "作業内容"`
+4. **プッシュ**: `git push -u origin feature/作業内容`
+5. **PR作成**: `gh pr create --title "タイトル" --body "説明"`
+6. **手動レビュー・マージ**: レビュー後に手動でマージ
+7. **ブランチ削除**: マージ後に作業ブランチを削除
 
 ### 🔒 **ファイル削除の絶対禁止**
 以下のファイル・フォルダは **絶対に削除してはならない**：
