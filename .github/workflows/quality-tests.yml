@@ -34,6 +34,12 @@ on:
       - 'docs/**'
       - 'README*'
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: '手動実行'
+        required: false
+        default: 'true'
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
