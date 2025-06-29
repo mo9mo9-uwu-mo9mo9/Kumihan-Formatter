@@ -304,10 +304,10 @@ sample.png
 
 ```bash
 # 単一ファイルの検証
-python dev/tools/syntax_validator.py examples/sample.txt
+python -m kumihan_formatter.core.syntax.syntax_validator examples/sample.txt
 
 # 複数ファイルの一括検証
-python dev/tools/syntax_validator.py examples/*.txt
+python -m kumihan_formatter.core.syntax.syntax_validator examples/*.txt
 
 # テストスイートによる検証
 python -m pytest dev/tests/test_syntax_validation.py -v
