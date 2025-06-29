@@ -182,8 +182,6 @@ class EnhancedConfig:
             "見出し5": {"tag": "h5"},
             "折りたたみ": {"tag": "details", "summary": "詳細を表示"},
             "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
-            "コードブロック": {"tag": "pre", "class": "code-block"},
-            "コード": {"tag": "code", "class": "inline-code"},
         },
         "theme": "default",
         "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",

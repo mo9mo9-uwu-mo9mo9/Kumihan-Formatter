@@ -274,7 +274,7 @@ class SpecialBlockParser:
         code_content = '\n'.join(code_lines)
         
         # Create code block node
-        builder = NodeBuilder('pre').css_class('code-block').content(code_content)
+        builder = NodeBuilder('pre').content(code_content)
         
         return builder.build(), end_index + 1
     
