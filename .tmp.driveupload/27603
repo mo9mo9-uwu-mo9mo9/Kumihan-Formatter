@@ -58,3 +58,4 @@ f0924d8ff537ee32fc7b6430ce9057edea8ba72d 489ee95f1a1b9bee651aff86583a6b77300687a
 489ee95f1a1b9bee651aff86583a6b77300687a1 b302d979db7e5aa0daa881dbddcbf2a7cc16758c Anonymous Developer <anonymous@example.com> 1751194999 +0900	commit: feat: GitHub Actions ワークフロー簡素化による最低限チェック体制確立
 b302d979db7e5aa0daa881dbddcbf2a7cc16758c 40ae9004da3324a5a4369cd95370717671543b5c Anonymous Developer <anonymous@example.com> 1751195008 +0900	pull --rebase origin main (finish): refs/heads/main onto fb4b94d8de506456608096ccdadb0c3558a6ef17
 40ae9004da3324a5a4369cd95370717671543b5c 636c95083d23ef9c79cc594498f7e9167b89de6e Anonymous Developer <anonymous@example.com> 1751195152 +0900	pull --rebase origin main (finish): refs/heads/main onto 636c95083d23ef9c79cc594498f7e9167b89de6e
+636c95083d23ef9c79cc594498f7e9167b89de6e aaaba610cd5e592611b914a0eef2a33d463ee4f1 Anonymous Developer <anonymous@example.com> 1751195160 +0900	commit: fix: GitHub Actions通知問題根本解決 - .github完全削除

@@ -357,3 +357,4 @@ fb4b94d8de506456608096ccdadb0c3558a6ef17 40ae9004da3324a5a4369cd95370717671543b5
 9d9e0e0bc9168ccb0b6caee9e53f4cda38b50f79 40ae9004da3324a5a4369cd95370717671543b5c Anonymous Developer <anonymous@example.com> 1751195146 +0900	checkout: moving from feature/workflow-simplification to main
 40ae9004da3324a5a4369cd95370717671543b5c 636c95083d23ef9c79cc594498f7e9167b89de6e Anonymous Developer <anonymous@example.com> 1751195152 +0900	pull --rebase origin main (start): checkout 636c95083d23ef9c79cc594498f7e9167b89de6e
 636c95083d23ef9c79cc594498f7e9167b89de6e 636c95083d23ef9c79cc594498f7e9167b89de6e Anonymous Developer <anonymous@example.com> 1751195152 +0900	pull --rebase origin main (finish): returning to refs/heads/main
+636c95083d23ef9c79cc594498f7e9167b89de6e aaaba610cd5e592611b914a0eef2a33d463ee4f1 Anonymous Developer <anonymous@example.com> 1751195160 +0900	commit: fix: GitHub Actions通知問題根本解決 - .github完全削除
