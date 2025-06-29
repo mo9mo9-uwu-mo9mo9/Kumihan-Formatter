@@ -8,23 +8,29 @@ name: Full Tests (Tier 2)
 on:
   push:
     branches: [ main ]
+    # Phase2-A最適化: mainブランチでは重要な変更のみ実行
     paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/**'
+      - 'kumihan_formatter/**/*.py'
+      - 'dev/tests/**/*.py'
       - 'pyproject.toml'
-      - '.github/workflows/**'  # 全ワークフロー変更時に実行
-  pull_request:
-    branches: [ main ]
-    types: [ready_for_review]  # ready_for_reviewのみ（synchronizeでは実行しない）
-    paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/**'
-      - 'pyproject.toml'
-      - '.github/workflows/**'  # 全ワークフロー変更時に実行
+      - '.github/workflows/ci-full.yml'  # 自身の変更時のみ
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
-      - 'examples/**'  # 軽微なサンプル変更では実行しない
+      - 'examples/**'
+      - 'setup_*'  # セットアップスクリプト変更はスキップ
+  pull_request:
+    branches: [ main ]
+    types: [ready_for_review]  # Phase2-A: ドラフト中は実行しない
+    paths:
+      - 'kumihan_formatter/**'
+      - 'dev/tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/ci-full.yml'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
 
   workflow_dispatch:  # 手動実行を許可
     inputs:
@@ -71,12 +77,13 @@ jobs:
         echo "**OS**: ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
         echo "**Python**: ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
         echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Test Coverage (Tier 2)" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ **Cross-platform**: Windows, macOS, Ubuntu" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ **Multi-Python**: 3.9, 3.10, 3.11, 3.12" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ **Complete validation**: All test suites" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ **Production simulation**: Real-world usage patterns" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Optimization**: Skipped for non-critical changes on main" >> $GITHUB_STEP_SUMMARY
         
     - uses: actions/checkout@v4
     

@@ -1,8 +1,10 @@
 name: Auto Update PR
 
+# Phase2-A最適化: PRの自動更新機能はブランチに関係なく必要
 on:
   pull_request:
     types: [opened, synchronize]
+    # パスフィルターなし: どのようなPRでも自動更新機能が必要
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -64,5 +66,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🔄 このPRはmainブランチより遅れていたため、自動的に更新されました。'
+              body: '🔄 このPRはmainブランチより遅れていたため、自動的に更新されました。\n\n**Phase2-A最適化**: 自動更新機能はPR品質保証のため継続して実行されます。'
             })

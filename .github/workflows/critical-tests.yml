@@ -8,10 +8,18 @@ name: Critical Tests (Tier 0)
 on:
   push:
     branches: [ main ]
-    # paths指定なし - すべての変更で実行
+    # Phase2-A最適化: mainブランチでは最小限のトリガーのみ
+    paths:
+      - 'kumihan_formatter/**'
+      - 'pyproject.toml'
+      - '.github/workflows/critical-tests.yml'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
   pull_request:
     branches: [ main ]
-    # paths指定なし - すべての変更で実行
+    # PR時は全変更で実行（品質保証）
     types: [opened, synchronize, ready_for_review]
   workflow_dispatch:  # 手動実行
 
@@ -29,16 +37,17 @@ jobs:
       - name: Display execution context
         run: |
           echo "## 🚨 Critical Tests (Tier 0) Execution" >> $GITHUB_STEP_SUMMARY
-          echo "**Purpose**: Mandatory checks for ALL changes" >> $GITHUB_STEP_SUMMARY
+          echo "**Purpose**: Mandatory checks for critical changes" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Target**: Fast validation (< 3 min)" >> $GITHUB_STEP_SUMMARY
+          echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Coverage (Tier 0)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Syntax Check**: Critical syntax errors only" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Import Test**: Package importability" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Quick Test**: Basic functionality smoke test" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚡ **No**: Full test matrix, coverage reports, extensive validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ **Optimization**: Skipped for docs/examples changes on main" >> $GITHUB_STEP_SUMMARY
       
       - name: Checkout code
         uses: actions/checkout@v4

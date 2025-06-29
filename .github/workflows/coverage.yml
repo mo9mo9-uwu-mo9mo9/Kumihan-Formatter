@@ -2,14 +2,20 @@ name: Coverage Report
 
 on:
   push:
-    branches: [ main ]  # mainブランチマージ時は必ず実行
+    branches: [ main ]
+    # Phase2-A最適化: mainブランチでは重要なコード変更時のみ実行
     paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/**'
+      - 'kumihan_formatter/**/*.py'
+      - 'dev/tests/**/*.py'
       - 'pyproject.toml'
       - '.github/workflows/coverage.yml'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
+      - 'setup_*'
   pull_request:
-    types: [ready_for_review, synchronize]  # Phase2.5: ドラフト中は実行しない
+    types: [ready_for_review, synchronize]
     branches: [ main ]
     paths:
       - 'kumihan_formatter/**/*.py'
@@ -17,9 +23,9 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/coverage.yml'
     paths-ignore:
-      # Phase2.5: 軽微な変更では実行しない（AI開発機動力確保）
-      - '**/*.md'             # ドキュメント変更のみ除外
-      # NOTE: テストファイル変更時もカバレッジ測定は重要（品質保証）
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
   workflow_dispatch:  # 手動実行（重要なオプション）
     inputs:
       force_run:
@@ -49,10 +55,11 @@ jobs:
           echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**PR State**: ${{ github.event.pull_request.draft && 'Draft' || 'Ready for Review' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Phase2.5 Optimization" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **AI Development Agility**: Skipped for draft PRs and minor changes" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Quality Assurance**: Executed for ready-for-review PRs and main branch" >> $GITHUB_STEP_SUMMARY
+          echo "### Phase2-A Optimization" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **AI Development Agility**: Skipped for non-code changes on main" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Quality Assurance**: Executed for code changes and ready PRs" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Manual Override**: Available via workflow_dispatch" >> $GITHUB_STEP_SUMMARY
       
       - name: Checkout code

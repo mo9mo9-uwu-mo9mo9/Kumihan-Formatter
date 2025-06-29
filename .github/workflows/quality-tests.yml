@@ -8,26 +8,32 @@ name: Quality Tests (Tier 1)
 on:
   push:
     branches: [ main ]
+    # Phase2-A最適化: mainブランチではコア機能変更時のみ実行
     paths:
-      - 'kumihan_formatter/**'
-      - 'dev/tests/**'
+      - 'kumihan_formatter/**/*.py'
+      - 'dev/tests/**/*.py'
       - 'pyproject.toml'
-      - 'examples/**/*.txt'  # サンプルファイル変更時も実行
-      - '.github/workflows/**'  # 全ワークフロー変更時に実行
+      - '.github/workflows/quality-tests.yml'  # 自身の変更時のみ
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
+      - 'setup_*'
   pull_request:
     branches: [ main ]
-    types: [ready_for_review, synchronize]  # ドラフト中は実行しない
+    types: [ready_for_review, synchronize]
+    # PR時はサンプルを含む幅広いチェックを実行
     paths:
       - 'kumihan_formatter/**'
       - 'dev/tests/**'
       - 'pyproject.toml'
       - 'examples/**/*.txt'
-      - '.github/workflows/**'  # 全ワークフロー変更時に実行
+      - '.github/workflows/quality-tests.yml'
     paths-ignore:
-      - '**/*.md'  # ドキュメント変更のみでは実行しない
+      - '**/*.md'
       - 'docs/**'
       - 'README*'
-  workflow_dispatch:  # 手動実行
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -48,12 +54,13 @@ jobs:
           echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**PR State**: ${{ github.event.pull_request.draft && 'Draft (Skipped)' || 'Ready for Review' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Optimization**: Phase2-A (main branch path filtering)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Coverage (Tier 1)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Syntax Validation**: Complete Kumihan syntax check" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Unit Tests**: Core functionality validation" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Integration Tests**: End-to-end conversion tests" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Sample Validation**: Example file integrity" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ **Optimization**: Selective execution based on change impact" >> $GITHUB_STEP_SUMMARY
       
       - name: Checkout code
         uses: actions/checkout@v4

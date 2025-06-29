@@ -1,10 +1,11 @@
 name: Code Quality / Emoji Check
 
+# Phase2-A最適化: PR時のみ実行、mainブランチでは絶対禁止事項なのでスキップ
 on:
   pull_request:
     branches: [ main ]
     paths:
-      # Phase2最適化: より具体的なpathフィルター
+      # Phase2-A: より絶対的なパスフィルターで絶対禁止事項をチェック
       - 'kumihan_formatter/**/*.py'
       - 'dev/tools/**/*.py'
       - 'dev/tests/**/*.py'
@@ -14,7 +15,9 @@ on:
       - 'CLAUDE.md'
       - 'SPEC.md'
       - 'CONTRIBUTING.md'
-  workflow_dispatch:  # 手動実行を可能にする
+      - '.github/workflows/**/*.yml'  # ワークフロー内の絵文字もチェック
+  # mainブランチではpushトリガーを無効化（絷対禁止事項なのでPRでチェック済み）
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +28,20 @@ jobs:
     name: Check for Emoji Usage
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    
     steps:
+    - name: Display execution context
+      run: |
+        echo "## 🚀 Emoji Check (Code Quality)" >> $GITHUB_STEP_SUMMARY
+        echo "**Purpose**: Enforce absolute emoji prohibition in code" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Optimization**: Phase2-A (PR-only execution)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚨 Absolute Prohibition" >> $GITHUB_STEP_SUMMARY
+        echo "- ❌ **Code Files**: Python, Shell, Batch scripts" >> $GITHUB_STEP_SUMMARY
+        echo "- ❌ **Documentation**: CLAUDE.md, SPEC.md, CONTRIBUTING.md" >> $GITHUB_STEP_SUMMARY
+        echo "- ❌ **Workflows**: GitHub Actions YAML files" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚡ **Optimization**: Skipped on main (already checked in PR)" >> $GITHUB_STEP_SUMMARY
     - uses: actions/checkout@v4
     
     - name: Set up Python
