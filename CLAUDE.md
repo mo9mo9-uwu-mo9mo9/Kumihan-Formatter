@@ -25,7 +25,8 @@
 
 ```markdown
 <every_chat>
-[main_output]
+## Claude Code 運用5原則
+...（実際のPREAMBLE.mdの内容）
 
 # {{session.turn}} times.
 </every_chat>
