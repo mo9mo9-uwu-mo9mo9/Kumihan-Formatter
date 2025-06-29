@@ -47,6 +47,25 @@ class TOCEntry:
 
 
 class TOCGenerator:
+    """
+    目次生成メインクラス（見出し抽出・構造化・レンダリング）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#目次生成
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - 目次仕様: /docs/toc_specification.md
+
+    関連クラス:
+    - TOCEntry: 目次エントリーのデータ構造
+    - TOCValidator: 目次構造の検証
+    - TOCFormatter: 目次のHTMLフォーマット
+    - Parser: 目次マーカーを処理する上位クラス
+
+    責務:
+    - ASTから見出し要素の抽出
+    - 見出し階層構造の構築
+    - 目次エントリーのID管理
+    """
     """Generates table of contents from heading nodes"""
     
     def __init__(self):
@@ -236,6 +255,22 @@ class TOCGenerator:
 
 
 class TOCValidator:
+    """
+    目次構造の検証（見出しレベル・数・範囲）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#目次検証ルール
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+
+    関連クラス:
+    - TOCGenerator: 検証対象の目次生成クラス
+    - TOCEntry: 検証対象のエントリー
+
+    責務:
+    - 見出しレベルの連続性チェック
+    - 目次エントリー数の制限検証
+    - 無効な目次構造の検出
+    """
     """Validator for table of contents structure"""
     
     def __init__(self):
@@ -314,6 +349,25 @@ class TOCValidator:
 
 
 class TOCFormatter:
+    """
+    目次のHTMLフォーマット（スタイル・リンク・インデント）
+
+    設計ドキュメント:
+    - 記法仕様: /SPEC.md#目次出力形式
+    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
+    - スタイル詳細: /docs/toc_styling.md
+
+    関連クラス:
+    - TOCGenerator: フォーマット対象の目次データ
+    - TOCEntry: フォーマット対象のエントリー
+    - HTMLFormatter: HTML整形と連携
+
+    責務:
+    - 目次のHTMLリスト生成
+    - アンカーリンクの作成
+    - インデントと階層表現
+    - CSSクラスの付与
+    """
     """Formatter for different TOC output styles"""
     
     def __init__(self):
