@@ -12,6 +12,10 @@ on:
       - 'examples/**/*.txt'
       - 'dev/tools/syntax_fixer.py'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   syntax-validation:
     runs-on: ubuntu-latest

@@ -16,10 +16,15 @@ on:
       - 'CONTRIBUTING.md'
   workflow_dispatch:  # 手動実行を可能にする
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   emoji-check:
     name: Check for Emoji Usage
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
     
@@ -95,6 +100,7 @@ jobs:
   markdown-emoji-advisory:
     name: Markdown Emoji Advisory Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event_name == 'pull_request'
     steps:
     - uses: actions/checkout@v4
