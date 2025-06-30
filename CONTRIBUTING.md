@@ -19,6 +19,15 @@ Kumihan-Formatter への貢献ガイドライン
 - Issue に基づいて作業を行った場合、作業結果をそのIssue にコメントしてください
 - PR のマージ後は Close できる Issue があるかどうかを確認してください
 
+### 3. Issue駆動開発ワークフロー
+- Issue 確認・分析後、「作業中」ラベルを付与してください
+- ブランチ作成: `git checkout -b feature/issue-{番号}-{概要}` または `git checkout -b fix/issue-{番号}-{概要}`
+- 実装・テスト実行
+- コミット・プッシュの実行
+- PR 作成（本文に `Closes #issue番号` を記載）
+- レビュー・マージ実行
+- Issue への完了報告・クローズ実行
+
 ### 4. コーディング規約
 - Python 3.8+ 対応
 - Black でコードフォーマット
