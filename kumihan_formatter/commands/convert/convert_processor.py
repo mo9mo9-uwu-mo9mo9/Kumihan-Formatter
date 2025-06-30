@@ -40,7 +40,7 @@ class ConvertProcessor:
 
         # ファイル読み込み
         ui.processing_start("読み込み中", str(input_path))
-        text = self.file_ops.read_file_text(input_path)
+        text = self.file_ops.read_text_file(input_path)
 
         # テストケース表示
         if show_test_cases:
@@ -67,7 +67,7 @@ class ConvertProcessor:
 
         # ファイル保存
         ui.processing_start("保存中", f"ファイルを保存しています: {output_file.name}")
-        self.file_ops.write_file_text(output_file, html)
+        self.file_ops.write_text_file(output_file, html)
 
         # 統計情報表示
         self._show_conversion_stats(ast, text, output_file, input_path)
