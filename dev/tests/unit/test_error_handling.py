@@ -9,10 +9,10 @@ except ImportError:
     ErrorHandler = None
 try:
     from kumihan_formatter.core.error_handling.error_types import (
-        KumihanError, ParseError, RenderError, FileError, ValidationError
+        ErrorLevel, ErrorCategory, ErrorSolution, UserFriendlyError
     )
 except ImportError:
-    KumihanError = ParseError = RenderError = FileError = ValidationError = None
+    ErrorLevel = ErrorCategory = ErrorSolution = UserFriendlyError = None
 try:
     from kumihan_formatter.core.error_handling.error_factories import ErrorFactory
 except ImportError:
@@ -32,61 +32,92 @@ except ImportError:
 
 
 class TestErrorTypes:
-    """  エラータイプのテスト"""
+    """エラータイプのテスト"""
 
-    def test_kumihan_error_creation(self):
-        """KumihanErrorの作成テスト"""
-        try:
-            error = KumihanError("テストエラー")
-            assert error is not None
-            assert str(error) == "テストエラー"
-        except ImportError:
-            pytest.skip("KumihanErrorがimportできません")
+    def test_error_level_enum(self):
+        """ErrorLevelの作成テスト"""
+        if ErrorLevel is None:
+            pytest.skip("ErrorLevelがimportできません")
+        
+        assert ErrorLevel.INFO.value == "info"
+        assert ErrorLevel.WARNING.value == "warning"
+        assert ErrorLevel.ERROR.value == "error"
+        assert ErrorLevel.CRITICAL.value == "critical"
 
-    def test_parse_error_creation(self):
-        """ParseErrorの作成テスト"""
-        try:
-            error = ParseError("解析エラー", line_number=10, column=5)
-            assert error is not None
-            assert "10" in str(error) or hasattr(error, 'line_number')
-        except (ImportError, TypeError):
-            # ImportErrorまたはParseErrorが引数を取らない場合
-            try:
-                error = ParseError("解析エラー")
-                assert error is not None
-            except ImportError:
-                pytest.skip("ParseErrorがimportできません")
+    def test_error_category_enum(self):
+        """ErrorCategoryの作成テスト"""
+        if ErrorCategory is None:
+            pytest.skip("ErrorCategoryがimportできません")
+            
+        assert ErrorCategory.FILE_SYSTEM.value == "file_system"
+        assert ErrorCategory.ENCODING.value == "encoding"
+        assert ErrorCategory.SYNTAX.value == "syntax"
 
-    def test_render_error_creation(self):
-        """RenderErrorの作成テスト"""
-        try:
-            error = RenderError("レンダリングエラー")
-            assert error is not None
-            assert str(error) == "レンダリングエラー"
-        except ImportError:
-            pytest.skip("RenderErrorがimportできません")
+    def test_error_solution_creation(self):
+        """ErrorSolutionの作成テスト"""
+        if ErrorSolution is None:
+            pytest.skip("ErrorSolutionがimportできません")
+            
+        solution = ErrorSolution(
+            quick_fix="即座に修正する方法",
+            detailed_steps=["ステップ1", "ステップ2"],
+            external_links=["https://example.com"],
+            alternative_approaches=["代替方法1"]
+        )
+        assert solution.quick_fix == "即座に修正する方法"
+        assert len(solution.detailed_steps) == 2
+        assert solution.external_links == ["https://example.com"]
+        assert solution.alternative_approaches == ["代替方法1"]
 
-    def test_file_error_creation(self):
-        """FileErrorの作成テスト"""
-        try:
-            error = FileError("ファイルエラー", file_path="/test/path.txt")
-            assert error is not None
-            assert "path.txt" in str(error) or hasattr(error, 'file_path')
-        except (ImportError, TypeError):
-            try:
-                error = FileError("ファイルエラー")
-                assert error is not None
-            except ImportError:
-                pytest.skip("FileErrorがimportできません")
+    def test_user_friendly_error_creation(self):
+        """UserFriendlyErrorの作成テスト"""
+        if UserFriendlyError is None or ErrorSolution is None:
+            pytest.skip("UserFriendlyErrorまたはErrorSolutionがimportできません")
+            
+        solution = ErrorSolution(
+            quick_fix="即座に修正する方法",
+            detailed_steps=["ステップ1", "ステップ2"]
+        )
+        
+        error = UserFriendlyError(
+            error_code="TEST001",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.SYNTAX,
+            user_message="テストエラー",
+            solution=solution
+        )
+        assert error.error_code == "TEST001"
+        assert error.user_message == "テストエラー"
+        assert error.level == ErrorLevel.ERROR
+        assert error.category == ErrorCategory.SYNTAX
+        assert error.solution == solution
 
-    def test_validation_error_creation(self):
-        """ValidationErrorの作成テスト"""
-        try:
-            error = ValidationError("バリデーションエラー")
-            assert error is not None
-            assert str(error) == "バリデーションエラー"
-        except ImportError:
-            pytest.skip("ValidationErrorがimportできません")
+    def test_formatted_message(self):
+        """フォーマット済みメッセージのテスト"""
+        if UserFriendlyError is None or ErrorSolution is None:
+            pytest.skip("UserFriendlyErrorまたはErrorSolutionがimportできません")
+            
+        solution = ErrorSolution(
+            quick_fix="即座に修正する方法",
+            detailed_steps=["ステップ1", "ステップ2"]
+        )
+        
+        error = UserFriendlyError(
+            error_code="TEST001",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.SYNTAX,
+            user_message="テストエラー",
+            solution=solution,
+            technical_details="技術的な詳細情報"
+        )
+        
+        # 基本メッセージ
+        basic_msg = error.format_message()
+        assert "[TEST001] テストエラー" in basic_msg
+        
+        # 技術的詳細を含むメッセージ
+        detailed_msg = error.format_message(include_technical=True)
+        assert "技術的詳細: 技術的な詳細情報" in detailed_msg
 
 
 class TestErrorHandler:

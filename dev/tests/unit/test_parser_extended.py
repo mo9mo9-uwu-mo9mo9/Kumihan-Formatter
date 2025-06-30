@@ -170,7 +170,11 @@ class TestBlockParserIntegration:
     def test_block_parser_creation(self):
         """BlockParserの作成テスト"""
         try:
-            parser = BlockParser()
+            # KeywordParserも必要
+            if KeywordParser is None:
+                pytest.skip("KeywordParserがimportできません")
+            keyword_parser = KeywordParser()
+            parser = BlockParser(keyword_parser)
             assert parser is not None
         except ImportError:
             # BlockParserが存在しない場合はスキップ
@@ -179,7 +183,10 @@ class TestBlockParserIntegration:
     def test_block_types_parsing(self):
         """  異なるブロックタイプの解析テスト"""
         try:
-            parser = BlockParser()
+            if KeywordParser is None:
+                pytest.skip("KeywordParserがimportできません")
+            keyword_parser = KeywordParser()
+            parser = BlockParser(keyword_parser)
             
             # 異なるブロックタイプのテスト
             test_blocks = [
@@ -239,7 +246,10 @@ class TestListParserIntegration:
     def test_list_parser_creation(self):
         """ListParserの作成テスト"""
         try:
-            parser = ListParser()
+            if KeywordParser is None:
+                pytest.skip("KeywordParserがimportできません")
+            keyword_parser = KeywordParser()
+            parser = ListParser(keyword_parser)
             assert parser is not None
         except ImportError:
             pytest.skip("ListParserがimportできません")
@@ -247,7 +257,10 @@ class TestListParserIntegration:
     def test_list_parsing(self):
         """リスト構造の解析テスト"""
         try:
-            parser = ListParser()
+            if KeywordParser is None:
+                pytest.skip("KeywordParserがimportできません")
+            keyword_parser = KeywordParser()
+            parser = ListParser(keyword_parser)
             
             list_text = """・第一項目
 ・第二項目
