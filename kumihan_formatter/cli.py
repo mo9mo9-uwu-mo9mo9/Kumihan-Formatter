@@ -32,7 +32,7 @@ def register_commands():
     """Register all CLI commands with lazy loading"""
     # convert コマンドを最初に登録（最重要）
     try:
-        from .commands.convert import create_convert_command
+        from .commands.convert_original import create_convert_command
         cli.add_command(create_convert_command(), name="convert")
     except ImportError:
         # ファイルから直接インポート  
