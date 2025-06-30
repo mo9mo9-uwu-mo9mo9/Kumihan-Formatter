@@ -21,7 +21,6 @@ Kumihan-Formatter/
 │   │   ├── convert.py     # 変換コマンド
 │   │   ├── sample.py      # サンプル生成コマンド
 │   │   ├── check_syntax.py # 構文チェックコマンド
-│   │   └── zip_dist.py    # 配布ZIP作成コマンド
 │   ├── core/              # 核心機能モジュール群
 │   │   ├── __init__.py
 │   │   ├── ast_nodes.py   # AST ノード定義

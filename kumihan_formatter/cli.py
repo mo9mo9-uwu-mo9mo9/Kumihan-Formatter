@@ -93,13 +93,6 @@ def register_commands():
     except ImportError as e:
         import warnings
         warnings.warn(f"sample コマンドが読み込めませんでした: {e}")
-    
-    try:
-        from .commands.zip_dist import create_zip_dist_command
-        cli.add_command(create_zip_dist_command(), name="zip-dist")
-    except ImportError as e:
-        import warnings
-        warnings.warn(f"zip-dist コマンドが読み込めませんでした: {e}")
 
 
 def main():
@@ -119,7 +112,6 @@ def main():
             first_arg = sys.argv[1]
             if not first_arg.startswith("-") and not first_arg in [
                 "convert",
-                "zip-dist",
                 "generate-sample",
                 "generate-test",
                 "check-syntax",

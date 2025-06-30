@@ -299,50 +299,6 @@ class ConsoleUI:
         """Display watch mode stopped"""
         self.console.print("\n[yellow] ファイル監視を停止しました[/yellow]")
 
-    # ZIP distribution
-    def zip_start(self, source_path: str) -> None:
-        """Display ZIP distribution start"""
-        self.console.print(
-            f"[green][ZIP配布] 配布パッケージ作成開始:[/green] {source_path}"
-        )
-
-    def zip_exclusion_loaded(self, pattern_count: int) -> None:
-        """Display exclusion pattern loading"""
-        self.console.print(
-            f"[blue][除外設定] .distignoreから{pattern_count}個の除外パターンを読み込みました[/blue]"
-        )
-
-    def zip_copying(self) -> None:
-        """Display file copying status"""
-        self.console.print("[cyan][コピー] ソースファイルをコピー中...[/cyan]")
-
-    def zip_copy_complete(self, copied_count: int, excluded_count: int = 0) -> None:
-        """Display copy completion"""
-        self.console.print(
-            f"[green][コピー完了] {copied_count}個のファイルをコピー[/green]"
-        )
-        if excluded_count > 0:
-            self.console.print(
-                f"[yellow][除外] {excluded_count}個のファイルを除外[/yellow]"
-            )
-
-    def zip_creating(self, zip_name: str) -> None:
-        """Display ZIP creation status"""
-        self.console.print(f"[cyan][圧縮] ZIPファイル作成中:[/cyan] {zip_name}")
-
-    def zip_complete(self, zip_path: str, size_mb: float = None) -> None:
-        """Display ZIP creation completion"""
-        self.console.print(f"[green][完了] ZIPファイル作成完了:[/green] {zip_path}")
-        if size_mb:
-            self.console.print(f"[dim]   ファイルサイズ: {size_mb:.2f} MB[/dim]")
-
-    def zip_directory_complete(self, dir_path: str) -> None:
-        """Display directory creation completion"""
-        self.console.print(f"[green][完了] 配布ディレクトリを作成:[/green] {dir_path}")
-
-    def zip_final_success(self) -> None:
-        """Display final success message"""
-        self.console.print("[green][成功] 配布パッケージの作成が完了しました！[/green]")
 
     def no_preview_files(self) -> None:
         """Display no preview files message"""
