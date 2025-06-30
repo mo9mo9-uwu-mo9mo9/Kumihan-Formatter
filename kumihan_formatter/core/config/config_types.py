@@ -12,6 +12,7 @@ from typing import List
 
 class ConfigLevel(Enum):
     """設定の優先度レベル"""
+
     DEFAULT = 1
     SYSTEM = 2
     USER = 3
@@ -22,10 +23,11 @@ class ConfigLevel(Enum):
 @dataclass
 class ValidationResult:
     """設定検証結果"""
+
     is_valid: bool
     errors: List[str]
     warnings: List[str]
-    
+
     def has_issues(self) -> bool:
         """検証で問題があるかチェック"""
         return len(self.errors) > 0 or len(self.warnings) > 0
