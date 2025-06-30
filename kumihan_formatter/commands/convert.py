@@ -14,7 +14,7 @@ from typing import Optional
 import click
 
 # 互換性のための再エクスポート
-from .convert.convert_command import ConvertCommand
+from kumihan_formatter.commands.convert.convert_command import ConvertCommand
 
 
 @click.command()
