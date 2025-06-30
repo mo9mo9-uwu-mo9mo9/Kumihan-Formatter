@@ -1,0 +1,73 @@
+# Kumihan-Formatter Pre-commit Hooks
+# アーキテクチャ原則の自動チェック - Issue #319対応
+
+repos:
+  # 標準的な品質チェック
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+
+  # Python コードフォーマット
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=88]
+
+  # Import整理
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # 基本的な構文チェック
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203,W503]
+
+  # Kumihan-Formatter 独自チェック
+  - repo: local
+    hooks:
+      # アーキテクチャ原則チェック
+      - id: architecture-validator
+        name: アーキテクチャ原則チェック
+        entry: python dev/tools/architecture_validator.py
+        language: python
+        files: \.py$
+        args: [--fail-on-error]
+        additional_dependencies: []
+
+      # ファイルサイズ制限チェック
+      - id: file-size-limit
+        name: ファイルサイズ制限チェック (300行)
+        entry: python dev/tools/check_file_size.py
+        language: python
+        files: \.py$
+        args: [--max-lines=300, --warning-lines=240]
+
+      # 複雑度チェック
+      - id: complexity-check
+        name: 複雑度チェック
+        entry: python -m radon cc
+        language: python
+        files: \.py$
+        args: [--min=B, --show-complexity]
+        additional_dependencies: [radon]
+
+      # 型チェック (将来的にmypy導入時)
+      # - id: mypy
+      #   name: 型チェック
+      #   entry: mypy
+      #   language: python
+      #   files: \.py$
+      #   additional_dependencies: [mypy]
