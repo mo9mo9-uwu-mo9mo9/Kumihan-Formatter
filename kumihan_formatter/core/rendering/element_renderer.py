@@ -134,8 +134,12 @@ class ElementRenderer:
         
         summary = node.get_attribute('summary', '詳細を表示')
         
+        # Check if this is a spoiler block
+        is_spoiler = node.get_attribute('spoiler', False) or summary == 'ネタバレを表示'
+        class_attr = ' class="spoiler"' if is_spoiler else ''
+        
         # Wrap content in a div to ensure CSS selectors work properly
-        return f'<details><summary>{escape_html(summary)}</summary><div class="details-content">{content}</div></details>'
+        return f'<details{class_attr}><summary>{escape_html(summary)}</summary><div class="details-content">{content}</div></details>'
     
     def render_preformatted(self, node: Node) -> str:
         """Render preformatted text"""

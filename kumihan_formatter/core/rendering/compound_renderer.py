@@ -68,7 +68,7 @@ class CompoundElementRenderer:
         elif keyword == '折りたたみ':
             return f'<details><summary>詳細を表示</summary>{content}</details>'
         elif keyword == 'ネタバレ':
-            return f'<details><summary>ネタバレを表示</summary>{content}</details>'
+            return f'<details class="spoiler"><summary>ネタバレを表示</summary>{content}</details>'
         else:
             # Fallback for unknown keywords
             return f'<span class="{escape(keyword)}">{content}</span>'
