@@ -32,21 +32,51 @@ def register_commands():
     """Register all CLI commands with lazy loading"""
     # convert コマンドを最初に登録（最重要）
     try:
-        from .commands.convert_original import create_convert_command
-        cli.add_command(create_convert_command(), name="convert")
+        # 新しい convert モジュール構造を使用
+        from .commands.convert.convert_command import ConvertCommand
+        import click
+        from typing import Optional
+        
+        @click.command()
+        @click.argument("input_file", required=False)
+        @click.option("--output", "-o", default="./dist", help="出力ディレクトリ (デフォルト: ./dist)")
+        @click.option("--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ")
+        @click.option("--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換")
+        @click.option("--config", "-c", help="設定ファイルのパス")
+        @click.option("--show-test-cases", is_flag=True, help="テストケースを表示")
+        @click.option("--template", help="使用するテンプレート名")
+        @click.option("--include-source", is_flag=True, help="ソース表示機能を含める")
+        @click.option("--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ")
+        def convert_command(
+            input_file: Optional[str],
+            output: str,
+            no_preview: bool,
+            watch: bool,
+            config: Optional[str],
+            show_test_cases: bool,
+            template: Optional[str],
+            include_source: bool,
+            no_syntax_check: bool,
+        ):
+            """テキストファイルをHTMLに変換する"""
+            command = ConvertCommand()
+            command.execute(
+                input_file=input_file,
+                output=output,
+                no_preview=no_preview,
+                watch=watch,
+                config=config,
+                show_test_cases=show_test_cases,
+                template_name=template,
+                include_source=include_source,
+                syntax_check=not no_syntax_check,
+            )
+        
+        cli.add_command(convert_command, name="convert")
     except ImportError:
-        # ファイルから直接インポート  
-        import importlib.util
-        
-        # convert.pyファイルを直接インポート
-        spec = importlib.util.spec_from_file_location(
-            "convert_legacy", 
-            str(Path(__file__).parent / "commands" / "convert.py")
-        )
-        convert_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(convert_module)
-        
-        cli.add_command(convert_module.convert_command, name="convert")
+        # フォールバック: レガシー convert.py を使用
+        from .commands.convert import create_convert_command
+        cli.add_command(create_convert_command(), name="convert")
     
     # 他のコマンドを個別に登録（失敗してもconvertは動作する）
     try:
