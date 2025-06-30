@@ -29,7 +29,7 @@ from .convert import ConvertCommand
 @click.option("--template", help="使用するテンプレート名")
 @click.option("--include-source", is_flag=True, help="ソース表示機能を含める")
 @click.option("--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ")
-def create_convert_command(
+def convert_command(
     input_file: Optional[str],
     output: str,
     no_preview: bool,
@@ -57,6 +57,11 @@ def create_convert_command(
         include_source=include_source,
         syntax_check=not no_syntax_check,
     )
+
+
+def create_convert_command():
+    """Click コマンドオブジェクトを返す"""
+    return convert_command
 
 
 # 廃止予定の警告

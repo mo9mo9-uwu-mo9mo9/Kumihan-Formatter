@@ -9,16 +9,6 @@ import sys
 
 import click
 
-from .commands.check_syntax import create_check_syntax_command
-
-# Import command factories
-from .commands.convert import create_convert_command
-from .commands.sample import create_sample_command, create_test_command
-from .commands.zip_dist import create_zip_dist_command
-from .core.error_handling import ErrorHandler as FriendlyErrorHandler
-from .core.error_reporting import ErrorReport, ErrorReportBuilder
-from .ui.console_ui import ui
-
 
 def setup_encoding():
     """Setup encoding for Windows and macOS compatibility"""
@@ -36,16 +26,42 @@ def cli():
     pass
 
 
-# Register commands directly with the CLI group
-cli.add_command(create_convert_command(), name="convert")
-cli.add_command(create_zip_dist_command(), name="zip-dist")
-cli.add_command(create_sample_command(), name="generate-sample")
-cli.add_command(create_test_command(), name="generate-test")
-cli.add_command(create_check_syntax_command(), name="check-syntax")
+# Register commands using lazy loading
+def register_commands():
+    """Register all CLI commands with lazy loading"""
+    try:
+        from .commands.check_syntax import create_check_syntax_command
+        from .commands.sample import create_sample_command, create_test_command
+        from .commands.zip_dist import create_zip_dist_command
+        
+        # convert コマンドは特殊なパスにある
+        try:
+            from .commands.convert import create_convert_command
+            cli.add_command(create_convert_command(), name="convert")
+        except ImportError:
+            # ファイルから直接インポート
+            from kumihan_formatter.commands.convert import convert_command
+            cli.add_command(convert_command, name="convert")
+        
+        cli.add_command(create_zip_dist_command(), name="zip-dist")
+        cli.add_command(create_sample_command(), name="generate-sample")
+        cli.add_command(create_test_command(), name="generate-test")
+        cli.add_command(create_check_syntax_command(), name="check-syntax")
+    except ImportError as e:
+        # テスト環境では一部のコマンドが利用できない可能性がある
+        import warnings
+        warnings.warn(f"一部のコマンドが読み込めませんでした: {e}")
+        pass
 
 
 def main():
     """Main entry point with enhanced error handling"""
+    # コマンドを登録
+    register_commands()
+    
+    from .core.error_handling import ErrorHandler as FriendlyErrorHandler
+    from .ui.console_ui import ui
+    
     friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
 
     try:
