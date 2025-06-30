@@ -8,13 +8,8 @@ Issue #319対応 - 単一責任原則に基づくリファクタリング
 """
 
 from .convert_command import ConvertCommand
-from .convert_validator import ConvertValidator
 from .convert_processor import ConvertProcessor
+from .convert_validator import ConvertValidator
 from .convert_watcher import ConvertWatcher
 
-__all__ = [
-    "ConvertCommand",
-    "ConvertValidator",
-    "ConvertProcessor", 
-    "ConvertWatcher"
-]
+__all__ = ["ConvertCommand", "ConvertValidator", "ConvertProcessor", "ConvertWatcher"]

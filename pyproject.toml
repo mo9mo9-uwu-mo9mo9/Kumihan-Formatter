@@ -30,15 +30,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "pytest-asyncio>=0.23.0",
     "black>=23.0",
     "isort>=5.0",
     "flake8>=6.0",
     "beautifulsoup4>=4.9",
     "psutil>=5.9",
-    "hypothesis>=6.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -54,12 +50,6 @@ target-version = ['py39']
 [tool.isort]
 profile = "black"
 line_length = 88
-
-[tool.pytest.ini_options]
-testpaths = ["dev/tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
 
 # バージョン管理設定
 [tool.bumpversion]
@@ -79,30 +69,3 @@ filename = "kumihan_formatter/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
-# テストカバレッジ設定
-[tool.coverage.run]
-source = ["kumihan_formatter"]
-omit = [
-    "*/tests/*",
-    "*/dev/*",
-    "*/__pycache__/*",
-    "*/venv/*",
-    "*/.venv/*",
-    "kumihan_formatter/cli_original.py",  # レガシーファイル
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-]
-show_missing = true
-skip_covered = false
-precision = 2
-
-[tool.coverage.html]
-directory = "htmlcov"

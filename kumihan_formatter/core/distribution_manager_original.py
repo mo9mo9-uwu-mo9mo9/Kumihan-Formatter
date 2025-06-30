@@ -4,12 +4,12 @@
 エンドユーザー向け配布物の構造と文書変換を管理する
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Set
+import re
 import shutil
 import tempfile
-import re
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
 
 from .doc_classifier import DocumentClassifier, DocumentType
 from .markdown_converter import SimpleMarkdownConverter, convert_markdown_file
@@ -17,133 +17,149 @@ from .markdown_converter import SimpleMarkdownConverter, convert_markdown_file
 
 class DistributionManager:
     """配布構造管理器
-    
+
     エンドユーザー向けの配布物を作成・管理する
     """
-    
+
     def __init__(self, ui=None):
         """配布管理器を初期化
-        
+
         Args:
             ui: UIインスタンス（進捗表示用）
         """
         self.ui = ui
         self.classifier = DocumentClassifier()
         self.markdown_converter = SimpleMarkdownConverter()
-    
-    def create_user_friendly_distribution(self, source_dir: Path, output_dir: Path,
-                                        convert_docs: bool = True,
-                                        include_developer_docs: bool = False) -> Dict[str, int]:
+
+    def create_user_friendly_distribution(
+        self,
+        source_dir: Path,
+        output_dir: Path,
+        convert_docs: bool = True,
+        include_developer_docs: bool = False,
+    ) -> Dict[str, int]:
         """ユーザーフレンドリーな配布構造を作成
-        
+
         Args:
             source_dir: ソースディレクトリ
             output_dir: 出力ディレクトリ
             convert_docs: 文書変換を実行するか
             include_developer_docs: 開発者向け文書を含めるか
-            
+
         Returns:
             Dict: 処理統計（変換ファイル数等）
         """
         stats = {
-            'total_files': 0,
-            'converted_to_html': 0,
-            'converted_to_txt': 0,
-            'copied_as_is': 0,
-            'excluded': 0
+            "total_files": 0,
+            "converted_to_html": 0,
+            "converted_to_txt": 0,
+            "copied_as_is": 0,
+            "excluded": 0,
         }
-        
+
         if self.ui:
             self.ui.info("配布用文書構造の作成を開始")
-        
+
         # ファイル分類
         classified_files = self.classifier.classify_directory(source_dir)
-        stats['total_files'] = sum(len(files) for files in classified_files.values())
-        
+        stats["total_files"] = sum(len(files) for files in classified_files.values())
+
         if self.ui:
             self.ui.info(f"文書分類完了: {stats['total_files']}件のファイルを処理")
-        
+
         # 配布構造を作成
         self._create_distribution_structure(output_dir)
-        
+
         # 文書変換と配置
         if convert_docs:
-            stats.update(self._process_document_conversion(
-                classified_files, source_dir, output_dir, include_developer_docs
-            ))
-        
+            stats.update(
+                self._process_document_conversion(
+                    classified_files, source_dir, output_dir, include_developer_docs
+                )
+            )
+
         # メインプログラムファイルの処理
-        stats.update(self._copy_program_files(
-            classified_files, source_dir, output_dir
-        ))
-        
+        stats.update(self._copy_program_files(classified_files, source_dir, output_dir))
+
         # インデックスファイルの作成
         self._create_documentation_index(output_dir, classified_files)
-        
+
         # 配布情報ファイルの作成
         self._create_distribution_info(output_dir, stats)
-        
+
         if self.ui:
             self.ui.success("配布構造の作成が完了")
             self._report_statistics(stats)
-        
+
         return stats
-    
+
     def _create_distribution_structure(self, output_dir: Path) -> None:
         """配布用ディレクトリ構造を作成"""
         directories = [
-            "docs/essential",     # 最重要文書（.txt）
-            "docs/user",          # ユーザーガイド（HTML）
-            "docs/developer",     # 開発者文書（必要時）
-            "docs/technical",     # 技術文書（必要時）
-            "examples",           # サンプルファイル
+            "docs/essential",  # 最重要文書（.txt）
+            "docs/user",  # ユーザーガイド（HTML）
+            "docs/developer",  # 開発者文書（必要時）
+            "docs/technical",  # 技術文書（必要時）
+            "examples",  # サンプルファイル
             "kumihan_formatter",  # メインプログラム
         ]
-        
+
         for dir_path in directories:
             (output_dir / dir_path).mkdir(parents=True, exist_ok=True)
-    
-    def _process_document_conversion(self, classified_files: Dict[DocumentType, List[Path]],
-                                   source_dir: Path, output_dir: Path,
-                                   include_developer_docs: bool) -> Dict[str, int]:
+
+    def _process_document_conversion(
+        self,
+        classified_files: Dict[DocumentType, List[Path]],
+        source_dir: Path,
+        output_dir: Path,
+        include_developer_docs: bool,
+    ) -> Dict[str, int]:
         """文書変換処理"""
-        stats = {'converted_to_html': 0, 'converted_to_txt': 0, 'copied_as_is': 0}
-        
+        stats = {"converted_to_html": 0, "converted_to_txt": 0, "copied_as_is": 0}
+
         # ユーザー重要文書（.txt変換）
         for file_path in classified_files[DocumentType.USER_ESSENTIAL]:
             self._convert_to_txt(file_path, source_dir, output_dir / "docs/essential")
-            stats['converted_to_txt'] += 1
-        
+            stats["converted_to_txt"] += 1
+
         # ユーザーガイド（HTML変換）
         for file_path in classified_files[DocumentType.USER_GUIDE]:
             self._convert_to_html(file_path, source_dir, output_dir / "docs/user")
-            stats['converted_to_html'] += 1
-        
+            stats["converted_to_html"] += 1
+
         # 開発者・技術文書（必要時のみ）
         if include_developer_docs:
             for file_path in classified_files[DocumentType.DEVELOPER]:
-                self._copy_file_as_is(file_path, source_dir, output_dir / "docs/developer")
-                stats['copied_as_is'] += 1
-            
+                self._copy_file_as_is(
+                    file_path, source_dir, output_dir / "docs/developer"
+                )
+                stats["copied_as_is"] += 1
+
             for file_path in classified_files[DocumentType.TECHNICAL]:
-                self._copy_file_as_is(file_path, source_dir, output_dir / "docs/technical")
-                stats['copied_as_is'] += 1
-        
+                self._copy_file_as_is(
+                    file_path, source_dir, output_dir / "docs/technical"
+                )
+                stats["copied_as_is"] += 1
+
         return stats
-    
-    def _copy_program_files(self, classified_files: Dict[DocumentType, List[Path]],
-                          source_dir: Path, output_dir: Path) -> Dict[str, int]:
+
+    def _copy_program_files(
+        self,
+        classified_files: Dict[DocumentType, List[Path]],
+        source_dir: Path,
+        output_dir: Path,
+    ) -> Dict[str, int]:
         """メインプログラムファイルの処理"""
-        stats = {'copied_as_is': 0}
-        
+        stats = {"copied_as_is": 0}
+
         # サンプルファイル
         for file_path in classified_files[DocumentType.EXAMPLE]:
             relative_path = file_path.relative_to(source_dir)
             target_path = output_dir / relative_path
             target_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(file_path, target_path)
-            stats['copied_as_is'] += 1
-        
+            stats["copied_as_is"] += 1
+
         # メインプログラム（kumihan_formatter/ 以下）
         kumihan_formatter_dir = source_dir / "kumihan_formatter"
         if kumihan_formatter_dir.exists():
@@ -151,162 +167,170 @@ class DistributionManager:
             if target_dir.exists():
                 shutil.rmtree(target_dir)
             shutil.copytree(kumihan_formatter_dir, target_dir)
-            
+
             # Python ファイル数をカウント
             py_files = list(target_dir.rglob("*.py"))
-            stats['copied_as_is'] += len(py_files)
-        
+            stats["copied_as_is"] += len(py_files)
+
         # セットアップファイル
         setup_files = ["setup_windows.bat", "setup_macos.command", "pyproject.toml"]
         for filename in setup_files:
             setup_file = source_dir / filename
             if setup_file.exists():
                 shutil.copy2(setup_file, output_dir / filename)
-                stats['copied_as_is'] += 1
-        
+                stats["copied_as_is"] += 1
+
         return stats
-    
-    def _convert_to_txt(self, file_path: Path, source_dir: Path, output_dir: Path) -> None:
+
+    def _convert_to_txt(
+        self, file_path: Path, source_dir: Path, output_dir: Path
+    ) -> None:
         """MarkdownファイルをプレーンテキストIDに変換"""
         try:
             # Markdownを読み込み
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
-            
+
             # 簡単なMarkdown→テキスト変換
             text_content = self._markdown_to_plain_text(content)
-            
+
             # 出力ファイル名を決定
             output_filename = self._get_user_friendly_filename(file_path, ".txt")
             output_file = output_dir / output_filename
-            
+
             # テキストファイルとして保存
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(text_content)
-            
+
             if self.ui:
                 self.ui.info(f"TXT変換: {file_path.name} → {output_filename}")
-        
+
         except Exception as e:
             if self.ui:
                 self.ui.warning(f"TXT変換失敗: {file_path.name} - {e}")
-    
-    def _convert_to_html(self, file_path: Path, source_dir: Path, output_dir: Path) -> None:
+
+    def _convert_to_html(
+        self, file_path: Path, source_dir: Path, output_dir: Path
+    ) -> None:
         """MarkdownファイルをHTMLに変換"""
         try:
             # 出力ファイル名を決定
             output_filename = self._get_user_friendly_filename(file_path, ".html")
             output_file = output_dir / output_filename
-            
+
             # タイトルを生成
             title = self._generate_title_from_filename(file_path)
-            
+
             # Markdown→HTML変換
             success = convert_markdown_file(file_path, output_file, title)
-            
+
             if success and self.ui:
                 self.ui.info(f"HTML変換: {file_path.name} → {output_filename}")
             elif not success and self.ui:
                 self.ui.warning(f"HTML変換失敗: {file_path.name}")
-        
+
         except Exception as e:
             if self.ui:
                 self.ui.warning(f"HTML変換失敗: {file_path.name} - {e}")
-    
-    def _copy_file_as_is(self, file_path: Path, source_dir: Path, output_dir: Path) -> None:
+
+    def _copy_file_as_is(
+        self, file_path: Path, source_dir: Path, output_dir: Path
+    ) -> None:
         """ファイルをそのままコピー"""
         try:
             relative_path = file_path.relative_to(source_dir)
             target_file = output_dir / relative_path
             target_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(file_path, target_file)
-        
+
         except Exception as e:
             if self.ui:
                 self.ui.warning(f"ファイルコピー失敗: {file_path.name} - {e}")
-    
+
     def _markdown_to_plain_text(self, markdown_content: str) -> str:
         """Markdownをプレーンテキストに変換"""
         # 基本的なMarkdown記法を除去
         text = markdown_content
-        
+
         # 見出しマーカーを除去
-        text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)
-        
+        text = re.sub(r"^#{1,6}\s*", "", text, flags=re.MULTILINE)
+
         # リンクからテキスト部分のみを抽出
-        text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-        
+        text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+
         # 強調記法を除去
-        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
-        text = re.sub(r'\*([^*]+)\*', r'\1', text)
-        text = re.sub(r'__([^_]+)__', r'\1', text)
-        text = re.sub(r'_([^_]+)_', r'\1', text)
-        
+        text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+        text = re.sub(r"\*([^*]+)\*", r"\1", text)
+        text = re.sub(r"__([^_]+)__", r"\1", text)
+        text = re.sub(r"_([^_]+)_", r"\1", text)
+
         # コードブロックのマーカーを除去
-        text = re.sub(r'```.*?\n', '', text)
-        text = re.sub(r'```', '', text)
-        
+        text = re.sub(r"```.*?\n", "", text)
+        text = re.sub(r"```", "", text)
+
         # インラインコードのマーカーを除去
-        text = re.sub(r'`([^`]+)`', r'\1', text)
-        
+        text = re.sub(r"`([^`]+)`", r"\1", text)
+
         # 水平線を除去
-        text = re.sub(r'^---+$', '', text, flags=re.MULTILINE)
-        
+        text = re.sub(r"^---+$", "", text, flags=re.MULTILINE)
+
         # 複数の空行を単一の空行に変換
-        text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)
-        
+        text = re.sub(r"\n\s*\n\s*\n", "\n\n", text)
+
         return text.strip()
-    
+
     def _get_user_friendly_filename(self, file_path: Path, new_extension: str) -> str:
         """ユーザーフレンドリーなファイル名を生成"""
         # ファイル名のマッピング
         name_mappings = {
-            'readme.md': f'はじめに{new_extension}',
-            'install.md': f'インストール方法{new_extension}',
-            'usage.md': f'使い方ガイド{new_extension}',
-            'troubleshooting.md': f'トラブルシューティング{new_extension}',
-            'faq.md': f'よくある質問{new_extension}',
-            'tutorial.md': f'チュートリアル{new_extension}',
-            'quickstart.md': f'クイックスタート{new_extension}',
-            'license': f'ライセンス{new_extension}',
-            'contributing.md': f'開発参加ガイド{new_extension}'
+            "readme.md": f"はじめに{new_extension}",
+            "install.md": f"インストール方法{new_extension}",
+            "usage.md": f"使い方ガイド{new_extension}",
+            "troubleshooting.md": f"トラブルシューティング{new_extension}",
+            "faq.md": f"よくある質問{new_extension}",
+            "tutorial.md": f"チュートリアル{new_extension}",
+            "quickstart.md": f"クイックスタート{new_extension}",
+            "license": f"ライセンス{new_extension}",
+            "contributing.md": f"開発参加ガイド{new_extension}",
         }
-        
+
         filename_lower = file_path.name.lower()
-        return name_mappings.get(filename_lower, 
-                               file_path.stem + new_extension)
-    
+        return name_mappings.get(filename_lower, file_path.stem + new_extension)
+
     def _generate_title_from_filename(self, file_path: Path) -> str:
         """ファイル名からタイトルを生成"""
         title_mappings = {
-            'readme.md': 'はじめに',
-            'install.md': 'インストール方法',
-            'usage.md': '使い方ガイド',
-            'troubleshooting.md': 'トラブルシューティング',
-            'faq.md': 'よくある質問',
-            'tutorial.md': 'チュートリアル',
-            'quickstart.md': 'クイックスタート'
+            "readme.md": "はじめに",
+            "install.md": "インストール方法",
+            "usage.md": "使い方ガイド",
+            "troubleshooting.md": "トラブルシューティング",
+            "faq.md": "よくある質問",
+            "tutorial.md": "チュートリアル",
+            "quickstart.md": "クイックスタート",
         }
-        
+
         filename_lower = file_path.name.lower()
         return title_mappings.get(filename_lower, file_path.stem)
-    
-    def _create_documentation_index(self, output_dir: Path, 
-                                  classified_files: Dict[DocumentType, List[Path]]) -> None:
+
+    def _create_documentation_index(
+        self, output_dir: Path, classified_files: Dict[DocumentType, List[Path]]
+    ) -> None:
         """文書インデックスページを作成"""
         index_content = self._generate_index_html(classified_files)
         index_file = output_dir / "docs" / "index.html"
-        
-        with open(index_file, 'w', encoding='utf-8') as f:
+
+        with open(index_file, "w", encoding="utf-8") as f:
             f.write(index_content)
-        
+
         if self.ui:
             self.ui.info("文書インデックスを作成: docs/index.html")
-    
-    def _generate_index_html(self, classified_files: Dict[DocumentType, List[Path]]) -> str:
+
+    def _generate_index_html(
+        self, classified_files: Dict[DocumentType, List[Path]]
+    ) -> str:
         """インデックスHTMLを生成"""
-        generation_time = datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')
-        
+        generation_time = datetime.now().strftime("%Y年%m月%d日 %H:%M:%S")
+
         return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -448,19 +472,21 @@ class DistributionManager:
     </div>
 </body>
 </html>"""
-    
-    def _create_distribution_info(self, output_dir: Path, stats: Dict[str, int]) -> None:
+
+    def _create_distribution_info(
+        self, output_dir: Path, stats: Dict[str, int]
+    ) -> None:
         """配布情報ファイルを作成"""
         info_content = self._generate_distribution_info(stats)
         info_file = output_dir / "配布情報.txt"
-        
-        with open(info_file, 'w', encoding='utf-8') as f:
+
+        with open(info_file, "w", encoding="utf-8") as f:
             f.write(info_content)
-    
+
     def _generate_distribution_info(self, stats: Dict[str, int]) -> str:
         """配布情報テキストを生成"""
-        generation_time = datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')
-        
+        generation_time = datetime.now().strftime("%Y年%m月%d日 %H:%M:%S")
+
         return f"""Kumihan-Formatter 配布パッケージ
 ================================
 
@@ -500,7 +526,7 @@ class DistributionManager:
 
 Kumihan-Formatter をお楽しみください！
 """
-    
+
     def _report_statistics(self, stats: Dict[str, int]) -> None:
         """統計レポートを出力"""
         if self.ui:
@@ -511,19 +537,22 @@ Kumihan-Formatter をお楽しみください！
             self.ui.info(f"  コピー: {stats['copied_as_is']}件")
 
 
-def create_user_distribution(source_dir: Path, output_dir: Path, 
-                           convert_docs: bool = True,
-                           include_developer_docs: bool = False,
-                           ui=None) -> Dict[str, int]:
+def create_user_distribution(
+    source_dir: Path,
+    output_dir: Path,
+    convert_docs: bool = True,
+    include_developer_docs: bool = False,
+    ui=None,
+) -> Dict[str, int]:
     """ユーザー向け配布物を作成（外部API）
-    
+
     Args:
         source_dir: ソースディレクトリ
-        output_dir: 出力ディレクトリ  
+        output_dir: 出力ディレクトリ
         convert_docs: 文書変換を行うか
         include_developer_docs: 開発者向け文書を含めるか
         ui: UIインスタンス
-        
+
     Returns:
         Dict: 処理統計
     """

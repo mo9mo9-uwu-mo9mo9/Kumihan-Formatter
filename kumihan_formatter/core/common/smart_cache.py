@@ -11,22 +11,22 @@ from kumihan_formatter.core.caching import (
 )
 """
 
+# 廃止予定の警告
+import warnings
+
 # 互換性のための再エクスポート
 from ..caching import (
     CacheEntry,
-    CacheStrategy,
-    LRUStrategy,
-    LFUStrategy,
     CacheStorage,
-    SmartCache
+    CacheStrategy,
+    LFUStrategy,
+    LRUStrategy,
+    SmartCache,
 )
-
-# 廃止予定の警告
-import warnings
 
 warnings.warn(
     "smart_cache.py は廃止予定です。"
     "新しいコードでは kumihan_formatter.core.caching を使用してください。",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
