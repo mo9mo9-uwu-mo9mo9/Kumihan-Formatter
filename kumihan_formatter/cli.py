@@ -6,18 +6,9 @@ better maintainability and reduced complexity.
 """
 
 import sys
+from pathlib import Path
 
 import click
-
-from .commands.check_syntax import create_check_syntax_command
-
-# Import command factories
-from .commands.convert import create_convert_command
-from .commands.sample import create_sample_command, create_test_command
-from .commands.zip_dist import create_zip_dist_command
-from .core.error_handling import ErrorHandler as FriendlyErrorHandler
-from .core.error_reporting import ErrorReport, ErrorReportBuilder
-from .ui.console_ui import ui
 
 
 def setup_encoding():
@@ -36,16 +27,59 @@ def cli():
     pass
 
 
-# Register commands directly with the CLI group
-cli.add_command(create_convert_command(), name="convert")
-cli.add_command(create_zip_dist_command(), name="zip-dist")
-cli.add_command(create_sample_command(), name="generate-sample")
-cli.add_command(create_test_command(), name="generate-test")
-cli.add_command(create_check_syntax_command(), name="check-syntax")
+# Register commands using lazy loading
+def register_commands():
+    """Register all CLI commands with lazy loading"""
+    # convert コマンドを最初に登録（最重要）
+    try:
+        from .commands.convert import create_convert_command
+        cli.add_command(create_convert_command(), name="convert")
+    except ImportError:
+        # ファイルから直接インポート  
+        import importlib.util
+        
+        # convert.pyファイルを直接インポート
+        spec = importlib.util.spec_from_file_location(
+            "convert_legacy", 
+            str(Path(__file__).parent / "commands" / "convert.py")
+        )
+        convert_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(convert_module)
+        
+        cli.add_command(convert_module.convert_command, name="convert")
+    
+    # 他のコマンドを個別に登録（失敗してもconvertは動作する）
+    try:
+        from .commands.check_syntax import create_check_syntax_command
+        cli.add_command(create_check_syntax_command(), name="check-syntax")
+    except ImportError as e:
+        import warnings
+        warnings.warn(f"check-syntax コマンドが読み込めませんでした: {e}")
+    
+    try:
+        from .commands.sample import create_sample_command, create_test_command
+        cli.add_command(create_sample_command(), name="generate-sample")
+        cli.add_command(create_test_command(), name="generate-test")
+    except ImportError as e:
+        import warnings
+        warnings.warn(f"sample コマンドが読み込めませんでした: {e}")
+    
+    try:
+        from .commands.zip_dist import create_zip_dist_command
+        cli.add_command(create_zip_dist_command(), name="zip-dist")
+    except ImportError as e:
+        import warnings
+        warnings.warn(f"zip-dist コマンドが読み込めませんでした: {e}")
 
 
 def main():
     """Main entry point with enhanced error handling"""
+    # コマンドを登録
+    register_commands()
+
+    from .core.error_handling import ErrorHandler as FriendlyErrorHandler
+    from .ui.console_ui import ui
+
     friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
 
     try:
