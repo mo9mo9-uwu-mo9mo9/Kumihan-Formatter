@@ -1,3 +1,0 @@
-"""
-Kumihan-Formatter Test Suite
-"""

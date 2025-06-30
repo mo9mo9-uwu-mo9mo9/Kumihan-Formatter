@@ -14,7 +14,7 @@ from typing import Optional
 import click
 
 # 互換性のための再エクスポート
-from .convert import ConvertCommand
+from .convert.convert_command import ConvertCommand
 
 
 @click.command()
