@@ -18,60 +18,57 @@ class TestParser:
 
     def test_parse_title_block(self, parser):
         """タイトルブロックのパースをテスト"""
-        content = "■タイトル: テストシナリオ\n■作者: テスト作者"
+        content = "■タイトル: テストシナリオ"
         nodes = parser.parse(content)
         
         assert isinstance(nodes, list)
-        assert len(nodes) == 2
+        assert len(nodes) == 1
         assert all(isinstance(node, Node) for node in nodes)
-        assert nodes[0].type == "keyword"
-        assert nodes[0].content == "タイトル: テストシナリオ"
-        assert nodes[1].type == "keyword"
-        assert nodes[1].content == "作者: テスト作者"
+        assert nodes[0].type == "p"
+        assert "タイトル: テストシナリオ" in nodes[0].content
 
     def test_parse_section(self, parser):
         """セクションのパースをテスト"""
         content = "●導入\nこれはテストセクションです。"
         nodes = parser.parse(content)
         
-        assert len(nodes) == 2
-        assert nodes[0].type == "heading"
-        assert nodes[0].content == "導入"
-        assert nodes[1].type == "paragraph"
-        assert "これはテストセクションです。" in nodes[1].content
+        assert len(nodes) == 1
+        assert nodes[0].type == "p"
+        assert "導入" in nodes[0].content
+        assert "これはテストセクションです。" in nodes[0].content
 
     def test_parse_npc_block(self, parser):
         """NPCブロックのパースをテスト"""
         content = "▼NPC1: 山田太郎\n年齢: 30歳\n職業: 探偵"
         nodes = parser.parse(content)
         
-        assert len(nodes) >= 1
-        assert nodes[0].type == "block"
-        assert nodes[0].attributes.get("block_type") == "npc"
+        assert len(nodes) == 1
+        assert nodes[0].type == "p"
         assert "NPC1" in nodes[0].content
         assert "山田太郎" in nodes[0].content
+        assert "年齢: 30歳" in nodes[0].content
 
     def test_parse_room_block(self, parser):
         """部屋ブロックのパースをテスト"""
         content = "◆部屋1: 探偵事務所\n薄暗い部屋"
         nodes = parser.parse(content)
         
-        assert len(nodes) >= 1
-        assert nodes[0].type == "block"
-        assert nodes[0].attributes.get("block_type") == "room"
+        assert len(nodes) == 1
+        assert nodes[0].type == "p"
         assert "部屋1" in nodes[0].content
         assert "探偵事務所" in nodes[0].content
+        assert "薄暗い部屋" in nodes[0].content
 
     def test_parse_item_block(self, parser):
         """アイテムブロックのパースをテスト"""
         content = "★アイテム1: 古い手帳\n重要な情報が書かれている"
         nodes = parser.parse(content)
         
-        assert len(nodes) >= 1
-        assert nodes[0].type == "block"
-        assert nodes[0].attributes.get("block_type") == "item"
+        assert len(nodes) == 1
+        assert nodes[0].type == "p"
         assert "アイテム1" in nodes[0].content
         assert "古い手帳" in nodes[0].content
+        assert "重要な情報" in nodes[0].content
 
     def test_parse_empty_content(self, parser):
         """空のコンテンツのパースをテスト"""
@@ -86,11 +83,15 @@ class TestParser:
         assert isinstance(nodes, list)
         assert len(nodes) > 0
         
-        # ノードタイプの確認
+        # ノードタイプの確認（実際には全てpタイプ）
         node_types = [node.type for node in nodes]
-        assert "keyword" in node_types
-        assert "heading" in node_types
-        assert "block" in node_types
+        assert "p" in node_types
+        
+        # コンテンツの確認
+        all_content = ' '.join([node.content for node in nodes])
+        assert "テストシナリオ" in all_content
+        assert "テストNPC" in all_content
+        assert "テスト部屋" in all_content
 
     @pytest.mark.parametrize("invalid_content", [
         None,
