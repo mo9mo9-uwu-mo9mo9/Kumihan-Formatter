@@ -438,7 +438,7 @@
 
         /* 折りたたみコンテンツ */
         details > *:not(summary) {
-            padding: 1em;
+            padding: 1.5em 1.2em;
             background-color: #ffffff;
             line-height: 1.7;
         }
@@ -455,9 +455,30 @@
         /* 折りたたみブロック内の改行を適切に表示 */
         details br {
             display: block;
-            margin: 0.5em 0;
-            content: "";
+            margin: 0;
             line-height: 1.8;
+        }
+        
+        /* 折りたたみブロック内のリスト要素 */
+        details ul, details ol {
+            margin: 1em 0;
+            padding-left: 2em;
+            line-height: 1.7;
+        }
+        
+        details li {
+            margin-bottom: 0.5em;
+            line-height: 1.7;
+        }
+        
+        details ul:first-child,
+        details ol:first-child {
+            margin-top: 0;
+        }
+        
+        details ul:last-child,
+        details ol:last-child {
+            margin-bottom: 0;
         }
         
         /* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
