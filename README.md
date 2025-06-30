@@ -5,7 +5,6 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 ![バージョン](https://img.shields.io/badge/version-0.3.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9+-green.svg)
 ![プラットフォーム](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
-![コード品質](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/actions/workflows/test.yml/badge.svg)
 
 ## ✨ 特長
 
