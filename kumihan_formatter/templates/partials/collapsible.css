@@ -1,6 +1,6 @@
 /* 折りたたみブロック（details要素）のスタイル */
 details {
-    margin: 1em 0;
+    margin: 1em 1.5em;
     padding: 0;
     border: 1px solid #d0d7de;
     border-radius: 6px;
@@ -21,7 +21,7 @@ details[open] {
 }
 
 details summary {
-    padding: 0.8em 1em;
+    padding: 0.8em 1.5em;
     font-weight: 600;
     cursor: pointer;
     background-color: #f6f8fa;
@@ -30,6 +30,7 @@ details summary {
     transition: all 0.2s ease;
     position: relative;
     padding-left: 2.5em;
+    padding-right: 1.5em;
     list-style: none;
     color: #24292f;
     font-size: 1em;
@@ -77,7 +78,14 @@ details[open] summary::before {
 
 /* 折りたたみコンテンツ */
 details > *:not(summary) {
-    padding: 2.5em 2.2em;
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
     background-color: #ffffff;
     line-height: 1.7;
 }

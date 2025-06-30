@@ -134,7 +134,8 @@ class ElementRenderer:
         
         summary = node.get_attribute('summary', '詳細を表示')
         
-        return f'<details><summary>{escape_html(summary)}</summary>{content}</details>'
+        # Wrap content in a div to ensure CSS selectors work properly
+        return f'<details><summary>{escape_html(summary)}</summary><div class="details-content">{content}</div></details>'
     
     def render_preformatted(self, node: Node) -> str:
         """Render preformatted text"""
