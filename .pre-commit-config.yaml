@@ -38,6 +38,15 @@ repos:
   # Kumihan-Formatter 独自チェック
   - repo: local
     hooks:
+      # 🚀 コミット前品質チェック（カバレッジ100%必須）
+      - id: pre-commit-quality
+        name: 🚀 コミット前品質チェック
+        entry: bash
+        args: [-c, 'if [ "$(find . -name "test_*.py" -o -name "*_test.py" | wc -l)" -gt 0 ]; then make pre-commit; else echo "⚠️  テストファイルが見つかりません。テスト実装後にカバレッジ100%チェックが有効になります。"; make lint; fi']
+        language: system
+        pass_filenames: false
+        always_run: true
+
       # アーキテクチャ原則チェック
       - id: architecture-validator
         name: アーキテクチャ原則チェック

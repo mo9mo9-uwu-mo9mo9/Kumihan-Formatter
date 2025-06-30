@@ -33,20 +33,33 @@ def register_commands():
     # convert コマンドを最初に登録（最重要）
     try:
         # 新しい convert モジュール構造を使用
-        from .commands.convert.convert_command import ConvertCommand
-        import click
         from typing import Optional
-        
+
+        import click
+
+        from .commands.convert.convert_command import ConvertCommand
+
         @click.command()
         @click.argument("input_file", required=False)
-        @click.option("--output", "-o", default="./dist", help="出力ディレクトリ (デフォルト: ./dist)")
-        @click.option("--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ")
-        @click.option("--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換")
+        @click.option(
+            "--output",
+            "-o",
+            default="./dist",
+            help="出力ディレクトリ (デフォルト: ./dist)",
+        )
+        @click.option(
+            "--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ"
+        )
+        @click.option(
+            "--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換"
+        )
         @click.option("--config", "-c", help="設定ファイルのパス")
         @click.option("--show-test-cases", is_flag=True, help="テストケースを表示")
         @click.option("--template", help="使用するテンプレート名")
         @click.option("--include-source", is_flag=True, help="ソース表示機能を含める")
-        @click.option("--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ")
+        @click.option(
+            "--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ"
+        )
         def convert_command(
             input_file: Optional[str],
             output: str,
@@ -71,27 +84,32 @@ def register_commands():
                 include_source=include_source,
                 syntax_check=not no_syntax_check,
             )
-        
+
         cli.add_command(convert_command, name="convert")
     except ImportError:
         # フォールバック: レガシー convert.py を使用
         from .commands.convert import create_convert_command
+
         cli.add_command(create_convert_command(), name="convert")
-    
+
     # 他のコマンドを個別に登録（失敗してもconvertは動作する）
     try:
         from .commands.check_syntax import create_check_syntax_command
+
         cli.add_command(create_check_syntax_command(), name="check-syntax")
     except ImportError as e:
         import warnings
+
         warnings.warn(f"check-syntax コマンドが読み込めませんでした: {e}")
-    
+
     try:
         from .commands.sample import create_sample_command, create_test_command
+
         cli.add_command(create_sample_command(), name="generate-sample")
         cli.add_command(create_test_command(), name="generate-test")
     except ImportError as e:
         import warnings
+
         warnings.warn(f"sample コマンドが読み込めませんでした: {e}")
 
 
