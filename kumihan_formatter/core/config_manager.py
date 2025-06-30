@@ -11,21 +11,21 @@ from kumihan_formatter.core.config import (
 )
 """
 
+# 廃止予定の警告
+import warnings
+
 # 互換性のための再エクスポート
 from .config import (
     ConfigLevel,
-    ValidationResult,
-    ConfigValidator,
     ConfigLoader,
-    EnhancedConfig
+    ConfigValidator,
+    EnhancedConfig,
+    ValidationResult,
 )
-
-# 廃止予定の警告
-import warnings
 
 warnings.warn(
     "config_manager.py は廃止予定です。"
     "新しいコードでは kumihan_formatter.core.config を使用してください。",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )

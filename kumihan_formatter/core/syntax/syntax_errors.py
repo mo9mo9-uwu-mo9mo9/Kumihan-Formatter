@@ -11,14 +11,16 @@ from typing import List
 
 class ErrorSeverity(Enum):
     """Error severity levels"""
+
     ERROR = "ERROR"
-    WARNING = "WARNING" 
+    WARNING = "WARNING"
     INFO = "INFO"
 
 
 @dataclass
 class SyntaxError:
     """Represents a syntax error in Kumihan markup"""
+
     line_number: int
     column: int
     severity: ErrorSeverity
@@ -31,6 +33,7 @@ class SyntaxError:
 # Error type constants for consistency
 class ErrorTypes:
     """Constants for error types"""
+
     ENCODING = "encoding"
     FILE_NOT_FOUND = "file-not-found"
     INVALID_KEYWORD = "invalid-keyword"

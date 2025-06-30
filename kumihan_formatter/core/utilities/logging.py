@@ -7,16 +7,16 @@ formatting sizes, durations, and other common log data.
 
 class LogHelper:
     """Logging utility functions"""
-    
+
     @staticmethod
     def format_size(size_bytes: int) -> str:
         """Format byte size in human-readable format"""
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024
         return f"{size_bytes:.1f} TB"
-    
+
     @staticmethod
     def format_duration(seconds: float) -> str:
         """Format duration in human-readable format"""

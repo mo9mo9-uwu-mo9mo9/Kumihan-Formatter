@@ -4,7 +4,7 @@ This module provides safe type conversion functions
 and list manipulation utilities.
 """
 
-from typing import Any, List, Iterator
+from typing import Any, Iterator, List
 
 
 def safe_int(value: Any, default: int = 0) -> int:
@@ -28,7 +28,7 @@ def safe_bool(value: Any, default: bool = False) -> bool:
     if isinstance(value, bool):
         return value
     elif isinstance(value, str):
-        return value.lower() in ('true', '1', 'yes', 'on')
+        return value.lower() in ("true", "1", "yes", "on")
     elif isinstance(value, (int, float)):
         return bool(value)
     else:
@@ -38,4 +38,4 @@ def safe_bool(value: Any, default: bool = False) -> bool:
 def chunks(lst: List[Any], n: int) -> Iterator[List[Any]]:
     """Yield successive n-sized chunks from list"""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]

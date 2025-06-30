@@ -12,12 +12,12 @@ from .cache_types import CacheEntry
 
 class CacheStrategy(ABC):
     """キャッシュ戦略の抽象基底クラス"""
-    
+
     @abstractmethod
     def should_evict(self, entry: CacheEntry) -> bool:
         """エントリを削除すべきかを判定"""
         pass
-    
+
     @abstractmethod
     def get_priority(self, entry: CacheEntry) -> float:
         """削除優先度を取得（低い値 = 先に削除）"""
@@ -26,19 +26,19 @@ class CacheStrategy(ABC):
 
 class LRUStrategy(CacheStrategy):
     """Least Recently Used (最近最少使用) 戦略"""
-    
+
     def should_evict(self, entry: CacheEntry) -> bool:
         return entry.is_expired()
-    
+
     def get_priority(self, entry: CacheEntry) -> float:
         return entry.last_accessed.timestamp()
 
 
 class LFUStrategy(CacheStrategy):
     """Least Frequently Used (最少頻度使用) 戦略"""
-    
+
     def should_evict(self, entry: CacheEntry) -> bool:
         return entry.is_expired()
-    
+
     def get_priority(self, entry: CacheEntry) -> float:
         return float(entry.access_count)

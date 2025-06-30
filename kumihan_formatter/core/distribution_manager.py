@@ -13,20 +13,23 @@ from kumihan_formatter.core.distribution import (
 
 # 互換性のための再エクスポート
 from .distribution import (
-    DistributionStructure,
     DistributionConverter,
+    DistributionManager,
     DistributionProcessor,
-    DistributionManager
+    DistributionStructure,
 )
 
+
 # 便利な関数（後方互換性のため）
-def create_user_distribution(source_dir, output_dir, ui=None, 
-                           convert_docs=True, include_developer_docs=False):
+def create_user_distribution(
+    source_dir, output_dir, ui=None, convert_docs=True, include_developer_docs=False
+):
     """配布構造を作成（後方互換性用）"""
     manager = DistributionManager(ui)
     return manager.create_user_friendly_distribution(
         source_dir, output_dir, convert_docs, include_developer_docs
     )
+
 
 # 廃止予定の警告
 import warnings
@@ -35,5 +38,5 @@ warnings.warn(
     "distribution_manager.py は廃止予定です。"
     "新しいコードでは kumihan_formatter.core.distribution を使用してください。",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
