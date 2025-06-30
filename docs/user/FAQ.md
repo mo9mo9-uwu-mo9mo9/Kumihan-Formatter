@@ -243,12 +243,7 @@ print_optimization:
 - そのまま共有可能
 - メール添付、クラウドストレージ
 
-**方法2: ZIP圧縮配布**
-```bash
-python -m kumihan_formatter zip-dist . -o 配布用
-```
-
-**方法3: PDF変換後配布**
+**方法2: PDF変換後配布**
 ```bash
 # 1. HTMLを生成
 kumihan シナリオ.txt
@@ -276,7 +271,6 @@ wkhtmltopdf dist/シナリオ.html シナリオ.pdf
 **ファイル形式**:
 - HTML: そのまま販売OK
 - PDF: 印刷用途におすすめ
-- ZIP: 複数ファイル時に便利
 
 ---
 

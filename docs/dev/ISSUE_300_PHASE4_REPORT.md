@@ -46,8 +46,8 @@ Issue #300 Phase4において、プロジェクトの最終的な簡素化と最
   - 包括的なプロジェクト品質指標の測定・報告機能
 
 #### バリデーション系ツールの統合
-- **distribution_validator.py + sample_content_validator.py + zip_feature_validator.py → content_validator.py**
-  - 配布物検証、サンプル検証、ZIP機能検証を統合
+- **distribution_validator.py + sample_content_validator.py → content_validator.py**
+  - 配布物検証、サンプル検証を統合
   - 一元化されたコンテンツ品質管理
 
 #### 品質管理系ツールの統合

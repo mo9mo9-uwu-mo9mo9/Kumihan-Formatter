@@ -58,7 +58,7 @@
 所要時間：全体の20%
 成果物：
 - 最終版HTML
-- 配布用ZIPファイル
+- 配布用HTMLファイル
 ;;;
 ```
 
@@ -180,15 +180,15 @@ styles:
 
 ## 🔧 配布用HTML最適化
 
-### 📦 配布パッケージの作成
+### 📦 配布パッケージの準備
 
 #### **基本的な配布準備**
 ```bash
-# 配布用ZIPの作成
-python -m kumihan_formatter zip-dist . -o release/
+# 配布用HTMLの作成
+python -m kumihan_formatter convert document.txt -o release/
 
 # ファイルサイズの確認
-ls -lh release/*.zip
+ls -lh release/*.html
 ```
 
 #### **最適化チェックリスト**
