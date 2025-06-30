@@ -9,7 +9,7 @@ import sys
 import click
 
 # Import command factories
-from .commands.convert import create_convert_command
+from .commands.convert_original import create_convert_command
 from .commands.zip_dist import create_zip_dist_command
 from .commands.sample import create_sample_command, create_test_command
 from .commands.check_syntax import create_check_syntax_command
