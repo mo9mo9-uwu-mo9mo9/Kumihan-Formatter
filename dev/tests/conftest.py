@@ -1,6 +1,7 @@
 """
 pytest configuration and shared fixtures for Kumihan-Formatter tests
 """
+
 import os
 import sys
 import tempfile
@@ -57,6 +58,7 @@ def cleanup_test_files():
     test_output = PROJECT_ROOT / "test_output"
     if test_output.exists():
         import shutil
+
         shutil.rmtree(test_output)
 
 
@@ -64,6 +66,7 @@ def cleanup_test_files():
 def mock_cli_runner():
     """CLIテスト用のrunner"""
     from click.testing import CliRunner
+
     return CliRunner()
 
 
@@ -73,9 +76,5 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "unit: marks tests as unit tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "unit: marks tests as unit tests")

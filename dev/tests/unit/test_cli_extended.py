@@ -1,4 +1,5 @@
 """Extended CLI functionality tests"""
+
 import pytest
 from pathlib import Path
 from click.testing import CliRunner
@@ -59,7 +60,7 @@ class TestCLIArguments:
             pytest.skip("cliがimportできません")
         result = runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        
+
         # 各コマンドがヘルプに表示されることを確認
         help_output = result.output
         assert "convert" in help_output
@@ -80,7 +81,7 @@ class TestCLIArguments:
             pytest.skip("cliがimportできません")
         result = runner.invoke(cli, ["convert", "--help"])
         assert result.exit_code == 0
-        
+
         help_output = result.output.lower()
         # 主要なオプションが表示されることを確認
         assert "output" in help_output  # --output オプションの確認
@@ -92,7 +93,7 @@ class TestCLIArguments:
             pytest.skip("cliがimportできません")
         result = runner.invoke(cli, ["check-syntax", "--help"])
         assert result.exit_code == 0
-        
+
         help_output = result.output
         # 記法チェック関連の説明があることを確認
         assert len(help_output) > 50  # ある程度の長さのヘルプがあることを確認
@@ -111,7 +112,10 @@ class TestCLIErrorHandling:
             pytest.skip("cliがimportできません")
         result = runner.invoke(cli, ["nonexistent-command"])
         assert result.exit_code != 0
-        assert "No such command" in result.output or "コマンドが見つかりません" in result.output
+        assert (
+            "No such command" in result.output
+            or "コマンドが見つかりません" in result.output
+        )
 
     def test_convert_nonexistent_file(self, runner):
         """存在しないファイルの変換テスト"""
@@ -121,24 +125,27 @@ class TestCLIErrorHandling:
         assert result.exit_code != 0
         # エラーメッセージの確認（日本語または英語）
         error_output = result.output.lower()
-        assert ("error" in error_output or "エラー" in result.output or 
-                "not found" in error_output or "見つかりません" in result.output)
+        assert (
+            "error" in error_output
+            or "エラー" in result.output
+            or "not found" in error_output
+            or "見つかりません" in result.output
+        )
 
     def test_convert_invalid_output_dir(self, runner, temp_dir):
         """不正な出力ディレクトリのテスト"""
         # テストファイルを作成
         test_file = temp_dir / "test.txt"
         test_file.write_text("■タイトル: テスト", encoding="utf-8")
-        
+
         # 存在しない親ディレクトリを指定
         invalid_output = "/nonexistent/path/output"
         if cli is None:
             pytest.skip("cliがimportできません")
-        result = runner.invoke(cli, [
-            "convert", str(test_file), 
-            "--output-dir", invalid_output
-        ])
-        
+        result = runner.invoke(
+            cli, ["convert", str(test_file), "--output-dir", invalid_output]
+        )
+
         # エラーが発生することを確認（ただし、ディレクトリが自動作成される可能性もある）
         # 結果を確認するが、自動作成される場合は成功する可能性もある
         if result.exit_code != 0:
@@ -151,8 +158,12 @@ class TestCLIErrorHandling:
         result = runner.invoke(cli, ["check-syntax", "nonexistent.txt"])
         assert result.exit_code != 0
         error_output = result.output.lower()
-        assert ("error" in error_output or "エラー" in result.output or 
-                "not found" in error_output or "見つかりません" in result.output)
+        assert (
+            "error" in error_output
+            or "エラー" in result.output
+            or "not found" in error_output
+            or "見つかりません" in result.output
+        )
 
 
 class TestCLIIntegration:
@@ -168,7 +179,8 @@ class TestCLIIntegration:
         files = []
         for i in range(3):
             file_path = temp_dir / f"test_{i}.txt"
-            file_path.write_text(f"""■タイトル: テスト{i}
+            file_path.write_text(
+                f"""■タイトル: テスト{i}
 ■作者: テスト作者{i}
 
 ●セクション{i}
@@ -176,7 +188,9 @@ class TestCLIIntegration:
 
 ▼NPC{i}: テストNPC{i}
 NPC{i}の説明です。
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
             files.append(file_path)
         return files
 
@@ -184,29 +198,34 @@ NPC{i}の説明です。
     def test_convert_single_file(self, runner, sample_files, temp_dir):
         """単一ファイルの変換テスト（複数ファイルサポートが無いため）"""
         output_dir = temp_dir / "output"
-        
+
         # 単一ファイルの変換テスト
         test_file = sample_files[0]  # 最初のファイルのみを使用
         if cli is None:
             pytest.skip("cliがimportできません")
-        result = runner.invoke(cli, [
-            "convert", str(test_file),
-            "--output", str(output_dir),
-            "--no-preview"  # プレビューを無効化してテストを高速化
-        ])
-        
+        result = runner.invoke(
+            cli,
+            [
+                "convert",
+                str(test_file),
+                "--output",
+                str(output_dir),
+                "--no-preview",  # プレビューを無効化してテストを高速化
+            ],
+        )
+
         # 詳細エラー出力
         if result.exit_code != 0:
             print(f"Exit code: {result.exit_code}")
             print(f"Output: {result.output}")
             print(f"Exception: {result.exception}")
-        
+
         assert result.exit_code == 0
-        
+
         # ファイルが変換されたことを確認
         expected_output = output_dir / "test_0.html"
         assert expected_output.exists(), f"test_0.html が生成されていません"
-        
+
         # HTMLの内容確認
         html_content = expected_output.read_text(encoding="utf-8")
         assert "テスト0" in html_content
@@ -217,32 +236,44 @@ NPC{i}の説明です。
         """設定ファイル付きでの変換テスト"""
         # テストファイルを作成
         test_file = temp_dir / "test.txt"
-        test_file.write_text("""■タイトル: 設定テスト
+        test_file.write_text(
+            """■タイトル: 設定テスト
 ■作者: テスト作者
 
 ●導入
 設定ファイルのテストです。
-""", encoding="utf-8")
-        
+""",
+            encoding="utf-8",
+        )
+
         # 設定ファイルを作成
         config_file = temp_dir / "config.yaml"
-        config_file.write_text("""title: "カスタムタイトル"
+        config_file.write_text(
+            """title: "カスタムタイトル"
 author: "カスタム作者"
 template: "base.html.j2"
-""", encoding="utf-8")
-        
+""",
+            encoding="utf-8",
+        )
+
         output_dir = temp_dir / "output"
-        
+
         if cli is None:
             pytest.skip("cliがimportできません")
-        result = runner.invoke(cli, [
-            "convert", str(test_file),
-            "--output", str(output_dir),
-            "--config", str(config_file)
-        ])
-        
+        result = runner.invoke(
+            cli,
+            [
+                "convert",
+                str(test_file),
+                "--output",
+                str(output_dir),
+                "--config",
+                str(config_file),
+            ],
+        )
+
         assert result.exit_code == 0
-        
+
         # 出力ファイルの確認（実際のファイル構造に合わせて調整）
         expected_output = None
         if output_dir.exists():
@@ -250,14 +281,18 @@ template: "base.html.j2"
             if generated_files:
                 # 最初に見つかったHTMLファイルを確認
                 expected_output = generated_files[0]
-                assert expected_output.exists(), f"HTMLファイルが見つかりません: {expected_output}"
+                assert (
+                    expected_output.exists()
+                ), f"HTMLファイルが見つかりません: {expected_output}"
             else:
                 # 代替パスを試す
                 expected_output = output_dir / "test.html"
-                assert expected_output.exists(), f"test.html が見つかりません。出力ディレクトリ内容: {list(output_dir.iterdir()) if output_dir.exists() else 'ディレクトリが存在しません'}"
+                assert (
+                    expected_output.exists()
+                ), f"test.html が見つかりません。出力ディレクトリ内容: {list(output_dir.iterdir()) if output_dir.exists() else 'ディレクトリが存在しません'}"
         else:
             assert False, f"出力ディレクトリが存在しません: {output_dir}"
-        
+
         # 設定が適用されたことを確認
         if expected_output:
             html_content = expected_output.read_text(encoding="utf-8")
@@ -267,18 +302,17 @@ template: "base.html.j2"
         """カスタム出力ディレクトリでのサンプル生成テスト"""
         if cli is None:
             pytest.skip("cliがimportできません")
-        result = runner.invoke(cli, [
-            "generate-sample",
-            "--output", str(temp_dir)
-        ])
-        
+        result = runner.invoke(cli, ["generate-sample", "--output", str(temp_dir)])
+
         assert result.exit_code == 0
-        
+
         # サンプルファイルが生成されたことを確認
         sample_files = list(temp_dir.glob("*.txt"))
         assert len(sample_files) > 0, "サンプルファイルが生成されていません"
-        
+
         # 生成されたファイルの内容確認
         for sample_file in sample_files:
             content = sample_file.read_text(encoding="utf-8")
-            assert ";;;見出し" in content or ";;;太字" in content or ";;;枠線" in content  # 現在の記法形式に対応
+            assert (
+                ";;;見出し" in content or ";;;太字" in content or ";;;枠線" in content
+            )  # 現在の記法形式に対応

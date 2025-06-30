@@ -1,6 +1,7 @@
 """
 Unit tests for the Parser module
 """
+
 import pytest
 from pathlib import Path
 
@@ -20,7 +21,7 @@ class TestParser:
         """タイトルブロックのパースをテスト"""
         content = "■タイトル: テストシナリオ"
         nodes = parser.parse(content)
-        
+
         assert isinstance(nodes, list)
         assert len(nodes) == 1
         assert all(isinstance(node, Node) for node in nodes)
@@ -31,7 +32,7 @@ class TestParser:
         """セクションのパースをテスト"""
         content = "●導入\nこれはテストセクションです。"
         nodes = parser.parse(content)
-        
+
         assert len(nodes) == 1
         assert nodes[0].type == "p"
         assert "導入" in nodes[0].content
@@ -41,7 +42,7 @@ class TestParser:
         """NPCブロックのパースをテスト"""
         content = "▼NPC1: 山田太郎\n年齢: 30歳\n職業: 探偵"
         nodes = parser.parse(content)
-        
+
         assert len(nodes) == 1
         assert nodes[0].type == "p"
         assert "NPC1" in nodes[0].content
@@ -52,7 +53,7 @@ class TestParser:
         """部屋ブロックのパースをテスト"""
         content = "◆部屋1: 探偵事務所\n薄暗い部屋"
         nodes = parser.parse(content)
-        
+
         assert len(nodes) == 1
         assert nodes[0].type == "p"
         assert "部屋1" in nodes[0].content
@@ -63,7 +64,7 @@ class TestParser:
         """アイテムブロックのパースをテスト"""
         content = "★アイテム1: 古い手帳\n重要な情報が書かれている"
         nodes = parser.parse(content)
-        
+
         assert len(nodes) == 1
         assert nodes[0].type == "p"
         assert "アイテム1" in nodes[0].content
@@ -79,26 +80,29 @@ class TestParser:
     def test_parse_mixed_content(self, parser, sample_text):
         """複合的なコンテンツのパースをテスト"""
         nodes = parser.parse(sample_text)
-        
+
         assert isinstance(nodes, list)
         assert len(nodes) > 0
-        
+
         # ノードタイプの確認（実際には全てpタイプ）
         node_types = [node.type for node in nodes]
         assert "p" in node_types
-        
+
         # コンテンツの確認
-        all_content = ' '.join([node.content for node in nodes])
+        all_content = " ".join([node.content for node in nodes])
         assert "テストシナリオ" in all_content
         assert "テストNPC" in all_content
         assert "テスト部屋" in all_content
 
-    @pytest.mark.parametrize("invalid_content", [
-        None,
-        123,
-        [],
-        {},
-    ])
+    @pytest.mark.parametrize(
+        "invalid_content",
+        [
+            None,
+            123,
+            [],
+            {},
+        ],
+    )
     def test_parse_invalid_input(self, parser, invalid_content):
         """不正な入力に対するエラーハンドリングをテスト"""
         with pytest.raises((TypeError, AttributeError)):

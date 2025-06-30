@@ -1,6 +1,7 @@
 """
 Unit tests for the Config module
 """
+
 import pytest
 from pathlib import Path
 import yaml
@@ -25,7 +26,7 @@ class TestConfig:
             "title": "テストタイトル",
             "author": "テスト作者",
             "output_dir": "test_output",
-            "template": "base.html.j2"
+            "template": "base.html.j2",
         }
         with open(config_path, "w", encoding="utf-8") as f:
             yaml.dump(config_data, f, allow_unicode=True)
@@ -41,11 +42,11 @@ class TestConfig:
     def test_load_config_from_file(self, config, config_file):
         """ファイルから設定を読み込むテスト"""
         success = config.load_config(str(config_file))
-        
+
         # load_configはbooleanを返す
         assert isinstance(success, bool)
         assert success == True
-        
+
         # 実際の設定はconfig属性からアクセス
         assert isinstance(config.config, dict)
 
@@ -55,17 +56,14 @@ class TestConfig:
         result = config.load_config("nonexistent_file.yaml")
         assert isinstance(result, bool)
         assert result == False
-        
+
         # デフォルト設定が使用される
         assert isinstance(config.config, dict)
 
     def test_config_validation(self, config):
         """設定の検証テスト"""
-        test_config = {
-            "title": "新しいタイトル",
-            "author": "新しい作者"
-        }
-        
+        test_config = {"title": "新しいタイトル", "author": "新しい作者"}
+
         # 検証が成功することを確認
         is_valid = config.validate_config()
         assert isinstance(is_valid, bool)
@@ -75,7 +73,7 @@ class TestConfig:
         # DEFAULT_CONFIGがアクセス可能であることを確認
         default_config = config.DEFAULT_CONFIG
         assert isinstance(default_config, dict)
-        
+
         # config属性がアクセス可能であることを確認
         current_config = config.config
         assert isinstance(current_config, dict)
@@ -87,7 +85,7 @@ class TestSimpleConfig:
     def test_simple_config_creation(self):
         """SimpleConfigの作成テスト"""
         config = SimpleConfig()
-        
+
         assert hasattr(config, "DEFAULT_CSS")
         assert hasattr(config, "css_vars")
         assert hasattr(config, "get_css_variables")
@@ -96,11 +94,11 @@ class TestSimpleConfig:
     def test_simple_config_methods(self):
         """シンプルコンフィグのメソッドテスト"""
         config = SimpleConfig()
-        
+
         # get_css_variablesメソッドのテスト
         css_vars = config.get_css_variables()
         assert isinstance(css_vars, dict)
-        
+
         # get_theme_nameメソッドのテスト
         theme_name = config.get_theme_name()
         assert isinstance(theme_name, str)
@@ -108,11 +106,11 @@ class TestSimpleConfig:
     def test_simple_config_css_access(self):
         """SimpleConfigのCSSアクセステスト"""
         config = SimpleConfig()
-        
+
         # DEFAULT_CSSがアクセス可能であることを確認
         default_css = config.DEFAULT_CSS
         assert isinstance(default_css, dict)
-        
+
         # css_varsがアクセス可能であることを確認
         css_vars = config.css_vars
         assert isinstance(css_vars, dict)
