@@ -2,11 +2,12 @@
 Unit tests for the Parser module
 """
 
-import pytest
 from pathlib import Path
 
-from kumihan_formatter.parser import Parser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node
+from kumihan_formatter.parser import Parser
 
 
 class TestParser:

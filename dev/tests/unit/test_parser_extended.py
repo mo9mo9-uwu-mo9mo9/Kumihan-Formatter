@@ -1,7 +1,8 @@
 """Extended Parser functionality tests"""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 try:
     from kumihan_formatter.parser import Parser as DocumentParser

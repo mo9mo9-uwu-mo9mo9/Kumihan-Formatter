@@ -1,9 +1,10 @@
 """Extended Renderer functionality tests"""
 
-import pytest
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+from pathlib import Path
+
+import pytest
 
 try:
     from kumihan_formatter.renderer import Renderer as DocumentRenderer

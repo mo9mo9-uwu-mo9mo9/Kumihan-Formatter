@@ -1,8 +1,9 @@
 """Error handling and exception management tests"""
 
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
+import pytest
 
 try:
     from kumihan_formatter.core.error_handling.error_handler import ErrorHandler
@@ -10,8 +11,8 @@ except ImportError:
     ErrorHandler = None
 try:
     from kumihan_formatter.core.error_handling.error_types import (
-        ErrorLevel,
         ErrorCategory,
+        ErrorLevel,
         ErrorSolution,
         UserFriendlyError,
     )

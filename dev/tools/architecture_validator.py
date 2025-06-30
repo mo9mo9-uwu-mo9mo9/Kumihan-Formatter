@@ -6,13 +6,13 @@ Kumihan-Formatter アーキテクチャバリデーター
 Issue #319対応 - 定期的リファクタリングを不要にする予防的品質管理
 """
 
+import argparse
 import ast
 import sys
-from pathlib import Path
-from typing import List, Dict, Tuple, Set, Optional
 from dataclasses import dataclass
 from enum import Enum
-import argparse
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
 
 
 class ViolationSeverity(Enum):

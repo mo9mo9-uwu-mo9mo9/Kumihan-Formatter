@@ -2,12 +2,13 @@
 Unit tests for the Renderer module
 """
 
-import pytest
 from pathlib import Path
 
-from kumihan_formatter.renderer import Renderer
-from kumihan_formatter.parser import Parser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node, heading, paragraph
+from kumihan_formatter.parser import Parser
+from kumihan_formatter.renderer import Renderer
 
 
 class TestRenderer:

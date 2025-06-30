@@ -2,8 +2,9 @@
 Integration tests for CLI functionality
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 from click.testing import CliRunner
 
 try:

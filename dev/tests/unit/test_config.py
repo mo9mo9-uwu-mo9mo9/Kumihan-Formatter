@@ -2,8 +2,9 @@
 Unit tests for the Config module
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 import yaml
 
 from kumihan_formatter.config import Config

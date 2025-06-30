@@ -6,8 +6,8 @@
 Issue #319対応 - 定期的リファクタリングを不要にする予防的品質管理
 """
 
-import sys
 import argparse
+import sys
 from pathlib import Path
 from typing import List, Tuple
 

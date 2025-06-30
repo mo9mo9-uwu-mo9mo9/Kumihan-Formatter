@@ -2,12 +2,13 @@
 Integration tests for convert functionality
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
+
+from kumihan_formatter.config import Config
 from kumihan_formatter.parser import Parser
 from kumihan_formatter.renderer import Renderer
-from kumihan_formatter.config import Config
 
 
 class TestConvertIntegration:
