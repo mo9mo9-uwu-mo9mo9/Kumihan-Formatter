@@ -10,7 +10,7 @@ from html import escape
 from ..ast_nodes import Node
 from .html_utils import (
     escape_html, render_attributes, process_text_content, process_block_content,
-    create_simple_tag, create_self_closing_tag
+    process_collapsible_content, create_simple_tag, create_self_closing_tag
 )
 
 
@@ -124,7 +124,14 @@ class ElementRenderer:
     
     def render_details(self, node: Node) -> str:
         """Render details/summary element"""
-        content = self._render_content(node.content, 0)
+        # Use special processing for collapsible content to handle lists properly
+        if node.content and isinstance(node.content[0], str):
+            # Process the raw text content with proper list handling
+            content = process_collapsible_content(node.content[0])
+        else:
+            # Fallback to normal content rendering
+            content = self._render_content(node.content, 0)
+        
         summary = node.get_attribute('summary', '詳細を表示')
         
         return f'<details><summary>{escape_html(summary)}</summary>{content}</details>'

@@ -102,6 +102,36 @@ def process_block_content(text: str) -> str:
     return processed_text
 
 
+def process_collapsible_content(text: str) -> str:
+    """
+    Process collapsible block content with proper list handling
+    
+    Args:
+        text: Raw collapsible block content
+    
+    Returns:
+        str: Processed HTML with proper list structure and line breaks
+    """
+    if not text:
+        return text
+    
+    # Check if text already contains HTML tags (from inline processing)
+    if contains_html_tags(text):
+        # Process text with existing HTML tags
+        processed_text = _convert_list_markers_with_html(text)
+        processed_text = re.sub(r'\r?\n', '<br>\n', processed_text)
+    else:
+        # Convert lists to proper HTML structure first
+        processed_text = _convert_lists_to_html(text)
+        # Then convert remaining newlines to br tags, but avoid adding br after HTML tags
+        processed_text = re.sub(r'(?<!>)\r?\n(?!<)', '<br>\n', processed_text)
+    
+    # Clean up multiple consecutive br tags
+    processed_text = re.sub(r'(<br>\s*){3,}', '<br>\n<br>\n', processed_text)
+    
+    return processed_text
+
+
 def _convert_list_markers(text: str) -> str:
     """
     Convert list markers (- and ・) in plain text
@@ -125,6 +155,50 @@ def _convert_list_markers(text: str) -> str:
             converted_lines.append(line)
     
     return '\n'.join(converted_lines)
+
+
+def _convert_lists_to_html(text: str) -> str:
+    """
+    Convert list markers to proper HTML ul/li structure
+    
+    Args:
+        text: Plain text content
+    
+    Returns:
+        str: Text with list markers converted to HTML
+    """
+    lines = text.split('\n')
+    result_lines = []
+    in_list = False
+    
+    for line in lines:
+        # Check if this line is a list item
+        if re.match(r'^(\s*)-\s', line):
+            # If not already in a list, start one
+            if not in_list:
+                result_lines.append('<ul>')
+                in_list = True
+            
+            # Extract the list item content
+            item_content = re.sub(r'^(\s*)-\s', '', line)
+            result_lines.append(f'<li>{escape(item_content)}</li>')
+        else:
+            # If we were in a list and this line is not a list item, close the list
+            if in_list:
+                result_lines.append('</ul>')
+                in_list = False
+            
+            # Add the non-list line (escaped if not empty)
+            if line.strip():
+                result_lines.append(escape(line))
+            else:
+                result_lines.append('')
+    
+    # Close any open list at the end
+    if in_list:
+        result_lines.append('</ul>')
+    
+    return '\n'.join(result_lines)
 
 
 def _convert_list_markers_with_html(text: str) -> str:
