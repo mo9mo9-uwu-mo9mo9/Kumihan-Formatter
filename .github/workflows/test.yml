@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -64,6 +64,13 @@ jobs:
       with:
         file: ./coverage.xml
         fail_ci_if_error: false
+
+  test:
+    needs: [unit-tests, type-check, integration-test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Test Summary
+      run: echo "✅ All tests passed successfully"
 
   type-check:
     runs-on: ubuntu-latest
