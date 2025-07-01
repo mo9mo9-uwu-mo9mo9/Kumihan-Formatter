@@ -224,7 +224,7 @@ if errorlevel 1 (
 echo.
 
 rem === 🆕 実践的サンプル集 ===
-echo %CYAN%=== 🎲 CoC6th実践的サンプル集 ===%NC%
+echo %CYAN%=== 🎲 CoC6th長文サンプル集 ===%NC%
 echo.
 
 rem サンプル5: 基本シナリオテンプレート
@@ -351,7 +351,7 @@ echo   02-basic/        - 基本的な記法のサンプル
 echo   03-advanced/     - 高度な記法のサンプル
 echo   04-showcase/     - 全機能のショーケース
 echo.
-echo %YELLOW%🎲 CoC6th実践用テンプレート%NC%
+echo %YELLOW%🎲 CoC6th長文サンプル集%NC%
 echo   05-basic-scenario/    - 基本シナリオテンプレート
 echo   06-closed-scenario/   - クローズド型シナリオテンプレート
 echo   07-city-scenario/     - シティ型シナリオテンプレート
