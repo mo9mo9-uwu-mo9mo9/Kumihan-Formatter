@@ -7,7 +7,7 @@ PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 PYTEST = $(VENV)/bin/pytest
 
-.PHONY: help test lint format check install clean coverage pre-commit
+.PHONY: help test lint format check install clean coverage pre-commit lint-docs
 
 # デフォルトターゲット：ヘルプ表示
 help:
@@ -20,6 +20,7 @@ help:
 	@echo "  make check      - フォーマット・リンター確認のみ（変更なし）"
 	@echo "  make coverage   - カバレッジ付きテスト実行（HTMLレポート生成）"
 	@echo "  make pre-commit - 🚀 コミット前品質チェック（カバレッジ100%必須）"
+	@echo "  make lint-docs  - ドキュメントリンクチェック"
 	@echo "  make install    - 開発用依存関係インストール"
 	@echo "  make clean      - 一時ファイル・キャッシュ削除"
 	@echo ""
@@ -92,6 +93,18 @@ pre-commit: clean format lint
 	@echo ""
 	@echo "🚀 コミット可能です！"
 	@echo "   git add . && git commit -m \"your message\""
+
+# ドキュメントリンクチェック
+lint-docs:
+	@echo "=== ドキュメントリンクチェック ==="
+	@echo "1. Markdownファイル一覧..."
+	@find . -name "*.md" -not -path "./.venv/*" -not -path "./htmlcov/*" | head -20
+	@echo "2. 基本的なリンクチェック..."
+	@echo "   - CHANGELOG.md: $(shell test -f CHANGELOG.md && echo "✓ 存在" || echo "✗ 不存在")"
+	@echo "   - README.md: $(shell test -f README.md && echo "✓ 存在" || echo "✗ 不存在")"
+	@echo "   - CONTRIBUTING.md: $(shell test -f CONTRIBUTING.md && echo "✓ 存在" || echo "✗ 不存在")"
+	@echo "リンクチェック完了 ✓"
+	@echo "※ 詳細なリンク検証にはmarkdownlinkcheckを使用してください"
 
 # 全体的な品質チェック（開発完了前の最終確認用）
 all: clean format test

@@ -5,8 +5,8 @@
 > **バージョン**: 0.4.0 (2025‑06‑29)
 
 # インポート
-@./PREAMBLE.md  &#x20;
-@./CONTRIBUTING.md
+参照: [PREAMBLE.md](PREAMBLE.md)  &#x20;
+参照: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
@@ -18,18 +18,8 @@
 
 ### セッション管理
 
-- Claude Code の `{{session.turn}}` プレースホルダを利用し、出力冒頭の `<every_chat>` テンプレート内で自動インクリメント。
-
-例:
-
-```markdown
-<every_chat>
-## Claude Code 運用5原則
-...（実際のPREAMBLE.mdの内容）
-
-# {{session.turn}} times.
-</every_chat>
-```
+- PREAMBLE.mdの内容に従い、出力冒頭に運用原則を表示
+- セッション進行状況は自動管理
 
 ### 守るべきファイル/フォルダ
 
@@ -58,7 +48,7 @@
 
 ## 3️⃣ 更新手順
 
-1. 追加情報が必要な場合は **別ファイル** を作成し `@filename` で参照。
+1. 追加情報が必要な場合は **別ファイル** を作成し標準Markdownリンク `[title](filename)` で参照。
 2. 例外として、本ファイルの「必須運用」節に関連する改訂のみ直接編集。
 3. 変更後は `make lint-docs` でリンク切れチェック。
 
