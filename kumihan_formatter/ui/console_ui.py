@@ -299,7 +299,6 @@ class ConsoleUI:
         """Display watch mode stopped"""
         self.console.print("\n[yellow] ファイル監視を停止しました[/yellow]")
 
-
     def no_preview_files(self) -> None:
         """Display no preview files message"""
         self.console.print(
