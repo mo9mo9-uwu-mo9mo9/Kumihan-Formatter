@@ -150,10 +150,10 @@ echo.
 
 rem 選択に基づいてフラグを設定
 if /i "%choice%"=="y" (
-    set "SOURCE_TOGGLE_FLAG=--with-source-toggle"
+    set "SOURCE_TOGGLE_FLAG=--include-source"
     echo %GREEN%Kumihan記法切り替え機能を有効にして変換します%NC%
 ) else if "%choice%"=="" (
-    set "SOURCE_TOGGLE_FLAG=--with-source-toggle"
+    set "SOURCE_TOGGLE_FLAG=--include-source"
     echo %GREEN%Kumihan記法切り替え機能を有効にして変換します%NC%
 ) else (
     set "SOURCE_TOGGLE_FLAG="
