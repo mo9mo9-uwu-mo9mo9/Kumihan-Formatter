@@ -131,7 +131,7 @@ EOF
 
 ### レビューコメントの記載方法
 
-**詳細なレビューガイド**: [PR_REVIEW_GUIDE.md](PR_REVIEW_GUIDE.md) を参照
+**詳細なレビューガイド**: [PR_REVIEW_GUIDE.md](docs/dev/PR_REVIEW_GUIDE.md) を参照
 
 ---
 
@@ -141,7 +141,7 @@ EOF
 
 #### Issue作成時
 - **Issue作成直後**: 内容に応じて適切なラベルを付与
-- **詳細なラベル管理**: [LABEL_GUIDE.md](LABEL_GUIDE.md) を参照
+- **詳細なラベル管理**: [LABEL_GUIDE.md](docs/dev/LABEL_GUIDE.md) を参照
 
 #### 作業段階別ラベル
 - **作業開始時**: 「作業中」ラベル付与
@@ -150,7 +150,7 @@ EOF
 
 ### Issue完了報告
 
-**Issue完了報告テンプレート**: [ISSUE_TEMPLATE.md](ISSUE_TEMPLATE.md) を参照
+**Issue完了報告テンプレート**: [ISSUE_TEMPLATE.md](docs/dev/ISSUE_TEMPLATE.md) を参照
 
 ---
 
@@ -163,13 +163,13 @@ EOF
 
 ### コミット前クリーンアップ
 
-**クリーンアップ詳細**: [QUALITY_GUIDE.md](QUALITY_GUIDE.md) を参照
+**クリーンアップ詳細**: [QUALITY_GUIDE.md](docs/dev/QUALITY_GUIDE.md) を参照
 
 ---
 
 ## 🧪 テスト・リンター
 
-**詳細な品質管理ガイド**: [QUALITY_GUIDE.md](QUALITY_GUIDE.md) を参照
+**詳細な品質管理ガイド**: [QUALITY_GUIDE.md](docs/dev/QUALITY_GUIDE.md) を参照
 
 ### ドキュメント更新
 - 変更内容は `CHANGELOG.md` に記録
