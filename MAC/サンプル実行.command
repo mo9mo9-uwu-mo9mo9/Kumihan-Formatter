@@ -139,7 +139,7 @@ echo ""
 
 # 選択に基づいてフラグを設定
 if [[ $choice =~ ^[Yy]$ ]] || [ -z "$choice" ]; then
-    SOURCE_TOGGLE_FLAG="--with-source-toggle"
+    SOURCE_TOGGLE_FLAG="--include-source"
     echo -e "${GREEN}Kumihan記法切り替え機能を有効にして変換します${NC}"
 else
     SOURCE_TOGGLE_FLAG=""
