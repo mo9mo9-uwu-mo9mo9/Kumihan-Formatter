@@ -23,6 +23,8 @@ AI運用5原則
 <every_chat>
 [AI運用5原則]
 
+[main_output]
+
 #[n] times. # n = increment each chat, end line, etc(#1, #2...)
 </every_chat>
 
