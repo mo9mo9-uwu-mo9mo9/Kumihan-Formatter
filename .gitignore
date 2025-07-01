@@ -178,3 +178,4 @@ e2e_test_results_previous/
 # Temporary directories
 .tmp.driveupload/
 toggle-test/
+tmp/
