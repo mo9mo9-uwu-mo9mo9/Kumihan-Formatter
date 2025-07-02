@@ -63,8 +63,6 @@ Kumihan-Formatter への貢献ガイドライン
 
 3. **実装・テスト**
    - コード実装
-   - テスト実行（`make test`）
-   - リンター実行（`make lint`）
 
 4. **完了処理**
    ```bash

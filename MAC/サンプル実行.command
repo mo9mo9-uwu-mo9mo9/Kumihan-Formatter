@@ -201,7 +201,7 @@ fi
 echo ""
 
 # === 🆕 実践的サンプル集 ===
-echo -e "${CYAN}=== 🎲 CoC6th実践的サンプル集 ===${NC}"
+echo -e "${CYAN}=== 🎲 CoC6th長文サンプル集 ===${NC}"
 echo ""
 
 # サンプル5: 基本シナリオテンプレート
@@ -312,7 +312,7 @@ echo "  02-basic/        - 基本的な記法のサンプル"
 echo "  03-advanced/     - 高度な記法のサンプル"
 echo "  04-showcase/     - 全機能のショーケース"
 echo ""
-echo -e "${YELLOW}🎲 CoC6th実践用テンプレート${NC}"
+echo -e "${YELLOW}🎲 CoC6th長文サンプル集${NC}"
 echo "  05-basic-scenario/    - 基本シナリオテンプレート"
 echo "  06-closed-scenario/   - クローズド型シナリオテンプレート"
 echo "  07-city-scenario/     - シティ型シナリオテンプレート"

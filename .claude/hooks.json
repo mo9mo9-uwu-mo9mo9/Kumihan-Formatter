@@ -1,0 +1,167 @@
+{
+  "hooks": {
+    "before_read": {
+      "description": "ファイル読み込み前のチェック",
+      "commands": []
+    },
+    
+    "before_write": {
+      "description": "ファイル書き込み前の品質チェック",
+      "commands": [
+        {
+          "command": "echo '📝 ファイル書き込み前チェック開始...'",
+          "continueOnError": true
+        },
+        {
+          "command": "# Python ファイルの場合はフォーマットチェック",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$FILE_PATH\" == *.py ]]; then echo '  → Pythonファイル検出: フォーマットチェック推奨'; fi",
+          "continueOnError": true
+        }
+      ]
+    },
+    
+    "after_write": {
+      "description": "ファイル書き込み後の品質チェック",
+      "commands": [
+        {
+          "command": "echo '✅ ファイル書き込み完了: $FILE_PATH'",
+          "continueOnError": true
+        },
+        {
+          "command": "# Pythonファイルの場合は自動フォーマット実行",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$FILE_PATH\" == *.py ]] && command -v black >/dev/null 2>&1; then black \"$FILE_PATH\" 2>/dev/null || true; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$FILE_PATH\" == *.py ]] && command -v isort >/dev/null 2>&1; then isort \"$FILE_PATH\" 2>/dev/null || true; fi",
+          "continueOnError": true
+        }
+      ]
+    },
+    
+    "before_bash": {
+      "description": "Bashコマンド実行前のチェック",
+      "commands": [
+        {
+          "command": "# git commit コマンドの場合は品質チェックを促す",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"git commit\"* ]]; then echo '⚠️  コミット前に make pre-commit の実行を推奨します'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# git push コマンドの場合はテスト実行を促す",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"git push\"* ]]; then echo '⚠️  プッシュ前に make test の実行を推奨します'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# Issue作業開始時のブランチ名チェック",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"git checkout -b\"* ]]; then echo '📌 ブランチ名規則: feature/issue-{番号}-{概要} または fix/issue-{番号}-{概要}'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# gh issue edit で作業中ラベルを付与する場合",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"gh issue edit\"* ]] && [[ \"$COMMAND\" == *\"--add-label\"* ]]; then echo '🏷️  作業中ラベルを付与します'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# PR作成時のテンプレート利用を促す",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"gh pr create\"* ]]; then echo '📝 PR作成時はCONTRIBUTING.md:115-129のテンプレートを使用してください'; fi",
+          "continueOnError": true
+        }
+      ]
+    },
+    
+    "after_bash": {
+      "description": "Bashコマンド実行後の処理",
+      "commands": [
+        {
+          "command": "# git commit 成功後の処理",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"git commit\"* ]] && [[ \"$EXIT_CODE\" == \"0\" ]]; then echo '✅ コミット成功！Issue駆動開発の場合は完了報告を忘れずに'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# make test 実行後のカバレッジ確認",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"make test\"* ]] && [[ \"$EXIT_CODE\" == \"0\" ]]; then echo '💯 テスト成功！カバレッジ100%を目指しましょう'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# make clean 実行後のメッセージ",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"make clean\"* ]] && [[ \"$EXIT_CODE\" == \"0\" ]]; then echo '🧹 クリーンアップ完了！'; fi",
+          "continueOnError": true
+        },
+        {
+          "command": "# PR作成後のメッセージ",
+          "continueOnError": true
+        },
+        {
+          "command": "if [[ \"$COMMAND\" == *\"gh pr create\"* ]] && [[ \"$EXIT_CODE\" == \"0\" ]]; then echo '🎉 PR作成完了！レビューを依頼しましょう'; fi",
+          "continueOnError": true
+        }
+      ]
+    },
+    
+    "periodic": {
+      "description": "定期的なリマインダー",
+      "interval": 1800,
+      "commands": [
+        {
+          "command": "echo '🔔 リマインダー: 定期的に make clean で一時ファイルを削除しましょう'",
+          "continueOnError": true
+        },
+        {
+          "command": "# 未コミットの変更があるかチェック",
+          "continueOnError": true
+        },
+        {
+          "command": "if git status --porcelain 2>/dev/null | grep -q .; then echo '⚠️  未コミットの変更があります'; fi",
+          "continueOnError": true
+        }
+      ]
+    }
+  },
+  
+  "environment": {
+    "KUMIHAN_FORMATTER_HOOKS": "enabled",
+    "HOOK_LOG_LEVEL": "info"
+  },
+  
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Kumihan-Formatter専用hooks設定",
+    "created": "2025-01-02",
+    "references": {
+      "quality_guide": "docs/dev/QUALITY_GUIDE.md",
+      "contributing": "CONTRIBUTING.md",
+      "preamble": "PREAMBLE.md"
+    }
+  }
+}
