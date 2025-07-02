@@ -26,38 +26,101 @@ class ConsoleUI:
 
     def _setup_encoding(self) -> None:
         """Setup proper encoding for different platforms"""
+        import locale
+        import os
+
+        # Set environment variable first
+        os.environ["PYTHONIOENCODING"] = "utf-8"
+
         # macOS encoding fix
         if sys.platform == "darwin":
-            if sys.stdout.encoding != "utf-8":
-                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
-
-        # Windows encoding setup
-        if sys.platform == "win32":
-            if hasattr(sys.stdout, "reconfigure"):
+            # Force UTF-8 encoding for stdout/stderr
+            if sys.stdout and sys.stdout.encoding != "utf-8":
                 try:
-                    sys.stdout.reconfigure(encoding="utf-8")
-                    sys.stderr.reconfigure(encoding="utf-8")
-                except:
+                    sys.stdout = io.TextIOWrapper(
+                        sys.stdout.buffer, encoding="utf-8", errors="replace"
+                    )
+                except AttributeError:
+                    # Already wrapped or no buffer attribute
                     pass
 
-            import os
+            if sys.stderr and sys.stderr.encoding != "utf-8":
+                try:
+                    sys.stderr = io.TextIOWrapper(
+                        sys.stderr.buffer, encoding="utf-8", errors="replace"
+                    )
+                except AttributeError:
+                    pass
 
-            os.environ["PYTHONIOENCODING"] = "utf-8"
+        # Windows encoding setup
+        elif sys.platform == "win32":
+            # Try multiple methods to ensure UTF-8 support
 
+            # Method 1: reconfigure (Python 3.7+)
+            if hasattr(sys.stdout, "reconfigure"):
+                try:
+                    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+                    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+                except Exception:
+                    # Fallback to method 2
+                    pass
+
+            # Method 2: Wrap streams
+            if sys.stdout and sys.stdout.encoding != "utf-8":
+                try:
+                    sys.stdout = io.TextIOWrapper(
+                        sys.stdout.buffer,
+                        encoding="utf-8",
+                        errors="replace",
+                        line_buffering=True,
+                    )
+                    sys.stderr = io.TextIOWrapper(
+                        sys.stderr.buffer,
+                        encoding="utf-8",
+                        errors="replace",
+                        line_buffering=True,
+                    )
+                except Exception:
+                    pass
+
+            # Method 3: Windows console code page
             try:
-                import locale
+                import ctypes
 
-                locale.setlocale(locale.LC_ALL, "")
-            except:
+                kernel32 = ctypes.windll.kernel32
+                # Set console code page to UTF-8
+                kernel32.SetConsoleCP(65001)
+                kernel32.SetConsoleOutputCP(65001)
+            except Exception:
                 pass
+
+            # Set locale
+            try:
+                locale.setlocale(locale.LC_ALL, "")
+            except Exception:
+                try:
+                    # Fallback to specific UTF-8 locale
+                    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+                except Exception:
+                    pass
 
     def _create_console(self) -> Console:
         """Create console instance with safe settings"""
         try:
-            return Console(force_terminal=True, legacy_windows=True)
-        except:
-            return Console()
+            # For Windows, use specific settings
+            if sys.platform == "win32":
+                return Console(
+                    force_terminal=True,
+                    legacy_windows=True,
+                    color_system="windows",
+                    # Ensure proper width detection
+                    width=None,
+                )
+            else:
+                return Console(force_terminal=True)
+        except Exception:
+            # Minimal console as fallback
+            return Console(legacy_windows=True)
 
     # Processing status messages
     def processing_start(self, message: str, file_path: str = None) -> None:
