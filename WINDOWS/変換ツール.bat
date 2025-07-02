@@ -85,7 +85,7 @@ if exist "../.venv\Scripts\activate.bat" (
     echo [警告]  仮想環境が見つかりません。自動で作成します...
     echo [構築]  初回セットアップを実行しています...
     echo.
-    
+
     rem 仮想環境を作成
     echo [パッケージ] 仮想環境を作成中...
     python -m venv ../.venv
@@ -98,7 +98,7 @@ if exist "../.venv\Scripts\activate.bat" (
         pause
         exit /b 1
     )
-    
+
     rem 仮想環境をアクティベート
     echo [設定] 仮想環境をアクティベート中...
     call ..\.venv\Scripts\activate.bat
@@ -115,7 +115,7 @@ if !VENV_CREATED! equ 1 (
     echo [ドキュメント] 新規仮想環境に依存関係をインストール中...
     echo [インストール] パッケージをインストール中... (しばらくお待ちください)
     echo.
-    
+
     %PYTHON_CMD% -m pip install -e "../[dev]" --quiet
     if !errorlevel! equ 0 (
         echo [完了] 依存関係のインストールが完了しました
@@ -137,7 +137,7 @@ if !VENV_CREATED! equ 1 (
         echo [ドキュメント] 必要なライブラリが不足しています。自動でインストールします...
         echo [インストール] パッケージをインストール中... (しばらくお待ちください)
         echo.
-        
+
         %PYTHON_CMD% -m pip install -e "../[dev]" --quiet
         if !errorlevel! equ 0 (
             echo [完了] 依存関係のインストールが完了しました
@@ -167,9 +167,10 @@ if %errorlevel%==0 (
     if not exist "!OUTPUT_DIR!" mkdir "!OUTPUT_DIR!"
 ) else (
     rem プロジェクト内から実行された場合
-    set "OUTPUT_DIR=..\dist"
+    set "OUTPUT_DIR=%~dp0..\dist"
     echo [設定] プロジェクト内実行を検出しました
     echo [フォルダ] 出力先: !OUTPUT_DIR!
+    if not exist "!OUTPUT_DIR!" mkdir "!OUTPUT_DIR!"
 )
 echo.
 
@@ -217,7 +218,11 @@ echo [完了] 変換が完了しました！
 echo [フォルダ] 出力フォルダを開きますか？ [Y/N]
 set /p choice="> "
 if /i "%choice%"=="y" (
-    explorer "!OUTPUT_DIR!"
+    if exist "!OUTPUT_DIR!" (
+        explorer "!OUTPUT_DIR!"
+    ) else (
+        echo [エラー] 出力フォルダが見つかりません: !OUTPUT_DIR!
+    )
 )
 
 echo.
@@ -305,7 +310,11 @@ echo [完了] 変換が完了しました！
 echo [フォルダ] 出力フォルダを開きますか？ [Y/N]
 set /p choice="> "
 if /i "%choice%"=="y" (
-    explorer "!OUTPUT_DIR!"
+    if exist "!OUTPUT_DIR!" (
+        explorer "!OUTPUT_DIR!"
+    ) else (
+        echo [エラー] 出力フォルダが見つかりません: !OUTPUT_DIR!
+    )
 )
 
 echo.
