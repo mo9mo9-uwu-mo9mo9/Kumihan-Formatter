@@ -7,8 +7,11 @@ that are shared across different parts of the application.
 import base64
 import fnmatch
 import shutil
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Tuple
+
+from .encoding_detector import EncodingDetector
 
 
 class UIProtocol(Protocol):
@@ -250,39 +253,49 @@ class FileOperations:
 
     @staticmethod
     def read_text_file(path: Path, encoding: str = "utf-8") -> str:
-        """Read text file with proper encoding and error handling"""
-        # Try multiple encodings
-        encodings_to_try = [encoding]
+        """Read text file with proper encoding and error handling
 
-        # Add common encodings based on platform
-        if encoding == "utf-8":
-            encodings_to_try.extend(
-                ["utf-8-sig", "cp932", "shift_jis", "gbk", "latin-1"]
-            )
+        Uses efficient encoding detection:
+        1. Check for BOM
+        2. Try specified encoding
+        3. Try platform-specific common encodings
+        4. Fallback to UTF-8 with error replacement
+        """
+        # Use encoding detector for efficiency
+        detected_encoding, is_confident = EncodingDetector.detect(path)
 
-        last_error = None
-        for enc in encodings_to_try:
+        # If confident in detection or no encoding specified, use detected
+        if is_confident or encoding == "utf-8":
             try:
-                with open(path, "r", encoding=enc, errors="strict") as f:
-                    content = f.read()
-                    # Verify content is readable
-                    _ = content.encode("utf-8", errors="strict")
-                    return content
-            except (UnicodeDecodeError, UnicodeEncodeError) as e:
-                last_error = e
-                continue
-            except Exception as e:
-                last_error = e
-                break
+                with open(path, "r", encoding=detected_encoding) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                pass
 
-        # Last resort: read with error replacement
-        try:
-            with open(path, "r", encoding=encoding, errors="replace") as f:
-                return f.read()
-        except Exception:
-            if last_error:
-                raise last_error
-            raise
+        # Try specified encoding if different from detected
+        if encoding != detected_encoding:
+            try:
+                with open(path, "r", encoding=encoding) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                pass
+
+        # Platform-specific fallbacks (minimal set)
+        if sys.platform == "win32":
+            fallback_encodings = ["cp932"]
+        else:
+            fallback_encodings = []
+
+        for enc in fallback_encodings:
+            try:
+                with open(path, "r", encoding=enc) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                continue
+
+        # Last resort: UTF-8 with error replacement
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
 
     @staticmethod
     def get_file_size_info(path: Path) -> Dict[str, Any]:

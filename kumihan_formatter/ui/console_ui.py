@@ -120,7 +120,7 @@ class ConsoleUI:
         if is_sample:
             self.console.print(
                 f"[yellow][警告]  {error_count}個のエラーが検出されました"
-            "（想定されたエラーです）[/yellow]"
+                "（想定されたエラーです）[/yellow]"
             )
             self.console.print(
                 "[yellow]   これらのエラーは、"
@@ -166,13 +166,14 @@ class ConsoleUI:
     # File operations
     def file_copied(self, count: int) -> None:
         """Display file copy count"""
-        self.console.print("[green]{}個の画像ファイルをコピーしました[/green]".format(count))
+        self.console.print(
+            "[green]{}個の画像ファイルをコピーしました[/green]".format(count)
+        )
 
     def files_missing(self, files: list) -> None:
         """Display missing files"""
         self.console.print(
-            f"[red][エラー] {len(files)}個の画像ファイルが"
-            "見つかりません:[/red]"
+            f"[red][エラー] {len(files)}個の画像ファイルが" "見つかりません:[/red]"
         )
         for filename in files:
             self.console.print(f"[red]   - {filename}[/red]")
@@ -352,8 +353,7 @@ class ConsoleUI:
                 "\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]"
             )
             self.console.print(
-                "[dim]   すべての記法が正しく処理されるか"
-                "テストしています[/dim]"
+                "[dim]   すべての記法が正しく処理されるか" "テストしています[/dim]"
             )
         else:
             self.console.print(
