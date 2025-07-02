@@ -30,7 +30,7 @@ if %errorlevel% neq 0 (
 )
 
 REM 仮想環境の確認
-if not exist "..\\.venv" (
+if not exist "%~dp0..\\.venv" (
     echo [警告] 仮想環境が見つかりません
     echo [ヒント] 変換ツール.bat を先に実行してセットアップを完了してください
     echo.
@@ -39,7 +39,7 @@ if not exist "..\\.venv" (
 )
 
 echo [設定] 仮想環境をアクティベート中...
-call "..\\.venv\\Scripts\\activate.bat"
+call "%~dp0..\\.venv\\Scripts\\activate.bat"
 
 REM 依存関係の確認
 python -c "import click, jinja2, rich" 2>nul
