@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>combat-scenario</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+
+        /* GitHub風トグル機能専用スタイル */
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* フローティングトグルボタン */
+        .floating-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .floating-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #656d76;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .floating-btn:hover {
+            color: #24292f;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .floating-btn.active {
+            background: white;
+            color: #24292f;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .file-label {
+            font-size: 10px;
+            color: #656d76;
+            text-align: center;
+            padding: 2px 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* コンテンツ表示エリア */
+        .content-display {
+            position: relative;
+            min-height: 400px;
+        }
+
+        /* プレビューコンテンツ */
+        .preview-content {
+            padding: 20px;
+            display: block;
+        }
+
+        .preview-content.hidden {
+            display: none;
+        }
+
+        /* ソースコンテンツ */
+        .source-content {
+            display: none;
+            padding: 0;
+        }
+
+        .source-content.active {
+            display: block !important;
+        }
+
+        .source-content pre {
+            margin: 0;
+            padding: 20px;
+            background: #f6f8fa;
+            border: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #24292f;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .source-content code {
+            background: transparent;
+            padding: 0;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        /* シンタックスハイライト */
+        .source-content .keyword {
+            color: #d73a49;
+            font-weight: bold;
+        }
+
+        .source-content .marker {
+            color: #005cc5;
+            font-weight: bold;
+        }
+
+        .source-content .content-text {
+            color: #24292e;
+        }
+
+        .source-content .comment {
+            color: #6a737d;
+            font-style: italic;
+        }
+
+        /* TOCレイアウト用スタイル */
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 100%;
+            margin: 0;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            /* 目次有効時のモバイルレイアウト */
+            .layout-wrapper {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .main-container {
+                border-radius: 4px;
+            }
+
+            .floating-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 6px;
+            }
+
+            .floating-btn {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+
+            .toggle-group {
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .file-label {
+                font-size: 9px;
+                max-width: 100px;
+            }
+
+            .preview-content,
+            .source-content pre {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper {
+                display: block;
+            }
+
+            .floating-toggle {
+                display: none;
+            }
+        }
+
+        /* 既存のスタイル（簡略版） */
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+padding: 0;            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .source-content,
+            .result-content {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- フローティングトグルボタン -->
+    <div class="floating-toggle">
+        <div class="toggle-group">
+            <button class="floating-btn active" id="preview-btn" onclick="showPreview()">
+                🎨 プレビュー
+            </button>
+            <button class="floating-btn" id="source-btn" onclick="showSource()">
+                📝 記法
+            </button>
+        </div>
+        <div class="file-label">combat-scenario.txt</div>
+    </div>
+
+    <!-- 目次有効時のレイアウト -->
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-1">
+<a href="#heading-1">戦闘重視型シナリオテンプレート</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-2">シナリオ概要</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-1">戦闘重視型の特徴</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-4">基本設定</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-5">脅威の設定</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-6">戦闘環境</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-7">探索者準備</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-8">推奨キャラクター構成</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-9">装備・道具</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-10">戦闘の段階的進行</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-11">第1段階：遭遇・初期戦闘</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-12">第2段階：本格戦闘</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-13">第3段階：クライマックス戦闘</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-14">戦術的要素</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-15">地形・環境の活用</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-16">チームワーク戦術</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-17">ダメージ・負傷管理</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-18">負傷システム</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-19">応急手当・治療</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-20">サバイバル要素</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-21">資源管理</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-22">脱出・撤退</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-23">非戦闘解決手段</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-24">交渉・説得</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-25">環境を利用した解決</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-26">KP運用ガイド</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-27">戦闘バランス調整</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-28">テンポの管理</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-29">安全管理</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-30">カスタマイズ要素</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-31">関連テンプレート</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-container">
+            <!-- コンテンツ表示エリア -->
+            <div class="content-display">
+                <!-- プレビュー表示 -->
+                <div class="preview-content" id="preview-content">
+                    <h1 id="heading-1">戦闘重視型シナリオテンプレート</h1>
+<h2 id="heading-2">シナリオ概要</h2>
+<div class="box">推奨プレイ人数: 3〜5人<br>
+プレイ時間: 約3〜4時間<br>
+舞台: ［戦闘に適した場所］<br>
+シナリオ種別: アクション・ホラー<br>
+推奨技能: ［回避］［隠れる］［応急手当］［投擲］［格闘］［拳銃］</div>
+<div class="box" id="heading-3"><h3 id="heading-1"><strong>戦闘重視型の特徴</strong></h3></div>
+<ul>
+<li>アクション性とスリルを重視</li>
+<li>戦略的な戦闘の楽しさ</li>
+<li>サバイバル要素の強調</li>
+<li>協力プレイの重要性</li>
+<li>段階的に強くなる敵との対決</li>
+</ul>
+<h2 id="heading-4">基本設定</h2>
+<h3 id="heading-5">脅威の設定</h3>
+<div class="highlight" style="background-color:#ffe6e6"><strong>主要な敵対勢力</strong></div>
+<p>種族/組織: ［敵の正体］ 数量: ［総数］ 能力: ［特殊能力・弱点］ 目的: ［探索者を狙う理由］</p>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content">＜KP専用：敵の詳細データ＞<br>
+［敵の名前］については後述の戦闘データを参照。<br>
+弱点は［具体的な弱点］で、［攻略方法］で対処可能。</div></details>
+<h3 id="heading-6">戦闘環境</h3>
+<div class="highlight" style="background-color:#f0f8ff"><strong>屋内戦闘</strong></div>
+<ul>
+<li>狭い通路、多数の部屋</li>
+<li>遮蔽物の活用</li>
+<li>照明・視界の制限</li>
+<li>脱出ルートの確保</li>
+</ul>
+<div class="highlight" style="background-color:#f0fff0"><strong>屋外戦闘</strong></div>
+<ul>
+<li>広い戦闘スペース</li>
+<li>地形の高低差活用</li>
+<li>天候・時間帯の影響</li>
+<li>車両・重火器の使用可能性</li>
+</ul>
+<h2 id="heading-7">探索者準備</h2>
+<h3 id="heading-8">推奨キャラクター構成</h3>
+<div class="highlight" style="background-color:#fff0f0"><strong>戦闘要員（1〜2名）</strong></div>
+<ul>
+<li>高い［格闘］［拳銃］技能</li>
+<li>高いSTR、CON、DEX</li>
+<li>軍人/警官/武道家等の職業</li>
+<li>前線での敵対処が主任務</li>
+</ul>
+<div class="highlight" style="background-color:#f0fff0"><strong>支援要員（1〜2名）</strong></div>
+<ul>
+<li>［応急手当］［医学］技能</li>
+<li>［隠れる］［聞き耳］技能</li>
+<li>医師/看護師/学生等の職業</li>
+<li>仲間の治療、情報収集が主任務</li>
+</ul>
+<div class="highlight" style="background-color:#f0f0ff"><strong>万能要員（1名）</strong></div>
+<ul>
+<li>バランスの取れた技能構成</li>
+<li>［図書館］［オカルト］技能</li>
+<li>研究者/記者/探偵等の職業</li>
+<li>状況判断、戦略立案が主任務</li>
+</ul>
+<h3 id="heading-9">装備・道具</h3>
+<div class="box"><strong>基本装備</strong></div>
+<ul>
+<li><strong>懐中電灯: 視界確保、敵の弱点照射</strong></li>
+<li><strong>応急手当キット: HP回復、状態異常治療</strong></li>
+<li><strong>携帯電話: 通信、緊急連絡（圏外注意）</strong></li>
+<li><strong>地図・コンパス: 現在位置確認、脱出ルート</strong></li>
+</ul>
+<div class="box"><strong>武器・防具</strong></div>
+<ul>
+<li><strong>警棒・ナイフ: 基本的な近接武器</strong></li>
+<li><strong>拳銃: 効果的だが弾薬限界あり</strong></li>
+<li><strong>防弾ベスト: 物理ダメージ軽減</strong></li>
+<li><strong>ヘルメット: 頭部保護</strong></li>
+</ul>
+<div class="box"><strong>特殊装備</strong></div>
+<ul>
+<li><strong>［敵の弱点に対応する装備］</strong></li>
+<li><strong>爆発物: 大ダメージだが危険</strong></li>
+<li><strong>罠・トラップ: 設置型の防御手段</strong></li>
+<li><strong>通信機器: チーム連携の強化</strong></li>
+</ul>
+<h2 id="heading-10">戦闘の段階的進行</h2>
+<h3 id="heading-11">第1段階：遭遇・初期戦闘</h3>
+<div class="box"><strong>最初の敵との接触（30分）</strong></div>
+<div class="highlight" style="background-color:#ffe6e6"><strong>弱い敵での練習戦闘</strong></div>
+<p>目的: ルール確認、キャラ性能把握 敵のレベル: 探索者より明らかに弱い 戦況: 比較的安全、逃走可能 学習要素: 基本的な戦闘メカニクス</p>
+<div class="box">［雑魚敵の名前］<br>
+STR: 8-10  CON: 8-10  SIZ: 8-10<br>
+INT: 5-8   POW: 8-10  DEX: 10-12<br>
+耐久力: 8-10<br>
+武器: ［基本武器］ 40-50% (1D6)<br>
+装甲: なし<br>
+正気度喪失: 0/1D3</div>
+<h3 id="heading-12">第2段階：本格戦闘</h3>
+<div class="box"><strong>中級の敵との戦闘（60分）</strong></div>
+<div class="highlight" style="background-color:#ffcc99"><strong>戦術的な戦闘</strong></div>
+<p>目的: 戦略・連携の重要性を体験 敵のレベル: 探索者と互角 戦況: 緊張感のある戦闘 学習要素: 地形活用、チームワーク</p>
+<div class="box">［中ボスの名前］<br>
+STR: 12-15  CON: 12-15  SIZ: 12-15<br>
+INT: 8-12   POW: 10-15  DEX: 10-15<br>
+耐久力: 12-15<br>
+武器: ［専用武器］ 60-70% (1D8+1)<br>
+装甲: 1-2ポイント<br>
+特殊能力: ［1つの特殊攻撃/能力］<br>
+正気度喪失: 1/1D6</div>
+<h3 id="heading-13">第3段階：クライマックス戦闘</h3>
+<div class="box"><strong>最終ボスとの決戦（60分）</strong></div>
+<div class="highlight" style="background-color:#ff9999"><strong>全力を出し切る戦闘</strong></div>
+<p>目的: これまでの成長の集大成 敵のレベル: 探索者より強力 戦況: 高い緊張感、全滅の危険性 学習要素: 弱点の発見と活用</p>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content">＜最終ボスの弱点＞<br>
+［弱点の内容］により大ダメージを与えられる。<br>
+発見方法: ［調査方法/観察/試行錯誤］<br>
+活用方法: ［具体的な攻撃手段］</div></details>
+<div class="box">［最終ボスの名前］<br>
+STR: 18-20  CON: 16-18  SIZ: 15-20<br>
+INT: 12-15  POW: 15-18  DEX: 12-15<br>
+耐久力: 18-25<br>
+武器: ［強力な攻撃］ 70-80% (2D6+3)<br>
+装甲: 3-5ポイント<br>
+特殊能力: ［複数の危険な能力］<br>
+弱点: ［特定条件下で装甲無効化］<br>
+正気度喪失: 1D6/1D12</div>
+<h2 id="heading-14">戦術的要素</h2>
+<h3 id="heading-15">地形・環境の活用</h3>
+<div class="highlight" style="background-color:#e6f3ff"><strong>遮蔽物の利用</strong></div>
+<ul>
+<li>柱、壁、車両の陰に隠れる</li>
+<li>［隠れる］技能で発見回避</li>
+<li>攻撃される確率を下げる</li>
+<li>回復時間の確保</li>
+</ul>
+<div class="highlight" style="background-color:#f0ffe6"><strong>高所の確保</strong></div>
+<ul>
+<li>階段、屋根、2階フロア</li>
+<li>射撃の有利ポジション</li>
+<li>敵の動きを俯瞰で把握</li>
+<li>脱出ルートの確認</li>
+</ul>
+<div class="highlight" style="background-color:#ffe6f0"><strong>狭所での戦闘</strong></div>
+<ul>
+<li>廊下、通路での戦闘</li>
+<li>敵の数的優位を無効化</li>
+<li>一対一の戦闘に持ち込む</li>
+<li>背後からの攻撃を防ぐ</li>
+</ul>
+<h3 id="heading-16">チームワーク戦術</h3>
+<details><summary>詳細を表示</summary><div class="details-content">＜挟み撃ち戦術＞<br>
+・前後から敵を挟み撃ち<br>
+・一方が囮、他方が奇襲<br>
+・敵の注意を分散させる<br>
+・連携攻撃で大ダメージ</div></details>
+<details><summary>詳細を表示</summary><div class="details-content">＜支援射撃戦術＞<br>
+・遠距離からの援護射撃<br>
+・前線要員の負担軽減<br>
+・敵の行動を制限<br>
+・安全地帯からの支援</div></details>
+<details><summary>詳細を表示</summary><div class="details-content">＜治療・回復戦術＞<br>
+・戦闘中の応急手当<br>
+・安全地帯への負傷者後送<br>
+・物資の効率的な使用<br>
+・戦線の維持</div></details>
+<h2 id="heading-17">ダメージ・負傷管理</h2>
+<h3 id="heading-18">負傷システム</h3>
+<div class="box"><strong>軽傷（耐久力50%以上）</strong></div>
+<ul>
+<li>動作に支障なし</li>
+<li>全ての行動が通常通り可能</li>
+<li>簡単な応急手当で小回復</li>
+</ul>
+<div class="box"><strong>重傷（耐久力25-50%）</strong></div>
+<ul>
+<li>行動にペナルティ発生</li>
+<li>技能ロール-10%修正</li>
+<li>移動速度半減</li>
+<li>応急手当必須</li>
+</ul>
+<div class="box"><strong>瀕死（耐久力1-24%）</strong></div>
+<ul>
+<li>戦闘行動困難</li>
+<li>意識維持判定が必要</li>
+<li>他者の支援なしに行動不能</li>
+<li>緊急治療が必要</li>
+</ul>
+<h3 id="heading-19">応急手当・治療</h3>
+<div class="highlight" style="background-color:#e6ffe6"><strong>基本的な応急手当</strong></div>
+<ul>
+<li>［応急手当］技能使用</li>
+<li>1D3ポイント回復</li>
+<li>1人1回まで（その戦闘中）</li>
+<li>包帯、消毒薬等を消費</li>
+</ul>
+<div class="highlight" style="background-color:#ffe6e6"><strong>高度な医療処置</strong></div>
+<ul>
+<li>［医学］技能必要</li>
+<li>1D6+1ポイント回復</li>
+<li>医療器具、薬品が必要</li>
+<li>時間がかかる（10分以上）</li>
+</ul>
+<h2 id="heading-20">サバイバル要素</h2>
+<h3 id="heading-21">資源管理</h3>
+<div class="box"><strong>弾薬管理</strong></div>
+<ul>
+<li>拳銃: 装弾数6-15発</li>
+<li>予備弾薬: 1-2クリップ</li>
+<li>補給機会は限定的</li>
+<li>節約が重要</li>
+</ul>
+<div class="box"><strong>体力管理</strong></div>
+<ul>
+<li>連続戦闘による疲労</li>
+<li>［CON］ロールで疲労抵抗</li>
+<li>休息による回復</li>
+<li>食料、水分の確保</li>
+</ul>
+<div class="box"><strong>正気度管理</strong></div>
+<ul>
+<li>戦闘による正気度減少</li>
+<li>仲間の死亡での大ダメージ</li>
+<li>一時的狂気の発症</li>
+<li>正気度回復手段の確保</li>
+</ul>
+<h3 id="heading-22">脱出・撤退</h3>
+<div class="highlight" style="background-color:#fff0f0"><strong>戦略的撤退</strong></div>
+<ul>
+<li>勝ち目がない時の判断</li>
+<li>脱出ルートの事前確認</li>
+<li>囮作戦での時間稼ぎ</li>
+<li>体勢立て直しの機会確保</li>
+</ul>
+<h2 id="heading-23">非戦闘解決手段</h2>
+<h3 id="heading-24">交渉・説得</h3>
+<ul>
+<li><strong>［説得］: 敵の戦意をくじく</strong></li>
+<li><strong>［心理学］: 敵の心理状態を把握</strong></li>
+<li><strong>［威圧］: 恐怖で行動を制限</strong></li>
+<li><strong>人質交換・取引の提案</strong></li>
+</ul>
+<h3 id="heading-25">環境を利用した解決</h3>
+<ul>
+<li><strong>火災・爆発による敵の排除</strong></li>
+<li><strong>水害・土砂崩れでの分断</strong></li>
+<li><strong>電気系統の操作で無力化</strong></li>
+<li><strong>毒ガス・煙幕での無効化</strong></li>
+</ul>
+<h2 id="heading-26">KP運用ガイド</h2>
+<h3 id="heading-27">戦闘バランス調整</h3>
+<div class="highlight" style="background-color:#f0f8ff"><strong>難易度調整のコツ</strong></div>
+<ul>
+<li>探索者が苦戦している時は敵を弱体化</li>
+<li>余裕がある時は追加の敵を投入</li>
+<li>クリティカル/ファンブルを活用</li>
+<li>状況に応じて弱点ヒントを提供</li>
+</ul>
+<h3 id="heading-28">テンポの管理</h3>
+<ul>
+<li><strong>戦闘ラウンドの迅速な処理</strong></li>
+<li><strong>長考は制限時間を設ける</strong></li>
+<li><strong>描写と処理のメリハリ</strong></li>
+<li><strong>緊張感の演出</strong></li>
+</ul>
+<h3 id="heading-29">安全管理</h3>
+<div class="box"><strong>全滅回避の配慮</strong></div>
+<ul>
+<li>最後の救済手段を用意</li>
+<li>NPCによる助け舟</li>
+<li>隠された脱出ルート</li>
+<li>敵の撤退・逃走</li>
+</ul>
+<h2 id="heading-30">カスタマイズ要素</h2>
+<div class="box"><strong>変更可能な設定</strong></div>
+<ul>
+<li>敵の種類（怪物/人間/ロボット等）</li>
+<li>戦闘環境（屋内/屋外/特殊環境）</li>
+<li>装備レベル（現代/近未来/過去）</li>
+<li>超自然要素の有無</li>
+<li>協力NPC の存在</li>
+</ul>
+<h3 id="heading-31">関連テンプレート</h3>
+<ul>
+<li><strong>基本型: basic-scenario.txt</strong></li>
+<li><strong>クローズド型: closed-scenario.txt</strong></li>
+<li><strong>シティ型: city-scenario.txt</strong></li>
+</ul>
+<p>---</p>
+<div class="highlight" style="background-color:#f0f8ff"><strong>戦闘重視型成功の秘訣</strong></div>
+<ol>
+<li>段階的な難易度上昇で成長感を演出</li>
+<li>戦術的な選択肢を豊富に用意</li>
+<li>チームワークの重要性を強調</li>
+<li>非戦闘解決手段も準備しておく</li>
+<li>緊張感と達成感のバランス調整</li>
+</ol>
+                </div>
+
+                <!-- ソース表示 -->
+                <div class="source-content" id="source-content">
+                    <pre><code>;;;見出し1
+戦闘重視型シナリオテンプレート
+;;;
+
+;;;見出し2
+シナリオ概要
+;;;
+
+;;;枠線
+推奨プレイ人数: 3〜5人
+プレイ時間: 約3〜4時間
+舞台: ［戦闘に適した場所］
+シナリオ種別: アクション・ホラー
+推奨技能: ［回避］［隠れる］［応急手当］［投擲］［格闘］［拳銃］
+;;;
+
+;;;見出し3+枠線+太字
+戦闘重視型の特徴
+;;;
+
+・アクション性とスリルを重視
+・戦略的な戦闘の楽しさ
+・サバイバル要素の強調
+・協力プレイの重要性
+・段階的に強くなる敵との対決
+
+;;;見出し2
+基本設定
+;;;
+
+;;;見出し3
+脅威の設定
+;;;
+
+;;;太字+ハイライト color=#ffe6e6
+主要な敵対勢力
+;;;
+種族/組織: ［敵の正体］
+数量: ［総数］
+能力: ［特殊能力・弱点］
+目的: ［探索者を狙う理由］
+
+;;;ネタバレ
+＜KP専用：敵の詳細データ＞
+［敵の名前］については後述の戦闘データを参照。
+弱点は［具体的な弱点］で、［攻略方法］で対処可能。
+;;;
+
+;;;見出し3
+戦闘環境
+;;;
+
+;;;太字+ハイライト color=#f0f8ff
+屋内戦闘
+;;;
+・狭い通路、多数の部屋
+・遮蔽物の活用
+・照明・視界の制限
+・脱出ルートの確保
+
+;;;太字+ハイライト color=#f0fff0
+屋外戦闘
+;;;
+・広い戦闘スペース
+・地形の高低差活用
+・天候・時間帯の影響
+・車両・重火器の使用可能性
+
+;;;見出し2
+探索者準備
+;;;
+
+;;;見出し3
+推奨キャラクター構成
+;;;
+
+;;;太字+ハイライト color=#fff0f0
+戦闘要員（1〜2名）
+;;;
+・高い［格闘］［拳銃］技能
+・高いSTR、CON、DEX
+・軍人/警官/武道家等の職業
+・前線での敵対処が主任務
+
+;;;太字+ハイライト color=#f0fff0
+支援要員（1〜2名）
+;;;
+・［応急手当］［医学］技能
+・［隠れる］［聞き耳］技能
+・医師/看護師/学生等の職業
+・仲間の治療、情報収集が主任務
+
+;;;太字+ハイライト color=#f0f0ff
+万能要員（1名）
+;;;
+・バランスの取れた技能構成
+・［図書館］［オカルト］技能
+・研究者/記者/探偵等の職業
+・状況判断、戦略立案が主任務
+
+;;;見出し3
+装備・道具
+;;;
+
+;;;太字+枠線
+基本装備
+;;;
+- ;;;太字;;; 懐中電灯: 視界確保、敵の弱点照射
+- ;;;太字;;; 応急手当キット: HP回復、状態異常治療
+- ;;;太字;;; 携帯電話: 通信、緊急連絡（圏外注意）
+- ;;;太字;;; 地図・コンパス: 現在位置確認、脱出ルート
+
+;;;太字+枠線
+武器・防具
+;;;
+- ;;;太字;;; 警棒・ナイフ: 基本的な近接武器
+- ;;;太字;;; 拳銃: 効果的だが弾薬限界あり
+- ;;;太字;;; 防弾ベスト: 物理ダメージ軽減
+- ;;;太字;;; ヘルメット: 頭部保護
+
+;;;太字+枠線
+特殊装備
+;;;
+- ;;;太字;;; ［敵の弱点に対応する装備］
+- ;;;太字;;; 爆発物: 大ダメージだが危険
+- ;;;太字;;; 罠・トラップ: 設置型の防御手段
+- ;;;太字;;; 通信機器: チーム連携の強化
+
+;;;見出し2
+戦闘の段階的進行
+;;;
+
+;;;見出し3
+第1段階：遭遇・初期戦闘
+;;;
+
+;;;太字+枠線
+最初の敵との接触（30分）
+;;;
+
+;;;太字+ハイライト color=#ffe6e6
+弱い敵での練習戦闘
+;;;
+目的: ルール確認、キャラ性能把握
+敵のレベル: 探索者より明らかに弱い
+戦況: 比較的安全、逃走可能
+学習要素: 基本的な戦闘メカニクス
+
+;;;枠線
+［雑魚敵の名前］
+STR: 8-10  CON: 8-10  SIZ: 8-10
+INT: 5-8   POW: 8-10  DEX: 10-12
+耐久力: 8-10
+武器: ［基本武器］ 40-50% (1D6)
+装甲: なし
+正気度喪失: 0/1D3
+;;;
+
+;;;見出し3
+第2段階：本格戦闘
+;;;
+
+;;;太字+枠線
+中級の敵との戦闘（60分）
+;;;
+
+;;;太字+ハイライト color=#ffcc99
+戦術的な戦闘
+;;;
+目的: 戦略・連携の重要性を体験
+敵のレベル: 探索者と互角
+戦況: 緊張感のある戦闘
+学習要素: 地形活用、チームワーク
+
+;;;枠線
+［中ボスの名前］
+STR: 12-15  CON: 12-15  SIZ: 12-15
+INT: 8-12   POW: 10-15  DEX: 10-15
+耐久力: 12-15
+武器: ［専用武器］ 60-70% (1D8+1)
+装甲: 1-2ポイント
+特殊能力: ［1つの特殊攻撃/能力］
+正気度喪失: 1/1D6
+;;;
+
+;;;見出し3
+第3段階：クライマックス戦闘
+;;;
+
+;;;太字+枠線
+最終ボスとの決戦（60分）
+;;;
+
+;;;太字+ハイライト color=#ff9999
+全力を出し切る戦闘
+;;;
+目的: これまでの成長の集大成
+敵のレベル: 探索者より強力
+戦況: 高い緊張感、全滅の危険性
+学習要素: 弱点の発見と活用
+
+;;;ネタバレ
+＜最終ボスの弱点＞
+［弱点の内容］により大ダメージを与えられる。
+発見方法: ［調査方法/観察/試行錯誤］
+活用方法: ［具体的な攻撃手段］
+;;;
+
+;;;枠線
+［最終ボスの名前］
+STR: 18-20  CON: 16-18  SIZ: 15-20
+INT: 12-15  POW: 15-18  DEX: 12-15
+耐久力: 18-25
+武器: ［強力な攻撃］ 70-80% (2D6+3)
+装甲: 3-5ポイント
+特殊能力: ［複数の危険な能力］
+弱点: ［特定条件下で装甲無効化］
+正気度喪失: 1D6/1D12
+;;;
+
+;;;見出し2
+戦術的要素
+;;;
+
+;;;見出し3
+地形・環境の活用
+;;;
+
+;;;太字+ハイライト color=#e6f3ff
+遮蔽物の利用
+;;;
+・柱、壁、車両の陰に隠れる
+・［隠れる］技能で発見回避
+・攻撃される確率を下げる
+・回復時間の確保
+
+;;;太字+ハイライト color=#f0ffe6
+高所の確保
+;;;
+・階段、屋根、2階フロア
+・射撃の有利ポジション
+・敵の動きを俯瞰で把握
+・脱出ルートの確認
+
+;;;太字+ハイライト color=#ffe6f0
+狭所での戦闘
+;;;
+・廊下、通路での戦闘
+・敵の数的優位を無効化
+・一対一の戦闘に持ち込む
+・背後からの攻撃を防ぐ
+
+;;;見出し3
+チームワーク戦術
+;;;
+
+;;;折りたたみ
+＜挟み撃ち戦術＞
+・前後から敵を挟み撃ち
+・一方が囮、他方が奇襲
+・敵の注意を分散させる
+・連携攻撃で大ダメージ
+;;;
+
+;;;折りたたみ
+＜支援射撃戦術＞
+・遠距離からの援護射撃
+・前線要員の負担軽減
+・敵の行動を制限
+・安全地帯からの支援
+;;;
+
+;;;折りたたみ
+＜治療・回復戦術＞
+・戦闘中の応急手当
+・安全地帯への負傷者後送
+・物資の効率的な使用
+・戦線の維持
+;;;
+
+;;;見出し2
+ダメージ・負傷管理
+;;;
+
+;;;見出し3
+負傷システム
+;;;
+
+;;;太字+枠線
+軽傷（耐久力50%以上）
+;;;
+・動作に支障なし
+・全ての行動が通常通り可能
+・簡単な応急手当で小回復
+
+;;;太字+枠線
+重傷（耐久力25-50%）
+;;;
+・行動にペナルティ発生
+・技能ロール-10%修正
+・移動速度半減
+・応急手当必須
+
+;;;太字+枠線
+瀕死（耐久力1-24%）
+;;;
+・戦闘行動困難
+・意識維持判定が必要
+・他者の支援なしに行動不能
+・緊急治療が必要
+
+;;;見出し3
+応急手当・治療
+;;;
+
+;;;太字+ハイライト color=#e6ffe6
+基本的な応急手当
+;;;
+・［応急手当］技能使用
+・1D3ポイント回復
+・1人1回まで（その戦闘中）
+・包帯、消毒薬等を消費
+
+;;;太字+ハイライト color=#ffe6e6
+高度な医療処置
+;;;
+・［医学］技能必要
+・1D6+1ポイント回復
+・医療器具、薬品が必要
+・時間がかかる（10分以上）
+
+;;;見出し2
+サバイバル要素
+;;;
+
+;;;見出し3
+資源管理
+;;;
+
+;;;太字+枠線
+弾薬管理
+;;;
+・拳銃: 装弾数6-15発
+・予備弾薬: 1-2クリップ
+・補給機会は限定的
+・節約が重要
+
+;;;太字+枠線
+体力管理
+;;;
+・連続戦闘による疲労
+・［CON］ロールで疲労抵抗
+・休息による回復
+・食料、水分の確保
+
+;;;太字+枠線
+正気度管理
+;;;
+・戦闘による正気度減少
+・仲間の死亡での大ダメージ
+・一時的狂気の発症
+・正気度回復手段の確保
+
+;;;見出し3
+脱出・撤退
+;;;
+
+;;;太字+ハイライト color=#fff0f0
+戦略的撤退
+;;;
+・勝ち目がない時の判断
+・脱出ルートの事前確認
+・囮作戦での時間稼ぎ
+・体勢立て直しの機会確保
+
+;;;見出し2
+非戦闘解決手段
+;;;
+
+;;;見出し3
+交渉・説得
+;;;
+
+- ;;;太字;;; ［説得］: 敵の戦意をくじく
+- ;;;太字;;; ［心理学］: 敵の心理状態を把握
+- ;;;太字;;; ［威圧］: 恐怖で行動を制限
+- ;;;太字;;; 人質交換・取引の提案
+
+;;;見出し3
+環境を利用した解決
+;;;
+
+- ;;;太字;;; 火災・爆発による敵の排除
+- ;;;太字;;; 水害・土砂崩れでの分断
+- ;;;太字;;; 電気系統の操作で無力化
+- ;;;太字;;; 毒ガス・煙幕での無効化
+
+;;;見出し2
+KP運用ガイド
+;;;
+
+;;;見出し3
+戦闘バランス調整
+;;;
+
+;;;太字+ハイライト color=#f0f8ff
+難易度調整のコツ
+;;;
+・探索者が苦戦している時は敵を弱体化
+・余裕がある時は追加の敵を投入
+・クリティカル/ファンブルを活用
+・状況に応じて弱点ヒントを提供
+
+;;;見出し3
+テンポの管理
+;;;
+
+- ;;;太字;;; 戦闘ラウンドの迅速な処理
+- ;;;太字;;; 長考は制限時間を設ける
+- ;;;太字;;; 描写と処理のメリハリ
+- ;;;太字;;; 緊張感の演出
+
+;;;見出し3
+安全管理
+;;;
+
+;;;枠線+太字
+全滅回避の配慮
+;;;
+・最後の救済手段を用意
+・NPCによる助け舟
+・隠された脱出ルート
+・敵の撤退・逃走
+
+;;;見出し2
+カスタマイズ要素
+;;;
+
+;;;枠線+太字
+変更可能な設定
+;;;
+・敵の種類（怪物/人間/ロボット等）
+・戦闘環境（屋内/屋外/特殊環境）
+・装備レベル（現代/近未来/過去）
+・超自然要素の有無
+・協力NPC の存在
+
+;;;見出し3
+関連テンプレート
+;;;
+
+- ;;;太字;;; 基本型: basic-scenario.txt
+- ;;;太字;;; クローズド型: closed-scenario.txt
+- ;;;太字;;; シティ型: city-scenario.txt
+
+---
+
+;;;太字+ハイライト color=#f0f8ff
+戦闘重視型成功の秘訣
+;;;
+1. 段階的な難易度上昇で成長感を演出
+2. 戦術的な選択肢を豊富に用意
+3. チームワークの重要性を強調
+4. 非戦闘解決手段も準備しておく
+5. 緊張感と達成感のバランス調整</code></pre>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // GitHub風タブ切り替え機能
+        function showPreview() {
+            // 全てのコンテンツを隠す
+            hideAllContent();
+
+            // プレビューを表示
+            document.getElementById('preview-content').classList.remove('hidden');
+
+            // ボタン状態をリセット
+            resetButtonStates();
+            document.getElementById('preview-btn').classList.add('active');
+        }
+
+        function showSource() {
+            // 全てのコンテンツを隠す
+            hideAllContent();
+
+            // ソースを表示
+            document.getElementById('source-content').classList.add('active');
+
+            // ボタン状態をリセット
+            resetButtonStates();
+            document.getElementById('source-btn').classList.add('active');
+        }
+
+
+        // ヘルパー関数：全てのコンテンツを隠す
+        function hideAllContent() {
+            document.getElementById('preview-content').classList.add('hidden');
+            document.getElementById('source-content').classList.remove('active');
+        }
+
+        // ヘルパー関数：全てのボタン状態をリセット
+        function resetButtonStates() {
+            document.getElementById('preview-btn').classList.remove('active');
+            document.getElementById('source-btn').classList.remove('active');
+        }
+
+        // シンタックスハイライト（シンプル版）
+        function applySyntaxHighlighting() {
+            const sourceContent = document.querySelector('#source-content code');
+            if (!sourceContent) return;
+
+            let text = sourceContent.textContent;
+
+            // ブロックマーカーのハイライト
+            text = text.replace(/^;;;(.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">;;;$1</span>');
+
+            // リスト項目のハイライト
+            text = text.replace(/^- (.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">-</span> $1');
+
+            sourceContent.innerHTML = text;
+        }
+
+
+
+        // 目次機能（TOC）
+        function setupTOC() {
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            if (!tocToggle || !tocSidebar) return;
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初期状態: プレビューを表示
+            showPreview();
+            applySyntaxHighlighting();
+            setupTOC();
+        });
+    </script>
+</body>
+</html>
