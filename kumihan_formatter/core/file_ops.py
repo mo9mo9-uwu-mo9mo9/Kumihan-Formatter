@@ -6,7 +6,6 @@ that are shared across different parts of the application.
 
 import base64
 import fnmatch
-import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Tuple
