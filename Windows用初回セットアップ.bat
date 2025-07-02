@@ -10,10 +10,10 @@ title Kumihan-Formatter - Initial Setup
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - 初回セットアップ
+echo  Kumihan-Formatter - Initial Setup
 echo ==========================================
-echo 必要な環境を自動でセットアップします
-echo すぐにKumihan-Formatterを使用できるようになります。
+echo Set up the required environment automatically
+echo Kumihan-Formatter will be ready to use soon
 echo ==========================================
 echo.
 
@@ -80,7 +80,7 @@ if errorlevel 1 (
 
 echo.
 echo ==========================================
-echo  セットアップ完了！
+echo  Setup Complete!
 echo ==========================================
 echo.
 echo [完了] セットアップが完了しました！

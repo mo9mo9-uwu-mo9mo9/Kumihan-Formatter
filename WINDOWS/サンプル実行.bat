@@ -31,10 +31,10 @@ if %MAJOR% geq 10 (
 
 echo.
 echo ==========================================
-echo  Kumihan-Formatter - サンプル一括実行
+echo  Kumihan-Formatter - Sample Batch Run
 echo ==========================================
-echo 全サンプルファイルをHTMLに変換します
-echo 出力先: ../dist/samples/
+echo Convert all sample files to HTML
+echo Output: ../dist/samples/
 echo ==========================================
 echo.
 
@@ -43,7 +43,7 @@ if not exist "../.venv\Scripts\activate.bat" (
     echo %YELLOW%[警告] セットアップが完了していません！%NC%
     echo.
     echo 先にセットアップを実行してください：
-    echo   1. ダブルクリック: 初回セットアップ.bat
+    echo   1. ダブルクリック: 初回セットアップ.bat .
     echo   2. セットアップの完了を待つ
     echo   3. その後、このスクリプトを再実行
     echo.
@@ -223,8 +223,8 @@ if errorlevel 1 (
 )
 echo.
 
-rem === 🆕 実践的サンプル集 ===
-echo %CYAN%=== 🎲 CoC6th長文サンプル集 ===%NC%
+rem === 実践的サンプル集 ===
+echo %CYAN%=== CoC6th長文サンプル集 ===%NC%
 echo.
 
 rem サンプル5: 基本シナリオテンプレート
@@ -340,18 +340,18 @@ if errorlevel 1 (
 echo.
 
 echo ==========================================
-echo %GREEN%全サンプルの変換が完了しました！%NC%
+echo %GREEN%All sample conversion completed!%NC%
 echo ==========================================
 echo.
 echo %CYAN%生成されたファイル:%NC%
 echo.
-echo %YELLOW%📚 学習用サンプル%NC%
+echo %YELLOW%学習用サンプル%NC%
 echo   01-quickstart/   - クイックスタートチュートリアル
 echo   02-basic/        - 基本的な記法のサンプル
 echo   03-advanced/     - 高度な記法のサンプル
 echo   04-showcase/     - 全機能のショーケース
 echo.
-echo %YELLOW%🎲 CoC6th長文サンプル集%NC%
+echo %YELLOW%CoC6th長文サンプル集%NC%
 echo   05-basic-scenario/    - 基本シナリオテンプレート
 echo   06-closed-scenario/   - クローズド型シナリオテンプレート
 echo   07-city-scenario/     - シティ型シナリオテンプレート
