@@ -6,24 +6,35 @@ that are shared across different parts of the application.
 
 import base64
 import fnmatch
-import os
 import shutil
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Tuple
+
+from .encoding_detector import EncodingDetector
 
 
 class UIProtocol(Protocol):
     """UI interface protocol to avoid circular dependency"""
 
     def warning(self, message: str, details: str = None) -> None: ...
+
     def file_copied(self, count: int) -> None: ...
+
     def files_missing(self, files: list) -> None: ...
+
     def duplicate_files(self, duplicates: dict) -> None: ...
+
     def info(self, message: str, details: str = None) -> None: ...
+
     def hint(self, message: str, details: str = None) -> None: ...
+
     def file_error(self, file_path: str, message: str) -> None: ...
+
     def encoding_error(self, file_path: str) -> None: ...
+
     def permission_error(self, error: str) -> None: ...
+
     def unexpected_error(self, error: str) -> None: ...
 
 
@@ -220,14 +231,70 @@ class FileOperations:
 
     @staticmethod
     def write_text_file(path: Path, content: str, encoding: str = "utf-8") -> None:
-        """Write text file with proper encoding"""
-        with open(path, "w", encoding=encoding) as f:
-            f.write(content)
+        """Write text file with proper encoding and error handling"""
+        try:
+            # Try with UTF-8 first
+            with open(path, "w", encoding=encoding, errors="replace") as f:
+                f.write(content)
+        except UnicodeEncodeError:
+            # Fallback with error replacement
+            with open(path, "w", encoding=encoding, errors="replace") as f:
+                f.write(content)
+        except Exception as e:
+            # For Windows, try with BOM
+            if encoding.lower() == "utf-8":
+                try:
+                    with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
+                        f.write(content)
+                except Exception:
+                    raise e
+            else:
+                raise
 
     @staticmethod
     def read_text_file(path: Path, encoding: str = "utf-8") -> str:
-        """Read text file with proper encoding"""
-        with open(path, "r", encoding=encoding) as f:
+        """Read text file with proper encoding and error handling
+
+        Uses efficient encoding detection:
+        1. Check for BOM
+        2. Try specified encoding
+        3. Try platform-specific common encodings
+        4. Fallback to UTF-8 with error replacement
+        """
+        # Use encoding detector for efficiency
+        detected_encoding, is_confident = EncodingDetector.detect(path)
+
+        # If confident in detection or no encoding specified, use detected
+        if is_confident or encoding == "utf-8":
+            try:
+                with open(path, "r", encoding=detected_encoding) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                pass
+
+        # Try specified encoding if different from detected
+        if encoding != detected_encoding:
+            try:
+                with open(path, "r", encoding=encoding) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                pass
+
+        # Platform-specific fallbacks (minimal set)
+        if sys.platform == "win32":
+            fallback_encodings = ["cp932"]
+        else:
+            fallback_encodings = []
+
+        for enc in fallback_encodings:
+            try:
+                with open(path, "r", encoding=enc) as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                continue
+
+        # Last resort: UTF-8 with error replacement
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
 
     @staticmethod
@@ -338,10 +405,16 @@ class ErrorHandler:
         if self.ui:
             self.ui.file_error(file_path, "ファイルが見つかりません")
 
-    def handle_encoding_error(self, file_path: str) -> None:
-        """Handle encoding error"""
+    def handle_encoding_error(self, file_path: str, encoding: str = "utf-8") -> None:
+        """Handle encoding error with helpful suggestions"""
         if self.ui:
             self.ui.encoding_error(file_path)
+            self.ui.hint(
+                "エンコーディングの問題を解決するには:",
+                "1. ファイルをUTF-8で保存し直してください\n"
+                "   2. テキストエディタで開き、「UTF-8」として保存\n"
+                "   3. Windowsの場合は「UTF-8 (BOM付き)」も試してください",
+            )
 
     def handle_permission_error(self, error: str) -> None:
         """Handle permission error"""

@@ -4,12 +4,12 @@ Centralized console output and user interaction management.
 All console.print() calls should go through this module.
 """
 
-import io
 import sys
-from typing import Any, Optional
 
 from rich.console import Console
 from rich.progress import Progress
+
+from .console_encoding import ConsoleEncodingSetup
 
 
 class ConsoleUI:
@@ -21,43 +21,26 @@ class ConsoleUI:
 
     def __init__(self):
         """Initialize console UI with proper encoding setup"""
-        self._setup_encoding()
+        ConsoleEncodingSetup.setup_encoding()
         self.console = self._create_console()
-
-    def _setup_encoding(self) -> None:
-        """Setup proper encoding for different platforms"""
-        # macOS encoding fix
-        if sys.platform == "darwin":
-            if sys.stdout.encoding != "utf-8":
-                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
-
-        # Windows encoding setup
-        if sys.platform == "win32":
-            if hasattr(sys.stdout, "reconfigure"):
-                try:
-                    sys.stdout.reconfigure(encoding="utf-8")
-                    sys.stderr.reconfigure(encoding="utf-8")
-                except:
-                    pass
-
-            import os
-
-            os.environ["PYTHONIOENCODING"] = "utf-8"
-
-            try:
-                import locale
-
-                locale.setlocale(locale.LC_ALL, "")
-            except:
-                pass
 
     def _create_console(self) -> Console:
         """Create console instance with safe settings"""
         try:
-            return Console(force_terminal=True, legacy_windows=True)
-        except:
-            return Console()
+            # For Windows, use specific settings
+            if sys.platform == "win32":
+                return Console(
+                    force_terminal=True,
+                    legacy_windows=True,
+                    color_system="windows",
+                    # Ensure proper width detection
+                    width=None,
+                )
+            else:
+                return Console(force_terminal=True)
+        except Exception:
+            # Minimal console as fallback
+            return Console(legacy_windows=True)
 
     # Processing status messages
     def processing_start(self, message: str, file_path: str = None) -> None:
@@ -108,7 +91,7 @@ class ConsoleUI:
     def encoding_error(self, file_path: str) -> None:
         """Display encoding error"""
         self.console.print(
-            f"[red][エラー] エンコーディングエラー:[/red] ファイルを UTF-8 として読み込めません"
+            "[red][エラー] エンコーディングエラー:[/red] ファイルを UTF-8 として読み込めません"
         )
         self.console.print(f"[dim]   ファイル: {file_path}[/dim]")
 
@@ -136,10 +119,12 @@ class ConsoleUI:
         """Display validation warnings"""
         if is_sample:
             self.console.print(
-                f"[yellow][警告]  {error_count}個のエラーが検出されました（想定されたエラーです）[/yellow]"
+                f"[yellow][警告]  {error_count}個のエラーが検出されました"
+                "（想定されたエラーです）[/yellow]"
             )
             self.console.print(
-                "[yellow]   これらのエラーは、記法の学習用にわざと含まれています[/yellow]"
+                "[yellow]   これらのエラーは、"
+                "記法の学習用にわざと含まれています[/yellow]"
             )
             self.console.print(
                 "[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]"
@@ -167,7 +152,7 @@ class ConsoleUI:
 
     def dim(self, message: str) -> None:
         """Display dimmed message"""
-        self.console.print(f"[dim]   {message}[/dim]")
+        self.console.print("[dim]   {}[/dim]".format(message))
 
     # Browser and preview
     def browser_opening(self) -> None:
@@ -181,12 +166,14 @@ class ConsoleUI:
     # File operations
     def file_copied(self, count: int) -> None:
         """Display file copy count"""
-        self.console.print(f"[green]{count}個の画像ファイルをコピーしました[/green]")
+        self.console.print(
+            "[green]{}個の画像ファイルをコピーしました[/green]".format(count)
+        )
 
     def files_missing(self, files: list) -> None:
         """Display missing files"""
         self.console.print(
-            f"[red][エラー] {len(files)}個の画像ファイルが見つかりません:[/red]"
+            f"[red][エラー] {len(files)}個の画像ファイルが" "見つかりません:[/red]"
         )
         for filename in files:
             self.console.print(f"[red]   - {filename}[/red]")
@@ -194,7 +181,7 @@ class ConsoleUI:
     def duplicate_files(self, duplicates: dict) -> None:
         """Display duplicate files warning"""
         self.console.print(
-            f"[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]"
+            "[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]"
         )
         for filename, count in duplicates.items():
             self.console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
@@ -314,7 +301,7 @@ class ConsoleUI:
         self, output_path: str, txt_name: str, html_name: str, image_count: int
     ) -> None:
         """Display sample generation completion"""
-        self.console.print(f"[green][完了] サンプル生成完了！[/green]")
+        self.console.print("[green][完了] サンプル生成完了！[/green]")
         self.console.print(f"[green]   [フォルダ] 出力先: {output_path}[/green]")
         self.console.print(f"[green]   [ファイル] テキスト: {txt_name}[/green]")
         self.console.print(f"[green]   [ブラウザ] HTML: {html_name}[/green]")
@@ -366,7 +353,7 @@ class ConsoleUI:
                 "\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]"
             )
             self.console.print(
-                "[dim]   すべての記法が正しく処理されるかテストしています[/dim]"
+                "[dim]   すべての記法が正しく処理されるか" "テストしています[/dim]"
             )
         else:
             self.console.print(
