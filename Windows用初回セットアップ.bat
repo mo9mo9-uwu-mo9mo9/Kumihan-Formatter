@@ -94,8 +94,8 @@ set /p choice="[選択] 選択してください [Y/N/S]: "
 if /i "%choice%"=="y" (
     echo.
     echo [開始] 変換ツールを起動しています...
-    if exist "WINDOWS\変換ツール.bat" (
-        call "WINDOWS\変換ツール.bat"
+    if exist "%~dp0WINDOWS\変換ツール.bat" (
+        call "%~dp0WINDOWS\変換ツール.bat"
     ) else (
         echo [エラー] 変換ツール.bat が見つかりません
         echo.
@@ -108,8 +108,8 @@ if /i "%choice%"=="y" (
     echo.
     echo [統計] サンプルを実行しています...
     echo.
-    if exist "WINDOWS\サンプル実行.bat" (
-        call "WINDOWS\サンプル実行.bat"
+    if exist "%~dp0WINDOWS\サンプル実行.bat" (
+        call "%~dp0WINDOWS\サンプル実行.bat"
         echo.
         echo サンプル確認が完了しました！
         echo.
@@ -117,8 +117,8 @@ if /i "%choice%"=="y" (
         if /i "!convert_choice!"=="y" (
             echo.
             echo [開始] 変換ツールを起動しています...
-            if exist "WINDOWS\変換ツール.bat" (
-                call "WINDOWS\変換ツール.bat"
+            if exist "%~dp0WINDOWS\変換ツール.bat" (
+                call "%~dp0WINDOWS\変換ツール.bat"
             ) else (
                 echo [エラー] エラー: 変換ツール.bat が見つかりません
                 echo 手動で 変換ツール.bat をダブルクリックしてください

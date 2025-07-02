@@ -111,7 +111,7 @@ echo %GREEN%[完了] 環境確認完了%NC%
 echo.
 
 rem 出力ディレクトリの準備
-set "OUTPUT_BASE=..\dist\samples"
+set "OUTPUT_BASE=%~dp0..\dist\samples"
 
 rem Check if output directory exists and is not empty
 if exist "%OUTPUT_BASE%" (
@@ -366,7 +366,11 @@ echo.
 echo 出力フォルダを開きますか？ [y/N]
 set /p choice=""
 if /i "%choice%"=="y" (
-    explorer "%OUTPUT_BASE%"
+    if exist "%OUTPUT_BASE%" (
+        explorer "%OUTPUT_BASE%"
+    ) else (
+        echo %RED%[エラー] 出力フォルダが見つかりません: %OUTPUT_BASE%%NC%
+    )
 )
 
 echo.
