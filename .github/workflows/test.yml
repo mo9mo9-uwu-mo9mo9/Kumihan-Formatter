@@ -45,6 +45,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Format check with black
+      shell: bash
       run: |
         if [ -d "tests" ]; then
           black --check kumihan_formatter tests
@@ -54,6 +55,7 @@ jobs:
         fi
 
     - name: Import sort check with isort
+      shell: bash
       run: |
         if [ -d "tests" ]; then
           isort --check-only kumihan_formatter tests
@@ -63,6 +65,7 @@ jobs:
         fi
 
     - name: Test with pytest
+      shell: bash
       run: |
         if [ -d "tests" ] && [ "$(find tests -name '*.py' -not -name '__init__.py' | wc -l)" -gt 0 ]; then
           pytest --cov=kumihan_formatter --cov-report=xml --cov-report=term
