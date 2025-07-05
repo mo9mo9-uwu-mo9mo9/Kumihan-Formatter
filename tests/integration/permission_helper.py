@@ -2,7 +2,7 @@
 
 Windows環境でのファイル権限テスト失敗を解決するため、
 プラットフォーム別の権限設定方法を提供します。
-"""
+"""  # noqa: E501
 
 import os
 import platform
@@ -116,7 +116,7 @@ class PermissionHelper:
                 "icacls",
                 str(file_path),
                 "/deny",
-                f"{os.environ.get('USERNAME', 'Everyone')}:R",
+                os.environ.get("USERNAME", "Everyone") + ":R",
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             return result.returncode == 0
@@ -146,7 +146,7 @@ class PermissionHelper:
                 "icacls",
                 str(dir_path),
                 "/deny",
-                f"{os.environ.get('USERNAME', 'Everyone')}:W",
+                os.environ.get("USERNAME", "Everyone") + ":W",
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             return result.returncode == 0
