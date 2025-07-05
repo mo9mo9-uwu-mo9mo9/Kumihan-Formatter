@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>item-template</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+
+        /* GitHub風トグル機能専用スタイル */
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* フローティングトグルボタン */
+        .floating-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .floating-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #656d76;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .floating-btn:hover {
+            color: #24292f;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .floating-btn.active {
+            background: white;
+            color: #24292f;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .file-label {
+            font-size: 10px;
+            color: #656d76;
+            text-align: center;
+            padding: 2px 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* コンテンツ表示エリア */
+        .content-display {
+            position: relative;
+            min-height: 400px;
+        }
+
+        /* プレビューコンテンツ */
+        .preview-content {
+            padding: 20px;
+            display: block;
+        }
+
+        .preview-content.hidden {
+            display: none;
+        }
+
+        /* ソースコンテンツ */
+        .source-content {
+            display: none;
+            padding: 0;
+        }
+
+        .source-content.active {
+            display: block !important;
+        }
+
+        .source-content pre {
+            margin: 0;
+            padding: 20px;
+            background: #f6f8fa;
+            border: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #24292f;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .source-content code {
+            background: transparent;
+            padding: 0;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        /* シンタックスハイライト */
+        .source-content .keyword {
+            color: #d73a49;
+            font-weight: bold;
+        }
+
+        .source-content .marker {
+            color: #005cc5;
+            font-weight: bold;
+        }
+
+        .source-content .content-text {
+            color: #24292e;
+        }
+
+        .source-content .comment {
+            color: #6a737d;
+            font-style: italic;
+        }
+
+        /* TOCレイアウト用スタイル */
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 100%;
+            margin: 0;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            /* 目次有効時のモバイルレイアウト */
+            .layout-wrapper {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .main-container {
+                border-radius: 4px;
+            }
+
+            .floating-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 6px;
+            }
+
+            .floating-btn {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+
+            .toggle-group {
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .file-label {
+                font-size: 9px;
+                max-width: 100px;
+            }
+
+            .preview-content,
+            .source-content pre {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper {
+                display: block;
+            }
+
+            .floating-toggle {
+                display: none;
+            }
+        }
+
+        /* 既存のスタイル（簡略版） */
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+padding: 0;            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .source-content,
+            .result-content {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- フローティングトグルボタン -->
+    <div class="floating-toggle">
+        <div class="toggle-group">
+            <button class="floating-btn active" id="preview-btn" onclick="showPreview()">
+                🎨 プレビュー
+            </button>
+            <button class="floating-btn" id="source-btn" onclick="showSource()">
+                📝 記法
+            </button>
+        </div>
+        <div class="file-label">item-template.txt</div>
+    </div>
+
+    <!-- 目次有効時のレイアウト -->
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-1">
+<a href="#heading-1">アイテム・クリーチャーテンプレート集</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-2">重要アイテムテンプレート</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-3">［アイテム名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-4">発見・入手方法</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-5">情報・手がかり</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-6">書類・文書系アイテム</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-7">［文書名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-8">手紙・私的文書</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-9">公文書・正式文書</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-10">装身具・貴重品系アイテム</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-11">［装身具名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-12">個人的な意味</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-13">隠された機能</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-14">武器・道具系アイテム</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-15">［武器・道具名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-16">歴史・来歴</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-17">クリーチャー・怪物テンプレート</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-18">［クリーチャー名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-19">外見・行動</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-20">特殊能力・弱点</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-21">オカルト・神秘系アイテム</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-22">［神秘的アイテム名］</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-23">超自然的効果</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-24">使用・活用</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-25">KP運用ガイド</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-26">アイテム配置のコツ</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-27">バランス調整</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-28">描写のポイント</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-container">
+            <!-- コンテンツ表示エリア -->
+            <div class="content-display">
+                <!-- プレビュー表示 -->
+                <div class="preview-content" id="preview-content">
+                    <h1 id="heading-1">アイテム・クリーチャーテンプレート集</h1>
+<h2 id="heading-2">重要アイテムテンプレート</h2>
+<h3 id="heading-3">［アイテム名］</h3>
+<div class="highlight" style="background-color:#e6f3ff"><strong>基本情報</strong></div>
+<p>種類: ［書類/装身具/武器/道具等］ サイズ: ［手のひら大/A4サイズ/大型等］ 材質: ［紙/金属/木製/石製等］ 年代: ［製作時期・年代］</p>
+<div class="box"><strong>外観・特徴</strong></div>
+<p>色・形状: ［色彩・形の特徴］ 装飾・模様: ［彫刻・文字・絵等］ 状態: ［新品/使い古し/破損等］ 特異点: ［普通でない特徴・異常な部分］</p>
+<h3 id="heading-4">発見・入手方法</h3>
+<div class="highlight" style="background-color:#f0fff0"><strong>発見場所</strong></div>
+<p>場所: ［具体的な発見場所］ 隠し方: ［隠蔽方法・隠された理由］ 発見条件: ［必要な技能・条件］</p>
+<div class="highlight" style="background-color:#fff0f0"><strong>入手難易度</strong></div>
+<ul>
+<li>簡単: 注意深く探せば見つかる</li>
+<li>普通: 特定の技能や条件が必要</li>
+<li>困難: 複数の手がかりや特殊な手段が必要</li>
+<li>極困難: シナリオの核心に関わる重要アイテム</li>
+</ul>
+<h3 id="heading-5">情報・手がかり</h3>
+<details><summary>詳細を表示</summary><div class="details-content">＜表面的な情報＞<br>
+誰でも分かる基本的な情報:<br>
+［一目で分かる事実・特徴］<br>
+<br>
+［目星］成功で分かる情報:<br>
+［注意深く観察すると気づく詳細］</div></details>
+<details><summary>詳細を表示</summary><div class="details-content">＜専門的な分析＞<br>
+［図書館］成功で分かる情報:<br>
+［歴史的背景・製作技法・価値等］<br>
+<br>
+［専門技能］成功で分かる情報:<br>
+［専門分野特有の知識が必要な情報］</div></details>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content"><strong>真の意味・重要性</strong></div></details>
+<p>シナリオでの役割: ［このアイテムがシナリオに与える影響］</p>
+<p>隠された真実: ［アイテムに関する重要な秘密］</p>
+<p>活用方法: ［問題解決・謎解きでの使用法］</p>
+<h2 id="heading-6">書類・文書系アイテム</h2>
+<h3 id="heading-7">［文書名］</h3>
+<div class="highlight" style="background-color:#fff0e6"><strong>文書情報</strong></div>
+<p>種類: ［手紙/日記/公文書/契約書等］ 作成者: ［筆者・発行者］ 宛先: ［受取人・対象者］ 作成日: ［日付・時期］</p>
+<div class="box"><strong>内容概要<br>
+主要内容: ［文書の主な内容］<br>
+重要部分: ［特に注目すべき記述］<br>
+暗号・隠語: ［暗示的表現・符丁］<br>
+欠損部分: ［破れ・汚れで読めない箇所］</strong></div>
+<h3 id="heading-8">手紙・私的文書</h3>
+<div class="highlight" style="background-color:#f0f8ff"><strong>差出人の心境</strong></div>
+<ul>
+<li>感情状態: ［焦り/恐怖/怒り/悲しみ等］</li>
+<li>緊急度: ［急いでいる/慎重/余裕等］</li>
+<li>関係性: ［親しい/疎遠/敵対的等］</li>
+</ul>
+<div class="highlight" style="background-color:#ffe6f0"><strong>読み取れる事実<br>
+・時系列: ［いつの出来事か］<br>
+・人間関係: ［登場人物の関係］<br>
+・事件の背景: ［何が起きているのか］</strong></div>
+<h3 id="heading-9">公文書・正式文書</h3>
+<div class="highlight" style="background-color:#f0fff0"><strong>記録された事実<br>
+・公的事実: ［法的に記録された事項］<br>
+・手続き: ［何の手続きが行われたか］<br>
+・承認者: ［誰が承認・署名したか］</strong></div>
+<div class="highlight" style="background-color:#fff0f0"><strong>隠された情報</strong></div>
+<ul>
+<li>省略事項: ［記載されていない重要事実］</li>
+<li>偽装: ［意図的に隠蔽された情報］</li>
+<li>矛盾: ［他の文書との食い違い］</li>
+</ul>
+<h2 id="heading-10">装身具・貴重品系アイテム</h2>
+<h3 id="heading-11">［装身具名］</h3>
+<div class="highlight" style="background-color:#f5f0ff"><strong>装身具情報<br>
+種類: ［指輪/ネックレス/ブローチ/時計等］<br>
+素材: ［金/銀/プラチナ/宝石等］<br>
+デザイン: ［装飾の特徴・スタイル］<br>
+価値: ［推定価格・希少性］</strong></div>
+<h3 id="heading-12">個人的な意味</h3>
+<div class="box"><strong>所有者との関係</strong></div>
+<ul>
+<li>贈り物: ［誰からの贈り物か］</li>
+<li>記念品: ［何の記念か］</li>
+<li>家宝: ［家族・一族の歴史］</li>
+<li>お守り: ［信仰・迷信との関係］</li>
+</ul>
+<h3 id="heading-13">隠された機能</h3>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content"><strong>特殊な仕組み</strong></div></details>
+<ul>
+<li>隠し部屋: ［秘密の収納部分］</li>
+<li>暗号: ［装飾に隠されたメッセージ］</li>
+<li>鍵: ［何かの鍵としての機能］</li>
+<li>目印: ［特定の場所・人を示すサイン］</li>
+</ul>
+<h2 id="heading-14">武器・道具系アイテム</h2>
+<h3 id="heading-15">［武器・道具名］</h3>
+<div class="highlight" style="background-color:#ffe6e6"><strong>性能データ<br>
+種類: ［ナイフ/銃/鈍器/工具等］<br>
+ダメージ: ［CoC戦闘での威力］<br>
+技能: ［使用する技能］<br>
+特殊効果: ［特別な効果・制限］</strong></div>
+<div class="box"><strong>使用・運用<br>
+入手方法: ［どこで手に入るか］<br>
+法的制限: ［所持・使用の法的問題］<br>
+隠蔽性: ［持ち歩きの容易さ］<br>
+弾薬・消耗: ［補給・メンテナンスの必要性］</strong></div>
+<h3 id="heading-16">歴史・来歴</h3>
+<div class="highlight" style="background-color:#f0f0ff"><strong>過去の使用者</strong></div>
+<ul>
+<li>前の所有者: ［誰が使っていたか］</li>
+<li>使用目的: ［何のために使われたか］</li>
+<li>事件との関係: ［過去の事件での役割］</li>
+</ul>
+<h2 id="heading-17">クリーチャー・怪物テンプレート</h2>
+<h3 id="heading-18">［クリーチャー名］</h3>
+<div class="highlight" style="background-color:#ffcccc"><strong>基本データ<br>
+種族: ［人間/動物/超自然的存在等］<br>
+知性: ［動物的/人間的/超人的等］<br>
+生息地: ［どこに棲息するか］<br>
+活動時間: ［昼行性/夜行性/特定条件等］</strong></div>
+<div class="box"><strong>戦闘データ<br>
+STR: ［筋力］  CON: ［体力］  SIZ: ［サイズ］<br>
+INT: ［知性］  POW: ［意志力］  DEX: ［敏捷性］<br>
+耐久力: ［HP］<br>
+移動力: ［移動距離］<br>
+武器: ［攻撃手段］ ［命中率］% （［ダメージ］）<br>
+装甲: ［防御力］ポイント<br>
+正気度喪失: ［遭遇時］/［死亡時］</strong></div>
+<h3 id="heading-19">外見・行動</h3>
+<div class="highlight" style="background-color:#f0f8ff"><strong>外見描写</strong></div>
+<ul>
+<li>サイズ: ［大きさの比較］</li>
+<li>形状: ［体型・シルエット］</li>
+<li>特徴: ［印象的な部位・異常性］</li>
+<li>動作: ［移動方法・独特な癖］</li>
+</ul>
+<div class="highlight" style="background-color:#ffe6f0"><strong>行動パターン<br>
+・警戒時: ［敵を発見した時の行動］<br>
+・攻撃時: ［戦闘中の行動］<br>
+・劣勢時: ［追い詰められた時の行動］<br>
+・平常時: ［通常の生活パターン］</strong></div>
+<h3 id="heading-20">特殊能力・弱点</h3>
+<div class="box"><strong>特殊能力<br>
+［能力名］:<br>
+効果: ［具体的な効果・影響］<br>
+使用条件: ［発動条件・制限］<br>
+対抗方法: ［回避・対処法］</strong></div>
+<div class="box"><strong>弱点・対策</strong></div>
+<p>物理的弱点: ［特定の武器・攻撃に弱い］ 環境的弱点: ［特定の環境・条件で無力化］ 心理的弱点: ［恐怖・忌避するもの］ 呪術的弱点: ［呪文・儀式での対処］</p>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content"><strong>真の正体・背景<br>
+正体: ［真の姿・由来］<br>
+目的: ［何を求めているか］<br>
+弱点の理由: ［なぜその弱点を持つか］<br>
+倒し方: ［完全に排除する方法］</strong></div></details>
+<h2 id="heading-21">オカルト・神秘系アイテム</h2>
+<h3 id="heading-22">［神秘的アイテム名］</h3>
+<div class="highlight" style="background-color:#f0f0ff"><strong>神秘的属性<br>
+起源: ［古代文明/邪教/異次元等］<br>
+力の種類: ［呪術/超能力/異次元の力等］<br>
+危険度: ［安全/注意/危険/極めて危険］</strong></div>
+<h3 id="heading-23">超自然的効果</h3>
+<div class="highlight" style="background-color:#e6e6ff"><strong>正の効果</strong></div>
+<ul>
+<li>能力向上: ［技能値の上昇］</li>
+<li>保護効果: ［危険からの保護］</li>
+<li>情報取得: ［隠された知識の獲得］</li>
+<li>治癒効果: ［HP・正気度の回復］</li>
+</ul>
+<div class="highlight" style="background-color:#ffe6e6"><strong>負の効果<br>
+・正気度減少: ［使用時の精神的負担］<br>
+・呪い: ［持続的な悪影響］<br>
+・依存性: ［使用をやめられなくなる］<br>
+・副作用: ［予期しない悪影響］</strong></div>
+<h3 id="heading-24">使用・活用</h3>
+<div class="box"><strong>使用方法<br>
+起動条件: ［どうすれば効果が発動するか］<br>
+使用制限: ［回数・時間・条件の制限］<br>
+必要技能: ［使いこなすのに必要な知識］<br>
+習得時間: ［使い方を覚えるのにかかる時間］</strong></div>
+<details class="spoiler"><summary>ネタバレを表示</summary><div class="details-content"><strong>隠された危険性<br>
+真の代償: ［使用者が払う本当の代価］<br>
+長期的影響: ［継続使用による変化］<br>
+破綻条件: ［力が暴走する条件］<br>
+対処法: ［悪影響を取り除く方法］</strong></div></details>
+<h2 id="heading-25">KP運用ガイド</h2>
+<h3 id="heading-26">アイテム配置のコツ</h3>
+<div class="highlight" style="background-color:#f0f8ff"><strong>発見の演出<br>
+・段階的発見: 少しずつ情報を開示<br>
+・複数の手がかり: 一つのアイテムから複数の情報<br>
+・赤いニシン: 重要そうで実は関係ないアイテム<br>
+・隠し要素: 二次的な調査で発見する秘密</strong></div>
+<h3 id="heading-27">バランス調整</h3>
+<div class="box"><strong>情報量の調整</strong></div>
+<ul>
+<li>多すぎる情報: 混乱を招く可能性</li>
+<li>少なすぎる情報: 進行が止まる危険</li>
+<li>タイミング: 適切な時期に適切な情報</li>
+<li>重要度: 情報の価値と発見難易度の対応</li>
+</ul>
+<h3 id="heading-28">描写のポイント</h3>
+<ul>
+<li><strong>五感を使った描写: 見た目だけでなく手触り・匂い等</strong></li>
+<li><strong>感情的反応: 探索者の直感的な印象</strong></li>
+<li><strong>比較表現: 身近なものとの比較で理解しやすく</strong></li>
+<li><strong>段階的詳細: 最初は概要、次に詳細を描写</strong></li>
+</ul>
+<p>---</p>
+<div class="highlight" style="background-color:#f0f8ff"><strong>アイテム・クリーチャー作成のポイント</strong></div>
+<ol>
+<li>シナリオでの役割を明確にする</li>
+<li>探索者の行動を促進する要素を含める</li>
+<li>複数の解釈・活用方法を用意する</li>
+<li>適切な難易度・危険度に設定する</li>
+<li>世界観に合った一貫性を保つ</li>
+</ol>
+                </div>
+
+                <!-- ソース表示 -->
+                <div class="source-content" id="source-content">
+                    <pre><code>;;;見出し1
+アイテム・クリーチャーテンプレート集
+;;;
+
+;;;見出し2
+重要アイテムテンプレート
+;;;
+
+;;;見出し3
+［アイテム名］
+;;;
+
+;;;太字+ハイライト color=#e6f3ff
+基本情報
+;;;
+種類: ［書類/装身具/武器/道具等］
+サイズ: ［手のひら大/A4サイズ/大型等］
+材質: ［紙/金属/木製/石製等］
+年代: ［製作時期・年代］
+
+;;;枠線+太字
+外観・特徴
+;;;
+色・形状: ［色彩・形の特徴］
+装飾・模様: ［彫刻・文字・絵等］
+状態: ［新品/使い古し/破損等］
+特異点: ［普通でない特徴・異常な部分］
+
+;;;見出し3
+発見・入手方法
+;;;
+
+;;;太字+ハイライト color=#f0fff0
+発見場所
+;;;
+場所: ［具体的な発見場所］
+隠し方: ［隠蔽方法・隠された理由］
+発見条件: ［必要な技能・条件］
+
+;;;太字+ハイライト color=#fff0f0
+入手難易度
+;;;
+・簡単: 注意深く探せば見つかる
+・普通: 特定の技能や条件が必要
+・困難: 複数の手がかりや特殊な手段が必要
+・極困難: シナリオの核心に関わる重要アイテム
+
+;;;見出し3
+情報・手がかり
+;;;
+
+;;;折りたたみ
+＜表面的な情報＞
+誰でも分かる基本的な情報:
+［一目で分かる事実・特徴］
+
+［目星］成功で分かる情報:
+［注意深く観察すると気づく詳細］
+;;;
+
+;;;折りたたみ
+＜専門的な分析＞
+［図書館］成功で分かる情報:
+［歴史的背景・製作技法・価値等］
+
+［専門技能］成功で分かる情報:
+［専門分野特有の知識が必要な情報］
+;;;
+
+;;;ネタバレ+太字
+真の意味・重要性
+;;;
+シナリオでの役割:
+［このアイテムがシナリオに与える影響］
+
+隠された真実:
+［アイテムに関する重要な秘密］
+
+活用方法:
+［問題解決・謎解きでの使用法］
+
+;;;見出し2
+書類・文書系アイテム
+;;;
+
+;;;見出し3
+［文書名］
+;;;
+
+;;;太字+ハイライト color=#fff0e6
+文書情報
+;;;
+種類: ［手紙/日記/公文書/契約書等］
+作成者: ［筆者・発行者］
+宛先: ［受取人・対象者］
+作成日: ［日付・時期］
+
+;;;枠線+太字
+内容概要
+主要内容: ［文書の主な内容］
+重要部分: ［特に注目すべき記述］
+暗号・隠語: ［暗示的表現・符丁］
+欠損部分: ［破れ・汚れで読めない箇所］
+;;;
+
+;;;見出し3
+手紙・私的文書
+;;;
+
+;;;太字+ハイライト color=#f0f8ff
+差出人の心境
+;;;
+・感情状態: ［焦り/恐怖/怒り/悲しみ等］
+・緊急度: ［急いでいる/慎重/余裕等］
+・関係性: ［親しい/疎遠/敵対的等］
+
+;;;太字+ハイライト color=#ffe6f0
+読み取れる事実
+・時系列: ［いつの出来事か］
+・人間関係: ［登場人物の関係］
+・事件の背景: ［何が起きているのか］
+;;;
+
+;;;見出し3
+公文書・正式文書
+;;;
+
+;;;太字+ハイライト color=#f0fff0
+記録された事実
+・公的事実: ［法的に記録された事項］
+・手続き: ［何の手続きが行われたか］
+・承認者: ［誰が承認・署名したか］
+;;;
+
+;;;太字+ハイライト color=#fff0f0
+隠された情報
+;;;
+・省略事項: ［記載されていない重要事実］
+・偽装: ［意図的に隠蔽された情報］
+・矛盾: ［他の文書との食い違い］
+
+;;;見出し2
+装身具・貴重品系アイテム
+;;;
+
+;;;見出し3
+［装身具名］
+;;;
+
+;;;太字+ハイライト color=#f5f0ff
+装身具情報
+種類: ［指輪/ネックレス/ブローチ/時計等］
+素材: ［金/銀/プラチナ/宝石等］
+デザイン: ［装飾の特徴・スタイル］
+価値: ［推定価格・希少性］
+;;;
+
+;;;見出し3
+個人的な意味
+;;;
+
+;;;枠線+太字
+所有者との関係
+;;;
+・贈り物: ［誰からの贈り物か］
+・記念品: ［何の記念か］
+・家宝: ［家族・一族の歴史］
+・お守り: ［信仰・迷信との関係］
+
+;;;見出し3
+隠された機能
+;;;
+
+;;;ネタバレ+太字
+特殊な仕組み
+;;;
+・隠し部屋: ［秘密の収納部分］
+・暗号: ［装飾に隠されたメッセージ］
+・鍵: ［何かの鍵としての機能］
+・目印: ［特定の場所・人を示すサイン］
+
+;;;見出し2
+武器・道具系アイテム
+;;;
+
+;;;見出し3
+［武器・道具名］
+;;;
+
+;;;太字+ハイライト color=#ffe6e6
+性能データ
+種類: ［ナイフ/銃/鈍器/工具等］
+ダメージ: ［CoC戦闘での威力］
+技能: ［使用する技能］
+特殊効果: ［特別な効果・制限］
+;;;
+
+;;;枠線+太字
+使用・運用
+入手方法: ［どこで手に入るか］
+法的制限: ［所持・使用の法的問題］
+隠蔽性: ［持ち歩きの容易さ］
+弾薬・消耗: ［補給・メンテナンスの必要性］
+;;;
+
+;;;見出し3
+歴史・来歴
+;;;
+
+;;;太字+ハイライト color=#f0f0ff
+過去の使用者
+;;;
+・前の所有者: ［誰が使っていたか］
+・使用目的: ［何のために使われたか］
+・事件との関係: ［過去の事件での役割］
+
+;;;見出し2
+クリーチャー・怪物テンプレート
+;;;
+
+;;;見出し3
+［クリーチャー名］
+;;;
+
+;;;太字+ハイライト color=#ffcccc
+基本データ
+種族: ［人間/動物/超自然的存在等］
+知性: ［動物的/人間的/超人的等］
+生息地: ［どこに棲息するか］
+活動時間: ［昼行性/夜行性/特定条件等］
+;;;
+
+;;;枠線+太字
+戦闘データ
+STR: ［筋力］  CON: ［体力］  SIZ: ［サイズ］
+INT: ［知性］  POW: ［意志力］  DEX: ［敏捷性］
+耐久力: ［HP］
+移動力: ［移動距離］
+武器: ［攻撃手段］ ［命中率］% （［ダメージ］）
+装甲: ［防御力］ポイント
+正気度喪失: ［遭遇時］/［死亡時］
+;;;
+
+;;;見出し3
+外見・行動
+;;;
+
+;;;太字+ハイライト color=#f0f8ff
+外見描写
+;;;
+・サイズ: ［大きさの比較］
+・形状: ［体型・シルエット］
+・特徴: ［印象的な部位・異常性］
+・動作: ［移動方法・独特な癖］
+
+;;;太字+ハイライト color=#ffe6f0
+行動パターン
+・警戒時: ［敵を発見した時の行動］
+・攻撃時: ［戦闘中の行動］
+・劣勢時: ［追い詰められた時の行動］
+・平常時: ［通常の生活パターン］
+;;;
+
+;;;見出し3
+特殊能力・弱点
+;;;
+
+;;;太字+枠線
+特殊能力
+［能力名］:
+効果: ［具体的な効果・影響］
+使用条件: ［発動条件・制限］
+対抗方法: ［回避・対処法］
+;;;
+
+;;;太字+枠線
+弱点・対策
+;;;
+物理的弱点: ［特定の武器・攻撃に弱い］
+環境的弱点: ［特定の環境・条件で無力化］
+心理的弱点: ［恐怖・忌避するもの］
+呪術的弱点: ［呪文・儀式での対処］
+
+;;;ネタバレ+太字
+真の正体・背景
+正体: ［真の姿・由来］
+目的: ［何を求めているか］
+弱点の理由: ［なぜその弱点を持つか］
+倒し方: ［完全に排除する方法］
+;;;
+
+;;;見出し2
+オカルト・神秘系アイテム
+;;;
+
+;;;見出し3
+［神秘的アイテム名］
+;;;
+
+;;;太字+ハイライト color=#f0f0ff
+神秘的属性
+起源: ［古代文明/邪教/異次元等］
+力の種類: ［呪術/超能力/異次元の力等］
+危険度: ［安全/注意/危険/極めて危険］
+;;;
+
+;;;見出し3
+超自然的効果
+;;;
+
+;;;太字+ハイライト color=#e6e6ff
+正の効果
+;;;
+・能力向上: ［技能値の上昇］
+・保護効果: ［危険からの保護］
+・情報取得: ［隠された知識の獲得］
+・治癒効果: ［HP・正気度の回復］
+
+;;;太字+ハイライト color=#ffe6e6
+負の効果
+・正気度減少: ［使用時の精神的負担］
+・呪い: ［持続的な悪影響］
+・依存性: ［使用をやめられなくなる］
+・副作用: ［予期しない悪影響］
+;;;
+
+;;;見出し3
+使用・活用
+;;;
+
+;;;枠線+太字
+使用方法
+起動条件: ［どうすれば効果が発動するか］
+使用制限: ［回数・時間・条件の制限］
+必要技能: ［使いこなすのに必要な知識］
+習得時間: ［使い方を覚えるのにかかる時間］
+;;;
+
+;;;ネタバレ+太字
+隠された危険性
+真の代償: ［使用者が払う本当の代価］
+長期的影響: ［継続使用による変化］
+破綻条件: ［力が暴走する条件］
+対処法: ［悪影響を取り除く方法］
+;;;
+
+;;;見出し2
+KP運用ガイド
+;;;
+
+;;;見出し3
+アイテム配置のコツ
+;;;
+
+;;;太字+ハイライト color=#f0f8ff
+発見の演出
+・段階的発見: 少しずつ情報を開示
+・複数の手がかり: 一つのアイテムから複数の情報
+・赤いニシン: 重要そうで実は関係ないアイテム
+・隠し要素: 二次的な調査で発見する秘密
+;;;
+
+;;;見出し3
+バランス調整
+;;;
+
+;;;枠線+太字
+情報量の調整
+;;;
+・多すぎる情報: 混乱を招く可能性
+・少なすぎる情報: 進行が止まる危険
+・タイミング: 適切な時期に適切な情報
+・重要度: 情報の価値と発見難易度の対応
+
+;;;見出し3
+描写のポイント
+;;;
+
+- ;;;太字;;; 五感を使った描写: 見た目だけでなく手触り・匂い等
+- ;;;太字;;; 感情的反応: 探索者の直感的な印象
+- ;;;太字;;; 比較表現: 身近なものとの比較で理解しやすく
+- ;;;太字;;; 段階的詳細: 最初は概要、次に詳細を描写
+
+---
+
+;;;太字+ハイライト color=#f0f8ff
+アイテム・クリーチャー作成のポイント
+;;;
+1. シナリオでの役割を明確にする
+2. 探索者の行動を促進する要素を含める
+3. 複数の解釈・活用方法を用意する
+4. 適切な難易度・危険度に設定する
+5. 世界観に合った一貫性を保つ
+</code></pre>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // GitHub風タブ切り替え機能
+        function showPreview() {
+            // 全てのコンテンツを隠す
+            hideAllContent();
+
+            // プレビューを表示
+            document.getElementById('preview-content').classList.remove('hidden');
+
+            // ボタン状態をリセット
+            resetButtonStates();
+            document.getElementById('preview-btn').classList.add('active');
+        }
+
+        function showSource() {
+            // 全てのコンテンツを隠す
+            hideAllContent();
+
+            // ソースを表示
+            document.getElementById('source-content').classList.add('active');
+
+            // ボタン状態をリセット
+            resetButtonStates();
+            document.getElementById('source-btn').classList.add('active');
+        }
+
+
+        // ヘルパー関数：全てのコンテンツを隠す
+        function hideAllContent() {
+            document.getElementById('preview-content').classList.add('hidden');
+            document.getElementById('source-content').classList.remove('active');
+        }
+
+        // ヘルパー関数：全てのボタン状態をリセット
+        function resetButtonStates() {
+            document.getElementById('preview-btn').classList.remove('active');
+            document.getElementById('source-btn').classList.remove('active');
+        }
+
+        // シンタックスハイライト（シンプル版）
+        function applySyntaxHighlighting() {
+            const sourceContent = document.querySelector('#source-content code');
+            if (!sourceContent) return;
+
+            let text = sourceContent.textContent;
+
+            // ブロックマーカーのハイライト
+            text = text.replace(/^;;;(.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">;;;$1</span>');
+
+            // リスト項目のハイライト
+            text = text.replace(/^- (.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">-</span> $1');
+
+            sourceContent.innerHTML = text;
+        }
+
+
+
+        // 目次機能（TOC）
+        function setupTOC() {
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            if (!tocToggle || !tocSidebar) return;
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初期状態: プレビューを表示
+            showPreview();
+            applySyntaxHighlighting();
+            setupTOC();
+        });
+    </script>
+</body>
+</html>
