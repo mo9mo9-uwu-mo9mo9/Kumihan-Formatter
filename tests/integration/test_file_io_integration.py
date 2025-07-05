@@ -7,13 +7,17 @@
 """
 
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
 
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
-from tests.permission_helper import PermissionHelper
+
+# testsディレクトリをパスに追加
+sys.path.append(str(Path(__file__).parent.parent))
+from permission_helper import PermissionHelper
 
 
 class TestFileIOIntegration(TestCase):

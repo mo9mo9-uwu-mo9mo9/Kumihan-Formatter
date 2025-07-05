@@ -8,11 +8,14 @@
 
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-from tests.permission_helper import PermissionHelper
+# testsディレクトリをパスに追加
+sys.path.append(str(Path(__file__).parent.parent))
+from permission_helper import PermissionHelper
 
 
 class TestSimpleIntegration(TestCase):
