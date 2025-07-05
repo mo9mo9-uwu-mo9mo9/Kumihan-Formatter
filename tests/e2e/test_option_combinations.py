@@ -80,7 +80,9 @@ def test_function():
     def _verify_output_exists(self, expected_files=None):
         """出力ファイルの存在確認"""
         # 出力ディレクトリまたはHTMLファイルが作成されたことを確認
-        self.assertTrue(self.output_dir.exists() or any(Path(self.test_dir).glob("*.html")))
+        self.assertTrue(
+            self.output_dir.exists() or any(Path(self.test_dir).glob("*.html"))
+        )
 
         if expected_files:
             for filename in expected_files:
@@ -380,9 +382,10 @@ def test_function():
             self.assertIn(result.returncode, [0, 1, 2])
 
             # 何らかの出力が生成されることを確認
-            self.assertTrue((
-                self.output_dir.exists() and list(self.output_dir.glob("*.html"))
-            ) or list(Path(self.test_dir).glob("*.html")))
+            self.assertTrue(
+                (self.output_dir.exists() and list(self.output_dir.glob("*.html")))
+                or list(Path(self.test_dir).glob("*.html"))
+            )
 
         finally:
             # 環境変数を復元
