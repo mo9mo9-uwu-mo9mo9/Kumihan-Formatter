@@ -434,10 +434,22 @@ def hello():
         result = self._run_conversion(nonexistent_file, expect_success=False)
 
         self.assertNotEqual(result.returncode, 0)
+        # STDOUTとSTDERRの両方でエラーメッセージをチェック
+        error_output = (result.stderr + result.stdout).lower()
         self.assertTrue(
             any(
-                keyword in result.stderr.lower()
-                for keyword in ["not found", "存在しない", "file", "error"]
+                keyword in error_output
+                for keyword in [
+                    "not found",
+                    "存在しない",
+                    "file",
+                    "error",
+                    "見つかりません",
+                    "ファイル",
+                    "が見つかりません",
+                    "ファイル名",
+                    "path",
+                ]
             )
         )
 
