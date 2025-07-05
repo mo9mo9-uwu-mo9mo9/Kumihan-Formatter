@@ -145,8 +145,6 @@ output/
 
 # Test output directories
 *-output/
-test_*/
-!test_*.py
 dist_test/
 dist_syntax_cheatsheet/
 test-block-*/
