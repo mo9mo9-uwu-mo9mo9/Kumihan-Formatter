@@ -150,7 +150,9 @@ class BlockParser:
 
         if end_index is None:
             return (
-                error_node("画像ブロックの閉じマーカーが見つかりません", start_index + 1),
+                error_node(
+                    "画像ブロックの閉じマーカーが見つかりません", start_index + 1
+                ),
                 start_index + 1,
             )
 

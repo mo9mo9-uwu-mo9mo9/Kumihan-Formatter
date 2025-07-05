@@ -28,7 +28,9 @@ class ConvertValidator:
         """入力ファイルを検証"""
         if not input_file:
             ui.error("入力ファイルが指定されていません")
-            ui.dim("テストファイル生成には --generate-test オプションを使用してください")
+            ui.dim(
+                "テストファイル生成には --generate-test オプションを使用してください"
+            )
             sys.exit(1)
 
         return self.path_validator.validate_input_file(input_file)
