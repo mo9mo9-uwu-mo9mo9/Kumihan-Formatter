@@ -339,9 +339,7 @@ d6  // ダイス数が指定されていない
 |-----|-----|-----|-----|-----|
 """
             for row in range(100):
-                memory_intensive_content += (
-                    f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
-                )
+                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content
@@ -540,4 +538,6 @@ alert('このスクリプトは実行されません');
                 self.assertIn("<body", content)
                 self.assertIn("</body>", content)
                 # 基本的なコンテンツが含まれることを確認（見出しやリストなど）
-                self.assertTrue(len(content) > 1000)  # HTMLが適切なサイズであることを確認
+                self.assertTrue(
+                    len(content) > 1000
+                )  # HTMLが適切なサイズであることを確認

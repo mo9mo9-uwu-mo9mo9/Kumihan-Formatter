@@ -124,14 +124,36 @@ class TestRealScenarios(TestCase):
 
         # HTML出力の検証（実際のコンテンツで確認）
         try:
-            content = self._verify_html_output(["推奨人数", "3-5人", "図書館", "書斎", "深きものども"])
-            
+            content = self._verify_html_output(
+                ["推奨人数", "3-5人", "図書館", "書斎", "深きものども"]
+            )
+
             # CoC特有の要素が正しく変換されていることを確認
-            self.assertTrue(any(term in content for term in ["【図書館】", "図書館", "ライブラリ", "推奨人数"]))
-            self.assertTrue(any(term in content for term in ["【オカルト】", "オカルト", "超自然", "3-5人"]))
+            self.assertTrue(
+                any(
+                    term in content
+                    for term in ["【図書館】", "図書館", "ライブラリ", "推奨人数"]
+                )
+            )
+            self.assertTrue(
+                any(
+                    term in content
+                    for term in ["【オカルト】", "オカルト", "超自然", "3-5人"]
+                )
+            )
             # ダイスロール表記は変換過程で欠落する可能性があるため、生還や正気度回復の文字列で確認
             self.assertTrue(
-                any(term in content for term in ["1d10", "正気度回復", "生還", "報酬", "回復", "深きものども"])
+                any(
+                    term in content
+                    for term in [
+                        "1d10",
+                        "正気度回復",
+                        "生還",
+                        "報酬",
+                        "回復",
+                        "深きものども",
+                    ]
+                )
             )
         except (AssertionError, FileNotFoundError):
             # HTMLファイルが生成されない場合は、最低限変換プロセスが実行されたことを確認
@@ -279,8 +301,12 @@ class TestRealScenarios(TestCase):
 
         # ファンタジー特有の要素が正しく変換されていることを確認
         self.assertTrue(any(term in content for term in ["金貨1000枚", "金貨", "報酬"]))
-        self.assertTrue(any(term in content for term in ["3d6+10", "魔法攻撃", "ダメージ"]))
-        self.assertTrue(any(term in content for term in ["AC+2", "守護の指輪", "防御力"]))
+        self.assertTrue(
+            any(term in content for term in ["3d6+10", "魔法攻撃", "ダメージ"])
+        )
+        self.assertTrue(
+            any(term in content for term in ["AC+2", "守護の指輪", "防御力"])
+        )
 
     # 長文ドキュメント変換テスト（2テスト）
 
@@ -457,10 +483,17 @@ class TestRealScenarios(TestCase):
 
         # 多層構造特有の要素が正しく変換されていることを確認
         if result.returncode == 0:
-            self.assertTrue(any(term in content for term in ["h1", "h2", "h3", "見出し"]))
-            self.assertTrue(any(term in content for term in ["システム設計", "システム", "設計"]))
             self.assertTrue(
-                any(term in content for term in ["データベース設計", "データベース", "DB"])
+                any(term in content for term in ["h1", "h2", "h3", "見出し"])
+            )
+            self.assertTrue(
+                any(term in content for term in ["システム設計", "システム", "設計"])
+            )
+            self.assertTrue(
+                any(
+                    term in content
+                    for term in ["データベース設計", "データベース", "DB"]
+                )
             )
 
     # 複合コンテンツ変換テスト（3テスト）
@@ -556,7 +589,9 @@ if __name__ == "__main__":
         self.assertIn("<td>", content)
         self.assertIn("<th>", content)
         self.assertIn("【技能】", content)
-        self.assertTrue(any(term in content for term in ["2d6+3", "ダメージ", "数値表現"]))
+        self.assertTrue(
+            any(term in content for term in ["2d6+3", "ダメージ", "数値表現"])
+        )
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
     def test_toc_generation(self):
@@ -620,14 +655,24 @@ if __name__ == "__main__":
 
         # 目次生成特有の要素が正しく変換されていることを確認
         if result.returncode == 0:
-            self.assertTrue(any(term in content for term in ["1.1 背景", "1.1", "背景"]))
             self.assertTrue(
-                any(term in content for term in ["2.1.1 課題の特定", "課題の特定", "課題"])
+                any(term in content for term in ["1.1 背景", "1.1", "背景"])
             )
             self.assertTrue(
-                any(term in content for term in ["3.1.1 アーキテクチャ", "アーキテクチャ", "アーキ"])
+                any(
+                    term in content
+                    for term in ["2.1.1 課題の特定", "課題の特定", "課題"]
+                )
             )
-            self.assertTrue(any(term in content for term in ["付録A", "付録", "Appendix"]))
+            self.assertTrue(
+                any(
+                    term in content
+                    for term in ["3.1.1 アーキテクチャ", "アーキテクチャ", "アーキ"]
+                )
+            )
+            self.assertTrue(
+                any(term in content for term in ["付録A", "付録", "Appendix"])
+            )
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
     def test_image_and_link_handling(self):
@@ -695,7 +740,10 @@ if __name__ == "__main__":
                 )
             )
             self.assertTrue(
-                any(term in content for term in ['title="キャラクター"', "キャラクター", "title"])
+                any(
+                    term in content
+                    for term in ['title="キャラクター"', "キャラクター", "title"]
+                )
             )
             self.assertTrue(
                 any(

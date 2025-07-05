@@ -119,7 +119,9 @@ class TestTemplateIntegration(TestCase):
         nonexistent_template = Path(self.test_dir) / "nonexistent.html.j2"
 
         # 存在しないテンプレートの読み込みで例外が発生することを確認
-        with self.assertRaises(Exception):  # TemplateNotFoundエラーまたはFileNotFoundError
+        with self.assertRaises(
+            Exception
+        ):  # TemplateNotFoundエラーまたはFileNotFoundError
             self.template_manager.get_template(nonexistent_template.name)
 
     # テンプレート変数展開テスト（4テスト）
