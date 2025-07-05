@@ -4,7 +4,7 @@
 カスタムマーカーは削除し、固定のCSS設定のみを提供。
 """
 
-from typing import Any, Dict
+from typing import Dict
 
 
 class SimpleConfig:
@@ -21,7 +21,9 @@ class SimpleConfig:
         "container_background": "white",
         "text_color": "#333",
         "line_height": "1.8",
-        "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+        "font_family": (
+            "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
+        ),
     }
 
     def __init__(self):

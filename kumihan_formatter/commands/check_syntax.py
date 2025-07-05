@@ -120,7 +120,7 @@ class CheckSyntaxCommand:
             )
 
             ui.warning(
-                f"構文チェック完了",
+                "構文チェック完了",
                 f"{len(results)} ファイルで {total_errors} 個の問題を発見",
             )
             ui.dim(f"エラー: {error_count}, 警告: {warning_count}")

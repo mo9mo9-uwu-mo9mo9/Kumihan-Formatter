@@ -7,7 +7,6 @@ previously part of the large cli.py file.
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.progress import Progress
@@ -229,17 +228,13 @@ def create_sample_command():
     """Create the sample generation click command"""
 
     @click.command()
-    @click.option(
-        "-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ"
-    )
+    @click.option("-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ")
     @click.option(
         "--with-source-toggle",
         is_flag=True,
         help="記法と結果を切り替えるトグル機能付きで出力",
     )
-    @click.option(
-        "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
-    )
+    @click.option("--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）")
     def generate_sample(output, with_source_toggle, quiet):
         """機能ショーケースサンプルを生成します"""
 
@@ -256,12 +251,8 @@ def create_test_command():
     """Create the test file generation click command"""
 
     @click.command()
-    @click.option(
-        "--test-output", default="test_patterns.txt", help="テストファイルの出力名"
-    )
-    @click.option(
-        "--pattern-count", type=int, default=100, help="生成するパターン数の上限"
-    )
+    @click.option("--test-output", default="test_patterns.txt", help="テストファイルの出力名")
+    @click.option("--pattern-count", type=int, default=100, help="生成するパターン数の上限")
     @click.option(
         "--double-click-mode",
         is_flag=True,

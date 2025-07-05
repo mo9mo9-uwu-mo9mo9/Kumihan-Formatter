@@ -8,7 +8,7 @@ Issue #319対応 - convert.py から分離
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from rich.progress import Progress
 
@@ -135,7 +135,7 @@ class ConvertProcessor:
         with Progress() as progress:
             if node_count > 1000:  # 1000ノード以上
                 task = progress.add_task(
-                    f"[yellow]大規模データを変換中 ({node_count:,}要素)", total=100
+                    f"[yellow]大規模データを変換中 ({node_count:, }要素)", total=100
                 )
             else:
                 task = progress.add_task("[yellow]HTMLを生成中", total=100)

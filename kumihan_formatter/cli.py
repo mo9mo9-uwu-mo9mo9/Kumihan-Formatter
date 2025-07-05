@@ -6,7 +6,6 @@ better maintainability and reduced complexity.
 """
 
 import sys
-from pathlib import Path
 
 import click
 
@@ -47,19 +46,13 @@ def register_commands():
             default="./dist",
             help="出力ディレクトリ (デフォルト: ./dist)",
         )
-        @click.option(
-            "--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ"
-        )
-        @click.option(
-            "--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換"
-        )
+        @click.option("--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ")
+        @click.option("--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換")
         @click.option("--config", "-c", help="設定ファイルのパス")
         @click.option("--show-test-cases", is_flag=True, help="テストケースを表示")
         @click.option("--template", help="使用するテンプレート名")
         @click.option("--include-source", is_flag=True, help="ソース表示機能を含める")
-        @click.option(
-            "--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ"
-        )
+        @click.option("--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ")
         def convert_command(
             input_file: Optional[str],
             output: str,
@@ -128,7 +121,7 @@ def main():
         if len(sys.argv) > 1:
             # Legacy support: if first argument is a file, route to convert
             first_arg = sys.argv[1]
-            if not first_arg.startswith("-") and not first_arg in [
+            if not first_arg.startswith("-") and first_arg not in [
                 "convert",
                 "generate-sample",
                 "generate-test",
