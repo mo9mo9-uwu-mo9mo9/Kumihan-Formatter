@@ -1,7 +1,7 @@
 """マーカーキーワードのパース処理に関する共通ユーティリティ"""
 
 import re
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 
 def parse_marker_keywords(marker_line: str) -> Tuple[List[str], dict]:

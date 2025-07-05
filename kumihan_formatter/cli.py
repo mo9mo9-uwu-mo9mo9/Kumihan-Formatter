@@ -6,7 +6,6 @@ better maintainability and reduced complexity.
 """
 
 import sys
-from pathlib import Path
 
 import click
 
@@ -128,7 +127,7 @@ def main():
         if len(sys.argv) > 1:
             # Legacy support: if first argument is a file, route to convert
             first_arg = sys.argv[1]
-            if not first_arg.startswith("-") and not first_arg in [
+            if not first_arg.startswith("-") and first_arg not in [
                 "convert",
                 "generate-sample",
                 "generate-test",

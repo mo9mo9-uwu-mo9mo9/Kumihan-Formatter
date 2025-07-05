@@ -7,7 +7,6 @@ previously part of the large cli.py file.
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.progress import Progress

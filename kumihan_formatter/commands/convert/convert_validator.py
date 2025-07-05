@@ -7,11 +7,10 @@ Issue #319対応 - convert.py から分離
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 from ...core.file_ops import FileOperations, PathValidator
-from ...core.reporting import ErrorReport, ErrorReportBuilder
-from ...core.syntax import ErrorSeverity, check_files
+from ...core.reporting import ErrorReport
+from ...core.syntax import check_files
 from ...ui.console_ui import ui
 
 

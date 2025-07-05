@@ -5,7 +5,7 @@ paragraphs, block markers, and special blocks.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from .ast_nodes import Node, NodeBuilder, error_node, image_node, paragraph, toc_marker
 from .keyword_parser import KeywordParser, MarkerValidator
@@ -58,9 +58,11 @@ class BlockParser:
             return self._parse_image_block(lines, start_index)
 
         # Find closing marker
-        is_valid, end_index, validation_errors = (
-            self.marker_validator.validate_block_structure(lines, start_index)
-        )
+        (
+            is_valid,
+            end_index,
+            validation_errors,
+        ) = self.marker_validator.validate_block_structure(lines, start_index)
 
         if not is_valid:
             return (
