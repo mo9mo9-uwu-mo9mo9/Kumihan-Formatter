@@ -7,10 +7,13 @@
 """
 
 import os
+import platform
 import shutil
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+import pytest
 
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
@@ -80,6 +83,10 @@ class TestFileIOIntegration(TestCase):
         with self.assertRaises(FileNotFoundError):
             self.file_ops.read_text_file(nonexistent_file)
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_read_permission_denied_file(self):
         """読み込み権限なしファイルテスト"""
         content = "権限テスト"
@@ -152,6 +159,10 @@ class TestFileIOIntegration(TestCase):
         # 上書きされたことを確認
         self.assertEqual(output_file.read_text(encoding="utf-8"), new_content)
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_write_permission_denied_directory(self):
         """書き込み権限なしディレクトリテスト"""
         content = "権限テスト"

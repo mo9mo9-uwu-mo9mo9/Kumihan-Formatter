@@ -8,11 +8,14 @@ E2Eテスト: エラーハンドリングE2Eテスト
 """
 
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+import pytest
 
 
 class TestErrorHandling(TestCase):
@@ -90,6 +93,10 @@ class TestErrorHandling(TestCase):
             f"or stdout: '{result.stdout}'",
         )
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_permission_denied_input_file_error(self):
         """読み込み権限なし入力ファイルエラーテスト"""
         # 権限なしファイルを作成
@@ -133,6 +140,10 @@ class TestErrorHandling(TestCase):
             # 権限を戻す（クリーンアップのため）
             os.chmod(restricted_file, 0o644)
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_permission_denied_output_directory_error(self):
         """書き込み権限なし出力ディレクトリエラーテスト"""
         # 正常な入力ファイルを作成
@@ -339,7 +350,9 @@ d6  // ダイス数が指定されていない
 |-----|-----|-----|-----|-----|
 """
             for row in range(100):
-                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
+                memory_intensive_content += (
+                    f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
+                )
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content
@@ -538,6 +551,4 @@ alert('このスクリプトは実行されません');
                 self.assertIn("<body", content)
                 self.assertIn("</body>", content)
                 # 基本的なコンテンツが含まれることを確認（見出しやリストなど）
-                self.assertTrue(
-                    len(content) > 1000
-                )  # HTMLが適切なサイズであることを確認
+                self.assertTrue(len(content) > 1000)  # HTMLが適切なサイズであることを確認

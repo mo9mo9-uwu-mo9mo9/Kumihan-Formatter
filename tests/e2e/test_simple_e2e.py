@@ -8,11 +8,14 @@ E2Eテスト: 実際の使用シナリオのE2Eテスト
 """
 
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+import pytest
 
 
 class TestSimpleE2E(TestCase):
@@ -420,9 +423,7 @@ def hello():
 """
         test_file = self._create_test_file("error_recovery.txt", content)
 
-        result = self._run_conversion(
-            test_file, ["--no-syntax-check"]
-        )  # エラーを無視するオプション
+        result = self._run_conversion(test_file, ["--no-syntax-check"])  # エラーを無視するオプション
 
         # エラーがあっても処理継続
         self.assertIn(result.returncode, [0, 1])
@@ -455,6 +456,10 @@ def hello():
             )
         )
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_permission_denied_input(self):
         """読み込み権限なし入力ファイル"""
         content = "権限テスト"
@@ -468,6 +473,10 @@ def hello():
         finally:
             os.chmod(restricted_file, 0o644)
 
+    @pytest.mark.skipif(
+        platform.system() == "Windows",
+        reason="Windows file permission tests need platform-specific " "implementation",
+    )
     def test_permission_denied_output(self):
         """書き込み権限なし出力ディレクトリ"""
         content = "# 権限テスト\n\n正常なコンテンツです。"
@@ -599,9 +608,7 @@ d6
 |-----|-----|-----|
 """
             for row in range(50):
-                memory_intensive_content += (
-                    f"| データ{row}A | データ{row}B | データ{row}C |\n"
-                )
+                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C |\n"
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content
