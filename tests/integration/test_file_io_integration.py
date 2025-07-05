@@ -6,7 +6,6 @@
 - 文字エンコーディングテスト（4テスト）
 """
 
-import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -14,6 +13,7 @@ from unittest import TestCase
 
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
+from tests.permission_helper import PermissionHelper
 
 
 class TestFileIOIntegration(TestCase):
@@ -85,16 +85,16 @@ class TestFileIOIntegration(TestCase):
         content = "権限テスト"
         file_path = self._create_test_file("permission_test.txt", content)
 
-        # ファイルの読み込み権限を削除
-        os.chmod(file_path, 0o000)
-
-        try:
-            # 権限なしファイルの読み込みで例外が発生することを確認
-            with self.assertRaises(PermissionError):
-                self.file_ops.read_text_file(file_path)
-        finally:
-            # 権限を戻す（クリーンアップのため）
-            os.chmod(file_path, 0o644)
+        with PermissionHelper.create_permission_test_context(
+            file_path=file_path
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                # 権限なしファイルの読み込みで例外が発生することを確認
+                with self.assertRaises(PermissionError):
+                    self.file_ops.read_text_file(file_path)
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest("Could not deny file read permissions on this platform")
 
     # ファイル出力テスト（4テスト）
 
@@ -159,16 +159,18 @@ class TestFileIOIntegration(TestCase):
         readonly_dir.mkdir()
         output_file = readonly_dir / "test.html"
 
-        # ディレクトリの書き込み権限を削除
-        os.chmod(readonly_dir, 0o444)
-
-        try:
-            # 権限なしディレクトリへの書き込みで例外が発生することを確認
-            with self.assertRaises(PermissionError):
-                self.file_ops.write_text_file(output_file, content)
-        finally:
-            # 権限を戻す（クリーンアップのため）
-            os.chmod(readonly_dir, 0o755)
+        with PermissionHelper.create_permission_test_context(
+            dir_path=readonly_dir
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                # 権限なしディレクトリへの書き込みで例外が発生することを確認
+                with self.assertRaises(PermissionError):
+                    self.file_ops.write_text_file(output_file, content)
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest(
+                    "Could not deny directory write permissions on this platform"
+                )
 
     # 文字エンコーディングテスト（4テスト）
 

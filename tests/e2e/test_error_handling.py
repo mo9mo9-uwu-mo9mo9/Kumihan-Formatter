@@ -7,12 +7,13 @@ E2Eテスト: エラーハンドリングE2Eテスト
 - 復旧機能テスト（3テスト）
 """
 
-import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+from tests.permission_helper import PermissionHelper
 
 
 class TestErrorHandling(TestCase):
@@ -96,42 +97,41 @@ class TestErrorHandling(TestCase):
         content = "権限テストファイル"
         restricted_file = self._create_test_file("restricted.txt", content)
 
-        # ファイルの読み込み権限を削除
-        os.chmod(restricted_file, 0o000)
-
-        try:
-            result = self._run_conversion(
-                input_file=restricted_file,
-                options=["--output", str(self.output_dir)],
-                expect_failure=True,
-            )
-
-            # 権限エラーの場合は適切なエラーコードが返されることを確認
-            self.assertNotEqual(result.returncode, 0)
-
-            # エラーメッセージが適切に表示されることを確認（STDOUTとSTDERRの両方をチェック）
-            error_output = (result.stderr + result.stdout).lower()
-            self.assertTrue(
-                any(
-                    keyword in error_output
-                    for keyword in [
-                        "permission",
-                        "権限",
-                        "access",
-                        "アクセス",
-                        "denied",
-                        "拒否",
-                        "ファイルに読み取りできません",
-                        "読み取り専用",
-                        "permission denied",
-                        "読み取り",
-                    ]
+        with PermissionHelper.create_permission_test_context(
+            file_path=restricted_file
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                result = self._run_conversion(
+                    input_file=restricted_file,
+                    options=["--output", str(self.output_dir)],
+                    expect_failure=True,
                 )
-            )
 
-        finally:
-            # 権限を戻す（クリーンアップのため）
-            os.chmod(restricted_file, 0o644)
+                # 権限エラーの場合は適切なエラーコードが返されることを確認
+                self.assertNotEqual(result.returncode, 0)
+
+                # エラーメッセージが適切に表示されることを確認（STDOUTとSTDERRの両方をチェック）
+                error_output = (result.stderr + result.stdout).lower()
+                self.assertTrue(
+                    any(
+                        keyword in error_output
+                        for keyword in [
+                            "permission",
+                            "権限",
+                            "access",
+                            "アクセス",
+                            "denied",
+                            "拒否",
+                            "ファイルに読み取りできません",
+                            "読み取り専用",
+                            "permission denied",
+                            "読み取り",
+                        ]
+                    )
+                )
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest("Could not deny file read permissions on this platform")
 
     def test_permission_denied_output_directory_error(self):
         """書き込み権限なし出力ディレクトリエラーテスト"""
@@ -142,21 +142,24 @@ class TestErrorHandling(TestCase):
         # 権限なしディレクトリを作成
         restricted_dir = Path(self.test_dir) / "restricted_output"
         restricted_dir.mkdir()
-        os.chmod(restricted_dir, 0o444)  # 読み込み専用
 
-        try:
-            result = self._run_conversion(
-                input_file=input_file,
-                options=["--output", str(restricted_dir)],
-                expect_failure=True,
-            )
+        with PermissionHelper.create_permission_test_context(
+            dir_path=restricted_dir
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                result = self._run_conversion(
+                    input_file=input_file,
+                    options=["--output", str(restricted_dir)],
+                    expect_failure=True,
+                )
 
-            # 書き込み権限エラーの場合は適切なエラーコードが返されることを確認
-            self.assertNotEqual(result.returncode, 0)
-
-        finally:
-            # 権限を戻す（クリーンアップのため）
-            os.chmod(restricted_dir, 0o755)
+                # 書き込み権限エラーの場合は適切なエラーコードが返されることを確認
+                self.assertNotEqual(result.returncode, 0)
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest(
+                    "Could not deny directory write permissions on this platform"
+                )
 
     def test_invalid_encoding_file_error(self):
         """無効なエンコーディングファイルエラーテスト"""
@@ -339,7 +342,9 @@ d6  // ダイス数が指定されていない
 |-----|-----|-----|-----|-----|
 """
             for row in range(100):
-                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
+                memory_intensive_content += (
+                    f"| データ{row}A | データ{row}B | データ{row}C | データ{row}D | データ{row}E |\n"
+                )
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content
@@ -538,6 +543,4 @@ alert('このスクリプトは実行されません');
                 self.assertIn("<body", content)
                 self.assertIn("</body>", content)
                 # 基本的なコンテンツが含まれることを確認（見出しやリストなど）
-                self.assertTrue(
-                    len(content) > 1000
-                )  # HTMLが適切なサイズであることを確認
+                self.assertTrue(len(content) > 1000)  # HTMLが適切なサイズであることを確認

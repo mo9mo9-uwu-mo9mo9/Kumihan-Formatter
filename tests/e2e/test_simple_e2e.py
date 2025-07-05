@@ -7,12 +7,13 @@ E2Eテスト: 実際の使用シナリオのE2Eテスト
 - システム統合テスト（3テスト）
 """
 
-import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+from tests.permission_helper import PermissionHelper
 
 
 class TestSimpleE2E(TestCase):
@@ -420,9 +421,7 @@ def hello():
 """
         test_file = self._create_test_file("error_recovery.txt", content)
 
-        result = self._run_conversion(
-            test_file, ["--no-syntax-check"]
-        )  # エラーを無視するオプション
+        result = self._run_conversion(test_file, ["--no-syntax-check"])  # エラーを無視するオプション
 
         # エラーがあっても処理継続
         self.assertIn(result.returncode, [0, 1])
@@ -460,13 +459,15 @@ def hello():
         content = "権限テスト"
         restricted_file = self._create_test_file("restricted.txt", content)
 
-        os.chmod(restricted_file, 0o000)
-
-        try:
-            result = self._run_conversion(restricted_file, expect_success=False)
-            self.assertNotEqual(result.returncode, 0)
-        finally:
-            os.chmod(restricted_file, 0o644)
+        with PermissionHelper.create_permission_test_context(
+            file_path=restricted_file
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                result = self._run_conversion(restricted_file, expect_success=False)
+                self.assertNotEqual(result.returncode, 0)
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest("Could not deny file read permissions on this platform")
 
     def test_permission_denied_output(self):
         """書き込み権限なし出力ディレクトリ"""
@@ -475,15 +476,20 @@ def hello():
 
         restricted_dir = Path(self.test_dir) / "restricted_output"
         restricted_dir.mkdir()
-        os.chmod(restricted_dir, 0o444)
 
-        try:
-            result = self._run_conversion(
-                test_file, ["--output", str(restricted_dir)], expect_success=False
-            )
-            self.assertNotEqual(result.returncode, 0)
-        finally:
-            os.chmod(restricted_dir, 0o755)
+        with PermissionHelper.create_permission_test_context(
+            dir_path=restricted_dir
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                result = self._run_conversion(
+                    test_file, ["--output", str(restricted_dir)], expect_success=False
+                )
+                self.assertNotEqual(result.returncode, 0)
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest(
+                    "Could not deny directory write permissions on this platform"
+                )
 
     def test_invalid_encoding_file(self):
         """無効なエンコーディングファイル"""
@@ -599,9 +605,7 @@ d6
 |-----|-----|-----|
 """
             for row in range(50):
-                memory_intensive_content += (
-                    f"| データ{row}A | データ{row}B | データ{row}C |\n"
-                )
+                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C |\n"
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content

@@ -6,12 +6,13 @@
 - テンプレート統合テスト（10テスト）
 """
 
-import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+
+from tests.permission_helper import PermissionHelper
 
 
 class TestSimpleIntegration(TestCase):
@@ -197,15 +198,15 @@ class TestSimpleIntegration(TestCase):
         test_file = Path(self.test_dir) / "permission_test.txt"
         test_file.write_text(content, encoding="utf-8")
 
-        # 権限を削除
-        os.chmod(test_file, 0o000)
-
-        try:
-            with self.assertRaises(PermissionError):
-                test_file.read_text(encoding="utf-8")
-        finally:
-            # 権限を戻す
-            os.chmod(test_file, 0o644)
+        with PermissionHelper.create_permission_test_context(
+            file_path=test_file
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                with self.assertRaises(PermissionError):
+                    test_file.read_text(encoding="utf-8")
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest("Could not deny file read permissions on this platform")
 
     def test_file_write_basic_html(self):
         """基本HTMLファイル書き込みテスト"""
@@ -252,13 +253,17 @@ class TestSimpleIntegration(TestCase):
         readonly_dir.mkdir()
         output_file = readonly_dir / "test.html"
 
-        os.chmod(readonly_dir, 0o444)
-
-        try:
-            with self.assertRaises(PermissionError):
-                output_file.write_text("テスト", encoding="utf-8")
-        finally:
-            os.chmod(readonly_dir, 0o755)
+        with PermissionHelper.create_permission_test_context(
+            dir_path=readonly_dir
+        ) as ctx:
+            if ctx.permission_denied_should_occur():
+                with self.assertRaises(PermissionError):
+                    output_file.write_text("テスト", encoding="utf-8")
+            else:
+                # 権限変更に失敗した場合はテストをスキップ
+                self.skipTest(
+                    "Could not deny directory write permissions on this platform"
+                )
 
     def test_encoding_utf8_detection(self):
         """UTF-8エンコーディング検出テスト"""
