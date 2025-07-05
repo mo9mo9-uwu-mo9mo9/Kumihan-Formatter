@@ -7,7 +7,6 @@
 """
 
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
@@ -15,13 +14,7 @@ from unittest import TestCase
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
 
-# 同じtestsディレクトリからインポート
-try:
-    from ..permission_helper import PermissionHelper
-except ImportError:
-    # 直接実行時のフォールバック
-    sys.path.append(str(Path(__file__).parent.parent))
-    from permission_helper import PermissionHelper
+from .permission_helper import PermissionHelper
 
 
 class TestFileIOIntegration(TestCase):

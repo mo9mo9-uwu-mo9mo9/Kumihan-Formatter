@@ -9,18 +9,11 @@ E2Eテスト: 実際の使用シナリオのE2Eテスト
 
 import shutil
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-# 同じtestsディレクトリからインポート
-try:
-    from ..permission_helper import PermissionHelper
-except ImportError:
-    # 直接実行時のフォールバック
-    sys.path.append(str(Path(__file__).parent.parent))
-    from permission_helper import PermissionHelper
+from .permission_helper import PermissionHelper
 
 
 class TestSimpleE2E(TestCase):
