@@ -1,0 +1,236 @@
+name: Auto Merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  check_suite:
+    types: [completed]
+  workflow_run:
+    workflows: ["Tests"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # mo9mo9ユーザーのPRのみ処理
+    if: |
+      github.actor == 'mo9mo9-uwu-mo9mo9' &&
+      (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+        (github.event_name == 'check_suite' && github.event.check_suite.conclusion == 'success') ||
+        github.event_name == 'workflow_dispatch'
+      )
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      checks: read
+      statuses: read
+
+    steps:
+    - name: Get PR information
+      id: pr-info
+      if: github.event_name != 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          let prNumber = null;
+
+          if (context.eventName === 'workflow_run') {
+            // workflow_runイベントからPR情報を取得
+            const workflowRun = context.payload.workflow_run;
+            console.log('Workflow run event:', workflowRun.event);
+            console.log('Head SHA:', workflowRun.head_sha);
+
+            // PRを検索してSHAで一致するものを探す
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            const matchingPr = prs.data.find(pr => pr.head.sha === workflowRun.head_sha);
+            if (matchingPr) {
+              prNumber = matchingPr.number;
+              console.log('Found matching PR:', prNumber);
+            }
+          } else if (context.eventName === 'check_suite') {
+            // check_suiteイベントからPR情報を取得
+            const checkSuite = context.payload.check_suite;
+            console.log('Check suite head SHA:', checkSuite.head_sha);
+
+            // PRを検索してSHAで一致するものを探す
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            const matchingPr = prs.data.find(pr => pr.head.sha === checkSuite.head_sha);
+            if (matchingPr) {
+              prNumber = matchingPr.number;
+              console.log('Found matching PR:', prNumber);
+            }
+          }
+
+          if (prNumber) {
+            core.setOutput('pr-number', prNumber);
+            core.setOutput('has-pr', 'true');
+          } else {
+            core.setOutput('has-pr', 'false');
+            console.log('No matching PR found');
+          }
+
+    - name: Set PR number for pull_request event
+      id: set-pr
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "pr-number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+          echo "has-pr=true" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # 手動実行時は開いているPRを検索
+          PR_NUMBER=$(gh pr list --author mo9mo9-uwu-mo9mo9 --state open --json number --jq '.[0].number // empty')
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "has-pr=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-pr=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "pr-number=${{ steps.pr-info.outputs.pr-number }}" >> $GITHUB_OUTPUT
+          echo "has-pr=${{ steps.pr-info.outputs.has-pr }}" >> $GITHUB_OUTPUT
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Wait for checks to complete
+      if: steps.set-pr.outputs.has-pr == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = ${{ steps.set-pr.outputs.pr-number }};
+          if (!prNumber) {
+            console.log('No PR number found, skipping...');
+            return;
+          }
+
+          console.log(`Checking PR #${prNumber}`);
+
+          // PR情報を取得
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber
+          });
+
+          console.log(`PR Author: ${pr.user.login}`);
+          console.log(`Current user: ${context.actor}`);
+
+          // PRの作者がmo9mo9-uwu-mo9mo9でない場合はスキップ
+          if (pr.user.login !== 'mo9mo9-uwu-mo9mo9') {
+            console.log('PR author is not mo9mo9-uwu-mo9mo9, skipping auto-merge');
+            return;
+          }
+
+          // PRがdraftの場合はスキップ
+          if (pr.draft) {
+            console.log('PR is draft, skipping auto-merge');
+            return;
+          }
+
+          // PRがマージ可能でない場合はスキップ
+          if (pr.mergeable === false) {
+            console.log('PR is not mergeable, skipping auto-merge');
+            return;
+          }
+
+          // チェック状態を確認
+          const { data: checkRuns } = await github.rest.checks.listForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: pr.head.sha
+          });
+
+          const { data: statusChecks } = await github.rest.repos.getCombinedStatusForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: pr.head.sha
+          });
+
+          console.log(`Check runs: ${checkRuns.check_runs.length}`);
+          console.log(`Status checks state: ${statusChecks.state}`);
+
+          // 重要なチェックが完了しているか確認（Issue #371の設計：PR時はfull-test、push時はquick-check）
+          const requiredChecks = [
+            'full-test (ubuntu-latest, 3.11)',
+            'full-test (windows-latest, 3.11)',
+            'full-test (macos-latest, 3.11)'
+          ];
+          const completedChecks = checkRuns.check_runs.filter(check =>
+            requiredChecks.includes(check.name) &&
+            check.status === 'completed' &&
+            check.conclusion === 'success'
+          );
+
+          console.log(`Completed required checks: ${completedChecks.length}`);
+
+          // 必要なチェック（3つの主要環境）が全て完了している場合のみマージ
+          if (completedChecks.length === 3) {
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: `${pr.title} (#${prNumber})`,
+                commit_message: `${pr.body || ''}\n\n🤖 Auto-merged after successful tests`
+              });
+              console.log(`Successfully auto-merged PR #${prNumber}`);
+            } catch (error) {
+              console.log(`Failed to merge PR #${prNumber}: ${error.message}`);
+
+              // コメントで失敗を通知
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🚫 Auto-merge failed: ${error.message}\n\nPlease merge manually or check for conflicts.`
+              });
+            }
+          } else {
+            console.log('Checks not yet completed or not successful, waiting...');
+          }
+
+    - name: Enable auto-merge and add comment
+      if: github.event_name == 'pull_request' && steps.set-pr.outputs.has-pr == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = ${{ github.event.number }};
+
+          // auto-mergeを有効化
+          try {
+            await github.rest.pulls.createAutoMerge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: 'squash'
+            });
+
+            console.log(`Auto-merge enabled for PR #${prNumber}`);
+          } catch (error) {
+            console.log(`Failed to enable auto-merge: ${error.message}`);
+          }
+
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber,
+            body: `🤖 **Auto-merge enabled**\n\nThis PR will be automatically merged when all tests pass.\n\n- ✅ Author: mo9mo9-uwu-mo9mo9\n- ⏳ Waiting for tests to complete...\n\n*Auto-merge is only available for mo9mo9-uwu-mo9mo9's PRs*`
+          });

@@ -229,7 +229,19 @@ make test        # テスト実行
 # 高度なチェック
 make coverage    # カバレッジ付きテスト
 make pre-commit  # コミット前フルチェック
+
+# テスト実行（新しい統一設定）
+pytest           # 全テスト実行（pyproject.tomlの設定を使用）
+pytest -m unit   # ユニットテストのみ
+pytest -m integration # 統合テストのみ
+pytest -m e2e    # E2Eテストのみ
 ```
+
+### 📝 テスト設定の変更
+
+- **pytest.ini** は廃止され、**pyproject.toml** に統一されました
+- GitHub Actions と ローカル環境でテストコマンドが統一されました
+- マーカーを使用したテスト分類が可能になりました
 
 ### ⚠️ CI失敗時の対処
 
