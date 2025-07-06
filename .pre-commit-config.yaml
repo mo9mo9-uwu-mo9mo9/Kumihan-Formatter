@@ -95,12 +95,12 @@ repos:
         stages: [manual, pre-push]
         alias: heavy-checks
 
-      # 型チェック (将来的にmypy導入時)
-      # - id: mypy
-      #   name: 🔍 型チェック
-      #   entry: mypy
-      #   language: python
-      #   files: \.py$
-      #   additional_dependencies: [mypy]
-      #   stages: [manual, pre-push]
-      #   alias: heavy-checks
+      # 型チェック
+      - id: mypy
+        name: 🔍 型チェック
+        entry: mypy
+        language: python
+        files: ^kumihan_formatter/.*\.py$
+        additional_dependencies: [mypy, pydantic]
+        stages: [manual, pre-push]
+        alias: heavy-checks

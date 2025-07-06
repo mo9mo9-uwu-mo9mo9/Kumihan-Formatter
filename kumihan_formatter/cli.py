@@ -10,10 +10,21 @@ import sys
 import click
 
 
-def setup_encoding():
+def setup_encoding() -> None:
     """Setup encoding for Windows and macOS compatibility"""
-    # This is now handled by the ConsoleUI class
-    pass
+    import os
+    import sys
+
+    # Windows specific encoding setup
+    if sys.platform == "win32":
+        # 環境変数ではなく、ストリームの設定で対応
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")  # type: ignore
+            sys.stderr.reconfigure(encoding="utf-8")  # type: ignore
+        except AttributeError:
+            # Python 3.7以前の場合のフォールバック
+            os.environ["PYTHONIOENCODING"] = "utf-8"
+            os.environ["PYTHONUTF8"] = "1"
 
 
 @click.group()
@@ -112,8 +123,11 @@ def register_commands():
         warnings.warn(f"sample コマンドが読み込めませんでした: {e}")
 
 
-def main():
+def main() -> None:
     """Main entry point with enhanced error handling"""
+    # エンコーディング設定を初期化
+    setup_encoding()
+
     # コマンドを登録
     register_commands()
 
