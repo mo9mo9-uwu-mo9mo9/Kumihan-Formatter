@@ -11,7 +11,7 @@ from pathlib import Path
 from ...core.file_ops import FileOperations, PathValidator
 from ...core.reporting import ErrorReport
 from ...core.syntax import check_files
-from ...ui.console_ui import ui
+from ...ui.console_ui import get_console_ui
 
 
 class ConvertValidator:
@@ -21,14 +21,14 @@ class ConvertValidator:
     """
 
     def __init__(self):
-        self.file_ops = FileOperations(ui=ui)
+        self.file_ops = FileOperations(ui=get_console_ui())
         self.path_validator = PathValidator()
 
     def validate_input_file(self, input_file: str) -> Path:
         """入力ファイルを検証"""
         if not input_file:
-            ui.error("入力ファイルが指定されていません")
-            ui.dim(
+            get_console_ui().error("入力ファイルが指定されていません")
+            get_console_ui().dim(
                 "テストファイル生成には --generate-test オプションを使用してください"
             )
             sys.exit(1)
@@ -42,20 +42,20 @@ class ConvertValidator:
         if size_info["is_large"]:
             # 大きなファイルの警告を表示
             if not self.file_ops.check_large_file_warning(input_path):
-                ui.info("処理を中断しました")
+                get_console_ui().info("処理を中断しました")
                 return False
 
             # 推定処理時間を表示
             estimated_time = self.file_ops.estimate_processing_time(
                 size_info["size_mb"]
             )
-            ui.hint(f"推定処理時間: {estimated_time}")
+            get_console_ui().hint(f"推定処理時間: {estimated_time}")
 
         return True
 
     def perform_syntax_check(self, input_path: Path) -> ErrorReport:
         """詳細な構文チェックを実行"""
-        ui.info("記法チェック", f"{input_path.name} の記法を検証中...")
+        get_console_ui().info("記法チェック", f"{input_path.name} の記法を検証中...")
 
         try:
             # 構文チェック実行
@@ -76,7 +76,7 @@ class ConvertValidator:
             return error_report
 
         except Exception as e:
-            ui.error("記法チェック中にエラーが発生しました", str(e))
+            get_console_ui().error("記法チェック中にエラーが発生しました", str(e))
             # 空のレポートを返す
             return ErrorReport(source_file=input_path)
 
@@ -110,6 +110,8 @@ class ConvertValidator:
         try:
             output_path = Path(output_dir) / f"{input_path.stem}_errors.txt"
             error_report.to_file_report(output_path)
-            ui.info("エラーレポート", f"詳細レポートを保存しました: {output_path}")
+            get_console_ui().info(
+                "エラーレポート", f"詳細レポートを保存しました: {output_path}"
+            )
         except Exception as e:
-            ui.warning("エラーレポートの保存に失敗しました", str(e))
+            get_console_ui().warning("エラーレポートの保存に失敗しました", str(e))

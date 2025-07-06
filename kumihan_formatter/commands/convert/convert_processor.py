@@ -15,7 +15,7 @@ from rich.progress import Progress
 from ...core.file_ops import FileOperations
 from ...parser import parse
 from ...renderer import render
-from ...ui.console_ui import ui
+from ...ui.console_ui import get_console_ui
 
 
 class ConvertProcessor:
@@ -25,7 +25,7 @@ class ConvertProcessor:
     """
 
     def __init__(self):
-        self.file_ops = FileOperations(ui=ui)
+        self.file_ops = FileOperations(ui=get_console_ui())
 
     def convert_file(
         self,
@@ -39,7 +39,7 @@ class ConvertProcessor:
         """ファイルを変換してHTMLを生成"""
 
         # ファイル読み込み
-        ui.processing_start("読み込み中", str(input_path))
+        get_console_ui().processing_start("読み込み中", str(input_path))
         text = self.file_ops.read_text_file(input_path)
 
         # テストケース表示
@@ -47,14 +47,14 @@ class ConvertProcessor:
             self._show_test_cases(text)
 
         # パース処理
-        ui.processing_start("解析中", "テキスト構造を解析しています...")
+        get_console_ui().processing_start("解析中", "テキスト構造を解析しています...")
         ast = self._parse_with_progress(text, config_obj, input_path)
 
         # 出力ファイルパスの決定
         output_file = self._determine_output_path(input_path, output_dir)
 
         # レンダリング処理
-        ui.processing_start("変換中", "HTMLを生成しています...")
+        get_console_ui().processing_start("変換中", "HTMLを生成しています...")
 
         # ソース表示用の引数を準備
         source_args = {}
@@ -66,7 +66,9 @@ class ConvertProcessor:
         )
 
         # ファイル保存
-        ui.processing_start("保存中", f"ファイルを保存しています: {output_file.name}")
+        get_console_ui().processing_start(
+            "保存中", f"ファイルを保存しています: {output_file.name}"
+        )
         self.file_ops.write_text_file(output_file, html)
 
         # 統計情報表示
@@ -176,7 +178,7 @@ class ConvertProcessor:
         test_cases = re.findall(test_case_pattern, text)
 
         if test_cases:
-            ui.test_cases_detected(len(test_cases), test_cases)
+            get_console_ui().test_cases_detected(len(test_cases), test_cases)
 
     def _show_conversion_stats(
         self, ast: Any, text: str, output_file: Path, input_path: Path
@@ -187,9 +189,9 @@ class ConvertProcessor:
         if error_count > 0:
             # サンプルファイルかどうかをチェック
             is_sample = input_path.name in ["02-basic.txt", "03-comprehensive.txt"]
-            ui.validation_warning(error_count, is_sample)
+            get_console_ui().validation_warning(error_count, is_sample)
 
-        ui.conversion_complete(str(output_file))
+        get_console_ui().conversion_complete(str(output_file))
 
         # 大きなファイルの場合は詳細統計を表示
         input_size_info = self.file_ops.get_file_size_info(input_path)
@@ -205,4 +207,4 @@ class ConvertProcessor:
 
         # 大きなファイルの場合のみ詳細統計を表示
         if stats["input_size_mb"] > 1.0 or stats["node_count"] > 500:
-            ui.show_detailed_stats(stats)
+            get_console_ui().show_detailed_stats(stats)

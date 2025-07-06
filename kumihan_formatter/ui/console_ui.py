@@ -2,6 +2,13 @@
 
 Centralized console output and user interaction management.
 All console.print() calls should go through this module.
+
+Dependencies:
+- rich: For console styling and progress display
+- console_encoding: For platform-specific encoding setup (side effect removed)
+
+Note: Uses lazy initialization pattern to avoid import-time side effects.
+Use get_console_ui() function instead of direct global instance access.
 """
 
 import sys
@@ -415,5 +422,14 @@ class ConsoleUI:
         return Progress()
 
 
-# Global console UI instance
-ui = ConsoleUI()
+# Global console UI instance - removed to avoid import-time side effects
+# Use get_console_ui() function instead
+_console_ui_instance = None
+
+
+def get_console_ui() -> ConsoleUI:
+    """Get the global console UI instance (lazy initialization)"""
+    global _console_ui_instance
+    if _console_ui_instance is None:
+        _console_ui_instance = ConsoleUI()
+    return _console_ui_instance

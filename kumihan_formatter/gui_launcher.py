@@ -23,7 +23,7 @@ try:
     from .commands.convert.convert_command import ConvertCommand
     from .commands.sample import SampleCommand
     from .core.config.config_manager import EnhancedConfig
-    from .ui.console_ui import ui
+    from .ui.console_ui import get_console_ui
 except ImportError as e:
     # Fallback for standalone execution
     import warnings

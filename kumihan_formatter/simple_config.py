@@ -26,7 +26,7 @@ class SimpleConfig:
         ),
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """簡素化された設定を初期化"""
         self.css_vars = self.DEFAULT_CSS.copy()
 

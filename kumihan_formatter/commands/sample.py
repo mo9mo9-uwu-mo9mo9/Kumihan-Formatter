@@ -15,14 +15,14 @@ from ..core.file_ops import FileOperations, PathValidator
 from ..parser import parse
 from ..renderer import render
 from ..sample_content import SAMPLE_IMAGES, SHOWCASE_SAMPLE
-from ..ui.console_ui import ui
+from ..ui.console_ui import get_console_ui
 
 
 class SampleCommand:
     """Sample generation command implementation"""
 
     def __init__(self):
-        self.file_ops = FileOperations(ui=ui)
+        self.file_ops = FileOperations(ui=get_console_ui())
         self.path_validator = PathValidator()
 
     def execute(
@@ -40,7 +40,7 @@ class SampleCommand:
         """
         output_path = Path(output_dir)
 
-        ui.sample_generation(str(output_path))
+        get_console_ui().sample_generation(str(output_path))
 
         # Remove existing output directory if it exists
         if output_path.exists():
@@ -67,7 +67,7 @@ class SampleCommand:
         self.file_ops.write_text_file(html_path, html)
 
         # Show completion message
-        ui.sample_complete(
+        get_console_ui().sample_complete(
             str(output_path.absolute()),
             sample_txt.name,
             html_path.name,
@@ -137,11 +137,11 @@ class TestFileCommand:
         try:
             from generate_test_file import TestFileGenerator
         except ImportError:
-            ui.error("テストファイル生成ツールが見つかりません")
-            ui.dim("dev/tools/generate_test_file.py を確認してください")
+            get_console_ui().error("テストファイル生成ツールが見つかりません")
+            get_console_ui().dim("dev/tools/generate_test_file.py を確認してください")
             sys.exit(1)
 
-        ui.test_file_generation(double_click_mode)
+        get_console_ui().test_file_generation(double_click_mode)
 
         # Generate test file with progress
         with Progress() as progress:
@@ -163,8 +163,8 @@ class TestFileCommand:
             progress.update(task, completed=100)
 
         # Display statistics
-        ui.test_file_complete(str(output_file), double_click_mode)
-        ui.test_statistics(stats, double_click_mode)
+        get_console_ui().test_file_complete(str(output_file), double_click_mode)
+        get_console_ui().test_statistics(stats, double_click_mode)
 
         # Test the generated file
         self._test_generated_file(
@@ -181,7 +181,7 @@ class TestFileCommand:
         double_click_mode: bool,
     ) -> None:
         """Test the generated file by converting it"""
-        ui.test_conversion_start(double_click_mode)
+        get_console_ui().test_conversion_start(double_click_mode)
 
         try:
             from ..config import load_config
@@ -206,7 +206,7 @@ class TestFileCommand:
                 show_test_cases=show_test_cases,
             )
 
-            ui.test_conversion_complete(
+            get_console_ui().test_conversion_complete(
                 str(test_output_file), str(output_file), double_click_mode
             )
 
@@ -214,13 +214,13 @@ class TestFileCommand:
                 import webbrowser
 
                 if double_click_mode:
-                    ui.info("ブラウザ", "ブラウザで結果を表示中...")
+                    get_console_ui().info("ブラウザ", "ブラウザで結果を表示中...")
                 else:
-                    ui.browser_opening()
+                    get_console_ui().browser_opening()
                 webbrowser.open(test_output_file.resolve().as_uri())
 
         except Exception as e:
-            ui.test_conversion_error(str(e))
+            get_console_ui().test_conversion_error(str(e))
             raise click.ClickException(f"テスト変換中にエラーが発生しました: {e}")
 
 

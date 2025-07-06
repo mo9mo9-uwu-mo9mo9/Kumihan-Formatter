@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from ...ui.console_ui import ui
+from ...ui.console_ui import get_console_ui
 
 
 class ConvertWatcher:
@@ -43,12 +43,12 @@ class ConvertWatcher:
             from watchdog.events import FileSystemEventHandler
             from watchdog.observers import Observer
         except ImportError:
-            ui.error("watchdog ライブラリがインストールされていません")
-            ui.dim("pip install watchdog を実行してください")
+            get_console_ui().error("watchdog ライブラリがインストールされていません")
+            get_console_ui().dim("pip install watchdog を実行してください")
             sys.exit(1)
 
         input_path = Path(input_file)
-        ui.watch_mode_start(str(input_path))
+        get_console_ui().watch_mode_start(str(input_path))
 
         # ファイル変更ハンドラーを作成
         handler = self._create_file_handler(
@@ -70,7 +70,7 @@ class ConvertWatcher:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
-            ui.watch_mode_stop()
+            get_console_ui().watch_mode_stop()
             observer.stop()
         observer.join()
 
@@ -112,13 +112,15 @@ class ConvertWatcher:
                         return
                     self.last_modified = current_time
 
-                    ui.file_changed(str(modified_path))
+                    get_console_ui().file_changed(str(modified_path))
 
                     try:
                         self._process_file_change()
                     except Exception as e:
-                        ui.error("ファイル変換中にエラーが発生しました", str(e))
-                        ui.dim("ファイルを修正して保存し直してください")
+                        get_console_ui().error(
+                            "ファイル変換中にエラーが発生しました", str(e)
+                        )
+                        get_console_ui().dim("ファイルを修正して保存し直してください")
 
             def _process_file_change(self):
                 """ファイル変更時の処理"""
@@ -127,11 +129,11 @@ class ConvertWatcher:
                     error_report = self.validator.perform_syntax_check(self.input_file)
 
                     if error_report.has_errors():
-                        ui.error("記法エラーが検出されました")
+                        get_console_ui().error("記法エラーが検出されました")
                         print(error_report.to_console_output())
                         return
                     elif error_report.has_warnings():
-                        ui.warning("記法に関する警告があります")
+                        get_console_ui().warning("記法に関する警告があります")
                         print(error_report.to_console_output())
 
                 # ファイル変換
@@ -144,7 +146,7 @@ class ConvertWatcher:
                     include_source=self.include_source,
                 )
 
-                ui.watch_mode_converted(str(output_file))
+                get_console_ui().watch_mode_converted(str(output_file))
 
         from watchdog.events import FileSystemEventHandler
 

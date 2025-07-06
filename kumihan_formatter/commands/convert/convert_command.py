@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Optional
 
 from ...core.error_handling import ErrorHandler as FriendlyErrorHandler
-from ...ui.console_ui import ui
+from ...ui.console_ui import get_console_ui
 from .convert_processor import ConvertProcessor
 from .convert_validator import ConvertValidator
 from .convert_watcher import ConvertWatcher
@@ -27,7 +27,7 @@ class ConvertCommand:
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()
         self.watcher = ConvertWatcher(self.processor, self.validator)
-        self.friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
+        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
 
     def execute(
         self,
@@ -69,7 +69,7 @@ class ConvertCommand:
             # 設定ファイルは簡素化のため使用しない
             config_obj = None
 
-            ui.processing_start("読み込み中", str(input_path))
+            get_console_ui().processing_start("読み込み中", str(input_path))
 
             # 構文チェック（有効な場合）
             if syntax_check:
@@ -77,21 +77,23 @@ class ConvertCommand:
 
                 if error_report.has_errors():
                     # エラーが見つかった場合は変換を中止
-                    ui.error("記法エラーが検出されました。変換を中止します。")
-                    ui.info("\n=== 詳細エラーレポート ===")
+                    get_console_ui().error(
+                        "記法エラーが検出されました。変換を中止します。"
+                    )
+                    get_console_ui().info("\n=== 詳細エラーレポート ===")
                     print(error_report.to_console_output())
 
                     # エラーレポートファイルを生成
                     self.validator.save_error_report(error_report, input_path, output)
 
-                    ui.dim(
+                    get_console_ui().dim(
                         "--no-syntax-check オプションで記法チェックをスキップできます"
                     )
                     sys.exit(1)
 
                 elif error_report.has_warnings():
                     # 警告のみの場合は続行するが表示
-                    ui.warning("記法に関する警告があります:")
+                    get_console_ui().warning("記法に関する警告があります:")
                     print(error_report.to_console_output())
 
             # ファイル変換実行
@@ -106,7 +108,7 @@ class ConvertCommand:
 
             # ブラウザプレビュー
             if not no_preview:
-                ui.browser_opening()
+                get_console_ui().browser_opening()
                 webbrowser.open(output_file.resolve().as_uri())
 
             # ファイル監視モード

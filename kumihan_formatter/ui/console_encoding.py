@@ -16,9 +16,9 @@ class ConsoleEncodingSetup:
         import locale
         import os
 
-        # Set environment variable first
-        os.environ["PYTHONIOENCODING"] = "utf-8"
-
+        # Note: Removed os.environ["PYTHONIOENCODING"] = "utf-8"
+        # to avoid global environment variable modification
+        # Applications should set this externally if needed
         # macOS encoding fix
         if sys.platform == "darwin":
             ConsoleEncodingSetup._setup_macos_encoding()
