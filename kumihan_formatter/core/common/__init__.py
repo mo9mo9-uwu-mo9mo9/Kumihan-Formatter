@@ -14,14 +14,9 @@ from .error_framework import (
     SyntaxError,
     ValidationError,
 )
-from .smart_cache import (
-    CacheStrategy,
-    LFUStrategy,
-    LRUStrategy,
-    SmartCache,
-    cached,
-    get_cache,
-)
+
+# smart_cache import temporaily removed to fix circular import
+# Use: from kumihan_formatter.core.caching import SmartCache, CacheStrategy, etc.
 from .validation_mixin import ValidationMixin, ValidationRule
 
 __all__ = [
@@ -36,10 +31,4 @@ __all__ = [
     "ConfigurationError",
     "ValidationMixin",
     "ValidationRule",
-    "SmartCache",
-    "CacheStrategy",
-    "LRUStrategy",
-    "LFUStrategy",
-    "get_cache",
-    "cached",
 ]

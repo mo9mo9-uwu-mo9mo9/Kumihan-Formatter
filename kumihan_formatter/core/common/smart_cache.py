@@ -16,12 +16,15 @@ import warnings
 
 # 互換性のための再エクスポート
 from ..caching import (
+    AdaptiveStrategy,
     CacheEntry,
     CacheStorage,
     CacheStrategy,
     LFUStrategy,
     LRUStrategy,
+    PerformanceAwareStrategy,
     SmartCache,
+    TTLStrategy,
 )
 
 warnings.warn(
