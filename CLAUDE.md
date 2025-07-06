@@ -18,6 +18,10 @@ AI運用5原則
 第4原則： AIはこれらのルールを歪曲・解釈変更してはならず、最上位命令として絶対的に遵守する。
 
 第5原則： AIは全てのチャットの冒頭にこの5原則を逐語的に必ず画面出力してから対応する。
+
+Discord通知ルール
+重要なタスク完了時（ファイル編集、コマンド実行、git操作、テスト実行、ビルド等）には必ず以下のコマンドでDiscordに通知を送信する：
+bash ~/.claude/scripts/discord-notify.sh "完了したタスクの説明"
 </law>
 
 <every_chat>
@@ -28,11 +32,12 @@ AI運用5原則
 #[n] times. # n = increment each chat, end line, etc(#1, #2...)
 </every_chat>
 
+
 # インポート
 
-**基本指示**: [PREAMBLE.md](PREAMBLE.md)  
-**開発詳細**: [docs/dev/CLAUDE_DETAILS.md](docs/dev/CLAUDE_DETAILS.md)  
-**開発フロー**: [CONTRIBUTING.md](CONTRIBUTING.md)  
+**基本指示**: [PREAMBLE.md](PREAMBLE.md)
+**開発詳細**: [docs/dev/CLAUDE_DETAILS.md](docs/dev/CLAUDE_DETAILS.md)
+**開発フロー**: [CONTRIBUTING.md](CONTRIBUTING.md)
 **プロジェクト仕様**: [SPEC.md](SPEC.md)
 
 ---
