@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 軽量チェック（push時とPR時）
+  # 軽量チェック（push時）- Issue #371の設計に戻す
   quick-check:
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

@@ -117,18 +117,22 @@ jobs:
           console.log(`Check runs: ${checkRuns.check_runs.length}`);
           console.log(`Status checks state: ${statusChecks.state}`);
 
-          // 重要なチェックが完了しているか確認
-          const requiredChecks = ['quick-check', 'full-test'];
+          // 重要なチェックが完了しているか確認（Issue #371の設計：PR時はfull-test、push時はquick-check）
+          const requiredChecks = [
+            'full-test (ubuntu-latest, 3.11)',
+            'full-test (windows-latest, 3.11)',
+            'full-test (macos-latest, 3.11)'
+          ];
           const completedChecks = checkRuns.check_runs.filter(check =>
-            requiredChecks.some(required => check.name.includes(required)) &&
+            requiredChecks.includes(check.name) &&
             check.status === 'completed' &&
             check.conclusion === 'success'
           );
 
           console.log(`Completed required checks: ${completedChecks.length}`);
 
-          // ステータスチェックが成功、かつ必要なチェックが完了している場合のみマージ
-          if (statusChecks.state === 'success' || completedChecks.length > 0) {
+          // 必要なチェック（3つの主要環境）が全て完了している場合のみマージ
+          if (completedChecks.length === 3) {
             try {
               await github.rest.pulls.merge({
                 owner: context.repo.owner,
