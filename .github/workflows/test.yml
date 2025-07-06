@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 軽量チェック（push時）
+  # 軽量チェック（push時）- Issue #371の設計に戻す
   quick-check:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
