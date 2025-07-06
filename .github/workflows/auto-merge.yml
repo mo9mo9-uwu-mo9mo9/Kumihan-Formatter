@@ -34,21 +34,56 @@ jobs:
     - name: Get PR information
       id: pr-info
       if: github.event_name != 'pull_request'
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_run" ]; then
-          PR_NUMBER=$(echo "${{ github.event.workflow_run.pull_requests }}" | jq -r '.[0].number // empty')
-        elif [ "${{ github.event_name }}" = "check_suite" ]; then
-          PR_NUMBER=$(echo "${{ github.event.check_suite.pull_requests }}" | jq -r '.[0].number // empty')
-        fi
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          let prNumber = null;
 
-        if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-          echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "has-pr=true" >> $GITHUB_OUTPUT
-        else
-          echo "has-pr=false" >> $GITHUB_OUTPUT
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if (context.eventName === 'workflow_run') {
+            // workflow_runイベントからPR情報を取得
+            const workflowRun = context.payload.workflow_run;
+            console.log('Workflow run event:', workflowRun.event);
+            console.log('Head SHA:', workflowRun.head_sha);
+
+            // PRを検索してSHAで一致するものを探す
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            const matchingPr = prs.data.find(pr => pr.head.sha === workflowRun.head_sha);
+            if (matchingPr) {
+              prNumber = matchingPr.number;
+              console.log('Found matching PR:', prNumber);
+            }
+          } else if (context.eventName === 'check_suite') {
+            // check_suiteイベントからPR情報を取得
+            const checkSuite = context.payload.check_suite;
+            console.log('Check suite head SHA:', checkSuite.head_sha);
+
+            // PRを検索してSHAで一致するものを探す
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            const matchingPr = prs.data.find(pr => pr.head.sha === checkSuite.head_sha);
+            if (matchingPr) {
+              prNumber = matchingPr.number;
+              console.log('Found matching PR:', prNumber);
+            }
+          }
+
+          if (prNumber) {
+            core.setOutput('pr-number', prNumber);
+            core.setOutput('has-pr', 'true');
+          } else {
+            core.setOutput('has-pr', 'false');
+            console.log('No matching PR found');
+          }
 
     - name: Set PR number for pull_request event
       id: set-pr
