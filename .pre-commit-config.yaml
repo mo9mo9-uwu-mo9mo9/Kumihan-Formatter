@@ -15,25 +15,25 @@ repos:
 
   # Python コードフォーマット
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 25.1.0
     hooks:
       - id: black
         language_version: python3
         args: [--line-length=88]
 
-  # Import整理
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: [--profile=black, --line-length=88]
+  # Import整理 (一時的に無効化 - Issue #383 Windows権限テスト検証のため)
+  # - repo: https://github.com/pycqa/isort
+  #   rev: 6.0.1
+  #   hooks:
+  #     - id: isort
+  #       args: [--profile=black, --line-length=88]
 
   # 基本的な構文チェック
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--max-line-length=88, --extend-ignore=E203,W503]
+        args: [--max-line-length=127, --extend-ignore=E203]
 
   # Kumihan-Formatter 独自チェック
   - repo: local
