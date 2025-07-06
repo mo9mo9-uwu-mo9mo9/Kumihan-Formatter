@@ -1,0 +1,163 @@
+name: Auto Merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  check_suite:
+    types: [completed]
+  workflow_run:
+    workflows: ["Tests"]
+    types: [completed]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # mo9mo9ユーザーのPRのみ処理
+    if: |
+      github.actor == 'mo9mo9-uwu-mo9mo9' &&
+      (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+        (github.event_name == 'check_suite' && github.event.check_suite.conclusion == 'success')
+      )
+
+    steps:
+    - name: Get PR information
+      id: pr-info
+      if: github.event_name != 'pull_request'
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_run" ]; then
+          PR_NUMBER=$(echo "${{ github.event.workflow_run.pull_requests }}" | jq -r '.[0].number // empty')
+        elif [ "${{ github.event_name }}" = "check_suite" ]; then
+          PR_NUMBER=$(echo "${{ github.event.check_suite.pull_requests }}" | jq -r '.[0].number // empty')
+        fi
+
+        if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+          echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "has-pr=true" >> $GITHUB_OUTPUT
+        else
+          echo "has-pr=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set PR number for pull_request event
+      id: set-pr
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "pr-number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+          echo "has-pr=true" >> $GITHUB_OUTPUT
+        else
+          echo "pr-number=${{ steps.pr-info.outputs.pr-number }}" >> $GITHUB_OUTPUT
+          echo "has-pr=${{ steps.pr-info.outputs.has-pr }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Wait for checks to complete
+      if: steps.set-pr.outputs.has-pr == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = ${{ steps.set-pr.outputs.pr-number }};
+          if (!prNumber) {
+            console.log('No PR number found, skipping...');
+            return;
+          }
+
+          console.log(`Checking PR #${prNumber}`);
+
+          // PR情報を取得
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber
+          });
+
+          console.log(`PR Author: ${pr.user.login}`);
+          console.log(`Current user: ${context.actor}`);
+
+          // PRの作者がmo9mo9-uwu-mo9mo9でない場合はスキップ
+          if (pr.user.login !== 'mo9mo9-uwu-mo9mo9') {
+            console.log('PR author is not mo9mo9-uwu-mo9mo9, skipping auto-merge');
+            return;
+          }
+
+          // PRがdraftの場合はスキップ
+          if (pr.draft) {
+            console.log('PR is draft, skipping auto-merge');
+            return;
+          }
+
+          // PRがマージ可能でない場合はスキップ
+          if (pr.mergeable === false) {
+            console.log('PR is not mergeable, skipping auto-merge');
+            return;
+          }
+
+          // チェック状態を確認
+          const { data: checkRuns } = await github.rest.checks.listForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: pr.head.sha
+          });
+
+          const { data: statusChecks } = await github.rest.repos.getCombinedStatusForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: pr.head.sha
+          });
+
+          console.log(`Check runs: ${checkRuns.check_runs.length}`);
+          console.log(`Status checks state: ${statusChecks.state}`);
+
+          // 重要なチェックが完了しているか確認
+          const requiredChecks = ['quick-check', 'full-test'];
+          const completedChecks = checkRuns.check_runs.filter(check =>
+            requiredChecks.some(required => check.name.includes(required)) &&
+            check.status === 'completed' &&
+            check.conclusion === 'success'
+          );
+
+          console.log(`Completed required checks: ${completedChecks.length}`);
+
+          // ステータスチェックが成功、かつ必要なチェックが完了している場合のみマージ
+          if (statusChecks.state === 'success' || completedChecks.length > 0) {
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: `${pr.title} (#${prNumber})`,
+                commit_message: `${pr.body || ''}\n\n🤖 Auto-merged after successful tests`
+              });
+              console.log(`Successfully auto-merged PR #${prNumber}`);
+            } catch (error) {
+              console.log(`Failed to merge PR #${prNumber}: ${error.message}`);
+
+              // コメントで失敗を通知
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🚫 Auto-merge failed: ${error.message}\n\nPlease merge manually or check for conflicts.`
+              });
+            }
+          } else {
+            console.log('Checks not yet completed or not successful, waiting...');
+          }
+
+    - name: Add auto-merge comment
+      if: github.event_name == 'pull_request' && steps.set-pr.outputs.has-pr == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = ${{ github.event.number }};
+
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber,
+            body: `🤖 **Auto-merge enabled**\n\nThis PR will be automatically merged when all tests pass.\n\n- ✅ Author: mo9mo9-uwu-mo9mo9\n- ⏳ Waiting for tests to complete...\n\n*Auto-merge is only available for mo9mo9-uwu-mo9mo9's PRs*`
+          });
