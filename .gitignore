@@ -142,6 +142,8 @@ output/
 
 # Claude Code settings (重要: 削除禁止)
 .claude/
+# Claude specific - Discord設定ファイルを除外
+.claude/discord_config.json
 
 # Test output directories
 *-output/

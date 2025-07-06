@@ -423,9 +423,7 @@ def hello():
 """
         test_file = self._create_test_file("error_recovery.txt", content)
 
-        result = self._run_conversion(
-            test_file, ["--no-syntax-check"]
-        )  # エラーを無視するオプション
+        result = self._run_conversion(test_file, ["--no-syntax-check"])  # エラーを無視するオプション
 
         # エラーがあっても処理継続
         self.assertIn(result.returncode, [0, 1])
@@ -610,9 +608,7 @@ d6
 |-----|-----|-----|
 """
             for row in range(50):
-                memory_intensive_content += (
-                    f"| データ{row}A | データ{row}B | データ{row}C |\n"
-                )
+                memory_intensive_content += f"| データ{row}A | データ{row}B | データ{row}C |\n"
 
         memory_file = self._create_test_file(
             "memory_intensive.txt", memory_intensive_content
