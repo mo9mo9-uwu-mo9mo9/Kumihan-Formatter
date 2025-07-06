@@ -13,6 +13,7 @@ from ..performance import get_global_monitor
 from .cache_strategies import AdaptiveStrategy
 from .smart_cache import SmartCache
 
+
 class FileCache(SmartCache):
     """ファイル読み込み専用キャッシュ
 

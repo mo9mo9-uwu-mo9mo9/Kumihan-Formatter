@@ -15,7 +15,7 @@ from kumihan_formatter.core.caching import (
 import warnings
 
 # 互換性のための再エクスポート
-from ..caching import (
+from ..caching import (  # noqa: F401
     AdaptiveStrategy,
     CacheEntry,
     CacheStorage,

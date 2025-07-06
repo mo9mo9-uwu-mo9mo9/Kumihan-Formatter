@@ -58,7 +58,6 @@ class ParseCache(SmartCache):
         self,
         source_content: str,
         parse_options: Optional[Dict[str, Any]] = None,
-<<<<<<< HEAD
     ) -> Optional[List[Node]]:
         """パース結果をキャッシュから取得
 
@@ -67,7 +66,6 @@ class ParseCache(SmartCache):
             parse_options: パースオプション
 
         Returns:
-<<<<<<< HEAD
             パース結果のNodeリスト
         """
         # キャッシュキーを生成
@@ -86,7 +84,6 @@ class ParseCache(SmartCache):
     def cache_parsed_ast(
         self,
         source_content: str,
-<<<<<<< HEAD
         ast_nodes: List[Node],
         parse_options: Optional[Dict[str, Any]] = None,
         parse_time: float = 0.0,
@@ -95,7 +92,6 @@ class ParseCache(SmartCache):
 
         Args:
             source_content: ソースコンテンツ
-<<<<<<< HEAD
             ast_nodes: パース結果のNodeリスト
             parse_options: パースオプション
             parse_time: パースにかかった時間
@@ -123,7 +119,6 @@ class ParseCache(SmartCache):
         source_content: str,
         parse_func: callable,
         parse_options: Optional[Dict[str, Any]] = None,
-<<<<<<< HEAD
     ) -> List[Node]:
         """キャッシュから取得または新規パース
 
@@ -133,7 +128,6 @@ class ParseCache(SmartCache):
             parse_options: パースオプション
 
         Returns:
-<<<<<<< HEAD
             パース結果のNodeリスト
         """
         # キャッシュから取得を試行

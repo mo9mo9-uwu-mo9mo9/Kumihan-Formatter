@@ -10,7 +10,6 @@ import statistics
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-<<<<<<< HEAD
 from typing import Any, Callable, Dict, List, Optional
 
 from ..caching.file_cache import FileCache

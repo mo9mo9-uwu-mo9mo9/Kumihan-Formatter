@@ -14,7 +14,6 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from pathlib import Path
-<<<<<<< HEAD
 from typing import Any, Callable, Dict, List, Optional
 
 
@@ -497,7 +496,6 @@ class AdvancedProfiler:
         if self._memory_tracker:
             try:
                 return self._memory_tracker.memory_info().rss
-<<<<<<< HEAD
             except Exception:
                 return None
         return None
