@@ -2,6 +2,18 @@
 
 This module provides comprehensive performance monitoring, profiling,
 and optimization tools to ensure efficient operation.
+
+Dependencies:
+- gc: For garbage collection control
+- statistics: For statistical calculations
+- threading: For thread-safe operations
+- time: For execution time measurement
+- functools: For decorator implementations
+- typing: For type annotations
+- dataclasses: For data structure definitions
+
+Note: Uses lazy initialization pattern to avoid import-time side effects.
+Use get_global_monitor() and get_global_profiler() functions instead of direct global access.
 """
 
 import gc
@@ -444,25 +456,41 @@ class BenchmarkSuite:
         }
 
 
-# Global instances for easy access
-global_monitor = PerformanceMonitor()
-global_profiler = PerformanceProfiler()
+# Global instances for easy access - converted to lazy initialization
+_global_monitor = None
+_global_profiler = None
+
+
+def get_global_monitor() -> PerformanceMonitor:
+    """Get the global performance monitor instance (lazy initialization)"""
+    global _global_monitor
+    if _global_monitor is None:
+        _global_monitor = PerformanceMonitor()
+    return _global_monitor
+
+
+def get_global_profiler() -> PerformanceProfiler:
+    """Get the global performance profiler instance (lazy initialization)"""
+    global _global_profiler
+    if _global_profiler is None:
+        _global_profiler = PerformanceProfiler()
+    return _global_profiler
 
 
 def measure_performance(operation_name: str, **kwargs):
     """Convenience function for performance measurement"""
-    return global_monitor.measure(operation_name, **kwargs)
+    return get_global_monitor().measure(operation_name, **kwargs)
 
 
 def profile_function(func_name: Optional[str] = None):
     """Convenience decorator for function profiling"""
-    return global_profiler.profile(func_name)
+    return get_global_profiler().profile(func_name)
 
 
 def get_performance_summary() -> Dict[str, Any]:
     """Get comprehensive performance summary"""
     return {
-        "monitor_stats": global_monitor.get_summary_stats(),
-        "profiler_stats": global_profiler.get_stats(),
-        "top_functions": global_profiler.get_top_functions(),
+        "monitor_stats": get_global_monitor().get_summary_stats(),
+        "profiler_stats": get_global_profiler().get_stats(),
+        "top_functions": get_global_profiler().get_top_functions(),
     }

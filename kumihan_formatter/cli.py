@@ -23,8 +23,14 @@ def setup_encoding() -> None:
             sys.stderr.reconfigure(encoding="utf-8")  # type: ignore
         except AttributeError:
             # Python 3.7以前の場合のフォールバック
-            os.environ["PYTHONIOENCODING"] = "utf-8"
-            os.environ["PYTHONUTF8"] = "1"
+            # Note: Removed environment variable modification to avoid global side effects
+            # Applications should handle encoding externally for older Python versions
+            import warnings
+
+            warnings.warn(
+                "Python 3.7 or earlier detected. Please set PYTHONIOENCODING=utf-8 externally.",
+                UserWarning,
+            )
 
 
 @click.group()
@@ -152,10 +158,11 @@ def main() -> None:
     try:
         cli()
     except KeyboardInterrupt:
-        from .ui.console_ui import ui
+        from .ui.console_ui import get_console_ui
 
-        ui.info("操作が中断されました")
-        ui.dim("Ctrl+C で中断されました")
+        console_ui = get_console_ui()
+        console_ui.info("操作が中断されました")
+        console_ui.dim("Ctrl+C で中断されました")
         sys.exit(130)
     except click.ClickException:
         # Let Click handle its own exceptions (including help)

@@ -4,7 +4,7 @@ import re
 from typing import List, Tuple
 
 
-def parse_marker_keywords(marker_line: str) -> Tuple[List[str], dict]:
+def parse_marker_keywords(marker_line: str) -> Tuple[List[str], dict[str, str]]:
     """
     マーカー行からキーワードと属性を抽出する共通関数
 
