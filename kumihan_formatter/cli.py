@@ -117,47 +117,41 @@ def main():
     # コマンドを登録
     register_commands()
 
-    from .core.error_handling import ErrorHandler as FriendlyErrorHandler
-    from .ui.console_ui import ui
+    # Handle legacy command routing
+    if len(sys.argv) > 1:
+        # Legacy support: if first argument is a file, route to convert
+        first_arg = sys.argv[1]
+        if not first_arg.startswith("-") and first_arg not in [
+            "convert",
+            "generate-sample",
+            "generate-test",
+            "check-syntax",
+        ]:
+            # Check if it's a file path
+            from pathlib import Path
 
-    friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
+            if Path(first_arg).exists() or first_arg.endswith(".txt"):
+                # Insert 'convert' command
+                sys.argv.insert(1, "convert")
 
+    # Execute CLI with minimal error handling to preserve Click's help behavior
     try:
-        # Handle legacy command routing
-        if len(sys.argv) > 1:
-            # Legacy support: if first argument is a file, route to convert
-            first_arg = sys.argv[1]
-            if not first_arg.startswith("-") and first_arg not in [
-                "convert",
-                "generate-sample",
-                "generate-test",
-                "check-syntax",
-            ]:
-                # Check if it's a file path
-                from pathlib import Path
-
-                if Path(first_arg).exists() or first_arg.endswith(".txt"):
-                    # Insert 'convert' command
-                    sys.argv.insert(1, "convert")
-
-        # Execute CLI
         cli()
-
     except KeyboardInterrupt:
+        from .ui.console_ui import ui
+
         ui.info("操作が中断されました")
         ui.dim("Ctrl+C で中断されました")
         sys.exit(130)
-    except click.ClickException as e:
-        # Click自体のエラーは元の処理を維持
-        e.show()
-        sys.exit(e.exit_code)
-    except (FileNotFoundError, UnicodeDecodeError, PermissionError) as e:
-        # 一般的なエラーは新システムで処理
-        error = friendly_error_handler.handle_exception(e)
-        friendly_error_handler.display_error(error, verbose=True)
-        sys.exit(1)
+    except click.ClickException:
+        # Let Click handle its own exceptions (including help)
+        raise
     except Exception as e:
-        # その他の予期しないエラー
+        # Handle other exceptions with friendly error handler
+        from .core.error_handling import ErrorHandler as FriendlyErrorHandler
+        from .ui.console_ui import ui
+
+        friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
         error = friendly_error_handler.handle_exception(
             e, context={"operation": "CLI実行", "args": sys.argv}
         )
