@@ -12,7 +12,8 @@ def test_cli_help():
         text=True,
     )
     assert result.returncode == 0
-    assert "Usage:" in result.stdout or "使い方:" in result.stdout
+    stdout = result.stdout or ""
+    assert "Usage:" in stdout or "使い方:" in stdout
 
 
 def test_cli_sample_command():
@@ -23,4 +24,5 @@ def test_cli_sample_command():
         text=True,
     )
     assert result.returncode == 0
-    assert "Usage:" in result.stdout or "使い方:" in result.stdout
+    stdout = result.stdout or ""
+    assert "Usage:" in stdout or "使い方:" in stdout
