@@ -49,7 +49,7 @@ Please merge manually or check for conflicts.
 以下の設定は既に自動で適用済みです：
 
 ### 1. ブランチ保護ルール ✅ 完了
-- **Required status checks**: `quick-check` 必須（Issue #371の設計通り）
+- **Required status checks**: `full-test (ubuntu-latest, 3.11)`, `full-test (windows-latest, 3.11)`, `full-test (macos-latest, 3.11)` 必須（Issue #371の設計通り）
 - **Strict checks**: ブランチを最新状態に保つ
 - **Pull request reviews**: 承認不要（0件）
 - **Stale review dismissal**: 有効
