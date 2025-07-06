@@ -206,13 +206,27 @@ jobs:
             console.log('Checks not yet completed or not successful, waiting...');
           }
 
-    - name: Add auto-merge comment
+    - name: Enable auto-merge and add comment
       if: github.event_name == 'pull_request' && steps.set-pr.outputs.has-pr == 'true'
       uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const prNumber = ${{ github.event.number }};
+
+          // auto-mergeを有効化
+          try {
+            await github.rest.pulls.createAutoMerge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: 'squash'
+            });
+
+            console.log(`Auto-merge enabled for PR #${prNumber}`);
+          } catch (error) {
+            console.log(`Failed to enable auto-merge: ${error.message}`);
+          }
 
           await github.rest.issues.createComment({
             owner: context.repo.owner,
