@@ -4,6 +4,7 @@ This is the new, modular renderer implementation that replaces the monolithic
 renderer.py file. Each rendering responsibility is now handled by specialized modules.
 """
 
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -11,6 +12,7 @@ from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
 from .core.template_manager import RenderContext, TemplateManager
 from .core.toc_generator import TOCGenerator
+from .core.utilities.logger import get_logger, log_performance
 from .simple_config import create_simple_config
 
 
@@ -43,9 +45,12 @@ class Renderer:
         Args:
             template_dir: Custom template directory (defaults to package templates)
         """
+        self.logger = get_logger(__name__)
         self.html_renderer = HTMLRenderer()
         self.template_manager = TemplateManager(template_dir)
         self.toc_generator = TOCGenerator()
+
+        self.logger.debug("Renderer initialized with template_dir: %s", template_dir)
 
     def render(
         self,
@@ -72,13 +77,17 @@ class Renderer:
         Returns:
             str: Complete HTML document
         """
+        start_time = time.time()
+        self.logger.info(f"Starting render of {len(ast)} AST nodes")
         # Filter out TOC markers for body content
         body_ast = [
             node for node in ast if not (isinstance(node, Node) and node.type == "toc")
         ]
+        self.logger.debug(f"Filtered {len(ast) - len(body_ast)} TOC markers")
 
         # Generate body HTML
         body_content = self.html_renderer.render_nodes(body_ast)
+        self.logger.debug(f"Generated body HTML: {len(body_content)} characters")
 
         # Generate table of contents
         toc_data = self.toc_generator.generate_toc(ast)
@@ -111,7 +120,13 @@ class Renderer:
             context.navigation(navigation_html)
 
         # Render template
-        return self.template_manager.render_template(template_name, context.build())
+        result = self.template_manager.render_template(template_name, context.build())
+
+        duration = time.time() - start_time
+        log_performance("render", duration, len(result))
+        self.logger.info(f"Render complete: {len(result)} characters")
+
+        return result
 
     def render_nodes_only(self, nodes: List[Node]) -> str:
         """
@@ -123,6 +138,7 @@ class Renderer:
         Returns:
             str: HTML content without template
         """
+        self.logger.debug(f"Rendering {len(nodes)} nodes without template")
         return self.html_renderer.render_nodes(nodes)
 
     def render_with_custom_context(
@@ -139,6 +155,10 @@ class Renderer:
         Returns:
             str: Rendered HTML
         """
+        self.logger.info(
+            f"Rendering with custom context using template: {template_name}"
+        )
+
         # Generate basic content
         body_content = self.html_renderer.render_nodes(ast)
         toc_data = self.toc_generator.generate_toc(ast)

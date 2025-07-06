@@ -5,6 +5,7 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
+from ..utilities.logger import get_logger
 from .error_factories import ErrorFactory
 from .error_types import ErrorLevel, UserFriendlyError
 
@@ -35,6 +36,8 @@ class ErrorHandler:
         """エラーハンドラを初期化"""
         self.console_ui = console_ui
         self._error_history: List[UserFriendlyError] = []
+        self.logger = get_logger(__name__)
+        self.logger.debug("ErrorHandler initialized")
 
     def handle_exception(
         self, exception: Exception, context: Dict[str, Any] = None
@@ -42,30 +45,41 @@ class ErrorHandler:
         """例外をユーザーフレンドリーエラーに変換"""
         context = context or {}
 
+        self.logger.error(
+            f"Handling exception: {type(exception).__name__} - {str(exception)}"
+        )
+        self.logger.debug(f"Exception context: {context}")
+
         # ファイル関連エラー
         if isinstance(exception, FileNotFoundError):
             file_path = context.get("file_path", str(exception))
+            self.logger.warning(f"File not found: {file_path}")
             return ErrorFactory.create_file_not_found_error(file_path)
 
         # エンコーディングエラー
         elif isinstance(exception, UnicodeDecodeError):
             file_path = context.get("file_path", "不明なファイル")
+            self.logger.error(f"Encoding error in file: {file_path}")
             return ErrorFactory.create_encoding_error(file_path)
 
         # 権限エラー
         elif isinstance(exception, PermissionError):
             file_path = context.get("file_path", str(exception))
             operation = context.get("operation", "アクセス")
+            self.logger.error(f"Permission denied: {operation} on {file_path}")
             return ErrorFactory.create_permission_error(file_path, operation)
 
         # その他の例外
         else:
+            self.logger.error(f"Unknown error type: {type(exception).__name__}")
             return ErrorFactory.create_unknown_error(
                 original_error=str(exception), context=context
             )
 
     def display_error(self, error: UserFriendlyError, verbose: bool = False) -> None:
         """エラーを画面に表示"""
+        self.logger.info(f"Displaying error: {error.error_code} - {error.user_message}")
+
         if not self.console_ui:
             print(f"[{error.error_code}] {error.user_message}")
             print(f"解決方法: {error.solution.quick_fix}")
@@ -111,11 +125,16 @@ class ErrorHandler:
 
         # エラー履歴に追加
         self._error_history.append(error)
+        self.logger.debug(
+            f"Error added to history. Total errors: {len(self._error_history)}"
+        )
 
     def show_error_context(
         self, file_path: Path, line_number: int, error_line: str
     ) -> None:
         """エラー箇所の前後コンテキストを表示"""
+        self.logger.debug(f"Showing error context for {file_path}:{line_number}")
+
         if not self.console_ui:
             return
 
@@ -141,8 +160,9 @@ class ErrorHandler:
                         f"[dim]  {line_num_display:3d}: {line_content}[/dim]"
                     )
 
-        except Exception:
+        except Exception as e:
             # ファイル読み込みでエラーが発生した場合はスキップ
+            self.logger.warning(f"Failed to show error context: {e}")
             pass
 
     def get_error_statistics(self) -> Dict[str, Any]:

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 from .encoding_detector import EncodingDetector
+from .utilities.logger import get_logger
 
 
 class UIProtocol(Protocol):
@@ -44,6 +45,8 @@ class FileOperations:
     def __init__(self, ui: Optional[UIProtocol] = None):
         """Initialize with optional UI instance for dependency injection"""
         self.ui = ui
+        self.logger = get_logger(__name__)
+        self.logger.debug("FileOperations initialized")
 
     @staticmethod
     def load_distignore_patterns() -> List[str]:
@@ -53,10 +56,12 @@ class FileOperations:
         Returns:
             list: List of exclusion patterns
         """
+        logger = get_logger(__name__)
         patterns = []
         distignore_path = Path(".distignore")
 
         if distignore_path.exists():
+            logger.debug(f"Loading exclusion patterns from {distignore_path}")
             with open(distignore_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
@@ -64,6 +69,7 @@ class FileOperations:
                     if line and not line.startswith("#"):
                         patterns.append(line)
 
+        logger.debug(f"Loaded {len(patterns)} exclusion patterns")
         return patterns
 
     @staticmethod
@@ -115,12 +121,18 @@ class FileOperations:
         image_nodes = [node for node in ast if getattr(node, "type", None) == "image"]
 
         if not image_nodes:
+            self.logger.debug("No image nodes found in AST")
             return
+
+        self.logger.info(
+            f"Copying {len(image_nodes)} images from {input_path} to {output_path}"
+        )
 
         # Check images folder in input file directory
         source_images_dir = input_path.parent / "images"
 
         if not source_images_dir.exists():
+            self.logger.warning(f"Images directory not found: {source_images_dir}")
             if self.ui:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
             return
@@ -149,18 +161,28 @@ class FileOperations:
                 else:
                     shutil.copy2(source_file, dest_file)
                     copied_files.append(filename)
+                    self.logger.debug(f"Copied image: {filename}")
             else:
                 missing_files.append(filename)
+                self.logger.warning(f"Image file not found: {filename}")
 
         # Report results
-        if copied_files and self.ui:
-            self.ui.file_copied(len(copied_files))
+        if copied_files:
+            self.logger.info(f"Successfully copied {len(copied_files)} image files")
+            if self.ui:
+                self.ui.file_copied(len(copied_files))
 
-        if missing_files and self.ui:
-            self.ui.files_missing(missing_files)
+        if missing_files:
+            self.logger.warning(f"{len(missing_files)} image files were missing")
+            if self.ui:
+                self.ui.files_missing(missing_files)
 
-        if duplicate_files and self.ui:
-            self.ui.duplicate_files(duplicate_files)
+        if duplicate_files:
+            self.logger.warning(
+                f"Found {len(duplicate_files)} duplicate image filenames"
+            )
+            if self.ui:
+                self.ui.duplicate_files(duplicate_files)
 
     @staticmethod
     def create_sample_images(images_dir: Path, sample_images: Dict[str, str]) -> None:
@@ -232,23 +254,30 @@ class FileOperations:
     @staticmethod
     def write_text_file(path: Path, content: str, encoding: str = "utf-8") -> None:
         """Write text file with proper encoding and error handling"""
+        logger = get_logger(__name__)
+        logger.debug(f"Writing file: {path} with encoding: {encoding}")
+
         try:
             # Try with UTF-8 first
             with open(path, "w", encoding=encoding, errors="replace") as f:
                 f.write(content)
         except UnicodeEncodeError:
             # Fallback with error replacement
+            logger.warning(f"Unicode encode error for {path}, using error replacement")
             with open(path, "w", encoding=encoding, errors="replace") as f:
                 f.write(content)
         except Exception as e:
             # For Windows, try with BOM
             if encoding.lower() == "utf-8":
                 try:
+                    logger.debug(f"Trying UTF-8 with BOM for {path}")
                     with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
                         f.write(content)
                 except Exception:
+                    logger.error(f"Failed to write file {path}: {e}")
                     raise e
             else:
+                logger.error(f"Failed to write file {path}: {e}")
                 raise
 
     @staticmethod
@@ -261,8 +290,14 @@ class FileOperations:
         3. Try platform-specific common encodings
         4. Fallback to UTF-8 with error replacement
         """
+        logger = get_logger(__name__)
+        logger.debug(f"Reading file: {path}")
+
         # Use encoding detector for efficiency
         detected_encoding, is_confident = EncodingDetector.detect(path)
+        logger.debug(
+            f"Detected encoding: {detected_encoding} (confident: {is_confident})"
+        )
 
         # If confident in detection or no encoding specified, use detected
         if is_confident or encoding == "utf-8":
@@ -270,6 +305,7 @@ class FileOperations:
                 with open(path, "r", encoding=detected_encoding) as f:
                     return f.read()
             except UnicodeDecodeError:
+                logger.debug(f"Failed to decode with {detected_encoding}")
                 pass
 
         # Try specified encoding if different from detected
@@ -278,6 +314,7 @@ class FileOperations:
                 with open(path, "r", encoding=encoding) as f:
                     return f.read()
             except UnicodeDecodeError:
+                logger.debug(f"Failed to decode with specified encoding: {encoding}")
                 pass
 
         # Platform-specific fallbacks (minimal set)
@@ -291,9 +328,11 @@ class FileOperations:
                 with open(path, "r", encoding=enc) as f:
                     return f.read()
             except UnicodeDecodeError:
+                logger.debug(f"Failed to decode with {enc}")
                 continue
 
         # Last resort: UTF-8 with error replacement
+        logger.warning(f"Using UTF-8 with error replacement for {path}")
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
 
@@ -329,6 +368,9 @@ class FileOperations:
         size_info = self.get_file_size_info(path)
 
         if size_info["size_mb"] > max_size_mb:
+            self.logger.warning(
+                f"Large file detected: {path} ({size_info['size_mb']:.1f}MB)"
+            )
             if self.ui:
                 self.ui.warning(
                     f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",
@@ -399,14 +441,18 @@ class ErrorHandler:
     def __init__(self, ui: Optional[UIProtocol] = None):
         """Initialize with optional UI instance"""
         self.ui = ui
+        self.logger = get_logger(__name__)
+        self.logger.debug("ErrorHandler initialized")
 
     def handle_file_not_found(self, file_path: str) -> None:
         """Handle file not found error"""
+        self.logger.error(f"File not found: {file_path}")
         if self.ui:
             self.ui.file_error(file_path, "ファイルが見つかりません")
 
     def handle_encoding_error(self, file_path: str, encoding: str = "utf-8") -> None:
         """Handle encoding error with helpful suggestions"""
+        self.logger.error(f"Encoding error in file: {file_path} (tried: {encoding})")
         if self.ui:
             self.ui.encoding_error(file_path)
             self.ui.hint(
@@ -418,10 +464,12 @@ class ErrorHandler:
 
     def handle_permission_error(self, error: str) -> None:
         """Handle permission error"""
+        self.logger.error(f"Permission error: {error}")
         if self.ui:
             self.ui.permission_error(error)
 
     def handle_unexpected_error(self, error: str) -> None:
         """Handle unexpected error"""
+        self.logger.error(f"Unexpected error: {error}")
         if self.ui:
             self.ui.unexpected_error(error)

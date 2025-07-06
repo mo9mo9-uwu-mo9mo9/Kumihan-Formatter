@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Union
 
+from ..utilities.logger import get_logger
 from .config_loader import ConfigLoader
 from .config_types import ConfigLevel
 from .config_validator import ConfigValidator
@@ -107,16 +108,19 @@ class EnhancedConfig:
     }
 
     def __init__(self):
+        self.logger = get_logger(__name__)
         self.config = {}
         self.config_sources = {}  # 各設定値の出典を追跡
         self.validator = ConfigValidator()
         self.loader = ConfigLoader(self.validator)
         self._load_defaults()
+        self.logger.debug("EnhancedConfig initialized with default settings")
 
     def _load_defaults(self):
         """デフォルト設定を読み込み"""
         self.config = self.loader._deep_copy(self.DEFAULT_CONFIG)
         self._mark_source("default", self.config)
+        self.logger.debug("Loaded default configuration")
 
     def _mark_source(self, source: str, obj: Any, path: str = ""):
         """設定ソースをマーク（追跡用）"""
@@ -130,22 +134,29 @@ class EnhancedConfig:
         self, config_path: Union[str, Path], level: ConfigLevel = ConfigLevel.USER
     ) -> bool:
         """ファイルから設定を読み込み"""
+        self.logger.info(f"Loading configuration from file: {config_path}")
         user_config = self.loader.load_from_file(config_path)
         if user_config:
             self._merge_config(user_config, str(config_path))
+            self.logger.info(f"Successfully loaded configuration from {config_path}")
             return True
+        self.logger.warning(f"Failed to load configuration from {config_path}")
         return False
 
     def load_from_environment(self) -> bool:
         """環境変数から設定を読み込み"""
+        self.logger.debug("Loading configuration from environment variables")
         env_config = self.loader.load_from_environment()
         if env_config:
             self._merge_config(env_config, "environment")
+            self.logger.info("Loaded configuration from environment variables")
             return True
+        self.logger.debug("No configuration found in environment variables")
         return False
 
     def _merge_config(self, user_config: Dict[str, Any], source: str):
         """設定をマージ"""
+        self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
         self._mark_source(source, user_config)
 
@@ -158,6 +169,9 @@ class EnhancedConfig:
             if isinstance(current, dict) and k in current:
                 current = current[k]
             else:
+                self.logger.debug(
+                    f"Configuration key not found: {key}, using default: {default}"
+                )
                 return default
 
         return current
@@ -175,6 +189,7 @@ class EnhancedConfig:
 
         current[keys[-1]] = value
         self.config_sources[key] = source
+        self.logger.debug(f"Set configuration {key} = {value} from {source}")
 
     def get_markers(self) -> Dict[str, Dict[str, str]]:
         """マーカー設定を取得"""

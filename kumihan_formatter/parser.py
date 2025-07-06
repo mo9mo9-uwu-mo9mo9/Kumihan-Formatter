@@ -10,6 +10,7 @@ from .core.ast_nodes import Node, paragraph
 from .core.block_parser import BlockParser
 from .core.keyword_parser import KeywordParser
 from .core.list_parser import ListParser
+from .core.utilities.logger import get_logger
 
 
 class Parser:
@@ -40,11 +41,14 @@ class Parser:
         self.lines = []
         self.current = 0
         self.errors = []
+        self.logger = get_logger(__name__)
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
         self.list_parser = ListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
+
+        self.logger.debug("Parser initialized with specialized parsers")
 
     def parse(self, text: str) -> List[Node]:
         """
@@ -61,15 +65,24 @@ class Parser:
         self.errors = []
         nodes = []
 
+        self.logger.info(f"Starting parse of {len(self.lines)} lines")
+        self.logger.debug(f"Input text length: {len(text)} characters")
+
         while self.current < len(self.lines):
             node = self._parse_line()
 
             if node:
                 nodes.append(node)
+                self.logger.debug(
+                    f"Parsed node type: {node.type} at line {self.current}"
+                )
             else:
                 # Skip empty lines
                 self.current += 1
 
+        self.logger.info(
+            f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors"
+        )
         return nodes
 
     def _parse_line(self) -> Optional[Node]:
@@ -84,6 +97,11 @@ class Parser:
             return None
 
         line = self.lines[self.current].strip()
+        self.logger.debug(
+            f"Processing line {self.current}: {line[:50]}..."
+            if len(line) > 50
+            else f"Processing line {self.current}: {line}"
+        )
 
         # Skip comment lines (lines starting with #)
         if line.startswith("#"):
@@ -92,6 +110,7 @@ class Parser:
 
         # Parse block markers
         if self.block_parser.is_opening_marker(line):
+            self.logger.debug(f"Found block marker at line {self.current}")
             node, next_index = self.block_parser.parse_block_marker(
                 self.lines, self.current
             )
@@ -101,6 +120,7 @@ class Parser:
         # Parse lists
         list_type = self.list_parser.is_list_line(line)
         if list_type:
+            self.logger.debug(f"Found {list_type} list at line {self.current}")
             if list_type == "ul":
                 node, next_index = self.list_parser.parse_unordered_list(
                     self.lines, self.current
@@ -125,6 +145,7 @@ class Parser:
     def add_error(self, error: str) -> None:
         """Add a parsing error"""
         self.errors.append(error)
+        self.logger.warning(f"Parse error: {error}")
 
     def get_statistics(self) -> dict:
         """Get parsing statistics"""
