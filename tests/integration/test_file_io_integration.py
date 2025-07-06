@@ -14,7 +14,6 @@ from pathlib import Path
 from unittest import TestCase
 
 import pytest
-
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
 
