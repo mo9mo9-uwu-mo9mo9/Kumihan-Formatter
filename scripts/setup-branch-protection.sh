@@ -14,10 +14,10 @@ echo "🔧 Setting up branch protection for $REPO/$BRANCH..."
 gh api \
   --method PUT \
   repos/$REPO/branches/$BRANCH/protection \
-  --field required_status_checks='{"strict":true,"checks":[{"context":"quick-check","app_id":-1},{"context":"full-test","app_id":-1}]}' \
+  --raw-field required_status_checks='{"strict":true,"checks":[{"context":"quick-check","app_id":-1},{"context":"full-test","app_id":-1}]}' \
   --field enforce_admins=false \
-  --field required_pull_request_reviews='{"required_approving_review_count":0,"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false,"bypass_pull_request_allowances":{"users":["mo9mo9-uwu-mo9mo9"]}}' \
-  --field restrictions='{"users":["mo9mo9-uwu-mo9mo9"],"teams":[],"apps":[]}' \
+  --raw-field required_pull_request_reviews='{"required_approving_review_count":0,"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false,"bypass_pull_request_allowances":{"users":["mo9mo9-uwu-mo9mo9"]}}' \
+  --raw-field restrictions='{"users":["mo9mo9-uwu-mo9mo9"],"teams":[],"apps":[]}' \
   --field required_linear_history=false \
   --field allow_force_pushes=false \
   --field allow_deletions=false \
