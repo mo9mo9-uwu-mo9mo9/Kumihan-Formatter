@@ -21,12 +21,12 @@ repos:
         language_version: python3
         args: [--line-length=88]
 
-  # Import整理 (一時的に無効化 - Issue #383 Windows権限テスト検証のため)
-  # - repo: https://github.com/pycqa/isort
-  #   rev: 6.0.1
-  #   hooks:
-  #     - id: isort
-  #       args: [--profile=black, --line-length=88]
+  # Import整理
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
 
   # 基本的な構文チェック
   - repo: https://github.com/pycqa/flake8

@@ -54,16 +54,15 @@ jobs:
           black --check kumihan_formatter
         fi
 
-    # 一時的に無効化 - Issue #383 Windows権限テスト検証のため
-    # - name: Import sort check with isort
-    #   shell: bash
-    #   run: |
-    #     if [ -d "tests" ]; then
-    #       isort --check-only kumihan_formatter tests
-    #     else
-    #       echo "tests directory not found, checking only kumihan_formatter"
-    #       isort --check-only kumihan_formatter
-    #     fi
+    - name: Import sort check with isort
+      shell: bash
+      run: |
+        if [ -d "tests" ]; then
+          isort --check-only kumihan_formatter tests
+        else
+          echo "tests directory not found, checking only kumihan_formatter"
+          isort --check-only kumihan_formatter
+        fi
 
     - name: Test with pytest
       shell: bash
