@@ -1,17 +1,29 @@
 """
-エラーハンドリングパッケージ
+エラーハンドリングパッケージ - Issue #401対応
 
-このパッケージは、Kumihan-Formatterのエラーハンドリング機能を提供します。
+このパッケージは、Kumihan-Formatterの統一エラーハンドリング機能を提供します。
 技術的なエラーメッセージをユーザーフレンドリーな日本語メッセージに変換し、
-具体的な解決方法を提示します。
+具体的な解決方法と自動回復機能を提示します。
 
 モジュール構成:
 - error_types: 基本的なエラー型定義
 - smart_suggestions: スマート提案システム
 - error_factories: エラーファクトリー
-- error_handler: メインエラーハンドラー
+- error_handler: 従来のエラーハンドラー（後方互換性）
+- unified_handler: 統一エラーハンドラー（推奨）
+- context_manager: エラーコンテキスト管理
+- recovery_strategies: 自動回復戦略
 - error_recovery: エラー回復機能（将来の拡張用）
 """
+
+from .context_manager import (
+    ErrorContextManager,
+    FileContext,
+    OperationContext,
+    SystemContext,
+    get_global_context_manager,
+    set_global_context_manager,
+)
 
 # エラーファクトリー
 from .error_factories import ErrorCatalog  # 後方互換性のためのエイリアス
@@ -29,9 +41,28 @@ from .error_recovery import ErrorRecovery, create_backup_file, restore_from_back
 
 # 基本的なエラー型のインポート
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
+from .japanese_messages import (
+    JapaneseMessageCatalog,
+    UserGuidanceProvider,
+    create_user_friendly_error,
+)
+from .recovery_strategies import (
+    FileEncodingRecoveryStrategy,
+    FileNotFoundRecoveryStrategy,
+    FilePermissionRecoveryStrategy,
+    MemoryErrorRecoveryStrategy,
+    RecoveryManager,
+    RecoveryStrategy,
+    SyntaxErrorRecoveryStrategy,
+    get_global_recovery_manager,
+    set_global_recovery_manager,
+)
 
 # スマート提案システム
 from .smart_suggestions import SmartSuggestions
+
+# 新しい統一エラーハンドリングシステム（Issue #401）
+from .unified_handler import UnifiedErrorHandler, get_global_handler, set_global_handler
 
 # パッケージ情報
 __version__ = "1.0.0"
@@ -51,12 +82,37 @@ __all__ = [
     "ErrorCatalog",  # 後方互換性
     "create_syntax_error_from_validation",
     "format_file_size_error",
-    # エラーハンドラー
+    # 従来のエラーハンドラー（後方互換性）
     "ErrorHandler",
     # エラー回復（将来の拡張用）
     "ErrorRecovery",
     "create_backup_file",
     "restore_from_backup",
+    # 新しい統一エラーハンドリングシステム（推奨）
+    "UnifiedErrorHandler",
+    "get_global_handler",
+    "set_global_handler",
+    # コンテキスト管理
+    "ErrorContextManager",
+    "OperationContext",
+    "SystemContext",
+    "FileContext",
+    "get_global_context_manager",
+    "set_global_context_manager",
+    # 回復戦略
+    "RecoveryManager",
+    "RecoveryStrategy",
+    "FileEncodingRecoveryStrategy",
+    "FilePermissionRecoveryStrategy",
+    "SyntaxErrorRecoveryStrategy",
+    "FileNotFoundRecoveryStrategy",
+    "MemoryErrorRecoveryStrategy",
+    "get_global_recovery_manager",
+    "set_global_recovery_manager",
+    # 日本語メッセージとガイダンス
+    "JapaneseMessageCatalog",
+    "UserGuidanceProvider",
+    "create_user_friendly_error",
 ]
 
 # 設定

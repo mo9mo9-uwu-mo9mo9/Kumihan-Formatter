@@ -8,7 +8,14 @@ Issue #319対応 - 単一責任原則に基づくリファクタリング
 """
 
 from .cache_storage import CacheStorage
-from .cache_strategies import CacheStrategy, LFUStrategy, LRUStrategy
+from .cache_strategies import (
+    AdaptiveStrategy,
+    CacheStrategy,
+    LFUStrategy,
+    LRUStrategy,
+    PerformanceAwareStrategy,
+    TTLStrategy,
+)
 from .cache_types import CacheEntry
 from .smart_cache import SmartCache
 
@@ -19,6 +26,9 @@ __all__ = [
     "CacheStrategy",
     "LRUStrategy",
     "LFUStrategy",
+    "TTLStrategy",
+    "AdaptiveStrategy",
+    "PerformanceAwareStrategy",
     # ストレージ
     "CacheStorage",
     # メインクラス

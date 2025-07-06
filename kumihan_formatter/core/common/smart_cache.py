@@ -15,13 +15,16 @@ from kumihan_formatter.core.caching import (
 import warnings
 
 # 互換性のための再エクスポート
-from ..caching import (
+from ..caching import (  # noqa: F401
+    AdaptiveStrategy,
     CacheEntry,
     CacheStorage,
     CacheStrategy,
     LFUStrategy,
     LRUStrategy,
+    PerformanceAwareStrategy,
     SmartCache,
+    TTLStrategy,
 )
 
 warnings.warn(

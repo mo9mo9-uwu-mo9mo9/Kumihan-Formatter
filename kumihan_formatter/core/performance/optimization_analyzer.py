@@ -6,16 +6,14 @@ Issue #402対応 - パフォーマンス最適化
 """
 
 import json
-import math
 import statistics
-import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from ..performance import get_global_monitor
-from .benchmark import BenchmarkConfig, BenchmarkResult, PerformanceBenchmarkSuite
+from .benchmark import BenchmarkConfig, PerformanceBenchmarkSuite
 from .memory_monitor import MemoryMonitor
 from .profiler import AdvancedProfiler
 

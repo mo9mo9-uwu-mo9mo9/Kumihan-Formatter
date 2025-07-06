@@ -8,16 +8,13 @@ Issue #402対応 - パフォーマンス最適化
 import cProfile
 import io
 import pstats
-import sys
 import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TypeVar
-
-from ..performance import PerformanceReport, get_global_monitor
+from typing import Any, Callable, Dict, List, Optional
 
 
 @dataclass
@@ -499,7 +496,7 @@ class AdvancedProfiler:
         if self._memory_tracker:
             try:
                 return self._memory_tracker.memory_info().rss
-            except:
+            except Exception:
                 return None
         return None
 

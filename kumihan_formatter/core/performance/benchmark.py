@@ -10,12 +10,12 @@ import statistics
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
 from ..caching.render_cache import RenderCache
-from ..performance import BenchmarkSuite, get_global_monitor
+from ..performance import get_global_monitor
 from .memory_monitor import MemoryMonitor
 from .profiler import AdvancedProfiler
 

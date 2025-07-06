@@ -6,12 +6,11 @@ Issue #402対応 - パフォーマンス最適化
 """
 
 import hashlib
-import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from ..ast_nodes import ASTNode
+from ..ast_nodes import Node
 from ..performance import get_global_monitor
 from .cache_strategies import PerformanceAwareStrategy
 from .smart_cache import SmartCache
@@ -59,7 +58,7 @@ class ParseCache(SmartCache):
         self,
         source_content: str,
         parse_options: Optional[Dict[str, Any]] = None,
-    ) -> Optional[List[ASTNode]]:
+    ) -> Optional[List[Node]]:
         """パース結果をキャッシュから取得
 
         Args:
@@ -67,7 +66,7 @@ class ParseCache(SmartCache):
             parse_options: パースオプション
 
         Returns:
-            パース結果のASTノードリスト
+            パース結果のNodeリスト
         """
         # キャッシュキーを生成
         cache_key = self._generate_parse_cache_key(source_content, parse_options)
@@ -85,7 +84,7 @@ class ParseCache(SmartCache):
     def cache_parsed_ast(
         self,
         source_content: str,
-        ast_nodes: List[ASTNode],
+        ast_nodes: List[Node],
         parse_options: Optional[Dict[str, Any]] = None,
         parse_time: float = 0.0,
     ) -> None:
@@ -93,7 +92,7 @@ class ParseCache(SmartCache):
 
         Args:
             source_content: ソースコンテンツ
-            ast_nodes: パース結果のASTノード
+            ast_nodes: パース結果のNodeリスト
             parse_options: パースオプション
             parse_time: パースにかかった時間
         """
@@ -120,7 +119,7 @@ class ParseCache(SmartCache):
         source_content: str,
         parse_func: callable,
         parse_options: Optional[Dict[str, Any]] = None,
-    ) -> List[ASTNode]:
+    ) -> List[Node]:
         """キャッシュから取得または新規パース
 
         Args:
@@ -129,7 +128,7 @@ class ParseCache(SmartCache):
             parse_options: パースオプション
 
         Returns:
-            パース結果のASTノード
+            パース結果のNodeリスト
         """
         # キャッシュから取得を試行
         cached_result = self.get_parsed_ast(source_content, parse_options)
