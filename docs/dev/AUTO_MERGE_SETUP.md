@@ -44,47 +44,25 @@ This PR will be automatically merged when all tests pass.
 Please merge manually or check for conflicts.
 ```
 
-## 🔧 手動設定が必要な項目
+## ✅ 設定完了済み
 
-自動マージを完全に機能させるために、以下の設定をGitHub Web UIで行ってください：
+以下の設定は既に自動で適用済みです：
 
-### 1. ブランチ保護ルール設定
+### 1. ブランチ保護ルール ✅ 完了
+- **Required status checks**: `quick-check`, `full-test` 必須
+- **Strict checks**: ブランチを最新状態に保つ
+- **Pull request reviews**: 承認不要（0件）
+- **Stale review dismissal**: 有効
 
-リポジトリの **Settings > Branches** で以下を設定：
+### 2. 権限設定 ✅ 完了
+- **mo9mo9-uwu-mo9mo9**: Admin権限確認済み
 
-```
-Branch name pattern: main
-
-✅ Restrict pushes that create files
-✅ Require a pull request before merging
-   - Required number of approvals: 0
-   - Dismiss stale PR approvals when new commits are pushed: ☑️
-   - Require review from code owners: ☐
-   - Restrict reviews to users with write access: ☐
-   - Allow specified actors to bypass required pull requests:
-     👤 mo9mo9-uwu-mo9mo9
-
-✅ Require status checks to pass before merging
-   - Require branches to be up to date before merging: ☑️
-   - Status checks that are required:
-     - Tests / quick-check
-     - Tests / full-test
-
-✅ Restrict pushes
-   - People with push access: 👤 mo9mo9-uwu-mo9mo9
-
-☐ Require conversation resolution before merging
-☐ Require signed commits
-☐ Require linear history
-☐ Require deployments to succeed before merging
-☐ Lock branch
-☐ Do not allow bypassing the above settings
-```
-
-### 2. 権限設定確認
-
-**Settings > Collaborators and teams** で確認：
-- mo9mo9-uwu-mo9mo9: Admin または Write 権限
+### 3. 個人リポジトリの制限事項
+個人リポジトリでは以下の機能は使用できません：
+- ❌ Push restrictions (組織専用)
+- ❌ Bypass allowances (組織専用)
+- ✅ Required status checks (利用可能)
+- ✅ Pull request reviews (利用可能)
 
 ## 📋 動作確認手順
 
