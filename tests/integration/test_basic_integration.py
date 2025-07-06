@@ -10,9 +10,13 @@ def test_cli_help():
         [sys.executable, "-m", "kumihan_formatter", "--help"],
         capture_output=True,
         text=True,
+        encoding="utf-8",  # Windows環境対応のためエンコーディングを明示的に指定
     )
     assert result.returncode == 0
-    assert "Usage:" in result.stdout or "使い方:" in result.stdout
+    stdout = result.stdout or ""
+    stderr = result.stderr or ""
+    output = stdout + stderr
+    assert "Usage:" in output or "使い方:" in output
 
 
 def test_cli_sample_command():
@@ -21,6 +25,10 @@ def test_cli_sample_command():
         [sys.executable, "-m", "kumihan_formatter", "generate-sample", "--help"],
         capture_output=True,
         text=True,
+        encoding="utf-8",  # Windows環境対応のためエンコーディングを明示的に指定
     )
     assert result.returncode == 0
-    assert "Usage:" in result.stdout or "使い方:" in result.stdout
+    stdout = result.stdout or ""
+    stderr = result.stderr or ""
+    output = stdout + stderr
+    assert "Usage:" in output or "使い方:" in output

@@ -54,7 +54,7 @@ Kumihan-Formatter への貢献ガイドライン
    ```bash
    # 作業中ラベル付与
    gh issue edit {ISSUE_NUMBER} --add-label "作業中"
-   
+
    # ブランチ作成
    git checkout -b fix/issue-{番号}-{概要}
    # または
@@ -70,10 +70,10 @@ Kumihan-Formatter への貢献ガイドライン
    git add .
    git commit -m "fix: Issue #XXX の概要"
    git push -u origin ブランチ名
-   
+
    # PR作成
    gh pr create --title "タイトル" --body "Closes #XXX"
-   
+
    # レビュー・マージ
    # Issue完了報告・クローズ
    ```
@@ -84,7 +84,7 @@ Kumihan-Formatter への貢献ガイドライン
 
 #### 小規模変更（直接mainブランチOK）
 - **条件**: タイポ修正、簡単なドキュメント更新、1ファイル・数行程度の変更
-- **手順**: 
+- **手順**:
   ```bash
   # mainブランチで直接作業
   git checkout main
@@ -167,7 +167,75 @@ EOF
 
 ## 🧪 テスト・リンター
 
-**詳細な品質管理ガイド**: [QUALITY_GUIDE.md](docs/dev/QUALITY_GUIDE.md) を参照
+### 💡 最低限のチェック項目（必須）
+
+**コミット前に必ず実行してください:**
+
+```bash
+# 1. コードフォーマット
+black .
+
+# 2. インポート整理
+isort .
+
+# 3. 基本的な構文チェック
+flake8 --select=E9,F63,F7,F82 .
+
+# 4. 軽量テストチェック
+python -m pytest -x --ff -q tests/
+```
+
+### ⚡ 軽量チェック（推奨）
+
+```bash
+# pre-commitフックを使用（軽量版）
+pre-commit run
+
+# または手動で軽量チェック
+make check
+```
+
+### 🚀 フルチェック（PR前推奨）
+
+```bash
+# 重いチェックも含む（PR作成前に実行）
+SKIP=heavy-checks pre-commit run --all-files
+
+# またはフルテストスイート
+make test-full
+```
+
+### 📊 段階的チェック体制（Issue #371対応）
+
+**push時（軽量）**:
+- ✅ flake8基本チェック
+- ✅ black/isortフォーマット
+- ✅ 高速テスト（fail-fast）
+
+**PR時（フル）**:
+- ✅ 全OS・Python版でのテスト
+- ✅ カバレッジ計測
+- ✅ アーキテクチャ原則チェック
+- ✅ 複雑度・ファイルサイズチェック
+
+### 🔧 開発者向けコマンド
+
+```bash
+# 基本的な開発サイクル
+make format      # フォーマット適用
+make lint        # 軽量チェック
+make test        # テスト実行
+
+# 高度なチェック
+make coverage    # カバレッジ付きテスト
+make pre-commit  # コミット前フルチェック
+```
+
+### ⚠️ CI失敗時の対処
+
+1. **ローカルで再現**: `make test-full`
+2. **段階的修正**: 軽量チェック → フルチェック
+3. **ヘルプ**: Issue作成またはDiscussion利用
 
 ### ドキュメント更新
 - 変更内容は `CHANGELOG.md` に記録
