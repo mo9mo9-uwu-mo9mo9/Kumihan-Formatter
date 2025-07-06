@@ -12,6 +12,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+from ...utilities.logger import get_logger
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
 from ..caching.render_cache import RenderCache
@@ -66,13 +67,21 @@ class PerformanceBenchmarkSuite:
         Args:
             config: ベンチマーク設定
         """
+        self.logger = get_logger(__name__)
         self.config = config or BenchmarkConfig()
+        self.logger.info(
+            f"PerformanceBenchmarkSuite初期化: iterations={self.config.iterations}, warmup={self.config.warmup_iterations}"
+        )
 
         # パフォーマンス測定ツール
         self.monitor = get_global_monitor()
         self.profiler = AdvancedProfiler() if self.config.enable_profiling else None
         self.memory_monitor = (
             MemoryMonitor() if self.config.enable_memory_monitoring else None
+        )
+
+        self.logger.debug(
+            f"profiling={self.config.enable_profiling}, memory_monitoring={self.config.enable_memory_monitoring}"
         )
 
         # キャッシュシステム
@@ -88,33 +97,42 @@ class PerformanceBenchmarkSuite:
         if self.config.baseline_file and self.config.baseline_file.exists():
             self.load_baseline(self.config.baseline_file)
 
+        self.logger.info("PerformanceBenchmarkSuite初期化完了")
+
     def run_full_benchmark_suite(self) -> Dict[str, Any]:
         """完全なベンチマークスイートを実行"""
+        self.logger.info("ベンチマークスイート実行開始")
         print("🚀 Starting Performance Benchmark Suite...")
         print("=" * 60)
 
         # メモリ監視開始
         if self.memory_monitor:
             self.memory_monitor.start_monitoring()
+            self.logger.debug("メモリ監視開始")
 
         try:
             # 1. ファイル読み込みベンチマーク
+            self.logger.info("ファイル読み込みベンチマーク開始")
             print("\n📁 File Reading Benchmarks:")
             self._run_file_benchmarks()
 
             # 2. パースベンチマーク
+            self.logger.info("パースベンチマーク開始")
             print("\n🔍 Parsing Benchmarks:")
             self._run_parse_benchmarks()
 
             # 3. レンダリングベンチマーク
+            self.logger.info("レンダリングベンチマーク開始")
             print("\n🎨 Rendering Benchmarks:")
             self._run_render_benchmarks()
 
             # 4. 統合ベンチマーク
+            self.logger.info("エンドツーエンドベンチマーク開始")
             print("\n🔄 End-to-End Benchmarks:")
             self._run_e2e_benchmarks()
 
             # 5. キャッシュパフォーマンステスト
+            self.logger.info("キャッシュパフォーマンステスト開始")
             print("\n💾 Cache Performance Tests:")
             self._run_cache_benchmarks()
 
@@ -122,9 +140,13 @@ class PerformanceBenchmarkSuite:
             # メモリ監視停止
             if self.memory_monitor:
                 self.memory_monitor.stop_monitoring()
+                self.logger.debug("メモリ監視停止")
 
         # 結果分析
         analysis = self._analyze_results()
+        self.logger.info(
+            f"ベンチマークスイート完了: {len(self.results)}個のベンチマークを実行"
+        )
 
         print("\n📊 Benchmark Complete!")
         print("=" * 60)
@@ -134,8 +156,11 @@ class PerformanceBenchmarkSuite:
     def run_regression_test(self) -> Dict[str, Any]:
         """パフォーマンス回帰テストを実行"""
         if not self.baseline_results:
-            return {"error": "No baseline results available for regression testing"}
+            error_msg = "No baseline results available for regression testing"
+            self.logger.error(error_msg)
+            return {"error": error_msg}
 
+        self.logger.info("パフォーマンス回帰テスト開始")
         print("🔍 Running Performance Regression Tests...")
 
         # 主要ベンチマークを実行
@@ -152,6 +177,9 @@ class PerformanceBenchmarkSuite:
 
         # 回帰分析
         regression_analysis = self._analyze_regression(current_results)
+        self.logger.info(
+            f"回帰テスト完了: {len(regression_analysis.get('regressions_detected', []))}個の回帰を検出"
+        )
 
         return regression_analysis
 
@@ -162,6 +190,7 @@ class PerformanceBenchmarkSuite:
             output_file: 保存先ファイル
         """
         if not self.results:
+            self.logger.warning("保存するベンチマーク結果がありません")
             print("⚠️  No results to save as baseline")
             return
 
@@ -171,11 +200,16 @@ class PerformanceBenchmarkSuite:
             "results": {result.name: asdict(result) for result in self.results},
         }
 
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(baseline_data, f, indent=2, ensure_ascii=False)
+        try:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_file, "w", encoding="utf-8") as f:
+                json.dump(baseline_data, f, indent=2, ensure_ascii=False)
 
-        print(f"💾 Baseline saved to: {output_file}")
+            self.logger.info(f"ベースライン保存完了: {output_file}")
+            print(f"💾 Baseline saved to: {output_file}")
+        except Exception as e:
+            self.logger.error(f"ベースライン保存エラー: {e}")
+            raise
 
     def load_baseline(self, baseline_file: Path):
         """ベースライン結果を読み込み
@@ -191,9 +225,13 @@ class PerformanceBenchmarkSuite:
             for name, result_data in baseline_data["results"].items():
                 self.baseline_results[name] = BenchmarkResult(**result_data)
 
+            self.logger.info(
+                f"ベースライン読み込み完了: {baseline_file}, {len(self.baseline_results)}個の結果"
+            )
             print(f"📥 Baseline loaded from: {baseline_file}")
 
         except Exception as e:
+            self.logger.error(f"ベースライン読み込みエラー: {e}")
             print(f"⚠️  Failed to load baseline: {e}")
 
     def _run_file_benchmarks(self):
@@ -377,8 +415,12 @@ class PerformanceBenchmarkSuite:
     def _run_benchmark(self, name: str, func: Callable) -> BenchmarkResult:
         """ベンチマークを実行"""
         # ウォームアップ
-        for _ in range(self.config.warmup_iterations):
+        self.logger.debug(f"ウォームアップ開始: {self.config.warmup_iterations}回")
+        for i in range(self.config.warmup_iterations):
             func()
+            self.logger.debug(
+                f"ウォームアップ {i+1}/{self.config.warmup_iterations} 完了"
+            )
 
         # メモリ監視開始
         start_memory = None
@@ -392,12 +434,17 @@ class PerformanceBenchmarkSuite:
             profiler_context.__enter__()
 
         # 実際の測定
+        self.logger.debug(f"ベンチマーク測定開始: {self.config.iterations}回")
         times = []
         for i in range(self.config.iterations):
             start_time = time.perf_counter()
             func()
             end_time = time.perf_counter()
-            times.append(end_time - start_time)
+            execution_time = end_time - start_time
+            times.append(execution_time)
+            self.logger.debug(
+                f"ベンチマーク {i+1}/{self.config.iterations}: {execution_time:.4f}s"
+            )
 
         # プロファイリング終了
         if self.profiler:
@@ -434,7 +481,7 @@ class PerformanceBenchmarkSuite:
         if self.render_cache:
             cache_stats["render_cache"] = self.render_cache.get_render_statistics()
 
-        return BenchmarkResult(
+        result = BenchmarkResult(
             name=name,
             iterations=self.config.iterations,
             total_time=total_time,
@@ -445,6 +492,13 @@ class PerformanceBenchmarkSuite:
             memory_usage=memory_usage,
             cache_stats=cache_stats,
         )
+
+        self.logger.info(
+            f"ベンチマーク完了: {name}, 平均: {avg_time:.4f}s, "
+            f"最小: {min_time:.4f}s, 最大: {max_time:.4f}s"
+        )
+
+        return result
 
     def _analyze_results(self) -> Dict[str, Any]:
         """結果を分析"""

@@ -16,6 +16,8 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+from ...utilities.logger import get_logger
+
 
 @dataclass
 class FunctionProfile:
@@ -71,10 +73,17 @@ class AdvancedProfiler:
         Args:
             enable_memory_tracking: メモリ追跡を有効にするか
         """
+        self.logger = get_logger(__name__)
+        self.logger.info(
+            f"AdvancedProfiler初期化開始: memory_tracking={enable_memory_tracking}"
+        )
+
         self.enable_memory_tracking = enable_memory_tracking
         self.sessions: Dict[str, ProfilingSession] = {}
         self.active_sessions: Dict[str, ProfilingSession] = {}
         self._lock = threading.Lock()
+
+        self.logger.debug("プロファイラー初期化完了")
 
         # メモリ追跡用
         self._memory_tracker = None
@@ -83,8 +92,9 @@ class AdvancedProfiler:
                 import psutil
 
                 self._memory_tracker = psutil.Process()
+                self.logger.info("メモリ追跡機能を有効化")
             except ImportError:
-                pass
+                self.logger.warning("psutilが利用できないため、メモリ追跡機能を無効化")
 
     @contextmanager
     def profile_session(self, session_name: str):
@@ -93,39 +103,52 @@ class AdvancedProfiler:
         Args:
             session_name: セッション名
         """
+        self.logger.info(f"プロファイリングセッション開始: {session_name}")
         session = self._start_session(session_name)
         profiler = cProfile.Profile()
 
         try:
             if self._memory_tracker:
-                session.memory_snapshots.append(
-                    {
+                try:
+                    memory_info = {
                         "timestamp": time.perf_counter(),
                         "memory_mb": self._memory_tracker.memory_info().rss
                         / 1024
                         / 1024,
                         "cpu_percent": self._memory_tracker.cpu_percent(),
                     }
-                )
+                    session.memory_snapshots.append(memory_info)
+                    self.logger.debug(
+                        f"メモリスナップショット記録: {memory_info['memory_mb']:.1f}MB"
+                    )
+                except Exception as e:
+                    self.logger.error(f"メモリ情報取得エラー: {e}")
 
             profiler.enable()
             yield session
 
         finally:
             profiler.disable()
+            self.logger.debug(f"プロファイリング測定終了: {session_name}")
 
             if self._memory_tracker:
-                session.memory_snapshots.append(
-                    {
+                try:
+                    final_memory_info = {
                         "timestamp": time.perf_counter(),
                         "memory_mb": self._memory_tracker.memory_info().rss
                         / 1024
                         / 1024,
                         "cpu_percent": self._memory_tracker.cpu_percent(),
                     }
-                )
+                    session.memory_snapshots.append(final_memory_info)
+                    self.logger.debug(
+                        f"最終メモリスナップショット: {final_memory_info['memory_mb']:.1f}MB"
+                    )
+                except Exception as e:
+                    self.logger.error(f"最終メモリ情報取得エラー: {e}")
 
             self._end_session(session_name, profiler)
+            self.logger.info(f"プロファイリングセッション完了: {session_name}")
 
     def profile_function(self, func_name: Optional[str] = None):
         """関数プロファイリング用デコレーター
@@ -176,8 +199,14 @@ class AdvancedProfiler:
         Returns:
             分析結果
         """
+        self.logger.info(
+            f"ボトルネック分析開始: session={session_name}, threshold={threshold_percent}%"
+        )
+
         if session_name not in self.sessions:
-            return {"error": f"Session '{session_name}' not found"}
+            error_msg = f"Session '{session_name}' not found"
+            self.logger.error(error_msg)
+            return {"error": error_msg}
 
         session = self.sessions[session_name]
 
@@ -195,21 +224,21 @@ class AdvancedProfiler:
             if func.total_time > 0:
                 percent = (func.total_time / total_time) * 100
                 if percent >= threshold_percent:
-                    bottlenecks.append(
-                        {
-                            "function": func.name,
-                            "module": func.module,
-                            "time_percent": percent,
-                            "total_time": func.total_time,
-                            "avg_time": func.avg_time,
-                            "calls": func.calls,
-                        }
-                    )
+                    bottleneck_info = {
+                        "function": func.name,
+                        "module": func.module,
+                        "time_percent": percent,
+                        "total_time": func.total_time,
+                        "avg_time": func.avg_time,
+                        "calls": func.calls,
+                    }
+                    bottlenecks.append(bottleneck_info)
+                    self.logger.debug(f"ボトルネック検出: {func.name} ({percent:.1f}%)")
 
         # メモリ使用量の分析
         memory_analysis = self._analyze_memory_usage(session)
 
-        return {
+        result = {
             "session": session_name,
             "total_time": total_time,
             "total_calls": session.total_calls,
@@ -218,6 +247,11 @@ class AdvancedProfiler:
             "top_functions": bottlenecks[:10],
             "performance_warnings": self._generate_performance_warnings(session),
         }
+
+        self.logger.info(
+            f"ボトルネック分析完了: {len(bottlenecks)}個のボトルネック検出"
+        )
+        return result
 
     def generate_performance_report(self, session_name: str) -> str:
         """パフォーマンスレポートを生成
@@ -441,7 +475,8 @@ class AdvancedProfiler:
                             session.function_profiles[func_name] = profile
                             session.total_calls += ncalls
 
-                    except (ValueError, IndexError):
+                    except (ValueError, IndexError) as e:
+                        self.logger.debug(f"プロファイル結果解析エラー: {e}")
                         continue
 
     def _analyze_memory_usage(
@@ -495,8 +530,13 @@ class AdvancedProfiler:
         """現在のメモリ使用量を取得"""
         if self._memory_tracker:
             try:
-                return self._memory_tracker.memory_info().rss
-            except Exception:
+                memory_usage = self._memory_tracker.memory_info().rss
+                self.logger.debug(
+                    f"メモリ使用量取得: {memory_usage / 1024 / 1024:.1f}MB"
+                )
+                return memory_usage
+            except Exception as e:
+                self.logger.error(f"メモリ使用量取得エラー: {e}")
                 return None
         return None
 
@@ -525,9 +565,15 @@ class AdvancedProfiler:
     def clear_sessions(self):
         """全セッションをクリア"""
         with self._lock:
+            session_count = len(self.sessions)
             self.sessions.clear()
             self.active_sessions.clear()
+            self.logger.info(
+                f"全セッションクリア完了: {session_count}個のセッションを削除"
+            )
 
     def get_session_names(self) -> List[str]:
         """セッション名のリストを取得"""
-        return list(self.sessions.keys())
+        session_names = list(self.sessions.keys())
+        self.logger.debug(f"セッション名取得: {len(session_names)}個のセッション")
+        return session_names

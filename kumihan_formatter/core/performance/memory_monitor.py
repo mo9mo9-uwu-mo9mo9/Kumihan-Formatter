@@ -13,6 +13,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from ...utilities.logger import get_logger
+
 try:
     import psutil
 
@@ -94,6 +96,11 @@ class MemoryMonitor:
             leak_detection_threshold: リーク検出の閾値
             enable_object_tracking: オブジェクト追跡を有効にするか
         """
+        self.logger = get_logger(__name__)
+        self.logger.info(
+            f"MemoryMonitor初期化開始: interval={sampling_interval}s, max_snapshots={max_snapshots}"
+        )
+
         self.sampling_interval = sampling_interval
         self.max_snapshots = max_snapshots
         self.leak_detection_threshold = leak_detection_threshold
@@ -130,20 +137,33 @@ class MemoryMonitor:
             "gc_forced": 0,
         }
 
+        self.logger.info(
+            f"MemoryMonitor初期化完了: object_tracking={enable_object_tracking}"
+        )
+
     def start_monitoring(self):
         """メモリ監視を開始"""
         if self._monitoring:
+            self.logger.warning("メモリ監視は既に開始されています")
             return
 
+        self.logger.info("メモリ監視を開始")
         self._monitoring = True
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()
+        self.logger.debug("メモリ監視スレッド開始完了")
 
     def stop_monitoring(self):
         """メモリ監視を停止"""
+        if not self._monitoring:
+            self.logger.warning("メモリ監視は既に停止されています")
+            return
+
+        self.logger.info("メモリ監視を停止")
         self._monitoring = False
         if self._monitor_thread and self._monitor_thread.is_alive():
             self._monitor_thread.join(timeout=5)
+            self.logger.debug("メモリ監視スレッド停止完了")
 
     def take_snapshot(self) -> MemorySnapshot:
         """手動でメモリスナップショットを取得"""
@@ -151,12 +171,20 @@ class MemoryMonitor:
 
         # システムメモリ情報
         if HAS_PSUTIL:
-            memory = psutil.virtual_memory()
-            process = psutil.Process()
-            total_memory = memory.total
-            available_memory = memory.available
-            process_memory = process.memory_info().rss
+            try:
+                memory = psutil.virtual_memory()
+                process = psutil.Process()
+                total_memory = memory.total
+                available_memory = memory.available
+                process_memory = process.memory_info().rss
+                self.logger.debug(
+                    f"メモリ情報取得: process={process_memory/1024/1024:.1f}MB, available={available_memory/1024/1024:.1f}MB"
+                )
+            except Exception as e:
+                self.logger.error(f"システムメモリ情報取得エラー: {e}")
+                total_memory = available_memory = process_memory = 0
         else:
+            self.logger.debug("psutil未利用のためメモリ情報は0")
             total_memory = 0
             available_memory = 0
             process_memory = 0
@@ -193,9 +221,17 @@ class MemoryMonitor:
         with self._lock:
             self.snapshots.append(snapshot)
             if len(self.snapshots) > self.max_snapshots:
-                self.snapshots.pop(0)
+                removed_snapshot = self.snapshots.pop(0)
+                self.logger.debug(
+                    f"古いスナップショット削除: {len(self.snapshots)}/{self.max_snapshots}"
+                )
 
             self.stats["total_snapshots"] += 1
+
+            if self.stats["total_snapshots"] % 10 == 0:
+                self.logger.debug(
+                    f"メモリスナップショット数: {self.stats['total_snapshots']}"
+                )
 
         # リーク検出
         self._detect_memory_leaks(snapshot)
@@ -213,12 +249,16 @@ class MemoryMonitor:
             obj_type: オブジェクトタイプ名
         """
         if not self.enable_object_tracking:
+            self.logger.debug(f"オブジェクト追跡無効のため登録スキップ: {obj_type}")
             return
 
         with self._lock:
             # WeakReferenceを使用してオブジェクトを追跡
             weak_ref = weakref.ref(obj)
             self.weak_refs[obj_type].append(weak_ref)
+            self.logger.debug(
+                f"オブジェクト登録: {obj_type} (合計: {len(self.weak_refs[obj_type])}個)"
+            )
 
     def get_memory_usage(self) -> Dict[str, Any]:
         """現在のメモリ使用量を取得"""
@@ -315,17 +355,21 @@ class MemoryMonitor:
 
     def force_garbage_collection(self) -> Dict[str, Any]:
         """ガベージコレクションを強制実行"""
+        self.logger.info("ガベージコレクション強制実行開始")
         before_snapshot = self.take_snapshot()
 
         # ガベージコレクションを実行
         collected = gc.collect()
+        self.logger.info(
+            f"ガベージコレクション実行完了: {collected}個のオブジェクトを回収"
+        )
 
         after_snapshot = self.take_snapshot()
 
         with self._lock:
             self.stats["gc_forced"] += 1
 
-        return {
+        result = {
             "objects_collected": collected,
             "memory_before_mb": before_snapshot.memory_mb,
             "memory_after_mb": after_snapshot.memory_mb,
@@ -333,6 +377,12 @@ class MemoryMonitor:
             "gc_objects_before": before_snapshot.gc_objects,
             "gc_objects_after": after_snapshot.gc_objects,
         }
+
+        self.logger.info(
+            f"GC結果: {result['memory_freed_mb']:.1f}MB解放, "
+            f"{result['gc_objects_before'] - result['gc_objects_after']}個のオブジェクト削減"
+        )
+        return result
 
     def optimize_memory_settings(self) -> Dict[str, Any]:
         """メモリ設定を最適化"""
@@ -441,7 +491,7 @@ class MemoryMonitor:
                 time.sleep(self.sampling_interval)
             except Exception as e:
                 # エラーが発生してもモニタリングを継続
-                print(f"Memory monitoring error: {e}")
+                self.logger.error(f"メモリ監視エラー: {e}")
                 time.sleep(self.sampling_interval)
 
     def _detect_memory_leaks(self, snapshot: MemorySnapshot):
@@ -493,6 +543,10 @@ class MemoryMonitor:
                 leak.severity = self._calculate_leak_severity(leak)
 
                 self.detected_leaks[obj_type] = leak
+                self.logger.warning(
+                    f"新しいメモリリーク検出: {obj_type}, 増加数: {count_increase}, "
+                    f"深刻度: {leak.severity}"
+                )
 
                 with self._lock:
                     self.stats["leaks_detected"] += 1
@@ -553,8 +607,13 @@ class MemoryMonitor:
         with self._lock:
             self.stats["alerts_triggered"] += 1
 
-        # ここでアラート処理を実装（ログ出力、通知など）
-        print(f"MEMORY ALERT [{level.upper()}]: {message}")
+        # ログレベルに応じた適切なログ出力
+        if level == "critical":
+            self.logger.critical(f"メモリアラート: {message}")
+        elif level == "warning":
+            self.logger.warning(f"メモリアラート: {message}")
+        else:
+            self.logger.info(f"メモリアラート: {message}")
 
     def _cleanup_weak_refs(self):
         """無効になったWeakReferenceをクリーンアップ"""
@@ -572,6 +631,9 @@ class MemoryMonitor:
     def clear_data(self):
         """全データをクリア"""
         with self._lock:
+            snapshot_count = len(self.snapshots)
+            leak_count = len(self.detected_leaks)
+
             self.snapshots.clear()
             self.detected_leaks.clear()
             self.object_counts.clear()
@@ -583,3 +645,8 @@ class MemoryMonitor:
                 "alerts_triggered": 0,
                 "gc_forced": 0,
             }
+
+            self.logger.info(
+                f"メモリモニターデータクリア完了: {snapshot_count}個のスナップショット, "
+                f"{leak_count}個のリーク情報を削除"
+            )
