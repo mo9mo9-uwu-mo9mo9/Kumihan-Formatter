@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ...utilities.logger import get_logger
 from ..performance import get_global_monitor
 from .cache_strategies import AdaptiveStrategy
 from .smart_cache import SmartCache
@@ -41,6 +42,11 @@ class RenderCache(SmartCache):
             max_entries: 最大エントリ数
             default_ttl: デフォルト有効期限（秒）
         """
+        self.logger = get_logger(__name__)
+        self.logger.info(
+            f"RenderCache初期化開始: max_memory={max_memory_mb}MB, max_entries={max_entries}, ttl={default_ttl}s"
+        )
+
         super().__init__(
             name="render_cache",
             max_memory_entries=max_entries,
@@ -56,6 +62,8 @@ class RenderCache(SmartCache):
 
         # 設定ハッシュ（設定変更検知用）
         self._config_hash: Optional[str] = None
+
+        self.logger.debug(f"RenderCache初期化完了: cache_dir={cache_dir}")
 
     def get_rendered_html(
         self,
@@ -73,6 +81,10 @@ class RenderCache(SmartCache):
         Returns:
             キャッシュされたHTML文字列
         """
+        self.logger.debug(
+            f"レンダリングキャッシュ取得要求: content_hash={content_hash[:8]}..., template={template_name}"
+        )
+
         # キャッシュキーを生成
         cache_key = self._generate_render_cache_key(
             content_hash, template_name, render_options

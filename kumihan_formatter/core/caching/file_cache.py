@@ -9,6 +9,7 @@ import hashlib
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from ...utilities.logger import get_logger
 from ..performance import get_global_monitor
 from .cache_strategies import AdaptiveStrategy
 from .smart_cache import SmartCache
@@ -39,6 +40,11 @@ class FileCache(SmartCache):
             max_entries: 最大エントリ数
             default_ttl: デフォルト有効期限（秒）
         """
+        self.logger = get_logger(__name__)
+        self.logger.info(
+            f"FileCache初期化開始: max_memory={max_memory_mb}MB, max_entries={max_entries}, ttl={default_ttl}s"
+        )
+
         super().__init__(
             name="file_cache",
             max_memory_entries=max_entries,
@@ -52,6 +58,8 @@ class FileCache(SmartCache):
         # ファイル情報のキャッシュ
         self._file_info: Dict[str, Dict[str, Any]] = {}
 
+        self.logger.debug(f"FileCache初期化完了: cache_dir={cache_dir}")
+
     def get_file_content(self, file_path: Path) -> Optional[str]:
         """ファイル内容をキャッシュから取得または読み込み
 
@@ -62,8 +70,10 @@ class FileCache(SmartCache):
             ファイル内容またはNone
         """
         file_path = Path(file_path)
+        self.logger.debug(f"ファイルコンテンツ取得要求: {file_path}")
 
         if not file_path.exists():
+            self.logger.warning(f"ファイルが存在しません: {file_path}")
             return None
 
         # ファイル情報を取得
