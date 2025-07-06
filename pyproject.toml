@@ -37,6 +37,7 @@ dev = [
     "psutil>=5.9",
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "pytest-timeout>=2.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -51,14 +52,32 @@ target-version = ['py39']
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v"
+minversion = "6.0"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=kumihan_formatter",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
 ]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "slow: Slow running tests",
+]
+# timeout = 300  # pytest-timeoutプラグインが必要
+log_cli = true
+log_cli_level = "INFO"
 
 [tool.coverage.run]
 source = ["kumihan_formatter"]
@@ -103,4 +122,3 @@ replace = 'version = "{new_version}"'
 filename = "kumihan_formatter/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
-

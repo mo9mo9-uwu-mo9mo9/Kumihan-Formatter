@@ -20,7 +20,7 @@ help:
 	@echo "  make quick-check- 最低限チェック（format+lint+test-quick）"
 	@echo ""
 	@echo "🔧 基本開発:"
-	@echo "  make test       - テスト実行（pytest）"
+	@echo "  make test       - テスト実行（pyproject.toml統一設定使用）"
 	@echo "  make lint       - リンター実行（コード品質チェック）"
 	@echo "  make format     - コードフォーマット実行"
 	@echo "  make check      - フォーマット・リンター確認のみ（変更なし）"
@@ -41,13 +41,13 @@ help:
 
 # テスト実行
 test:
-	@echo "=== テスト実行 ==="
-	$(PYTEST) -v
+	@echo "=== テスト実行（pyproject.tomlの統一設定使用）==="
+	$(PYTEST)
 
 # カバレッジ付きテスト実行
 coverage:
-	@echo "=== カバレッジ付きテスト実行 ==="
-	$(PYTEST) --cov=kumihan_formatter --cov-report=html --cov-report=term
+	@echo "=== カバレッジ付きテスト実行（pyproject.tomlの統一設定使用）==="
+	$(PYTEST)
 	@echo "HTMLレポートは htmlcov/index.html で確認できます"
 
 # 軽量テスト実行（Issue #371対応）
@@ -58,8 +58,8 @@ test-quick:
 
 # フルテスト実行（Issue #371対応）
 test-full:
-	@echo "=== フルテストスイート実行 ==="
-	$(PYTEST) --cov=kumihan_formatter --cov-report=term --cov-report=html -v
+	@echo "=== フルテストスイート実行（pyproject.tomlの統一設定使用）==="
+	$(PYTEST) -v
 	@echo "フルテスト完了 🚀"
 
 # リンター実行（チェックのみ）
@@ -106,7 +106,7 @@ clean:
 pre-commit: clean format lint
 	@echo "=== 🚀 コミット前品質チェック ==="
 	@echo "1. カバレッジ100%テスト実行..."
-	$(PYTEST) --cov=kumihan_formatter --cov-report=term --cov-fail-under=100 --cov-report=html
+	$(PYTEST) --cov-fail-under=100
 	@echo ""
 	@echo "🎉 品質チェック完了！"
 	@echo "✅ フォーマット: 適用済み"

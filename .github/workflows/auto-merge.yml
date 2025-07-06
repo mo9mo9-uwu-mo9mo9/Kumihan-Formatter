@@ -56,10 +56,21 @@ jobs:
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           echo "pr-number=${{ github.event.number }}" >> $GITHUB_OUTPUT
           echo "has-pr=true" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # 手動実行時は開いているPRを検索
+          PR_NUMBER=$(gh pr list --author mo9mo9-uwu-mo9mo9 --state open --json number --jq '.[0].number // empty')
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "has-pr=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-pr=false" >> $GITHUB_OUTPUT
+          fi
         else
           echo "pr-number=${{ steps.pr-info.outputs.pr-number }}" >> $GITHUB_OUTPUT
           echo "has-pr=${{ steps.pr-info.outputs.has-pr }}" >> $GITHUB_OUTPUT
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Wait for checks to complete
       if: steps.set-pr.outputs.has-pr == 'true'
