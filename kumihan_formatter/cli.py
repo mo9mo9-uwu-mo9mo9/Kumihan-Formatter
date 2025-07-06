@@ -170,9 +170,9 @@ def main() -> None:
     except Exception as e:
         # Handle other exceptions with friendly error handler
         from .core.error_handling import ErrorHandler as FriendlyErrorHandler
-        from .ui.console_ui import ui
+        from .ui.console_ui import get_console_ui
 
-        friendly_error_handler = FriendlyErrorHandler(console_ui=ui)
+        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
         error = friendly_error_handler.handle_exception(
             e, context={"operation": "CLI実行", "args": sys.argv}
         )
