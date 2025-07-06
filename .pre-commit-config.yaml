@@ -34,7 +34,8 @@ repos:
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--max-line-length=127, --extend-ignore=E203, --select=E9,F63,F7,F82]
+        args: ['--max-line-length=127', '--select=E9,F63,F7,F82']
+        files: ^(kumihan_formatter|tests)/.*\.py$
 
 # --- 軽量化設定（Issue #371対応）---
 # 以下のフックは重いため、CI実行時のみ有効化

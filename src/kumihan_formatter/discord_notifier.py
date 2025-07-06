@@ -1,4 +1,5 @@
 """Discord Webhook通知モジュール"""
+
 import json
 import time
 from typing import Any, Dict, Optional

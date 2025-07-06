@@ -61,7 +61,9 @@ class WindowsBuilder:
 
             print("✅ tkinter が利用可能です")
         except ImportError:
-            print("❌ tkinter が見つかりません（Pythonの標準ライブラリに含まれているはずです）")
+            print(
+                "❌ tkinter が見つかりません（Pythonの標準ライブラリに含まれているはずです）"
+            )
             return False
 
         return True
@@ -257,9 +259,15 @@ def main():
         description="Kumihan-Formatter Windows版ビルドスクリプト",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--clean", action="store_true", help="ビルド前にディレクトリをクリーンアップ")
-    parser.add_argument("--test", action="store_true", help="ビルド後に実行ファイルをテスト")
-    parser.add_argument("--upload", action="store_true", help="GitHub リリースにアップロード")
+    parser.add_argument(
+        "--clean", action="store_true", help="ビルド前にディレクトリをクリーンアップ"
+    )
+    parser.add_argument(
+        "--test", action="store_true", help="ビルド後に実行ファイルをテスト"
+    )
+    parser.add_argument(
+        "--upload", action="store_true", help="GitHub リリースにアップロード"
+    )
 
     args = parser.parse_args()
 
