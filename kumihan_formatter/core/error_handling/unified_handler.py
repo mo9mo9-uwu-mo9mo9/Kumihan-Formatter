@@ -5,14 +5,13 @@
 既存のerror_handlingとcommon/error_frameworkを統合。
 """
 
-import sys
 import traceback
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..common.error_framework import ErrorContext, ErrorSeverity
+from ..common.error_framework import ErrorContext
 from ..utilities.logger import get_logger
 from .error_factories import ErrorFactory
 from .error_types import ErrorCategory, ErrorLevel, UserFriendlyError
@@ -233,7 +232,7 @@ class UnifiedErrorHandler:
         self, exception: Union[IOError, OSError], context: Dict[str, Any]
     ) -> UserFriendlyError:
         """I/Oエラーの専用ハンドリング"""
-        file_path = context.get("file_path", "不明なファイル")
+        _ = context.get("file_path", "不明なファイル")
         operation = context.get("operation", "ファイル操作")
 
         return UserFriendlyError(

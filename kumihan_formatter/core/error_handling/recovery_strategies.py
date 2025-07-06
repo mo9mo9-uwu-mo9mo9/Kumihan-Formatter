@@ -5,15 +5,13 @@
 可能な限り処理を継続できるようにするシステム。
 """
 
-import os
 import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..utilities.logger import get_logger
-from .context_manager import ErrorContextManager
 from .error_types import ErrorCategory, UserFriendlyError
 
 

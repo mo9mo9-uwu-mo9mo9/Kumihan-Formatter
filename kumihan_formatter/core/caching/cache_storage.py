@@ -168,7 +168,7 @@ class CacheStorage:
             # 破損ファイルを削除
             try:
                 self._get_file_path(key).unlink(missing_ok=True)
-            except:
+            except Exception:
                 pass
             return None
 

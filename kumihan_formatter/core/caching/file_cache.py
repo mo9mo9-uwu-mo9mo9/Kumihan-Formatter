@@ -6,15 +6,12 @@ Issue #402対応 - パフォーマンス最適化
 """
 
 import hashlib
-import os
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ..performance import get_global_monitor
 from .cache_strategies import AdaptiveStrategy
 from .smart_cache import SmartCache
-
 
 class FileCache(SmartCache):
     """ファイル読み込み専用キャッシュ

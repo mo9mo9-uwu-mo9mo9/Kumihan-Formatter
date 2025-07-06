@@ -9,7 +9,8 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+<<<<<<< HEAD
+from typing import Any, Dict, List, Optional
 
 from ..performance import get_global_monitor
 from .cache_strategies import AdaptiveStrategy
