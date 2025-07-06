@@ -7,19 +7,30 @@ PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 PYTEST = $(VENV)/bin/pytest
 
-.PHONY: help test lint format check install clean coverage pre-commit lint-docs
+.PHONY: help test lint format check install clean coverage pre-commit lint-docs test-quick test-full quick-check
 
 # デフォルトターゲット：ヘルプ表示
 help:
 	@echo "Kumihan-Formatter - ローカル開発用コマンド"
 	@echo ""
 	@echo "利用可能なコマンド:"
+	@echo ""
+	@echo "🏃‍♂️ 軽量・高速（Issue #371対応）:"
+	@echo "  make test-quick - 軽量テスト実行（fail-fast）⚡"
+	@echo "  make quick-check- 最低限チェック（format+lint+test-quick）"
+	@echo ""
+	@echo "🔧 基本開発:"
 	@echo "  make test       - テスト実行（pytest）"
 	@echo "  make lint       - リンター実行（コード品質チェック）"
 	@echo "  make format     - コードフォーマット実行"
 	@echo "  make check      - フォーマット・リンター確認のみ（変更なし）"
+	@echo ""
+	@echo "🚀 高度・詳細:"
+	@echo "  make test-full  - フルテストスイート実行（カバレッジ付き）"
 	@echo "  make coverage   - カバレッジ付きテスト実行（HTMLレポート生成）"
 	@echo "  make pre-commit - 🚀 コミット前品質チェック（カバレッジ100%必須）"
+	@echo ""
+	@echo "🛠️ 環境・その他:"
 	@echo "  make lint-docs  - ドキュメントリンクチェック"
 	@echo "  make install    - 開発用依存関係インストール"
 	@echo "  make clean      - 一時ファイル・キャッシュ削除"
@@ -38,6 +49,18 @@ coverage:
 	@echo "=== カバレッジ付きテスト実行 ==="
 	$(PYTEST) --cov=kumihan_formatter --cov-report=html --cov-report=term
 	@echo "HTMLレポートは htmlcov/index.html で確認できます"
+
+# 軽量テスト実行（Issue #371対応）
+test-quick:
+	@echo "=== 軽量テスト実行（fail-fast）==="
+	$(PYTEST) -x --ff -q
+	@echo "軽量テスト完了 ⚡"
+
+# フルテスト実行（Issue #371対応）
+test-full:
+	@echo "=== フルテストスイート実行 ==="
+	$(PYTEST) --cov=kumihan_formatter --cov-report=term --cov-report=html -v
+	@echo "フルテスト完了 🚀"
 
 # リンター実行（チェックのみ）
 lint:
@@ -105,6 +128,11 @@ lint-docs:
 	@echo "   - CONTRIBUTING.md: $(shell test -f CONTRIBUTING.md && echo "✓ 存在" || echo "✗ 不存在")"
 	@echo "リンクチェック完了 ✓"
 	@echo "※ 詳細なリンク検証にはmarkdownlinkcheckを使用してください"
+
+# 軽量チェック（Issue #371対応）
+quick-check: format lint test-quick
+	@echo "=== 軽量チェック完了 ⚡ ==="
+	@echo "基本品質チェック完了 ✓"
 
 # 全体的な品質チェック（開発完了前の最終確認用）
 all: clean format test

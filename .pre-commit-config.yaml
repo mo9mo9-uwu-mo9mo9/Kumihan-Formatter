@@ -1,5 +1,6 @@
 # Kumihan-Formatter Pre-commit Hooks
-# アーキテクチャ原則の自動チェック - Issue #319対応
+# Issue #371対応: 段階的チェック体制
+# 必須フック（毎回実行）+ 推奨フック（CI時実行）
 
 repos:
   # 標準的な品質チェック
@@ -21,62 +22,84 @@ repos:
         language_version: python3
         args: [--line-length=88]
 
-  # Import整理 (一時的に無効化 - Issue #383 Windows権限テスト検証のため)
-  # - repo: https://github.com/pycqa/isort
-  #   rev: 6.0.1
-  #   hooks:
-  #     - id: isort
-  #       args: [--profile=black, --line-length=88]
+  # Import整理（必須フック）
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
 
-  # 基本的な構文チェック
+  # 基本的な構文チェック（必須フック）
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--max-line-length=127, --extend-ignore=E203]
+        args: [--max-line-length=127, --extend-ignore=E203, --select=E9,F63,F7,F82]
 
-  # Kumihan-Formatter 独自チェック
+# --- 軽量化設定（Issue #371対応）---
+# 以下のフックは重いため、CI実行時のみ有効化
+# ローカル開発では `SKIP=heavy-checks pre-commit run` で除外可能
+
+  # Kumihan-Formatter 推奨チェック（重いフック）
   - repo: local
     hooks:
-      # 🚀 コミット前品質チェック（テスト種別に応じた柔軟なチェック）
-      - id: pre-commit-quality
-        name: 🚀 コミット前品質チェック
+      # 軽量テストチェック（必須フック）
+      - id: quick-test
+        name: ⚡ 軽量テストチェック
         entry: bash
-        args: [-c, 'if [ "$(find tests/ -name "test_*.py" 2>/dev/null | wc -l)" -gt 0 ]; then echo "✓ テストファイルが見つかりました。基本チェックを実行します。"; make lint; else echo "⚠️  testsディレクトリにテストファイルが見つかりません。"; make lint; fi']
+        args: [-c, 'python -m pytest -x --ff -q tests/ || echo "⚠️ テスト失敗: 詳細はCIで確認してください"']
         language: system
         pass_filenames: false
         always_run: true
+        stages: [commit]
 
-      # アーキテクチャ原則チェック（テストファイル除外）
+      # アーキテクチャ原則チェック（推奨フック）
       - id: architecture-validator
-        name: アーキテクチャ原則チェック
+        name: 🏗️ アーキテクチャ原則チェック
         entry: python dev/tools/architecture_validator.py --fail-on-error
         language: python
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
         additional_dependencies: []
+        stages: [manual, pre-push]
+        alias: heavy-checks
 
-      # ファイルサイズ制限チェック（テストファイル除外）
+      # ファイルサイズ制限チェック（推奨フック）
       - id: file-size-limit
-        name: ファイルサイズ制限チェック (300行)
+        name: 📏 ファイルサイズ制限チェック (300行)
         entry: python dev/tools/check_file_size.py --max-lines=300 --warning-lines=240
         language: python
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
+        stages: [manual, pre-push]
+        alias: heavy-checks
 
-      # 複雑度チェック（テストファイル除外）
+      # 複雑度チェック（推奨フック）
       - id: complexity-check
-        name: 複雑度チェック
+        name: 🧠 複雑度チェック
         entry: python -m radon cc kumihan_formatter/ --min=B --show-complexity
         language: python
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
         additional_dependencies: [radon]
+        stages: [manual, pre-push]
+        alias: heavy-checks
+
+      # フルテスト（推奨フック）
+      - id: full-test
+        name: 🧪 フルテストスイート
+        entry: python -m pytest --cov=kumihan_formatter --cov-report=term-missing
+        language: python
+        pass_filenames: false
+        stages: [manual, pre-push]
+        alias: heavy-checks
 
       # 型チェック (将来的にmypy導入時)
       # - id: mypy
-      #   name: 型チェック
+      #   name: 🔍 型チェック
       #   entry: mypy
       #   language: python
       #   files: \.py$
       #   additional_dependencies: [mypy]
+      #   stages: [manual, pre-push]
+      #   alias: heavy-checks

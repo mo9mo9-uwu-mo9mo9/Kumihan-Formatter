@@ -8,7 +8,47 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  # 軽量チェック（push時）
+  quick-check:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Quick lint check
+      run: |
+        # 重要なエラーのみチェック
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Quick format check
+      run: |
+        black --check kumihan_formatter tests || true
+
+    - name: Fast test run
+      run: |
+        pytest -x --ff -q tests/
+
+  # フルチェック（PR時）
+  full-test:
+    if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -54,16 +94,15 @@ jobs:
           black --check kumihan_formatter
         fi
 
-    # 一時的に無効化 - Issue #383 Windows権限テスト検証のため
-    # - name: Import sort check with isort
-    #   shell: bash
-    #   run: |
-    #     if [ -d "tests" ]; then
-    #       isort --check-only kumihan_formatter tests
-    #     else
-    #       echo "tests directory not found, checking only kumihan_formatter"
-    #       isort --check-only kumihan_formatter
-    #     fi
+    - name: Import sort check with isort
+      shell: bash
+      run: |
+        if [ -d "tests" ]; then
+          isort --check-only kumihan_formatter tests
+        else
+          echo "tests directory not found, checking only kumihan_formatter"
+          isort --check-only kumihan_formatter
+        fi
 
     - name: Test with pytest
       shell: bash
