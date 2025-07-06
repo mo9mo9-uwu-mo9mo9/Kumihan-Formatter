@@ -5,6 +5,23 @@
 Issue #402対応 - パフォーマンス最適化とキャッシュシステム強化
 """
 
-# Empty init to avoid circular imports
-# Use kumihan_formatter.core.performance directly for imports
-__all__ = []
+
+# Mock implementation to avoid circular imports
+def get_global_monitor():
+    """グローバルモニターのモック実装"""
+
+    class MockMonitor:
+        def measure(self, name, **kwargs):
+            class MockContext:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    pass
+
+            return MockContext()
+
+    return MockMonitor()
+
+
+__all__ = ["get_global_monitor"]
