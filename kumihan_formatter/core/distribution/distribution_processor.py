@@ -19,7 +19,7 @@ class DistributionProcessor:
     責任: ファイルコピー・分類処理・統計生成
     """
 
-    def __init__(self, ui: Any | None = None) -> None:  # type: ignore
+    def __init__(self, ui: Any | None = None) -> None:
         """
         Args:
             ui: UIインスタンス（進捗表示用）

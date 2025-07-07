@@ -3,7 +3,7 @@
 CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツールです。
 
 ![バージョン](https://img.shields.io/badge/version-0.3.0-blue.svg)
-![Python](https://img.shields.io/badge/python-3.9+-green.svg)
+![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![プラットフォーム](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
 ## ✨ 特長
@@ -21,7 +21,7 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 
 ### 🎨 プロ品質の出力
 - **美しい組版**: 適切なフォント・行間・レイアウト
-- **印刷対応**: A4サイズで美しく印刷可能  
+- **印刷対応**: A4サイズで美しく印刷可能
 - **配布可能**: HTMLファイル単体で完結
 
 ## 🚀 3ステップで始める
@@ -105,7 +105,7 @@ CoC6th同人シナリオなどのテキストファイルを、**ワンコマン
 - **[QUICKSTART.md](docs/user/QUICKSTART.md)** - はじめての方向け詳細ガイド
 - **[examples/](examples/)** - サンプルファイル集
 
-### 📖 応用レベル  
+### 📖 応用レベル
 - **[実践ガイド](docs/user/PRACTICAL_GUIDE.md)** - 全機能の使い方
 - **[SYNTAX_REFERENCE.md](docs/user/SYNTAX_REFERENCE.md)** - 完全Kumihan記法リファレンス
 

@@ -79,7 +79,7 @@ def test_function():
 
         return result
 
-    def _verify_output_exists(self, expected_files: list[str] | None = None) -> None:  # type: ignore
+    def _verify_output_exists(self, expected_files: list[str] | None = None) -> None:
         """出力ファイルの存在確認"""
         # 出力ディレクトリまたはHTMLファイルが作成されたことを確認
         self.assertTrue(

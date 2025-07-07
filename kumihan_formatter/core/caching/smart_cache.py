@@ -35,7 +35,7 @@ class SmartCache:
         max_memory_entries: int = 1000,
         max_memory_mb: float = 100.0,
         default_ttl: int = 3600,  # 1時間
-        strategy: CacheStrategy | None = None,  # type: ignore
+        strategy: CacheStrategy | None = None,
         cache_dir: Optional[Path] = None,
         enable_file_cache: bool = True,
     ):

@@ -29,10 +29,10 @@ class ConvertCommand:
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()
         self.watcher = ConvertWatcher(self.processor, self.validator)
-        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())  # type: ignore
+        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
         self.logger.debug("ConvertCommand initialized")
 
-    def execute(  # type: ignore
+    def execute(
         self,
         input_file: Optional[str],
         output: str,
@@ -43,7 +43,7 @@ class ConvertCommand:
         template_name: Optional[str],
         include_source: bool,
         syntax_check: bool = True,
-    ) -> Path:
+    ) -> None:
         """
         変換コマンドを実行
 
@@ -59,7 +59,7 @@ class ConvertCommand:
             syntax_check: 変換前の構文チェックを有効化
 
         Returns:
-            Path: 出力ファイルのパス
+            None: プログラム終了時のみ
         """
         self.logger.info(
             f"Starting conversion: input_file='{input_file}', output='{output}'"
@@ -149,7 +149,8 @@ class ConvertCommand:
                     syntax_check,
                 )
 
-            return output_file
+            # 正常終了
+            sys.exit(0)
 
         except FileNotFoundError as e:
             self.logger.error(f"File not found: {e}")
