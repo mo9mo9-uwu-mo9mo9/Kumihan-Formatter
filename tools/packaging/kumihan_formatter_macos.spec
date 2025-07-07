@@ -163,7 +163,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name=f'{APP_NAME}.app',
-    icon=None,  # Add icon file path if available (*.icns)
+    icon=str(ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.icns') if (ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.icns').exists() else None,  # Add icon file path if available (*.icns)
     bundle_identifier=APP_IDENTIFIER,
     version=APP_VERSION,
     info_plist={
