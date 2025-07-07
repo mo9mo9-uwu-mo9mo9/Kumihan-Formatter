@@ -68,7 +68,8 @@ class TemplateManager:
         if template_name not in self._template_cache:
             self._template_cache[template_name] = self.env.get_template(template_name)
 
-        return self._template_cache[template_name]
+        template: Template = self._template_cache[template_name]
+        return template
 
     def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """
@@ -82,7 +83,8 @@ class TemplateManager:
             str: Rendered HTML
         """
         template = self.get_template(template_name)
-        return template.render(**context)
+        result: str = template.render(**context)
+        return result
 
     def select_template_name(
         self,
@@ -102,7 +104,13 @@ class TemplateManager:
             str: Template name to use
         """
         if template:
-            return template
+            # Map short template names to full file names
+            template_mapping = {
+                "base": "base.html.j2",
+                "base-with-source-toggle": "base-with-source-toggle.html.j2",
+                "docs": "docs.html.j2",
+            }
+            return template_mapping.get(template, template)
         elif source_text is not None:
             if experimental == "scroll-sync":
                 return "experimental/base-with-scroll-sync.html.j2"
@@ -133,7 +141,9 @@ class TemplateManager:
             template = self.get_template(template_name)
             # Try to parse the template to check for syntax errors
             # Get the template source code and parse it
-            source = template.environment.get_template(template_name).source
+            source_template = template.environment.get_template(template_name)
+            # Access source through loader
+            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
             template.environment.parse(source)
             return True, None
         except Exception as e:
@@ -164,7 +174,8 @@ class TemplateManager:
             if isinstance(content, str):
                 return content
             elif hasattr(content, "get_text_content"):
-                return content.get_text_content()
+                result: str = content.get_text_content()
+                return result
             else:
                 return str(content)
 
@@ -310,8 +321,8 @@ class TemplateValidator:
         """
         try:
             template = self.template_manager.get_template(template_name)
-            # Get the template source code via the environment
-            source = template.environment.get_template(template_name).source
+            # Get the template source code via the environment loader
+            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
 
             missing_vars = []
             for var in required_vars:
