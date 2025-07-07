@@ -9,7 +9,7 @@
 ## 📋 技術的問題の分類
 
 ### 🐍 Python環境問題
-### 💻 OS固有問題  
+### 💻 OS固有問題
 ### ⚡ パフォーマンス問題
 ### 🔄 変換・出力問題
 
@@ -44,7 +44,7 @@
    ```bash
    # Python Launcherを使用
    py -3 --version
-   
+
    # または環境変数PATHにPythonを追加
    # システム環境変数 → Path → 編集 → 新規
    # C:\Python39 を追加
@@ -54,7 +54,7 @@
    ```bash
    # Homebrewでインストール
    brew install python3
-   
+
    # または.bash_profileに追加
    echo 'alias python="python3"' >> ~/.bash_profile
    source ~/.bash_profile
@@ -107,7 +107,7 @@ ModuleNotFoundError: No module named 'jinja2'
    ```bash
    # 仮想環境内で実行
    pip install -e .[dev]
-   
+
    # または個別インストール
    pip install click jinja2 pyyaml rich
    ```
@@ -151,7 +151,7 @@ UnicodeDecodeError: 'shift_jis' codec can't decode
    ```bash
    # PowerShellの場合
    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-   
+
    # またはファイルをUTF-8で保存し直す
    ```
 
@@ -203,7 +203,7 @@ xcode-select --install
    ```bash
    # ファイルサイズ確認
    ls -lh your-file.txt
-   
+
    # 1MB以下に分割して処理
    split -b 1M your-file.txt part_
    ```
@@ -212,7 +212,7 @@ xcode-select --install
    ```bash
    # メモリ使用量確認（Windows）
    tasklist /fi "imagename eq python.exe"
-   
+
    # メモリ使用量確認（macOS）
    ps aux | grep python
    ```
@@ -235,17 +235,17 @@ MemoryError: Unable to allocate array
 1. **ストリーミング処理使用**
    ```python
    # 大きなファイル用の処理方法
-   python -m kumihan_formatter.cli input.txt --streaming
+   python -m kumihan_formatter input.txt --streaming
    ```
 
 2. **ファイル分割処理**
    ```bash
    # 1000行ずつ分割
    split -l 1000 large-file.txt chunk_
-   
+
    # 各チャンクを個別処理
    for file in chunk_*; do
-       python -m kumihan_formatter.cli "$file"
+       python -m kumihan_formatter "$file"
    done
    ```
 
@@ -260,16 +260,16 @@ MemoryError: Unable to allocate array
 1. **プロセス優先度下げる**
    ```bash
    # Windows
-   start /LOW python -m kumihan_formatter.cli input.txt
-   
+   start /LOW python -m kumihan_formatter input.txt
+
    # macOS
-   nice -n 10 python -m kumihan_formatter.cli input.txt
+   nice -n 10 python -m kumihan_formatter input.txt
    ```
 
 2. **並列処理制限**
    ```bash
    # 並列処理無効化
-   python -m kumihan_formatter.cli input.txt --single-thread
+   python -m kumihan_formatter input.txt --single-thread
    ```
 
 ---
@@ -288,17 +288,17 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
 1. **エンコーディング指定**
    ```bash
    # Shift_JISファイルの場合
-   python -m kumihan_formatter.cli input.txt --encoding shift_jis
-   
+   python -m kumihan_formatter input.txt --encoding shift_jis
+
    # 自動検出
-   python -m kumihan_formatter.cli input.txt --encoding auto
+   python -m kumihan_formatter input.txt --encoding auto
    ```
 
 2. **ファイル変換**
    ```bash
    # Windowsでshift_jis → utf-8変換
    powershell -Command "Get-Content input.txt -Encoding Default | Set-Content input_utf8.txt -Encoding UTF8"
-   
+
    # macOSでshift_jis → utf-8変換
    iconv -f shift_jis -t utf-8 input.txt > input_utf8.txt
    ```
@@ -315,7 +315,7 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
    ```bash
    # 出力ディレクトリの権限確認
    ls -la output/
-   
+
    # 権限変更
    chmod 755 output/
    ```
@@ -323,8 +323,8 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
 2. **テンプレートエラー**
    ```bash
    # デバッグモードで実行
-   python -m kumihan_formatter.cli input.txt --debug
-   
+   python -m kumihan_formatter input.txt --debug
+
    # テンプレート確認
    python -c "from kumihan_formatter import renderer; print(renderer.template_available())"
    ```
@@ -341,7 +341,7 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
    ```bash
    # 画像ファイル存在確認
    ls -la images/
-   
+
    # 相対パス修正
    # ;;;./images/sample.jpg;;; 形式に変更
    ```
@@ -364,9 +364,9 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
    ```bash
    # テンプレートファイル確認
    ls -la kumihan_formatter/templates/
-   
+
    # カスタムテンプレート使用
-   python -m kumihan_formatter.cli input.txt --template custom.html.j2
+   python -m kumihan_formatter input.txt --template custom.html.j2
    ```
 
 2. **CSSファイル確認**
@@ -389,14 +389,14 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
 
 2. **詳細デバッグ実行**
    ```bash
-   python -m kumihan_formatter.cli input.txt --verbose --debug
+   python -m kumihan_formatter input.txt --verbose --debug
    ```
 
 3. **ログファイル確認**
    ```bash
    # ログ出力先確認
    python -c "import tempfile; print(tempfile.gettempdir())"
-   
+
    # ログファイル表示
    cat /tmp/kumihan_formatter.log
    ```
@@ -413,7 +413,7 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte
 
 ### 実行コマンド
 ```bash
-python -m kumihan_formatter.cli input.txt
+python -m kumihan_formatter input.txt
 ```
 
 ### エラーメッセージ
@@ -424,7 +424,7 @@ python -m kumihan_formatter.cli input.txt
 ### 期待する結果
 [期待していた動作]
 
-### 実際の結果  
+### 実際の結果
 [実際に起こった動作]
 
 ### 追加情報
@@ -445,5 +445,5 @@ python -m kumihan_formatter.cli input.txt
 
 **🎯 目標解決時間**
 - 基本的な問題: 5分以内
-- 環境問題: 15分以内  
+- 環境問題: 15分以内
 - 複雑な技術問題: 30分以内
