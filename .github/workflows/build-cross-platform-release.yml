@@ -77,6 +77,7 @@ jobs:
     - name: Create Windows distribution package
       run: |
         $version = "${{ github.event.inputs.version || github.ref_name }}"
+        $version = $version -replace "/", "_"
         $packageName = "Kumihan-Formatter-${version}-Windows"
         $zipPath = "dist/${packageName}.zip"
 
@@ -117,7 +118,7 @@ jobs:
       id: upload
       uses: actions/upload-artifact@v4
       with:
-        name: kumihan-formatter-windows-${{ github.event.inputs.version || github.ref_name }}
+        name: kumihan-formatter-windows-${{ github.run_number }}
         path: |
           dist/Kumihan-Formatter.exe
           dist/Kumihan-Formatter-*.zip
@@ -167,6 +168,7 @@ jobs:
     - name: Create macOS distribution package
       run: |
         version="${{ github.event.inputs.version || github.ref_name }}"
+        version=$(echo "$version" | sed 's|/|_|g')
         packageName="Kumihan-Formatter-${version}-macOS"
         zipPath="dist/${packageName}.zip"
 
@@ -213,7 +215,7 @@ jobs:
       id: upload
       uses: actions/upload-artifact@v4
       with:
-        name: kumihan-formatter-macos-${{ github.event.inputs.version || github.ref_name }}
+        name: kumihan-formatter-macos-${{ github.run_number }}
         path: |
           dist/Kumihan-Formatter.app
           dist/Kumihan-Formatter-*.zip
@@ -232,13 +234,13 @@ jobs:
     - name: Download Windows artifacts
       uses: actions/download-artifact@v4
       with:
-        name: kumihan-formatter-windows-${{ github.event.inputs.version || github.ref_name }}
+        name: kumihan-formatter-windows-${{ github.run_number }}
         path: release-assets/windows/
 
     - name: Download macOS artifacts
       uses: actions/download-artifact@v4
       with:
-        name: kumihan-formatter-macos-${{ github.event.inputs.version || github.ref_name }}
+        name: kumihan-formatter-macos-${{ github.run_number }}
         path: release-assets/macos/
 
     - name: Prepare release assets
