@@ -149,7 +149,7 @@ exe = EXE(
     entitlements_file=None,
     # Windows-specific options
     version='version_info.txt',  # We'll create this separately
-    icon=None,  # Add icon file path if available
+    icon=str(ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.ico') if (ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.ico').exists() else None,  # Add icon file path if available
     # Manifest options
     manifest=None,
     # Additional Windows options
