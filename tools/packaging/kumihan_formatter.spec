@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Get the directory containing this spec file
 SPEC_DIR = Path(SPECPATH)
-ROOT_DIR = SPEC_DIR
+ROOT_DIR = SPEC_DIR.parent.parent  # Navigate to project root
 
 # Define application metadata
 APP_NAME = 'Kumihan-Formatter'
