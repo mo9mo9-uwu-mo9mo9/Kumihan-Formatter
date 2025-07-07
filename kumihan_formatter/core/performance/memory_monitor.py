@@ -11,7 +11,7 @@ import time
 import weakref
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, List
 
 from ..utilities.logger import get_logger
 

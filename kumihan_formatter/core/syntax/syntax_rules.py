@@ -5,7 +5,6 @@ combinations, and validation logic for Kumihan markup syntax.
 """
 
 import re
-from typing import Any, Dict, List, Set
 
 
 class SyntaxRules:

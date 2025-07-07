@@ -54,24 +54,24 @@ jobs:
 
     - name: Test Windows build script
       run: |
-        Write-Host "🧪 Testing Windows build process..."
+        Write-Host "[INFO] Testing Windows build process..."
         python build_windows.py --clean --test
 
     - name: Verify Windows package
       run: |
         if (Test-Path "dist/Kumihan-Formatter.exe") {
           $size = (Get-Item "dist/Kumihan-Formatter.exe").Length / 1MB
-          Write-Host "✅ Windows executable created: $([math]::Round($size, 1)) MB"
+          Write-Host "[OK] Windows executable created: $([math]::Round($size, 1)) MB"
         } else {
-          Write-Host "❌ Windows executable not found"
+          Write-Host "[ERROR] Windows executable not found"
           exit 1
         }
 
         if (Test-Path "dist/Kumihan-Formatter-v1.0-Windows.zip") {
           $zipSize = (Get-Item "dist/Kumihan-Formatter-v1.0-Windows.zip").Length / 1MB
-          Write-Host "✅ Windows package created: $([math]::Round($zipSize, 1)) MB"
+          Write-Host "[OK] Windows package created: $([math]::Round($zipSize, 1)) MB"
         } else {
-          Write-Host "❌ Windows package not found"
+          Write-Host "[ERROR] Windows package not found"
           exit 1
         }
 
@@ -106,24 +106,24 @@ jobs:
 
     - name: Test macOS build script
       run: |
-        echo "🧪 Testing macOS build process..."
+        echo "[INFO] Testing macOS build process..."
         python build_macos.py --clean --test
 
     - name: Verify macOS package
       run: |
         if [ -d "dist/Kumihan-Formatter.app" ]; then
           appSize=$(du -sm "dist/Kumihan-Formatter.app" | cut -f1)
-          echo "✅ macOS app created: ${appSize} MB"
+          echo "[OK] macOS app created: ${appSize} MB"
         else
-          echo "❌ macOS app not found"
+          echo "[ERROR] macOS app not found"
           exit 1
         fi
 
         if [ -f "dist/Kumihan-Formatter-v1.0-macOS.zip" ]; then
           zipSize=$(du -sm "dist/Kumihan-Formatter-v1.0-macOS.zip" | cut -f1)
-          echo "✅ macOS package created: ${zipSize} MB"
+          echo "[OK] macOS package created: ${zipSize} MB"
         else
-          echo "❌ macOS package not found"
+          echo "[ERROR] macOS package not found"
           exit 1
         fi
 
@@ -144,32 +144,32 @@ jobs:
     steps:
     - name: Test Summary
       run: |
-        echo "## 🧪 Package Build Test Summary"
+        echo "## Package Build Test Summary"
         echo ""
         echo "### Test Results:"
 
         if [ "${{ needs.test-windows-build.result }}" == "success" ]; then
-          echo "- ✅ **Windows Build**: PASSED"
+          echo "- [OK] **Windows Build**: PASSED"
         elif [ "${{ needs.test-windows-build.result }}" == "skipped" ]; then
-          echo "- ⏭️ **Windows Build**: SKIPPED"
+          echo "- [SKIP] **Windows Build**: SKIPPED"
         else
-          echo "- ❌ **Windows Build**: FAILED"
+          echo "- [ERROR] **Windows Build**: FAILED"
         fi
 
         if [ "${{ needs.test-macos-build.result }}" == "success" ]; then
-          echo "- ✅ **macOS Build**: PASSED"
+          echo "- [OK] **macOS Build**: PASSED"
         elif [ "${{ needs.test-macos-build.result }}" == "skipped" ]; then
-          echo "- ⏭️ **macOS Build**: SKIPPED"
+          echo "- [SKIP] **macOS Build**: SKIPPED"
         else
-          echo "- ❌ **macOS Build**: FAILED"
+          echo "- [ERROR] **macOS Build**: FAILED"
         fi
 
         echo ""
-        echo "### 📦 Artifacts:"
+        echo "### Artifacts:"
         echo "- Windows executable and package (if tested)"
         echo "- macOS app bundle and package (if tested)"
         echo ""
-        echo "### 🔗 Next Steps:"
+        echo "### Next Steps:"
         echo "1. Download artifacts to test manually"
         echo "2. Verify functionality on target platforms"
         echo "3. Report any issues found"
@@ -180,10 +180,10 @@ jobs:
 
         if [ "$windows_ok" == "true" ] && [ "$macos_ok" == "true" ]; then
           echo ""
-          echo "🎉 **Overall Status: PASSED**"
+          echo "[OK] **Overall Status: PASSED**"
           exit 0
         else
           echo ""
-          echo "❌ **Overall Status: FAILED**"
+          echo "[ERROR] **Overall Status: FAILED**"
           exit 1
         fi

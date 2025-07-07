@@ -7,7 +7,7 @@ Issue #319対応 - smart_cache.py から分離
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass

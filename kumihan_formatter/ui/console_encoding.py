@@ -15,7 +15,6 @@ class ConsoleEncodingSetup:
     def setup_encoding() -> None:
         """Setup proper encoding for different platforms"""
         import locale
-        import os
 
         # Note: Removed os.environ["PYTHONIOENCODING"] = "utf-8"
         # to avoid global environment variable modification

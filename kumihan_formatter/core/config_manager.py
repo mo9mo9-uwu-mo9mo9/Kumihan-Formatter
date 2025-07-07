@@ -15,13 +15,6 @@ from kumihan_formatter.core.config import (
 import warnings
 
 # 互換性のための再エクスポート
-from .config import (
-    ConfigLevel,
-    ConfigLoader,
-    ConfigValidator,
-    EnhancedConfig,
-    ValidationResult,
-)
 
 warnings.warn(
     "config_manager.py は廃止予定です。"

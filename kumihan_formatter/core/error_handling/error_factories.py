@@ -3,7 +3,7 @@
 """
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
 from .smart_suggestions import SmartSuggestions

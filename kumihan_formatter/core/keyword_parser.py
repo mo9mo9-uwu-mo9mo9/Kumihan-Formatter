@@ -6,7 +6,7 @@ including compound keywords and error suggestions.
 
 import re
 from difflib import get_close_matches
-from typing import Any, Dict, List
+from typing import Any
 
 from .ast_nodes import Node, NodeBuilder, error_node
 

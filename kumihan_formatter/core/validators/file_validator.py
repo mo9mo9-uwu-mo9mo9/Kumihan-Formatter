@@ -5,7 +5,6 @@ permissions, and encoding.
 """
 
 from pathlib import Path
-from typing import List
 
 from .validation_issue import ValidationIssue
 

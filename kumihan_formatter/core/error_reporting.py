@@ -16,17 +16,6 @@ from kumihan_formatter.core.reporting import (
 import warnings
 
 # 互換性のための再エクスポート
-from .reporting import (
-    DetailedError,
-    ErrorCategory,
-    ErrorContextManager,
-    ErrorFormatter,
-    ErrorLocation,
-    ErrorReport,
-    ErrorReportBuilder,
-    ErrorSeverity,
-    FixSuggestion,
-)
 
 warnings.warn(
     "error_reporting.py は廃止予定です。"

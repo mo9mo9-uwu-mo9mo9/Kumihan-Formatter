@@ -5,7 +5,6 @@ validation problems in Kumihan-Formatter documents.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass

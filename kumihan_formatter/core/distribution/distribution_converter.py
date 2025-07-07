@@ -7,7 +7,7 @@ Issue #319対応 - distribution_manager.py から分離
 
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ..markdown_converter import convert_markdown_file
 

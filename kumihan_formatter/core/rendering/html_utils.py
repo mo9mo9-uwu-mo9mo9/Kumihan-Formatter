@@ -6,7 +6,7 @@ escaping, formatting, and nesting logic.
 
 import re
 from html import escape
-from typing import Any, Dict, List
+from typing import Any
 
 
 def escape_html(text: str) -> str:

@@ -5,14 +5,12 @@ This module provides a user-friendly GUI interface for non-technical users
 to use Kumihan-Formatter without command line knowledge.
 """
 
-import os
 import sys
 import threading
 import webbrowser
 from pathlib import Path
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
-from typing import Optional
 
 # Add the parent directory to sys.path to import kumihan_formatter modules
 current_dir = Path(__file__).parent

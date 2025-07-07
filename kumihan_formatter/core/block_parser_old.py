@@ -5,7 +5,6 @@ paragraphs, block markers, and special blocks.
 """
 
 import re
-from typing import List, Optional, Tuple
 
 from .ast_nodes import Node, NodeBuilder, error_node, image_node, paragraph, toc_marker
 from .keyword_parser import KeywordParser, MarkerValidator

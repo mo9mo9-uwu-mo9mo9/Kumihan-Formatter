@@ -11,7 +11,7 @@ import logging.handlers
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from .logging import LogHelper
 

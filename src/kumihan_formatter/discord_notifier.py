@@ -23,7 +23,7 @@ class DiscordNotifier:
     def send_message(
         self,
         content: str,
-        embeds: Optional[list[dict]] = None,
+        embeds: Optional[list[Dict[str, Any]]] = None,
         username: Optional[str] = "Kumihan Formatter",
         avatar_url: Optional[str] = None,
     ) -> bool:
@@ -54,7 +54,7 @@ class DiscordNotifier:
         title: str,
         description: str,
         color: int = 0x00FF00,  # デフォルトは緑
-        fields: Optional[list[dict]] = None,
+        fields: Optional[list[Dict[str, Any]]] = None,
         footer: Optional[str] = None,
         username: Optional[str] = "Kumihan Formatter",
     ) -> bool:

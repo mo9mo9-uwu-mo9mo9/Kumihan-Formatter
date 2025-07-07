@@ -5,7 +5,7 @@
 Issue #319対応 - config_manager.py から分離
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Tuple
 
 from .config_types import ValidationResult
 

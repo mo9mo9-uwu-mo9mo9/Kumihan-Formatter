@@ -7,7 +7,6 @@ Issue #319対応 - error_reporting.py から分離
 
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
 
 from .error_formatter import ErrorFormatter
 from .error_types import (

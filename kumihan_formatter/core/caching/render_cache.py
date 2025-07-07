@@ -9,7 +9,7 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger

@@ -5,7 +5,7 @@
 """
 
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
 

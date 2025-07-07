@@ -8,7 +8,7 @@ Issue #319対応 - convert.py から分離
 import sys
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ...ui.console_ui import get_console_ui
 

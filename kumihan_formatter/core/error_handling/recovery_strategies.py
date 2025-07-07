@@ -9,7 +9,7 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Tuple
 
 from ..utilities.logger import get_logger
 from .error_types import ErrorCategory, UserFriendlyError

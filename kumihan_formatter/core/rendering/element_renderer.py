@@ -4,12 +4,10 @@ This module handles rendering of basic HTML elements like paragraphs,
 headings, lists, and other simple elements.
 """
 
-from html import escape
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..ast_nodes import Node
 from .html_utils import (
-    create_self_closing_tag,
     create_simple_tag,
     escape_html,
     process_block_content,

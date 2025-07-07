@@ -7,7 +7,6 @@ Issue #319対応 - convert.py から分離
 
 import sys
 import webbrowser
-from pathlib import Path
 
 from ...core.error_handling import ErrorHandler as FriendlyErrorHandler
 from ...core.utilities.logger import get_logger

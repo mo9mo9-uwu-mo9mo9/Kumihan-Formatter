@@ -4,7 +4,7 @@ This module provides string similarity calculation functions
 including Levenshtein distance and fuzzy matching.
 """
 
-from typing import List, Tuple
+from typing import List
 
 
 class StringSimilarity:

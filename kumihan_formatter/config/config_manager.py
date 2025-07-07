@@ -6,7 +6,7 @@ BaseConfig、ExtendedConfig、既存の設定クラスを統一的に管理す�
 
 import os
 from pathlib import Path
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 from .base_config import BaseConfig
 from .extended_config import ExtendedConfig

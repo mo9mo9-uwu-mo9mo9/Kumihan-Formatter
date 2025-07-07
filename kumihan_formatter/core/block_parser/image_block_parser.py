@@ -4,7 +4,7 @@ This module handles parsing of image blocks and image-related elements.
 """
 
 import re
-from typing import Any, List, Tuple
+from typing import Any
 
 from ..ast_nodes import Node, error_node, image_node
 

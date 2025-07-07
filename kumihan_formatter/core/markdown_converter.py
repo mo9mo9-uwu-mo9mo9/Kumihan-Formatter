@@ -7,7 +7,7 @@ Issue #118対応: エンドユーザー向け文書の読みやすさ向上
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional, Pattern, Tuple
+from typing import Any, Pattern
 
 
 class SimpleMarkdownConverter:

@@ -9,9 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Union
-
-from .config_types import ConfigLevel
+from typing import Any
 
 try:
     import yaml

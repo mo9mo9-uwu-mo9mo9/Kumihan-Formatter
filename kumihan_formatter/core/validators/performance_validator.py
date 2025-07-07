@@ -5,7 +5,6 @@ memory usage, and processing complexity.
 """
 
 from pathlib import Path
-from typing import List
 
 from ..ast_nodes import Node
 from .validation_issue import ValidationIssue

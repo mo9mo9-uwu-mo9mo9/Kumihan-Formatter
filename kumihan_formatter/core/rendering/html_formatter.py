@@ -5,7 +5,7 @@ and validation of generated HTML.
 """
 
 import re
-from typing import List, Optional
+from typing import List
 
 
 class HTMLFormatter:

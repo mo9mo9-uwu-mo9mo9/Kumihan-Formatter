@@ -8,7 +8,7 @@ Issue #402対応 - パフォーマンス最適化
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from ..ast_nodes import Node
 from ..performance import get_global_monitor

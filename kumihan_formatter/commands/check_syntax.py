@@ -5,7 +5,6 @@ This module provides syntax checking functionality for Kumihan markup files.
 
 import sys
 from pathlib import Path
-from typing import List
 
 import click
 

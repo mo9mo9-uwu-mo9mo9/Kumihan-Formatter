@@ -15,7 +15,6 @@ from .core.utilities.logger import get_logger
 def setup_encoding() -> None:
     """Setup encoding for Windows and macOS compatibility"""
     logger = get_logger(__name__)
-    import os
     import sys
 
     # Windows specific encoding setup

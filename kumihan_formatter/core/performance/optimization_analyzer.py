@@ -10,7 +10,7 @@ import statistics
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ..performance import get_global_monitor
 from .benchmark import BenchmarkConfig, PerformanceBenchmarkSuite

@@ -4,8 +4,6 @@
 統合設定システムの基本設定を使用し、互換性を維持します。
 """
 
-from typing import Dict
-
 from .config import create_config_manager
 
 

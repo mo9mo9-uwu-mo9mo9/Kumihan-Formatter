@@ -5,7 +5,6 @@ comprehensive document validation.
 """
 
 from pathlib import Path
-from typing import List, Optional
 
 from ..ast_nodes import Node
 from .file_validator import FileValidator
