@@ -42,10 +42,10 @@ def setup_encoding() -> None:
 
 @click.group()
 def cli() -> None:
-    """Kumihan-Formatter - 美しい組版を、誰でも簡単に。
+    """Kumihan-Formatter - 開発用CLIツール
 
-    CLI tool for converting text files to beautifully formatted HTML.
-    Optimized for doujin scenario writers and non-technical users.
+    Development CLI tool for Kumihan-Formatter.
+    For end users, please use the GUI version.
     """
     pass
 

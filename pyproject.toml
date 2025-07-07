@@ -42,8 +42,6 @@ dev = [
 [tool.setuptools.packages.find]
 exclude = ["dev*"]
 
-[project.scripts]
-kumihan = "kumihan_formatter.cli:main"
 
 [tool.black]
 line-length = 88

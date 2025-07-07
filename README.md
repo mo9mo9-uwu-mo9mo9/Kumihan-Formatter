@@ -15,17 +15,20 @@
 
 ## 🚀 クイックスタート
 
-```bash
-# インストール
-pip install kumihan-formatter
-
-# 使用例
-kumihan-formatter input.txt
-```
-
-**または GUI版**:
+**GUI版**:
 1. [リリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)からダウンロード
 2. `.txtファイル`をドラッグ&ドロップで変換完了！
+
+**開発者向け**:
+```bash
+# 開発環境セットアップ
+git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
+cd Kumihan-Formatter
+pip install -e ".[dev]"
+
+# 開発用CLI使用例
+python -m kumihan_formatter.cli convert input.txt
+```
 
 ## 💡 基本的な記法
 
