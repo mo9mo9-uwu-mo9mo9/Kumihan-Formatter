@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-def test_cli_help():
+def test_cli_help() -> None:
     """CLIヘルプの基本テスト"""
     result = subprocess.run(
         [sys.executable, "-m", "kumihan_formatter", "--help"],
@@ -19,7 +19,7 @@ def test_cli_help():
     assert "Usage:" in output or "使い方:" in output
 
 
-def test_cli_sample_command():
+def test_cli_sample_command() -> None:
     """CLIサンプルコマンドの基本テスト"""
     result = subprocess.run(
         [sys.executable, "-m", "kumihan_formatter", "generate-sample", "--help"],

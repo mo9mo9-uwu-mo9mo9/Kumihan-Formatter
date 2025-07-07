@@ -42,7 +42,7 @@ def setup_encoding() -> None:
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """Kumihan-Formatter - 美しい組版を、誰でも簡単に。
 
     CLI tool for converting text files to beautifully formatted HTML.
@@ -52,7 +52,7 @@ def cli():
 
 
 # Register commands using lazy loading
-def register_commands():
+def register_commands() -> None:
     """Register all CLI commands with lazy loading"""
     logger = get_logger(__name__)
     # convert コマンドを最初に登録（最重要）
@@ -96,7 +96,7 @@ def register_commands():
             template: Optional[str],
             include_source: bool,
             no_syntax_check: bool,
-        ):
+        ) -> None:
             """テキストファイルをHTMLに変換する"""
             command = ConvertCommand()
             command.execute(

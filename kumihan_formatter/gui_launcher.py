@@ -34,7 +34,7 @@ except ImportError as e:
 class KumihanGUI:
     """Main GUI application class for Kumihan-Formatter"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = Tk()
         self.root.title("Kumihan-Formatter v1.0 - 美しい組版を、誰でも簡単に")
         self.root.geometry("800x600")
@@ -58,11 +58,11 @@ class KumihanGUI:
         self.setup_ui()
         self.center_window()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Setup the main UI components"""
         # Main container
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(W, E, N, S))
+        main_frame.grid(row=0, column=0, sticky="WENS")
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
@@ -84,14 +84,14 @@ class KumihanGUI:
 
         # File selection section
         file_frame = ttk.LabelFrame(main_frame, text="ファイル選択", padding="10")
-        file_frame.grid(row=2, column=0, columnspan=3, sticky=(W, E), pady=(0, 10))
+        file_frame.grid(row=2, column=0, columnspan=3, sticky="WE", pady=(0, 10))
         file_frame.columnconfigure(1, weight=1)
 
         ttk.Label(file_frame, text="入力ファイル:").grid(
             row=0, column=0, sticky=W, padx=(0, 10)
         )
         ttk.Entry(file_frame, textvariable=self.input_file_var, width=50).grid(
-            row=0, column=1, sticky=(W, E), padx=(0, 10)
+            row=0, column=1, sticky="WE", padx=(0, 10)
         )
         ttk.Button(file_frame, text="参照", command=self.browse_input_file).grid(
             row=0, column=2
@@ -101,7 +101,7 @@ class KumihanGUI:
             row=1, column=0, sticky=W, padx=(0, 10), pady=(10, 0)
         )
         ttk.Entry(file_frame, textvariable=self.output_dir_var, width=50).grid(
-            row=1, column=1, sticky=(W, E), padx=(0, 10), pady=(10, 0)
+            row=1, column=1, sticky="WE", padx=(0, 10), pady=(10, 0)
         )
         ttk.Button(file_frame, text="参照", command=self.browse_output_dir).grid(
             row=1, column=2, pady=(10, 0)
@@ -109,7 +109,7 @@ class KumihanGUI:
 
         # Options section
         options_frame = ttk.LabelFrame(main_frame, text="変換オプション", padding="10")
-        options_frame.grid(row=3, column=0, columnspan=3, sticky=(W, E), pady=(0, 10))
+        options_frame.grid(row=3, column=0, columnspan=3, sticky="WE", pady=(0, 10))
         options_frame.columnconfigure(1, weight=1)
 
         ttk.Label(options_frame, text="テンプレート:").grid(
@@ -121,7 +121,7 @@ class KumihanGUI:
             values=["base.html.j2", "base-with-source-toggle.html.j2"],
             state="readonly",
         )
-        template_combo.grid(row=0, column=1, sticky=(W, E), padx=(0, 10))
+        template_combo.grid(row=0, column=1, sticky="WE", padx=(0, 10))
 
         ttk.Checkbutton(
             options_frame,
@@ -159,20 +159,20 @@ class KumihanGUI:
 
         # Progress section
         progress_frame = ttk.LabelFrame(main_frame, text="進行状況", padding="10")
-        progress_frame.grid(row=5, column=0, columnspan=3, sticky=(W, E), pady=(0, 10))
+        progress_frame.grid(row=5, column=0, columnspan=3, sticky="WE", pady=(0, 10))
         progress_frame.columnconfigure(0, weight=1)
 
         self.progress_bar = ttk.Progressbar(
             progress_frame, variable=self.progress_var, maximum=100
         )
-        self.progress_bar.grid(row=0, column=0, sticky=(W, E), pady=(0, 5))
+        self.progress_bar.grid(row=0, column=0, sticky="WE", pady=(0, 5))
 
         self.status_label = ttk.Label(progress_frame, textvariable=self.status_var)
         self.status_label.grid(row=1, column=0, sticky=W)
 
         # Log section
         log_frame = ttk.LabelFrame(main_frame, text="ログ", padding="10")
-        log_frame.grid(row=6, column=0, columnspan=3, sticky=(W, E, N, S), pady=(0, 10))
+        log_frame.grid(row=6, column=0, columnspan=3, sticky="WENS", pady=(0, 10))
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
         main_frame.rowconfigure(6, weight=1)
@@ -183,10 +183,10 @@ class KumihanGUI:
         )
         self.log_text.configure(yscrollcommand=log_scrollbar.set)
 
-        self.log_text.grid(row=0, column=0, sticky=(W, E, N, S))
-        log_scrollbar.grid(row=0, column=1, sticky=(N, S))
+        self.log_text.grid(row=0, column=0, sticky="WENS")
+        log_scrollbar.grid(row=0, column=1, sticky="NS")
 
-    def center_window(self):
+    def center_window(self) -> None:
         """Center the window on screen"""
         self.root.update_idletasks()
         width = self.root.winfo_width()
@@ -195,7 +195,7 @@ class KumihanGUI:
         pos_y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
 
-    def browse_input_file(self):
+    def browse_input_file(self) -> None:
         """Browse for input file"""
         filename = filedialog.askopenfilename(
             title="変換するテキストファイルを選択",
@@ -204,20 +204,20 @@ class KumihanGUI:
         if filename:
             self.input_file_var.set(filename)
 
-    def browse_output_dir(self):
+    def browse_output_dir(self) -> None:
         """Browse for output directory"""
         dirname = filedialog.askdirectory(title="出力フォルダを選択")
         if dirname:
             self.output_dir_var.set(dirname)
 
-    def on_source_toggle_change(self):
+    def on_source_toggle_change(self) -> None:
         """Handle source toggle checkbox change"""
         if self.include_source_var.get():
             self.template_var.set("base-with-source-toggle.html.j2")
         else:
             self.template_var.set("base.html.j2")
 
-    def log_message(self, message: str, level: str = "info"):
+    def log_message(self, message: str, level: str = "info") -> None:
         """Add message to log"""
         self.log_text.config(state=NORMAL)
         timestamp = __import__("datetime").datetime.now().strftime("%H:%M:%S")
@@ -236,14 +236,14 @@ class KumihanGUI:
         self.log_text.see(END)
         self.root.update_idletasks()
 
-    def update_progress(self, value: float, status: str = ""):
+    def update_progress(self, value: float, status: str = "") -> None:
         """Update progress bar and status"""
         self.progress_var.set(value)
         if status:
             self.status_var.set(status)
         self.root.update_idletasks()
 
-    def convert_file(self):
+    def convert_file(self) -> None:
         """Execute file conversion in separate thread"""
         input_file = self.input_file_var.get().strip()
         if not input_file:
@@ -262,7 +262,7 @@ class KumihanGUI:
         thread.daemon = True
         thread.start()
 
-    def _convert_file_thread(self):
+    def _convert_file_thread(self) -> None:
         """File conversion thread"""
         try:
             self.log_message("変換を開始します...")
@@ -338,7 +338,7 @@ class KumihanGUI:
             self.root.after(0, lambda: self.set_ui_enabled(True))
             self.update_progress(0, "準備完了")
 
-    def generate_sample(self):
+    def generate_sample(self) -> None:
         """Generate sample files in separate thread"""
         # Disable UI elements during generation
         self.set_ui_enabled(False)
@@ -348,7 +348,7 @@ class KumihanGUI:
         thread.daemon = True
         thread.start()
 
-    def _generate_sample_thread(self):
+    def _generate_sample_thread(self) -> None:
         """Sample generation thread"""
         try:
             self.log_message("サンプルファイルの生成を開始します...")
@@ -402,12 +402,12 @@ class KumihanGUI:
             self.root.after(0, lambda: self.set_ui_enabled(True))
             self.update_progress(0, "準備完了")
 
-    def set_ui_enabled(self, enabled: bool):
+    def set_ui_enabled(self, enabled: bool) -> None:
         """Enable/disable UI elements"""
         state = NORMAL if enabled else DISABLED
 
         # Find all widgets and update their state
-        def update_widget_state(widget):
+        def update_widget_state(widget) -> None:
             try:
                 if isinstance(
                     widget, (ttk.Button, ttk.Entry, ttk.Combobox, ttk.Checkbutton)
@@ -421,7 +421,7 @@ class KumihanGUI:
 
         update_widget_state(self.root)
 
-    def show_help(self):
+    def show_help(self) -> None:
         """Show help dialog"""
         help_text = """Kumihan-Formatter GUI ヘルプ
 
@@ -479,7 +479,7 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
             pady=10
         )
 
-    def run(self):
+    def run(self) -> None:
         """Start the GUI application"""
         self.log_message("Kumihan-Formatter GUI が起動しました")
         self.log_message(
@@ -488,7 +488,7 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
         self.root.mainloop()
 
 
-def main():
+def main() -> None:
     """Main entry point for GUI launcher"""
     try:
         app = KumihanGUI()

@@ -13,7 +13,7 @@ from .validation_issue import ValidationIssue
 class FileValidator:
     """Validator for file-related issues"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize file validator"""
         pass
 

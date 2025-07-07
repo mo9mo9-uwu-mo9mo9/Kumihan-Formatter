@@ -4,7 +4,7 @@ This module provides utilities for working with complex data structures
 including dictionary operations and nested data manipulation.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 
 class DataStructureHelper:
@@ -13,7 +13,7 @@ class DataStructureHelper:
     @staticmethod
     def deep_merge_dicts(*dicts: Dict[str, Any]) -> Dict[str, Any]:
         """Deep merge multiple dictionaries"""
-        result = {}
+        result: Dict[str, Any] = {}
 
         for d in dicts:
             for key, value in d.items():
@@ -35,7 +35,7 @@ class DataStructureHelper:
         d: Dict[str, Any], parent_key: str = "", sep: str = "."
     ) -> Dict[str, Any]:
         """Flatten nested dictionary"""
-        items = []
+        items: List[Tuple[str, Any]] = []
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
             if isinstance(v, dict):
@@ -49,7 +49,7 @@ class DataStructureHelper:
     @staticmethod
     def unflatten_dict(d: Dict[str, Any], sep: str = ".") -> Dict[str, Any]:
         """Unflatten dictionary with dot notation keys"""
-        result = {}
+        result: Dict[str, Any] = {}
         for key, value in d.items():
             parts = key.split(sep)
             current = result

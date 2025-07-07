@@ -6,6 +6,7 @@ Issue #319対応 - smart_cache.py から分離
 """
 
 from abc import ABC, abstractmethod
+from typing import Dict
 
 from .cache_types import CacheEntry
 
@@ -81,8 +82,8 @@ class AdaptiveStrategy(CacheStrategy):
 class PerformanceAwareStrategy(CacheStrategy):
     """パフォーマンス重視戦略 - 処理コストを考慮"""
 
-    def __init__(self):
-        self.processing_costs = {}  # key -> processing_time の記録
+    def __init__(self) -> None:
+        self.processing_costs: Dict[str, float] = {}  # key -> processing_time の記録
 
     def should_evict(self, entry: CacheEntry) -> bool:
         return entry.is_expired()

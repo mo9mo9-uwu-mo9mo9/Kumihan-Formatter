@@ -108,7 +108,7 @@ class HTMLFormatter:
 
         # Check for unclosed tags
         tags = self._extract_tags(html)
-        tag_stack = []
+        tag_stack: list[str] = []
 
         for tag in tags:
             if self._is_self_closing_tag(tag):

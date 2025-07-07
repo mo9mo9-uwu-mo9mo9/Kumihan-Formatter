@@ -76,7 +76,7 @@ class BlockParser:
             validation_errors,
         ) = self.marker_validator.validate_block_structure(lines, start_index)
 
-        if not is_valid:
+        if not is_valid or end_index is None:
             self.logger.error(
                 f"Invalid block structure at line {start_index + 1}: {validation_errors}"
             )
@@ -148,7 +148,9 @@ class BlockParser:
         image_extensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"]
         return any(filename.lower().endswith(ext) for ext in image_extensions)
 
-    def parse_paragraph(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_paragraph(
+        self, lines: List[str], start_index: int
+    ) -> Tuple[Optional[Node], int]:
         """
         Parse a paragraph starting from the given index
 

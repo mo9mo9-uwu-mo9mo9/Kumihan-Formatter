@@ -7,6 +7,7 @@ Issue #319対応 - distribution_manager.py から分離
 
 import re
 from pathlib import Path
+from typing import Any, Optional
 
 from ..markdown_converter import convert_markdown_file
 
@@ -30,7 +31,7 @@ class DistributionConverter:
         "license.md": "ライセンス",
     }
 
-    def __init__(self, ui=None):
+    def __init__(self, ui: Optional[Any] = None) -> None:
         """
         Args:
             ui: UIインスタンス（進捗表示用）

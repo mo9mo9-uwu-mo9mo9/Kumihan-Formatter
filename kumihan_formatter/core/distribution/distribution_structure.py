@@ -6,7 +6,7 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 from pathlib import Path
-from typing import List
+from typing import Any, List, Optional
 
 
 class DistributionStructure:
@@ -25,7 +25,7 @@ class DistributionStructure:
         "kumihan_formatter",  # メインプログラム
     ]
 
-    def __init__(self, ui=None):
+    def __init__(self, ui: Optional[Any] = None) -> None:
         """
         Args:
             ui: UIインスタンス（進捗表示用）
@@ -33,7 +33,7 @@ class DistributionStructure:
         self.ui = ui
 
     def create_structure(
-        self, output_dir: Path, custom_directories: List[str] = None
+        self, output_dir: Path, custom_directories: Optional[List[str]] = None
     ) -> None:
         """配布用ディレクトリ構造を作成
 

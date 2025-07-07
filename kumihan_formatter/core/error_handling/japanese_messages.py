@@ -5,7 +5,7 @@
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
 
@@ -209,7 +209,7 @@ class JapaneseMessageCatalog:
 
     @classmethod
     def get_file_system_error(
-        cls, error_type: str, file_path: str = None, **kwargs
+        cls, error_type: str, file_path: Optional[str] = None, **kwargs: Any
     ) -> UserFriendlyError:
         """ファイルシステムエラーのメッセージを生成"""
         if error_type not in cls.FILE_SYSTEM_MESSAGES:
@@ -218,7 +218,7 @@ class JapaneseMessageCatalog:
         template = cls.FILE_SYSTEM_MESSAGES[error_type]
 
         # ファイルパスを含むメッセージに調整
-        title = template["title"]
+        title = str(template["title"])
         if file_path:
             title += f"（ファイル: {Path(file_path).name}）"
 
@@ -228,16 +228,16 @@ class JapaneseMessageCatalog:
             category=ErrorCategory.FILE_SYSTEM,
             user_message=title,
             solution=ErrorSolution(
-                quick_fix=template["quick_fix"],
-                detailed_steps=template["detailed_steps"],
-                alternative_approaches=template.get("alternatives", []),
+                quick_fix=str(template["quick_fix"]),
+                detailed_steps=list(template["detailed_steps"]),
+                alternative_approaches=list(template.get("alternatives", [])),
             ),
             context={"file_path": file_path, **kwargs},
         )
 
     @classmethod
     def get_encoding_error(
-        cls, error_type: str, file_path: str = None, **kwargs
+        cls, error_type: str, file_path: Optional[str] = None, **kwargs: Any
     ) -> UserFriendlyError:
         """エンコーディングエラーのメッセージを生成"""
         if error_type not in cls.ENCODING_MESSAGES:
@@ -245,7 +245,7 @@ class JapaneseMessageCatalog:
 
         template = cls.ENCODING_MESSAGES[error_type]
 
-        title = template["title"]
+        title = str(template["title"])
         if file_path:
             title += f"（ファイル: {Path(file_path).name}）"
 
@@ -255,16 +255,16 @@ class JapaneseMessageCatalog:
             category=ErrorCategory.ENCODING,
             user_message=title,
             solution=ErrorSolution(
-                quick_fix=template["quick_fix"],
-                detailed_steps=template["detailed_steps"],
-                alternative_approaches=template.get("alternatives", []),
+                quick_fix=str(template["quick_fix"]),
+                detailed_steps=list(template["detailed_steps"]),
+                alternative_approaches=list(template.get("alternatives", [])),
             ),
             context={"file_path": file_path, **kwargs},
         )
 
     @classmethod
     def get_syntax_error(
-        cls, error_type: str, line_number: int = None, **kwargs
+        cls, error_type: str, line_number: Optional[int] = None, **kwargs: Any
     ) -> UserFriendlyError:
         """構文エラーのメッセージを生成"""
         if error_type not in cls.SYNTAX_MESSAGES:
@@ -272,7 +272,7 @@ class JapaneseMessageCatalog:
 
         template = cls.SYNTAX_MESSAGES[error_type]
 
-        title = template["title"]
+        title = str(template["title"])
         if line_number:
             title += f"（{line_number}行目）"
 
@@ -282,16 +282,16 @@ class JapaneseMessageCatalog:
             category=ErrorCategory.SYNTAX,
             user_message=title,
             solution=ErrorSolution(
-                quick_fix=template["quick_fix"],
-                detailed_steps=template["detailed_steps"],
-                alternative_approaches=template.get("alternatives", []),
+                quick_fix=str(template["quick_fix"]),
+                detailed_steps=list(template["detailed_steps"]),
+                alternative_approaches=list(template.get("alternatives", [])),
             ),
             context={"line_number": line_number, **kwargs},
         )
 
     @classmethod
     def get_rendering_error(
-        cls, error_type: str, template_name: str = None, **kwargs
+        cls, error_type: str, template_name: Optional[str] = None, **kwargs: Any
     ) -> UserFriendlyError:
         """レンダリングエラーのメッセージを生成"""
         if error_type not in cls.RENDERING_MESSAGES:
@@ -299,7 +299,7 @@ class JapaneseMessageCatalog:
 
         template = cls.RENDERING_MESSAGES[error_type]
 
-        title = template["title"]
+        title = str(template["title"])
         if template_name:
             title += f"（テンプレート: {template_name}）"
 
@@ -309,15 +309,15 @@ class JapaneseMessageCatalog:
             category=ErrorCategory.RENDERING,
             user_message=title,
             solution=ErrorSolution(
-                quick_fix=template["quick_fix"],
-                detailed_steps=template["detailed_steps"],
-                alternative_approaches=template.get("alternatives", []),
+                quick_fix=str(template["quick_fix"]),
+                detailed_steps=list(template["detailed_steps"]),
+                alternative_approaches=list(template.get("alternatives", [])),
             ),
             context={"template_name": template_name, **kwargs},
         )
 
     @classmethod
-    def get_system_error(cls, error_type: str, **kwargs) -> UserFriendlyError:
+    def get_system_error(cls, error_type: str, **kwargs: Any) -> UserFriendlyError:
         """システムエラーのメッセージを生成"""
         if error_type not in cls.SYSTEM_MESSAGES:
             error_type = "unexpected_error"  # デフォルト
@@ -334,11 +334,11 @@ class JapaneseMessageCatalog:
             error_code=f"E{hash(error_type) % 1000:03d}",
             level=level,
             category=ErrorCategory.SYSTEM,
-            user_message=template["title"],
+            user_message=str(template["title"]),
             solution=ErrorSolution(
-                quick_fix=template["quick_fix"],
-                detailed_steps=template["detailed_steps"],
-                alternative_approaches=template.get("alternatives", []),
+                quick_fix=str(template["quick_fix"]),
+                detailed_steps=list(template["detailed_steps"]),
+                alternative_approaches=list(template.get("alternatives", [])),
             ),
             context=kwargs,
         )
@@ -420,7 +420,7 @@ class UserGuidanceProvider:
         elif error.category == ErrorCategory.ENCODING:
             if "encoding" in cls.COMMON_QUESTIONS:
                 qa = cls.COMMON_QUESTIONS["how_to_fix_encoding"]
-                guidance[qa["question"]] = qa["answer"]
+                guidance[str(qa["question"])] = list(qa["answer"])
 
         elif error.category == ErrorCategory.SYNTAX:
             guidance["構文エラー対処法"] = cls.TROUBLESHOOTING_STEPS.get(
@@ -429,7 +429,7 @@ class UserGuidanceProvider:
 
             if "what_is_kumihan_syntax" in cls.COMMON_QUESTIONS:
                 qa = cls.COMMON_QUESTIONS["what_is_kumihan_syntax"]
-                guidance[qa["question"]] = qa["answer"]
+                guidance[str(qa["question"])] = list(qa["answer"])
 
         elif error.category == ErrorCategory.RENDERING:
             guidance["変換失敗時の対処法"] = cls.TROUBLESHOOTING_STEPS.get(
@@ -464,7 +464,7 @@ class UserGuidanceProvider:
 
 # モジュールレベル関数
 def create_user_friendly_error(
-    category: str, error_type: str, **context
+    category: str, error_type: str, **context: Any
 ) -> UserFriendlyError:
     """ユーザーフレンドリーエラーを作成する便利関数"""
 

@@ -3,7 +3,7 @@
 This module handles validation of block structures and syntax.
 """
 
-from typing import List
+from typing import Any, List
 
 
 class BlockValidator:
@@ -24,7 +24,7 @@ class BlockValidator:
     - エラーメッセージの生成
     """
 
-    def __init__(self, block_parser):
+    def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
     def validate_document_structure(self, lines: List[str]) -> List[str]:
@@ -37,7 +37,7 @@ class BlockValidator:
         Returns:
             List[str]: List of validation issues
         """
-        issues = []
+        issues: List[str] = []
         open_blocks = []
 
         for i, line in enumerate(lines):
@@ -61,7 +61,7 @@ class BlockValidator:
 
     def validate_block_nesting(self, lines: List[str]) -> List[str]:
         """Validate block nesting rules"""
-        issues = []
+        issues: List[str] = []
         # TODO: Implement nesting validation
         return issues
 

@@ -4,7 +4,7 @@ This module handles parsing of special block types including code blocks,
 tables, and other special formatting elements.
 """
 
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from ..ast_nodes import Node, NodeBuilder, error_node, paragraph
 
@@ -12,7 +12,7 @@ from ..ast_nodes import Node, NodeBuilder, error_node, paragraph
 class SpecialBlockParser:
     """Parser for special block types"""
 
-    def __init__(self, block_parser):
+    def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
     def parse_code_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
