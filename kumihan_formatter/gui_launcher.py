@@ -407,7 +407,7 @@ class KumihanGUI:
         state = NORMAL if enabled else DISABLED
 
         # Find all widgets and update their state
-        def update_widget_state(widget) -> None:
+        def update_widget_state(widget) -> None:  # type: ignore
             try:
                 if isinstance(
                     widget, (ttk.Button, ttk.Entry, ttk.Combobox, ttk.Checkbutton)

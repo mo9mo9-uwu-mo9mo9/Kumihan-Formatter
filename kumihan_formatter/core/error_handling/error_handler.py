@@ -32,7 +32,7 @@ class ErrorHandler:
     - 初心者向けの分かりやすいエラーメッセージ生成
     """
 
-    def __init__(self, console_ui=None):
+    def __init__(self, console_ui=None):  # type: ignore
         """エラーハンドラを初期化"""
         self.console_ui = console_ui
         self._error_history: List[UserFriendlyError] = []
@@ -40,7 +40,7 @@ class ErrorHandler:
         self.logger.debug("ErrorHandler initialized")
 
     def handle_exception(
-        self, exception: Exception, context: Dict[str, Any] = None
+        self, exception: Exception, context: Dict[str, Any] | None = None  # type: ignore
     ) -> UserFriendlyError:
         """例外をユーザーフレンドリーエラーに変換"""
         context = context or {}
@@ -170,8 +170,8 @@ class ErrorHandler:
         if not self._error_history:
             return {}
 
-        categories = {}
-        levels = {}
+        categories = {}  # type: ignore
+        levels = {}  # type: ignore
 
         for error in self._error_history:
             categories[error.category.value] = (

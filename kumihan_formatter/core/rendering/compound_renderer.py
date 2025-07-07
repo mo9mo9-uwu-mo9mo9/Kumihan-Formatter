@@ -5,7 +5,7 @@ and complex nesting logic.
 """
 
 from html import escape
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from .html_utils import process_text_content, sort_keywords_by_nesting_order
 
@@ -112,7 +112,7 @@ class CompoundElementRenderer:
         styled_content = self.render_compound_element(keywords, content, attributes)
         return f"<li>{styled_content}</li>"
 
-    def validate_keyword_combination(self, keywords: List[str]) -> tuple[bool, str]:
+    def validate_keyword_combination(self, keywords: List[str]) -> Tuple[bool, str]:
         """
         Validate that keyword combination is valid
 

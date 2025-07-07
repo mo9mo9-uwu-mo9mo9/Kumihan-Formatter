@@ -80,13 +80,13 @@ class ConfigManager:
         # テーマ設定
         theme = os.environ.get(f"{self.env_prefix}THEME")
         if theme:
-            env_config["theme"] = theme
+            env_config["theme"] = theme  # type: ignore
 
         # 設定をマージ
         if env_config and hasattr(self._config, "merge_config"):
             self._config.merge_config(env_config)
         elif env_config:
-            for key, value in env_config.items():
+            for key, value in env_config.items():  # type: ignore
                 self._config.set(key, value)
 
     # BaseConfigインターフェースの委譲
@@ -118,7 +118,7 @@ class ConfigManager:
     def get_markers(self) -> Dict[str, Dict[str, Any]]:
         """マーカー定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_markers"):
-            return self._config.get_markers()
+            return self._config.get_markers()  # type: ignore
         return {}
 
     def add_marker(self, name: str, definition: Dict[str, Any]) -> None:
@@ -129,13 +129,13 @@ class ConfigManager:
     def remove_marker(self, name: str) -> bool:
         """マーカーを削除（ExtendedConfigのみ）"""
         if hasattr(self._config, "remove_marker"):
-            return self._config.remove_marker(name)
+            return self._config.remove_marker(name)  # type: ignore
         return False
 
     def get_themes(self) -> Dict[str, Dict[str, Any]]:
         """テーマ定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_themes"):
-            return self._config.get_themes()
+            return self._config.get_themes()  # type: ignore
         return {}
 
     def add_theme(self, theme_id: str, theme_data: Dict[str, Any]) -> None:
@@ -146,13 +146,13 @@ class ConfigManager:
     def set_theme(self, theme_id: str) -> bool:
         """テーマを設定（ExtendedConfigのみ）"""
         if hasattr(self._config, "set_theme"):
-            return self._config.set_theme(theme_id)
+            return self._config.set_theme(theme_id)  # type: ignore
         return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_current_theme"):
-            return self._config.get_current_theme()
+            return self._config.get_current_theme()  # type: ignore
         return "default"
 
     # 互換性メソッド

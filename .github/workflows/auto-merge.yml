@@ -167,9 +167,9 @@ jobs:
 
           // 重要なチェックが完了しているか確認（Issue #371の設計：PR時はfull-test、push時はquick-check）
           const requiredChecks = [
-            'full-test (ubuntu-latest, 3.11)',
-            'full-test (windows-latest, 3.11)',
-            'full-test (macos-latest, 3.11)'
+            'full-test (ubuntu-latest, 3.12)',
+            'full-test (windows-latest, 3.12)',
+            'full-test (macos-latest, 3.12)'
           ];
           const completedChecks = checkRuns.check_runs.filter(check =>
             requiredChecks.includes(check.name) &&

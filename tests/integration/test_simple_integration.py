@@ -20,7 +20,7 @@ import pytest
 class TestSimpleIntegration(TestCase):
     """シンプルな統合テスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.output_dir = Path(self.test_dir) / "output"
@@ -44,11 +44,13 @@ class TestSimpleIntegration(TestCase):
             encoding="utf-8",
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _run_cli(self, args, expect_success=True):
+    def _run_cli(
+        self, args: list[str], expect_success: bool = True
+    ) -> subprocess.CompletedProcess[str]:
         """CLI実行ヘルパー"""
         cmd = ["python3", "-m", "kumihan_formatter"] + args
         result = subprocess.run(
@@ -62,13 +64,13 @@ class TestSimpleIntegration(TestCase):
 
     # CLI統合テスト（11テスト）
 
-    def test_cli_help_display(self):
+    def test_cli_help_display(self) -> None:
         """ヘルプ表示テスト"""
         result = self._run_cli(["--help"])
         self.assertEqual(result.returncode, 0)
         self.assertIn("Kumihan", result.stdout)
 
-    def test_cli_basic_convert(self):
+    def test_cli_basic_convert(self) -> None:
         """基本的な変換テスト"""
         result = self._run_cli(
             [
@@ -83,12 +85,12 @@ class TestSimpleIntegration(TestCase):
         # 成功またはエラーがあっても何らかの出力があることを確認
         self.assertIn(result.returncode, [0, 1])
 
-    def test_cli_invalid_command(self):
+    def test_cli_invalid_command(self) -> None:
         """無効なコマンドテスト"""
         result = self._run_cli(["invalid-command"], expect_success=False)
         self.assertNotEqual(result.returncode, 0)
 
-    def test_cli_convert_with_output(self):
+    def test_cli_convert_with_output(self) -> None:
         """出力ディレクトリ指定変換テスト"""
         result = self._run_cli(
             [
@@ -102,7 +104,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_cli_convert_with_template(self):
+    def test_cli_convert_with_template(self) -> None:
         """テンプレート指定変換テスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--template", "base", "--no-preview"]
@@ -110,7 +112,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_cli_convert_include_source(self):
+    def test_cli_convert_include_source(self) -> None:
         """ソース表示オプションテスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--include-source", "--no-preview"]
@@ -118,7 +120,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_cli_convert_no_syntax_check(self):
+    def test_cli_convert_no_syntax_check(self) -> None:
         """構文チェック無効テスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--no-syntax-check", "--no-preview"]
@@ -126,28 +128,28 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_cli_check_syntax_command(self):
+    def test_cli_check_syntax_command(self) -> None:
         """構文チェックコマンドテスト"""
         result = self._run_cli(["check-syntax", str(self.test_input_file)])
 
         # 構文チェックは成功/警告/エラーのいずれかを返す
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_cli_generate_sample_command(self):
+    def test_cli_generate_sample_command(self) -> None:
         """サンプル生成コマンドテスト"""
         result = self._run_cli(["generate-sample", "--output", str(self.output_dir)])
 
         # コマンドが存在することを確認（成功しなくても可）
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_cli_generate_test_command(self):
+    def test_cli_generate_test_command(self) -> None:
         """テスト生成コマンドテスト"""
         result = self._run_cli(["generate-test", "--output", str(self.output_dir)])
 
         # コマンドが存在することを確認（成功しなくても可）
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_cli_all_options_combination(self):
+    def test_cli_all_options_combination(self) -> None:
         """全オプション組み合わせテスト"""
         result = self._run_cli(
             [
@@ -167,7 +169,7 @@ class TestSimpleIntegration(TestCase):
 
     # ファイルI/O統合テスト（12テスト）
 
-    def test_file_read_basic_text(self):
+    def test_file_read_basic_text(self) -> None:
         """基本テキストファイル読み込みテスト"""
         content = "# テストファイル\n\n基本的なテキストです。"
         test_file = Path(self.test_dir) / "read_test.txt"
@@ -177,7 +179,7 @@ class TestSimpleIntegration(TestCase):
         read_content = test_file.read_text(encoding="utf-8")
         self.assertEqual(read_content, content)
 
-    def test_file_read_large_text(self):
+    def test_file_read_large_text(self) -> None:
         """大きなテキストファイル読み込みテスト"""
         lines = [f"行{i}: テストデータ" for i in range(1000)]
         content = "\n".join(lines)
@@ -187,7 +189,7 @@ class TestSimpleIntegration(TestCase):
         read_content = test_file.read_text(encoding="utf-8")
         self.assertEqual(len(read_content.split("\n")), 1000)
 
-    def test_file_read_nonexistent(self):
+    def test_file_read_nonexistent(self) -> None:
         """存在しないファイル読み込みテスト"""
         nonexistent_file = Path(self.test_dir) / "nonexistent.txt"
 
@@ -198,7 +200,7 @@ class TestSimpleIntegration(TestCase):
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
-    def test_file_read_permission_denied(self):
+    def test_file_read_permission_denied(self) -> None:
         """読み込み権限なしファイルテスト"""
         content = "権限テスト"
         test_file = Path(self.test_dir) / "permission_test.txt"
@@ -214,7 +216,7 @@ class TestSimpleIntegration(TestCase):
             # 権限を戻す
             os.chmod(test_file, 0o644)
 
-    def test_file_write_basic_html(self):
+    def test_file_write_basic_html(self) -> None:
         """基本HTMLファイル書き込みテスト"""
         html_content = """<!DOCTYPE html>
 <html>
@@ -229,7 +231,7 @@ class TestSimpleIntegration(TestCase):
         read_content = output_file.read_text(encoding="utf-8")
         self.assertEqual(read_content, html_content)
 
-    def test_file_write_new_directory(self):
+    def test_file_write_new_directory(self) -> None:
         """新ディレクトリ書き込みテスト"""
         content = "新ディレクトリテスト"
         new_dir = Path(self.test_dir) / "new_dir"
@@ -241,7 +243,7 @@ class TestSimpleIntegration(TestCase):
         self.assertTrue(output_file.exists())
         self.assertEqual(output_file.read_text(encoding="utf-8"), content)
 
-    def test_file_overwrite_existing(self):
+    def test_file_overwrite_existing(self) -> None:
         """既存ファイル上書きテスト"""
         original_content = "元の内容"
         new_content = "新しい内容"
@@ -257,7 +259,7 @@ class TestSimpleIntegration(TestCase):
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
-    def test_file_write_permission_denied(self):
+    def test_file_write_permission_denied(self) -> None:
         """書き込み権限なしディレクトリテスト"""
         readonly_dir = Path(self.test_dir) / "readonly"
         readonly_dir.mkdir()
@@ -271,7 +273,7 @@ class TestSimpleIntegration(TestCase):
         finally:
             os.chmod(readonly_dir, 0o755)
 
-    def test_encoding_utf8_detection(self):
+    def test_encoding_utf8_detection(self) -> None:
         """UTF-8エンコーディング検出テスト"""
         content = "UTF-8テスト: 日本語文字列 🎌"
         test_file = Path(self.test_dir) / "utf8_test.txt"
@@ -281,7 +283,7 @@ class TestSimpleIntegration(TestCase):
         read_content = test_file.read_text(encoding="utf-8")
         self.assertEqual(read_content, content)
 
-    def test_encoding_shiftjis_handling(self):
+    def test_encoding_shiftjis_handling(self) -> None:
         """Shift_JISエンコーディング処理テスト"""
         content = "Shift_JISテスト: 日本語"
         test_file = Path(self.test_dir) / "shiftjis_test.txt"
@@ -298,7 +300,7 @@ class TestSimpleIntegration(TestCase):
             # Shift_JISで表現できない文字がある場合はスキップ
             self.skipTest("Shift_JIS encoding not supported for this content")
 
-    def test_encoding_bom_handling(self):
+    def test_encoding_bom_handling(self) -> None:
         """BOM付きファイル処理テスト"""
         content = "BOMテスト: 日本語文字列"
         test_file = Path(self.test_dir) / "bom_test.txt"
@@ -311,7 +313,7 @@ class TestSimpleIntegration(TestCase):
             read_content = f.read()
         self.assertEqual(read_content, content)
 
-    def test_mixed_encoding_files(self):
+    def test_mixed_encoding_files(self) -> None:
         """複数エンコーディング処理テスト"""
         encodings = ["utf-8", "shift_jis"]
 
@@ -332,7 +334,7 @@ class TestSimpleIntegration(TestCase):
 
     # テンプレート統合テスト（10テスト）
 
-    def test_template_basic_usage(self):
+    def test_template_basic_usage(self) -> None:
         """基本的なテンプレート使用テスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--template", "base", "--no-preview"]
@@ -341,7 +343,7 @@ class TestSimpleIntegration(TestCase):
         # テンプレートが指定されても処理が継続することを確認
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_template_docs_usage(self):
+    def test_template_docs_usage(self) -> None:
         """docsテンプレート使用テスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--template", "docs", "--no-preview"]
@@ -349,7 +351,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_template_nonexistent(self):
+    def test_template_nonexistent(self) -> None:
         """存在しないテンプレートテスト"""
         result = self._run_cli(
             [
@@ -364,7 +366,7 @@ class TestSimpleIntegration(TestCase):
         # 存在しないテンプレートでもフォールバックして処理継続
         self.assertIn(result.returncode, [0, 1, 2])
 
-    def test_template_with_include_source(self):
+    def test_template_with_include_source(self) -> None:
         """テンプレート+ソース表示テスト"""
         result = self._run_cli(
             [
@@ -379,7 +381,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_with_output_dir(self):
+    def test_template_with_output_dir(self) -> None:
         """テンプレート+出力ディレクトリテスト"""
         result = self._run_cli(
             [
@@ -395,7 +397,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_variable_expansion(self):
+    def test_template_variable_expansion(self) -> None:
         """テンプレート変数展開テスト"""
         # 変数を含むコンテンツ
         content_with_vars = """# テンプレート変数テスト
@@ -416,7 +418,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_css_integration(self):
+    def test_template_css_integration(self) -> None:
         """テンプレートCSS統合テスト"""
         result = self._run_cli(
             ["convert", str(self.test_input_file), "--template", "base", "--no-preview"]
@@ -425,7 +427,7 @@ class TestSimpleIntegration(TestCase):
         # CSS統合が含まれるテンプレートでも正常に動作
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_javascript_integration(self):
+    def test_template_javascript_integration(self) -> None:
         """テンプレートJavaScript統合テスト"""
         result = self._run_cli(
             [
@@ -441,7 +443,7 @@ class TestSimpleIntegration(TestCase):
         # JavaScript機能を含むテンプレートでも正常に動作
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_responsive_design(self):
+    def test_template_responsive_design(self) -> None:
         """テンプレートレスポンシブデザインテスト"""
         # レスポンシブデザイン要素を含むコンテンツ
         responsive_content = """# レスポンシブデザインテスト
@@ -469,7 +471,7 @@ class TestSimpleIntegration(TestCase):
 
         self.assertIn(result.returncode, [0, 1])
 
-    def test_template_error_recovery(self):
+    def test_template_error_recovery(self) -> None:
         """テンプレートエラー回復テスト"""
         # 問題のあるコンテンツでもテンプレート処理が継続することをテスト
         problem_content = """# エラー回復テスト

@@ -4,7 +4,7 @@ This module handles Jinja2 template loading, caching, and rendering.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -68,7 +68,8 @@ class TemplateManager:
         if template_name not in self._template_cache:
             self._template_cache[template_name] = self.env.get_template(template_name)
 
-        return self._template_cache[template_name]
+        template: Template = self._template_cache[template_name]
+        return template
 
     def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """
@@ -82,7 +83,8 @@ class TemplateManager:
             str: Rendered HTML
         """
         template = self.get_template(template_name)
-        return template.render(**context)
+        result: str = template.render(**context)
+        return result
 
     def select_template_name(
         self,
@@ -102,7 +104,13 @@ class TemplateManager:
             str: Template name to use
         """
         if template:
-            return template
+            # Map short template names to full file names
+            template_mapping = {
+                "base": "base.html.j2",
+                "base-with-source-toggle": "base-with-source-toggle.html.j2",
+                "docs": "docs.html.j2",
+            }
+            return template_mapping.get(template, template)
         elif source_text is not None:
             if experimental == "scroll-sync":
                 return "experimental/base-with-scroll-sync.html.j2"
@@ -111,7 +119,7 @@ class TemplateManager:
         else:
             return "base.html.j2"
 
-    def get_available_templates(self) -> list[str]:
+    def get_available_templates(self) -> List[str]:
         """Get list of available template files"""
         templates = []
         for template_file in self.template_dir.rglob("*.j2"):
@@ -119,7 +127,7 @@ class TemplateManager:
             templates.append(str(relative_path))
         return sorted(templates)
 
-    def validate_template(self, template_name: str) -> tuple[bool, Optional[str]]:
+    def validate_template(self, template_name: str) -> Tuple[bool, Optional[str]]:
         """
         Validate that a template exists and is valid
 
@@ -132,7 +140,11 @@ class TemplateManager:
         try:
             template = self.get_template(template_name)
             # Try to parse the template to check for syntax errors
-            template.environment.parse(template.source)
+            # Get the template source code and parse it
+            source_template = template.environment.get_template(template_name)
+            # Access source through loader
+            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
+            template.environment.parse(source)
             return True, None
         except Exception as e:
             return False, str(e)
@@ -162,7 +174,8 @@ class TemplateManager:
             if isinstance(content, str):
                 return content
             elif hasattr(content, "get_text_content"):
-                return content.get_text_content()
+                result: str = content.get_text_content()
+                return result
             else:
                 return str(content)
 
@@ -181,7 +194,7 @@ class RenderContext:
     """Builder for template rendering context"""
 
     def __init__(self) -> None:
-        self._context = {}
+        self._context = {}  # type: ignore
 
     def title(self, title: str) -> "RenderContext":
         """Set page title"""
@@ -263,7 +276,7 @@ class TemplateValidator:
     def __init__(self, template_manager: TemplateManager):
         self.template_manager = template_manager
 
-    def validate_all_templates(self) -> Dict[str, tuple[bool, Optional[str]]]:
+    def validate_all_templates(self) -> Dict[str, Tuple[bool, Optional[str]]]:
         """
         Validate all available templates
 
@@ -294,8 +307,8 @@ class TemplateValidator:
         return results
 
     def validate_template_variables(
-        self, template_name: str, required_vars: list[str]
-    ) -> tuple[bool, list[str]]:
+        self, template_name: str, required_vars: List[str]
+    ) -> Tuple[bool, List[str]]:
         """
         Validate that template uses required variables
 
@@ -308,7 +321,8 @@ class TemplateValidator:
         """
         try:
             template = self.template_manager.get_template(template_name)
-            source = template.source
+            # Get the template source code via the environment loader
+            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
 
             missing_vars = []
             for var in required_vars:

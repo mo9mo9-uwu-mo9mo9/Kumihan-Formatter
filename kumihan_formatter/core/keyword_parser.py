@@ -285,8 +285,8 @@ class KeywordParser:
 
         # Return the outermost node
         if isinstance(current_content, list):
-            return current_content[0]
-        return current_content
+            return current_content[0]  # type: ignore
+        return current_content  # type: ignore
 
     def _parse_block_content(self, content: str) -> List[Any]:
         """Parse block content into appropriate structure"""
@@ -319,7 +319,7 @@ class KeywordParser:
 
             if errors or not keywords:
                 # If there are errors, return original text
-                return prefix + list_marker + full_marker + text_content
+                return prefix + list_marker + full_marker + text_content  # type: ignore
 
             # Apply styling to text content
             if len(keywords) == 1:
@@ -333,7 +333,7 @@ class KeywordParser:
                     keywords, text_content, attributes
                 )
 
-            return prefix + list_marker + styled_text
+            return prefix + list_marker + styled_text  # type: ignore
 
         return re.sub(pattern, replace_keyword, content, flags=re.MULTILINE)
 

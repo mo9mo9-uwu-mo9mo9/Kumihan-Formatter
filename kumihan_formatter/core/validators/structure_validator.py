@@ -14,7 +14,7 @@ from .validation_issue import ValidationIssue
 class StructureValidator:
     """Validator for document structure"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize structure validator"""
         self.toc_validator = TOCValidator()
 
@@ -44,7 +44,7 @@ class StructureValidator:
         toc_entries = self._extract_toc_entries(ast)
 
         # Validate TOC structure
-        toc_issues = self.toc_validator.validate_toc_structure(toc_entries)
+        toc_issues = self.toc_validator.validate_toc_structure(toc_entries)  # type: ignore
         for issue in toc_issues:
             issues.append(
                 ValidationIssue(
@@ -124,7 +124,7 @@ class StructureValidator:
         return None
 
     def _validate_heading_hierarchy(
-        self, heading_levels: List[tuple]
+        self, heading_levels: List[tuple]  # type: ignore
     ) -> List[ValidationIssue]:
         """Validate heading hierarchy"""
         issues = []

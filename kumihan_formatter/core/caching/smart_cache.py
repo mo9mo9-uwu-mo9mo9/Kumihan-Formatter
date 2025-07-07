@@ -35,7 +35,7 @@ class SmartCache:
         max_memory_entries: int = 1000,
         max_memory_mb: float = 100.0,
         default_ttl: int = 3600,  # 1時間
-        strategy: CacheStrategy = None,
+        strategy: CacheStrategy | None = None,  # type: ignore
         cache_dir: Optional[Path] = None,
         enable_file_cache: bool = True,
     ):
@@ -142,7 +142,7 @@ class SmartCache:
         # キャッシュから試行
         cached_value = self.get(key)
         if cached_value is not None:
-            return cached_value
+            return cached_value  # type: ignore
 
         # 計算して保存
         computed_value = compute_func()

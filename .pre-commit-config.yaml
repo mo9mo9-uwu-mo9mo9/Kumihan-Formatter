@@ -95,12 +95,14 @@ repos:
         stages: [manual, pre-push]
         alias: heavy-checks
 
-      # 型チェック
-      - id: mypy
-        name: 🔍 型チェック
-        entry: mypy
+      # 型チェック（strict mode必須）
+      - id: mypy-strict
+        name: 🔍 mypy strict mode型チェック
+        entry: python
+        args: [-m, mypy, --config-file=mypy.ini, kumihan_formatter/, tests/]
         language: python
-        files: ^kumihan_formatter/.*\.py$
-        additional_dependencies: [mypy, pydantic]
-        stages: [manual, pre-push]
-        alias: heavy-checks
+        files: ^(kumihan_formatter|tests)/.*\.py$
+        pass_filenames: false
+        additional_dependencies: [mypy, pydantic, types-PyYAML, types-psutil, types-Jinja2, types-MarkupSafe, types-click]
+        stages: [commit, manual, pre-push]
+        always_run: true

@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import TestCase
 
 import yaml
@@ -20,7 +21,7 @@ import yaml
 class TestOptionCombinations(TestCase):
     """オプション組み合わせE2Eテスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.output_dir = Path(self.test_dir) / "output"
@@ -56,11 +57,11 @@ def test_function():
             encoding="utf-8",
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _run_conversion(self, options):
+    def _run_conversion(self, options: list[str]) -> subprocess.CompletedProcess[str]:
         """変換処理を実行"""
         cmd = [
             "python3",
@@ -78,7 +79,7 @@ def test_function():
 
         return result
 
-    def _verify_output_exists(self, expected_files=None):
+    def _verify_output_exists(self, expected_files: list[str] | None = None) -> None:  # type: ignore
         """出力ファイルの存在確認"""
         # 出力ディレクトリまたはHTMLファイルが作成されたことを確認
         self.assertTrue(
@@ -96,9 +97,9 @@ def test_function():
                     file_path.exists(), f"Expected file {filename} not found"
                 )
 
-        return True
+        return True  # type: ignore
 
-    def _create_config_file(self, config_data):
+    def _create_config_file(self, config_data: dict[str, Any]) -> Path:
         """設定ファイルを作成"""
         config_file = Path(self.test_dir) / "config.yaml"
         with open(config_file, "w", encoding="utf-8") as f:
@@ -107,7 +108,7 @@ def test_function():
 
     # 基本オプション組み合わせ（4テスト）
 
-    def test_output_and_template_combination(self):
+    def test_output_and_template_combination(self) -> None:
         """出力ディレクトリとテンプレート指定の組み合わせ"""
         options = ["--output", str(self.output_dir), "--template", "base.html.j2"]
 
@@ -125,7 +126,7 @@ def test_function():
             content = html_files[0].read_text(encoding="utf-8")
             self.assertIn("<!DOCTYPE html>", content)
 
-    def test_include_source_and_syntax_check_combination(self):
+    def test_include_source_and_syntax_check_combination(self) -> None:
         """ソース表示と構文チェックの組み合わせ"""
         options = [
             "--output",
@@ -149,7 +150,7 @@ def test_function():
             # ソース表示機能の確認は実装依存のため、基本的なHTML構造のみ確認
             self.assertIn("<!DOCTYPE html>", content)
 
-    def test_template_and_include_source_combination(self):
+    def test_template_and_include_source_combination(self) -> None:
         """テンプレート指定とソース表示の組み合わせ"""
         options = [
             "--output",
@@ -167,7 +168,7 @@ def test_function():
         # 出力ファイルが生成されることを確認
         self._verify_output_exists()
 
-    def test_all_basic_options_combination(self):
+    def test_all_basic_options_combination(self) -> None:
         """基本オプション全組み合わせ"""
         options = [
             "--output",
@@ -188,7 +189,7 @@ def test_function():
 
     # 高度なオプション組み合わせ（4テスト）
 
-    def test_watch_mode_with_options(self):
+    def test_watch_mode_with_options(self) -> None:
         """ウォッチモードとその他オプションの組み合わせ"""
         # ウォッチモードは長時間実行されるため、短時間でテスト終了
         options = [
@@ -234,7 +235,7 @@ def test_function():
         # 出力ファイルが生成されたことを確認
         self._verify_output_exists()
 
-    def test_show_test_cases_with_options(self):
+    def test_show_test_cases_with_options(self) -> None:
         """テストケース表示とその他オプションの組み合わせ"""
         options = [
             "--output",
@@ -250,7 +251,7 @@ def test_function():
         # エラーでなければ成功とみなす
         self.assertIn(result.returncode, [0, 1])  # 0=成功, 1=警告あり成功
 
-    def test_multiple_output_formats(self):
+    def test_multiple_output_formats(self) -> None:
         """複数出力形式の組み合わせ"""
         # 異なる出力ディレクトリで複数回実行
         output_dirs = [Path(self.test_dir) / "output1", Path(self.test_dir) / "output2"]
@@ -276,7 +277,7 @@ def test_function():
                 output_dir.exists() or any(Path(self.test_dir).glob("*.html"))
             )
 
-    def test_error_recovery_with_options(self):
+    def test_error_recovery_with_options(self) -> None:
         """エラー回復とオプションの組み合わせ"""
         # 無効なテンプレート名を指定してもエラー回復することを確認
         options = [
@@ -297,7 +298,7 @@ def test_function():
 
     # 設定ファイルとの組み合わせ（4テスト）
 
-    def test_config_file_with_cli_options(self):
+    def test_config_file_with_cli_options(self) -> None:
         """設定ファイルとCLIオプションの組み合わせ"""
         # 設定ファイルを作成
         config_data = {
@@ -329,7 +330,7 @@ def test_function():
                 # 出力ファイルが生成されない場合も許容
                 pass
 
-    def test_config_file_priority_test(self):
+    def test_config_file_priority_test(self) -> None:
         """設定ファイルの優先順位テスト"""
         # 複数の設定値を持つ設定ファイル
         config_data = {
@@ -363,7 +364,7 @@ def test_function():
                 # 出力ファイルが生成されない場合も許容
                 pass
 
-    def test_multiple_config_sections(self):
+    def test_multiple_config_sections(self) -> None:
         """複数設定セクションのテスト"""
         # 複数のセクションを持つ設定ファイル
         config_data = {
@@ -385,7 +386,7 @@ def test_function():
         self.assertIn(result.returncode, [0, 1, 2])
 
     @unittest.skip("Environment variable config tests - skipping for CI stability")
-    def test_config_file_with_environment_variables(self):
+    def test_config_file_with_environment_variables(self) -> None:
         """設定ファイルと環境変数の組み合わせ"""
         # 環境変数を設定
         original_env = os.environ.copy()

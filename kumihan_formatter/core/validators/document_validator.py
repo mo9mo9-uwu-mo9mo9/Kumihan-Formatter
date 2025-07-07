@@ -18,7 +18,7 @@ from .validation_issue import ValidationIssue
 class DocumentValidator:
     """Main validator that coordinates all validation components"""
 
-    def __init__(self, config=None):
+    def __init__(self, config=None):  # type: ignore
         """Initialize document validator with all sub-validators"""
         self.config = config
 

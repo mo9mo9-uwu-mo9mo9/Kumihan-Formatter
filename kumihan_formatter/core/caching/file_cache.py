@@ -9,8 +9,8 @@ import hashlib
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from ...utilities.logger import get_logger
 from ..performance import get_global_monitor
+from ..utilities.logger import get_logger
 from .cache_strategies import AdaptiveStrategy
 from .smart_cache import SmartCache
 
@@ -94,7 +94,7 @@ class FileCache(SmartCache):
             with get_global_monitor().measure("file_cache_hit", file_size=file_size):
                 content = self.get(cache_key)
                 if content is not None:
-                    return content
+                    return content  # type: ignore
 
         # ファイルを読み込み
         with get_global_monitor().measure("file_read", file_size=file_size):
@@ -144,7 +144,7 @@ class FileCache(SmartCache):
         if cached_info and cached_info["modified_time"] == modified_time:
             hash_value = self.get(hash_key)
             if hash_value is not None:
-                return hash_value
+                return hash_value  # type: ignore
 
         # ハッシュを計算
         with get_global_monitor().measure("file_hash_calculation"):

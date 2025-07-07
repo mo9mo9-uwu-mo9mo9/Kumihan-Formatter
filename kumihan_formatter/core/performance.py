@@ -118,7 +118,7 @@ class PerformanceReport:
 class PerformanceMonitor:
     """Advanced performance monitoring system"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.reports: List[PerformanceReport] = []
         self._cache_stats = {"hits": 0, "misses": 0}
         self._node_count = 0
@@ -275,7 +275,7 @@ class PerformanceMonitor:
 class PerformanceProfiler:
     """Function-level performance profiler"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.function_stats: Dict[str, List[float]] = {}
         self._lock = threading.Lock()
 

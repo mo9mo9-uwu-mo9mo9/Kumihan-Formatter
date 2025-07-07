@@ -139,7 +139,7 @@ class ArchitectureValidator:
         if not hasattr(node, "lineno") or not hasattr(node, "end_lineno"):
             return
 
-        func_lines = node.end_lineno - node.lineno + 1
+        func_lines = (node.end_lineno or node.lineno) - node.lineno + 1
 
         if func_lines > self.MAX_FUNCTION_LINES:
             self._add_violation(
@@ -158,7 +158,7 @@ class ArchitectureValidator:
         if not hasattr(node, "lineno") or not hasattr(node, "end_lineno"):
             return
 
-        class_lines = node.end_lineno - node.lineno + 1
+        class_lines = (node.end_lineno or node.lineno) - node.lineno + 1
 
         if class_lines > self.MAX_CLASS_LINES:
             self._add_violation(
@@ -264,7 +264,7 @@ class ArchitectureValidator:
             return "✅ アーキテクチャ原則違反は見つかりませんでした。"
 
         # 重要度別に集計
-        by_severity = {}
+        by_severity: dict[str, list[ArchitectureViolation]] = {}
         for violation in self.violations:
             severity = violation.severity.value
             if severity not in by_severity:
@@ -285,7 +285,7 @@ class ArchitectureValidator:
             ViolationSeverity.ERROR,
             ViolationSeverity.WARNING,
         ]:
-            if severity not in by_severity:
+            if severity.value not in by_severity:
                 continue
 
             violations = by_severity[severity.value]
@@ -302,7 +302,7 @@ class ArchitectureValidator:
         return "\n".join(report_lines)
 
 
-def main():
+def main() -> None:
     """メイン実行"""
     parser = argparse.ArgumentParser(
         description="Kumihan-Formatter アーキテクチャバリデーター"

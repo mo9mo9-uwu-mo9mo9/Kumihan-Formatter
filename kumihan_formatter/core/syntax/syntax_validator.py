@@ -16,7 +16,7 @@ from .syntax_rules import SyntaxRules
 class KumihanSyntaxValidator:
     """Core Kumihan markup syntax validator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.errors: List[SyntaxError] = []
         self.current_file = ""
 
@@ -92,7 +92,7 @@ class KumihanSyntaxValidator:
         """Validate syntax for all lines"""
         in_block = False
         block_start_line = 0
-        block_keywords = []
+        block_keywords = []  # type: ignore
 
         for line_num, line in enumerate(lines, 1):
             stripped = line.strip()

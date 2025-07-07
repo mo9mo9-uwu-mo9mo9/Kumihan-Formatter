@@ -4,7 +4,7 @@ This module provides a builder pattern for creating Node instances
 with a fluent interface.
 """
 
-from typing import Any
+from typing import Any, Dict
 
 from .node import Node
 
@@ -32,7 +32,7 @@ class NodeBuilder:
     def __init__(self, node_type: str):
         self._type = node_type
         self._content = None
-        self._attributes: dict[str, Any] = {}
+        self._attributes: Dict[str, Any] = {}
 
     def content(self, content: Any) -> "NodeBuilder":
         """Set node content"""

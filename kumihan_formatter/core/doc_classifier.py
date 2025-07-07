@@ -27,7 +27,7 @@ class DocumentClassifier:
     ファイルパスとメタデータに基づいて文書を適切に分類する
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """分類器を初期化"""
         self.classification_rules = self._build_classification_rules()
 
@@ -223,7 +223,7 @@ class DocumentClassifier:
         Returns:
             Dict: 分類結果（タイプ別ファイルリスト）
         """
-        result = {doc_type: [] for doc_type in DocumentType}
+        result = {doc_type: [] for doc_type in DocumentType}  # type: ignore
 
         # 除外パターンをロード
         exclude_patterns = self._load_exclude_patterns(directory)

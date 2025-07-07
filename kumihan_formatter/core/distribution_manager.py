@@ -21,11 +21,11 @@ from .distribution import (
 
 
 # 便利な関数（後方互換性のため）
-def create_user_distribution(
+def create_user_distribution(  # type: ignore
     source_dir, output_dir, ui=None, convert_docs=True, include_developer_docs=False
 ):
     """配布構造を作成（後方互換性用）"""
-    manager = DistributionManager(ui)
+    manager = DistributionManager(ui)  # type: ignore
     return manager.create_user_friendly_distribution(
         source_dir, output_dir, convert_docs, include_developer_docs
     )

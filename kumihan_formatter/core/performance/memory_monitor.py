@@ -13,7 +13,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from ...utilities.logger import get_logger
+from ..utilities.logger import get_logger
 
 try:
     import psutil
@@ -115,7 +115,7 @@ class MemoryMonitor:
 
         # 監視対象オブジェクト
         self.tracked_objects: Dict[str, Set[Any]] = defaultdict(set)
-        self.weak_refs: Dict[str, List[weakref.ReferenceType]] = defaultdict(list)
+        self.weak_refs: Dict[str, List[weakref.ReferenceType]] = defaultdict(list)  # type: ignore
 
         # モニタリング制御
         self._monitoring = False
@@ -141,7 +141,7 @@ class MemoryMonitor:
             f"MemoryMonitor初期化完了: object_tracking={enable_object_tracking}"
         )
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """メモリ監視を開始"""
         if self._monitoring:
             self.logger.warning("メモリ監視は既に開始されています")
@@ -153,7 +153,7 @@ class MemoryMonitor:
         self._monitor_thread.start()
         self.logger.debug("メモリ監視スレッド開始完了")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """メモリ監視を停止"""
         if not self._monitoring:
             self.logger.warning("メモリ監視は既に停止されています")
@@ -191,7 +191,7 @@ class MemoryMonitor:
 
         # ガベージコレクション情報
         gc_objects = len(gc.get_objects())
-        gc_collections = list(gc.get_stats()) if hasattr(gc, "get_stats") else [0, 0, 0]
+        gc_collections = list(gc.get_stats()) if hasattr(gc, "get_stats") else [0, 0, 0]  # type: ignore # type: ignore # type: ignore
 
         # カスタムオブジェクト追跡
         custom_objects = {}
@@ -241,7 +241,7 @@ class MemoryMonitor:
 
         return snapshot
 
-    def register_object(self, obj: Any, obj_type: str):
+    def register_object(self, obj: Any, obj_type: str) -> None:
         """オブジェクトを追跡対象に登録
 
         Args:
@@ -483,7 +483,7 @@ class MemoryMonitor:
 
         return "\n".join(report_lines)
 
-    def _monitor_loop(self):
+    def _monitor_loop(self) -> None:
         """メモリ監視ループ"""
         while self._monitoring:
             try:
@@ -494,7 +494,7 @@ class MemoryMonitor:
                 self.logger.error(f"メモリ監視エラー: {e}")
                 time.sleep(self.sampling_interval)
 
-    def _detect_memory_leaks(self, snapshot: MemorySnapshot):
+    def _detect_memory_leaks(self, snapshot: MemorySnapshot) -> None:
         """メモリリークを検出"""
         current_time = snapshot.timestamp
 
@@ -512,7 +512,7 @@ class MemoryMonitor:
             if len(self.object_counts[obj_type]) >= 10:  # 最低10個のデータポイント
                 self._analyze_object_leak(obj_type, current_time)
 
-    def _analyze_object_leak(self, obj_type: str, current_time: float):
+    def _analyze_object_leak(self, obj_type: str, current_time: float) -> None:
         """オブジェクトタイプのリークを分析"""
         counts = self.object_counts[obj_type]
 
@@ -570,7 +570,7 @@ class MemoryMonitor:
         else:
             return "low"
 
-    def _check_memory_alerts(self, snapshot: MemorySnapshot):
+    def _check_memory_alerts(self, snapshot: MemorySnapshot) -> None:
         """メモリアラートをチェック"""
         if not HAS_PSUTIL:
             return
@@ -602,7 +602,7 @@ class MemoryMonitor:
                         f"Rapid memory increase: {rate_mb_per_sec:.1f} MB/sec",
                     )
 
-    def _trigger_alert(self, level: str, message: str):
+    def _trigger_alert(self, level: str, message: str) -> None:
         """アラートをトリガー"""
         with self._lock:
             self.stats["alerts_triggered"] += 1
@@ -615,7 +615,7 @@ class MemoryMonitor:
         else:
             self.logger.info(f"メモリアラート: {message}")
 
-    def _cleanup_weak_refs(self):
+    def _cleanup_weak_refs(self) -> None:
         """無効になったWeakReferenceをクリーンアップ"""
         for obj_type in list(self.weak_refs.keys()):
             alive_refs = []
@@ -628,7 +628,7 @@ class MemoryMonitor:
                 ref() for ref in alive_refs if ref() is not None
             }
 
-    def clear_data(self):
+    def clear_data(self) -> None:
         """全データをクリア"""
         with self._lock:
             snapshot_count = len(self.snapshots)

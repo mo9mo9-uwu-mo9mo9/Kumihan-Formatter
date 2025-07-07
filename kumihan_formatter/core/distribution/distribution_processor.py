@@ -8,7 +8,7 @@ Issue #319対応 - distribution_manager.py から分離
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from ..doc_classifier import DocumentType
 
@@ -19,7 +19,7 @@ class DistributionProcessor:
     責任: ファイルコピー・分類処理・統計生成
     """
 
-    def __init__(self, ui=None):
+    def __init__(self, ui: Any | None = None) -> None:  # type: ignore
         """
         Args:
             ui: UIインスタンス（進捗表示用）

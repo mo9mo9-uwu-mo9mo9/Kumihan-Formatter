@@ -14,9 +14,9 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional
 
-from ...utilities.logger import get_logger
+from ..utilities.logger import get_logger
 
 
 @dataclass
@@ -97,7 +97,7 @@ class AdvancedProfiler:
                 self.logger.warning("psutilが利用できないため、メモリ追跡機能を無効化")
 
     @contextmanager
-    def profile_session(self, session_name: str):
+    def profile_session(self, session_name: str) -> Generator[None, None, None]:
         """プロファイリングセッションのコンテキストマネージャー
 
         Args:
@@ -125,7 +125,7 @@ class AdvancedProfiler:
                     self.logger.error(f"メモリ情報取得エラー: {e}")
 
             profiler.enable()
-            yield session
+            yield session  # type: ignore
 
         finally:
             profiler.disable()
@@ -150,18 +150,18 @@ class AdvancedProfiler:
             self._end_session(session_name, profiler)
             self.logger.info(f"プロファイリングセッション完了: {session_name}")
 
-    def profile_function(self, func_name: Optional[str] = None):
+    def profile_function(self, func_name: Optional[str] = None) -> Callable[[Callable], Callable]:  # type: ignore
         """関数プロファイリング用デコレーター
 
         Args:
             func_name: 関数名（未指定時は自動取得）
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             name = func_name or f"{func.__module__}.{func.__name__}"
 
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 start_time = time.perf_counter()
                 start_memory = self._get_memory_usage()
 
@@ -413,7 +413,7 @@ class AdvancedProfiler:
             self.active_sessions[session_name] = session
             return session
 
-    def _end_session(self, session_name: str, profiler: cProfile.Profile):
+    def _end_session(self, session_name: str, profiler: cProfile.Profile) -> None:
         """セッションを終了"""
         with self._lock:
             if session_name in self.active_sessions:
@@ -428,7 +428,7 @@ class AdvancedProfiler:
 
     def _parse_cprofile_results(
         self, session: ProfilingSession, profiler: cProfile.Profile
-    ):
+    ) -> None:
         """cProfileの結果を解析"""
         # 統計を文字列バッファに出力
         s = io.StringIO()
@@ -534,7 +534,7 @@ class AdvancedProfiler:
                 self.logger.debug(
                     f"メモリ使用量取得: {memory_usage / 1024 / 1024:.1f}MB"
                 )
-                return memory_usage
+                return int(memory_usage)
             except Exception as e:
                 self.logger.error(f"メモリ使用量取得エラー: {e}")
                 return None
@@ -542,7 +542,7 @@ class AdvancedProfiler:
 
     def _record_function_call(
         self, func_name: str, execution_time: float, memory_delta: Optional[int]
-    ):
+    ) -> None:
         """関数呼び出しを記録"""
         # 現在のアクティブセッションに記録
         for session in self.active_sessions.values():
@@ -562,7 +562,7 @@ class AdvancedProfiler:
             if memory_delta:
                 profile.memory_delta = memory_delta
 
-    def clear_sessions(self):
+    def clear_sessions(self) -> None:
         """全セッションをクリア"""
         with self._lock:
             session_count = len(self.sessions)

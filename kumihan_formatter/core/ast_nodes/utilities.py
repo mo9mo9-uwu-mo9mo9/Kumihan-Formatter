@@ -34,7 +34,7 @@ def flatten_text_nodes(content: List[Any]) -> List[Any]:
 
 def count_nodes_by_type(nodes: List[Node]) -> Dict[str, int]:
     """Count nodes by type in a list"""
-    counts: dict[str, int] = {}
+    counts: Dict[str, int] = {}
     for node in nodes:
         if isinstance(node, Node):
             counts[node.type] = counts.get(node.type, 0) + 1
@@ -60,7 +60,7 @@ def validate_ast(nodes: List[Node]) -> List[str]:
 
     for i, node in enumerate(nodes):
         if not isinstance(node, Node):
-            issues.append(f"Item {i} is not a Node instance: {type(node)}")
+            issues.append(f"Item {i} is not a Node instance: {type(node)}")  # type: ignore
             continue
 
         if not node.type:

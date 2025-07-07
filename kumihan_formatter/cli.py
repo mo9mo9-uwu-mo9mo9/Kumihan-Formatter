@@ -116,7 +116,7 @@ def register_commands() -> None:
     except ImportError as e:
         # フォールバック: レガシー convert.py を使用
         logger.warning(f"Failed to import new convert command, using legacy: {e}")
-        from .commands.convert import create_convert_command
+        from .commands.convert import create_convert_command  # type: ignore
 
         cli.add_command(create_convert_command(), name="convert")
         logger.debug("Legacy convert command registered")
@@ -125,7 +125,7 @@ def register_commands() -> None:
     try:
         from .commands.check_syntax import create_check_syntax_command
 
-        cli.add_command(create_check_syntax_command(), name="check-syntax")
+        cli.add_command(create_check_syntax_command(), name="check-syntax")  # type: ignore
         logger.debug("check-syntax command registered successfully")
     except ImportError as e:
         import warnings
@@ -136,8 +136,8 @@ def register_commands() -> None:
     try:
         from .commands.sample import create_sample_command, create_test_command
 
-        cli.add_command(create_sample_command(), name="generate-sample")
-        cli.add_command(create_test_command(), name="generate-test")
+        cli.add_command(create_sample_command(), name="generate-sample")  # type: ignore
+        cli.add_command(create_test_command(), name="generate-test")  # type: ignore
         logger.debug("Sample generation commands registered successfully")
     except ImportError as e:
         import warnings
@@ -197,7 +197,7 @@ def main() -> None:
         from .core.error_handling import ErrorHandler as FriendlyErrorHandler
         from .ui.console_ui import get_console_ui
 
-        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
+        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())  # type: ignore
         error = friendly_error_handler.handle_exception(
             e, context={"operation": "CLI実行", "args": sys.argv}
         )

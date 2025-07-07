@@ -8,45 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 軽量チェック（push時）- Issue #371の設計に戻す
-  quick-check:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-
-    - name: Cache pip packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-
-    - name: Quick lint check
-      run: |
-        # 重要なエラーのみチェック
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
-    - name: Quick format check
-      run: |
-        black --check kumihan_formatter tests || true
-
-    - name: Fast test run
-      run: |
-        pytest -x --ff -q
-
-  # フルチェック（PR時）
+  # PR時フルテスト（複数OS × 複数Pythonバージョン）
+  # Push時のチェックはPre-commitで実施済み
   full-test:
     if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
@@ -54,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
     steps:
     - uses: actions/checkout@v4
@@ -104,6 +67,13 @@ jobs:
           isort --check-only kumihan_formatter
         fi
 
+    - name: Type check with mypy strict mode
+      shell: bash
+      run: |
+        pip install mypy
+        pip install -r requirements-dev.txt
+        python -m mypy --strict kumihan_formatter/ tests/
+
     - name: Test with pytest
       shell: bash
       run: |
@@ -117,7 +87,7 @@ jobs:
         fi
 
     - name: Upload coverage reports to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
@@ -126,7 +96,7 @@ jobs:
         fail_ci_if_error: false
 
     - name: Generate coverage badge
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
       run: |
         pip install coverage-badge
         coverage-badge -o coverage.svg -f

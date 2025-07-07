@@ -23,7 +23,7 @@ class DiscordNotifier:
     def send_message(
         self,
         content: str,
-        embeds: Optional[list] = None,
+        embeds: Optional[list[dict]] = None,
         username: Optional[str] = "Kumihan Formatter",
         avatar_url: Optional[str] = None,
     ) -> bool:
@@ -54,7 +54,7 @@ class DiscordNotifier:
         title: str,
         description: str,
         color: int = 0x00FF00,  # デフォルトは緑
-        fields: Optional[list] = None,
+        fields: Optional[list[dict]] = None,
         footer: Optional[str] = None,
         username: Optional[str] = "Kumihan Formatter",
     ) -> bool:
@@ -160,8 +160,13 @@ class DiscordNotifier:
 
         return False
 
-    def __enter__(self):
+    def __enter__(self) -> "DiscordNotifier":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object | None,
+    ) -> None:
         self.session.close()

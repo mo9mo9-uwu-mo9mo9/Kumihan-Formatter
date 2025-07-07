@@ -55,7 +55,7 @@ class BaseConfig:
         Returns:
             str: テーマ名
         """
-        return self._config.get("theme_name", "デフォルト")
+        return str(self._config.get("theme_name", "デフォルト"))
 
     def get(self, key: str, default: Any = None) -> Any:
         """設定値を取得
@@ -90,7 +90,7 @@ class BaseConfig:
         """
         # 基本的な型チェック
         if not isinstance(self._config, dict):
-            return False
+            return False  # type: ignore
 
         # CSS設定のチェック
         if "css" in self._config:

@@ -17,7 +17,7 @@ class WindowsPermissionHelper:
     def __init__(self) -> None:
         self.is_windows = platform.system() == "Windows"
         self.current_user = getpass.getuser()
-        self._original_permissions = {}
+        self._original_permissions: dict[str, str] = {}
 
     def deny_read_permission(self, file_path: Path) -> bool:
         """ファイルの読み取り権限を拒否する

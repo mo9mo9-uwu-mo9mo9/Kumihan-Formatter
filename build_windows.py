@@ -11,33 +11,33 @@ Options:
     --upload  Upload to GitHub releases (requires environment setup)
 """
 
-import argparse
-import os
-import shutil
-import subprocess
-import sys
-import tempfile
-import zipfile
-from pathlib import Path
+import argparse  # type: ignore
+import os  # type: ignore
+import shutil  # type: ignore
+import subprocess  # type: ignore
+import sys  # type: ignore
+import tempfile  # type: ignore
+import zipfile  # type: ignore
+from pathlib import Path  # type: ignore
 
 
 class WindowsBuilder:
     """Windows executable builder for Kumihan-Formatter"""
 
-    def __init__(self, root_dir: Path = None):
+    def __init__(self, root_dir: Path | None = None):
         self.root_dir = root_dir or Path(__file__).parent
         self.dist_dir = self.root_dir / "dist"
         self.build_dir = self.root_dir / "build"
         self.spec_file = self.root_dir / "kumihan_formatter.spec"
         self.exe_name = "Kumihan-Formatter.exe"
 
-    def check_dependencies(self):
+    def check_dependencies(self) -> bool:
         """Check if required dependencies are installed"""
         print("📋 依存関係をチェック中...")
 
         # Check PyInstaller
         try:
-            import PyInstaller
+            import PyInstaller  # type: ignore
 
             print(f"✅ PyInstaller {PyInstaller.__version__} が見つかりました")
         except ImportError:
@@ -47,7 +47,7 @@ class WindowsBuilder:
 
         # Check main package
         try:
-            import kumihan_formatter
+            import kumihan_formatter  # type: ignore
 
             print(f"✅ kumihan_formatter が見つかりました")
         except ImportError:
@@ -57,7 +57,7 @@ class WindowsBuilder:
 
         # Check GUI dependencies
         try:
-            import tkinter
+            import tkinter  # type: ignore
 
             print("✅ tkinter が利用可能です")
         except ImportError:
@@ -68,7 +68,7 @@ class WindowsBuilder:
 
         return True
 
-    def clean_build_dirs(self):
+    def clean_build_dirs(self) -> None:
         """Clean build and dist directories"""
         print("🧹 ビルドディレクトリをクリーンアップ中...")
 
@@ -80,17 +80,17 @@ class WindowsBuilder:
             else:
                 print(f"   スキップ: {dir_path} (存在しません)")
 
-    def install_pyinstaller_if_needed(self):
+    def install_pyinstaller_if_needed(self) -> None:
         """Install PyInstaller if not available"""
         try:
-            import PyInstaller
+            import PyInstaller  # type: ignore
         except ImportError:
             print("📦 PyInstaller をインストール中...")
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
 
-    def build_executable(self):
+    def build_executable(self) -> None:
         """Build the Windows executable using PyInstaller"""
         print("🔨 Windows実行ファイルをビルド中...")
 
@@ -125,7 +125,7 @@ class WindowsBuilder:
 
         return exe_path
 
-    def test_executable(self, exe_path: Path):
+    def test_executable(self, exe_path: Path) -> None:
         """Test the built executable"""
         print("🧪 実行ファイルをテスト中...")
 
@@ -154,7 +154,7 @@ class WindowsBuilder:
 
         print("✅ 基本テスト完了")
 
-    def create_distribution_package(self, exe_path: Path):
+    def create_distribution_package(self, exe_path: Path) -> Path:
         """Create distribution package (ZIP file)"""
         print("📦 配布パッケージを作成中...")
 
@@ -197,13 +197,15 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 
         return zip_path
 
-    def upload_to_github(self, package_path: Path):
+    def upload_to_github(self, package_path: Path) -> None:
         """Upload package to GitHub releases (placeholder)"""
         print("🚀 GitHub リリースへのアップロード...")
         print("⚠️  GitHub Actions を使用した自動アップロードを推奨します")
         print(f"   手動アップロード用パッケージ: {package_path}")
 
-    def build(self, clean=False, test=False, upload=False):
+    def build(
+        self, clean: bool = False, test: bool = False, upload: bool = False
+    ) -> None:
         """Main build process"""
         print("🏗️  Kumihan-Formatter Windows版ビルドを開始します...")
         print(f"   プロジェクトディレクトリ: {self.root_dir}")
@@ -247,13 +249,13 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 
         except Exception as e:
             print(f"\n❌ ビルドに失敗しました: {e}")
-            import traceback
+            import traceback  # type: ignore
 
             traceback.print_exc()
             return False
 
 
-def main():
+def main() -> None:
     """Main entry point"""
     parser = argparse.ArgumentParser(
         description="Kumihan-Formatter Windows版ビルドスクリプト",

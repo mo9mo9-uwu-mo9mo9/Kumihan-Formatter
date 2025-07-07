@@ -48,7 +48,7 @@ class ConvertWatcher:
             sys.exit(1)
 
         input_path = Path(input_file)
-        get_console_ui().watch_mode_start(str(input_path))
+        get_console_ui().watch_start(str(input_path))
 
         # ファイル変更ハンドラーを作成
         handler = self._create_file_handler(
@@ -70,7 +70,7 @@ class ConvertWatcher:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
-            get_console_ui().watch_mode_stop()
+            get_console_ui().watch_stopped()
             observer.stop()
         observer.join()
 
@@ -110,9 +110,9 @@ class ConvertWatcher:
                     current_time = time.time()
                     if current_time - self.last_modified < 1:
                         return
-                    self.last_modified = current_time
+                    self.last_modified = current_time  # type: ignore
 
-                    get_console_ui().file_changed(str(modified_path))
+                    get_console_ui().watch_file_changed(str(modified_path))
 
                     try:
                         self._process_file_change()
@@ -146,7 +146,7 @@ class ConvertWatcher:
                     include_source=self.include_source,
                 )
 
-                get_console_ui().watch_mode_converted(str(output_file))
+                get_console_ui().watch_update_complete(str(output_file))
 
         from watchdog.events import FileSystemEventHandler
 
