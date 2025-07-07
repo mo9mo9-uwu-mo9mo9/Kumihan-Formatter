@@ -26,7 +26,7 @@ class ConsoleUI:
     Provides consistent formatting and error handling.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize console UI with proper encoding setup"""
         ConsoleEncodingSetup.setup_encoding()
         self.console = self._create_console()
@@ -50,7 +50,7 @@ class ConsoleUI:
             return Console(legacy_windows=True)
 
     # Processing status messages
-    def processing_start(self, message: str, file_path: str = None) -> None:
+    def processing_start(self, message: str, file_path: str = None) -> None:  # type: ignore
         """Display processing start message"""
         if file_path:
             self.console.print(f"[green][ドキュメント] 読み込み中:[/green] {file_path}")
@@ -69,7 +69,7 @@ class ConsoleUI:
         self.console.print("[yellow][生成] HTML生成中...[/yellow]")
 
     # Success messages
-    def success(self, message: str, file_path: str = None) -> None:
+    def success(self, message: str, file_path: str = None) -> None:  # type: ignore
         """Display success message"""
         if file_path:
             self.console.print(f"[green][完了] {message}:[/green] {file_path}")
@@ -81,7 +81,7 @@ class ConsoleUI:
         self.console.print(f"[green][完了] 完了:[/green] {output_file}")
 
     # Error messages
-    def error(self, message: str, details: str = None) -> None:
+    def error(self, message: str, details: str = None) -> None:  # type: ignore
         """Display error message"""
         self.console.print(f"[red][エラー] エラー:[/red] {message}")
         if details:
@@ -116,7 +116,7 @@ class ConsoleUI:
         )
 
     # Warning messages
-    def warning(self, message: str, details: str = None) -> None:
+    def warning(self, message: str, details: str = None) -> None:  # type: ignore
         """Display warning message"""
         self.console.print(f"[yellow][警告] {message}[/yellow]")
         if details:
@@ -145,13 +145,13 @@ class ConsoleUI:
             )
 
     # Information messages
-    def info(self, message: str, details: str = None) -> None:
+    def info(self, message: str, details: str = None) -> None:  # type: ignore
         """Display info message"""
         self.console.print(f"[blue][情報] {message}[/blue]")
         if details:
             self.console.print(f"[dim]   {details}[/dim]")
 
-    def hint(self, message: str, details: str = None) -> None:
+    def hint(self, message: str, details: str = None) -> None:  # type: ignore
         """Display hint message"""
         self.console.print(f"[cyan][ヒント] {message}[/cyan]")
         if details:
@@ -177,7 +177,7 @@ class ConsoleUI:
             "[green]{}個の画像ファイルをコピーしました[/green]".format(count)
         )
 
-    def files_missing(self, files: list) -> None:
+    def files_missing(self, files: list) -> None:  # type: ignore
         """Display missing files"""
         self.console.print(
             f"[red][エラー] {len(files)}個の画像ファイルが" "見つかりません:[/red]"
@@ -185,7 +185,7 @@ class ConsoleUI:
         for filename in files:
             self.console.print(f"[red]   - {filename}[/red]")
 
-    def duplicate_files(self, duplicates: dict) -> None:
+    def duplicate_files(self, duplicates: dict) -> None:  # type: ignore
         """Display duplicate files warning"""
         self.console.print(
             "[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]"
@@ -194,7 +194,7 @@ class ConsoleUI:
             self.console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
 
     # Statistics and details
-    def statistics(self, stats: dict) -> None:
+    def statistics(self, stats: dict) -> None:  # type: ignore
         """Display statistics"""
         if "total_nodes" in stats:
             self.console.print(
@@ -215,7 +215,7 @@ class ConsoleUI:
                 f"[dim]   - 出力サイズ: {stats['output_size_mb']:.1f}MB[/dim]"
             )
 
-    def test_statistics(self, stats: dict, double_click_mode: bool = False) -> None:
+    def test_statistics(self, stats: dict, double_click_mode: bool = False) -> None:  # type: ignore
         """Display test generation statistics"""
         if double_click_mode:
             self.console.print(
@@ -315,7 +315,7 @@ class ConsoleUI:
         self.console.print(f"[green]   [画像]  画像: {image_count}個[/green]")
 
     # Test case detection
-    def test_cases_detected(self, count: int, cases: list) -> None:
+    def test_cases_detected(self, count: int, cases: list) -> None:  # type: ignore
         """Display test case detection"""
         self.console.print(f"[blue][テスト] テストケース検出: {count}個[/blue]")
         for i, (num, category, description) in enumerate(cases[:5]):

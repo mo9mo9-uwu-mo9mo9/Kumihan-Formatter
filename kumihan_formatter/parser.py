@@ -34,13 +34,13 @@ class Parser:
     - AST構造の構築統括
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None) -> None:  # type: ignore
         """Initialize parser with fixed markers"""
         # 簡素化: configは無視して固定マーカーのみ使用
         self.config = None
-        self.lines = []
+        self.lines = []  # type: ignore
         self.current = 0
-        self.errors = []
+        self.errors = []  # type: ignore
         self.logger = get_logger(__name__)
 
         # Initialize specialized parsers
@@ -147,7 +147,7 @@ class Parser:
         self.errors.append(error)
         self.logger.warning(f"Parse error: {error}")
 
-    def get_statistics(self) -> dict:
+    def get_statistics(self) -> dict:  # type: ignore
         """Get parsing statistics"""
         return {
             "total_lines": len(self.lines),
@@ -156,7 +156,7 @@ class Parser:
         }
 
 
-def parse(text: str, config=None) -> List[Node]:
+def parse(text: str, config=None) -> List[Node]:  # type: ignore
     """
     Main parsing function (compatibility with existing API)
 

@@ -12,7 +12,7 @@ from kumihan_formatter.models.config import FormatterConfig, SimpleFormatterConf
 class TestFormatterConfig:
     """FormatterConfigのテストクラス"""
 
-    def test_default_values(self):
+    def test_default_values(self) -> None:
         """デフォルト値が正しく設定されているかテスト"""
         config = FormatterConfig()
 
@@ -28,7 +28,7 @@ class TestFormatterConfig:
         assert "max_width" in config.css_variables
         assert config.css_variables["max_width"] == "800px"
 
-    def test_field_validation(self):
+    def test_field_validation(self) -> None:
         """フィールドの検証が正しく機能するかテスト"""
         # 正常なケース
         config = FormatterConfig(
@@ -42,22 +42,22 @@ class TestFormatterConfig:
         assert config.template_name == "custom"
         assert config.strict_mode is True
 
-    def test_whitespace_stripping(self):
+    def test_whitespace_stripping(self) -> None:
         """文字列の前後空白が自動削除されるかテスト"""
         config = FormatterConfig(input_encoding="  utf-8  ", template_name="  custom  ")
 
         assert config.input_encoding == "utf-8"
         assert config.template_name == "custom"
 
-    def test_forbidden_extra_fields(self):
+    def test_forbidden_extra_fields(self) -> None:
         """未定義フィールドが禁止されているかテスト"""
         with pytest.raises(ValidationError) as exc_info:
-            FormatterConfig(unknown_field="value")
+            FormatterConfig(unknown_field="value")  # type: ignore
 
         assert "unknown_field" in str(exc_info.value)
         assert "extra" in str(exc_info.value)
 
-    def test_assignment_validation(self):
+    def test_assignment_validation(self) -> None:
         """代入時の検証が有効かテスト"""
         config = FormatterConfig()
 
@@ -69,7 +69,7 @@ class TestFormatterConfig:
         with pytest.raises(ValidationError):
             config.strict_mode = "invalid"  # type: ignore
 
-    def test_css_variables_customization(self):
+    def test_css_variables_customization(self) -> None:
         """CSS変数のカスタマイズが正しく機能するかテスト"""
         custom_css = {
             "max_width": "1000px",
@@ -87,7 +87,7 @@ class TestFormatterConfig:
 class TestSimpleFormatterConfig:
     """SimpleFormatterConfigのテストクラス"""
 
-    def test_default_values(self):
+    def test_default_values(self) -> None:
         """デフォルト値が正しく設定されているかテスト"""
         config = SimpleFormatterConfig()
 
@@ -96,28 +96,28 @@ class TestSimpleFormatterConfig:
         assert "max_width" in config.css_variables
         assert config.css_variables["max_width"] == "800px"
 
-    def test_get_theme_name(self):
+    def test_get_theme_name(self) -> None:
         """テーマ名の取得が正しく機能するかテスト"""
         config = SimpleFormatterConfig()
 
         assert config.get_theme_name() == "デフォルト"
 
-    def test_field_validation(self):
+    def test_field_validation(self) -> None:
         """フィールドの検証が正しく機能するかテスト"""
         config = SimpleFormatterConfig(template_name="custom", include_source=True)
 
         assert config.template_name == "custom"
         assert config.include_source is True
 
-    def test_forbidden_extra_fields(self):
+    def test_forbidden_extra_fields(self) -> None:
         """未定義フィールドが禁止されているかテスト"""
         with pytest.raises(ValidationError) as exc_info:
-            SimpleFormatterConfig(unknown_field="value")
+            SimpleFormatterConfig(unknown_field="value")  # type: ignore
 
         assert "unknown_field" in str(exc_info.value)
         assert "extra" in str(exc_info.value)
 
-    def test_css_variables_default(self):
+    def test_css_variables_default(self) -> None:
         """CSS変数のデフォルト値が正しく設定されているかテスト"""
         config = SimpleFormatterConfig()
 
@@ -137,7 +137,7 @@ class TestSimpleFormatterConfig:
 class TestConfigCompatibility:
     """既存システムとの互換性テスト"""
 
-    def test_simple_config_compatibility(self):
+    def test_simple_config_compatibility(self) -> None:
         """simple_config.pyとの互換性テスト"""
         from kumihan_formatter.simple_config import SimpleConfig
 
@@ -159,7 +159,7 @@ class TestConfigCompatibility:
             assert key in old_css
             assert key in new_css
 
-    def test_config_serialization(self):
+    def test_config_serialization(self) -> None:
         """設定のシリアル化/デシリアル化テスト"""
         config = FormatterConfig(
             input_encoding="shift_jis",

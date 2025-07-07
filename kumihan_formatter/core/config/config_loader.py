@@ -27,7 +27,7 @@ class ConfigLoader:
     責任: ファイル読み込み・環境変数処理・設定マージ
     """
 
-    def __init__(self, validator):
+    def __init__(self, validator) -> None:  # type: ignore
         """
         Args:
             validator: ConfigValidator インスタンス
@@ -96,15 +96,19 @@ class ConfigLoader:
                     env_config["font_family"] = value
                 elif config_key == "max_file_size_mb":
                     try:
-                        env_config.setdefault("validation", {})["max_file_size_mb"] = (
+                        env_config.setdefault("validation", {})["max_file_size_mb"] = (  # type: ignore # type: ignore
                             int(value)
                         )
                     except ValueError:
                         logging.warning(f"Invalid value for {key}: {value}")
                 elif config_key == "strict_mode":
-                    env_config.setdefault("validation", {})[
+                    env_config.setdefault("validation", {})[  # type: ignore # type: ignore
                         "strict_mode"
-                    ] = value.lower() in ("true", "1", "yes")
+                    ] = value.lower() in (
+                        "true",
+                        "1",
+                        "yes",
+                    )
 
         if env_config:
             logging.info(f"Loaded environment configuration: {list(env_config.keys())}")
@@ -117,7 +121,7 @@ class ConfigLoader:
         """設定をマージ（上書き）"""
         result = self._deep_copy(base_config)
         self._merge_dict(result, override_config)
-        return result
+        return dict(result)
 
     def _deep_copy(self, obj: Any) -> Any:
         """深いコピーユーティリティ"""

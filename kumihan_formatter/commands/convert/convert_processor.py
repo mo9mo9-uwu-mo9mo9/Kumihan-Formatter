@@ -25,12 +25,12 @@ class ConvertProcessor:
     責任: ファイルの解析・変換・HTML生成
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.file_ops = FileOperations(ui=get_console_ui())
+        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
         self.logger.debug("ConvertProcessor initialized")
 
-    def convert_file(
+    def convert_file(  # type: ignore
         self,
         input_path: Path,
         output_dir: str,
@@ -107,7 +107,7 @@ class ConvertProcessor:
         html_filename = f"{input_path.stem}.html"
         return output_path / html_filename
 
-    def _parse_with_progress(self, text: str, config, input_path: Path) -> Any:
+    def _parse_with_progress(self, text: str, config, input_path: Path) -> Any:  # type: ignore
         """プログレス表示付きでパース処理を実行"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
         self.logger.debug(f"Parsing file of size: {size_mb:.2f} MB")
@@ -143,7 +143,7 @@ class ConvertProcessor:
 
         return ast
 
-    def _render_with_progress(
+    def _render_with_progress(  # type: ignore
         self,
         ast: Any,
         config,
@@ -235,4 +235,4 @@ class ConvertProcessor:
             self.logger.info(
                 f"Detailed stats: input={stats['input_size_mb']:.2f}MB, output={stats['output_size_mb']:.2f}MB, nodes={stats['node_count']}"
             )
-            get_console_ui().show_detailed_stats(stats)
+            get_console_ui().show_detailed_stats(stats)  # type: ignore

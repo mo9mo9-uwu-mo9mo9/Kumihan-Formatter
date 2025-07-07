@@ -48,7 +48,7 @@ def count_effective_lines(file_path: Path) -> int:
                 effective_lines += 1
             else:
                 # 複数行文字列内
-                if string_delimiter in stripped:
+                if string_delimiter and string_delimiter in stripped:
                     in_multiline_string = False
                 continue
 
@@ -83,7 +83,7 @@ def check_file_size(
         return True, line_count, message
 
 
-def main():
+def main() -> None:
     """メイン実行"""
     parser = argparse.ArgumentParser(description="ファイルサイズ制限チェック")
     parser.add_argument(

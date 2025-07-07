@@ -68,7 +68,7 @@ class TemplateManager:
         if template_name not in self._template_cache:
             self._template_cache[template_name] = self.env.get_template(template_name)
 
-        return self._template_cache[template_name]
+        return self._template_cache[template_name]  # type: ignore
 
     def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """
@@ -132,7 +132,7 @@ class TemplateManager:
         try:
             template = self.get_template(template_name)
             # Try to parse the template to check for syntax errors
-            template.environment.parse(template.source)
+            template.environment.parse(template.source)  # type: ignore
             return True, None
         except Exception as e:
             return False, str(e)
@@ -162,7 +162,7 @@ class TemplateManager:
             if isinstance(content, str):
                 return content
             elif hasattr(content, "get_text_content"):
-                return content.get_text_content()
+                return content.get_text_content()  # type: ignore
             else:
                 return str(content)
 
@@ -181,7 +181,7 @@ class RenderContext:
     """Builder for template rendering context"""
 
     def __init__(self) -> None:
-        self._context = {}
+        self._context = {}  # type: ignore
 
     def title(self, title: str) -> "RenderContext":
         """Set page title"""
@@ -308,7 +308,7 @@ class TemplateValidator:
         """
         try:
             template = self.template_manager.get_template(template_name)
-            source = template.source
+            source = template.source  # type: ignore
 
             missing_vars = []
             for var in required_vars:

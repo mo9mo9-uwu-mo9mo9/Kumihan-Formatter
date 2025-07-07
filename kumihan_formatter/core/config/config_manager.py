@@ -107,22 +107,22 @@ class EnhancedConfig:
         },
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.config = {}
-        self.config_sources = {}  # 各設定値の出典を追跡
+        self.config = {}  # type: ignore
+        self.config_sources: dict[str, str] = {}  # 各設定値の出典を追跡
         self.validator = ConfigValidator()
         self.loader = ConfigLoader(self.validator)
         self._load_defaults()
         self.logger.debug("EnhancedConfig initialized with default settings")
 
-    def _load_defaults(self):
+    def _load_defaults(self) -> None:
         """デフォルト設定を読み込み"""
         self.config = self.loader._deep_copy(self.DEFAULT_CONFIG)
         self._mark_source("default", self.config)
         self.logger.debug("Loaded default configuration")
 
-    def _mark_source(self, source: str, obj: Any, path: str = ""):
+    def _mark_source(self, source: str, obj: Any, path: str = ""):  # type: ignore
         """設定ソースをマーク（追跡用）"""
         if isinstance(obj, dict):
             for key, value in obj.items():
@@ -154,7 +154,7 @@ class EnhancedConfig:
         self.logger.debug("No configuration found in environment variables")
         return False
 
-    def _merge_config(self, user_config: Dict[str, Any], source: str):
+    def _merge_config(self, user_config: Dict[str, Any], source: str):  # type: ignore
         """設定をマージ"""
         self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
@@ -176,7 +176,7 @@ class EnhancedConfig:
 
         return current
 
-    def set(self, key: str, value: Any, source: str = "runtime"):
+    def set(self, key: str, value: Any, source: str = "runtime"):  # type: ignore
         """設定値を設定"""
         keys = key.split(".")
         current = self.config
@@ -193,27 +193,27 @@ class EnhancedConfig:
 
     def get_markers(self) -> Dict[str, Dict[str, str]]:
         """マーカー設定を取得"""
-        return self.get("markers", {})
+        return dict(self.get("markers", {}))
 
     def get_theme(self) -> str:
         """テーマ名を取得"""
-        return self.get("theme", "default")
+        return str(self.get("theme", "default"))
 
     def get_css_config(self) -> Dict[str, str]:
         """CSS設定を取得"""
-        return self.get("css", {})
+        return dict(self.get("css", {}))
 
     def get_performance_config(self) -> Dict[str, Any]:
         """パフォーマンス設定を取得"""
-        return self.get("performance", {})
+        return dict(self.get("performance", {}))
 
     def get_validation_config(self) -> Dict[str, Any]:
         """バリデーション設定を取得"""
-        return self.get("validation", {})
+        return dict(self.get("validation", {}))
 
     def to_dict(self) -> Dict[str, Any]:
         """設定を辞書として取得"""
-        return self.loader._deep_copy(self.config)
+        return self.loader._deep_copy(self.config)  # type: ignore
 
     def get_config_source(self, key: str) -> str:
         """設定値のソースを取得"""

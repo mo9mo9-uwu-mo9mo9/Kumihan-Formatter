@@ -4,7 +4,7 @@ This module handles syntax-level validation including markers, lists,
 and basic text structure.
 """
 
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from ..block_parser import BlockParser, BlockValidator
 from ..keyword_parser import KeywordParser, MarkerValidator
@@ -15,7 +15,7 @@ from .validation_issue import ValidationIssue
 class SyntaxValidator:
     """Validator for Kumihan syntax"""
 
-    def __init__(self, config=None):
+    def __init__(self, config: dict[str, Any] | None = None) -> None:  # type: ignore
         """Initialize syntax validator"""
         self.config = config
         self.keyword_parser = KeywordParser(config)

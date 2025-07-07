@@ -24,16 +24,16 @@ from ..windows_permission_helper import (
 class TestErrorHandling(TestCase):
     """エラーハンドリングE2Eテスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.output_dir = Path(self.test_dir) / "output"
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _run_conversion(self, input_file=None, options=None, expect_failure=False):
+    def _run_conversion(self, input_file: Path | None = None, options: list[str] | None = None, expect_failure: bool = False) -> subprocess.CompletedProcess[str]:  # type: ignore
         """変換処理を実行"""
         cmd = ["python3", "-m", "kumihan_formatter", "convert"]
         if input_file:
@@ -53,18 +53,20 @@ class TestErrorHandling(TestCase):
 
         return result
 
-    def _create_test_file(self, filename, content, encoding="utf-8"):
+    def _create_test_file(
+        self, filename: str, content: str, encoding: str = "utf-8"
+    ) -> Path:
         """テスト用ファイルを作成"""
         file_path = Path(self.test_dir) / filename
         if encoding:
             file_path.write_text(content, encoding=encoding)
         else:
-            file_path.write_bytes(content)
+            file_path.write_bytes(content)  # type: ignore
         return file_path
 
     # ファイルエラーハンドリング（4テスト）
 
-    def test_nonexistent_input_file_error(self):
+    def test_nonexistent_input_file_error(self) -> None:
         """存在しない入力ファイルエラーテスト"""
         nonexistent_file = Path(self.test_dir) / "nonexistent.txt"
 
@@ -96,7 +98,7 @@ class TestErrorHandling(TestCase):
             f"or stdout: '{result.stdout}'",
         )
 
-    def test_permission_denied_input_file_error(self):
+    def test_permission_denied_input_file_error(self) -> None:
         """読み込み権限なし入力ファイルエラーテスト"""
         # 権限なしファイルを作成
         content = "権限テストファイル"
@@ -180,7 +182,7 @@ class TestErrorHandling(TestCase):
                 # 権限を戻す（クリーンアップのため）
                 os.chmod(restricted_file, 0o644)
 
-    def test_permission_denied_output_directory_error(self):
+    def test_permission_denied_output_directory_error(self) -> None:
         """書き込み権限なし出力ディレクトリエラーテスト"""
         # 正常な入力ファイルを作成
         content = "# 権限テスト\n\n正常なコンテンツです。"
@@ -228,12 +230,12 @@ class TestErrorHandling(TestCase):
                 # 権限を戻す（クリーンアップのため）
                 os.chmod(restricted_dir, 0o755)
 
-    def test_invalid_encoding_file_error(self):
+    def test_invalid_encoding_file_error(self) -> None:
         """無効なエンコーディングファイルエラーテスト"""
         # バイナリデータで無効なテキストファイルを作成
         invalid_content = b"\xff\xfe\x00\x00\x01\x02\x03\x04"
         invalid_file = self._create_test_file(
-            "invalid_encoding.txt", invalid_content, encoding=None
+            "invalid_encoding.txt", invalid_content, encoding=None  # type: ignore # type: ignore
         )
 
         result = self._run_conversion(
@@ -248,7 +250,7 @@ class TestErrorHandling(TestCase):
 
     # 構文エラーハンドリング（4テスト）
 
-    def test_malformed_markdown_syntax_error(self):
+    def test_malformed_markdown_syntax_error(self) -> None:
         """不正なMarkdown構文エラーテスト"""
         malformed_content = """# 不正な構文テスト
 
@@ -290,7 +292,7 @@ def broken_function(
         ) or list(Path(self.test_dir).glob("*.html"))
         self.assertTrue(output_exists)
 
-    def test_invalid_special_syntax_error(self):
+    def test_invalid_special_syntax_error(self) -> None:
         """無効な特殊構文エラーテスト"""
         invalid_syntax_content = """# 無効な特殊構文テスト
 
@@ -325,7 +327,7 @@ d6  // ダイス数が指定されていない
         # 特殊構文エラーがあっても基本的な変換は継続することを確認
         self.assertIn(result.returncode, [0, 1])
 
-    def test_circular_reference_error(self):
+    def test_circular_reference_error(self) -> None:
         """循環参照エラーテスト"""
         # 循環参照を含むコンテンツ（実装依存）
         circular_content = """# 循環参照テスト
@@ -350,7 +352,7 @@ d6  // ダイス数が指定されていない
         # 循環参照があっても変換は継続することを確認
         self.assertIn(result.returncode, [0, 1])
 
-    def test_deeply_nested_structure_error(self):
+    def test_deeply_nested_structure_error(self) -> None:
         """深いネスト構造エラーテスト"""
         # 極端に深いネスト構造を作成
         nested_content = "# 深いネスト構造テスト\n\n"
@@ -375,7 +377,7 @@ d6  // ダイス数が指定されていない
 
     # システムエラーハンドリング（3テスト）
 
-    def test_insufficient_disk_space_simulation(self):
+    def test_insufficient_disk_space_simulation(self) -> None:
         """ディスク容量不足シミュレーションテスト"""
         # 非常に大きなファイルを生成してディスク容量不足をシミュレート
         # 実際のディスク容量不足は危険なため、代替手段を使用
@@ -393,7 +395,7 @@ d6  // ダイス数が指定されていない
         # 大きなファイルでも正常に処理されることを確認
         self.assertIn(result.returncode, [0, 1])
 
-    def test_memory_intensive_operation_error(self):
+    def test_memory_intensive_operation_error(self) -> None:
         """メモリ集約的操作エラーテスト"""
         # メモリ使用量が多い操作をシミュレート
         memory_intensive_content = """# メモリ集約的操作テスト
@@ -422,7 +424,7 @@ d6  // ダイス数が指定されていない
         # メモリ集約的操作でも正常に処理されることを確認
         self.assertIn(result.returncode, [0, 1])
 
-    def test_concurrent_access_error(self):
+    def test_concurrent_access_error(self) -> None:
         """同時アクセスエラーテスト"""
         # 同じファイルに対する同時変換をシミュレート
         content = "# 同時アクセステスト\n\n同時実行のテストです。"
@@ -463,7 +465,7 @@ d6  // ダイス数が指定されていない
 
     # 復旧機能テスト（3テスト）
 
-    def test_partial_failure_recovery(self):
+    def test_partial_failure_recovery(self) -> None:
         """部分的失敗からの復旧テスト"""
         # 一部に問題があるが全体としては処理可能なコンテンツ
         partial_failure_content = """# 部分的失敗復旧テスト
@@ -502,7 +504,7 @@ d6  // ダイス数が指定されていない
         ) or list(Path(self.test_dir).glob("*.html"))
         self.assertTrue(output_exists)
 
-    def test_template_fallback_recovery(self):
+    def test_template_fallback_recovery(self) -> None:
         """テンプレートフォールバック復旧テスト"""
         content = "# テンプレートフォールバックテスト\n\n正常なコンテンツです。"
         input_file = self._create_test_file("template_test.txt", content)
@@ -540,7 +542,7 @@ d6  // ダイス数が指定されていない
                 f"Expected template error message, got: {result.stderr}",
             )
 
-    def test_graceful_degradation(self):
+    def test_graceful_degradation(self) -> None:
         """段階的機能縮退テスト"""
         # 高度な機能を要求するが、基本的な変換は可能なコンテンツ
         degradation_content = """# 段階的機能縮退テスト

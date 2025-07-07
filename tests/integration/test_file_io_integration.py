@@ -22,17 +22,19 @@ from kumihan_formatter.core.file_ops import FileOperations
 class TestFileIOIntegration(TestCase):
     """ファイル入出力の統合テスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.file_ops = FileOperations()
         self.encoding_detector = EncodingDetector()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _create_test_file(self, filename, content, encoding="utf-8"):
+    def _create_test_file(
+        self, filename: str, content: str, encoding: str = "utf-8"
+    ) -> Path:
         """テスト用ファイルを作成"""
         file_path = Path(self.test_dir) / filename
         file_path.write_text(content, encoding=encoding)
@@ -40,7 +42,7 @@ class TestFileIOIntegration(TestCase):
 
     # ファイル読み込みテスト（4テスト）
 
-    def test_read_basic_text_file(self):
+    def test_read_basic_text_file(self) -> None:
         """基本的なテキストファイル読み込みテスト"""
         content = """# テストシナリオ
 
@@ -61,7 +63,7 @@ class TestFileIOIntegration(TestCase):
         # 読み込んだ内容が正しいことを確認
         self.assertEqual(result, content)
 
-    def test_read_large_text_file(self):
+    def test_read_large_text_file(self) -> None:
         """大きなテキストファイル読み込みテスト"""
         # 大きなファイルを作成（1000行）
         lines = [f"行{i}: これは大きなファイルのテストです。" for i in range(1000)]
@@ -75,7 +77,7 @@ class TestFileIOIntegration(TestCase):
         self.assertEqual(result, content)
         self.assertEqual(len(result.split("\n")), 1000)
 
-    def test_read_nonexistent_file(self):
+    def test_read_nonexistent_file(self) -> None:
         """存在しないファイル読み込みテスト"""
         nonexistent_file = Path(self.test_dir) / "nonexistent.txt"
 
@@ -87,7 +89,7 @@ class TestFileIOIntegration(TestCase):
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
-    def test_read_permission_denied_file(self):
+    def test_read_permission_denied_file(self) -> None:
         """読み込み権限なしファイルテスト"""
         content = "権限テスト"
         file_path = self._create_test_file("permission_test.txt", content)
@@ -105,7 +107,7 @@ class TestFileIOIntegration(TestCase):
 
     # ファイル出力テスト（4テスト）
 
-    def test_write_basic_html_file(self):
+    def test_write_basic_html_file(self) -> None:
         """基本的なHTMLファイル出力テスト"""
         html_content = """<!DOCTYPE html>
 <html>
@@ -129,7 +131,7 @@ class TestFileIOIntegration(TestCase):
         result = output_file.read_text(encoding="utf-8")
         self.assertEqual(result, html_content)
 
-    def test_write_to_new_directory(self):
+    def test_write_to_new_directory(self) -> None:
         """新しいディレクトリへの出力テスト"""
         content = "新しいディレクトリテスト"
         output_dir = Path(self.test_dir) / "new_dir" / "subdir"
@@ -143,7 +145,7 @@ class TestFileIOIntegration(TestCase):
         self.assertTrue(output_file.exists())
         self.assertEqual(output_file.read_text(encoding="utf-8"), content)
 
-    def test_overwrite_existing_file(self):
+    def test_overwrite_existing_file(self) -> None:
         """既存ファイル上書きテスト"""
         original_content = "元のファイル内容"
         new_content = "新しいファイル内容"
@@ -163,7 +165,7 @@ class TestFileIOIntegration(TestCase):
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
-    def test_write_permission_denied_directory(self):
+    def test_write_permission_denied_directory(self) -> None:
         """書き込み権限なしディレクトリテスト"""
         content = "権限テスト"
         readonly_dir = Path(self.test_dir) / "readonly"
@@ -183,7 +185,7 @@ class TestFileIOIntegration(TestCase):
 
     # 文字エンコーディングテスト（4テスト）
 
-    def test_utf8_encoding_detection(self):
+    def test_utf8_encoding_detection(self) -> None:
         """UTF-8エンコーディング検出テスト"""
         content = "UTF-8テスト: 日本語文字列 🎌"
         file_path = self._create_test_file("utf8_test.txt", content, encoding="utf-8")
@@ -194,7 +196,7 @@ class TestFileIOIntegration(TestCase):
         # UTF-8が検出されることを確認
         self.assertIn("utf", detected_encoding.lower())
 
-    def test_shiftjis_encoding_detection(self):
+    def test_shiftjis_encoding_detection(self) -> None:
         """Shift_JISエンコーディング検出テスト"""
         content = "Shift_JISテスト: 日本語文字列"
         file_path = Path(self.test_dir) / "shiftjis_test.txt"
@@ -211,7 +213,7 @@ class TestFileIOIntegration(TestCase):
             any(enc in detected_encoding.lower() for enc in ["shift", "sjis", "cp932"])
         )
 
-    def test_encoding_with_bom(self):
+    def test_encoding_with_bom(self) -> None:
         """BOM付きファイルのエンコーディング検出テスト"""
         content = "BOMテスト: 日本語文字列"
         file_path = Path(self.test_dir) / "bom_test.txt"
@@ -227,7 +229,7 @@ class TestFileIOIntegration(TestCase):
         self.assertIn("utf", detected_encoding.lower())
         self.assertTrue(has_bom)
 
-    def test_mixed_encoding_handling(self):
+    def test_mixed_encoding_handling(self) -> None:
         """複数エンコーディング混在処理テスト"""
         # 複数のエンコーディングでファイルを作成
         encodings = ["utf-8", "shift_jis", "euc-jp"]

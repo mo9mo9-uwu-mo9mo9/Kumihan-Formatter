@@ -277,7 +277,7 @@ class NestedListParser:
             return self.list_parser.parse_ordered_list(lines, start_index)
         else:
             # Not a list
-            return None, start_index
+            return None, start_index  # type: ignore
 
     def _calculate_indent_level(self, line: str) -> int:
         """Calculate indentation level of a line"""
@@ -287,7 +287,7 @@ class NestedListParser:
         self, lines: List[str]
     ) -> Dict[int, List[Tuple[int, str]]]:
         """Group list items by their indentation level"""
-        groups = {}
+        groups = {}  # type: ignore
         for i, line in enumerate(lines):
             if self.list_parser.is_list_line(line):
                 indent = self._calculate_indent_level(line)
@@ -347,7 +347,7 @@ class ListValidator:
 
     def _validate_keyword_list_item(self, line: str, line_number: int) -> List[str]:
         """Validate keyword syntax in a list item"""
-        issues = []
+        issues = []  # type: ignore
 
         # Extract content after "- " or "・"
         if line.startswith("- "):

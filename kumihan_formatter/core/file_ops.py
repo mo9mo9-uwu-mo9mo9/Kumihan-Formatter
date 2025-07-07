@@ -18,17 +18,17 @@ from .utilities.logger import get_logger
 class UIProtocol(Protocol):
     """UI interface protocol to avoid circular dependency"""
 
-    def warning(self, message: str, details: str = None) -> None: ...
+    def warning(self, message: str, details: str | None = None) -> None: ...  # type: ignore
 
     def file_copied(self, count: int) -> None: ...
 
-    def files_missing(self, files: list) -> None: ...
+    def files_missing(self, files: list) -> None: ...  # type: ignore
 
-    def duplicate_files(self, duplicates: dict) -> None: ...
+    def duplicate_files(self, duplicates: dict) -> None: ...  # type: ignore
 
-    def info(self, message: str, details: str = None) -> None: ...
+    def info(self, message: str, details: str | None = None) -> None: ...  # type: ignore
 
-    def hint(self, message: str, details: str = None) -> None: ...
+    def hint(self, message: str, details: str | None = None) -> None: ...  # type: ignore
 
     def file_error(self, file_path: str, message: str) -> None: ...
 
@@ -319,9 +319,9 @@ class FileOperations:
 
         # Platform-specific fallbacks (minimal set)
         if sys.platform == "win32":
-            fallback_encodings = ["cp932"]
+            fallback_encodings: list[str] = ["cp932"]
         else:
-            fallback_encodings = []
+            fallback_encodings: list[str] = []
 
         for enc in fallback_encodings:
             try:

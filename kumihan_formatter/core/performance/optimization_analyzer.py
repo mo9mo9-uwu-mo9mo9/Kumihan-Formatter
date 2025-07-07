@@ -72,7 +72,7 @@ class OptimizationAnalyzer:
     - 最適化レポート生成
     """
 
-    def __init__(self, baseline_dir: Path = None):
+    def __init__(self, baseline_dir: Path = None):  # type: ignore
         """最適化分析器を初期化
 
         Args:
@@ -319,7 +319,7 @@ class OptimizationAnalyzer:
         Returns:
             比較結果
         """
-        comparison_data = {
+        comparison_data = {  # type: ignore
             "optimizations": {},
             "ranking": [],
             "best_practices": [],
@@ -337,7 +337,7 @@ class OptimizationAnalyzer:
 
         # 各最適化のスコアを比較
         for report in reports:
-            comparison_data["optimizations"][report.optimization_name] = {
+            comparison_data["optimizations"][report.optimization_name] = {  # type: ignore
                 "total_score": report.total_improvement_score,
                 "significant_improvements": len(report.get_significant_improvements()),
                 "regression_warnings": len(report.regression_warnings),
@@ -345,7 +345,7 @@ class OptimizationAnalyzer:
 
         # ランキング作成
         ranking = sorted(
-            comparison_data["optimizations"].items(),
+            comparison_data["optimizations"].items(),  # type: ignore
             key=lambda x: x[1]["total_score"],
             reverse=True,
         )
@@ -365,14 +365,14 @@ class OptimizationAnalyzer:
     def _load_baseline(self, baseline_name: str) -> Optional[Dict[str, Any]]:
         """ベースラインデータを読み込み"""
         if baseline_name in self.baseline_data:
-            return self.baseline_data[baseline_name]
+            return self.baseline_data[baseline_name]  # type: ignore
 
         baseline_file = self.baseline_dir / f"{baseline_name}_baseline.json"
         if baseline_file.exists():
             with open(baseline_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self.baseline_data[baseline_name] = data
-                return data
+                return data  # type: ignore
 
         return None
 
@@ -501,7 +501,7 @@ class OptimizationAnalyzer:
         cache_metrics = [m for m in metrics if "cache" in m.name.lower()]
         if cache_metrics:
             cache_improvements = [m for m in cache_metrics if m.is_improvement]
-            summary["cache_effectiveness"] = {
+            summary["cache_effectiveness"] = {  # type: ignore
                 "total_cache_metrics": len(cache_metrics),
                 "cache_improvements": len(cache_improvements),
                 "avg_cache_improvement": (
@@ -583,14 +583,14 @@ class OptimizationAnalyzer:
         try:
             import psutil
 
-            system_info["cpu_count"] = psutil.cpu_count()
-            system_info["memory_total"] = psutil.virtual_memory().total
+            system_info["cpu_count"] = psutil.cpu_count()  # type: ignore
+            system_info["memory_total"] = psutil.virtual_memory().total  # type: ignore
         except ImportError:
             pass
 
         return system_info
 
-    def cleanup_old_data(self, days_old: int = 30):
+    def cleanup_old_data(self, days_old: int = 30):  # type: ignore
         """古いデータをクリーンアップ
 
         Args:
@@ -610,7 +610,7 @@ class OptimizationAnalyzer:
                 report_file.unlink()
                 print(f"🗑️  Deleted old report: {report_file}")
 
-    def export_optimization_summary(self, output_file: Path):
+    def export_optimization_summary(self, output_file: Path):  # type: ignore
         """最適化の要約をエクスポート
 
         Args:

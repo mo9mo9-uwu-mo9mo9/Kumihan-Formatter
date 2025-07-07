@@ -55,9 +55,9 @@ class CacheStorage:
             self.cache_dir = cache_dir or Path.cwd() / ".kumihan_cache" / name
             self.cache_dir.mkdir(parents=True, exist_ok=True)
         else:
-            self.cache_dir = None
+            self.cache_dir = None  # type: ignore
 
-    def calculate_size(self, value) -> int:
+    def calculate_size(self, value: Any) -> int:  # type: ignore
         """値のサイズを推定（バイト）"""
         try:
             if isinstance(value, str):

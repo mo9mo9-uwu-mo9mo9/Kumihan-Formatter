@@ -61,7 +61,7 @@ class RecoveryStrategy(ABC):
 class FileEncodingRecoveryStrategy(RecoveryStrategy):
     """ファイルエンコーディングエラーの回復戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("FileEncodingRecovery", priority=2)
         self.encoding_candidates = [
             "utf-8",
@@ -132,7 +132,7 @@ class FileEncodingRecoveryStrategy(RecoveryStrategy):
 class FilePermissionRecoveryStrategy(RecoveryStrategy):
     """ファイル権限エラーの回復戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("FilePermissionRecovery", priority=3)
 
     def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
@@ -206,7 +206,7 @@ class FilePermissionRecoveryStrategy(RecoveryStrategy):
 class SyntaxErrorRecoveryStrategy(RecoveryStrategy):
     """構文エラーの回復戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("SyntaxErrorRecovery", priority=4)
         # よくある修正パターン
         self.correction_patterns = {
@@ -305,7 +305,7 @@ class SyntaxErrorRecoveryStrategy(RecoveryStrategy):
 class FileNotFoundRecoveryStrategy(RecoveryStrategy):
     """ファイル未発見エラーの回復戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("FileNotFoundRecovery", priority=3)
 
     def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
@@ -383,7 +383,7 @@ class FileNotFoundRecoveryStrategy(RecoveryStrategy):
 class MemoryErrorRecoveryStrategy(RecoveryStrategy):
     """メモリ不足エラーの回復戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("MemoryErrorRecovery", priority=1)
 
     def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
@@ -578,7 +578,7 @@ class RecoveryManager:
         # 成功率を計算
         for strategy, stats in strategy_stats.items():
             stats["success_rate"] = (
-                stats["successes"] / stats["attempts"] if stats["attempts"] > 0 else 0
+                stats["successes"] / stats["attempts"] if stats["attempts"] > 0 else 0  # type: ignore
             )
 
         return {

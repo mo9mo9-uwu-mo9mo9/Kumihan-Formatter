@@ -17,22 +17,22 @@ from unittest import TestCase
 class TestRealScenarios(TestCase):
     """実際の使用シナリオE2Eテスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.output_dir = Path(self.test_dir) / "output"
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _create_scenario_file(self, filename, content):
+    def _create_scenario_file(self, filename: str, content: str) -> Path:
         """シナリオファイルを作成"""
         file_path = Path(self.test_dir) / filename
         file_path.write_text(content, encoding="utf-8")
         return file_path
 
-    def _run_conversion(self, input_file, options=None):
+    def _run_conversion(self, input_file: Path, options: list[str] | None = None) -> subprocess.CompletedProcess[str]:  # type: ignore
         """変換処理を実行"""
         cmd = ["python3", "-m", "kumihan_formatter", "convert", str(input_file)]
         if options:
@@ -45,7 +45,7 @@ class TestRealScenarios(TestCase):
 
         return result
 
-    def _verify_html_output(self, expected_elements=None):
+    def _verify_html_output(self, expected_elements: list[str] | None = None) -> None:  # type: ignore
         """HTML出力の検証"""
         # 出力ディレクトリが作成されたことを確認
         self.assertTrue(self.output_dir.exists())
@@ -69,12 +69,12 @@ class TestRealScenarios(TestCase):
             for element in expected_elements:
                 self.assertIn(element, content)
 
-        return content
+        return content  # type: ignore
 
     # 同人シナリオ変換テスト（3テスト）
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_basic_coc_scenario(self):
+    def test_basic_coc_scenario(self) -> None:
         """基本的なCoC6thシナリオ変換テスト"""
         scenario_content = """# 古き館の謎
 ## CoC6th 同人シナリオ
@@ -124,7 +124,7 @@ class TestRealScenarios(TestCase):
 
         # HTML出力の検証（実際のコンテンツで確認）
         try:
-            content = self._verify_html_output(
+            content = self._verify_html_output(  # type: ignore
                 ["推奨人数", "3-5人", "図書館", "書斎", "深きものども"]
             )
 
@@ -160,7 +160,7 @@ class TestRealScenarios(TestCase):
             self.assertIsNotNone(result.stdout or result.stderr)
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_modern_horror_scenario(self):
+    def test_modern_horror_scenario(self) -> None:
         """現代ホラーシナリオ変換テスト"""
         scenario_content = """# 消えた友人
 ## 現代ホラー TRPG シナリオ
@@ -212,7 +212,7 @@ class TestRealScenarios(TestCase):
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "消えた友人",
                 "現代ホラー TRPG シナリオ",
@@ -228,7 +228,7 @@ class TestRealScenarios(TestCase):
         self.assertIn("ハッピーエンド", content)
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_fantasy_adventure_scenario(self):
+    def test_fantasy_adventure_scenario(self) -> None:
         """ファンタジー冒険シナリオ変換テスト"""
         scenario_content = """# 失われた遺跡の秘宝
 ## ファンタジー冒険シナリオ
@@ -289,7 +289,7 @@ class TestRealScenarios(TestCase):
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "失われた遺跡の秘宝",
                 "ファンタジー冒険シナリオ",
@@ -311,7 +311,7 @@ class TestRealScenarios(TestCase):
     # 長文ドキュメント変換テスト（2テスト）
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_long_document_conversion(self):
+    def test_long_document_conversion(self) -> None:
         """長文ドキュメント変換テスト"""
         # 長文ドキュメントを作成（50章構成）
         chapters = []
@@ -361,7 +361,7 @@ class TestRealScenarios(TestCase):
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             ["長文ドキュメントテスト", "第1章", "第25章", "第50章", "総合ガイド"]
         )
 
@@ -371,7 +371,7 @@ class TestRealScenarios(TestCase):
         self.assertIn("全50章", content)
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_multilevel_structure_document(self):
+    def test_multilevel_structure_document(self) -> None:
         """多層構造ドキュメント変換テスト"""
         multilevel_content = """# 多層構造ドキュメント
 ## システム設計書
@@ -471,7 +471,7 @@ class TestRealScenarios(TestCase):
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "多層構造ドキュメント",
                 "システム設計書",
@@ -499,7 +499,7 @@ class TestRealScenarios(TestCase):
     # 複合コンテンツ変換テスト（3テスト）
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_mixed_content_conversion(self):
+    def test_mixed_content_conversion(self) -> None:
         """複合コンテンツ変換テスト"""
         mixed_content = """# 複合コンテンツテスト
 ## 様々な要素の統合
@@ -571,7 +571,7 @@ if __name__ == "__main__":
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "複合コンテンツテスト",
                 "<strong>太字</strong>",
@@ -594,7 +594,7 @@ if __name__ == "__main__":
         )
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_toc_generation(self):
+    def test_toc_generation(self) -> None:
         """目次生成テスト"""
         toc_content = """# メインタイトル
 ## 目次を生成するテスト
@@ -641,7 +641,7 @@ if __name__ == "__main__":
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "メインタイトル",
                 "目次を生成するテスト",
@@ -675,7 +675,7 @@ if __name__ == "__main__":
             )
 
     @unittest.skip("Complex scenario tests - skipping for CI stability")
-    def test_image_and_link_handling(self):
+    def test_image_and_link_handling(self) -> None:
         """画像とリンク処理テスト"""
         image_link_content = """# 画像とリンクのテスト
 ## メディアコンテンツの統合
@@ -717,7 +717,7 @@ if __name__ == "__main__":
         self.assertIn(result.returncode, [0, 1])
 
         # HTML出力の検証
-        content = self._verify_html_output(
+        content = self._verify_html_output(  # type: ignore
             [
                 "画像とリンクのテスト",
                 "<img",

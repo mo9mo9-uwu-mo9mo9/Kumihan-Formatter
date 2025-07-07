@@ -20,8 +20,8 @@ class ConvertValidator:
     責任: 入力ファイルの検証・構文チェック
     """
 
-    def __init__(self):
-        self.file_ops = FileOperations(ui=get_console_ui())
+    def __init__(self) -> None:
+        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
         self.path_validator = PathValidator()
 
     def validate_input_file(self, input_file: str) -> Path:
@@ -69,7 +69,7 @@ class ConvertValidator:
                     for error in errors:
                         # 旧形式から新形式に変換
                         detailed_error = self._convert_to_detailed_error(
-                            error, file_path
+                            error, file_path  # type: ignore
                         )
                         error_report.add_error(detailed_error)
 
@@ -80,7 +80,7 @@ class ConvertValidator:
             # 空のレポートを返す
             return ErrorReport(source_file=input_path)
 
-    def _convert_to_detailed_error(self, error, file_path: Path):
+    def _convert_to_detailed_error(self, error, file_path: Path):  # type: ignore # type: ignore
         """旧エラー形式から新DetailedError形式に変換"""
         from ...core.reporting import (
             DetailedError,

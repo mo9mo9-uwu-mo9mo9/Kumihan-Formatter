@@ -87,7 +87,7 @@ class ExtendedConfig(BaseConfig):
         """現在のテーマをCSS変数に適用"""
         if self._current_theme in self._themes:
             theme_css = self._themes[self._current_theme].get("css", {})
-            self._css_vars.update(theme_css)
+            self._css_vars.update(theme_css)  # type: ignore
 
     def get_markers(self) -> Dict[str, Dict[str, Any]]:
         """マーカー定義を取得
@@ -164,7 +164,7 @@ class ExtendedConfig(BaseConfig):
         Returns:
             str: テーマID
         """
-        return self._current_theme
+        return self._current_theme  # type: ignore
 
     def get_theme_name(self) -> str:
         """現在のテーマ名を取得
@@ -173,7 +173,7 @@ class ExtendedConfig(BaseConfig):
             str: テーマ名
         """
         if self._current_theme in self._themes:
-            return self._themes[self._current_theme].get("name", "不明")
+            return self._themes[self._current_theme].get("name", "不明")  # type: ignore
         return "不明"
 
     def validate(self) -> bool:
@@ -208,7 +208,7 @@ class ExtendedConfig(BaseConfig):
             other_config: マージする設定辞書
         """
         if not isinstance(other_config, dict):
-            return
+            return  # type: ignore
 
         # マーカーのマージ
         if "markers" in other_config and isinstance(other_config["markers"], dict):

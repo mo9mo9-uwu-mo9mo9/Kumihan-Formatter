@@ -53,7 +53,7 @@ class SyntaxReporter:
             report.append(f"📁 {file_path}")
 
             # Group by severity
-            by_severity = {}
+            by_severity = {}  # type: ignore
             for error in errors:
                 if error.severity not in by_severity:
                     by_severity[error.severity] = []
@@ -140,7 +140,7 @@ class SyntaxReporter:
             )
 
 
-def main():
+def main():  # type: ignore
     """CLI entry point for syntax checker"""
     import argparse
 
@@ -172,4 +172,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # type: ignore

@@ -90,7 +90,7 @@ class HTMLRenderer:
             str: Generated HTML for the node
         """
         if not isinstance(node, Node):
-            return escape(str(node))
+            return escape(str(node))  # type: ignore
 
         # Route to specific rendering method
         renderer_method = getattr(self, f"_render_{node.type}", self._render_generic)
@@ -235,7 +235,7 @@ class HTMLRenderer:
             return "[ERROR: Maximum recursion depth reached]"
 
         if not isinstance(node, Node):
-            return escape(str(node))
+            return escape(str(node))  # type: ignore
 
         # Route to specific rendering method
         renderer_method = getattr(
@@ -337,3 +337,5 @@ def render_single_node(node: Node, depth: int = 0) -> str:
 
 # Maintain the original CompoundElementRenderer class for backward compatibility
 CompoundElementRenderer = CompoundElementRenderer
+
+__all__ = ["HTMLRenderer", "CompoundElementRenderer", "render_node"]

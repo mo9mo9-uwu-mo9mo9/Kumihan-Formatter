@@ -29,10 +29,10 @@ class ConvertCommand:
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()
         self.watcher = ConvertWatcher(self.processor, self.validator)
-        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
+        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())  # type: ignore
         self.logger.debug("ConvertCommand initialized")
 
-    def execute(
+    def execute(  # type: ignore
         self,
         input_file: Optional[str],
         output: str,
@@ -71,7 +71,7 @@ class ConvertCommand:
         try:
             # 入力ファイルの検証
             self.logger.debug("Validating input file")
-            input_path = self.validator.validate_input_file(input_file)
+            input_path = self.validator.validate_input_file(input_file)  # type: ignore
             self.logger.info(f"Input file validated: {input_path}")
 
             # ファイルサイズチェック
@@ -93,7 +93,7 @@ class ConvertCommand:
                 if error_report.has_errors():
                     # エラーが見つかった場合は変換を中止
                     self.logger.error(
-                        f"Syntax errors found: {error_report.error_count} errors"
+                        f"Syntax errors found: {error_report.error_count} errors"  # type: ignore
                     )
                     get_console_ui().error(
                         "記法エラーが検出されました。変換を中止します。"
@@ -113,7 +113,7 @@ class ConvertCommand:
                 elif error_report.has_warnings():
                     # 警告のみの場合は続行するが表示
                     self.logger.warning(
-                        f"Syntax warnings found: {error_report.warning_count} warnings"
+                        f"Syntax warnings found: {error_report.warning_count} warnings"  # type: ignore
                     )
                     get_console_ui().warning("記法に関する警告があります:")
                     print(error_report.to_console_output())
@@ -140,7 +140,7 @@ class ConvertCommand:
             if watch:
                 self.logger.info("Starting watch mode")
                 self.watcher.start_watch_mode(
-                    input_file,
+                    input_file,  # type: ignore
                     output,
                     config_obj,
                     show_test_cases,

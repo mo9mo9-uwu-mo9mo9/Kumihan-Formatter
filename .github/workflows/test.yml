@@ -42,6 +42,11 @@ jobs:
       run: |
         black --check kumihan_formatter tests || true
 
+    - name: Type check with mypy strict mode
+      run: |
+        pip install mypy
+        python -m mypy --strict kumihan_formatter/ tests/
+
     - name: Fast test run
       run: |
         pytest -x --ff -q
@@ -103,6 +108,12 @@ jobs:
           echo "tests directory not found, checking only kumihan_formatter"
           isort --check-only kumihan_formatter
         fi
+
+    - name: Type check with mypy strict mode
+      shell: bash
+      run: |
+        pip install mypy
+        python -m mypy --strict kumihan_formatter/ tests/
 
     - name: Test with pytest
       shell: bash

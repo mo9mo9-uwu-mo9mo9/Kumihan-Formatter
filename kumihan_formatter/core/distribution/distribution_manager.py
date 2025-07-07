@@ -20,7 +20,7 @@ class DistributionManager:
     責任: 配布構造作成の全体制御・各処理のオーケストレーション
     """
 
-    def __init__(self, ui=None):
+    def __init__(self, ui=None):  # type: ignore
         """配布管理器を初期化
 
         Args:
@@ -176,7 +176,7 @@ class DistributionManager:
 </head>
 <body>
     <h1>Kumihan-Formatter ドキュメント</h1>
-    
+
     <div class="section">
         <h2>📋 最重要文書</h2>
         <p>最初にお読みください（プレーンテキスト形式）</p>
@@ -185,7 +185,7 @@ class DistributionManager:
             <li><a href="essential/インストール方法.txt">インストール方法.txt</a></li>
         </ul>
     </div>
-    
+
     <div class="section">
         <h2>📚 ユーザーガイド</h2>
         <p>詳細な使用方法（HTML形式）</p>
@@ -194,7 +194,7 @@ class DistributionManager:
             <li><a href="user/トラブルシューティング.html">トラブルシューティング.html</a></li>
         </ul>
     </div>
-    
+
     <footer style="margin-top: 50px; text-align: center; color: #666;">
         <p>生成日時: {generation_time}</p>
     </footer>

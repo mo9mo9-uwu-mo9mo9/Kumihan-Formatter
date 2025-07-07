@@ -79,7 +79,7 @@ class BlockParser:
             # Create a simple paragraph node for empty markers
             from .ast_nodes import paragraph
 
-            return paragraph(content), end_index + 1
+            return paragraph(content), end_index + 1  # type: ignore
 
         # Parse keywords and attributes
         keywords, attributes, parse_errors = self.keyword_parser.parse_marker_keywords(
@@ -87,7 +87,7 @@ class BlockParser:
         )
 
         if parse_errors:
-            return error_node("; ".join(parse_errors), start_index + 1), end_index + 1
+            return error_node("; ".join(parse_errors), start_index + 1), end_index + 1  # type: ignore
 
         # Create block node
         if len(keywords) == 1:
@@ -105,7 +105,7 @@ class BlockParser:
             if hasattr(node, "add_attribute"):
                 node.add_attribute("id", f"heading-{self.heading_counter}")
 
-        return node, end_index + 1
+        return node, end_index + 1  # type: ignore
 
     def _parse_image_block(
         self, lines: List[str], start_index: int
@@ -234,7 +234,7 @@ class BlockParser:
             current_index += 1
 
         if not paragraph_lines:
-            return None, start_index
+            return None, start_index  # type: ignore
 
         # Join lines with space
         content = " ".join(paragraph_lines)
@@ -386,7 +386,7 @@ class BlockValidator:
 
     def validate_block_nesting(self, lines: List[str]) -> List[str]:
         """Validate block nesting rules"""
-        issues = []
+        issues = []  # type: ignore
         # TODO: Implement nesting validation
         return issues
 

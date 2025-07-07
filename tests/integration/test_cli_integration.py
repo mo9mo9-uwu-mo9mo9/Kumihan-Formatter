@@ -16,7 +16,7 @@ from unittest import TestCase
 class TestCLIIntegration(TestCase):
     """CLI全体の動作確認統合テスト"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """テスト用の一時ディレクトリを作成"""
         self.test_dir = tempfile.mkdtemp()
         self.test_input_file = Path(self.test_dir) / "test_input.txt"
@@ -51,11 +51,13 @@ template: "base"
             encoding="utf-8",
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _run_cli(self, args, expect_success=True):
+    def _run_cli(
+        self, args: list[str], expect_success: bool = True
+    ) -> subprocess.CompletedProcess[str]:
         """CLI実行ヘルパー"""
         cmd = ["python3", "-m", "kumihan_formatter"] + args
         result = subprocess.run(
@@ -69,27 +71,27 @@ template: "base"
 
     # CLI基本動作テスト（3テスト）
 
-    def test_cli_help_display(self):
+    def test_cli_help_display(self) -> None:
         """ヘルプ表示テスト"""
         result = self._run_cli(["--help"])
         self.assertIn("Kumihan-Formatter", result.stdout)
         self.assertIn("convert", result.stdout)
 
-    def test_cli_version_info(self):
+    def test_cli_version_info(self) -> None:
         """ヘルプ情報テスト（バージョン情報の代替）"""
         result = self._run_cli(["--help"])
         # ヘルプ情報が出力されることを確認
         self.assertIn("Kumihan-Formatter", result.stdout)
         self.assertIn("convert", result.stdout)
 
-    def test_cli_invalid_command(self):
+    def test_cli_invalid_command(self) -> None:
         """無効なコマンドテスト"""
         result = self._run_cli(["invalid-command"], expect_success=False)
         self.assertNotEqual(result.returncode, 0)
 
     # convert コマンド統合テスト（5テスト）
 
-    def test_convert_basic_conversion(self):
+    def test_convert_basic_conversion(self) -> None:
         """基本的な変換処理テスト"""
         self._run_cli(
             [
@@ -108,7 +110,7 @@ template: "base"
         html_files = list(self.test_output_dir.glob("*.html"))
         self.assertGreater(len(html_files), 0)
 
-    def test_convert_with_options(self):
+    def test_convert_with_options(self) -> None:
         """オプション付き変換テスト"""
         result = self._run_cli(
             [
@@ -125,7 +127,7 @@ template: "base"
         # 変換が成功することを確認
         self.assertEqual(result.returncode, 0)
 
-    def test_convert_with_config_file(self):
+    def test_convert_with_config_file(self) -> None:
         """設定ファイル使用テスト"""
         result = self._run_cli(
             [
@@ -140,7 +142,7 @@ template: "base"
         # 設定ファイルが読み込まれて変換が成功することを確認
         self.assertEqual(result.returncode, 0)
 
-    def test_convert_with_template(self):
+    def test_convert_with_template(self) -> None:
         """テンプレート指定テスト"""
         result = self._run_cli(
             [
@@ -157,7 +159,7 @@ template: "base"
         # テンプレートが指定されて変換が成功することを確認
         self.assertEqual(result.returncode, 0)
 
-    def test_convert_syntax_check_modes(self):
+    def test_convert_syntax_check_modes(self) -> None:
         """構文チェック有効/無効テスト"""
         # 構文チェック有効（デフォルト）
         result1 = self._run_cli(
@@ -186,7 +188,7 @@ template: "base"
 
     # 補助コマンド統合テスト（3テスト）
 
-    def test_check_syntax_command(self):
+    def test_check_syntax_command(self) -> None:
         """check-syntax コマンドテスト"""
         result = self._run_cli(["check-syntax", str(self.test_input_file)])
 
@@ -194,7 +196,7 @@ template: "base"
         # エラーがなければ成功、エラーがあれば報告される
         self.assertTrue(result.returncode in [0, 1])  # 0=成功, 1=構文エラー検出
 
-    def test_generate_sample_command(self):
+    def test_generate_sample_command(self) -> None:
         """generate-sample コマンドテスト"""
         result = self._run_cli(
             ["generate-sample", "--output", str(self.test_output_dir)]
@@ -205,7 +207,7 @@ template: "base"
             sample_files = list(Path(self.test_output_dir).glob("*.txt"))
             self.assertGreater(len(sample_files), 0)
 
-    def test_generate_test_command(self):
+    def test_generate_test_command(self) -> None:
         """generate-test コマンドテスト"""
         result = self._run_cli(
             ["generate-test", "--output", str(self.test_output_dir)],

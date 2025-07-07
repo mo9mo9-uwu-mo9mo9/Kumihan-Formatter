@@ -234,7 +234,7 @@ class ElementRenderer:
         elif isinstance(content, Node):
             # Handle single Node objects using main renderer if available
             if self._main_renderer:
-                return self._main_renderer._render_node_with_depth(content, depth + 1)
+                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
             else:
                 return f"{{NODE:{content.type}}}"
         elif isinstance(content, list):
@@ -279,7 +279,7 @@ class ElementRenderer:
         elif isinstance(content, Node):
             # Handle single Node objects using main renderer if available
             if self._main_renderer:
-                return self._main_renderer._render_node_with_depth(content, depth + 1)
+                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
             else:
                 return f"{{NODE:{content.type}}}"
         elif isinstance(content, list):

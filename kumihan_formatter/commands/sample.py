@@ -21,8 +21,8 @@ from ..ui.console_ui import get_console_ui
 class SampleCommand:
     """Sample generation command implementation"""
 
-    def __init__(self):
-        self.file_ops = FileOperations(ui=get_console_ui())
+    def __init__(self) -> None:
+        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
         self.path_validator = PathValidator()
 
     def execute(
@@ -104,7 +104,7 @@ class SampleCommand:
 class TestFileCommand:
     """Test file generation command implementation"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.file_ops = FileOperations()
 
     def execute(
@@ -135,7 +135,7 @@ class TestFileCommand:
             sys.path.insert(0, str(dev_tools_path))
 
         try:
-            from generate_test_file import TestFileGenerator
+            from generate_test_file import TestFileGenerator  # type: ignore
         except ImportError:
             get_console_ui().error("テストファイル生成ツールが見つかりません")
             get_console_ui().dim("dev/tools/generate_test_file.py を確認してください")
@@ -189,7 +189,7 @@ class TestFileCommand:
 
             config_obj = load_config(config)
             if config:
-                config_obj.validate_config()
+                config_obj.validate_config()  # type: ignore
 
             # Ensure the output directory is clean
             output_dir = Path(output or "dist")
@@ -198,7 +198,7 @@ class TestFileCommand:
                 test_html_file.unlink()
 
             convert_command = ConvertCommand()
-            test_output_file = convert_command._convert_file(
+            test_output_file = convert_command._convert_file(  # type: ignore
                 output_file,
                 output or "dist",
                 config_obj,
@@ -224,7 +224,7 @@ class TestFileCommand:
             raise click.ClickException(f"テスト変換中にエラーが発生しました: {e}")
 
 
-def create_sample_command():
+def create_sample_command():  # type: ignore
     """Create the sample generation click command"""
 
     @click.command()
@@ -239,7 +239,7 @@ def create_sample_command():
     @click.option(
         "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
     )
-    def generate_sample(output, with_source_toggle, quiet):
+    def generate_sample(output, with_source_toggle, quiet):  # type: ignore
         """機能ショーケースサンプルを生成します"""
 
         # Determine source toggle usage
@@ -251,7 +251,7 @@ def create_sample_command():
     return generate_sample
 
 
-def create_test_command():
+def create_test_command():  # type: ignore
     """Create the test file generation click command"""
 
     @click.command()
@@ -274,7 +274,7 @@ def create_test_command():
         help="テストケース名を表示（テスト用ファイル変換時）",
     )
     @click.option("--config", type=click.Path(exists=True), help="設定ファイルのパス")
-    def generate_test(
+    def generate_test(  # type: ignore
         test_output,
         pattern_count,
         double_click_mode,

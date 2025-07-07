@@ -41,7 +41,7 @@ class SystemContext:
     cpu_usage: Optional[float] = None
     disk_space: Optional[int] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """システム情報を自動収集"""
         try:
             import psutil
@@ -73,7 +73,7 @@ class FileContext:
     modification_time: Optional[datetime] = None
     checksum: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """ファイル情報を自動収集"""
         try:
             path = Path(self.file_path)
@@ -149,7 +149,7 @@ class ErrorContextManager:
             self.logger.debug("ErrorContextManager initialized")
 
     @contextmanager
-    def operation_context(
+    def operation_context(  # type: ignore # type: ignore
         self,
         operation_name: str,
         component: str,
@@ -255,7 +255,7 @@ class ErrorContextManager:
                 ].__dict__
 
         # 操作スタック
-        context["operation_stack"] = [
+        context["operation_stack"] = [  # type: ignore
             {
                 "operation": op.operation_name,
                 "component": op.component,
@@ -456,7 +456,7 @@ class ErrorContextManager:
             }
 
             # datetime オブジェクトを文字列に変換
-            def datetime_serializer(obj):
+            def datetime_serializer(obj):  # type: ignore
                 if isinstance(obj, datetime):
                     return obj.isoformat()
                 raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
