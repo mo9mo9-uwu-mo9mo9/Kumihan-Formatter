@@ -4,7 +4,7 @@ This module handles Jinja2 template loading, caching, and rendering.
 """
 
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -308,7 +308,7 @@ class TemplateValidator:
 
     def validate_template_variables(
         self, template_name: str, required_vars: list[str]
-    ) -> Tuple[bool, list[str]]:
+    ) -> tuple[bool, list[str]]:
         """
         Validate that template uses required variables
 

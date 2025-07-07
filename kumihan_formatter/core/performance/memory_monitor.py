@@ -111,7 +111,7 @@ class MemoryMonitor:
 
         # メモリリーク検出
         self.detected_leaks: dict[str, MemoryLeak] = {}
-        self.object_counts: Dict[str, List[tuple[float, int]]] = defaultdict(list)
+        self.object_counts: dict[str, list[tuple[float, int]]] = defaultdict(list)
 
         # 監視対象オブジェクト
         self.tracked_objects: dict[str, set[Any]] = defaultdict(set)

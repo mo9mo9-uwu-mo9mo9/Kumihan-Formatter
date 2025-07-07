@@ -34,7 +34,7 @@ def flatten_text_nodes(content: list[Any]) -> list[Any]:
 
 def count_nodes_by_type(nodes: list[Node]) -> dict[str, int]:
     """Count nodes by type in a list"""
-    counts: dict[str, int] = {}
+    counts: Dict[str, int] = {}
     for node in nodes:
         if isinstance(node, Node):
             counts[node.type] = counts.get(node.type, 0) + 1

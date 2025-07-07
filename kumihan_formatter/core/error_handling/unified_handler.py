@@ -9,7 +9,7 @@ import traceback
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Generator, List, Union
+from typing import Any, Callable, Generator
 
 from ..common.error_framework import ErrorContext
 from ..utilities.logger import get_logger
