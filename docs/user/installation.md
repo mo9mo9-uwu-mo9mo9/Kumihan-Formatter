@@ -28,13 +28,11 @@ Kumihan-Formatterのインストール方法を詳しく説明します。
 
 ## Kumihan-Formatterのインストール
 
-### 方法1: pipでインストール（推奨）
+### 方法1: GitHubからダウンロード（推奨）
 
-```bash
-pip install kumihan-formatter
-```
+> **注意**: 現在、PyPIでの配布準備中です。以下の方法でインストールしてください。
 
-### 方法2: GitHubからダウンロード
+### 方法2: 開発者向けインストール
 
 1. [GitHubのリリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)
 2. 最新版のZIPファイルをダウンロード
@@ -48,7 +46,7 @@ pip install kumihan-formatter
 インストール後、以下のコマンドで確認：
 
 ```bash
-kumihan-formatter --version
+python -m kumihan_formatter --version
 ```
 
 ## トラブルシューティング

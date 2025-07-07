@@ -23,7 +23,7 @@ python --version > nul 2>&1
 if errorlevel 1 (
     echo [エラー] Python が見つかりません
     echo.
-    echo Python 3.9 以上をインストールしてください：
+    echo Python 3.12 以上をインストールしてください：
     echo https://www.python.org/downloads/
     echo.
     echo Python インストール後、再度このセットアップを実行してください。

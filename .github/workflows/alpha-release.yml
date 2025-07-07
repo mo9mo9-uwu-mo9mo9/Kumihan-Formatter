@@ -48,7 +48,7 @@ jobs:
 
     - name: Test executable
       run: |
-        ./dist/${{ matrix.executable_name }} --version
+        ./dist/${{ matrix.executable_name }} --help
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

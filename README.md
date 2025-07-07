@@ -1,7 +1,7 @@
 # Kumihan-Formatter
 
 ![Tests](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/workflows/Tests/badge.svg)
-![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.3.0--alpha.1-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
@@ -32,7 +32,7 @@ scripts/setup/Windows用初回セットアップ.bat
 scripts/setup/macOS用初回セットアップ.command
 
 # 開発用CLI使用例
-python -m kumihan_formatter.cli convert input.txt
+python -m kumihan_formatter convert input.txt
 ```
 
 ## 💡 基本的な記法
@@ -65,4 +65,5 @@ python -m kumihan_formatter.cli convert input.txt
 
 ## 📄 ライセンス
 
-MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
+Proprietary License - Copyright © 2025 mo9mo9-uwu-mo9mo9
+All rights reserved.

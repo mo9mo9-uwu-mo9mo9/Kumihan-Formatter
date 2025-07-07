@@ -32,7 +32,7 @@ cd "$SCRIPT_DIR"
 echo "[1/4] Checking Python installation..."
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    REQUIRED_VERSION="3.9"
+    REQUIRED_VERSION="3.12"
 
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
@@ -51,7 +51,7 @@ if command -v python3 &> /dev/null; then
     fi
 elif command -v python &> /dev/null; then
     PYTHON_VERSION=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    REQUIRED_VERSION="3.9"
+    REQUIRED_VERSION="3.12"
 
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
@@ -71,7 +71,7 @@ elif command -v python &> /dev/null; then
 else
     echo "[ERROR] Python not found"
     echo ""
-    echo "Please install Python 3.9 or higher:"
+    echo "Please install Python 3.12 or higher:"
     echo "https://www.python.org/downloads/"
     echo ""
     echo "After installing Python, run this setup again."
