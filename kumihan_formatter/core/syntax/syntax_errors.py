@@ -6,7 +6,6 @@ for syntax errors in Kumihan markup.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 
 class ErrorSeverity(Enum):

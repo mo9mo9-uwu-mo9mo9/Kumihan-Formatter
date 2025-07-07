@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import hashlib
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger

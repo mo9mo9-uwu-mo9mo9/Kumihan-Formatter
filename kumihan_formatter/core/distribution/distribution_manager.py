@@ -6,7 +6,6 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 from pathlib import Path
-from typing import List
 
 from ..doc_classifier import DocumentClassifier, DocumentType
 from .distribution_converter import DistributionConverter

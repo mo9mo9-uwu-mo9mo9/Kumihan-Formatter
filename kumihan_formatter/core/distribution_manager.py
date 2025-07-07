@@ -13,10 +13,7 @@ from kumihan_formatter.core.distribution import (
 
 # 互換性のための再エクスポート
 from .distribution import (
-    DistributionConverter,
     DistributionManager,
-    DistributionProcessor,
-    DistributionStructure,
 )
 
 

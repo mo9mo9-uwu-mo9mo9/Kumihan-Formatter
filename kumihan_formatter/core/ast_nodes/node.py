@@ -5,7 +5,7 @@ elements in the Abstract Syntax Tree.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass

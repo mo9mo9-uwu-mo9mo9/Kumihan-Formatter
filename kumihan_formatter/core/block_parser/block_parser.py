@@ -4,7 +4,6 @@ This module handles the parsing of basic block-level elements.
 """
 
 import re
-from typing import List, Optional, Tuple
 
 from ..ast_nodes import Node, error_node, paragraph, toc_marker
 from ..keyword_parser import KeywordParser, MarkerValidator

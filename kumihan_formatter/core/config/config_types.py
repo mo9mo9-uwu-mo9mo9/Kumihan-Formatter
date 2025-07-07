@@ -7,7 +7,6 @@ Issue #319対応 - config_manager.py から分離
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 
 class ConfigLevel(Enum):

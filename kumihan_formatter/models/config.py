@@ -4,8 +4,6 @@ pydantic BaseModelを使用した設定管理
 Issue #370対応 - 型安全性強化
 """
 
-from typing import Dict, Optional
-
 from pydantic import BaseModel, Field
 
 

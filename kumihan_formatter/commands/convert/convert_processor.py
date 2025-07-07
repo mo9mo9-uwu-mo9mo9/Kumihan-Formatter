@@ -8,7 +8,7 @@ Issue #319対応 - convert.py から分離
 import re
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from rich.progress import Progress
 

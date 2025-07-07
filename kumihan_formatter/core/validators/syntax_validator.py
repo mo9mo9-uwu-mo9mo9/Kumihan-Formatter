@@ -4,7 +4,7 @@ This module handles syntax-level validation including markers, lists,
 and basic text structure.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 
 from ..block_parser import BlockParser, BlockValidator
 from ..keyword_parser import KeywordParser, MarkerValidator

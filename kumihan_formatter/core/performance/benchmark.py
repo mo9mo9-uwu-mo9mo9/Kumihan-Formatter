@@ -10,7 +10,7 @@ import statistics
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache

@@ -5,8 +5,6 @@
 Issue #319対応 - error_reporting.py から分離
 """
 
-from typing import List
-
 from .error_types import DetailedError, ErrorSeverity
 
 

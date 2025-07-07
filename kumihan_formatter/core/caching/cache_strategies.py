@@ -6,7 +6,6 @@ Issue #319対応 - smart_cache.py から分離
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict
 
 from .cache_types import CacheEntry
 

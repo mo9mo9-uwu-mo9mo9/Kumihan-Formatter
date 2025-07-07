@@ -6,7 +6,6 @@ Issue #319対応 - error_reporting.py から分離
 """
 
 from pathlib import Path
-from typing import List
 
 
 class ErrorContextManager:

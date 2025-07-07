@@ -6,7 +6,7 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 
 class DistributionStructure:

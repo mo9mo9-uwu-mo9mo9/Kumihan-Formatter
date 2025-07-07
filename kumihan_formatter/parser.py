@@ -4,9 +4,7 @@ This is the new, modular parser implementation that replaces the monolithic
 parser.py file. Each parsing responsibility is now handled by specialized modules.
 """
 
-from typing import List, Optional
-
-from .core.ast_nodes import Node, paragraph
+from .core.ast_nodes import Node
 from .core.block_parser import BlockParser
 from .core.keyword_parser import KeywordParser
 from .core.list_parser import ListParser

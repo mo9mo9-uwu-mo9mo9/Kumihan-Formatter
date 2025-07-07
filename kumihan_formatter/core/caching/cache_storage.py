@@ -9,7 +9,7 @@ import hashlib
 import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..common.error_framework import ErrorCategory, KumihanError
 from .cache_strategies import CacheStrategy

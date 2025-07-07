@@ -6,7 +6,7 @@ directory management, file hashing, and safe filename generation.
 
 import hashlib
 from pathlib import Path
-from typing import Iterator, Union
+from typing import Iterator
 
 
 class FileSystemHelper:

@@ -23,8 +23,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
-from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable
 
 try:
     import psutil

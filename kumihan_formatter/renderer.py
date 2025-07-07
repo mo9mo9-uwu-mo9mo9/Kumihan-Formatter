@@ -6,7 +6,7 @@ renderer.py file. Each rendering responsibility is now handled by specialized mo
 
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer

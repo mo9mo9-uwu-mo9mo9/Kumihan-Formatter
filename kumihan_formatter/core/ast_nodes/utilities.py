@@ -4,7 +4,7 @@ This module provides utility functions for working with
 AST nodes and node collections.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from .node import Node
 

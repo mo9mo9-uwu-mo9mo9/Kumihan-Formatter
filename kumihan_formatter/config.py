@@ -7,16 +7,13 @@
 内部的には新しいExtendedConfigを使用します。
 """
 
-import json
 import logging
-from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-import yaml
 from rich.console import Console
 
 # 新しい統合設定システムをインポート
-from .config import ConfigManager, ExtendedConfig
+from .config import ConfigManager
 
 console = Console()
 logger = logging.getLogger(__name__)

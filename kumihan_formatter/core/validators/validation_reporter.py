@@ -4,7 +4,6 @@ This module formats and reports validation results in various formats.
 """
 
 import json
-from typing import List
 
 from .validation_issue import ValidationIssue
 

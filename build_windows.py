@@ -11,14 +11,12 @@ Options:
     --upload  Upload to GitHub releases (requires environment setup)
 """
 
-import argparse  # type: ignore
-import os  # type: ignore
-import shutil  # type: ignore
-import subprocess  # type: ignore
-import sys  # type: ignore
-import tempfile  # type: ignore
-import zipfile  # type: ignore
-from pathlib import Path  # type: ignore
+import argparse
+import shutil
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
 
 
 class WindowsBuilder:
@@ -37,7 +35,7 @@ class WindowsBuilder:
 
         # Check PyInstaller
         try:
-            import PyInstaller  # type: ignore
+            import PyInstaller
 
             print(f"[OK] PyInstaller {PyInstaller.__version__} が見つかりました")
         except ImportError:
@@ -47,9 +45,9 @@ class WindowsBuilder:
 
         # Check main package
         try:
-            import kumihan_formatter  # type: ignore
+            import kumihan_formatter
 
-            print(f"[OK] kumihan_formatter が見つかりました")
+            print("[OK] kumihan_formatter が見つかりました")
         except ImportError:
             print("[ERROR] kumihan_formatter パッケージが見つかりません")
             print("現在のディレクトリから実行していることを確認してください")
@@ -57,7 +55,7 @@ class WindowsBuilder:
 
         # Check GUI dependencies
         try:
-            import tkinter  # type: ignore
+            import tkinter
 
             print("[OK] tkinter が利用可能です")
         except ImportError:
@@ -83,7 +81,7 @@ class WindowsBuilder:
     def install_pyinstaller_if_needed(self) -> None:
         """Install PyInstaller if not available"""
         try:
-            import PyInstaller  # type: ignore
+            import PyInstaller
         except ImportError:
             print("[INFO] PyInstaller をインストール中...")
             subprocess.check_call(
@@ -172,7 +170,7 @@ class WindowsBuilder:
         print("[INFO] 配布パッケージを作成中...")
 
         # Create ZIP package
-        package_name = f"Kumihan-Formatter-v1.0-Windows"
+        package_name = "Kumihan-Formatter-v1.0-Windows"
         zip_path = self.dist_dir / f"{package_name}.zip"
 
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -262,7 +260,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 
         except Exception as e:
             print(f"\n[ERROR] ビルドに失敗しました: {e}")
-            import traceback  # type: ignore
+            import traceback
 
             traceback.print_exc()
             return False
@@ -290,7 +288,7 @@ def main() -> None:
     builder = WindowsBuilder()
     success = builder.build(clean=args.clean, test=args.test, upload=args.upload)
 
-    return 0 if success else 1
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

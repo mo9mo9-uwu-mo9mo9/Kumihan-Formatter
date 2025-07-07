@@ -4,7 +4,7 @@ This module handles parsing of special block types including code blocks,
 tables, and other special formatting elements.
 """
 
-from typing import Any, List, Tuple
+from typing import Any
 
 from ..ast_nodes import Node, NodeBuilder, error_node, paragraph
 

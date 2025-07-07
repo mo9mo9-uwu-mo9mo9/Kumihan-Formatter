@@ -9,7 +9,7 @@ Issue #319対応 - 定期的リファクタリングを不要にする予防的�
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 
 
 def count_effective_lines(file_path: Path) -> int:

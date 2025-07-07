@@ -4,7 +4,7 @@ This module validates document structure including AST validation,
 TOC structure, and document organization.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 from ..ast_nodes import Node, validate_ast
 from ..toc_generator import TOCValidator

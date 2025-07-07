@@ -12,7 +12,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional
 
 
 class ViolationSeverity(Enum):
@@ -105,7 +105,7 @@ class ArchitectureValidator:
                 ViolationSeverity.CRITICAL,
                 "file_too_large",
                 f"ファイルサイズが制限を超過: {line_count}行 > {self.MAX_FILE_LINES}行",
-                f"ファイルを複数の責任に分割してください",
+                "ファイルを複数の責任に分割してください",
             )
         elif line_count > self.MAX_FILE_LINES * 0.8:
             self._add_violation(
@@ -114,7 +114,7 @@ class ArchitectureValidator:
                 ViolationSeverity.WARNING,
                 "file_size_warning",
                 f"ファイルサイズが警告レベル: {line_count}行 (制限: {self.MAX_FILE_LINES}行)",
-                f"ファイル分割を検討してください",
+                "ファイル分割を検討してください",
             )
 
     def _check_ast(self, file_path: Path, tree: ast.AST, lines: List[str]) -> None:
@@ -148,7 +148,7 @@ class ArchitectureValidator:
                 ViolationSeverity.ERROR,
                 "function_too_large",
                 f"関数 '{node.name}' が制限を超過: {func_lines}行 > {self.MAX_FUNCTION_LINES}行",
-                f"関数を小さな機能に分割してください",
+                "関数を小さな機能に分割してください",
             )
 
     def _check_class_size(
@@ -167,7 +167,7 @@ class ArchitectureValidator:
                 ViolationSeverity.ERROR,
                 "class_too_large",
                 f"クラス '{node.name}' が制限を超過: {class_lines}行 > {self.MAX_CLASS_LINES}行",
-                f"クラスを複数の責任に分割してください",
+                "クラスを複数の責任に分割してください",
             )
 
     def _check_function_complexity(
@@ -189,7 +189,7 @@ class ArchitectureValidator:
                 ViolationSeverity.WARNING,
                 "high_complexity",
                 f"関数 '{node.name}' の複雑度が高い: {complexity} > {self.MAX_COMPLEXITY}",
-                f"条件分岐を減らすか、複数の関数に分割してください",
+                "条件分岐を減らすか、複数の関数に分割してください",
             )
 
     def _check_class_responsibility(self, file_path: Path, node: ast.ClassDef) -> None:
@@ -204,17 +204,17 @@ class ArchitectureValidator:
                 ViolationSeverity.WARNING,
                 "too_many_methods",
                 f"クラス '{node.name}' のメソッド数が多い: {len(methods)}個",
-                f"責任を分離し、複数のクラスに分割を検討してください",
+                "責任を分離し、複数のクラスに分割を検討してください",
             )
 
     def _check_dependency_direction(self, file_path: Path, node: ast.AST) -> None:
         """依存関係の方向性チェック"""
         if isinstance(node, ast.ImportFrom) and node.module:
-            module_parts = node.module.split(".")
-
             # 相対インポートの場合
             if node.level > 0:
-                current_layer = self._get_file_layer(file_path)
+                # 未使用変数を削除
+                # module_parts = node.module.split(".")
+                # current_layer = self._get_file_layer(file_path)
 
                 # 上位レイヤーへの依存は禁止
                 if node.level == 1:  # ..module
@@ -224,7 +224,7 @@ class ArchitectureValidator:
                         ViolationSeverity.ERROR,
                         "upward_dependency",
                         f"上位レイヤーへの依存が検出: {node.module}",
-                        f"依存関係を逆転させるか、抽象化を検討してください",
+                        "依存関係を逆転させるか、抽象化を検討してください",
                     )
 
     def _get_file_layer(self, file_path: Path) -> str:
@@ -293,7 +293,7 @@ class ArchitectureValidator:
 
             for violation in violations:
                 relative_path = violation.file_path.relative_to(self.project_root)
-                report_lines.append(f"")
+                report_lines.append("")
                 report_lines.append(f"📁 {relative_path}:{violation.line_number}")
                 report_lines.append(f"🔍 {violation.rule_name}: {violation.message}")
                 if violation.suggestion:

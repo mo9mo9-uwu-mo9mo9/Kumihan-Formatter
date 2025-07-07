@@ -5,9 +5,8 @@ including keyword-enhanced list items.
 """
 
 import re
-from typing import Optional, Tuple
 
-from .ast_nodes import Node, NodeBuilder, list_item, ordered_list, unordered_list
+from .ast_nodes import Node, list_item, ordered_list, unordered_list
 from .keyword_parser import KeywordParser
 
 

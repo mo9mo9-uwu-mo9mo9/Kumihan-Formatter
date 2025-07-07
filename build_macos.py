@@ -17,8 +17,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
-import zipfile
 from pathlib import Path
 
 
@@ -51,7 +49,7 @@ class MacOSBuilder:
         try:
             import kumihan_formatter
 
-            print(f"[OK] kumihan_formatter が見つかりました")
+            print("[OK] kumihan_formatter が見つかりました")
         except ImportError:
             print("[ERROR] kumihan_formatter パッケージが見つかりません")
             print("現在のディレクトリから実行していることを確認してください")
@@ -179,7 +177,7 @@ class MacOSBuilder:
         ]
 
         print(f"署名コマンド: {' '.join(cmd)}")
-        result = subprocess.run(cmd)
+        result: subprocess.CompletedProcess[str] = subprocess.run(cmd, text=True)
 
         if result.returncode == 0:
             print("[OK] 署名が完了しました")
@@ -253,7 +251,7 @@ class MacOSBuilder:
         print("[INFO] 配布パッケージを作成中...")
 
         # Create ZIP package for simple distribution
-        package_name = f"Kumihan-Formatter-v1.0-macOS"
+        package_name = "Kumihan-Formatter-v1.0-macOS"
         zip_path = self.dist_dir / f"{package_name}.zip"
 
         print(f"ZIPパッケージを作成中: {zip_path}")

@@ -5,9 +5,8 @@
 Issue #319対応 - config_manager.py から分離
 """
 
-import logging
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from ..utilities.logger import get_logger
 from .config_loader import ConfigLoader

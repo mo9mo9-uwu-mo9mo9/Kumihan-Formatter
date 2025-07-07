@@ -5,7 +5,7 @@ all specialized renderers and maintains backward compatibility.
 """
 
 from html import escape
-from typing import Any, Dict, List
+from typing import Any, List
 
 from ..ast_nodes import Node
 from .compound_renderer import CompoundElementRenderer

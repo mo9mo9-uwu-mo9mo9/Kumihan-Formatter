@@ -4,7 +4,7 @@ This module provides safe type conversion functions
 and list manipulation utilities.
 """
 
-from typing import Any, Iterator, List
+from typing import Any, Iterator
 
 
 def safe_int(value: Any, default: int = 0) -> int:
