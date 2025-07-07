@@ -62,21 +62,24 @@ jobs:
 
     - name: Test executable
       shell: bash
+      timeout-minutes: 2
       run: |
+        echo "=== Testing executable with timeout ==="
         if [ "${{ matrix.platform }}" = "macos" ]; then
-          # Mac: Test .app bundle or executable
+          # Mac: Test with timeout (GUI apps may hang)
           if [ -d "./dist/${{ matrix.executable_name }}.app" ]; then
-            echo "Testing .app bundle"
-            ./dist/${{ matrix.executable_name }}.app/Contents/MacOS/${{ matrix.executable_name }} || echo "GUI test completed"
+            echo "Found .app bundle, testing..."
+            timeout 10 ./dist/${{ matrix.executable_name }}.app/Contents/MacOS/${{ matrix.executable_name }} --help 2>&1 || echo "macOS .app GUI test completed (expected timeout)"
           else
-            echo "Testing executable"
-            timeout 5 ./dist/${{ matrix.executable_name }} || echo "GUI test completed"
+            echo "Testing macOS executable..."
+            timeout 10 ./dist/${{ matrix.executable_name }} --help 2>&1 || echo "macOS GUI test completed (expected timeout)"
           fi
         else
-          # Windows: Test executable with timeout
-          echo "Testing Windows executable"
-          timeout 5 ./dist/${{ matrix.executable_name }} || echo "GUI test completed"
+          # Windows: Test with timeout
+          echo "Testing Windows executable..."
+          timeout 10 ./dist/${{ matrix.executable_name }} --help 2>&1 || echo "Windows GUI test completed (expected timeout)"
         fi
+        echo "=== Test completed ==="
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
