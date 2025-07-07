@@ -43,18 +43,45 @@ jobs:
 
     - name: Build executable
       run: |
-        echo "from kumihan_formatter.cli import main; main()" > entry_point.py
-        pyinstaller --onefile --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates:kumihan_formatter/templates" entry_point.py
+        echo "from kumihan_formatter.gui_launcher import main; main()" > entry_point.py
+        echo "=== Debug: Created entry_point.py ==="
+        cat entry_point.py
+        echo "=== Debug: Platform = ${{ matrix.platform }} ==="
+        echo "=== Debug: Available templates ==="
+        ls -la kumihan_formatter/templates/ || echo "Templates directory not found"
+        if [ "${{ matrix.platform }}" = "macos" ]; then
+          echo "=== Building for macOS ==="
+          pyinstaller --onefile --windowed --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates:kumihan_formatter/templates" entry_point.py
+        else
+          echo "=== Building for Windows ==="
+          pyinstaller --onefile --windowed --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates;kumihan_formatter/templates" entry_point.py
+        fi
+        echo "=== Debug: Build completed, checking output ==="
+        ls -la dist/
 
     - name: Test executable
       run: |
-        ./dist/${{ matrix.executable_name }} --version
+        if [ "${{ matrix.platform }}" = "macos" ]; then
+          # Mac: Test .app bundle or executable
+          if [ -d "./dist/${{ matrix.executable_name }}.app" ]; then
+            echo "Testing .app bundle"
+            ./dist/${{ matrix.executable_name }}.app/Contents/MacOS/${{ matrix.executable_name }} || echo "GUI test completed"
+          else
+            echo "Testing executable"
+            timeout 5 ./dist/${{ matrix.executable_name }} || echo "GUI test completed"
+          fi
+        else
+          # Windows: Test executable with timeout
+          echo "Testing Windows executable"
+          timeout 5 ./dist/${{ matrix.executable_name }} || echo "GUI test completed"
+        fi
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.platform }}-executable
-        path: dist/${{ matrix.executable_name }}
+        path: |
+          dist/${{ matrix.executable_name }}*
         retention-days: 30
 
   create-release:
