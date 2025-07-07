@@ -45,7 +45,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
         cache: 'pip'
 
     - name: Install dependencies
@@ -209,7 +209,7 @@ jobs:
         Write-Host "### ✅ Successfully built Windows executable"
         Write-Host ""
         Write-Host "- **Branch**: ${{ github.ref_name }}"
-        Write-Host "- **Python Version**: 3.11"
+        Write-Host "- **Python Version**: 3.12"
         Write-Host "- **Build OS**: Windows Latest"
         Write-Host "- **PyInstaller**: $(pyinstaller --version)"
         Write-Host "- **Run Number**: ${{ github.run_number }}"
