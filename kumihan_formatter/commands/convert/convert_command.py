@@ -24,7 +24,7 @@ class ConvertCommand:
     責任: 変換処理全体のオーケストレーション・エラーハンドリング
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()

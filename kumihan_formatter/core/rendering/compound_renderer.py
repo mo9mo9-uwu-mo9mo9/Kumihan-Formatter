@@ -13,7 +13,7 @@ from .html_utils import process_text_content, sort_keywords_by_nesting_order
 class CompoundElementRenderer:
     """Renderer for compound elements with multiple keywords"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize compound element renderer"""
         pass
 

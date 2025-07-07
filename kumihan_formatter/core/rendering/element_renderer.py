@@ -5,7 +5,7 @@ headings, lists, and other simple elements.
 """
 
 from html import escape
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ..ast_nodes import Node
 from .html_utils import (
@@ -22,10 +22,10 @@ from .html_utils import (
 class ElementRenderer:
     """Renderer for basic HTML elements"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize element renderer"""
         self.heading_counter = 0
-        self._main_renderer = None  # Will be set by main renderer
+        self._main_renderer: Optional[Any] = None  # Will be set by main renderer
 
     def render_paragraph(self, node: Node) -> str:
         """Render paragraph node"""

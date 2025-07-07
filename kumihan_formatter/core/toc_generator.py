@@ -70,7 +70,7 @@ class TOCGenerator:
 
     """Generates table of contents from heading nodes"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.entries: List[TOCEntry] = []
         self.heading_counter = 0
 

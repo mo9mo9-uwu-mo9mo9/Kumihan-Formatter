@@ -9,7 +9,7 @@ import logging.handlers
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from .logging import LogHelper
 
@@ -27,6 +27,7 @@ class KumihanLogger:
 
     _instance: Optional["KumihanLogger"] = None
     _loggers: dict[str, logging.Logger] = {}
+    _initialized: bool
 
     def __new__(cls) -> "KumihanLogger":
         """Singleton pattern to ensure single logger instance"""
@@ -35,7 +36,7 @@ class KumihanLogger:
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the logger system"""
         if self._initialized:
             return
@@ -58,7 +59,7 @@ class KumihanLogger:
         # Set up root logger
         self._setup_root_logger()
 
-    def _setup_root_logger(self):
+    def _setup_root_logger(self) -> None:
         """Configure the root logger"""
         root_logger = logging.getLogger("kumihan_formatter")
         root_logger.setLevel(getattr(logging, self.default_level.upper()))
@@ -104,7 +105,9 @@ class KumihanLogger:
             self._loggers[name] = logger
         return self._loggers[name]
 
-    def set_level(self, level: Union[str, int], logger_name: Optional[str] = None):
+    def set_level(
+        self, level: Union[str, int], logger_name: Optional[str] = None
+    ) -> None:
         """Set logging level for a specific logger or all loggers
 
         Args:
@@ -124,8 +127,8 @@ class KumihanLogger:
                 logger.setLevel(level)
 
     def log_with_context(
-        self, logger: logging.Logger, level: int, message: str, **context
-    ):
+        self, logger: logging.Logger, level: int, message: str, **context: Any
+    ) -> None:
         """Log a message with additional context
 
         Args:
@@ -145,7 +148,7 @@ class KumihanLogger:
         operation: str,
         duration: float,
         size: Optional[int] = None,
-    ):
+    ) -> None:
         """Log performance metrics
 
         Args:
@@ -188,7 +191,9 @@ def get_logger(name: str) -> logging.Logger:
     return _logger_instance.get_logger(name)
 
 
-def configure_logging(level: Optional[str] = None, enable_file: Optional[bool] = None):
+def configure_logging(
+    level: Optional[str] = None, enable_file: Optional[bool] = None
+) -> None:
     """Configure global logging settings
 
     Args:
@@ -203,7 +208,9 @@ def configure_logging(level: Optional[str] = None, enable_file: Optional[bool] =
         _logger_instance._setup_root_logger()
 
 
-def log_performance(operation: str, duration: float, size: Optional[int] = None):
+def log_performance(
+    operation: str, duration: float, size: Optional[int] = None
+) -> None:
     """Convenience function for logging performance metrics
 
     Args:

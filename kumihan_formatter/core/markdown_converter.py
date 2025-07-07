@@ -7,7 +7,7 @@ Issue #118対応: エンドユーザー向け文書の読みやすさ向上
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Pattern, Tuple
 
 
 class SimpleMarkdownConverter:
@@ -22,11 +22,11 @@ class SimpleMarkdownConverter:
     - 水平線 ---
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """変換器を初期化"""
         self.patterns = self._compile_patterns()
 
-    def _compile_patterns(self) -> Dict[str, re.Pattern]:
+    def _compile_patterns(self) -> Dict[str, Pattern[str]]:
         """正規表現パターンをコンパイル"""
         return {
             # 見出し
@@ -120,7 +120,7 @@ class SimpleMarkdownConverter:
     def _convert_code_blocks(self, text: str) -> str:
         """コードブロック（```）を変換"""
 
-        def replace_code_block(match):
+        def replace_code_block(match: Any) -> str:
             code_content = match.group(1)
             # HTMLエスケープ
             code_content = (
@@ -140,8 +140,8 @@ class SimpleMarkdownConverter:
             pattern_name = f"h{level}"
             if pattern_name in self.patterns:
 
-                def make_heading_replacer(h_level):
-                    def replace_heading(match):
+                def make_heading_replacer(h_level: int) -> Any:
+                    def replace_heading(match: Any) -> str:
                         heading_text = match.group(1).strip()
                         # ID生成（リンク用）
                         heading_id = self._generate_heading_id(heading_text)
@@ -232,7 +232,7 @@ class SimpleMarkdownConverter:
         """段落を作成"""
         lines = text.split("\n")
         result = []
-        current_paragraph = []
+        current_paragraph: List[str] = []
 
         for line in lines:
             line = line.strip()
@@ -363,7 +363,7 @@ class SimpleMarkdownConverter:
 <body>
     <div class="container">
         {content}
-        
+
         <div class="document-info">
             <strong>📄 文書情報</strong><br>
             元ファイル: {source_filename}<br>

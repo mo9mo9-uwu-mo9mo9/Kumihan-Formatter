@@ -8,7 +8,7 @@ Issue #319対応 - convert.py から分離
 import sys
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from ...ui.console_ui import get_console_ui
 
@@ -19,7 +19,7 @@ class ConvertWatcher:
     責任: ファイル変更の監視とリアルタイム変換
     """
 
-    def __init__(self, processor, validator):
+    def __init__(self, processor: Any, validator: Any) -> None:
         """
         Args:
             processor: ConvertProcessor インスタンス
@@ -32,7 +32,7 @@ class ConvertWatcher:
         self,
         input_file: str,
         output: str,
-        config_obj,
+        config_obj: Any,
         show_test_cases: bool,
         template_name: Optional[str],
         include_source: bool,
@@ -78,16 +78,16 @@ class ConvertWatcher:
         self,
         input_file: str,
         output: str,
-        config_obj,
+        config_obj: Any,
         show_test_cases: bool,
         template_name: Optional[str],
         include_source: bool,
         syntax_check: bool,
-    ):
+    ) -> Any:
         """ファイル変更ハンドラーを作成"""
 
         class FileChangeHandler:
-            def __init__(self, watcher, processor, validator):
+            def __init__(self, watcher: Any, processor: Any, validator: Any) -> None:
                 self.watcher = watcher
                 self.processor = processor
                 self.validator = validator
@@ -100,7 +100,7 @@ class ConvertWatcher:
                 self.syntax_check = syntax_check
                 self.last_modified = 0
 
-            def on_modified(self, event):
+            def on_modified(self, event: Any) -> None:
                 if event.is_directory:
                     return
 
@@ -122,7 +122,7 @@ class ConvertWatcher:
                         )
                         get_console_ui().dim("ファイルを修正して保存し直してください")
 
-            def _process_file_change(self):
+            def _process_file_change(self) -> None:
                 """ファイル変更時の処理"""
                 # 構文チェック（有効な場合）
                 if self.syntax_check:
@@ -151,7 +151,7 @@ class ConvertWatcher:
         from watchdog.events import FileSystemEventHandler
 
         class FileSystemHandler(FileSystemEventHandler, FileChangeHandler):
-            def __init__(self, watcher, processor, validator):
+            def __init__(self, watcher: Any, processor: Any, validator: Any) -> None:
                 FileSystemEventHandler.__init__(self)
                 FileChangeHandler.__init__(self, watcher, processor, validator)
 

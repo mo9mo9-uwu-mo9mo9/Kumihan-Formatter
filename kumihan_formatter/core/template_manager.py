@@ -50,7 +50,7 @@ class TemplateManager:
         )
 
         # Template cache
-        self._template_cache = {}
+        self._template_cache: Dict[str, Any] = {}
 
         # Add custom filters
         self._register_custom_filters()
@@ -180,7 +180,7 @@ class TemplateManager:
 class RenderContext:
     """Builder for template rendering context"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._context = {}
 
     def title(self, title: str) -> "RenderContext":
@@ -226,7 +226,7 @@ class RenderContext:
         return self
 
     def metadata(
-        self, description: str = None, keywords: str = None
+        self, description: Optional[str] = None, keywords: Optional[str] = None
     ) -> "RenderContext":
         """Add page metadata"""
         if description:

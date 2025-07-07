@@ -12,7 +12,7 @@ from .validation_issue import ValidationIssue
 class ValidationReporter:
     """Formats and reports validation results"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def generate_report(

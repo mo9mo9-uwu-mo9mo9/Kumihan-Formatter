@@ -5,7 +5,7 @@
 Issue #319対応 - error_reporting.py から分離
 """
 
-from typing import Dict
+from typing import Dict, List
 
 from .error_types import DetailedError, ErrorSeverity
 
@@ -69,13 +69,13 @@ class ErrorFormatter:
         return "\n".join(lines)
 
     @classmethod
-    def format_summary(cls, errors: list[DetailedError]) -> str:
+    def format_summary(cls, errors: List[DetailedError]) -> str:
         """エラーサマリーを表示"""
         if not errors:
             return "✅ エラーはありません。"
 
         # 重要度別集計
-        by_severity = {}
+        by_severity: Dict[ErrorSeverity, List[DetailedError]] = {}
         for error in errors:
             severity = error.severity
             if severity not in by_severity:
