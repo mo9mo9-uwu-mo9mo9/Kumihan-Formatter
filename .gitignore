@@ -181,3 +181,7 @@ toggle-test/
 
 # Application logs
 logs/
+
+# Build artifacts
+macos-executable/
+windows-executable/

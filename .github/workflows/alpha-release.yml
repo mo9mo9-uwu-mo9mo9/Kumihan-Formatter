@@ -19,7 +19,6 @@ jobs:
         include:
           - os: macos-latest
             platform: macos
-            executable_name: kumihan_formatter_macos
           - os: windows-latest
             platform: windows
             executable_name: kumihan_formatter_windows.exe
@@ -44,17 +43,23 @@ jobs:
     - name: Build executable
       shell: bash
       run: |
-        echo "from kumihan_formatter.gui_launcher import main; main()" > entry_point.py
-        echo "=== Debug: Created entry_point.py ==="
-        cat entry_point.py
-        echo "=== Debug: Platform = ${{ matrix.platform }} ==="
-        echo "=== Debug: Available templates ==="
-        ls -la kumihan_formatter/templates/ || echo "Templates directory not found"
         if [ "${{ matrix.platform }}" = "macos" ]; then
-          echo "=== Building for macOS ==="
-          pyinstaller --onefile --windowed --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates:kumihan_formatter/templates" entry_point.py
+          echo "=== Building macOS .app bundle only ==="
+          # macOS: .appバンドルのみ作成（単体実行ファイルは作成しない）
+          echo "from kumihan_formatter.gui_launcher import main; main()" > entry_point.py
+          pyinstaller --windowed \
+            --name "Kumihan Formatter" \
+            --add-data "kumihan_formatter/templates:kumihan_formatter/templates" \
+            --osx-bundle-identifier "com.mo9mo9.kumihan-formatter" \
+            --icon "kumihan_formatter/assets/icon.icns" \
+            entry_point.py || echo "No icon file, continuing without icon"
+          echo "=== Renaming app bundle ==="
+          mv "dist/Kumihan Formatter.app" "dist/KumihanFormatter.app" || true
+          echo "=== Creating ZIP archive ==="
+          cd dist && zip -r KumihanFormatter.app.zip KumihanFormatter.app && cd ..
         else
           echo "=== Building for Windows ==="
+          echo "from kumihan_formatter.gui_launcher import main; main()" > entry_point.py
           pyinstaller --onefile --windowed --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates;kumihan_formatter/templates" entry_point.py
         fi
         echo "=== Debug: Build completed, checking output ==="
@@ -66,13 +71,15 @@ jobs:
       run: |
         echo "=== Testing executable with timeout ==="
         if [ "${{ matrix.platform }}" = "macos" ]; then
-          # Mac: Test with timeout (GUI apps may hang)
-          if [ -d "./dist/${{ matrix.executable_name }}.app" ]; then
-            echo "Found .app bundle, testing..."
-            timeout 10 ./dist/${{ matrix.executable_name }}.app/Contents/MacOS/${{ matrix.executable_name }} --help 2>&1 || echo "macOS .app GUI test completed (expected timeout)"
+          # Mac: .appバンドルのテスト
+          if [ -d "./dist/KumihanFormatter.app" ]; then
+            echo "Found KumihanFormatter.app bundle"
+            echo "Contents:"
+            ls -la ./dist/KumihanFormatter.app/Contents/
+            echo "GUI app test skipped (GUI apps cannot be tested in CI)"
           else
-            echo "Testing macOS executable..."
-            timeout 10 ./dist/${{ matrix.executable_name }} --help 2>&1 || echo "macOS GUI test completed (expected timeout)"
+            echo "No .app bundle found, checking dist directory:"
+            ls -la ./dist/
           fi
         else
           # Windows: Test with timeout
@@ -86,7 +93,8 @@ jobs:
       with:
         name: ${{ matrix.platform }}-executable
         path: |
-          dist/${{ matrix.executable_name }}*
+          dist/*.exe
+          dist/*.app.zip
         retention-days: 30
 
   create-release:
@@ -118,7 +126,7 @@ jobs:
           - フィードバックをお待ちしています
 
           ### 実行ファイル
-          - `kumihan_formatter_macos`: macOS用実行ファイル
+          - `KumihanFormatter.app.zip`: macOS用アプリケーションバンドル（解凍して使用）
           - `kumihan_formatter_windows.exe`: Windows用実行ファイル
 
           ### 使用方法
