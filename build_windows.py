@@ -33,15 +33,15 @@ class WindowsBuilder:
 
     def check_dependencies(self) -> bool:
         """Check if required dependencies are installed"""
-        print("📋 依存関係をチェック中...")
+        print("[INFO] 依存関係をチェック中...")
 
         # Check PyInstaller
         try:
             import PyInstaller  # type: ignore
 
-            print(f"✅ PyInstaller {PyInstaller.__version__} が見つかりました")
+            print(f"[OK] PyInstaller {PyInstaller.__version__} が見つかりました")
         except ImportError:
-            print("❌ PyInstaller が見つかりません")
+            print("[ERROR] PyInstaller が見つかりません")
             print("インストールコマンド: pip install pyinstaller")
             return False
 
@@ -49,9 +49,9 @@ class WindowsBuilder:
         try:
             import kumihan_formatter  # type: ignore
 
-            print(f"✅ kumihan_formatter が見つかりました")
+            print(f"[OK] kumihan_formatter が見つかりました")
         except ImportError:
-            print("❌ kumihan_formatter パッケージが見つかりません")
+            print("[ERROR] kumihan_formatter パッケージが見つかりません")
             print("現在のディレクトリから実行していることを確認してください")
             return False
 
@@ -59,10 +59,10 @@ class WindowsBuilder:
         try:
             import tkinter  # type: ignore
 
-            print("✅ tkinter が利用可能です")
+            print("[OK] tkinter が利用可能です")
         except ImportError:
             print(
-                "❌ tkinter が見つかりません（Pythonの標準ライブラリに含まれているはずです）"
+                "[ERROR] tkinter が見つかりません（Pythonの標準ライブラリに含まれているはずです）"
             )
             return False
 
@@ -70,7 +70,7 @@ class WindowsBuilder:
 
     def clean_build_dirs(self) -> None:
         """Clean build and dist directories"""
-        print("🧹 ビルドディレクトリをクリーンアップ中...")
+        print("[INFO] ビルドディレクトリをクリーンアップ中...")
 
         dirs_to_clean = [self.dist_dir, self.build_dir]
         for dir_path in dirs_to_clean:
@@ -85,14 +85,14 @@ class WindowsBuilder:
         try:
             import PyInstaller  # type: ignore
         except ImportError:
-            print("📦 PyInstaller をインストール中...")
+            print("[INFO] PyInstaller をインストール中...")
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
 
     def build_executable(self) -> None:
         """Build the Windows executable using PyInstaller"""
-        print("🔨 Windows実行ファイルをビルド中...")
+        print("[INFO] Windows実行ファイルをビルド中...")
 
         if not self.spec_file.exists():
             raise FileNotFoundError(f"Spec file not found: {self.spec_file}")
@@ -133,14 +133,14 @@ class WindowsBuilder:
                 f"Built executable not found. Checked: {[str(p) for p in possible_exes]}"
             )
 
-        print(f"✅ 実行ファイルが作成されました: {exe_path}")
+        print(f"[OK] 実行ファイルが作成されました: {exe_path}")
         print(f"   ファイルサイズ: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
 
         return exe_path
 
     def test_executable(self, exe_path: Path) -> None:
         """Test the built executable"""
-        print("🧪 実行ファイルをテスト中...")
+        print("[INFO] 実行ファイルをテスト中...")
 
         # Basic execution test (should start GUI)
         try:
@@ -149,27 +149,27 @@ class WindowsBuilder:
                 [str(exe_path), "--help"], capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
-                print("✅ ヘルプ表示テスト: 成功")
+                print("[OK] ヘルプ表示テスト: 成功")
             else:
-                print("⚠️  ヘルプ表示テスト: スキップ（GUIアプリのため正常）")
+                print("[WARNING] ヘルプ表示テスト: スキップ（GUIアプリのため正常）")
         except subprocess.TimeoutExpired:
-            print("⚠️  ヘルプ表示テスト: タイムアウト（GUIアプリのため正常）")
+            print("[WARNING] ヘルプ表示テスト: タイムアウト（GUIアプリのため正常）")
         except Exception as e:
-            print(f"⚠️  ヘルプ表示テスト: {e}")
+            print(f"[WARNING] ヘルプ表示テスト: {e}")
 
         # Check file dependencies
-        print("📁 依存ファイルの確認...")
+        print("[INFO] 依存ファイルの確認...")
         templates_exist = any((self.dist_dir / "_internal").glob("**/templates"))
         if templates_exist:
-            print("✅ テンプレートファイルが含まれています")
+            print("[OK] テンプレートファイルが含まれています")
         else:
-            print("⚠️  テンプレートファイルが見つかりません")
+            print("[WARNING] テンプレートファイルが見つかりません")
 
-        print("✅ 基本テスト完了")
+        print("[OK] 基本テスト完了")
 
     def create_distribution_package(self, exe_path: Path) -> Path:
         """Create distribution package (ZIP file)"""
-        print("📦 配布パッケージを作成中...")
+        print("[INFO] 配布パッケージを作成中...")
 
         # Create ZIP package
         package_name = f"Kumihan-Formatter-v1.0-Windows"
@@ -205,28 +205,28 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 """
             zipf.writestr("README.txt", readme_content.encode("utf-8"))
 
-        print(f"✅ 配布パッケージが作成されました: {zip_path}")
+        print(f"[OK] 配布パッケージが作成されました: {zip_path}")
         print(f"   パッケージサイズ: {zip_path.stat().st_size / 1024 / 1024:.1f} MB")
 
         return zip_path
 
     def upload_to_github(self, package_path: Path) -> None:
         """Upload package to GitHub releases (placeholder)"""
-        print("🚀 GitHub リリースへのアップロード...")
-        print("⚠️  GitHub Actions を使用した自動アップロードを推奨します")
+        print("[INFO] GitHub リリースへのアップロード...")
+        print("[WARNING] GitHub Actions を使用した自動アップロードを推奨します")
         print(f"   手動アップロード用パッケージ: {package_path}")
 
     def build(
         self, clean: bool = False, test: bool = False, upload: bool = False
     ) -> None:
         """Main build process"""
-        print("🏗️  Kumihan-Formatter Windows版ビルドを開始します...")
+        print("[INFO] Kumihan-Formatter Windows版ビルドを開始します...")
         print(f"   プロジェクトディレクトリ: {self.root_dir}")
 
         try:
             # Check dependencies
             if not self.check_dependencies():
-                print("❌ 依存関係のチェックに失敗しました")
+                print("[ERROR] 依存関係のチェックに失敗しました")
                 return False
 
             # Install PyInstaller if needed
@@ -250,10 +250,10 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             if upload:
                 self.upload_to_github(package_path)
 
-            print("\n✅ ビルドが完了しました！")
+            print("\n[OK] ビルドが完了しました！")
             print(f"   実行ファイル: {exe_path}")
             print(f"   配布パッケージ: {package_path}")
-            print("\n📋 次のステップ:")
+            print("\n[INFO] 次のステップ:")
             print("   1. 実行ファイルをテストしてください")
             print("   2. 異なるWindows環境でテストしてください")
             print("   3. GitHub リリースページで配布パッケージを公開してください")
@@ -261,7 +261,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             return True
 
         except Exception as e:
-            print(f"\n❌ ビルドに失敗しました: {e}")
+            print(f"\n[ERROR] ビルドに失敗しました: {e}")
             import traceback  # type: ignore
 
             traceback.print_exc()

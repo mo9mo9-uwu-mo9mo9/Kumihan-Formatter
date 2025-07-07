@@ -35,15 +35,15 @@ class MacOSBuilder:
 
     def check_dependencies(self) -> bool:
         """Check if required dependencies are installed"""
-        print("📋 依存関係をチェック中...")
+        print("[INFO] 依存関係をチェック中...")
 
         # Check PyInstaller
         try:
             import PyInstaller
 
-            print(f"✅ PyInstaller {PyInstaller.__version__} が見つかりました")
+            print(f"[OK] PyInstaller {PyInstaller.__version__} が見つかりました")
         except ImportError:
-            print("❌ PyInstaller が見つかりません")
+            print("[ERROR] PyInstaller が見つかりません")
             print("インストールコマンド: pip install pyinstaller")
             return False
 
@@ -51,9 +51,9 @@ class MacOSBuilder:
         try:
             import kumihan_formatter
 
-            print(f"✅ kumihan_formatter が見つかりました")
+            print(f"[OK] kumihan_formatter が見つかりました")
         except ImportError:
-            print("❌ kumihan_formatter パッケージが見つかりません")
+            print("[ERROR] kumihan_formatter パッケージが見つかりません")
             print("現在のディレクトリから実行していることを確認してください")
             return False
 
@@ -61,22 +61,22 @@ class MacOSBuilder:
         try:
             import tkinter
 
-            print("✅ tkinter が利用可能です")
+            print("[OK] tkinter が利用可能です")
         except ImportError:
-            print("❌ tkinter が見つかりません")
+            print("[ERROR] tkinter が見つかりません")
             return False
 
         # Check macOS specific tools
         if sys.platform == "darwin":
-            print("✅ macOS プラットフォームを確認しました")
+            print("[OK] macOS プラットフォームを確認しました")
         else:
-            print("⚠️  macOS以外のプラットフォームです")
+            print("[WARNING] macOS以外のプラットフォームです")
 
         return True
 
     def clean_build_dirs(self) -> None:
         """Clean build and dist directories"""
-        print("🧹 ビルドディレクトリをクリーンアップ中...")
+        print("[INFO] ビルドディレクトリをクリーンアップ中...")
 
         dirs_to_clean = [self.dist_dir, self.build_dir]
         for dir_path in dirs_to_clean:
@@ -91,14 +91,14 @@ class MacOSBuilder:
         try:
             import PyInstaller
         except ImportError:
-            print("📦 PyInstaller をインストール中...")
+            print("[INFO] PyInstaller をインストール中...")
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
 
     def build_app(self) -> Path:
         """Build the macOS app using PyInstaller"""
-        print("🔨 macOS Appをビルド中...")
+        print("[INFO] macOS Appをビルド中...")
 
         if not self.spec_file.exists():
             raise FileNotFoundError(f"Spec file not found: {self.spec_file}")
@@ -125,7 +125,7 @@ class MacOSBuilder:
         if not self.app_path.exists():
             raise FileNotFoundError(f"Built app not found: {self.app_path}")
 
-        print(f"✅ Appバンドルが作成されました: {self.app_path}")
+        print(f"[OK] Appバンドルが作成されました: {self.app_path}")
 
         # Calculate app size
         app_size = self._get_directory_size(self.app_path)
@@ -145,7 +145,7 @@ class MacOSBuilder:
 
     def sign_app(self, app_path: Path, identity: str | None = None) -> None:
         """Sign the app bundle"""
-        print("🔏 Appバンドルに署名中...")
+        print("[INFO] Appバンドルに署名中...")
 
         if not identity:
             # Try to find available signing identities
@@ -158,11 +158,11 @@ class MacOSBuilder:
                 print("利用可能な署名アイデンティティ:")
                 print(result.stdout)
                 print(
-                    "⚠️  署名するには--signオプションでアイデンティティを指定してください"
+                    "[WARNING] 署名するには--signオプションでアイデンティティを指定してください"
                 )
                 return
             else:
-                print("❌ 署名アイデンティティが見つかりません")
+                print("[ERROR] 署名アイデンティティが見つかりません")
                 print("開発者アカウントでの署名が必要です")
                 return
 
@@ -182,23 +182,23 @@ class MacOSBuilder:
         result = subprocess.run(cmd)
 
         if result.returncode == 0:
-            print("✅ 署名が完了しました")
+            print("[OK] 署名が完了しました")
         else:
-            print("❌ 署名に失敗しました")
+            print("[ERROR] 署名に失敗しました")
             raise RuntimeError(
                 f"Code signing failed with return code {result.returncode}"
             )
 
     def notarize_app(self, app_path: Path) -> None:
         """Notarize the app bundle"""
-        print("🔐 Appバンドルをnotarization中...")
-        print("⚠️  notarizationにはApple IDの設定が必要です")
+        print("[INFO] Appバンドルをnotarization中...")
+        print("[WARNING] notarizationにはApple IDの設定が必要です")
         print(
             "詳細: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution"
         )
 
         # This would require Apple ID credentials and is beyond basic setup
-        print("🏗️  手動でnotarizationを実行してください:")
+        print("[INFO] 手動でnotarizationを実行してください:")
         print(
             f"   1. アプリをZIPに圧縮: ditto -c -k --keepParent {app_path} {app_path.name}.zip"
         )
@@ -208,28 +208,28 @@ class MacOSBuilder:
 
     def test_app(self, app_path: Path) -> None:
         """Test the built app"""
-        print("🧪 Appバンドルをテスト中...")
+        print("[INFO] Appバンドルをテスト中...")
 
         # Check app bundle structure
         executable_path = app_path / "Contents" / "MacOS" / "Kumihan-Formatter"
         if executable_path.exists():
-            print("✅ 実行ファイルが見つかりました")
+            print("[OK] 実行ファイルが見つかりました")
         else:
-            print("❌ 実行ファイルが見つかりません")
+            print("[ERROR] 実行ファイルが見つかりません")
 
         # Check Info.plist
         info_plist_path = app_path / "Contents" / "Info.plist"
         if info_plist_path.exists():
-            print("✅ Info.plistが見つかりました")
+            print("[OK] Info.plistが見つかりました")
         else:
-            print("❌ Info.plistが見つかりません")
+            print("[ERROR] Info.plistが見つかりません")
 
         # Check Resources directory
         resources_path = app_path / "Contents" / "Resources"
         if resources_path.exists():
-            print("✅ Resourcesディレクトリが見つかりました")
+            print("[OK] Resourcesディレクトリが見つかりました")
         else:
-            print("❌ Resourcesディレクトリが見つかりません")
+            print("[ERROR] Resourcesディレクトリが見つかりません")
 
         # Basic execution test
         try:
@@ -240,17 +240,17 @@ class MacOSBuilder:
                 text=True,
             )
             if result.returncode == 0:
-                print("✅ アプリケーション情報を取得できました")
+                print("[OK] アプリケーション情報を取得できました")
             else:
-                print("⚠️  アプリケーション情報の取得に失敗しました")
+                print("[WARNING] アプリケーション情報の取得に失敗しました")
         except Exception as e:
-            print(f"⚠️  テスト中にエラーが発生しました: {e}")
+            print(f"[WARNING] テスト中にエラーが発生しました: {e}")
 
-        print("✅ 基本テスト完了")
+        print("[OK] 基本テスト完了")
 
     def create_distribution_package(self, app_path: Path) -> Path:
         """Create distribution package (DMG or ZIP)"""
-        print("📦 配布パッケージを作成中...")
+        print("[INFO] 配布パッケージを作成中...")
 
         # Create ZIP package for simple distribution
         package_name = f"Kumihan-Formatter-v1.0-macOS"
@@ -301,7 +301,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             f.write(readme_content)
 
         zip_size = zip_path.stat().st_size
-        print(f"✅ 配布パッケージが作成されました: {zip_path}")
+        print(f"[OK] 配布パッケージが作成されました: {zip_path}")
         print(f"   パッケージサイズ: {zip_size / 1024 / 1024:.1f} MB")
 
         return zip_path
@@ -315,13 +315,13 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
         sign_identity: str | None = None,
     ) -> bool:
         """Main build process"""
-        print("🏗️  Kumihan-Formatter macOS版ビルドを開始します...")
+        print("[INFO] Kumihan-Formatter macOS版ビルドを開始します...")
         print(f"   プロジェクトディレクトリ: {self.root_dir}")
 
         try:
             # Check dependencies
             if not self.check_dependencies():
-                print("❌ 依存関係のチェックに失敗しました")
+                print("[ERROR] 依存関係のチェックに失敗しました")
                 return False
 
             # Install PyInstaller if needed
@@ -349,10 +349,10 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             # Create distribution package
             package_path = self.create_distribution_package(app_path)
 
-            print("\n✅ ビルドが完了しました！")
+            print("\n[OK] ビルドが完了しました！")
             print(f"   Appバンドル: {app_path}")
             print(f"   配布パッケージ: {package_path}")
-            print("\n📋 次のステップ:")
+            print("\n[INFO] 次のステップ:")
             print("   1. Appバンドルをテストしてください")
             print("   2. 異なるmacOSバージョンでテストしてください")
             print("   3. 必要に応じて署名・notarizationを実行してください")
@@ -361,7 +361,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             return True
 
         except Exception as e:
-            print(f"\n❌ ビルドに失敗しました: {e}")
+            print(f"\n[ERROR] ビルドに失敗しました: {e}")
             import traceback
 
             traceback.print_exc()

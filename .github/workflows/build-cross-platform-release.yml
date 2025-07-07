@@ -60,8 +60,8 @@ jobs:
 
     - name: Verify installation
       run: |
-        python -c "import kumihan_formatter; print('✅ Package imported successfully')"
-        python -c "import tkinter; print('✅ tkinter available')"
+        python -c "import kumihan_formatter; print('[OK] Package imported successfully')"
+        python -c "import tkinter; print('[OK] tkinter available')"
         pyinstaller --version
 
     - name: Clean previous builds
@@ -71,7 +71,7 @@ jobs:
 
     - name: Build Windows executable
       run: |
-        Write-Host "🔨 Building Windows executable..."
+        Write-Host "[INFO] Building Windows executable..."
         pyinstaller --clean --noconfirm kumihan_formatter.spec
 
     - name: Create Windows distribution package
@@ -109,7 +109,7 @@ jobs:
 
         $exeSize = (Get-Item "dist/Kumihan-Formatter.exe").Length / 1MB
         $zipSize = (Get-Item $zipPath).Length / 1MB
-        Write-Host "📊 Windows Build Summary:"
+        Write-Host "[INFO] Windows Build Summary:"
         Write-Host "   Executable size: $([math]::Round($exeSize, 1)) MB"
         Write-Host "   Package size: $([math]::Round($zipSize, 1)) MB"
 
@@ -150,10 +150,10 @@ jobs:
 
     - name: Verify installation
       run: |
-        python -c "import kumihan_formatter; print('✅ Package imported successfully')"
-        python -c "import tkinter; print('✅ tkinter available')"
+        python -c "import kumihan_formatter; print('[OK] Package imported successfully')"
+        python -c "import tkinter; print('[OK] tkinter available')"
         pyinstaller --version
-        echo "✅ macOS version: $(sw_vers -productVersion)"
+        echo "[OK] macOS version: $(sw_vers -productVersion)"
 
     - name: Clean previous builds
       run: |
@@ -161,7 +161,7 @@ jobs:
 
     - name: Build macOS App
       run: |
-        echo "🍎 Building macOS App..."
+        echo "[INFO] Building macOS App..."
         pyinstaller --clean --noconfirm kumihan_formatter_macos.spec
 
     - name: Create macOS distribution package
@@ -205,7 +205,7 @@ jobs:
 
         appSize=$(du -sm "dist/Kumihan-Formatter.app" | cut -f1)
         zipSize=$(du -sm "$zipPath" | cut -f1)
-        echo "📊 macOS Build Summary:"
+        echo "[INFO] macOS Build Summary:"
         echo "   App bundle size: ${appSize} MB"
         echo "   Package size: ${zipSize} MB"
 
@@ -254,7 +254,7 @@ jobs:
         cp release-assets/macos/README-macOS.txt release-final/
 
         # List final assets
-        echo "📦 Release assets:"
+        echo "[INFO] Release assets:"
         ls -la release-final/
 
     - name: Generate release notes
@@ -265,7 +265,7 @@ jobs:
         cat > release-notes.md << EOF
         # Kumihan-Formatter ${version}
 
-        ## 📦 配布パッケージ
+        ## 配布パッケージ
 
         ### Windows版
         - **Kumihan-Formatter-${version}-Windows.zip** - Windows 10/11 対応実行ファイル
@@ -278,13 +278,13 @@ jobs:
         - システム要件: macOS 10.15 (Catalina) 以降
         - Intel/Apple Silicon Mac 対応
 
-        ## 🚀 新機能・改善
+        ## 新機能・改善
         - クロスプラットフォーム配布パッケージングの統合実装
         - Windows向けexe形式パッケージング対応
         - macOS向け.app形式パッケージング対応
         - 自動ビルド・リリース機能の実装
 
-        ## 📋 インストール方法
+        ## インストール方法
 
         ### Windows
         1. \`Kumihan-Formatter-${version}-Windows.zip\` をダウンロード
@@ -296,7 +296,7 @@ jobs:
         2. 展開後、\`Kumihan-Formatter.app\` を「アプリケーション」フォルダに移動
         3. Launchpadまたはアプリケーションフォルダから起動
 
-        ## 🔗 関連リンク
+        ## 関連リンク
         - [GitHub Repository](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter)
         - [Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
         - [Wiki](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/wiki)
@@ -321,21 +321,21 @@ jobs:
     - name: Build summary
       run: |
         version="${{ github.event.inputs.version || github.ref_name }}"
-        echo "## 🎉 Cross-Platform Release Complete!"
+        echo "## Cross-Platform Release Complete!"
         echo ""
-        echo "### ✅ Successfully built and released:"
+        echo "### Successfully built and released:"
         echo "- **Version**: ${version}"
         echo "- **Windows Package**: Kumihan-Formatter-${version}-Windows.zip"
         echo "- **macOS Package**: Kumihan-Formatter-${version}-macOS.zip"
         echo "- **GitHub Release**: Created"
         echo ""
-        echo "### 📊 Build Summary"
+        echo "### Build Summary"
         echo "- **Platforms**: Windows, macOS"
         echo "- **CI/CD**: Fully automated"
         echo "- **Package Format**: ZIP with README"
         echo "- **Distribution**: GitHub Releases"
         echo ""
-        echo "### 🔗 Next Steps"
+        echo "### Next Steps"
         echo "1. Test packages on target platforms"
         echo "2. Update documentation"
         echo "3. Announce release"
