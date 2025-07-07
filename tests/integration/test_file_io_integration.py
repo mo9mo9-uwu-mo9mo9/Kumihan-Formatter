@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-import pytest  # type: ignore
+import pytest
 
 from kumihan_formatter.core.encoding_detector import EncodingDetector
 from kumihan_formatter.core.file_ops import FileOperations
@@ -85,7 +85,7 @@ class TestFileIOIntegration(TestCase):
         with self.assertRaises(FileNotFoundError):
             self.file_ops.read_text_file(nonexistent_file)
 
-    @pytest.mark.skipif(  # type: ignore[misc]
+    @pytest.mark.skipif(
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
@@ -161,7 +161,7 @@ class TestFileIOIntegration(TestCase):
         # 上書きされたことを確認
         self.assertEqual(output_file.read_text(encoding="utf-8"), new_content)
 
-    @pytest.mark.skipif(  # type: ignore[misc]
+    @pytest.mark.skipif(
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )

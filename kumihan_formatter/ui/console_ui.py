@@ -13,8 +13,8 @@ Use get_console_ui() function instead of direct global instance access.
 
 import sys
 
-from rich.console import Console  # type: ignore
-from rich.progress import Progress  # type: ignore
+from rich.console import Console
+from rich.progress import Progress
 
 from .console_encoding import ConsoleEncodingSetup
 
@@ -31,7 +31,7 @@ class ConsoleUI:
         ConsoleEncodingSetup.setup_encoding()
         self.console = self._create_console()
 
-    def _create_console(self) -> Console:  # type: ignore[no-any-unimported]
+    def _create_console(self) -> Console:
         """Create console instance with safe settings"""
         try:
             # For Windows, use specific settings
@@ -247,7 +247,7 @@ class ConsoleUI:
     # User input
     def input(self, prompt: str) -> str:
         """Get user input with styled prompt"""
-        return self.console.input(prompt)  # type: ignore[no-any-return]
+        return self.console.input(prompt)
 
     def confirm_source_toggle(self) -> bool:
         """Confirm source toggle feature usage"""
@@ -417,7 +417,7 @@ class ConsoleUI:
         self.console.print(f"[yellow][パフォーマンス] {warning}[/yellow]")
 
     # Generic progress
-    def create_progress(self) -> Progress:  # type: ignore[no-any-unimported]
+    def create_progress(self) -> Progress:
         """Create a progress instance"""
         return Progress()
 

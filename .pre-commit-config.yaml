@@ -99,7 +99,7 @@ repos:
       - id: mypy-strict
         name: 🔍 mypy strict mode型チェック
         entry: python
-        args: [-m, mypy, --strict, kumihan_formatter/, tests/]
+        args: [-m, mypy, --config-file=mypy.ini, kumihan_formatter/, tests/]
         language: python
         files: ^(kumihan_formatter|tests)/.*\.py$
         pass_filenames: false
