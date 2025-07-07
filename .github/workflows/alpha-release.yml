@@ -43,7 +43,8 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates:kumihan_formatter/templates" -c kumihan_formatter.cli:main
+        echo "from kumihan_formatter.cli import main; main()" > entry_point.py
+        pyinstaller --onefile --name ${{ matrix.executable_name }} --add-data "kumihan_formatter/templates:kumihan_formatter/templates" entry_point.py
 
     - name: Test executable
       run: |
