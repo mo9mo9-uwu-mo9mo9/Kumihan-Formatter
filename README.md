@@ -58,6 +58,14 @@ python -m kumihan_formatter convert input.txt
 - **[⚙️ インストール詳細](docs/user/installation.md)** - Python環境構築
 - **[🛠️ 開発者向け](docs/dev/)** - API・貢献方法
 
+## 🛡️ セキュリティ情報
+
+**Windows Defender警告が表示される場合:**
+1. 「詳細情報」→「実行」をクリック
+2. または [セキュリティガイド](SECURITY.md) を参照
+
+本ソフトウェアは未署名ですが、オープンソースで安全です。
+
 ## 🤝 サポート
 
 - **バグ報告・機能要望**: [Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
