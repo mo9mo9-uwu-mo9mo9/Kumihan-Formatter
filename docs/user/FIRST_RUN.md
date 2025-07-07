@@ -16,10 +16,16 @@ python3 --version
 
 ## 🎯 超簡単2ステップで始める
 
-### ⚡ ステップ1: 初回セットアップ（1回だけ）
+### ⚡ ステップ1: アプリを起動
 
-**Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック  
-**macOS**: `MAC/初回セットアップ.command` をダブルクリック
+**GUI版（推奨）**:
+1. [リリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)からダウンロード
+2. **Windows**: `Kumihan-Formatter.exe` をダブルクリック
+3. **macOS**: `Kumihan-Formatter.app` をダブルクリック
+
+**開発者向け**:
+- **Windows**: `scripts/setup/Windows用初回セットアップ.bat` をダブルクリック
+- **macOS**: `scripts/setup/macOS用初回セットアップ.command` をダブルクリック
 
 ✅ **成功の確認:**
 - `[OK] Dependencies installed successfully` が表示される
@@ -27,13 +33,15 @@ python3 --version
 
 ### 🎉 ステップ2: すぐに使える！
 
-**変換したい場合:**
-- **Windows**: `WINDOWS/変換ツール.bat` をダブルクリック
-- **macOS**: `MAC/変換ツール.command` をダブルクリック
+**GUI版を使う場合:**
+1. アプリを起動
+2. 「参照」ボタンから.txtファイルを選択
+3. 「変換実行」ボタンをクリック
 
-**サンプルを試したい場合:**
-- **Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック  
-- **macOS**: `MAC/サンプル実行.command` をダブルクリック
+**開発者向けコマンドライン:**
+```bash
+python -m kumihan_formatter convert input.txt -o output/
+```
 
 🎉 **おめでとうございます！** これで基本的な使い方をマスターしました。
 
@@ -42,15 +50,17 @@ python3 --version
 ### 🎨 サンプルで機能体験
 セットアップ後、すぐに全機能を体験できます：
 
-**Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック  
-**macOS**: `MAC/サンプル実行.command` をダブルクリック
+**サンプルファイルを使用:**
+```bash
+python -m kumihan_formatter sample
+```
 
 → `dist/samples/` フォルダに結果が生成されます
 
 ### 📝 自分のファイルを変換
 セットアップ後、いつでもファイル変換できます：
 
-**Windows**: `kumihan_convert.bat` をダブルクリック  
+**Windows**: `kumihan_convert.bat` をダブルクリック
 **macOS**: `kumihan_convert.command` をダブルクリック
 
 → `.txt` ファイルをドラッグ&ドロップするだけ

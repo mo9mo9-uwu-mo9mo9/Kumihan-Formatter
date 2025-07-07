@@ -87,7 +87,7 @@ class TestNewFeature:
     def test_正常系(self):
         result = process("input")
         assert result == "expected"
-    
+
     def test_エラーケース(self):
         with pytest.raises(ValueError):
             process(None)

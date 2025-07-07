@@ -29,7 +29,7 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-*.spec
+# *.spec excluded - we need our packaging specs
 
 # Installer logs
 pip-log.txt
@@ -178,3 +178,6 @@ e2e_test_results_previous/
 # Temporary directories
 .tmp.driveupload/
 toggle-test/
+
+# Application logs
+logs/

@@ -26,9 +26,9 @@ on:
       - 'experimental/windows-exe-packaging'
     paths:
       - 'kumihan_formatter/**'
-      - 'build_windows.py'
-      - 'kumihan_formatter.spec'
-      - 'version_info.txt'
+      - 'scripts/build/build_windows.py'
+      - 'tools/packaging/kumihan_formatter.spec'
+      - 'tools/packaging/version_info.txt'
 
 jobs:
   build-windows-exe:
@@ -69,7 +69,7 @@ jobs:
     - name: Build Windows executable
       run: |
         Write-Host "🔨 Starting Windows EXE build..."
-        pyinstaller --clean --noconfirm kumihan_formatter.spec
+        pyinstaller --clean --noconfirm tools/packaging/kumihan_formatter.spec
         Write-Host "✅ Build completed"
 
     - name: Create distribution package

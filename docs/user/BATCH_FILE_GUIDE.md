@@ -16,9 +16,7 @@ Windows用バッチファイル
 
 | ファイル名 | 場所 | 機能 |
 |-----------|------|------|
-| `変換ツール.bat` | `WINDOWS/` | テキストファイルをHTMLに変換 |
-| `初回セットアップ.bat` | `WINDOWS/` | 環境の自動セットアップ |
-| `サンプル実行.bat` | `WINDOWS/` | 機能ショーケースの生成 |
+| `初回セットアップ.bat` | `scripts/setup/` | 開発環境の自動セットアップ |
 
 ;;;見出し3
 macOS用コマンドファイル
@@ -26,9 +24,7 @@ macOS用コマンドファイル
 
 | ファイル名 | 場所 | 機能 |
 |-----------|------|------|
-| `変換ツール.command` | `MAC/` | テキストファイルをHTMLに変換 |
-| `初回セットアップ.command` | `MAC/` | 環境の自動セットアップ |
-| `サンプル実行.command` | `MAC/` | 機能ショーケースの生成 |
+| `初回セットアップ.command` | `scripts/setup/` | 開発環境の自動セットアップ |
 
 ;;;見出し2
 基本的な使用方法
@@ -38,8 +34,12 @@ macOS用コマンドファイル
 1. 初回セットアップ（必須）
 ;;;
 
-**Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック
-**macOS**: `MAC/初回セットアップ.command` をダブルクリック
+**開発者向け**:
+- **Windows**: `scripts/setup/Windows用初回セットアップ.bat` をダブルクリック
+- **macOS**: `scripts/setup/macOS用初回セットアップ.command` をダブルクリック
+
+**一般ユーザー**:
+- GUIアプリを[リリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)からダウンロード
 
 初回実行時の流れ：
 1. Python環境のチェック
@@ -56,8 +56,14 @@ macOS用コマンドファイル
 2. テキストファイル変換
 ;;;
 
-**Windows**: `WINDOWS/変換ツール.bat` をダブルクリック
-**macOS**: `MAC/変換ツール.command` をダブルクリック
+**GUIアプリを使用** (推奨):
+1. アプリを起動
+2. .txtファイルをドラッグ&ドロップ
+
+**コマンドライン**:
+```bash
+python -m kumihan_formatter convert input.txt
+```
 
 ;;;見出し4
 方法A: ドラッグ&ドロップ
@@ -85,8 +91,10 @@ macOS用コマンドファイル
 3. 機能ショーケース確認
 ;;;
 
-**Windows**: `WINDOWS/サンプル実行.bat` をダブルクリック
-**macOS**: `MAC/サンプル実行.command` をダブルクリック
+**コマンドライン**:
+```bash
+python -m kumihan_formatter sample
+```
 
 機能：
 - Kumihan-Formatterの全機能を体験
@@ -267,7 +275,7 @@ Kumihan_Output/ (または dist/)
 # Windows (変換ツール.bat)
 set "OUTPUT_DIR=C:\MyOutput"
 
-# macOS (変換ツール.command)  
+# macOS (変換ツール.command)
 OUTPUT_DIR="$HOME/MyOutput"
 ```
 

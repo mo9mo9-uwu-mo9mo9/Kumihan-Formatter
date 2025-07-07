@@ -25,10 +25,10 @@ on:
   pull_request:
     paths:
       - 'kumihan_formatter/**'
-      - 'build_windows.py'
-      - 'build_macos.py'
-      - 'kumihan_formatter.spec'
-      - 'kumihan_formatter_macos.spec'
+      - 'scripts/build/build_windows.py'
+      - 'scripts/build/build_macos.py'
+      - 'tools/packaging/kumihan_formatter.spec'
+      - 'tools/packaging/kumihan_formatter_macos.spec'
       - '.github/workflows/build-*.yml'
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
     - name: Test Windows build script
       run: |
         Write-Host "[INFO] Testing Windows build process..."
-        python build_windows.py --clean --test
+        python scripts/build/build_windows.py --clean --test
 
     - name: Verify Windows package
       run: |
@@ -107,7 +107,7 @@ jobs:
     - name: Test macOS build script
       run: |
         echo "[INFO] Testing macOS build process..."
-        python build_macos.py --clean --test
+        python scripts/build/build_macos.py --clean --test
 
     - name: Verify macOS package
       run: |
