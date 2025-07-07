@@ -87,7 +87,7 @@ jobs:
         fi
 
     - name: Upload coverage reports to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
@@ -96,7 +96,7 @@ jobs:
         fail_ci_if_error: false
 
     - name: Generate coverage badge
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
       run: |
         pip install coverage-badge
         coverage-badge -o coverage.svg -f
