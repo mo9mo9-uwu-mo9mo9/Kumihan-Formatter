@@ -1,4 +1,11 @@
-"""設定管理モジュール"""
+"""設定管理モジュール - Issue #400対応
+
+統合設定システムへの移行により、既存のConfigクラスは
+新しい統合設定管理システムのラッパーとして機能します。
+
+互換性維持のため、既存のAPIは保持されますが、
+内部的には新しいExtendedConfigを使用します。
+"""
 
 import json
 import logging
@@ -8,14 +15,21 @@ from typing import Any, Dict, Optional
 import yaml
 from rich.console import Console
 
+# 新しい統合設定システムをインポート
+from .config import ConfigManager, ExtendedConfig
+
 console = Console()
 logger = logging.getLogger(__name__)
 
 
 class Config:
-    """設定管理クラス"""
+    """設定管理クラス（統合設定システムへの互換性ラッパー）
 
-    # デフォルト設定
+    Issue #400対応: 新しい統合設定システムを内部的に使用しながら、
+    既存のAPIとの互換性を維持するラッパークラス。
+    """
+
+    # 互換性のためのデフォルト設定（参照用）
     DEFAULT_CONFIG = {
         "markers": {
             "太字": {"tag": "strong"},
@@ -68,148 +82,75 @@ class Config:
     }
 
     def __init__(self, config_path: Optional[str] = None):
-        self.config = self.DEFAULT_CONFIG.copy()
+        """設定管理を初期化（統合設定システムを使用）"""
+        # 統合設定管理システムを使用
+        self._manager = ConfigManager(config_type="extended", config_path=config_path)
 
-        if config_path:
-            self.load_config(config_path)
-
-        # テーマが指定されている場合、CSSを更新
-        if "theme" in self.config and self.config["theme"] in self.config["themes"]:
-            theme_css = self.config["themes"][self.config["theme"]]["css"]
-            self.config["css"].update(theme_css)
+        # 互換性のため、設定辞書も保持
+        self.config = self._manager.to_dict()
 
     def load_config(self, config_path: str) -> bool:
-        """設定ファイルを読み込む"""
+        """設定ファイルを読み込む（統合設定システムに委譲）"""
         try:
-            config_file = Path(config_path)
-
-            if not config_file.exists():
+            result = self._manager.load_config(config_path)
+            if result:
+                # 設定辞書を更新
+                self.config = self._manager.to_dict()
+                console.print(
+                    f"[green][完了] 設定ファイルを読み込みました:[/green] {config_path}"
+                )
+            else:
                 console.print(
                     f"[yellow][警告]  設定ファイルが見つかりません:[/yellow] {config_path}"
                 )
                 console.print("[dim]   デフォルト設定を使用します[/dim]")
-                return False
-
-            with open(config_file, "r", encoding="utf-8") as f:
-                if config_file.suffix.lower() in [".yaml", ".yml"]:
-                    user_config = yaml.safe_load(f)
-                elif config_file.suffix.lower() == ".json":
-                    user_config = json.load(f)
-                else:
-                    console.print(
-                        f"[red][エラー] 未対応の設定ファイル形式:[/red] {config_file.suffix}"
-                    )
-                    console.print(
-                        "[dim]   .yaml, .yml, .json のみサポートしています[/dim]"
-                    )
-                    return False
-
-            if not isinstance(user_config, dict):
-                console.print(
-                    "[red][エラー] 設定ファイルの形式が正しくありません[/red]"
-                )
-                return False
-
-            # 設定をマージ
-            self._merge_config(user_config)
-            console.print(
-                f"[green][完了] 設定ファイルを読み込みました:[/green] {config_path}"
-            )
-
-            return True
-
-        except yaml.YAMLError as e:
-            console.print(f"[red][エラー] YAML解析エラー:[/red] {e}")
-            return False
-        except json.JSONDecodeError as e:
-            console.print(f"[red][エラー] JSON解析エラー:[/red] {e}")
-            return False
+            return result
         except Exception as e:
             console.print(f"[red][エラー] 設定ファイル読み込みエラー:[/red] {e}")
             return False
 
     def _merge_config(self, user_config: Dict[str, Any]):
-        """ユーザー設定をデフォルト設定にマージ"""
-        # カスタムテーマの追加（テーマ設定より先に処理）
+        """ユーザー設定をデフォルト設定にマージ（統合設定システムに委譲）"""
+        self._manager.merge_config(user_config)
+        self.config = self._manager.to_dict()
+
+        # ログ出力（互換性維持）
         if "themes" in user_config and isinstance(user_config["themes"], dict):
-            self.config["themes"].update(user_config["themes"])
             console.print(
                 f"[dim]   カスタムテーマ: {len(user_config['themes'])}個[/dim]"
             )
-
-        # マーカーの追加・上書き
-        if "markers" in user_config:
-            if isinstance(user_config["markers"], dict):
-                self.config["markers"].update(user_config["markers"])
-                console.print(
-                    f"[dim]   カスタムマーカー: {len(user_config['markers'])}個[/dim]"
-                )
-
-        # テーマ設定
+        if "markers" in user_config and isinstance(user_config["markers"], dict):
+            console.print(
+                f"[dim]   カスタムマーカー: {len(user_config['markers'])}個[/dim]"
+            )
         if "theme" in user_config:
-            if user_config["theme"] in self.config["themes"]:
-                self.config["theme"] = user_config["theme"]
-                console.print(
-                    f"[dim]   テーマ: {self.config['themes'][user_config['theme']]['name']}[/dim]"
-                )
-            else:
-                console.print(
-                    f"[yellow][警告]  未知のテーマ:[/yellow] {user_config['theme']}"
-                )
-
-        # フォント設定
+            theme_name = self._manager.get_theme_name()
+            console.print(f"[dim]   テーマ: {theme_name}[/dim]")
         if "font_family" in user_config:
-            self.config["font_family"] = user_config["font_family"]
             console.print(f"[dim]   フォント: {user_config['font_family']}[/dim]")
-
-        # CSS設定の上書き
         if "css" in user_config and isinstance(user_config["css"], dict):
-            self.config["css"].update(user_config["css"])
             console.print(f"[dim]   カスタムCSS: {len(user_config['css'])}項目[/dim]")
 
     def get_markers(self) -> Dict[str, Dict[str, Any]]:
-        """マーカー定義を取得"""
-        return self.config["markers"]
+        """マーカー定義を取得（統合設定システムに委譲）"""
+        return self._manager.get_markers()
 
     def get_css_variables(self) -> Dict[str, str]:
-        """CSS変数を取得"""
-        css_vars = self.config["css"].copy()
-        css_vars["font_family"] = self.config["font_family"]
-        return css_vars
+        """CSS変数を取得（統合設定システムに委譲）"""
+        return self._manager.get_css_variables()
 
     def get_theme_name(self) -> str:
-        """現在のテーマ名を取得"""
-        theme_key = self.config.get("theme", "default")
-        return self.config["themes"].get(theme_key, {}).get("name", "不明")
+        """現在のテーマ名を取得（統合設定システムに委譲）"""
+        return self._manager.get_theme_name()
 
     def validate_config(self) -> bool:
-        """設定の妥当性をチェック"""
-        errors = []
-
-        # マーカー定義の検証
-        if "markers" not in self.config:
-            errors.append("markers設定が見つかりません")
-        else:
-            for name, marker in self.config["markers"].items():
-                if not isinstance(marker, dict):
-                    errors.append(f"マーカー '{name}' の設定が辞書形式ではありません")
-                elif "tag" not in marker:
-                    errors.append(f"マーカー '{name}' にtagが指定されていません")
-
-        # テーマの検証
-        current_theme = self.config.get("theme", "default")
-        if current_theme not in self.config["themes"]:
-            errors.append(f"テーマ '{current_theme}' が定義されていません")
-
-        if errors:
-            console.print("[red][エラー] 設定検証エラー:[/red]")
-            for error in errors:
-                console.print(f"[red]   - {error}[/red]")
-            return False
-
-        return True
+        """設定の妥当性をチェック（統合設定システムに委譲）"""
+        result = self._manager.validate()
+        if not result:
+            console.print("[red][エラー] 設定検証エラー[/red]")
+        return result
 
 
 def load_config(config_path: Optional[str] = None) -> Config:
-    """設定を読み込む便利関数"""
+    """設定を読み込む便利関数（統合設定システムを使用）"""
     return Config(config_path)
