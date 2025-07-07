@@ -26,6 +26,9 @@ dependencies = [
     "pydantic>=2.0",
 ]
 
+[project.scripts]
+kumihan = "kumihan_formatter.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "black>=23.0",
