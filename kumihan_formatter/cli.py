@@ -9,18 +9,23 @@ import sys
 
 import click
 
+from .core.utilities.logger import get_logger
+
 
 def setup_encoding() -> None:
     """Setup encoding for Windows and macOS compatibility"""
+    logger = get_logger(__name__)
     import os
     import sys
 
     # Windows specific encoding setup
     if sys.platform == "win32":
+        logger.debug("Windows platform detected, setting up UTF-8 encoding")
         # 環境変数ではなく、ストリームの設定で対応
         try:
             sys.stdout.reconfigure(encoding="utf-8")  # type: ignore
             sys.stderr.reconfigure(encoding="utf-8")  # type: ignore
+            logger.info("UTF-8 encoding configured successfully")
         except AttributeError:
             # Python 3.7以前の場合のフォールバック
             # Note: Removed environment variable modification to avoid global side effects
@@ -30,6 +35,9 @@ def setup_encoding() -> None:
             warnings.warn(
                 "Python 3.7 or earlier detected. Please set PYTHONIOENCODING=utf-8 externally.",
                 UserWarning,
+            )
+            logger.warning(
+                "Python 3.7 or earlier detected, manual encoding setup may be required"
             )
 
 
@@ -46,7 +54,9 @@ def cli():
 # Register commands using lazy loading
 def register_commands():
     """Register all CLI commands with lazy loading"""
+    logger = get_logger(__name__)
     # convert コマンドを最初に登録（最重要）
+    logger.info("Registering CLI commands")
     try:
         # 新しい convert モジュール構造を使用
         from typing import Optional
@@ -102,36 +112,45 @@ def register_commands():
             )
 
         cli.add_command(convert_command, name="convert")
-    except ImportError:
+        logger.debug("Convert command registered successfully")
+    except ImportError as e:
         # フォールバック: レガシー convert.py を使用
+        logger.warning(f"Failed to import new convert command, using legacy: {e}")
         from .commands.convert import create_convert_command
 
         cli.add_command(create_convert_command(), name="convert")
+        logger.debug("Legacy convert command registered")
 
     # 他のコマンドを個別に登録（失敗してもconvertは動作する）
     try:
         from .commands.check_syntax import create_check_syntax_command
 
         cli.add_command(create_check_syntax_command(), name="check-syntax")
+        logger.debug("check-syntax command registered successfully")
     except ImportError as e:
         import warnings
 
         warnings.warn(f"check-syntax コマンドが読み込めませんでした: {e}")
+        logger.error(f"Failed to load check-syntax command: {e}")
 
     try:
         from .commands.sample import create_sample_command, create_test_command
 
         cli.add_command(create_sample_command(), name="generate-sample")
         cli.add_command(create_test_command(), name="generate-test")
+        logger.debug("Sample generation commands registered successfully")
     except ImportError as e:
         import warnings
 
         warnings.warn(f"sample コマンドが読み込めませんでした: {e}")
+        logger.error(f"Failed to load sample commands: {e}")
 
 
 def main() -> None:
     """Main entry point with enhanced error handling"""
+    logger = get_logger(__name__)
     # エンコーディング設定を初期化
+    logger.info("Kumihan-Formatter CLI starting")
     setup_encoding()
 
     # コマンドを登録
@@ -152,10 +171,14 @@ def main() -> None:
 
             if Path(first_arg).exists() or first_arg.endswith(".txt"):
                 # Insert 'convert' command
+                logger.debug(
+                    f"Auto-routing file argument '{first_arg}' to convert command"
+                )
                 sys.argv.insert(1, "convert")
 
     # Execute CLI with minimal error handling to preserve Click's help behavior
     try:
+        logger.debug(f"Executing command with args: {sys.argv}")
         cli()
     except KeyboardInterrupt:
         from .ui.console_ui import get_console_ui
@@ -163,12 +186,14 @@ def main() -> None:
         console_ui = get_console_ui()
         console_ui.info("操作が中断されました")
         console_ui.dim("Ctrl+C で中断されました")
+        logger.info("Operation cancelled by user (KeyboardInterrupt)")
         sys.exit(130)
     except click.ClickException:
         # Let Click handle its own exceptions (including help)
         raise
     except Exception as e:
         # Handle other exceptions with friendly error handler
+        logger.error(f"Unhandled exception in CLI: {e}", exc_info=True)
         from .core.error_handling import ErrorHandler as FriendlyErrorHandler
         from .ui.console_ui import get_console_ui
 

@@ -7,7 +7,7 @@
 <language>Japanese</language>
 <character_code>UTF-8</character_code>
 <law>
-AI運用6原則
+AI運用5原則
 
 第1原則： AIはファイル生成・更新・プログラム実行前に必ず自身の作業計画を報告し、y/nでユーザー確認を取り、yが返るまで一切の実行を停止する。
 
@@ -21,7 +21,7 @@ AI運用6原則
 </law>
 
 <every_chat>
-[AI運用6原則]
+[AI運用5原則]
 
 [main_output]
 
