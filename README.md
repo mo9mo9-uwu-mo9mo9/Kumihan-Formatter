@@ -1,11 +1,14 @@
 # Kumihan-Formatter
 
 ![Tests](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/workflows/Tests/badge.svg)
-![Version](https://img.shields.io/badge/version-0.3.0--alpha.1-orange.svg)
+![Version](https://img.shields.io/badge/version-0.9.0--alpha.1-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
 > CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツール
+
+**⚠️ 現在のバージョン**: v0.9.0-alpha.1 (アルファ版・テスト改善用)
+**注意**: このバージョンはテスト目的です。正式リリースではありません。
 
 ## ✨ 特徴
 
