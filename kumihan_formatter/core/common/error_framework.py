@@ -112,7 +112,7 @@ class KumihanError(Exception):
 
         # Store the original traceback if available
         if cause:
-            self.cause_traceback = "".join(
+            self.cause_traceback: Optional[str] = "".join(
                 traceback.format_exception(type(cause), cause, cause.__traceback__)
             )
         else:
@@ -262,8 +262,8 @@ class BaseErrorHandler(ABC):
         if not self.errors:
             return {"total": 0, "by_severity": {}, "by_category": {}}
 
-        by_severity = {}
-        by_category = {}
+        by_severity: Dict[str, int] = {}
+        by_category: Dict[str, int] = {}
 
         for error in self.errors:
             # Count by severity
@@ -292,7 +292,7 @@ class BaseErrorHandler(ABC):
 class FileSystemError(KumihanError):
     """File system related errors"""
 
-    def __init__(self, message: str, file_path: str, **kwargs):
+    def __init__(self, message: str, file_path: str, **kwargs: Any) -> None:
         context = ErrorContext(file_path=file_path)
         super().__init__(
             message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs
@@ -302,7 +302,7 @@ class FileSystemError(KumihanError):
 class SyntaxError(KumihanError):
     """Syntax related errors"""
 
-    def __init__(self, message: str, line_number: int, **kwargs):
+    def __init__(self, message: str, line_number: int, **kwargs: Any) -> None:
         context = ErrorContext(line_number=line_number)
         super().__init__(
             message, category=ErrorCategory.SYNTAX, context=context, **kwargs
@@ -312,12 +312,12 @@ class SyntaxError(KumihanError):
 class ValidationError(KumihanError):
     """Validation related errors"""
 
-    def __init__(self, message: str, **kwargs):
+    def __init__(self, message: str, **kwargs: Any) -> None:
         super().__init__(message, category=ErrorCategory.VALIDATION, **kwargs)
 
 
 class ConfigurationError(KumihanError):
     """Configuration related errors"""
 
-    def __init__(self, message: str, **kwargs):
+    def __init__(self, message: str, **kwargs: Any) -> None:
         super().__init__(message, category=ErrorCategory.CONFIGURATION, **kwargs)

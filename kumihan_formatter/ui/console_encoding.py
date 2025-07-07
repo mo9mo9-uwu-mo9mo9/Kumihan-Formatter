@@ -5,6 +5,7 @@ Handles platform-specific encoding configuration.
 
 import io
 import sys
+from typing import Any
 
 
 class ConsoleEncodingSetup:
@@ -49,15 +50,17 @@ class ConsoleEncodingSetup:
                 pass
 
     @staticmethod
-    def _setup_windows_encoding(locale) -> None:
+    def _setup_windows_encoding(locale: Any) -> None:
         """Setup encoding for Windows"""
         # Try multiple methods to ensure UTF-8 support
 
         # Method 1: reconfigure (Python 3.7+)
         if hasattr(sys.stdout, "reconfigure"):
             try:
-                sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-                sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+                if hasattr(sys.stdout, "reconfigure"):
+                    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+                if hasattr(sys.stderr, "reconfigure"):
+                    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
             except Exception:
                 # Fallback to method 2
                 pass
@@ -84,7 +87,8 @@ class ConsoleEncodingSetup:
         try:
             import ctypes
 
-            kernel32 = ctypes.windll.kernel32
+            if hasattr(ctypes, "windll"):
+                kernel32 = ctypes.windll.kernel32
             # Set console code page to UTF-8
             kernel32.SetConsoleCP(65001)
             kernel32.SetConsoleOutputCP(65001)

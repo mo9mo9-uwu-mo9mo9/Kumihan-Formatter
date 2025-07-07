@@ -50,7 +50,7 @@ class HTMLRenderer:
         "em",  # イタリック
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize HTML renderer with specialized renderers"""
         self.element_renderer = ElementRenderer()
         self.compound_renderer = CompoundElementRenderer()
@@ -279,7 +279,7 @@ class HTMLRenderer:
         Returns:
             List[Dict]: List of heading information
         """
-        headings = []
+        headings: List[Dict[str, Any]] = []
         max_depth = 50  # Prevent infinite recursion
 
         if depth > max_depth:

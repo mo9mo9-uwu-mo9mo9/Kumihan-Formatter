@@ -73,7 +73,7 @@ class ValidationMixin:
     validation capabilities across the application.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._validation_rules: Dict[str, List[ValidationRule]] = {}
         self._validation_errors: List[ValidationError] = []

@@ -14,7 +14,7 @@ from typing import Optional, Tuple
 class WindowsPermissionHelper:
     """Windows権限制御ヘルパークラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_windows = platform.system() == "Windows"
         self.current_user = getpass.getuser()
         self._original_permissions = {}

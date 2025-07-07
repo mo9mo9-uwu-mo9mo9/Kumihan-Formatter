@@ -25,6 +25,7 @@ class ErrorCategory(Enum):
     PERMISSION = "permission"  # 権限関連
     SYSTEM = "system"  # システム関連
     NETWORK = "network"  # ネットワーク関連
+    RENDERING = "rendering"  # レンダリング関連
     UNKNOWN = "unknown"  # 不明
 
 
@@ -34,8 +35,8 @@ class ErrorSolution:
 
     quick_fix: str  # 即座にできる解決方法
     detailed_steps: List[str]  # 詳細な手順
-    external_links: List[str] = None  # 参考リンク
-    alternative_approaches: List[str] = None  # 代替手段
+    external_links: Optional[List[str]] = None  # 参考リンク
+    alternative_approaches: Optional[List[str]] = None  # 代替手段
 
 
 @dataclass

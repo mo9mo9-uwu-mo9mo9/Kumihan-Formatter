@@ -12,11 +12,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ...utilities.logger import get_logger
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
 from ..caching.render_cache import RenderCache
 from ..performance import get_global_monitor
+from ..utilities.logger import get_logger
 from .memory_monitor import MemoryMonitor
 from .profiler import AdvancedProfiler
 
@@ -61,7 +61,7 @@ class PerformanceBenchmarkSuite:
     - ベースライン比較
     """
 
-    def __init__(self, config: BenchmarkConfig = None):
+    def __init__(self, config: Optional[BenchmarkConfig] = None) -> None:
         """ベンチマークスイートを初期化
 
         Args:
@@ -183,7 +183,7 @@ class PerformanceBenchmarkSuite:
 
         return regression_analysis
 
-    def save_baseline(self, output_file: Path):
+    def save_baseline(self, output_file: Path) -> None:
         """現在の結果をベースラインとして保存
 
         Args:
@@ -211,7 +211,7 @@ class PerformanceBenchmarkSuite:
             self.logger.error(f"ベースライン保存エラー: {e}")
             raise
 
-    def load_baseline(self, baseline_file: Path):
+    def load_baseline(self, baseline_file: Path) -> Any:
         """ベースライン結果を読み込み
 
         Args:
@@ -234,7 +234,7 @@ class PerformanceBenchmarkSuite:
             self.logger.error(f"ベースライン読み込みエラー: {e}")
             print(f"⚠️  Failed to load baseline: {e}")
 
-    def _run_file_benchmarks(self):
+    def _run_file_benchmarks(self) -> Dict[str, BenchmarkResult]:
         """ファイル読み込みベンチマーク"""
         # 小ファイル読み込み
         result = self._benchmark_file_reading(file_size="small")
@@ -246,7 +246,7 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Large files: {result.avg_time:.3f}s avg")
 
-    def _run_parse_benchmarks(self):
+    def _run_parse_benchmarks(self) -> Dict[str, BenchmarkResult]:
         """パースベンチマーク"""
         # 基本パース
         result = self._benchmark_parsing(complexity="basic")
@@ -258,7 +258,7 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Complex parsing: {result.avg_time:.3f}s avg")
 
-    def _run_render_benchmarks(self):
+    def _run_render_benchmarks(self) -> Dict[str, BenchmarkResult]:
         """レンダリングベンチマーク"""
         # 基本レンダリング
         result = self._benchmark_rendering(template="basic")
@@ -270,13 +270,13 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Complex rendering: {result.avg_time:.3f}s avg")
 
-    def _run_e2e_benchmarks(self):
+    def _run_e2e_benchmarks(self) -> Dict[str, BenchmarkResult]:
         """エンドツーエンドベンチマーク"""
         result = self._benchmark_full_pipeline()
         self.results.append(result)
         print(f"  Full pipeline: {result.avg_time:.3f}s avg")
 
-    def _run_cache_benchmarks(self):
+    def _run_cache_benchmarks(self) -> Dict[str, BenchmarkResult]:
         """キャッシュパフォーマンステスト"""
         if not self.config.cache_enabled:
             print("  Cache disabled, skipping cache benchmarks")
@@ -669,7 +669,7 @@ class PerformanceBenchmarkSuite:
         time.sleep(0.001)  # 1ms のパース時間をシミュレート
         return [{"type": "text", "content": line} for line in content.split("\n")]
 
-    def _mock_render_function(self, **kwargs) -> str:
+    def _mock_render_function(self, **kwargs: Any) -> str:
         """モックレンダー関数"""
         # 実際のレンダリング処理をシミュレート
         time.sleep(0.002)  # 2ms のレンダリング時間をシミュレート

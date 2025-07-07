@@ -55,12 +55,12 @@ class Renderer:
     def render(
         self,
         ast: List[Node],
-        config=None,
-        template=None,
-        title=None,
-        source_text=None,
-        source_filename=None,
-        navigation_html=None,
+        config: Any = None,
+        template: Optional[str] = None,
+        title: Optional[str] = None,
+        source_text: Optional[str] = None,
+        source_filename: Optional[str] = None,
+        navigation_html: Optional[str] = None,
     ) -> str:
         """
         Render AST to HTML
@@ -225,12 +225,12 @@ class Renderer:
 
 def render(
     ast: List[Node],
-    config=None,
-    template=None,
-    title=None,
-    source_text=None,
-    source_filename=None,
-    navigation_html=None,
+    config: Any = None,
+    template: Optional[str] = None,
+    title: Optional[str] = None,
+    source_text: Optional[str] = None,
+    source_filename: Optional[str] = None,
+    navigation_html: Optional[str] = None,
 ) -> str:
     """
     Main rendering function (compatibility with existing API)

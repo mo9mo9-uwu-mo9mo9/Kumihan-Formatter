@@ -4,7 +4,7 @@ This module handles parsing of image blocks and image-related elements.
 """
 
 import re
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from ..ast_nodes import Node, error_node, image_node
 
@@ -12,7 +12,7 @@ from ..ast_nodes import Node, error_node, image_node
 class ImageBlockParser:
     """Parser for image blocks"""
 
-    def __init__(self, block_parser):
+    def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
     def parse_image_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:

@@ -61,7 +61,7 @@ class KeywordParser:
         "em",  # イタリック
     ]
 
-    def __init__(self, config=None):
+    def __init__(self, config: Any = None) -> None:
         """Initialize keyword parser with fixed keywords"""
         # 簡素化: 固定マーカーセットのみ使用
         self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS.copy()
@@ -115,7 +115,7 @@ class KeywordParser:
 
         keywords = []
         attributes = {}
-        errors = []
+        errors: List[str] = []
 
         # Extract color attribute
         color_match = re.search(r"color=([#\w]+)", marker_content)
@@ -284,11 +284,11 @@ class KeywordParser:
             current_content = [current_node]
 
         # Return the outermost node
-        return (
-            current_content[0] if isinstance(current_content, list) else current_content
-        )
+        if isinstance(current_content, list):
+            return current_content[0]
+        return current_content
 
-    def _parse_block_content(self, content: str) -> List:
+    def _parse_block_content(self, content: str) -> List[Any]:
         """Parse block content into appropriate structure"""
         if not content.strip():
             return [""]
@@ -307,7 +307,7 @@ class KeywordParser:
         # Pattern to match ;;;keyword;;; text at the start of lines or after list markers
         pattern = r"(^|\n)([\s]*[-*]?\s*)(;;;([^;]+);;;\s+)(.+?)(?=\n|$)"
 
-        def replace_keyword(match):
+        def replace_keyword(match: Any) -> str:
             prefix = match.group(1)  # \n or start
             list_marker = match.group(2)  # list marker and spaces
             full_marker = match.group(3)  # ;;;keyword;;;
@@ -337,7 +337,9 @@ class KeywordParser:
 
         return re.sub(pattern, replace_keyword, content, flags=re.MULTILINE)
 
-    def _apply_simple_styling(self, keyword: str, text: str, attributes: dict) -> str:
+    def _apply_simple_styling(
+        self, keyword: str, text: str, attributes: Dict[str, Any]
+    ) -> str:
         """Apply simple styling to text based on keyword"""
         if keyword == "太字":
             return f"<strong>{text}</strong>"
@@ -360,7 +362,7 @@ class KeywordParser:
             return text
 
     def _apply_compound_styling(
-        self, keywords: List[str], text: str, attributes: dict
+        self, keywords: List[str], text: str, attributes: Dict[str, Any]
     ) -> str:
         """Apply compound styling to text"""
         # Sort keywords by nesting order

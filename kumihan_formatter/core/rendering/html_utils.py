@@ -6,7 +6,7 @@ escaping, formatting, and nesting logic.
 
 import re
 from html import escape
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 def escape_html(text: str) -> str:
@@ -22,7 +22,7 @@ def escape_html(text: str) -> str:
     return escape(text)
 
 
-def render_attributes(attributes: Dict[str, Any]) -> str:
+def render_attributes(attributes: Optional[Dict[str, Any]]) -> str:
     """
     Render HTML attributes
 
@@ -241,7 +241,9 @@ def contains_html_tags(text: str) -> bool:
     return bool(re.search(html_tag_pattern, text, re.IGNORECASE | re.DOTALL))
 
 
-def create_simple_tag(tag: str, content: str, attributes: Dict[str, Any] = None) -> str:
+def create_simple_tag(
+    tag: str, content: str, attributes: Optional[Dict[str, Any]] = None
+) -> str:
     """
     Create a simple HTML tag with content
 
@@ -261,7 +263,9 @@ def create_simple_tag(tag: str, content: str, attributes: Dict[str, Any] = None)
         return f"<{tag}>{content}</{tag}>"
 
 
-def create_self_closing_tag(tag: str, attributes: Dict[str, Any] = None) -> str:
+def create_self_closing_tag(
+    tag: str, attributes: Optional[Dict[str, Any]] = None
+) -> str:
     """
     Create a self-closing HTML tag
 

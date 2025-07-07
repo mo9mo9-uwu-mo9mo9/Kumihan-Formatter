@@ -11,13 +11,13 @@ from .error_types import UserFriendlyError
 class ErrorRecovery:
     """エラー自動回復機能（将来の拡張用）"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """回復機能を初期化"""
         self._recovery_attempts = 0
         self._max_attempts = 3
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any] = None
+        self, error: UserFriendlyError, context: Optional[Dict[str, Any]] = None
     ) -> bool:
         """エラーからの自動回復を試行
 
