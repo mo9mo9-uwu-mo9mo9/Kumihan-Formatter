@@ -42,6 +42,7 @@ jobs:
       run: pip install -e .
 
     - name: Build executable
+      shell: bash
       run: |
         echo "from kumihan_formatter.gui_launcher import main; main()" > entry_point.py
         echo "=== Debug: Created entry_point.py ==="
@@ -60,6 +61,7 @@ jobs:
         ls -la dist/
 
     - name: Test executable
+      shell: bash
       run: |
         if [ "${{ matrix.platform }}" = "macos" ]; then
           # Mac: Test .app bundle or executable
