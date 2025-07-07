@@ -3,7 +3,7 @@
 Issue #390対応 - 型安全性向上のためのテストケース
 """
 
-import pytest
+import pytest  # type: ignore
 from pydantic import ValidationError
 
 from kumihan_formatter.models.config import FormatterConfig, SimpleFormatterConfig

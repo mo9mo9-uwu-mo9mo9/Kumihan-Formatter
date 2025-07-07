@@ -40,8 +40,8 @@ class ConvertWatcher:
     ) -> None:
         """ファイル監視モードを開始"""
         try:
-            from watchdog.events import FileSystemEventHandler
-            from watchdog.observers import Observer
+            from watchdog.events import FileSystemEventHandler  # type: ignore
+            from watchdog.observers import Observer  # type: ignore
         except ImportError:
             get_console_ui().error("watchdog ライブラリがインストールされていません")
             get_console_ui().dim("pip install watchdog を実行してください")
@@ -150,7 +150,7 @@ class ConvertWatcher:
 
         from watchdog.events import FileSystemEventHandler
 
-        class FileSystemHandler(FileSystemEventHandler, FileChangeHandler):
+        class FileSystemHandler(FileSystemEventHandler, FileChangeHandler):  # type: ignore[misc, no-any-unimported]
             def __init__(self, watcher: Any, processor: Any, validator: Any) -> None:
                 FileSystemEventHandler.__init__(self)
                 FileChangeHandler.__init__(self, watcher, processor, validator)

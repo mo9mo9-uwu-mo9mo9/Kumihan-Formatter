@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-import pytest
+import pytest  # type: ignore
 
 
 class TestSimpleIntegration(TestCase):
@@ -196,7 +196,7 @@ class TestSimpleIntegration(TestCase):
         with self.assertRaises(FileNotFoundError):
             nonexistent_file.read_text(encoding="utf-8")
 
-    @pytest.mark.skipif(
+    @pytest.mark.skipif(  # type: ignore[misc]
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
@@ -255,7 +255,7 @@ class TestSimpleIntegration(TestCase):
         test_file.write_text(new_content, encoding="utf-8")
         self.assertEqual(test_file.read_text(encoding="utf-8"), new_content)
 
-    @pytest.mark.skipif(
+    @pytest.mark.skipif(  # type: ignore[misc]
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )

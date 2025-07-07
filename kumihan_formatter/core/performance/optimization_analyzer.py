@@ -573,7 +573,7 @@ class OptimizationAnalyzer:
         import platform
         import sys
 
-        system_info = {
+        system_info: Dict[str, Any] = {
             "platform": platform.platform(),
             "python_version": sys.version,
             "cpu_count": None,
@@ -583,8 +583,8 @@ class OptimizationAnalyzer:
         try:
             import psutil
 
-            system_info["cpu_count"] = psutil.cpu_count()  # type: ignore
-            system_info["memory_total"] = psutil.virtual_memory().total  # type: ignore
+            system_info["cpu_count"] = psutil.cpu_count()
+            system_info["memory_total"] = psutil.virtual_memory().total
         except ImportError:
             pass
 

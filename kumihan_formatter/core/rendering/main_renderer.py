@@ -338,4 +338,4 @@ def render_single_node(node: Node, depth: int = 0) -> str:
 # Maintain the original CompoundElementRenderer class for backward compatibility
 CompoundElementRenderer = CompoundElementRenderer
 
-__all__ = ["HTMLRenderer", "CompoundElementRenderer", "render_node"]
+__all__ = ["HTMLRenderer", "CompoundElementRenderer", "render_single_node"]

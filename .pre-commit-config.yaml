@@ -103,6 +103,6 @@ repos:
         language: python
         files: ^(kumihan_formatter|tests)/.*\.py$
         pass_filenames: false
-        additional_dependencies: [mypy, pydantic]
+        additional_dependencies: [mypy, pydantic, types-PyYAML, types-psutil, types-Jinja2, types-MarkupSafe, types-click]
         stages: [commit, manual, pre-push]
         always_run: true

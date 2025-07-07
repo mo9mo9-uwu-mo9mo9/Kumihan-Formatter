@@ -9,7 +9,7 @@ import hashlib
 import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from ..common.error_framework import ErrorCategory, KumihanError
 from .cache_strategies import CacheStrategy
@@ -57,7 +57,7 @@ class CacheStorage:
         else:
             self.cache_dir = None  # type: ignore
 
-    def calculate_size(self, value: Any) -> int:  # type: ignore
+    def calculate_size(self, value: Any) -> int:
         """値のサイズを推定（バイト）"""
         try:
             if isinstance(value, str):

@@ -68,7 +68,7 @@ class TemplateManager:
         if template_name not in self._template_cache:
             self._template_cache[template_name] = self.env.get_template(template_name)
 
-        return self._template_cache[template_name]  # type: ignore
+        return self._template_cache[template_name]  # type: ignore[no-any-return]
 
     def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """
@@ -132,7 +132,9 @@ class TemplateManager:
         try:
             template = self.get_template(template_name)
             # Try to parse the template to check for syntax errors
-            template.environment.parse(template.source)  # type: ignore
+            # Get the template source code and parse it
+            source = template.environment.get_template(template_name).source  # type: ignore[attr-defined]
+            template.environment.parse(source)
             return True, None
         except Exception as e:
             return False, str(e)
@@ -308,7 +310,8 @@ class TemplateValidator:
         """
         try:
             template = self.template_manager.get_template(template_name)
-            source = template.source  # type: ignore
+            # Get the template source code via the environment
+            source = template.environment.get_template(template_name).source  # type: ignore[attr-defined]
 
             missing_vars = []
             for var in required_vars:

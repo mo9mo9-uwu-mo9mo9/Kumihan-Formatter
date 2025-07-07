@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
-from rich.progress import Progress
+from rich.progress import Progress  # type: ignore
 
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger

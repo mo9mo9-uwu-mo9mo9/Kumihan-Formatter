@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-import pytest
+import pytest  # type: ignore
 
 
 class TestSimpleE2E(TestCase):
@@ -458,7 +458,7 @@ def hello():
             )
         )
 
-    @pytest.mark.skipif(
+    @pytest.mark.skipif(  # type: ignore[misc]
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
@@ -475,7 +475,7 @@ def hello():
         finally:
             os.chmod(restricted_file, 0o644)
 
-    @pytest.mark.skipif(
+    @pytest.mark.skipif(  # type: ignore[misc]
         platform.system() == "Windows",
         reason="Windows file permission tests need platform-specific " "implementation",
     )
