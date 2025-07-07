@@ -144,7 +144,7 @@ class TOCGenerator:
             return []
 
         entries = []
-        stack: list[TOCEntry] = []  # Stack to maintain hierarchy
+        stack: List[TOCEntry] = []  # Stack to maintain hierarchy
 
         for heading in headings:
             entry = TOCEntry(

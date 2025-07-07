@@ -4,7 +4,7 @@ This module handles Jinja2 template loading, caching, and rendering.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -119,7 +119,7 @@ class TemplateManager:
         else:
             return "base.html.j2"
 
-    def get_available_templates(self) -> list[str]:
+    def get_available_templates(self) -> List[str]:
         """Get list of available template files"""
         templates = []
         for template_file in self.template_dir.rglob("*.j2"):
@@ -127,7 +127,7 @@ class TemplateManager:
             templates.append(str(relative_path))
         return sorted(templates)
 
-    def validate_template(self, template_name: str) -> tuple[bool, Optional[str]]:
+    def validate_template(self, template_name: str) -> Tuple[bool, Optional[str]]:
         """
         Validate that a template exists and is valid
 
@@ -276,7 +276,7 @@ class TemplateValidator:
     def __init__(self, template_manager: TemplateManager):
         self.template_manager = template_manager
 
-    def validate_all_templates(self) -> Dict[str, tuple[bool, Optional[str]]]:
+    def validate_all_templates(self) -> Dict[str, Tuple[bool, Optional[str]]]:
         """
         Validate all available templates
 
@@ -307,8 +307,8 @@ class TemplateValidator:
         return results
 
     def validate_template_variables(
-        self, template_name: str, required_vars: list[str]
-    ) -> tuple[bool, list[str]]:
+        self, template_name: str, required_vars: List[str]
+    ) -> Tuple[bool, List[str]]:
         """
         Validate that template uses required variables
 

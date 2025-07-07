@@ -319,9 +319,9 @@ class FileOperations:
 
         # Platform-specific fallbacks (minimal set)
         if sys.platform == "win32":
-            fallback_encodings: list[str] = ["cp932"]
+            fallback_encodings: List[str] = ["cp932"]
         else:
-            fallback_encodings: list[str] = []
+            fallback_encodings: List[str] = []
 
         for enc in fallback_encodings:
             try:

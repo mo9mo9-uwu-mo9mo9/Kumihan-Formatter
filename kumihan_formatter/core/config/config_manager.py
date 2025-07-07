@@ -110,7 +110,7 @@ class EnhancedConfig:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.config = {}  # type: ignore
-        self.config_sources: dict[str, str] = {}  # 各設定値の出典を追跡
+        self.config_sources: Dict[str, str] = {}  # 各設定値の出典を追跡
         self.validator = ConfigValidator()
         self.loader = ConfigLoader(self.validator)
         self._load_defaults()

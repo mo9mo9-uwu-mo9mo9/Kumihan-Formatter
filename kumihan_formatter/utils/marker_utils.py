@@ -1,10 +1,10 @@
 """マーカーキーワードのパース処理に関する共通ユーティリティ"""
 
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 
-def parse_marker_keywords(marker_line: str) -> Tuple[List[str], dict[str, str]]:
+def parse_marker_keywords(marker_line: str) -> Tuple[List[str], Dict[str, str]]:
     """
     マーカー行からキーワードと属性を抽出する共通関数
 

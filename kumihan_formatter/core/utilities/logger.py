@@ -9,7 +9,7 @@ import logging.handlers
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from .logging import LogHelper
 
@@ -26,7 +26,7 @@ class KumihanLogger:
     """
 
     _instance: Optional["KumihanLogger"] = None
-    _loggers: dict[str, logging.Logger] = {}
+    _loggers: Dict[str, logging.Logger] = {}
     _initialized: bool
 
     def __new__(cls) -> "KumihanLogger":

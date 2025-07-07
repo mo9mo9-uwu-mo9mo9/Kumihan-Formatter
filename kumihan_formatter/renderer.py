@@ -6,7 +6,7 @@ renderer.py file. Each rendering responsibility is now handled by specialized mo
 
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
@@ -201,7 +201,7 @@ class Renderer:
         """
         return self.html_renderer.collect_headings(ast)
 
-    def validate_template(self, template_name: str) -> tuple[bool, Optional[str]]:
+    def validate_template(self, template_name: str) -> Tuple[bool, Optional[str]]:
         """
         Validate a template
 
