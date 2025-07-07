@@ -4,7 +4,7 @@
 マーカー、テーマ、高度なCSS設定など、フル機能を提供する。
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base_config import BaseConfig
 
@@ -59,7 +59,7 @@ class ExtendedConfig(BaseConfig):
         },
     }
 
-    def __init__(self, config_data: Optional[Dict[str, Any]] = None):
+    def __init__(self, config_data: dict[str, Any] | None = None):
         """拡張設定を初期化
 
         Args:
@@ -89,15 +89,15 @@ class ExtendedConfig(BaseConfig):
             theme_css = self._themes[self._current_theme].get("css", {})
             self._css_vars.update(theme_css)  # type: ignore
 
-    def get_markers(self) -> Dict[str, Dict[str, Any]]:
+    def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得
 
         Returns:
-            Dict[str, Dict[str, Any]]: マーカー定義辞書
+            dict[str, dict[str, Any]]: マーカー定義辞書
         """
         return self._markers.copy()
 
-    def add_marker(self, name: str, definition: Dict[str, Any]) -> None:
+    def add_marker(self, name: str, definition: dict[str, Any]) -> None:
         """マーカーを追加
 
         Args:
@@ -123,15 +123,15 @@ class ExtendedConfig(BaseConfig):
             return True
         return False
 
-    def get_themes(self) -> Dict[str, Dict[str, Any]]:
+    def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得
 
         Returns:
-            Dict[str, Dict[str, Any]]: テーマ定義辞書
+            dict[str, dict[str, Any]]: テーマ定義辞書
         """
         return self._themes.copy()
 
-    def add_theme(self, theme_id: str, theme_data: Dict[str, Any]) -> None:
+    def add_theme(self, theme_id: str, theme_data: dict[str, Any]) -> None:
         """テーマを追加
 
         Args:
@@ -201,7 +201,7 @@ class ExtendedConfig(BaseConfig):
 
         return True
 
-    def merge_config(self, other_config: Dict[str, Any]) -> None:
+    def merge_config(self, other_config: dict[str, Any]) -> None:
         """他の設定をマージ
 
         Args:
@@ -229,11 +229,11 @@ class ExtendedConfig(BaseConfig):
         # その他の設定のマージ
         self._config.update(other_config)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得
 
         Returns:
-            Dict[str, Any]: 設定辞書
+            dict[str, Any]: 設定辞書
         """
         config_dict = super().to_dict()
         config_dict.update(

@@ -5,7 +5,7 @@ any class needing validation capabilities.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from .error_framework import ErrorSeverity, KumihanError, ValidationError
 
@@ -19,7 +19,7 @@ class ValidationRule:
         validator: Callable[[Any], bool],
         error_message: str,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        suggestion: Optional[str] = None,
+        suggestion: str | None = None,
     ):
         """Initialize validation rule
 
@@ -36,7 +36,7 @@ class ValidationRule:
         self.severity = severity
         self.suggestion = suggestion
 
-    def validate(self, value: Any) -> Optional[ValidationError]:
+    def validate(self, value: Any) -> ValidationError | None:
         """Validate a value against this rule
 
         Args:
@@ -75,8 +75,8 @@ class ValidationMixin:
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._validation_rules: Dict[str, List[ValidationRule]] = {}
-        self._validation_errors: List[ValidationError] = []
+        self._validation_rules: dict[str, list[ValidationRule]] = {}
+        self._validation_errors: list[ValidationError] = []
 
     def add_validation_rule(self, field: str, rule: ValidationRule) -> None:
         """Add a validation rule for a field
@@ -95,7 +95,7 @@ class ValidationMixin:
         validator: Callable[[Any], bool],
         error_message: str,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        suggestion: Optional[str] = None,
+        suggestion: str | None = None,
     ) -> None:
         """Add a simple validation rule
 
@@ -115,7 +115,7 @@ class ValidationMixin:
         )
         self.add_validation_rule(field, rule)
 
-    def validate_field(self, field: str, value: Any) -> List[ValidationError]:
+    def validate_field(self, field: str, value: Any) -> list[ValidationError]:
         """Validate a single field
 
         Args:
@@ -135,7 +135,7 @@ class ValidationMixin:
 
         return errors
 
-    def validate_all(self, data: Dict[str, Any]) -> List[ValidationError]:
+    def validate_all(self, data: dict[str, Any]) -> list[ValidationError]:
         """Validate all fields in provided data
 
         Args:
@@ -153,7 +153,7 @@ class ValidationMixin:
         self._validation_errors = all_errors
         return all_errors
 
-    def is_valid(self, data: Dict[str, Any]) -> bool:
+    def is_valid(self, data: dict[str, Any]) -> bool:
         """Check if data is valid
 
         Args:
@@ -165,7 +165,7 @@ class ValidationMixin:
         errors = self.validate_all(data)
         return len(errors) == 0
 
-    def get_validation_errors(self) -> List[ValidationError]:
+    def get_validation_errors(self) -> list[ValidationError]:
         """Get last validation errors"""
         return self._validation_errors.copy()
 
@@ -173,7 +173,7 @@ class ValidationMixin:
         """Clear stored validation errors"""
         self._validation_errors.clear()
 
-    def require_not_empty(self, field: str, message: Optional[str] = None) -> None:
+    def require_not_empty(self, field: str, message: str | None = None) -> None:
         """Add rule requiring field is not empty
 
         Args:
@@ -189,7 +189,7 @@ class ValidationMixin:
         )
 
     def require_type(
-        self, field: str, expected_type: type, message: Optional[str] = None
+        self, field: str, expected_type: type, message: str | None = None
     ) -> None:
         """Add rule requiring specific type
 
@@ -209,9 +209,9 @@ class ValidationMixin:
     def require_in_range(
         self,
         field: str,
-        min_val: Optional[Union[int, float]] = None,
-        max_val: Optional[Union[int, float]] = None,
-        message: Optional[str] = None,
+        min_val: int | float | None = None,
+        max_val: int | float | None = None,
+        message: str | None = None,
     ) -> None:
         """Add rule requiring value in range
 
@@ -239,7 +239,7 @@ class ValidationMixin:
         )
 
     def require_matches_pattern(
-        self, field: str, pattern: str, message: Optional[str] = None
+        self, field: str, pattern: str, message: str | None = None
     ) -> None:
         """Add rule requiring value matches regex pattern
 
@@ -261,7 +261,7 @@ class ValidationMixin:
         )
 
     def require_one_of(
-        self, field: str, valid_values: List[Any], message: Optional[str] = None
+        self, field: str, valid_values: list[Any], message: str | None = None
     ) -> None:
         """Add rule requiring value is one of specified options
 

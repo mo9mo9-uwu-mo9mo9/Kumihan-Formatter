@@ -24,10 +24,10 @@ class FormatterConfig(BaseModel):
     )
 
     # テンプレート設定
-    template_dir: Optional[str] = Field(
+    template_dir: str | None = Field(
         default=None, description="テンプレートディレクトリのパス"
     )
-    template_name: Optional[str] = Field(
+    template_name: str | None = Field(
         default=None, description="使用するテンプレート名"
     )
 
@@ -41,7 +41,7 @@ class FormatterConfig(BaseModel):
     watch_mode: bool = Field(default=False, description="ファイル変更監視モード")
 
     # CSS設定
-    css_variables: Dict[str, str] = Field(
+    css_variables: dict[str, str] = Field(
         default_factory=lambda: {
             "max_width": "800px",
             "background_color": "#f9f9f9",
@@ -72,7 +72,7 @@ class SimpleFormatterConfig(BaseModel):
     include_source: bool = Field(default=False, description="ソース表示機能")
 
     # 固定CSS設定
-    css_variables: Dict[str, str] = Field(
+    css_variables: dict[str, str] = Field(
         default_factory=lambda: {
             "max_width": "800px",
             "background_color": "#f9f9f9",

@@ -12,7 +12,7 @@ class SyntaxRules:
     """Defines syntax rules and keyword validation for Kumihan markup"""
 
     # Valid keywords
-    VALID_KEYWORDS: Set[str] = {
+    VALID_KEYWORDS: set[str] = {
         "太字",
         "イタリック",
         "枠線",
@@ -29,13 +29,13 @@ class SyntaxRules:
     }
 
     # Keywords that accept color attribute
-    COLOR_KEYWORDS: Set[str] = {"ハイライト"}
+    COLOR_KEYWORDS: set[str] = {"ハイライト"}
 
     # Keywords that accept alt attribute
-    ALT_KEYWORDS: Set[str] = {"画像"}
+    ALT_KEYWORDS: set[str] = {"画像"}
 
     # Heading keywords for conflict detection
-    HEADING_KEYWORDS: Set[str] = {"見出し1", "見出し2", "見出し3", "見出し4", "見出し5"}
+    HEADING_KEYWORDS: set[str] = {"見出し1", "見出し2", "見出し3", "見出し4", "見出し5"}
 
     @classmethod
     def is_valid_keyword(cls, keyword: str) -> bool:
@@ -58,7 +58,7 @@ class SyntaxRules:
         return keyword in cls.HEADING_KEYWORDS
 
     @classmethod
-    def parse_keywords(cls, keyword_part: str) -> List[str]:
+    def parse_keywords(cls, keyword_part: str) -> list[str]:
         """Parse compound keywords separated by + or ＋"""
         if not keyword_part:
             return []
@@ -127,7 +127,7 @@ class SyntaxRules:
         return "alt=" in keyword
 
     @classmethod
-    def find_duplicate_keywords(cls, keywords: List[str]) -> List[str]:
+    def find_duplicate_keywords(cls, keywords: list[str]) -> list[str]:
         """Find duplicate base keywords in list"""
         base_keywords = [cls.extract_base_keyword(kw) for kw in keywords]
         seen = set()
@@ -141,7 +141,7 @@ class SyntaxRules:
         return duplicates
 
     @classmethod
-    def find_conflicting_headings(cls, keywords: List[str]) -> List[str]:
+    def find_conflicting_headings(cls, keywords: list[str]) -> list[str]:
         """Find conflicting heading keywords"""
         base_keywords = [cls.extract_base_keyword(kw) for kw in keywords]
         headings = [kw for kw in base_keywords if cls.is_heading(kw)]
@@ -151,6 +151,6 @@ class SyntaxRules:
         return []
 
     @classmethod
-    def get_sorted_keywords(cls) -> List[str]:
+    def get_sorted_keywords(cls) -> list[str]:
         """Get sorted list of valid keywords for error messages"""
         return sorted(cls.VALID_KEYWORDS)

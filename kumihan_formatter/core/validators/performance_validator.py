@@ -21,7 +21,7 @@ class PerformanceValidator:
         self.max_ast_nodes = 100000
         self.max_nesting_depth = 10
 
-    def validate_file_size(self, file_path: Path) -> List[ValidationIssue]:
+    def validate_file_size(self, file_path: Path) -> list[ValidationIssue]:
         """Validate file size"""
         issues = []
 
@@ -51,7 +51,7 @@ class PerformanceValidator:
 
         return issues
 
-    def validate_ast_performance(self, ast: List[Node]) -> List[ValidationIssue]:
+    def validate_ast_performance(self, ast: list[Node]) -> list[ValidationIssue]:
         """Validate AST performance characteristics"""
         issues = []
 
@@ -86,7 +86,7 @@ class PerformanceValidator:
 
         return issues
 
-    def validate_memory_usage(self, text: str) -> List[ValidationIssue]:
+    def validate_memory_usage(self, text: str) -> list[ValidationIssue]:
         """Validate potential memory usage"""
         issues = []
 
@@ -118,7 +118,7 @@ class PerformanceValidator:
 
         return issues
 
-    def _calculate_max_nesting_depth(self, ast: List[Node], depth: int = 0) -> int:
+    def _calculate_max_nesting_depth(self, ast: list[Node], depth: int = 0) -> int:
         """Calculate maximum nesting depth in AST"""
         max_depth = depth
 
@@ -131,7 +131,7 @@ class PerformanceValidator:
 
         return max_depth
 
-    def _check_large_blocks(self, ast: List[Node]) -> List[ValidationIssue]:
+    def _check_large_blocks(self, ast: list[Node]) -> list[ValidationIssue]:
         """Check for large content blocks"""
         issues = []
 

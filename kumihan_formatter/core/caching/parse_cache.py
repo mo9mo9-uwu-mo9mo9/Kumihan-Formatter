@@ -8,7 +8,7 @@ Issue #402対応 - パフォーマンス最適化
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 from ..ast_nodes import Node
 from ..performance import get_global_monitor
@@ -28,7 +28,7 @@ class ParseCache(SmartCache):
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         max_memory_mb: float = 100.0,
         max_entries: int = 1000,
         default_ttl: int = 3600,  # 1時間
@@ -52,13 +52,13 @@ class ParseCache(SmartCache):
         )
 
         # パースメタデータ
-        self._parse_metadata: Dict[str, Dict[str, Any]] = {}
+        self._parse_metadata: dict[str, dict[str, Any]] = {}
 
     def get_parsed_ast(
         self,
         source_content: str,
-        parse_options: Optional[Dict[str, Any]] = None,
-    ) -> Optional[List[Node]]:
+        parse_options: dict[str, Any] | None = None,
+    ) -> list[Node] | None:
         """パース結果をキャッシュから取得
 
         Args:
@@ -84,8 +84,8 @@ class ParseCache(SmartCache):
     def cache_parsed_ast(
         self,
         source_content: str,
-        ast_nodes: List[Node],
-        parse_options: Optional[Dict[str, Any]] = None,
+        ast_nodes: list[Node],
+        parse_options: dict[str, Any] | None = None,
         parse_time: float = 0.0,
     ) -> None:
         """パース結果をキャッシュに保存
@@ -118,8 +118,8 @@ class ParseCache(SmartCache):
         self,
         source_content: str,
         parse_func: callable,  # type: ignore
-        parse_options: Optional[Dict[str, Any]] = None,
-    ) -> List[Node]:
+        parse_options: dict[str, Any] | None = None,
+    ) -> list[Node]:
         """キャッシュから取得または新規パース
 
         Args:
@@ -184,7 +184,7 @@ class ParseCache(SmartCache):
 
         return invalidated_count
 
-    def get_parse_statistics(self) -> Dict[str, Any]:
+    def get_parse_statistics(self) -> dict[str, Any]:
         """パースキャッシュの統計情報を取得"""
         base_stats = self.get_stats()
 
@@ -230,7 +230,7 @@ class ParseCache(SmartCache):
         base_stats.update(parse_stats)
         return base_stats
 
-    def optimize_cache_for_patterns(self) -> Dict[str, Any]:
+    def optimize_cache_for_patterns(self) -> dict[str, Any]:
         """使用パターンに基づいてキャッシュを最適化"""
         optimization_report = {
             "actions_taken": [],
@@ -270,7 +270,7 @@ class ParseCache(SmartCache):
     def _generate_parse_cache_key(
         self,
         source_content: str,
-        parse_options: Optional[Dict[str, Any]] = None,
+        parse_options: dict[str, Any] | None = None,
     ) -> str:
         """パース用キャッシュキーを生成"""
         # コンテンツハッシュ
@@ -307,7 +307,7 @@ class ParseCache(SmartCache):
 
         return int(base_ttl)
 
-    def create_cache_snapshot(self) -> Dict[str, Any]:
+    def create_cache_snapshot(self) -> dict[str, Any]:
         """キャッシュのスナップショットを作成"""
         return {
             "timestamp": datetime.now().isoformat(),

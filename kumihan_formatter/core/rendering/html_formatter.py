@@ -94,7 +94,7 @@ class HTMLFormatter:
 
         return html.strip()
 
-    def validate_html_structure(self, html: str) -> List[str]:
+    def validate_html_structure(self, html: str) -> list[str]:
         """
         Validate HTML structure and return list of issues
 
@@ -102,13 +102,13 @@ class HTMLFormatter:
             html: HTML to validate
 
         Returns:
-            List[str]: List of validation issues
+            list[str]: List of validation issues
         """
         issues = []
 
         # Check for unclosed tags
         tags = self._extract_tags(html)
-        tag_stack: List[str] = []
+        tag_stack: list[str] = []
 
         for tag in tags:
             if self._is_self_closing_tag(tag):
@@ -158,7 +158,7 @@ class HTMLFormatter:
 
         return text.strip()
 
-    def _tokenize_html(self, html: str) -> List[str]:
+    def _tokenize_html(self, html: str) -> list[str]:
         """
         Tokenize HTML into tags and text content
 
@@ -166,7 +166,7 @@ class HTMLFormatter:
             html: HTML to tokenize
 
         Returns:
-            List[str]: List of tokens
+            list[str]: List of tokens
         """
         tokens = []
         current_pos = 0
@@ -189,7 +189,7 @@ class HTMLFormatter:
 
         return tokens
 
-    def _extract_tags(self, html: str) -> List[str]:
+    def _extract_tags(self, html: str) -> list[str]:
         """Extract all HTML tags from string"""
         return re.findall(r"<[^>]+>", html)
 

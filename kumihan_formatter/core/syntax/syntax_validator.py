@@ -17,10 +17,10 @@ class KumihanSyntaxValidator:
     """Core Kumihan markup syntax validator"""
 
     def __init__(self) -> None:
-        self.errors: List[SyntaxError] = []
+        self.errors: list[SyntaxError] = []
         self.current_file = ""
 
-    def get_friendly_errors(self) -> List[UserFriendlyError]:
+    def get_friendly_errors(self) -> list[UserFriendlyError]:
         """Convert SyntaxError to UserFriendlyError instances"""
         friendly_errors = []
 
@@ -54,7 +54,7 @@ class KumihanSyntaxValidator:
 
         return friendly_errors
 
-    def validate_file(self, file_path: Path) -> List[SyntaxError]:
+    def validate_file(self, file_path: Path) -> list[SyntaxError]:
         """Validate a single file for syntax errors"""
         self.errors.clear()
         self.current_file = str(file_path)
@@ -88,7 +88,7 @@ class KumihanSyntaxValidator:
 
         return self.errors
 
-    def _validate_syntax(self, lines: List[str]) -> None:
+    def _validate_syntax(self, lines: list[str]) -> None:
         """Validate syntax for all lines"""
         in_block = False
         block_start_line = 0
@@ -157,7 +157,7 @@ class KumihanSyntaxValidator:
         line_num: int,
         stripped: str,
         block_start_line: int,
-        existing_keywords: List[str],
+        existing_keywords: list[str],
     ) -> None:
         """Check for invalid multi-line syntax patterns"""
         keywords = SyntaxRules.parse_keywords(stripped[3:])
@@ -256,7 +256,7 @@ class KumihanSyntaxValidator:
                 )
 
     def _validate_keyword_combination(
-        self, line_num: int, keywords: List[str], context: str
+        self, line_num: int, keywords: list[str], context: str
     ) -> None:
         """Validate if keyword combination is valid"""
         # Check for duplicate keywords

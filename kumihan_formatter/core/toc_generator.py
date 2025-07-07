@@ -17,8 +17,8 @@ class TOCEntry:
         self.title = title
         self.heading_id = heading_id
         self.node = node
-        self.children: List["TOCEntry"] = []
-        self.parent: Optional["TOCEntry"] = None
+        self.children: list["TOCEntry"] = []
+        self.parent: "TOCEntry" | None = None
 
     def add_child(self, child: "TOCEntry") -> None:
         """Add a child entry"""
@@ -71,10 +71,10 @@ class TOCGenerator:
     """Generates table of contents from heading nodes"""
 
     def __init__(self) -> None:
-        self.entries: List[TOCEntry] = []
+        self.entries: list[TOCEntry] = []
         self.heading_counter = 0
 
-    def generate_toc(self, nodes: List[Node]) -> Dict[str, Any]:
+    def generate_toc(self, nodes: list[Node]) -> dict[str, Any]:
         """
         Generate table of contents from nodes
 
@@ -100,12 +100,12 @@ class TOCGenerator:
             "heading_count": len(headings),
         }
 
-    def _collect_headings(self, nodes: List[Node]) -> List[Dict[str, Any]]:
+    def _collect_headings(self, nodes: list[Node]) -> List[dict[str, Any]]:
         """Collect all heading nodes recursively"""
         headings = []
         max_depth = 50  # Prevent infinite recursion
 
-        def collect_recursive(node_list: List[Node], depth: int = 0) -> None:
+        def collect_recursive(node_list: list[Node], depth: int = 0) -> None:
             if depth > max_depth:
                 # Prevent infinite recursion
                 return
@@ -138,13 +138,13 @@ class TOCGenerator:
         collect_recursive(nodes)
         return headings
 
-    def _build_toc_structure(self, headings: List[Dict[str, Any]]) -> List[TOCEntry]:
+    def _build_toc_structure(self, headings: List[dict[str, Any]]) -> list[TOCEntry]:
         """Build hierarchical TOC structure"""
         if not headings:
             return []
 
         entries = []
-        stack: List[TOCEntry] = []  # Stack to maintain hierarchy
+        stack: list[TOCEntry] = []  # Stack to maintain hierarchy
 
         for heading in headings:
             entry = TOCEntry(
@@ -169,7 +169,7 @@ class TOCGenerator:
 
         return entries
 
-    def _generate_toc_html(self, entries: List[TOCEntry]) -> str:
+    def _generate_toc_html(self, entries: list[TOCEntry]) -> str:
         """Generate HTML for table of contents"""
         if not entries:
             return ""
@@ -206,7 +206,7 @@ class TOCGenerator:
 
         return "\n".join(html_parts)
 
-    def should_generate_toc(self, nodes: List[Node]) -> bool:
+    def should_generate_toc(self, nodes: list[Node]) -> bool:
         """
         Determine if TOC should be generated
 
@@ -228,7 +228,7 @@ class TOCGenerator:
         headings = self._collect_headings(nodes)
         return len(headings) >= 2
 
-    def get_toc_statistics(self, entries: List[TOCEntry]) -> Dict[str, Any]:
+    def get_toc_statistics(self, entries: list[TOCEntry]) -> dict[str, Any]:
         """Get statistics about the TOC structure"""
         stats = {
             "total_entries": 0,
@@ -280,7 +280,7 @@ class TOCValidator:
     def __init__(self) -> None:
         self.issues = []  # type: ignore
 
-    def validate_toc_structure(self, entries: List[TOCEntry]) -> List[str]:
+    def validate_toc_structure(self, entries: list[TOCEntry]) -> list[str]:
         """
         Validate TOC structure and return issues
 
@@ -288,7 +288,7 @@ class TOCValidator:
             entries: TOC entries to validate
 
         Returns:
-            List[str]: List of validation issues
+            list[str]: List of validation issues
         """
         self.issues = []
 
@@ -303,10 +303,10 @@ class TOCValidator:
 
         return self.issues
 
-    def _validate_heading_hierarchy(self, entries: List[TOCEntry]) -> None:
+    def _validate_heading_hierarchy(self, entries: list[TOCEntry]) -> None:
         """Validate that heading levels follow proper hierarchy"""
 
-        def check_hierarchy(entry_list: List[TOCEntry], parent_level: int = 0) -> None:
+        def check_hierarchy(entry_list: list[TOCEntry], parent_level: int = 0) -> None:
             for entry in entry_list:
                 # Check if level jump is too large
                 if entry.level > parent_level + 1 and parent_level > 0:
@@ -320,11 +320,11 @@ class TOCValidator:
 
         check_hierarchy(entries)
 
-    def _validate_unique_ids(self, entries: List[TOCEntry]) -> None:
+    def _validate_unique_ids(self, entries: list[TOCEntry]) -> None:
         """Validate that all heading IDs are unique"""
         seen_ids = set()
 
-        def check_ids(entry_list: List[TOCEntry]) -> None:
+        def check_ids(entry_list: list[TOCEntry]) -> None:
             for entry in entry_list:
                 if entry.heading_id in seen_ids:
                     self.issues.append(
@@ -338,10 +338,10 @@ class TOCValidator:
 
         check_ids(entries)
 
-    def _validate_titles(self, entries: List[TOCEntry]) -> None:
+    def _validate_titles(self, entries: list[TOCEntry]) -> None:
         """Validate that all entries have non-empty titles"""
 
-        def check_titles(entry_list: List[TOCEntry]) -> None:
+        def check_titles(entry_list: list[TOCEntry]) -> None:
             for entry in entry_list:
                 if not entry.get_text_content().strip():
                     self.issues.append(f"空の見出しタイトル (ID: {entry.heading_id})")
@@ -377,7 +377,7 @@ class TOCFormatter:
     def __init__(self) -> None:
         pass
 
-    def format_simple_list(self, entries: List[TOCEntry]) -> str:
+    def format_simple_list(self, entries: list[TOCEntry]) -> str:
         """Format TOC as a simple flat list"""
         lines = []
 
@@ -394,7 +394,7 @@ class TOCFormatter:
 
         return "\n".join(lines)
 
-    def format_numbered_list(self, entries: List[TOCEntry]) -> str:
+    def format_numbered_list(self, entries: list[TOCEntry]) -> str:
         """Format TOC as a numbered list"""
         lines = []
         counters = {}  # Track counters for each level
@@ -432,11 +432,11 @@ class TOCFormatter:
 
         return "\n".join(lines)
 
-    def format_json(self, entries: List[TOCEntry]) -> str:
+    def format_json(self, entries: list[TOCEntry]) -> str:
         """Format TOC as JSON structure"""
         import json
 
-        def entry_to_dict(entry: TOCEntry) -> Dict[str, Any]:
+        def entry_to_dict(entry: TOCEntry) -> dict[str, Any]:
             return {
                 "level": entry.level,
                 "title": entry.get_text_content(),

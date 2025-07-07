@@ -10,7 +10,7 @@ import statistics
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from ..performance import get_global_monitor
 from .benchmark import BenchmarkConfig, PerformanceBenchmarkSuite
@@ -43,16 +43,16 @@ class OptimizationReport:
     timestamp: str
     optimization_name: str
     total_improvement_score: float
-    metrics: List[OptimizationMetrics]
-    performance_summary: Dict[str, Any]
-    recommendations: List[str]
-    regression_warnings: List[str]
+    metrics: list[OptimizationMetrics]
+    performance_summary: dict[str, Any]
+    recommendations: list[str]
+    regression_warnings: list[str]
 
-    def get_metrics_by_category(self, category: str) -> List[OptimizationMetrics]:
+    def get_metrics_by_category(self, category: str) -> list[OptimizationMetrics]:
         """カテゴリ別メトリクスを取得"""
         return [m for m in self.metrics if m.category == category]
 
-    def get_significant_improvements(self) -> List[OptimizationMetrics]:
+    def get_significant_improvements(self) -> list[OptimizationMetrics]:
         """重要な改善を取得"""
         return [
             m
@@ -87,10 +87,10 @@ class OptimizationAnalyzer:
         self.memory_monitor = MemoryMonitor()
 
         # データ保存
-        self.baseline_data: Dict[str, Any] = {}
-        self.optimization_history: List[OptimizationReport] = []
+        self.baseline_data: dict[str, Any] = {}
+        self.optimization_history: list[OptimizationReport] = []
 
-    def capture_baseline(self, name: str, description: str = "") -> Dict[str, Any]:
+    def capture_baseline(self, name: str, description: str = "") -> dict[str, Any]:
         """最適化前のベースライン性能を記録
 
         Args:
@@ -310,7 +310,7 @@ class OptimizationAnalyzer:
 
         return "\n".join(lines)
 
-    def compare_optimizations(self, optimization_names: List[str]) -> Dict[str, Any]:
+    def compare_optimizations(self, optimization_names: list[str]) -> dict[str, Any]:
         """複数の最適化を比較
 
         Args:
@@ -362,7 +362,7 @@ class OptimizationAnalyzer:
 
         return comparison_data
 
-    def _load_baseline(self, baseline_name: str) -> Optional[Dict[str, Any]]:
+    def _load_baseline(self, baseline_name: str) -> dict[str, Any] | None:
         """ベースラインデータを読み込み"""
         if baseline_name in self.baseline_data:
             return self.baseline_data[baseline_name]  # type: ignore
@@ -377,8 +377,8 @@ class OptimizationAnalyzer:
         return None
 
     def _compare_performance(
-        self, baseline_results: Dict[str, Any], optimized_results: Dict[str, Any]
-    ) -> List[OptimizationMetrics]:
+        self, baseline_results: dict[str, Any], optimized_results: dict[str, Any]
+    ) -> list[OptimizationMetrics]:
         """パフォーマンスを比較"""
         metrics = []
 
@@ -458,7 +458,7 @@ class OptimizationAnalyzer:
             return "low"
 
     def _calculate_total_improvement_score(
-        self, metrics: List[OptimizationMetrics]
+        self, metrics: list[OptimizationMetrics]
     ) -> float:
         """総合改善スコアを計算"""
         if not metrics:
@@ -481,8 +481,8 @@ class OptimizationAnalyzer:
         return total_score
 
     def _create_performance_summary(
-        self, metrics: List[OptimizationMetrics]
-    ) -> Dict[str, Any]:
+        self, metrics: list[OptimizationMetrics]
+    ) -> dict[str, Any]:
         """パフォーマンス要約を作成"""
         improved = [m for m in metrics if m.is_improvement]
         degraded = [
@@ -514,8 +514,8 @@ class OptimizationAnalyzer:
         return summary
 
     def _generate_recommendations(
-        self, metrics: List[OptimizationMetrics]
-    ) -> List[str]:
+        self, metrics: list[OptimizationMetrics]
+    ) -> list[str]:
         """推奨事項を生成"""
         recommendations = []
 
@@ -553,7 +553,7 @@ class OptimizationAnalyzer:
 
         return recommendations
 
-    def _detect_regressions(self, metrics: List[OptimizationMetrics]) -> List[str]:
+    def _detect_regressions(self, metrics: list[OptimizationMetrics]) -> list[str]:
         """回帰を検出"""
         warnings = []
 
@@ -568,12 +568,12 @@ class OptimizationAnalyzer:
 
         return warnings
 
-    def _capture_system_info(self) -> Dict[str, Any]:
+    def _capture_system_info(self) -> dict[str, Any]:
         """システム情報を記録"""
         import platform
         import sys
 
-        system_info: Dict[str, Any] = {
+        system_info: dict[str, Any] = {
             "platform": platform.platform(),
             "python_version": sys.version,
             "cpu_count": None,

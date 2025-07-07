@@ -60,7 +60,7 @@ class HTMLRenderer:
         # Inject this main renderer into element renderer for content processing
         self.element_renderer._main_renderer = self
 
-    def render_nodes(self, nodes: List[Node]) -> str:
+    def render_nodes(self, nodes: list[Node]) -> str:
         """
         Render a list of nodes to HTML
 
@@ -260,15 +260,15 @@ class HTMLRenderer:
 
         return contains_html_tags(text)
 
-    def _render_attributes(self, attributes: Dict[str, Any]) -> str:
+    def _render_attributes(self, attributes: dict[str, Any]) -> str:
         """Render HTML attributes - delegate to html_utils"""
         from .html_utils import render_attributes
 
         return render_attributes(attributes)
 
     def collect_headings(
-        self, nodes: List[Node], depth: int = 0
-    ) -> List[Dict[str, Any]]:
+        self, nodes: list[Node], depth: int = 0
+    ) -> List[dict[str, Any]]:
         """
         Collect all headings from nodes for TOC generation
 
@@ -277,9 +277,9 @@ class HTMLRenderer:
             depth: Current recursion depth (prevents infinite recursion)
 
         Returns:
-            List[Dict]: List of heading information
+            list[Dict]: List of heading information
         """
-        headings: List[Dict[str, Any]] = []
+        headings: List[dict[str, Any]] = []
         max_depth = 50  # Prevent infinite recursion
 
         if depth > max_depth:

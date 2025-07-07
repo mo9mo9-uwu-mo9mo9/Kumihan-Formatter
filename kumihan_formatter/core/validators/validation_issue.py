@@ -15,10 +15,10 @@ class ValidationIssue:
     level: str  # 'error', 'warning', 'info'
     category: str  # 'syntax', 'structure', 'performance', 'style'
     message: str
-    line_number: Optional[int] = None
-    column_number: Optional[int] = None
-    suggestion: Optional[str] = None
-    code: Optional[str] = None  # Error code for programmatic handling
+    line_number: int | None = None
+    column_number: int | None = None
+    suggestion: str | None = None
+    code: str | None = None  # Error code for programmatic handling
 
     def is_error(self) -> bool:
         """Check if this is an error-level issue"""

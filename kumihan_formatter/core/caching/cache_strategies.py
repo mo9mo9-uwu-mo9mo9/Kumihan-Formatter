@@ -83,7 +83,7 @@ class PerformanceAwareStrategy(CacheStrategy):
     """パフォーマンス重視戦略 - 処理コストを考慮"""
 
     def __init__(self) -> None:
-        self.processing_costs: Dict[str, float] = {}  # key -> processing_time の記録
+        self.processing_costs: dict[str, float] = {}  # key -> processing_time の記録
 
     def should_evict(self, entry: CacheEntry) -> bool:
         return entry.is_expired()

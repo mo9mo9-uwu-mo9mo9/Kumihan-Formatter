@@ -7,7 +7,7 @@ Issue #319対応 - smart_cache.py から分離
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, Callable, TypeVar
 
 from .cache_storage import CacheStorage
 from .cache_strategies import CacheStrategy, LRUStrategy
@@ -36,7 +36,7 @@ class SmartCache:
         max_memory_mb: float = 100.0,
         default_ttl: int = 3600,  # 1時間
         strategy: CacheStrategy | None = None,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         enable_file_cache: bool = True,
     ):
         """スマートキャッシュを初期化
@@ -103,7 +103,7 @@ class SmartCache:
         self.stats["file_cache_misses"] += 1
         return default
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """キャッシュに値を設定
 
         Args:
@@ -127,7 +127,7 @@ class SmartCache:
         self.storage.save_to_file(key, entry)
 
     def get_or_compute(
-        self, key: str, compute_func: Callable[[], T], ttl: Optional[int] = None
+        self, key: str, compute_func: Callable[[], T], ttl: int | None = None
     ) -> T:
         """キャッシュから取得、なければ計算して保存
 
@@ -187,7 +187,7 @@ class SmartCache:
                 except Exception:
                     pass
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """キャッシュ統計を取得"""
         memory_stats = self.storage.get_memory_stats()
 

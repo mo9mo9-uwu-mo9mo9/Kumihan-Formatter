@@ -13,14 +13,14 @@ class FileSystemHelper:
     """File system operation utilities"""
 
     @staticmethod
-    def ensure_directory(path: Union[str, Path]) -> Path:
+    def ensure_directory(path: str | Path) -> Path:
         """Ensure directory exists, create if necessary"""
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
         return path
 
     @staticmethod
-    def get_file_hash(file_path: Union[str, Path], algorithm: str = "md5") -> str:
+    def get_file_hash(file_path: str | Path, algorithm: str = "md5") -> str:
         """Get file hash for change detection"""
         hash_func = hashlib.new(algorithm)
 
@@ -51,7 +51,7 @@ class FileSystemHelper:
 
     @staticmethod
     def find_files(
-        directory: Union[str, Path], pattern: str = "*", recursive: bool = True
+        directory: str | Path, pattern: str = "*", recursive: bool = True
     ) -> Iterator[Path]:
         """Find files matching pattern"""
         directory = Path(directory)

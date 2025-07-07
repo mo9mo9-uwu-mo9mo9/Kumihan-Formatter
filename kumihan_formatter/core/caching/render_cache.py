@@ -9,7 +9,7 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger
@@ -29,7 +29,7 @@ class RenderCache(SmartCache):
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         max_memory_mb: float = 150.0,
         max_entries: int = 500,
         default_ttl: int = 1800,  # 30分
@@ -58,10 +58,10 @@ class RenderCache(SmartCache):
         )
 
         # レンダリングメタデータ
-        self._render_metadata: Dict[str, Dict[str, Any]] = {}
+        self._render_metadata: dict[str, dict[str, Any]] = {}
 
         # 設定ハッシュ（設定変更検知用）
-        self._config_hash: Optional[str] = None
+        self._config_hash: str | None = None
 
         self.logger.debug(f"RenderCache初期化完了: cache_dir={cache_dir}")
 
@@ -69,8 +69,8 @@ class RenderCache(SmartCache):
         self,
         content_hash: str,
         template_name: str,
-        render_options: Optional[Dict[str, Any]] = None,
-    ) -> Optional[str]:
+        render_options: dict[str, Any] | None = None,
+    ) -> str | None:
         """レンダリング結果をキャッシュから取得
 
         Args:
@@ -110,7 +110,7 @@ class RenderCache(SmartCache):
         content_hash: str,
         template_name: str,
         html_output: str,
-        render_options: Optional[Dict[str, Any]] = None,
+        render_options: dict[str, Any] | None = None,
         render_time: float = 0.0,
         node_count: int = 0,
     ) -> None:
@@ -152,7 +152,7 @@ class RenderCache(SmartCache):
         content_hash: str,
         template_name: str,
         render_func: callable,  # type: ignore
-        render_options: Optional[Dict[str, Any]] = None,
+        render_options: dict[str, Any] | None = None,
         **render_kwargs,
     ) -> str:
         """キャッシュから取得または新規レンダリング
@@ -276,7 +276,7 @@ class RenderCache(SmartCache):
 
         return invalidated_count
 
-    def get_render_statistics(self) -> Dict[str, Any]:
+    def get_render_statistics(self) -> dict[str, Any]:
         """レンダリングキャッシュの統計情報を取得"""
         base_stats = self.get_stats()
 
@@ -332,7 +332,7 @@ class RenderCache(SmartCache):
         base_stats.update(render_stats)
         return base_stats
 
-    def optimize_for_templates(self) -> Dict[str, Any]:
+    def optimize_for_templates(self) -> dict[str, Any]:
         """テンプレート使用パターンに基づく最適化"""
         optimization_report = {
             "actions_taken": [],
@@ -372,7 +372,7 @@ class RenderCache(SmartCache):
         self,
         content_hash: str,
         template_name: str,
-        render_options: Optional[Dict[str, Any]] = None,
+        render_options: dict[str, Any] | None = None,
     ) -> str:
         """レンダリング用キャッシュキーを生成"""
         key_parts = [
@@ -419,7 +419,7 @@ class RenderCache(SmartCache):
 
         return int(base_ttl)
 
-    def create_render_report(self) -> Dict[str, Any]:
+    def create_render_report(self) -> dict[str, Any]:
         """レンダリングキャッシュの詳細レポートを作成"""
         stats = self.get_render_statistics()
 
@@ -430,7 +430,7 @@ class RenderCache(SmartCache):
             "template_analysis": self._analyze_template_usage(),
         }
 
-    def _generate_optimization_suggestions(self) -> List[str]:
+    def _generate_optimization_suggestions(self) -> list[str]:
         """最適化提案を生成"""
         suggestions = []
 
@@ -464,7 +464,7 @@ class RenderCache(SmartCache):
 
         return suggestions
 
-    def _analyze_template_usage(self) -> Dict[str, Any]:
+    def _analyze_template_usage(self) -> dict[str, Any]:
         """テンプレート使用パターンを分析"""
         template_stats = {}
 

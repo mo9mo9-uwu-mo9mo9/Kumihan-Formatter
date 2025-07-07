@@ -18,7 +18,7 @@ class CompoundElementRenderer:
         pass
 
     def render_compound_element(
-        self, keywords: List[str], content: str, attributes: Dict[str, Any]
+        self, keywords: list[str], content: str, attributes: dict[str, Any]
     ) -> str:
         """
         Render element with multiple keywords applied
@@ -43,7 +43,7 @@ class CompoundElementRenderer:
         return current_html
 
     def _wrap_with_keyword(
-        self, content: str, keyword: str, attributes: Dict[str, Any]
+        self, content: str, keyword: str, attributes: dict[str, Any]
     ) -> str:
         """
         Wrap content with HTML for a specific keyword
@@ -75,7 +75,7 @@ class CompoundElementRenderer:
             # Fallback for unknown keywords
             return f'<span class="{escape(keyword)}">{content}</span>'
 
-    def _render_highlight(self, content: str, attributes: Dict[str, Any]) -> str:
+    def _render_highlight(self, content: str, attributes: dict[str, Any]) -> str:
         """
         Render highlight element with optional color
 
@@ -96,7 +96,7 @@ class CompoundElementRenderer:
         return f'<div class="highlight"{style}>{content}</div>'
 
     def render_keyword_list_item(
-        self, keywords: List[str], content: str, attributes: Dict[str, Any]
+        self, keywords: list[str], content: str, attributes: dict[str, Any]
     ) -> str:
         """
         Render list item with keywords applied
@@ -112,7 +112,7 @@ class CompoundElementRenderer:
         styled_content = self.render_compound_element(keywords, content, attributes)
         return f"<li>{styled_content}</li>"
 
-    def validate_keyword_combination(self, keywords: List[str]) -> Tuple[bool, str]:
+    def validate_keyword_combination(self, keywords: list[str]) -> tuple[bool, str]:
         """
         Validate that keyword combination is valid
 

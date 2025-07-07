@@ -17,7 +17,7 @@ class FileValidator:
         """Initialize file validator"""
         pass
 
-    def validate_file_path(self, file_path: Path) -> List[ValidationIssue]:
+    def validate_file_path(self, file_path: Path) -> list[ValidationIssue]:
         """Validate file path and permissions"""
         issues = []
 
@@ -96,7 +96,7 @@ class FileValidator:
 
         return issues
 
-    def validate_output_path(self, output_path: Path) -> List[ValidationIssue]:
+    def validate_output_path(self, output_path: Path) -> list[ValidationIssue]:
         """Validate output path"""
         issues = []
 

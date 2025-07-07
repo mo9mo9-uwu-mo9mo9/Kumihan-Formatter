@@ -30,7 +30,7 @@ class RecoveryStrategy(ABC):
         self.logger = get_logger(__name__)
 
     @abstractmethod
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """このエラーを処理できるかチェック
 
         Args:
@@ -44,8 +44,8 @@ class RecoveryStrategy(ABC):
 
     @abstractmethod
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """回復を試行
 
         Args:
@@ -53,7 +53,7 @@ class RecoveryStrategy(ABC):
             context: エラーコンテキスト
 
         Returns:
-            Tuple[bool, Optional[str]]: (成功フラグ, メッセージ)
+            tuple[bool, str | None]: (成功フラグ, メッセージ)
         """
         pass
 
@@ -71,7 +71,7 @@ class FileEncodingRecoveryStrategy(RecoveryStrategy):
             "iso-2022-jp",
         ]
 
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """エンコーディングエラーを処理できるかチェック"""
         return (
             error.category == ErrorCategory.ENCODING
@@ -80,8 +80,8 @@ class FileEncodingRecoveryStrategy(RecoveryStrategy):
         )
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """エンコーディング自動検出・変換による回復"""
         file_path = context.get("file_path")
         if not file_path or not Path(file_path).exists():
@@ -135,7 +135,7 @@ class FilePermissionRecoveryStrategy(RecoveryStrategy):
     def __init__(self) -> None:
         super().__init__("FilePermissionRecovery", priority=3)
 
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """権限エラーを処理できるかチェック"""
         return (
             error.category == ErrorCategory.PERMISSION
@@ -144,8 +144,8 @@ class FilePermissionRecoveryStrategy(RecoveryStrategy):
         )
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """一時ファイルでの処理継続による回復"""
         file_path = context.get("file_path")
         if not file_path:
@@ -216,7 +216,7 @@ class SyntaxErrorRecoveryStrategy(RecoveryStrategy):
             ";;;;太字;;;;": ";;;太字;;;",
         }
 
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """構文エラーを処理できるかチェック"""
         return (
             error.category == ErrorCategory.SYNTAX
@@ -225,8 +225,8 @@ class SyntaxErrorRecoveryStrategy(RecoveryStrategy):
         )
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """構文エラーの自動修正による回復"""
         file_path = context.get("file_path")
         line_number = context.get("line_number")
@@ -308,7 +308,7 @@ class FileNotFoundRecoveryStrategy(RecoveryStrategy):
     def __init__(self) -> None:
         super().__init__("FileNotFoundRecovery", priority=3)
 
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """ファイル未発見エラーを処理できるかチェック"""
         return error.category == ErrorCategory.FILE_SYSTEM and (
             "not found" in error.error_code.lower()
@@ -316,8 +316,8 @@ class FileNotFoundRecoveryStrategy(RecoveryStrategy):
         )
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """類似ファイル名の検索による回復"""
         file_path = context.get("file_path")
         if not file_path:
@@ -353,7 +353,7 @@ class FileNotFoundRecoveryStrategy(RecoveryStrategy):
             self.logger.error(f"File recovery failed: {e}")
             return False, f"ファイル回復に失敗: {str(e)}"
 
-    def _find_similar_files(self, directory: Path, target_name: str) -> List[Path]:
+    def _find_similar_files(self, directory: Path, target_name: str) -> list[Path]:
         """類似ファイル名を検索"""
         import difflib
 
@@ -386,7 +386,7 @@ class MemoryErrorRecoveryStrategy(RecoveryStrategy):
     def __init__(self) -> None:
         super().__init__("MemoryErrorRecovery", priority=1)
 
-    def can_handle(self, error: UserFriendlyError, context: Dict[str, Any]) -> bool:
+    def can_handle(self, error: UserFriendlyError, context: dict[str, Any]) -> bool:
         """メモリエラーを処理できるかチェック"""
         return (
             "memory" in error.error_code.lower()
@@ -395,8 +395,8 @@ class MemoryErrorRecoveryStrategy(RecoveryStrategy):
         )
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, Optional[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """メモリ使用量の削減による回復"""
         self.logger.info("Attempting memory recovery")
 
@@ -455,10 +455,10 @@ class RecoveryManager:
         self.logger = get_logger(__name__) if enable_logging else None
 
         # 回復戦略のリスト
-        self.strategies: List[RecoveryStrategy] = []
+        self.strategies: list[RecoveryStrategy] = []
 
         # 回復履歴
-        self.recovery_history: List[Dict[str, Any]] = []
+        self.recovery_history: List[dict[str, Any]] = []
 
         # デフォルト戦略を登録
         self._register_default_strategies()
@@ -488,8 +488,8 @@ class RecoveryManager:
             self.logger.debug(f"Registered recovery strategy: {strategy.name}")
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Dict[str, Any]
-    ) -> Tuple[bool, List[str]]:
+        self, error: UserFriendlyError, context: dict[str, Any]
+    ) -> Tuple[bool, list[str]]:
         """エラーからの回復を試行
 
         Args:
@@ -497,7 +497,7 @@ class RecoveryManager:
             context: エラーコンテキスト
 
         Returns:
-            Tuple[bool, List[str]]: (回復成功フラグ, 実行された回復操作のメッセージリスト)
+            Tuple[bool, list[str]]: (回復成功フラグ, 実行された回復操作のメッセージリスト)
         """
         recovery_messages = []
 
@@ -550,11 +550,11 @@ class RecoveryManager:
 
         return False, recovery_messages
 
-    def get_recovery_statistics(self) -> Dict[str, Any]:
+    def get_recovery_statistics(self) -> dict[str, Any]:
         """回復統計情報を取得
 
         Returns:
-            Dict[str, Any]: 回復統計情報
+            dict[str, Any]: 回復統計情報
         """
         if not self.recovery_history:
             return {"total_attempts": 0}
@@ -598,7 +598,7 @@ class RecoveryManager:
 
 
 # グローバルインスタンス
-_global_recovery_manager: Optional[RecoveryManager] = None
+_global_recovery_manager: RecoveryManager | None = None
 
 
 def get_global_recovery_manager() -> RecoveryManager:

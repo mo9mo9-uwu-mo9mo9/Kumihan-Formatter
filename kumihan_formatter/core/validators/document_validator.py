@@ -28,9 +28,9 @@ class DocumentValidator:
         self.performance_validator = PerformanceValidator(config)
         self.file_validator = FileValidator()
 
-        self.issues: List[ValidationIssue] = []
+        self.issues: list[ValidationIssue] = []
 
-    def validate_text(self, text: str) -> List[ValidationIssue]:
+    def validate_text(self, text: str) -> list[ValidationIssue]:
         """
         Validate raw text input
 
@@ -38,7 +38,7 @@ class DocumentValidator:
             text: Raw text to validate
 
         Returns:
-            List[ValidationIssue]: List of validation issues
+            list[ValidationIssue]: List of validation issues
         """
         self.issues = []
         lines = text.split("\n")
@@ -57,7 +57,7 @@ class DocumentValidator:
 
         return self.issues
 
-    def validate_ast(self, ast: List[Node]) -> List[ValidationIssue]:
+    def validate_ast(self, ast: list[Node]) -> list[ValidationIssue]:
         """
         Validate parsed AST
 
@@ -65,7 +65,7 @@ class DocumentValidator:
             ast: Parsed AST to validate
 
         Returns:
-            List[ValidationIssue]: List of validation issues
+            list[ValidationIssue]: List of validation issues
         """
         self.issues = []
 
@@ -78,7 +78,7 @@ class DocumentValidator:
 
         return self.issues
 
-    def validate_file(self, file_path: Path) -> List[ValidationIssue]:
+    def validate_file(self, file_path: Path) -> list[ValidationIssue]:
         """
         Validate a file
 
@@ -86,7 +86,7 @@ class DocumentValidator:
             file_path: Path to file to validate
 
         Returns:
-            List[ValidationIssue]: List of validation issues
+            list[ValidationIssue]: List of validation issues
         """
         self.issues = []
 
@@ -118,7 +118,7 @@ class DocumentValidator:
 
         return self.issues
 
-    def validate_output_path(self, output_path: Path) -> List[ValidationIssue]:
+    def validate_output_path(self, output_path: Path) -> list[ValidationIssue]:
         """
         Validate output path
 
@@ -126,7 +126,7 @@ class DocumentValidator:
             output_path: Path to output file
 
         Returns:
-            List[ValidationIssue]: List of validation issues
+            list[ValidationIssue]: List of validation issues
         """
         return self.file_validator.validate_output_path(output_path)
 

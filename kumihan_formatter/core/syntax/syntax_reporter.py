@@ -7,7 +7,7 @@ formats (text, JSON), and managing error presentation.
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from .syntax_errors import ErrorSeverity, SyntaxError
 from .syntax_validator import KumihanSyntaxValidator
@@ -18,8 +18,8 @@ class SyntaxReporter:
 
     @staticmethod
     def check_files(
-        file_paths: List[Path], verbose: bool = False
-    ) -> Dict[str, List[SyntaxError]]:
+        file_paths: list[Path], verbose: bool = False
+    ) -> dict[str, list[SyntaxError]]:
         """Check multiple files for syntax errors"""
         validator = KumihanSyntaxValidator()
         results = {}
@@ -36,7 +36,7 @@ class SyntaxReporter:
 
     @staticmethod
     def format_error_report(
-        results: Dict[str, List[SyntaxError]], show_suggestions: bool = True
+        results: dict[str, list[SyntaxError]], show_suggestions: bool = True
     ) -> str:
         """Format error report as string"""
         if not results:
@@ -86,7 +86,7 @@ class SyntaxReporter:
         return "\n".join(report)
 
     @staticmethod
-    def format_json_report(results: Dict[str, List[SyntaxError]]) -> str:
+    def format_json_report(results: dict[str, list[SyntaxError]]) -> str:
         """Format error report as JSON"""
         json_results = {}
         for file_path, errors in results.items():
@@ -105,7 +105,7 @@ class SyntaxReporter:
         return json.dumps(json_results, ensure_ascii=False, indent=2)
 
     @staticmethod
-    def get_error_counts(results: Dict[str, List[SyntaxError]]) -> Dict[str, int]:
+    def get_error_counts(results: dict[str, list[SyntaxError]]) -> dict[str, int]:
         """Get counts of errors by severity"""
         counts = {"ERROR": 0, "WARNING": 0, "INFO": 0, "TOTAL": 0}
 
@@ -117,7 +117,7 @@ class SyntaxReporter:
         return counts
 
     @staticmethod
-    def should_exit_with_error(results: Dict[str, List[SyntaxError]]) -> bool:
+    def should_exit_with_error(results: dict[str, list[SyntaxError]]) -> bool:
         """Determine if process should exit with error code"""
         error_count = sum(
             1
@@ -128,7 +128,7 @@ class SyntaxReporter:
         return error_count > 0
 
     @staticmethod
-    def print_summary(results: Dict[str, List[SyntaxError]]) -> None:
+    def print_summary(results: dict[str, list[SyntaxError]]) -> None:
         """Print summary of validation results"""
         if not results:
             print("✅ 記法エラーは見つかりませんでした。")

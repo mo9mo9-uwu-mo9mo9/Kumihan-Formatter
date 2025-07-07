@@ -5,7 +5,7 @@ used throughout the parsing and rendering pipeline.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 
 
 @dataclass
@@ -32,7 +32,7 @@ class Node:
 
     type: str
     content: Any
-    attributes: Optional[Dict[str, Any]] = None
+    attributes: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if self.attributes is None:
@@ -88,7 +88,7 @@ class Node:
         """Check if this node is a heading"""
         return self.type in {"h1", "h2", "h3", "h4", "h5"}
 
-    def get_heading_level(self) -> Optional[int]:
+    def get_heading_level(self) -> int | None:
         """Get heading level (1-5) or None if not a heading"""
         if self.type.startswith("h") and len(self.type) == 2:
             try:
@@ -131,7 +131,7 @@ class Node:
             return len(self.content)
         return 0
 
-    def find_children_by_type(self, node_type: str) -> List["Node"]:
+    def find_children_by_type(self, node_type: str) -> list["Node"]:
         """Find all direct children of a specific type"""
         if not isinstance(self.content, list):
             return []
@@ -174,7 +174,7 @@ class NodeBuilder:
     def __init__(self, node_type: str):
         self._type = node_type
         self._content = None
-        self._attributes: Dict[str, Any] = {}
+        self._attributes: dict[str, Any] = {}
 
     def content(self, content: Any) -> "NodeBuilder":
         """Set node content"""
@@ -206,13 +206,13 @@ class NodeBuilder:
 
 
 # Convenience functions for common node types
-def paragraph(content: Union[str, List[Any]]) -> Node:
+def paragraph(content: str | list[Any]) -> Node:
     """Create a paragraph node"""
     return NodeBuilder("p").content(content).build()
 
 
 def heading(
-    level: int, content: Union[str, List[Any]], heading_id: Optional[str] = None
+    level: int, content: str | list[Any], heading_id: str | None = None
 ) -> Node:
     """Create a heading node"""
     builder = NodeBuilder(f"h{level}").content(content)
@@ -221,22 +221,22 @@ def heading(
     return builder.build()
 
 
-def strong(content: Union[str, List[Any]]) -> Node:
+def strong(content: str | list[Any]) -> Node:
     """Create a strong (bold) node"""
     return NodeBuilder("strong").content(content).build()
 
 
-def emphasis(content: Union[str, List[Any]]) -> Node:
+def emphasis(content: str | list[Any]) -> Node:
     """Create an emphasis (italic) node"""
     return NodeBuilder("em").content(content).build()
 
 
-def div_box(content: Union[str, List[Any]]) -> Node:
+def div_box(content: Union[str, list[Any]]) -> Node:
     """Create a div with box class"""
     return NodeBuilder("div").css_class("box").content(content).build()
 
 
-def highlight(content: Union[str, List[Any]], color: Optional[str] = None) -> Node:
+def highlight(content: Union[str, list[Any]], color: str | None = None) -> Node:
     """Create a highlight div"""
     builder = NodeBuilder("div").css_class("highlight").content(content)
     if color:
@@ -244,27 +244,27 @@ def highlight(content: Union[str, List[Any]], color: Optional[str] = None) -> No
     return builder.build()
 
 
-def unordered_list(items: List[Node]) -> Node:
+def unordered_list(items: list[Node]) -> Node:
     """Create an unordered list"""
     return NodeBuilder("ul").content(items).build()
 
 
-def ordered_list(items: List[Node]) -> Node:
+def ordered_list(items: list[Node]) -> Node:
     """Create an ordered list"""
     return NodeBuilder("ol").content(items).build()
 
 
-def list_item(content: Union[str, List[Any], Node]) -> Node:
+def list_item(content: Union[str, list[Any], Node]) -> Node:
     """Create a list item"""
     return NodeBuilder("li").content(content).build()
 
 
-def details(summary: str, content: Union[str, List[Any]]) -> Node:
+def details(summary: str, content: Union[str, list[Any]]) -> Node:
     """Create a details/summary block"""
     return NodeBuilder("details").attribute("summary", summary).content(content).build()
 
 
-def error_node(message: str, line_number: Optional[int] = None) -> Node:
+def error_node(message: str, line_number: int | None = None) -> Node:
     """Create an error node"""
     builder = NodeBuilder("error").content(message)
     if line_number is not None:
@@ -272,7 +272,7 @@ def error_node(message: str, line_number: Optional[int] = None) -> Node:
     return builder.build()
 
 
-def image_node(filename: str, alt_text: Optional[str] = None) -> Node:
+def image_node(filename: str, alt_text: str | None = None) -> Node:
     """Create an image node"""
     builder = NodeBuilder("image").content(filename)
     if alt_text:
@@ -286,7 +286,7 @@ def toc_marker() -> Node:
 
 
 # AST utility functions
-def flatten_text_nodes(content: List[Any]) -> List[Any]:
+def flatten_text_nodes(content: list[Any]) -> list[Any]:
     """Flatten consecutive text nodes in a content list"""
     if not content:
         return content
@@ -309,16 +309,16 @@ def flatten_text_nodes(content: List[Any]) -> List[Any]:
     return result
 
 
-def count_nodes_by_type(nodes: List[Node]) -> Dict[str, int]:
+def count_nodes_by_type(nodes: list[Node]) -> dict[str, int]:
     """Count nodes by type in a list"""
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for node in nodes:
         if isinstance(node, Node):
             counts[node.type] = counts.get(node.type, 0) + 1
     return counts
 
 
-def find_all_headings(nodes: List[Node]) -> List[Node]:
+def find_all_headings(nodes: list[Node]) -> list[Node]:
     """Find all heading nodes recursively"""
     headings = []
     for node in nodes:
@@ -331,7 +331,7 @@ def find_all_headings(nodes: List[Node]) -> List[Node]:
     return headings
 
 
-def validate_ast(nodes: List[Node]) -> List[str]:
+def validate_ast(nodes: list[Node]) -> list[str]:
     """Validate AST structure and return list of issues"""
     issues = []
 

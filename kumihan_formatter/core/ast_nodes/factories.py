@@ -10,13 +10,13 @@ from .node import Node
 from .node_builder import NodeBuilder
 
 
-def paragraph(content: Union[str, List[Any]]) -> Node:
+def paragraph(content: Union[str, list[Any]]) -> Node:
     """Create a paragraph node"""
     return NodeBuilder("p").content(content).build()
 
 
 def heading(
-    level: int, content: Union[str, List[Any]], heading_id: Optional[str] = None
+    level: int, content: Union[str, list[Any]], heading_id: str | None = None
 ) -> Node:
     """Create a heading node"""
     builder = NodeBuilder(f"h{level}").content(content)
@@ -25,22 +25,22 @@ def heading(
     return builder.build()
 
 
-def strong(content: Union[str, List[Any]]) -> Node:
+def strong(content: Union[str, list[Any]]) -> Node:
     """Create a strong (bold) node"""
     return NodeBuilder("strong").content(content).build()
 
 
-def emphasis(content: Union[str, List[Any]]) -> Node:
+def emphasis(content: Union[str, list[Any]]) -> Node:
     """Create an emphasis (italic) node"""
     return NodeBuilder("em").content(content).build()
 
 
-def div_box(content: Union[str, List[Any]]) -> Node:
+def div_box(content: Union[str, list[Any]]) -> Node:
     """Create a div with box class"""
     return NodeBuilder("div").css_class("box").content(content).build()
 
 
-def highlight(content: Union[str, List[Any]], color: Optional[str] = None) -> Node:
+def highlight(content: Union[str, list[Any]], color: str | None = None) -> Node:
     """Create a highlight div"""
     builder = NodeBuilder("div").css_class("highlight").content(content)
     if color:
@@ -48,27 +48,27 @@ def highlight(content: Union[str, List[Any]], color: Optional[str] = None) -> No
     return builder.build()
 
 
-def unordered_list(items: List[Node]) -> Node:
+def unordered_list(items: list[Node]) -> Node:
     """Create an unordered list"""
     return NodeBuilder("ul").content(items).build()
 
 
-def ordered_list(items: List[Node]) -> Node:
+def ordered_list(items: list[Node]) -> Node:
     """Create an ordered list"""
     return NodeBuilder("ol").content(items).build()
 
 
-def list_item(content: Union[str, List[Any], Node]) -> Node:
+def list_item(content: Union[str, list[Any], Node]) -> Node:
     """Create a list item"""
     return NodeBuilder("li").content(content).build()
 
 
-def details(summary: str, content: Union[str, List[Any]]) -> Node:
+def details(summary: str, content: Union[str, list[Any]]) -> Node:
     """Create a details/summary block"""
     return NodeBuilder("details").attribute("summary", summary).content(content).build()
 
 
-def error_node(message: str, line_number: Optional[int] = None) -> Node:
+def error_node(message: str, line_number: int | None = None) -> Node:
     """Create an error node"""
     builder = NodeBuilder("error").content(message)
     if line_number is not None:
@@ -76,7 +76,7 @@ def error_node(message: str, line_number: Optional[int] = None) -> Node:
     return builder.build()
 
 
-def image_node(filename: str, alt_text: Optional[str] = None) -> Node:
+def image_node(filename: str, alt_text: str | None = None) -> Node:
     """Create an image node"""
     builder = NodeBuilder("image").content(filename)
     if alt_text:

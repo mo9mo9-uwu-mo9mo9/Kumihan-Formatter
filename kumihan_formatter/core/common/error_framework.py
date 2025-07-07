@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 
 class ErrorSeverity(Enum):
@@ -41,15 +41,15 @@ class ErrorCategory(Enum):
 class ErrorContext:
     """Context information for errors"""
 
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
-    column_number: Optional[int] = None
-    operation: Optional[str] = None
-    user_input: Optional[str] = None
-    system_info: Optional[Dict[str, Any]] = field(default_factory=dict)
+    file_path: str | None = None
+    line_number: int | None = None
+    column_number: int | None = None
+    operation: str | None = None
+    user_input: str | None = None
+    system_info: dict[str, Any] | None = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert context to dictionary for serialization"""
         return {
             "file_path": self.file_path,
@@ -78,12 +78,12 @@ class KumihanError(Exception):
         *,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
         category: ErrorCategory = ErrorCategory.UNKNOWN,
-        error_code: Optional[str] = None,
-        context: Optional[ErrorContext] = None,
-        user_message: Optional[str] = None,
-        suggestions: Optional[List[str]] = None,
-        technical_details: Optional[str] = None,
-        cause: Optional[Exception] = None,
+        error_code: str | None = None,
+        context: ErrorContext | None = None,
+        user_message: str | None = None,
+        suggestions: list[str] | None = None,
+        technical_details: str | None = None,
+        cause: Exception | None = None,
     ):
         """Initialize Kumihan error
 
@@ -112,7 +112,7 @@ class KumihanError(Exception):
 
         # Store the original traceback if available
         if cause:
-            self.cause_traceback: Optional[str] = "".join(
+            self.cause_traceback: str | None = "".join(
                 traceback.format_exception(type(cause), cause, cause.__traceback__)
             )
         else:
@@ -175,7 +175,7 @@ class KumihanError(Exception):
 
         return "\n".join(parts)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary for serialization"""
         return {
             "error_code": self.error_code,
@@ -205,10 +205,10 @@ class BaseErrorHandler(ABC):
         """
         self.name = name
         self.error_count = 0
-        self.errors: List[KumihanError] = []
+        self.errors: list[KumihanError] = []
 
     @abstractmethod
-    def handle_error(self, error: Union[KumihanError, Exception]) -> bool:
+    def handle_error(self, error: KumihanError | Exception) -> bool:
         """Handle an error
 
         Args:
@@ -225,8 +225,8 @@ class BaseErrorHandler(ABC):
         *,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
         category: ErrorCategory = ErrorCategory.UNKNOWN,
-        user_message: Optional[str] = None,
-        context: Optional[ErrorContext] = None,
+        user_message: str | None = None,
+        context: ErrorContext | None = None,
     ) -> KumihanError:
         """Wrap a standard exception in a KumihanError
 
@@ -257,13 +257,13 @@ class BaseErrorHandler(ABC):
         self.errors.append(error)
         self.error_count += 1
 
-    def get_error_summary(self) -> Dict[str, Any]:
+    def get_error_summary(self) -> dict[str, Any]:
         """Get summary of handled errors"""
         if not self.errors:
             return {"total": 0, "by_severity": {}, "by_category": {}}
 
-        by_severity: Dict[str, int] = {}
-        by_category: Dict[str, int] = {}
+        by_severity: dict[str, int] = {}
+        by_category: dict[str, int] = {}
 
         for error in self.errors:
             # Count by severity

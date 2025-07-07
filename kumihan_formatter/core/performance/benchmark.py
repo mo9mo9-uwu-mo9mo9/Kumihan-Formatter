@@ -10,7 +10,7 @@ import statistics
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
@@ -32,10 +32,10 @@ class BenchmarkResult:
     min_time: float
     max_time: float
     std_dev: float
-    memory_usage: Dict[str, float]
-    cache_stats: Dict[str, Any]
-    throughput: Optional[float] = None
-    regression_score: Optional[float] = None
+    memory_usage: dict[str, float]
+    cache_stats: dict[str, Any]
+    throughput: float | None = None
+    regression_score: float | None = None
 
 
 @dataclass
@@ -47,7 +47,7 @@ class BenchmarkConfig:
     enable_profiling: bool = True
     enable_memory_monitoring: bool = True
     cache_enabled: bool = True
-    baseline_file: Optional[Path] = None
+    baseline_file: Path | None = None
 
 
 class PerformanceBenchmarkSuite:
@@ -61,7 +61,7 @@ class PerformanceBenchmarkSuite:
     - ベースライン比較
     """
 
-    def __init__(self, config: Optional[BenchmarkConfig] = None) -> None:
+    def __init__(self, config: BenchmarkConfig | None = None) -> None:
         """ベンチマークスイートを初期化
 
         Args:
@@ -90,8 +90,8 @@ class PerformanceBenchmarkSuite:
         self.render_cache = RenderCache() if self.config.cache_enabled else None
 
         # 結果保存
-        self.results: List[BenchmarkResult] = []
-        self.baseline_results: Optional[Dict[str, BenchmarkResult]] = None
+        self.results: list[BenchmarkResult] = []
+        self.baseline_results: dict[str, BenchmarkResult] | None = None
 
         # ベースラインを読み込み
         if self.config.baseline_file and self.config.baseline_file.exists():
@@ -99,7 +99,7 @@ class PerformanceBenchmarkSuite:
 
         self.logger.info("PerformanceBenchmarkSuite初期化完了")
 
-    def run_full_benchmark_suite(self) -> Dict[str, Any]:
+    def run_full_benchmark_suite(self) -> dict[str, Any]:
         """完全なベンチマークスイートを実行"""
         self.logger.info("ベンチマークスイート実行開始")
         print("🚀 Starting Performance Benchmark Suite...")
@@ -153,7 +153,7 @@ class PerformanceBenchmarkSuite:
 
         return analysis
 
-    def run_regression_test(self) -> Dict[str, Any]:
+    def run_regression_test(self) -> dict[str, Any]:
         """パフォーマンス回帰テストを実行"""
         if not self.baseline_results:
             error_msg = "No baseline results available for regression testing"
@@ -234,7 +234,7 @@ class PerformanceBenchmarkSuite:
             self.logger.error(f"ベースライン読み込みエラー: {e}")
             print(f"⚠️  Failed to load baseline: {e}")
 
-    def _run_file_benchmarks(self) -> Dict[str, BenchmarkResult]:  # type: ignore
+    def _run_file_benchmarks(self) -> dict[str, BenchmarkResult]:  # type: ignore
         """ファイル読み込みベンチマーク"""
         # 小ファイル読み込み
         result = self._benchmark_file_reading(file_size="small")
@@ -246,7 +246,7 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Large files: {result.avg_time:.3f}s avg")
 
-    def _run_parse_benchmarks(self) -> Dict[str, BenchmarkResult]:  # type: ignore
+    def _run_parse_benchmarks(self) -> dict[str, BenchmarkResult]:  # type: ignore
         """パースベンチマーク"""
         # 基本パース
         result = self._benchmark_parsing(complexity="basic")
@@ -258,7 +258,7 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Complex parsing: {result.avg_time:.3f}s avg")
 
-    def _run_render_benchmarks(self) -> Dict[str, BenchmarkResult]:  # type: ignore
+    def _run_render_benchmarks(self) -> dict[str, BenchmarkResult]:  # type: ignore
         """レンダリングベンチマーク"""
         # 基本レンダリング
         result = self._benchmark_rendering(template="basic")
@@ -270,13 +270,13 @@ class PerformanceBenchmarkSuite:
         self.results.append(result)
         print(f"  Complex rendering: {result.avg_time:.3f}s avg")
 
-    def _run_e2e_benchmarks(self) -> Dict[str, BenchmarkResult]:  # type: ignore
+    def _run_e2e_benchmarks(self) -> dict[str, BenchmarkResult]:  # type: ignore
         """エンドツーエンドベンチマーク"""
         result = self._benchmark_full_pipeline()
         self.results.append(result)
         print(f"  Full pipeline: {result.avg_time:.3f}s avg")
 
-    def _run_cache_benchmarks(self) -> Dict[str, BenchmarkResult]:  # type: ignore
+    def _run_cache_benchmarks(self) -> dict[str, BenchmarkResult]:  # type: ignore
         """キャッシュパフォーマンステスト"""
         if not self.config.cache_enabled:
             print("  Cache disabled, skipping cache benchmarks")
@@ -500,7 +500,7 @@ class PerformanceBenchmarkSuite:
 
         return result
 
-    def _analyze_results(self) -> Dict[str, Any]:
+    def _analyze_results(self) -> dict[str, Any]:
         """結果を分析"""
         analysis = {
             "summary": {
@@ -529,8 +529,8 @@ class PerformanceBenchmarkSuite:
         return analysis
 
     def _analyze_regression(
-        self, current_results: Dict[str, BenchmarkResult]
-    ) -> Dict[str, Any]:
+        self, current_results: dict[str, BenchmarkResult]
+    ) -> dict[str, Any]:
         """回帰分析を実行"""
         regression_analysis = {  # type: ignore
             "regressions_detected": [],
@@ -577,7 +577,7 @@ class PerformanceBenchmarkSuite:
 
         return regression_analysis
 
-    def _generate_performance_insights(self) -> List[str]:
+    def _generate_performance_insights(self) -> list[str]:
         """パフォーマンスインサイトを生成"""
         insights = []  # type: ignore
 
@@ -652,7 +652,7 @@ class PerformanceBenchmarkSuite:
         else:
             return self._generate_test_content("large")
 
-    def _generate_render_test_data(self, template: str) -> Dict[str, Any]:
+    def _generate_render_test_data(self, template: str) -> dict[str, Any]:
         """レンダーテスト用データを生成"""
         if template == "basic":
             return {"title": "Test", "content": "Basic content"}
@@ -663,7 +663,7 @@ class PerformanceBenchmarkSuite:
                 "items": [f"Item {i}" for i in range(100)],
             }
 
-    def _mock_parse_function(self, content: str) -> List[Any]:
+    def _mock_parse_function(self, content: str) -> list[Any]:
         """モックパース関数"""
         # 実際のパース処理をシミュレート
         time.sleep(0.001)  # 1ms のパース時間をシミュレート

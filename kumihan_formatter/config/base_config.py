@@ -6,7 +6,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import yaml
 
@@ -28,7 +28,7 @@ class BaseConfig:
         "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
     }
 
-    def __init__(self, config_data: Optional[Dict[str, Any]] = None):
+    def __init__(self, config_data: dict[str, Any] | None = None):
         """基本設定を初期化
 
         Args:
@@ -41,11 +41,11 @@ class BaseConfig:
         if "css" in self._config and isinstance(self._config["css"], dict):
             self._css_vars.update(self._config["css"])
 
-    def get_css_variables(self) -> Dict[str, str]:
+    def get_css_variables(self) -> dict[str, str]:
         """CSS変数を取得
 
         Returns:
-            Dict[str, str]: CSS変数の辞書
+            dict[str, str]: CSS変数の辞書
         """
         return self._css_vars.copy()
 
@@ -99,11 +99,11 @@ class BaseConfig:
 
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得
 
         Returns:
-            Dict[str, Any]: 設定辞書
+            dict[str, Any]: 設定辞書
         """
         return self._config.copy()
 

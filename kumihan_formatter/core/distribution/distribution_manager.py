@@ -6,7 +6,7 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from ..doc_classifier import DocumentClassifier, DocumentType
 from .distribution_converter import DistributionConverter
@@ -38,7 +38,7 @@ class DistributionManager:
         output_dir: Path,
         convert_docs: bool = True,
         include_developer_docs: bool = False,
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """ユーザーフレンドリーな配布構造を作成
 
         Args:
@@ -98,10 +98,10 @@ class DistributionManager:
 
     def _process_document_conversion(
         self,
-        classified_files: Dict[DocumentType, List[Path]],
+        classified_files: dict[DocumentType, list[Path]],
         output_dir: Path,
         include_developer_docs: bool,
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """文書変換処理を実行"""
         stats = {"converted_to_html": 0, "converted_to_txt": 0, "copied_as_is": 0}
 
@@ -137,7 +137,7 @@ class DistributionManager:
         return stats
 
     def _create_documentation_index(
-        self, output_dir: Path, classified_files: Dict[DocumentType, List[Path]]
+        self, output_dir: Path, classified_files: dict[DocumentType, list[Path]]
     ) -> None:
         """文書インデックスを作成"""
         index_content = self._generate_index_html(classified_files)
@@ -155,7 +155,7 @@ class DistributionManager:
                 self.ui.warning(f"インデックス作成失敗: {e}")
 
     def _generate_index_html(
-        self, classified_files: Dict[DocumentType, List[Path]]
+        self, classified_files: dict[DocumentType, list[Path]]
     ) -> str:
         """インデックスHTMLを生成（簡略版）"""
         from datetime import datetime

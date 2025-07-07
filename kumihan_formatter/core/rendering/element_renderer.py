@@ -25,7 +25,7 @@ class ElementRenderer:
     def __init__(self) -> None:
         """Initialize element renderer"""
         self.heading_counter = 0
-        self._main_renderer: Optional[Any] = None  # Will be set by main renderer
+        self._main_renderer: Any | None = None  # Will be set by main renderer
 
     def render_paragraph(self, node: Node) -> str:
         """Render paragraph node"""

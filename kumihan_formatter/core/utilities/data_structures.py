@@ -11,9 +11,9 @@ class DataStructureHelper:
     """Utilities for working with data structures"""
 
     @staticmethod
-    def deep_merge_dicts(*dicts: Dict[str, Any]) -> Dict[str, Any]:
+    def deep_merge_dicts(*dicts: dict[str, Any]) -> dict[str, Any]:
         """Deep merge multiple dictionaries"""
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
 
         for d in dicts:
             for key, value in d.items():
@@ -32,10 +32,10 @@ class DataStructureHelper:
 
     @staticmethod
     def flatten_dict(
-        d: Dict[str, Any], parent_key: str = "", sep: str = "."
-    ) -> Dict[str, Any]:
+        d: dict[str, Any], parent_key: str = "", sep: str = "."
+    ) -> dict[str, Any]:
         """Flatten nested dictionary"""
-        items: List[Tuple[str, Any]] = []
+        items: List[tuple[str, Any]] = []
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
             if isinstance(v, dict):
@@ -47,9 +47,9 @@ class DataStructureHelper:
         return dict(items)
 
     @staticmethod
-    def unflatten_dict(d: Dict[str, Any], sep: str = ".") -> Dict[str, Any]:
+    def unflatten_dict(d: dict[str, Any], sep: str = ".") -> dict[str, Any]:
         """Unflatten dictionary with dot notation keys"""
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         for key, value in d.items():
             parts = key.split(sep)
             current = result
@@ -62,7 +62,7 @@ class DataStructureHelper:
 
     @staticmethod
     def get_nested_value(
-        d: Dict[str, Any], key_path: str, default: Any = None, sep: str = "."
+        d: dict[str, Any], key_path: str, default: Any = None, sep: str = "."
     ) -> Any:
         """Get nested dictionary value using dot notation"""
         keys = key_path.split(sep)
@@ -77,7 +77,7 @@ class DataStructureHelper:
 
     @staticmethod
     def set_nested_value(
-        d: Dict[str, Any], key_path: str, value: Any, sep: str = "."
+        d: dict[str, Any], key_path: str, value: Any, sep: str = "."
     ) -> None:
         """Set nested dictionary value using dot notation"""
         keys = key_path.split(sep)

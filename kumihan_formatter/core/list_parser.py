@@ -5,7 +5,7 @@ including keyword-enhanced list items.
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 from .ast_nodes import Node, NodeBuilder, list_item, ordered_list, unordered_list
 from .keyword_parser import KeywordParser
@@ -37,8 +37,8 @@ class ListParser:
         self.keyword_parser = keyword_parser
 
     def parse_unordered_list(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Node, int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         Parse an unordered list starting from the given index
 
@@ -69,8 +69,8 @@ class ListParser:
         return unordered_list(items), current_index
 
     def parse_ordered_list(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Node, int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         Parse an ordered list starting from the given index
 
@@ -101,8 +101,8 @@ class ListParser:
         return ordered_list(items), current_index
 
     def _parse_list_item(
-        self, lines: List[str], index: int, is_ordered: bool
-    ) -> Tuple[Node, int]:
+        self, lines: list[str], index: int, is_ordered: bool
+    ) -> tuple[Node, int]:
         """
         Parse a single list item
 
@@ -220,7 +220,7 @@ class ListParser:
                 return True
         return False
 
-    def extract_list_items(self, content: str) -> List[str]:
+    def extract_list_items(self, content: str) -> list[str]:
         """
         Extract list items from content
 
@@ -228,7 +228,7 @@ class ListParser:
             content: Content containing lists
 
         Returns:
-            List[str]: List of item contents
+            list[str]: List of item contents
         """
         items = []
         lines = content.split("\n")
@@ -254,8 +254,8 @@ class NestedListParser:
         self.list_parser = list_parser
 
     def parse_nested_lists(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Node, int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         Parse nested list structures
 
@@ -284,8 +284,8 @@ class NestedListParser:
         return len(line) - len(line.lstrip())
 
     def _group_by_indent_level(
-        self, lines: List[str]
-    ) -> Dict[int, List[Tuple[int, str]]]:
+        self, lines: list[str]
+    ) -> dict[int, list[tuple[int, str]]]:
         """Group list items by their indentation level"""
         groups = {}  # type: ignore
         for i, line in enumerate(lines):
@@ -303,7 +303,7 @@ class ListValidator:
     def __init__(self, list_parser: ListParser):
         self.list_parser = list_parser
 
-    def validate_list_structure(self, lines: List[str]) -> List[str]:
+    def validate_list_structure(self, lines: list[str]) -> list[str]:
         """
         Validate list structure and return any issues
 
@@ -311,7 +311,7 @@ class ListValidator:
             lines: Lines to validate
 
         Returns:
-            List[str]: List of validation issues
+            list[str]: List of validation issues
         """
         issues = []
         current_list_type = None
@@ -345,7 +345,7 @@ class ListValidator:
 
         return issues
 
-    def _validate_keyword_list_item(self, line: str, line_number: int) -> List[str]:
+    def _validate_keyword_list_item(self, line: str, line_number: int) -> list[str]:
         """Validate keyword syntax in a list item"""
         issues = []  # type: ignore
 

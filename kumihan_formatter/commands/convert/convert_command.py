@@ -8,7 +8,6 @@ Issue #319対応 - convert.py から分離
 import sys
 import webbrowser
 from pathlib import Path
-from typing import Optional
 
 from ...core.error_handling import ErrorHandler as FriendlyErrorHandler
 from ...core.utilities.logger import get_logger
@@ -34,13 +33,13 @@ class ConvertCommand:
 
     def execute(
         self,
-        input_file: Optional[str],
+        input_file: str | None,
         output: str,
         no_preview: bool,
         watch: bool,
-        config: Optional[str],
+        config: str | None,
         show_test_cases: bool,
-        template_name: Optional[str],
+        template_name: str | None,
         include_source: bool,
         syntax_check: bool = True,
     ) -> None:
@@ -165,9 +164,7 @@ class ConvertCommand:
             self.logger.error(f"Unexpected error during conversion: {e}", exc_info=True)
             self._handle_generic_error(e, input_file)
 
-    def _handle_file_error(
-        self, e: FileNotFoundError, input_file: Optional[str]
-    ) -> None:
+    def _handle_file_error(self, e: FileNotFoundError, input_file: str | None) -> None:
         """ファイル未発見エラーの処理"""
         error = self.friendly_error_handler.handle_exception(
             e, context={"file_path": input_file or ""}
@@ -176,7 +173,7 @@ class ConvertCommand:
         sys.exit(1)
 
     def _handle_encoding_error(
-        self, e: UnicodeDecodeError, input_file: Optional[str]
+        self, e: UnicodeDecodeError, input_file: str | None
     ) -> None:
         """文字エンコーディングエラーの処理"""
         error = self.friendly_error_handler.handle_exception(
@@ -186,7 +183,7 @@ class ConvertCommand:
         sys.exit(1)
 
     def _handle_permission_error(
-        self, e: PermissionError, input_file: Optional[str]
+        self, e: PermissionError, input_file: str | None
     ) -> None:
         """ファイル権限エラーの処理"""
         error = self.friendly_error_handler.handle_exception(
@@ -195,7 +192,7 @@ class ConvertCommand:
         self.friendly_error_handler.display_error(error, verbose=True)
         sys.exit(1)
 
-    def _handle_generic_error(self, e: Exception, input_file: Optional[str]) -> None:
+    def _handle_generic_error(self, e: Exception, input_file: str | None) -> None:
         """一般的なエラーの処理"""
         error = self.friendly_error_handler.handle_exception(
             e, context={"input_file": input_file, "operation": "ファイル変換"}

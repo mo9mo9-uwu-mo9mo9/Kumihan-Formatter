@@ -4,7 +4,7 @@ This module handles Jinja2 template loading, caching, and rendering.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -31,7 +31,7 @@ class TemplateManager:
     - カスタムテンプレートディレクトリ対応
     """
 
-    def __init__(self, template_dir: Optional[Path] = None):
+    def __init__(self, template_dir: Path | None = None):
         """
         Initialize template manager
 
@@ -50,7 +50,7 @@ class TemplateManager:
         )
 
         # Template cache
-        self._template_cache: Dict[str, Any] = {}
+        self._template_cache: dict[str, Any] = {}
 
         # Add custom filters
         self._register_custom_filters()
@@ -71,7 +71,7 @@ class TemplateManager:
         template: Template = self._template_cache[template_name]
         return template
 
-    def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
+    def render_template(self, template_name: str, context: dict[str, Any]) -> str:
         """
         Render a template with the given context
 
@@ -88,9 +88,9 @@ class TemplateManager:
 
     def select_template_name(
         self,
-        source_text: Optional[str] = None,
-        template: Optional[str] = None,
-        experimental: Optional[str] = None,
+        source_text: str | None = None,
+        template: str | None = None,
+        experimental: str | None = None,
     ) -> str:
         """
         Select appropriate template name based on requirements
@@ -119,7 +119,7 @@ class TemplateManager:
         else:
             return "base.html.j2"
 
-    def get_available_templates(self) -> List[str]:
+    def get_available_templates(self) -> list[str]:
         """Get list of available template files"""
         templates = []
         for template_file in self.template_dir.rglob("*.j2"):
@@ -127,7 +127,7 @@ class TemplateManager:
             templates.append(str(relative_path))
         return sorted(templates)
 
-    def validate_template(self, template_name: str) -> Tuple[bool, Optional[str]]:
+    def validate_template(self, template_name: str) -> tuple[bool, str | None]:
         """
         Validate that a template exists and is valid
 
@@ -228,7 +228,7 @@ class RenderContext:
         self._context["navigation_html"] = nav_html
         return self
 
-    def css_vars(self, css_vars: Dict[str, str]) -> "RenderContext":
+    def css_vars(self, css_vars: dict[str, str]) -> "RenderContext":
         """Set CSS variables for styling"""
         self._context["css_vars"] = css_vars
         return self
@@ -239,7 +239,7 @@ class RenderContext:
         return self
 
     def metadata(
-        self, description: Optional[str] = None, keywords: Optional[str] = None
+        self, description: str | None = None, keywords: str | None = None
     ) -> "RenderContext":
         """Add page metadata"""
         if description:
@@ -248,7 +248,7 @@ class RenderContext:
             self._context["meta_keywords"] = keywords
         return self
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> dict[str, Any]:
         """Build the context dictionary"""
         # Set defaults
         defaults = {
@@ -276,7 +276,7 @@ class TemplateValidator:
     def __init__(self, template_manager: TemplateManager):
         self.template_manager = template_manager
 
-    def validate_all_templates(self) -> Dict[str, Tuple[bool, Optional[str]]]:
+    def validate_all_templates(self) -> dict[str, tuple[bool, str | None]]:
         """
         Validate all available templates
 
@@ -292,7 +292,7 @@ class TemplateValidator:
 
         return results
 
-    def check_required_templates(self) -> Dict[str, bool]:
+    def check_required_templates(self) -> dict[str, bool]:
         """Check that required templates exist"""
         required_templates = ["base.html.j2", "base-with-source-toggle.html.j2"]
 
@@ -307,8 +307,8 @@ class TemplateValidator:
         return results
 
     def validate_template_variables(
-        self, template_name: str, required_vars: List[str]
-    ) -> Tuple[bool, List[str]]:
+        self, template_name: str, required_vars: list[str]
+    ) -> Tuple[bool, list[str]]:
         """
         Validate that template uses required variables
 

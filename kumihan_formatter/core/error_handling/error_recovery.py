@@ -3,7 +3,7 @@
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .error_types import UserFriendlyError
 
@@ -17,7 +17,7 @@ class ErrorRecovery:
         self._max_attempts = 3
 
     def attempt_recovery(
-        self, error: UserFriendlyError, context: Optional[Dict[str, Any]] = None
+        self, error: UserFriendlyError, context: dict[str, Any] | None = None
     ) -> bool:
         """エラーからの自動回復を試行
 
@@ -48,27 +48,27 @@ class ErrorRecovery:
         # 将来の実装: 自動修正可能なエラーパターンの判定
         return False
 
-    def suggest_manual_fix(self, error: UserFriendlyError) -> Optional[str]:
+    def suggest_manual_fix(self, error: UserFriendlyError) -> str | None:
         """手動修正のための具体的な提案を生成
 
         Args:
             error: 修正提案を生成するエラー
 
         Returns:
-            Optional[str]: 修正提案テキスト
+            str | None: 修正提案テキスト
         """
         # 将来の実装: より具体的で状況に応じた修正提案
         return None
 
 
-def create_backup_file(file_path: Path) -> Optional[Path]:
+def create_backup_file(file_path: Path) -> Path | None:
     """ファイルのバックアップを作成
 
     Args:
         file_path: バックアップ対象のファイル
 
     Returns:
-        Optional[Path]: バックアップファイルのパス（失敗時はNone）
+        Path | None: バックアップファイルのパス（失敗時はNone）
     """
     # 将来の実装: エラー回復前の自動バックアップ機能
     return None

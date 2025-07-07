@@ -9,7 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 from .config_types import ConfigLevel
 
@@ -34,7 +34,7 @@ class ConfigLoader:
         """
         self.validator = validator
 
-    def load_from_file(self, config_path: Union[str, Path]) -> Optional[Dict[str, Any]]:
+    def load_from_file(self, config_path: str | Path) -> dict[str, Any] | None:
         """ファイルから設定を読み込み"""
         config_path = Path(config_path)
 
@@ -80,7 +80,7 @@ class ConfigLoader:
             logging.error(f"Failed to load configuration from {config_path}: {e}")
             return None
 
-    def load_from_environment(self) -> Dict[str, Any]:
+    def load_from_environment(self) -> dict[str, Any]:
         """環境変数から設定を読み込み"""
         env_config = {}
         prefix = "KUMIHAN_"
@@ -116,8 +116,8 @@ class ConfigLoader:
         return env_config
 
     def merge_configs(
-        self, base_config: Dict[str, Any], override_config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, base_config: dict[str, Any], override_config: dict[str, Any]
+    ) -> dict[str, Any]:
         """設定をマージ（上書き）"""
         result = self._deep_copy(base_config)
         self._merge_dict(result, override_config)
@@ -132,7 +132,7 @@ class ConfigLoader:
         else:
             return obj
 
-    def _merge_dict(self, target: Dict[str, Any], source: Dict[str, Any]) -> None:
+    def _merge_dict(self, target: dict[str, Any], source: dict[str, Any]) -> None:
         """辞書を再帰的にマージ"""
         for key, value in source.items():
             if (

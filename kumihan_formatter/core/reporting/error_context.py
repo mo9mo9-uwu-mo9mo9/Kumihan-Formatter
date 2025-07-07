@@ -6,7 +6,7 @@ Issue #319対応 - error_reporting.py から分離
 """
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 
 class ErrorContextManager:
@@ -15,9 +15,9 @@ class ErrorContextManager:
     責任: エラー発生箇所の周辺情報収集・管理
     """
 
-    def __init__(self, file_path: Optional[Path] = None):
+    def __init__(self, file_path: Path | None = None):
         self.file_path = file_path
-        self._file_lines: Optional[List[str]] = None
+        self._file_lines: list[str] | None = None
 
     def load_file(self, file_path: Path) -> None:
         """ファイルを読み込み"""
@@ -28,7 +28,7 @@ class ErrorContextManager:
         except Exception:
             self._file_lines = None
 
-    def get_context_lines(self, line_number: int, context_range: int = 2) -> List[str]:
+    def get_context_lines(self, line_number: int, context_range: int = 2) -> list[str]:
         """指定行の周辺コンテキストを取得"""
         if not self._file_lines:
             return []
@@ -49,7 +49,7 @@ class ErrorContextManager:
 
         return context_lines
 
-    def get_highlighted_line(self, line_number: int) -> Optional[str]:
+    def get_highlighted_line(self, line_number: int) -> str | None:
         """指定行をハイライト表示用に取得"""
         if (
             not self._file_lines
@@ -61,7 +61,7 @@ class ErrorContextManager:
         return self._file_lines[line_number - 1].rstrip("\n")
 
     def extract_problem_section(
-        self, line_number: int, column: Optional[int] = None
+        self, line_number: int, column: int | None = None
     ) -> str:
         """問題箇所を視覚的に強調表示"""
         line = self.get_highlighted_line(line_number)

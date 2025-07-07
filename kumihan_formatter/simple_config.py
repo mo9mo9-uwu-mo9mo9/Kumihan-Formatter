@@ -36,11 +36,11 @@ class SimpleConfig:
         # 互換性のため、CSS変数も保持
         self.css_vars = self._manager.get_css_variables()
 
-    def get_css_variables(self) -> Dict[str, str]:
+    def get_css_variables(self) -> dict[str, str]:
         """CSS変数を取得（統合設定システムに委譲）
 
         Returns:
-            Dict[str, str]: CSS変数の辞書
+            dict[str, str]: CSS変数の辞書
         """
         return self._manager.get_css_variables()
 

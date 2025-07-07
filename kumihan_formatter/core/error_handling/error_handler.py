@@ -3,7 +3,7 @@
 """
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ..utilities.logger import get_logger
 from .error_factories import ErrorFactory
@@ -35,12 +35,12 @@ class ErrorHandler:
     def __init__(self, console_ui: Any = None) -> None:
         """エラーハンドラを初期化"""
         self.console_ui = console_ui
-        self._error_history: List[UserFriendlyError] = []
+        self._error_history: list[UserFriendlyError] = []
         self.logger = get_logger(__name__)
         self.logger.debug("ErrorHandler initialized")
 
     def handle_exception(
-        self, exception: Exception, context: Dict[str, Any] | None = None
+        self, exception: Exception, context: dict[str, Any] | None = None
     ) -> UserFriendlyError:
         """例外をユーザーフレンドリーエラーに変換"""
         context = context or {}
@@ -165,7 +165,7 @@ class ErrorHandler:
             self.logger.warning(f"Failed to show error context: {e}")
             pass
 
-    def get_error_statistics(self) -> Dict[str, Any]:
+    def get_error_statistics(self) -> dict[str, Any]:
         """エラー統計を取得"""
         if not self._error_history:
             return {}

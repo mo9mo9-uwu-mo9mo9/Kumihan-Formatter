@@ -50,7 +50,7 @@ class Parser:
 
         self.logger.debug("Parser initialized with specialized parsers")
 
-    def parse(self, text: str) -> List[Node]:
+    def parse(self, text: str) -> list[Node]:
         """
         Parse text into AST nodes
 
@@ -58,7 +58,7 @@ class Parser:
             text: Input text to parse
 
         Returns:
-            List[Node]: Parsed AST nodes
+            list[Node]: Parsed AST nodes
         """
         self.lines = text.split("\n")
         self.current = 0
@@ -85,7 +85,7 @@ class Parser:
         )
         return nodes
 
-    def _parse_line(self) -> Optional[Node]:
+    def _parse_line(self) -> Node | None:
         """Parse a single line or block starting from current position"""
         if self.current >= len(self.lines):
             return None
@@ -138,7 +138,7 @@ class Parser:
         self.current = next_index
         return node
 
-    def get_errors(self) -> List[str]:
+    def get_errors(self) -> list[str]:
         """Get parsing errors"""
         return self.errors
 
@@ -156,7 +156,7 @@ class Parser:
         }
 
 
-def parse(text: str, config=None) -> List[Node]:  # type: ignore
+def parse(text: str, config=None) -> list[Node]:  # type: ignore
     """
     Main parsing function (compatibility with existing API)
 
@@ -165,7 +165,7 @@ def parse(text: str, config=None) -> List[Node]:  # type: ignore
         config: Optional configuration
 
     Returns:
-        List[Node]: Parsed AST nodes
+        list[Node]: Parsed AST nodes
     """
     parser = Parser(config)
     return parser.parse(text)

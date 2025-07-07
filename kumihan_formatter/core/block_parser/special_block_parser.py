@@ -15,7 +15,7 @@ class SpecialBlockParser:
     def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
-    def parse_code_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_code_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """Parse a code block"""
         # Find closing marker
         end_index = None
@@ -50,7 +50,7 @@ class SpecialBlockParser:
 
         return builder.build()
 
-    def parse_table_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_table_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """Parse a table block (future enhancement)"""
         # TODO: Implement table parsing
         return error_node("テーブル機能は未実装です"), start_index + 1

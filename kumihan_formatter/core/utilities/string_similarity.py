@@ -44,10 +44,10 @@ class StringSimilarity:
     @staticmethod
     def find_closest_matches(
         target: str,
-        candidates: List[str],
+        candidates: list[str],
         min_similarity: float = 0.6,
         max_results: int = 3,
-    ) -> List[Tuple[str, float]]:
+    ) -> List[tuple[str, float]]:
         """Find closest matching strings"""
         matches = []
 

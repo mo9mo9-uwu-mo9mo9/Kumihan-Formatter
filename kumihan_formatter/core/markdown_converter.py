@@ -7,7 +7,7 @@ Issue #118対応: エンドユーザー向け文書の読みやすさ向上
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Pattern, Tuple
+from typing import Any, List, Optional, Pattern, Tuple
 
 
 class SimpleMarkdownConverter:
@@ -26,7 +26,7 @@ class SimpleMarkdownConverter:
         """変換器を初期化"""
         self.patterns = self._compile_patterns()
 
-    def _compile_patterns(self) -> Dict[str, Pattern[str]]:
+    def _compile_patterns(self) -> dict[str, Pattern[str]]:
         """正規表現パターンをコンパイル"""
         return {
             # 見出し
@@ -53,7 +53,7 @@ class SimpleMarkdownConverter:
             "ul_item": re.compile(r"^[-*+]\s+(.+)$", re.MULTILINE),
         }
 
-    def convert_file(self, markdown_file: Path, title: Optional[str] = None) -> str:
+    def convert_file(self, markdown_file: Path, title: str | None = None) -> str:
         """Markdownファイルを変換してHTMLを返す
 
         Args:
@@ -112,7 +112,7 @@ class SimpleMarkdownConverter:
 
         return text
 
-    def _extract_title_from_content(self, content: str) -> Optional[str]:
+    def _extract_title_from_content(self, content: str) -> str | None:
         """コンテンツから最初のH1見出しを抽出"""
         match = self.patterns["h1"].search(content)
         return match.group(1).strip() if match else None
@@ -232,7 +232,7 @@ class SimpleMarkdownConverter:
         """段落を作成"""
         lines = text.split("\n")
         result = []
-        current_paragraph: List[str] = []
+        current_paragraph: list[str] = []
 
         for line in lines:
             line = line.strip()
@@ -377,7 +377,7 @@ class SimpleMarkdownConverter:
 
 
 def convert_markdown_file(
-    input_file: Path, output_file: Path, title: Optional[str] = None
+    input_file: Path, output_file: Path, title: str | None = None
 ) -> bool:
     """Markdownファイルを変換してHTMLファイルを作成
 

@@ -25,11 +25,11 @@ class ErrorReport:
     責任: エラーの収集・分類・サマリー生成
     """
 
-    def __init__(self, source_file: Optional[Path] = None):
+    def __init__(self, source_file: Path | None = None):
         self.source_file = source_file
-        self.errors: List[DetailedError] = []
-        self.warnings: List[DetailedError] = []
-        self.info: List[DetailedError] = []
+        self.errors: list[DetailedError] = []
+        self.warnings: list[DetailedError] = []
+        self.info: list[DetailedError] = []
         self.generation_time = datetime.now()
 
     def add_error(self, error: DetailedError) -> None:
@@ -251,11 +251,11 @@ class ErrorReportBuilder:
     責任: エラーレポートの段階的構築
     """
 
-    def __init__(self, source_file: Optional[Path] = None):
+    def __init__(self, source_file: Path | None = None):
         self.report = ErrorReport(source_file)
 
     def add_syntax_error(
-        self, line: int, message: str, suggestion: Optional[str] = None
+        self, line: int, message: str, suggestion: str | None = None
     ) -> "ErrorReportBuilder":
         """構文エラーを追加"""
         error = DetailedError(
@@ -274,7 +274,7 @@ class ErrorReportBuilder:
         return self
 
     def add_keyword_error(
-        self, line: int, keyword: str, suggestion: Optional[str] = None
+        self, line: int, keyword: str, suggestion: str | None = None
     ) -> "ErrorReportBuilder":
         """キーワードエラーを追加"""
         error = DetailedError(

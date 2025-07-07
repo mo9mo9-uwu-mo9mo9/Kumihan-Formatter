@@ -9,7 +9,7 @@ import traceback
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, Generator, List, Union
 
 from ..common.error_framework import ErrorContext
 from ..utilities.logger import get_logger
@@ -46,13 +46,13 @@ class UnifiedErrorHandler:
         self.logger = get_logger(__name__) if enable_logging else None
 
         # エラー統計とヒストリー
-        self._error_history: List[UserFriendlyError] = []
-        self._error_stats: Dict[str, int] = {}
-        self._context_stack: List[ErrorContext] = []
+        self._error_history: list[UserFriendlyError] = []
+        self._error_stats: dict[str, int] = {}
+        self._context_stack: list[ErrorContext] = []
 
         # 回復戦略設定
         self._max_recovery_attempts = 3
-        self._recovery_callbacks: Dict[str, List[Callable]] = {}  # type: ignore
+        self._recovery_callbacks: dict[str, list[Callable]] = {}  # type: ignore
 
         if self.logger:
             self.logger.info("UnifiedErrorHandler initialized")
@@ -61,8 +61,8 @@ class UnifiedErrorHandler:
     def error_context(
         self,
         operation: str,
-        file_path: Optional[str] = None,
-        line_number: Optional[int] = None,
+        file_path: str | None = None,
+        line_number: int | None = None,
         **context_data: Any,
     ) -> Generator[None, None, None]:
         """エラーコンテキストマネージャー
@@ -103,7 +103,7 @@ class UnifiedErrorHandler:
                 self.logger.debug(f"Completed operation: {operation}")
 
     def handle_exception(
-        self, exception: Exception, context: Optional[Dict[str, Any]] = None
+        self, exception: Exception, context: dict[str, Any] | None = None
     ) -> UserFriendlyError:
         """例外を統一的にハンドリング
 
@@ -146,7 +146,7 @@ class UnifiedErrorHandler:
         return error
 
     def _create_error_from_exception(
-        self, exception: Exception, context: Dict[str, Any]
+        self, exception: Exception, context: dict[str, Any]
     ) -> UserFriendlyError:
         """例外からUserFriendlyErrorを生成"""
 
@@ -185,7 +185,7 @@ class UnifiedErrorHandler:
             )
 
     def _handle_syntax_error(
-        self, exception: SyntaxError, context: Dict[str, Any]
+        self, exception: SyntaxError, context: dict[str, Any]
     ) -> UserFriendlyError:
         """構文エラーの専用ハンドリング"""
         line_num = getattr(exception, "lineno", context.get("line_number", 0))
@@ -197,7 +197,7 @@ class UnifiedErrorHandler:
         )
 
     def _handle_value_error(
-        self, exception: ValueError, context: Dict[str, Any]
+        self, exception: ValueError, context: dict[str, Any]
     ) -> UserFriendlyError:
         """値エラーの専用ハンドリング"""
         error_msg = str(exception)
@@ -229,7 +229,7 @@ class UnifiedErrorHandler:
         )
 
     def _handle_io_error(
-        self, exception: Union[IOError, OSError], context: Dict[str, Any]
+        self, exception: IOError | OSError, context: dict[str, Any]
     ) -> UserFriendlyError:
         """I/Oエラーの専用ハンドリング"""
         _ = context.get("file_path", "不明なファイル")
@@ -245,7 +245,7 @@ class UnifiedErrorHandler:
             context=context,
         )
 
-    def _create_suggestion_solution(self, suggestions: List[str]) -> Dict[str, Any]:
+    def _create_suggestion_solution(self, suggestions: list[str]) -> dict[str, Any]:
         """スマート提案からSolutionを生成"""
         if suggestions:
             quick_fix = f"もしかして: {', '.join(suggestions[:3])}"
@@ -268,7 +268,7 @@ class UnifiedErrorHandler:
             external_links=["記法ガイド: SPEC.md を参照"],
         )
 
-    def _create_generic_solution(self, quick_fix: str) -> Dict[str, Any]:
+    def _create_generic_solution(self, quick_fix: str) -> dict[str, Any]:
         """汎用的なSolutionを生成"""
         from .error_types import ErrorSolution
 
@@ -281,7 +281,7 @@ class UnifiedErrorHandler:
             ],
         )
 
-    def _create_file_operation_solution(self, error_details: str) -> Dict[str, Any]:
+    def _create_file_operation_solution(self, error_details: str) -> dict[str, Any]:
         """ファイル操作エラー用のSolutionを生成"""
         from .error_types import ErrorSolution
 
@@ -433,7 +433,7 @@ class UnifiedErrorHandler:
         if self.logger:
             self.logger.debug(f"Recovery callback registered for {error_category}")
 
-    def _get_recovery_options(self, error: UserFriendlyError) -> List[str]:
+    def _get_recovery_options(self, error: UserFriendlyError) -> list[str]:
         """エラーに対する回復オプションを取得"""
         options = []
 
@@ -460,7 +460,7 @@ class UnifiedErrorHandler:
         error_key = f"{error.category.value}_{error.level.value}"
         self._error_stats[error_key] = self._error_stats.get(error_key, 0) + 1
 
-    def get_error_statistics(self) -> Dict[str, Any]:
+    def get_error_statistics(self) -> dict[str, Any]:
         """エラー統計情報を取得"""
         total_errors = len(self._error_history)
 
@@ -550,7 +550,7 @@ class UnifiedErrorHandler:
 
 
 # グローバルインスタンス（必要に応じて）
-_global_handler: Optional[UnifiedErrorHandler] = None
+_global_handler: UnifiedErrorHandler | None = None
 
 
 def get_global_handler() -> UnifiedErrorHandler:

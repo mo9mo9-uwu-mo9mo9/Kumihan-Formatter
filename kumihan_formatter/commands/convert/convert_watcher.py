@@ -34,7 +34,7 @@ class ConvertWatcher:
         output: str,
         config_obj: Any,
         show_test_cases: bool,
-        template_name: Optional[str],
+        template_name: str | None,
         include_source: bool,
         syntax_check: bool = True,
     ) -> None:
@@ -80,7 +80,7 @@ class ConvertWatcher:
         output: str,
         config_obj: Any,
         show_test_cases: bool,
-        template_name: Optional[str],
+        template_name: str | None,
         include_source: bool,
         syntax_check: bool,
     ) -> Any:

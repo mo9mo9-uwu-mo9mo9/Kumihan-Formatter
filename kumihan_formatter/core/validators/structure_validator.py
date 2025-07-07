@@ -18,7 +18,7 @@ class StructureValidator:
         """Initialize structure validator"""
         self.toc_validator = TOCValidator()
 
-    def validate_ast_structure(self, ast: List[Node]) -> List[ValidationIssue]:
+    def validate_ast_structure(self, ast: list[Node]) -> list[ValidationIssue]:
         """Validate AST structure"""
         issues = []
 
@@ -36,7 +36,7 @@ class StructureValidator:
 
         return issues
 
-    def validate_toc_structure(self, ast: List[Node]) -> List[ValidationIssue]:
+    def validate_toc_structure(self, ast: list[Node]) -> list[ValidationIssue]:
         """Validate TOC structure"""
         issues = []
 
@@ -57,7 +57,7 @@ class StructureValidator:
 
         return issues
 
-    def validate_document_structure(self, lines: List[str]) -> List[ValidationIssue]:
+    def validate_document_structure(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate overall document structure"""
         issues = []
 
@@ -99,7 +99,7 @@ class StructureValidator:
 
         return issues
 
-    def _extract_toc_entries(self, ast: List[Node]) -> List[Dict[str, Any]]:
+    def _extract_toc_entries(self, ast: list[Node]) -> List[dict[str, Any]]:
         """Extract TOC entries from AST"""
         entries = []
         for node in ast:
@@ -114,7 +114,7 @@ class StructureValidator:
                     )
         return entries
 
-    def _extract_heading_level(self, line: str) -> Optional[int]:
+    def _extract_heading_level(self, line: str) -> int | None:
         """Extract heading level from line"""
         import re
 
@@ -124,8 +124,8 @@ class StructureValidator:
         return None
 
     def _validate_heading_hierarchy(
-        self, heading_levels: List[tuple]  # type: ignore
-    ) -> List[ValidationIssue]:
+        self, heading_levels: list[tuple]  # type: ignore
+    ) -> list[ValidationIssue]:
         """Validate heading hierarchy"""
         issues = []
 

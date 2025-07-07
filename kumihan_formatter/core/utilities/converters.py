@@ -35,7 +35,7 @@ def safe_bool(value: Any, default: bool = False) -> bool:
         return default
 
 
-def chunks(lst: List[Any], n: int) -> Iterator[List[Any]]:
+def chunks(lst: list[Any], n: int) -> Iterator[list[Any]]:
     """Yield successive n-sized chunks from list"""
     for i in range(0, len(lst), n):
         yield lst[i : i + n]

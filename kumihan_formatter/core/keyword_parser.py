@@ -6,7 +6,7 @@ including compound keywords and error suggestions.
 
 import re
 from difflib import get_close_matches
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 from .ast_nodes import Node, NodeBuilder, error_node
 
@@ -100,7 +100,7 @@ class KeywordParser:
 
     def parse_marker_keywords(
         self, marker_content: str
-    ) -> Tuple[List[str], Dict[str, Any], List[str]]:
+    ) -> tuple[list[str], dict[str, Any], list[str]]:
         """
         Parse keywords and attributes from marker content
 
@@ -115,7 +115,7 @@ class KeywordParser:
 
         keywords = []
         attributes = {}
-        errors: List[str] = []
+        errors: list[str] = []
 
         # Extract color attribute
         color_match = re.search(r"color=([#\w]+)", marker_content)
@@ -145,7 +145,7 @@ class KeywordParser:
 
         return keywords, attributes, errors
 
-    def validate_keywords(self, keywords: List[str]) -> Tuple[List[str], List[str]]:
+    def validate_keywords(self, keywords: list[str]) -> tuple[list[str], list[str]]:
         """
         Validate keywords and return valid ones with errors
 
@@ -171,7 +171,7 @@ class KeywordParser:
         return valid_keywords, error_messages
 
     def create_single_block(
-        self, keyword: str, content: str, attributes: Dict[str, Any]
+        self, keyword: str, content: str, attributes: dict[str, Any]
     ) -> Node:
         """
         Create a single block node from keyword
@@ -222,7 +222,7 @@ class KeywordParser:
         return builder.build()
 
     def create_compound_block(
-        self, keywords: List[str], content: str, attributes: Dict[str, Any]
+        self, keywords: list[str], content: str, attributes: dict[str, Any]
     ) -> Node:
         """
         Create compound block node with nested keywords
@@ -288,7 +288,7 @@ class KeywordParser:
             return current_content[0]  # type: ignore
         return current_content  # type: ignore
 
-    def _parse_block_content(self, content: str) -> List[Any]:
+    def _parse_block_content(self, content: str) -> list[Any]:
         """Parse block content into appropriate structure"""
         if not content.strip():
             return [""]
@@ -338,7 +338,7 @@ class KeywordParser:
         return re.sub(pattern, replace_keyword, content, flags=re.MULTILINE)
 
     def _apply_simple_styling(
-        self, keyword: str, text: str, attributes: Dict[str, Any]
+        self, keyword: str, text: str, attributes: dict[str, Any]
     ) -> str:
         """Apply simple styling to text based on keyword"""
         if keyword == "太字":
@@ -362,7 +362,7 @@ class KeywordParser:
             return text
 
     def _apply_compound_styling(
-        self, keywords: List[str], text: str, attributes: Dict[str, Any]
+        self, keywords: list[str], text: str, attributes: dict[str, Any]
     ) -> str:
         """Apply compound styling to text"""
         # Sort keywords by nesting order
@@ -375,7 +375,7 @@ class KeywordParser:
 
         return result
 
-    def _sort_keywords_by_nesting_order(self, keywords: List[str]) -> List[str]:
+    def _sort_keywords_by_nesting_order(self, keywords: list[str]) -> list[str]:
         """Sort keywords by their nesting order"""
 
         def get_tag_priority(keyword: str) -> int:
@@ -390,7 +390,7 @@ class KeywordParser:
 
         return sorted(keywords, key=get_tag_priority)
 
-    def _find_node_by_keyword(self, node: Node, keyword: str) -> Optional[Node]:
+    def _find_node_by_keyword(self, node: Node, keyword: str) -> Node | None:
         """Find a node created by a specific keyword"""
         if keyword not in self.BLOCK_KEYWORDS:
             return None
@@ -415,7 +415,7 @@ class KeywordParser:
 
     def _get_keyword_suggestions(
         self, invalid_keyword: str, max_suggestions: int = 3
-    ) -> List[str]:
+    ) -> list[str]:
         """Get suggestions for invalid keywords"""
         all_keywords = list(self.BLOCK_KEYWORDS.keys())
         suggestions = get_close_matches(
@@ -423,7 +423,7 @@ class KeywordParser:
         )
         return suggestions
 
-    def get_all_keywords(self) -> List[str]:
+    def get_all_keywords(self) -> list[str]:
         """Get list of all available keywords"""
         return list(self.BLOCK_KEYWORDS.keys())
 
@@ -431,11 +431,11 @@ class KeywordParser:
         """Check if a keyword is valid"""
         return keyword in self.BLOCK_KEYWORDS
 
-    def get_keyword_info(self, keyword: str) -> Optional[Dict[str, Any]]:
+    def get_keyword_info(self, keyword: str) -> dict[str, Any] | None:
         """Get information about a keyword"""
         return self.BLOCK_KEYWORDS.get(keyword)
 
-    def add_custom_keyword(self, keyword: str, definition: Dict[str, Any]) -> None:
+    def add_custom_keyword(self, keyword: str, definition: dict[str, Any]) -> None:
         """Add a custom keyword definition"""
         self.BLOCK_KEYWORDS[keyword] = definition
 
@@ -453,7 +453,7 @@ class MarkerValidator:
     def __init__(self, keyword_parser: KeywordParser):
         self.keyword_parser = keyword_parser
 
-    def validate_marker_line(self, line: str) -> Tuple[bool, List[str]]:
+    def validate_marker_line(self, line: str) -> tuple[bool, list[str]]:
         """
         Validate a complete marker line
 
@@ -493,8 +493,8 @@ class MarkerValidator:
         return len(errors) == 0, errors
 
     def validate_block_structure(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[bool, Optional[int], List[str]]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[bool, int | None, list[str]]:
         """
         Validate block structure starting from a marker line
 

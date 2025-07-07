@@ -28,7 +28,7 @@ class CacheStorage:
         max_memory_entries: int,
         max_memory_bytes: int,
         strategy: CacheStrategy,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         enable_file_cache: bool = True,
     ):
         """
@@ -47,7 +47,7 @@ class CacheStorage:
         self.enable_file_cache = enable_file_cache
 
         # メモリキャッシュ
-        self._memory_cache: Dict[str, CacheEntry] = {}
+        self._memory_cache: dict[str, CacheEntry] = {}
         self._memory_size = 0
 
         # ファイルキャッシュ
@@ -71,7 +71,7 @@ class CacheStorage:
             # フォールバック推定
             return 1024  # 1KBデフォルト
 
-    def get_from_memory(self, key: str) -> Optional[CacheEntry]:
+    def get_from_memory(self, key: str) -> CacheEntry | None:
         """メモリキャッシュから取得"""
         entry = self._memory_cache.get(key)
         if entry and not entry.is_expired():
@@ -131,7 +131,7 @@ class CacheStorage:
             print(f"Warning: Failed to save cache entry to file: {e}")
             return False
 
-    def load_from_file(self, key: str) -> Optional[CacheEntry]:
+    def load_from_file(self, key: str) -> CacheEntry | None:
         """ファイルキャッシュから読み込み"""
         if not self.enable_file_cache:
             return None
@@ -233,7 +233,7 @@ class CacheStorage:
         self._memory_cache.clear()
         self._memory_size = 0
 
-    def get_memory_stats(self) -> Dict[str, int]:
+    def get_memory_stats(self) -> dict[str, int]:
         """メモリキャッシュの統計を取得"""
         return {
             "entries": len(self._memory_cache),
