@@ -24,7 +24,12 @@
 # 開発環境セットアップ
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
 cd Kumihan-Formatter
-pip install -e ".[dev]"
+
+# 自動セットアップ (Windows)
+scripts/setup/Windows用初回セットアップ.bat
+
+# 自動セットアップ (macOS)
+scripts/setup/macOS用初回セットアップ.command
 
 # 開発用CLI使用例
 python -m kumihan_formatter.cli convert input.txt

@@ -6,8 +6,9 @@
 
 **まず最初にセットアップを実行してください:**
 
-**Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック  
-**macOS**: `MAC/初回セットアップ.command` をダブルクリック
+**開発者向け**:
+- **Windows**: `scripts/setup/Windows用初回セットアップ.bat` をダブルクリック
+- **macOS**: `scripts/setup/macOS用初回セットアップ.command` をダブルクリック
 
 → 1回実行すれば、後は他のファイルが使えるようになります！
 
@@ -19,12 +20,12 @@
 
 **Windows:**
 ```
-WINDOWS/変換ツール.bat をダブルクリック
+GUIアプリを起動してファイルをドラッグ&ドロップ
 ```
 
 **macOS:**
 ```
-MAC/変換ツール.command をダブルクリック
+GUIアプリを起動してファイルをドラッグ&ドロップ
 ```
 
 **使い方:**
@@ -38,12 +39,12 @@ MAC/変換ツール.command をダブルクリック
 
 **Windows:**
 ```
-WINDOWS/サンプル実行.bat をダブルクリック
+`python -m kumihan_formatter sample` を実行
 ```
 
 **macOS:**
 ```
-MAC/サンプル実行.command をダブルクリック
+`python -m kumihan_formatter sample` を実行
 ```
 
 **使い方:**
@@ -68,7 +69,7 @@ MAC/サンプル実行.command をダブルクリック
 
 ### 🔰 初心者の方（推奨フロー）
 1. **最初に** `setup` でセットアップ
-2. `run_examples` で機能を体験  
+2. `run_examples` で機能を体験
 3. 慣れたら `kumihan_convert` で自分のファイルを変換
 
 ### 🏃‍♂️ すぐに使いたい方

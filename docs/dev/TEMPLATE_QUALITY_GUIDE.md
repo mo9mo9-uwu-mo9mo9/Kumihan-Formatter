@@ -64,7 +64,7 @@ python dev/tools/syntax_fixer.py path/to/new-template.txt --fix
 python -m kumihan_formatter.cli path/to/new-template.txt -o test_output/
 
 # 記法ツールテスト
-./記法ツール/記法検証.command path/to/new-template.txt
+python -m kumihan_formatter check-syntax path/to/new-template.txt
 ```
 
 ---

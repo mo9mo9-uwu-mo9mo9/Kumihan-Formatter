@@ -72,7 +72,7 @@ jobs:
     - name: Build Windows executable
       run: |
         Write-Host "[INFO] Building Windows executable..."
-        pyinstaller --clean --noconfirm kumihan_formatter.spec
+        pyinstaller --clean --noconfirm tools/packaging/kumihan_formatter.spec
 
     - name: Create Windows distribution package
       run: |
@@ -163,7 +163,7 @@ jobs:
     - name: Build macOS App
       run: |
         echo "[INFO] Building macOS App..."
-        pyinstaller --clean --noconfirm kumihan_formatter_macos.spec
+        pyinstaller --clean --noconfirm tools/packaging/kumihan_formatter_macos.spec
 
     - name: Create macOS distribution package
       run: |

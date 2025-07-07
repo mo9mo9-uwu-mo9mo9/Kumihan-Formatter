@@ -23,7 +23,7 @@ source .venv/bin/activate  # macOS/Linux
 pip install pyinstaller
 
 # ビルド実行
-python build_windows.py --clean --test
+python scripts/build/build_windows.py --clean --test
 ```
 
 **生成ファイル:**
@@ -40,7 +40,7 @@ source .venv/bin/activate
 pip install pyinstaller
 
 # ビルド実行
-python build_macos.py --clean --test
+python scripts/build/build_macos.py --clean --test
 ```
 
 **生成ファイル:**
@@ -101,7 +101,7 @@ Kumihan-Formatter-v1.0-macOS.zip
 ### PyInstaller 設定
 
 #### Windows用
-- **ファイル**: `kumihan_formatter.spec`
+- **ファイル**: `tools/packaging/kumihan_formatter.spec`
 - **出力**: 単一実行ファイル（.exe）
 - **特徴**:
   - UPX圧縮有効
@@ -109,7 +109,7 @@ Kumihan-Formatter-v1.0-macOS.zip
   - 全依存関係を含む
 
 #### macOS用
-- **ファイル**: `kumihan_formatter_macos.spec`
+- **ファイル**: `tools/packaging/kumihan_formatter_macos.spec`
 - **出力**: アプリケーションバンドル（.app）
 - **特徴**:
   - ネイティブmacOSアプリ

@@ -16,19 +16,18 @@ Kumihan-Formatterを使って、あなたの**テキストファイル**を**美
 2. 最新版の **`Kumihan-Formatter-vX.X.X.zip`** をクリックしてダウンロード
 3. お好みの場所に解凍（デスクトップがおすすめ）
 
-### ステップ2: 初回セットアップ
-- **Windows**: `WINDOWS/初回セットアップ.bat` をダブルクリック
-- **macOS**: `MAC/初回セットアップ.command` をダブルクリック
+### ステップ2: 実行ファイルを起動
 
-### ステップ3: 変換開始
-- **Windows**: `WINDOWS/変換ツール.bat` をダブルクリック
-- **macOS**: `MAC/変換ツール.command` をダブルクリック
+**GUI版（推奨）**:
+1. [リリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)からダウンロード
+2. **Windows**: `Kumihan-Formatter.exe` をダブルクリック
+3. **macOS**: `Kumihan-Formatter.app` をダブルクリック
 
 **.txtファイル**をドラッグ&ドロップで変換完了！
 
-### サンプル実行
-- **Windows**: `WINDOWS/サンプル実行.bat`
-- **macOS**: `MAC/サンプル実行.command`
+**開発者向け**:
+- **Windows**: `scripts/setup/Windows用初回セットアップ.bat` をダブルクリック
+- **macOS**: `scripts/setup/macOS用初回セットアップ.command` をダブルクリック
 
 ## 💡 こんな方におすすめ
 

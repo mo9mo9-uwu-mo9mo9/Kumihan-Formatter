@@ -47,7 +47,7 @@
 **処理フロー**:
 1. **環境準備**: macOS-latest, Python 3.12
 2. **依存関係**: PyInstaller, プロジェクト依存関係
-3. **ビルド**: `pyinstaller kumihan_formatter_macos.spec`
+3. **ビルド**: `pyinstaller tools/packaging/kumihan_formatter_macos.spec`
 4. **検証**: アプリバンドル構造確認
 5. **パッケージ作成**: ZIP形式で配布パッケージ作成
 6. **アーティファクト**: 30日間保存
@@ -66,13 +66,13 @@
 **テスト項目**:
 
 #### Windows Build Test
-1. `build_windows.py --clean --test` 実行
+1. `scripts/build/build_windows.py --clean --test` 実行
 2. `Kumihan-Formatter.exe` 生成確認
 3. `Kumihan-Formatter-v1.0-Windows.zip` 確認
 4. アーティファクト保存（7日間）
 
 #### macOS Build Test
-1. `build_macos.py --clean --test` 実行
+1. `scripts/build/build_macos.py --clean --test` 実行
 2. `Kumihan-Formatter.app` 生成確認
 3. `Kumihan-Formatter-v1.0-macOS.zip` 確認
 4. アーティファクト保存（7日間）

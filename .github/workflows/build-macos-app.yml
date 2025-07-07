@@ -28,8 +28,8 @@ on:
       - 'feature/issue391-cross-platform-packaging'
     paths:
       - 'kumihan_formatter/**'
-      - 'build_macos.py'
-      - 'kumihan_formatter_macos.spec'
+      - 'scripts/build/build_macos.py'
+      - 'tools/packaging/kumihan_formatter_macos.spec'
 
 jobs:
   build-macos-app:
@@ -71,7 +71,7 @@ jobs:
     - name: Build macOS App
       run: |
         echo "[INFO] Starting macOS App build..."
-        pyinstaller --clean --noconfirm kumihan_formatter_macos.spec
+        pyinstaller --clean --noconfirm tools/packaging/kumihan_formatter_macos.spec
         echo "[OK] Build completed"
 
     - name: Verify App bundle

@@ -100,7 +100,8 @@ if /i "%choice%"=="y" (
         echo [エラー] 変換ツール.bat が見つかりません
         echo.
         echo 手動で起動してください:
-        echo   - ダブルクリック: WINDOWS/変換ツール.bat
+        echo   - GUIアプリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases
+        echo   - コマンドライン: python -m kumihan_formatter convert input.txt
         echo.
         pause
     )

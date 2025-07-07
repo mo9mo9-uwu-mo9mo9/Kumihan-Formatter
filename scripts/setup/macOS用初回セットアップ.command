@@ -33,7 +33,7 @@ echo "[1/4] Checking Python installation..."
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     REQUIRED_VERSION="3.9"
-    
+
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
         PYTHON_CMD="python3"
@@ -52,7 +52,7 @@ if command -v python3 &> /dev/null; then
 elif command -v python &> /dev/null; then
     PYTHON_VERSION=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     REQUIRED_VERSION="3.9"
-    
+
     # Version comparison
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" = "$REQUIRED_VERSION" ]; then
         PYTHON_CMD="python"
@@ -134,30 +134,28 @@ echo "  2. .txtファイルをドラッグ&ドロップ"
 echo "  3. HTMLファイルが生成されます"
 echo ""
 echo "次のステップを選択してください:"
-echo "  Y: 変換ツールを今すぐ起動"  
+echo "  Y: 変換ツールを今すぐ起動"
 echo "  N: 後で使用（使用方法を表示）"
 echo "  S: サンプルを確認（出力例を見る）"
 echo ""
 read -p "選択してください [Y/N/S]: " choice
 if [[ "$choice" =~ ^[Yy]$ ]]; then
     echo ""
-    echo " 変換ツールを起動しています..."
-    if [ -f "MAC/変換ツール.command" ]; then
-        open "MAC/変換ツール.command"
-    else
-        echo "[ERROR] 変換ツール.command が見つかりません"
-        echo ""
-        echo "手動で起動してください:"
-        echo "  - Double-click: MAC/変換ツール.command"
-        echo ""
-        read -p "Press any key to exit..."
-    fi
+    echo " GUIアプリを使用してください"
+    echo ""
+    echo "📻 リリースページからGUIアプリをダウンロード:"
+    echo "   https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases"
+    echo ""
+    echo "🔧 またはコマンドラインで:"
+    echo "   python -m kumihan_formatter convert input.txt"
+    echo ""
+    read -p "Press any key to continue..."
 elif [[ "$choice" =~ ^[Ss]$ ]]; then
     echo ""
     echo " サンプルを実行しています..."
     echo ""
-    if [ -f "MAC/サンプル実行.command" ]; then
-        ./MAC/サンプル実行.command
+    echo "🎆 サンプルを生成しています..."
+    python -m kumihan_formatter sample
         echo ""
         echo "サンプル確認が完了しました！"
         echo ""
@@ -165,16 +163,15 @@ elif [[ "$choice" =~ ^[Ss]$ ]]; then
         if [[ "$convert_choice" =~ ^[Yy]$ ]]; then
             echo ""
             echo " 変換ツールを起動しています..."
-            if [ -f "MAC/変換ツール.command" ]; then
-                open "MAC/変換ツール.command"
-            else
-                echo "[エラー] エラー: 変換ツール.command が見つかりません"
-                echo "手動で 変換ツール.command をダブルクリックしてください"
-            fi
+            echo "💻 GUIアプリを使用してください:"
+            echo "   https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases"
+            echo ""
+            echo "🔧 またはコマンドラインで:"
+            echo "   python -m kumihan_formatter convert input.txt"
         fi
     else
-        echo "[エラー] エラー: サンプル実行.command が見つかりません"
-        echo "手動で MAC/サンプル実行.command をダブルクリックしてください"
+        echo "[エラー] サンプルの生成に失敗しました"
+        echo "手動で 'python -m kumihan_formatter sample' を実行してください"
     fi
     echo ""
     echo "Press any key to exit..."
@@ -182,10 +179,11 @@ elif [[ "$choice" =~ ^[Ss]$ ]]; then
 else
     echo ""
     echo "[ヒント] 後で使用する場合:"
-    echo "   MAC/変換ツール.command をダブルクリック"
+    echo "   GUIアプリ: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases"
+    echo "   コマンドライン: python -m kumihan_formatter convert input.txt"
     echo ""
     echo "サンプルを確認する場合:"
-    echo "   MAC/サンプル実行.command をダブルクリック"
+    echo "   python -m kumihan_formatter sample"
     echo ""
     echo "Press any key to exit..."
     read -p ""

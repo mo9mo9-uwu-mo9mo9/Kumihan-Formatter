@@ -5,10 +5,10 @@
 ## 使い方
 
 ### Windows ユーザー
-`WINDOWS/記法チェッカー.bat` をダブルクリックして実行してください。
+コマンドラインで `python -m kumihan_formatter check-syntax filename.txt` を実行してください。
 
 ### macOS ユーザー
-`MAC/記法チェッカー.command` をダブルクリックして実行してください。
+コマンドラインで `python -m kumihan_formatter check-syntax filename.txt` を実行してください。
 
 ## 機能
 
