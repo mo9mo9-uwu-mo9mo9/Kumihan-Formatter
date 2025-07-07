@@ -1,0 +1,252 @@
+name: Build macOS App (Experimental)
+
+on:
+  # Manual trigger only for experimental branch
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        default: 'experimental/macos-app-packaging'
+        type: choice
+        options:
+          - 'experimental/macos-app-packaging'
+          - 'feature/issue391-cross-platform-packaging'
+      commit_results:
+        description: 'Commit results back to branch?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+  # Trigger on push to experimental branch only
+  push:
+    branches:
+      - 'experimental/macos-app-packaging'
+      - 'feature/issue391-cross-platform-packaging'
+    paths:
+      - 'kumihan_formatter/**'
+      - 'build_macos.py'
+      - 'kumihan_formatter_macos.spec'
+
+jobs:
+  build-macos-app:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+
+    - name: Verify installation
+      run: |
+        python -c "import kumihan_formatter; print('✅ Package imported successfully')"
+        python -c "import tkinter; print('✅ tkinter available')"
+        pyinstaller --version
+        echo "✅ macOS version: $(sw_vers -productVersion)"
+        echo "✅ Architecture: $(uname -m)"
+
+    - name: Clean previous builds
+      run: |
+        rm -rf dist/ build/ || true
+        echo "✅ Cleaned previous builds"
+
+    - name: Build macOS App
+      run: |
+        echo "🔨 Starting macOS App build..."
+        pyinstaller --clean --noconfirm kumihan_formatter_macos.spec
+        echo "✅ Build completed"
+
+    - name: Verify App bundle
+      run: |
+        echo "🔍 Verifying App bundle..."
+
+        if [ -d "dist/Kumihan-Formatter.app" ]; then
+          echo "✅ App bundle created successfully"
+
+          # Check app structure
+          if [ -f "dist/Kumihan-Formatter.app/Contents/MacOS/Kumihan-Formatter" ]; then
+            echo "✅ Executable found"
+          else
+            echo "❌ Executable not found"
+            exit 1
+          fi
+
+          if [ -f "dist/Kumihan-Formatter.app/Contents/Info.plist" ]; then
+            echo "✅ Info.plist found"
+          else
+            echo "❌ Info.plist not found"
+            exit 1
+          fi
+
+          # Calculate app size
+          app_size=$(du -sm "dist/Kumihan-Formatter.app" | cut -f1)
+          echo "📊 App size: ${app_size} MB"
+
+          # Check app info
+          mdls -name kMDItemDisplayName "dist/Kumihan-Formatter.app" || echo "⚠️  Could not get app info"
+
+        else
+          echo "❌ App bundle not found"
+          exit 1
+        fi
+
+    - name: Create distribution package
+      run: |
+        echo "📦 Creating distribution package..."
+
+        # Create ZIP package using ditto (preserves resource forks)
+        package_name="Kumihan-Formatter-v1.0-macOS"
+        zip_path="dist/${package_name}.zip"
+
+        ditto -c -k --keepParent "dist/Kumihan-Formatter.app" "$zip_path"
+
+        # Create README
+        cat > dist/README.txt << 'READMEEOF'
+        Kumihan-Formatter v1.0 - macOS版
+
+        【インストール方法】
+        1. このZIPファイルをダウンロードして展開してください
+        2. Kumihan-Formatter.appを「アプリケーション」フォルダにドラッグ&ドロップしてください
+        3. 初回起動時に「開発元を確認できません」と表示される場合：
+           - アプリを右クリック → 「開く」を選択
+           - または システム環境設定 → セキュリティとプライバシー → 「このまま開く」
+
+        【システム要件】
+        - macOS 10.15 (Catalina) 以降
+        - Intel/Apple Silicon Mac 対応
+        - インターネット接続不要
+        - Pythonのインストール不要
+
+        【使い方】
+        1. アプリケーションを起動
+        2. 「参照」ボタンから変換したいテキストファイルを選択
+        3. 「変換実行」ボタンをクリック
+
+        【サポート】
+        - GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
+        - Issues: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
+
+        【ライセンス】
+        MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
+        READMEEOF
+
+        zip_size=$(du -sm "$zip_path" | cut -f1)
+        echo "✅ Distribution package created: $zip_path"
+        echo "📦 Package size: ${zip_size} MB"
+
+    - name: Test App bundle (basic)
+      run: |
+        echo "🧪 Testing App bundle..."
+
+        # Test app structure
+        if [ -d "dist/Kumihan-Formatter.app/Contents/Resources" ]; then
+          echo "✅ Resources directory found"
+        else
+          echo "⚠️  Resources directory not found"
+        fi
+
+        # Test file permissions
+        if [ -x "dist/Kumihan-Formatter.app/Contents/MacOS/Kumihan-Formatter" ]; then
+          echo "✅ Executable permissions verified"
+        else
+          echo "❌ Executable permissions not set"
+          exit 1
+        fi
+
+        # Test app signature (if signed)
+        codesign -dv "dist/Kumihan-Formatter.app" 2>/dev/null || echo "⚠️  App not signed (expected for CI)"
+
+        echo "✅ Basic tests completed"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: kumihan-formatter-macos-app-${{ github.run_number }}
+        path: |
+          dist/Kumihan-Formatter.app
+          dist/Kumihan-Formatter-v1.0-macOS.zip
+          dist/README.txt
+        retention-days: 30
+
+    - name: Commit results to branch
+      if: ${{ github.event.inputs.commit_results == 'true' || github.event_name == 'push' }}
+      run: |
+        echo "💾 Committing results to branch..."
+
+        # Configure git
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Add macOS build results
+        git add -f dist/Kumihan-Formatter.app/
+        git add -f dist/Kumihan-Formatter-v1.0-macOS.zip
+        git add -f dist/README.txt
+
+        # Check if there are changes to commit
+        if git diff --cached --quiet; then
+          echo "ℹ️  No new changes to commit"
+        else
+          echo "📋 Files to commit:"
+          git diff --cached --name-only
+
+          # Commit changes
+          app_size=$(du -sm 'dist/Kumihan-Formatter.app' | cut -f1)
+          git commit -m "feat: macOS App自動生成完了 (GitHub Actions) - サイズ: ${app_size}MB - 配布パッケージ: Kumihan-Formatter-v1.0-macOS.zip - PyInstaller使用 🤖 Generated by GitHub Actions"
+
+          # Push to branch
+          git push origin HEAD
+          echo "✅ Successfully committed and pushed macOS App to branch"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build summary
+      run: |
+        echo "## 🍎 macOS Build Summary"
+        echo ""
+        echo "### ✅ Successfully built macOS App"
+        echo ""
+        echo "- **Branch**: ${{ github.ref_name }}"
+        echo "- **Python Version**: 3.12"
+        echo "- **Build OS**: macOS Latest"
+        echo "- **PyInstaller**: $(pyinstaller --version)"
+        echo "- **macOS Version**: $(sw_vers -productVersion)"
+        echo "- **Architecture**: $(uname -m)"
+        echo "- **Run Number**: ${{ github.run_number }}"
+        echo ""
+        echo "### 📦 Artifacts Created"
+        echo "- \`Kumihan-Formatter.app\` - macOS App bundle"
+        echo "- \`Kumihan-Formatter-v1.0-macOS.zip\` - Distribution package"
+        echo "- \`README.txt\` - Installation instructions"
+        echo ""
+        app_size=$(du -sm 'dist/Kumihan-Formatter.app' | cut -f1)
+        zip_size=$(du -sm 'dist/Kumihan-Formatter-v1.0-macOS.zip' | cut -f1)
+        echo "### 📊 File Sizes"
+        echo "- **App Bundle**: ${app_size} MB"
+        echo "- **ZIP Package**: ${zip_size} MB"
+        echo ""
+        echo "### 🔗 Next Steps"
+        echo "1. Download artifacts from GitHub Actions"
+        echo "2. Test on different macOS versions"
+        echo "3. Verify all GUI functionality works"
+        echo "4. Test file conversion and sample generation"
+        echo "5. Consider code signing for distribution"
+        echo "6. Consider notarization for App Store distribution"

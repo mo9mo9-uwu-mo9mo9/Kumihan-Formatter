@@ -1,0 +1,342 @@
+name: Cross-Platform Release Build
+
+on:
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+        type: string
+      create_release:
+        description: 'Create GitHub release?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+  # Trigger on release tags
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - 'feature/issue391-cross-platform-packaging'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    outputs:
+      windows-artifact: ${{ steps.upload.outputs.artifact-id }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+
+    - name: Verify installation
+      run: |
+        python -c "import kumihan_formatter; print('✅ Package imported successfully')"
+        python -c "import tkinter; print('✅ tkinter available')"
+        pyinstaller --version
+
+    - name: Clean previous builds
+      run: |
+        if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
+        if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
+
+    - name: Build Windows executable
+      run: |
+        Write-Host "🔨 Building Windows executable..."
+        pyinstaller --clean --noconfirm kumihan_formatter.spec
+
+    - name: Create Windows distribution package
+      run: |
+        $version = "${{ github.event.inputs.version || github.ref_name }}"
+        $packageName = "Kumihan-Formatter-${version}-Windows"
+        $zipPath = "dist/${packageName}.zip"
+
+        # Create README
+        echo "Kumihan-Formatter ${version} - Windows版" > dist/README-Windows.txt
+        echo "" >> dist/README-Windows.txt
+        echo "【インストール方法】" >> dist/README-Windows.txt
+        echo "1. このZIPファイルを任意の場所に展開してください" >> dist/README-Windows.txt
+        echo "2. Kumihan-Formatter.exe をダブルクリックして起動してください" >> dist/README-Windows.txt
+        echo "" >> dist/README-Windows.txt
+        echo "【システム要件】" >> dist/README-Windows.txt
+        echo "- Windows 10 / 11 (64-bit)" >> dist/README-Windows.txt
+        echo "- インターネット接続不要" >> dist/README-Windows.txt
+        echo "- Pythonのインストール不要" >> dist/README-Windows.txt
+        echo "" >> dist/README-Windows.txt
+        echo "【使い方】" >> dist/README-Windows.txt
+        echo "1. アプリケーションを起動" >> dist/README-Windows.txt
+        echo "2. 「参照」ボタンから変換したいテキストファイルを選択" >> dist/README-Windows.txt
+        echo "3. 「変換実行」ボタンをクリック" >> dist/README-Windows.txt
+        echo "" >> dist/README-Windows.txt
+        echo "【サポート】" >> dist/README-Windows.txt
+        echo "- GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter" >> dist/README-Windows.txt
+        echo "- Issues: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues" >> dist/README-Windows.txt
+        echo "" >> dist/README-Windows.txt
+        echo "【ライセンス】" >> dist/README-Windows.txt
+        echo "MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9" >> dist/README-Windows.txt
+
+        # Create ZIP
+        Compress-Archive -Path "dist/Kumihan-Formatter.exe", "dist/README-Windows.txt" -DestinationPath $zipPath -Force
+
+        $exeSize = (Get-Item "dist/Kumihan-Formatter.exe").Length / 1MB
+        $zipSize = (Get-Item $zipPath).Length / 1MB
+        Write-Host "📊 Windows Build Summary:"
+        Write-Host "   Executable size: $([math]::Round($exeSize, 1)) MB"
+        Write-Host "   Package size: $([math]::Round($zipSize, 1)) MB"
+
+    - name: Upload Windows artifacts
+      id: upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: kumihan-formatter-windows-${{ github.event.inputs.version || github.ref_name }}
+        path: |
+          dist/Kumihan-Formatter.exe
+          dist/Kumihan-Formatter-*.zip
+          dist/README-Windows.txt
+        retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+    outputs:
+      macos-artifact: ${{ steps.upload.outputs.artifact-id }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+
+    - name: Verify installation
+      run: |
+        python -c "import kumihan_formatter; print('✅ Package imported successfully')"
+        python -c "import tkinter; print('✅ tkinter available')"
+        pyinstaller --version
+        echo "✅ macOS version: $(sw_vers -productVersion)"
+
+    - name: Clean previous builds
+      run: |
+        rm -rf dist/ build/ || true
+
+    - name: Build macOS App
+      run: |
+        echo "🍎 Building macOS App..."
+        pyinstaller --clean --noconfirm kumihan_formatter_macos.spec
+
+    - name: Create macOS distribution package
+      run: |
+        version="${{ github.event.inputs.version || github.ref_name }}"
+        packageName="Kumihan-Formatter-${version}-macOS"
+        zipPath="dist/${packageName}.zip"
+
+        # Create README
+        cat > dist/README-macOS.txt << 'MACOSEOF'
+        Kumihan-Formatter ${version} - macOS版
+
+        【インストール方法】
+        1. このZIPファイルをダウンロードして展開してください
+        2. Kumihan-Formatter.appを「アプリケーション」フォルダにドラッグ&ドロップしてください
+        3. 初回起動時に「開発元を確認できません」と表示される場合：
+           - アプリを右クリック → 「開く」を選択
+           - または システム環境設定 → セキュリティとプライバシー → 「このまま開く」
+
+        【システム要件】
+        - macOS 10.15 (Catalina) 以降
+        - Intel/Apple Silicon Mac 対応
+        - インターネット接続不要
+        - Pythonのインストール不要
+
+        【使い方】
+        1. アプリケーションを起動
+        2. 「参照」ボタンから変換したいテキストファイルを選択
+        3. 「変換実行」ボタンをクリック
+
+        【サポート】
+        - GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
+        - Issues: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
+
+        【ライセンス】
+        MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
+        MACOSEOF
+
+        # Create ZIP using ditto (preserves resource forks)
+        ditto -c -k --keepParent "dist/Kumihan-Formatter.app" "$zipPath"
+
+        appSize=$(du -sm "dist/Kumihan-Formatter.app" | cut -f1)
+        zipSize=$(du -sm "$zipPath" | cut -f1)
+        echo "📊 macOS Build Summary:"
+        echo "   App bundle size: ${appSize} MB"
+        echo "   Package size: ${zipSize} MB"
+
+    - name: Upload macOS artifacts
+      id: upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: kumihan-formatter-macos-${{ github.event.inputs.version || github.ref_name }}
+        path: |
+          dist/Kumihan-Formatter.app
+          dist/Kumihan-Formatter-*.zip
+          dist/README-macOS.txt
+        retention-days: 30
+
+  create-release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.create_release == 'true' || startsWith(github.ref, 'refs/tags/') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: kumihan-formatter-windows-${{ github.event.inputs.version || github.ref_name }}
+        path: release-assets/windows/
+
+    - name: Download macOS artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: kumihan-formatter-macos-${{ github.event.inputs.version || github.ref_name }}
+        path: release-assets/macos/
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release-final
+
+        # Copy Windows assets
+        cp release-assets/windows/Kumihan-Formatter-*.zip release-final/
+        cp release-assets/windows/README-Windows.txt release-final/
+
+        # Copy macOS assets
+        cp release-assets/macos/Kumihan-Formatter-*.zip release-final/
+        cp release-assets/macos/README-macOS.txt release-final/
+
+        # List final assets
+        echo "📦 Release assets:"
+        ls -la release-final/
+
+    - name: Generate release notes
+      id: release-notes
+      run: |
+        version="${{ github.event.inputs.version || github.ref_name }}"
+
+        cat > release-notes.md << EOF
+        # Kumihan-Formatter ${version}
+
+        ## 📦 配布パッケージ
+
+        ### Windows版
+        - **Kumihan-Formatter-${version}-Windows.zip** - Windows 10/11 対応実行ファイル
+        - インストール不要、ダウンロード後すぐに使用可能
+        - システム要件: Windows 10/11 (64-bit)
+
+        ### macOS版
+        - **Kumihan-Formatter-${version}-macOS.zip** - macOS アプリケーション
+        - アプリケーションフォルダにドラッグ&ドロップでインストール
+        - システム要件: macOS 10.15 (Catalina) 以降
+        - Intel/Apple Silicon Mac 対応
+
+        ## 🚀 新機能・改善
+        - クロスプラットフォーム配布パッケージングの統合実装
+        - Windows向けexe形式パッケージング対応
+        - macOS向け.app形式パッケージング対応
+        - 自動ビルド・リリース機能の実装
+
+        ## 📋 インストール方法
+
+        ### Windows
+        1. \`Kumihan-Formatter-${version}-Windows.zip\` をダウンロード
+        2. 任意の場所に展開
+        3. \`Kumihan-Formatter.exe\` をダブルクリックして起動
+
+        ### macOS
+        1. \`Kumihan-Formatter-${version}-macOS.zip\` をダウンロード
+        2. 展開後、\`Kumihan-Formatter.app\` を「アプリケーション」フォルダに移動
+        3. Launchpadまたはアプリケーションフォルダから起動
+
+        ## 🔗 関連リンク
+        - [GitHub Repository](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter)
+        - [Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
+        - [Wiki](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/wiki)
+
+        ---
+
+        **Issue #391対応完了** - クロスプラットフォーム配布パッケージングの統合実装
+        EOF
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.event.inputs.version || github.ref_name }}
+        name: Kumihan-Formatter ${{ github.event.inputs.version || github.ref_name }}
+        body_path: release-notes.md
+        draft: false
+        prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+        files: |
+          release-final/*
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build summary
+      run: |
+        version="${{ github.event.inputs.version || github.ref_name }}"
+        echo "## 🎉 Cross-Platform Release Complete!"
+        echo ""
+        echo "### ✅ Successfully built and released:"
+        echo "- **Version**: ${version}"
+        echo "- **Windows Package**: Kumihan-Formatter-${version}-Windows.zip"
+        echo "- **macOS Package**: Kumihan-Formatter-${version}-macOS.zip"
+        echo "- **GitHub Release**: Created"
+        echo ""
+        echo "### 📊 Build Summary"
+        echo "- **Platforms**: Windows, macOS"
+        echo "- **CI/CD**: Fully automated"
+        echo "- **Package Format**: ZIP with README"
+        echo "- **Distribution**: GitHub Releases"
+        echo ""
+        echo "### 🔗 Next Steps"
+        echo "1. Test packages on target platforms"
+        echo "2. Update documentation"
+        echo "3. Announce release"
+        echo "4. Close Issue #391"

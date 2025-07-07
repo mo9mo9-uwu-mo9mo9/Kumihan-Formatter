@@ -1,0 +1,189 @@
+name: Test Package Builds
+
+on:
+  # Manual trigger for testing packages
+  workflow_dispatch:
+    inputs:
+      test_windows:
+        description: 'Test Windows build?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      test_macos:
+        description: 'Test macOS build?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+  # Trigger on pull requests that affect packaging
+  pull_request:
+    paths:
+      - 'kumihan_formatter/**'
+      - 'build_windows.py'
+      - 'build_macos.py'
+      - 'kumihan_formatter.spec'
+      - 'kumihan_formatter_macos.spec'
+      - '.github/workflows/build-*.yml'
+
+jobs:
+  test-windows-build:
+    if: ${{ github.event.inputs.test_windows == 'true' || github.event_name == 'pull_request' }}
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+
+    - name: Test Windows build script
+      run: |
+        Write-Host "🧪 Testing Windows build process..."
+        python build_windows.py --clean --test
+
+    - name: Verify Windows package
+      run: |
+        if (Test-Path "dist/Kumihan-Formatter.exe") {
+          $size = (Get-Item "dist/Kumihan-Formatter.exe").Length / 1MB
+          Write-Host "✅ Windows executable created: $([math]::Round($size, 1)) MB"
+        } else {
+          Write-Host "❌ Windows executable not found"
+          exit 1
+        }
+
+        if (Test-Path "dist/Kumihan-Formatter-v1.0-Windows.zip") {
+          $zipSize = (Get-Item "dist/Kumihan-Formatter-v1.0-Windows.zip").Length / 1MB
+          Write-Host "✅ Windows package created: $([math]::Round($zipSize, 1)) MB"
+        } else {
+          Write-Host "❌ Windows package not found"
+          exit 1
+        }
+
+    - name: Upload Windows test artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-windows-build-${{ github.run_number }}
+        path: |
+          dist/Kumihan-Formatter.exe
+          dist/Kumihan-Formatter-v1.0-Windows.zip
+        retention-days: 7
+
+  test-macos-build:
+    if: ${{ github.event.inputs.test_macos == 'true' || github.event_name == 'pull_request' }}
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+
+    - name: Test macOS build script
+      run: |
+        echo "🧪 Testing macOS build process..."
+        python build_macos.py --clean --test
+
+    - name: Verify macOS package
+      run: |
+        if [ -d "dist/Kumihan-Formatter.app" ]; then
+          appSize=$(du -sm "dist/Kumihan-Formatter.app" | cut -f1)
+          echo "✅ macOS app created: ${appSize} MB"
+        else
+          echo "❌ macOS app not found"
+          exit 1
+        fi
+
+        if [ -f "dist/Kumihan-Formatter-v1.0-macOS.zip" ]; then
+          zipSize=$(du -sm "dist/Kumihan-Formatter-v1.0-macOS.zip" | cut -f1)
+          echo "✅ macOS package created: ${zipSize} MB"
+        else
+          echo "❌ macOS package not found"
+          exit 1
+        fi
+
+    - name: Upload macOS test artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-macos-build-${{ github.run_number }}
+        path: |
+          dist/Kumihan-Formatter.app
+          dist/Kumihan-Formatter-v1.0-macOS.zip
+        retention-days: 7
+
+  test-summary:
+    needs: [test-windows-build, test-macos-build]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Test Summary
+      run: |
+        echo "## 🧪 Package Build Test Summary"
+        echo ""
+        echo "### Test Results:"
+
+        if [ "${{ needs.test-windows-build.result }}" == "success" ]; then
+          echo "- ✅ **Windows Build**: PASSED"
+        elif [ "${{ needs.test-windows-build.result }}" == "skipped" ]; then
+          echo "- ⏭️ **Windows Build**: SKIPPED"
+        else
+          echo "- ❌ **Windows Build**: FAILED"
+        fi
+
+        if [ "${{ needs.test-macos-build.result }}" == "success" ]; then
+          echo "- ✅ **macOS Build**: PASSED"
+        elif [ "${{ needs.test-macos-build.result }}" == "skipped" ]; then
+          echo "- ⏭️ **macOS Build**: SKIPPED"
+        else
+          echo "- ❌ **macOS Build**: FAILED"
+        fi
+
+        echo ""
+        echo "### 📦 Artifacts:"
+        echo "- Windows executable and package (if tested)"
+        echo "- macOS app bundle and package (if tested)"
+        echo ""
+        echo "### 🔗 Next Steps:"
+        echo "1. Download artifacts to test manually"
+        echo "2. Verify functionality on target platforms"
+        echo "3. Report any issues found"
+
+        # Set overall status
+        windows_ok="${{ needs.test-windows-build.result == 'success' || needs.test-windows-build.result == 'skipped' }}"
+        macos_ok="${{ needs.test-macos-build.result == 'success' || needs.test-macos-build.result == 'skipped' }}"
+
+        if [ "$windows_ok" == "true" ] && [ "$macos_ok" == "true" ]; then
+          echo ""
+          echo "🎉 **Overall Status: PASSED**"
+          exit 0
+        else
+          echo ""
+          echo "❌ **Overall Status: FAILED**"
+          exit 1
+        fi

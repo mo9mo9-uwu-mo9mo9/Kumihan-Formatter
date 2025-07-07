@@ -115,10 +115,23 @@ class WindowsBuilder:
                 f"PyInstaller failed with return code {result.returncode}"
             )
 
-        # Check if executable was created
-        exe_path = self.dist_dir / self.exe_name
-        if not exe_path.exists():
-            raise FileNotFoundError(f"Built executable not found: {exe_path}")
+        # Check if executable was created (adapt to current platform)
+        # On macOS/Unix, PyInstaller creates executables without .exe extension
+        possible_exes = [
+            self.dist_dir / self.exe_name,  # Kumihan-Formatter.exe
+            self.dist_dir / "Kumihan-Formatter",  # Kumihan-Formatter (Unix)
+        ]
+
+        exe_path = None
+        for possible_exe in possible_exes:
+            if possible_exe.exists():
+                exe_path = possible_exe
+                break
+
+        if not exe_path:
+            raise FileNotFoundError(
+                f"Built executable not found. Checked: {[str(p) for p in possible_exes]}"
+            )
 
         print(f"✅ 実行ファイルが作成されました: {exe_path}")
         print(f"   ファイルサイズ: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
