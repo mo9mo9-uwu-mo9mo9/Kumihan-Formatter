@@ -33,7 +33,12 @@ class TestErrorHandling(TestCase):
         """テスト後のクリーンアップ"""
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
-    def _run_conversion(self, input_file: Path | None = None, options: list[str] | None = None, expect_failure: bool = False) -> subprocess.CompletedProcess[str]:  # type: ignore
+    def _run_conversion(
+        self,
+        input_file: Path | None = None,
+        options: list[str] | None = None,
+        expect_failure: bool = False,
+    ) -> subprocess.CompletedProcess[str]:
         """変換処理を実行"""
         cmd = ["python3", "-m", "kumihan_formatter", "convert"]
         if input_file:

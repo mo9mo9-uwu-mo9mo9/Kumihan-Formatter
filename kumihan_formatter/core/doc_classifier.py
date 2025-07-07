@@ -31,7 +31,7 @@ class DocumentClassifier:
         """分類器を初期化"""
         self.classification_rules = self._build_classification_rules()
 
-    def _build_classification_rules(self) -> Dict[DocumentType, Dict[str, List[str]]]:
+    def _build_classification_rules(self) -> Dict[DocumentType, dict[str, list[str]]]:
         """分類ルールを構築"""
         return {
             DocumentType.USER_ESSENTIAL: {
@@ -214,7 +214,7 @@ class DocumentClassifier:
         else:
             return DocumentType.EXCLUDE
 
-    def classify_directory(self, directory: Path) -> Dict[DocumentType, List[Path]]:
+    def classify_directory(self, directory: Path) -> dict[DocumentType, list[Path]]:
         """ディレクトリ内のファイルを一括分類
 
         Args:
@@ -241,7 +241,7 @@ class DocumentClassifier:
 
         return result
 
-    def _load_exclude_patterns(self, directory: Path) -> List[str]:
+    def _load_exclude_patterns(self, directory: Path) -> list[str]:
         """除外パターンを.distignoreから読み込み"""
         distignore_file = directory / ".distignore"
         patterns = []
@@ -259,21 +259,21 @@ class DocumentClassifier:
         return patterns
 
     def _should_exclude_by_patterns(
-        self, file_path: Path, base_path: Path, patterns: List[str]
+        self, file_path: Path, base_path: Path, patterns: list[str]
     ) -> bool:
         """除外パターンによるチェック"""
         from ..core.file_ops import FileOperations
 
         return FileOperations.should_exclude(file_path, patterns, base_path)
 
-    def get_conversion_strategy(self, doc_type: DocumentType) -> Tuple[str, str]:
+    def get_conversion_strategy(self, doc_type: DocumentType) -> tuple[str, str]:
         """文書タイプに対する変換戦略を取得
 
         Args:
             doc_type: 文書タイプ
 
         Returns:
-            Tuple[str, str]: (変換方法, 出力先ディレクトリ)
+            tuple[str, str]: (変換方法, 出力先ディレクトリ)
         """
         strategies = {
             DocumentType.USER_ESSENTIAL: ("markdown_to_txt", "docs/essential"),
@@ -286,7 +286,7 @@ class DocumentClassifier:
         return strategies.get(doc_type, ("exclude", ""))
 
     def generate_document_summary(
-        self, classified_files: Dict[DocumentType, List[Path]]
+        self, classified_files: dict[DocumentType, list[Path]]
     ) -> str:
         """分類結果のサマリーを生成"""
         summary_lines = ["📚 文書分類結果", "=" * 40, ""]
@@ -328,7 +328,7 @@ def classify_document(file_path: Path, base_path: Path) -> DocumentType:
     return classifier.classify_file(file_path, base_path)
 
 
-def classify_project_documents(project_dir: Path) -> Dict[DocumentType, List[Path]]:
+def classify_project_documents(project_dir: Path) -> dict[DocumentType, list[Path]]:
     """プロジェクト文書を一括分類（外部API）
 
     Args:

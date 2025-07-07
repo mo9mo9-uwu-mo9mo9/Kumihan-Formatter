@@ -59,8 +59,6 @@ def register_commands() -> None:
     logger.info("Registering CLI commands")
     try:
         # 新しい convert モジュール構造を使用
-        from typing import Optional
-
         import click
 
         from .commands.convert.convert_command import ConvertCommand
@@ -87,13 +85,13 @@ def register_commands() -> None:
             "--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ"
         )
         def convert_command(
-            input_file: Optional[str],
+            input_file: str | None,
             output: str,
             no_preview: bool,
             watch: bool,
-            config: Optional[str],
+            config: str | None,
             show_test_cases: bool,
-            template: Optional[str],
+            template: str | None,
             include_source: bool,
             no_syntax_check: bool,
         ) -> None:
@@ -197,7 +195,7 @@ def main() -> None:
         from .core.error_handling import ErrorHandler as FriendlyErrorHandler
         from .ui.console_ui import get_console_ui
 
-        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())  # type: ignore
+        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
         error = friendly_error_handler.handle_exception(
             e, context={"operation": "CLI実行", "args": sys.argv}
         )

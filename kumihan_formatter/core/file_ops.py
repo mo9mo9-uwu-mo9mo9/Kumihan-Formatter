@@ -9,7 +9,7 @@ import fnmatch
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Tuple
+from typing import Any, Protocol
 
 from .encoding_detector import EncodingDetector
 from .utilities.logger import get_logger
@@ -18,17 +18,17 @@ from .utilities.logger import get_logger
 class UIProtocol(Protocol):
     """UI interface protocol to avoid circular dependency"""
 
-    def warning(self, message: str, details: str | None = None) -> None: ...  # type: ignore
+    def warning(self, message: str, details: str | None = None) -> None: ...
 
     def file_copied(self, count: int) -> None: ...
 
-    def files_missing(self, files: list) -> None: ...  # type: ignore
+    def files_missing(self, files: list[str]) -> None: ...
 
-    def duplicate_files(self, duplicates: dict) -> None: ...  # type: ignore
+    def duplicate_files(self, duplicates: dict[str, int]) -> None: ...
 
-    def info(self, message: str, details: str | None = None) -> None: ...  # type: ignore
+    def info(self, message: str, details: str | None = None) -> None: ...
 
-    def hint(self, message: str, details: str | None = None) -> None: ...  # type: ignore
+    def hint(self, message: str, details: str | None = None) -> None: ...
 
     def file_error(self, file_path: str, message: str) -> None: ...
 
@@ -42,14 +42,14 @@ class UIProtocol(Protocol):
 class FileOperations:
     """File operations utility class"""
 
-    def __init__(self, ui: Optional[UIProtocol] = None):
+    def __init__(self, ui: UIProtocol | None = None):
         """Initialize with optional UI instance for dependency injection"""
         self.ui = ui
         self.logger = get_logger(__name__)
         self.logger.debug("FileOperations initialized")
 
     @staticmethod
-    def load_distignore_patterns() -> List[str]:
+    def load_distignore_patterns() -> list[str]:
         """
         Load exclusion patterns from .distignore file
 
@@ -73,7 +73,7 @@ class FileOperations:
         return patterns
 
     @staticmethod
-    def should_exclude(path: Path, patterns: List[str], base_path: Path) -> bool:
+    def should_exclude(path: Path, patterns: list[str], base_path: Path) -> bool:
         """
         Check if the specified path matches exclusion patterns
 
@@ -115,7 +115,7 @@ class FileOperations:
 
         return False
 
-    def copy_images(self, input_path: Path, output_path: Path, ast: List[Any]) -> None:
+    def copy_images(self, input_path: Path, output_path: Path, ast: list[Any]) -> None:
         """Copy image files to output directory"""
         # Extract image nodes from AST
         image_nodes = [node for node in ast if getattr(node, "type", None) == "image"]
@@ -185,7 +185,7 @@ class FileOperations:
                 self.ui.duplicate_files(duplicate_files)
 
     @staticmethod
-    def create_sample_images(images_dir: Path, sample_images: Dict[str, str]) -> None:
+    def create_sample_images(images_dir: Path, sample_images: dict[str, str]) -> None:
         """Create sample images from base64 data"""
         images_dir.mkdir(exist_ok=True)
 
@@ -197,8 +197,8 @@ class FileOperations:
 
     @staticmethod
     def copy_directory_with_exclusions(
-        source_path: Path, dest_path: Path, exclude_patterns: List[str]
-    ) -> Tuple[int, int]:
+        source_path: Path, dest_path: Path, exclude_patterns: list[str]
+    ) -> tuple[int, int]:
         """
         Copy directory contents with exclusion patterns
 
@@ -229,7 +229,7 @@ class FileOperations:
         return copied_count, excluded_count
 
     @staticmethod
-    def find_preview_file(directory: Path) -> Optional[Path]:
+    def find_preview_file(directory: Path) -> Path | None:
         """
         Find a suitable preview file in the directory
 
@@ -319,9 +319,9 @@ class FileOperations:
 
         # Platform-specific fallbacks (minimal set)
         if sys.platform == "win32":
-            fallback_encodings: List[str] = ["cp932"]
+            fallback_encodings: list[str] = ["cp932"]
         else:
-            fallback_encodings: List[str] = []
+            fallback_encodings: list[str] = []
 
         for enc in fallback_encodings:
             try:
@@ -337,7 +337,7 @@ class FileOperations:
             return f.read()
 
     @staticmethod
-    def get_file_size_info(path: Path) -> Dict[str, Any]:
+    def get_file_size_info(path: Path) -> dict[str, Any]:
         """Get file size information"""
         if path.exists():
             size = path.stat().st_size
@@ -438,7 +438,7 @@ class PathValidator:
 class ErrorHandler:
     """Centralized error handling for file operations"""
 
-    def __init__(self, ui: Optional[UIProtocol] = None):
+    def __init__(self, ui: UIProtocol | None = None):
         """Initialize with optional UI instance"""
         self.ui = ui
         self.logger = get_logger(__name__)

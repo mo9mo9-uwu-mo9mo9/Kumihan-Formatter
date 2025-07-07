@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger
@@ -27,7 +27,7 @@ class FileCache(SmartCache):
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         max_memory_mb: float = 50.0,
         max_entries: int = 500,
         default_ttl: int = 7200,  # 2時間
@@ -56,11 +56,11 @@ class FileCache(SmartCache):
         )
 
         # ファイル情報のキャッシュ
-        self._file_info: Dict[str, Dict[str, Any]] = {}
+        self._file_info: dict[str, dict[str, Any]] = {}
 
         self.logger.debug(f"FileCache初期化完了: cache_dir={cache_dir}")
 
-    def get_file_content(self, file_path: Path) -> Optional[str]:
+    def get_file_content(self, file_path: Path) -> str | None:
         """ファイル内容をキャッシュから取得または読み込み
 
         Args:
@@ -115,7 +115,7 @@ class FileCache(SmartCache):
 
         return content
 
-    def get_file_hash(self, file_path: Path) -> Optional[str]:
+    def get_file_hash(self, file_path: Path) -> str | None:
         """ファイルのハッシュ値をキャッシュから取得または計算
 
         Args:
@@ -263,7 +263,7 @@ class FileCache(SmartCache):
         else:  # 100KB以上
             return 14400  # 4時間
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """ファイルキャッシュの統計情報を取得"""
         base_stats = self.get_stats()
 

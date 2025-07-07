@@ -20,7 +20,7 @@ class EncodingDetector:
     }
 
     @classmethod
-    def detect_bom(cls, path: Path) -> Optional[str]:
+    def detect_bom(cls, path: Path) -> str | None:
         """Detect encoding from BOM (Byte Order Mark)
 
         Args:
@@ -40,7 +40,7 @@ class EncodingDetector:
         return None
 
     @staticmethod
-    def detect_encoding_sample(path: Path, sample_size: int = 8192) -> Optional[str]:
+    def detect_encoding_sample(path: Path, sample_size: int = 8192) -> str | None:
         """Detect encoding by sampling file content
 
         Args:
@@ -84,7 +84,7 @@ class EncodingDetector:
             return None
 
     @classmethod
-    def detect(cls, path: Path) -> Tuple[str, bool]:
+    def detect(cls, path: Path) -> tuple[str, bool]:
         """Detect file encoding
 
         Args:

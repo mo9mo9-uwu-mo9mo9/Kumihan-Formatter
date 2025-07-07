@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 from .node import Node
 
 
-def flatten_text_nodes(content: List[Any]) -> List[Any]:
+def flatten_text_nodes(content: list[Any]) -> list[Any]:
     """Flatten consecutive text nodes in a content list"""
     if not content:
         return content
@@ -32,7 +32,7 @@ def flatten_text_nodes(content: List[Any]) -> List[Any]:
     return result
 
 
-def count_nodes_by_type(nodes: List[Node]) -> Dict[str, int]:
+def count_nodes_by_type(nodes: list[Node]) -> dict[str, int]:
     """Count nodes by type in a list"""
     counts: Dict[str, int] = {}
     for node in nodes:
@@ -41,7 +41,7 @@ def count_nodes_by_type(nodes: List[Node]) -> Dict[str, int]:
     return counts
 
 
-def find_all_headings(nodes: List[Node]) -> List[Node]:
+def find_all_headings(nodes: list[Node]) -> list[Node]:
     """Find all heading nodes recursively"""
     headings = []
     for node in nodes:
@@ -54,7 +54,7 @@ def find_all_headings(nodes: List[Node]) -> List[Node]:
     return headings
 
 
-def validate_ast(nodes: List[Node]) -> List[str]:
+def validate_ast(nodes: list[Node]) -> list[str]:
     """Validate AST structure and return list of issues"""
     issues = []
 

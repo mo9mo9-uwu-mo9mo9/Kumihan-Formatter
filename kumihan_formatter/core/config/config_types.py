@@ -25,8 +25,8 @@ class ValidationResult:
     """設定検証結果"""
 
     is_valid: bool
-    errors: List[str]
-    warnings: List[str]
+    errors: list[str]
+    warnings: list[str]
 
     def has_issues(self) -> bool:
         """検証で問題があるかチェック"""

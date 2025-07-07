@@ -4,6 +4,8 @@ This module provides a unified logging system for the entire application,
 offering structured logging with levels, formatting, and output management.
 """
 
+from __future__ import annotations
+
 import logging
 import logging.handlers
 import os
@@ -25,8 +27,8 @@ class KumihanLogger:
     - Integration with LogHelper for formatting
     """
 
-    _instance: Optional["KumihanLogger"] = None
-    _loggers: Dict[str, logging.Logger] = {}
+    _instance: "KumihanLogger" | None = None
+    _loggers: dict[str, logging.Logger] = {}
     _initialized: bool
 
     def __new__(cls) -> "KumihanLogger":
@@ -105,9 +107,7 @@ class KumihanLogger:
             self._loggers[name] = logger
         return self._loggers[name]
 
-    def set_level(
-        self, level: Union[str, int], logger_name: Optional[str] = None
-    ) -> None:
+    def set_level(self, level: str | int, logger_name: str | None = None) -> None:
         """Set logging level for a specific logger or all loggers
 
         Args:
@@ -147,7 +147,7 @@ class KumihanLogger:
         logger: logging.Logger,
         operation: str,
         duration: float,
-        size: Optional[int] = None,
+        size: int | None = None,
     ) -> None:
         """Log performance metrics
 
@@ -192,7 +192,7 @@ def get_logger(name: str) -> logging.Logger:
 
 
 def configure_logging(
-    level: Optional[str] = None, enable_file: Optional[bool] = None
+    level: str | None = None, enable_file: bool | None = None
 ) -> None:
     """Configure global logging settings
 
@@ -208,9 +208,7 @@ def configure_logging(
         _logger_instance._setup_root_logger()
 
 
-def log_performance(
-    operation: str, duration: float, size: Optional[int] = None
-) -> None:
+def log_performance(operation: str, duration: float, size: int | None = None) -> None:
     """Convenience function for logging performance metrics
 
     Args:

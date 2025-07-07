@@ -3,7 +3,7 @@
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
 from .smart_suggestions import SmartSuggestions
@@ -64,7 +64,7 @@ class ErrorFactory:
 
     @staticmethod
     def create_syntax_error(
-        line_num: int, invalid_content: str, file_path: Optional[str] = None
+        line_num: int, invalid_content: str, file_path: str | None = None
     ) -> UserFriendlyError:
         """記法エラー"""
         suggestions = SmartSuggestions.suggest_keyword(invalid_content.strip(";"))
@@ -178,7 +178,7 @@ class ErrorFactory:
 
     @staticmethod
     def create_unknown_error(
-        original_error: str, context: Optional[Dict[str, Any]] = None
+        original_error: str, context: dict[str, Any] | None = None
     ) -> UserFriendlyError:
         """不明なエラー"""
         return UserFriendlyError(
@@ -209,7 +209,7 @@ ErrorCatalog = ErrorFactory
 
 # 便利な関数群
 def create_syntax_error_from_validation(
-    validation_error: Any, file_path: Optional[str] = None
+    validation_error: Any, file_path: str | None = None
 ) -> UserFriendlyError:
     """バリデーションエラーからユーザーフレンドリーエラーを作成"""
     if hasattr(validation_error, "line_number") and hasattr(

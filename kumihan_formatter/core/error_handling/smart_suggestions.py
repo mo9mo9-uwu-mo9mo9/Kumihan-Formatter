@@ -61,7 +61,7 @@ class SmartSuggestions:
     }
 
     @classmethod
-    def suggest_keyword(cls, invalid_keyword: str) -> List[str]:
+    def suggest_keyword(cls, invalid_keyword: str) -> list[str]:
         """無効なキーワードに対する提案を生成"""
         suggestions = []
 
@@ -79,7 +79,7 @@ class SmartSuggestions:
         return list(dict.fromkeys(suggestions))
 
     @classmethod
-    def suggest_file_encoding(cls, file_path: Path) -> List[str]:
+    def suggest_file_encoding(cls, file_path: Path) -> list[str]:
         """ファイルエンコーディングエラーの提案"""
         suggestions = []
 

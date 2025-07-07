@@ -37,9 +37,9 @@ class ErrorLocation:
     """エラー位置情報"""
 
     line: int
-    column: Optional[int] = None
-    context_start: Optional[int] = None
-    context_end: Optional[int] = None
+    column: int | None = None
+    context_start: int | None = None
+    context_end: int | None = None
 
     def __str__(self) -> str:
         if self.column is not None:
@@ -52,8 +52,8 @@ class FixSuggestion:
     """修正提案"""
 
     description: str  # 修正内容の説明
-    original_text: Optional[str] = None  # 元のテキスト
-    suggested_text: Optional[str] = None  # 提案テキスト
+    original_text: str | None = None  # 元のテキスト
+    suggested_text: str | None = None  # 提案テキスト
     action_type: str = "replace"  # "replace", "insert", "delete"
     confidence: float = 1.0  # 提案の信頼度 (0.0-1.0)
 
@@ -75,18 +75,18 @@ class DetailedError:
     message: str  # 詳細メッセージ
 
     # 位置情報
-    file_path: Optional[Path] = None  # ファイルパス
-    location: Optional[ErrorLocation] = None  # エラー位置
+    file_path: Path | None = None  # ファイルパス
+    location: ErrorLocation | None = None  # エラー位置
 
     # コンテキスト
-    context_lines: List[str] = field(default_factory=list)  # 周辺行
-    highlighted_line: Optional[str] = None  # ハイライトされた問題行
+    context_lines: list[str] = field(default_factory=list)  # 周辺行
+    highlighted_line: str | None = None  # ハイライトされた問題行
 
     # 修正支援
-    fix_suggestions: List[FixSuggestion] = field(default_factory=list)
-    help_url: Optional[str] = None  # ヘルプURL
-    learn_more: Optional[str] = None  # 学習リンク
+    fix_suggestions: list[FixSuggestion] = field(default_factory=list)
+    help_url: str | None = None  # ヘルプURL
+    learn_more: str | None = None  # 学習リンク
 
     # メタデータ
     timestamp: datetime = field(default_factory=datetime.now)
-    additional_info: Dict[str, Any] = field(default_factory=dict)
+    additional_info: dict[str, Any] = field(default_factory=dict)

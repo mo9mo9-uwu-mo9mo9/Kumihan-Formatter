@@ -27,7 +27,7 @@ class BlockValidator:
     def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
-    def validate_document_structure(self, lines: List[str]) -> List[str]:
+    def validate_document_structure(self, lines: list[str]) -> list[str]:
         """
         Validate overall document structure
 
@@ -35,9 +35,9 @@ class BlockValidator:
             lines: Document lines to validate
 
         Returns:
-            List[str]: List of validation issues
+            list[str]: List of validation issues
         """
-        issues: List[str] = []
+        issues: list[str] = []
         open_blocks = []
 
         for i, line in enumerate(lines):
@@ -59,13 +59,13 @@ class BlockValidator:
 
         return issues
 
-    def validate_block_nesting(self, lines: List[str]) -> List[str]:
+    def validate_block_nesting(self, lines: list[str]) -> list[str]:
         """Validate block nesting rules"""
-        issues: List[str] = []
+        issues: list[str] = []
         # TODO: Implement nesting validation
         return issues
 
-    def validate_content_structure(self, content: str) -> List[str]:
+    def validate_content_structure(self, content: str) -> list[str]:
         """Validate content within blocks"""
         issues = []
 

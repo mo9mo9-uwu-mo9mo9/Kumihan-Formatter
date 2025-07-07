@@ -5,7 +5,7 @@ elements in the Abstract Syntax Tree.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -32,7 +32,7 @@ class Node:
 
     type: str
     content: Any
-    attributes: Optional[Dict[str, Any]] = None
+    attributes: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if self.attributes is None:
@@ -88,7 +88,7 @@ class Node:
         """Check if this node is a heading"""
         return self.type in {"h1", "h2", "h3", "h4", "h5"}
 
-    def get_heading_level(self) -> Optional[int]:
+    def get_heading_level(self) -> int | None:
         """Get heading level (1-5) or None if not a heading"""
         if self.type.startswith("h") and len(self.type) == 2:
             try:
@@ -131,7 +131,7 @@ class Node:
             return len(self.content)
         return 0
 
-    def find_children_by_type(self, node_type: str) -> List["Node"]:
+    def find_children_by_type(self, node_type: str) -> list["Node"]:
         """Find all direct children of a specific type"""
         if not isinstance(self.content, list):
             return []

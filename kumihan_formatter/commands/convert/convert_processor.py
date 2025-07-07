@@ -36,7 +36,7 @@ class ConvertProcessor:
         output_dir: str,
         config_obj=None,
         show_test_cases: bool = False,
-        template: Optional[str] = None,
+        template: str | None = None,
         include_source: bool = False,
     ) -> Path:
         """ファイルを変換してHTMLを生成"""
@@ -147,10 +147,10 @@ class ConvertProcessor:
         self,
         ast: Any,
         config,
-        template: Optional[str],
+        template: str | None,
         title: str,
-        source_text: Optional[str] = None,
-        source_filename: Optional[str] = None,
+        source_text: str | None = None,
+        source_filename: str | None = None,
     ) -> str:
         """プログレス表示付きでレンダリング処理を実行"""
         node_count = len(ast) if ast else 0

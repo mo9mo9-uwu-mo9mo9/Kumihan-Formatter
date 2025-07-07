@@ -8,7 +8,6 @@ Issue #319対応 - convert.py から分離
 import sys
 import webbrowser
 from pathlib import Path
-from typing import Optional
 
 from ...core.error_handling import ErrorHandler as FriendlyErrorHandler
 from ...core.utilities.logger import get_logger
@@ -29,21 +28,21 @@ class ConvertCommand:
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()
         self.watcher = ConvertWatcher(self.processor, self.validator)
-        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())  # type: ignore
+        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
         self.logger.debug("ConvertCommand initialized")
 
-    def execute(  # type: ignore
+    def execute(
         self,
-        input_file: Optional[str],
+        input_file: str | None,
         output: str,
         no_preview: bool,
         watch: bool,
-        config: Optional[str],
+        config: str | None,
         show_test_cases: bool,
-        template_name: Optional[str],
+        template_name: str | None,
         include_source: bool,
         syntax_check: bool = True,
-    ) -> Path:
+    ) -> None:
         """
         変換コマンドを実行
 
@@ -59,7 +58,7 @@ class ConvertCommand:
             syntax_check: 変換前の構文チェックを有効化
 
         Returns:
-            Path: 出力ファイルのパス
+            None: プログラム終了時のみ
         """
         self.logger.info(
             f"Starting conversion: input_file='{input_file}', output='{output}'"
@@ -149,7 +148,8 @@ class ConvertCommand:
                     syntax_check,
                 )
 
-            return output_file
+            # 正常終了
+            sys.exit(0)
 
         except FileNotFoundError as e:
             self.logger.error(f"File not found: {e}")
@@ -164,9 +164,7 @@ class ConvertCommand:
             self.logger.error(f"Unexpected error during conversion: {e}", exc_info=True)
             self._handle_generic_error(e, input_file)
 
-    def _handle_file_error(
-        self, e: FileNotFoundError, input_file: Optional[str]
-    ) -> None:
+    def _handle_file_error(self, e: FileNotFoundError, input_file: str | None) -> None:
         """ファイル未発見エラーの処理"""
         error = self.friendly_error_handler.handle_exception(
             e, context={"file_path": input_file or ""}
@@ -175,7 +173,7 @@ class ConvertCommand:
         sys.exit(1)
 
     def _handle_encoding_error(
-        self, e: UnicodeDecodeError, input_file: Optional[str]
+        self, e: UnicodeDecodeError, input_file: str | None
     ) -> None:
         """文字エンコーディングエラーの処理"""
         error = self.friendly_error_handler.handle_exception(
@@ -185,7 +183,7 @@ class ConvertCommand:
         sys.exit(1)
 
     def _handle_permission_error(
-        self, e: PermissionError, input_file: Optional[str]
+        self, e: PermissionError, input_file: str | None
     ) -> None:
         """ファイル権限エラーの処理"""
         error = self.friendly_error_handler.handle_exception(
@@ -194,7 +192,7 @@ class ConvertCommand:
         self.friendly_error_handler.display_error(error, verbose=True)
         sys.exit(1)
 
-    def _handle_generic_error(self, e: Exception, input_file: Optional[str]) -> None:
+    def _handle_generic_error(self, e: Exception, input_file: str | None) -> None:
         """一般的なエラーの処理"""
         error = self.friendly_error_handler.handle_exception(
             e, context={"input_file": input_file, "operation": "ファイル変換"}

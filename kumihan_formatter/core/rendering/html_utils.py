@@ -6,7 +6,7 @@ escaping, formatting, and nesting logic.
 
 import re
 from html import escape
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 def escape_html(text: str) -> str:
@@ -22,7 +22,7 @@ def escape_html(text: str) -> str:
     return escape(text)
 
 
-def render_attributes(attributes: Optional[Dict[str, Any]]) -> str:
+def render_attributes(attributes: dict[str, Any] | None) -> str:
     """
     Render HTML attributes
 
@@ -242,7 +242,7 @@ def contains_html_tags(text: str) -> bool:
 
 
 def create_simple_tag(
-    tag: str, content: str, attributes: Optional[Dict[str, Any]] = None
+    tag: str, content: str, attributes: dict[str, Any] | None = None
 ) -> str:
     """
     Create a simple HTML tag with content
@@ -263,9 +263,7 @@ def create_simple_tag(
         return f"<{tag}>{content}</{tag}>"
 
 
-def create_self_closing_tag(
-    tag: str, attributes: Optional[Dict[str, Any]] = None
-) -> str:
+def create_self_closing_tag(tag: str, attributes: dict[str, Any] | None = None) -> str:
     """
     Create a self-closing HTML tag
 
@@ -314,7 +312,7 @@ def get_tag_priority(tag: str) -> int:
         return 999  # Unknown tags go last
 
 
-def sort_keywords_by_nesting_order(keywords: List[str]) -> List[str]:
+def sort_keywords_by_nesting_order(keywords: list[str]) -> list[str]:
     """
     Sort keywords by their nesting order
 
@@ -322,7 +320,7 @@ def sort_keywords_by_nesting_order(keywords: List[str]) -> List[str]:
         keywords: List of keywords to sort
 
     Returns:
-        List[str]: Keywords sorted by nesting priority
+        list[str]: Keywords sorted by nesting priority
     """
     # Map keywords to their HTML tags
     keyword_to_tag = {

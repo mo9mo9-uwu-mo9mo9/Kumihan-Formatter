@@ -8,7 +8,7 @@ Issue #319対応 - distribution_manager.py から分離
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ..doc_classifier import DocumentType
 
@@ -19,7 +19,7 @@ class DistributionProcessor:
     責任: ファイルコピー・分類処理・統計生成
     """
 
-    def __init__(self, ui: Any | None = None) -> None:  # type: ignore
+    def __init__(self, ui: Any | None = None) -> None:
         """
         Args:
             ui: UIインスタンス（進捗表示用）
@@ -28,10 +28,10 @@ class DistributionProcessor:
 
     def copy_program_files(
         self,
-        classified_files: Dict[DocumentType, List[Path]],
+        classified_files: dict[DocumentType, list[Path]],
         source_dir: Path,
         output_dir: Path,
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """メインプログラムファイルの処理
 
         Args:
@@ -40,7 +40,7 @@ class DistributionProcessor:
             output_dir: 出力ディレクトリ
 
         Returns:
-            Dict[str, int]: 処理統計
+            dict[str, int]: 処理統計
         """
         stats = {"copied_as_is": 0}
 
@@ -131,7 +131,7 @@ class DistributionProcessor:
                 self.ui.warning(f"ファイルコピー失敗: {file_path.name} - {e}")
             return False
 
-    def create_distribution_info(self, output_dir: Path, stats: Dict[str, int]) -> None:
+    def create_distribution_info(self, output_dir: Path, stats: dict[str, int]) -> None:
         """配布情報ファイルを作成
 
         Args:
@@ -152,7 +152,7 @@ class DistributionProcessor:
             if self.ui:
                 self.ui.warning(f"配布情報ファイル作成失敗: {e}")
 
-    def _generate_distribution_info(self, stats: Dict[str, int]) -> str:
+    def _generate_distribution_info(self, stats: dict[str, int]) -> str:
         """配布情報テキストを生成"""
         generation_time = datetime.now().strftime("%Y年%m月%d日 %H:%M:%S")
 
@@ -185,7 +185,7 @@ class DistributionProcessor:
 - 問題報告: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
 """
 
-    def report_statistics(self, stats: Dict[str, int]) -> None:
+    def report_statistics(self, stats: dict[str, int]) -> None:
         """統計情報を表示
 
         Args:

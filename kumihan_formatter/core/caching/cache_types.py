@@ -18,8 +18,8 @@ class CacheEntry:
     created_at: datetime
     last_accessed: datetime
     access_count: int = 0
-    ttl_seconds: Optional[int] = None
-    size_bytes: Optional[int] = None
+    ttl_seconds: int | None = None
+    size_bytes: int | None = None
 
     def is_expired(self) -> bool:
         """キャッシュエントリが期限切れかチェック"""

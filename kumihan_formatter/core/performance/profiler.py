@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional
+from typing import Any, Callable, Dict, Generator, List
 
 from ..utilities.logger import get_logger
 
@@ -31,8 +31,8 @@ class FunctionProfile:
     avg_time: float = 0.0
     max_time: float = 0.0
     min_time: float = float("inf")
-    memory_usage: Optional[int] = None
-    memory_delta: Optional[int] = None
+    memory_usage: int | None = None
+    memory_delta: int | None = None
 
 
 @dataclass
@@ -41,12 +41,12 @@ class ProfilingSession:
 
     name: str
     start_time: float
-    end_time: Optional[float] = None
-    function_profiles: Dict[str, FunctionProfile] = field(default_factory=dict)
+    end_time: float | None = None
+    function_profiles: dict[str, FunctionProfile] = field(default_factory=dict)
     total_calls: int = 0
     total_time: float = 0.0
-    memory_snapshots: List[Dict[str, Any]] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    memory_snapshots: List[dict[str, Any]] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     @property
     def duration(self) -> float:
@@ -79,8 +79,8 @@ class AdvancedProfiler:
         )
 
         self.enable_memory_tracking = enable_memory_tracking
-        self.sessions: Dict[str, ProfilingSession] = {}
-        self.active_sessions: Dict[str, ProfilingSession] = {}
+        self.sessions: dict[str, ProfilingSession] = {}
+        self.active_sessions: dict[str, ProfilingSession] = {}
         self._lock = threading.Lock()
 
         self.logger.debug("プロファイラー初期化完了")
@@ -150,7 +150,7 @@ class AdvancedProfiler:
             self._end_session(session_name, profiler)
             self.logger.info(f"プロファイリングセッション完了: {session_name}")
 
-    def profile_function(self, func_name: Optional[str] = None) -> Callable[[Callable], Callable]:  # type: ignore
+    def profile_function(self, func_name: str | None = None) -> Callable[[Callable], Callable]:  # type: ignore
         """関数プロファイリング用デコレーター
 
         Args:
@@ -189,7 +189,7 @@ class AdvancedProfiler:
         self,
         session_name: str,
         threshold_percent: float = 5.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """パフォーマンスボトルネックを分析
 
         Args:
@@ -343,7 +343,7 @@ class AdvancedProfiler:
 
         return output_file
 
-    def compare_sessions(self, session1: str, session2: str) -> Dict[str, Any]:
+    def compare_sessions(self, session1: str, session2: str) -> dict[str, Any]:
         """セッション間の比較
 
         Args:
@@ -479,9 +479,7 @@ class AdvancedProfiler:
                         self.logger.debug(f"プロファイル結果解析エラー: {e}")
                         continue
 
-    def _analyze_memory_usage(
-        self, session: ProfilingSession
-    ) -> Optional[Dict[str, Any]]:
+    def _analyze_memory_usage(self, session: ProfilingSession) -> dict[str, Any] | None:
         """メモリ使用量を分析"""
         if not session.memory_snapshots:
             return None
@@ -499,7 +497,7 @@ class AdvancedProfiler:
             "snapshots": session.memory_snapshots,
         }
 
-    def _generate_performance_warnings(self, session: ProfilingSession) -> List[str]:
+    def _generate_performance_warnings(self, session: ProfilingSession) -> list[str]:
         """パフォーマンス警告を生成"""
         warnings = []
 
@@ -526,7 +524,7 @@ class AdvancedProfiler:
 
         return warnings
 
-    def _get_memory_usage(self) -> Optional[int]:
+    def _get_memory_usage(self) -> int | None:
         """現在のメモリ使用量を取得"""
         if self._memory_tracker:
             try:
@@ -541,7 +539,7 @@ class AdvancedProfiler:
         return None
 
     def _record_function_call(
-        self, func_name: str, execution_time: float, memory_delta: Optional[int]
+        self, func_name: str, execution_time: float, memory_delta: int | None
     ) -> None:
         """関数呼び出しを記録"""
         # 現在のアクティブセッションに記録
@@ -572,7 +570,7 @@ class AdvancedProfiler:
                 f"全セッションクリア完了: {session_count}個のセッションを削除"
             )
 
-    def get_session_names(self) -> List[str]:
+    def get_session_names(self) -> list[str]:
         """セッション名のリストを取得"""
         session_names = list(self.sessions.keys())
         self.logger.debug(f"セッション名取得: {len(session_names)}個のセッション")

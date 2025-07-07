@@ -38,7 +38,7 @@ class Renderer:
     - テンプレート適用とHTML出力
     """
 
-    def __init__(self, template_dir: Optional[Path] = None):
+    def __init__(self, template_dir: Path | None = None):
         """
         Initialize renderer with optional template directory
 
@@ -54,13 +54,13 @@ class Renderer:
 
     def render(
         self,
-        ast: List[Node],
+        ast: list[Node],
         config: Any = None,
-        template: Optional[str] = None,
-        title: Optional[str] = None,
-        source_text: Optional[str] = None,
-        source_filename: Optional[str] = None,
-        navigation_html: Optional[str] = None,
+        template: str | None = None,
+        title: str | None = None,
+        source_text: str | None = None,
+        source_filename: str | None = None,
+        navigation_html: str | None = None,
     ) -> str:
         """
         Render AST to HTML
@@ -128,7 +128,7 @@ class Renderer:
 
         return result
 
-    def render_nodes_only(self, nodes: List[Node]) -> str:
+    def render_nodes_only(self, nodes: list[Node]) -> str:
         """
         Render only the nodes without template wrapper
 
@@ -142,7 +142,7 @@ class Renderer:
         return self.html_renderer.render_nodes(nodes)
 
     def render_with_custom_context(
-        self, ast: List[Node], template_name: str, custom_context: Dict[str, Any]
+        self, ast: list[Node], template_name: str, custom_context: dict[str, Any]
     ) -> str:
         """
         Render with custom template context
@@ -177,7 +177,7 @@ class Renderer:
 
         return self.template_manager.render_template(template_name, base_context)
 
-    def get_toc_data(self, ast: List[Node]) -> Dict[str, Any]:
+    def get_toc_data(self, ast: list[Node]) -> dict[str, Any]:
         """
         Get table of contents data without rendering
 
@@ -189,7 +189,7 @@ class Renderer:
         """
         return self.toc_generator.generate_toc(ast)
 
-    def get_headings(self, ast: List[Node]) -> List[Dict[str, Any]]:
+    def get_headings(self, ast: list[Node]) -> List[dict[str, Any]]:
         """
         Get list of headings from AST
 
@@ -201,7 +201,7 @@ class Renderer:
         """
         return self.html_renderer.collect_headings(ast)
 
-    def validate_template(self, template_name: str) -> Tuple[bool, Optional[str]]:
+    def validate_template(self, template_name: str) -> tuple[bool, str | None]:
         """
         Validate a template
 
@@ -213,7 +213,7 @@ class Renderer:
         """
         return self.template_manager.validate_template(template_name)
 
-    def get_available_templates(self) -> List[str]:
+    def get_available_templates(self) -> list[str]:
         """Get list of available templates"""
         return self.template_manager.get_available_templates()
 
@@ -224,13 +224,13 @@ class Renderer:
 
 
 def render(
-    ast: List[Node],
+    ast: list[Node],
     config: Any = None,
-    template: Optional[str] = None,
-    title: Optional[str] = None,
-    source_text: Optional[str] = None,
-    source_filename: Optional[str] = None,
-    navigation_html: Optional[str] = None,
+    template: str | None = None,
+    title: str | None = None,
+    source_text: str | None = None,
+    source_filename: str | None = None,
+    navigation_html: str | None = None,
 ) -> str:
     """
     Main rendering function (compatibility with existing API)

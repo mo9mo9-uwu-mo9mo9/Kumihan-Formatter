@@ -72,10 +72,10 @@ class ConfigValidator:
         },
     }
 
-    def validate(self, config: Dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, Any]) -> ValidationResult:
         """設定をスキーマに対して検証"""
-        errors: List[str] = []
-        warnings: List[str] = []
+        errors: list[str] = []
+        warnings: list[str] = []
 
         # 必須セクションのチェック
         for key, spec in self.SCHEMA.items():
@@ -99,11 +99,11 @@ class ConfigValidator:
         )
 
     def _validate_section(
-        self, section_name: str, section_data: Any, spec: Dict[str, Any]
-    ) -> Tuple[List[str], List[str]]:
+        self, section_name: str, section_data: Any, spec: dict[str, Any]
+    ) -> Tuple[list[str], list[str]]:
         """設定セクションを検証"""
-        errors: List[str] = []
-        warnings: List[str] = []
+        errors: list[str] = []
+        warnings: list[str] = []
 
         # 型検証
         expected_type = spec.get("type")

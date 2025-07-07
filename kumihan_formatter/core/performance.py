@@ -24,7 +24,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 try:
     import psutil
@@ -40,13 +40,13 @@ class PerformanceReport:
 
     operation_name: str
     execution_time: float
-    memory_usage: Optional[int] = None
-    cpu_usage: Optional[float] = None
-    node_count: Optional[int] = None
-    file_size: Optional[int] = None
+    memory_usage: int | None = None
+    cpu_usage: float | None = None
+    node_count: int | None = None
+    file_size: int | None = None
     cache_hits: int = 0
     cache_misses: int = 0
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     @property
     def cache_hit_ratio(self) -> float:
@@ -55,14 +55,14 @@ class PerformanceReport:
         return self.cache_hits / total if total > 0 else 0.0
 
     @property
-    def throughput_nodes_per_second(self) -> Optional[float]:
+    def throughput_nodes_per_second(self) -> float | None:
         """Calculate nodes processed per second"""
         if self.node_count and self.execution_time > 0:
             return self.node_count / self.execution_time
         return None
 
     @property
-    def throughput_mb_per_second(self) -> Optional[float]:
+    def throughput_mb_per_second(self) -> float | None:
         """Calculate MB processed per second"""
         if self.file_size and self.execution_time > 0:
             return (self.file_size / (1024 * 1024)) / self.execution_time
@@ -119,7 +119,7 @@ class PerformanceMonitor:
     """Advanced performance monitoring system"""
 
     def __init__(self) -> None:
-        self.reports: List[PerformanceReport] = []
+        self.reports: list[PerformanceReport] = []
         self._cache_stats = {"hits": 0, "misses": 0}
         self._node_count = 0
         self._lock = threading.Lock()
@@ -128,8 +128,8 @@ class PerformanceMonitor:
     def measure(
         self,
         operation_name: str,
-        node_count: Optional[int] = None,
-        file_size: Optional[int] = None,
+        node_count: int | None = None,
+        file_size: int | None = None,
     ):
         """Context manager for measuring performance"""
         start_time = time.perf_counter()
@@ -183,12 +183,12 @@ class PerformanceMonitor:
         with self._lock:
             self._cache_stats["misses"] += 1
 
-    def get_latest_report(self) -> Optional[PerformanceReport]:
+    def get_latest_report(self) -> PerformanceReport | None:
         """Get the most recent performance report"""
         with self._lock:
             return self.reports[-1] if self.reports else None
 
-    def get_summary_stats(self) -> Dict[str, Any]:
+    def get_summary_stats(self) -> dict[str, Any]:
         """Get summary statistics across all reports"""
         if not self.reports:
             return {}
@@ -215,7 +215,7 @@ class PerformanceMonitor:
 
         return stats
 
-    def _get_memory_usage(self) -> Optional[int]:
+    def _get_memory_usage(self) -> int | None:
         """Get current memory usage"""
         if not HAS_PSUTIL:
             return None
@@ -228,7 +228,7 @@ class PerformanceMonitor:
         except Exception:
             return None
 
-    def _get_cpu_usage(self) -> Optional[float]:
+    def _get_cpu_usage(self) -> float | None:
         """Get current CPU usage"""
         if not HAS_PSUTIL:
             return None
@@ -276,10 +276,10 @@ class PerformanceProfiler:
     """Function-level performance profiler"""
 
     def __init__(self) -> None:
-        self.function_stats: Dict[str, List[float]] = {}
+        self.function_stats: dict[str, list[float]] = {}
         self._lock = threading.Lock()
 
-    def profile(self, func_name: Optional[str] = None):
+    def profile(self, func_name: str | None = None):
         """Decorator for profiling function performance"""
 
         def decorator(func: Callable) -> Callable:
@@ -304,7 +304,7 @@ class PerformanceProfiler:
 
         return decorator
 
-    def get_stats(self) -> Dict[str, Dict[str, float]]:
+    def get_stats(self) -> dict[str, dict[str, float]]:
         """Get profiling statistics"""
         stats = {}
 
@@ -324,7 +324,7 @@ class PerformanceProfiler:
 
     def get_top_functions(
         self, metric: str = "total_time", limit: int = 10
-    ) -> List[tuple]:
+    ) -> list[tuple]:
         """Get top functions by specified metric"""
         stats = self.get_stats()
 
@@ -368,7 +368,7 @@ class PerformanceOptimizer:
 
     @staticmethod
     def should_use_streaming(
-        file_size: int, available_memory: Optional[int] = None
+        file_size: int, available_memory: int | None = None
     ) -> bool:
         """Determine if streaming processing should be used"""
         # Use streaming for files larger than 10MB or if memory is limited
@@ -390,7 +390,7 @@ class BenchmarkSuite:
 
     def __init__(self, monitor: PerformanceMonitor):
         self.monitor = monitor
-        self.benchmark_results: Dict[str, List[PerformanceReport]] = {}
+        self.benchmark_results: dict[str, list[PerformanceReport]] = {}
 
     def run_benchmark(
         self, name: str, func: Callable, *args, iterations: int = 5, **kwargs
@@ -410,7 +410,7 @@ class BenchmarkSuite:
         self.benchmark_results[name] = results
         self._print_benchmark_summary(name, results)
 
-    def _print_benchmark_summary(self, name: str, results: List[PerformanceReport]):
+    def _print_benchmark_summary(self, name: str, results: list[PerformanceReport]):
         """Print benchmark summary"""
         if not results:
             return
@@ -435,7 +435,7 @@ class BenchmarkSuite:
                     f"Average Memory: {PerformanceReport._format_bytes(int(avg_memory))}"
                 )
 
-    def compare_benchmarks(self, benchmark1: str, benchmark2: str) -> Dict[str, float]:
+    def compare_benchmarks(self, benchmark1: str, benchmark2: str) -> dict[str, float]:
         """Compare two benchmarks"""
         if (
             benchmark1 not in self.benchmark_results
@@ -482,12 +482,12 @@ def measure_performance(operation_name: str, **kwargs):
     return get_global_monitor().measure(operation_name, **kwargs)
 
 
-def profile_function(func_name: Optional[str] = None):
+def profile_function(func_name: str | None = None):
     """Convenience decorator for function profiling"""
     return get_global_profiler().profile(func_name)
 
 
-def get_performance_summary() -> Dict[str, Any]:
+def get_performance_summary() -> dict[str, Any]:
     """Get comprehensive performance summary"""
     return {
         "monitor_stats": get_global_monitor().get_summary_stats(),

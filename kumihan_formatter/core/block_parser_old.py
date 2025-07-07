@@ -20,8 +20,8 @@ class BlockParser:
         self.heading_counter = 0
 
     def parse_block_marker(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Optional[Node], int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node | None, int]:
         """
         Parse a block marker starting from the given index
 
@@ -108,8 +108,8 @@ class BlockParser:
         return node, end_index + 1  # type: ignore
 
     def _parse_image_block(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Node, int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         Parse an image block
 
@@ -200,7 +200,7 @@ class BlockParser:
         image_extensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"]
         return any(filename.lower().endswith(ext) for ext in image_extensions)
 
-    def parse_paragraph(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_paragraph(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """
         Parse a paragraph starting from the given index
 
@@ -262,7 +262,7 @@ class BlockParser:
         """Check if a line is a closing block marker"""
         return line.strip() == ";;;"
 
-    def skip_empty_lines(self, lines: List[str], start_index: int) -> int:
+    def skip_empty_lines(self, lines: list[str], start_index: int) -> int:
         """Skip empty lines and return the next non-empty line index"""
         index = start_index
         while index < len(lines) and not lines[index].strip():
@@ -270,8 +270,8 @@ class BlockParser:
         return index
 
     def find_next_significant_line(
-        self, lines: List[str], start_index: int
-    ) -> Optional[int]:
+        self, lines: list[str], start_index: int
+    ) -> int | None:
         """Find the next line that contains significant content"""
         for i in range(start_index, len(lines)):
             line = lines[i].strip()
@@ -290,7 +290,7 @@ class SpecialBlockParser:
     def __init__(self, block_parser: BlockParser):
         self.block_parser = block_parser
 
-    def parse_code_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_code_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """Parse a code block"""
         # Find closing marker
         end_index = None
@@ -325,7 +325,7 @@ class SpecialBlockParser:
 
         return builder.build()
 
-    def parse_table_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_table_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """Parse a table block (future enhancement)"""
         # TODO: Implement table parsing
         return error_node("テーブル機能は未実装です"), start_index + 1
@@ -352,7 +352,7 @@ class BlockValidator:
     def __init__(self, block_parser: BlockParser):
         self.block_parser = block_parser
 
-    def validate_document_structure(self, lines: List[str]) -> List[str]:
+    def validate_document_structure(self, lines: list[str]) -> list[str]:
         """
         Validate overall document structure
 
@@ -360,7 +360,7 @@ class BlockValidator:
             lines: Document lines to validate
 
         Returns:
-            List[str]: List of validation issues
+            list[str]: List of validation issues
         """
         issues = []
         open_blocks = []
@@ -384,13 +384,13 @@ class BlockValidator:
 
         return issues
 
-    def validate_block_nesting(self, lines: List[str]) -> List[str]:
+    def validate_block_nesting(self, lines: list[str]) -> list[str]:
         """Validate block nesting rules"""
         issues = []  # type: ignore
         # TODO: Implement nesting validation
         return issues
 
-    def validate_content_structure(self, content: str) -> List[str]:
+    def validate_content_structure(self, content: str) -> list[str]:
         """Validate content within blocks"""
         issues = []
 

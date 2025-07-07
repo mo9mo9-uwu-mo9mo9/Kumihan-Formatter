@@ -6,7 +6,7 @@ BaseConfig、ExtendedConfig、既存の設定クラスを統一的に管理す�
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Optional, Type, Union
 
 from .base_config import BaseConfig
 from .extended_config import ExtendedConfig
@@ -22,7 +22,7 @@ class ConfigManager:
     def __init__(
         self,
         config_type: str = "extended",
-        config_path: Optional[str] = None,
+        config_path: str | None = None,
         env_prefix: str = "KUMIHAN_",
     ):
         """統合設定管理を初期化
@@ -34,23 +34,19 @@ class ConfigManager:
         """
         self.config_type = config_type
         self.env_prefix = env_prefix
-        self._config: Union[BaseConfig, ExtendedConfig] = self._create_config(
-            config_path
-        )
+        self._config: BaseConfig | ExtendedConfig = self._create_config(config_path)
 
         # 環境変数から設定を読み込み
         self._load_from_env()
 
-    def _create_config(
-        self, config_path: Optional[str]
-    ) -> Union[BaseConfig, ExtendedConfig]:
+    def _create_config(self, config_path: str | None) -> BaseConfig | ExtendedConfig:
         """設定オブジェクトを作成
 
         Args:
             config_path: 設定ファイルパス
 
         Returns:
-            Union[BaseConfig, ExtendedConfig]: 設定オブジェクト
+            BaseConfig | ExtendedConfig: 設定オブジェクト
         """
         config_class = ExtendedConfig if self.config_type == "extended" else BaseConfig
 
@@ -90,7 +86,7 @@ class ConfigManager:
                 self._config.set(key, value)
 
     # BaseConfigインターフェースの委譲
-    def get_css_variables(self) -> Dict[str, str]:
+    def get_css_variables(self) -> dict[str, str]:
         """CSS変数を取得"""
         return self._config.get_css_variables()
 
@@ -110,18 +106,18 @@ class ConfigManager:
         """設定の妥当性をチェック"""
         return self._config.validate()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得"""
         return self._config.to_dict()
 
     # ExtendedConfigインターフェースの委譲（利用可能な場合）
-    def get_markers(self) -> Dict[str, Dict[str, Any]]:
+    def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_markers"):
             return self._config.get_markers()  # type: ignore
         return {}
 
-    def add_marker(self, name: str, definition: Dict[str, Any]) -> None:
+    def add_marker(self, name: str, definition: dict[str, Any]) -> None:
         """マーカーを追加（ExtendedConfigのみ）"""
         if hasattr(self._config, "add_marker"):
             self._config.add_marker(name, definition)
@@ -132,13 +128,13 @@ class ConfigManager:
             return self._config.remove_marker(name)  # type: ignore
         return False
 
-    def get_themes(self) -> Dict[str, Dict[str, Any]]:
+    def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_themes"):
             return self._config.get_themes()  # type: ignore
         return {}
 
-    def add_theme(self, theme_id: str, theme_data: Dict[str, Any]) -> None:
+    def add_theme(self, theme_id: str, theme_data: dict[str, Any]) -> None:
         """テーマを追加（ExtendedConfigのみ）"""
         if hasattr(self._config, "add_theme"):
             self._config.add_theme(theme_id, theme_data)
@@ -177,7 +173,7 @@ class ConfigManager:
         except Exception:
             return False
 
-    def merge_config(self, other_config: Dict[str, Any]) -> None:
+    def merge_config(self, other_config: dict[str, Any]) -> None:
         """他の設定をマージ
 
         Args:
@@ -191,14 +187,14 @@ class ConfigManager:
                 self._config.set(key, value)
 
     @property
-    def config(self) -> Union[BaseConfig, ExtendedConfig]:
+    def config(self) -> BaseConfig | ExtendedConfig:
         """内部設定オブジェクトを取得（下位互換性用）"""
         return self._config
 
 
 # 便利関数
 def create_config_manager(
-    config_type: str = "extended", config_path: Optional[str] = None
+    config_type: str = "extended", config_path: str | None = None
 ) -> ConfigManager:
     """設定管理を作成
 
@@ -212,7 +208,7 @@ def create_config_manager(
     return ConfigManager(config_type=config_type, config_path=config_path)
 
 
-def load_config(config_path: Optional[str] = None) -> ConfigManager:
+def load_config(config_path: str | None = None) -> ConfigManager:
     """設定を読み込む便利関数（既存コードとの互換性用）
 
     Args:

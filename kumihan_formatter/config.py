@@ -10,7 +10,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import yaml
 from rich.console import Console
@@ -81,7 +81,7 @@ class Config:
         },
     }
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """設定管理を初期化（統合設定システムを使用）"""
         # 統合設定管理システムを使用
         self._manager = ConfigManager(config_type="extended", config_path=config_path)
@@ -109,7 +109,7 @@ class Config:
             console.print(f"[red][エラー] 設定ファイル読み込みエラー:[/red] {e}")
             return False
 
-    def _merge_config(self, user_config: Dict[str, Any]):
+    def _merge_config(self, user_config: dict[str, Any]):
         """ユーザー設定をデフォルト設定にマージ（統合設定システムに委譲）"""
         self._manager.merge_config(user_config)
         self.config = self._manager.to_dict()
@@ -131,11 +131,11 @@ class Config:
         if "css" in user_config and isinstance(user_config["css"], dict):
             console.print(f"[dim]   カスタムCSS: {len(user_config['css'])}項目[/dim]")
 
-    def get_markers(self) -> Dict[str, Dict[str, Any]]:
+    def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得（統合設定システムに委譲）"""
         return self._manager.get_markers()
 
-    def get_css_variables(self) -> Dict[str, str]:
+    def get_css_variables(self) -> dict[str, str]:
         """CSS変数を取得（統合設定システムに委譲）"""
         return self._manager.get_css_variables()
 
@@ -151,6 +151,6 @@ class Config:
         return result
 
 
-def load_config(config_path: Optional[str] = None) -> Config:
+def load_config(config_path: str | None = None) -> Config:
     """設定を読み込む便利関数（統合設定システムを使用）"""
     return Config(config_path)

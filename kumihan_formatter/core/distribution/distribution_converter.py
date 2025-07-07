@@ -31,7 +31,7 @@ class DistributionConverter:
         "license.md": "ライセンス",
     }
 
-    def __init__(self, ui: Optional[Any] = None) -> None:
+    def __init__(self, ui: Any | None = None) -> None:
         """
         Args:
             ui: UIインスタンス（進捗表示用）

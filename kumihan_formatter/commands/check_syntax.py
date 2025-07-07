@@ -18,7 +18,7 @@ class CheckSyntaxCommand:
 
     def execute(
         self,
-        files: List[str],
+        files: list[str],
         recursive: bool = False,
         show_suggestions: bool = True,
         format_output: str = "text",
@@ -72,7 +72,7 @@ class CheckSyntaxCommand:
             get_console_ui().error(f"構文チェック中にエラーが発生しました: {e}")
             sys.exit(1)
 
-    def _collect_files(self, file_patterns: List[str], recursive: bool) -> List[Path]:
+    def _collect_files(self, file_patterns: list[str], recursive: bool) -> list[Path]:
         """Collect files to check from patterns"""
         file_paths = []
 

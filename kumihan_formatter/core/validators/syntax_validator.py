@@ -15,7 +15,7 @@ from .validation_issue import ValidationIssue
 class SyntaxValidator:
     """Validator for Kumihan syntax"""
 
-    def __init__(self, config: Union[Dict[str, Any], None] = None) -> None:
+    def __init__(self, config: Union[dict[str, Any], None] = None) -> None:
         """Initialize syntax validator"""
         self.config = config
         self.keyword_parser = KeywordParser(config)
@@ -27,7 +27,7 @@ class SyntaxValidator:
         self.list_validator = ListValidator(self.list_parser)
         self.block_validator = BlockValidator(self.block_parser)
 
-    def validate_encoding(self, text: str) -> List[ValidationIssue]:
+    def validate_encoding(self, text: str) -> list[ValidationIssue]:
         """Validate text encoding"""
         issues = []
 
@@ -57,7 +57,7 @@ class SyntaxValidator:
 
         return issues
 
-    def validate_marker_syntax(self, lines: List[str]) -> List[ValidationIssue]:
+    def validate_marker_syntax(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate marker syntax in lines"""
         issues = []
 
@@ -94,7 +94,7 @@ class SyntaxValidator:
 
         return issues
 
-    def validate_list_syntax(self, lines: List[str]) -> List[ValidationIssue]:
+    def validate_list_syntax(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate list syntax in lines"""
         issues = []
         list_issue_messages = self.list_validator.validate_list_structure(lines)
@@ -109,7 +109,7 @@ class SyntaxValidator:
             )
         return issues
 
-    def validate_block_syntax(self, lines: List[str]) -> List[ValidationIssue]:
+    def validate_block_syntax(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate block syntax in lines"""
         issues = []
         block_issue_messages = self.block_validator.validate_document_structure(lines)

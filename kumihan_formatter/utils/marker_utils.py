@@ -1,10 +1,9 @@
 """マーカーキーワードのパース処理に関する共通ユーティリティ"""
 
 import re
-from typing import Dict, List, Tuple
 
 
-def parse_marker_keywords(marker_line: str) -> Tuple[List[str], Dict[str, str]]:
+def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
     """
     マーカー行からキーワードと属性を抽出する共通関数
 
@@ -51,7 +50,7 @@ def parse_marker_keywords(marker_line: str) -> Tuple[List[str], Dict[str, str]]:
     return keywords, attributes
 
 
-def normalize_keywords(keywords: List[str]) -> List[str]:
+def normalize_keywords(keywords: list[str]) -> list[str]:
     """
     キーワードの正規化（表記揺れの統一）
 
@@ -98,7 +97,7 @@ def normalize_keywords(keywords: List[str]) -> List[str]:
     return normalized
 
 
-def validate_keyword_combinations(keywords: List[str]) -> Tuple[bool, List[str]]:
+def validate_keyword_combinations(keywords: list[str]) -> tuple[bool, list[str]]:
     """
     キーワードの組み合わせの妥当性をチェック
 
@@ -142,7 +141,7 @@ def validate_keyword_combinations(keywords: List[str]) -> Tuple[bool, List[str]]
     return len(errors) == 0, errors
 
 
-def get_keyword_suggestions(invalid_keyword: str) -> List[str]:
+def get_keyword_suggestions(invalid_keyword: str) -> list[str]:
     """
     無効なキーワードに対する修正候補を提案
 

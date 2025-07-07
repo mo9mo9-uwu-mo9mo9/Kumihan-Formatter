@@ -32,7 +32,9 @@ class TestRealScenarios(TestCase):
         file_path.write_text(content, encoding="utf-8")
         return file_path
 
-    def _run_conversion(self, input_file: Path, options: list[str] | None = None) -> subprocess.CompletedProcess[str]:  # type: ignore
+    def _run_conversion(
+        self, input_file: Path, options: list[str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
         """変換処理を実行"""
         cmd = ["python3", "-m", "kumihan_formatter", "convert", str(input_file)]
         if options:
@@ -45,7 +47,7 @@ class TestRealScenarios(TestCase):
 
         return result
 
-    def _verify_html_output(self, expected_elements: list[str] | None = None) -> None:  # type: ignore
+    def _verify_html_output(self, expected_elements: list[str] | None = None) -> None:
         """HTML出力の検証"""
         # 出力ディレクトリが作成されたことを確認
         self.assertTrue(self.output_dir.exists())

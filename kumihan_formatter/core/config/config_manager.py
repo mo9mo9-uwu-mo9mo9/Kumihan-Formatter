@@ -7,7 +7,7 @@ Issue #319対応 - config_manager.py から分離
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 from ..utilities.logger import get_logger
 from .config_loader import ConfigLoader
@@ -110,7 +110,7 @@ class EnhancedConfig:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.config = {}  # type: ignore
-        self.config_sources: Dict[str, str] = {}  # 各設定値の出典を追跡
+        self.config_sources: dict[str, str] = {}  # 各設定値の出典を追跡
         self.validator = ConfigValidator()
         self.loader = ConfigLoader(self.validator)
         self._load_defaults()
@@ -131,7 +131,7 @@ class EnhancedConfig:
                 self._mark_source(source, value, current_path)
 
     def load_from_file(
-        self, config_path: Union[str, Path], level: ConfigLevel = ConfigLevel.USER
+        self, config_path: str | Path, level: ConfigLevel = ConfigLevel.USER
     ) -> bool:
         """ファイルから設定を読み込み"""
         self.logger.info(f"Loading configuration from file: {config_path}")
@@ -154,7 +154,7 @@ class EnhancedConfig:
         self.logger.debug("No configuration found in environment variables")
         return False
 
-    def _merge_config(self, user_config: Dict[str, Any], source: str):  # type: ignore
+    def _merge_config(self, user_config: dict[str, Any], source: str):  # type: ignore
         """設定をマージ"""
         self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
@@ -191,7 +191,7 @@ class EnhancedConfig:
         self.config_sources[key] = source
         self.logger.debug(f"Set configuration {key} = {value} from {source}")
 
-    def get_markers(self) -> Dict[str, Dict[str, str]]:
+    def get_markers(self) -> dict[str, dict[str, str]]:
         """マーカー設定を取得"""
         return dict(self.get("markers", {}))
 
@@ -199,19 +199,19 @@ class EnhancedConfig:
         """テーマ名を取得"""
         return str(self.get("theme", "default"))
 
-    def get_css_config(self) -> Dict[str, str]:
+    def get_css_config(self) -> dict[str, str]:
         """CSS設定を取得"""
         return dict(self.get("css", {}))
 
-    def get_performance_config(self) -> Dict[str, Any]:
+    def get_performance_config(self) -> dict[str, Any]:
         """パフォーマンス設定を取得"""
         return dict(self.get("performance", {}))
 
-    def get_validation_config(self) -> Dict[str, Any]:
+    def get_validation_config(self) -> dict[str, Any]:
         """バリデーション設定を取得"""
         return dict(self.get("validation", {}))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得"""
         return self.loader._deep_copy(self.config)  # type: ignore
 

@@ -15,7 +15,7 @@ class ImageBlockParser:
     def __init__(self, block_parser: Any) -> None:
         self.block_parser = block_parser
 
-    def parse_image_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+    def parse_image_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """
         Parse an image block
 

@@ -22,12 +22,12 @@ class OperationContext:
 
     operation_name: str
     component: str  # Parser, Renderer, FileOps等
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
-    column_number: Optional[int] = None
-    user_input: Optional[str] = None
+    file_path: str | None = None
+    line_number: int | None = None
+    column_number: int | None = None
+    user_input: str | None = None
     started_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -37,9 +37,9 @@ class SystemContext:
     platform: str = field(default_factory=lambda: sys.platform)
     python_version: str = field(default_factory=lambda: sys.version)
     working_directory: str = field(default_factory=lambda: os.getcwd())
-    memory_usage: Optional[int] = None
-    cpu_usage: Optional[float] = None
-    disk_space: Optional[int] = None
+    memory_usage: int | None = None
+    cpu_usage: float | None = None
+    disk_space: int | None = None
 
     def __post_init__(self) -> None:
         """システム情報を自動収集"""
@@ -67,11 +67,11 @@ class FileContext:
     """ファイル操作コンテキスト"""
 
     file_path: str
-    file_size: Optional[int] = None
-    encoding: Optional[str] = None
-    line_count: Optional[int] = None
-    modification_time: Optional[datetime] = None
-    checksum: Optional[str] = None
+    file_size: int | None = None
+    encoding: str | None = None
+    line_count: int | None = None
+    modification_time: datetime | None = None
+    checksum: str | None = None
 
     def __post_init__(self) -> None:
         """ファイル情報を自動収集"""
@@ -138,12 +138,12 @@ class ErrorContextManager:
         self.logger = get_logger(__name__) if enable_logging else None
 
         # コンテキストスタック
-        self._operation_stack: List[OperationContext] = []
+        self._operation_stack: list[OperationContext] = []
         self._system_context = SystemContext()
-        self._file_contexts: Dict[str, FileContext] = {}
+        self._file_contexts: dict[str, FileContext] = {}
 
         # デバッグ情報
-        self._debug_info: Dict[str, Any] = {}
+        self._debug_info: dict[str, Any] = {}
 
         if self.logger:
             self.logger.debug("ErrorContextManager initialized")
@@ -153,7 +153,7 @@ class ErrorContextManager:
         self,
         operation_name: str,
         component: str,
-        file_path: Optional[str] = None,
+        file_path: str | None = None,
         **metadata,
     ):
         """操作コンテキストマネージャー
@@ -197,7 +197,7 @@ class ErrorContextManager:
             self._file_contexts[file_path] = FileContext(file_path)
 
     def set_line_position(
-        self, line_number: int, column_number: Optional[int] = None
+        self, line_number: int, column_number: int | None = None
     ) -> None:
         """現在の行位置を設定
 
@@ -229,11 +229,11 @@ class ErrorContextManager:
         """
         self._debug_info[key] = value
 
-    def get_current_context(self) -> Dict[str, Any]:
+    def get_current_context(self) -> dict[str, Any]:
         """現在のコンテキスト情報を取得
 
         Returns:
-            Dict[str, Any]: 統合されたコンテキスト情報
+            dict[str, Any]: 統合されたコンテキスト情報
         """
         context = {
             "system": self._system_context.__dict__,
@@ -267,11 +267,11 @@ class ErrorContextManager:
 
         return context
 
-    def get_error_location_info(self) -> Dict[str, Any]:
+    def get_error_location_info(self) -> dict[str, Any]:
         """エラー発生場所の詳細情報を取得
 
         Returns:
-            Dict[str, Any]: エラー発生場所の情報
+            dict[str, Any]: エラー発生場所の情報
         """
         if not self._operation_stack:
             return {}
@@ -320,14 +320,14 @@ class ErrorContextManager:
 
         return " → ".join(breadcrumb_parts)
 
-    def create_error_summary(self, exception: Exception) -> Dict[str, Any]:
+    def create_error_summary(self, exception: Exception) -> dict[str, Any]:
         """例外に対する包括的なエラーサマリーを作成
 
         Args:
             exception: 発生した例外
 
         Returns:
-            Dict[str, Any]: エラーサマリー情報
+            dict[str, Any]: エラーサマリー情報
         """
         import traceback
 
@@ -345,14 +345,14 @@ class ErrorContextManager:
 
         return summary
 
-    def suggest_probable_cause(self, exception: Exception) -> List[str]:
+    def suggest_probable_cause(self, exception: Exception) -> list[str]:
         """例外とコンテキストから推定される原因を提案
 
         Args:
             exception: 発生した例外
 
         Returns:
-            List[str]: 推定される原因のリスト
+            list[str]: 推定される原因のリスト
         """
         suggestions = []
 
@@ -483,7 +483,7 @@ class ErrorContextManager:
 
 
 # グローバルインスタンス
-_global_context_manager: Optional[ErrorContextManager] = None
+_global_context_manager: ErrorContextManager | None = None
 
 
 def get_global_context_manager() -> ErrorContextManager:

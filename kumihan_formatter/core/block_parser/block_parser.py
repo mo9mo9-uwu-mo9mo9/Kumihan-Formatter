@@ -22,8 +22,8 @@ class BlockParser:
         self.logger.debug("BlockParser initialized")
 
     def parse_block_marker(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Optional[Node], int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node | None, int]:
         """
         Parse a block marker starting from the given index
 
@@ -149,8 +149,8 @@ class BlockParser:
         return any(filename.lower().endswith(ext) for ext in image_extensions)
 
     def parse_paragraph(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Optional[Node], int]:
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node | None, int]:
         """
         Parse a paragraph starting from the given index
 
@@ -216,7 +216,7 @@ class BlockParser:
         """Check if a line is a closing block marker"""
         return line.strip() == ";;;"
 
-    def skip_empty_lines(self, lines: List[str], start_index: int) -> int:
+    def skip_empty_lines(self, lines: list[str], start_index: int) -> int:
         """Skip empty lines and return the next non-empty line index"""
         index = start_index
         while index < len(lines) and not lines[index].strip():
@@ -224,8 +224,8 @@ class BlockParser:
         return index
 
     def find_next_significant_line(
-        self, lines: List[str], start_index: int
-    ) -> Optional[int]:
+        self, lines: list[str], start_index: int
+    ) -> int | None:
         """Find the next line that contains significant content"""
         for i in range(start_index, len(lines)):
             line = lines[i].strip()

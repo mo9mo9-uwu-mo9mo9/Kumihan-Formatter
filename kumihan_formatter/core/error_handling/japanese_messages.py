@@ -5,7 +5,7 @@
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError
 
@@ -209,7 +209,7 @@ class JapaneseMessageCatalog:
 
     @classmethod
     def get_file_system_error(
-        cls, error_type: str, file_path: Optional[str] = None, **kwargs: Any
+        cls, error_type: str, file_path: str | None = None, **kwargs: Any
     ) -> UserFriendlyError:
         """ファイルシステムエラーのメッセージを生成"""
         if error_type not in cls.FILE_SYSTEM_MESSAGES:
@@ -237,7 +237,7 @@ class JapaneseMessageCatalog:
 
     @classmethod
     def get_encoding_error(
-        cls, error_type: str, file_path: Optional[str] = None, **kwargs: Any
+        cls, error_type: str, file_path: str | None = None, **kwargs: Any
     ) -> UserFriendlyError:
         """エンコーディングエラーのメッセージを生成"""
         if error_type not in cls.ENCODING_MESSAGES:
@@ -264,7 +264,7 @@ class JapaneseMessageCatalog:
 
     @classmethod
     def get_syntax_error(
-        cls, error_type: str, line_number: Optional[int] = None, **kwargs: Any
+        cls, error_type: str, line_number: int | None = None, **kwargs: Any
     ) -> UserFriendlyError:
         """構文エラーのメッセージを生成"""
         if error_type not in cls.SYNTAX_MESSAGES:
@@ -291,7 +291,7 @@ class JapaneseMessageCatalog:
 
     @classmethod
     def get_rendering_error(
-        cls, error_type: str, template_name: Optional[str] = None, **kwargs: Any
+        cls, error_type: str, template_name: str | None = None, **kwargs: Any
     ) -> UserFriendlyError:
         """レンダリングエラーのメッセージを生成"""
         if error_type not in cls.RENDERING_MESSAGES:
@@ -407,7 +407,7 @@ class UserGuidanceProvider:
     @classmethod
     def get_guidance_for_error(
         cls, error: UserFriendlyError
-    ) -> Optional[Dict[str, List[str]]]:
+    ) -> Optional[dict[str, list[str]]]:
         """エラーに対する追加ガイダンスを取得"""
         guidance = {}
 
@@ -439,7 +439,7 @@ class UserGuidanceProvider:
         return guidance if guidance else None
 
     @classmethod
-    def get_beginner_tips(cls, operation: str) -> List[str]:
+    def get_beginner_tips(cls, operation: str) -> list[str]:
         """初心者向けのティップスを取得"""
         tips = {
             "convert": [

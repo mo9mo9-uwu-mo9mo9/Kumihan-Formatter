@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 class ErrorLevel(Enum):
@@ -34,9 +34,9 @@ class ErrorSolution:
     """エラー解決方法"""
 
     quick_fix: str  # 即座にできる解決方法
-    detailed_steps: List[str]  # 詳細な手順
-    external_links: Optional[List[str]] = None  # 参考リンク
-    alternative_approaches: Optional[List[str]] = None  # 代替手段
+    detailed_steps: list[str]  # 詳細な手順
+    external_links: list[str] | None = None  # 参考リンク
+    alternative_approaches: list[str] | None = None  # 代替手段
 
 
 @dataclass
@@ -48,8 +48,8 @@ class UserFriendlyError:
     category: ErrorCategory  # エラーカテゴリ
     user_message: str  # ユーザー向けメッセージ
     solution: ErrorSolution  # 解決方法
-    technical_details: Optional[str] = None  # 技術的詳細
-    context: Optional[Dict[str, Any]] = None  # エラーコンテキスト
+    technical_details: str | None = None  # 技術的詳細
+    context: dict[str, Any] | None = None  # エラーコンテキスト
 
     def format_message(self, include_technical: bool = False) -> str:
         """フォーマット済みメッセージを取得"""

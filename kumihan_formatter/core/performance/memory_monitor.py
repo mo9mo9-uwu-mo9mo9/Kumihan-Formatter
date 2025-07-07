@@ -32,8 +32,8 @@ class MemorySnapshot:
     available_memory: int
     process_memory: int
     gc_objects: int
-    gc_collections: List[int]  # 各世代のGC回数
-    custom_objects: Dict[str, int] = field(default_factory=dict)
+    gc_collections: list[int]  # 各世代のGC回数
+    custom_objects: dict[str, int] = field(default_factory=dict)
 
     @property
     def memory_mb(self) -> float:
@@ -107,19 +107,19 @@ class MemoryMonitor:
         self.enable_object_tracking = enable_object_tracking
 
         # スナップショット履歴
-        self.snapshots: List[MemorySnapshot] = []
+        self.snapshots: list[MemorySnapshot] = []
 
         # メモリリーク検出
-        self.detected_leaks: Dict[str, MemoryLeak] = {}
-        self.object_counts: Dict[str, List[Tuple[float, int]]] = defaultdict(list)
+        self.detected_leaks: dict[str, MemoryLeak] = {}
+        self.object_counts: dict[str, list[tuple[float, int]]] = defaultdict(list)
 
         # 監視対象オブジェクト
-        self.tracked_objects: Dict[str, Set[Any]] = defaultdict(set)
-        self.weak_refs: Dict[str, List[weakref.ReferenceType]] = defaultdict(list)  # type: ignore
+        self.tracked_objects: dict[str, set[Any]] = defaultdict(set)
+        self.weak_refs: dict[str, list[weakref.ReferenceType]] = defaultdict(list)  # type: ignore
 
         # モニタリング制御
         self._monitoring = False
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._monitor_thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
         # アラート設定
@@ -260,7 +260,7 @@ class MemoryMonitor:
                 f"オブジェクト登録: {obj_type} (合計: {len(self.weak_refs[obj_type])}個)"
             )
 
-    def get_memory_usage(self) -> Dict[str, Any]:
+    def get_memory_usage(self) -> dict[str, Any]:
         """現在のメモリ使用量を取得"""
         if not self.snapshots:
             self.take_snapshot()
@@ -281,7 +281,7 @@ class MemoryMonitor:
 
         return usage_info
 
-    def get_memory_trend(self, window_seconds: float = 60.0) -> Dict[str, Any]:
+    def get_memory_trend(self, window_seconds: float = 60.0) -> dict[str, Any]:
         """メモリ使用量のトレンドを分析
 
         Args:
@@ -333,7 +333,7 @@ class MemoryMonitor:
             ),
         }
 
-    def get_memory_leaks(self) -> List[Dict[str, Any]]:
+    def get_memory_leaks(self) -> List[dict[str, Any]]:
         """検出されたメモリリークの情報を取得"""
         leak_info = []
 
@@ -353,7 +353,7 @@ class MemoryMonitor:
 
         return sorted(leak_info, key=lambda x: x["severity"], reverse=True)
 
-    def force_garbage_collection(self) -> Dict[str, Any]:
+    def force_garbage_collection(self) -> dict[str, Any]:
         """ガベージコレクションを強制実行"""
         self.logger.info("ガベージコレクション強制実行開始")
         before_snapshot = self.take_snapshot()
@@ -384,7 +384,7 @@ class MemoryMonitor:
         )
         return result
 
-    def optimize_memory_settings(self) -> Dict[str, Any]:
+    def optimize_memory_settings(self) -> dict[str, Any]:
         """メモリ設定を最適化"""
         actions_taken = []
 

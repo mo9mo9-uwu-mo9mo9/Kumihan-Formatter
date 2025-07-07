@@ -16,7 +16,7 @@ class ValidationReporter:
         pass
 
     def generate_report(
-        self, issues: List[ValidationIssue], format_type: str = "text"
+        self, issues: list[ValidationIssue], format_type: str = "text"
     ) -> str:
         """
         Generate validation report
@@ -35,7 +35,7 @@ class ValidationReporter:
         else:
             return self._generate_text_report(issues)
 
-    def _generate_text_report(self, issues: List[ValidationIssue]) -> str:
+    def _generate_text_report(self, issues: list[ValidationIssue]) -> str:
         """Generate text format report"""
         if not issues:
             return "✅ No validation issues found."
@@ -66,7 +66,7 @@ class ValidationReporter:
 
         return "\n".join(lines)
 
-    def _generate_json_report(self, issues: List[ValidationIssue]) -> str:
+    def _generate_json_report(self, issues: list[ValidationIssue]) -> str:
         """Generate JSON format report"""
         report_data = {
             "summary": {
@@ -91,7 +91,7 @@ class ValidationReporter:
 
         return json.dumps(report_data, ensure_ascii=False, indent=2)
 
-    def _generate_html_report(self, issues: List[ValidationIssue]) -> str:
+    def _generate_html_report(self, issues: list[ValidationIssue]) -> str:
         """Generate HTML format report"""
         if not issues:
             return (
@@ -142,7 +142,7 @@ class ValidationReporter:
 
         return "\n".join(html_parts)
 
-    def print_summary(self, issues: List[ValidationIssue]) -> None:
+    def print_summary(self, issues: list[ValidationIssue]) -> None:
         """Print a summary of validation issues to console"""
         errors = sum(1 for i in issues if i.is_error())
         warnings = sum(1 for i in issues if i.is_warning())
