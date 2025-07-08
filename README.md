@@ -34,6 +34,9 @@ python -m pip install -r requirements-dev.txt
 
 # 開発用CLI使用例
 python -m kumihan_formatter convert input.txt
+
+# 開発ログの有効化（Claude Code向け）
+KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
 ```
 
 ## 💡 基本的な記法

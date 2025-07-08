@@ -90,6 +90,28 @@ class ExampleClass:
             raise
 ```
 
+### 開発ログ機能 (Issue#446)
+
+Claude Code向けの専用ログ機能が実装されています：
+
+**特徴**:
+- **出力先**: `/tmp/kumihan_formatter/` （Claude Codeがアクセス可能）
+- **有効化**: `KUMIHAN_DEV_LOG=true` 環境変数
+- **セッション管理**: タイムスタンプ付きファイル名
+- **自動管理**: 24時間後の自動削除、5MB制限
+
+**使用方法**:
+```bash
+# 開発ログ有効化
+KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
+
+# ログファイル確認
+ls /tmp/kumihan_formatter/
+cat /tmp/kumihan_formatter/dev_log_*.log
+```
+
+**実装場所**: `kumihan_formatter/core/utilities/logger.py` の `DevLogHandler` クラス
+
 ---
 
 開発を楽しみましょう 🎉

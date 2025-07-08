@@ -148,6 +148,25 @@ python -m cProfile -s cumulative cli.py
 - ログレベル: `--debug`オプション使用
 - エラートレース: `--traceback`オプション
 
+## 開発ログ機能 (Issue#446)
+Claude Code向けの開発ログ機能が利用可能です：
+
+```bash
+# 開発ログの有効化
+KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
+
+# ログファイルの確認
+ls /tmp/kumihan_formatter/
+cat /tmp/kumihan_formatter/dev_log_*.log
+```
+
+### 開発ログの特徴
+- **出力先**: `/tmp/kumihan_formatter/`
+- **有効化**: `KUMIHAN_DEV_LOG=true`環境変数
+- **ファイル名**: `dev_log_<セッションID>.log`
+- **自動クリーンアップ**: 24時間経過後に削除
+- **サイズ制限**: 5MB（超過時は自動ローテーション）
+- **本番環境**: 環境変数未設定時は無効
 ---
 
 **注意**: より詳細な開発ガイドラインは上記リンク先を参照。
