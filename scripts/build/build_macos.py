@@ -194,7 +194,7 @@ class MacOSBuilder:
         print("[INFO] Notarizing app bundle...")
         print("[WARNING] Notarization requires Apple ID configuration")
         print(
-            "詳細: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution"
+            "Details: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution"
         )
 
         # This would require Apple ID credentials and is beyond basic setup

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-アルファ版ビルドスクリプト
+Alpha build script
 Generate Mac/Windows executable files
 """
 
@@ -49,7 +49,7 @@ def main():
         sys.exit(1)
 
     # Execute build
-    print(f"🔨 ビルド開始: {spec_file}")
+    print(f"🔨 Build starting: {spec_file}")
     try:
         subprocess.run(
             [sys.executable, "-m", "PyInstaller", "--clean", "--noconfirm", spec_file],
@@ -59,7 +59,7 @@ def main():
         # Check output file
         dist_path = project_root / "dist" / output_name
         if dist_path.exists():
-            print(f"✅ ビルド成功: {dist_path}")
+            print(f"✅ Build successful: {dist_path}")
 
             # Execution test
             print("🧪 Execution testing...")
@@ -75,7 +75,7 @@ def main():
             sys.exit(1)
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ ビルドエラー: {e}")
+        print(f"❌ Build error: {e}")
         sys.exit(1)
 
     print("🎉 Alpha build completed")
