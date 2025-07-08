@@ -76,7 +76,8 @@ hiddenimports = [
     'rich.progress',
     'rich.table',
     'watchdog',
-    'pyyaml',
+    'PyYAML',
+    'yaml',
     'tkinter',
     'tkinter.ttk',
     'tkinter.filedialog',
@@ -175,7 +176,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name=f'{APP_NAME}.app',
-    icon=str(ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.icns') if (ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.icns').exists() else None,  # Add icon file path if available (*.icns)
+    icon=None,  # アイコンファイルが空のため無効化
     bundle_identifier=APP_IDENTIFIER,
     version=APP_VERSION,
     info_plist={

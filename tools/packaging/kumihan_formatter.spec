@@ -75,7 +75,8 @@ hiddenimports = [
     'rich.progress',
     'rich.table',
     'watchdog',
-    'pyyaml',
+    'PyYAML',
+    'yaml',
     'tkinter',
     'tkinter.ttk',
     'tkinter.filedialog',
@@ -161,7 +162,7 @@ exe = EXE(
     entitlements_file=None,
     # Windows-specific options
     version='version_info.txt',  # We'll create this separately
-    icon=str(ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.ico') if (ROOT_DIR / 'kumihan_formatter' / 'assets' / 'icon.ico').exists() else None,  # Add icon file path if available
+    icon=None,  # アイコンファイルが空のため無効化
     # Manifest options
     manifest=None,
     # Additional Windows options
