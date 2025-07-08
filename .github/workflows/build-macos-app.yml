@@ -28,7 +28,6 @@ on:
       - 'feature/issue391-cross-platform-packaging'
     paths:
       - 'kumihan_formatter/**'
-      - 'scripts/build/build_macos.py'
       - 'tools/packaging/kumihan_formatter_macos.spec'
 
 jobs:

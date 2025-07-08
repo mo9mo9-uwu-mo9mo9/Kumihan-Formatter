@@ -26,7 +26,6 @@ on:
       - 'experimental/windows-exe-packaging'
     paths:
       - 'kumihan_formatter/**'
-      - 'scripts/build/build_windows.py'
       - 'tools/packaging/kumihan_formatter.spec'
       - 'tools/packaging/version_info.txt'
 
