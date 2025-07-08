@@ -26,7 +26,9 @@ class WindowsBuilder:
         self.root_dir = root_dir or Path(__file__).parent
         self.dist_dir = self.root_dir / "dist"
         self.build_dir = self.root_dir / "build"
-        self.spec_file = self.root_dir / "kumihan_formatter.spec"
+        # .spec file is located in tools/packaging directory
+        project_root = Path(__file__).parent.parent.parent
+        self.spec_file = project_root / "tools" / "packaging" / "kumihan_formatter.spec"
         self.exe_name = "Kumihan-Formatter.exe"
 
     def check_dependencies(self) -> bool:
