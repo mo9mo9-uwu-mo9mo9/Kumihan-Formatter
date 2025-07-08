@@ -28,7 +28,7 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             workflow_id: 'build-test-packages.yml',
-            ref: context.ref,
+            ref: 'main',
             inputs: {
               test_windows: 'true',
               test_macos: 'true'
