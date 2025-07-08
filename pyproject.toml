@@ -43,7 +43,18 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["dev*"]
+exclude = ["dev*", "tests*", "tools*"]
+
+[tool.setuptools.package-data]
+kumihan_formatter = [
+    "templates/*.html.j2",
+    "templates/*.css",
+    "templates/*.js",
+    "templates/partials/*",
+    "assets/*",
+    "config/*.py",
+    "models/*.py"
+]
 
 
 [tool.black]

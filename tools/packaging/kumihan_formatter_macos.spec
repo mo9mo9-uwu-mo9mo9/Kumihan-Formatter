@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Get the directory containing this spec file
 SPEC_DIR = Path(SPECPATH)
-ROOT_DIR = SPEC_DIR
+ROOT_DIR = SPEC_DIR.parent.parent
 
 # Define application metadata
 APP_NAME = 'Kumihan-Formatter'
@@ -23,16 +23,28 @@ APP_IDENTIFIER = 'com.mo9mo9.kumihan-formatter'
 ENTRY_POINT = str(ROOT_DIR / 'kumihan_formatter' / 'gui_launcher.py')
 
 # Data files and directories to include
-datas = [
-    # Templates directory
-    (str(ROOT_DIR / 'kumihan_formatter' / 'templates'), 'kumihan_formatter/templates'),
-    # Examples directory (for sample generation)
-    (str(ROOT_DIR / 'examples'), 'examples'),
-    # Dev tools (for test file generation)
-    (str(ROOT_DIR / 'dev' / 'tools'), 'dev/tools'),
-    # Configuration files
-    (str(ROOT_DIR / 'pyproject.toml'), '.'),
-]
+# Check which directories exist and only include them
+datas = []
+
+# Templates directory (必須)
+templates_dir = ROOT_DIR / 'kumihan_formatter' / 'templates'
+if templates_dir.exists():
+    datas.append((str(templates_dir), 'kumihan_formatter/templates'))
+
+# Assets directory (アイコンなど)
+assets_dir = ROOT_DIR / 'kumihan_formatter' / 'assets'
+if assets_dir.exists():
+    datas.append((str(assets_dir), 'kumihan_formatter/assets'))
+
+# Examples directory (存在する場合のみ)
+examples_dir = ROOT_DIR / 'examples'
+if examples_dir.exists():
+    datas.append((str(examples_dir), 'examples'))
+
+# Configuration files
+config_file = ROOT_DIR / 'pyproject.toml'
+if config_file.exists():
+    datas.append((str(config_file), '.'))
 
 # Hidden imports (modules that PyInstaller might miss)
 hiddenimports = [
