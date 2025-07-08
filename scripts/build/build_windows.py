@@ -37,7 +37,7 @@ class WindowsBuilder:
         try:
             import PyInstaller
 
-            print(f"[OK] PyInstaller {PyInstaller.__version__} が見つかりました")
+            print(f"[OK] PyInstaller {PyInstaller.__version__} found")
         except ImportError:
             print("[ERROR] PyInstaller が見つかりません")
             print("インストールコマンド: pip install pyinstaller")
@@ -47,7 +47,7 @@ class WindowsBuilder:
         try:
             import kumihan_formatter
 
-            print("[OK] kumihan_formatter が見つかりました")
+            print("[OK] kumihan_formatter found")
         except ImportError:
             print("[ERROR] kumihan_formatter パッケージが見つかりません")
             print("現在のディレクトリから実行していることを確認してください")
@@ -76,7 +76,7 @@ class WindowsBuilder:
                 print(f"   削除中: {dir_path}")
                 shutil.rmtree(dir_path)
             else:
-                print(f"   スキップ: {dir_path} (存在しません)")
+                print(f"   Skip: {dir_path} (does not exist)")
 
     def install_pyinstaller_if_needed(self) -> None:
         """Install PyInstaller if not available"""
