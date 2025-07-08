@@ -28,11 +28,9 @@
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
 cd Kumihan-Formatter
 
-# 自動セットアップ (Windows)
-scripts/setup/Windows用初回セットアップ.bat
-
-# 自動セットアップ (macOS)
-scripts/setup/macOS用初回セットアップ.command
+# 開発環境セットアップ
+python -m pip install -e .
+python -m pip install -r requirements-dev.txt
 
 # 開発用CLI使用例
 python -m kumihan_formatter convert input.txt
