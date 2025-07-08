@@ -1,0 +1,118 @@
+# Auto-merge Configuration for Kumihan-Formatter
+# GitHub App統合用自動マージ設定
+
+# 自動マージ対象ブランチ
+target_branches:
+  - "main"
+  - "develop"
+
+# 自動マージ条件
+merge_conditions:
+  # 必要なチェック
+  required_checks:
+    - "full-test (ubuntu-latest, 3.12)"
+    - "full-test (windows-latest, 3.12)"
+    - "full-test (macos-latest, 3.12)"
+
+  # 承認条件
+  approvals:
+    required_count: 0  # オーナーのみのプロジェクトなので0
+    dismiss_stale: true
+    require_code_owner: false
+
+  # コンフリクト確認
+  no_conflicts: true
+
+  # 最新状態確認
+  up_to_date: true
+
+# ラベルベースの自動マージ
+label_rules:
+  # 緊急修正は即座にマージ
+  emergency:
+    labels: ["緊急"]
+    bypass_reviews: true
+    required_checks: ["full-test (ubuntu-latest, 3.12)"]
+
+  # アルファリリースは自動マージ
+  alpha_release:
+    labels: ["CI/CD"]
+    auto_merge: true
+
+  # ドキュメント更新は軽量チェック
+  documentation:
+    labels: ["ドキュメント"]
+    required_checks: ["full-test (ubuntu-latest, 3.12)"]
+
+# PR種別ごとの設定
+pr_types:
+  # 機能追加
+  feature:
+    merge_method: "squash"
+    delete_branch: true
+
+  # バグ修正
+  bugfix:
+    merge_method: "squash"
+    delete_branch: true
+
+  # ホットフィックス
+  hotfix:
+    merge_method: "merge"
+    delete_branch: false
+    priority: "high"
+
+  # リファクタリング
+  refactor:
+    merge_method: "squash"
+    delete_branch: true
+    require_full_test: true
+
+# 自動化アクション
+actions:
+  # マージ後アクション
+  post_merge:
+    - action: "delete_branch"
+      condition: "feature_branch"
+    - action: "create_release"
+      condition: "release_branch"
+    - action: "notify_discord"
+      condition: "major_change"
+
+  # マージ前アクション
+  pre_merge:
+    - action: "update_changelog"
+      condition: "version_change"
+    - action: "run_security_scan"
+      condition: "dependency_change"
+
+# 除外設定
+exclusions:
+  # 自動マージしないファイル
+  protected_files:
+    - ".github/workflows/*.yml"
+    - "pyproject.toml"
+    - "requirements*.txt"
+
+  # 自動マージしないPR
+  protected_prs:
+    - draft: true
+    - has_label: "作業中"
+    - has_label: "検討中"
+    - conflicts: true
+
+# 通知設定
+notifications:
+  # マージ成功
+  merge_success:
+    discord: true
+    github_comment: true
+
+  # マージ失敗
+  merge_failure:
+    discord: true
+    github_issue: true
+
+  # 待機中
+  merge_pending:
+    github_status: true

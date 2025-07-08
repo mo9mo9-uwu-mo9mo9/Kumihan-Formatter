@@ -1,0 +1,30 @@
+# Code Owners for Kumihan-Formatter
+# GitHub App統合用コードオーナー設定
+
+# デフォルトオーナー（全ファイル）
+* @mo9mo9-uwu-mo9mo9
+
+# コア機能
+/kumihan_formatter/ @mo9mo9-uwu-mo9mo9
+
+# 設定ファイル
+/pyproject.toml @mo9mo9-uwu-mo9mo9
+/requirements*.txt @mo9mo9-uwu-mo9mo9
+/.github/ @mo9mo9-uwu-mo9mo9
+
+# ドキュメント
+/docs/ @mo9mo9-uwu-mo9mo9
+/README.md @mo9mo9-uwu-mo9mo9
+/SPEC.md @mo9mo9-uwu-mo9mo9
+
+# ビルド・デプロイ
+/.github/workflows/ @mo9mo9-uwu-mo9mo9
+/tools/packaging/ @mo9mo9-uwu-mo9mo9
+/scripts/ @mo9mo9-uwu-mo9mo9
+
+# テスト
+/tests/ @mo9mo9-uwu-mo9mo9
+
+# サンプル・テンプレート
+/examples/ @mo9mo9-uwu-mo9mo9
+/tools/syntax/ @mo9mo9-uwu-mo9mo9

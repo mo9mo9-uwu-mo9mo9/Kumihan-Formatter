@@ -1,0 +1,173 @@
+name: Claude Code Integration
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened]
+  pull_request:
+    types: [opened, edited, closed, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  claude-integration:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Claude Code Auto-Analysis
+      uses: anthropics/claude-github-action@v1
+      with:
+        # Issue分析
+        analyze_issues: true
+        suggest_labels: true
+        suggest_assignees: true
+
+        # PR分析
+        analyze_prs: true
+        suggest_reviewers: true
+        auto_description: true
+
+        # コードレビュー
+        auto_review: true
+        review_focus: "type_safety,performance,security"
+
+        # 自動化
+        auto_merge_eligible: true
+        auto_close_duplicates: true
+
+        # プロジェクト設定
+        project_config: ".github/claude-config.yml"
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+
+  issue-management:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+
+    steps:
+    - name: Auto-label Issues
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+          const body = issue.body.toLowerCase();
+
+          // 自動ラベル付け
+          const labels = [];
+
+          if (title.includes('バグ') || title.includes('bug') || body.includes('エラー')) {
+            labels.push('バグ');
+          }
+
+          if (title.includes('機能') || title.includes('feature')) {
+            labels.push('機能改善');
+          }
+
+          if (title.includes('ドキュメント') || title.includes('docs')) {
+            labels.push('ドキュメント');
+          }
+
+          if (title.includes('緊急') || title.includes('urgent')) {
+            labels.push('緊急');
+          }
+
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labels
+            });
+          }
+
+    - name: Auto-assign Milestone
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+
+          // v1.0マイルストーンID（存在する場合）
+          const milestones = await github.rest.issues.listMilestones({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+
+          const v1Milestone = milestones.data.find(m => m.title === 'v1.0');
+
+          if (v1Milestone && !title.includes('v2') && !title.includes('将来')) {
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              milestone: v1Milestone.number
+            });
+          }
+
+  pr-management:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Auto-label PRs
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const title = pr.title.toLowerCase();
+          const branch = pr.head.ref.toLowerCase();
+
+          const labels = [];
+
+          // ブランチ名ベース
+          if (branch.includes('feature/')) {
+            labels.push('機能改善');
+          } else if (branch.includes('fix/')) {
+            labels.push('バグ');
+          } else if (branch.includes('docs/')) {
+            labels.push('ドキュメント');
+          } else if (branch.includes('refactor/')) {
+            labels.push('リファクタリング');
+          }
+
+          // タイトルベース
+          if (title.includes('issue#') || title.includes('fix:')) {
+            labels.push('完了待ち');
+          }
+
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: labels
+            });
+          }
+
+  discord-notification:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'issues' && github.event.action == 'closed') ||
+      (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+
+    steps:
+    - name: Notify Discord
+      run: |
+        # Discord通知スクリプトが存在する場合の処理
+        if [ -f "~/.claude/scripts/discord-notify.sh" ]; then
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            message="Issue #${{ github.event.issue.number }} が完了しました: ${{ github.event.issue.title }}"
+          else
+            message="PR #${{ github.event.pull_request.number }} がマージされました: ${{ github.event.pull_request.title }}"
+          fi
+
+          bash ~/.claude/scripts/discord-notify.sh "$message"
+        fi

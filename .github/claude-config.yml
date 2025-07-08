@@ -1,0 +1,137 @@
+# Claude Code GitHub App Configuration
+# Kumihan-Formatter プロジェクト用設定
+
+# プロジェクト情報
+project:
+  name: "Kumihan-Formatter"
+  description: "CoC6th同人シナリオテキストファイルをワンコマンドで美しいHTMLに変換する日本語ツール"
+  language: "ja"
+  main_branch: "main"
+  development_branch: "develop"
+
+# 自動化設定
+automation:
+  # Issue管理
+  issues:
+    auto_assign_labels: true
+    auto_milestone: true
+    template_suggestions: true
+    duplicate_detection: true
+
+  # PR管理
+  pull_requests:
+    auto_title_generation: true
+    auto_description: true
+    auto_labels: true
+    auto_reviewers: false
+    draft_for_wip: true
+
+  # コミット管理
+  commits:
+    enforce_conventional: true
+    auto_changelog: true
+    version_bumping: true
+
+# ラベル管理
+labels:
+  priority:
+    - name: "緊急"
+      color: "B60205"
+      description: "システム停止・セキュリティ問題"
+    - name: "通常"
+      color: "FFA500"
+      description: "通常の機能改善・軽微なバグ"
+    - name: "低優先度"
+      color: "87CEEB"
+      description: "時間があるときに対応"
+
+  status:
+    - name: "作業中"
+      color: "FFFF00"
+      description: "現在作業が進行中"
+    - name: "完了待ち"
+      color: "90EE90"
+      description: "作業完了、クローズ待ち"
+    - name: "検討中"
+      color: "FBCA04"
+      description: "実装を検討中・調査段階"
+
+# ワークフロー設定
+workflows:
+  # 自動マージ
+  auto_merge:
+    enabled: true
+    conditions:
+      - "all_checks_pass"
+      - "approved_by_owner"
+      - "no_conflicts"
+
+  # 自動リリース
+  auto_release:
+    enabled: true
+    alpha_branch: "develop"
+    release_branch: "main"
+
+# 通知設定
+notifications:
+  # Discord通知（既存スクリプト連携）
+  discord:
+    enabled: true
+    webhook_script: "~/.claude/scripts/discord-notify.sh"
+    events:
+      - "issue_closed"
+      - "pr_merged"
+      - "release_published"
+
+  # GitHub通知
+  github:
+    mention_on_assignment: true
+    review_requests: true
+    status_updates: true
+
+# テンプレート設定
+templates:
+  # Issue テンプレート
+  issue:
+    bug_report: true
+    feature_request: true
+    documentation: true
+
+  # PR テンプレート
+  pull_request:
+    standard: true
+    hotfix: true
+    release: true
+
+# セキュリティ設定
+security:
+  # 秘密情報保護
+  secrets_detection: true
+
+  # 依存関係チェック
+  dependency_scanning: true
+
+  # 脆弱性アラート
+  vulnerability_alerts: true
+
+# Claude Code 固有設定
+claude_code:
+  # 自動コードレビュー
+  auto_review:
+    enabled: true
+    focus_areas:
+      - "type_safety"
+      - "performance"
+      - "security"
+      - "documentation"
+
+  # 自動修正提案
+  auto_suggestions:
+    enabled: true
+    confidence_threshold: 0.8
+
+  # コンテキスト保持
+  context:
+    remember_project_structure: true
+    remember_coding_patterns: true
+    remember_issue_history: true
