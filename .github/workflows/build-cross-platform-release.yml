@@ -226,6 +226,8 @@ jobs:
     needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.create_release == 'true' || startsWith(github.ref, 'refs/tags/') }}
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout code
