@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Windows EXE Build Script for Kumihan-Formatter
-Windows向けexe形式パッケージング用ビルドスクリプト
+Windows executable packaging build script
 
 Usage:
     python build_windows.py [--clean] [--test] [--upload]
@@ -31,7 +31,7 @@ class WindowsBuilder:
 
     def check_dependencies(self) -> bool:
         """Check if required dependencies are installed"""
-        print("[INFO] 依存関係をチェック中...")
+        print("[INFO] Checking dependencies...")
 
         # Check PyInstaller
         try:
@@ -68,7 +68,7 @@ class WindowsBuilder:
 
     def clean_build_dirs(self) -> None:
         """Clean build and dist directories"""
-        print("[INFO] ビルドディレクトリをクリーンアップ中...")
+        print("[INFO] Cleaning build directories...")
 
         dirs_to_clean = [self.dist_dir, self.build_dir]
         for dir_path in dirs_to_clean:
@@ -90,7 +90,7 @@ class WindowsBuilder:
 
     def build_executable(self) -> None:
         """Build the Windows executable using PyInstaller"""
-        print("[INFO] Windows実行ファイルをビルド中...")
+        print("[INFO] Building Windows executable...")
 
         if not self.spec_file.exists():
             raise FileNotFoundError(f"Spec file not found: {self.spec_file}")
@@ -248,7 +248,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             if upload:
                 self.upload_to_github(package_path)
 
-            print("\n[OK] ビルドが完了しました！")
+            print("\n[OK] Build completed successfully!")
             print(f"   実行ファイル: {exe_path}")
             print(f"   配布パッケージ: {package_path}")
             print("\n[INFO] 次のステップ:")
@@ -259,7 +259,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             return True
 
         except Exception as e:
-            print(f"\n[ERROR] ビルドに失敗しました: {e}")
+            print(f"\n[ERROR] Build failed: {e}")
             import traceback
 
             traceback.print_exc()
@@ -269,14 +269,14 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 def main() -> None:
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description="Kumihan-Formatter Windows版ビルドスクリプト",
+        description="Kumihan-Formatter Windows build script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--clean", action="store_true", help="ビルド前にディレクトリをクリーンアップ"
+        "--clean", action="store_true", help="Clean directories before build"
     )
     parser.add_argument(
-        "--test", action="store_true", help="ビルド後に実行ファイルをテスト"
+        "--test", action="store_true", help="Test executable after build"
     )
     parser.add_argument(
         "--upload", action="store_true", help="GitHub リリースにアップロード"
