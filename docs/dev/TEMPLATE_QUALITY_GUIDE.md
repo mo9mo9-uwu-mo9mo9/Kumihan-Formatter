@@ -28,11 +28,11 @@
 ### Step 1: 作成前チェック
 ```bash
 # 既存テンプレートの確認
-ls 記法ツール/サンプルファイル/
+ls tools/syntax/記法ツール/サンプルファイル/
 ls examples/elements/
 
 # 類似テンプレートの存在確認
-grep -r "類似キーワード" 記法ツール/サンプルファイル/
+grep -r "類似キーワード" tools/syntax/記法ツール/サンプルファイル/
 ```
 
 ### Step 2: テンプレート作成
@@ -43,13 +43,13 @@ grep -r "類似キーワード" 記法ツール/サンプルファイル/
 ### Step 3: 記法検証
 ```bash
 # 検証実行
-python dev/tools/syntax_fixer.py path/to/new-template.txt
+python tools/dev/tools/syntax_fixer.py path/to/new-template.txt
 
 # プレビュー確認
-python dev/tools/syntax_fixer.py path/to/new-template.txt --preview
+python tools/dev/tools/syntax_fixer.py path/to/new-template.txt --preview
 
 # 自動修正（必要時）
-python dev/tools/syntax_fixer.py path/to/new-template.txt --fix
+python tools/dev/tools/syntax_fixer.py path/to/new-template.txt --fix
 ```
 
 ### Step 4: 品質チェック

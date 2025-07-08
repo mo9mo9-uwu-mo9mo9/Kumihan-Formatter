@@ -9,10 +9,10 @@ Kumihan-Formatterの記法チェック・自動修正ツールの使用方法に
 
 ```bash
 # 基本的な使用方法
-python dev/tools/syntax_validator.py examples/*.txt
+python tools/dev/tools/syntax_validator.py examples/*.txt
 
 # 単一ファイル
-python dev/tools/syntax_validator.py examples/01-quickstart.txt
+python tools/dev/tools/syntax_validator.py examples/01-quickstart.txt
 ```
 
 ### 2. syntax_fixer.py（推奨版）
@@ -20,13 +20,13 @@ python dev/tools/syntax_validator.py examples/01-quickstart.txt
 
 ```bash
 # 記法エラーの検証のみ
-python dev/tools/syntax_fixer.py examples/*.txt
+python tools/dev/tools/syntax_fixer.py examples/*.txt
 
 # 修正内容のプレビュー（ファイル変更なし）
-python dev/tools/syntax_fixer.py examples/*.txt --fix --preview
+python tools/dev/tools/syntax_fixer.py examples/*.txt --fix --preview
 
 # 自動修正の実行（ファイル変更あり）
-python dev/tools/syntax_fixer.py examples/*.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/*.txt --fix
 ```
 
 ## 📱 macOS D&D制限について
@@ -41,16 +41,16 @@ python dev/tools/syntax_fixer.py examples/*.txt --fix
 # プロジェクトルートディレクトリで実行
 
 # 1. 記法エラーの検証
-python dev/tools/syntax_fixer.py examples/elements/*.txt
+python tools/dev/tools/syntax_fixer.py examples/elements/*.txt
 
 # 2. 修正内容のプレビュー
-python dev/tools/syntax_fixer.py examples/elements/*.txt --fix --preview
+python tools/dev/tools/syntax_fixer.py examples/elements/*.txt --fix --preview
 
 # 3. 自動修正の実行
-python dev/tools/syntax_fixer.py examples/elements/*.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/elements/*.txt --fix
 
 # 4. 静かなモード（詳細出力を抑制）
-python dev/tools/syntax_fixer.py examples/*.txt --fix --quiet
+python tools/dev/tools/syntax_fixer.py examples/*.txt --fix --quiet
 ```
 
 ## 🎯 使用パターン
@@ -59,30 +59,30 @@ python dev/tools/syntax_fixer.py examples/*.txt --fix --quiet
 
 1. **エラー発見**: 記法問題の確認
    ```bash
-   python dev/tools/syntax_fixer.py examples/elements/item-template.txt
+   python tools/dev/tools/syntax_fixer.py examples/elements/item-template.txt
    ```
 
 2. **修正確認**: 修正内容の事前確認
    ```bash
-   python dev/tools/syntax_fixer.py examples/elements/item-template.txt --fix --preview
+   python tools/dev/tools/syntax_fixer.py examples/elements/item-template.txt --fix --preview
    ```
 
 3. **自動修正**: 実際のファイル修正
    ```bash
-   python dev/tools/syntax_fixer.py examples/elements/item-template.txt --fix
+   python tools/dev/tools/syntax_fixer.py examples/elements/item-template.txt --fix
    ```
 
 ### バッチ処理
 
 ```bash
 # 全テンプレートファイルを一括処理
-python dev/tools/syntax_fixer.py examples/elements/*.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/elements/*.txt --fix
 
 # 全サンプルファイルを一括処理
-python dev/tools/syntax_fixer.py examples/*.txt --fix --preview
+python tools/dev/tools/syntax_fixer.py examples/*.txt --fix --preview
 
 # 特定パターンのファイルのみ
-python dev/tools/syntax_fixer.py examples/*template*.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/*template*.txt --fix
 ```
 
 ## 🔧 技術詳細
@@ -158,13 +158,13 @@ chmod +x 記法ツール/*.command
 
 ```bash
 # 絶対パス
-python dev/tools/syntax_fixer.py /path/to/file.txt --fix
+python tools/dev/tools/syntax_fixer.py /path/to/file.txt --fix
 
 # 相対パス（プロジェクトルートから）
-python dev/tools/syntax_fixer.py examples/01-quickstart.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/01-quickstart.txt --fix
 
 # ワイルドカード
-python dev/tools/syntax_fixer.py examples/elements/*.txt --fix
+python tools/dev/tools/syntax_fixer.py examples/elements/*.txt --fix
 ```
 
 ## 📈 効果
