@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kumihan-formatter"
-version = "0.9.0-alpha.1"
+version = "0.9.0-alpha.2"
 description = "CoC6th同人シナリオなどのテキストファイルをワンコマンドで配布可能なHTMLに自動組版するCLIツール"
 authors = [{name = "mo9mo9-uwu-mo9mo9"}]
 readme = "README.md"
@@ -43,7 +43,18 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["dev*"]
+exclude = ["dev*", "tests*", "tools*"]
+
+[tool.setuptools.package-data]
+kumihan_formatter = [
+    "templates/*.html.j2",
+    "templates/*.css",
+    "templates/*.js",
+    "templates/partials/*",
+    "assets/*",
+    "config/*.py",
+    "models/*.py"
+]
 
 
 [tool.black]

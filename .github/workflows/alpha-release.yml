@@ -36,7 +36,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
-        pip install pyinstaller
+        pip install pyinstaller Pillow PyYAML
 
     - name: Install package
       run: pip install -e .
@@ -61,6 +61,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, 'alpha')
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -68,12 +70,20 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
 
+    - name: Create distribution packages
+      run: |
+        # Create distribution packages with README files
+        cd macos-executable
+        zip -r "../Kumihan-Formatter-${{ github.ref_name }}-macOS.zip" kumihan_formatter_macos
+        cd ../windows-executable
+        zip -r "../Kumihan-Formatter-${{ github.ref_name }}-Windows.zip" kumihan_formatter_windows.exe
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          macos-executable/*
-          windows-executable/*
+          Kumihan-Formatter-${{ github.ref_name }}-macOS.zip
+          Kumihan-Formatter-${{ github.ref_name }}-Windows.zip
         draft: false
         prerelease: true
         name: "Alpha Release ${{ github.ref_name }}"
@@ -85,14 +95,15 @@ jobs:
           - バグや不具合が含まれる可能性があります
           - フィードバックをお待ちしています
 
-          ### 実行ファイル
-          - `kumihan_formatter_macos`: macOS用実行ファイル
-          - `kumihan_formatter_windows.exe`: Windows用実行ファイル
+          ### 配布パッケージ
+          - `Kumihan-Formatter-${{ github.ref_name }}-macOS.zip`: macOS用実行ファイル
+          - `Kumihan-Formatter-${{ github.ref_name }}-Windows.zip`: Windows用実行ファイル
 
           ### 使用方法
-          1. お使いのOS用のファイルをダウンロード
-          2. 実行権限を付与（macOSの場合）
-          3. コマンドラインから実行
+          1. お使いのOS用のZIPファイルをダウンロード
+          2. ZIPファイルを展開
+          3. 実行権限を付与（macOSの場合）
+          4. コマンドラインから実行
 
           ### ライセンス
           このソフトウェアはプロプライエタリライセンスです。
