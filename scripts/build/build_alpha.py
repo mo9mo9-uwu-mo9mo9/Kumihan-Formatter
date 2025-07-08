@@ -15,7 +15,7 @@ def main():
     """アルファ版ビルドのメイン処理"""
 
     # プロジェクトルートに移動
-    project_root = Path(__file__).parent.parent
+    project_root = Path(__file__).parent.parent.parent
     os.chdir(project_root)
 
     print("🚀 Kumihan-Formatter アルファ版ビルド開始")
@@ -40,7 +40,7 @@ def main():
     system = platform.system()
     if system == "Darwin":  # macOS
         spec_file = "tools/packaging/kumihan_formatter_macos.spec"
-        output_name = "kumihan_formatter_macos"
+        output_name = "Kumihan-Formatter"
     elif system == "Windows":
         spec_file = "tools/packaging/kumihan_formatter.spec"
         output_name = "kumihan_formatter_windows.exe"

@@ -218,13 +218,13 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
         self, clean: bool = False, test: bool = False, upload: bool = False
     ) -> None:
         """Main build process"""
-        print("[INFO] Kumihan-Formatter Windows版ビルドを開始します...")
-        print(f"   プロジェクトディレクトリ: {self.root_dir}")
+        print("[INFO] Kumihan-Formatter Windows build starting...")
+        print(f"   Project directory: {self.root_dir}")
 
         try:
             # Check dependencies
             if not self.check_dependencies():
-                print("[ERROR] 依存関係のチェックに失敗しました")
+                print("[ERROR] Dependency check failed")
                 return False
 
             # Install PyInstaller if needed
