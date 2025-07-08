@@ -39,8 +39,8 @@ class WindowsBuilder:
 
             print(f"[OK] PyInstaller {PyInstaller.__version__} found")
         except ImportError:
-            print("[ERROR] PyInstaller が見つかりません")
-            print("インストールコマンド: pip install pyinstaller")
+            print("[ERROR] PyInstaller not found")
+            print("Install command: pip install pyinstaller")
             return False
 
         # Check main package
@@ -49,18 +49,18 @@ class WindowsBuilder:
 
             print("[OK] kumihan_formatter found")
         except ImportError:
-            print("[ERROR] kumihan_formatter パッケージが見つかりません")
-            print("現在のディレクトリから実行していることを確認してください")
+            print("[ERROR] kumihan_formatter package not found")
+            print("Please ensure running from current directory")
             return False
 
         # Check GUI dependencies
         try:
             import tkinter
 
-            print("[OK] tkinter が利用可能です")
+            print("[OK] tkinter available")
         except ImportError:
             print(
-                "[ERROR] tkinter が見つかりません（Pythonの標準ライブラリに含まれているはずです）"
+                "[ERROR] tkinter not found (should be included in Python standard library)"
             )
             return False
 
@@ -73,7 +73,7 @@ class WindowsBuilder:
         dirs_to_clean = [self.dist_dir, self.build_dir]
         for dir_path in dirs_to_clean:
             if dir_path.exists():
-                print(f"   削除中: {dir_path}")
+                print(f"   Removing: {dir_path}")
                 shutil.rmtree(dir_path)
             else:
                 print(f"   Skip: {dir_path} (does not exist)")
@@ -83,7 +83,7 @@ class WindowsBuilder:
         try:
             import PyInstaller
         except ImportError:
-            print("[INFO] PyInstaller をインストール中...")
+            print("[INFO] Installing PyInstaller...")
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
@@ -105,7 +105,7 @@ class WindowsBuilder:
             str(self.spec_file),
         ]
 
-        print(f"実行コマンド: {' '.join(cmd)}")
+        print(f"Running command: {' '.join(cmd)}")
         result = subprocess.run(cmd, cwd=self.root_dir)
 
         if result.returncode != 0:
@@ -131,14 +131,14 @@ class WindowsBuilder:
                 f"Built executable not found. Checked: {[str(p) for p in possible_exes]}"
             )
 
-        print(f"[OK] 実行ファイルが作成されました: {exe_path}")
-        print(f"   ファイルサイズ: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
+        print(f"[OK] Executable created: {exe_path}")
+        print(f"   File size: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
 
         return exe_path
 
     def test_executable(self, exe_path: Path) -> None:
         """Test the built executable"""
-        print("[INFO] 実行ファイルをテスト中...")
+        print("[INFO] Testing executable...")
 
         # Basic execution test (should start GUI)
         try:
@@ -147,27 +147,27 @@ class WindowsBuilder:
                 [str(exe_path), "--help"], capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
-                print("[OK] ヘルプ表示テスト: 成功")
+                print("[OK] Help display test: success")
             else:
-                print("[WARNING] ヘルプ表示テスト: スキップ（GUIアプリのため正常）")
+                print("[WARNING] Help display test: skipped (normal for GUI app)")
         except subprocess.TimeoutExpired:
-            print("[WARNING] ヘルプ表示テスト: タイムアウト（GUIアプリのため正常）")
+            print("[WARNING] Help display test: timeout (normal for GUI app)")
         except Exception as e:
-            print(f"[WARNING] ヘルプ表示テスト: {e}")
+            print(f"[WARNING] Help display test: {e}")
 
         # Check file dependencies
-        print("[INFO] 依存ファイルの確認...")
+        print("[INFO] Checking dependency files...")
         templates_exist = any((self.dist_dir / "_internal").glob("**/templates"))
         if templates_exist:
-            print("[OK] テンプレートファイルが含まれています")
+            print("[OK] Template files included")
         else:
-            print("[WARNING] テンプレートファイルが見つかりません")
+            print("[WARNING] Template files not found")
 
-        print("[OK] 基本テスト完了")
+        print("[OK] Basic test completed")
 
     def create_distribution_package(self, exe_path: Path) -> Path:
         """Create distribution package (ZIP file)"""
-        print("[INFO] 配布パッケージを作成中...")
+        print("[INFO] Creating distribution package...")
 
         # Create ZIP package
         package_name = "Kumihan-Formatter-v1.0-Windows"
@@ -178,41 +178,41 @@ class WindowsBuilder:
             zipf.write(exe_path, exe_path.name)
 
             # Add README for distribution
-            readme_content = """Kumihan-Formatter v1.0 - Windows版
+            readme_content = """Kumihan-Formatter v1.0 - Windows Edition
 
-【インストール方法】
-1. このZIPファイルを任意の場所に展開してください
-2. Kumihan-Formatter.exe をダブルクリックして起動してください
+Installation Instructions:
+1. Extract this ZIP file to any location
+2. Double-click Kumihan-Formatter.exe to launch
 
-【システム要件】
+System Requirements:
 - Windows 10 / 11 (64-bit)
-- インターネット接続不要
-- Pythonのインストール不要
+- No internet connection required
+- No Python installation required
 
-【使い方】
-1. アプリケーションを起動
-2. 「参照」ボタンから変換したいテキストファイルを選択
-3. 「変換実行」ボタンをクリック
+Usage:
+1. Launch the application
+2. Use "Browse" button to select text file for conversion
+3. Click "Convert" button
 
-【サポート】
+Support:
 - GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
 - Issues: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
 
-【ライセンス】
+License:
 MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 """
             zipf.writestr("README.txt", readme_content.encode("utf-8"))
 
-        print(f"[OK] 配布パッケージが作成されました: {zip_path}")
-        print(f"   パッケージサイズ: {zip_path.stat().st_size / 1024 / 1024:.1f} MB")
+        print(f"[OK] Distribution package created: {zip_path}")
+        print(f"   Package size: {zip_path.stat().st_size / 1024 / 1024:.1f} MB")
 
         return zip_path
 
     def upload_to_github(self, package_path: Path) -> None:
         """Upload package to GitHub releases (placeholder)"""
-        print("[INFO] GitHub リリースへのアップロード...")
-        print("[WARNING] GitHub Actions を使用した自動アップロードを推奨します")
-        print(f"   手動アップロード用パッケージ: {package_path}")
+        print("[INFO] Uploading to GitHub release...")
+        print("[WARNING] Automatic upload via GitHub Actions is recommended")
+        print(f"   Package for manual upload: {package_path}")
 
     def build(
         self, clean: bool = False, test: bool = False, upload: bool = False
@@ -249,12 +249,12 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
                 self.upload_to_github(package_path)
 
             print("\n[OK] Build completed successfully!")
-            print(f"   実行ファイル: {exe_path}")
-            print(f"   配布パッケージ: {package_path}")
-            print("\n[INFO] 次のステップ:")
-            print("   1. 実行ファイルをテストしてください")
-            print("   2. 異なるWindows環境でテストしてください")
-            print("   3. GitHub リリースページで配布パッケージを公開してください")
+            print(f"   Executable: {exe_path}")
+            print(f"   Distribution package: {package_path}")
+            print("\n[INFO] Next steps:")
+            print("   1. Test the executable")
+            print("   2. Test on different Windows environments")
+            print("   3. Publish distribution package on GitHub release page")
 
             return True
 
@@ -279,7 +279,7 @@ def main() -> None:
         "--test", action="store_true", help="Test executable after build"
     )
     parser.add_argument(
-        "--upload", action="store_true", help="GitHub リリースにアップロード"
+        "--upload", action="store_true", help="Upload to GitHub release"
     )
 
     args = parser.parse_args()

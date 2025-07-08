@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 アルファ版ビルドスクリプト
-Mac/Windows用実行ファイルを生成
+Generate Mac/Windows executable files
 """
 
 import os
@@ -12,31 +12,31 @@ from pathlib import Path
 
 
 def main():
-    """アルファ版ビルドのメイン処理"""
+    """Main processing for alpha build"""
 
-    # プロジェクトルートに移動
+    # Move to project root
     project_root = Path(__file__).parent.parent.parent
     os.chdir(project_root)
 
-    print("🚀 Kumihan-Formatter アルファ版ビルド開始")
-    print(f"📁 プロジェクトルート: {project_root}")
-    print(f"🖥️  プラットフォーム: {platform.system()}")
+    print("🚀 Kumihan-Formatter alpha build starting")
+    print(f"📁 Project root: {project_root}")
+    print(f"🖥️  Platform: {platform.system()}")
 
-    # PyInstallerがインストールされているか確認
+    # Check if PyInstaller is installed
     try:
         subprocess.run(
             [sys.executable, "-m", "PyInstaller", "--version"],
             check=True,
             capture_output=True,
         )
-        print("✅ PyInstaller が見つかりました")
+        print("✅ PyInstaller found")
     except subprocess.CalledProcessError:
-        print("❌ PyInstaller が見つかりません。インストールしています...")
+        print("❌ PyInstaller not found. Installing...")
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "pyinstaller"], check=True
         )
 
-    # プラットフォーム別の設定
+    # Platform-specific settings
     system = platform.system()
     if system == "Darwin":  # macOS
         spec_file = "tools/packaging/kumihan_formatter_macos.spec"
@@ -45,10 +45,10 @@ def main():
         spec_file = "tools/packaging/kumihan_formatter.spec"
         output_name = "kumihan_formatter_windows.exe"
     else:
-        print(f"❌ 未対応のプラットフォーム: {system}")
+        print(f"❌ Unsupported platform: {system}")
         sys.exit(1)
 
-    # ビルド実行
+    # Execute build
     print(f"🔨 ビルド開始: {spec_file}")
     try:
         subprocess.run(
@@ -56,30 +56,30 @@ def main():
             check=True,
         )
 
-        # 出力ファイルの確認
+        # Check output file
         dist_path = project_root / "dist" / output_name
         if dist_path.exists():
             print(f"✅ ビルド成功: {dist_path}")
 
-            # 実行テスト
-            print("🧪 実行テスト中...")
+            # Execution test
+            print("🧪 Execution testing...")
             result = subprocess.run(
                 [str(dist_path), "--version"], capture_output=True, text=True
             )
             if result.returncode == 0:
-                print(f"✅ 実行テスト成功: {result.stdout.strip()}")
+                print(f"✅ Execution test successful: {result.stdout.strip()}")
             else:
-                print(f"⚠️  実行テストで警告: {result.stderr}")
+                print(f"⚠️  Execution test warning: {result.stderr}")
         else:
-            print(f"❌ ビルドファイルが見つかりません: {dist_path}")
+            print(f"❌ Build file not found: {dist_path}")
             sys.exit(1)
 
     except subprocess.CalledProcessError as e:
         print(f"❌ ビルドエラー: {e}")
         sys.exit(1)
 
-    print("🎉 アルファ版ビルド完了")
-    print(f"📦 出力ファイル: dist/{output_name}")
+    print("🎉 Alpha build completed")
+    print(f"📦 Output file: dist/{output_name}")
 
 
 if __name__ == "__main__":
