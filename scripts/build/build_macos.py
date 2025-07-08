@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """macOS App Build Script for Kumihan-Formatter
-macOS向け.app形式パッケージング用ビルドスクリプト
+macOS .app packaging build script
 
 Usage:
     python build_macos.py [--clean] [--test] [--sign] [--notarize]
@@ -24,34 +24,36 @@ class MacOSBuilder:
     """macOS App builder for Kumihan-Formatter"""
 
     def __init__(self, root_dir: Path | None = None):
-        self.root_dir = root_dir or Path(__file__).parent
+        self.root_dir = root_dir or Path(__file__).parent.parent.parent
         self.dist_dir = self.root_dir / "dist"
         self.build_dir = self.root_dir / "build"
-        self.spec_file = self.root_dir / "kumihan_formatter_macos.spec"
+        self.spec_file = (
+            self.root_dir / "tools" / "packaging" / "kumihan_formatter_macos.spec"
+        )
         self.app_name = "Kumihan-Formatter.app"
         self.app_path = self.dist_dir / self.app_name
 
     def check_dependencies(self) -> bool:
         """Check if required dependencies are installed"""
-        print("[INFO] 依存関係をチェック中...")
+        print("[INFO] Checking dependencies...")
 
         # Check PyInstaller
         try:
             import PyInstaller
 
-            print(f"[OK] PyInstaller {PyInstaller.__version__} が見つかりました")
+            print(f"[OK] PyInstaller {PyInstaller.__version__} found")
         except ImportError:
-            print("[ERROR] PyInstaller が見つかりません")
-            print("インストールコマンド: pip install pyinstaller")
+            print("[ERROR] PyInstaller not found")
+            print("Install command: pip install pyinstaller")
             return False
 
         # Check main package
         try:
             import kumihan_formatter
 
-            print("[OK] kumihan_formatter が見つかりました")
+            print("[OK] kumihan_formatter found")
         except ImportError:
-            print("[ERROR] kumihan_formatter パッケージが見つかりません")
+            print("[ERROR] kumihan_formatter package not found")
             print("現在のディレクトリから実行していることを確認してください")
             return False
 
@@ -61,7 +63,7 @@ class MacOSBuilder:
 
             print("[OK] tkinter が利用可能です")
         except ImportError:
-            print("[ERROR] tkinter が見つかりません")
+            print("[ERROR] tkinter not found")
             return False
 
         # Check macOS specific tools
@@ -74,7 +76,7 @@ class MacOSBuilder:
 
     def clean_build_dirs(self) -> None:
         """Clean build and dist directories"""
-        print("[INFO] ビルドディレクトリをクリーンアップ中...")
+        print("[INFO] Cleaning build directories...")
 
         dirs_to_clean = [self.dist_dir, self.build_dir]
         for dir_path in dirs_to_clean:
@@ -82,21 +84,21 @@ class MacOSBuilder:
                 print(f"   削除中: {dir_path}")
                 shutil.rmtree(dir_path)
             else:
-                print(f"   スキップ: {dir_path} (存在しません)")
+                print(f"   Skip: {dir_path} (does not exist)")
 
     def install_pyinstaller_if_needed(self) -> None:
         """Install PyInstaller if not available"""
         try:
             import PyInstaller
         except ImportError:
-            print("[INFO] PyInstaller をインストール中...")
+            print("[INFO] Installing PyInstaller...")
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
 
     def build_app(self) -> Path:
         """Build the macOS app using PyInstaller"""
-        print("[INFO] macOS Appをビルド中...")
+        print("[INFO] Building macOS App...")
 
         if not self.spec_file.exists():
             raise FileNotFoundError(f"Spec file not found: {self.spec_file}")
@@ -160,7 +162,7 @@ class MacOSBuilder:
                 )
                 return
             else:
-                print("[ERROR] 署名アイデンティティが見つかりません")
+                print("[ERROR] Signing identity not found")
                 print("開発者アカウントでの署名が必要です")
                 return
 
@@ -211,23 +213,23 @@ class MacOSBuilder:
         # Check app bundle structure
         executable_path = app_path / "Contents" / "MacOS" / "Kumihan-Formatter"
         if executable_path.exists():
-            print("[OK] 実行ファイルが見つかりました")
+            print("[OK] Executable found")
         else:
-            print("[ERROR] 実行ファイルが見つかりません")
+            print("[ERROR] Executable not found")
 
         # Check Info.plist
         info_plist_path = app_path / "Contents" / "Info.plist"
         if info_plist_path.exists():
-            print("[OK] Info.plistが見つかりました")
+            print("[OK] Info.plist found")
         else:
-            print("[ERROR] Info.plistが見つかりません")
+            print("[ERROR] Info.plist not found")
 
         # Check Resources directory
         resources_path = app_path / "Contents" / "Resources"
         if resources_path.exists():
-            print("[OK] Resourcesディレクトリが見つかりました")
+            print("[OK] Resources directory found")
         else:
-            print("[ERROR] Resourcesディレクトリが見つかりません")
+            print("[ERROR] Resources directory not found")
 
         # Basic execution test
         try:
@@ -268,7 +270,7 @@ class MacOSBuilder:
         # Create installation instructions
         readme_content = """Kumihan-Formatter v1.0 - macOS版
 
-【インストール方法】
+Installation Instructions
 1. このZIPファイルをダウンロードして展開してください
 2. Kumihan-Formatter.appを「アプリケーション」フォルダにドラッグ&ドロップしてください
 3. 初回起動時に「開発元を確認できません」と表示される場合：
@@ -279,7 +281,7 @@ class MacOSBuilder:
 - macOS 10.15 (Catalina) 以降
 - Intel/Apple Silicon Mac 対応
 - インターネット接続不要
-- Pythonのインストール不要
+- No Python installation required
 
 【使い方】
 1. アプリケーションを起動
@@ -313,13 +315,13 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
         sign_identity: str | None = None,
     ) -> bool:
         """Main build process"""
-        print("[INFO] Kumihan-Formatter macOS版ビルドを開始します...")
+        print("[INFO] Kumihan-Formatter macOS build starting...")
         print(f"   プロジェクトディレクトリ: {self.root_dir}")
 
         try:
             # Check dependencies
             if not self.check_dependencies():
-                print("[ERROR] 依存関係のチェックに失敗しました")
+                print("[ERROR] Dependency check failed")
                 return False
 
             # Install PyInstaller if needed
@@ -347,7 +349,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             # Create distribution package
             package_path = self.create_distribution_package(app_path)
 
-            print("\n[OK] ビルドが完了しました！")
+            print("\n[OK] Build completed successfully!")
             print(f"   Appバンドル: {app_path}")
             print(f"   配布パッケージ: {package_path}")
             print("\n[INFO] 次のステップ:")
@@ -359,7 +361,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             return True
 
         except Exception as e:
-            print(f"\n[ERROR] ビルドに失敗しました: {e}")
+            print(f"\n[ERROR] Build failed: {e}")
             import traceback
 
             traceback.print_exc()
@@ -369,14 +371,14 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 def main() -> int:
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description="Kumihan-Formatter macOS版ビルドスクリプト",
+        description="Kumihan-Formatter macOS build script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--clean", action="store_true", help="ビルド前にディレクトリをクリーンアップ"
+        "--clean", action="store_true", help="Clean directories before build"
     )
     parser.add_argument(
-        "--test", action="store_true", help="ビルド後にAppバンドルをテスト"
+        "--test", action="store_true", help="Test app bundle after build"
     )
     parser.add_argument("--sign", action="store_true", help="Appバンドルに署名")
     parser.add_argument(
