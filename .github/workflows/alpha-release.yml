@@ -12,7 +12,76 @@ on:
         default: 'alpha.1'
 
 jobs:
+  # リリース前にビルドテストを実行
+  test-builds:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger build tests
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: workflow } = await github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'build-test-packages.yml',
+            ref: context.ref,
+            inputs: {
+              test_windows: 'true',
+              test_macos: 'true'
+            }
+          });
+
+          console.log('Build test workflow triggered');
+
+          // ワークフロー実行を待機
+          await new Promise(resolve => setTimeout(resolve, 10000));
+
+          // 最新のワークフロー実行を確認
+          const { data: runs } = await github.rest.actions.listWorkflowRuns({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'build-test-packages.yml',
+            per_page: 1
+          });
+
+          if (runs.workflow_runs.length === 0) {
+            throw new Error('No workflow runs found');
+          }
+
+          const runId = runs.workflow_runs[0].id;
+          console.log(`Monitoring workflow run: ${runId}`);
+
+          // ワークフローの完了を待機
+          let attempts = 0;
+          const maxAttempts = 60; // 30分待機
+
+          while (attempts < maxAttempts) {
+            const { data: run } = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+
+            console.log(`Attempt ${attempts + 1}: Status = ${run.status}, Conclusion = ${run.conclusion}`);
+
+            if (run.status === 'completed') {
+              if (run.conclusion === 'success') {
+                console.log('Build tests passed successfully');
+                return;
+              } else {
+                throw new Error(`Build tests failed with conclusion: ${run.conclusion}`);
+              }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 30000)); // 30秒待機
+            attempts++;
+          }
+
+          throw new Error('Build tests timed out');
+
   build:
+    needs: test-builds
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

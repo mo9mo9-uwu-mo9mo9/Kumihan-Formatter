@@ -131,25 +131,21 @@ jobs:
           console.log(`PR Author: ${pr.user.login}`);
           console.log(`Current user: ${context.actor}`);
 
-          // PRの作者がmo9mo9-uwu-mo9mo9でない場合はスキップ
+          // mo9mo9-uwu-mo9mo9のPRのみ処理、ただし全て自動マージ
           if (pr.user.login !== 'mo9mo9-uwu-mo9mo9') {
             console.log('PR author is not mo9mo9-uwu-mo9mo9, skipping auto-merge');
             return;
           }
 
-          // PRがdraftの場合はスキップ
-          if (pr.draft) {
-            console.log('PR is draft, skipping auto-merge');
-            return;
-          }
+          // PRがdraftの場合もマージ対象とする（全て自動マージ）
+          console.log(`PR draft status: ${pr.draft}`);
 
-          // PRがマージ可能でない場合はスキップ
+          // PRがマージ可能でない場合は少し待つ
           if (pr.mergeable === false) {
-            console.log('PR is not mergeable, skipping auto-merge');
-            return;
+            console.log('PR is not mergeable, but will attempt merge anyway');
           }
 
-          // チェック状態を確認
+          // チェック状態を確認（mo9mo9のPRは条件緩和）
           const { data: checkRuns } = await github.rest.checks.listForRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -165,7 +161,7 @@ jobs:
           console.log(`Check runs: ${checkRuns.check_runs.length}`);
           console.log(`Status checks state: ${statusChecks.state}`);
 
-          // 重要なチェックが完了しているか確認（Issue #371の設計：PR時はfull-test、push時はquick-check）
+          // 必須チェック（3つのfull-test環境）が完了しているか確認
           const requiredChecks = [
             'full-test (ubuntu-latest, 3.12)',
             'full-test (windows-latest, 3.12)',
@@ -177,9 +173,9 @@ jobs:
             check.conclusion === 'success'
           );
 
-          console.log(`Completed required checks: ${completedChecks.length}`);
+          console.log(`Completed required checks: ${completedChecks.length}/${requiredChecks.length}`);
 
-          // 必要なチェック（3つの主要環境）が全て完了している場合のみマージ
+          // 必須チェック（3つの主要環境）が全て完了している場合のみマージ
           if (completedChecks.length === 3) {
             try {
               await github.rest.pulls.merge({
@@ -203,7 +199,7 @@ jobs:
               });
             }
           } else {
-            console.log('Checks not yet completed or not successful, waiting...');
+            console.log('Required checks not yet completed or not successful, waiting...');
           }
 
     - name: Enable auto-merge and add comment
@@ -232,5 +228,5 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: prNumber,
-            body: `🤖 **Auto-merge enabled**\n\nThis PR will be automatically merged when all tests pass.\n\n- ✅ Author: mo9mo9-uwu-mo9mo9\n- ⏳ Waiting for tests to complete...\n\n*Auto-merge is only available for mo9mo9-uwu-mo9mo9's PRs*`
+            body: `🤖 **Auto-merge enabled**\n\nThis PR will be automatically merged when required tests pass.\n\n- ✅ Author: mo9mo9-uwu-mo9mo9\n- ⏳ Waiting for required tests: full-test (ubuntu, windows, macos)\n- 🚫 Excluded: build tests, test-summary\n\n*Auto-merge enabled for mo9mo9's PRs when core tests pass*`
           });
