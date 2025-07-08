@@ -35,6 +35,7 @@ AI運用5原則
 **開発詳細**: [docs/dev/CLAUDE_DETAILS.md](docs/dev/CLAUDE_DETAILS.md)
 **開発フロー**: [CONTRIBUTING.md](CONTRIBUTING.md)
 **プロジェクト仕様**: [SPEC.md](SPEC.md)
+**リリース手順**: [docs/dev/RELEASE_GUIDE.md](docs/dev/RELEASE_GUIDE.md)
 
 # リリース方針
 
@@ -48,6 +49,15 @@ AI運用5原則
 1. アルファ版か正式版かをユーザーに必ず確認
 2. 正式版の場合は明示的な許可を取得
 3. 許可なしにv1.0.0以上のタグを作成・プッシュしない
+
+## リリース手順（重要）
+**⚠️ 必須**: 全リリースは [docs/dev/RELEASE_GUIDE.md](docs/dev/RELEASE_GUIDE.md) の手順に従う
+
+### 基本原則
+- **mainブランチ保護**: 直接プッシュ禁止
+- **PR経由必須**: バージョン変更もPR経由
+- **オートマージ必須**: `gh pr merge PR番号 --auto --merge`
+- **手順厳守**: ガイドに従わない場合は同じ失敗を繰り返す
 
 # よく使うコマンド
 
