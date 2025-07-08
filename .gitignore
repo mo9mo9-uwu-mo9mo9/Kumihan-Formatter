@@ -183,3 +183,6 @@ toggle-test/
 
 # Application logs
 logs/
+
+# Development logs (Issue#446)
+/tmp/kumihan_formatter/
