@@ -28,26 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Claude Code Review
-        uses: anthropics/claude-code-action@main
+        uses: anthropics/claude-code-action@beta
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Optional settings
-          model: "sonnet-latest"  # or "opus-latest"
-          max_turns: 3
-          temperature: 0.2
-          timeout_minutes: 10
-
-          # Prompts for different scenarios
-          review_prompt: |
-            このPull Requestの変更内容をレビューしてください。
-            以下の観点でチェックをお願いします：
-            - コードの品質と可読性
-            - 潜在的なバグやセキュリティの問題
-            - パフォーマンスの改善点
-            - テストカバレッジ
-            - プロジェクトのコーディング規約への準拠
-
-          comment_prompt: |
-            このコメントに対して適切な回答や提案を提供してください。
-            必要に応じてコードの改善案も含めてください。
