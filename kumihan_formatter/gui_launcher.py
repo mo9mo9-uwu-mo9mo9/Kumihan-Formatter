@@ -12,35 +12,141 @@ from pathlib import Path
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
 
+# Debug logger (環境変数KUMIHAN_GUI_DEBUG=trueで有効化)
+try:
+    from .core.debug_logger import (
+        debug,
+        error,
+        get_logger,
+        info,
+        is_debug_enabled,
+        log_gui_event,
+        log_gui_method,
+        log_startup_info,
+        warning,
+    )
+except ImportError:
+    # Fallback for direct execution
+    try:
+        from kumihan_formatter.core.debug_logger import (
+            debug,
+            error,
+            get_logger,
+            info,
+            is_debug_enabled,
+            log_gui_event,
+            log_gui_method,
+            log_startup_info,
+            warning,
+        )
+    except ImportError:
+        # No-op fallbacks if debug logger is not available
+        def debug(*args, **kwargs):
+            pass
+
+        def info(*args, **kwargs):
+            pass
+
+        def warning(*args, **kwargs):
+            pass
+
+        def error(*args, **kwargs):
+            pass
+
+        def log_gui_event(*args, **kwargs):
+            pass
+
+        def log_gui_method(func):
+            return func
+
+        def log_startup_info():
+            pass
+
+        def is_debug_enabled():
+            return False
+
+        def get_logger():
+            return None
+
+
+# Log startup information
+log_startup_info()
+info("GUI Launcher module loading...")
+
 # Add the parent directory to sys.path to import kumihan_formatter modules
 current_dir = Path(__file__).parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
+# Try relative imports first (for package execution)
+info("Attempting to import required modules...")
 try:
+    debug("Trying relative imports...")
     from .commands.convert.convert_command import ConvertCommand
     from .commands.sample import SampleCommand
     from .core.config.config_manager import EnhancedConfig
     from .ui.console_ui import get_console_ui
-except ImportError as e:
-    # Fallback for standalone execution
-    import warnings
 
-    warnings.warn(f"Import error: {e}. Some features may not work.")
+    info("Relative imports successful")
+except ImportError as relative_error:
+    warning(f"Relative imports failed: {relative_error}")
+    # Try absolute imports (for direct execution)
+    try:
+        debug("Trying absolute imports...")
+        from kumihan_formatter.commands.convert.convert_command import ConvertCommand
+        from kumihan_formatter.commands.sample import SampleCommand
+        from kumihan_formatter.core.config.config_manager import EnhancedConfig
+        from kumihan_formatter.ui.console_ui import get_console_ui
+
+        info("Absolute imports successful")
+    except ImportError as absolute_error:
+        # If both fail, show detailed error and exit
+        import sys
+
+        error_msg = f"インポートエラー: 必要なモジュールが見つかりません"
+        error(error_msg)
+        error(f"相対インポートエラー: {relative_error}")
+        error(f"絶対インポートエラー: {absolute_error}")
+        error(f"現在のPythonパス: {sys.path}")
+
+        print(error_msg, file=sys.stderr)
+        print(f"相対インポートエラー: {relative_error}", file=sys.stderr)
+        print(f"絶対インポートエラー: {absolute_error}", file=sys.stderr)
+        print(f"現在のPythonパス: {sys.path}", file=sys.stderr)
+        if is_debug_enabled():
+            print(
+                f"デバッグログファイル: {get_logger().get_log_file_path()}",
+                file=sys.stderr,
+            )
+        sys.exit(1)
 
 
 class KumihanGUI:
     """Main GUI application class for Kumihan-Formatter"""
 
+    @log_gui_method
     def __init__(self) -> None:
-        self.root = Tk()
-        self.root.title("Kumihan-Formatter v1.0 - 美しい組版を、誰でも簡単に")
-        self.root.geometry("800x600")
-        self.root.resizable(True, True)
+        info("Initializing KumihanGUI...")
+        try:
+            debug("Creating root Tk window...")
+            self.root = Tk()
+            self.root.title("Kumihan-Formatter v1.0 - 美しい組版を、誰でも簡単に")
+            self.root.geometry("800x600")
+            self.root.resizable(True, True)
+            info("Root Tk window created successfully")
+        except Exception as e:
+            error("Failed to create root Tk window", e)
+            raise
 
         # Configure style
-        self.style = ttk.Style()
-        self.style.theme_use("clam")
+        try:
+            debug("Configuring ttk style...")
+            self.style = ttk.Style()
+            self.style.theme_use("clam")
+            info("ttk style configured successfully")
+        except Exception as e:
+            error("Failed to configure ttk style", e)
+            raise
 
         # Variables
         self.input_file_var = StringVar()
@@ -53,8 +159,19 @@ class KumihanGUI:
         self.progress_var = DoubleVar()
         self.status_var = StringVar(value="準備完了")
 
-        self.setup_ui()
-        self.center_window()
+        try:
+            debug("Setting up UI components...")
+            self.setup_ui()
+            info("UI components setup completed")
+
+            debug("Centering window...")
+            self.center_window()
+            info("Window centered")
+
+            info("KumihanGUI initialization completed successfully")
+        except Exception as e:
+            error("Failed during GUI initialization", e)
+            raise
 
     def setup_ui(self) -> None:
         """Setup the main UI components"""
@@ -153,6 +270,12 @@ class KumihanGUI:
             side=LEFT, padx=(0, 10)
         )
 
+        # デバッグモードの時のみログビューアーボタンを表示
+        if is_debug_enabled():
+            ttk.Button(button_frame, text="ログ", command=self.show_log_viewer).pack(
+                side=LEFT, padx=(0, 10)
+            )
+
         ttk.Button(button_frame, text="終了", command=self.root.quit).pack(side=LEFT)
 
         # Progress section
@@ -167,6 +290,9 @@ class KumihanGUI:
 
         self.status_label = ttk.Label(progress_frame, textvariable=self.status_var)
         self.status_label.grid(row=1, column=0, sticky=W)
+
+        # ログビューアーの参照を保持
+        self.log_viewer = None
 
         # Log section
         log_frame = ttk.LabelFrame(main_frame, text="ログ", padding="10")
@@ -193,14 +319,19 @@ class KumihanGUI:
         pos_y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
 
+    @log_gui_method
     def browse_input_file(self) -> None:
         """Browse for input file"""
+        log_gui_event("button_click", "browse_input_file")
         filename = filedialog.askopenfilename(
             title="変換するテキストファイルを選択",
             filetypes=[("テキストファイル", "*.txt"), ("すべてのファイル", "*.*")],
         )
         if filename:
+            info(f"Input file selected: {filename}")
             self.input_file_var.set(filename)
+        else:
+            debug("Input file selection cancelled")
 
     def browse_output_dir(self) -> None:
         """Browse for output directory"""
@@ -357,7 +488,14 @@ class KumihanGUI:
             self.update_progress(30, "サンプルファイルを作成中...")
 
             # Execute sample generation
-            sample_command = SampleCommand()
+            try:
+                sample_command = SampleCommand()
+            except Exception as init_error:
+                self.log_message(
+                    f"SampleCommandの初期化エラー: {str(init_error)}", "error"
+                )
+                raise init_error
+
             output_path = sample_command.execute(
                 output_dir="kumihan_sample", use_source_toggle=use_source_toggle
             )
@@ -374,24 +512,42 @@ class KumihanGUI:
                 self.log_message("ブラウザでサンプルを開いています...")
                 webbrowser.open(sample_html.resolve().as_uri())
 
+            # Open directory in Finder (macOS)
+            import platform
+            import subprocess
+
+            if platform.system() == "Darwin":  # macOS
+                self.log_message("Finderでフォルダを開いています...")
+                subprocess.run(["open", str(output_path.absolute())])
+
             self.update_progress(100, "完了")
 
-            # Show success dialog
+            # Show success dialog with more detail
             self.root.after(
                 0,
                 lambda: messagebox.showinfo(
                     "サンプル生成完了",
-                    f"サンプルファイルの生成が完了しました。\n\n出力先: {output_path.absolute()}\n\nサンプルHTMLがブラウザで開かれます。",
+                    f"サンプルファイルの生成が完了しました。\n\n"
+                    f"出力先: {output_path.absolute()}\n\n"
+                    f"生成されたファイル:\n"
+                    f"• showcase.html (メインHTML)\n"
+                    f"• showcase.txt (ソーステキスト)\n"
+                    f"• images/ (サンプル画像)\n\n"
+                    f"Finderでフォルダを開きました。",
                 ),
             )
 
         except Exception as e:
+            import traceback
+
+            error_details = traceback.format_exc()
             self.log_message(f"サンプル生成エラー: {str(e)}", "error")
+            self.log_message(f"詳細: {error_details}", "error")
             self.root.after(
                 0,
                 lambda: messagebox.showerror(
                     "サンプル生成エラー",
-                    f"サンプル生成中にエラーが発生しました:\n\n{str(e)}",
+                    f"サンプル生成中にエラーが発生しました:\n\n{str(e)}\n\n詳細はログを確認してください。",
                 ),
             )
 
@@ -476,6 +632,28 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
         ttk.Button(help_window, text="閉じる", command=help_window.destroy).pack(
             pady=10
         )
+
+    @log_gui_method
+    def show_log_viewer(self) -> None:
+        """Show debug log viewer window"""
+        log_gui_event("button_click", "show_log_viewer")
+        try:
+            if self.log_viewer and self.log_viewer.is_open():
+                # 既に開いている場合は前面に表示
+                self.log_viewer.window.lift()
+                self.log_viewer.window.focus_force()
+            else:
+                # 新しいログビューアーを開く
+                from .core.log_viewer import LogViewerWindow
+
+                self.log_viewer = LogViewerWindow(self.root)
+                self.log_viewer.show()
+                info("Log viewer window opened")
+        except Exception as e:
+            error("Failed to open log viewer", e)
+            messagebox.showerror(
+                "エラー", f"ログビューアーの表示に失敗しました:\n\n{str(e)}"
+            )
 
     def run(self) -> None:
         """Start the GUI application"""
