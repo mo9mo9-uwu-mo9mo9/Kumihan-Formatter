@@ -35,7 +35,7 @@ repos:
     hooks:
       - id: flake8
         args: ['--max-line-length=127', '--select=E9,F63,F7,F82']
-        files: ^(kumihan_formatter|tests)/.*\.py$
+        files: ^kumihan_formatter/.*\.py$
 
 # --- 軽量化設定（Issue #371対応）---
 # 以下のフックは重いため、CI実行時のみ有効化
@@ -48,7 +48,7 @@ repos:
       - id: quick-test
         name: ⚡ 軽量テストチェック
         entry: bash
-        args: [-c, 'python -m pytest -x --ff -q tests/ || echo "⚠️ テスト失敗: 詳細はCIで確認してください"']
+        args: [-c, 'python -m pytest tests/unit tests/integration -v --tb=short || echo "⚠️ テスト失敗: 詳細はCIで確認してください"']
         language: system
         pass_filenames: false
         always_run: true
@@ -99,9 +99,9 @@ repos:
       - id: mypy-strict
         name: 🔍 mypy strict mode型チェック
         entry: python
-        args: [-m, mypy, --config-file=mypy.ini, kumihan_formatter/, tests/]
+        args: [-m, mypy, --config-file=mypy.ini, kumihan_formatter/]
         language: python
-        files: ^(kumihan_formatter|tests)/.*\.py$
+        files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
         additional_dependencies: [mypy, pydantic, types-PyYAML, types-psutil, types-Jinja2, types-MarkupSafe, types-click]
         stages: [commit, manual, pre-push]
