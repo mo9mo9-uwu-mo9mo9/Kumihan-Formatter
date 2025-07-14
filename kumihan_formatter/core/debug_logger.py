@@ -49,7 +49,6 @@ class GUIDebugLogger:
 
         # ログ保存用deque（メモリ内ログビューアー用、効率的なバッファ管理）
         self.log_buffer: Deque[str] = deque(maxlen=1000)
-        self.max_buffer_size = 1000
         self._buffer_lock = threading.Lock()  # バッファアクセス用ロック
 
         self.logger: Optional[logging.Logger] = None
@@ -114,7 +113,7 @@ class GUIDebugLogger:
         log_entry = f"[{timestamp}] [{level:8s}] {message}"
 
         with self._buffer_lock:
-            # dequeのmaxlenにより古いエントリは自動的に削除される
+            # dequeのmaxlen=1000により、古いエントリは自動的に削除される（O(1)効率）
             self.log_buffer.append(log_entry)
 
     def debug(self, message: str, **kwargs: Any) -> None:
