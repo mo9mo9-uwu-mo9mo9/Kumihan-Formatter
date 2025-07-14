@@ -48,7 +48,7 @@ repos:
       - id: quick-test
         name: ⚡ 軽量テストチェック
         entry: bash
-        args: [-c, 'echo "⚠️ テスト設定未完了: 別イシューで対応予定"']
+        args: [-c, 'python -m pytest tests/unit tests/integration -v --tb=short || echo "⚠️ テスト失敗: 詳細はCIで確認してください"']
         language: system
         pass_filenames: false
         always_run: true

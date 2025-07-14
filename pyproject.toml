@@ -62,7 +62,7 @@ line-length = 88
 target-version = ['py312']
 
 [tool.pytest.ini_options]
-testpaths = []
+testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
