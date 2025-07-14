@@ -173,6 +173,9 @@ gh pr create --title "タイトル" --body "内容"
 
 # オートマージは使用しない（手動でマージ）
 # gh pr merge PR番号 --auto --merge  # 使用禁止
+
+# オートマージが自動有効化された場合は明示的に無効化
+gh pr merge PR番号 --disable-auto
 ```
 
 ### 手動マージの手順
