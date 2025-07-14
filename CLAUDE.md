@@ -159,27 +159,30 @@ kumihan_formatter/
 6. CLIに組み込み（`cli/commands.py`）
 7. `make pre-commit`で品質チェック
 8. PRを作成（テンプレート使用）
-9. **オートマージ設定**: `gh pr merge PR番号 --auto --merge`
+9. **レビュー待ち**: オートマージは使用せず手動マージ
 
 ## Pull Request作成・マージ手順
 
-### ⚠️ 重要: オートマージが基本方針
-このプロジェクトは**オートマージ**を基本とします。直接マージは**禁止**です。
+### ⚠️ 重要: オートマージは無効
+このプロジェクトは**手動マージ**を基本とします。オートマージは**使用禁止**です。
 
 ### PR作成
 ```bash
 # PR作成
 gh pr create --title "タイトル" --body "内容"
 
-# 必ずオートマージ設定（直接マージ禁止）
-gh pr merge PR番号 --auto --merge
+# オートマージは使用しない（手動でマージ）
+# gh pr merge PR番号 --auto --merge  # 使用禁止
+
+# オートマージが自動有効化された場合は明示的に無効化
+gh pr merge PR番号 --disable-auto
 ```
 
-### オートマージの仕組み
-- **対象**: mo9mo9-uwu-mo9mo9のPRのみ
-- **条件**: 全テスト成功時に自動マージ
-- **方式**: squash merge
-- **詳細**: [docs/dev/AUTO_MERGE_SETUP.md](docs/dev/AUTO_MERGE_SETUP.md)
+### 手動マージの手順
+- **作成**: PRを作成してレビューを待つ
+- **レビュー**: @claudeメンションでレビューを依頼
+- **マージ**: レビュー完了後に手動でマージ
+- **方式**: squash merge推奨
 
 ## デバッグ
 ```bash
