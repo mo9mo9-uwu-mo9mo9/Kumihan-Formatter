@@ -131,6 +131,30 @@ EOF
 
 **詳細なレビューガイド**: [PR_REVIEW_GUIDE.md](docs/dev/PR_REVIEW_GUIDE.md) を参照
 
+### デバッグ手順
+
+開発中に問題が発生した場合、以下のデバッグ機能を活用してください：
+
+**詳細なデバッグガイド**: [DEBUGGING.md](docs/dev/DEBUGGING.md) を参照
+
+#### GUIアプリケーションのデバッグ
+```bash
+# デバッグモードで起動
+KUMIHAN_GUI_DEBUG=true python3 -m kumihan_formatter.gui_launcher
+
+# ログビューアーを使用してリアルタイムでログを確認
+# 「ログ」ボタンからアクセス可能
+```
+
+#### CLI版のデバッグ
+```bash
+# 開発ログを有効化
+KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
+
+# ログファイル確認
+cat /tmp/kumihan_formatter/dev_log_*.log
+```
+
 ---
 
 ## 📋 Issue管理

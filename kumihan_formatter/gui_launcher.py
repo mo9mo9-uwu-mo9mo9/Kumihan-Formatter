@@ -11,6 +11,10 @@ import webbrowser
 from pathlib import Path
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
+from typing import TYPE_CHECKING, Any, Callable, Optional
+
+if TYPE_CHECKING:
+    from .core.log_viewer import LogViewerWindow
 
 # Debug logger (環境変数KUMIHAN_GUI_DEBUG=trueで有効化)
 try:
@@ -41,31 +45,32 @@ except ImportError:
         )
     except ImportError:
         # No-op fallbacks if debug logger is not available
-        def debug(*args, **kwargs):
+
+        def debug(*args: Any, **kwargs: Any) -> None:
             pass
 
-        def info(*args, **kwargs):
+        def info(*args: Any, **kwargs: Any) -> None:
             pass
 
-        def warning(*args, **kwargs):
+        def warning(*args: Any, **kwargs: Any) -> None:
             pass
 
-        def error(*args, **kwargs):
+        def error(*args: Any, **kwargs: Any) -> None:
             pass
 
-        def log_gui_event(*args, **kwargs):
+        def log_gui_event(*args: Any, **kwargs: Any) -> None:
             pass
 
-        def log_gui_method(func):
+        def log_gui_method(func: Callable[..., Any]) -> Callable[..., Any]:  # type: ignore[misc]
             return func
 
-        def log_startup_info():
+        def log_startup_info() -> None:
             pass
 
-        def is_debug_enabled():
+        def is_debug_enabled() -> bool:
             return False
 
-        def get_logger():
+        def get_logger() -> Any:  # type: ignore[misc]
             return None
 
 
@@ -124,7 +129,7 @@ except ImportError as relative_error:
 class KumihanGUI:
     """Main GUI application class for Kumihan-Formatter"""
 
-    @log_gui_method
+    @log_gui_method  # type: ignore
     def __init__(self) -> None:
         info("Initializing KumihanGUI...")
         try:
@@ -208,7 +213,7 @@ class KumihanGUI:
         ttk.Entry(file_frame, textvariable=self.input_file_var, width=50).grid(
             row=0, column=1, sticky="WE", padx=(0, 10)
         )
-        ttk.Button(file_frame, text="参照", command=self.browse_input_file).grid(
+        ttk.Button(file_frame, text="参照", command=self.browse_input_file).grid(  # type: ignore[misc]
             row=0, column=2
         )
 
@@ -272,7 +277,7 @@ class KumihanGUI:
 
         # デバッグモードの時のみログビューアーボタンを表示
         if is_debug_enabled():
-            ttk.Button(button_frame, text="ログ", command=self.show_log_viewer).pack(
+            ttk.Button(button_frame, text="ログ", command=self.show_log_viewer).pack(  # type: ignore[misc]
                 side=LEFT, padx=(0, 10)
             )
 
@@ -292,7 +297,7 @@ class KumihanGUI:
         self.status_label.grid(row=1, column=0, sticky=W)
 
         # ログビューアーの参照を保持
-        self.log_viewer = None
+        self.log_viewer: Optional["LogViewerWindow"] = None
 
         # Log section
         log_frame = ttk.LabelFrame(main_frame, text="ログ", padding="10")
@@ -319,7 +324,7 @@ class KumihanGUI:
         pos_y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
 
-    @log_gui_method
+    @log_gui_method  # type: ignore
     def browse_input_file(self) -> None:
         """Browse for input file"""
         log_gui_event("button_click", "browse_input_file")
@@ -633,15 +638,16 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
             pady=10
         )
 
-    @log_gui_method
+    @log_gui_method  # type: ignore
     def show_log_viewer(self) -> None:
         """Show debug log viewer window"""
         log_gui_event("button_click", "show_log_viewer")
         try:
             if self.log_viewer and self.log_viewer.is_open():
                 # 既に開いている場合は前面に表示
-                self.log_viewer.window.lift()
-                self.log_viewer.window.focus_force()
+                if self.log_viewer.window:
+                    self.log_viewer.window.lift()
+                    self.log_viewer.window.focus_force()
             else:
                 # 新しいログビューアーを開く
                 from .core.log_viewer import LogViewerWindow

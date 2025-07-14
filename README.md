@@ -62,10 +62,26 @@ KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
 - **[⚙️ インストール詳細](docs/user/installation.md)** - Python環境構築
 - **[🛠️ 開発者向け](docs/dev/)** - API・貢献方法
 
+## 🔧 開発者向け機能
+
+### デバッグ機能
+GUIアプリケーションやCLI版で問題が発生した場合、詳細なデバッグ機能を利用できます：
+
+```bash
+# GUIデバッグモード
+KUMIHAN_GUI_DEBUG=true python3 -m kumihan_formatter.gui_launcher
+
+# CLI開発ログ
+KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
+```
+
+**詳細**: [デバッグガイド](docs/dev/DEBUGGING.md)
+
 ## 🤝 サポート
 
 - **バグ報告・機能要望**: [Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)
 - **使い方相談**: [Discussions](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/discussions)
+- **開発に参加**: [Contributing Guide](CONTRIBUTING.md)
 
 ## 📄 ライセンス
 

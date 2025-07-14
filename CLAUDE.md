@@ -56,7 +56,7 @@ AI運用5原則
 ### 基本原則
 - **mainブランチ保護**: 直接プッシュ禁止
 - **PR経由必須**: バージョン変更もPR経由
-- **オートマージ必須**: `gh pr merge PR番号 --auto --merge`
+- **手動マージ**: レビュー後に手動でマージ実行
 - **手順厳守**: ガイドに従わない場合は同じ失敗を繰り返す
 
 # よく使うコマンド
@@ -68,6 +68,21 @@ make lint          # リントチェック
 make format        # コードフォーマット
 make coverage      # カバレッジレポート生成
 make pre-commit    # コミット前の全チェック実行
+```
+
+## デバッグ用コマンド
+```bash
+# GUIデバッグモード
+KUMIHAN_GUI_DEBUG=true python3 -m kumihan_formatter.gui_launcher
+
+# 詳細ログレベル設定
+KUMIHAN_GUI_DEBUG=true KUMIHAN_GUI_LOG_LEVEL=DEBUG python3 -m kumihan_formatter.gui_launcher
+
+# コンソール出力も有効化
+KUMIHAN_GUI_DEBUG=true KUMIHAN_GUI_CONSOLE_LOG=true python3 -m kumihan_formatter.gui_launcher
+
+# 開発ログ機能（Issue#446）
+KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
 ```
 
 ## CLI使用例

@@ -6,21 +6,24 @@ import threading
 import time
 import tkinter as tk
 from tkinter import scrolledtext, ttk
-from typing import Optional
+from typing import List, Optional, Union
 
 
 class LogViewerWindow:
     """リアルタイムログビューアーウィンドウ"""
 
-    def __init__(self, parent_window: Optional[tk.Tk] = None):
+    def __init__(self, parent_window: Optional[tk.Tk] = None) -> None:
         self.parent = parent_window
-        self.window = None
-        self.log_text = None
+        self.window: Optional[Union[tk.Tk, tk.Toplevel]] = None
+        self.log_text: Optional[scrolledtext.ScrolledText] = None
         self.auto_scroll = True
-        self.update_thread = None
+        self.update_thread: Optional[threading.Thread] = None
         self.running = False
+        self.auto_scroll_var: Optional[tk.BooleanVar] = None
+        self.level_var: Optional[tk.StringVar] = None
+        self.status_var: Optional[tk.StringVar] = None
 
-    def show(self):
+    def show(self) -> None:
         """ログビューアーウィンドウを表示"""
         if self.window is not None:
             # 既に開いている場合は前面に表示
@@ -39,16 +42,16 @@ class LogViewerWindow:
         self._setup_ui()
         self._start_update_thread()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """UIコンポーネントのセットアップ"""
         # ツールバー
         toolbar = ttk.Frame(self.window)
         toolbar.pack(fill=tk.X, padx=5, pady=5)
 
         # クリアボタン
-        ttk.Button(
-            toolbar, text="ログクリア", command=self.clear_log
-        ).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(toolbar, text="ログクリア", command=self.clear_log).pack(
+            side=tk.LEFT, padx=(0, 5)
+        )
 
         # 自動スクロールチェックボックス
         self.auto_scroll_var = tk.BooleanVar(value=True)
@@ -60,9 +63,9 @@ class LogViewerWindow:
         ).pack(side=tk.LEFT, padx=(0, 5))
 
         # ログファイルを開くボタン
-        ttk.Button(
-            toolbar, text="ログファイルを開く", command=self.open_log_file
-        ).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(toolbar, text="ログファイルを開く", command=self.open_log_file).pack(
+            side=tk.LEFT, padx=(0, 5)
+        )
 
         # ログレベルフィルター
         ttk.Label(toolbar, text="レベル:").pack(side=tk.LEFT, padx=(10, 5))
@@ -104,13 +107,13 @@ class LogViewerWindow:
         )
         status_bar.pack(fill=tk.X, side=tk.BOTTOM)
 
-    def _start_update_thread(self):
+    def _start_update_thread(self) -> None:
         """ログ更新スレッドを開始"""
         self.running = True
         self.update_thread = threading.Thread(target=self._update_logs, daemon=True)
         self.update_thread.start()
 
-    def _update_logs(self):
+    def _update_logs(self) -> None:
         """ログを定期的に更新"""
         try:
             from .debug_logger import get_logger
@@ -118,9 +121,13 @@ class LogViewerWindow:
             logger = get_logger()
 
             if not logger or not logger.enabled:
-                self.window.after(
-                    100, lambda: self.status_var.set("デバッグモードが無効です")
-                )
+                if self.window and self.status_var:
+
+                    def set_debug_disabled() -> None:
+                        if self.status_var:
+                            self.status_var.set("デバッグモードが無効です")
+
+                    self.window.after(100, set_debug_disabled)
                 return
 
             last_log_count = 0
@@ -133,9 +140,12 @@ class LogViewerWindow:
                     # 新しいログがある場合のみ更新
                     if len(log_buffer) > last_log_count:
                         new_logs = log_buffer[last_log_count:]
-                        self.window.after(
-                            0, lambda logs=new_logs: self._add_logs(logs)
-                        )
+                        if self.window:
+
+                            def add_new_logs() -> None:
+                                self._add_logs(new_logs)
+
+                            self.window.after(0, add_new_logs)
                         last_log_count = len(log_buffer)
 
                         # ステータス更新
@@ -143,23 +153,38 @@ class LogViewerWindow:
                         if logger.get_log_file_path().exists():
                             file_size = logger.get_log_file_path().stat().st_size
                             status += f" | ファイルサイズ: {file_size // 1024} KB"
-                        self.window.after(0, lambda s=status: self.status_var.set(s))
+                        if self.window and self.status_var:
+
+                            def update_status() -> None:
+                                if self.status_var:
+                                    self.status_var.set(status)
+
+                            self.window.after(0, update_status)
 
                     time.sleep(0.5)  # 0.5秒間隔で更新
 
                 except Exception as e:
                     error_msg = f"ログ更新エラー: {str(e)}"
-                    self.window.after(
-                        0, lambda msg=error_msg: self.status_var.set(msg)
-                    )
+                    if self.window and self.status_var:
+
+                        def set_error_msg() -> None:
+                            if self.status_var:
+                                self.status_var.set(error_msg)
+
+                        self.window.after(0, set_error_msg)
                     time.sleep(1)
 
         except Exception as e:
             error_msg = f"ログビューアーエラー: {str(e)}"
-            if self.window:
-                self.window.after(0, lambda msg=error_msg: self.status_var.set(msg))
+            if self.window and self.status_var:
 
-    def _add_logs(self, logs: list[str]):
+                def set_viewer_error() -> None:
+                    if self.status_var:
+                        self.status_var.set(error_msg)
+
+                self.window.after(0, set_viewer_error)
+
+    def _add_logs(self, logs: List[str]) -> None:
         """ログをテキストエリアに追加"""
         if not self.log_text:
             return
@@ -179,7 +204,11 @@ class LogViewerWindow:
                 tag = "ERROR"
 
             # フィルタリング
-            if self.level_var.get() != "ALL" and tag != self.level_var.get():
+            if (
+                self.level_var
+                and self.level_var.get() != "ALL"
+                and tag != self.level_var.get()
+            ):
                 continue
 
             self.log_text.insert(tk.END, log_line + "\n", tag)
@@ -187,21 +216,22 @@ class LogViewerWindow:
         self.log_text.config(state=tk.DISABLED)
 
         # 自動スクロール
-        if self.auto_scroll:
+        if self.auto_scroll and self.log_text:
             self.log_text.see(tk.END)
 
-    def _toggle_auto_scroll(self):
+    def _toggle_auto_scroll(self) -> None:
         """自動スクロールの切り替え"""
-        self.auto_scroll = self.auto_scroll_var.get()
+        if self.auto_scroll_var:
+            self.auto_scroll = self.auto_scroll_var.get()
 
-    def _filter_logs(self, event=None):
+    def _filter_logs(self, event: Optional[tk.Event[tk.Widget]] = None) -> None:
         """ログレベルフィルタリング"""
         # 既存のログを再表示（フィルタリング適用）
         try:
             from .debug_logger import get_logger
 
             logger = get_logger()
-            if logger and logger.enabled:
+            if logger and logger.enabled and self.log_text:
                 self.log_text.config(state=tk.NORMAL)
                 self.log_text.delete(1.0, tk.END)
                 self.log_text.config(state=tk.DISABLED)
@@ -210,9 +240,10 @@ class LogViewerWindow:
                 log_buffer = logger.get_log_buffer()
                 self._add_logs(log_buffer)
         except Exception as e:
-            self.status_var.set(f"フィルタリングエラー: {str(e)}")
+            if self.status_var:
+                self.status_var.set(f"フィルタリングエラー: {str(e)}")
 
-    def clear_log(self):
+    def clear_log(self) -> None:
         """ログをクリア"""
         if self.log_text:
             self.log_text.config(state=tk.NORMAL)
@@ -226,11 +257,13 @@ class LogViewerWindow:
             logger = get_logger()
             if logger:
                 logger.clear_log_buffer()
-                self.status_var.set("ログがクリアされました")
+                if self.status_var:
+                    self.status_var.set("ログがクリアされました")
         except Exception as e:
-            self.status_var.set(f"ログクリアエラー: {str(e)}")
+            if self.status_var:
+                self.status_var.set(f"ログクリアエラー: {str(e)}")
 
-    def open_log_file(self):
+    def open_log_file(self) -> None:
         """ログファイルを外部エディタで開く"""
         try:
             from .debug_logger import get_logger
@@ -249,13 +282,16 @@ class LogViewerWindow:
                 else:  # Linux
                     subprocess.run(["xdg-open", log_file])
 
-                self.status_var.set(f"ログファイルを開きました: {log_file}")
+                if self.status_var:
+                    self.status_var.set(f"ログファイルを開きました: {log_file}")
             else:
-                self.status_var.set("ログファイルが見つかりません")
+                if self.status_var:
+                    self.status_var.set("ログファイルが見つかりません")
         except Exception as e:
-            self.status_var.set(f"ファイルオープンエラー: {str(e)}")
+            if self.status_var:
+                self.status_var.set(f"ファイルオープンエラー: {str(e)}")
 
-    def on_closing(self):
+    def on_closing(self) -> None:
         """ウィンドウを閉じる時の処理"""
         self.running = False
         if self.update_thread and self.update_thread.is_alive():
@@ -268,7 +304,7 @@ class LogViewerWindow:
 
     def is_open(self) -> bool:
         """ウィンドウが開いているかどうか"""
-        return self.window is not None and self.window.winfo_exists()
+        return self.window is not None
 
 
 def show_log_viewer(parent_window: Optional[tk.Tk] = None) -> LogViewerWindow:
@@ -290,7 +326,7 @@ if __name__ == "__main__":
     viewer = show_log_viewer()
 
     # テストログを生成
-    from debug_logger import debug, error, info, warning
+    from .debug_logger import debug, error, info, warning
 
     debug("これはデバッグメッセージです")
     info("これは情報メッセージです")
