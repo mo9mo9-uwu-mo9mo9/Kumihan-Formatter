@@ -6,6 +6,7 @@ Issue #463対応: log_viewer.pyのテストカバレッジ実装（0% → 基本
 import threading
 import time
 import unittest
+from typing import cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -211,10 +212,13 @@ class TestLogViewerWindow(unittest.TestCase):
                 viewer.show()
 
                 # ウィンドウのタイトルとサイズが設定される
-                viewer.window.title.assert_called_with(
-                    "Kumihan-Formatter - Debug Log Viewer"
-                )
-                viewer.window.geometry.assert_called_with("800x600")
+                if viewer.window:
+                    title_mock = cast(Mock, viewer.window.title)
+                    geometry_mock = cast(Mock, viewer.window.geometry)
+                    title_mock.assert_called_with(
+                        "Kumihan-Formatter - Debug Log Viewer"
+                    )
+                    geometry_mock.assert_called_with("800x600")
 
     def test_open_log_file(self) -> None:
         """ログファイルを開く機能のテスト"""

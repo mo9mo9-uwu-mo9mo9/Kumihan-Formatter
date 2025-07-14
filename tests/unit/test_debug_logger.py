@@ -5,6 +5,7 @@ Issue #463対応: テストカバレッジ向上（43% → 80%以上）
 
 import os
 import tempfile
+import threading
 import time
 from pathlib import Path
 from unittest import TestCase

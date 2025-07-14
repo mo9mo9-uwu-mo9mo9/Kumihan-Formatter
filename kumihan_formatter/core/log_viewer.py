@@ -4,27 +4,46 @@ GUIアプリケーション用のリアルタイムログビューアー
 
 import threading
 import time
-import tkinter as tk
-from tkinter import scrolledtext, ttk
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
+
+# tkinterは必要時にのみインポート（CI環境での問題回避）
+if TYPE_CHECKING:
+    import tkinter as tk
+    from tkinter import scrolledtext, ttk
+else:
+    try:
+        import tkinter as tk
+        from tkinter import scrolledtext, ttk
+    except ImportError:
+        # CI環境やheadless環境ではtkinterが利用できない場合がある
+        tk = None  # type: ignore
+        scrolledtext = None  # type: ignore
+        ttk = None  # type: ignore
 
 
 class LogViewerWindow:
     """リアルタイムログビューアーウィンドウ"""
 
-    def __init__(self, parent_window: Optional[tk.Tk] = None) -> None:
+    def __init__(self, parent_window: Optional["tk.Tk"] = None) -> None:
         self.parent = parent_window
-        self.window: Optional[Union[tk.Tk, tk.Toplevel]] = None
-        self.log_text: Optional[scrolledtext.ScrolledText] = None
+        self.window: Optional[Union["tk.Tk", "tk.Toplevel"]] = None
+        self.log_text: Optional["scrolledtext.ScrolledText"] = None
         self.auto_scroll = True
         self.update_thread: Optional[threading.Thread] = None
         self.running = False
-        self.auto_scroll_var: Optional[tk.BooleanVar] = None
-        self.level_var: Optional[tk.StringVar] = None
-        self.status_var: Optional[tk.StringVar] = None
+        self.auto_scroll_var: Optional["tk.BooleanVar"] = None
+        self.level_var: Optional["tk.StringVar"] = None
+        self.status_var: Optional["tk.StringVar"] = None
 
     def show(self) -> None:
         """ログビューアーウィンドウを表示"""
+        # tkinterが利用できない場合（CI環境等）はエラーを出さずに終了
+        if tk is None:
+            print(
+                "Warning: tkinter is not available. GUI log viewer cannot be displayed."
+            )
+            return
+
         if self.window is not None:
             # 既に開いている場合は前面に表示
             self.window.lift()
@@ -307,7 +326,7 @@ class LogViewerWindow:
         return self.window is not None
 
 
-def show_log_viewer(parent_window: Optional[tk.Tk] = None) -> LogViewerWindow:
+def show_log_viewer(parent_window: Optional["tk.Tk"] = None) -> LogViewerWindow:
     """ログビューアーを表示"""
     viewer = LogViewerWindow(parent_window)
     viewer.show()
@@ -317,6 +336,10 @@ def show_log_viewer(parent_window: Optional[tk.Tk] = None) -> LogViewerWindow:
 if __name__ == "__main__":
     # テスト用
     import os
+
+    if tk is None:
+        print("tkinter is not available. Cannot run GUI test.")
+        exit(1)
 
     os.environ["KUMIHAN_GUI_DEBUG"] = "true"
 
