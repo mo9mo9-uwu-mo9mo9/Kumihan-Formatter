@@ -224,7 +224,7 @@ class LogViewerWindow:
         if self.auto_scroll_var:
             self.auto_scroll = self.auto_scroll_var.get()
 
-    def _filter_logs(self, event: Optional[tk.Event[tk.Widget]] = None) -> None:
+    def _filter_logs(self, event: Optional[object] = None) -> None:
         """ログレベルフィルタリング"""
         # 既存のログを再表示（フィルタリング適用）
         try:
