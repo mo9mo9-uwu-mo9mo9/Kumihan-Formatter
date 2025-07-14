@@ -17,9 +17,20 @@ import sys
 import threading
 import time
 import traceback
+from collections import deque
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Deque,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 
 class GUIDebugLogger:
@@ -36,8 +47,8 @@ class GUIDebugLogger:
         )
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # ログ保存用リスト（メモリ内ログビューアー用）
-        self.log_buffer: List[str] = []
+        # ログ保存用deque（メモリ内ログビューアー用、効率的なバッファ管理）
+        self.log_buffer: Deque[str] = deque(maxlen=1000)
         self.max_buffer_size = 1000
         self._buffer_lock = threading.Lock()  # バッファアクセス用ロック
 
@@ -98,14 +109,13 @@ class GUIDebugLogger:
                 print(f"Warning: Cannot create console handler: {e}", file=sys.stderr)
 
     def _add_to_buffer(self, level: str, message: str) -> None:
-        """メモリバッファにログを追加（スレッドセーフ）"""
+        """メモリバッファにログを追加（スレッドセーフ、dequeで効率的）"""
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         log_entry = f"[{timestamp}] [{level:8s}] {message}"
 
         with self._buffer_lock:
+            # dequeのmaxlenにより古いエントリは自動的に削除される
             self.log_buffer.append(log_entry)
-            if len(self.log_buffer) > self.max_buffer_size:
-                self.log_buffer.pop(0)
 
     def debug(self, message: str, **kwargs: Any) -> None:
         """DEBUGレベルログ"""
@@ -185,7 +195,7 @@ class GUIDebugLogger:
     def get_log_buffer(self) -> List[str]:
         """メモリ内ログバッファを取得（スレッドセーフ）"""
         with self._buffer_lock:
-            return self.log_buffer.copy()
+            return list(self.log_buffer)
 
     def clear_log_buffer(self) -> None:
         """メモリ内ログバッファをクリア（スレッドセーフ）"""
