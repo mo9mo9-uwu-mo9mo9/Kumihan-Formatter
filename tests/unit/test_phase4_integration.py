@@ -15,13 +15,15 @@ import pytest
 
 from kumihan_formatter.core.utilities.logger import (
     ClaudeCodeIntegrationLogger,
-    LogPerformanceOptimizer,
     LogSizeController,
-    StructuredLogger,
     get_claude_code_logger,
-    get_log_performance_optimizer,
     get_log_size_controller,
 )
+from kumihan_formatter.core.utilities.performance_logger import (
+    LogPerformanceOptimizer,
+    get_log_performance_optimizer,
+)
+from kumihan_formatter.core.utilities.structured_logger import StructuredLogger
 
 
 class TestLogPerformanceOptimizer:
