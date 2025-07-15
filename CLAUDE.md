@@ -279,7 +279,7 @@ logger = get_structured_logger(__name__)
 # コンテキスト付きログ
 logger.info("Processing file", file_path="test.txt", size_bytes=1024)
 
-# エラーと解決提案
+# エラーと解決提案（Claude Code向け特化機能）
 logger.error_with_suggestion(
     "File conversion failed",
     "Check file encoding and permissions",
@@ -287,11 +287,17 @@ logger.error_with_suggestion(
     file_path="input.txt"
 )
 
-# パフォーマンス計測
+# パフォーマンス計測（実行時間とメトリクス記録）
 logger.performance("file_conversion", 0.125, lines_processed=500)
 
-# ファイル操作記録
+# ファイル操作記録（操作結果の構造化記録）
 logger.file_operation("read", "/path/to/file.txt", success=True, size_bytes=2048)
+
+# 状態変更追跡（デバッグ用）
+logger.state_change("config_updated", old_value="debug", new_value="info")
+
+# 機密情報の自動フィルタリング（パフォーマンス最適化済み）
+logger.info("User login", username="user123", password="secret")  # password は [FILTERED] に置換
 ```
 
 **JSON出力例**:

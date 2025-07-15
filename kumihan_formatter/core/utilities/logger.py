@@ -14,7 +14,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from .logging import LogHelper
 
@@ -386,7 +386,7 @@ class StructuredLogger:
     making it easier for Claude Code to parse and analyze logs.
     """
 
-    # Sensitive keys that should be filtered out from logs
+    # Sensitive keys that should be filtered out from logs (pre-lowercased for performance)
     SENSITIVE_KEYS = {
         "password",
         "passwd",
@@ -405,10 +405,13 @@ class StructuredLogger:
         "cookie",
     }
 
+    # Cache for lowercased keys to avoid repeated string operations
+    _key_cache: dict[str, str] = {}
+
     def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """Remove sensitive information from context data
 
         Args:
@@ -419,7 +422,14 @@ class StructuredLogger:
         """
         sanitized = {}
         for key, value in context.items():
-            if key.lower() in self.SENSITIVE_KEYS:
+            # Use cache to avoid repeated string.lower() operations
+            if key not in self._key_cache:
+                self._key_cache[key] = key.lower()
+                # Limit cache size to prevent memory issues
+                if len(self._key_cache) > 1000:
+                    self._key_cache.clear()
+
+            if self._key_cache[key] in self.SENSITIVE_KEYS:
                 sanitized[key] = "[FILTERED]"
             else:
                 sanitized[key] = value
@@ -429,7 +439,7 @@ class StructuredLogger:
         self,
         level: int,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """Log message with structured context
