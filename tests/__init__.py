@@ -1,4 +1,1 @@
-"""Kumihan-Formatter テストスイート
-
-最小限のテスト構造を提供し、Issue #463でテストインフラを完全に再構築予定
-"""
+"""Test package for Kumihan-Formatter"""

@@ -1,1 +1,1 @@
-"""ユニットテスト: 個別のクラス・関数のテスト"""
+"""Unit tests for Kumihan-Formatter"""
