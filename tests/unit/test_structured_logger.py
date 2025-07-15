@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 import pytest
 
-from kumihan_formatter.core.utilities.logger import (
-    StructuredLogFormatter,
+from kumihan_formatter.core.utilities.logging_formatters import StructuredLogFormatter
+from kumihan_formatter.core.utilities.structured_logger import (
     StructuredLogger,
     get_structured_logger,
 )
