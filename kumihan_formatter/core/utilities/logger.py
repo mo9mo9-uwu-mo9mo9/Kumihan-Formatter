@@ -6,15 +6,83 @@ offering structured logging with levels, formatting, and output management.
 
 from __future__ import annotations
 
+import json
 import logging
 import logging.handlers
 import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional, Union
 
 from .logging import LogHelper
+
+
+class StructuredLogFormatter(logging.Formatter):
+    """JSON formatter for structured logging
+
+    Formats log records as JSON with structured context data for easier
+    parsing by Claude Code and other automated tools.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record as JSON with structured context"""
+        # Base log data
+        log_data = {
+            "timestamp": datetime.fromtimestamp(record.created).isoformat(),
+            "level": record.levelname,
+            "module": record.name,
+            "message": record.getMessage(),
+            "line_number": record.lineno,
+            "function": record.funcName,
+        }
+
+        # Add structured context if available
+        if hasattr(record, "context") and record.context:
+            log_data["context"] = record.context
+
+        # Add extra fields from record
+        extra_fields = {
+            k: v
+            for k, v in record.__dict__.items()
+            if k
+            not in {
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "context",
+            }
+        }
+        if extra_fields:
+            log_data["extra"] = extra_fields
+
+        # Add exception info if present
+        if record.exc_info:
+            log_data["exception"] = self.formatException(record.exc_info)
+
+        try:
+            return json.dumps(log_data, ensure_ascii=False, separators=(",", ":"))
+        except (TypeError, ValueError):
+            # Fallback to standard formatting if JSON serialization fails
+            return super().format(record)
 
 
 class DevLogHandler(logging.Handler):
@@ -45,11 +113,16 @@ class DevLogHandler(logging.Handler):
         # Clean up old logs
         self._cleanup_old_logs()
 
-        # Set up formatter
-        formatter = logging.Formatter(
-            "[%(asctime)s] [%(levelname)8s] [%(name)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+        # Set up formatter (JSON for structured logging)
+        use_json = os.environ.get("KUMIHAN_DEV_LOG_JSON", "true").lower() == "true"
+        formatter: Union[StructuredLogFormatter, logging.Formatter]
+        if use_json:
+            formatter = StructuredLogFormatter()
+        else:
+            formatter = logging.Formatter(
+                "[%(asctime)s] [%(levelname)8s] [%(name)s] %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
         self.setFormatter(formatter)
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -299,6 +372,168 @@ def configure_logging(
     if enable_file is not None and enable_file != _logger_instance.enable_file_logging:
         _logger_instance.enable_file_logging = enable_file
         _logger_instance._setup_root_logger()
+
+
+class StructuredLogger:
+    """Enhanced logger with structured logging capabilities
+
+    Provides methods for logging with structured context data,
+    making it easier for Claude Code to parse and analyze logs.
+    """
+
+    def __init__(self, logger: logging.Logger):
+        self.logger = logger
+
+    def log_with_context(
+        self,
+        level: int,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Log message with structured context
+
+        Args:
+            level: Log level (logging.INFO, etc.)
+            message: Log message
+            context: Structured context data
+            **kwargs: Additional context as keyword arguments
+        """
+        if context or kwargs:
+            full_context = {**(context or {}), **kwargs}
+            extra = {"context": full_context}
+            self.logger.log(level, message, extra=extra)
+        else:
+            self.logger.log(level, message)
+
+    def info(self, message: str, **context: Any) -> None:
+        """Log info with context"""
+        self.log_with_context(logging.INFO, message, **context)
+
+    def debug(self, message: str, **context: Any) -> None:
+        """Log debug with context"""
+        self.log_with_context(logging.DEBUG, message, **context)
+
+    def warning(self, message: str, **context: Any) -> None:
+        """Log warning with context"""
+        self.log_with_context(logging.WARNING, message, **context)
+
+    def error(self, message: str, **context: Any) -> None:
+        """Log error with context"""
+        self.log_with_context(logging.ERROR, message, **context)
+
+    def critical(self, message: str, **context: Any) -> None:
+        """Log critical with context"""
+        self.log_with_context(logging.CRITICAL, message, **context)
+
+    def file_operation(
+        self, operation: str, file_path: str, success: bool = True, **context: Any
+    ) -> None:
+        """Log file operations with standardized context
+
+        Args:
+            operation: Operation type (read, write, convert, etc.)
+            file_path: Path to file being operated on
+            success: Whether operation succeeded
+            **context: Additional context
+        """
+        level = logging.INFO if success else logging.ERROR
+        self.log_with_context(
+            level,
+            f"File {operation}",
+            file_path=file_path,
+            operation=operation,
+            success=success,
+            **context,
+        )
+
+    def performance(
+        self, operation: str, duration_seconds: float, **context: Any
+    ) -> None:
+        """Log performance metrics
+
+        Args:
+            operation: Operation name
+            duration_seconds: Duration in seconds
+            **context: Additional metrics
+        """
+        self.log_with_context(
+            logging.INFO,
+            f"Performance: {operation}",
+            operation=operation,
+            duration_seconds=duration_seconds,
+            duration_ms=duration_seconds * 1000,
+            **context,
+        )
+
+    def state_change(
+        self,
+        what_changed: str,
+        old_value: Any = None,
+        new_value: Any = None,
+        **context: Any,
+    ) -> None:
+        """Log state changes for debugging
+
+        Args:
+            what_changed: Description of what changed
+            old_value: Previous value
+            new_value: New value
+            **context: Additional context
+        """
+        self.log_with_context(
+            logging.DEBUG,
+            f"State change: {what_changed}",
+            what_changed=what_changed,
+            old_value=old_value,
+            new_value=new_value,
+            **context,
+        )
+
+    def error_with_suggestion(
+        self,
+        message: str,
+        suggestion: str,
+        error_type: Optional[str] = None,
+        **context: Any,
+    ) -> None:
+        """Log error with suggested solution
+
+        Args:
+            message: Error message
+            suggestion: Suggested fix or action
+            error_type: Type of error
+            **context: Additional context
+        """
+        self.log_with_context(
+            logging.ERROR,
+            message,
+            suggestion=suggestion,
+            error_type=error_type,
+            **context,
+        )
+
+
+def get_structured_logger(name: str) -> StructuredLogger:
+    """Get a structured logger instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        StructuredLogger instance with enhanced logging capabilities
+
+    Example:
+        >>> logger = get_structured_logger(__name__)
+        >>> logger.info("Processing file", file_path="test.txt", size_bytes=1024)
+        >>> logger.error_with_suggestion(
+        ...     "File not found",
+        ...     "Check file path and permissions",
+        ...     file_path="missing.txt"
+        ... )
+    """
+    standard_logger = get_logger(name)
+    return StructuredLogger(standard_logger)
 
 
 def log_performance(operation: str, duration: float, size: int | None = None) -> None:

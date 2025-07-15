@@ -84,6 +84,9 @@ KUMIHAN_GUI_DEBUG=true KUMIHAN_GUI_CONSOLE_LOG=true python3 -m kumihan_formatter
 
 # 開発ログ機能（Issue#446）
 KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
+
+# 構造化ログ機能（Issue#472）- JSON形式でClaude Code解析しやすく
+KUMIHAN_DEV_LOG=true KUMIHAN_DEV_LOG_JSON=true kumihan convert input.txt output.txt
 ```
 
 ## CLI使用例
@@ -263,6 +266,48 @@ cat /tmp/kumihan_formatter/dev_log_*.log
 - **自動クリーンアップ**: 24時間経過後に削除
 - **サイズ制限**: 5MB（超過時は自動ローテーション）
 - **本番環境**: 環境変数未設定時は無効
+
+### 構造化ログ機能 (Issue#472)
+Claude Code向けの構造化JSON形式ログ：
+
+```python
+# 構造化ロガーの使用例
+from kumihan_formatter.core.utilities.logger import get_structured_logger
+
+logger = get_structured_logger(__name__)
+
+# コンテキスト付きログ
+logger.info("Processing file", file_path="test.txt", size_bytes=1024)
+
+# エラーと解決提案
+logger.error_with_suggestion(
+    "File conversion failed",
+    "Check file encoding and permissions",
+    error_type="FileError",
+    file_path="input.txt"
+)
+
+# パフォーマンス計測
+logger.performance("file_conversion", 0.125, lines_processed=500)
+
+# ファイル操作記録
+logger.file_operation("read", "/path/to/file.txt", success=True, size_bytes=2048)
+```
+
+**JSON出力例**:
+```json
+{
+    "timestamp": "2025-07-15T15:30:00",
+    "level": "INFO",
+    "module": "convert_processor",
+    "message": "File converted",
+    "context": {
+        "file_path": "input.txt",
+        "output_size": 2048,
+        "duration_ms": 150
+    }
+}
+```
 ---
 
 **注意**: より詳細な開発ガイドラインは上記リンク先を参照。
