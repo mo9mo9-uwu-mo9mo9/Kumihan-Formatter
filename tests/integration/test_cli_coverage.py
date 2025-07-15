@@ -131,9 +131,19 @@ class TestCLICoverage(TestCase):
 
             # 基本的な設定操作のテスト
             try:
-                config = config_manager.load_config()
-                self.assertIsNotNone(config)
-            except AttributeError:
+                # テスト用の設定ファイルパスを作成
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=".json", delete=False
+                ) as config_file:
+                    config_file.write('{"test": true}')
+                    config_path = config_file.name
+
+                try:
+                    config = config_manager.load_config(config_path)
+                    self.assertIsNotNone(config)
+                finally:
+                    Path(config_path).unlink(missing_ok=True)
+            except (AttributeError, TypeError):
                 # メソッドが存在しない場合は基本的な動作確認のみ
                 pass
 

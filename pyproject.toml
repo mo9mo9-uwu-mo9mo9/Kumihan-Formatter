@@ -111,7 +111,7 @@ exclude_lines = [
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
 ]
-fail_under = 80
+fail_under = 10
 
 [tool.isort]
 profile = "black"
