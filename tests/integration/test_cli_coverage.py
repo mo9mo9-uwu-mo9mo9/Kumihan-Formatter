@@ -109,7 +109,9 @@ class TestCLICoverage(TestCase):
 
             try:
                 # 基本的な変換処理
-                processor.process_file(input_path, output_path)
+                from pathlib import Path
+
+                processor.convert_file(Path(input_path), str(Path(output_path).parent))
             except Exception:
                 # エラーが発生しても基本的な動作確認
                 pass
