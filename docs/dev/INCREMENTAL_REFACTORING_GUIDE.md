@@ -40,7 +40,6 @@ non-blocking status code 1: No stderr output
    # 最大違反ファイルから順に対応
    find kumihan_formatter -name "*.py" -exec wc -l {} + | sort -rn | head -5
    ```
-
 ## 🎯 基本原則
 
 ### 1. Boy Scout Rule（ボーイスカウトルール）

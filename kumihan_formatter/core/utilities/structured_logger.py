@@ -21,29 +21,18 @@ class StructuredLogger:
 
     def __init__(self, logger: logging.Logger):
         self.logger = logger
+        self.security_matcher = SecurityPatternMatcher()
 
-    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Remove sensitive information from context data
+    def sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize context data to remove sensitive information
 
         Args:
-            context: Original context dictionary
+            context: Context dictionary to sanitize
 
         Returns:
             Sanitized context dictionary
         """
-        sanitized = {}
-        for key, value in context.items():
-            # Check if key is sensitive
-            if SecurityPatternMatcher.is_sensitive_key(key):
-                sanitized[key] = "[FILTERED]"
-            else:
-                # Check if value contains sensitive patterns
-                if isinstance(value, str):
-                    sanitized_value = SecurityPatternMatcher.sanitize_value(value)
-                    sanitized[key] = sanitized_value
-                else:
-                    sanitized[key] = value
-        return sanitized
+        return self.security_matcher.sanitize_dict(context)
 
     def log_with_context(
         self,
@@ -52,19 +41,19 @@ class StructuredLogger:
         context: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
-        """Log message with structured context
+        """Log message with optional context data
 
         Args:
-            level: Log level
+            level: Log level (logging.DEBUG, logging.INFO, etc.)
             message: Log message
             context: Optional context data
             **kwargs: Additional logging parameters
         """
         if context:
-            sanitized_context = self._sanitize_context(context)
-            # Add context to extra for structured logging
-            kwargs["extra"] = kwargs.get("extra", {})
-            kwargs["extra"]["context"] = sanitized_context
+            sanitized_context = self.sanitize_context(context)
+            extra = kwargs.get("extra", {})
+            extra.update(sanitized_context)
+            kwargs["extra"] = extra
 
         self.logger.log(level, message, **kwargs)
 
@@ -113,37 +102,6 @@ class StructuredLogger:
         """Critical log with context"""
         self.log_with_context(logging.CRITICAL, message, context, **kwargs)
 
-    def log_performance(
-        self,
-        operation: str,
-        duration: float,
-        context: Optional[Dict[str, Any]] = None,
-        **kwargs: Any,
-    ) -> None:
-        """Log performance metrics
-
-        Args:
-            operation: Operation name
-            duration: Duration in seconds
-            context: Optional additional context
-            **kwargs: Additional logging parameters
-        """
-        perf_context = {
-            "operation": operation,
-            "duration_seconds": duration,
-            "duration_ms": duration * 1000,
-            "performance_log": True,
-        }
-
-        if context:
-            perf_context.update(context)
-
-        self.info_with_context(
-            f"Performance: {operation} completed in {duration:.3f}s",
-            perf_context,
-            **kwargs,
-        )
-
     def log_error_with_traceback(
         self,
         message: str,
@@ -151,7 +109,7 @@ class StructuredLogger:
         context: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
-        """Log error with traceback
+        """Log error with traceback information
 
         Args:
             message: Error message
@@ -162,31 +120,34 @@ class StructuredLogger:
         error_context = {
             "error_type": type(error).__name__,
             "error_message": str(error),
-            "error_log": True,
         }
 
         if context:
             error_context.update(context)
 
-        self.error_with_context(message, error_context, exc_info=True, **kwargs)
+        self.log_with_context(
+            logging.ERROR,
+            message,
+            error_context,
+            exc_info=True,
+            **kwargs,
+        )
 
 
 # Global instance cache
 _structured_loggers: Dict[str, StructuredLogger] = {}
 
 
-def get_structured_logger(name: str) -> StructuredLogger:
+def get_structured_logger(logger: logging.Logger) -> StructuredLogger:
     """Get cached structured logger instance
 
     Args:
-        name: Logger name
+        logger: Base logger instance
 
     Returns:
         StructuredLogger instance
     """
-    if name not in _structured_loggers:
-        from .logging_handlers import get_logger
-
-        base_logger = get_logger(name)
-        _structured_loggers[name] = StructuredLogger(base_logger)
-    return _structured_loggers[name]
+    logger_name = logger.name
+    if logger_name not in _structured_loggers:
+        _structured_loggers[logger_name] = StructuredLogger(logger)
+    return _structured_loggers[logger_name]

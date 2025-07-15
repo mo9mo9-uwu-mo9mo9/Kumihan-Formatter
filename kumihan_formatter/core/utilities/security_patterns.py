@@ -5,7 +5,7 @@ Issue #476 Phase3対応 - structured_logger.py分割
 """
 
 import re
-from typing import Set
+from typing import Any, Dict, Set
 
 # Sensitive keys that should be filtered out from logs (pre-lowercased for performance)
 SENSITIVE_KEYS: Set[str] = {
@@ -172,6 +172,28 @@ class SecurityPatternMatcher:
                 cls._key_cache.clear()
 
         return cls._key_cache[key] in SENSITIVE_KEYS
+
+    @classmethod
+    def sanitize_dict(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize dictionary by removing sensitive keys and values
+
+        Args:
+            data: Dictionary to sanitize
+
+        Returns:
+            Sanitized dictionary
+        """
+        sanitized: Dict[str, Any] = {}
+        for key, value in data.items():
+            if cls.is_sensitive_key(key):
+                sanitized[key] = "[FILTERED]"
+            elif isinstance(value, str):
+                sanitized[key] = cls.sanitize_value(value)
+            elif isinstance(value, dict):
+                sanitized[key] = cls.sanitize_dict(value)
+            else:
+                sanitized[key] = value
+        return sanitized
 
     @classmethod
     def sanitize_value(cls, value: str) -> str:
