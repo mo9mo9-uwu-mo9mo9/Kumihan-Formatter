@@ -70,6 +70,7 @@ def log_performance_decorator(
             if include_memory and HAS_PSUTIL:
                 try:
                     start_memory = psutil.Process().memory_info().rss
+<<<<<<< HEAD
                 except Exception as e:
                     # Log memory monitoring errors for debugging
                     import logging
@@ -135,6 +136,7 @@ def log_performance_decorator(
                             completion_context["memory_delta_mb"] = round(
                                 memory_delta / (1024 * 1024), 2
                             )
+<<<<<<< HEAD
                     except Exception as e:
                         # Log memory monitoring errors for debugging
                         import logging
@@ -147,6 +149,7 @@ def log_performance_decorator(
 
                 return result
 
+<<<<<<< HEAD
             except Exception as func_error:
                 # Log error completion
                 end_time = time.time()
@@ -155,6 +158,7 @@ def log_performance_decorator(
                 error_context = {
                     "phase": "error",
                     "success": False,
+<<<<<<< HEAD
                     "error_message": str(func_error),
                 }
 
@@ -164,6 +168,7 @@ def log_performance_decorator(
                         error_context["memory_mb"] = round(
                             end_memory / (1024 * 1024), 2
                         )
+<<<<<<< HEAD
                     except Exception as memory_error:
                         # Log memory monitoring errors for debugging
                         import logging
@@ -175,6 +180,7 @@ def log_performance_decorator(
                 structured_logger.error_with_suggestion(
                     f"Function failed: {op_name}",
                     "Check function arguments and internal logic",
+<<<<<<< HEAD
                     error_type=type(func_error).__name__,
                     operation=op_name,
                     **error_context,

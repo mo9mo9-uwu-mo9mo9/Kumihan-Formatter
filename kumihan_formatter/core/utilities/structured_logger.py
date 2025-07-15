@@ -11,7 +11,10 @@ import logging
 import time
 import traceback
 from datetime import datetime
+<<<<<<< HEAD
 from functools import lru_cache
+=======
+>>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
 from typing import Any, Optional
 
 try:
@@ -21,7 +24,11 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
+<<<<<<< HEAD
 # Import get_logger at runtime to avoid circular imports
+=======
+from .logger import get_logger
+>>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
 from .performance_logger import call_chain_tracker, memory_usage_tracker
 
 
@@ -51,6 +58,7 @@ class StructuredLogger:
         "cookie",
     }
 
+<<<<<<< HEAD
     def __init__(self, logger: logging.Logger):
         self.logger = logger
 
@@ -59,6 +67,14 @@ class StructuredLogger:
         """Check if a key is sensitive using LRU cache for efficiency"""
         return key.lower() in self.SENSITIVE_KEYS
 
+=======
+    # Cache for lowercased keys to avoid repeated string operations
+    _key_cache: dict[str, str] = {}
+
+    def __init__(self, logger: logging.Logger):
+        self.logger = logger
+
+>>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
     def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """Remove sensitive information from context data
 
@@ -227,9 +243,12 @@ def get_structured_logger(name: str) -> StructuredLogger:
         ...     file_path="missing.txt"
         ... )
     """
+<<<<<<< HEAD
     # Import get_logger at runtime to avoid circular imports
     from .logger import get_logger
 
+=======
+>>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
     standard_logger = get_logger(name)
     return StructuredLogger(standard_logger)
 
