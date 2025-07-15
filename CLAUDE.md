@@ -21,6 +21,7 @@ AI運用5原則
 </law>
 
 <every_chat>
+<!-- Claude Code専用設定: GitHub Apps環境では無視される -->
 [AI運用5原則]
 
 [main_output]
