@@ -60,12 +60,21 @@ kumihan check-syntax manuscript.txt
 # PR作成
 gh pr create --title "タイトル" --body "内容"
 
+# ⚠️ PR作成後の必須手順リマインダー
+python scripts/pr_review_reminder.py
+
 # オートマージは使用しない（手動でマージ）
 # gh pr merge PR番号 --auto --merge  # 使用禁止
 
 # オートマージが自動有効化された場合は明示的に無効化
 gh pr merge PR番号 --disable-auto
 ```
+
+**PR作成後の必須手順**:
+1. PRページで @claude にレビュー依頼コメントを送信
+2. レビュー完了まで待機
+3. 指摘事項があれば修正
+4. 承認後、手動マージを実行
 
 ## 環境変数一覧
 

@@ -9,6 +9,37 @@
 このガイドは、Kumihan-Formatterにおける**漸進的リファクタリング**の実践方法を定義します。
 大規模な技術的負債の蓄積を防ぎ、コードベースの健全性を維持することを目指します。
 
+## ⚠️ Claude Code Hook警告への対応
+
+Claude Code使用時に以下のメッセージが表示される場合の対応手順：
+
+```
+PreToolUse:Bash [~/.claude/hook_pre_commands.sh] failed with
+non-blocking status code 1: No stderr output
+```
+
+### 🔍 警告の意味
+- **status code 1**: 非ブロッキングエラー（処理継続）
+- **技術的負債検出**: 300行制限違反やアーキテクチャルール違反
+- **予防システム**: Issue #476のような大規模リファクタリングを予防
+
+### 📋 即座の対応手順
+1. **現状確認**
+   ```bash
+   python3 scripts/check_file_size.py --max-lines=300
+   python3 scripts/architecture_check.py
+   ```
+
+2. **優先度付け**
+   - **高**: 1000行超のファイル
+   - **中**: 500-1000行のファイル
+   - **低**: 300-500行のファイル
+
+3. **段階的修正**
+   ```bash
+   # 最大違反ファイルから順に対応
+   find kumihan_formatter -name "*.py" -exec wc -l {} + | sort -rn | head -5
+   ```
 ## 🎯 基本原則
 
 ### 1. Boy Scout Rule（ボーイスカウトルール）
