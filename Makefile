@@ -28,7 +28,7 @@ help:
 	@echo "🚀 高度・詳細:"
 	@echo "  make test-full  - フルテストスイート実行（カバレッジ付き）"
 	@echo "  make coverage   - カバレッジ付きテスト実行（HTMLレポート生成）"
-	@echo "  make pre-commit - 🚀 コミット前品質チェック（カバレッジ100%必須）"
+	@echo "  make pre-commit - 🚀 コミット前品質チェック（カバレッジ80%必須）"
 	@echo ""
 	@echo "🛠️ 環境・その他:"
 	@echo "  make lint-docs  - ドキュメントリンクチェック"
@@ -102,17 +102,17 @@ clean:
 	find . -name "*.pyc" -delete 2>/dev/null || true
 	@echo "クリーンアップ完了 ✓"
 
-# 🚀 コミット前品質チェック（カバレッジ100%必須）
+# 🚀 コミット前品質チェック（カバレッジ80%必須）
 pre-commit: clean format lint
 	@echo "=== 🚀 コミット前品質チェック ==="
-	@echo "1. カバレッジ100%テスト実行..."
+	@echo "1. カバレッジ80%テスト実行..."
 	$(PYTEST) --cov-fail-under=80
 	@echo ""
 	@echo "🎉 品質チェック完了！"
 	@echo "✅ フォーマット: 適用済み"
 	@echo "✅ リニット: 合格"
 	@echo "✅ テスト: 全て成功"
-	@echo "✅ カバレッジ: 100%達成"
+	@echo "✅ カバレッジ: 80%以上達成"
 	@echo ""
 	@echo "🚀 コミット可能です！"
 	@echo "   git add . && git commit -m \"your message\""
