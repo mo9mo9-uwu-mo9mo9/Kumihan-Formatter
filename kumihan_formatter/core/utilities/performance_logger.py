@@ -1,21 +1,17 @@
-"""Performance logging and optimization for Kumihan-Formatter
+"""Performance monitoring and error analysis for Kumihan-Formatter logging
 
-This module provides performance tracking, monitoring, and optimization
-features specifically designed for Claude Code integration.
+Single Responsibility Principle適用: パフォーマンス監視とエラー分析の分離
+Issue #476 Phase3対応 - logger.py分割
 """
 
 from __future__ import annotations
 
 import functools
 import inspect
-import logging
 import time
 import traceback
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Callable, Optional
-
-if TYPE_CHECKING:
-    from .structured_logger import StructuredLogger
+from typing import Any, Callable, Optional
 
 try:
     import psutil
@@ -24,7 +20,210 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-# Note: structured_logger imports will be resolved at runtime to avoid circular imports
+
+class ErrorAnalyzer:
+    """Claude Code specific error analysis support
+
+    Provides enhanced error logging with analysis suggestions,
+    error categorization, and debugging hints specifically
+    designed for Claude Code integration.
+    """
+
+    # Common error categories and their solutions
+    ERROR_CATEGORIES = {
+        "encoding": {
+            "patterns": ["encoding", "decode", "utf-8", "unicode", "ascii"],
+            "suggestions": [
+                "Check file encoding with 'file -I filename'",
+                "Try specifying encoding explicitly: encoding='utf-8'",
+                "Consider using chardet library for encoding detection",
+            ],
+        },
+        "file_access": {
+            "patterns": ["permission", "access", "not found", "no such file"],
+            "suggestions": [
+                "Check file permissions with 'ls -la'",
+                "Verify file path exists",
+                "Ensure process has read/write permissions",
+            ],
+        },
+        "parsing": {
+            "patterns": ["parse", "syntax", "invalid", "unexpected"],
+            "suggestions": [
+                "Check input file format",
+                "Validate syntax of input content",
+                "Review notation format specification",
+            ],
+        },
+        "memory": {
+            "patterns": ["memory", "out of memory", "allocation"],
+            "suggestions": [
+                "Process file in chunks",
+                "Check available system memory",
+                "Consider input file size limitations",
+            ],
+        },
+        "dependency": {
+            "patterns": ["import", "module", "not found", "missing"],
+            "suggestions": [
+                "Check if required package is installed",
+                "Verify PYTHONPATH includes necessary directories",
+                "Install missing dependencies with pip",
+            ],
+        },
+    }
+
+    def __init__(self, logger: Any):
+        self.logger = logger
+
+    def analyze_error(
+        self,
+        error: Exception,
+        context: Optional[dict[str, Any]] = None,
+        operation: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Analyze error and provide structured debugging information
+
+        Args:
+            error: Exception that occurred
+            context: Additional context about the operation
+            operation: Name of operation that failed
+
+        Returns:
+            Dictionary with error analysis and suggestions
+        """
+        error_message = str(error).lower()
+        error_type = type(error).__name__
+
+        # Categorize error
+        category = self._categorize_error(error_message)
+
+        # Get stack trace information
+        stack_info = call_chain_tracker(max_depth=15)
+
+        # Get memory usage at error time
+        memory_info = memory_usage_tracker()
+
+        # Add suggestions based on category
+        suggestions: list[str]
+        if category != "unknown":
+            suggestions = self.ERROR_CATEGORIES[category]["suggestions"]
+        else:
+            suggestions = self._generate_generic_suggestions(error_type, error_message)
+
+        analysis: dict[str, Any] = {
+            "error_type": error_type,
+            "error_message": str(error),
+            "category": category,
+            "operation": operation,
+            "stack_info": stack_info,
+            "memory_info": memory_info,
+            "timestamp": datetime.now().isoformat(),
+            "suggestions": suggestions,
+        }
+
+        if context:
+            analysis["context"] = context
+
+        return analysis
+
+    def _categorize_error(self, error_message: str) -> str:
+        """Categorize error based on message content"""
+        for category, config in self.ERROR_CATEGORIES.items():
+            if any(pattern in error_message for pattern in config["patterns"]):
+                return category
+        return "unknown"
+
+    def _generate_generic_suggestions(
+        self, error_type: str, error_message: str
+    ) -> list[str]:
+        """Generate generic suggestions for unknown error types"""
+        suggestions = [
+            f"Review {error_type} documentation",
+            "Check logs for additional context",
+            "Verify input parameters and their types",
+        ]
+
+        # Add specific suggestions based on error type
+        if "file" in error_message.lower() or "path" in error_message.lower():
+            suggestions.append("Check file paths and permissions")
+
+        if "type" in error_message.lower() or "attribute" in error_message.lower():
+            suggestions.append("Verify object types and available methods")
+
+        return suggestions
+
+
+class DependencyTracker:
+    """Track dependencies and their loading performance"""
+
+    def __init__(self) -> None:
+        self.loaded_modules: dict[str, float] = {}
+        self.failed_imports: list[dict[str, Any]] = []
+
+    def track_import(self, module_name: str, start_time: float, success: bool) -> None:
+        """Track module import performance"""
+        duration = time.time() - start_time
+
+        if success:
+            self.loaded_modules[module_name] = duration
+        else:
+            self.failed_imports.append(
+                {
+                    "module": module_name,
+                    "timestamp": datetime.now().isoformat(),
+                    "duration": duration,
+                }
+            )
+
+    def get_summary(self) -> dict[str, Any]:
+        """Get dependency loading summary"""
+        return {
+            "loaded_modules": len(self.loaded_modules),
+            "failed_imports": len(self.failed_imports),
+            "total_load_time": sum(self.loaded_modules.values()),
+            "slowest_modules": sorted(
+                self.loaded_modules.items(), key=lambda x: x[1], reverse=True
+            )[:5],
+        }
+
+
+class ExecutionFlowTracker:
+    """Track execution flow for debugging"""
+
+    def __init__(self) -> None:
+        self.flow_stack: list[dict[str, Any]] = []
+        self.checkpoints: list[dict[str, Any]] = []
+
+    def enter_function(self, function_name: str, args_info: dict[str, Any]) -> str:
+        """Record function entry"""
+        entry_id = f"{function_name}_{len(self.flow_stack)}"
+        self.flow_stack.append(
+            {
+                "id": entry_id,
+                "function": function_name,
+                "entry_time": time.time(),
+                "args_info": args_info,
+            }
+        )
+        return entry_id
+
+    def exit_function(self, entry_id: str, result_info: dict[str, Any]) -> None:
+        """Record function exit"""
+        if self.flow_stack and self.flow_stack[-1]["id"] == entry_id:
+            entry = self.flow_stack.pop()
+            duration = time.time() - entry["entry_time"]
+            entry.update(
+                {"exit_time": time.time(), "duration": duration, **result_info}
+            )
+
+    def add_checkpoint(self, name: str, data: dict[str, Any]) -> None:
+        """Add execution checkpoint"""
+        self.checkpoints.append({"name": name, "timestamp": time.time(), "data": data})
+
+    def get_current_flow(self) -> list[dict[str, Any]]:
+        """Get current execution flow"""
+        return self.flow_stack.copy()
 
 
 def log_performance_decorator(
@@ -57,12 +256,12 @@ def log_performance_decorator(
             # Set up operation name
             op_name = operation or func.__name__
 
-            # Set up logger
+            # Set up logger - use basic logging if structured logger not available
+            from .logging_handlers import get_logger
+
             module_name = func.__module__ if func.__module__ else "unknown"
             logger_name_final = logger_name or module_name
-            from .structured_logger import get_structured_logger
-
-            structured_logger = get_structured_logger(logger_name_final)
+            logger = get_logger(logger_name_final)
 
             # Record start time and memory
             start_time = time.time()
@@ -102,9 +301,7 @@ def log_performance_decorator(
                 if stack_info:
                     entry_context["stack_info"] = stack_info
 
-                structured_logger.debug(
-                    f"Function entry: {op_name}", operation=op_name, **entry_context
-                )
+                logger.debug(f"Function entry: {op_name} {entry_context}")
 
                 # Execute function
                 result = func(*args, **kwargs)
@@ -117,6 +314,7 @@ def log_performance_decorator(
                 completion_context = {
                     "phase": "completion",
                     "success": True,
+                    "duration": duration,
                 }
 
                 if include_memory and HAS_PSUTIL:
@@ -133,7 +331,7 @@ def log_performance_decorator(
                     except Exception:
                         pass  # Ignore memory monitoring errors
 
-                structured_logger.performance(op_name, duration, **completion_context)
+                logger.info(f"Performance: {op_name} completed in {duration:.3f}s")
 
                 return result
 
@@ -146,6 +344,7 @@ def log_performance_decorator(
                     "phase": "error",
                     "success": False,
                     "error_message": str(e),
+                    "duration": duration,
                 }
 
                 if include_memory and HAS_PSUTIL:
@@ -157,13 +356,7 @@ def log_performance_decorator(
                     except Exception:
                         pass  # Ignore memory monitoring errors
 
-                structured_logger.error_with_suggestion(
-                    f"Function failed: {op_name}",
-                    "Check function arguments and internal logic",
-                    error_type=type(e).__name__,
-                    operation=op_name,
-                    **error_context,
-                )
+                logger.error(f"Function failed: {op_name} - {str(e)} {error_context}")
 
                 # Re-raise the exception
                 raise
@@ -177,29 +370,35 @@ def call_chain_tracker(max_depth: int = 10) -> dict[str, Any]:
     """Get current call chain information for debugging
 
     Args:
-        max_depth: Maximum stack depth to track
+        max_depth: Maximum stack depth to capture
 
     Returns:
-        Dictionary with call chain information
+        Call chain information
     """
-    stack = traceback.extract_stack()
-    call_chain = []
+    stack_summary = traceback.extract_stack()
 
-    # Skip the last frame (this function) and limit depth
-    for frame in stack[-max_depth - 1 : -1]:
+    # Remove the tracker function itself
+    stack_frames = list(stack_summary[:-1])
+
+    # Limit depth
+    if len(stack_frames) > max_depth:
+        stack_frames = stack_frames[-max_depth:]
+
+    call_chain = []
+    for frame in stack_frames:
         call_chain.append(
             {
-                "file": frame.filename.split("/")[-1],  # Just filename, not full path
+                "file": frame.filename,
                 "line": frame.lineno,
                 "function": frame.name,
-                "code": frame.line.strip() if frame.line else None,
+                "code": frame.line or "",
             }
         )
 
     return {
         "call_chain": call_chain,
-        "chain_depth": len(call_chain),
-        "current_function": call_chain[-1]["function"] if call_chain else None,
+        "depth": len(call_chain),
+        "timestamp": time.time(),
     }
 
 
@@ -207,233 +406,74 @@ def memory_usage_tracker() -> dict[str, Any]:
     """Get current memory usage information
 
     Returns:
-        Dictionary with memory usage metrics
+        Memory usage information
     """
-    if not HAS_PSUTIL:
-        return {
-            "memory_rss_mb": 0,
-            "memory_vms_mb": 0,
-            "memory_percent": 0,
-            "cpu_percent": 0,
-            "psutil_available": False,
-        }
+    memory_info: dict[str, Any] = {"timestamp": time.time()}
 
-    try:
-        process = psutil.Process()
-        memory_info = process.memory_info()
-
-        return {
-            "memory_rss_mb": round(memory_info.rss / (1024 * 1024), 2),
-            "memory_vms_mb": round(memory_info.vms / (1024 * 1024), 2),
-            "memory_percent": round(process.memory_percent(), 2),
-            "cpu_percent": round(process.cpu_percent(), 2),
-            "psutil_available": True,
-        }
-    except Exception:
-        return {
-            "memory_rss_mb": 0,
-            "memory_vms_mb": 0,
-            "memory_percent": 0,
-            "cpu_percent": 0,
-            "psutil_available": False,
-            "error": "Failed to get memory info",
-        }
-
-
-class LogPerformanceOptimizer:
-    """Performance optimization for logging system
-
-    Provides intelligent logging optimization features:
-    - Adaptive log level management
-    - Performance-based filtering
-    - Resource usage monitoring
-    - Automatic throttling
-    """
-
-    def __init__(self, logger: "StructuredLogger"):
-        self.logger = logger
-        self.performance_metrics: dict[str, list[float]] = {}
-        self.log_frequency: dict[str, int] = {}
-        self.throttle_thresholds = {
-            "high_frequency": 100,  # logs per second
-            "memory_limit": 100,  # MB
-            "cpu_limit": 80,  # percentage
-        }
-        self.adaptive_levels = {
-            "debug": logging.DEBUG,
-            "info": logging.INFO,
-            "warning": logging.WARNING,
-            "error": logging.ERROR,
-        }
-        self.current_optimization_level = "normal"
-
-    def should_log(
-        self, level: int, message_key: str, operation: Optional[str] = None
-    ) -> bool:
-        """Determine if message should be logged based on performance metrics
-
-        Args:
-            level: Log level
-            message_key: Unique key for message type
-            operation: Operation being logged
-
-        Returns:
-            True if message should be logged
-        """
-        # Always log errors and warnings
-        if level >= logging.WARNING:
-            return True
-
-        # Check frequency throttling
-        if self._is_high_frequency(message_key):
-            if level == logging.DEBUG:
-                return False  # Skip debug in high frequency scenarios
-
-        # Check system resource usage
-        if self._is_high_resource_usage():
-            if level == logging.DEBUG:
-                return False
-            if level == logging.INFO and self._is_non_critical_info(operation):
-                return False
-
-        return True
-
-    def _is_high_frequency(self, message_key: str) -> bool:
-        """Check if message type is being logged at high frequency"""
-        current_time = time.time()
-
-        # Initialize if first occurrence
-        if message_key not in self.log_frequency:
-            self.log_frequency[message_key] = 0
-            return False
-
-        # Simple frequency check (could be enhanced with time windows)
-        return (
-            self.log_frequency[message_key] > self.throttle_thresholds["high_frequency"]
-        )
-
-    def _is_high_resource_usage(self) -> bool:
-        """Check if system resource usage is high"""
-        if not HAS_PSUTIL:
-            return False
-
+    if HAS_PSUTIL:
         try:
-            memory_info = memory_usage_tracker()
-            return bool(
-                memory_info["memory_rss_mb"] > self.throttle_thresholds["memory_limit"]
-                or memory_info["cpu_percent"] > self.throttle_thresholds["cpu_limit"]
+            process = psutil.Process()
+            memory = process.memory_info()
+            memory_info.update(
+                {
+                    "rss_mb": round(memory.rss / (1024 * 1024), 2),
+                    "vms_mb": round(memory.vms / (1024 * 1024), 2),
+                    "percent": float(process.memory_percent()),
+                }
             )
+
+            # System memory info
+            system_memory = psutil.virtual_memory()
+            memory_info["system"] = {
+                "total_mb": round(system_memory.total / (1024 * 1024), 2),
+                "available_mb": round(system_memory.available / (1024 * 1024), 2),
+                "percent_used": float(system_memory.percent),
+            }
         except Exception:
-            return False
+            memory_info["error"] = "Failed to get memory info"
+    else:
+        memory_info["error"] = "psutil not available"
 
-    def _is_non_critical_info(self, operation: Optional[str]) -> bool:
-        """Check if info message is non-critical and can be skipped"""
-        non_critical_operations = {
-            "performance_tracking",
-            "dependency_loading",
-            "memory_monitoring",
-            "debug_tracing",
-        }
-        return operation in non_critical_operations
-
-    def record_log_event(
-        self, level: int, message_key: str, duration: float = 0.0
-    ) -> None:
-        """Record logging event for performance analysis
-
-        Args:
-            level: Log level
-            message_key: Message type key
-            duration: Time taken to process log
-        """
-        # Update frequency counter
-        self.log_frequency[message_key] = self.log_frequency.get(message_key, 0) + 1
-
-        # Record performance metrics
-        if message_key not in self.performance_metrics:
-            self.performance_metrics[message_key] = []
-
-        self.performance_metrics[message_key].append(duration)
-
-        # Keep only recent metrics (last 100 entries)
-        if len(self.performance_metrics[message_key]) > 100:
-            self.performance_metrics[message_key] = self.performance_metrics[
-                message_key
-            ][-100:]
-
-    def optimize_log_levels(self) -> dict[str, int]:
-        """Automatically optimize log levels based on performance data
-
-        Returns:
-            Dictionary of recommended log level adjustments
-        """
-        recommendations = {}
-
-        # Analyze performance impact of different log levels
-        total_debug_time = sum(
-            sum(metrics)
-            for key, metrics in self.performance_metrics.items()
-            if "debug" in key.lower()
-        )
-
-        total_info_time = sum(
-            sum(metrics)
-            for key, metrics in self.performance_metrics.items()
-            if "info" in key.lower()
-        )
-
-        # Recommend level adjustments based on overhead
-        if total_debug_time > 1.0:  # If debug logging takes > 1 second total
-            recommendations["debug"] = logging.INFO
-
-        if total_info_time > 0.5:  # If info logging takes > 0.5 seconds total
-            recommendations["info"] = logging.WARNING
-
-        return recommendations
-
-    def get_performance_report(self) -> dict[str, Any]:
-        """Generate performance report for logging system
-
-        Returns:
-            Dictionary with performance analysis
-        """
-        total_logs = sum(self.log_frequency.values())
-        total_time = sum(sum(metrics) for metrics in self.performance_metrics.values())
-
-        # Calculate average times per message type
-        avg_times = {}
-        for key, metrics in self.performance_metrics.items():
-            if metrics:
-                avg_times[key] = round(sum(metrics) / len(metrics) * 1000, 3)  # ms
-
-        # Find slowest operations
-        slowest = sorted(avg_times.items(), key=lambda x: x[1], reverse=True)[:5]
-
-        return {
-            "total_log_events": total_logs,
-            "total_processing_time_ms": round(total_time * 1000, 2),
-            "average_time_per_log_ms": round(total_time / max(total_logs, 1) * 1000, 3),
-            "slowest_operations": slowest,
-            "high_frequency_messages": [
-                key
-                for key, count in self.log_frequency.items()
-                if count > self.throttle_thresholds["high_frequency"] // 10
-            ],
-            "optimization_level": self.current_optimization_level,
-            "memory_usage": memory_usage_tracker(),
-        }
+    return memory_info
 
 
-def get_log_performance_optimizer(name: str) -> LogPerformanceOptimizer:
-    """Get log performance optimizer instance for a module
+def log_performance(
+    operation: str,
+    duration: float,
+    size: Optional[int] = None,
+    logger_name: Optional[str] = None,
+) -> None:
+    """Log performance metrics for an operation
 
     Args:
-        name: Module name (typically __name__)
-
-    Returns:
-        LogPerformanceOptimizer instance for performance optimization
+        operation: Operation name
+        duration: Duration in seconds
+        size: Optional size in bytes
+        logger_name: Optional logger name
     """
-    from .structured_logger import get_structured_logger
+    from .logging_handlers import get_logger
 
-    structured_logger = get_structured_logger(name)
-    return LogPerformanceOptimizer(structured_logger)
+    logger = get_logger(logger_name or "performance")
+
+    message = f"Performance: {operation} completed in {duration:.3f}s"
+    if size is not None:
+        size_mb = size / (1024 * 1024)
+        throughput = size_mb / duration if duration > 0 else 0
+        message += f" ({size_mb:.2f}MB, {throughput:.2f}MB/s)"
+
+    logger.info(message)
+
+
+# Global instances for tracking
+_dependency_tracker: DependencyTracker = DependencyTracker()
+_execution_flow_tracker: ExecutionFlowTracker = ExecutionFlowTracker()
+
+
+def get_dependency_tracker() -> DependencyTracker:
+    """Get global dependency tracker instance"""
+    return _dependency_tracker
+
+
+def get_execution_flow_tracker() -> ExecutionFlowTracker:
+    """Get global execution flow tracker instance"""
+    return _execution_flow_tracker
