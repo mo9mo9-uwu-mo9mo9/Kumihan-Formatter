@@ -21,19 +21,19 @@ on:
           - 'true'
           - 'false'
 
-  # Trigger on pull requests that affect packaging
-  pull_request:
-    paths:
-      - 'kumihan_formatter/**'
-      - 'scripts/build/build_windows.py'
-      - 'scripts/build/build_macos.py'
-      - 'tools/packaging/kumihan_formatter.spec'
-      - 'tools/packaging/kumihan_formatter_macos.spec'
-      - '.github/workflows/build-*.yml'
+  # Trigger on pull requests that affect packaging - DISABLED
+  # pull_request:
+  #   paths:
+  #     - 'kumihan_formatter/**'
+  #     - 'scripts/build/build_windows.py'
+  #     - 'scripts/build/build_macos.py'
+  #     - 'tools/packaging/kumihan_formatter.spec'
+  #     - 'tools/packaging/kumihan_formatter_macos.spec'
+  #     - '.github/workflows/build-*.yml'
 
 jobs:
   test-windows-build:
-    if: ${{ github.event.inputs.test_windows == 'true' || github.event_name == 'pull_request' }}
+    if: ${{ github.event.inputs.test_windows == 'true' }}
     runs-on: windows-latest
 
     steps:
@@ -85,7 +85,7 @@ jobs:
         retention-days: 7
 
   test-macos-build:
-    if: ${{ github.event.inputs.test_macos == 'true' || github.event_name == 'pull_request' }}
+    if: ${{ github.event.inputs.test_macos == 'true' }}
     runs-on: macos-latest
 
     steps:

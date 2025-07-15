@@ -26,12 +26,12 @@ on:
           - 'true'
           - 'false'
 
-  # Trigger on release tags
-  push:
-    tags:
-      - 'v*'
-    branches:
-      - 'feature/issue391-cross-platform-packaging'
+  # Trigger on release tags - DISABLED
+  # push:
+  #   tags:
+  #     - 'v*'
+  #   branches:
+  #     - 'feature/issue391-cross-platform-packaging'
 
 jobs:
   build-windows:
