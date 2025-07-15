@@ -80,8 +80,8 @@ class StructuredLogFormatter(logging.Formatter):
             return json.dumps(log_data, ensure_ascii=False, separators=(",", ":"))
         except (TypeError, ValueError) as e:
             # Fallback to standard formatting if JSON serialization fails
-            # Log the error to stderr for debugging
-            print(f"JSON serialization failed: {e}", file=sys.stderr)
+            # ログシステム内のエラーなので、システムログに記録
+            sys.stderr.write(f"[LOGGING ERROR] JSON serialization failed: {e}\n")
             return super().format(record)
 
 

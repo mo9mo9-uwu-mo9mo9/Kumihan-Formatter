@@ -30,7 +30,7 @@ class KumihanLogger:
 
     _instance: "KumihanLogger" | None = None
     _loggers: dict[str, logging.Logger] = {}
-    _initialized: bool
+    _initialized: bool = False
 
     def __new__(cls) -> "KumihanLogger":
         """Singleton pattern to ensure single logger instance"""
