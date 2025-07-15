@@ -822,3 +822,985 @@ def log_performance(
     """
     logger = get_logger("performance")
     _logger_instance.log_performance(logger, operation, duration, size)
+
+
+class ErrorAnalyzer:
+    """Claude Code specific error analysis support
+
+    Provides enhanced error logging with analysis suggestions,
+    error categorization, and debugging hints specifically
+    designed for Claude Code integration.
+    """
+
+    # Common error categories and their solutions
+    ERROR_CATEGORIES = {
+        "encoding": {
+            "patterns": ["encoding", "decode", "utf-8", "unicode", "ascii"],
+            "suggestions": [
+                "Check file encoding with 'file -I filename'",
+                "Try specifying encoding explicitly: encoding='utf-8'",
+                "Consider using chardet library for encoding detection",
+            ],
+        },
+        "file_access": {
+            "patterns": ["permission", "access", "not found", "no such file"],
+            "suggestions": [
+                "Check file permissions with 'ls -la'",
+                "Verify file path exists",
+                "Ensure process has read/write permissions",
+            ],
+        },
+        "parsing": {
+            "patterns": ["parse", "syntax", "invalid", "unexpected"],
+            "suggestions": [
+                "Check input file format",
+                "Validate syntax of input content",
+                "Review notation format specification",
+            ],
+        },
+        "memory": {
+            "patterns": ["memory", "out of memory", "allocation"],
+            "suggestions": [
+                "Process file in chunks",
+                "Check available system memory",
+                "Consider input file size limitations",
+            ],
+        },
+        "dependency": {
+            "patterns": ["import", "module", "not found", "missing"],
+            "suggestions": [
+                "Check if required package is installed",
+                "Verify PYTHONPATH includes necessary directories",
+                "Install missing dependencies with pip",
+            ],
+        },
+    }
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+
+    def analyze_error(
+        self,
+        error: Exception,
+        context: Optional[dict[str, Any]] = None,
+        operation: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Analyze error and provide structured debugging information
+
+        Args:
+            error: Exception that occurred
+            context: Additional context about the operation
+            operation: Name of operation that failed
+
+        Returns:
+            Dictionary with error analysis and suggestions
+        """
+        error_message = str(error).lower()
+        error_type = type(error).__name__
+
+        # Categorize error
+        category = self._categorize_error(error_message)
+
+        # Get stack trace information
+        stack_info = call_chain_tracker(max_depth=15)
+
+        # Get memory usage at error time
+        memory_info = memory_usage_tracker()
+
+        # Add suggestions based on category
+        suggestions: list[str]
+        if category != "unknown":
+            suggestions = self.ERROR_CATEGORIES[category]["suggestions"]
+        else:
+            suggestions = self._generate_generic_suggestions(error_type, error_message)
+
+        analysis: dict[str, Any] = {
+            "error_type": error_type,
+            "error_message": str(error),
+            "category": category,
+            "operation": operation,
+            "stack_info": stack_info,
+            "memory_info": memory_info,
+            "timestamp": datetime.now().isoformat(),
+            "suggestions": suggestions,
+        }
+
+        # Add context if provided
+        if context:
+            analysis["context"] = context
+
+        return analysis
+
+    def _categorize_error(self, error_message: str) -> str:
+        """Categorize error based on message content"""
+        for category, info in self.ERROR_CATEGORIES.items():
+            if any(pattern in error_message for pattern in info["patterns"]):
+                return category
+        return "unknown"
+
+    def _generate_generic_suggestions(
+        self, error_type: str, error_message: str
+    ) -> list[str]:
+        """Generate generic suggestions for unknown error types"""
+        suggestions = [
+            f"Check the specific {error_type} details",
+            "Review input parameters and validate data",
+            "Enable debug logging for more details",
+        ]
+
+        # Add type-specific suggestions
+        if "Value" in error_type:
+            suggestions.append("Validate input values and types")
+        elif "Type" in error_type:
+            suggestions.append("Check argument types match expected types")
+        elif "Index" in error_type or "Key" in error_type:
+            suggestions.append("Verify data structure bounds and keys")
+
+        return suggestions
+
+    def log_error_with_analysis(
+        self,
+        error: Exception,
+        message: str,
+        context: Optional[dict[str, Any]] = None,
+        operation: Optional[str] = None,
+    ) -> None:
+        """Log error with comprehensive analysis
+
+        Args:
+            error: Exception that occurred
+            message: Human-readable error description
+            context: Additional context
+            operation: Operation that failed
+        """
+        analysis = self.analyze_error(error, context, operation)
+
+        self.logger.log_with_context(
+            logging.ERROR,
+            message,
+            error_analysis=analysis,
+            claude_hint="Use error_analysis.suggestions for debugging steps",
+        )
+
+    def log_warning_with_suggestion(
+        self, message: str, suggestion: str, category: str = "general", **context: Any
+    ) -> None:
+        """Log warning with specific suggestion
+
+        Args:
+            message: Warning message
+            suggestion: Specific suggestion for resolution
+            category: Warning category
+            **context: Additional context
+        """
+        self.logger.log_with_context(
+            logging.WARNING,
+            message,
+            suggestion=suggestion,
+            category=category,
+            claude_hint=f"Category: {category} - Apply suggestion to resolve",
+            **context,
+        )
+
+
+class DependencyTracker:
+    """Track and visualize module dependencies for debugging
+
+    Provides dependency mapping and load tracking to help
+    Claude Code understand module relationships and identify
+    dependency-related issues.
+    """
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+        self.dependencies: dict[str, set[str]] = {}
+        self.load_times: dict[str, float] = {}
+        self.load_order: list[str] = []
+
+    def track_import(
+        self,
+        module_name: str,
+        imported_from: Optional[str] = None,
+        import_time: Optional[float] = None,
+    ) -> None:
+        """Track module import for dependency visualization
+
+        Args:
+            module_name: Name of imported module
+            imported_from: Module that performed the import
+            import_time: Time taken to import (seconds)
+        """
+        # Record dependency relationship
+        if imported_from:
+            if imported_from not in self.dependencies:
+                self.dependencies[imported_from] = set()
+            self.dependencies[imported_from].add(module_name)
+
+        # Record import timing
+        if import_time is not None:
+            self.load_times[module_name] = import_time
+
+        # Record load order
+        if module_name not in self.load_order:
+            self.load_order.append(module_name)
+
+        # Log the import
+        context = {
+            "module": module_name,
+            "imported_from": imported_from,
+            "import_time_ms": round(import_time * 1000, 2) if import_time else None,
+            "load_order_position": len(self.load_order),
+        }
+
+        self.logger.debug(
+            f"Module imported: {module_name}",
+            **context,
+            claude_hint="Track dependencies for debugging import issues",
+        )
+
+    def get_dependency_map(self) -> dict[str, Any]:
+        """Get complete dependency map for visualization
+
+        Returns:
+            Dictionary with dependency relationships and metrics
+        """
+        return {
+            "dependencies": {k: list(v) for k, v in self.dependencies.items()},
+            "load_times": self.load_times,
+            "load_order": self.load_order,
+            "total_modules": len(self.load_order),
+            "slowest_imports": sorted(
+                [(k, v) for k, v in self.load_times.items()],
+                key=lambda x: x[1],
+                reverse=True,
+            )[:5],
+        }
+
+    def log_dependency_summary(self) -> None:
+        """Log summary of all tracked dependencies"""
+        dep_map = self.get_dependency_map()
+
+        self.logger.info(
+            "Dependency tracking summary",
+            dependency_map=dep_map,
+            claude_hint="Use dependency_map to understand module relationships",
+        )
+
+
+class ExecutionFlowTracker:
+    """Track execution flow for debugging and optimization
+
+    Records function call sequences, timing, and resource usage
+    to help Claude Code understand application behavior.
+    """
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+        self.execution_stack: list[dict[str, Any]] = []
+        self.flow_id = str(int(time.time() * 1000))  # Unique flow identifier
+
+    def enter_function(
+        self,
+        function_name: str,
+        module_name: str,
+        args_info: Optional[dict[str, Any]] = None,
+    ) -> str:
+        """Record function entry in execution flow
+
+        Args:
+            function_name: Name of function being entered
+            module_name: Module containing the function
+            args_info: Information about function arguments
+
+        Returns:
+            Unique frame ID for this function call
+        """
+        frame_id = f"{self.flow_id}_{len(self.execution_stack)}"
+        start_time = time.time()
+
+        frame_info = {
+            "frame_id": frame_id,
+            "function_name": function_name,
+            "module_name": module_name,
+            "start_time": start_time,
+            "args_info": args_info,
+            "depth": len(self.execution_stack),
+        }
+
+        self.execution_stack.append(frame_info)
+
+        # Log function entry
+        self.logger.debug(
+            f"Function entry: {function_name}",
+            flow_id=self.flow_id,
+            frame_id=frame_id,
+            function=function_name,
+            module=module_name,
+            depth=len(self.execution_stack),
+            args_info=args_info,
+            claude_hint="Track execution flow for debugging call sequences",
+        )
+
+        return frame_id
+
+    def exit_function(
+        self,
+        frame_id: str,
+        success: bool = True,
+        result_info: Optional[dict[str, Any]] = None,
+        error_info: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Record function exit in execution flow
+
+        Args:
+            frame_id: Frame ID from enter_function
+            success: Whether function completed successfully
+            result_info: Information about function result
+            error_info: Information about any error that occurred
+        """
+        if not self.execution_stack:
+            return
+
+        # Find and remove the frame
+        frame = None
+        for i, stack_frame in enumerate(reversed(self.execution_stack)):
+            if stack_frame["frame_id"] == frame_id:
+                frame = self.execution_stack.pop(-(i + 1))
+                break
+
+        if not frame:
+            return
+
+        end_time = time.time()
+        duration = end_time - frame["start_time"]
+
+        # Log function exit
+        exit_context = {
+            "flow_id": self.flow_id,
+            "frame_id": frame_id,
+            "function": frame["function_name"],
+            "module": frame["module_name"],
+            "duration_ms": round(duration * 1000, 2),
+            "success": success,
+            "depth": frame["depth"],
+        }
+
+        if result_info:
+            exit_context["result_info"] = result_info
+
+        if error_info:
+            exit_context["error_info"] = error_info
+
+        level = logging.DEBUG if success else logging.WARNING
+        self.logger.log_with_context(
+            level,
+            f"Function exit: {frame['function_name']}",
+            **exit_context,
+            claude_hint="Analyze execution timing and call patterns",
+        )
+
+    def get_current_flow(self) -> dict[str, Any]:
+        """Get current execution flow state
+
+        Returns:
+            Dictionary with current execution stack and flow info
+        """
+        return {
+            "flow_id": self.flow_id,
+            "current_stack": [
+                {
+                    "function": frame["function_name"],
+                    "module": frame["module_name"],
+                    "depth": frame["depth"],
+                    "duration_so_far": round(
+                        (time.time() - frame["start_time"]) * 1000, 2
+                    ),
+                }
+                for frame in self.execution_stack
+            ],
+            "stack_depth": len(self.execution_stack),
+            "total_execution_time": (
+                round((time.time() - self.execution_stack[0]["start_time"]) * 1000, 2)
+                if self.execution_stack
+                else 0
+            ),
+        }
+
+
+def get_error_analyzer(name: str) -> ErrorAnalyzer:
+    """Get error analyzer instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        ErrorAnalyzer instance with enhanced error analysis capabilities
+    """
+    structured_logger = get_structured_logger(name)
+    return ErrorAnalyzer(structured_logger)
+
+
+def get_dependency_tracker(name: str) -> DependencyTracker:
+    """Get dependency tracker instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        DependencyTracker instance for tracking module dependencies
+    """
+    structured_logger = get_structured_logger(name)
+    return DependencyTracker(structured_logger)
+
+
+def get_execution_flow_tracker(name: str) -> ExecutionFlowTracker:
+    """Get execution flow tracker instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        ExecutionFlowTracker instance for tracking execution flow
+    """
+    structured_logger = get_structured_logger(name)
+    return ExecutionFlowTracker(structured_logger)
+
+
+class LogPerformanceOptimizer:
+    """Phase 4: Performance optimization for logging system
+
+    Provides intelligent logging optimization features:
+    - Adaptive log level management
+    - Performance-based filtering
+    - Resource usage monitoring
+    - Automatic throttling
+    """
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+        self.performance_metrics: dict[str, list[float]] = {}
+        self.log_frequency: dict[str, int] = {}
+        self.throttle_thresholds = {
+            "high_frequency": 100,  # logs per second
+            "memory_limit": 100,  # MB
+            "cpu_limit": 80,  # percentage
+        }
+        self.adaptive_levels = {
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+        }
+        self.current_optimization_level = "normal"
+
+    def should_log(
+        self, level: int, message_key: str, operation: Optional[str] = None
+    ) -> bool:
+        """Determine if message should be logged based on performance metrics
+
+        Args:
+            level: Log level
+            message_key: Unique key for message type
+            operation: Operation being logged
+
+        Returns:
+            True if message should be logged
+        """
+        # Always log errors and warnings
+        if level >= logging.WARNING:
+            return True
+
+        # Check frequency throttling
+        if self._is_high_frequency(message_key):
+            if level == logging.DEBUG:
+                return False  # Skip debug in high frequency scenarios
+
+        # Check system resource usage
+        if self._is_high_resource_usage():
+            if level == logging.DEBUG:
+                return False
+            if level == logging.INFO and self._is_non_critical_info(operation):
+                return False
+
+        return True
+
+    def _is_high_frequency(self, message_key: str) -> bool:
+        """Check if message type is being logged at high frequency"""
+        current_time = time.time()
+
+        # Initialize if first occurrence
+        if message_key not in self.log_frequency:
+            self.log_frequency[message_key] = 0
+            return False
+
+        # Simple frequency check (could be enhanced with time windows)
+        return (
+            self.log_frequency[message_key] > self.throttle_thresholds["high_frequency"]
+        )
+
+    def _is_high_resource_usage(self) -> bool:
+        """Check if system resource usage is high"""
+        if not HAS_PSUTIL:
+            return False
+
+        try:
+            memory_info = memory_usage_tracker()
+            return bool(
+                memory_info["memory_rss_mb"] > self.throttle_thresholds["memory_limit"]
+                or memory_info["cpu_percent"] > self.throttle_thresholds["cpu_limit"]
+            )
+        except Exception:
+            return False
+
+    def _is_non_critical_info(self, operation: Optional[str]) -> bool:
+        """Check if info message is non-critical and can be skipped"""
+        non_critical_operations = {
+            "performance_tracking",
+            "dependency_loading",
+            "memory_monitoring",
+            "debug_tracing",
+        }
+        return operation in non_critical_operations
+
+    def record_log_event(
+        self, level: int, message_key: str, duration: float = 0.0
+    ) -> None:
+        """Record logging event for performance analysis
+
+        Args:
+            level: Log level
+            message_key: Message type key
+            duration: Time taken to process log
+        """
+        # Update frequency counter
+        self.log_frequency[message_key] = self.log_frequency.get(message_key, 0) + 1
+
+        # Record performance metrics
+        if message_key not in self.performance_metrics:
+            self.performance_metrics[message_key] = []
+
+        self.performance_metrics[message_key].append(duration)
+
+        # Keep only recent metrics (last 100 entries)
+        if len(self.performance_metrics[message_key]) > 100:
+            self.performance_metrics[message_key] = self.performance_metrics[
+                message_key
+            ][-100:]
+
+    def optimize_log_levels(self) -> dict[str, int]:
+        """Automatically optimize log levels based on performance data
+
+        Returns:
+            Dictionary of recommended log level adjustments
+        """
+        recommendations = {}
+
+        # Analyze performance impact of different log levels
+        total_debug_time = sum(
+            sum(metrics)
+            for key, metrics in self.performance_metrics.items()
+            if "debug" in key.lower()
+        )
+
+        total_info_time = sum(
+            sum(metrics)
+            for key, metrics in self.performance_metrics.items()
+            if "info" in key.lower()
+        )
+
+        # Recommend level adjustments based on overhead
+        if total_debug_time > 1.0:  # If debug logging takes > 1 second total
+            recommendations["debug"] = logging.INFO
+
+        if total_info_time > 0.5:  # If info logging takes > 0.5 seconds total
+            recommendations["info"] = logging.WARNING
+
+        return recommendations
+
+    def get_performance_report(self) -> dict[str, Any]:
+        """Generate performance report for logging system
+
+        Returns:
+            Dictionary with performance analysis
+        """
+        total_logs = sum(self.log_frequency.values())
+        total_time = sum(sum(metrics) for metrics in self.performance_metrics.values())
+
+        # Calculate average times per message type
+        avg_times = {}
+        for key, metrics in self.performance_metrics.items():
+            if metrics:
+                avg_times[key] = round(sum(metrics) / len(metrics) * 1000, 3)  # ms
+
+        # Find slowest operations
+        slowest = sorted(avg_times.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        return {
+            "total_log_events": total_logs,
+            "total_processing_time_ms": round(total_time * 1000, 2),
+            "average_time_per_log_ms": round(total_time / max(total_logs, 1) * 1000, 3),
+            "slowest_operations": slowest,
+            "high_frequency_messages": [
+                key
+                for key, count in self.log_frequency.items()
+                if count > self.throttle_thresholds["high_frequency"] // 10
+            ],
+            "optimization_level": self.current_optimization_level,
+            "memory_usage": memory_usage_tracker(),
+        }
+
+
+class LogSizeController:
+    """Phase 4: Log size control and management
+
+    Provides intelligent log size management:
+    - Automatic log rotation
+    - Content compression
+    - Selective retention
+    - Size-based filtering
+    """
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+        self.size_limits = {
+            "max_file_size_mb": 50,
+            "max_total_size_mb": 200,
+            "max_entries_per_file": 100000,
+            "retention_days": 7,
+        }
+        self.compression_enabled = True
+        self.content_filters = {
+            "max_message_length": 1000,
+            "max_context_entries": 20,
+            "sensitive_data_removal": True,
+        }
+
+    def should_include_context(self, context: dict[str, Any]) -> dict[str, Any]:
+        """Filter context data to control log size
+
+        Args:
+            context: Original context dictionary
+
+        Returns:
+            Filtered context dictionary
+        """
+        filtered = {}
+        entry_count = 0
+
+        for key, value in context.items():
+            # Limit number of context entries
+            if entry_count >= self.content_filters["max_context_entries"]:
+                filtered["_truncated"] = (
+                    f"... {len(context) - entry_count} more entries"
+                )
+                break
+
+            # Filter large values
+            if (
+                isinstance(value, str)
+                and len(value) > self.content_filters["max_message_length"]
+            ):
+                filtered[key] = (
+                    value[: self.content_filters["max_message_length"]]
+                    + "... [truncated]"
+                )
+            elif (
+                isinstance(value, (list, dict))
+                and len(str(value)) > self.content_filters["max_message_length"]
+            ):
+                filtered[key] = f"[Large {type(value).__name__}: {len(value)} items]"
+            else:
+                filtered[key] = value
+
+            entry_count += 1
+
+        return filtered
+
+    def format_message_for_size(self, message: str) -> str:
+        """Format message to control size
+
+        Args:
+            message: Original message
+
+        Returns:
+            Potentially truncated message
+        """
+        max_length = self.content_filters["max_message_length"]
+
+        if len(message) <= max_length:
+            return message
+
+        # Truncate with meaningful suffix
+        return message[: max_length - 15] + "... [truncated]"
+
+    def estimate_log_size(
+        self, message: str, context: Optional[dict[str, Any]] = None
+    ) -> int:
+        """Estimate the size of a log entry in bytes
+
+        Args:
+            message: Log message
+            context: Context data
+
+        Returns:
+            Estimated size in bytes
+        """
+        # Base message size
+        size = len(message.encode("utf-8"))
+
+        # Add context size if present
+        if context:
+            try:
+                context_json = json.dumps(context, ensure_ascii=False)
+                size += len(context_json.encode("utf-8"))
+            except (TypeError, ValueError):
+                # Fallback estimation
+                size += len(str(context).encode("utf-8"))
+
+        # Add overhead for JSON structure
+        size += 200  # Estimated JSON overhead
+
+        return size
+
+    def should_skip_due_to_size(
+        self, estimated_size: int, priority: str = "normal"
+    ) -> bool:
+        """Determine if log should be skipped due to size constraints
+
+        Args:
+            estimated_size: Estimated log entry size in bytes
+            priority: Priority level (high, normal, low)
+
+        Returns:
+            True if log should be skipped
+        """
+        # Never skip high priority logs
+        if priority == "high":
+            return False
+
+        # Skip very large logs for normal/low priority
+        size_mb = estimated_size / (1024 * 1024)
+
+        if priority == "low" and size_mb > 1.0:  # 1MB limit for low priority
+            return True
+
+        if priority == "normal" and size_mb > 5.0:  # 5MB limit for normal priority
+            return True
+
+        return False
+
+    def get_size_statistics(self) -> dict[str, Any]:
+        """Get current size statistics
+
+        Returns:
+            Dictionary with size-related statistics
+        """
+        return {
+            "size_limits": self.size_limits,
+            "content_filters": self.content_filters,
+            "compression_enabled": self.compression_enabled,
+            "estimated_overhead_bytes": 200,  # JSON overhead
+        }
+
+    def optimize_for_claude_code(self, context: dict[str, Any]) -> dict[str, Any]:
+        """Optimize log content specifically for Claude Code consumption
+
+        Args:
+            context: Original context
+
+        Returns:
+            Optimized context for Claude Code
+        """
+        optimized = {}
+
+        # Prioritize Claude-specific hints
+        if "claude_hint" in context:
+            optimized["claude_hint"] = context["claude_hint"]
+
+        # Include error analysis if present
+        if "error_analysis" in context:
+            optimized["error_analysis"] = context["error_analysis"]
+
+        # Include suggestions
+        if "suggestion" in context or "suggestions" in context:
+            optimized["suggestion"] = context.get("suggestion") or context.get(
+                "suggestions"
+            )
+
+        # Include operation context
+        if "operation" in context:
+            optimized["operation"] = context["operation"]
+
+        # Include file/line information
+        for key in ["file_path", "line_number", "function", "module"]:
+            if key in context:
+                optimized[key] = context[key]
+
+        # Include performance metrics (limited)
+        for key in ["duration_ms", "memory_mb", "success"]:
+            if key in context:
+                optimized[key] = context[key]
+
+        # Add remaining important context (up to limit)
+        remaining_space = self.content_filters["max_context_entries"] - len(optimized)
+        for key, value in context.items():
+            if key not in optimized and remaining_space > 0:
+                optimized[key] = value
+                remaining_space -= 1
+
+        return optimized
+
+
+def get_log_performance_optimizer(name: str) -> LogPerformanceOptimizer:
+    """Get log performance optimizer instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        LogPerformanceOptimizer instance for performance optimization
+    """
+    structured_logger = get_structured_logger(name)
+    return LogPerformanceOptimizer(structured_logger)
+
+
+def get_log_size_controller(name: str) -> LogSizeController:
+    """Get log size controller instance for a module
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        LogSizeController instance for size management
+    """
+    structured_logger = get_structured_logger(name)
+    return LogSizeController(structured_logger)
+
+
+class ClaudeCodeIntegrationLogger:
+    """Phase 4: Complete Claude Code integration logger
+
+    Combines all Phase 1-4 features into a single, optimized logger
+    specifically designed for Claude Code interaction.
+    """
+
+    def __init__(self, name: str):
+        self.name = name
+        self.structured_logger = get_structured_logger(name)
+        self.error_analyzer = ErrorAnalyzer(self.structured_logger)
+        self.dependency_tracker = DependencyTracker(self.structured_logger)
+        self.flow_tracker = ExecutionFlowTracker(self.structured_logger)
+        self.performance_optimizer = LogPerformanceOptimizer(self.structured_logger)
+        self.size_controller = LogSizeController(self.structured_logger)
+
+    def log_with_claude_optimization(
+        self,
+        level: int,
+        message: str,
+        context: Optional[dict[str, Any]] = None,
+        operation: Optional[str] = None,
+        priority: str = "normal",
+    ) -> None:
+        """Log with full Claude Code optimization
+
+        Args:
+            level: Log level
+            message: Log message
+            context: Context data
+            operation: Operation name
+            priority: Priority level (high, normal, low)
+        """
+        start_time = time.time()
+
+        # Generate message key for performance tracking
+        message_key = (
+            f"{self.name}_{operation or 'general'}_{logging.getLevelName(level)}"
+        )
+
+        # Check if we should log based on performance
+        if not self.performance_optimizer.should_log(level, message_key, operation):
+            return
+
+        # Optimize context for Claude Code
+        if context:
+            context = self.size_controller.optimize_for_claude_code(context)
+            context = self.size_controller.should_include_context(context)
+
+        # Format message for size control
+        formatted_message = self.size_controller.format_message_for_size(message)
+
+        # Estimate size and check if we should skip
+        estimated_size = self.size_controller.estimate_log_size(
+            formatted_message, context
+        )
+        if self.size_controller.should_skip_due_to_size(estimated_size, priority):
+            return
+
+        # Perform the actual logging
+        if context:
+            self.structured_logger.log_with_context(level, formatted_message, context)
+        else:
+            self.structured_logger.logger.log(level, formatted_message)
+
+        # Record performance metrics
+        duration = time.time() - start_time
+        self.performance_optimizer.record_log_event(level, message_key, duration)
+
+    def log_error_with_claude_analysis(
+        self,
+        error: Exception,
+        message: str,
+        context: Optional[dict[str, Any]] = None,
+        operation: Optional[str] = None,
+    ) -> None:
+        """Log error with full Claude Code analysis"""
+        self.error_analyzer.log_error_with_analysis(error, message, context, operation)
+
+    def track_function_execution(
+        self, function_name: str, args_info: Optional[dict[str, Any]] = None
+    ) -> str:
+        """Track function execution with flow tracking"""
+        return self.flow_tracker.enter_function(function_name, self.name, args_info)
+
+    def finish_function_execution(
+        self,
+        frame_id: str,
+        success: bool = True,
+        result_info: Optional[dict[str, Any]] = None,
+        error_info: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Finish function execution tracking"""
+        self.flow_tracker.exit_function(frame_id, success, result_info, error_info)
+
+    def track_dependency_import(
+        self,
+        module_name: str,
+        imported_from: Optional[str] = None,
+        import_time: Optional[float] = None,
+    ) -> None:
+        """Track module dependency import"""
+        self.dependency_tracker.track_import(module_name, imported_from, import_time)
+
+    def get_comprehensive_report(self) -> dict[str, Any]:
+        """Get comprehensive report combining all tracking data"""
+        return {
+            "module": self.name,
+            "timestamp": datetime.now().isoformat(),
+            "performance": self.performance_optimizer.get_performance_report(),
+            "size_stats": self.size_controller.get_size_statistics(),
+            "dependencies": self.dependency_tracker.get_dependency_map(),
+            "execution_flow": self.flow_tracker.get_current_flow(),
+            "claude_hint": "Complete integration report for debugging and optimization",
+        }
+
+
+def get_claude_code_logger(name: str) -> ClaudeCodeIntegrationLogger:
+    """Get complete Claude Code integration logger
+
+    Args:
+        name: Module name (typically __name__)
+
+    Returns:
+        ClaudeCodeIntegrationLogger with all Phase 1-4 features
+    """
+    return ClaudeCodeIntegrationLogger(name)
