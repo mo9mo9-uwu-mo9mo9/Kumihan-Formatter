@@ -8,6 +8,8 @@ offering structured logging with levels, formatting, and output management.
 """
 
 # Re-export all classes and functions from split modules
+from .claude_integration import ClaudeCodeIntegrationLogger, get_claude_code_logger
+from .log_optimization import LogPerformanceOptimizer, LogSizeController
 from .logging_formatters import DevLogHandler, StructuredLogFormatter
 from .logging_handlers import KumihanLogger, configure_logging, get_logger
 from .performance_logger import (
@@ -21,14 +23,7 @@ from .performance_logger import (
     log_performance_decorator,
     memory_usage_tracker,
 )
-from .structured_logger import (
-    ClaudeCodeIntegrationLogger,
-    LogPerformanceOptimizer,
-    LogSizeController,
-    StructuredLogger,
-    get_claude_code_logger,
-    get_structured_logger,
-)
+from .structured_logger import StructuredLogger, get_structured_logger
 
 
 # Backward compatibility functions

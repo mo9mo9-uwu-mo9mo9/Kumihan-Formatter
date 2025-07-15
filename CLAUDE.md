@@ -90,6 +90,46 @@ scripts/architecture_check.py   # アーキテクチャ品質チェック
 .venv/bin/python scripts/architecture_check.py
 ```
 
+### ⚠️ pre-commit hookエラー対応
+Claude Code使用時に以下のメッセージが表示される場合：
+```
+PreToolUse:Bash [~/.claude/hook_pre_commands.sh] failed with
+non-blocking status code 1: No stderr output
+```
+
+**これは正常動作です。** status code 1は非ブロッキングエラーで、技術的負債の警告を表示しています。
+
+#### 📋 対応手順
+1. **エラー内容を確認**
+   ```bash
+   python3 scripts/check_file_size.py --max-lines=300
+   ```
+
+2. **300行制限違反の修正**
+   - ファイルを機能別に分割
+   - Single Responsibility Principleに従う
+   - 大きな関数・クラスを小さく分割
+
+3. **修正例**
+   ```bash
+   # 違反ファイルの確認
+   find kumihan_formatter -name "*.py" -exec wc -l {} + | awk '$1 > 300'
+
+   # 分割実行（例）
+   # large_file.py → feature_a.py + feature_b.py + feature_c.py
+   ```
+
+4. **修正後の確認**
+   ```bash
+   python3 scripts/check_file_size.py --max-lines=300
+   # ✅ 違反件数が減少していることを確認
+   ```
+
+#### 🚨 重要
+- **status code 1は処理継続**: エラーではなく警告
+- **無視しない**: 技術的負債の蓄積を防ぐため必ず対応
+- **継続的改善**: Boy Scout Ruleに従って少しずつ改善
+
 # プロジェクト構造
 
 ```
