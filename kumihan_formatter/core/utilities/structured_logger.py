@@ -24,11 +24,7 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-<<<<<<< HEAD
 # Import get_logger at runtime to avoid circular imports
-=======
-from .logger import get_logger
->>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
 from .performance_logger import call_chain_tracker, memory_usage_tracker
 
 
@@ -243,12 +239,9 @@ def get_structured_logger(name: str) -> StructuredLogger:
         ...     file_path="missing.txt"
         ... )
     """
-<<<<<<< HEAD
     # Import get_logger at runtime to avoid circular imports
     from .logger import get_logger
 
-=======
->>>>>>> 33858f9 (refactor: Issue #476 Phase 1 - logger.py分割と技術的負債解消)
     standard_logger = get_logger(name)
     return StructuredLogger(standard_logger)
 
