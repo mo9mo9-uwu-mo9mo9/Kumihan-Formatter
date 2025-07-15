@@ -52,7 +52,7 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [commit]
+        stages: [pre-commit]
 
       # アーキテクチャ原則チェック（推奨フック）
       - id: architecture-validator
@@ -104,5 +104,5 @@ repos:
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
         additional_dependencies: [mypy, pydantic, types-PyYAML, types-psutil, types-Jinja2, types-MarkupSafe, types-click]
-        stages: [commit, manual, pre-push]
+        stages: [pre-commit, manual, pre-push]
         always_run: true

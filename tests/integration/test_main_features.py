@@ -295,7 +295,10 @@ class TestMainFeatures(TestCase):
             processor = ConvertProcessor()
 
             # ファイル変換実行
-            processor.process_file(input_path, output_path)
+            from pathlib import Path
+
+            output_dir = str(Path(output_path).parent)
+            processor.convert_file(Path(input_path), output_dir)
 
             # 出力ファイル確認
             if Path(output_path).exists():
