@@ -10,6 +10,7 @@ import json
 import logging
 import logging.handlers
 import os
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -80,8 +81,10 @@ class StructuredLogFormatter(logging.Formatter):
 
         try:
             return json.dumps(log_data, ensure_ascii=False, separators=(",", ":"))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             # Fallback to standard formatting if JSON serialization fails
+            # Log the error to stderr for debugging
+            print(f"JSON serialization failed: {e}", file=sys.stderr)
             return super().format(record)
 
 
@@ -99,7 +102,7 @@ class DevLogHandler(logging.Handler):
     - Only active when KUMIHAN_DEV_LOG=true
     """
 
-    def __init__(self, session_id: str | None = None):
+    def __init__(self, session_id: Optional[str] = None):
         super().__init__()
         self.session_id = session_id or str(int(time.time()))
         self.log_dir = Path("/tmp/kumihan_formatter")
@@ -140,9 +143,9 @@ class DevLogHandler(logging.Handler):
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(msg + "\n")
 
-        except Exception:
-            # Silently fail to avoid disrupting the main application
-            pass
+        except Exception as e:
+            # Log the error to stderr but don't disrupt the main application
+            print(f"Log handler error: {e}", file=sys.stderr)
 
     def _should_log(self) -> bool:
         """Check if development logging is enabled"""
@@ -273,7 +276,9 @@ class KumihanLogger:
             self._loggers[name] = logger
         return self._loggers[name]
 
-    def set_level(self, level: str | int, logger_name: str | None = None) -> None:
+    def set_level(
+        self, level: Union[str, int], logger_name: Optional[str] = None
+    ) -> None:
         """Set logging level for a specific logger or all loggers
 
         Args:
@@ -313,7 +318,7 @@ class KumihanLogger:
         logger: logging.Logger,
         operation: str,
         duration: float,
-        size: int | None = None,
+        size: Optional[int] = None,
     ) -> None:
         """Log performance metrics
 
@@ -381,8 +386,44 @@ class StructuredLogger:
     making it easier for Claude Code to parse and analyze logs.
     """
 
+    # Sensitive keys that should be filtered out from logs
+    SENSITIVE_KEYS = {
+        "password",
+        "passwd",
+        "pwd",
+        "secret",
+        "token",
+        "key",
+        "api_key",
+        "auth_token",
+        "bearer_token",
+        "access_token",
+        "refresh_token",
+        "credential",
+        "authorization",
+        "session_id",
+        "cookie",
+    }
+
     def __init__(self, logger: logging.Logger):
         self.logger = logger
+
+    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Remove sensitive information from context data
+
+        Args:
+            context: Original context dictionary
+
+        Returns:
+            Sanitized context dictionary with sensitive data filtered out
+        """
+        sanitized = {}
+        for key, value in context.items():
+            if key.lower() in self.SENSITIVE_KEYS:
+                sanitized[key] = "[FILTERED]"
+            else:
+                sanitized[key] = value
+        return sanitized
 
     def log_with_context(
         self,
@@ -401,7 +442,9 @@ class StructuredLogger:
         """
         if context or kwargs:
             full_context = {**(context or {}), **kwargs}
-            extra = {"context": full_context}
+            # Sanitize sensitive information
+            sanitized_context = self._sanitize_context(full_context)
+            extra = {"context": sanitized_context}
             self.logger.log(level, message, extra=extra)
         else:
             self.logger.log(level, message)
@@ -536,7 +579,9 @@ def get_structured_logger(name: str) -> StructuredLogger:
     return StructuredLogger(standard_logger)
 
 
-def log_performance(operation: str, duration: float, size: int | None = None) -> None:
+def log_performance(
+    operation: str, duration: float, size: Optional[int] = None
+) -> None:
     """Convenience function for logging performance metrics
 
     Args:
