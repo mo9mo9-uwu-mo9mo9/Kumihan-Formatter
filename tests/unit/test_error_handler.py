@@ -245,11 +245,11 @@ class TestErrorHandlerContext(TestCase):
         """コンソールUIなしでのコンテキスト表示テスト"""
         file_path = Path("/test/file.txt")
 
-        # console_uiがNoneの場合は何もしない
-        self.handler.show_error_context(file_path, 3, "line 3 (error line)")
+        # console_uiがNoneの場合は何もしない（例外が発生しないことをテスト）
+        result = self.handler.show_error_context(file_path, 3, "line 3 (error line)")
 
-        # エラーが発生しないことを確認
-        self.assertTrue(True)
+        # メソッドが正常に完了し、Noneを返すことを確認
+        self.assertIsNone(result)
 
     def test_show_error_context_with_console_ui(self) -> None:
         """コンソールUI付きでのコンテキスト表示テスト"""
@@ -278,10 +278,11 @@ class TestErrorHandlerContext(TestCase):
             mock_read.side_effect = Exception("File read error")
 
             # エラーが発生してもクラッシュしないことを確認
-            handler.show_error_context(file_path, 3, "line 3 (error line)")
+            result = handler.show_error_context(file_path, 3, "line 3 (error line)")
 
-            # エラーが適切にログされることを確認
-            self.assertTrue(True)
+            # メソッドが例外をキャッチして正常に完了することを確認
+            self.assertIsNone(result)
+            mock_read.assert_called_once()
 
     def test_show_error_context_edge_cases(self) -> None:
         """エッジケースでのコンテキスト表示テスト"""

