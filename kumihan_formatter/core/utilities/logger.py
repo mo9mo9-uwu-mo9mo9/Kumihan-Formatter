@@ -30,6 +30,34 @@ from .structured_logger import (
     get_structured_logger,
 )
 
+
+# Backward compatibility functions
+def get_error_analyzer(logger_name: str = "error_analyzer") -> "ErrorAnalyzer":
+    """Get error analyzer instance for backward compatibility"""
+    from .logging_handlers import get_logger
+    from .performance_logger import ErrorAnalyzer
+
+    return ErrorAnalyzer(get_logger(logger_name))
+
+
+def get_log_performance_optimizer(
+    logger_name: str = "performance_optimizer",
+) -> "LogPerformanceOptimizer":
+    """Get log performance optimizer instance for backward compatibility"""
+    from .logging_handlers import get_logger
+
+    return LogPerformanceOptimizer(StructuredLogger(get_logger(logger_name)))
+
+
+def get_log_size_controller(
+    logger_name: str = "size_controller",
+) -> "LogSizeController":
+    """Get log size controller instance for backward compatibility"""
+    from .logging_handlers import get_logger
+
+    return LogSizeController(StructuredLogger(get_logger(logger_name)))
+
+
 # Backward compatibility - maintain all original exports
 __all__ = [
     # Formatters and handlers
@@ -59,6 +87,10 @@ __all__ = [
     # Claude Code integration
     "ClaudeCodeIntegrationLogger",
     "get_claude_code_logger",
+    # Backward compatibility functions
+    "get_error_analyzer",
+    "get_log_performance_optimizer",
+    "get_log_size_controller",
 ]
 
 # Maintain backward compatibility for any code that imports directly

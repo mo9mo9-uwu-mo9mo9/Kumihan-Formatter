@@ -402,13 +402,53 @@ def call_chain_tracker(max_depth: int = 10) -> dict[str, Any]:
     }
 
 
-def memory_usage_tracker() -> dict[str, Any]:
-    """Get current memory usage information
+# Memory usage tracking optimization
+_memory_cache: dict[str, Any] = {}
+_memory_cache_timestamp: float = 0.0
+_memory_cache_ttl: float = 1.0  # Cache TTL in seconds
+_memory_sample_counter: int = 0
+_memory_sample_interval: int = 10  # Sample every 10th call
+
+
+def memory_usage_tracker(
+    use_cache: bool = True, force_refresh: bool = False
+) -> dict[str, Any]:
+    """Get current memory usage information with caching and sampling
+
+    Args:
+        use_cache: Whether to use cached values to reduce overhead
+        force_refresh: Whether to force refresh the cache
 
     Returns:
         Memory usage information
     """
-    memory_info: dict[str, Any] = {"timestamp": time.time()}
+    global _memory_cache, _memory_cache_timestamp, _memory_sample_counter
+
+    current_time = time.time()
+
+    # Implement sampling to reduce overhead
+    _memory_sample_counter += 1
+    if not force_refresh and _memory_sample_counter % _memory_sample_interval != 0:
+        # Return cached data or minimal info for non-sampled calls
+        if (
+            use_cache
+            and _memory_cache
+            and (current_time - _memory_cache_timestamp) < _memory_cache_ttl
+        ):
+            return _memory_cache.copy()
+        else:
+            return {"timestamp": current_time, "sampled": False}
+
+    # Check cache first
+    if (
+        use_cache
+        and not force_refresh
+        and _memory_cache
+        and (current_time - _memory_cache_timestamp) < _memory_cache_ttl
+    ):
+        return _memory_cache.copy()
+
+    memory_info: dict[str, Any] = {"timestamp": current_time, "sampled": True}
 
     if HAS_PSUTIL:
         try:
@@ -422,17 +462,23 @@ def memory_usage_tracker() -> dict[str, Any]:
                 }
             )
 
-            # System memory info
-            system_memory = psutil.virtual_memory()
-            memory_info["system"] = {
-                "total_mb": round(system_memory.total / (1024 * 1024), 2),
-                "available_mb": round(system_memory.available / (1024 * 1024), 2),
-                "percent_used": float(system_memory.percent),
-            }
+            # System memory info (less frequent to reduce overhead)
+            if _memory_sample_counter % (_memory_sample_interval * 5) == 0:
+                system_memory = psutil.virtual_memory()
+                memory_info["system"] = {
+                    "total_mb": round(system_memory.total / (1024 * 1024), 2),
+                    "available_mb": round(system_memory.available / (1024 * 1024), 2),
+                    "percent_used": float(system_memory.percent),
+                }
         except Exception:
             memory_info["error"] = "Failed to get memory info"
     else:
         memory_info["error"] = "psutil not available"
+
+    # Update cache
+    if use_cache:
+        _memory_cache = memory_info.copy()
+        _memory_cache_timestamp = current_time
 
     return memory_info
 
