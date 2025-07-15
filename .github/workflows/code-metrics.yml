@@ -1,0 +1,113 @@
+name: Code Metrics & Architecture Check
+
+# 技術的負債予防のためのメトリクス監視
+# Issue #476対応: 大規模リファクタリング予防策
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'kumihan_formatter/**/*.py'
+  workflow_dispatch:
+
+jobs:
+  code-metrics:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon xenon flake8 mypy
+        pip install -e .
+
+    - name: 📏 File Size Check
+      run: |
+        echo "## 📏 ファイルサイズチェック結果" >> $GITHUB_STEP_SUMMARY
+        python scripts/check_file_size.py --max-lines=300 || echo "ファイルサイズ違反が検出されました"
+
+    - name: 🏗️ Architecture Check
+      run: |
+        echo "## 🏗️ アーキテクチャチェック結果" >> $GITHUB_STEP_SUMMARY
+        python scripts/architecture_check.py --target-dir=kumihan_formatter || echo "アーキテクチャ違反が検出されました"
+
+    - name: 📊 Code Complexity Analysis
+      run: |
+        echo "## 📊 コード複雑度分析" >> $GITHUB_STEP_SUMMARY
+        echo "### Cyclomatic Complexity" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        radon cc kumihan_formatter/ --min=B --show-complexity || true
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+        echo "### Maintainability Index" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        radon mi kumihan_formatter/ --min=B || true
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: 📈 Code Statistics
+      run: |
+        echo "## 📈 コードベース統計" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "=== ファイル統計 ==="
+        find kumihan_formatter -name "*.py" | wc -l | xargs echo "Pythonファイル数:"
+        find kumihan_formatter -name "*.py" -exec wc -l {} + | tail -1 | awk '{print "総行数: " $1}'
+        echo ""
+        echo "=== 最大ファイル（上位5位） ==="
+        find kumihan_formatter -name "*.py" -exec wc -l {} + | sort -rn | head -5
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: 🔍 Technical Debt Detection
+      run: |
+        echo "## 🔍 技術的負債検出" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+        echo "=== 大きすぎるファイル (>300行) ==="
+        find kumihan_formatter -name "*.py" -exec wc -l {} + | awk '$1 > 300 {print $2 ": " $1 "行"}' || echo "なし"
+
+        echo ""
+        echo "=== 複雑すぎる関数 ==="
+        radon cc kumihan_formatter/ --min=C --show-complexity || echo "なし"
+
+        echo ""
+        echo "=== TODO/FIXME コメント ==="
+        grep -r "TODO\|FIXME\|XXX\|HACK" kumihan_formatter/ --include="*.py" || echo "なし"
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: ⚠️ Check Thresholds
+      run: |
+        echo "## ⚠️ 閾値チェック" >> $GITHUB_STEP_SUMMARY
+
+        # ファイルサイズ閾値チェック
+        large_files=$(find kumihan_formatter -name "*.py" -exec wc -l {} + | awk '$1 > 300 {count++} END {print count+0}')
+        echo "大きすぎるファイル数: $large_files (閾値: 0)" >> $GITHUB_STEP_SUMMARY
+
+        # 総行数チェック
+        total_lines=$(find kumihan_formatter -name "*.py" -exec wc -l {} + | tail -1 | awk '{print $1}')
+        echo "総行数: $total_lines (目安: <15000)" >> $GITHUB_STEP_SUMMARY
+
+        # 複雑度チェック
+        complex_functions=$(radon cc kumihan_formatter/ --min=C --show-complexity | wc -l)
+        echo "複雑すぎる関数数: $complex_functions (閾値: 5)" >> $GITHUB_STEP_SUMMARY
+
+        # 警告の出力
+        if [ "$large_files" -gt 0 ] || [ "$total_lines" -gt 15000 ] || [ "$complex_functions" -gt 5 ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🚨 **技術的負債の蓄積が検出されました！リファクタリングを検討してください。**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 推奨対策:" >> $GITHUB_STEP_SUMMARY
+          echo "- Single Responsibility Principleに従ってファイル分割" >> $GITHUB_STEP_SUMMARY
+          echo "- 大きな関数の分解" >> $GITHUB_STEP_SUMMARY
+          echo "- 複雑な条件分岐の単純化" >> $GITHUB_STEP_SUMMARY
+          echo "- 重複コードの排除" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **すべての閾値をクリアしています！**" >> $GITHUB_STEP_SUMMARY
+        fi

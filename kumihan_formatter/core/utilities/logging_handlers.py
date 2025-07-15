@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from .logging import LogHelper
+from ..utilities.logging import LogHelper
 from .logging_formatters import DevLogHandler
 
 
@@ -86,16 +86,29 @@ class KumihanLogger:
                 self.log_dir
                 / f"kumihan_formatter_{datetime.now().strftime('%Y%m%d')}.log"
             )
-            file_handler = logging.handlers.RotatingFileHandler(
-                log_file,
-                maxBytes=10 * 1024 * 1024,  # 10MB
-                backupCount=7,
-                encoding="utf-8",
-            )
-            file_handler.setLevel(logging.DEBUG)
-            file_formatter = logging.Formatter(self.log_format, self.date_format)
-            file_handler.setFormatter(file_formatter)
-            root_logger.addHandler(file_handler)
+
+            # Check file write permissions before creating handler
+            if self._check_file_write_permissions(log_file):
+                try:
+                    file_handler = logging.handlers.RotatingFileHandler(
+                        log_file,
+                        maxBytes=10 * 1024 * 1024,  # 10MB
+                        backupCount=7,
+                        encoding="utf-8",
+                    )
+                    file_handler.setLevel(logging.DEBUG)
+                    file_formatter = logging.Formatter(
+                        self.log_format, self.date_format
+                    )
+                    file_handler.setFormatter(file_formatter)
+                    root_logger.addHandler(file_handler)
+                except (OSError, IOError) as e:
+                    # Log to console if file logging fails
+                    print(f"Warning: Could not create file handler for {log_file}: {e}")
+                    self.enable_file_logging = False
+            else:
+                print(f"Warning: No write permissions for log file {log_file}")
+                self.enable_file_logging = False
 
         # Development log handler (optional)
         if self.enable_dev_logging:
@@ -178,6 +191,35 @@ class KumihanLogger:
         else:
             message = f"Performance: {operation} completed in {duration_str}"
         logger.info(message)
+
+    def _check_file_write_permissions(self, log_file: Path) -> bool:
+        """Check if we have write permissions for the log file
+
+        Args:
+            log_file: Path to the log file
+
+        Returns:
+            True if we have write permissions, False otherwise
+        """
+        try:
+            # Check if file exists and is writable
+            if log_file.exists():
+                return os.access(log_file, os.W_OK)
+
+            # Check if parent directory exists and is writable
+            parent_dir = log_file.parent
+            if parent_dir.exists():
+                return os.access(parent_dir, os.W_OK)
+
+            # Try to create parent directory if it doesn't exist
+            try:
+                parent_dir.mkdir(parents=True, exist_ok=True)
+                return os.access(parent_dir, os.W_OK)
+            except (OSError, IOError):
+                return False
+
+        except (OSError, IOError):
+            return False
 
 
 # Global logger instance

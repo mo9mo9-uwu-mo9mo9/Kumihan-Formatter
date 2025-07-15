@@ -65,6 +65,30 @@ AI運用5原則
 - **行長**: 88文字
 - **命名**: snake_case, PascalCase, UPPER_SNAKE_CASE
 
+## 技術的負債予防ルール（Issue #476対応）
+### 📏 300行ルール（厳守）
+- **ファイル**: 300行以内（例外なし）
+- **クラス**: 100行以内推奨
+- **関数**: 20行以内推奨
+- **⚠️ 違反時**: pre-commit hookが自動でブロック
+
+### 🏗️ アーキテクチャ原則
+- **Single Responsibility Principle**: 1ファイル1責任
+- **関数分割**: 複雑な処理は機能単位で分離
+- **Boy Scout Rule**: コードを触ったら少しでも改善
+- **循環依存**: 禁止（アーキテクチャチェックで検出）
+
+### 🔧 自動チェック体制
+```bash
+# コミット時自動実行（pre-commit hook）
+scripts/check_file_size.py      # ファイルサイズチェック
+scripts/architecture_check.py   # アーキテクチャ品質チェック
+
+# 手動実行（必要時のみ）
+.venv/bin/python scripts/check_file_size.py
+.venv/bin/python scripts/architecture_check.py
+```
+
 # プロジェクト構造
 
 ```
