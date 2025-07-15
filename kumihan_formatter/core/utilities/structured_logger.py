@@ -20,7 +20,7 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-from .logger import get_logger
+# Import get_logger at runtime to avoid circular imports
 from .performance_logger import call_chain_tracker, memory_usage_tracker
 
 
@@ -230,6 +230,9 @@ def get_structured_logger(name: str) -> StructuredLogger:
         ...     file_path="missing.txt"
         ... )
     """
+    # Import get_logger at runtime to avoid circular imports
+    from .logger import get_logger
+
     standard_logger = get_logger(name)
     return StructuredLogger(standard_logger)
 
