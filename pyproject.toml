@@ -86,7 +86,7 @@ markers = [
     "e2e: End-to-end tests",
     "slow: Slow running tests",
 ]
-# timeout = 300  # pytest-timeoutプラグインが必要
+timeout = 300  # pytest-timeoutプラグインが必要
 log_cli = true
 log_cli_level = "INFO"
 
