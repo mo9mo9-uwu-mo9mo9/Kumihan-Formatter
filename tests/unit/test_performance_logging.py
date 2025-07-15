@@ -6,12 +6,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from kumihan_formatter.core.utilities.logger import (
+from kumihan_formatter.core.utilities.performance_logger import (
     call_chain_tracker,
-    get_structured_logger,
     log_performance_decorator,
     memory_usage_tracker,
 )
+from kumihan_formatter.core.utilities.structured_logger import get_structured_logger
 
 
 class TestPerformanceDecorator:
