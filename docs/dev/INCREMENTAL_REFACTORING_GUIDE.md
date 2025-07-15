@@ -174,11 +174,11 @@ from .interfaces import IProcessor
 
 ### 自動監視項目
 ```bash
-# 毎コミット時チェック
+# コミット時自動チェック（pre-commit hook）
 scripts/check_file_size.py --max-lines=300
 scripts/architecture_check.py
 
-# 毎週チェック
+# 手動実行（必要時のみ）
 radon cc kumihan_formatter/ --min=B
 radon mi kumihan_formatter/ --min=B
 ```
@@ -317,23 +317,24 @@ class ProcessorFactory:
         return processor
 ```
 
-## 📅 実践スケジュール
+## 📅 実践アプローチ
 
-### 日次（5-10分）
-- [ ] 修正したファイルの命名改善
+### コード触る時（Boy Scout Rule）
+- [ ] 修正対象ファイルの命名改善
 - [ ] 無用なコメント削除
 - [ ] 小さな重複コード排除
+- [ ] 20行超過関数の分割検討
 
-### 週次（30-60分）
-- [ ] ファイルサイズチェック結果確認
-- [ ] 大きすぎる関数の分割
-- [ ] テストカバレッジ改善
+### PR作成時
+- [ ] pre-commit hookで自動チェック実行
+- [ ] ファイルサイズ違反の解消
+- [ ] アーキテクチャ違反の確認
 
-### 月次（2-4時間）
-- [ ] アーキテクチャメトリクス確認
+### 必要に応じて（問題発見時）
+- [ ] 300行超過ファイルの分割
+- [ ] 複雑度過多関数の簡素化
 - [ ] 循環依存の解消
 - [ ] 大きなクラスの責任分離
-- [ ] 技術的負債の優先順位付け
 
 ## 🚨 危険信号
 

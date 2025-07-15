@@ -80,12 +80,13 @@ AI運用5原則
 
 ### 🔧 自動チェック体制
 ```bash
-# コミット時自動実行
+# コミット時自動実行（pre-commit hook）
 scripts/check_file_size.py      # ファイルサイズチェック
 scripts/architecture_check.py   # アーキテクチャ品質チェック
 
-# 手動実行
-make architecture-review        # 月1回推奨
+# 手動実行（必要時のみ）
+.venv/bin/python scripts/check_file_size.py
+.venv/bin/python scripts/architecture_check.py
 ```
 
 # プロジェクト構造

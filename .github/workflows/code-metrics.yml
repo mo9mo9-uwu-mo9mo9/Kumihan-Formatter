@@ -4,17 +4,10 @@ name: Code Metrics & Architecture Check
 # Issue #476対応: 大規模リファクタリング予防策
 
 on:
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'kumihan_formatter/**/*.py'
   pull_request:
     branches: [ main ]
     paths:
       - 'kumihan_formatter/**/*.py'
-  schedule:
-    # 毎週月曜日午前9時（JST）に定期実行
-    - cron: '0 0 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -118,56 +111,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **すべての閾値をクリアしています！**" >> $GITHUB_STEP_SUMMARY
         fi
-
-  save-metrics:
-    runs-on: ubuntu-latest
-    needs: code-metrics
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install radon
-
-    - name: Save Metrics to JSON
-      run: |
-        mkdir -p metrics
-
-        # 現在の日付
-        date=$(date +%Y-%m-%d)
-
-        # メトリクス収集
-        total_lines=$(find kumihan_formatter -name "*.py" -exec wc -l {} + | tail -1 | awk '{print $1}')
-        file_count=$(find kumihan_formatter -name "*.py" | wc -l)
-        large_files=$(find kumihan_formatter -name "*.py" -exec wc -l {} + | awk '$1 > 300 {count++} END {print count+0}')
-
-        # JSON形式で保存
-        cat > metrics/metrics-$date.json << EOF
-        {
-          "date": "$date",
-          "commit": "$GITHUB_SHA",
-          "total_lines": $total_lines,
-          "file_count": $file_count,
-          "large_files_count": $large_files,
-          "metrics_version": "1.0"
-        }
-        EOF
-
-        echo "メトリクス保存完了: metrics/metrics-$date.json"
-
-    - name: Commit metrics
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add metrics/
-        git commit -m "📊 Add code metrics for $(date +%Y-%m-%d)" || exit 0
-        git push || exit 0
