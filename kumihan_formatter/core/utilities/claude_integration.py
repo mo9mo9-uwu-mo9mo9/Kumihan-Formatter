@@ -193,7 +193,11 @@ class ClaudeCodeIntegrationLogger:
             error_context.update(context)
 
         self.structured_logger.log_with_context(
-            logging.ERROR, f"Error occurred: {error}", error_context, exc_info=True, **kwargs
+            logging.ERROR,
+            f"Error occurred: {error}",
+            error_context,
+            exc_info=True,
+            **kwargs,
         )
 
     def log_with_dependency_tracking(
