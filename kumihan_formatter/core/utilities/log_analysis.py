@@ -423,7 +423,7 @@ class ExecutionFlowTracker:
 def get_error_analyzer(name: str):
     """Get an ErrorAnalyzer instance for a module"""
     from .structured_logging import get_structured_logger
-    
+
     structured_logger = get_structured_logger(name)
     return ErrorAnalyzer(structured_logger)
 
@@ -431,7 +431,7 @@ def get_error_analyzer(name: str):
 def get_dependency_tracker(name: str):
     """Get a DependencyTracker instance for a module"""
     from .structured_logging import get_structured_logger
-    
+
     structured_logger = get_structured_logger(name)
     return DependencyTracker(structured_logger)
 
@@ -439,6 +439,6 @@ def get_dependency_tracker(name: str):
 def get_execution_flow_tracker(name: str):
     """Get an ExecutionFlowTracker instance for a module"""
     from .structured_logging import get_structured_logger
-    
+
     structured_logger = get_structured_logger(name)
     return ExecutionFlowTracker(structured_logger)

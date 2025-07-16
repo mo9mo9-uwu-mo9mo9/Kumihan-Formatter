@@ -12,8 +12,8 @@ import weakref
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set
 
-from .memory_types import MemorySnapshot, HAS_PSUTIL
 from ..utilities.logger import get_logger
+from .memory_types import HAS_PSUTIL, MemorySnapshot
 
 if HAS_PSUTIL:
     import psutil
@@ -21,7 +21,7 @@ if HAS_PSUTIL:
 
 class MemoryMonitor:
     """メモリ監視システムのコア機能
-    
+
     基本機能:
     - リアルタイムメモリ追跡
     - スナップショット取得
@@ -59,7 +59,7 @@ class MemoryMonitor:
         # データストレージ
         self.snapshots: List[MemorySnapshot] = []
         self.custom_objects: Dict[str, Set[weakref.ReferenceType]] = defaultdict(set)
-        
+
         # 統計
         self.stats = {
             "total_snapshots": 0,
@@ -76,7 +76,9 @@ class MemoryMonitor:
         if HAS_PSUTIL:
             self.logger.info("psutil が利用可能です - 詳細なメモリ情報を取得します")
         else:
-            self.logger.warning("psutil が利用できません - 基本的なメモリ情報のみ利用可能")
+            self.logger.warning(
+                "psutil が利用できません - 基本的なメモリ情報のみ利用可能"
+            )
 
         self.logger.info("メモリモニター初期化完了")
 
@@ -87,10 +89,12 @@ class MemoryMonitor:
                 self.logger.warning("メモリ監視は既に開始されています")
                 return
 
-            self.logger.info(f"メモリ監視を開始します interval={self.sampling_interval}")
+            self.logger.info(
+                f"メモリ監視を開始します interval={self.sampling_interval}"
+            )
             self._monitoring = True
             self.stats["monitoring_start_time"] = time.time()
-            
+
             self._monitor_thread = threading.Thread(
                 target=self._monitor_loop, daemon=True, name="MemoryMonitor"
             )
@@ -105,10 +109,10 @@ class MemoryMonitor:
 
             self.logger.info("メモリ監視を停止します")
             self._monitoring = False
-            
+
             if self._monitor_thread and self._monitor_thread.is_alive():
                 self._monitor_thread.join(timeout=5.0)
-                
+
             # 統計更新
             if self.stats["monitoring_start_time"]:
                 self.stats["total_monitoring_time"] += (
@@ -122,10 +126,10 @@ class MemoryMonitor:
             MemorySnapshot: 現在のメモリ状況
         """
         timestamp = time.time()
-        
+
         # ガベージコレクション情報
         gc_objects = len(gc.get_objects())
-        gc_collections = list(gc.get_stats()) if hasattr(gc, 'get_stats') else [0, 0, 0]
+        gc_collections = list(gc.get_stats()) if hasattr(gc, "get_stats") else [0, 0, 0]
         if not isinstance(gc_collections, list):
             gc_collections = [gc.get_count()[i] for i in range(3)]
 
@@ -155,7 +159,7 @@ class MemoryMonitor:
                 # 生きているオブジェクトのみカウント
                 alive_refs = [ref for ref in weak_refs if ref() is not None]
                 custom_objects[obj_type] = len(alive_refs)
-                
+
                 # 死んでいる参照を削除
                 self.custom_objects[obj_type] = set(alive_refs)
 
@@ -173,8 +177,8 @@ class MemoryMonitor:
         with self._lock:
             self.snapshots.append(snapshot)
             if len(self.snapshots) > self.max_snapshots:
-                self.snapshots = self.snapshots[-self.max_snapshots:]
-            
+                self.snapshots = self.snapshots[-self.max_snapshots :]
+
             self.stats["total_snapshots"] += 1
 
         self.logger.debug(
@@ -198,9 +202,9 @@ class MemoryMonitor:
             weak_ref = weakref.ref(obj)
             with self._lock:
                 self.custom_objects[obj_type].add(weak_ref)
-                
+
             self.logger.debug(f"オブジェクト追跡に登録: {obj_type}")
-            
+
         except TypeError:
             # weak reference を作成できないオブジェクト
             self.logger.debug(f"weak reference 作成不可のオブジェクト: {obj_type}")
@@ -212,7 +216,7 @@ class MemoryMonitor:
             Dict: メモリ使用量情報
         """
         current_snapshot = self.take_snapshot()
-        
+
         return {
             "timestamp": current_snapshot.timestamp,
             "process_memory_mb": current_snapshot.memory_mb,
@@ -228,7 +232,7 @@ class MemoryMonitor:
     def _monitor_loop(self) -> None:
         """監視ループ（別スレッドで実行）"""
         self.logger.info("メモリ監視ループ開始")
-        
+
         while self._monitoring:
             try:
                 self.take_snapshot()
@@ -253,7 +257,7 @@ class MemoryMonitor:
                         alive_refs.add(weak_ref)
                     else:
                         cleaned_count += 1
-                
+
                 if alive_refs:
                     self.custom_objects[obj_type] = alive_refs
                 else:
@@ -267,10 +271,10 @@ class MemoryMonitor:
         with self._lock:
             snapshot_count = len(self.snapshots)
             object_types = len(self.custom_objects)
-            
+
             self.snapshots.clear()
             self.custom_objects.clear()
-            
+
             # 統計をリセット（一部は保持）
             old_total_time = self.stats.get("total_monitoring_time", 0.0)
             self.stats = {

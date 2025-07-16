@@ -218,6 +218,6 @@ def get_structured_logger(name: str) -> StructuredLogger:
     """
     # Import here to avoid circular import
     from .logger import get_logger
-    
+
     standard_logger = get_logger(name)
     return StructuredLogger(standard_logger)

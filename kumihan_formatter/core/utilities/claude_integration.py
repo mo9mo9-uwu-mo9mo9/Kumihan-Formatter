@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 from typing import Any, Optional
 
-from .log_analysis import ErrorAnalyzer, DependencyTracker, ExecutionFlowTracker
+from .log_analysis import DependencyTracker, ErrorAnalyzer, ExecutionFlowTracker
 from .log_optimization import LogPerformanceOptimizer, LogSizeController
 from .structured_logging import get_structured_logger
 

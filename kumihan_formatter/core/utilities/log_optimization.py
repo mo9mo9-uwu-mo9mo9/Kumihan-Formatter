@@ -409,7 +409,7 @@ class LogSizeController:
 def get_log_performance_optimizer(name: str):
     """Get log performance optimizer instance for a module"""
     from .structured_logging import get_structured_logger
-    
+
     structured_logger = get_structured_logger(name)
     return LogPerformanceOptimizer(structured_logger)
 
@@ -417,6 +417,6 @@ def get_log_performance_optimizer(name: str):
 def get_log_size_controller(name: str):
     """Get log size controller instance for a module"""
     from .structured_logging import get_structured_logger
-    
+
     structured_logger = get_structured_logger(name)
     return LogSizeController(structured_logger)

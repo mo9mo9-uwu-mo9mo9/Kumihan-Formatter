@@ -9,16 +9,16 @@ import time
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-from .memory_types import MemoryLeak, MemorySnapshot, LEAK_SEVERITY_THRESHOLDS
 from ..utilities.logger import get_logger
+from .memory_types import LEAK_SEVERITY_THRESHOLDS, MemoryLeak, MemorySnapshot
 
 
 class MemoryLeakDetector:
     """メモリリーク検出と分析機能
-    
+
     機能:
     - オブジェクトカウント増加の検出
-    - リーク深刻度の計算  
+    - リーク深刻度の計算
     - リークパターンの分析
     - リーク履歴の管理
     """
@@ -44,7 +44,7 @@ class MemoryLeakDetector:
         # リーク追跡データ
         self.detected_leaks: Dict[str, MemoryLeak] = {}
         self.object_history: Dict[str, List[Tuple[float, int]]] = defaultdict(list)
-        
+
         self.logger.info(
             f"メモリリーク検出器初期化完了 threshold={leak_detection_threshold}, "
             f"min_data_points={min_data_points}, analysis_window_hours={analysis_window_hours}"
@@ -58,14 +58,14 @@ class MemoryLeakDetector:
         """
         # GCオブジェクト数の記録
         self._record_object_count("gc_objects", snapshot.timestamp, snapshot.gc_objects)
-        
+
         # カスタムオブジェクトの記録
         for obj_type, count in snapshot.custom_objects.items():
             self._record_object_count(obj_type, snapshot.timestamp, count)
-        
+
         # 古いデータの削除
         self._remove_old_data(snapshot.timestamp)
-        
+
         # リーク検出の実行
         self._detect_memory_leaks()
 
@@ -79,7 +79,7 @@ class MemoryLeakDetector:
         """
         history = self.object_history[obj_type]
         history.append((timestamp, count))
-        
+
         # 効率性のため、履歴の長さを制限
         if len(history) > 1000:
             self.object_history[obj_type] = history[-500:]
@@ -91,18 +91,20 @@ class MemoryLeakDetector:
             current_timestamp: 現在のタイムスタンプ
         """
         cutoff_time = current_timestamp - self.analysis_window_seconds
-        
+
         for obj_type in list(self.object_history.keys()):
             history = self.object_history[obj_type]
             # 古いデータを削除
             valid_data = [(ts, count) for ts, count in history if ts >= cutoff_time]
-            
+
             if valid_data:
                 self.object_history[obj_type] = valid_data
             else:
                 del self.object_history[obj_type]
 
-    def get_memory_leaks(self, severity_filter: Optional[str] = None) -> List[MemoryLeak]:
+    def get_memory_leaks(
+        self, severity_filter: Optional[str] = None
+    ) -> List[MemoryLeak]:
         """検出されたメモリリークを取得
 
         Args:
@@ -112,14 +114,14 @@ class MemoryLeakDetector:
             List[MemoryLeak]: 検出されたリークのリスト（深刻度順）
         """
         leaks = list(self.detected_leaks.values())
-        
+
         # 深刻度フィルター
         if severity_filter:
             leaks = [leak for leak in leaks if leak.severity == severity_filter]
-        
+
         # 深刻度順でソート（高い順）
         leaks.sort(key=lambda x: x.severity_score, reverse=True)
-        
+
         return leaks
 
     def get_critical_leaks(self) -> List[MemoryLeak]:
@@ -128,7 +130,9 @@ class MemoryLeakDetector:
         Returns:
             List[MemoryLeak]: クリティカルなリークのリスト
         """
-        return [leak for leak in self.detected_leaks.values() if leak.is_critical_leak()]
+        return [
+            leak for leak in self.detected_leaks.values() if leak.is_critical_leak()
+        ]
 
     def get_leak_summary(self) -> Dict[str, any]:
         """リーク検出の概要を取得
@@ -137,14 +141,14 @@ class MemoryLeakDetector:
             Dict: リーク検出の概要情報
         """
         all_leaks = list(self.detected_leaks.values())
-        
+
         severity_counts = defaultdict(int)
         for leak in all_leaks:
             severity_counts[leak.severity] += 1
-        
+
         total_objects_leaked = sum(leak.count_increase for leak in all_leaks)
         critical_leaks = self.get_critical_leaks()
-        
+
         return {
             "total_leaks": len(all_leaks),
             "critical_leaks": len(critical_leaks),
@@ -159,15 +163,15 @@ class MemoryLeakDetector:
     def _detect_memory_leaks(self) -> None:
         """メモリリークを検出"""
         current_time = time.time()
-        
+
         for obj_type, history in self.object_history.items():
             if len(history) < self.min_data_points:
                 continue
-                
+
             leak_info = self._analyze_object_leak(obj_type, history, current_time)
             if leak_info:
                 object_type, count_increase, size_estimate, first_detected = leak_info
-                
+
                 if object_type in self.detected_leaks:
                     # 既存のリークを更新
                     existing_leak = self.detected_leaks[object_type]
@@ -175,8 +179,10 @@ class MemoryLeakDetector:
                     existing_leak.last_detected = current_time
                 else:
                     # 新しいリークを作成
-                    severity = self._calculate_leak_severity(count_increase, size_estimate)
-                    
+                    severity = self._calculate_leak_severity(
+                        count_increase, size_estimate
+                    )
+
                     new_leak = MemoryLeak(
                         object_type=object_type,
                         count_increase=count_increase,
@@ -185,9 +191,9 @@ class MemoryLeakDetector:
                         last_detected=current_time,
                         severity=severity,
                     )
-                    
+
                     self.detected_leaks[object_type] = new_leak
-                    
+
                     self.logger.warning(
                         f"メモリリーク検出: {object_type} count_increase={count_increase}, "
                         f"severity={severity}, estimated_size_mb={size_estimate / 1024 / 1024:.2f}"
@@ -209,26 +215,26 @@ class MemoryLeakDetector:
         """
         if len(history) < 2:
             return None
-        
+
         # 最初と最後の値を比較
         start_timestamp, start_count = history[0]
         end_timestamp, end_count = history[-1]
-        
+
         count_increase = end_count - start_count
-        
+
         # 閾値チェック
         if count_increase < self.leak_detection_threshold:
             return None
-        
+
         # 時間経過の確認（短時間での一時的な増加を除外）
         time_span = end_timestamp - start_timestamp
         if time_span < 60:  # 1分未満は除外
             return None
-        
+
         # サイズ推定（簡易的）
         estimated_size_per_object = 100  # 100バイト/オブジェクトと仮定
         size_estimate = count_increase * estimated_size_per_object
-        
+
         return (obj_type, count_increase, size_estimate, start_timestamp)
 
     def _calculate_leak_severity(self, count_increase: int, size_estimate: int) -> str:
@@ -250,7 +256,7 @@ class MemoryLeakDetector:
             return "medium"
         elif count_increase >= LEAK_SEVERITY_THRESHOLDS["low"]:
             return "low"
-        
+
         # サイズベースの評価（バックアップ）
         size_mb = size_estimate / 1024 / 1024
         if size_mb >= 50:
@@ -266,10 +272,10 @@ class MemoryLeakDetector:
         """リーク検出データをクリア"""
         cleared_leaks = len(self.detected_leaks)
         cleared_history = len(self.object_history)
-        
+
         self.detected_leaks.clear()
         self.object_history.clear()
-        
+
         self.logger.info(
             f"リーク検出データをクリア cleared_leaks={cleared_leaks}, "
             f"cleared_history_types={cleared_history}"

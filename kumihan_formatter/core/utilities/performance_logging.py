@@ -49,7 +49,7 @@ def log_performance_decorator(
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Import here to avoid circular import
             from .structured_logging import get_structured_logger
-            
+
             # Set up operation name
             op_name = operation or func.__name__
 
@@ -246,7 +246,7 @@ def log_performance(
     """
     # Import here to avoid circular import
     from .logger import get_logger
-    
+
     logger = get_logger("performance")
     # Note: This would need the _logger_instance reference to be updated
     # when the main logger module is refactored

@@ -22,16 +22,16 @@ MEMORY_ALERT_THRESHOLDS = {
 }
 
 LEAK_SEVERITY_THRESHOLDS = {
-    "low": 10,      # オブジェクト数増加
-    "medium": 50,   
-    "high": 100,    
+    "low": 10,  # オブジェクト数増加
+    "medium": 50,
+    "high": 100,
     "critical": 500,
 }
 
 GC_OPTIMIZATION_THRESHOLDS = {
-    "generation_0": 700,    # デフォルト700
-    "generation_1": 10,     # デフォルト10
-    "generation_2": 10,     # デフォルト10
+    "generation_0": 700,  # デフォルト700
+    "generation_1": 10,  # デフォルト10
+    "generation_2": 10,  # デフォルト10
 }
 
 
@@ -118,7 +118,7 @@ class MemoryLeak:
     def is_critical_leak(self) -> bool:
         """クリティカルなリークかどうか"""
         return (
-            self.severity == "critical" 
+            self.severity == "critical"
             or self.count_increase >= LEAK_SEVERITY_THRESHOLDS["critical"]
             or self.estimated_leak_rate > 10.0  # 10オブジェクト/秒以上
         )

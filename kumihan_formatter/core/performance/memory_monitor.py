@@ -6,18 +6,18 @@
 Issue #402対応 - パフォーマンス最適化
 """
 
-from typing import Dict, List, Optional, Any, Callable
+from typing import Any, Callable, Dict, List, Optional
 
-from .memory_types import MemorySnapshot, MemoryLeak
-from .memory_monitor_core import MemoryMonitor as CoreMemoryMonitor
-from .memory_leak_detector import MemoryLeakDetector
-from .memory_analyzer import MemoryAnalyzer
 from ..utilities.logger import get_logger
+from .memory_analyzer import MemoryAnalyzer
+from .memory_leak_detector import MemoryLeakDetector
+from .memory_monitor_core import MemoryMonitor as CoreMemoryMonitor
+from .memory_types import MemoryLeak, MemorySnapshot
 
 
 class MemoryMonitor:
     """統合メモリ監視システム
-    
+
     分割されたコンポーネントを統合し、元のMemoryMonitorクラスの
     すべての機能を提供します:
     - リアルタイムメモリ追跡（Core）
@@ -41,7 +41,7 @@ class MemoryMonitor:
             enable_object_tracking: オブジェクト追跡を有効にするか
         """
         self.logger = get_logger(__name__)
-        
+
         # コンポーネント初期化
         self.core = CoreMemoryMonitor(
             sampling_interval=sampling_interval,
@@ -49,15 +49,15 @@ class MemoryMonitor:
             leak_detection_threshold=leak_detection_threshold,
             enable_object_tracking=enable_object_tracking,
         )
-        
+
         self.leak_detector = MemoryLeakDetector(
             leak_detection_threshold=leak_detection_threshold,
             min_data_points=10,
             analysis_window_hours=24.0,
         )
-        
+
         self.analyzer = MemoryAnalyzer()
-        
+
         self.logger.info("統合メモリ監視システム初期化完了")
 
     # Core機能の委譲
@@ -72,13 +72,13 @@ class MemoryMonitor:
     def take_snapshot(self) -> MemorySnapshot:
         """メモリスナップショットを取得"""
         snapshot = self.core.take_snapshot()
-        
+
         # リーク検出器に分析を委譲
         self.leak_detector.analyze_snapshot(snapshot)
-        
+
         # アラートチェック
         self.analyzer.check_memory_alerts(snapshot)
-        
+
         return snapshot
 
     def register_object(self, obj: Any, obj_type: str) -> None:
@@ -95,7 +95,9 @@ class MemoryMonitor:
         self.leak_detector.clear_leak_data()
 
     # リーク検出機能の委譲
-    def get_memory_leaks(self, severity_filter: Optional[str] = None) -> List[MemoryLeak]:
+    def get_memory_leaks(
+        self, severity_filter: Optional[str] = None
+    ) -> List[MemoryLeak]:
         """検出されたメモリリークを取得"""
         return self.leak_detector.get_memory_leaks(severity_filter)
 
@@ -105,17 +107,12 @@ class MemoryMonitor:
         return self.analyzer.get_memory_trend(self.core.snapshots, window_minutes)
 
     def generate_memory_report(
-        self, 
-        include_trend: bool = True,
-        trend_window_minutes: int = 30
+        self, include_trend: bool = True, trend_window_minutes: int = 30
     ) -> Dict[str, Any]:
         """包括的なメモリレポートを生成"""
         leaks = self.leak_detector.get_memory_leaks()
         return self.analyzer.generate_memory_report(
-            self.core.snapshots, 
-            leaks,
-            include_trend,
-            trend_window_minutes
+            self.core.snapshots, leaks, include_trend, trend_window_minutes
         )
 
     def force_garbage_collection(self) -> Dict[str, Any]:
@@ -126,7 +123,9 @@ class MemoryMonitor:
         """メモリ設定を最適化"""
         return self.analyzer.optimize_memory_settings()
 
-    def register_alert_callback(self, callback: Callable[[str, Dict[str, Any]], None]) -> None:
+    def register_alert_callback(
+        self, callback: Callable[[str, Dict[str, Any]], None]
+    ) -> None:
         """アラートコールバックを登録"""
         self.analyzer.register_alert_callback(callback)
 
@@ -142,7 +141,7 @@ class MemoryMonitor:
         core_stats = self.core.stats
         analyzer_stats = self.analyzer.get_stats()
         leak_stats = self.leak_detector.get_leak_summary()
-        
+
         return {
             "core": core_stats,
             "analyzer": analyzer_stats,
