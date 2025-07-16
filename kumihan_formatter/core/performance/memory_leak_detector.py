@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from ..utilities.logger import get_logger
 from .memory_types import LEAK_SEVERITY_THRESHOLDS, MemoryLeak, MemorySnapshot
@@ -42,8 +42,8 @@ class MemoryLeakDetector:
         self.analysis_window_seconds = analysis_window_hours * 3600
 
         # リーク追跡データ
-        self.detected_leaks: Dict[str, MemoryLeak] = {}
-        self.object_history: Dict[str, List[Tuple[float, int]]] = defaultdict(list)
+        self.detected_leaks: dict[str, MemoryLeak] = {}
+        self.object_history: dict[str, list[tuple[float, int]]] = defaultdict(list)
 
         self.logger.info(
             f"メモリリーク検出器初期化完了 threshold={leak_detection_threshold}, "
@@ -104,14 +104,14 @@ class MemoryLeakDetector:
 
     def get_memory_leaks(
         self, severity_filter: Optional[str] = None
-    ) -> List[MemoryLeak]:
+    ) -> list[MemoryLeak]:
         """検出されたメモリリークを取得
 
         Args:
             severity_filter: 深刻度フィルター (low, medium, high, critical)
 
         Returns:
-            List[MemoryLeak]: 検出されたリークのリスト（深刻度順）
+            list[MemoryLeak]: 検出されたリークのリスト（深刻度順）
         """
         leaks = list(self.detected_leaks.values())
 
@@ -124,25 +124,25 @@ class MemoryLeakDetector:
 
         return leaks
 
-    def get_critical_leaks(self) -> List[MemoryLeak]:
+    def get_critical_leaks(self) -> list[MemoryLeak]:
         """クリティカルなリークのみを取得
 
         Returns:
-            List[MemoryLeak]: クリティカルなリークのリスト
+            list[MemoryLeak]: クリティカルなリークのリスト
         """
         return [
             leak for leak in self.detected_leaks.values() if leak.is_critical_leak()
         ]
 
-    def get_leak_summary(self) -> Dict[str, Any]:
+    def get_leak_summary(self) -> dict[str, Any]:
         """リーク検出の概要を取得
 
         Returns:
-            Dict: リーク検出の概要情報
+            dict: リーク検出の概要情報
         """
         all_leaks = list(self.detected_leaks.values())
 
-        severity_counts: Dict[str, int] = defaultdict(int)
+        severity_counts: dict[str, int] = defaultdict(int)
         for leak in all_leaks:
             severity_counts[leak.severity] += 1
 
@@ -200,8 +200,8 @@ class MemoryLeakDetector:
                     )
 
     def _analyze_object_leak(
-        self, obj_type: str, history: List[Tuple[float, int]], current_time: float
-    ) -> Optional[Tuple[str, int, int, float]]:
+        self, obj_type: str, history: list[tuple[float, int]], current_time: float
+    ) -> Optional[tuple[str, int, int, float]]:
         """オブジェクトタイプのリークを分析
 
         Args:
@@ -210,7 +210,7 @@ class MemoryLeakDetector:
             current_time: 現在時刻
 
         Returns:
-            Optional[Tuple]: (object_type, count_increase, size_estimate, first_detected)
+            Optional[tuple]: (object_type, count_increase, size_estimate, first_detected)
                            リークが検出されない場合はNone
         """
         if len(history) < 2:

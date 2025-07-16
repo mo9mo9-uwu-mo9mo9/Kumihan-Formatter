@@ -10,7 +10,7 @@ import platform
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger
@@ -195,7 +195,7 @@ class OptimizationMeasurementSystem:
         if not baseline_data:
             return {"valid": False, "error": "Baseline not found"}
 
-        warnings: List[str] = []
+        warnings: list[str] = []
         validation_result = {
             "valid": True,
             "warnings": warnings,

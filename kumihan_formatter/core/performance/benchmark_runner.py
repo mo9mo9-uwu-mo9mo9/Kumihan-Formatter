@@ -8,7 +8,7 @@ Issue #476対応 - ファイルサイズ制限遵守
 import statistics
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache

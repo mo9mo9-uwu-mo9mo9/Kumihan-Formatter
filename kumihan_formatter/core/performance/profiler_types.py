@@ -5,7 +5,7 @@
 """
 
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any
 
 
 @dataclass
@@ -34,7 +34,7 @@ class ProfilingSession:
     function_profiles: dict[str, FunctionProfile] = field(default_factory=dict)
     total_calls: int = 0
     total_time: float = 0.0
-    memory_snapshots: List[dict[str, Any]] = field(default_factory=list)
+    memory_snapshots: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     @property

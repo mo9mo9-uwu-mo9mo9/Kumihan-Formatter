@@ -10,7 +10,7 @@ import threading
 import time
 import weakref
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Optional, Union
 
 from ..utilities.logger import get_logger
 from .memory_types import HAS_PSUTIL, MemorySnapshot
@@ -57,13 +57,13 @@ class MemoryMonitor:
         self.enable_object_tracking = enable_object_tracking
 
         # データストレージ
-        self.snapshots: List[MemorySnapshot] = []
-        self.custom_objects: Dict[str, Set[weakref.ReferenceType[Any]]] = defaultdict(
+        self.snapshots: list[MemorySnapshot] = []
+        self.custom_objects: dict[str, set[weakref.ReferenceType[Any]]] = defaultdict(
             set
         )
 
         # 統計
-        self.stats: Dict[str, Union[int, float, None]] = {
+        self.stats: dict[str, Union[int, float, None]] = {
             "total_snapshots": 0,
             "monitoring_start_time": None,
             "total_monitoring_time": 0.0,
@@ -219,11 +219,11 @@ class MemoryMonitor:
             # weak reference を作成できないオブジェクト
             self.logger.debug(f"weak reference 作成不可のオブジェクト: {obj_type}")
 
-    def get_memory_usage(self) -> Dict[str, Any]:
+    def get_memory_usage(self) -> dict[str, Any]:
         """現在のメモリ使用量情報を取得
 
         Returns:
-            Dict: メモリ使用量情報
+            dict: メモリ使用量情報
         """
         current_snapshot = self.take_snapshot()
 

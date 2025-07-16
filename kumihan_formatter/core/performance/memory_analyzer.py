@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import gc
 import time
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Sequence, Union
 
 from ..utilities.logger import get_logger
 from .memory_types import (
@@ -33,8 +33,8 @@ class MemoryAnalyzer:
         self.logger = get_logger(__name__)
 
         # アラート管理
-        self.alert_callbacks: List[Callable[[str, Dict[str, Any]], None]] = []
-        self.last_alert_time: Dict[str, float] = {}
+        self.alert_callbacks: list[Callable[[str, dict[str, Any]], None]] = []
+        self.last_alert_time: dict[str, float] = {}
         self.alert_cooldown = 300.0  # 5分間のクールダウン
 
         # 統計
@@ -48,7 +48,7 @@ class MemoryAnalyzer:
         self.logger.info("メモリ分析器初期化完了")
 
     def register_alert_callback(
-        self, callback: Callable[[str, Dict[str, Any]], None]
+        self, callback: Callable[[str, dict[str, Any]], None]
     ) -> None:
         """アラートコールバックを登録
 
@@ -59,8 +59,8 @@ class MemoryAnalyzer:
         self.logger.debug("アラートコールバック登録完了")
 
     def get_memory_trend(
-        self, snapshots: List[MemorySnapshot], window_minutes: int = 30
-    ) -> Dict[str, Any]:
+        self, snapshots: list[MemorySnapshot], window_minutes: int = 30
+    ) -> dict[str, Any]:
         """メモリ使用量のトレンドを分析
 
         Args:
@@ -68,7 +68,7 @@ class MemoryAnalyzer:
             window_minutes: 分析ウィンドウ（分）
 
         Returns:
-            Dict: トレンド分析結果
+            dict: トレンド分析結果
         """
         if not snapshots:
             return {"error": "No snapshots available"}
@@ -169,11 +169,11 @@ class MemoryAnalyzer:
 
     def generate_memory_report(
         self,
-        snapshots: List[MemorySnapshot],
-        leaks: Optional[List[MemoryLeak]] = None,
+        snapshots: list[MemorySnapshot],
+        leaks: Optional[list[MemoryLeak]] = None,
         include_trend: bool = True,
         trend_window_minutes: int = 30,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """包括的なメモリレポートを生成
 
         Args:
@@ -183,7 +183,7 @@ class MemoryAnalyzer:
             trend_window_minutes: トレンド分析のウィンドウ（分）
 
         Returns:
-            Dict: メモリレポート
+            dict: メモリレポート
         """
         if not snapshots:
             return {"error": "No snapshots available for report"}
@@ -220,8 +220,8 @@ class MemoryAnalyzer:
 
         # メモリリーク情報（オプション）
         if leaks:
-            leaks_by_severity: Dict[str, int] = {}
-            top_leaks: List[Dict[str, Any]] = []
+            leaks_by_severity: dict[str, int] = {}
+            top_leaks: list[dict[str, Any]] = []
 
             leak_summary = {
                 "total_leaks": len(leaks),
@@ -294,11 +294,11 @@ class MemoryAnalyzer:
 
         return report
 
-    def force_garbage_collection(self) -> Dict[str, Any]:
+    def force_garbage_collection(self) -> dict[str, Any]:
         """ガベージコレクションを強制実行
 
         Returns:
-            Dict: GC実行結果
+            dict: GC実行結果
         """
         start_time = time.time()
 
@@ -343,11 +343,11 @@ class MemoryAnalyzer:
 
         return result
 
-    def optimize_memory_settings(self) -> Dict[str, Any]:
+    def optimize_memory_settings(self) -> dict[str, Any]:
         """メモリ設定を最適化
 
         Returns:
-            Dict: 最適化結果
+            dict: 最適化結果
         """
         old_thresholds = gc.get_threshold()
 
@@ -414,7 +414,7 @@ class MemoryAnalyzer:
                     },
                 )
 
-    def check_memory_alerts_batch(self, snapshots: List[MemorySnapshot]) -> None:
+    def check_memory_alerts_batch(self, snapshots: list[MemorySnapshot]) -> None:
         """複数のスナップショットに対してアラートをチェック
 
         Args:
@@ -436,7 +436,7 @@ class MemoryAnalyzer:
         last_time = self.last_alert_time.get(alert_type, 0)
         return current_time - last_time >= self.alert_cooldown
 
-    def _trigger_alert(self, alert_type: str, context: Dict[str, Any]) -> None:
+    def _trigger_alert(self, alert_type: str, context: dict[str, Any]) -> None:
         """アラートを発火
 
         Args:
@@ -458,11 +458,11 @@ class MemoryAnalyzer:
 
         self.stats["total_alerts_triggered"] += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """統計情報を取得
 
         Returns:
-            Dict: 統計情報
+            dict: 統計情報
         """
         return self.stats.copy()
 
