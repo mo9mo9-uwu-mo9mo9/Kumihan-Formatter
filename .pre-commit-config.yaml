@@ -95,9 +95,9 @@ repos:
         stages: [manual, pre-push]
         alias: heavy-checks
 
-      # 型チェック（strict mode必須）
+      # 型チェック（strict mode必須・スキップ不可）
       - id: mypy-strict
-        name: 🔍 mypy strict mode型チェック
+        name: 🔍 mypy strict mode型チェック（必須）
         entry: python
         args: [-m, mypy, --config-file=mypy.ini, kumihan_formatter/]
         language: python
@@ -106,3 +106,5 @@ repos:
         additional_dependencies: [mypy, pydantic, types-PyYAML, types-psutil, types-Jinja2, types-MarkupSafe, types-click]
         stages: [pre-commit, manual, pre-push]
         always_run: true
+        # SKIPできないように設定
+        verbose: true

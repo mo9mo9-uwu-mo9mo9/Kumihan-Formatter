@@ -1,0 +1,16 @@
+# 技術的負債対象ファイル一覧（一時的除外対象）
+# 既存の53個のmypy strict mode エラーを持つファイル一覧
+# 新規実装時は厳格チェックを適用し、段階的に解決していく
+
+# 2025-01-16 現在の技術的負債対象ファイル
+# 注意：これらのファイルは将来的に段階的に修正していく予定
+# 新規実装・変更時は厳格な品質チェックを適用
+
+# Core utilities
+kumihan_formatter/core/utilities/logger.py
+kumihan_formatter/core/utilities/memory_monitor.py
+kumihan_formatter/core/utilities/performance_logger.py
+kumihan_formatter/core/utilities/structured_logger.py
+
+# Other legacy files with type errors
+# （必要に応じて追加）

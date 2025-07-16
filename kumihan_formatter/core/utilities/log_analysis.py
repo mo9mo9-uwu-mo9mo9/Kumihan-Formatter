@@ -66,7 +66,7 @@ class ErrorAnalyzer:
         },
     }
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         """Initialize with a StructuredLogger instance"""
         self.logger = logger
 
@@ -202,7 +202,7 @@ class DependencyTracker:
     dependency-related issues.
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         """Initialize with a StructuredLogger instance"""
         self.logger = logger
         self.dependencies: dict[str, set[str]] = {}
@@ -286,7 +286,7 @@ class ExecutionFlowTracker:
     to help Claude Code understand application behavior.
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         """Initialize with a StructuredLogger instance"""
         self.logger = logger
         self.execution_stack: list[dict[str, Any]] = []
@@ -420,7 +420,7 @@ class ExecutionFlowTracker:
         }
 
 
-def get_error_analyzer(name: str):
+def get_error_analyzer(name: str) -> ErrorAnalyzer:
     """Get an ErrorAnalyzer instance for a module"""
     from .structured_logging import get_structured_logger
 
@@ -428,7 +428,7 @@ def get_error_analyzer(name: str):
     return ErrorAnalyzer(structured_logger)
 
 
-def get_dependency_tracker(name: str):
+def get_dependency_tracker(name: str) -> DependencyTracker:
     """Get a DependencyTracker instance for a module"""
     from .structured_logging import get_structured_logger
 
@@ -436,7 +436,7 @@ def get_dependency_tracker(name: str):
     return DependencyTracker(structured_logger)
 
 
-def get_execution_flow_tracker(name: str):
+def get_execution_flow_tracker(name: str) -> ExecutionFlowTracker:
     """Get an ExecutionFlowTracker instance for a module"""
     from .structured_logging import get_structured_logger
 

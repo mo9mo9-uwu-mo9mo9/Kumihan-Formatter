@@ -1,281 +1,362 @@
 """Tests for structured logging functionality"""
 
-import json
 import logging
-import tempfile
-from pathlib import Path
-from unittest.mock import patch
+import time
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from kumihan_formatter.core.utilities.logging_formatters import StructuredLogFormatter
 from kumihan_formatter.core.utilities.structured_logger import (
+    DependencyTracker,
+    ErrorAnalyzer,
+    ExecutionFlowTracker,
     StructuredLogger,
+    get_dependency_tracker,
+    get_error_analyzer,
+    get_execution_flow_tracker,
     get_structured_logger,
 )
 
 
-class TestStructuredLogFormatter:
-    """Test the JSON formatter for structured logs"""
-
-    def test_basic_json_formatting(self):
-        """Test basic JSON log formatting"""
-        formatter = StructuredLogFormatter()
-        record = logging.LogRecord(
-            name="test.module",
-            level=logging.INFO,
-            pathname="/path/to/file.py",
-            lineno=42,
-            msg="Test message",
-            args=(),
-            exc_info=None,
-            func="test_function",
-        )
-
-        result = formatter.format(record)
-        log_data = json.loads(result)
-
-        assert log_data["level"] == "INFO"
-        assert log_data["module"] == "test.module"
-        assert log_data["message"] == "Test message"
-        assert log_data["line_number"] == 42
-        assert log_data["function"] == "test_function"
-        assert "timestamp" in log_data
-
-    def test_context_formatting(self):
-        """Test formatting with structured context"""
-        formatter = StructuredLogFormatter()
-        record = logging.LogRecord(
-            name="test.module",
-            level=logging.INFO,
-            pathname="/path/to/file.py",
-            lineno=42,
-            msg="Test message",
-            args=(),
-            exc_info=None,
-            func="test_function",
-        )
-        record.context = {"file_path": "test.txt", "size": 1024}
-
-        result = formatter.format(record)
-        log_data = json.loads(result)
-
-        assert log_data["context"]["file_path"] == "test.txt"
-        assert log_data["context"]["size"] == 1024
-
-    def test_extra_fields_formatting(self):
-        """Test formatting with extra fields"""
-        formatter = StructuredLogFormatter()
-        record = logging.LogRecord(
-            name="test.module",
-            level=logging.INFO,
-            pathname="/path/to/file.py",
-            lineno=42,
-            msg="Test message",
-            args=(),
-            exc_info=None,
-            func="test_function",
-        )
-        record.custom_field = "custom_value"
-
-        result = formatter.format(record)
-        log_data = json.loads(result)
-
-        assert log_data["extra"]["custom_field"] == "custom_value"
-
-    def test_json_serialization_fallback(self):
-        """Test that JSON serialization handles non-serializable objects"""
-        formatter = StructuredLogFormatter()
-        record = logging.LogRecord(
-            name="test.module",
-            level=logging.INFO,
-            pathname="/path/to/file.py",
-            lineno=42,
-            msg="Test message",
-            args=(),
-            exc_info=None,
-            func="test_function",
-        )
-        # Add a non-serializable object
-        record.context = {"non_serializable": object()}
-
-        # Should fall back to standard formatting without raising an exception
-        result = formatter.format(record)
-        assert isinstance(result, str)
-        # Should not be JSON if fallback occurred
-        try:
-            json.loads(result)
-            # If this succeeds, the object was somehow serializable
-            assert False, "Expected fallback formatting, but got JSON"
-        except json.JSONDecodeError:
-            # Expected - fallback to standard formatting
-            assert "Test message" in result
-
-
 class TestStructuredLogger:
-    """Test the enhanced structured logger"""
+    """Test the StructuredLogger class"""
 
-    def setup_method(self):
-        """Set up test logger"""
-        self.test_logger = logging.getLogger("test_structured")
-        self.test_logger.setLevel(logging.DEBUG)
-        self.structured_logger = StructuredLogger(self.test_logger)
+    def test_structured_logger_creation(self):
+        """Test creating a structured logger"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
 
-    def test_log_with_context(self, caplog):
+        assert structured_logger.logger == mock_logger
+
+    def test_sensitive_key_detection(self):
+        """Test sensitive key detection using LRU cache"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
+
+        # Test sensitive keys
+        assert structured_logger._is_sensitive_key("password") == True
+        assert structured_logger._is_sensitive_key("api_key") == True
+        assert structured_logger._is_sensitive_key("token") == True
+        assert structured_logger._is_sensitive_key("SECRET") == True
+
+        # Test non-sensitive keys
+        assert structured_logger._is_sensitive_key("username") == False
+        assert structured_logger._is_sensitive_key("file_path") == False
+
+    def test_context_sanitization(self):
+        """Test context sanitization removes sensitive data"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
+
+        context = {
+            "username": "test_user",
+            "password": "secret123",
+            "api_key": "abc123",
+            "file_path": "/tmp/test.txt",
+            "token": "xyz789",
+        }
+
+        sanitized = structured_logger._sanitize_context(context)
+
+        assert sanitized["username"] == "test_user"
+        assert sanitized["password"] == "[FILTERED]"
+        assert sanitized["api_key"] == "[FILTERED]"
+        assert sanitized["file_path"] == "/tmp/test.txt"
+        assert sanitized["token"] == "[FILTERED]"
+
+    def test_log_with_context(self):
         """Test logging with context"""
-        with caplog.at_level(logging.INFO):
-            self.structured_logger.log_with_context(
-                logging.INFO, "Test message", {"safe_key": "value"}
-            )
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
 
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert hasattr(record, "context")
-        assert record.context["safe_key"] == "value"
+        context = {"operation": "test", "file_path": "/tmp/test.txt"}
+        structured_logger.log_with_context(logging.INFO, "Test message", context)
 
-    def test_info_with_context(self, caplog):
-        """Test info logging with context"""
-        with caplog.at_level(logging.INFO):
-            self.structured_logger.info("Test info", file_path="test.txt", size=1024)
+        mock_logger.log.assert_called_once()
+        args, kwargs = mock_logger.log.call_args
+        assert args[0] == logging.INFO
+        assert args[1] == "Test message"
+        assert "context" in kwargs["extra"]
 
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "INFO"
-        assert record.context["file_path"] == "test.txt"
-        assert record.context["size"] == 1024
+    def test_convenience_methods(self):
+        """Test convenience logging methods"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
 
-    def test_error_with_suggestion(self, caplog):
+        structured_logger.info("Info message", key="value")
+        structured_logger.debug("Debug message", key="value")
+        structured_logger.warning("Warning message", key="value")
+        structured_logger.error("Error message", key="value")
+        structured_logger.critical("Critical message", key="value")
+
+        assert mock_logger.log.call_count == 5
+
+    def test_file_operation_logging(self):
+        """Test file operation logging"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
+
+        # Test successful operation
+        structured_logger.file_operation("read", "/tmp/test.txt", success=True)
+        mock_logger.log.assert_called_with(
+            logging.INFO,
+            "File read",
+            extra={
+                "context": {
+                    "file_path": "/tmp/test.txt",
+                    "operation": "read",
+                    "success": True,
+                }
+            },
+        )
+
+        # Test failed operation
+        structured_logger.file_operation("write", "/tmp/test.txt", success=False)
+        mock_logger.log.assert_called_with(
+            logging.ERROR,
+            "File write",
+            extra={
+                "context": {
+                    "file_path": "/tmp/test.txt",
+                    "operation": "write",
+                    "success": False,
+                }
+            },
+        )
+
+    def test_performance_logging(self):
+        """Test performance logging"""
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
+
+        structured_logger.performance("test_operation", 0.5, memory_mb=100)
+
+        mock_logger.log.assert_called_with(
+            logging.INFO,
+            "Performance: test_operation",
+            extra={
+                "context": {
+                    "operation": "test_operation",
+                    "duration_seconds": 0.5,
+                    "duration_ms": 500,
+                    "memory_mb": 100,
+                }
+            },
+        )
+
+    def test_error_with_suggestion(self):
         """Test error logging with suggestion"""
-        with caplog.at_level(logging.ERROR):
-            self.structured_logger.error_with_suggestion(
-                "File not found",
-                "Check file path",
-                error_type="FileNotFoundError",
-                file_path="missing.txt",
-            )
+        mock_logger = MagicMock(spec=logging.Logger)
+        structured_logger = StructuredLogger(mock_logger)
 
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "ERROR"
-        assert record.context["suggestion"] == "Check file path"
-        assert record.context["error_type"] == "FileNotFoundError"
-        assert record.context["file_path"] == "missing.txt"
+        structured_logger.error_with_suggestion(
+            "Test error", "Check the input", error_type="ValueError"
+        )
 
-    def test_file_operation_success(self, caplog):
-        """Test file operation logging (success)"""
-        with caplog.at_level(logging.INFO):
-            self.structured_logger.file_operation(
-                "read", "/path/to/file.txt", success=True, size_bytes=2048
-            )
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "INFO"
-        assert record.context["operation"] == "read"
-        assert record.context["file_path"] == "/path/to/file.txt"
-        assert record.context["success"] is True
-        assert record.context["size_bytes"] == 2048
-
-    def test_file_operation_failure(self, caplog):
-        """Test file operation logging (failure)"""
-        with caplog.at_level(logging.ERROR):
-            self.structured_logger.file_operation(
-                "write", "/path/to/file.txt", success=False, error="Permission denied"
-            )
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "ERROR"
-        assert record.context["operation"] == "write"
-        assert record.context["success"] is False
-        assert record.context["error"] == "Permission denied"
-
-    def test_performance_logging(self, caplog):
-        """Test performance metrics logging"""
-        with caplog.at_level(logging.INFO):
-            self.structured_logger.performance("file_conversion", 0.125, lines=500)
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "INFO"
-        assert record.context["operation"] == "file_conversion"
-        assert record.context["duration_seconds"] == 0.125
-        assert record.context["duration_ms"] == 125.0
-        assert record.context["lines"] == 500
-
-    def test_state_change_logging(self, caplog):
-        """Test state change logging"""
-        with caplog.at_level(logging.DEBUG):
-            self.structured_logger.state_change(
-                "config updated", old_value="debug", new_value="info", module="logger"
-            )
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.levelname == "DEBUG"
-        assert record.context["what_changed"] == "config updated"
-        assert record.context["old_value"] == "debug"
-        assert record.context["new_value"] == "info"
-        assert record.context["module"] == "logger"
-
-    def test_sensitive_data_filtering(self, caplog):
-        """Test that sensitive data is filtered out"""
-        with caplog.at_level(logging.INFO):
-            self.structured_logger.info(
-                "User login",
-                username="test_user",
-                password="secret123",  # Should be filtered
-                token="bearer_token",  # Should be filtered
-                api_key="api_secret",  # Should be filtered
-            )
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert record.context["username"] == "test_user"
-        # Sensitive data should be replaced with [FILTERED]
-        assert record.context["password"] == "[FILTERED]"
-        assert record.context["token"] == "[FILTERED]"
-        assert record.context["api_key"] == "[FILTERED]"
+        mock_logger.log.assert_called_with(
+            logging.ERROR,
+            "Test error",
+            extra={
+                "context": {"suggestion": "Check the input", "error_type": "ValueError"}
+            },
+        )
 
 
-class TestStructuredLoggerIntegration:
-    """Integration tests for structured logging"""
+class TestErrorAnalyzer:
+    """Test the ErrorAnalyzer class"""
+
+    def test_error_analyzer_creation(self):
+        """Test creating an error analyzer"""
+        mock_logger = MagicMock()
+        analyzer = ErrorAnalyzer(mock_logger)
+
+        assert analyzer.logger == mock_logger
+
+    def test_error_categorization(self):
+        """Test error categorization"""
+        mock_logger = MagicMock()
+        analyzer = ErrorAnalyzer(mock_logger)
+
+        # Test encoding error
+        assert analyzer._categorize_error("utf-8 encoding error") == "encoding"
+
+        # Test file access error
+        assert analyzer._categorize_error("permission denied") == "file_access"
+
+        # Test parsing error
+        assert analyzer._categorize_error("parse error: invalid syntax") == "parsing"
+
+        # Test memory error
+        assert analyzer._categorize_error("out of memory") == "memory"
+
+        # Test dependency error
+        assert analyzer._categorize_error("module missing") == "dependency"
+
+        # Test unknown error
+        assert analyzer._categorize_error("unknown error") == "unknown"
+
+    @patch("kumihan_formatter.core.utilities.structured_logger.call_chain_tracker")
+    @patch("kumihan_formatter.core.utilities.structured_logger.memory_usage_tracker")
+    def test_error_analysis(self, mock_memory_tracker, mock_call_tracker):
+        """Test error analysis"""
+        mock_logger = MagicMock()
+        analyzer = ErrorAnalyzer(mock_logger)
+
+        # Mock return values
+        mock_call_tracker.return_value = {"call_chain": [], "chain_depth": 0}
+        mock_memory_tracker.return_value = {"memory_rss_mb": 100}
+
+        error = ValueError("Test error")
+        analysis = analyzer.analyze_error(
+            error, {"operation": "test"}, operation="test"
+        )
+
+        assert analysis["error_type"] == "ValueError"
+        assert analysis["error_message"] == "Test error"
+        assert analysis["category"] == "unknown"
+        assert analysis["operation"] == "test"
+        assert "suggestions" in analysis
+        assert "timestamp" in analysis
+
+    def test_generic_suggestions(self):
+        """Test generic suggestion generation"""
+        mock_logger = MagicMock()
+        analyzer = ErrorAnalyzer(mock_logger)
+
+        # Test ValueError suggestions
+        suggestions = analyzer._generate_generic_suggestions(
+            "ValueError", "invalid value"
+        )
+        assert "Validate input values and types" in suggestions
+
+        # Test TypeError suggestions
+        suggestions = analyzer._generate_generic_suggestions("TypeError", "wrong type")
+        assert "Check argument types match expected types" in suggestions
+
+        # Test IndexError suggestions
+        suggestions = analyzer._generate_generic_suggestions(
+            "IndexError", "out of range"
+        )
+        assert "Verify data structure bounds and keys" in suggestions
+
+
+class TestDependencyTracker:
+    """Test the DependencyTracker class"""
+
+    def test_dependency_tracker_creation(self):
+        """Test creating a dependency tracker"""
+        mock_logger = MagicMock()
+        tracker = DependencyTracker(mock_logger)
+
+        assert tracker.logger == mock_logger
+        assert tracker.dependencies == {}
+        assert tracker.load_times == {}
+        assert tracker.load_order == []
+
+    def test_track_import(self):
+        """Test tracking module imports"""
+        mock_logger = MagicMock()
+        tracker = DependencyTracker(mock_logger)
+
+        # Track import
+        tracker.track_import("module_a", "module_b", 0.1)
+
+        assert "module_b" in tracker.dependencies
+        assert "module_a" in tracker.dependencies["module_b"]
+        assert tracker.load_times["module_a"] == 0.1
+        assert tracker.load_order == ["module_a"]
+
+        # Verify logging
+        mock_logger.debug.assert_called_once()
+
+    def test_dependency_map(self):
+        """Test getting dependency map"""
+        mock_logger = MagicMock()
+        tracker = DependencyTracker(mock_logger)
+
+        # Add some dependencies
+        tracker.track_import("module_a", "module_b", 0.1)
+        tracker.track_import("module_c", "module_b", 0.2)
+
+        dep_map = tracker.get_dependency_map()
+
+        assert "dependencies" in dep_map
+        assert "load_times" in dep_map
+        assert "load_order" in dep_map
+        assert dep_map["total_modules"] == 2
+        assert "slowest_imports" in dep_map
+
+
+class TestExecutionFlowTracker:
+    """Test the ExecutionFlowTracker class"""
+
+    def test_execution_flow_tracker_creation(self):
+        """Test creating an execution flow tracker"""
+        mock_logger = MagicMock()
+        tracker = ExecutionFlowTracker(mock_logger)
+
+        assert tracker.logger == mock_logger
+        assert tracker.execution_stack == []
+        assert tracker.flow_id is not None
+
+    def test_function_entry_exit(self):
+        """Test function entry and exit tracking"""
+        mock_logger = MagicMock()
+        tracker = ExecutionFlowTracker(mock_logger)
+
+        # Enter function
+        frame_id = tracker.enter_function(
+            "test_func", "test_module", {"arg1": "value1"}
+        )
+
+        assert len(tracker.execution_stack) == 1
+        assert tracker.execution_stack[0]["function_name"] == "test_func"
+        assert tracker.execution_stack[0]["module_name"] == "test_module"
+
+        # Exit function
+        tracker.exit_function(frame_id, success=True, result_info={"result": "success"})
+
+        assert len(tracker.execution_stack) == 0
+
+        # Verify logging
+        assert mock_logger.debug.call_count == 1
+        assert mock_logger.log_with_context.call_count == 1
+
+    def test_current_flow(self):
+        """Test getting current flow state"""
+        mock_logger = MagicMock()
+        tracker = ExecutionFlowTracker(mock_logger)
+
+        # Enter function
+        frame_id = tracker.enter_function("test_func", "test_module")
+
+        flow = tracker.get_current_flow()
+
+        assert flow["flow_id"] == tracker.flow_id
+        assert flow["stack_depth"] == 1
+        assert len(flow["current_stack"]) == 1
+        assert flow["current_stack"][0]["function"] == "test_func"
+
+
+class TestModuleFunctions:
+    """Test module-level functions"""
 
     def test_get_structured_logger(self):
-        """Test getting a structured logger instance"""
-        logger = get_structured_logger("test.integration")
+        """Test getting structured logger instance"""
+        logger = get_structured_logger("test_module")
         assert isinstance(logger, StructuredLogger)
-        assert logger.logger.name == "kumihan_formatter.test.integration"
 
-    @patch.dict(
-        "os.environ", {"KUMIHAN_DEV_LOG": "true", "KUMIHAN_DEV_LOG_JSON": "true"}
-    )
-    def test_development_logging_integration(self):
-        """Test integration with development logging"""
-        logger = get_structured_logger("test.dev")
+    def test_get_error_analyzer(self):
+        """Test getting error analyzer instance"""
+        analyzer = get_error_analyzer("test_module")
+        assert isinstance(analyzer, ErrorAnalyzer)
 
-        # Test that we can log without errors
-        logger.info("Development test", test_id=123)
-        logger.error_with_suggestion(
-            "Test error", "Test suggestion", error_type="TestError"
-        )
+    def test_get_dependency_tracker(self):
+        """Test getting dependency tracker instance"""
+        tracker = get_dependency_tracker("test_module")
+        assert isinstance(tracker, DependencyTracker)
 
-    def test_large_context_handling(self, caplog):
-        """Test handling of large context data"""
-        logger = get_structured_logger("test.large")
-
-        # Create large context data
-        large_context = {f"key_{i}": f"value_{i}" for i in range(100)}
-
-        with caplog.at_level(logging.INFO):
-            logger.info("Large context test", **large_context)
-
-        assert len(caplog.records) == 1
-        record = caplog.records[0]
-        assert len(record.context) == 100
-        assert record.context["key_0"] == "value_0"
-        assert record.context["key_99"] == "value_99"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+    def test_get_execution_flow_tracker(self):
+        """Test getting execution flow tracker instance"""
+        tracker = get_execution_flow_tracker("test_module")
+        assert isinstance(tracker, ExecutionFlowTracker)

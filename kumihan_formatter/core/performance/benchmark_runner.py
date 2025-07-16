@@ -8,7 +8,7 @@ Issue #476対応 - ファイルサイズ制限遵守
 import statistics
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Union
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
@@ -124,7 +124,8 @@ class BenchmarkRunner:
 
         def benchmark_func() -> str:
             if self.file_cache:
-                return self.file_cache.get_file_content(test_file)
+                content = self.file_cache.get_file_content(test_file)
+                return content if content is not None else ""
             else:
                 return test_file.read_text(encoding="utf-8")
 
@@ -178,6 +179,7 @@ class BenchmarkRunner:
             # 1. ファイル読み込み
             if self.file_cache:
                 content = self.file_cache.get_file_content(test_file)
+                content = content if content is not None else ""
             else:
                 content = test_file.read_text(encoding="utf-8")
 
@@ -384,7 +386,7 @@ class BenchmarkRunner:
                 "content": "多くの要素を含むコンテンツ",
                 "items": list(range(100)),
                 "nested": {"data": list(range(50))},
-                "metadata": {"key": "value"} * 20,
+                "metadata": {f"key_{i}": f"value_{i}" for i in range(20)},
             }
         else:
             return {
@@ -393,7 +395,7 @@ class BenchmarkRunner:
                 "items": list(range(25)),
             }
 
-    def _mock_parse_function(self, content: str) -> list[dict[str, Any]]:
+    def _mock_parse_function(self, content: str) -> Any:
         """モックパース関数"""
         # 簡単なパース処理をシミュレート
         lines = content.split("\n")

@@ -31,7 +31,7 @@ class LogPerformanceOptimizer:
     - Automatic throttling
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         """Initialize with a StructuredLogger instance"""
         self.logger = logger
         self.performance_metrics: dict[str, list[float]] = {}
@@ -214,7 +214,7 @@ class LogSizeController:
     - Size-based filtering
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         """Initialize with a StructuredLogger instance"""
         self.logger = logger
         self.size_limits = {
@@ -406,7 +406,7 @@ class LogSizeController:
         return optimized
 
 
-def get_log_performance_optimizer(name: str):
+def get_log_performance_optimizer(name: str) -> LogPerformanceOptimizer:
     """Get log performance optimizer instance for a module"""
     from .structured_logging import get_structured_logger
 
@@ -414,7 +414,7 @@ def get_log_performance_optimizer(name: str):
     return LogPerformanceOptimizer(structured_logger)
 
 
-def get_log_size_controller(name: str):
+def get_log_size_controller(name: str) -> LogSizeController:
     """Get log size controller instance for a module"""
     from .structured_logging import get_structured_logger
 

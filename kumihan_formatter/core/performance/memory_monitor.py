@@ -6,7 +6,7 @@
 Issue #402対応 - パフォーマンス最適化
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 from ..utilities.logger import get_logger
 from .memory_analyzer import MemoryAnalyzer
@@ -85,7 +85,7 @@ class MemoryMonitor:
         """カスタムオブジェクトを追跡に登録"""
         self.core.register_object(obj, obj_type)
 
-    def get_memory_usage(self) -> Dict[str, Any]:
+    def get_memory_usage(self) -> dict[str, Any]:
         """現在のメモリ使用量情報を取得"""
         return self.core.get_memory_usage()
 
@@ -97,46 +97,46 @@ class MemoryMonitor:
     # リーク検出機能の委譲
     def get_memory_leaks(
         self, severity_filter: Optional[str] = None
-    ) -> List[MemoryLeak]:
+    ) -> list[MemoryLeak]:
         """検出されたメモリリークを取得"""
         return self.leak_detector.get_memory_leaks(severity_filter)
 
     # 分析機能の委譲
-    def get_memory_trend(self, window_minutes: int = 30) -> Dict[str, Any]:
+    def get_memory_trend(self, window_minutes: int = 30) -> dict[str, Any]:
         """メモリ使用量のトレンドを分析"""
         return self.analyzer.get_memory_trend(self.core.snapshots, window_minutes)
 
     def generate_memory_report(
         self, include_trend: bool = True, trend_window_minutes: int = 30
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """包括的なメモリレポートを生成"""
         leaks = self.leak_detector.get_memory_leaks()
         return self.analyzer.generate_memory_report(
             self.core.snapshots, leaks, include_trend, trend_window_minutes
         )
 
-    def force_garbage_collection(self) -> Dict[str, Any]:
+    def force_garbage_collection(self) -> dict[str, Any]:
         """ガベージコレクションを強制実行"""
         return self.analyzer.force_garbage_collection()
 
-    def optimize_memory_settings(self) -> Dict[str, Any]:
+    def optimize_memory_settings(self) -> dict[str, Any]:
         """メモリ設定を最適化"""
         return self.analyzer.optimize_memory_settings()
 
     def register_alert_callback(
-        self, callback: Callable[[str, Dict[str, Any]], None]
+        self, callback: Callable[[str, dict[str, Any]], None]
     ) -> None:
         """アラートコールバックを登録"""
         self.analyzer.register_alert_callback(callback)
 
     # プロパティアクセス（後方互換性のため）
     @property
-    def snapshots(self) -> List[MemorySnapshot]:
+    def snapshots(self) -> list[MemorySnapshot]:
         """スナップショットリストへのアクセス"""
         return self.core.snapshots
 
     @property
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """統計情報への統合アクセス"""
         core_stats = self.core.stats
         analyzer_stats = self.analyzer.get_stats()
@@ -155,12 +155,12 @@ class MemoryMonitor:
         # 明示的な実行は不要
         pass
 
-    def _analyze_object_leak(self, *args, **kwargs):
+    def _analyze_object_leak(self, *args: Any, **kwargs: Any) -> None:
         """オブジェクトリーク分析（後方互換性）"""
         # 内部実装は leak_detector に移動済み
         pass
 
-    def _calculate_leak_severity(self, *args, **kwargs):
+    def _calculate_leak_severity(self, *args: Any, **kwargs: Any) -> None:
         """リーク深刻度計算（後方互換性）"""
         # 内部実装は leak_detector に移動済み
         pass
@@ -169,7 +169,7 @@ class MemoryMonitor:
         """メモリアラートチェック（後方互換性）"""
         self.analyzer.check_memory_alerts(snapshot)
 
-    def _trigger_alert(self, alert_type: str, context: Dict[str, Any]) -> None:
+    def _trigger_alert(self, alert_type: str, context: dict[str, Any]) -> None:
         """アラート発火（後方互換性）"""
         self.analyzer._trigger_alert(alert_type, context)
 

@@ -10,7 +10,7 @@ import platform
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from ..performance import get_global_monitor
 from ..utilities.logger import get_logger
@@ -29,7 +29,7 @@ class OptimizationMeasurementSystem:
     - システム情報の記録
     """
 
-    def __init__(self, baseline_dir: Path = None):  # type: ignore
+    def __init__(self, baseline_dir: Optional[Path] = None) -> None:
         """測定システムを初期化
 
         Args:
@@ -195,9 +195,10 @@ class OptimizationMeasurementSystem:
         if not baseline_data:
             return {"valid": False, "error": "Baseline not found"}
 
+        warnings: list[str] = []
         validation_result = {
             "valid": True,
-            "warnings": [],
+            "warnings": warnings,
             "info": {
                 "timestamp": baseline_data.get("timestamp"),
                 "system_info": baseline_data.get("system_info"),
@@ -208,7 +209,7 @@ class OptimizationMeasurementSystem:
         benchmark_results = baseline_data.get("benchmark_results")
         if not benchmark_results:
             validation_result["valid"] = False
-            validation_result["warnings"].append("ベンチマーク結果が見つかりません")
+            warnings.append("ベンチマーク結果が見つかりません")
 
         # タイムスタンプのチェック
         if baseline_data.get("timestamp"):
@@ -216,10 +217,8 @@ class OptimizationMeasurementSystem:
                 baseline_time = datetime.fromisoformat(baseline_data["timestamp"])
                 days_old = (datetime.now() - baseline_time).days
                 if days_old > 30:
-                    validation_result["warnings"].append(
-                        f"ベースラインが{days_old}日前と古いです"
-                    )
+                    warnings.append(f"ベースラインが{days_old}日前と古いです")
             except ValueError:
-                validation_result["warnings"].append("無効なタイムスタンプ形式")
+                warnings.append("無効なタイムスタンプ形式")
 
         return validation_result

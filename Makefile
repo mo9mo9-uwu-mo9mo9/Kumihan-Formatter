@@ -30,6 +30,12 @@ help:
 	@echo "  make coverage   - カバレッジ付きテスト実行（HTMLレポート生成）"
 	@echo "  make pre-commit - 🚀 コミット前品質チェック（カバレッジ80%必須）"
 	@echo ""
+	@echo "🚨 Claude Code 専用:"
+	@echo "  make claude-quality-gate - 実装前必須品質チェック"
+	@echo "  make tdd-check          - TDD準拠チェック"
+	@echo "  make type-check         - mypy strict mode"
+	@echo "  make full-quality-check - 完全品質チェック"
+	@echo ""
 	@echo "🛠️ 環境・その他:"
 	@echo "  make lint-docs  - ドキュメントリンクチェック"
 	@echo "  make install    - 開発用依存関係インストール"
@@ -134,7 +140,37 @@ quick-check: format lint test-quick
 	@echo "=== 軽量チェック完了 ⚡ ==="
 	@echo "基本品質チェック完了 ✓"
 
+# 🚨 Claude Code 品質ゲート（実装前必須）
+claude-quality-gate:
+	@echo "🚨 === Claude Code 品質ゲート ==="
+	@echo "実装前の必須品質チェックを実行中..."
+	$(PYTHON) scripts/claude_quality_gate.py
+	@echo "✅ 品質ゲート通過 - 実装作業を開始できます"
+
+# TDD準拠チェック
+tdd-check:
+	@echo "🧪 === TDD 準拠チェック ==="
+	$(PYTHON) scripts/enforce_tdd.py kumihan_formatter/
+	@echo "✅ TDD準拠確認完了"
+
+# 型チェック（mypy strict mode）
+type-check:
+	@echo "🔍 === 型チェック（mypy strict mode）==="
+	$(PYTHON) -m mypy --strict kumihan_formatter/
+	@echo "✅ 型チェック完了"
+
+# 完全品質チェック（コミット前必須）
+full-quality-check: clean format lint type-check tdd-check test
+	@echo "🎉 === 完全品質チェック完了 ==="
+	@echo "✅ フォーマット: 適用済み"
+	@echo "✅ リント: 合格"
+	@echo "✅ 型チェック: strict mode 合格"
+	@echo "✅ TDD: 準拠確認"
+	@echo "✅ テスト: 全て成功"
+	@echo ""
+	@echo "🚀 コミット可能です！"
+
 # 全体的な品質チェック（開発完了前の最終確認用）
-all: clean format test
+all: full-quality-check
 	@echo "=== 全体品質チェック完了 ==="
 	@echo "コミット準備完了 ✓"

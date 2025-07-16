@@ -45,7 +45,7 @@ class MemorySnapshot:
     process_memory: int
     gc_objects: int
     gc_collections: list[int]  # 各世代のGC回数
-    custom_objects: Dict[str, int] = field(default_factory=dict)
+    custom_objects: dict[str, int] = field(default_factory=dict)
 
     @property
     def memory_mb(self) -> float:
@@ -125,6 +125,6 @@ class MemoryLeak:
 
 
 # 便利な型エイリアス
-MemoryStats = Dict[str, float]
-ObjectCounts = Dict[str, int]
-GCStats = Dict[str, int]
+MemoryStats = dict[str, float]
+ObjectCounts = dict[str, int]
+GCStats = dict[str, int]
