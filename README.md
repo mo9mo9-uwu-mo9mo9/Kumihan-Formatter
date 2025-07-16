@@ -77,6 +77,19 @@ KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
 
 **詳細**: [デバッグガイド](docs/dev/DEBUGGING.md)
 
+### Pre-commit Hook警告への対応
+このプロジェクトでは技術的負債を防ぐため、pre-commit hookでファイルサイズ制限（300行）をチェックしています。
+
+**警告が表示された場合**:
+- `status code 1`は正常動作です（警告表示）
+- 警告は無視せず、必ず対応してください
+- 詳細な対応手順は[CONTRIBUTING.md](CONTRIBUTING.md#pre-commit-hook警告への対応)を参照
+
+```bash
+# 違反ファイルの確認
+python3 scripts/check_file_size.py --max-lines=300
+```
+
 ## 🤝 サポート
 
 - **バグ報告・機能要望**: [Issues](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues)

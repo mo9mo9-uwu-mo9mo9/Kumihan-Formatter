@@ -33,12 +33,12 @@
 gui_views/
 ├── __init__.py           # 統合エクスポート
 ├── main_window.py        # メインウィンドウ
-├── preview_widget.py     # プレビューウィジェット  
+├── preview_widget.py     # プレビューウィジェット
 ├── settings_dialog.py    # 設定ダイアログ
 └── status_bar.py         # ステータスバー
 ```
 
-#### 1.2 gui_controller.py (397行) → 3ファイル分割  
+#### 1.2 gui_controller.py (397行) → 3ファイル分割
 ```python
 gui_controllers/
 ├── __init__.py           # 統合エクスポート
@@ -50,7 +50,7 @@ gui_controllers/
 #### 1.3 gui_models.py (37関数) → 機能別分割
 ```python
 gui_models/
-├── __init__.py           # 統合エクスポート  
+├── __init__.py           # 統合エクスポート
 ├── file_model.py         # ファイルモデル（15関数）
 ├── settings_model.py     # 設定モデル（12関数）
 └── preview_model.py      # プレビューモデル（10関数）
@@ -92,7 +92,7 @@ performance/benchmarking/
 
 #### 3.2 その他パフォーマンス系ファイル
 - `memory_monitor.py` (652行) → 監視・分析・レポート分離
-- `profiler.py` (577行) → プロファイル・分析・出力分離  
+- `profiler.py` (577行) → プロファイル・分析・出力分離
 - `optimization_analyzer.py` (631行) → 解析・推奨・実行分離
 
 ### Week 4: 残存ファイル対応（⚠️ 中優先度）
@@ -124,7 +124,7 @@ large_module.py
 large_module/
 ├── __init__.py      # re-export all
 ├── core_feature.py  # 主要機能
-├── helper_utils.py  # ヘルパー機能  
+├── helper_utils.py  # ヘルパー機能
 └── config_types.py  # 設定・型定義
 ```
 

@@ -13,7 +13,7 @@ Kumihan-Formatterは**純粋な変換処理**を行うツールであり、複�
 
 ```
 dev/tests/test_parser.py      - パース機能
-dev/tests/test_renderer.py    - レンダリング機能  
+dev/tests/test_renderer.py    - レンダリング機能
 dev/tests/test_cli.py         - CLI機能
 dev/tests/test_config.py      - 設定管理
 ```
@@ -46,7 +46,7 @@ dev/tests/integration/test_compound_block.py      - 複合記法処理
 def test_cli_basic_conversion():
     """CLI経由での基本変換のみテスト"""
     result = subprocess.run([
-        "python", "-m", "kumihan_formatter.cli", 
+        "python", "-m", "kumihan_formatter.cli",
         "input.txt", "-o", "output"
     ])
     assert result.returncode == 0
