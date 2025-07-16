@@ -10,7 +10,8 @@ Issue #476 Phase2対応 - gui_models.py分割完了
 """
 
 # 設定・変換状態モデル
-from .config_model import GuiConfig, ConversionState
+from .gui_config import GuiConfig
+from .conversion_state import ConversionState
 
 # ファイル管理モデル
 from .file_model import FileManager

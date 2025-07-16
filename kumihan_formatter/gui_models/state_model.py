@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 from typing import Dict, Optional
 
-from .config_model import GuiConfig, ConversionState
+from .gui_config import GuiConfig
+from .conversion_state import ConversionState
 from .file_model import FileManager
 
 
