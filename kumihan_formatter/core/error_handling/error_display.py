@@ -59,22 +59,22 @@ class ErrorDisplay:
         try:
             # エラーレベルに応じたUI表示
             if error.level == ErrorLevel.CRITICAL:
-                self.console_ui.error(error.message)
+                self.console_ui.error(error.user_message)
             elif error.level == ErrorLevel.ERROR:
-                self.console_ui.error(error.message)
+                self.console_ui.error(error.user_message)
             elif error.level == ErrorLevel.WARNING:
-                self.console_ui.warning(error.message)
+                self.console_ui.warning(error.user_message)
             else:
-                self.console_ui.info(error.message)
+                self.console_ui.info(error.user_message)
 
             # 詳細情報の表示
-            if show_details and error.details:
-                self.console_ui.info(f"詳細: {error.details}")
+            if show_details and error.technical_details:
+                self.console_ui.info(f"詳細: {error.technical_details}")
 
             # 修正提案の表示
-            if show_suggestions and error.suggestions:
+            if show_suggestions and error.solution.detailed_steps:
                 self.console_ui.info("修正提案:")
-                for i, suggestion in enumerate(error.suggestions, 1):
+                for i, suggestion in enumerate(error.solution.detailed_steps, 1):
                     self.console_ui.info(f"  {i}. {suggestion}")
 
             # コンテキスト情報の表示
@@ -107,16 +107,16 @@ class ErrorDisplay:
         }
 
         level_str = level_prefix.get(error.level, "❓ UNKNOWN")
-        print(f"{level_str}: {error.message}")
+        print(f"{level_str}: {error.user_message}")
 
         # 詳細情報
-        if show_details and error.details:
-            print(f"詳細: {error.details}")
+        if show_details and error.technical_details:
+            print(f"詳細: {error.technical_details}")
 
         # 修正提案
-        if show_suggestions and error.suggestions:
+        if show_suggestions and error.solution.detailed_steps:
             print("修正提案:")
-            for i, suggestion in enumerate(error.suggestions, 1):
+            for i, suggestion in enumerate(error.solution.detailed_steps, 1):
                 print(f"  {i}. {suggestion}")
 
         # コンテキスト情報
@@ -136,7 +136,7 @@ class ErrorDisplay:
 
             logger_method = getattr(self.logger, log_level.get(error.level, "info"))
             logger_method(
-                f"Error displayed: {error.message}",
+                f"Error displayed: {error.user_message}",
                 extra={
                     "error_category": (
                         error.category.value
@@ -148,8 +148,8 @@ class ErrorDisplay:
                         if hasattr(error.level, "value")
                         else str(error.level)
                     ),
-                    "error_details": error.details,
-                    "error_suggestions": error.suggestions,
+                    "error_details": error.technical_details,
+                    "error_suggestions": error.solution.detailed_steps,
                     "error_context": error.context,
                 },
             )
@@ -166,14 +166,14 @@ class ErrorDisplay:
         Returns:
             フォーマットされたエラーメッセージ
         """
-        message_parts = [error.message]
+        message_parts = [error.user_message]
 
-        if error.details:
-            message_parts.append(f"詳細: {error.details}")
+        if error.technical_details:
+            message_parts.append(f"詳細: {error.technical_details}")
 
-        if include_suggestions and error.suggestions:
+        if include_suggestions and error.solution.detailed_steps:
             message_parts.append("修正提案:")
-            for i, suggestion in enumerate(error.suggestions, 1):
+            for i, suggestion in enumerate(error.solution.detailed_steps, 1):
                 message_parts.append(f"  {i}. {suggestion}")
 
         return "\n".join(message_parts)
@@ -208,4 +208,4 @@ class ErrorDisplay:
         color = self.get_display_color(error.level)
         reset = "\033[0m"
 
-        return f"{color}{error.message}{reset}"
+        return f"{color}{error.user_message}{reset}"

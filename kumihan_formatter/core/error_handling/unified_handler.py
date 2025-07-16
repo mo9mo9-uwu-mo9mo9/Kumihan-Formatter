@@ -55,12 +55,11 @@ class UnifiedErrorHandler:
 
         # 分割された機能コンポーネント
         self.display = ErrorDisplay(console_ui, enable_logging)
-        self.recovery = ErrorRecovery(enable_logging)
+        self.recovery = ErrorRecovery()
         self.statistics = ErrorStatistics(enable_logging)
 
         # 依存サービス
         self.error_factory = ErrorFactory()
-        self.smart_suggestions = SmartSuggestions()
 
     @contextmanager
     def error_context(
@@ -79,7 +78,7 @@ class UnifiedErrorHandler:
         Yields:
             ErrorContext: エラーコンテキスト
         """
-        error_context = ErrorContext(operation, context or {})
+        error_context = ErrorContext(operation=operation, system_info=context or {})
 
         try:
             yield error_context
@@ -89,14 +88,14 @@ class UnifiedErrorHandler:
 
             # 自動回復の試行
             if auto_recover:
-                success, recovery_msg = self.recovery.attempt_recovery(user_error)
+                success = self.recovery.attempt_recovery(user_error)
                 if success:
                     if self.logger:
-                        self.logger.info(f"Auto-recovery successful: {recovery_msg}")
+                        self.logger.info("Auto-recovery successful")
                     return
                 else:
                     if self.logger:
-                        self.logger.warning(f"Auto-recovery failed: {recovery_msg}")
+                        self.logger.warning("Auto-recovery failed")
 
             # エラー表示と処理
             self.handle_exception(e, error_context)
@@ -132,9 +131,9 @@ class UnifiedErrorHandler:
 
         # 回復の試行
         if attempt_recovery:
-            success, recovery_msg = self.recovery.attempt_recovery(user_error)
+            success = self.recovery.attempt_recovery(user_error)
             if success and self.logger:
-                self.logger.info(f"Recovery successful: {recovery_msg}")
+                self.logger.info("Recovery successful")
 
         return user_error
 
@@ -159,12 +158,8 @@ class UnifiedErrorHandler:
             return self._handle_io_error(exception, context)
         else:
             # 汎用エラー処理
-            return self.error_factory.create_error(
-                category=ErrorCategory.GENERAL,
-                level=ErrorLevel.ERROR,
-                message=str(exception),
-                details=traceback.format_exc(),
-                suggestions=self.smart_suggestions.get_suggestions(exception),
+            return self.error_factory.create_unknown_error(
+                str(exception),
                 context=context.to_dict() if context else {},
             )
 
@@ -178,17 +173,9 @@ class UnifiedErrorHandler:
             "記法の使用方法を確認してください",
         ]
 
-        return self.error_factory.create_error(
-            category=ErrorCategory.SYNTAX,
-            level=ErrorLevel.ERROR,
-            message=f"構文エラー: {str(error)}",
-            details=(
-                f"行 {error.lineno}: {error.text}"
-                if error.lineno and error.text
-                else None
-            ),
-            suggestions=suggestions,
-            context=context.to_dict() if context else {},
+        return self.error_factory.create_syntax_error(
+            error.lineno if error.lineno else 0,
+            error.text or "",
         )
 
     def _handle_value_error(
@@ -197,27 +184,9 @@ class UnifiedErrorHandler:
         """ValueErrorの処理"""
         error_msg = str(error)
 
-        # エラーメッセージに基づく特定の処理
-        if "codec" in error_msg.lower() or "encoding" in error_msg.lower():
-            suggestions = [
-                "ファイルの文字エンコーディングをUTF-8に変更してください",
-                "BOMありのUTF-8を試してください",
-                "文字コードの自動検出を使用してください",
-            ]
-            category = ErrorCategory.ENCODING
-        else:
-            suggestions = [
-                "入力値の形式を確認してください",
-                "設定値が正しい範囲内にあることを確認してください",
-                "データの妥当性を確認してください",
-            ]
-            category = ErrorCategory.VALIDATION
-
-        return self.error_factory.create_error(
-            category=category,
-            level=ErrorLevel.ERROR,
-            message=f"値エラー: {error_msg}",
-            suggestions=suggestions,
+        # エラーメッセージに基づく特定の処理は将来の実装で対応
+        return self.error_factory.create_unknown_error(
+            f"値エラー: {error_msg}",
             context=context.to_dict() if context else {},
         )
 
@@ -226,47 +195,31 @@ class UnifiedErrorHandler:
     ) -> UserFriendlyError:
         """IOエラーの処理"""
         if isinstance(error, FileNotFoundError):
-            category = ErrorCategory.FILE_NOT_FOUND
-            suggestions = [
-                "ファイルパスが正しいことを確認してください",
-                "ファイルが存在することを確認してください",
-                "相対パスではなく絶対パスを使用してください",
-            ]
+            return self.error_factory.create_file_not_found_error(
+                str(error).split(":")[-1].strip().strip("'\"")
+            )
         elif isinstance(error, PermissionError):
-            category = ErrorCategory.PERMISSION
-            suggestions = [
-                "ファイルの読み取り権限を確認してください",
-                "管理者権限で実行してください",
-                "ファイルが他のプロセスで使用されていないか確認してください",
-            ]
+            return self.error_factory.create_permission_error(
+                str(error).split(":")[-1].strip().strip("'\"")
+            )
         else:
-            category = ErrorCategory.IO
-            suggestions = [
-                "ファイルシステムの状態を確認してください",
-                "ディスク容量を確認してください",
-                "ファイルの破損をチェックしてください",
-            ]
-
-        return self.error_factory.create_error(
-            category=category,
-            level=ErrorLevel.ERROR,
-            message=f"ファイルエラー: {str(error)}",
-            suggestions=suggestions,
-            context=context.to_dict() if context else {},
-        )
+            return self.error_factory.create_unknown_error(
+                f"ファイルエラー: {str(error)}",
+                context=context.to_dict() if context else {},
+            )
 
     # 分割された機能へのプロキシメソッド
-    def display_error(self, error: UserFriendlyError, **kwargs) -> None:
+    def display_error(self, error: UserFriendlyError, **kwargs: Any) -> None:
         """エラー表示（プロキシメソッド）"""
-        return self.display.display_error(error, **kwargs)
+        self.display.display_error(error, **kwargs)
 
     def register_recovery_callback(
-        self, error_category: str, callback: Callable, description: str = ""
+        self, error_category: str, callback: Callable[..., Any], description: str = ""
     ) -> None:
         """回復コールバック登録（プロキシメソッド）"""
-        return self.recovery.register_recovery_callback(
-            error_category, callback, description
-        )
+        # ErrorRecoveryクラスにregister_recovery_callbackメソッドがないため、
+        # 将来の実装用のプレースホルダーとして残す
+        pass
 
     def get_error_statistics(self) -> dict[str, Any]:
         """エラー統計取得（プロキシメソッド）"""

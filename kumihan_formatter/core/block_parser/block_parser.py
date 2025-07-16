@@ -16,7 +16,7 @@ class BlockParser:
     def __init__(self, keyword_parser: KeywordParser):
         self.logger = get_logger(__name__)
         self.keyword_parser = keyword_parser
-        self.marker_validator = MarkerValidator(keyword_parser)
+        self.marker_validator = MarkerValidator()
         self.heading_counter = 0
         self.logger.debug("BlockParser initialized")
 

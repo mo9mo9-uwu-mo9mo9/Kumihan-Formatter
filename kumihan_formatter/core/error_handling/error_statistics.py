@@ -67,8 +67,8 @@ class ErrorStatistics:
             }
 
         # カテゴリー別統計
-        category_stats = {}
-        level_stats = {}
+        category_stats: dict[str, int] = {}
+        level_stats: dict[str, int] = {}
 
         for error in self._error_history:
             category = (
@@ -88,7 +88,7 @@ class ErrorStatistics:
         for error in self._error_history[-5:]:
             recent_errors.append(
                 {
-                    "message": error.message,
+                    "message": error.user_message,
                     "category": (
                         error.category.value
                         if hasattr(error.category, "value")
@@ -108,8 +108,8 @@ class ErrorStatistics:
             )
 
         # サマリー生成
-        most_common_category = max(category_stats, key=category_stats.get)
-        most_common_level = max(level_stats, key=level_stats.get)
+        most_common_category = max(category_stats, key=lambda x: category_stats[x])
+        most_common_level = max(level_stats, key=lambda x: level_stats[x])
 
         summary = (
             f"Total: {total_errors} errors. "
@@ -156,7 +156,7 @@ class ErrorStatistics:
             # エラー履歴をシリアライズ可能な形式に変換
             for error in self._error_history:
                 error_data = {
-                    "message": error.message,
+                    "message": error.user_message,
                     "category": (
                         error.category.value
                         if hasattr(error.category, "value")
@@ -172,13 +172,15 @@ class ErrorStatistics:
                         if hasattr(error, "timestamp")
                         else None
                     ),
-                    "details": error.details if hasattr(error, "details") else None,
+                    "details": error.technical_details if hasattr(error, "technical_details") else None,
                     "suggestions": (
-                        error.suggestions if hasattr(error, "suggestions") else []
+                        error.solution.detailed_steps if hasattr(error, "solution") else []
                     ),
                     "context": error.context if hasattr(error, "context") else {},
                 }
-                export_data["error_history"].append(error_data)
+                error_history_list = export_data["error_history"] 
+                if isinstance(error_history_list, list):
+                    error_history_list.append(error_data)
 
             # ファイルに保存
             with open(file_path, "w", encoding="utf-8") as f:
@@ -206,8 +208,8 @@ class ErrorStatistics:
             return {"trends": "No error data available"}
 
         # 日付別エラー数の集計
-        daily_counts = {}
-        category_trends = {}
+        daily_counts: dict[str, int] = {}
+        category_trends: dict[str, dict[str, int]] = {}
 
         cutoff_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 

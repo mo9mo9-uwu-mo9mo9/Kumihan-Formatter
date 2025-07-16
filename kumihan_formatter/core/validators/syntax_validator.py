@@ -23,7 +23,7 @@ class SyntaxValidator:
         self.block_parser = BlockParser(self.keyword_parser)
 
         # Initialize specialized validators
-        self.marker_validator = MarkerValidator(self.keyword_parser)
+        self.marker_validator = MarkerValidator()
         self.list_validator = ListValidator(self.list_parser)
         self.block_validator = BlockValidator(self.block_parser)
 
