@@ -12,7 +12,8 @@ from typing import Any
 
 from ...performance import get_global_monitor
 from ...utilities.logger import get_logger
-from ..benchmark import BenchmarkConfig, PerformanceBenchmarkSuite
+from ..benchmark import PerformanceBenchmarkSuite
+from ..benchmark_types import BenchmarkConfig
 from ..memory_monitor import MemoryMonitor
 from ..profiler import AdvancedProfiler
 from .models import OptimizationMetrics, OptimizationReport
@@ -180,16 +181,17 @@ class OptimizationAnalyzer:
         """ベースラインデータを読み込み"""
         # メモリから検索
         if baseline_name in self.baseline_data:
-            return self.baseline_data[baseline_name]
+            cached_data: dict[str, Any] = self.baseline_data[baseline_name]
+            return cached_data
 
         # ファイルから読み込み
         baseline_file = self.baseline_dir / f"{baseline_name}_baseline.json"
         if baseline_file.exists():
             try:
                 with open(baseline_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                self.baseline_data[baseline_name] = data
-                return data
+                    loaded_data: dict[str, Any] = json.load(f)
+                self.baseline_data[baseline_name] = loaded_data
+                return loaded_data
             except Exception as e:
                 self.logger.error(f"ベースライン読み込みエラー: {e}")
 

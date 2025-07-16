@@ -15,7 +15,7 @@ class MarkerParser:
 
     def __init__(self, definitions: KeywordDefinitions) -> None:
         """マーカーパーサーを初期化
-        
+
         Args:
             definitions: キーワード定義
         """
@@ -102,10 +102,10 @@ class MarkerParser:
 
     def extract_color_attribute(self, marker_content: str) -> tuple[str | None, str]:
         """マーカーコンテンツからcolor属性を抽出
-        
+
         Args:
             marker_content: マーカーコンテンツ
-            
+
         Returns:
             tuple: (color値, color属性を除去したコンテンツ)
         """
@@ -118,10 +118,10 @@ class MarkerParser:
 
     def extract_alt_attribute(self, marker_content: str) -> tuple[str | None, str]:
         """マーカーコンテンツからalt属性を抽出
-        
+
         Args:
             marker_content: マーカーコンテンツ
-            
+
         Returns:
             tuple: (alt値, alt属性を除去したコンテンツ)
         """
@@ -134,15 +134,15 @@ class MarkerParser:
 
     def split_compound_keywords(self, keyword_content: str) -> list[str]:
         """複合キーワードを分割
-        
+
         Args:
             keyword_content: キーワード部分のコンテンツ
-            
+
         Returns:
             キーワードのリスト
         """
         keywords = []
-        
+
         if "+" in keyword_content or "＋" in keyword_content:
             # 複合キーワード
             parts = re.split(r"[+＋]", keyword_content)
@@ -155,5 +155,5 @@ class MarkerParser:
             keyword = keyword_content.strip()
             if keyword:
                 keywords.append(keyword)
-        
+
         return keywords

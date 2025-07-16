@@ -4,8 +4,7 @@ Single Responsibility Principle適用: メインウィンドウ管理の分離
 Issue #476 Phase2対応 - gui_views.py分割（1/4）
 """
 
-from tkinter import Tk
-from tkinter import ttk
+from tkinter import Tk, ttk
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

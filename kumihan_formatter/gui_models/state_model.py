@@ -8,9 +8,9 @@ import os
 from pathlib import Path
 from typing import Dict, Optional
 
-from .gui_config import GuiConfig
 from .conversion_state import ConversionState
 from .file_model import FileManager
+from .gui_config import GuiConfig
 
 
 class LogManager:

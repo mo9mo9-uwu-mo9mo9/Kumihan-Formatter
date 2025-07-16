@@ -11,14 +11,8 @@ Issue #476 Phase2対応 - gui_views.py分割完了
 - main_view.py: 統合ビュー管理
 """
 
-# メインウィンドウ
-from .main_window import MainWindow
-
-# 基本ウィジェット
-from .widgets import HeaderFrame, FileSelectionFrame, OptionsFrame
-
 # コントロール
-from .controls import ActionButtonFrame, ProgressFrame, LogFrame
+from .controls import ActionButtonFrame, LogFrame, ProgressFrame
 
 # ダイアログ
 from .dialogs import HelpDialog
@@ -26,17 +20,23 @@ from .dialogs import HelpDialog
 # 統合ビュー
 from .main_view import MainView
 
+# メインウィンドウ
+from .main_window import MainWindow
+
+# 基本ウィジェット
+from .widgets import FileSelectionFrame, HeaderFrame, OptionsFrame
+
 # 後方互換性のために全クラスをエクスポート
 __all__ = [
     # メインウィンドウ
     "MainWindow",
     # 基本ウィジェット
-    "HeaderFrame", 
+    "HeaderFrame",
     "FileSelectionFrame",
     "OptionsFrame",
     # コントロール
     "ActionButtonFrame",
-    "ProgressFrame", 
+    "ProgressFrame",
     "LogFrame",
     # ダイアログ
     "HelpDialog",

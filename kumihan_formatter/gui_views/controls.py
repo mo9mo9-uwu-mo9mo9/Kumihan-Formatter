@@ -4,8 +4,8 @@ Single Responsibility Principle適用: コントロールウィジェット管�
 Issue #476 Phase2対応 - gui_views.py分割（3/4）
 """
 
-from tkinter import LEFT, VERTICAL, WORD, DISABLED, W, Text, Widget, ttk
-from typing import Any, Callable, TYPE_CHECKING
+from tkinter import DISABLED, LEFT, VERTICAL, WORD, Text, W, Widget, ttk
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from ..gui_models import AppState
@@ -155,7 +155,7 @@ class LogFrame:
     def add_message(self, message: str, level: str = "info") -> None:
         """ログメッセージを追加"""
         formatted_message = self.app_state.log_manager.add_message(message, level)
-        
+
         self.log_text.config(state="normal")
         self.log_text.insert("end", formatted_message + "\n")
         self.log_text.config(state=DISABLED)

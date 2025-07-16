@@ -4,6 +4,8 @@ Single Responsibility Principle適用: 統合GUIコントローラーの分離
 Issue #476 Phase2対応 - gui_controller.py分割（統合）
 """
 
+from typing import Any
+
 from ..gui_models import AppState
 from ..gui_views import MainView
 from .main_controller import MainController
@@ -28,12 +30,12 @@ class GuiController:
 
     # 後方互換性のためのプロパティ
     @property
-    def log_viewer(self):
+    def log_viewer(self) -> Any:
         """ログビューアーへのアクセス（後方互換性）"""
         return self.main_controller.log_viewer
 
     @log_viewer.setter
-    def log_viewer(self, value):
+    def log_viewer(self, value: Any) -> None:
         """ログビューアーの設定（後方互換性）"""
         self.main_controller.log_viewer = value
 

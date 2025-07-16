@@ -172,13 +172,19 @@ class ErrorStatistics:
                         if hasattr(error, "timestamp")
                         else None
                     ),
-                    "details": error.technical_details if hasattr(error, "technical_details") else None,
+                    "details": (
+                        error.technical_details
+                        if hasattr(error, "technical_details")
+                        else None
+                    ),
                     "suggestions": (
-                        error.solution.detailed_steps if hasattr(error, "solution") else []
+                        error.solution.detailed_steps
+                        if hasattr(error, "solution")
+                        else []
                     ),
                     "context": error.context if hasattr(error, "context") else {},
                 }
-                error_history_list = export_data["error_history"] 
+                error_history_list = export_data["error_history"]
                 if isinstance(error_history_list, list):
                     error_history_list.append(error_data)
 

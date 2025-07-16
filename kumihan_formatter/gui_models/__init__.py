@@ -9,21 +9,22 @@ Issue #476 Phase2対応 - gui_models.py分割完了
 - state_model.py: ログ・アプリ状態管理
 """
 
-# 設定・変換状態モデル
-from .gui_config import GuiConfig
 from .conversion_state import ConversionState
 
 # ファイル管理モデル
 from .file_model import FileManager
 
-# ログ・アプリ状態モデル  
-from .state_model import LogManager, AppState
+# 設定・変換状態モデル
+from .gui_config import GuiConfig
+
+# ログ・アプリ状態モデル
+from .state_model import AppState, LogManager
 
 # 後方互換性のために全クラスをエクスポート
 __all__ = [
     # 設定・変換状態
     "GuiConfig",
-    "ConversionState", 
+    "ConversionState",
     # ファイル管理
     "FileManager",
     # ログ・アプリ状態

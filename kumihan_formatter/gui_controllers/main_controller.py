@@ -7,8 +7,8 @@ Issue #476 Phase2対応 - gui_controller.py分割（3/3）
 from tkinter import messagebox
 from typing import TYPE_CHECKING, Any, Optional
 
-from .file_controller import FileController
 from .conversion_controller import ConversionController
+from .file_controller import FileController
 
 if TYPE_CHECKING:
     from ..core.log_viewer import LogViewerWindow

@@ -5,7 +5,7 @@ including compound keywords and error suggestions.
 
 このファイルは技術的負債解消（Issue #476）により分割されました：
 - keyword_parsing/definitions.py: キーワード定義
-- keyword_parsing/marker_parser.py: マーカー解析  
+- keyword_parsing/marker_parser.py: マーカー解析
 - keyword_parsing/validator.py: キーワード検証
 """
 
@@ -13,7 +13,7 @@ import re
 from typing import Any
 
 from .ast_nodes import Node, NodeBuilder, error_node
-from .keyword_parsing import KeywordDefinitions, MarkerParser, KeywordValidator
+from .keyword_parsing import KeywordDefinitions, KeywordValidator, MarkerParser
 
 
 class KeywordParser:
@@ -72,7 +72,7 @@ class KeywordParser:
         self.definitions = KeywordDefinitions(config)
         self.marker_parser = MarkerParser(self.definitions)
         self.validator = KeywordValidator(self.definitions)
-        
+
         # 後方互換性のため既存プロパティを維持
         self.BLOCK_KEYWORDS = self.definitions.BLOCK_KEYWORDS
 
@@ -90,7 +90,9 @@ class KeywordParser:
         """後方互換性のため分割されたコンポーネントに委譲"""
         return self.validator.validate_keywords(keywords)
 
-    def _get_keyword_suggestions(self, invalid_keyword: str, max_suggestions: int = 3) -> list[str]:
+    def _get_keyword_suggestions(
+        self, invalid_keyword: str, max_suggestions: int = 3
+    ) -> list[str]:
         """後方互換性のため分割されたコンポーネントに委譲"""
         return self.validator.get_keyword_suggestions(invalid_keyword, max_suggestions)
 
@@ -199,7 +201,11 @@ class KeywordParser:
                 current_node = node
             else:
                 # Find the content and replace it with the new node
-                if current_node and hasattr(current_node, 'content') and current_node.content:
+                if (
+                    current_node
+                    and hasattr(current_node, "content")
+                    and current_node.content
+                ):
                     current_node.content = [node]
                 current_node = node
 
@@ -245,29 +251,31 @@ class MarkerValidator:
     def validate_marker_line(line: str) -> tuple[bool, list[str]]:
         """Validate a marker line format"""
         warnings = []
-        
+
         # Check for proper marker format
         if not line.strip().startswith(";;;") or not line.strip().endswith(";;;"):
             warnings.append("マーカー行は ;;; で開始・終了する必要があります")
             return False, warnings
-            
+
         return True, warnings
 
     @staticmethod
-    def validate_block_structure(lines: list[str], start_index: int) -> tuple[bool, int | None, list[str]]:
+    def validate_block_structure(
+        lines: list[str], start_index: int
+    ) -> tuple[bool, int | None, list[str]]:
         """Validate block structure from marker line"""
         warnings = []
         end_index = None
-        
+
         # Simple validation - expand as needed
         for i in range(start_index + 1, len(lines)):
             line = lines[i].strip()
             if line.startswith(";;;") and line.endswith(";;;"):
                 end_index = i
                 break
-                
+
         if end_index is None:
             warnings.append("ブロックの終了マーカーが見つかりません")
             return False, None, warnings
-            
+
         return True, end_index, warnings

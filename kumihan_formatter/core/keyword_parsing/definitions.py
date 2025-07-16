@@ -6,7 +6,6 @@ Kumihan記法キーワード定義 - Issue #476対応
 
 from typing import Any
 
-
 # デフォルトブロックキーワード定義
 DEFAULT_BLOCK_KEYWORDS = {
     "太字": {"tag": "strong"},
@@ -41,7 +40,7 @@ class KeywordDefinitions:
 
     def __init__(self, config: Any = None) -> None:
         """キーワード定義を初期化
-        
+
         Args:
             config: 設定オブジェクト（現在未使用）
         """
@@ -51,7 +50,7 @@ class KeywordDefinitions:
 
     def get_all_keywords(self) -> list[str]:
         """全キーワードのリストを取得
-        
+
         Returns:
             キーワード名のリスト
         """
@@ -59,10 +58,10 @@ class KeywordDefinitions:
 
     def is_valid_keyword(self, keyword: str) -> bool:
         """キーワードが有効かチェック
-        
+
         Args:
             keyword: チェックするキーワード
-            
+
         Returns:
             有効な場合True
         """
@@ -70,10 +69,10 @@ class KeywordDefinitions:
 
     def get_keyword_info(self, keyword: str) -> dict[str, Any] | None:
         """キーワードの定義情報を取得
-        
+
         Args:
             keyword: キーワード名
-            
+
         Returns:
             キーワード定義辞書、存在しない場合None
         """
@@ -81,7 +80,7 @@ class KeywordDefinitions:
 
     def add_custom_keyword(self, keyword: str, definition: dict[str, Any]) -> None:
         """カスタムキーワードを追加
-        
+
         Args:
             keyword: キーワード名
             definition: キーワード定義
@@ -90,10 +89,10 @@ class KeywordDefinitions:
 
     def remove_keyword(self, keyword: str) -> bool:
         """キーワードを削除
-        
+
         Args:
             keyword: 削除するキーワード名
-            
+
         Returns:
             削除成功時True
         """
@@ -104,7 +103,7 @@ class KeywordDefinitions:
 
     def get_nesting_order(self) -> list[str]:
         """ネスト順序を取得
-        
+
         Returns:
             ネスト順序のリスト
         """
@@ -112,10 +111,10 @@ class KeywordDefinitions:
 
     def get_tag_for_keyword(self, keyword: str) -> str | None:
         """キーワードに対応するHTMLタグを取得
-        
+
         Args:
             keyword: キーワード名
-            
+
         Returns:
             HTMLタグ名、存在しない場合None
         """

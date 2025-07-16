@@ -5,7 +5,7 @@ Issue #476 Phase2対応 - gui_views.py分割（2/4）
 """
 
 from tkinter import W, Widget, ttk
-from typing import Any, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from ..gui_models import AppState

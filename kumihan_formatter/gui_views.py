@@ -16,5 +16,5 @@ from .gui_views import *  # noqa: F403, F401
 warnings.warn(
     "gui_views.py is deprecated. Use 'from kumihan_formatter.gui_views import MainView' instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )

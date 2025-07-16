@@ -4,7 +4,7 @@ This module validates document structure including AST validation,
 TOC structure, and document organization.
 """
 
-from typing import Any, List
+from typing import Any
 
 from ..ast_nodes import Node, validate_ast
 from ..toc_generator import TOCValidator
@@ -44,7 +44,7 @@ class StructureValidator:
         toc_entries = self._extract_toc_entries(ast)
 
         # Validate TOC structure
-        toc_issues = self.toc_validator.validate_toc_structure(toc_entries)  # type: ignore
+        toc_issues = self.toc_validator.validate_toc_structure(toc_entries)
         for issue in toc_issues:
             issues.append(
                 ValidationIssue(
@@ -99,7 +99,7 @@ class StructureValidator:
 
         return issues
 
-    def _extract_toc_entries(self, ast: list[Node]) -> List[dict[str, Any]]:
+    def _extract_toc_entries(self, ast: list[Node]) -> list[dict[str, Any]]:
         """Extract TOC entries from AST"""
         entries = []
         for node in ast:
@@ -124,7 +124,7 @@ class StructureValidator:
         return None
 
     def _validate_heading_hierarchy(
-        self, heading_levels: list[tuple]  # type: ignore
+        self, heading_levels: list[tuple[int, int]]
     ) -> list[ValidationIssue]:
         """Validate heading hierarchy"""
         issues = []

@@ -32,6 +32,7 @@ except ImportError:
     def log_gui_event(*args: Any, **kwargs: Any) -> None:
         pass
 
+
 # コマンドクラスのインポート
 try:
     from ..commands.convert.convert_command import ConvertCommand
@@ -92,9 +93,13 @@ class ConversionController:
             convert_command = ConvertCommand()
             self.app_state.conversion_state.update_progress(40, "ファイルを変換中...")
 
-            output_path = convert_command.execute(**params)
+            convert_command.execute(**params)
             self.app_state.conversion_state.update_progress(80, "変換完了...")
 
+            # 出力パスはparamsから取得
+            from pathlib import Path
+
+            output_path = Path(params.get("output", "output"))
             self.main_view.log_frame.add_message(
                 f"変換が完了しました: {output_path.absolute()}", "success"
             )
@@ -103,11 +108,14 @@ class ConversionController:
             if not self.app_state.config.get_no_preview():
                 output_html = output_path / "index.html"
                 if output_html.exists():
-                    self.main_view.log_frame.add_message("ブラウザでプレビューを開いています...")
+                    self.main_view.log_frame.add_message(
+                        "ブラウザでプレビューを開いています..."
+                    )
                     webbrowser.open(output_html.resolve().as_uri())
 
             # ファイルマネージャーで開く
             from .file_controller import FileController
+
             file_controller = FileController(self.app_state, self.main_view)
             file_controller.open_directory_in_file_manager(output_path)
 
@@ -157,11 +165,15 @@ class ConversionController:
     def _generate_sample_thread(self) -> None:
         """サンプル生成スレッド"""
         try:
-            self.main_view.log_frame.add_message("サンプルファイルの生成を開始します...")
+            self.main_view.log_frame.add_message(
+                "サンプルファイルの生成を開始します..."
+            )
             self.app_state.conversion_state.update_progress(0, "サンプル生成準備中...")
 
             use_source_toggle = self.app_state.config.get_include_source()
-            self.app_state.conversion_state.update_progress(30, "サンプルファイルを作成中...")
+            self.app_state.conversion_state.update_progress(
+                30, "サンプルファイルを作成中..."
+            )
 
             # サンプル生成実行
             if SampleCommand is None:
@@ -181,11 +193,14 @@ class ConversionController:
             # サンプルHTMLを開く
             sample_html = output_path / "showcase.html"
             if sample_html.exists():
-                self.main_view.log_frame.add_message("ブラウザでサンプルを開いています...")
+                self.main_view.log_frame.add_message(
+                    "ブラウザでサンプルを開いています..."
+                )
                 webbrowser.open(sample_html.resolve().as_uri())
 
             # ファイルマネージャーで開く
             from .file_controller import FileController
+
             file_controller = FileController(self.app_state, self.main_view)
             file_controller.open_directory_in_file_manager(output_path)
 

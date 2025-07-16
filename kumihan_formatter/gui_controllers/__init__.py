@@ -10,19 +10,20 @@ Issue #476 Phase2対応 - gui_controller.py分割完了
 - gui_controller.py: 統合GUIコントローラー（後方互換性）
 """
 
+from .conversion_controller import ConversionController
+
 # サブコントローラー
 from .file_controller import FileController
-from .conversion_controller import ConversionController
-from .main_controller import MainController
 
 # 統合コントローラー
 from .gui_controller import GuiController, create_gui_application
+from .main_controller import MainController
 
 # 後方互換性のために全クラスをエクスポート
 __all__ = [
     # サブコントローラー
     "FileController",
-    "ConversionController", 
+    "ConversionController",
     "MainController",
     # 統合コントローラー
     "GuiController",

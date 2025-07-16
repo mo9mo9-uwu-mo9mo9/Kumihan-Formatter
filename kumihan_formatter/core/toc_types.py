@@ -1,8 +1,6 @@
-"""Table of Contents generation for Kumihan-Formatter
+"""TOCエントリー・基本データ構造
 
-This module handles the generation of table of contents from heading elements.
-This file now serves as a compatibility wrapper, with main classes moved to toc_main.py
-to comply with the 300-line limit.
+目次のデータ構造とエントリー管理クラス。
 """
 
 from __future__ import annotations
@@ -46,12 +44,3 @@ class TOCEntry:
 
         clean_title = re.sub(r"<[^>]+>", "", self.title)
         return clean_title.strip()
-
-
-# Import main classes from separate files for backward compatibility
-from .toc_formatter import TOCFormatter
-from .toc_generator_main import TOCGenerator
-from .toc_validator import TOCValidator
-
-# Re-export all classes to maintain the same public API
-__all__ = ["TOCEntry", "TOCGenerator", "TOCValidator", "TOCFormatter"]
