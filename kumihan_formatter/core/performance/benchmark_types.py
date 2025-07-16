@@ -42,7 +42,7 @@ class BenchmarkConfig:
 @dataclass
 class RegressionAnalysis:
     """回帰分析結果"""
-    
+
     benchmark_name: str
     baseline_avg_time: float
     current_avg_time: float
@@ -56,7 +56,7 @@ class RegressionAnalysis:
 @dataclass
 class BenchmarkSummary:
     """ベンチマーク結果サマリー"""
-    
+
     total_benchmarks: int
     total_runtime: float
     fastest_benchmark: BenchmarkResult
@@ -87,7 +87,7 @@ REGRESSION_CONFIG = BenchmarkConfig(
 # パフォーマンス閾値
 PERFORMANCE_THRESHOLDS = {
     "regression_threshold_percent": 10.0,  # 10%以上の性能劣化で回帰とみなす
-    "severe_regression_percent": 25.0,    # 25%以上の劣化で深刻な回帰
-    "memory_increase_threshold": 20.0,    # 20%以上のメモリ増加で警告
-    "cache_hit_rate_minimum": 0.8,        # キャッシュヒット率80%未満で警告
+    "severe_regression_percent": 25.0,  # 25%以上の劣化で深刻な回帰
+    "memory_increase_threshold": 20.0,  # 20%以上のメモリ増加で警告
+    "cache_hit_rate_minimum": 0.8,  # キャッシュヒット率80%未満で警告
 }

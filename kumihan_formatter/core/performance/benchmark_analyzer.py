@@ -10,16 +10,16 @@ from typing import Any
 
 from ..utilities.logger import get_logger
 from .benchmark_types import (
+    PERFORMANCE_THRESHOLDS,
     BenchmarkResult,
     BenchmarkSummary,
-    PERFORMANCE_THRESHOLDS,
     RegressionAnalysis,
 )
 
 
 class BenchmarkAnalyzer:
     """ベンチマーク結果分析器
-    
+
     機能:
     - ベンチマーク結果の統計分析
     - パフォーマンス回帰検出
@@ -33,10 +33,10 @@ class BenchmarkAnalyzer:
 
     def analyze_results(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """ベンチマーク結果を分析
-        
+
         Args:
             results: ベンチマーク結果リスト
-            
+
         Returns:
             dict: 分析結果
         """
@@ -47,16 +47,16 @@ class BenchmarkAnalyzer:
 
         # 基本統計
         basic_stats = self._calculate_basic_statistics(results)
-        
+
         # パフォーマンス評価
         performance_score = self._calculate_performance_score(results)
-        
+
         # メモリ分析
         memory_analysis = self._analyze_memory_usage(results)
-        
+
         # キャッシュ分析
         cache_analysis = self._analyze_cache_performance(results)
-        
+
         # 推奨事項
         recommendations = self._generate_recommendations(results)
 
@@ -78,32 +78,32 @@ class BenchmarkAnalyzer:
         return analysis
 
     def analyze_regression(
-        self, 
-        current_results: dict[str, BenchmarkResult], 
-        baseline_results: dict[str, BenchmarkResult]
+        self,
+        current_results: dict[str, BenchmarkResult],
+        baseline_results: dict[str, BenchmarkResult],
     ) -> dict[str, Any]:
         """パフォーマンス回帰を分析
-        
+
         Args:
             current_results: 現在の結果
             baseline_results: ベースライン結果
-            
+
         Returns:
             dict: 回帰分析結果
         """
         self.logger.info("パフォーマンス回帰分析開始")
-        
+
         regressions = []
         improvements = []
-        
+
         for name, current in current_results.items():
             if name not in baseline_results:
                 self.logger.warning(f"ベースラインに存在しないベンチマーク: {name}")
                 continue
-                
+
             baseline = baseline_results[name]
             regression_analysis = self._analyze_single_regression(current, baseline)
-            
+
             if regression_analysis.is_regression:
                 regressions.append(regression_analysis)
                 self.logger.warning(
@@ -122,8 +122,12 @@ class BenchmarkAnalyzer:
         analysis = {
             "overall_regression": overall_regression,
             "severity": severity,
-            "regressions_detected": [self._format_regression_analysis(r) for r in regressions],
-            "improvements_detected": [self._format_regression_analysis(r) for r in improvements],
+            "regressions_detected": [
+                self._format_regression_analysis(r) for r in regressions
+            ],
+            "improvements_detected": [
+                self._format_regression_analysis(r) for r in improvements
+            ],
             "summary": {
                 "total_benchmarks_compared": len(current_results),
                 "regressions_count": len(regressions),
@@ -139,7 +143,9 @@ class BenchmarkAnalyzer:
         )
         return analysis
 
-    def generate_benchmark_summary(self, results: list[BenchmarkResult]) -> BenchmarkSummary:
+    def generate_benchmark_summary(
+        self, results: list[BenchmarkResult]
+    ) -> BenchmarkSummary:
         """ベンチマーク結果サマリーを生成"""
         if not results:
             raise ValueError("No results to summarize")
@@ -172,21 +178,28 @@ class BenchmarkAnalyzer:
         )
 
     def _analyze_single_regression(
-        self, 
-        current: BenchmarkResult, 
-        baseline: BenchmarkResult
+        self, current: BenchmarkResult, baseline: BenchmarkResult
     ) -> RegressionAnalysis:
         """単一ベンチマークの回帰分析"""
         performance_change_percent = (
             (current.avg_time - baseline.avg_time) / baseline.avg_time * 100
         )
-        
-        is_regression = performance_change_percent > PERFORMANCE_THRESHOLDS["regression_threshold_percent"]
-        
+
+        is_regression = (
+            performance_change_percent
+            > PERFORMANCE_THRESHOLDS["regression_threshold_percent"]
+        )
+
         # 深刻度評価
-        if performance_change_percent > PERFORMANCE_THRESHOLDS["severe_regression_percent"]:
+        if (
+            performance_change_percent
+            > PERFORMANCE_THRESHOLDS["severe_regression_percent"]
+        ):
             severity = "severe"
-        elif performance_change_percent > PERFORMANCE_THRESHOLDS["regression_threshold_percent"]:
+        elif (
+            performance_change_percent
+            > PERFORMANCE_THRESHOLDS["regression_threshold_percent"]
+        ):
             if performance_change_percent > 20.0:
                 severity = "moderate"
             else:
@@ -196,7 +209,7 @@ class BenchmarkAnalyzer:
 
         # メモリ変化計算
         memory_change_percent = None
-        if (current.memory_usage.get("peak_mb") and baseline.memory_usage.get("peak_mb")):
+        if current.memory_usage.get("peak_mb") and baseline.memory_usage.get("peak_mb"):
             current_memory = current.memory_usage["peak_mb"]
             baseline_memory = baseline.memory_usage["peak_mb"]
             memory_change_percent = (
@@ -213,7 +226,9 @@ class BenchmarkAnalyzer:
             memory_change_percent=memory_change_percent,
         )
 
-    def _calculate_basic_statistics(self, results: list[BenchmarkResult]) -> dict[str, Any]:
+    def _calculate_basic_statistics(
+        self, results: list[BenchmarkResult]
+    ) -> dict[str, Any]:
         """基本統計を計算"""
         avg_times = [r.avg_time for r in results]
         total_times = [r.total_time for r in results]
@@ -251,15 +266,17 @@ class BenchmarkAnalyzer:
         cache_score = self._calculate_overall_cache_hit_rate(results) * 100
 
         # 総合スコア（重み付き平均）
-        performance_score = (time_score * 0.4 + throughput_score * 0.3 + cache_score * 0.3)
-        
+        performance_score = (
+            time_score * 0.4 + throughput_score * 0.3 + cache_score * 0.3
+        )
+
         return min(performance_score, 100.0)  # 最大100点
 
     def _analyze_memory_usage(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """メモリ使用量を分析"""
         memory_data = []
         memory_increases = []
-        
+
         for result in results:
             if result.memory_usage:
                 if "peak_mb" in result.memory_usage:
@@ -282,20 +299,24 @@ class BenchmarkAnalyzer:
         # 警告チェック
         if memory_data and max(memory_data) > 100.0:  # 100MB以上
             analysis["warnings"].append("High memory usage detected (>100MB)")
-            
-        if memory_increases and statistics.mean(memory_increases) > 10.0:  # 平均10MB以上の増加
+
+        if (
+            memory_increases and statistics.mean(memory_increases) > 10.0
+        ):  # 平均10MB以上の増加
             analysis["warnings"].append("Significant memory increase during benchmarks")
 
         return analysis
 
-    def _analyze_cache_performance(self, results: list[BenchmarkResult]) -> dict[str, Any]:
+    def _analyze_cache_performance(
+        self, results: list[BenchmarkResult]
+    ) -> dict[str, Any]:
         """キャッシュパフォーマンスを分析"""
         cache_data = {
             "file_cache": [],
             "parse_cache": [],
             "render_cache": [],
         }
-        
+
         for result in results:
             for cache_type in cache_data.keys():
                 if cache_type in result.cache_stats:
@@ -308,7 +329,7 @@ class BenchmarkAnalyzer:
                 for cache_stat in data:
                     if isinstance(cache_stat, dict) and "hit_rate" in cache_stat:
                         hit_rates.append(cache_stat["hit_rate"])
-                
+
                 if hit_rates:
                     analysis[cache_type] = {
                         "average_hit_rate": statistics.mean(hit_rates),
@@ -318,68 +339,76 @@ class BenchmarkAnalyzer:
 
         return analysis
 
-    def _calculate_overall_cache_hit_rate(self, results: list[BenchmarkResult]) -> float:
+    def _calculate_overall_cache_hit_rate(
+        self, results: list[BenchmarkResult]
+    ) -> float:
         """全体のキャッシュヒット率を計算"""
         hit_rates = []
-        
+
         for result in results:
             for cache_type in ["file_cache", "parse_cache", "render_cache"]:
                 if cache_type in result.cache_stats:
                     cache_stat = result.cache_stats[cache_type]
                     if isinstance(cache_stat, dict) and "hit_rate" in cache_stat:
                         hit_rates.append(cache_stat["hit_rate"])
-        
+
         return statistics.mean(hit_rates) if hit_rates else 0.0
 
     def _generate_recommendations(self, results: list[BenchmarkResult]) -> list[str]:
         """推奨事項を生成"""
         recommendations = []
-        
+
         # パフォーマンス関連
         avg_times = [r.avg_time for r in results]
         if avg_times and statistics.mean(avg_times) > 1.0:
-            recommendations.append("Consider optimizing algorithms - average execution time is high")
-        
+            recommendations.append(
+                "Consider optimizing algorithms - average execution time is high"
+            )
+
         # メモリ関連
         memory_data = []
         for result in results:
             if result.memory_usage and "peak_mb" in result.memory_usage:
                 memory_data.append(result.memory_usage["peak_mb"])
-        
+
         if memory_data and max(memory_data) > 200.0:
-            recommendations.append("High memory usage detected - consider memory optimization")
-        
+            recommendations.append(
+                "High memory usage detected - consider memory optimization"
+            )
+
         # キャッシュ関連
         cache_hit_rate = self._calculate_overall_cache_hit_rate(results)
         if cache_hit_rate < PERFORMANCE_THRESHOLDS["cache_hit_rate_minimum"]:
             recommendations.append("Low cache hit rate - review caching strategy")
-        
+
         return recommendations
 
     def _calculate_overall_performance_change(
-        self, 
-        current_results: dict[str, BenchmarkResult], 
-        baseline_results: dict[str, BenchmarkResult]
+        self,
+        current_results: dict[str, BenchmarkResult],
+        baseline_results: dict[str, BenchmarkResult],
     ) -> float:
         """全体のパフォーマンス変化を計算"""
         changes = []
-        
+
         for name, current in current_results.items():
             if name in baseline_results:
                 baseline = baseline_results[name]
-                change = (current.avg_time - baseline.avg_time) / baseline.avg_time * 100
+                change = (
+                    (current.avg_time - baseline.avg_time) / baseline.avg_time * 100
+                )
                 changes.append(change)
-        
+
         return statistics.mean(changes) if changes else 0.0
 
     def _calculate_overall_severity(self, regressions: list[RegressionAnalysis]) -> str:
         """全体の深刻度を計算"""
         if not regressions:
             return "none"
-        
+
         severe_count = sum(1 for r in regressions if r.severity == "severe")
         moderate_count = sum(1 for r in regressions if r.severity == "moderate")
-        
+
         if severe_count > 0:
             return "severe"
         elif moderate_count > 0:
@@ -393,11 +422,15 @@ class BenchmarkAnalyzer:
             "name": result.name,
             "avg_time": round(result.avg_time, 3),
             "throughput": round(result.throughput, 1) if result.throughput else None,
-            "memory_peak": result.memory_usage.get("peak_mb") if result.memory_usage else None,
+            "memory_peak": (
+                result.memory_usage.get("peak_mb") if result.memory_usage else None
+            ),
             "cache_performance": self._extract_cache_summary(result.cache_stats),
         }
 
-    def _format_regression_analysis(self, analysis: RegressionAnalysis) -> dict[str, Any]:
+    def _format_regression_analysis(
+        self, analysis: RegressionAnalysis
+    ) -> dict[str, Any]:
         """回帰分析をフォーマット"""
         return {
             "benchmark_name": analysis.benchmark_name,
@@ -406,8 +439,9 @@ class BenchmarkAnalyzer:
             "baseline_time": round(analysis.baseline_avg_time, 3),
             "current_time": round(analysis.current_avg_time, 3),
             "memory_change_percent": (
-                round(analysis.memory_change_percent, 2) 
-                if analysis.memory_change_percent is not None else None
+                round(analysis.memory_change_percent, 2)
+                if analysis.memory_change_percent is not None
+                else None
             ),
         }
 

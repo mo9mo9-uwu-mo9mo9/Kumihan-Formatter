@@ -19,7 +19,7 @@ from ..performance import get_global_monitor
 from ..utilities.logger import get_logger
 from .benchmark_analyzer import BenchmarkAnalyzer
 from .benchmark_runner import BenchmarkRunner
-from .benchmark_types import BenchmarkConfig, BenchmarkResult, DEFAULT_BENCHMARK_CONFIG
+from .benchmark_types import DEFAULT_BENCHMARK_CONFIG, BenchmarkConfig, BenchmarkResult
 from .memory_monitor import MemoryMonitor
 from .profiler import AdvancedProfiler
 
@@ -235,10 +235,10 @@ class PerformanceBenchmarkSuite:
 
         # 基本分析
         analysis = self.analyzer.analyze_results(self.results)
-        
+
         # サマリー生成
         summary = self.analyzer.generate_benchmark_summary(self.results)
-        
+
         # 回帰分析（ベースラインがある場合）
         regression_analysis = None
         if self.baseline_results:

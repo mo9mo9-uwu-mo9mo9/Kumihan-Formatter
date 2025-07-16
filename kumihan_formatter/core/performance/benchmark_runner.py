@@ -14,14 +14,14 @@ from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache
 from ..caching.render_cache import RenderCache
 from ..utilities.logger import get_logger
-from .benchmark_types import BenchmarkResult, BenchmarkConfig
+from .benchmark_types import BenchmarkConfig, BenchmarkResult
 from .memory_monitor import MemoryMonitor
 from .profiler import AdvancedProfiler
 
 
 class BenchmarkRunner:
     """個別ベンチマーク実行機能
-    
+
     機能:
     - ファイル読み込みベンチマーク
     - パースベンチマーク
@@ -51,7 +51,7 @@ class BenchmarkRunner:
     def run_file_benchmarks(self) -> list[BenchmarkResult]:
         """ファイル読み込みベンチマーク"""
         results = []
-        
+
         # 小ファイル読み込み
         result = self.benchmark_file_reading(file_size="small")
         results.append(result)
@@ -61,13 +61,13 @@ class BenchmarkRunner:
         result = self.benchmark_file_reading(file_size="large")
         results.append(result)
         print(f"  Large files: {result.avg_time:.3f}s avg")
-        
+
         return results
 
     def run_parse_benchmarks(self) -> list[BenchmarkResult]:
         """パースベンチマーク"""
         results = []
-        
+
         # 基本パース
         result = self.benchmark_parsing(complexity="basic")
         results.append(result)
@@ -77,13 +77,13 @@ class BenchmarkRunner:
         result = self.benchmark_parsing(complexity="complex")
         results.append(result)
         print(f"  Complex parsing: {result.avg_time:.3f}s avg")
-        
+
         return results
 
     def run_render_benchmarks(self) -> list[BenchmarkResult]:
         """レンダリングベンチマーク"""
         results = []
-        
+
         # 基本レンダリング
         result = self.benchmark_rendering(template="basic")
         results.append(result)
@@ -93,7 +93,7 @@ class BenchmarkRunner:
         result = self.benchmark_rendering(template="complex")
         results.append(result)
         print(f"  Complex rendering: {result.avg_time:.3f}s avg")
-        
+
         return results
 
     def run_e2e_benchmarks(self) -> list[BenchmarkResult]:
@@ -269,7 +269,9 @@ class BenchmarkRunner:
             end_time = time.perf_counter()
             execution_time = end_time - start_time
             times.append(execution_time)
-            self.logger.debug(f"実行 {i+1}/{self.config.iterations}: {execution_time:.3f}s")
+            self.logger.debug(
+                f"実行 {i+1}/{self.config.iterations}: {execution_time:.3f}s"
+            )
 
         # プロファイリング終了
         if profiler_context:
@@ -318,7 +320,9 @@ class BenchmarkRunner:
 
         self.logger.info(
             f"ベンチマーク完了: {name}, avg={avg_time:.3f}s, "
-            f"throughput={throughput:.1f}ops/s" if throughput else ""
+            f"throughput={throughput:.1f}ops/s"
+            if throughput
+            else ""
         )
 
         return result
@@ -326,25 +330,25 @@ class BenchmarkRunner:
     def _get_cache_stats(self) -> dict[str, Any]:
         """キャッシュ統計を取得"""
         stats = {}
-        
+
         if self.file_cache:
             file_stats = self.file_cache.get_stats()
             stats["file_cache"] = file_stats
-            
+
         if self.parse_cache:
             parse_stats = self.parse_cache.get_stats()
             stats["parse_cache"] = parse_stats
-            
+
         if self.render_cache:
             render_stats = self.render_cache.get_stats()
             stats["render_cache"] = render_stats
-            
+
         return stats
 
     def _generate_test_content(self, size: str) -> str:
         """テストコンテンツを生成"""
         base_content = "これはテストコンテンツです。"
-        
+
         if size == "small":
             return base_content * 10  # 約240文字
         elif size == "medium":
@@ -392,17 +396,22 @@ class BenchmarkRunner:
     def _mock_parse_function(self, content: str) -> list[dict[str, Any]]:
         """モックパース関数"""
         # 簡単なパース処理をシミュレート
-        lines = content.split('\n')
-        return [{"type": "text", "content": line, "index": i} for i, line in enumerate(lines)]
+        lines = content.split("\n")
+        return [
+            {"type": "text", "content": line, "index": i}
+            for i, line in enumerate(lines)
+        ]
 
     def _mock_render_function(self, **kwargs: Any) -> str:
         """モックレンダー関数"""
         # 簡単なレンダリング処理をシミュレート
         data = kwargs.get("data", {})
         ast_nodes = kwargs.get("ast_nodes", [])
-        
+
         if ast_nodes:
-            return "\n".join([f"<p>{node.get('content', '')}</p>" for node in ast_nodes])
+            return "\n".join(
+                [f"<p>{node.get('content', '')}</p>" for node in ast_nodes]
+            )
         elif data:
             title = data.get("title", "No Title")
             content = data.get("content", "No Content")
