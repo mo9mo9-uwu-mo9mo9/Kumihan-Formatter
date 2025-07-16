@@ -1,9 +1,9 @@
 name: Alpha Release Build
 
 on:
-  push:
-    branches: [ "main" ]
-    tags: [ "v*-alpha*" ]
+  # push:
+  #   branches: [ "main" ]
+  #   tags: [ "v*-alpha*" ]
   workflow_dispatch:
     inputs:
       version_suffix:
