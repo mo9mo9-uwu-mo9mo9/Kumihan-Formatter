@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import gc
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from ..utilities.logger import get_logger
 from .memory_types import (
@@ -28,7 +28,7 @@ class MemoryAnalyzer:
     - メモリアラート管理
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """メモリ分析器を初期化"""
         self.logger = get_logger(__name__)
 
@@ -108,7 +108,8 @@ class MemoryAnalyzer:
             [s.timestamp for s in window_snapshots], memory_values
         )
         gc_slope = self._calculate_slope(
-            [s.timestamp for s in window_snapshots], gc_object_values
+            [s.timestamp for s in window_snapshots],
+            [float(x) for x in gc_object_values],
         )
 
         return {
@@ -138,7 +139,9 @@ class MemoryAnalyzer:
             ),
         }
 
-    def _calculate_slope(self, x_values: List[float], y_values: List[float]) -> float:
+    def _calculate_slope(
+        self, x_values: Sequence[float], y_values: Sequence[float]
+    ) -> float:
         """最小二乗法で傾きを計算
 
         Args:
@@ -217,26 +220,29 @@ class MemoryAnalyzer:
 
         # メモリリーク情報（オプション）
         if leaks:
+            leaks_by_severity: Dict[str, int] = {}
+            top_leaks: List[Dict[str, Any]] = []
+
             leak_summary = {
                 "total_leaks": len(leaks),
                 "critical_leaks": len([l for l in leaks if l.is_critical_leak()]),
-                "leaks_by_severity": {},
-                "top_leaks": [],
+                "leaks_by_severity": leaks_by_severity,
+                "top_leaks": top_leaks,
             }
 
             # 深刻度別分類
             for leak in leaks:
                 severity = leak.severity
-                if severity not in leak_summary["leaks_by_severity"]:
-                    leak_summary["leaks_by_severity"][severity] = 0
-                leak_summary["leaks_by_severity"][severity] += 1
+                if severity not in leaks_by_severity:
+                    leaks_by_severity[severity] = 0
+                leaks_by_severity[severity] += 1
 
             # トップリーク（上位5つ）
             sorted_leaks = sorted(leaks, key=lambda x: x.count_increase, reverse=True)[
                 :5
             ]
             for leak in sorted_leaks:
-                leak_summary["top_leaks"].append(
+                top_leaks.append(
                     {
                         "object_type": leak.object_type,
                         "count_increase": leak.count_increase,
@@ -266,8 +272,14 @@ class MemoryAnalyzer:
 
         if include_trend and "trend_analysis" in report:
             trend_data = report["trend_analysis"]
-            if trend_data.get("memory_trend", {}).get("change_percent", 0) > 10:
-                recommendations.append("Warning: メモリ使用量が急速に増加しています。")
+            if isinstance(trend_data, dict):
+                memory_trend = trend_data.get("memory_trend", {})
+                if isinstance(memory_trend, dict):
+                    change_percent = memory_trend.get("change_percent", 0)
+                    if isinstance(change_percent, (int, float)) and change_percent > 10:
+                        recommendations.append(
+                            "Warning: メモリ使用量が急速に増加しています。"
+                        )
 
         report["recommendations"] = recommendations
 

@@ -7,7 +7,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import time
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..utilities.logger import get_logger
 from .memory_types import LEAK_SEVERITY_THRESHOLDS, MemoryLeak, MemorySnapshot
@@ -134,7 +134,7 @@ class MemoryLeakDetector:
             leak for leak in self.detected_leaks.values() if leak.is_critical_leak()
         ]
 
-    def get_leak_summary(self) -> Dict[str, any]:
+    def get_leak_summary(self) -> Dict[str, Any]:
         """リーク検出の概要を取得
 
         Returns:
@@ -142,7 +142,7 @@ class MemoryLeakDetector:
         """
         all_leaks = list(self.detected_leaks.values())
 
-        severity_counts = defaultdict(int)
+        severity_counts: Dict[str, int] = defaultdict(int)
         for leak in all_leaks:
             severity_counts[leak.severity] += 1
 

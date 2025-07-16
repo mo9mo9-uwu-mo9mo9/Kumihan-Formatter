@@ -6,7 +6,7 @@ Issue #476対応 - ファイルサイズ制限遵守
 """
 
 import statistics
-from typing import Any
+from typing import Any, Dict, List
 
 from ..utilities.logger import get_logger
 from .benchmark_types import (
@@ -27,7 +27,7 @@ class BenchmarkAnalyzer:
     - トレンド分析
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """ベンチマーク分析器を初期化"""
         self.logger = get_logger(__name__)
 
@@ -297,13 +297,14 @@ class BenchmarkAnalyzer:
         }
 
         # 警告チェック
+        warnings_list: List[str] = analysis["warnings"]  # type: ignore
         if memory_data and max(memory_data) > 100.0:  # 100MB以上
-            analysis["warnings"].append("High memory usage detected (>100MB)")
+            warnings_list.append("High memory usage detected (>100MB)")
 
         if (
             memory_increases and statistics.mean(memory_increases) > 10.0
         ):  # 平均10MB以上の増加
-            analysis["warnings"].append("Significant memory increase during benchmarks")
+            warnings_list.append("Significant memory increase during benchmarks")
 
         return analysis
 
@@ -311,7 +312,7 @@ class BenchmarkAnalyzer:
         self, results: list[BenchmarkResult]
     ) -> dict[str, Any]:
         """キャッシュパフォーマンスを分析"""
-        cache_data = {
+        cache_data: Dict[str, List[Any]] = {
             "file_cache": [],
             "parse_cache": [],
             "render_cache": [],

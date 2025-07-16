@@ -155,12 +155,12 @@ class MemoryMonitor:
         # 明示的な実行は不要
         pass
 
-    def _analyze_object_leak(self, *args, **kwargs):
+    def _analyze_object_leak(self, *args: Any, **kwargs: Any) -> None:
         """オブジェクトリーク分析（後方互換性）"""
         # 内部実装は leak_detector に移動済み
         pass
 
-    def _calculate_leak_severity(self, *args, **kwargs):
+    def _calculate_leak_severity(self, *args: Any, **kwargs: Any) -> None:
         """リーク深刻度計算（後方互換性）"""
         # 内部実装は leak_detector に移動済み
         pass

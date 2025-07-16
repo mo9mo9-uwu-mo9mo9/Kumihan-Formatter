@@ -10,7 +10,7 @@ import threading
 import time
 import weakref
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from ..utilities.logger import get_logger
 from .memory_types import HAS_PSUTIL, MemorySnapshot
@@ -58,10 +58,12 @@ class MemoryMonitor:
 
         # データストレージ
         self.snapshots: List[MemorySnapshot] = []
-        self.custom_objects: Dict[str, Set[weakref.ReferenceType]] = defaultdict(set)
+        self.custom_objects: Dict[str, Set[weakref.ReferenceType[Any]]] = defaultdict(
+            set
+        )
 
         # 統計
-        self.stats = {
+        self.stats: Dict[str, Union[int, float, None]] = {
             "total_snapshots": 0,
             "monitoring_start_time": None,
             "total_monitoring_time": 0.0,
@@ -114,10 +116,12 @@ class MemoryMonitor:
                 self._monitor_thread.join(timeout=5.0)
 
             # 統計更新
-            if self.stats["monitoring_start_time"]:
-                self.stats["total_monitoring_time"] += (
-                    time.time() - self.stats["monitoring_start_time"]
-                )
+            if self.stats["monitoring_start_time"] is not None:
+                total_time = self.stats["total_monitoring_time"]
+                if isinstance(total_time, (int, float)):
+                    self.stats["total_monitoring_time"] = total_time + (
+                        time.time() - self.stats["monitoring_start_time"]
+                    )
 
     def take_snapshot(self) -> MemorySnapshot:
         """現在のメモリ状況のスナップショットを取得
@@ -129,9 +133,13 @@ class MemoryMonitor:
 
         # ガベージコレクション情報
         gc_objects = len(gc.get_objects())
-        gc_collections = list(gc.get_stats()) if hasattr(gc, "get_stats") else [0, 0, 0]
-        if not isinstance(gc_collections, list):
-            gc_collections = [gc.get_count()[i] for i in range(3)]
+
+        # gc.get_stats()が利用可能な場合は統計を取得、そうでなければget_count()を使用
+        if hasattr(gc, "get_stats"):
+            gc_stats = gc.get_stats()
+            gc_collections = [stat.get("collections", 0) for stat in gc_stats]
+        else:
+            gc_collections = list(gc.get_count())
 
         # システムメモリ情報（psutil利用可能時）
         total_memory = 0
@@ -179,7 +187,9 @@ class MemoryMonitor:
             if len(self.snapshots) > self.max_snapshots:
                 self.snapshots = self.snapshots[-self.max_snapshots :]
 
-            self.stats["total_snapshots"] += 1
+            snapshots_count = self.stats["total_snapshots"]
+            if isinstance(snapshots_count, int):
+                self.stats["total_snapshots"] = snapshots_count + 1
 
         self.logger.debug(
             f"メモリスナップショット取得 memory_mb={snapshot.memory_mb:.1f}, "
@@ -276,11 +286,19 @@ class MemoryMonitor:
             self.custom_objects.clear()
 
             # 統計をリセット（一部は保持）
-            old_total_time = self.stats.get("total_monitoring_time", 0.0)
+            current_monitoring_time = self.stats.get("total_monitoring_time", 0.0)
+            if (
+                isinstance(current_monitoring_time, (int, float))
+                and self.stats["monitoring_start_time"] is not None
+            ):
+                current_monitoring_time += (
+                    time.time() - self.stats["monitoring_start_time"]
+                )
+
             self.stats = {
                 "total_snapshots": 0,
                 "monitoring_start_time": None,
-                "total_monitoring_time": old_total_time,
+                "total_monitoring_time": current_monitoring_time,
             }
 
         self.logger.info(
