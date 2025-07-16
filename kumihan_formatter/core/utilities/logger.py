@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import logging.handlers
 import os
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -54,13 +55,15 @@ class KumihanLogger:
     _instance: "KumihanLogger" | None = None
     _loggers: dict[str, logging.Logger] = {}
     _initialized: bool
+    _lock: threading.Lock = threading.Lock()
 
     def __new__(cls) -> "KumihanLogger":
-        """Singleton pattern to ensure single logger instance"""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
+        """Thread-safe singleton pattern to ensure single logger instance"""
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+                cls._instance._initialized = False
+            return cls._instance
 
     def __init__(self) -> None:
         """Initialize the logger system"""

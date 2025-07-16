@@ -70,8 +70,13 @@ def log_performance_decorator(
             if include_memory and HAS_PSUTIL:
                 try:
                     start_memory = psutil.Process().memory_info().rss
-                except Exception:
-                    pass  # Ignore memory monitoring errors
+                except Exception as e:
+                    # Log memory monitoring errors for debugging
+                    import logging
+
+                    logging.getLogger("kumihan_formatter.performance").debug(
+                        f"Memory monitoring failed: {e}"
+                    )
 
             # Get function signature and arguments
             sig = inspect.signature(func)
@@ -130,14 +135,19 @@ def log_performance_decorator(
                             completion_context["memory_delta_mb"] = round(
                                 memory_delta / (1024 * 1024), 2
                             )
-                    except Exception:
-                        pass  # Ignore memory monitoring errors
+                    except Exception as e:
+                        # Log memory monitoring errors for debugging
+                        import logging
+
+                        logging.getLogger("kumihan_formatter.performance").debug(
+                            f"Memory monitoring failed: {e}"
+                        )
 
                 structured_logger.performance(op_name, duration, **completion_context)
 
                 return result
 
-            except Exception as e:
+            except Exception as func_error:
                 # Log error completion
                 end_time = time.time()
                 duration = end_time - start_time
@@ -145,7 +155,7 @@ def log_performance_decorator(
                 error_context = {
                     "phase": "error",
                     "success": False,
-                    "error_message": str(e),
+                    "error_message": str(func_error),
                 }
 
                 if include_memory and HAS_PSUTIL:
@@ -154,13 +164,18 @@ def log_performance_decorator(
                         error_context["memory_mb"] = round(
                             end_memory / (1024 * 1024), 2
                         )
-                    except Exception:
-                        pass  # Ignore memory monitoring errors
+                    except Exception as memory_error:
+                        # Log memory monitoring errors for debugging
+                        import logging
+
+                        logging.getLogger("kumihan_formatter.performance").debug(
+                            f"Memory monitoring failed: {memory_error}"
+                        )
 
                 structured_logger.error_with_suggestion(
                     f"Function failed: {op_name}",
                     "Check function arguments and internal logic",
-                    error_type=type(e).__name__,
+                    error_type=type(func_error).__name__,
                     operation=op_name,
                     **error_context,
                 )

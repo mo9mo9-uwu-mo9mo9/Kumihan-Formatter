@@ -11,6 +11,7 @@ import logging
 import time
 import traceback
 from datetime import datetime
+from functools import lru_cache
 from typing import Any, Optional
 
 try:
@@ -50,11 +51,13 @@ class StructuredLogger:
         "cookie",
     }
 
-    # Cache for lowercased keys to avoid repeated string operations
-    _key_cache: dict[str, str] = {}
-
     def __init__(self, logger: logging.Logger):
         self.logger = logger
+
+    @lru_cache(maxsize=1000)
+    def _is_sensitive_key(self, key: str) -> bool:
+        """Check if a key is sensitive using LRU cache for efficiency"""
+        return key.lower() in self.SENSITIVE_KEYS
 
     def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """Remove sensitive information from context data
@@ -67,14 +70,8 @@ class StructuredLogger:
         """
         sanitized = {}
         for key, value in context.items():
-            # Use cache to avoid repeated string.lower() operations
-            if key not in self._key_cache:
-                self._key_cache[key] = key.lower()
-                # Limit cache size to prevent memory issues
-                if len(self._key_cache) > 1000:
-                    self._key_cache.clear()
-
-            if self._key_cache[key] in self.SENSITIVE_KEYS:
+            # Use LRU cache for efficient sensitive key detection
+            if self._is_sensitive_key(key):
                 sanitized[key] = "[FILTERED]"
             else:
                 sanitized[key] = value
