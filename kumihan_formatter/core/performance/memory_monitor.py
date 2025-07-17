@@ -149,21 +149,6 @@ class MemoryMonitor:
         }
 
     # 内部メソッド（後方互換性）
-    def _detect_memory_leaks(self) -> None:
-        """メモリリーク検出（後方互換性）"""
-        # この機能はtake_snapshot()で自動的に実行されるため、
-        # 明示的な実行は不要
-        pass
-
-    def _analyze_object_leak(self, *args: Any, **kwargs: Any) -> None:
-        """オブジェクトリーク分析（後方互換性）"""
-        # 内部実装は leak_detector に移動済み
-        pass
-
-    def _calculate_leak_severity(self, *args: Any, **kwargs: Any) -> None:
-        """リーク深刻度計算（後方互換性）"""
-        # 内部実装は leak_detector に移動済み
-        pass
 
     def _check_memory_alerts(self, snapshot: MemorySnapshot) -> None:
         """メモリアラートチェック（後方互換性）"""
@@ -176,8 +161,3 @@ class MemoryMonitor:
     def _cleanup_weak_refs(self) -> None:
         """WeakReferenceクリーンアップ（後方互換性）"""
         self.core._cleanup_weak_refs()
-
-    def _monitor_loop(self) -> None:
-        """監視ループ（後方互換性）"""
-        # この機能は core に移動済み
-        pass

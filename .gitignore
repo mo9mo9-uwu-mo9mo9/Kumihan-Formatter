@@ -187,3 +187,6 @@ logs/
 
 # Development logs (Issue#446)
 /tmp/kumihan_formatter/
+
+# Temporary files
+*.tmp

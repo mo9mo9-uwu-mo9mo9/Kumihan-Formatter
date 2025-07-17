@@ -24,24 +24,27 @@ class CacheStrategy(ABC):
         pass
 
 
-class LRUStrategy(CacheStrategy):
-    """Least Recently Used (最近最少使用) 戦略"""
+class StandardStrategy(CacheStrategy):
+    """標準戦略 - LRU/LFUを統合"""
+
+    def __init__(self, strategy_type: str = "lru"):
+        """
+        Args:
+            strategy_type: "lru" (最新アクセス時刻) または "lfu" (アクセス回数)
+        """
+        self.strategy_type = strategy_type
 
     def should_evict(self, entry: CacheEntry) -> bool:
         return entry.is_expired()
 
     def get_priority(self, entry: CacheEntry) -> float:
-        return entry.last_accessed.timestamp()
-
-
-class LFUStrategy(CacheStrategy):
-    """Least Frequently Used (最少頻度使用) 戦略"""
-
-    def should_evict(self, entry: CacheEntry) -> bool:
-        return entry.is_expired()
-
-    def get_priority(self, entry: CacheEntry) -> float:
-        return float(entry.access_count)
+        if self.strategy_type == "lru":
+            return entry.last_accessed.timestamp()
+        elif self.strategy_type == "lfu":
+            return float(entry.access_count)
+        else:
+            # デフォルトはLRU
+            return entry.last_accessed.timestamp()
 
 
 class TTLStrategy(CacheStrategy):

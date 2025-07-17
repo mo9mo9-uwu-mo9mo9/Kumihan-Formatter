@@ -193,21 +193,6 @@ class ConfigManager:
 
 
 # 便利関数
-def create_config_manager(
-    config_type: str = "extended", config_path: str | None = None
-) -> ConfigManager:
-    """設定管理を作成
-
-    Args:
-        config_type: 設定タイプ ("base" または "extended")
-        config_path: 設定ファイルパス
-
-    Returns:
-        ConfigManager: 設定管理オブジェクト
-    """
-    return ConfigManager(config_type=config_type, config_path=config_path)
-
-
 def load_config(config_path: str | None = None) -> ConfigManager:
     """設定を読み込む便利関数（既存コードとの互換性用）
 
@@ -217,4 +202,4 @@ def load_config(config_path: str | None = None) -> ConfigManager:
     Returns:
         ConfigManager: 設定管理オブジェクト
     """
-    return create_config_manager(config_type="extended", config_path=config_path)
+    return ConfigManager(config_type="extended", config_path=config_path)

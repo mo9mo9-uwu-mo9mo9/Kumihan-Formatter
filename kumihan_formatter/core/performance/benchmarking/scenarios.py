@@ -8,6 +8,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from ...utilities.logger import get_logger
 from .scenario_generators import ScenarioDataGenerators
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> origin/main
 class BenchmarkScenarios:
     """ベンチマークシナリオ管理クラス
     機能:
@@ -122,6 +127,10 @@ class BenchmarkScenarios:
     def generate_file_content(self, lines: int = 1000) -> str:
         """ファイル読み込みテスト用コンテンツを生成（ScenarioDataGeneratorsに委譲）"""
         return ScenarioDataGenerators.generate_file_content(lines)
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
     def generate_parse_content(
         self, lines: int = 100, notation_density: float = 0.3
     ) -> str:
@@ -239,6 +248,10 @@ class BenchmarkScenarios:
     def _generate_lorem_ipsum(self, sentences: int = 1) -> str:
         """Lorem Ipsum風のテキストを生成（簡略版）"""
         return "Lorem ipsum dolor sit amet. " * sentences
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
     def create_benchmark_suite(
         self, scenario_names: Optional[List[str]] = None
     ) -> Dict[str, Tuple[Any, Dict[str, Any]]]:
