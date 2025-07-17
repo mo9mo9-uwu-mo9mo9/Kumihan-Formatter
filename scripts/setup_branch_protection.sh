@@ -68,8 +68,7 @@ PROTECTION_CONFIG=$(cat <<EOF
   "required_status_checks": {
     "strict": true,
     "contexts": [
-      "quality-check / quality-check",
-      "quality-check / pre-commit-check"
+      "quality-check / quality-check"
     ]
   },
   "enforce_admins": true,

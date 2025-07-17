@@ -30,7 +30,6 @@ GitHub Actionsの品質チェックを**必須**にして、全てのコード�
 ```yaml
 必須チェック項目:
 ✅ quality-check / quality-check
-✅ quality-check / pre-commit-check
 ```
 
 ### 詳細設定
@@ -48,7 +47,6 @@ Branch Protection Rules:
         - Require branches to be up to date: 有効
         - Status checks found in the last week:
           - quality-check / quality-check
-          - quality-check / pre-commit-check
 
     ✅ Require conversation resolution before merging
 
@@ -79,7 +77,6 @@ Branch Protection Rules:
    ```
    Status checks found in the last week で以下を選択:
    - quality-check / quality-check
-   - quality-check / pre-commit-check
    ```
 
 ### 2. GitHub CLI での設定（自動化）
@@ -88,7 +85,7 @@ Branch Protection Rules:
 # ブランチ保護ルール作成
 gh api repos/{owner}/{repo}/branches/main/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["quality-check / quality-check","quality-check / pre-commit-check"]}' \
+  --field required_status_checks='{"strict":true,"contexts":["quality-check / quality-check"]}' \
   --field enforce_admins=true \
   --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true}' \
   --field restrictions=null
