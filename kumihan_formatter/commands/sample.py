@@ -22,7 +22,7 @@ class SampleCommand:
     """Sample generation command implementation"""
 
     def __init__(self) -> None:
-        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
+        self.file_ops = FileOperations(ui=get_console_ui())
         self.path_validator = PathValidator()
 
     def execute(

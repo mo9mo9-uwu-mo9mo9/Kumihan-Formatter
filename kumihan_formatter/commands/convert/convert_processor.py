@@ -27,7 +27,7 @@ class ConvertProcessor:
 
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
+        self.file_ops = FileOperations(ui=get_console_ui())
         self.logger.debug("ConvertProcessor initialized")
 
     def convert_file(  # type: ignore
@@ -219,8 +219,10 @@ class ConvertProcessor:
         get_console_ui().conversion_complete(str(output_file))
 
         # 大きなファイルの場合は詳細統計を表示
-        input_size_info = self.file_ops.get_file_size_info(input_path)
-        output_size_info = self.file_ops.get_file_size_info(output_file)
+        from ...core.file_path_utilities import FilePathUtilities
+
+        input_size_info = FilePathUtilities.get_file_size_info(input_path)
+        output_size_info = FilePathUtilities.get_file_size_info(output_file)
 
         stats = {
             "input_size_mb": input_size_info["size_mb"],

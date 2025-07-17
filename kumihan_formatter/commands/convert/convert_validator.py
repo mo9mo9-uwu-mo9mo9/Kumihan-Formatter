@@ -21,7 +21,7 @@ class ConvertValidator:
     """
 
     def __init__(self) -> None:
-        self.file_ops = FileOperations(ui=get_console_ui())  # type: ignore
+        self.file_ops = FileOperations(ui=get_console_ui())
         self.path_validator = PathValidator()
 
     def validate_input_file(self, input_file: str) -> Path:
@@ -37,7 +37,9 @@ class ConvertValidator:
 
     def check_file_size(self, input_path: Path) -> bool:
         """ファイルサイズをチェックし、必要に応じて警告を表示"""
-        size_info = self.file_ops.get_file_size_info(input_path)
+        from ...core.file_path_utilities import FilePathUtilities
+
+        size_info = FilePathUtilities.get_file_size_info(input_path)
 
         if size_info["is_large"]:
             # 大きなファイルの警告を表示
@@ -46,7 +48,7 @@ class ConvertValidator:
                 return False
 
             # 推定処理時間を表示
-            estimated_time = self.file_ops.estimate_processing_time(
+            estimated_time = FilePathUtilities.estimate_processing_time(
                 size_info["size_mb"]
             )
             get_console_ui().hint(f"推定処理時間: {estimated_time}")
