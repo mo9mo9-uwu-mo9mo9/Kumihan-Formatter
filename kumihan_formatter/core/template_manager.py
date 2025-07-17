@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
-
-
+from .template_filters import TemplateFilters
+from .template_selector import TemplateSelector
+from .template_context import RenderContext
 class TemplateManager:
     """
     Jinja2テンプレート管理クラス（HTML出力の制御）
@@ -155,11 +156,15 @@ class TemplateManager:
 
     def _register_custom_filters(self) -> None:
         """Register custom Jinja2 filters"""
-
+        # Register standard template filters
+        filters = TemplateFilters.get_all_filters()
+        for name, filter_func in filters.items():
+            self.env.filters[name] = filter_func
+            
+        # Register legacy filters for backward compatibility
         def safe_html(text: str) -> str:
             """Mark text as safe HTML (no escaping)"""
             from markupsafe import Markup
-
             return Markup(text)
 
         def truncate_words(text: str, length: int = 50, suffix: str = "...") -> str:
@@ -183,93 +188,14 @@ class TemplateManager:
             """Format TOC indentation based on heading level"""
             return "    " * (level - 1)
 
-        # Register filters
+        # Register legacy filters
         self.env.filters["safe_html"] = safe_html
         self.env.filters["truncate_words"] = truncate_words
         self.env.filters["extract_text"] = extract_text
         self.env.filters["format_toc_level"] = format_toc_level
 
 
-class RenderContext:
-    """Builder for template rendering context"""
-
-    def __init__(self) -> None:
-        self._context = {}  # type: ignore
-
-    def title(self, title: str) -> "RenderContext":
-        """Set page title"""
-        self._context["title"] = title
-        return self
-
-    def body_content(self, content: str) -> "RenderContext":
-        """Set main body content"""
-        self._context["body_content"] = content
-        return self
-
-    def toc_html(self, toc: str) -> "RenderContext":
-        """Set table of contents HTML"""
-        self._context["toc_html"] = toc
-        return self
-
-    def has_toc(self, has_toc: bool) -> "RenderContext":
-        """Set whether TOC should be displayed"""
-        self._context["has_toc"] = has_toc
-        return self
-
-    def source_toggle(self, source_text: str, source_filename: str) -> "RenderContext":
-        """Add source toggle functionality"""
-        self._context["source_text"] = source_text
-        self._context["source_filename"] = source_filename
-        self._context["has_source_toggle"] = True
-        return self
-
-    def navigation(self, nav_html: str) -> "RenderContext":
-        """Add navigation HTML"""
-        self._context["navigation_html"] = nav_html
-        return self
-
-    def css_vars(self, css_vars: dict[str, str]) -> "RenderContext":
-        """Set CSS variables for styling"""
-        self._context["css_vars"] = css_vars
-        return self
-
-    def custom(self, key: str, value: Any) -> "RenderContext":
-        """Add custom context variable"""
-        self._context[key] = value
-        return self
-
-    def metadata(
-        self, description: str | None = None, keywords: str | None = None
-    ) -> "RenderContext":
-        """Add page metadata"""
-        if description:
-            self._context["meta_description"] = description
-        if keywords:
-            self._context["meta_keywords"] = keywords
-        return self
-
-    def build(self) -> dict[str, Any]:
-        """Build the context dictionary"""
-        # Set defaults
-        defaults = {
-            "title": "Document",
-            "body_content": "",
-            "toc_html": "",
-            "has_toc": False,
-            "has_source_toggle": False,
-            "navigation_html": "",
-            "meta_description": "",
-            "meta_keywords": "",
-            "css_vars": {},  # Empty CSS variables dict for template compatibility
-        }
-
-        # Merge with provided context
-        result = defaults.copy()
-        result.update(self._context)
-
-        return result
-
-
+# RenderContext moved to template_context.py for better modularity
 class TemplateValidator:
     """Validator for template files and structure"""
 
