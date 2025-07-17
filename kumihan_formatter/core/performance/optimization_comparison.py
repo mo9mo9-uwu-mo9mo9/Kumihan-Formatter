@@ -3,8 +3,10 @@
 ベースラインと最適化後のパフォーマンスを比較しメトリクスを計算
 Issue #476対応 - ファイルサイズ制限遵守
 """
+
 import statistics
 from typing import Any
+
 from ..utilities.logger import get_logger
 from .optimization_types import (
     REGRESSION_THRESHOLDS,
@@ -12,6 +14,7 @@ from .optimization_types import (
     SIGNIFICANCE_THRESHOLDS,
     OptimizationMetrics,
 )
+
 
 class OptimizationComparisonEngine:
     """最適化比較エンジン

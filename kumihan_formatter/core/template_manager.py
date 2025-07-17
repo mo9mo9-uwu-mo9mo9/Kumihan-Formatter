@@ -7,18 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
-<<<<<<< HEAD
 
 from .template_context import RenderContext
 from .template_filters import TemplateFilters
 from .template_selector import TemplateSelector
 
 
-=======
-from .template_filters import TemplateFilters
-from .template_selector import TemplateSelector
-from .template_context import RenderContext
->>>>>>> origin/main
 class TemplateManager:
     """
     Jinja2テンプレート管理クラス（HTML出力の制御）
@@ -169,15 +163,12 @@ class TemplateManager:
         filters = TemplateFilters.get_all_filters()
         for name, filter_func in filters.items():
             self.env.filters[name] = filter_func
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> origin/main
         # Register legacy filters for backward compatibility
         def safe_html(text: str) -> str:
             """Mark text as safe HTML (no escaping)"""
             from markupsafe import Markup
+
             return Markup(text)
 
         def truncate_words(text: str, length: int = 50, suffix: str = "...") -> str:

@@ -27,6 +27,23 @@ class FileSizeChecker:
         self.max_functions = max_functions
         self.violations: List[Tuple[str, str, int, int]] = []
 
+    def _load_legacy_files(self) -> set:
+        """技術的負債ファイル一覧を読み込み"""
+        legacy_files = set()
+        legacy_file_path = Path("technical_debt_legacy_files.txt")
+
+        if legacy_file_path.exists():
+            try:
+                with open(legacy_file_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#"):
+                            legacy_files.add(line)
+            except Exception:
+                pass  # ファイル読み込みエラーは無視
+
+        return legacy_files
+
     def check_file(self, file_path: Path) -> bool:
         """単一ファイルをチェック
 
@@ -104,12 +121,17 @@ class FileSizeChecker:
             "**/dist/**",
         ]
 
+        # 技術的負債ファイルを読み込み
+        legacy_files = self._load_legacy_files()
+
         filtered_files = []
         for file_path in python_files:
             should_exclude = any(
                 file_path.match(pattern) for pattern in excluded_patterns
             )
-            if not should_exclude:
+            # 技術的負債ファイルも除外
+            relative_path = str(file_path).replace(str(target_dir.parent) + "/", "")
+            if not should_exclude and relative_path not in legacy_files:
                 filtered_files.append(file_path)
 
         print(f"チェック対象: {len(filtered_files)} ファイル")

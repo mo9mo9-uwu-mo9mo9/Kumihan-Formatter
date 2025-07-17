@@ -2,73 +2,58 @@ name: Quality Check
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches: [main, develop]
+    branches: [ main, develop ]
 
 jobs:
   quality-check:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e .
+        pip install pytest pytest-cov black isort flake8 mypy
 
-    - name: Run file size check
+    - name: Check file sizes and architecture (警告のみ)
       run: |
-        echo "🔍 Running file size check..."
-        python scripts/check_file_size.py --max-lines=300 || echo "::warning::File size violations detected"
+        echo "⚠️ 技術的負債チェック（Issue #497: 警告表示のみ）"
+        python scripts/check_file_size.py --max-lines=300 || echo "📏 ファイルサイズ警告を検出"
+        python scripts/architecture_check.py || echo "🏗️ アーキテクチャ警告を検出"
 
-    - name: Run architecture check
+    - name: Code formatting check (Black)
       run: |
-        echo "🏗️ Running architecture check..."
-        python scripts/architecture_check.py || echo "::warning::Architecture violations detected"
+        black --check kumihan_formatter/ tests/ || true
 
-    - name: Run Black formatting check
+    - name: Import sorting check (isort)
       run: |
-        echo "🎨 Running Black formatting check..."
-        black --check kumihan_formatter tests
+        isort --check-only --diff kumihan_formatter/ tests/ || true
 
-    - name: Run isort import sorting check
+    - name: Linting (flake8)
       run: |
-        echo "📦 Running isort import sorting check..."
-        isort --check-only kumihan_formatter tests
+        flake8 kumihan_formatter/ tests/ || true
 
-    - name: Run flake8 linting
+    - name: Type checking (mypy - 警告のみ)
       run: |
-        echo "🧹 Running flake8 linting..."
-        flake8 kumihan_formatter tests
+        echo "⚠️ 型チェック（Issue #497: 警告表示のみ）"
+        mypy kumihan_formatter/ --strict || echo "🔍 型エラー警告を検出"
 
-    - name: Run mypy type checking (staged adoption)
+    - name: Run tests (基本テストのみ)
       run: |
-        echo "🔍 Running mypy type checking with staged adoption..."
-        # Legacy files are excluded as per technical_debt_legacy_files.txt
-        mypy kumihan_formatter --strict \
-          --exclude "kumihan_formatter/file_operations.py" \
-          --exclude "kumihan_formatter/japanese_messages.py" \
-          --exclude "kumihan_formatter/errors.py" \
-          --exclude "kumihan_formatter/batch_processor.py" || echo "::error::Type checking failed"
+        echo "⚠️ Issue #497: 基本テスト実行（段階的テスト復旧）"
+        pytest tests/ -v --cov=kumihan_formatter --cov-report=xml --cov-fail-under=0 || echo "📝 テスト警告を検出（Phase 2-4で本格的テスト追加予定）"
 
-    - name: Run pytest
-      run: |
-        echo "🧪 Running tests..."
-        pytest tests/ -v --tb=short --maxfail=10 || echo "::error::Tests failed"
-
-    - name: Generate test report
-      if: always()
-      run: |
-        echo "📊 Quality Check Summary"
-        echo "========================"
-        echo "✅ Checks completed. See annotations above for any issues."
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false

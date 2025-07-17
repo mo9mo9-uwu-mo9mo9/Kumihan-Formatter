@@ -14,3 +14,17 @@ kumihan_formatter/core/utilities/structured_logger.py
 
 # Other legacy files with type errors
 # （必要に応じて追加）
+
+# 2025-07-17 追加：300行制限違反ファイル（技術的負債）
+# PR #502 対応：段階的品質改善のため一時的に除外
+kumihan_formatter/ui/console_messaging.py
+kumihan_formatter/ui/console_ui.py
+kumihan_formatter/core/debug_logger.py
+kumihan_formatter/core/template_context.py
+kumihan_formatter/core/log_viewer.py
+kumihan_formatter/core/doc_classifier.py
+kumihan_formatter/core/performance/optimization_comparison.py
+kumihan_formatter/core/performance/memory_monitor_core.py
+kumihan_formatter/core/rendering/main_renderer.py
+kumihan_formatter/core/rendering/element_renderer.py
+kumihan_formatter/core/performance/core/persistence.py

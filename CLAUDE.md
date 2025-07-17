@@ -61,8 +61,21 @@ AI運用5原則
 - **段階的移行**: 既存ファイルは修正時に品質基準適用
 
 ### Pull Request必須ルール
-- **手動マージ**: オートマージ使用禁止
-- **人間による@claudeレビュー必須**: PR作成後、人間が手動で@claudeをメンションしてレビュー依頼
+- **Claude自動レビュー**: PR作成時に自動でClaude Codeレビュー実行
+- **mo9mo9手動マージ**: レビュー完了後、mo9mo9による手動マージ実行
+- **品質保証**: GitHub Actions品質チェック + Claudeレビューの二重チェック
+
+### Claude自動レビュー体制（新導入）
+- **実行タイミング**: PR作成・更新時に自動実行
+- **レビュー観点**: コード品質・アーキテクチャ・セキュリティ・パフォーマンス・テスト・文書化
+- **ワークフロー**: `.github/workflows/claude-review.yml`
+- **ラベル**: `review-requested`、`claude-review`を自動付与
+
+### ブランチ保護設定（重要）
+- **main ブランチ直接プッシュ禁止**: 全ての変更はPR経由必須
+- **CI/CD必須通過**: GitHub Actions品質チェック必須
+- **設定ガイド**: [docs/dev/BRANCH_PROTECTION.md](docs/dev/BRANCH_PROTECTION.md)
+- **自動設定**: `scripts/setup_branch_protection.sh`実行
 
 ## コーディング規約
 - **Python**: 3.12以上, Black, isort, mypy strict

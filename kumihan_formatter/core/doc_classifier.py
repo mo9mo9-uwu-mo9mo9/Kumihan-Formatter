@@ -2,25 +2,33 @@
 文書分類システム - Issue #118対応
 エンドユーザー向けと開発者向け文書を適切に分類・処理する
 """
+
 import re
 from enum import Enum
 from pathlib import Path
 from typing import Dict
+
+
 class DocumentType(Enum):
     """文書タイプの分類"""
+
     USER_ESSENTIAL = "user_essential"  # 最重要ユーザー文書（.txt化）
     USER_GUIDE = "user_guide"  # ユーザーガイド（HTML化）
     DEVELOPER = "developer"  # 開発者向け文書（Markdownのまま）
     TECHNICAL = "technical"  # 技術文書（開発者ディレクトリ）
     EXCLUDE = "exclude"  # 配布から除外
     EXAMPLE = "example"  # サンプルファイル
+
+
 class DocumentClassifier:
     """文書分類器
     ファイルパスとメタデータに基づいて文書を適切に分類する
     """
+
     def __init__(self) -> None:
         """分類器を初期化"""
         self.classification_rules = self._build_classification_rules()
+
     def _build_classification_rules(self) -> Dict[DocumentType, dict[str, list[str]]]:
         """分類ルールを構築"""
         return {
@@ -159,6 +167,7 @@ class DocumentClassifier:
                 ],
             },
         }
+
     def classify_file(self, file_path: Path, base_path: Path) -> DocumentType:
         """ファイルを分類
         Args:
@@ -196,6 +205,7 @@ class DocumentClassifier:
             return DocumentType.USER_ESSENTIAL
         else:
             return DocumentType.EXCLUDE
+
     def classify_directory(self, directory: Path) -> dict[DocumentType, list[Path]]:
         """ディレクトリ内のファイルを一括分類
         Args:
@@ -216,6 +226,7 @@ class DocumentClassifier:
                 doc_type = self.classify_file(file_path, directory)
                 result[doc_type].append(file_path)
         return result
+
     def _load_exclude_patterns(self, directory: Path) -> list[str]:
         """除外パターンを.distignoreから読み込み"""
         distignore_file = directory / ".distignore"
@@ -230,12 +241,15 @@ class DocumentClassifier:
             except Exception:
                 pass  # エラーは無視
         return patterns
+
     def _should_exclude_by_patterns(
         self, file_path: Path, base_path: Path, patterns: list[str]
     ) -> bool:
         """除外パターンによるチェック"""
         from ..core.file_ops import FileOperations
+
         return FileOperations.should_exclude(file_path, patterns, base_path)
+
     def get_conversion_strategy(self, doc_type: DocumentType) -> tuple[str, str]:
         """文書タイプに対する変換戦略を取得
         Args:
@@ -252,6 +266,7 @@ class DocumentClassifier:
             DocumentType.EXCLUDE: ("exclude", ""),
         }
         return strategies.get(doc_type, ("exclude", ""))
+
     def generate_document_summary(
         self, classified_files: dict[DocumentType, list[Path]]
     ) -> str:
@@ -276,6 +291,8 @@ class DocumentClassifier:
                     summary_lines.append(f"  ... 他{len(files) - 5}件")
                 summary_lines.append("")
         return "\n".join(summary_lines)
+
+
 def classify_document(file_path: Path, base_path: Path) -> DocumentType:
     """ファイルを分類（外部API）
     Args:
@@ -286,6 +303,8 @@ def classify_document(file_path: Path, base_path: Path) -> DocumentType:
     """
     classifier = DocumentClassifier()
     return classifier.classify_file(file_path, base_path)
+
+
 def classify_project_documents(project_dir: Path) -> dict[DocumentType, list[Path]]:
     """プロジェクト文書を一括分類（外部API）
     Args:

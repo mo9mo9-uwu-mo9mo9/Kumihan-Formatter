@@ -249,7 +249,7 @@ class RenderCacheAnalytics:
         Returns:
             最適化機会の分析結果
         """
-        opportunities: Dict[str, List[Dict[str, Any]]] = {
+        opportunities: Dict[str, List[str]] = {
             "high_impact": [],
             "medium_impact": [],
             "low_impact": [],
