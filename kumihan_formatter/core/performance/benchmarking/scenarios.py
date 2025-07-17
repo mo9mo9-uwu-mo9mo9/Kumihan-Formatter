@@ -2,10 +2,12 @@
 Single Responsibility Principle適用: ベンチマークシナリオの責任分離
 Issue #476 Phase2対応 - パフォーマンスモジュール統合
 """
+
 import random
 import string
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
 from ...utilities.logger import get_logger
 from .scenario_generators import ScenarioDataGenerators
 
@@ -17,11 +19,13 @@ class BenchmarkScenarios:
     - テストデータの生成
     - シナリオ別パラメータ管理
     """
+
     def __init__(self) -> None:
         """ベンチマークシナリオを初期化"""
         self.logger = get_logger(__name__)
         self.scenarios: Dict[str, Dict[str, Any]] = {}
         self._register_default_scenarios()
+
     def _register_default_scenarios(self) -> None:
         """デフォルトシナリオを登録"""
         # ファイル読み込みシナリオ
@@ -99,6 +103,7 @@ class BenchmarkScenarios:
                 "params": {"template_complexity": "complex"},
             },
         )
+
     def register_scenario(self, name: str, config: Dict[str, Any]) -> None:
         """シナリオを登録
         Args:
@@ -107,6 +112,7 @@ class BenchmarkScenarios:
         """
         self.scenarios[name] = config
         self.logger.debug(f"Registered scenario: {name}")
+
     def get_scenario(self, name: str) -> Optional[Dict[str, Any]]:
         """シナリオを取得
         Args:
@@ -115,12 +121,14 @@ class BenchmarkScenarios:
             シナリオ設定（見つからない場合はNone）
         """
         return self.scenarios.get(name)
+
     def list_scenarios(self) -> List[str]:
         """利用可能なシナリオ一覧を取得
         Returns:
             シナリオ名のリスト
         """
         return list(self.scenarios.keys())
+
     def generate_file_content(self, lines: int = 1000) -> str:
         """ファイル読み込みテスト用コンテンツを生成（ScenarioDataGeneratorsに委譲）"""
         return ScenarioDataGenerators.generate_file_content(lines)
@@ -163,6 +171,7 @@ class BenchmarkScenarios:
                     f"Normal text line {i}: " + self._generate_lorem_ipsum()
                 )
         return "\n".join(content_lines)
+
     def generate_render_data(
         self, elements: int = 100, template_complexity: str = "standard"
     ) -> Dict[str, Any]:
@@ -239,13 +248,11 @@ class BenchmarkScenarios:
                 "date": "2024-01-01",
             },
         }
+
     def _generate_lorem_ipsum(self, sentences: int = 1) -> str:
         """Lorem Ipsum風のテキストを生成（簡略版）"""
         return "Lorem ipsum dolor sit amet. " * sentences
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/main
     def create_benchmark_suite(
         self, scenario_names: Optional[List[str]] = None
     ) -> Dict[str, Tuple[Any, Dict[str, Any]]]:
@@ -275,8 +282,12 @@ class BenchmarkScenarios:
             else:
                 self.logger.warning(f"Scenario '{name}' not found")
         return suite
+
+
 # グローバルインスタンス
 _global_scenarios: Optional[BenchmarkScenarios] = None
+
+
 def get_benchmark_scenarios() -> BenchmarkScenarios:
     """グローバルなベンチマークシナリオインスタンスを取得
     Returns:

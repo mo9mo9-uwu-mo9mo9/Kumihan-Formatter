@@ -9,27 +9,27 @@ jobs:
   claude-review:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Get changed files
       id: changed-files
       run: |
         echo "files=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | tr '\n' ' ')" >> $GITHUB_OUTPUT
-    
+
     - name: Claude Code Review
       uses: actions/github-script@v7
       with:
         script: |
           const { owner, repo, number } = context.issue;
           const changedFiles = "${{ steps.changed-files.outputs.files }}";
-          
+
           // Claude Code レビュー依頼のコメント
-          const reviewComment = `@claude 
+          const reviewComment = `@claude
 
 ## 🤖 自動レビュー依頼
 
@@ -45,12 +45,13 @@ jobs:
 - テスト（網羅性・品質）
 - 文書化（適切なコメント・ドキュメント）
 
-**Issue #497 完了後の新体制:**
+**個人開発における手動マージ体制:**
 - 自動品質チェック強化
-- オートマージ専用化
+- Claude自動レビュー後、mo9mo9による手動マージ
 - 段階的テスト復旧（Phase 2-4）
 
-詳細なレビューをお願いします。`;
+詳細なレビューをお願いします。
+**注意**: レビュー完了後、mo9mo9による手動マージが必要です。`;
 
           await github.rest.issues.createComment({
             owner,
@@ -58,15 +59,15 @@ jobs:
             issue_number: number,
             body: reviewComment
           });
-          
+
           console.log("Claude Code review request posted successfully");
-    
+
     - name: Add review label
       uses: actions/github-script@v7
       with:
         script: |
           const { owner, repo, number } = context.issue;
-          
+
           await github.rest.issues.addLabels({
             owner,
             repo,
