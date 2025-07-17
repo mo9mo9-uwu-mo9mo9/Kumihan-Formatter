@@ -9,6 +9,10 @@ jobs:
   claude-review:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
 
     steps:
     - name: Checkout code
@@ -21,48 +25,7 @@ jobs:
       run: |
         echo "files=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
-    - name: Claude Code Review
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { owner, repo, number } = context.issue;
-          const changedFiles = "${{ steps.changed-files.outputs.files }}";
-
-          // Claude Code レビュー依頼のコメント
-          const reviewComment = `@claude
-
-## 🤖 自動レビュー依頼
-
-このPRの自動レビューを開始します。
-
-**変更ファイル:** ${changedFiles}
-
-**レビュー観点:**
-- コード品質（可読性・保守性）
-- アーキテクチャ準拠（300行制限・Single Responsibility）
-- セキュリティ（機密情報漏洩・脆弱性）
-- パフォーマンス（効率性・最適化）
-- テスト（網羅性・品質）
-- 文書化（適切なコメント・ドキュメント）
-
-**個人開発における手動マージ体制:**
-- 自動品質チェック強化
-- Claude自動レビュー後、mo9mo9による手動マージ
-- 段階的テスト復旧（Phase 2-4）
-
-詳細なレビューをお願いします。
-**注意**: レビュー完了後、mo9mo9による手動マージが必要です。`;
-
-          await github.rest.issues.createComment({
-            owner,
-            repo,
-            issue_number: number,
-            body: reviewComment
-          });
-
-          console.log("Claude Code review request posted successfully");
-
-    - name: Add review label
+    - name: Add review labels
       uses: actions/github-script@v7
       with:
         script: |
@@ -74,3 +37,41 @@ jobs:
             issue_number: number,
             labels: ['review-requested', 'claude-review']
           });
+
+    - name: Auto Review Notification
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo, number } = context.issue;
+          const changedFiles = "${{ steps.changed-files.outputs.files }}";
+
+          const notificationComment = `## 🤖 自動レビューが開始されました
+
+          **変更ファイル:** ${changedFiles}
+
+          **レビュー観点:**
+          - コード品質（可読性・保守性）
+          - アーキテクチャ準拠（300行制限・Single Responsibility）
+          - セキュリティ（機密情報漏洩・脆弱性）
+          - パフォーマンス（効率性・最適化）
+          - テスト（網羅性・品質）
+          - 文書化（適切なコメント・ドキュメント）
+
+          **🏷️ ラベルトリガー方式:**
+          \`claude-review\` ラベルの付与により Claude Apps による詳細レビューが実行されます。
+
+          **個人開発における手動マージ体制:**
+          - 自動品質チェック強化
+          - Claude自動レビュー後、mo9mo9による手動マージ
+          - 段階的テスト復旧（Phase 2-4）
+
+          **注意**: レビュー完了後、mo9mo9による手動マージが必要です。`;
+
+          await github.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: number,
+            body: notificationComment
+          });
+
+          console.log("Auto review notification posted successfully");
