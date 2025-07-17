@@ -45,18 +45,12 @@ class ContextAnalyzerReports:
             "error_analysis": {
                 "error_type": type(error).__name__,
                 "error_message": str(error),
-                "stack_trace": (
-                    str(error.__traceback__) if error.__traceback__ else None
-                ),
+                "stack_trace": str(error.__traceback__) if error.__traceback__ else None,
             },
             "context_analysis": self._analyze_context_stack(context_stack),
             "system_analysis": self._analyze_system_context(system_context),
-            "file_analysis": (
-                self._analyze_file_contexts(file_contexts) if file_contexts else None
-            ),
-            "recommendations": self._generate_recommendations(
-                error, context_stack, system_context
-            ),
+            "file_analysis": self._analyze_file_contexts(file_contexts) if file_contexts else None,
+            "recommendations": self._generate_recommendations(error, context_stack, system_context),
         }
 
         self.logger.info("詳細レポート生成完了")
@@ -108,9 +102,7 @@ class ContextAnalyzerReports:
                     path: {
                         "size": ctx.size,
                         "encoding": ctx.encoding,
-                        "last_modified": (
-                            ctx.last_modified.isoformat() if ctx.last_modified else None
-                        ),
+                        "last_modified": ctx.last_modified.isoformat() if ctx.last_modified else None,
                         "content_type": ctx.content_type,
                         "metadata": ctx.metadata,
                     }
@@ -155,14 +147,10 @@ class ContextAnalyzerReports:
         # 操作パターンの分析
         operation_counts = {}
         for ctx in context_stack:
-            operation_counts[ctx.operation_type] = (
-                operation_counts.get(ctx.operation_type, 0) + 1
-            )
+            operation_counts[ctx.operation_type] = operation_counts.get(ctx.operation_type, 0) + 1
 
         analysis["operation_distribution"] = operation_counts
-        analysis["dominant_operation"] = max(
-            operation_counts.items(), key=lambda x: x[1]
-        )[0]
+        analysis["dominant_operation"] = max(operation_counts.items(), key=lambda x: x[1])[0]
 
         return analysis
 
@@ -179,9 +167,7 @@ class ContextAnalyzerReports:
             },
             "environment_info": {
                 "working_directory": system_context.working_directory,
-                "environment_variables_count": len(
-                    system_context.environment_variables
-                ),
+                "environment_variables_count": len(system_context.environment_variables),
             },
         }
 
@@ -206,9 +192,7 @@ class ContextAnalyzerReports:
             "file_count": len(file_contexts),
             "total_size": sum(ctx.size for ctx in file_contexts.values()),
             "encodings": list(set(ctx.encoding for ctx in file_contexts.values())),
-            "content_types": list(
-                set(ctx.content_type for ctx in file_contexts.values())
-            ),
+            "content_types": list(set(ctx.content_type for ctx in file_contexts.values())),
         }
 
         # サイズ別分析
@@ -234,51 +218,38 @@ class ContextAnalyzerReports:
 
         # エラータイプ別の推奨事項
         if error_type in ["FileNotFoundError", "PermissionError"]:
-            recommendations.extend(
-                [
-                    "ファイルパスと存在を確認してください",
-                    "ファイルのアクセス権限を確認してください",
-                    "相対パスではなく絶対パスの使用を検討してください",
-                ]
-            )
+            recommendations.extend([
+                "ファイルパスと存在を確認してください",
+                "ファイルのアクセス権限を確認してください",
+                "相対パスではなく絶対パスの使用を検討してください",
+            ])
 
         elif error_type in ["UnicodeDecodeError", "UnicodeEncodeError"]:
-            recommendations.extend(
-                [
-                    "ファイルのエンコーディングを確認してください",
-                    "UTF-8でファイルを保存し直してください",
-                    "BOMの有無を確認してください",
-                ]
-            )
+            recommendations.extend([
+                "ファイルのエンコーディングを確認してください",
+                "UTF-8でファイルを保存し直してください",
+                "BOMの有無を確認してください",
+            ])
 
         elif error_type in ["ValueError", "TypeError"]:
-            recommendations.extend(
-                [
-                    "入力データの形式と型を確認してください",
-                    "データの妥当性を検証してください",
-                    "APIドキュメントを確認してください",
-                ]
-            )
+            recommendations.extend([
+                "入力データの形式と型を確認してください",
+                "データの妥当性を検証してください",
+                "APIドキュメントを確認してください",
+            ])
 
         # コンテキストベースの推奨事項
         if context_stack:
             current_context = context_stack[0]
-
+            
             if current_context.operation_type == "file_parsing":
-                recommendations.append(
-                    "構文エラーの可能性があります。記法を確認してください"
-                )
-
+                recommendations.append("構文エラーの可能性があります。記法を確認してください")
+                
             elif current_context.operation_type == "rendering":
                 recommendations.append("レンダリング設定を確認してください")
 
         # システムリソースベースの推奨事項
-        if (
-            system_context.available_memory
-            and system_context.available_memory < 100 * 1024 * 1024
-        ):
-            recommendations.append(
-                "メモリ不足の可能性があります。システムリソースを確認してください"
-            )
+        if system_context.available_memory and system_context.available_memory < 100 * 1024 * 1024:
+            recommendations.append("メモリ不足の可能性があります。システムリソースを確認してください")
 
         return recommendations

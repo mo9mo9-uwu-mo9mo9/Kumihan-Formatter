@@ -27,7 +27,11 @@ class ContextAnalyzer(ContextAnalyzerCore):
     def __init__(self) -> None:
         """コンテキスト分析器を初期化"""
         super().__init__()
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> origin/main
         # レポート機能を初期化
         self.reports = ContextAnalyzerReports()
 
@@ -62,4 +66,8 @@ __all__ = [
     "ContextAnalyzer",
     "ContextAnalyzerCore",
     "ContextAnalyzerReports",
+<<<<<<< HEAD
 ]
+=======
+]
+>>>>>>> origin/main

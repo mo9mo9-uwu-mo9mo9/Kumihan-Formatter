@@ -3,21 +3,16 @@
 メモリ監視の基本機能とスナップショット取得
 Issue #402対応 - パフォーマンス最適化
 """
-
 import gc
 import threading
 import time
 import weakref
 from collections import defaultdict
 from typing import Any, Optional, Union
-
 from ..utilities.logger import get_logger
 from .memory_types import HAS_PSUTIL, MemorySnapshot
-
 if HAS_PSUTIL:
     import psutil
-
-
 class MemoryMonitor:
     """メモリ監視システムのコア機能
     基本機能:

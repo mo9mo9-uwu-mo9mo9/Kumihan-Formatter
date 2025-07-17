@@ -4,19 +4,15 @@
 元のOptimizationAnalyzerクラスと同等の機能を提供
 Issue #476対応 - ファイルサイズ制限遵守
 """
-
 import json
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
-
 from ..utilities.logger import get_logger
 from .optimization_comparison import OptimizationComparisonEngine
 from .optimization_measurement import OptimizationMeasurementSystem
 from .optimization_types import OptimizationReport
-
-
 class OptimizationAnalyzer:
     """最適化効果分析システム統合
     機能:
@@ -26,7 +22,6 @@ class OptimizationAnalyzer:
     - 回帰リスクの評価
     - 最適化レポート生成
     """
-
     def __init__(self, baseline_dir: Path = None):  # type: ignore
         """最適化分析器を初期化
         Args:
@@ -40,7 +35,6 @@ class OptimizationAnalyzer:
         self.comparison_engine = OptimizationComparisonEngine()
         # データ保存
         self.optimization_history: list[OptimizationReport] = []
-
     def capture_baseline(self, name: str, description: str = "") -> dict[str, Any]:
         """最適化前のベースライン性能を記録
         Args:
@@ -50,7 +44,6 @@ class OptimizationAnalyzer:
             ベースラインデータ
         """
         return self.measurement_system.capture_baseline(name, description)
-
     def measure_optimization_impact(
         self,
         optimization_name: str,
@@ -104,7 +97,6 @@ class OptimizationAnalyzer:
         print(f"📈 Optimization report saved to: {report_file}")
         self.logger.info(f"最適化レポート保存完了: {report_file}")
         return report
-
     def generate_comprehensive_report(self, optimization_name: str) -> str:
         """包括的な最適化レポートを生成
         Args:
@@ -207,7 +199,6 @@ class OptimizationAnalyzer:
                 ]
             )
         return "\n".join(lines)
-
     def compare_optimizations(self, optimization_names: list[str]) -> dict[str, Any]:
         """複数の最適化を比較
         Args:
@@ -250,16 +241,13 @@ class OptimizationAnalyzer:
                     best_practices.add(rec)
         comparison_data["best_practices"] = list(best_practices)
         return comparison_data
-
     # データ管理メソッド
     def list_baselines(self) -> list[str]:
         """利用可能なベースライン一覧を取得"""
         return self.measurement_system.list_baselines()
-
     def validate_baseline_consistency(self, baseline_name: str) -> dict[str, Any]:
         """ベースラインデータの一貫性を検証"""
         return self.measurement_system.validate_baseline_consistency(baseline_name)
-
     def cleanup_old_data(self, days_old: int = 30):  # type: ignore
         """古いデータをクリーンアップ
         Args:
@@ -276,7 +264,6 @@ class OptimizationAnalyzer:
             if report_file.stat().st_mtime < cutoff_date.timestamp():
                 report_file.unlink()
                 print(f"🗑️  Deleted old report: {report_file}")
-
     def export_optimization_summary(self, output_file: Path):  # type: ignore
         """最適化の要約をエクスポート
         Args:

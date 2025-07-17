@@ -2,18 +2,13 @@
 Single Responsibility Principle適用: データ保存・読み込み処理の一元化
 Issue #476 Phase2対応 - パフォーマンスモジュール統合
 """
-
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
 from ...utilities.logger import get_logger
-
-
 class DataPersistence:
     """データ永続化の統一インターフェース"""
-
     def __init__(self, base_directory: Path | None = None) -> None:
         """データ永続化を初期化
         Args:
@@ -22,7 +17,6 @@ class DataPersistence:
         self.base_directory = base_directory or Path("./performance_data")
         self.base_directory.mkdir(parents=True, exist_ok=True)
         self.logger = get_logger(__name__)
-
     def save_json(self, data: Any, filename: str, subdirectory: str = "") -> Path:
         """JSON形式でデータを保存
         Args:
@@ -47,7 +41,6 @@ class DataPersistence:
         except Exception as e:
             self.logger.error(f"Failed to save data to {filepath}: {e}")
             raise
-
     def load_json(self, filename: str, subdirectory: str = "") -> Dict[str, Any] | None:
         """JSON形式でデータを読み込み
         Args:
@@ -71,7 +64,6 @@ class DataPersistence:
         except Exception as e:
             self.logger.error(f"Failed to load data from {filepath}: {e}")
             raise
-
     def list_files(self, subdirectory: str = "", pattern: str = "*.json") -> List[Path]:
         """ファイル一覧を取得
         Args:
@@ -86,7 +78,6 @@ class DataPersistence:
         if not search_dir.exists():
             return []
         return list(search_dir.glob(pattern))
-
     def delete_file(self, filename: str, subdirectory: str = "") -> bool:
         """ファイルを削除
         Args:
@@ -109,7 +100,6 @@ class DataPersistence:
         except Exception as e:
             self.logger.error(f"Failed to delete file {filepath}: {e}")
             return False
-
     def cleanup_old_files(self, subdirectory: str = "", max_age_days: int = 30) -> int:
         """古いファイルをクリーンアップ
         Args:
@@ -119,7 +109,6 @@ class DataPersistence:
             削除したファイル数
         """
         import time
-
         cleanup_dir = (
             self.base_directory / subdirectory if subdirectory else self.base_directory
         )
@@ -139,7 +128,6 @@ class DataPersistence:
         if deleted_count > 0:
             self.logger.info(f"Cleaned up {deleted_count} old files from {cleanup_dir}")
         return deleted_count
-
     def _json_serializer(self, obj: Any) -> str:
         """JSON シリアライザー
         Args:
@@ -154,11 +142,8 @@ class DataPersistence:
         elif hasattr(obj, "to_dict"):
             return str(obj.to_dict())
         raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
-
 class BaselineManager:
     """ベースラインデータ管理"""
-
     def __init__(self, persistence: DataPersistence) -> None:
         """ベースラインマネージャーを初期化
         Args:
@@ -166,7 +151,6 @@ class BaselineManager:
         """
         self.persistence = persistence
         self.logger = get_logger(__name__)
-
     def save_baseline(self, name: str, data: Dict[str, Any]) -> Path:
         """ベースラインデータを保存
         Args:
@@ -184,7 +168,6 @@ class BaselineManager:
             "metadata": {"created_by": "BaselineManager", "version": "1.0"},
         }
         return self.persistence.save_json(baseline_data, filename, "baselines")
-
     def load_baseline(self, name: str) -> Optional[Dict[str, Any]]:
         """最新のベースラインデータを読み込み
         Args:
@@ -198,7 +181,6 @@ class BaselineManager:
         # 最新のベースラインを選択
         latest_baseline = max(baselines, key=lambda p: p.stat().st_mtime)
         return self.persistence.load_json(latest_baseline.name, "baselines")
-
     def list_baselines(self, name_pattern: str = "*") -> List[Dict[str, Any]]:
         """ベースライン一覧を取得
         Args:
@@ -225,7 +207,6 @@ class BaselineManager:
             except Exception as e:
                 self.logger.warning(f"Failed to load baseline {baseline_file}: {e}")
         return sorted(baseline_info, key=lambda x: x["timestamp"], reverse=True)
-
     def delete_baseline(self, name: str, timestamp: str) -> bool:
         """指定したベースラインを削除
         Args:
@@ -236,11 +217,8 @@ class BaselineManager:
         """
         filename = f"{name}_{timestamp}_baseline.json"
         return self.persistence.delete_file(filename, "baselines")
-
-
 class ReportExporter:
     """レポートエクスポート機能"""
-
     def __init__(self, persistence: DataPersistence) -> None:
         """レポートエクスポーターを初期化
         Args:
@@ -248,7 +226,6 @@ class ReportExporter:
         """
         self.persistence = persistence
         self.logger = get_logger(__name__)
-
     def export_report(
         self, report_data: Dict[str, Any], report_type: str = "benchmark"
     ) -> Path:
@@ -268,7 +245,6 @@ class ReportExporter:
             "metadata": {"exported_by": "ReportExporter", "version": "1.0"},
         }
         return self.persistence.save_json(export_data, filename, "reports")
-
     def export_summary(self, summary_data: Dict[str, Any]) -> Path:
         """サマリーをエクスポート
         Args:
@@ -279,12 +255,8 @@ class ReportExporter:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"performance_summary_{timestamp}.json"
         return self.persistence.save_json(summary_data, filename, "summaries")
-
-
 # グローバルインスタンス
 _global_persistence: Optional[DataPersistence] = None
-
-
 def get_global_persistence() -> DataPersistence:
     """グローバルなデータ永続化インスタンスを取得
     Returns:
@@ -294,8 +266,6 @@ def get_global_persistence() -> DataPersistence:
     if _global_persistence is None:
         _global_persistence = DataPersistence()
     return _global_persistence
-
-
 def initialize_persistence(base_directory: Path | None = None) -> DataPersistence:
     """データ永続化を初期化
     Args:

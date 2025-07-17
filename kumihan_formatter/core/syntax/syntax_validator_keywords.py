@@ -15,7 +15,9 @@ class KeywordBlockValidator:
     """Keyword and block validation functionality"""
 
     @staticmethod
-    def validate_block_keywords(errors: list[Any], line_num: int, line: str) -> None:
+    def validate_block_keywords(
+        errors: list[Any], line_num: int, line: str
+    ) -> None:
         """Validate block keyword syntax"""
         keyword_part = line[3:].strip()
 
