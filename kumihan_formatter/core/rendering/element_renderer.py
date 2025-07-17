@@ -78,24 +78,20 @@ class ElementRenderer:
         else:
             return f"<{tag}>{content}</{tag}>"
 
+    # Heading level methods - delegate to render_heading
     def render_h1(self, node: Node) -> str:
-        """Render h1 heading"""
         return self.render_heading(node, 1)
 
     def render_h2(self, node: Node) -> str:
-        """Render h2 heading"""
         return self.render_heading(node, 2)
 
     def render_h3(self, node: Node) -> str:
-        """Render h3 heading"""
         return self.render_heading(node, 3)
 
     def render_h4(self, node: Node) -> str:
-        """Render h4 heading"""
         return self.render_heading(node, 4)
 
     def render_h5(self, node: Node) -> str:
-        """Render h5 heading"""
         return self.render_heading(node, 5)
 
     def render_unordered_list(self, node: Node) -> str:

@@ -9,7 +9,10 @@ from typing import Any, List
 
 from ..ast_nodes import Node
 from .compound_renderer import CompoundElementRenderer
+from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
+from .heading_collector import HeadingCollector
+from .heading_renderer import HeadingRenderer
 from .html_formatter import HTMLFormatter
 from .html_utils import process_text_content
 
@@ -55,7 +58,11 @@ class HTMLRenderer:
         self.element_renderer = ElementRenderer()
         self.compound_renderer = CompoundElementRenderer()
         self.formatter = HTMLFormatter()
-        self.heading_counter = 0
+
+        # Initialize specialized processors
+        self.heading_renderer = HeadingRenderer(self.element_renderer)
+        self.content_processor = ContentProcessor(self)
+        self.heading_collector = HeadingCollector()
 
         # Inject this main renderer into element renderer for content processing
         self.element_renderer._main_renderer = self
@@ -118,51 +125,27 @@ class HTMLRenderer:
 
     def _render_h1(self, node: Node) -> str:
         """Render h1 heading"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_h1(node)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_h1(node)
 
     def _render_h2(self, node: Node) -> str:
         """Render h2 heading"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_h2(node)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_h2(node)
 
     def _render_h3(self, node: Node) -> str:
         """Render h3 heading"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_h3(node)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_h3(node)
 
     def _render_h4(self, node: Node) -> str:
         """Render h4 heading"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_h4(node)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_h4(node)
 
     def _render_h5(self, node: Node) -> str:
         """Render h5 heading"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_h5(node)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_h5(node)
 
     def _render_heading(self, node: Node, level: int) -> str:
         """Render heading with ID"""
-        # Sync heading counter with element renderer
-        self.element_renderer.heading_counter = self.heading_counter
-        result = self.element_renderer.render_heading(node, level)
-        self.heading_counter = self.element_renderer.heading_counter
-        return result
+        return self.heading_renderer.render_heading(node, level)
 
     def _render_ul(self, node: Node) -> str:
         """Render unordered list"""
@@ -202,49 +185,11 @@ class HTMLRenderer:
 
     def _render_content(self, content: Any, depth: int = 0) -> str:
         """Render node content (recursive)"""
-        max_depth = 100  # Prevent infinite recursion
-
-        if depth > max_depth:
-            return "[ERROR: Maximum recursion depth reached]"
-
-        if content is None:
-            return ""
-        elif isinstance(content, str):
-            return process_text_content(content)
-        elif isinstance(content, Node):
-            # Handle single Node objects
-            return self._render_node_with_depth(content, depth + 1)
-        elif isinstance(content, list):
-            parts = []
-            for item in content:
-                if isinstance(item, Node):
-                    parts.append(self._render_node_with_depth(item, depth + 1))
-                elif isinstance(item, str):
-                    parts.append(process_text_content(item))
-                else:
-                    parts.append(process_text_content(str(item)))
-            return "".join(parts)
-        else:
-            return process_text_content(str(content))
+        return self.content_processor.render_content(content, depth)
 
     def _render_node_with_depth(self, node: Node, depth: int = 0) -> str:
         """Render a single node with depth tracking"""
-        max_depth = 100  # Prevent infinite recursion
-
-        if depth > max_depth:
-            return "[ERROR: Maximum recursion depth reached]"
-
-        if not isinstance(node, Node):
-            return escape(str(node))  # type: ignore
-
-        # Route to specific rendering method
-        renderer_method = getattr(
-            self, f"_render_{node.type}", self._render_generic_with_depth
-        )
-        if renderer_method == self._render_generic:
-            return self._render_generic_with_depth(node, depth)
-        else:
-            return renderer_method(node)
+        return self.content_processor.render_node_with_depth(node, depth)
 
     def _render_generic_with_depth(self, node: Node, depth: int = 0) -> str:
         """Generic node renderer with depth tracking"""
@@ -279,43 +224,24 @@ class HTMLRenderer:
         Returns:
             list[Dict]: List of heading information
         """
-        headings: List[dict[str, Any]] = []
-        max_depth = 50  # Prevent infinite recursion
-
-        if depth > max_depth:
-            return headings
-
-        for node in nodes:
-            if isinstance(node, Node):
-                if node.is_heading():
-                    level = node.get_heading_level()
-                    if level:
-                        heading_id = node.get_attribute("id")
-                        if not heading_id:
-                            self.heading_counter += 1
-                            heading_id = f"heading-{self.heading_counter}"
-                            node.add_attribute("id", heading_id)
-
-                        headings.append(
-                            {
-                                "level": level,
-                                "id": heading_id,
-                                "title": node.get_text_content(),
-                                "node": node,
-                            }
-                        )
-
-                # Recursively search in content with depth tracking
-                if isinstance(node.content, list):
-                    child_headings = self.collect_headings(node.content, depth + 1)
-                    headings.extend(child_headings)
-
-        return headings
+        return self.heading_collector.collect_headings(nodes, depth)
 
     def reset_counters(self) -> None:
         """Reset internal counters"""
-        self.heading_counter = 0
+        self.heading_renderer.reset_counters()
+        self.heading_collector.reset_counters()
         self.element_renderer.reset_counters()
+
+    @property
+    def heading_counter(self) -> int:
+        """Get current heading counter"""
+        return self.heading_renderer.heading_counter
+
+    @heading_counter.setter
+    def heading_counter(self, value: int) -> None:
+        """Set heading counter"""
+        self.heading_renderer.heading_counter = value
+        self.heading_collector.heading_counter = value
 
 
 # Module-level function for backward compatibility

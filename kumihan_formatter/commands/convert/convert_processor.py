@@ -220,6 +220,7 @@ class ConvertProcessor:
 
         # 大きなファイルの場合は詳細統計を表示
         from ...core.file_path_utilities import FilePathUtilities
+
         input_size_info = FilePathUtilities.get_file_size_info(input_path)
         output_size_info = FilePathUtilities.get_file_size_info(output_file)
 

@@ -14,11 +14,11 @@ class TestBenchmarkAnalyzerCore:
     """ベンチマーク分析器コア機能のテスト"""
 
     def test_benchmark_analyzer_core_import(self):
-        """RED: ベンチマーク分析器コアモジュールインポートテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_analyzer_core import (
-                BenchmarkAnalyzerCore,
-            )
+        """GREEN: ベンチマーク分析器コアモジュールインポートテスト"""
+        from kumihan_formatter.core.performance.benchmark_analyzer_core import (
+            BenchmarkAnalyzerCore,
+        )
+        assert BenchmarkAnalyzerCore is not None
 
     def test_benchmark_analyzer_core_initialization(self):
         """RED: ベンチマーク分析器コア初期化テスト"""

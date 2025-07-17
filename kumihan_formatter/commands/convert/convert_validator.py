@@ -38,6 +38,7 @@ class ConvertValidator:
     def check_file_size(self, input_path: Path) -> bool:
         """ファイルサイズをチェックし、必要に応じて警告を表示"""
         from ...core.file_path_utilities import FilePathUtilities
+
         size_info = FilePathUtilities.get_file_size_info(input_path)
 
         if size_info["is_large"]:
