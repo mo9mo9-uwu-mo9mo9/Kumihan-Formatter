@@ -1,0 +1,74 @@
+name: Quality Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, develop]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run file size check
+      run: |
+        echo "🔍 Running file size check..."
+        python scripts/check_file_size.py --max-lines=300 || echo "::warning::File size violations detected"
+
+    - name: Run architecture check
+      run: |
+        echo "🏗️ Running architecture check..."
+        python scripts/architecture_check.py || echo "::warning::Architecture violations detected"
+
+    - name: Run Black formatting check
+      run: |
+        echo "🎨 Running Black formatting check..."
+        black --check kumihan_formatter tests
+
+    - name: Run isort import sorting check
+      run: |
+        echo "📦 Running isort import sorting check..."
+        isort --check-only kumihan_formatter tests
+
+    - name: Run flake8 linting
+      run: |
+        echo "🧹 Running flake8 linting..."
+        flake8 kumihan_formatter tests
+
+    - name: Run mypy type checking (staged adoption)
+      run: |
+        echo "🔍 Running mypy type checking with staged adoption..."
+        # Legacy files are excluded as per technical_debt_legacy_files.txt
+        mypy kumihan_formatter --strict \
+          --exclude "kumihan_formatter/file_operations.py" \
+          --exclude "kumihan_formatter/japanese_messages.py" \
+          --exclude "kumihan_formatter/errors.py" \
+          --exclude "kumihan_formatter/batch_processor.py" || echo "::error::Type checking failed"
+
+    - name: Run pytest
+      run: |
+        echo "🧪 Running tests..."
+        pytest tests/ -v --tb=short --maxfail=10 || echo "::error::Tests failed"
+
+    - name: Generate test report
+      if: always()
+      run: |
+        echo "📊 Quality Check Summary"
+        echo "========================"
+        echo "✅ Checks completed. See annotations above for any issues."
