@@ -8,11 +8,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from ...utilities.logger import get_logger
 from .scenario_generators import ScenarioDataGenerators
-<<<<<<< HEAD
 
 
-=======
->>>>>>> origin/main
 class BenchmarkScenarios:
     """ベンチマークシナリオ管理クラス
     機能:

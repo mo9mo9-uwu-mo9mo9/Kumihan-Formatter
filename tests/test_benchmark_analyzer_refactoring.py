@@ -18,180 +18,240 @@ class TestBenchmarkAnalyzerCore:
         from kumihan_formatter.core.performance.benchmark_analyzer_core import (
             BenchmarkAnalyzerCore,
         )
+
         assert BenchmarkAnalyzerCore is not None
 
     def test_benchmark_analyzer_core_initialization(self):
-        """RED: ベンチマーク分析器コア初期化テスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_analyzer_core import (
-                BenchmarkAnalyzerCore,
-            )
+        """GREEN: ベンチマーク分析器コア初期化テスト"""
+        from kumihan_formatter.core.performance.benchmark_analyzer_core import (
+            BenchmarkAnalyzerCore,
+        )
 
-            analyzer = BenchmarkAnalyzerCore()
+        analyzer = BenchmarkAnalyzerCore()
+        assert analyzer is not None
 
     def test_analyze_results_method(self):
-        """RED: 結果分析メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_analyzer_core import (
-                BenchmarkAnalyzerCore,
-            )
+        """GREEN: 結果分析メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_analyzer_core import (
+            BenchmarkAnalyzerCore,
+        )
 
-            analyzer = BenchmarkAnalyzerCore()
-            results = analyzer.analyze_results([])
+        analyzer = BenchmarkAnalyzerCore()
+        results = analyzer.analyze_results([])
+        assert isinstance(results, dict)
 
 
 class TestBenchmarkRegressionAnalyzer:
     """ベンチマーク回帰分析のテスト"""
 
     def test_regression_analyzer_import(self):
-        """RED: 回帰分析モジュールインポートテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
-                BenchmarkRegressionAnalyzer,
-            )
+        """GREEN: 回帰分析モジュールインポートテスト"""
+        from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
+            BenchmarkRegressionAnalyzer,
+        )
+
+        assert BenchmarkRegressionAnalyzer is not None
 
     def test_regression_analyzer_initialization(self):
-        """RED: 回帰分析器初期化テスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
-                BenchmarkRegressionAnalyzer,
-            )
+        """GREEN: 回帰分析器初期化テスト"""
+        from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
+            BenchmarkRegressionAnalyzer,
+        )
 
-            analyzer = BenchmarkRegressionAnalyzer()
+        analyzer = BenchmarkRegressionAnalyzer()
+        assert analyzer is not None
 
     def test_analyze_regression_method(self):
-        """RED: 回帰分析メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
-                BenchmarkRegressionAnalyzer,
-            )
+        """GREEN: 回帰分析メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
+            BenchmarkRegressionAnalyzer,
+        )
 
-            analyzer = BenchmarkRegressionAnalyzer()
-            result = analyzer.analyze_regression({}, {})
+        analyzer = BenchmarkRegressionAnalyzer()
+        result = analyzer.analyze_regression({}, {})
+        assert isinstance(result, dict)
 
     def test_analyze_single_regression_method(self):
-        """RED: 単一回帰分析メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
-                BenchmarkRegressionAnalyzer,
-            )
+        """GREEN: 単一回帰分析メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_regression_analyzer import (
+            BenchmarkRegressionAnalyzer,
+        )
+        from kumihan_formatter.core.performance.benchmark_types import BenchmarkResult
 
-            analyzer = BenchmarkRegressionAnalyzer()
-            mock_current = Mock()
-            mock_baseline = Mock()
-            result = analyzer.analyze_single_regression(mock_current, mock_baseline)
+        analyzer = BenchmarkRegressionAnalyzer()
+        # BenchmarkResultオブジェクトを使用
+        current = BenchmarkResult(
+            name="test_benchmark",
+            iterations=5,
+            total_time=5.0,
+            avg_time=1.0,
+            min_time=0.8,
+            max_time=1.2,
+            std_dev=0.1,
+            memory_usage={"peak": 100},
+            cache_stats={"hits": 10, "misses": 1},
+        )
+        baseline = BenchmarkResult(
+            name="test_benchmark",
+            iterations=5,
+            total_time=6.0,
+            avg_time=1.2,
+            min_time=1.0,
+            max_time=1.4,
+            std_dev=0.1,
+            memory_usage={"peak": 120},
+            cache_stats={"hits": 8, "misses": 3},
+        )
+        result = analyzer.analyze_single_regression(current, baseline)
+        from kumihan_formatter.core.performance.benchmark_types import (
+            RegressionAnalysis,
+        )
+
+        assert isinstance(result, RegressionAnalysis)
 
 
 class TestBenchmarkStatistics:
     """ベンチマーク統計計算のテスト"""
 
     def test_statistics_module_import(self):
-        """RED: 統計モジュールインポートテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: 統計モジュールインポートテスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
+
+        assert BenchmarkStatistics is not None
 
     def test_statistics_initialization(self):
-        """RED: 統計計算器初期化テスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: 統計計算器初期化テスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
 
-            stats = BenchmarkStatistics()
+        stats = BenchmarkStatistics()
+        assert stats is not None
 
     def test_calculate_basic_statistics_method(self):
-        """RED: 基本統計計算メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: 基本統計計算メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
 
-            stats = BenchmarkStatistics()
-            result = stats.calculate_basic_statistics([])
+        stats = BenchmarkStatistics()
+        result = stats.calculate_basic_statistics([])
+        assert isinstance(result, dict)
 
     def test_calculate_performance_score_method(self):
-        """RED: パフォーマンススコア計算メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: パフォーマンススコア計算メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
 
-            stats = BenchmarkStatistics()
-            score = stats.calculate_performance_score([])
+        stats = BenchmarkStatistics()
+        score = stats.calculate_performance_score([])
+        assert isinstance(score, (int, float))
 
     def test_analyze_memory_usage_method(self):
-        """RED: メモリ使用量分析メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: メモリ使用量分析メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
 
-            stats = BenchmarkStatistics()
-            analysis = stats.analyze_memory_usage([])
+        stats = BenchmarkStatistics()
+        analysis = stats.analyze_memory_usage([])
+        assert isinstance(analysis, dict)
 
     def test_analyze_cache_performance_method(self):
-        """RED: キャッシュパフォーマンス分析メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_statistics import (
-                BenchmarkStatistics,
-            )
+        """GREEN: キャッシュパフォーマンス分析メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_statistics import (
+            BenchmarkStatistics,
+        )
 
-            stats = BenchmarkStatistics()
-            analysis = stats.analyze_cache_performance([])
+        stats = BenchmarkStatistics()
+        analysis = stats.analyze_cache_performance([])
+        assert isinstance(analysis, dict)
 
 
 class TestBenchmarkFormatters:
     """ベンチマークフォーマッターのテスト"""
 
     def test_formatters_module_import(self):
-        """RED: フォーマッターモジュールインポートテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_formatters import (
-                BenchmarkFormatters,
-            )
+        """GREEN: フォーマッターモジュールインポートテスト"""
+        from kumihan_formatter.core.performance.benchmark_formatters import (
+            BenchmarkFormatters,
+        )
+
+        assert BenchmarkFormatters is not None
 
     def test_formatters_initialization(self):
-        """RED: フォーマッター初期化テスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_formatters import (
-                BenchmarkFormatters,
-            )
+        """GREEN: フォーマッター初期化テスト"""
+        from kumihan_formatter.core.performance.benchmark_formatters import (
+            BenchmarkFormatters,
+        )
 
-            formatters = BenchmarkFormatters()
+        formatters = BenchmarkFormatters()
+        assert formatters is not None
 
     def test_generate_benchmark_summary_method(self):
-        """RED: ベンチマークサマリー生成メソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_formatters import (
-                BenchmarkFormatters,
-            )
+        """GREEN: ベンチマークサマリー生成メソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_formatters import (
+            BenchmarkFormatters,
+        )
 
-            formatters = BenchmarkFormatters()
-            summary = formatters.generate_benchmark_summary([])
+        formatters = BenchmarkFormatters()
+        # 空リストでエラーが発生することを確認
+        with pytest.raises(ValueError, match="No results to summarize"):
+            formatters.generate_benchmark_summary([])
 
     def test_format_result_summary_method(self):
-        """RED: 結果サマリーフォーマットメソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_formatters import (
-                BenchmarkFormatters,
-            )
+        """GREEN: 結果サマリーフォーマットメソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_formatters import (
+            BenchmarkFormatters,
+        )
+        from kumihan_formatter.core.performance.benchmark_types import BenchmarkResult
 
-            formatters = BenchmarkFormatters()
-            mock_result = Mock()
-            formatted = formatters.format_result_summary(mock_result)
+        formatters = BenchmarkFormatters()
+        # BenchmarkResultオブジェクトを使用
+        result = BenchmarkResult(
+            name="test_benchmark",
+            iterations=5,
+            total_time=5.0,
+            avg_time=1.0,
+            min_time=0.8,
+            max_time=1.2,
+            std_dev=0.1,
+            memory_usage={"peak": 100},
+            cache_stats={"hits": 10, "misses": 1},
+        )
+        formatted = formatters.format_result_summary(result)
+        assert isinstance(formatted, dict)
+        assert "name" in formatted
+        assert "avg_time" in formatted
 
     def test_format_regression_analysis_method(self):
-        """RED: 回帰分析フォーマットメソッドテスト"""
-        with pytest.raises(ImportError):
-            from kumihan_formatter.core.performance.benchmark_formatters import (
-                BenchmarkFormatters,
-            )
+        """GREEN: 回帰分析フォーマットメソッドテスト"""
+        from kumihan_formatter.core.performance.benchmark_formatters import (
+            BenchmarkFormatters,
+        )
+        from kumihan_formatter.core.performance.benchmark_types import (
+            RegressionAnalysis,
+        )
 
-            formatters = BenchmarkFormatters()
-            mock_analysis = Mock()
-            formatted = formatters.format_regression_analysis(mock_analysis)
+        formatters = BenchmarkFormatters()
+        # RegressionAnalysisオブジェクトを使用
+        analysis = RegressionAnalysis(
+            benchmark_name="test_benchmark",
+            baseline_avg_time=1.2,
+            current_avg_time=1.0,
+            performance_change_percent=-16.7,
+            is_regression=False,
+            severity="minor",
+            memory_change_percent=0.0,
+            cache_performance_change={"hits": 10.0, "misses": -50.0},
+        )
+        formatted = formatters.format_regression_analysis(analysis)
+        assert isinstance(formatted, dict)
+        assert "benchmark_name" in formatted
+        assert "performance_change_percent" in formatted
 
 
 class TestOriginalBenchmarkAnalyzer:

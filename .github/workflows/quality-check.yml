@@ -1,74 +1,77 @@
 name: Quality Check
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   quality-check:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e .
+        pip install pytest pytest-cov black isort flake8 mypy
 
-    - name: Run file size check
+    - name: Check file sizes and architecture
       run: |
-        echo "🔍 Running file size check..."
-        python scripts/check_file_size.py --max-lines=300 || echo "::warning::File size violations detected"
+        python scripts/check_file_size.py --max-lines=300
+        python scripts/architecture_check.py
 
-    - name: Run architecture check
+    - name: Code formatting check (Black)
       run: |
-        echo "🏗️ Running architecture check..."
-        python scripts/architecture_check.py || echo "::warning::Architecture violations detected"
+        black --check kumihan_formatter/ tests/
 
-    - name: Run Black formatting check
+    - name: Import sorting check (isort)
       run: |
-        echo "🎨 Running Black formatting check..."
-        black --check kumihan_formatter tests
+        isort --check-only --diff kumihan_formatter/ tests/
 
-    - name: Run isort import sorting check
+    - name: Linting (flake8)
       run: |
-        echo "📦 Running isort import sorting check..."
-        isort --check-only kumihan_formatter tests
+        flake8 kumihan_formatter/ tests/
 
-    - name: Run flake8 linting
+    - name: Type checking (mypy)
       run: |
-        echo "🧹 Running flake8 linting..."
-        flake8 kumihan_formatter tests
+        mypy kumihan_formatter/ --strict
 
-    - name: Run mypy type checking (staged adoption)
+    - name: Run tests
       run: |
-        echo "🔍 Running mypy type checking with staged adoption..."
-        # Legacy files are excluded as per technical_debt_legacy_files.txt
-        mypy kumihan_formatter --strict \
-          --exclude "kumihan_formatter/file_operations.py" \
-          --exclude "kumihan_formatter/japanese_messages.py" \
-          --exclude "kumihan_formatter/errors.py" \
-          --exclude "kumihan_formatter/batch_processor.py" || echo "::error::Type checking failed"
+        pytest tests/ -v --cov=kumihan_formatter --cov-report=xml
 
-    - name: Run pytest
-      run: |
-        echo "🧪 Running tests..."
-        pytest tests/ -v --tb=short --maxfail=10 || echo "::error::Tests failed"
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
 
-    - name: Generate test report
-      if: always()
+  pre-commit-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install pre-commit
       run: |
-        echo "📊 Quality Check Summary"
-        echo "========================"
-        echo "✅ Checks completed. See annotations above for any issues."
+        pip install pre-commit
+
+    - name: Run pre-commit hooks
+      run: |
+        pre-commit run --all-files
