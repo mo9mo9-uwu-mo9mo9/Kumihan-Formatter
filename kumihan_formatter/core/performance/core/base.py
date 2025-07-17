@@ -39,7 +39,7 @@ class SystemInfo:
         return cls(
             platform=platform.platform(),
             python_version=sys.version,
-            cpu_count=os.cpu_count() or 1,
+            cpu_count=int(os.cpu_count() or 1),
             memory_total=memory_total,
             architecture=platform.architecture()[0],
         )

@@ -117,7 +117,7 @@ class ObjectMonitor:
         Returns:
             改善提案のリスト
         """
-        recommendations = []
+        recommendations: list[str] = []
 
         if not self.enable_tracking:
             return recommendations

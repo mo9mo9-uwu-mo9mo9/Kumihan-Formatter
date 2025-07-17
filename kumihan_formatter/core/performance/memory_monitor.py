@@ -171,7 +171,7 @@ class MemoryMonitor:
 
     def _trigger_alert(self, alert_type: str, context: dict[str, Any]) -> None:
         """アラート発火（後方互換性）"""
-        self.analyzer._trigger_alert(alert_type, context)
+        self.analyzer.alert_manager.trigger_alert(alert_type, context)
 
     def _cleanup_weak_refs(self) -> None:
         """WeakReferenceクリーンアップ（後方互換性）"""
