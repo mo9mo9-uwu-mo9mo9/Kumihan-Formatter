@@ -143,7 +143,9 @@ def log_performance_decorator(
                             f"Memory monitoring failed: {e}"
                         )
 
-                structured_logger.performance(op_name, duration, **completion_context)
+                structured_logger.performance(
+                    op_name, duration, metadata=completion_context
+                )
 
                 return result
 
@@ -174,7 +176,8 @@ def log_performance_decorator(
 
                 structured_logger.error_with_suggestion(
                     f"Function failed: {op_name}",
-                    "Check function arguments and internal logic",
+                    func_error,
+                    ["Check function arguments and internal logic"],
                     error_type=type(func_error).__name__,
                     operation=op_name,
                     **error_context,

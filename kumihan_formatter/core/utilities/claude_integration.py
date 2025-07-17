@@ -1,34 +1,40 @@
-"""Claude Code integration logger for Kumihan-Formatter
+"""Claude Code integration utilities for logging
 
-This module provides a complete Claude Code integration logger that combines
-all logging features into a single, optimized interface.
+Single Responsibility Principle適用: Claude Code統合機能の分離
+Issue #476 Phase3対応 - structured_logger.py分割
 """
 
-from __future__ import annotations
-
 import logging
-import time
-from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
-from .log_analysis import DependencyTracker, ErrorAnalyzer, ExecutionFlowTracker
-from .log_optimization import LogPerformanceOptimizer, LogSizeController
-from .structured_logging import get_structured_logger
+from .log_performance import LogPerformanceOptimizer
+from .log_size_control import LogSizeController
 
 
 class ClaudeCodeIntegrationLogger:
-    """Phase 4: Complete Claude Code integration logger
+    """Complete Claude Code integration logger
 
-    Combines all Phase 1-4 features into a single, optimized logger
-    specifically designed for Claude Code interaction.
+    Provides comprehensive logging capabilities optimized for Claude Code:
+    - Structured logging with context
+    - Performance optimization
+    - Size control
+    - Error analysis
+    - Automatic formatting
     """
 
     def __init__(self, name: str):
         self.name = name
-        self.structured_logger = get_structured_logger(name)
-        self.error_analyzer = ErrorAnalyzer(self.structured_logger)
-        self.dependency_tracker = DependencyTracker(self.structured_logger)
-        self.flow_tracker = ExecutionFlowTracker(self.structured_logger)
+        from .logger import get_logger
+
+        base_logger = get_logger(name)
+
+        # Import here to avoid circular imports
+        from .structured_logger import StructuredLogger
+
+        self.structured_logger = StructuredLogger(base_logger)
+
+        # Note: ErrorAnalyzer は削除されているため、基本的なログ機能のみ使用
+        self.error_analyzer = None
         self.performance_optimizer = LogPerformanceOptimizer(self.structured_logger)
         self.size_controller = LogSizeController(self.structured_logger)
 
@@ -36,163 +42,203 @@ class ClaudeCodeIntegrationLogger:
         self,
         level: int,
         message: str,
-        context: Optional[dict[str, Any]] = None,
-        operation: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
         priority: str = "normal",
+        **kwargs: Any,
     ) -> None:
-        """Log with full Claude Code optimization
+        """Log with Claude Code optimizations
 
         Args:
             level: Log level
             message: Log message
-            context: Context data
-            operation: Operation name
+            context: Optional context data
             priority: Priority level (high, normal, low)
+            **kwargs: Additional logging parameters
         """
-        start_time = time.time()
-
-        # Generate message key for performance tracking
-        message_key = (
-            f"{self.name}_{operation or 'general'}_{logging.getLevelName(level)}"
-        )
-
-        # Check if we should log based on performance
-        if not self.performance_optimizer.should_log(level, message_key, operation):
+        # Performance check
+        if not self.performance_optimizer.should_log(
+            logging.getLevelName(level), message, context, priority
+        ):
             return
 
-        # Optimize context for Claude Code
-        if context:
-            context = self.size_controller.optimize_for_claude_code(context)
-            context = self.size_controller.should_include_context(context)
-
-        # Format message for size control
-        formatted_message = self.size_controller.format_message_for_size(message)
-
-        # Estimate size and check if we should skip
-        estimated_size = self.size_controller.estimate_log_size(
-            formatted_message, context
-        )
+        # Size check
+        estimated_size = self.size_controller.estimate_log_size(message, context)
         if self.size_controller.should_skip_due_to_size(estimated_size, priority):
             return
 
-        # Perform the actual logging
+        # Optimize context
         if context:
-            self.structured_logger.log_with_context(level, formatted_message, context)
-        else:
-            self.structured_logger.logger.log(level, formatted_message)
+            context = self.performance_optimizer.optimize_context(context)
+            context = self.size_controller.should_include_context(context)
 
-        # Record performance metrics
-        duration = time.time() - start_time
-        self.performance_optimizer.record_log_event(level, message_key, duration)
+        # Format message
+        message = self.size_controller.format_message_for_size(message)
 
-    def log_error_with_claude_analysis(
+        # Log with structured logger
+        self.structured_logger.log_with_context(level, message, context, **kwargs)
+
+    def debug_optimized(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "low",
+        **kwargs: Any,
+    ) -> None:
+        """Debug log with Claude Code optimizations"""
+        self.log_with_claude_optimization(
+            logging.DEBUG, message, context, priority, **kwargs
+        )
+
+    def info_optimized(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "normal",
+        **kwargs: Any,
+    ) -> None:
+        """Info log with Claude Code optimizations"""
+        self.log_with_claude_optimization(
+            logging.INFO, message, context, priority, **kwargs
+        )
+
+    def warning_optimized(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "normal",
+        **kwargs: Any,
+    ) -> None:
+        """Warning log with Claude Code optimizations"""
+        self.log_with_claude_optimization(
+            logging.WARNING, message, context, priority, **kwargs
+        )
+
+    def error_optimized(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "high",
+        **kwargs: Any,
+    ) -> None:
+        """Error log with Claude Code optimizations"""
+        self.log_with_claude_optimization(
+            logging.ERROR, message, context, priority, **kwargs
+        )
+
+    def critical_optimized(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "high",
+        **kwargs: Any,
+    ) -> None:
+        """Critical log with Claude Code optimizations"""
+        self.log_with_claude_optimization(
+            logging.CRITICAL, message, context, priority, **kwargs
+        )
+
+    def log_performance_with_claude(
+        self,
+        operation: str,
+        duration: float,
+        context: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Log performance metrics with Claude Code formatting
+
+        Args:
+            operation: Operation name
+            duration: Duration in seconds
+            context: Optional additional context
+            **kwargs: Additional logging parameters
+        """
+        perf_context = {
+            "operation": operation,
+            "duration_seconds": duration,
+            "duration_ms": duration * 1000,
+            "performance_log": True,
+        }
+
+        if context:
+            perf_context.update(context)
+
+        self.info_optimized(
+            f"Performance: {operation} completed in {duration:.3f}s",
+            perf_context,
+            priority="normal",
+            **kwargs,
+        )
+
+    def log_error_with_analysis(
         self,
         error: Exception,
+        context: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Log error with automatic analysis
+
+        Args:
+            error: Exception object
+            context: Optional additional context
+            **kwargs: Additional logging parameters
+        """
+        # Use structured logger for error logging
+        error_context = {
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "error_log": True,
+        }
+
+        if context:
+            error_context.update(context)
+
+        self.structured_logger.log_with_context(
+            logging.ERROR,
+            f"Error occurred: {error}",
+            error_context,
+            exc_info=True,
+            **kwargs,
+        )
+
+    def log_with_dependency_tracking(
+        self,
+        level: int,
         message: str,
-        context: Optional[dict[str, Any]] = None,
-        operation: Optional[str] = None,
+        dependencies: Optional[list[str]] = None,
+        context: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> None:
-        """Log error with full Claude Code analysis"""
-        self.error_analyzer.log_error_with_analysis(error, message, context, operation)
+        """Log with dependency tracking for Claude Code analysis
 
-    def track_function_execution(
-        self, function_name: str, args_info: Optional[dict[str, Any]] = None
-    ) -> str:
-        """Track function execution with flow tracking"""
-        return self.flow_tracker.enter_function(function_name, self.name, args_info)
+        Args:
+            level: Log level
+            message: Log message
+            dependencies: List of dependency names
+            context: Optional context data
+            **kwargs: Additional logging parameters
+        """
+        if dependencies:
+            dep_context = {"dependencies": dependencies}
+            if context:
+                dep_context.update(context)
+            context = dep_context
 
-    def finish_function_execution(
-        self,
-        frame_id: str,
-        success: bool = True,
-        result_info: Optional[dict[str, Any]] = None,
-        error_info: Optional[dict[str, Any]] = None,
-    ) -> None:
-        """Finish function execution tracking"""
-        self.flow_tracker.exit_function(frame_id, success, result_info, error_info)
+        self.log_with_claude_optimization(level, message, context, **kwargs)
 
-    def track_dependency_import(
-        self,
-        module_name: str,
-        imported_from: Optional[str] = None,
-        import_time: Optional[float] = None,
-    ) -> None:
-        """Track module dependency import"""
-        self.dependency_tracker.track_import(module_name, imported_from, import_time)
 
-    def get_comprehensive_report(self) -> dict[str, Any]:
-        """Get comprehensive report combining all tracking data"""
-        return {
-            "module": self.name,
-            "timestamp": datetime.now().isoformat(),
-            "performance": self.performance_optimizer.get_performance_report(),
-            "size_stats": self.size_controller.get_size_statistics(),
-            "dependencies": self.dependency_tracker.get_dependency_map(),
-            "execution_flow": self.flow_tracker.get_current_flow(),
-            "claude_hint": "Complete integration report for debugging and optimization",
-        }
-
-    # Convenience methods for common logging patterns
-    def info(self, message: str, **context: Any) -> None:
-        """Log info message with Claude optimization"""
-        self.log_with_claude_optimization(logging.INFO, message, context)
-
-    def debug(self, message: str, **context: Any) -> None:
-        """Log debug message with Claude optimization"""
-        self.log_with_claude_optimization(logging.DEBUG, message, context)
-
-    def warning(self, message: str, **context: Any) -> None:
-        """Log warning message with Claude optimization"""
-        self.log_with_claude_optimization(logging.WARNING, message, context)
-
-    def error(self, message: str, **context: Any) -> None:
-        """Log error message with Claude optimization"""
-        self.log_with_claude_optimization(logging.ERROR, message, context)
-
-    def critical(self, message: str, **context: Any) -> None:
-        """Log critical message with Claude optimization"""
-        self.log_with_claude_optimization(logging.CRITICAL, message, context)
-
-    def file_operation(
-        self, operation: str, file_path: str, success: bool = True, **context: Any
-    ) -> None:
-        """Log file operations with Claude optimization"""
-        level = logging.INFO if success else logging.ERROR
-        full_context = {
-            "file_path": file_path,
-            "operation": operation,
-            "success": success,
-            **context,
-        }
-        self.log_with_claude_optimization(
-            level, f"File {operation}", full_context, operation="file_operation"
-        )
-
-    def performance(
-        self, operation: str, duration_seconds: float, **context: Any
-    ) -> None:
-        """Log performance metrics with Claude optimization"""
-        full_context = {
-            "operation": operation,
-            "duration_seconds": duration_seconds,
-            "duration_ms": duration_seconds * 1000,
-            **context,
-        }
-        self.log_with_claude_optimization(
-            logging.INFO,
-            f"Performance: {operation}",
-            full_context,
-            operation="performance_tracking",
-        )
+# Global instance cache
+_claude_loggers: Dict[str, ClaudeCodeIntegrationLogger] = {}
 
 
 def get_claude_code_logger(name: str) -> ClaudeCodeIntegrationLogger:
-    """Get complete Claude Code integration logger
+    """Get cached Claude Code integration logger
 
     Args:
-        name: Module name (typically __name__)
+        name: Logger name
 
     Returns:
-        ClaudeCodeIntegrationLogger with all Phase 1-4 features
+        ClaudeCodeIntegrationLogger instance
     """
-    return ClaudeCodeIntegrationLogger(name)
+    if name not in _claude_loggers:
+        _claude_loggers[name] = ClaudeCodeIntegrationLogger(name)
+    return _claude_loggers[name]

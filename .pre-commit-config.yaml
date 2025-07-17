@@ -54,21 +54,19 @@ repos:
         always_run: true
         stages: [pre-commit]
 
-      # アーキテクチャ原則チェック（推奨フック）
-      - id: architecture-validator
-        name: 🏗️ アーキテクチャ原則チェック
-        entry: python dev/tools/architecture_validator.py --fail-on-error
+      # ファイルサイズ制限チェック（必須フック - 技術的負債予防）
+      - id: file-size-check
+        name: 📏 ファイルサイズチェック (300行制限)
+        entry: python scripts/check_file_size.py --max-lines=300
         language: python
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false
-        additional_dependencies: []
-        stages: [manual, pre-push]
-        alias: heavy-checks
+        stages: [pre-commit]
 
-      # ファイルサイズ制限チェック（推奨フック）
-      - id: file-size-limit
-        name: 📏 ファイルサイズ制限チェック (300行)
-        entry: python dev/tools/check_file_size.py --max-lines=300 --warning-lines=240
+      # アーキテクチャルールチェック（推奨フック）
+      - id: architecture-check
+        name: 🏗️ アーキテクチャルールチェック
+        entry: python scripts/architecture_check.py --target-dir=kumihan_formatter
         language: python
         files: ^kumihan_formatter/.*\.py$
         pass_filenames: false

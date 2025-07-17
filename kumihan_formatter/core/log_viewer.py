@@ -4,7 +4,7 @@ GUIアプリケーション用のリアルタイムログビューアー
 
 import threading
 import time
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 # tkinterは必要時にのみインポート（CI環境での問題回避）
 if TYPE_CHECKING:
@@ -34,6 +34,24 @@ class LogViewerWindow:
         self.auto_scroll_var: Optional["tk.BooleanVar"] = None
         self.level_var: Optional["tk.StringVar"] = None
         self.status_var: Optional["tk.StringVar"] = None
+        # Logger取得を一箇所にまとめる（重複debug logger fallback定義の削除）
+        self._logger: Optional[Any] = None
+        self._initialize_logger()
+
+    def _initialize_logger(self) -> None:
+        """ロガーを初期化（重複削除のため一箇所で実行）"""
+        try:
+            from .debug_logger import get_logger
+
+            self._logger = get_logger()
+        except Exception:
+            self._logger = None
+
+    def _get_logger(self) -> Optional[Any]:
+        """ロガーを取得（fallback処理を含む）"""
+        if self._logger is None:
+            self._initialize_logger()
+        return self._logger
 
     def show(self) -> None:
         """ログビューアーウィンドウを表示"""
@@ -135,9 +153,7 @@ class LogViewerWindow:
     def _update_logs(self) -> None:
         """ログを定期的に更新"""
         try:
-            from .debug_logger import get_logger
-
-            logger = get_logger()
+            logger = self._get_logger()
 
             if not logger or not logger.enabled:
                 if self.window and self.status_var:
@@ -247,9 +263,7 @@ class LogViewerWindow:
         """ログレベルフィルタリング"""
         # 既存のログを再表示（フィルタリング適用）
         try:
-            from .debug_logger import get_logger
-
-            logger = get_logger()
+            logger = self._get_logger()
             if logger and logger.enabled and self.log_text:
                 self.log_text.config(state=tk.NORMAL)
                 self.log_text.delete(1.0, tk.END)
@@ -271,9 +285,7 @@ class LogViewerWindow:
 
         # ログバッファもクリア
         try:
-            from .debug_logger import get_logger
-
-            logger = get_logger()
+            logger = self._get_logger()
             if logger:
                 logger.clear_log_buffer()
                 if self.status_var:
@@ -285,9 +297,7 @@ class LogViewerWindow:
     def open_log_file(self) -> None:
         """ログファイルを外部エディタで開く"""
         try:
-            from .debug_logger import get_logger
-
-            logger = get_logger()
+            logger = self._get_logger()
             if logger and logger.get_log_file_path().exists():
                 import platform
                 import subprocess

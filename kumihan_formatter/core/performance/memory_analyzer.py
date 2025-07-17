@@ -5,14 +5,14 @@
 Issue #402対応 - パフォーマンス最適化
 """
 
-import gc
 import time
 from typing import Any, Callable, Optional, Sequence, Union
 
 from ..utilities.logger import get_logger
+from .memory_alert_manager import MemoryAlertManager
+from .memory_gc_manager import MemoryGCManager
+from .memory_report_generator import MemoryReportGenerator
 from .memory_types import (
-    GC_OPTIMIZATION_THRESHOLDS,
-    MEMORY_ALERT_THRESHOLDS,
     MemoryLeak,
     MemorySnapshot,
 )
@@ -32,18 +32,10 @@ class MemoryAnalyzer:
         """メモリ分析器を初期化"""
         self.logger = get_logger(__name__)
 
-        # アラート管理
-        self.alert_callbacks: list[Callable[[str, dict[str, Any]], None]] = []
-        self.last_alert_time: dict[str, float] = {}
-        self.alert_cooldown = 300.0  # 5分間のクールダウン
-
-        # 統計
-        self.stats = {
-            "total_reports_generated": 0,
-            "total_gc_forced": 0,
-            "total_alerts_triggered": 0,
-            "memory_optimizations": 0,
-        }
+        # 専門コンポーネント
+        self.report_generator = MemoryReportGenerator()
+        self.alert_manager = MemoryAlertManager()
+        self.gc_manager = MemoryGCManager()
 
         self.logger.info("メモリ分析器初期化完了")
 
@@ -55,8 +47,7 @@ class MemoryAnalyzer:
         Args:
             callback: アラート発生時に呼び出される関数
         """
-        self.alert_callbacks.append(callback)
-        self.logger.debug("アラートコールバック登録完了")
+        self.alert_manager.register_alert_callback(callback)
 
     def get_memory_trend(
         self, snapshots: list[MemorySnapshot], window_minutes: int = 30
@@ -185,114 +176,19 @@ class MemoryAnalyzer:
         Returns:
             dict: メモリレポート
         """
-        if not snapshots:
-            return {"error": "No snapshots available for report"}
-
-        current_snapshot = snapshots[-1]
-
-        # 基本情報
-        report = {
-            "report_timestamp": time.time(),
-            "report_time_human": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "snapshot_count": len(snapshots),
-            "monitoring_duration_hours": (
-                ((snapshots[-1].timestamp - snapshots[0].timestamp) / 3600)
-                if len(snapshots) > 1
-                else 0
-            ),
-            # 現在の状況
-            "current_memory": {
-                "process_memory_mb": current_snapshot.memory_mb,
-                "available_memory_mb": current_snapshot.available_mb,
-                "memory_usage_ratio": current_snapshot.memory_usage_ratio,
-                "gc_objects": current_snapshot.gc_objects,
-                "gc_collections": current_snapshot.gc_collections,
-                "custom_objects": current_snapshot.custom_objects,
-                "is_warning": current_snapshot.is_memory_warning,
-                "is_critical": current_snapshot.is_memory_critical,
-            },
-        }
-
-        # トレンド分析（オプション）
+        # トレンド分析を事前計算（必要時のみ）
+        trend_analysis = None
         if include_trend and len(snapshots) > 1:
-            trend = self.get_memory_trend(snapshots, trend_window_minutes)
-            report["trend_analysis"] = trend
+            trend_analysis = self.get_memory_trend(snapshots, trend_window_minutes)
 
-        # メモリリーク情報（オプション）
-        if leaks:
-            leaks_by_severity: dict[str, int] = {}
-            top_leaks: list[dict[str, Any]] = []
-
-            leak_summary = {
-                "total_leaks": len(leaks),
-                "critical_leaks": len([l for l in leaks if l.is_critical_leak()]),
-                "leaks_by_severity": leaks_by_severity,
-                "top_leaks": top_leaks,
-            }
-
-            # 深刻度別分類
-            for leak in leaks:
-                severity = leak.severity
-                if severity not in leaks_by_severity:
-                    leaks_by_severity[severity] = 0
-                leaks_by_severity[severity] += 1
-
-            # トップリーク（上位5つ）
-            sorted_leaks = sorted(leaks, key=lambda x: x.count_increase, reverse=True)[
-                :5
-            ]
-            for leak in sorted_leaks:
-                top_leaks.append(
-                    {
-                        "object_type": leak.object_type,
-                        "count_increase": leak.count_increase,
-                        "size_estimate_mb": leak.size_estimate_mb,
-                        "severity": leak.severity,
-                        "age_hours": leak.age_seconds / 3600,
-                    }
-                )
-
-            report["memory_leaks"] = leak_summary
-
-        # 推奨アクション
-        recommendations = []
-        if current_snapshot.is_memory_critical:
-            recommendations.append(
-                "Critical: メモリ使用量が危険なレベルです。即座にガベージコレクションを実行してください。"
-            )
-        elif current_snapshot.is_memory_warning:
-            recommendations.append(
-                "Warning: メモリ使用量が警告レベルです。監視を強化してください。"
-            )
-
-        if leaks and len([l for l in leaks if l.is_critical_leak()]) > 0:
-            recommendations.append(
-                "Critical: クリティカルなメモリリークが検出されています。アプリケーションの再起動を検討してください。"
-            )
-
-        if include_trend and "trend_analysis" in report:
-            trend_data = report["trend_analysis"]
-            if isinstance(trend_data, dict):
-                memory_trend = trend_data.get("memory_trend", {})
-                if isinstance(memory_trend, dict):
-                    change_percent = memory_trend.get("change_percent", 0)
-                    if isinstance(change_percent, (int, float)) and change_percent > 10:
-                        recommendations.append(
-                            "Warning: メモリ使用量が急速に増加しています。"
-                        )
-
-        report["recommendations"] = recommendations
-
-        # 統計更新
-        self.stats["total_reports_generated"] += 1
-
-        self.logger.info(
-            f"メモリレポート生成完了 snapshot_count={len(snapshots)}, "
-            f"current_memory_mb={current_snapshot.memory_mb:.1f}, "
-            f"leak_count={len(leaks) if leaks else 0}"
+        # レポート生成器に委譲
+        return self.report_generator.generate_memory_report(
+            snapshots=snapshots,
+            leaks=leaks,
+            include_trend=include_trend,
+            trend_window_minutes=trend_window_minutes,
+            trend_analysis=trend_analysis,
         )
-
-        return report
 
     def force_garbage_collection(self) -> dict[str, Any]:
         """ガベージコレクションを強制実行
@@ -300,48 +196,7 @@ class MemoryAnalyzer:
         Returns:
             dict: GC実行結果
         """
-        start_time = time.time()
-
-        # 実行前の状態
-        before_objects = len(gc.get_objects())
-        before_collections = gc.get_count()
-
-        # GC実行
-        collected_counts = []
-        for generation in range(3):
-            collected = gc.collect(generation)
-            collected_counts.append(collected)
-
-        # 実行後の状態
-        after_objects = len(gc.get_objects())
-        after_collections = gc.get_count()
-
-        duration = time.time() - start_time
-
-        result = {
-            "duration_ms": duration * 1000,
-            "before": {
-                "objects": before_objects,
-                "collections": before_collections,
-            },
-            "after": {
-                "objects": after_objects,
-                "collections": after_collections,
-            },
-            "collected_by_generation": collected_counts,
-            "objects_freed": before_objects - after_objects,
-            "total_collected": sum(collected_counts),
-        }
-
-        self.stats["total_gc_forced"] += 1
-
-        self.logger.info(
-            f"強制GC実行完了 duration_ms={result['duration_ms']:.2f}, "
-            f"objects_freed={result['objects_freed']}, "
-            f"total_collected={result['total_collected']}"
-        )
-
-        return result
+        return self.gc_manager.force_garbage_collection()
 
     def optimize_memory_settings(self) -> dict[str, Any]:
         """メモリ設定を最適化
@@ -349,34 +204,7 @@ class MemoryAnalyzer:
         Returns:
             dict: 最適化結果
         """
-        old_thresholds = gc.get_threshold()
-
-        # 最適化された閾値を設定
-        new_thresholds = (
-            GC_OPTIMIZATION_THRESHOLDS["generation_0"],
-            GC_OPTIMIZATION_THRESHOLDS["generation_1"],
-            GC_OPTIMIZATION_THRESHOLDS["generation_2"],
-        )
-
-        gc.set_threshold(*new_thresholds)
-
-        # 設定確認
-        current_thresholds = gc.get_threshold()
-
-        result = {
-            "old_thresholds": old_thresholds,
-            "new_thresholds": current_thresholds,
-            "optimization_applied": current_thresholds == new_thresholds,
-        }
-
-        self.stats["memory_optimizations"] += 1
-
-        self.logger.info(
-            f"メモリ設定最適化完了 old_thresholds={old_thresholds}, "
-            f"new_thresholds={current_thresholds}"
-        )
-
-        return result
+        return self.gc_manager.optimize_memory_settings()
 
     def check_memory_alerts(self, snapshot: MemorySnapshot) -> None:
         """メモリアラートをチェック
@@ -384,35 +212,7 @@ class MemoryAnalyzer:
         Args:
             snapshot: チェック対象のスナップショット
         """
-        current_time = time.time()
-
-        # 警告レベルチェック
-        if snapshot.is_memory_warning:
-            alert_type = "memory_warning"
-            if self._can_trigger_alert(alert_type, current_time):
-                self._trigger_alert(
-                    alert_type,
-                    {
-                        "memory_usage_ratio": snapshot.memory_usage_ratio,
-                        "memory_mb": snapshot.memory_mb,
-                        "available_mb": snapshot.available_mb,
-                        "threshold": MEMORY_ALERT_THRESHOLDS["warning"],
-                    },
-                )
-
-        # クリティカルレベルチェック
-        if snapshot.is_memory_critical:
-            alert_type = "memory_critical"
-            if self._can_trigger_alert(alert_type, current_time):
-                self._trigger_alert(
-                    alert_type,
-                    {
-                        "memory_usage_ratio": snapshot.memory_usage_ratio,
-                        "memory_mb": snapshot.memory_mb,
-                        "available_mb": snapshot.available_mb,
-                        "threshold": MEMORY_ALERT_THRESHOLDS["critical"],
-                    },
-                )
+        self.alert_manager.check_memory_alerts(snapshot)
 
     def check_memory_alerts_batch(self, snapshots: list[MemorySnapshot]) -> None:
         """複数のスナップショットに対してアラートをチェック
@@ -420,43 +220,7 @@ class MemoryAnalyzer:
         Args:
             snapshots: チェック対象のスナップショットリスト
         """
-        for snapshot in snapshots:
-            self.check_memory_alerts(snapshot)
-
-    def _can_trigger_alert(self, alert_type: str, current_time: float) -> bool:
-        """アラートを発火できるかチェック（クールダウン考慮）
-
-        Args:
-            alert_type: アラートタイプ
-            current_time: 現在時刻
-
-        Returns:
-            bool: アラート発火可能かどうか
-        """
-        last_time = self.last_alert_time.get(alert_type, 0)
-        return current_time - last_time >= self.alert_cooldown
-
-    def _trigger_alert(self, alert_type: str, context: dict[str, Any]) -> None:
-        """アラートを発火
-
-        Args:
-            alert_type: アラートタイプ
-            context: アラートコンテキスト
-        """
-        current_time = time.time()
-        self.last_alert_time[alert_type] = current_time
-
-        context_str = ", ".join(f"{k}={v}" for k, v in context.items())
-        self.logger.warning(f"メモリアラート発火: {alert_type} {context_str}")
-
-        # 登録されたコールバックを実行
-        for callback in self.alert_callbacks:
-            try:
-                callback(alert_type, context)
-            except Exception as e:
-                self.logger.error(f"アラートコールバック実行エラー: {e}")
-
-        self.stats["total_alerts_triggered"] += 1
+        self.alert_manager.check_memory_alerts_batch(snapshots)
 
     def get_stats(self) -> dict[str, Any]:
         """統計情報を取得
@@ -464,16 +228,24 @@ class MemoryAnalyzer:
         Returns:
             dict: 統計情報
         """
-        return self.stats.copy()
+        combined_stats = {}
+
+        # 各コンポーネントの統計を統合
+        report_stats = self.report_generator.get_stats()
+        alert_stats = self.alert_manager.get_stats()
+        gc_stats = self.gc_manager.get_stats()
+
+        combined_stats.update(report_stats)
+        combined_stats.update(alert_stats)
+        combined_stats.update(gc_stats)
+
+        return combined_stats
 
     def reset_stats(self) -> None:
         """統計情報をリセット"""
-        old_stats = self.stats.copy()
-        self.stats = {
-            "total_reports_generated": 0,
-            "total_gc_forced": 0,
-            "total_alerts_triggered": 0,
-            "memory_optimizations": 0,
-        }
+        # 各コンポーネントの統計をリセット
+        self.report_generator.reset_stats()
+        self.alert_manager.reset_stats()
+        self.gc_manager.reset_stats()
 
-        self.logger.info(f"統計情報をリセット old_stats={old_stats}")
+        self.logger.info("全コンポーネントの統計情報をリセット")
