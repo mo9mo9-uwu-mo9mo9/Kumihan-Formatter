@@ -24,9 +24,7 @@ class SyntaxValidatorUtils:
             if error.error_type == ErrorTypes.ENCODING:
                 friendly_error = ErrorCatalog.create_encoding_error(current_file)
             elif error.error_type == ErrorTypes.FILE_NOT_FOUND:
-                friendly_error = ErrorCatalog.create_file_not_found_error(
-                    current_file
-                )
+                friendly_error = ErrorCatalog.create_file_not_found_error(current_file)
             elif error.error_type in [
                 ErrorTypes.INVALID_KEYWORD,
                 ErrorTypes.UNKNOWN_KEYWORD,
@@ -77,12 +75,12 @@ class SyntaxValidatorUtils:
     @staticmethod
     def validate_file_access(file_path: Path) -> tuple[str, list[SyntaxError]]:
         """Validate file access and return content
-        
+
         Returns:
             tuple: (content, errors)
         """
         errors = []
-        
+
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()

@@ -7,6 +7,7 @@ Environment Variables:
     KUMIHAN_GUI_LOG_LEVEL: ログレベル（DEBUG, INFO, WARNING, ERROR）
     KUMIHAN_GUI_LOG_FILE: ログファイルのパス（デフォルト: /tmp/kumihan_gui_debug.log）
 """
+
 import functools
 import logging
 import os
@@ -28,10 +29,14 @@ from typing import (
     Tuple,
     Union,
 )
+
+
 class GUIDebugLogger:
     """GUI専用デバッグロガー（スレッドセーフシングルトン）"""
+
     _instance: Optional["GUIDebugLogger"] = None
     _lock = threading.Lock()
+
     def __init__(self) -> None:
         self.enabled = os.getenv("KUMIHAN_GUI_DEBUG", "").lower() == "true"
         self.log_level = os.getenv("KUMIHAN_GUI_LOG_LEVEL", "DEBUG").upper()
@@ -49,6 +54,7 @@ class GUIDebugLogger:
             self.info(f"Session ID: {self.session_id}")
             self.info(f"Python version: {sys.version}")
             self.info(f"Platform: {sys.platform}")
+
     def _setup_logger(self) -> None:
         """ロガーの初期化"""
         try:
@@ -93,6 +99,7 @@ class GUIDebugLogger:
                 self.logger.addHandler(console_handler)
             except Exception as e:
                 print(f"Warning: Cannot create console handler: {e}", file=sys.stderr)
+
     def _add_to_buffer(self, level: str, message: str) -> None:
         """メモリバッファにログを追加（スレッドセーフ、dequeで効率的）"""
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
@@ -100,6 +107,7 @@ class GUIDebugLogger:
         with self._buffer_lock:
             # dequeのmaxlen=1000により、古いエントリは自動的に削除される（O(1)効率）
             self.log_buffer.append(log_entry)
+
     def debug(self, message: str, **kwargs: Any) -> None:
         """DEBUGレベルログ"""
         if not self.enabled:
@@ -107,6 +115,7 @@ class GUIDebugLogger:
         if self.logger:
             self.logger.debug(message, **kwargs)
         self._add_to_buffer("DEBUG", message)
+
     def info(self, message: str, **kwargs: Any) -> None:
         """INFOレベルログ"""
         if not self.enabled:
@@ -114,6 +123,7 @@ class GUIDebugLogger:
         if self.logger:
             self.logger.info(message, **kwargs)
         self._add_to_buffer("INFO", message)
+
     def warning(self, message: str, **kwargs: Any) -> None:
         """WARNINGレベルログ"""
         if not self.enabled:
@@ -121,6 +131,7 @@ class GUIDebugLogger:
         if self.logger:
             self.logger.warning(message, **kwargs)
         self._add_to_buffer("WARNING", message)
+
     def error(
         self, message: str, exception: Optional[Exception] = None, **kwargs: Any
     ) -> None:
@@ -135,6 +146,7 @@ class GUIDebugLogger:
         if self.logger:
             self.logger.error(full_message, **kwargs)
         self._add_to_buffer("ERROR", full_message)
+
     def log_function_call(
         self,
         func_name: str,
@@ -148,6 +160,7 @@ class GUIDebugLogger:
         kwargs_str = ", ".join(f"{k}={v}" for k, v in (kwargs or {}).items())
         params = ", ".join(filter(None, [args_str, kwargs_str]))
         self.debug(f"Function call: {func_name}({params})")
+
     def log_gui_event(self, event_type: str, widget: str, details: str = "") -> None:
         """GUIイベントをログ"""
         if not self.enabled:
@@ -156,22 +169,27 @@ class GUIDebugLogger:
         if details:
             message += f" - {details}"
         self.info(message)
+
     def log_performance(self, operation: str, duration: float) -> None:
         """パフォーマンス情報をログ"""
         if not self.enabled:
             return
         self.info(f"Performance: {operation} took {duration:.3f}s")
+
     def get_log_buffer(self) -> List[str]:
         """メモリ内ログバッファを取得（スレッドセーフ）"""
         with self._buffer_lock:
             return list(self.log_buffer)
+
     def clear_log_buffer(self) -> None:
         """メモリ内ログバッファをクリア（スレッドセーフ）"""
         with self._buffer_lock:
             self.log_buffer.clear()
+
     def get_log_file_path(self) -> Path:
         """ログファイルのパスを取得"""
         return self.log_file
+
     @classmethod
     def get_singleton(cls) -> "GUIDebugLogger":
         """スレッドセーフなシングルトンインスタンス取得"""
@@ -181,10 +199,13 @@ class GUIDebugLogger:
                 if cls._instance is None:
                     cls._instance = cls()
         return cls._instance
+
+
 def log_gui_method(
     logger_instance: "GUIDebugLogger",
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """GUIメソッド用デコレータ"""
+
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -203,12 +224,17 @@ def log_gui_method(
                 duration = time.time() - start_time
                 logger_instance.error(f"Error in {func_name} after {duration:.3f}s", e)
                 raise
+
         return wrapper
+
     return decorator
+
+
 def log_import_attempt(
     module_name: str, logger_instance: "GUIDebugLogger"
 ) -> Callable[[Callable[[], Any]], Callable[[], Any]]:
     """インポート試行をログ"""
+
     def decorator(import_func: Callable[[], Any]) -> Callable[[], Any]:
         @functools.wraps(import_func)
         def wrapper() -> Any:
@@ -223,8 +249,12 @@ def log_import_attempt(
             except Exception as e:
                 logger_instance.error(f"Failed to import {module_name}", e)
                 raise
+
         return wrapper
+
     return decorator
+
+
 # グローバルロガーインスタンス（シングルトン使用）
 gui_debug_logger = GUIDebugLogger.get_singleton()
 # 便利なエイリアス
@@ -236,20 +266,30 @@ log_gui_event = gui_debug_logger.log_gui_event
 log_performance = gui_debug_logger.log_performance
 # デコレータファクトリ関数をエクスポート用に保持
 _log_gui_method_factory = log_gui_method
+
+
 # グローバルロガーインスタンス付きデコレータ
 def log_gui_method_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
     """グローバルロガーを使用するGUIメソッドデコレータ"""
     return _log_gui_method_factory(gui_debug_logger)(func)
+
+
 # 後方互換性のためのエイリアス
 # 実行時のみデコレータを使用（型チェック時は元の関数定義を維持）
 if not TYPE_CHECKING:
     log_gui_method = log_gui_method_decorator  # type: ignore[misc]
+
+
 def get_logger() -> GUIDebugLogger:
     """ロガーインスタンスを取得"""
     return gui_debug_logger
+
+
 def is_debug_enabled() -> bool:
     """デバッグモードが有効かどうか"""
     return gui_debug_logger.enabled
+
+
 def log_startup_info() -> None:
     """起動時情報をログ"""
     if not gui_debug_logger.enabled:
@@ -265,14 +305,18 @@ def log_startup_info() -> None:
     # メモリ使用量（利用可能な場合）
     try:
         import psutil
+
         process = psutil.Process()
         memory_mb = process.memory_info().rss / 1024 / 1024
         info(f"Initial memory usage: {memory_mb:.1f} MB")
     except ImportError:
         debug("psutil not available for memory monitoring")
+
+
 if __name__ == "__main__":
     # テスト用コード
     import os
+
     os.environ["KUMIHAN_GUI_DEBUG"] = "true"
     logger = GUIDebugLogger()
     logger.info("Test message")

@@ -1,9 +1,11 @@
 """GUI Log Viewer for Kumihan-Formatter
 GUIアプリケーション用のリアルタイムログビューアー
 """
+
 import threading
 import time
 from typing import TYPE_CHECKING, Any, List, Optional, Union
+
 # tkinterは必要時にのみインポート（CI環境での問題回避）
 if TYPE_CHECKING:
     import tkinter as tk
@@ -17,8 +19,11 @@ else:
         tk = None  # type: ignore
         scrolledtext = None  # type: ignore
         ttk = None  # type: ignore
+
+
 class LogViewerWindow:
     """リアルタイムログビューアーウィンドウ"""
+
     def __init__(self, parent_window: Optional["tk.Tk"] = None) -> None:
         self.parent = parent_window
         self.window: Optional[Union["tk.Tk", "tk.Toplevel"]] = None
@@ -32,18 +37,22 @@ class LogViewerWindow:
         # Logger取得を一箇所にまとめる（重複debug logger fallback定義の削除）
         self._logger: Optional[Any] = None
         self._initialize_logger()
+
     def _initialize_logger(self) -> None:
         """ロガーを初期化（重複削除のため一箇所で実行）"""
         try:
             from .debug_logger import get_logger
+
             self._logger = get_logger()
         except Exception:
             self._logger = None
+
     def _get_logger(self) -> Optional[Any]:
         """ロガーを取得（fallback処理を含む）"""
         if self._logger is None:
             self._initialize_logger()
         return self._logger
+
     def show(self) -> None:
         """ログビューアーウィンドウを表示"""
         # tkinterが利用できない場合（CI環境等）はエラーを出さずに終了
@@ -65,6 +74,7 @@ class LogViewerWindow:
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
         self._setup_ui()
         self._start_update_thread()
+
     def _setup_ui(self) -> None:
         """UIコンポーネントのセットアップ"""
         # ツールバー
@@ -121,20 +131,24 @@ class LogViewerWindow:
             anchor=tk.W,
         )
         status_bar.pack(fill=tk.X, side=tk.BOTTOM)
+
     def _start_update_thread(self) -> None:
         """ログ更新スレッドを開始"""
         self.running = True
         self.update_thread = threading.Thread(target=self._update_logs, daemon=True)
         self.update_thread.start()
+
     def _update_logs(self) -> None:
         """ログを定期的に更新"""
         try:
             logger = self._get_logger()
             if not logger or not logger.enabled:
                 if self.window and self.status_var:
+
                     def set_debug_disabled() -> None:
                         if self.status_var:
                             self.status_var.set("デバッグモードが無効です")
+
                     self.window.after(100, set_debug_disabled)
                 return
             last_log_count = 0
@@ -146,8 +160,10 @@ class LogViewerWindow:
                     if len(log_buffer) > last_log_count:
                         new_logs = log_buffer[last_log_count:]
                         if self.window:
+
                             def add_new_logs() -> None:
                                 self._add_logs(new_logs)
+
                             self.window.after(0, add_new_logs)
                         last_log_count = len(log_buffer)
                         # ステータス更新
@@ -156,26 +172,33 @@ class LogViewerWindow:
                             file_size = logger.get_log_file_path().stat().st_size
                             status += f" | ファイルサイズ: {file_size // 1024} KB"
                         if self.window and self.status_var:
+
                             def update_status() -> None:
                                 if self.status_var:
                                     self.status_var.set(status)
+
                             self.window.after(0, update_status)
                     time.sleep(0.5)  # 0.5秒間隔で更新
                 except Exception as e:
                     error_msg = f"ログ更新エラー: {str(e)}"
                     if self.window and self.status_var:
+
                         def set_error_msg() -> None:
                             if self.status_var:
                                 self.status_var.set(error_msg)
+
                         self.window.after(0, set_error_msg)
                     time.sleep(1)
         except Exception as e:
             error_msg = f"ログビューアーエラー: {str(e)}"
             if self.window and self.status_var:
+
                 def set_viewer_error() -> None:
                     if self.status_var:
                         self.status_var.set(error_msg)
+
                 self.window.after(0, set_viewer_error)
+
     def _add_logs(self, logs: List[str]) -> None:
         """ログをテキストエリアに追加"""
         if not self.log_text:
@@ -204,10 +227,12 @@ class LogViewerWindow:
         # 自動スクロール
         if self.auto_scroll and self.log_text:
             self.log_text.see(tk.END)
+
     def _toggle_auto_scroll(self) -> None:
         """自動スクロールの切り替え"""
         if self.auto_scroll_var:
             self.auto_scroll = self.auto_scroll_var.get()
+
     def _filter_logs(self, event: Optional[object] = None) -> None:
         """ログレベルフィルタリング"""
         # 既存のログを再表示（フィルタリング適用）
@@ -223,6 +248,7 @@ class LogViewerWindow:
         except Exception as e:
             if self.status_var:
                 self.status_var.set(f"フィルタリングエラー: {str(e)}")
+
     def clear_log(self) -> None:
         """ログをクリア"""
         if self.log_text:
@@ -239,6 +265,7 @@ class LogViewerWindow:
         except Exception as e:
             if self.status_var:
                 self.status_var.set(f"ログクリアエラー: {str(e)}")
+
     def open_log_file(self) -> None:
         """ログファイルを外部エディタで開く"""
         try:
@@ -246,6 +273,7 @@ class LogViewerWindow:
             if logger and logger.get_log_file_path().exists():
                 import platform
                 import subprocess
+
                 log_file = str(logger.get_log_file_path())
                 if platform.system() == "Darwin":  # macOS
                     subprocess.run(["open", log_file])
@@ -261,6 +289,7 @@ class LogViewerWindow:
         except Exception as e:
             if self.status_var:
                 self.status_var.set(f"ファイルオープンエラー: {str(e)}")
+
     def on_closing(self) -> None:
         """ウィンドウを閉じる時の処理"""
         self.running = False
@@ -270,17 +299,23 @@ class LogViewerWindow:
         if self.window:
             self.window.destroy()
             self.window = None
+
     def is_open(self) -> bool:
         """ウィンドウが開いているかどうか"""
         return self.window is not None
+
+
 def show_log_viewer(parent_window: Optional["tk.Tk"] = None) -> LogViewerWindow:
     """ログビューアーを表示"""
     viewer = LogViewerWindow(parent_window)
     viewer.show()
     return viewer
+
+
 if __name__ == "__main__":
     # テスト用
     import os
+
     if tk is None:
         print("tkinter is not available. Cannot run GUI test.")
         exit(1)
@@ -290,6 +325,7 @@ if __name__ == "__main__":
     viewer = show_log_viewer()
     # テストログを生成
     from .debug_logger import debug, error, info, warning
+
     debug("これはデバッグメッセージです")
     info("これは情報メッセージです")
     warning("これは警告メッセージです")

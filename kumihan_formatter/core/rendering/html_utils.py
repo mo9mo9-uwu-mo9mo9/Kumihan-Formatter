@@ -26,14 +26,14 @@ from .html_tag_utils import (
 # 後方互換性のため、main_renderer.pyで使用される定数を再定義
 NESTING_ORDER = [
     "details",  # 折りたたみ, ネタバレ
-    "div",      # 枠線, ハイライト
-    "h1",       # 見出し
+    "div",  # 枠線, ハイライト
+    "h1",  # 見出し
     "h2",
     "h3",
     "h4",
     "h5",
-    "strong",   # 太字
-    "em",       # イタリック
+    "strong",  # 太字
+    "em",  # イタリック
 ]
 
 # 後方互換性のため、全ての関数を再エクスポート

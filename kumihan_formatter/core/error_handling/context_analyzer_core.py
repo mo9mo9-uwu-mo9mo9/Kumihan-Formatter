@@ -45,7 +45,9 @@ class ContextAnalyzerCore:
             "error_type": type(error).__name__,
             "error_message": str(error),
             "timestamp": system_context.timestamp,
-            "location": self._get_error_location(context_stack[0] if context_stack else None),
+            "location": self._get_error_location(
+                context_stack[0] if context_stack else None
+            ),
             "operation_chain": self._build_operation_chain(context_stack),
             "system_info": self._extract_system_info(system_context),
         }
@@ -56,14 +58,18 @@ class ContextAnalyzerCore:
                 path: {
                     "size": ctx.size,
                     "encoding": ctx.encoding,
-                    "last_modified": ctx.last_modified.isoformat() if ctx.last_modified else None,
+                    "last_modified": (
+                        ctx.last_modified.isoformat() if ctx.last_modified else None
+                    ),
                     "content_type": ctx.content_type,
                 }
                 for path, ctx in file_contexts.items()
             }
 
         # 推定原因を追加
-        probable_cause = self.suggest_probable_cause(error, context_stack, system_context)
+        probable_cause = self.suggest_probable_cause(
+            error, context_stack, system_context
+        )
         summary["probable_cause"] = probable_cause
 
         # コンテキストブレッドクラムを追加
@@ -93,7 +99,7 @@ class ContextAnalyzerCore:
 
         error_type = type(error).__name__
         error_msg = str(error)
-        
+
         # 基本的な原因分析
         cause_analysis = {
             "primary_cause": "unknown",
@@ -110,7 +116,7 @@ class ContextAnalyzerCore:
                 "ファイルパスを確認してください",
                 "ファイルの存在とアクセス権限を確認してください",
             ]
-            
+
         elif error_type in ["UnicodeDecodeError", "UnicodeEncodeError"]:
             cause_analysis["primary_cause"] = "encoding_issue"
             cause_analysis["confidence"] = 0.9
@@ -118,7 +124,7 @@ class ContextAnalyzerCore:
                 "ファイルのエンコーディングを確認してください",
                 "UTF-8でファイルを保存し直してください",
             ]
-            
+
         elif error_type in ["ValueError", "TypeError"]:
             cause_analysis["primary_cause"] = "data_format_issue"
             cause_analysis["confidence"] = 0.7
@@ -126,7 +132,7 @@ class ContextAnalyzerCore:
                 "入力データの形式を確認してください",
                 "データの型と値を確認してください",
             ]
-            
+
         elif "syntax" in error_msg.lower():
             cause_analysis["primary_cause"] = "syntax_error"
             cause_analysis["confidence"] = 0.85
@@ -138,16 +144,20 @@ class ContextAnalyzerCore:
         # コンテキストベースの追加分析
         if context_stack:
             current_context = context_stack[0]
-            
+
             # 操作種別による分析
             if current_context.operation_type == "file_parsing":
                 cause_analysis["related_contexts"].append("file_parsing")
                 if "line" in error_msg.lower():
-                    cause_analysis["suggestions"].append("指定された行番号付近を確認してください")
-                    
+                    cause_analysis["suggestions"].append(
+                        "指定された行番号付近を確認してください"
+                    )
+
             elif current_context.operation_type == "rendering":
                 cause_analysis["related_contexts"].append("rendering")
-                cause_analysis["suggestions"].append("レンダリング設定を確認してください")
+                cause_analysis["suggestions"].append(
+                    "レンダリング設定を確認してください"
+                )
 
         self.logger.debug(f"推定原因分析完了: {cause_analysis['primary_cause']}")
         return cause_analysis
@@ -168,7 +178,7 @@ class ContextAnalyzerCore:
         for i, context in enumerate(reversed(context_stack)):
             level_indicator = "→" if i > 0 else "📍"
             breadcrumb_parts.append(f"{level_indicator} {context.operation_type}")
-            
+
             if context.file_path:
                 breadcrumb_parts.append(f"({Path(context.file_path).name})")
 
@@ -198,12 +208,16 @@ class ContextAnalyzerCore:
 
         chain = []
         for context in context_stack:
-            chain.append({
-                "operation_type": context.operation_type,
-                "file_path": context.file_path,
-                "line_number": context.line_number,
-                "timestamp": context.timestamp.isoformat() if context.timestamp else None,
-            })
+            chain.append(
+                {
+                    "operation_type": context.operation_type,
+                    "file_path": context.file_path,
+                    "line_number": context.line_number,
+                    "timestamp": (
+                        context.timestamp.isoformat() if context.timestamp else None
+                    ),
+                }
+            )
 
         return chain
 
