@@ -124,10 +124,7 @@ class BenchmarkScenarios:
     def generate_file_content(self, lines: int = 1000) -> str:
         """ファイル読み込みテスト用コンテンツを生成（ScenarioDataGeneratorsに委譲）"""
         return ScenarioDataGenerators.generate_file_content(lines)
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/main
     def generate_parse_content(
         self, lines: int = 100, notation_density: float = 0.3
     ) -> str:

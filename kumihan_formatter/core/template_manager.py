@@ -7,18 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
-<<<<<<< HEAD
 
 from .template_context import RenderContext
 from .template_filters import TemplateFilters
 from .template_selector import TemplateSelector
 
 
-=======
-from .template_filters import TemplateFilters
-from .template_selector import TemplateSelector
-from .template_context import RenderContext
->>>>>>> origin/main
 class TemplateManager:
     """
     Jinja2テンプレート管理クラス（HTML出力の制御）
