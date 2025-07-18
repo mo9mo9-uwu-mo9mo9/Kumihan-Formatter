@@ -112,20 +112,24 @@ class TestValidationIssue(BaseTestCase):
         try:
             # Test with required parameters
             issue = ValidationIssue(
+                level="warning",
+                category="syntax",
                 message="Test validation issue",
-                severity="warning",
                 line_number=1,
                 column_number=1,
             )
             assert issue is not None
             assert issue.message == "Test validation issue"
-            assert issue.severity == "warning"
+            assert issue.level == "warning"
+            assert issue.category == "syntax"
             assert issue.line_number == 1
             assert issue.column_number == 1
         except (ImportError, TypeError):
             # If ValidationIssue requires different parameters, test basic creation
             try:
-                issue = ValidationIssue("Test message")
+                issue = ValidationIssue(
+                    level="info", category="syntax", message="Test message"
+                )
                 assert issue is not None
             except ImportError:
                 pytest.skip("ValidationIssue not available")
@@ -134,21 +138,24 @@ class TestValidationIssue(BaseTestCase):
         """Test creating validation issues"""
         try:
             # Test issue creation with different severity levels
-            severities = ["info", "warning", "error", "critical"]
+            levels = ["info", "warning", "error"]
 
-            for severity in severities:
+            for level in levels:
                 try:
                     issue = ValidationIssue(
-                        message=f"Test {severity} issue",
-                        severity=severity,
+                        level=level,
+                        category="syntax",
+                        message=f"Test {level} issue",
                         line_number=1,
                         column_number=1,
                     )
                     assert issue is not None
-                    assert issue.severity == severity
+                    assert issue.level == level
                 except TypeError:
                     # If constructor signature is different, test basic creation
-                    issue = ValidationIssue(f"Test {severity} message")
+                    issue = ValidationIssue(
+                        level=level, category="syntax", message=f"Test {level} message"
+                    )
                     assert issue is not None
 
         except ImportError:
@@ -160,13 +167,16 @@ class TestValidationIssue(BaseTestCase):
             # Test issue formatting for display
             try:
                 issue = ValidationIssue(
+                    level="error",
+                    category="syntax",
                     message="Test formatting issue",
-                    severity="error",
                     line_number=5,
                     column_number=10,
                 )
             except TypeError:
-                issue = ValidationIssue("Test formatting message")
+                issue = ValidationIssue(
+                    level="error", category="syntax", message="Test formatting message"
+                )
 
             # Test string representation
             issue_str = str(issue)
