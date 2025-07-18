@@ -33,8 +33,15 @@ class TestConfigManager:
         try:
             config_manager = ConfigManager()
 
-            # Test default config loading
-            assert config_manager is not None
+            # Test default config values
+            default_config = config_manager.get_default_config()
+            assert default_config is not None
+            assert "output_format" in default_config
+            assert "encoding" in default_config
+
+            # Test accessing specific config values
+            output_format = config_manager.get("output_format", "html")
+            assert output_format in ["html", "markdown", "text"]
         except ImportError:
             pytest.skip("ConfigManager not available")
 
@@ -48,7 +55,13 @@ class TestConfigManager:
             config_manager = ConfigManager()
 
             # Test file-based config loading
-            assert config_manager is not None
+            config_manager.load_from_file(temp_path)
+
+            # Verify loaded configuration
+            output_format = config_manager.get("output_format")
+            assert output_format == "html"
+
+            # Test config file existence
             assert Path(temp_path).exists()
         except ImportError:
             pytest.skip("ConfigManager not available")
@@ -63,8 +76,18 @@ class TestConfigManager:
         try:
             config_manager = ConfigManager()
 
+            # Set some configuration values
+            config_manager.set("output_format", "markdown")
+            config_manager.set("encoding", "utf-8")
+
             # Test config saving
-            assert config_manager is not None
+            config_manager.save_to_file(temp_path)
+
+            # Verify file was created and contains expected content
+            assert Path(temp_path).exists()
+            content = Path(temp_path).read_text()
+            assert 'output_format = "markdown"' in content
+            assert 'encoding = "utf-8"' in content
 
             # Clean up
             if os.path.exists(temp_path):
@@ -92,8 +115,22 @@ class TestConfigManagerCore:
         try:
             config_manager = ConfigManagerCore()
 
-            # Test config validation
-            assert config_manager is not None
+            # Test valid configuration
+            valid_config = {
+                "output_format": "html",
+                "encoding": "utf-8",
+                "theme": "default",
+            }
+            is_valid = config_manager.validate_config(valid_config)
+            assert is_valid is True
+
+            # Test invalid configuration
+            invalid_config = {
+                "output_format": "invalid_format",
+                "encoding": "invalid_encoding",
+            }
+            is_valid = config_manager.validate_config(invalid_config)
+            assert is_valid is False
         except ImportError:
             pytest.skip("ConfigManagerCore not available")
 
@@ -103,7 +140,21 @@ class TestConfigManagerCore:
             config_manager = ConfigManagerCore()
 
             # Test config merging
-            assert config_manager is not None
+            base_config = {
+                "output_format": "html",
+                "encoding": "utf-8",
+                "theme": "default",
+            }
+
+            override_config = {"output_format": "markdown", "author": "test_user"}
+
+            merged_config = config_manager.merge_configs(base_config, override_config)
+
+            # Verify merged configuration
+            assert merged_config["output_format"] == "markdown"  # Overridden
+            assert merged_config["encoding"] == "utf-8"  # From base
+            assert merged_config["theme"] == "default"  # From base
+            assert merged_config["author"] == "test_user"  # New value
         except ImportError:
             pytest.skip("ConfigManagerCore not available")
 

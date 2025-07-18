@@ -12,33 +12,49 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from kumihan_formatter.core.caching import CacheManager
+from kumihan_formatter.core.caching import SmartCache
 from kumihan_formatter.core.caching.file_cache import FileCache
 from kumihan_formatter.core.caching.parse_cache import ParseCache
 from kumihan_formatter.core.caching.render_cache import RenderCache
 
 
-class TestCacheManager:
-    """Test cache manager basic functionality"""
+class TestSmartCache:
+    """Test smart cache basic functionality"""
 
-    def test_cache_manager_initialization(self):
-        """Test CacheManager initialization"""
+    def test_smart_cache_initialization(self):
+        """Test SmartCache initialization"""
         try:
-            cache_manager = CacheManager()
-            assert cache_manager is not None
+            smart_cache = SmartCache()
+            assert smart_cache is not None
         except ImportError:
-            # If CacheManager is not available, skip this test
-            pytest.skip("CacheManager not available")
+            # If SmartCache is not available, skip this test
+            pytest.skip("SmartCache not available")
 
-    def test_cache_manager_basic_operations(self):
+    def test_smart_cache_basic_operations(self):
         """Test basic cache operations"""
         try:
-            cache_manager = CacheManager()
+            smart_cache = SmartCache()
 
-            # Test cache interface
-            assert cache_manager is not None
+            # Test actual cache operations
+            test_key = "test_key"
+            test_value = "test_value"
+
+            # Test set and get
+            smart_cache.set(test_key, test_value)
+            retrieved_value = smart_cache.get(test_key)
+            assert retrieved_value == test_value
+
+            # Test cache miss
+            assert smart_cache.get("nonexistent_key") is None
+
+            # Test cache statistics
+            stats = smart_cache.get_stats()
+            assert stats is not None
+            assert isinstance(stats, dict)
+            assert "hit_rate" in stats or "total_requests" in stats
+
         except ImportError:
-            pytest.skip("CacheManager not available")
+            pytest.skip("SmartCache not available")
 
 
 class TestFileCache:
@@ -57,18 +73,60 @@ class TestFileCache:
         try:
             file_cache = FileCache()
 
-            # Test cache store/retrieve interface
-            assert file_cache is not None
+            # Create test file
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".txt"
+            ) as f:
+                f.write("test content")
+                temp_path = f.name
+
+            try:
+                # Test file content caching
+                file_path = Path(temp_path)
+                cached_content = file_cache.get_file_content(file_path)
+                assert cached_content == "test content"
+
+                # Test cache hit on second access
+                cached_content_2 = file_cache.get_file_content(file_path)
+                assert cached_content_2 == "test content"
+
+                # Verify cache statistics
+                assert file_cache.hit_count >= 1
+            finally:
+                os.unlink(temp_path)
         except ImportError:
             pytest.skip("FileCache not available")
 
     def test_file_cache_expiration(self):
         """Test file cache expiration"""
         try:
-            file_cache = FileCache()
+            # Create file cache with short TTL
+            file_cache = FileCache(ttl=0.1)  # 100ms TTL
 
-            # Test cache expiration interface
-            assert file_cache is not None
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".txt"
+            ) as f:
+                f.write("test content")
+                temp_path = f.name
+
+            try:
+                file_path = Path(temp_path)
+
+                # Cache the content
+                cached_content = file_cache.get_file_content(file_path)
+                assert cached_content == "test content"
+
+                # Wait for expiration
+                time.sleep(0.2)
+
+                # Content should be re-read due to expiration
+                cached_content_2 = file_cache.get_file_content(file_path)
+                assert cached_content_2 == "test content"
+
+                # Verify cache miss due to expiration
+                assert file_cache.miss_count >= 1
+            finally:
+                os.unlink(temp_path)
         except ImportError:
             pytest.skip("FileCache not available")
 
@@ -82,14 +140,22 @@ class TestFileCache:
             file_cache = FileCache()
 
             # Test cache invalidation when file changes
-            assert Path(temp_path).exists()
+            file_path = Path(temp_path)
+
+            # Initial cache
+            cached_content = file_cache.get_file_content(file_path)
+            assert cached_content == "original content"
 
             # Modify file
             time.sleep(0.1)  # Ensure different timestamp
-            Path(temp_path).write_text("modified content")
+            file_path.write_text("modified content")
 
-            # Test cache invalidation interface
-            assert file_cache is not None
+            # Cache should be invalidated and new content returned
+            new_cached_content = file_cache.get_file_content(file_path)
+            assert new_cached_content == "modified content"
+
+            # Verify cache invalidation occurred
+            assert file_cache.invalidation_count >= 1
         except ImportError:
             pytest.skip("FileCache not available")
         finally:

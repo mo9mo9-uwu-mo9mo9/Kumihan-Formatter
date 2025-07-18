@@ -98,3 +98,23 @@ class PerformanceAwareStrategy(CacheStrategy):
 
         # アクセス頻度と最新アクセスの組み合わせ
         return -(frequency_score * 0.7 + access_score * 0.3)
+
+
+class LRUStrategy(CacheStrategy):
+    """Least Recently Used (最近最少使用) 戦略"""
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        return entry.is_expired()
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        return entry.last_accessed.timestamp()
+
+
+class LFUStrategy(CacheStrategy):
+    """Least Frequently Used (最少頻度使用) 戦略"""
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        return entry.is_expired()
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        return float(entry.access_count)

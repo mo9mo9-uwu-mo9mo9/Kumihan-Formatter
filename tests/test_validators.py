@@ -19,87 +19,138 @@ from kumihan_formatter.core.validators import (
 from kumihan_formatter.core.validators.performance_validator import PerformanceValidator
 from kumihan_formatter.core.validators.structure_validator import StructureValidator
 from kumihan_formatter.core.validators.syntax_validator import SyntaxValidator
+from tests.test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
 
 
-class TestDocumentValidator:
+class TestDocumentValidator(ValidatorTestCase):
     """Test document validator functionality"""
 
     def test_document_validator_initialization(self):
         """Test DocumentValidator initialization"""
-        try:
-            validator = DocumentValidator()
-            assert validator is not None
-        except ImportError:
-            pytest.skip("DocumentValidator not available")
+        self.test_component_initialization(DocumentValidator, "DocumentValidator")
 
     def test_document_validator_basic_validation(self):
         """Test basic document validation"""
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
-            f.write(";;;強調;;; テスト内容 ;;;")
-            temp_path = f.name
-
         try:
             validator = DocumentValidator()
 
-            # Test basic validation
-            assert validator is not None
-            assert Path(temp_path).exists()
+            # Test basic validation with Kumihan content
+            test_content = ";;;強調;;; テスト内容 ;;;"
+            temp_file = self.create_temp_file(test_content)
+
+            # Test validation
+            if hasattr(validator, "validate"):
+                result = validator.validate(test_content)
+                assert result is not None
+                # Check if validation passed
+                assert hasattr(result, "is_valid") or isinstance(result, bool)
+
+            # Test file validation
+            if hasattr(validator, "validate_file"):
+                result = validator.validate_file(temp_file)
+                assert result is not None
+
         except ImportError:
             pytest.skip("DocumentValidator not available")
-        finally:
-            os.unlink(temp_path)
 
     def test_document_validator_kumihan_syntax(self):
         """Test Kumihan syntax validation"""
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
-            f.write(";;;強調;;; テスト内容 ;;;\n((脚注内容))\n｜傍注《ぼうちゅう》")
-            temp_path = f.name
-
         try:
             validator = DocumentValidator()
 
-            # Test Kumihan syntax validation
-            assert validator is not None
-            assert Path(temp_path).exists()
+            # Test complex Kumihan syntax
+            test_content = create_test_kumihan_content()
+            temp_file = self.create_temp_file(test_content)
+
+            # Test validation of complex syntax
+            if hasattr(validator, "validate"):
+                result = validator.validate(test_content)
+                assert result is not None
+
+                # Check if validation recognizes Kumihan syntax
+                if hasattr(result, "notations_found"):
+                    assert len(result.notations_found) > 0
+                elif hasattr(result, "syntax_elements"):
+                    assert len(result.syntax_elements) > 0
+
         except ImportError:
             pytest.skip("DocumentValidator not available")
-        finally:
-            os.unlink(temp_path)
 
     def test_document_validator_error_detection(self):
         """Test error detection in documents"""
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
-            f.write(";;;強調;;; 閉じタグなし")  # Missing closing tag
-            temp_path = f.name
-
         try:
             validator = DocumentValidator()
 
+            # Test malformed Kumihan syntax
+            malformed_content = ";;;強調;;; 閉じタグなし"  # Missing closing tag
+            temp_file = self.create_temp_file(malformed_content)
+
             # Test error detection
-            assert validator is not None
-            assert Path(temp_path).exists()
+            if hasattr(validator, "validate"):
+                result = validator.validate(malformed_content)
+                assert result is not None
+
+                # Check if errors were detected
+                if hasattr(result, "errors"):
+                    assert len(result.errors) > 0
+                elif hasattr(result, "is_valid"):
+                    # Should detect syntax error
+                    assert result.is_valid is False
+                elif isinstance(result, bool):
+                    # Should return False for invalid syntax
+                    assert result is False
+
         except ImportError:
             pytest.skip("DocumentValidator not available")
-        finally:
-            os.unlink(temp_path)
 
 
-class TestValidationIssue:
+class TestValidationIssue(BaseTestCase):
     """Test validation issue functionality"""
 
     def test_validation_issue_initialization(self):
         """Test ValidationIssue initialization"""
         try:
-            issue = ValidationIssue()
+            # Test with required parameters
+            issue = ValidationIssue(
+                message="Test validation issue",
+                severity="warning",
+                line_number=1,
+                column_number=1,
+            )
             assert issue is not None
-        except ImportError:
-            pytest.skip("ValidationIssue not available")
+            assert issue.message == "Test validation issue"
+            assert issue.severity == "warning"
+            assert issue.line_number == 1
+            assert issue.column_number == 1
+        except (ImportError, TypeError):
+            # If ValidationIssue requires different parameters, test basic creation
+            try:
+                issue = ValidationIssue("Test message")
+                assert issue is not None
+            except ImportError:
+                pytest.skip("ValidationIssue not available")
 
     def test_validation_issue_creation(self):
         """Test creating validation issues"""
         try:
             # Test issue creation with different severity levels
-            assert True  # Basic interface test
+            severities = ["info", "warning", "error", "critical"]
+
+            for severity in severities:
+                try:
+                    issue = ValidationIssue(
+                        message=f"Test {severity} issue",
+                        severity=severity,
+                        line_number=1,
+                        column_number=1,
+                    )
+                    assert issue is not None
+                    assert issue.severity == severity
+                except TypeError:
+                    # If constructor signature is different, test basic creation
+                    issue = ValidationIssue(f"Test {severity} message")
+                    assert issue is not None
+
         except ImportError:
             pytest.skip("ValidationIssue not available")
 
@@ -107,7 +158,25 @@ class TestValidationIssue:
         """Test validation issue formatting"""
         try:
             # Test issue formatting for display
-            assert True  # Basic interface test
+            try:
+                issue = ValidationIssue(
+                    message="Test formatting issue",
+                    severity="error",
+                    line_number=5,
+                    column_number=10,
+                )
+            except TypeError:
+                issue = ValidationIssue("Test formatting message")
+
+            # Test string representation
+            issue_str = str(issue)
+            assert isinstance(issue_str, str)
+            assert len(issue_str) > 0
+
+            # Test if issue contains relevant information
+            if hasattr(issue, "message"):
+                assert issue.message in issue_str
+
         except ImportError:
             pytest.skip("ValidationIssue not available")
 

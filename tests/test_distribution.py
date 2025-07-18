@@ -22,28 +22,23 @@ from kumihan_formatter.core.distribution.distribution_processor import (
 from kumihan_formatter.core.distribution.distribution_structure import (
     DistributionStructure,
 )
+from tests.test_base import (
+    BaseTestCase,
+    DistributionTestCase,
+    create_test_kumihan_content,
+)
 
 
-class TestDistributionManager:
+class TestDistributionManager(DistributionTestCase):
     """Test distribution manager basic functionality"""
 
     def test_distribution_manager_initialization(self):
         """Test DistributionManager initialization"""
-        try:
-            distribution_manager = DistributionManager()
-            assert distribution_manager is not None
-        except ImportError:
-            pytest.skip("DistributionManager not available")
+        self.test_component_initialization(DistributionManager, "DistributionManager")
 
     def test_distribution_manager_basic_operations(self):
         """Test basic distribution operations"""
-        try:
-            distribution_manager = DistributionManager()
-
-            # Test distribution interface
-            assert distribution_manager is not None
-        except ImportError:
-            pytest.skip("DistributionManager not available")
+        self.test_distribution_basic_operations(DistributionManager)
 
 
 class TestDistributionConverter:
@@ -62,8 +57,20 @@ class TestDistributionConverter:
         try:
             converter = DistributionConverter()
 
-            # Test HTML generation interface
-            assert converter is not None
+            # Test HTML generation with Kumihan content
+            test_content = create_test_kumihan_content()
+            temp_file = self.create_temp_file(test_content)
+
+            # Test HTML conversion
+            if hasattr(converter, "convert_to_html"):
+                html_result = converter.convert_to_html(test_content)
+                assert html_result is not None
+                assert isinstance(html_result, str)
+                assert len(html_result) > 0
+            elif hasattr(converter, "convert"):
+                result = converter.convert(test_content, format="html")
+                assert result is not None
+
         except ImportError:
             pytest.skip("DistributionConverter not available")
 
@@ -72,8 +79,24 @@ class TestDistributionConverter:
         try:
             converter = DistributionConverter()
 
-            # Test asset handling interface
-            assert converter is not None
+            # Create test assets
+            assets_dir = self.create_temp_dir()
+            css_file = Path(assets_dir) / "style.css"
+            css_file.write_text("body { font-family: serif; }", encoding="utf-8")
+
+            js_file = Path(assets_dir) / "script.js"
+            js_file.write_text("console.log('test');", encoding="utf-8")
+
+            # Test asset handling
+            if hasattr(converter, "handle_assets"):
+                converter.handle_assets(assets_dir)
+            elif hasattr(converter, "process_assets"):
+                converter.process_assets(assets_dir)
+
+            # Verify assets still exist
+            assert css_file.exists()
+            assert js_file.exists()
+
         except ImportError:
             pytest.skip("DistributionConverter not available")
 
