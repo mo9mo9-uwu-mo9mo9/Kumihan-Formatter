@@ -54,12 +54,19 @@ class CheckSyntaxCommand:
 
             # Exit with appropriate code
             if results:
-                error_count = sum(
-                    1
-                    for errors in results.values()
-                    for error in errors
-                    if error.severity == ErrorSeverity.ERROR
-                )
+                if isinstance(results, dict):
+                    error_count = sum(
+                        1
+                        for errors in results.values()
+                        for error in errors
+                        if error.severity == ErrorSeverity.ERROR
+                    )
+                else:
+                    # If results is a list of errors
+                    error_count = sum(
+                        1 for error in results if error.severity == ErrorSeverity.ERROR
+                    )
+
                 if error_count > 0:
                     sys.exit(1)
                 else:

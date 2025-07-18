@@ -19,6 +19,7 @@ from kumihan_formatter.commands.check_syntax import (
     CheckSyntaxCommand,
     create_check_syntax_command,
 )
+from kumihan_formatter.core.syntax import ErrorSeverity
 
 
 class TestCheckSyntaxCommand:
@@ -43,7 +44,7 @@ class TestCheckSyntaxCommand:
         # モックファイルとチェック結果
         with patch.object(command, "_collect_files", return_value=[Path("test.txt")]):
             # 有効なファイルの場合（エラーなし）
-            mock_check_files.return_value = []
+            mock_check_files.return_value = {}
 
             with patch("sys.exit") as mock_exit:
                 command.execute(
@@ -67,10 +68,12 @@ class TestCheckSyntaxCommand:
 
         # モックファイルとチェック結果
         with patch.object(command, "_collect_files", return_value=[Path("test.txt")]):
-            # エラーがある場合
+            # エラーがある場合（辞書形式で返す）
             mock_error = MagicMock()
-            mock_error.severity = "ERROR"
-            mock_check_files.return_value = [mock_error, mock_error, mock_error]
+            mock_error.severity = ErrorSeverity.ERROR
+            mock_check_files.return_value = {
+                "test.txt": [mock_error, mock_error, mock_error]
+            }
 
             with patch("sys.exit") as mock_exit:
                 command.execute(
@@ -81,10 +84,11 @@ class TestCheckSyntaxCommand:
                 )
 
                 mock_exit.assert_called_with(1)
-                mock_console.error.assert_called()
+                mock_console.warning.assert_called()
 
     @patch("kumihan_formatter.commands.check_syntax.get_console_ui")
-    def test_check_syntax_file_not_found(self, mock_get_console_ui):
+    @patch("kumihan_formatter.commands.check_syntax.check_files")
+    def test_check_syntax_file_not_found(self, mock_check_files, mock_get_console_ui):
         """Test syntax check with non-existent file"""
         mock_console = MagicMock()
         mock_get_console_ui.return_value = mock_console
@@ -101,7 +105,8 @@ class TestCheckSyntaxCommand:
                     format_output="text",
                 )
 
-                mock_exit.assert_called_with(1)
+                # sys.exit(1)が最初に呼ばれることを確認
+                mock_exit.assert_any_call(1)
                 mock_console.error.assert_called_with(
                     "チェックするファイルが見つかりません"
                 )
@@ -228,12 +233,19 @@ class TestCheckSyntaxIntegration:
         # モックファイルとチェック結果
         with (
             patch.object(command, "_collect_files", return_value=[Path("test.txt")]),
-            patch("kumihan_formatter.commands.check_syntax.print") as mock_print,
+            patch("builtins.print") as mock_print,
         ):
 
-            # エラーがある場合
+            # エラーがある場合（辞書形式で返す）
             mock_error = MagicMock()
-            mock_check_files.return_value = [mock_error]
+            mock_error.line_number = 1
+            mock_error.column = 1
+            mock_error.severity = ErrorSeverity.ERROR
+            mock_error.error_type = "test_error"
+            mock_error.message = "Test error"
+            mock_error.context = "Test context"
+            mock_error.suggestion = "Test suggestion"
+            mock_check_files.return_value = {"test.txt": [mock_error]}
 
             with patch("sys.exit"):
                 command.execute(
@@ -251,17 +263,26 @@ class TestCheckSyntaxIntegration:
         command = CheckSyntaxCommand()
 
         # 再帰的なファイル収集のテスト
-        with patch("pathlib.Path") as mock_path_class:
+        with patch("kumihan_formatter.commands.check_syntax.Path") as mock_path_class:
             mock_dir = MagicMock()
-            mock_dir.exists.return_value = True
+            mock_dir.is_file.return_value = False
             mock_dir.is_dir.return_value = True
-            mock_dir.glob.return_value = [Path("dir/test1.txt"), Path("dir/test2.txt")]
+            mock_dir.rglob.return_value = [Path("dir/test1.txt"), Path("dir/test2.txt")]
             mock_path_class.return_value = mock_dir
 
-            result = command._collect_files(["dir"], recursive=True)
+            # get_console_ui calls もmock
+            with patch(
+                "kumihan_formatter.commands.check_syntax.get_console_ui"
+            ) as mock_console_ui:
+                mock_console = MagicMock()
+                mock_console_ui.return_value = mock_console
 
-            # glob が呼ばれることを確認
-            mock_dir.glob.assert_called()
+                result = command._collect_files(["dir"], recursive=True)
+
+                # rglob が呼ばれることを確認
+                mock_dir.rglob.assert_called_with("*.txt")
+                # 返されたファイルの数を確認
+                assert len(result) == 2
 
     @patch("kumihan_formatter.commands.check_syntax.get_console_ui")
     @patch("kumihan_formatter.commands.check_syntax.check_files")
@@ -275,12 +296,12 @@ class TestCheckSyntaxIntegration:
         # エラーの重要度をテスト
         with patch.object(command, "_collect_files", return_value=[Path("test.txt")]):
 
-            # 異なる重要度のエラー
+            # 異なる重要度のエラー（辞書形式で返す）
             mock_error = MagicMock()
-            mock_error.severity = "ERROR"
+            mock_error.severity = ErrorSeverity.ERROR
             mock_warning = MagicMock()
-            mock_warning.severity = "WARNING"
-            mock_check_files.return_value = [mock_error, mock_warning]
+            mock_warning.severity = ErrorSeverity.WARNING
+            mock_check_files.return_value = {"test.txt": [mock_error, mock_warning]}
 
             with patch("sys.exit") as mock_exit:
                 command.execute(
