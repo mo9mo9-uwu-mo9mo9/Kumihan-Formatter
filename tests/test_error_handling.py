@@ -12,13 +12,18 @@ from unittest.mock import Mock, patch
 import pytest
 from click.testing import CliRunner
 
-from kumihan_formatter.cli import cli
+from kumihan_formatter.cli import cli, register_commands
 from kumihan_formatter.commands.check_syntax import CheckSyntaxCommand
 from kumihan_formatter.commands.convert import ConvertCommand
 
 
 class TestFileSystemErrorHandling:
     """Test file system related error handling"""
+
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
 
     def test_permission_denied_error(self):
         """Test handling of permission denied errors"""
@@ -92,6 +97,11 @@ class TestFileSystemErrorHandling:
 class TestEncodingErrorHandling:
     """Test encoding related error handling"""
 
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
+
     def test_invalid_utf8_handling(self):
         """Test handling of invalid UTF-8 sequences"""
         runner = CliRunner()
@@ -137,6 +147,11 @@ class TestEncodingErrorHandling:
 
 class TestCommandArgumentErrorHandling:
     """Test command argument related error handling"""
+
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
 
     def test_missing_required_arguments(self):
         """Test handling of missing required arguments"""
@@ -194,6 +209,11 @@ class TestCommandArgumentErrorHandling:
 class TestMemoryErrorHandling:
     """Test memory related error handling"""
 
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
+
     def test_large_file_handling(self):
         """Test handling of large files"""
         runner = CliRunner()
@@ -228,6 +248,11 @@ class TestMemoryErrorHandling:
 class TestNetworkErrorHandling:
     """Test network related error handling"""
 
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
+
     def test_network_timeout_simulation(self):
         """Test network timeout simulation"""
         runner = CliRunner()
@@ -249,6 +274,11 @@ class TestNetworkErrorHandling:
 
 class TestExceptionHandling:
     """Test exception handling scenarios"""
+
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
 
     @patch("kumihan_formatter.commands.check_syntax.CheckSyntaxCommand.execute")
     def test_unexpected_exception_handling(self, mock_execute):
@@ -302,6 +332,11 @@ class TestExceptionHandling:
 class TestGracefulDegradation:
     """Test graceful degradation scenarios"""
 
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
+
     def test_missing_dependencies(self):
         """Test handling of missing dependencies"""
         runner = CliRunner()
@@ -339,6 +374,11 @@ class TestGracefulDegradation:
 
 class TestResourceManagement:
     """Test resource management scenarios"""
+
+    @classmethod
+    def setup_class(cls):
+        """Setup CLI commands before running tests"""
+        register_commands()
 
     def test_file_handle_cleanup(self):
         """Test file handle cleanup"""
