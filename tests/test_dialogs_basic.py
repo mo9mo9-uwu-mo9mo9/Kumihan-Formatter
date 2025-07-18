@@ -10,7 +10,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from kumihan_formatter.gui_views.dialogs import *
-from tests.test_base import BaseTestCase
+
+from .test_base import BaseTestCase
 
 
 class TestDialogCreation(BaseTestCase):

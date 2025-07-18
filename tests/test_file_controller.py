@@ -6,13 +6,15 @@ proper file selection and directory operations.
 
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import pytest
 import tkinter as tk
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from kumihan_formatter.gui_controllers.file_controller import FileController
-from tests.test_base import BaseTestCase
+
+from .test_base import BaseTestCase
 
 
 class TestFileController(BaseTestCase):
@@ -37,7 +39,7 @@ class TestFileController(BaseTestCase):
         assert controller is not None
         assert controller.view == self.mock_view
 
-    @patch('tkinter.filedialog.askopenfilename')
+    @patch("tkinter.filedialog.askopenfilename")
     def test_browse_input_file_success(self, mock_dialog):
         """Test successful input file browsing"""
         # Setup
@@ -53,7 +55,7 @@ class TestFileController(BaseTestCase):
         self.mock_view.input_file_var.set.assert_called_once_with(test_file)
         self.mock_view.update_output_preview.assert_called_once()
 
-    @patch('tkinter.filedialog.askopenfilename')
+    @patch("tkinter.filedialog.askopenfilename")
     def test_browse_input_file_cancel(self, mock_dialog):
         """Test cancelled input file browsing"""
         # Setup
@@ -68,7 +70,7 @@ class TestFileController(BaseTestCase):
         self.mock_view.input_file_var.set.assert_not_called()
         self.mock_view.update_output_preview.assert_not_called()
 
-    @patch('tkinter.filedialog.askopenfilename')
+    @patch("tkinter.filedialog.askopenfilename")
     def test_browse_input_file_with_initial_dir(self, mock_dialog):
         """Test input file browsing with initial directory"""
         # Setup
@@ -83,10 +85,10 @@ class TestFileController(BaseTestCase):
         # Verify
         mock_dialog.assert_called_once()
         call_kwargs = mock_dialog.call_args[1]
-        assert 'initialdir' in call_kwargs
-        assert call_kwargs['initialdir'] == os.path.dirname(existing_file)
+        assert "initialdir" in call_kwargs
+        assert call_kwargs["initialdir"] == os.path.dirname(existing_file)
 
-    @patch('tkinter.filedialog.askdirectory')
+    @patch("tkinter.filedialog.askdirectory")
     def test_browse_output_dir_success(self, mock_dialog):
         """Test successful output directory browsing"""
         # Setup
@@ -102,7 +104,7 @@ class TestFileController(BaseTestCase):
         self.mock_view.output_dir_var.set.assert_called_once_with(test_dir)
         self.mock_view.update_output_preview.assert_called_once()
 
-    @patch('tkinter.filedialog.askdirectory')
+    @patch("tkinter.filedialog.askdirectory")
     def test_browse_output_dir_cancel(self, mock_dialog):
         """Test cancelled output directory browsing"""
         # Setup
@@ -117,7 +119,7 @@ class TestFileController(BaseTestCase):
         self.mock_view.output_dir_var.set.assert_not_called()
         self.mock_view.update_output_preview.assert_not_called()
 
-    @patch('tkinter.filedialog.askdirectory')
+    @patch("tkinter.filedialog.askdirectory")
     def test_browse_output_dir_with_initial_dir(self, mock_dialog):
         """Test output directory browsing with initial directory"""
         # Setup
@@ -132,12 +134,14 @@ class TestFileController(BaseTestCase):
         # Verify
         mock_dialog.assert_called_once()
         call_kwargs = mock_dialog.call_args[1]
-        assert 'initialdir' in call_kwargs
-        assert call_kwargs['initialdir'] == existing_dir
+        assert "initialdir" in call_kwargs
+        assert call_kwargs["initialdir"] == existing_dir
 
-    @patch('subprocess.run')
-    @patch('platform.system')
-    def test_open_directory_in_file_manager_windows(self, mock_platform, mock_subprocess):
+    @patch("subprocess.run")
+    @patch("platform.system")
+    def test_open_directory_in_file_manager_windows(
+        self, mock_platform, mock_subprocess
+    ):
         """Test opening directory in Windows Explorer"""
         # Setup
         controller = FileController(self.mock_view)
@@ -148,10 +152,10 @@ class TestFileController(BaseTestCase):
         controller.open_directory_in_file_manager(test_dir)
 
         # Verify
-        mock_subprocess.assert_called_once_with(['explorer', test_dir])
+        mock_subprocess.assert_called_once_with(["explorer", test_dir])
 
-    @patch('subprocess.run')
-    @patch('platform.system')
+    @patch("subprocess.run")
+    @patch("platform.system")
     def test_open_directory_in_file_manager_macos(self, mock_platform, mock_subprocess):
         """Test opening directory in macOS Finder"""
         # Setup
@@ -163,10 +167,10 @@ class TestFileController(BaseTestCase):
         controller.open_directory_in_file_manager(test_dir)
 
         # Verify
-        mock_subprocess.assert_called_once_with(['open', test_dir])
+        mock_subprocess.assert_called_once_with(["open", test_dir])
 
-    @patch('subprocess.run')
-    @patch('platform.system')
+    @patch("subprocess.run")
+    @patch("platform.system")
     def test_open_directory_in_file_manager_linux(self, mock_platform, mock_subprocess):
         """Test opening directory in Linux file manager"""
         # Setup
@@ -178,9 +182,9 @@ class TestFileController(BaseTestCase):
         controller.open_directory_in_file_manager(test_dir)
 
         # Verify
-        mock_subprocess.assert_called_once_with(['xdg-open', test_dir])
+        mock_subprocess.assert_called_once_with(["xdg-open", test_dir])
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_open_directory_in_file_manager_error_handling(self, mock_subprocess):
         """Test error handling when opening directory fails"""
         # Setup
@@ -197,14 +201,14 @@ class TestFileController(BaseTestCase):
     def test_file_controller_with_mock_filedialog_types(self):
         """Test file dialog with different file types"""
         controller = FileController(self.mock_view)
-        
+
         # Verify controller handles different file extensions
         test_files = [
             ("test.txt", "Text file"),
             ("test.md", "Markdown file"),
             ("test.html", "HTML file"),
         ]
-        
+
         for filename, description in test_files:
             temp_file = self.create_temp_file("content", suffix=filename)
             assert Path(temp_file).exists()
@@ -226,15 +230,15 @@ class TestFileControllerIntegration(BaseTestCase):
         self.mock_view.output_dir_var.set = Mock()
         self.mock_view.update_output_preview = Mock()
 
-    @patch('tkinter.filedialog.askopenfilename')
-    @patch('tkinter.filedialog.askdirectory')
+    @patch("tkinter.filedialog.askopenfilename")
+    @patch("tkinter.filedialog.askdirectory")
     def test_file_controller_complete_workflow(self, mock_dir_dialog, mock_file_dialog):
         """Test complete file selection workflow"""
         # Setup
         controller = FileController(self.mock_view)
         input_file = self.create_temp_file("test content", suffix=".txt")
         output_dir = self.create_temp_dir()
-        
+
         mock_file_dialog.return_value = input_file
         mock_dir_dialog.return_value = output_dir
 
@@ -250,19 +254,19 @@ class TestFileControllerIntegration(BaseTestCase):
     def test_file_controller_unicode_filenames(self):
         """Test handling of unicode filenames"""
         controller = FileController(self.mock_view)
-        
+
         # Test with various unicode filenames
         unicode_names = [
             "テスト.txt",
             "文書.md",
             "ファイル.html",
         ]
-        
+
         for name in unicode_names:
             temp_file = self.create_temp_file("content", suffix=".txt")
             # Rename to unicode name
             unicode_path = Path(temp_file).parent / name
             Path(temp_file).rename(unicode_path)
-            
+
             assert unicode_path.exists()
             self.temp_files.append(str(unicode_path))  # Track for cleanup

@@ -19,7 +19,8 @@ from kumihan_formatter.core.validators import (
 from kumihan_formatter.core.validators.performance_validator import PerformanceValidator
 from kumihan_formatter.core.validators.structure_validator import StructureValidator
 from kumihan_formatter.core.validators.syntax_validator import SyntaxValidator
-from tests.test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
+
+from .test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
 
 
 class TestSyntaxValidator(BaseTestCase):
@@ -153,7 +154,7 @@ class TestSyntaxValidator(BaseTestCase):
             os.unlink(temp_path)
 
 
-class TestPerformanceValidator:
+class TestPerformanceValidator(BaseTestCase):
     """Test performance validator functionality"""
 
     def test_performance_validator_initialization(self):
@@ -218,7 +219,7 @@ class TestPerformanceValidator:
             os.unlink(temp_path)
 
 
-class TestValidatorIntegration:
+class TestValidatorIntegration(BaseTestCase):
     """Test validator integration scenarios"""
 
     def test_validator_integration_end_to_end(self):
@@ -296,7 +297,7 @@ class TestValidatorIntegration:
             os.unlink(temp_path)
 
 
-class TestValidatorErrorRecovery:
+class TestValidatorErrorRecovery(BaseTestCase):
     """Test validator error recovery scenarios"""
 
     def test_validator_partial_error_recovery(self):
