@@ -110,7 +110,7 @@ class TestValidationIssue(BaseTestCase):
     def test_validation_issue_initialization(self):
         """Test ValidationIssue initialization"""
         try:
-            # Test with required parameters
+            # Test with required parameters (both level and severity for compatibility)
             issue = ValidationIssue(
                 level="warning",
                 category="syntax",
