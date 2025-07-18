@@ -63,6 +63,15 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      # ファイル自動分割（必須フック - 300行超過時の自動対応）
+      - id: auto-file-split
+        name: ✂️ ファイル自動分割 (300行超過時)
+        entry: bash scripts/auto_split_files.sh
+        language: system
+        files: ^kumihan_formatter/.*\.py$
+        pass_filenames: false
+        stages: [pre-commit]
+
       # アーキテクチャルールチェック（推奨フック）
       - id: architecture-check
         name: 🏗️ アーキテクチャルールチェック

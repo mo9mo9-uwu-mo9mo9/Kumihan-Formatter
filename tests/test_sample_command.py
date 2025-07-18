@@ -60,7 +60,18 @@ class TestSampleCommand:
         cmd = create_sample_command()
 
         # サンプル生成コマンドの実行
-        result = runner.invoke(cmd, [])
+        with runner.isolated_filesystem():
+            # モックでファイルI/Oをバイパス
+            with patch(
+                "kumihan_formatter.core.file_io_handler.FileIOHandler.write_text_file"
+            ):
+                with patch(
+                    "kumihan_formatter.core.file_operations.FileOperations.ensure_directory"
+                ):
+                    with patch(
+                        "kumihan_formatter.core.file_operations.FileOperations.create_sample_images"
+                    ):
+                        result = runner.invoke(cmd, [])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -71,7 +82,8 @@ class TestSampleCommand:
         cmd = create_test_command()
 
         # テストケース生成コマンドの実行
-        result = runner.invoke(cmd, [])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, [])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -82,7 +94,8 @@ class TestSampleCommand:
         cmd = create_sample_command()
 
         # 出力オプション付きで実行
-        result = runner.invoke(cmd, ["--output", "custom_sample.txt"])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, ["--output", "custom_sample.txt"])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -93,7 +106,8 @@ class TestSampleCommand:
         cmd = create_test_command()
 
         # 出力オプション付きで実行
-        result = runner.invoke(cmd, ["--output", "custom_test.txt"])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, ["--output", "custom_test.txt"])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -148,7 +162,8 @@ class TestSampleCommandCLIIntegration:
         cmd = create_sample_command()
 
         # 引数なしで実行
-        result = runner.invoke(cmd, [])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, [])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -159,7 +174,8 @@ class TestSampleCommandCLIIntegration:
         cmd = create_test_command()
 
         # 引数なしで実行
-        result = runner.invoke(cmd, [])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, [])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -170,7 +186,8 @@ class TestSampleCommandCLIIntegration:
         cmd = create_sample_command()
 
         # 複数のオプションで実行
-        result = runner.invoke(cmd, ["--output", "sample.txt", "--format", "txt"])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, ["--output", "sample.txt", "--format", "txt"])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
@@ -181,7 +198,8 @@ class TestSampleCommandCLIIntegration:
         cmd = create_test_command()
 
         # 複数のオプションで実行
-        result = runner.invoke(cmd, ["--output", "test.txt", "--format", "txt"])
+        with runner.isolated_filesystem():
+            result = runner.invoke(cmd, ["--output", "test.txt", "--format", "txt"])
 
         # 実行が成功することを確認
         assert result.exit_code == 0
