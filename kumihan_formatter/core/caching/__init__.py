@@ -14,6 +14,7 @@ from .cache_strategies import (
     LFUStrategy,
     LRUStrategy,
     PerformanceAwareStrategy,
+    StandardStrategy,
     TTLStrategy,
 )
 from .cache_types import CacheEntry
@@ -26,6 +27,7 @@ __all__ = [
     "CacheStrategy",
     "LRUStrategy",
     "LFUStrategy",
+    "StandardStrategy",
     "TTLStrategy",
     "AdaptiveStrategy",
     "PerformanceAwareStrategy",
