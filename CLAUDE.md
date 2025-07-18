@@ -1,11 +1,12 @@
 # CLAUDE.md
 
-> Kumihan‑Formatter – Claude Code 指示ファイル\
-> **目的**: Claude Code に開発ガイドラインの要点を渡す\
-> **バージョン**: 1.0.0 (2025‑01‑15)
+> Kumihan‑Formatter – Claude Code 指示ファイル
+> **目的**: Claude Code に開発ガイドラインの要点を渡す
+> **バージョン**: 1.1.0 (2025‑01‑18) - 整理・統合版
 
 <language>Japanese</language>
 <character_code>UTF-8</character_code>
+
 <law>
 AI運用5原則
 
@@ -39,6 +40,10 @@ AI運用5原則
 **プロジェクト仕様**: [SPEC.md](SPEC.md)
 **リリース手順**: [docs/dev/RELEASE_GUIDE.md](docs/dev/RELEASE_GUIDE.md)
 
+**品質管理**: [docs/dev/QUALITY_GATE.md](docs/dev/QUALITY_GATE.md)
+**技術的負債**: [docs/dev/TECHNICAL_DEBT.md](docs/dev/TECHNICAL_DEBT.md)
+**効率化**: [docs/dev/EFFICIENT_REFACTORING.md](docs/dev/EFFICIENT_REFACTORING.md)
+
 # 重要なルール
 
 ## リリース方針
@@ -49,33 +54,21 @@ AI運用5原則
 - **正式リリース**: ユーザー許可後のみ v1.0.0以上を使用
 
 ## 開発プロセス
-### t-wada推奨テスト駆動開発（TDD）
+
+### TDD（テスト駆動開発）
 - **新機能**: Red-Green-Refactorサイクル実践
 - **テストファースト**: 実装前にテスト作成
 - **継続的リファクタリング**: 安全な設計改善
-
-### 段階的品質向上戦略
-- **新規実装**: 100%厳格品質チェック適用
-- **既存コード**: 技術的負債を段階的に解決
-- **レガシー除外**: `technical_debt_legacy_files.txt`で管理
-- **段階的移行**: 既存ファイルは修正時に品質基準適用
 
 ### Pull Request必須ルール
 - **Claude自動レビュー**: PR作成時に自動でClaude Codeレビュー実行
 - **mo9mo9手動マージ**: レビュー完了後、mo9mo9による手動マージ実行
 - **品質保証**: GitHub Actions品質チェック + Claudeレビューの二重チェック
 
-### Claude自動レビュー体制（新導入）
-- **実行タイミング**: PR作成・更新時に自動実行
-- **レビュー観点**: コード品質・アーキテクチャ・セキュリティ・パフォーマンス・テスト・文書化
-- **ワークフロー**: `.github/workflows/claude-review.yml`
-- **ラベル**: `review-requested`、`claude-review`を自動付与
-
-### ブランチ保護設定（重要）
+### ブランチ保護設定
 - **main ブランチ直接プッシュ禁止**: 全ての変更はPR経由必須
 - **CI/CD必須通過**: GitHub Actions品質チェック必須
 - **設定ガイド**: [docs/dev/BRANCH_PROTECTION.md](docs/dev/BRANCH_PROTECTION.md)
-- **自動設定**: `scripts/setup_branch_protection.sh`実行
 
 ## コーディング規約
 - **Python**: 3.12以上, Black, isort, mypy strict
@@ -83,69 +76,23 @@ AI運用5原則
 - **行長**: 88文字
 - **命名**: snake_case, PascalCase, UPPER_SNAKE_CASE
 
-## 技術的負債予防ルール（Issue #476対応）
-### 📏 300行ルール（厳守）
-- **ファイル**: 300行以内（例外なし）
-- **クラス**: 100行以内推奨
-- **関数**: 20行以内推奨
-- **⚠️ 違反時**: pre-commit hookが自動でブロック
+## 核心ルール
 
-### 🏗️ アーキテクチャ原則
-- **Single Responsibility Principle**: 1ファイル1責任
-- **関数分割**: 複雑な処理は機能単位で分離
-- **Boy Scout Rule**: コードを触ったら少しでも改善
-- **循環依存**: 禁止（アーキテクチャチェックで検出）
-
-### 🔧 自動チェック体制
+### 1. 品質ゲート（詳細: [docs/dev/QUALITY_GATE.md](docs/dev/QUALITY_GATE.md)）
 ```bash
-# コミット時自動実行（pre-commit hook）
-scripts/check_file_size.py      # ファイルサイズチェック
-scripts/architecture_check.py   # アーキテクチャ品質チェック
-
-# 手動実行（必要時のみ）
-.venv/bin/python scripts/check_file_size.py
-.venv/bin/python scripts/architecture_check.py
+# 実装前必須チェック
+python scripts/claude_quality_gate.py
 ```
 
-### ⚠️ pre-commit hookエラー対応
-Claude Code使用時に以下のメッセージが表示される場合：
-```
-PreToolUse:Bash [~/.claude/hook_pre_commands.sh] failed with
-non-blocking status code 1: No stderr output
-```
+### 2. 技術的負債予防（詳細: [docs/dev/TECHNICAL_DEBT.md](docs/dev/TECHNICAL_DEBT.md)）
+- **300行制限**: ファイル300行以内（例外なし）
+- **Single Responsibility**: 1ファイル1責任
+- **Boy Scout Rule**: コードを触ったら少しでも改善
 
-**これは正常動作です。** status code 1は非ブロッキングエラーで、技術的負債の警告を表示しています。
-
-#### 📋 対応手順
-1. **エラー内容を確認**
-   ```bash
-   python3 scripts/check_file_size.py --max-lines=300
-   ```
-
-2. **300行制限違反の修正**
-   - ファイルを機能別に分割
-   - Single Responsibility Principleに従う
-   - 大きな関数・クラスを小さく分割
-
-3. **修正例**
-   ```bash
-   # 違反ファイルの確認
-   find kumihan_formatter -name "*.py" -exec wc -l {} + | awk '$1 > 300'
-
-   # 分割実行（例）
-   # large_file.py → feature_a.py + feature_b.py + feature_c.py
-   ```
-
-4. **修正後の確認**
-   ```bash
-   python3 scripts/check_file_size.py --max-lines=300
-   # ✅ 違反件数が減少していることを確認
-   ```
-
-#### 🚨 重要
-- **status code 1は処理継続**: エラーではなく警告
-- **無視しない**: 技術的負債の蓄積を防ぐため必ず対応
-- **継続的改善**: Boy Scout Ruleに従って少しずつ改善
+### 3. Token効率化（詳細: [docs/dev/EFFICIENT_REFACTORING.md](docs/dev/EFFICIENT_REFACTORING.md)）
+- **既存コード分割優先**: 移動・コピーで行う
+- **新規作成禁止**: ファイル分割時に新しいコードを書かない
+- **Token節約**: 80-90%削減を目指す
 
 # プロジェクト構造
 
@@ -179,89 +126,6 @@ KUMIHAN_DEV_LOG=true KUMIHAN_DEV_LOG_JSON=true kumihan convert input.txt output.
 ```
 
 詳細なコマンドとオプションは [docs/dev/CLAUDE_COMMANDS.md](docs/dev/CLAUDE_COMMANDS.md) を参照。
-
-# 🚨 Claude Code 品質ゲート（絶対遵守）
-
-## 実装前必須チェック
-
-**Claude Code は実装作業前に以下を必ず実行すること：**
-
-```bash
-# 品質ゲートチェック（必須）
-python scripts/claude_quality_gate.py
-
-# 失敗した場合の修正
-make pre-commit
-```
-
-## 🔒 絶対ルール（違反禁止）
-
-### 1. **mypy strict mode は絶対必須**
-- `SKIP=mypy-strict` の使用は**絶対禁止**
-- 型エラーが1個でもあるとコミット不可
-- 実装前に必ず型安全性を確保
-
-### 2. **TDD（テスト駆動開発）の強制**
-- **実装前にテストを書く**（Red-Green-Refactor）
-- テストが存在しない機能の実装は禁止
-- `python scripts/enforce_tdd.py kumihan_formatter/` で確認
-
-### 3. **品質チェック通過必須**
-- Black, isort, flake8 の完全通過
-- 全テストの成功
-- アーキテクチャルールの遵守
-
-## ⚡ 実装フロー（厳格遵守）
-
-```bash
-# 1. 品質ゲートチェック
-python scripts/claude_quality_gate.py
-
-# 2. テスト作成（RED）
-# 新機能のテストを先に作成（失敗することを確認）
-
-# 3. 最小実装（GREEN）
-# テストが通る最小限の実装
-
-# 4. リファクタリング（REFACTOR）
-# テストを保持したまま改善
-
-# 5. 最終確認
-make pre-commit
-
-# 6. コミット
-git commit -m "..."
-```
-
-## 💥 違反時の対応
-
-### 品質ゲート失敗時
-```bash
-🚨 Quality gate FAILED!
-❌ The following checks failed:
-   - mypy strict mode
-   - TDD compliance
-
-🛑 IMPLEMENTATION BLOCKED
-```
-
-**対応**:
-1. エラーメッセージを必ず確認
-2. 指摘された問題を完全に修正
-3. 再度品質ゲートを実行
-4. 成功するまで実装作業禁止
-
-### 緊急時の例外処理
-- 緊急時でも品質ゲートのスキップは**禁止**
-- 問題の根本原因を修正してから進行
-- 技術的負債の蓄積を防ぐ
-
-## 🎯 品質保証の目標
-
-- **型安全性**: 100% mypy strict mode 準拠
-- **テストカバレッジ**: 新機能は必ずテスト付き
-- **コード品質**: リンターエラー0個
-- **アーキテクチャ**: 300行制限・単一責任原則
 
 ---
 

@@ -4,11 +4,15 @@
 BaseConfig、ExtendedConfig、既存の設定クラスを統一的に管理する。
 """
 
-import os
-from pathlib import Path
 from typing import Any
 
 from .base_config import BaseConfig
+from .config_manager_env import ConfigEnvironmentHandler
+from .config_manager_utils import (
+    create_config_instance,
+    load_config_file,
+    merge_config_data,
+)
 from .extended_config import ExtendedConfig
 
 
@@ -34,56 +38,13 @@ class ConfigManager:
         """
         self.config_type = config_type
         self.env_prefix = env_prefix
-        self._config: BaseConfig | ExtendedConfig = self._create_config(config_path)
+        self._config: BaseConfig | ExtendedConfig = create_config_instance(
+            config_type, config_path
+        )
+        self._env_handler = ConfigEnvironmentHandler(env_prefix)
 
         # 環境変数から設定を読み込み
-        self._load_from_env()
-
-    def _create_config(self, config_path: str | None) -> BaseConfig | ExtendedConfig:
-        """設定オブジェクトを作成
-
-        Args:
-            config_path: 設定ファイルパス
-
-        Returns:
-            BaseConfig | ExtendedConfig: 設定オブジェクト
-        """
-        config_class = ExtendedConfig if self.config_type == "extended" else BaseConfig
-
-        if config_path and Path(config_path).exists():
-            try:
-                return config_class.from_file(config_path)
-            except (FileNotFoundError, ValueError):
-                # ファイル読み込みに失敗した場合はデフォルト設定を使用
-                pass
-
-        return config_class()
-
-    def _load_from_env(self) -> None:
-        """環境変数から設定を読み込み"""
-        env_config = {}
-
-        # CSS関連の環境変数
-        css_vars = {}
-        for key, value in os.environ.items():
-            if key.startswith(f"{self.env_prefix}CSS_"):
-                css_key = key[len(f"{self.env_prefix}CSS_") :].lower()
-                css_vars[css_key] = value
-
-        if css_vars:
-            env_config["css"] = css_vars
-
-        # テーマ設定
-        theme = os.environ.get(f"{self.env_prefix}THEME")
-        if theme:
-            env_config["theme"] = theme  # type: ignore
-
-        # 設定をマージ
-        if env_config and hasattr(self._config, "merge_config"):
-            self._config.merge_config(env_config)
-        elif env_config:
-            for key, value in env_config.items():  # type: ignore
-                self._config.set(key, value)
+        self._env_handler.load_from_env(self._config)
 
     # BaseConfigインターフェースの委譲
     def get_css_variables(self) -> dict[str, str]:
@@ -162,13 +123,8 @@ class ConfigManager:
             bool: 読み込みに成功した場合True
         """
         try:
-            new_config = self._create_config(config_path)
-            if hasattr(new_config, "merge_config") and hasattr(self._config, "to_dict"):
-                # 既存設定をマージ
-                existing_config = self._config.to_dict()
-                new_config.merge_config(existing_config)
-            self._config = new_config
-            self._load_from_env()  # 環境変数を再適用
+            self._config = load_config_file(self.config_type, config_path, self._config)
+            self._env_handler.load_from_env(self._config)  # 環境変数を再適用
             return True
         except Exception:
             return False
@@ -179,12 +135,7 @@ class ConfigManager:
         Args:
             other_config: マージする設定辞書
         """
-        if hasattr(self._config, "merge_config"):
-            self._config.merge_config(other_config)
-        else:
-            # BaseConfigの場合は個別に設定
-            for key, value in other_config.items():
-                self._config.set(key, value)
+        merge_config_data(self._config, other_config)
 
     @property
     def config(self) -> BaseConfig | ExtendedConfig:
