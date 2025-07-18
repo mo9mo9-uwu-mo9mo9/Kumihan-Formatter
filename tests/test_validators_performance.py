@@ -12,7 +12,8 @@ import pytest
 
 from kumihan_formatter.core.validators.performance_validator import PerformanceValidator
 from kumihan_formatter.core.validators.structure_validator import StructureValidator
-from tests.test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
+
+from .test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
 
 
 class TestPerformanceValidator(BaseTestCase):

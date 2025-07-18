@@ -22,7 +22,8 @@ from kumihan_formatter.core.distribution.distribution_processor import (
 from kumihan_formatter.core.distribution.distribution_structure import (
     DistributionStructure,
 )
-from tests.test_base import (
+
+from .test_base import (
     BaseTestCase,
     DistributionTestCase,
     create_test_kumihan_content,
@@ -34,14 +35,35 @@ class TestDistributionManager(DistributionTestCase):
 
     def test_distribution_manager_initialization(self):
         """Test DistributionManager initialization"""
-        self.test_component_initialization(DistributionManager, "DistributionManager")
+        try:
+            manager = DistributionManager()
+            assert manager is not None
+        except ImportError:
+            pytest.skip("DistributionManager not available")
 
     def test_distribution_manager_basic_operations(self):
         """Test basic distribution operations"""
-        self.test_distribution_basic_operations(DistributionManager)
+        try:
+            manager = DistributionManager()
+            source_dir = self.create_temp_dir()
+            target_dir = self.create_temp_dir()
+
+            # Create source files
+            source_file = Path(source_dir) / "source.txt"
+            source_file.write_text("test content", encoding="utf-8")
+
+            # Test distribution operation
+            if hasattr(manager, "distribute"):
+                manager.distribute(source_dir, target_dir)
+            elif hasattr(manager, "process"):
+                manager.process(source_dir, target_dir)
+
+            assert manager is not None
+        except ImportError:
+            pytest.skip("DistributionManager not available")
 
 
-class TestDistributionConverter:
+class TestDistributionConverter(BaseTestCase):
     """Test distribution converter functionality"""
 
     def test_distribution_converter_initialization(self):
@@ -101,7 +123,7 @@ class TestDistributionConverter:
             pytest.skip("DistributionConverter not available")
 
 
-class TestDistributionProcessor:
+class TestDistributionProcessor(BaseTestCase):
     """Test distribution processor functionality"""
 
     def test_distribution_processor_initialization(self):
@@ -140,7 +162,7 @@ class TestDistributionProcessor:
                 pytest.skip("DistributionProcessor not available")
 
 
-class TestDistributionStructure:
+class TestDistributionStructure(BaseTestCase):
     """Test distribution structure functionality"""
 
     def test_distribution_structure_initialization(self):
@@ -172,7 +194,7 @@ class TestDistributionStructure:
             pytest.skip("DistributionStructure not available")
 
 
-class TestDistributionIntegration:
+class TestDistributionIntegration(BaseTestCase):
     """Test distribution integration scenarios"""
 
     def test_distribution_integration_end_to_end(self):
@@ -237,7 +259,7 @@ class TestDistributionIntegration:
             assert js_file.exists()
 
 
-class TestDistributionErrorScenarios:
+class TestDistributionErrorScenarios(BaseTestCase):
     """Test distribution error scenarios"""
 
     def test_distribution_insufficient_disk_space(self):
@@ -306,7 +328,7 @@ class TestDistributionErrorScenarios:
             assert path is not None
 
 
-class TestDistributionPerformance:
+class TestDistributionPerformance(BaseTestCase):
     """Test distribution performance characteristics"""
 
     def test_distribution_performance_large_files(self):

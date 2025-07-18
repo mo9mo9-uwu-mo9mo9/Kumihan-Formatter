@@ -11,7 +11,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from kumihan_formatter.ui.console_ui import ConsoleUI
-from tests.test_base import BaseTestCase
+
+from .test_base import BaseTestCase
 
 
 class TestConsoleUI(BaseTestCase):

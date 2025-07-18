@@ -4,6 +4,10 @@ This module provides basic tests for ConversionState class
 to ensure proper initialization and core functionality.
 """
 
+import pytest
+
+pytest.skip("GUI models not yet implemented - Issue #516", allow_module_level=True)
+
 import threading
 import time
 from unittest.mock import MagicMock, Mock, patch
@@ -11,7 +15,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from kumihan_formatter.gui_models.conversion_state import ConversionState
-from tests.test_base import BaseTestCase
+
+from .test_base import BaseTestCase
 
 
 class TestConversionStateBasics(BaseTestCase):

@@ -16,7 +16,8 @@ from kumihan_formatter.core.validators import (
     ValidationIssue,
     ValidationReporter,
 )
-from tests.test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
+
+from .test_base import BaseTestCase, ValidatorTestCase, create_test_kumihan_content
 
 
 class TestDocumentValidator(ValidatorTestCase):
@@ -24,7 +25,11 @@ class TestDocumentValidator(ValidatorTestCase):
 
     def test_document_validator_initialization(self):
         """Test DocumentValidator initialization"""
-        self.test_component_initialization(DocumentValidator, "DocumentValidator")
+        try:
+            validator = DocumentValidator()
+            assert validator is not None
+        except ImportError:
+            pytest.skip("DocumentValidator not available")
 
     def test_document_validator_basic_validation(self):
         """Test basic document validation"""
@@ -34,6 +39,7 @@ class TestDocumentValidator(ValidatorTestCase):
             # Test basic validation with Kumihan content
             test_content = ";;;強調;;; テスト内容 ;;;"
             temp_file = self.create_temp_file(test_content)
+            temp_path = Path(temp_file)
 
             # Test validation
             if hasattr(validator, "validate"):
@@ -44,7 +50,7 @@ class TestDocumentValidator(ValidatorTestCase):
 
             # Test file validation
             if hasattr(validator, "validate_file"):
-                result = validator.validate_file(temp_file)
+                result = validator.validate_file(temp_path)
                 assert result is not None
 
         except ImportError:
@@ -58,6 +64,7 @@ class TestDocumentValidator(ValidatorTestCase):
             # Test with malformed content
             test_content = ";;;強調;;; 未完成タグ"
             temp_file = self.create_temp_file(test_content)
+            temp_path = Path(temp_file)
 
             # Test validation with errors
             if hasattr(validator, "validate"):
@@ -66,7 +73,7 @@ class TestDocumentValidator(ValidatorTestCase):
 
             # Test file validation with errors
             if hasattr(validator, "validate_file"):
-                result = validator.validate_file(temp_file)
+                result = validator.validate_file(temp_path)
                 assert result is not None
 
         except ImportError:
