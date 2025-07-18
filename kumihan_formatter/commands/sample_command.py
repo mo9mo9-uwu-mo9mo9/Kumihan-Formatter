@@ -141,4 +141,3 @@ def create_sample_command():  # type: ignore
         command.execute(output, use_source_toggle)
 
     return generate_sample
-

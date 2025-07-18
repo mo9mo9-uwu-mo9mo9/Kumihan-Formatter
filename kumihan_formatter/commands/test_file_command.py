@@ -188,4 +188,3 @@ def create_test_command():  # type: ignore
         )
 
     return generate_test
-
