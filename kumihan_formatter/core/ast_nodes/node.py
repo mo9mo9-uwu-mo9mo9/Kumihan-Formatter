@@ -92,7 +92,10 @@ class Node:
         """Get heading level (1-5) or None if not a heading"""
         if self.type.startswith("h") and len(self.type) == 2:
             try:
-                return int(self.type[1])
+                level = int(self.type[1])
+                # 有効な見出しレベル（1-5）のみ返す
+                if 1 <= level <= 5:
+                    return level
             except ValueError:
                 pass
         return None
