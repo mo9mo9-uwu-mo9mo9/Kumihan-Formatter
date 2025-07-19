@@ -1,110 +1,119 @@
-"""Heading rendering functionality extracted from main_renderer.py
+"""Heading renderer for Kumihan-Formatter
 
-This module handles rendering of heading elements (h1-h5) to reduce
-the size of main_renderer.py and maintain the 300-line limit.
+This module handles rendering of heading elements and heading-related functionality.
 """
 
+from typing import Any
+
 from ..ast_nodes import Node
-from .element_renderer import ElementRenderer
+from .html_utils import render_attributes
 
 
 class HeadingRenderer:
-    """Handles rendering of heading elements"""
+    """Renderer for heading elements"""
 
-    def __init__(self, element_renderer: ElementRenderer) -> None:
-        """Initialize with element renderer instance"""
-        self.element_renderer = element_renderer
-        self._heading_counter = 0
-
-    @property
-    def heading_counter(self) -> int:
-        """Get heading counter"""
-        return self._heading_counter
-
-    @heading_counter.setter
-    def heading_counter(self, value: int) -> None:
-        """Set heading counter"""
-        self._heading_counter = value
-
-    def render_h1(self, node: Node) -> str:
-        """Render h1 heading"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_h1(node)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
-
-    def render_h2(self, node: Node) -> str:
-        """Render h2 heading"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_h2(node)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
-
-    def render_h3(self, node: Node) -> str:
-        """Render h3 heading"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_h3(node)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
-
-    def render_h4(self, node: Node) -> str:
-        """Render h4 heading"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_h4(node)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
-
-    def render_h5(self, node: Node) -> str:
-        """Render h5 heading"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_h5(node)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
+    def __init__(self) -> None:
+        """Initialize heading renderer"""
+        self.heading_counter = 0
+        self._main_renderer: Any | None = None  # Will be set by main renderer
 
     def render_heading(self, node: Node, level: int) -> str:
-        """Render heading with ID"""
-        self.element_renderer.heading_counter = self._heading_counter
-        result = self.element_renderer.render_heading(node, level)
-        self._heading_counter = self.element_renderer.heading_counter
-        return result
-
-    def render_heading_by_level(self, node: Node) -> str:
         """
-        Render heading based on node type (h1-h5)
+        Render heading with ID
 
         Args:
-            node: Node with heading type
+            node: Heading node
+            level: Heading level (1-6)
 
         Returns:
-            str: Rendered HTML
+            str: HTML heading element
         """
-        level_map = {
-            "h1": 1,
-            "h2": 2,
-            "h3": 3,
-            "h4": 4,
-            "h5": 5,
-        }
+        content = self._render_content(node.content, 0)
 
-        if node.type in level_map:
-            level = level_map[node.type]
-            return self.render_heading(node, level)
+        # Generate heading ID if not present
+        heading_id = node.get_attribute("id")
+        if not heading_id:
+            self.heading_counter += 1
+            heading_id = f"heading-{self.heading_counter}"
+            node.add_attribute("id", heading_id)
 
-        # Fallback to specific methods
-        method_map = {
-            "h1": self.render_h1,
-            "h2": self.render_h2,
-            "h3": self.render_h3,
-            "h4": self.render_h4,
-            "h5": self.render_h5,
-        }
+        attributes = render_attributes(node.attributes)
+        tag = f"h{level}"
 
-        if node.type in method_map:
-            return method_map[node.type](node)
+        if attributes:
+            return f"<{tag} {attributes}>{content}</{tag}>"
+        else:
+            return f"<{tag}>{content}</{tag}>"
 
-        # Default to h1 if type is not recognized
-        return self.render_h1(node)
+    # Heading level methods - delegate to render_heading
+    def render_h1(self, node: Node) -> str:
+        return self.render_heading(node, 1)
+
+    def render_h2(self, node: Node) -> str:
+        return self.render_heading(node, 2)
+
+    def render_h3(self, node: Node) -> str:
+        return self.render_heading(node, 3)
+
+    def render_h4(self, node: Node) -> str:
+        return self.render_heading(node, 4)
+
+    def render_h5(self, node: Node) -> str:
+        return self.render_heading(node, 5)
+
+    def _render_content(self, content: Any, depth: int = 0) -> str:
+        """
+        Render node content (recursive)
+
+        Args:
+            content: Content to render
+            depth: Current recursion depth
+
+        Returns:
+            str: Rendered content
+        """
+        max_depth = 100  # Prevent infinite recursion
+
+        if depth > max_depth:
+            return "[ERROR: Maximum recursion depth reached]"
+
+        if content is None:
+            return ""
+        elif isinstance(content, str):
+            from .html_utils import process_text_content
+
+            return process_text_content(content)
+        elif hasattr(content, "type"):  # Node object
+            # Handle single Node objects using main renderer if available
+            if self._main_renderer:
+                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
+            else:
+                return f"{{NODE:{content.type}}}"
+        elif isinstance(content, list):
+            parts = []
+            for item in content:
+                if hasattr(item, "type"):  # Node object
+                    # Handle nested nodes using main renderer if available
+                    if self._main_renderer:
+                        parts.append(
+                            self._main_renderer._render_node_with_depth(item, depth + 1)
+                        )
+                    else:
+                        parts.append(f"{{NODE:{item.type}}}")
+                elif isinstance(item, str):
+                    from .html_utils import process_text_content
+
+                    parts.append(process_text_content(item))
+                else:
+                    from .html_utils import process_text_content
+
+                    parts.append(process_text_content(str(item)))
+            return "".join(parts)
+        else:
+            from .html_utils import process_text_content
+
+            return process_text_content(str(content))
 
     def reset_counters(self) -> None:
-        """Reset heading counter"""
-        self._heading_counter = 0
+        """Reset internal counters"""
+        self.heading_counter = 0
