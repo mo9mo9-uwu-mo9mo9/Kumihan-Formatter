@@ -6,8 +6,10 @@ Issue #476 Phase2対応 - gui_controller.py分割（統合）
 
 from typing import Any
 
-from ..gui_models import AppState
-from ..gui_views import MainView
+from ..gui_models.state_model import StateModel
+from ..gui_views.main_window import MainWindow
+from .conversion_controller import ConversionController
+from .file_controller import FileController
 from .main_controller import MainController
 
 
@@ -20,24 +22,35 @@ class GuiController:
 
     def __init__(self) -> None:
         """コントローラーの初期化"""
-        self.app_state = AppState()
-        self.main_view = MainView(self.app_state)
-        self.main_controller = MainController(self.app_state, self.main_view)
+        # GUI components initialization
+        self.model = StateModel()  # app_stateを先に作成
+        self.view = MainWindow(self.model)  # app_stateを渡してMainWindowを作成
+
+        # Controllers initialization
+        self.file_controller = FileController(self.view)
+        self.conversion_controller = ConversionController(self.model, self.view)
+        self.main_controller = MainController(
+            self.view, self.model, self.file_controller, self.conversion_controller
+        )
 
     def run(self) -> None:
         """GUIアプリケーションの実行"""
-        self.main_controller.run()
+        if self.main_controller:
+            self.main_controller.run()
 
     # 後方互換性のためのプロパティ
     @property
     def log_viewer(self) -> Any:
         """ログビューアーへのアクセス（後方互換性）"""
-        return self.main_controller.log_viewer
+        if self.main_controller:
+            return self.main_controller.log_viewer
+        return None
 
     @log_viewer.setter
     def log_viewer(self, value: Any) -> None:
         """ログビューアーの設定（後方互換性）"""
-        self.main_controller.log_viewer = value
+        if self.main_controller:
+            self.main_controller.log_viewer = value
 
 
 def create_gui_application() -> GuiController:

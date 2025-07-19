@@ -109,3 +109,7 @@ class AppState:
             )
         except ValueError:
             return None
+
+
+# 後方互換性のために StateModel エイリアスを定義
+StateModel = AppState
