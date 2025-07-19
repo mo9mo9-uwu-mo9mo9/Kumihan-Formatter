@@ -77,7 +77,8 @@ class TestGuard:
                 if not line:
                     continue
 
-                parts = line.split("\t")
+                # スペースまたはタブで分割（git diff --name-statusの出力形式対応）
+                parts = line.split(None, 1)  # 最大1回分割
                 if len(parts) != 2:
                     continue
 
