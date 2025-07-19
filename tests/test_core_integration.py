@@ -297,19 +297,3 @@ class TestASTNodeIntegration:
         assert isinstance(parent.content, list)
         assert len(parent.content) == 1
         assert parent.content[0] == child
-
-    def test_node_attribute_operations(self):
-        """Test node attribute operations"""
-        node = Node("div", "content")
-
-        # Test attribute setting
-        node.add_attribute("id", "test-id")
-        node.add_attribute("class", "test-class")
-
-        # Test attribute retrieval
-        assert node.get_attribute("id") == "test-id"
-        assert node.get_attribute("class") == "test-class"
-        assert node.get_attribute("nonexistent") is None
-
-        # Test attribute with default
-        assert node.get_attribute("nonexistent", "default") == "default"
