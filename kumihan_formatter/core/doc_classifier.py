@@ -4,20 +4,11 @@
 """
 
 import re
-from enum import Enum
 from pathlib import Path
 from typing import Dict
 
-
-class DocumentType(Enum):
-    """文書タイプの分類"""
-
-    USER_ESSENTIAL = "user_essential"  # 最重要ユーザー文書（.txt化）
-    USER_GUIDE = "user_guide"  # ユーザーガイド（HTML化）
-    DEVELOPER = "developer"  # 開発者向け文書（Markdownのまま）
-    TECHNICAL = "technical"  # 技術文書（開発者ディレクトリ）
-    EXCLUDE = "exclude"  # 配布から除外
-    EXAMPLE = "example"  # サンプルファイル
+from .classification_rules import build_classification_rules, get_conversion_strategies
+from .document_types import DocumentType, get_type_display_names
 
 
 class DocumentClassifier:
@@ -27,146 +18,7 @@ class DocumentClassifier:
 
     def __init__(self) -> None:
         """分類器を初期化"""
-        self.classification_rules = self._build_classification_rules()
-
-    def _build_classification_rules(self) -> Dict[DocumentType, dict[str, list[str]]]:
-        """分類ルールを構築"""
-        return {
-            DocumentType.USER_ESSENTIAL: {
-                "filenames": [
-                    "README.md",
-                    "readme.md",
-                    "LISENCE",
-                    "LICENSE",
-                    "LICENSE.txt",
-                    "はじめに.md",
-                    "はじめに.txt",
-                    "クイックスタート.md",
-                    "クイックスタート.txt",
-                    "quickstart.md",
-                    "quickstart.txt",
-                ],
-                "patterns": [
-                    r"^readme",
-                    r"^license",
-                    r"quickstart",
-                    r"クイック.*スタート",
-                    r"はじめに",
-                    r"getting.*started",
-                ],
-            },
-            DocumentType.USER_GUIDE: {
-                "filenames": [
-                    "INSTALL.md",
-                    "install.md",
-                    "USAGE.md",
-                    "usage.md",
-                    "tutorial.md",
-                    "TUTORIAL.md",
-                    "TROUBLESHOOTING.md",
-                    "troubleshooting.md",
-                    "FAQ.md",
-                    "faq.md",
-                    "インストール.md",
-                    "チュートリアル.md",
-                    "トラブルシューティング.md",
-                    "よくある質問.md",
-                ],
-                "paths": ["docs/user", "docs/ユーザー", "user_docs", "ユーザーガイド"],
-                "patterns": [
-                    r"install",
-                    r"usage",
-                    r"tutorial",
-                    r"troubleshoot",
-                    r"faq",
-                    r"インストール",
-                    r"使い方",
-                    r"チュートリアル",
-                    r"トラブル.*シューティング",
-                    r"よくある質問",
-                ],
-            },
-            DocumentType.DEVELOPER: {
-                "filenames": [
-                    "CONTRIBUTING.md",
-                    "contributing.md",
-                    "DEVELOPERS.md",
-                    "developers.md",
-                    "API.md",
-                    "api.md",
-                    "ARCHITECTURE.md",
-                    "architecture.md",
-                ],
-                "paths": [
-                    "dev",
-                    "developer",
-                    "development",
-                    "docs/dev",
-                    "docs/developer",
-                    "docs/development",
-                ],
-                "patterns": [
-                    r"contribut",
-                    r"developer",
-                    r"development",
-                    r"api",
-                    r"architecture",
-                ],
-            },
-            DocumentType.TECHNICAL: {
-                "filenames": [
-                    "CLAUDE.md",
-                    "SPEC.md",
-                    "spec.md",
-                    "STYLE_GUIDE.md",
-                    "style_guide.md",
-                    "DESIGN.md",
-                    "design.md",
-                    "REFACTORING_SUMMARY.md",
-                    "BRANCH_CLEANUP.md",
-                    "SYNTAX_CHECKER_README.md",
-                ],
-                "patterns": [
-                    r"claude\.md$",
-                    r"spec\.md$",
-                    r"style.*guide",
-                    r"design",
-                    r"refactor",
-                    r"branch.*cleanup",
-                    r"syntax.*checker",
-                ],
-            },
-            DocumentType.EXAMPLE: {
-                "paths": ["examples", "samples", "サンプル"],
-                "patterns": [r"example", r"sample", r"サンプル", r"テンプレート"],
-            },
-            DocumentType.EXCLUDE: {
-                "filenames": [
-                    "CHANGELOG.md",
-                    "HISTORY.md",
-                    "TODO.md",
-                    ".gitignore",
-                    ".gitattributes",
-                ],
-                "paths": [
-                    ".git",
-                    ".github",
-                    ".vscode",
-                    ".idea",
-                    "__pycache__",
-                    ".pytest_cache",
-                    "node_modules",
-                ],
-                "patterns": [
-                    r"changelog",
-                    r"history",
-                    r"todo",
-                    r"\.git",
-                    r"__pycache__",
-                    r"\.pytest_cache",
-                ],
-            },
-        }
+        self.classification_rules = build_classification_rules()
 
     def classify_file(self, file_path: Path, base_path: Path) -> DocumentType:
         """ファイルを分類
@@ -257,14 +109,7 @@ class DocumentClassifier:
         Returns:
             tuple[str, str]: (変換方法, 出力先ディレクトリ)
         """
-        strategies = {
-            DocumentType.USER_ESSENTIAL: ("markdown_to_txt", "docs/essential"),
-            DocumentType.USER_GUIDE: ("markdown_to_html", "docs/user"),
-            DocumentType.DEVELOPER: ("copy_as_is", "docs/developer"),
-            DocumentType.TECHNICAL: ("copy_as_is", "docs/technical"),
-            DocumentType.EXAMPLE: ("copy_as_is", "examples"),
-            DocumentType.EXCLUDE: ("exclude", ""),
-        }
+        strategies = get_conversion_strategies()
         return strategies.get(doc_type, ("exclude", ""))
 
     def generate_document_summary(
@@ -272,14 +117,7 @@ class DocumentClassifier:
     ) -> str:
         """分類結果のサマリーを生成"""
         summary_lines = ["📚 文書分類結果", "=" * 40, ""]
-        type_names = {
-            DocumentType.USER_ESSENTIAL: "🎯 重要文書（.txt変換）",
-            DocumentType.USER_GUIDE: "📖 ユーザーガイド（HTML変換）",
-            DocumentType.DEVELOPER: "🔧 開発者文書",
-            DocumentType.TECHNICAL: "⚙️ 技術文書",
-            DocumentType.EXAMPLE: "📝 サンプル・例",
-            DocumentType.EXCLUDE: "🚫 除外対象",
-        }
+        type_names = get_type_display_names()
         for doc_type, files in classified_files.items():
             if files:
                 summary_lines.append(
