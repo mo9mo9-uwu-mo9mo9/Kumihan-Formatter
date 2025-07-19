@@ -1,0 +1,65 @@
+# Test Protection Pre-commit Hook Configuration
+# テスト大量削除防止用のpre-commitフック設定
+
+repos:
+  # Test Guard Hook
+  - repo: local
+    hooks:
+      - id: test-guard
+        name: Test Protection Guard
+        entry: python scripts/test_guard.py --check-staged
+        language: system
+        stages: [commit]
+        pass_filenames: false
+        description: "Prevent accidental mass deletion of test files"
+
+      - id: test-backup
+        name: Test Backup Before Changes
+        entry: python scripts/test_guard.py --backup-tests
+        language: system
+        stages: [pre-commit]
+        pass_filenames: false
+        description: "Backup test files before any changes"
+
+  # Standard Quality Checks (existing)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+
+  # Python Formatting
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        args: [--line-length=88]
+
+  # Import Sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black]
+
+  # Type Checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports]
+
+  # 300-line Limit Check
+  - repo: local
+    hooks:
+      - id: line-limit-check
+        name: 300-line Limit Check
+        entry: python scripts/claude_quality_gate.py
+        language: system
+        stages: [commit]
+        pass_filenames: false
+        description: "Enforce 300-line limit per file"
