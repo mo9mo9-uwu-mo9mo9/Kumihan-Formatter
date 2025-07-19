@@ -50,6 +50,7 @@ class TestConvertCommandDeep:
             patch(
                 "kumihan_formatter.commands.convert.convert_command.get_console_ui"
             ) as mock_ui,
+            patch("sys.exit") as mock_exit,
         ):
 
             command = ConvertCommand()
@@ -60,23 +61,29 @@ class TestConvertCommandDeep:
             command.watcher = Mock()
             command.friendly_error_handler = Mock()
 
+            # 構文チェックの結果をモック
+            command.validator.perform_syntax_check.return_value.to_console_output.return_value = (
+                "Syntax check passed"
+            )
+            command.validator.perform_syntax_check.return_value.has_errors.return_value = (
+                False
+            )
+
             # 基本実行テスト
-            try:
-                command.execute(
-                    input_file="test.txt",
-                    output="output/",
-                    no_preview=False,
-                    watch=False,
-                    config=None,
-                    show_test_cases=False,
-                    template_name=None,
-                    include_source=False,
-                    syntax_check=True,
-                )
-                # 正常実行を確認
-            except Exception as e:
-                # 依存関係の問題は許容
-                assert "Mock" in str(type(e)) or "attribute" in str(e).lower()
+            command.execute(
+                input_file="test.txt",
+                output="output/",
+                no_preview=False,
+                watch=False,
+                config=None,
+                show_test_cases=False,
+                template_name=None,
+                include_source=False,
+                syntax_check=True,
+            )
+
+            # バリデータが呼ばれたことを確認
+            command.validator.perform_syntax_check.assert_called_once()
 
     def test_convert_command_execute_with_watch(self):
         """ウォッチモード実行テスト"""
