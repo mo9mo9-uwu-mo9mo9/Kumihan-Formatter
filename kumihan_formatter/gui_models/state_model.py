@@ -109,3 +109,16 @@ class AppState:
             )
         except ValueError:
             return None
+
+
+# 後方互換性のためのStateModelクラス定義
+class StateModel(AppState):
+    """後方互換性のためのStateModelクラス
+
+    AppStateの機能をそのまま継承し、既存コードとの互換性を維持
+    新規実装ではAppStateの使用を推奨
+    """
+
+    def __init__(self) -> None:
+        """StateModel初期化（AppStateと同一）"""
+        super().__init__()
