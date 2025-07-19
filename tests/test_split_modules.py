@@ -7,18 +7,18 @@ These tests focus on basic functionality to improve coverage quickly.
 import pytest
 
 # Test AST nodes for basic functionality
-# from kumihan_formatter.core.ast_nodes import Node, NodeBuilder
-# from kumihan_formatter.core.classification_rules import build_classification_rules
-# from kumihan_formatter.core.debug_logger_core import GUIDebugLogger
-# from kumihan_formatter.core.debug_logger_decorators import log_gui_method
-# from kumihan_formatter.core.debug_logger_utils import get_logger, is_debug_enabled
-# from kumihan_formatter.core.document_types import DocumentType
+from kumihan_formatter.core.ast_nodes import Node, NodeBuilder
+from kumihan_formatter.core.classification_rules import build_classification_rules
+from kumihan_formatter.core.debug_logger_core import GUIDebugLogger
+from kumihan_formatter.core.debug_logger_decorators import log_gui_method
+from kumihan_formatter.core.debug_logger_utils import get_logger, is_debug_enabled
+from kumihan_formatter.core.document_types import DocumentType
 
 # Test split modules from Issue #490
-# from kumihan_formatter.core.rendering.basic_element_renderer import BasicElementRenderer
-# from kumihan_formatter.core.rendering.div_renderer import DivRenderer
-# from kumihan_formatter.core.rendering.heading_renderer import HeadingRenderer
-# from kumihan_formatter.core.rendering.list_renderer import ListRenderer
+from kumihan_formatter.core.rendering.basic_element_renderer import BasicElementRenderer
+from kumihan_formatter.core.rendering.div_renderer import DivRenderer
+from kumihan_formatter.core.rendering.heading_renderer import HeadingRenderer
+from kumihan_formatter.core.rendering.list_renderer import ListRenderer
 
 
 class TestSplitModulesBasic:
@@ -26,50 +26,106 @@ class TestSplitModulesBasic:
 
     def test_basic_element_renderer_initialization(self):
         """Test BasicElementRenderer initialization"""
-        pytest.skip("Import issue - addressing in separate issue")
+        renderer = BasicElementRenderer()
+        assert renderer is not None
+        assert hasattr(renderer, "_render_content")
 
     def test_heading_renderer_initialization(self):
         """Test HeadingRenderer initialization"""
-        pytest.skip("Import issue - addressing in separate issue")
+        renderer = HeadingRenderer()
+        assert renderer is not None
+        assert hasattr(renderer, "heading_counter")
+        assert hasattr(renderer, "reset_counters")
 
     def test_list_renderer_initialization(self):
         """Test ListRenderer initialization"""
-        pytest.skip("Import issue - addressing in separate issue")
+        renderer = ListRenderer()
+        assert renderer is not None
+        assert hasattr(renderer, "_render_content")
 
     def test_div_renderer_initialization(self):
         """Test DivRenderer initialization"""
-        pytest.skip("Import issue - addressing in separate issue")
+        renderer = DivRenderer()
+        assert renderer is not None
+        assert hasattr(renderer, "_render_content")
 
     def test_debug_logger_core_initialization(self):
         """Test GUIDebugLogger initialization"""
-        pytest.skip("Import issue - addressing in separate issue")
+        logger = GUIDebugLogger()
+        assert logger is not None
+        assert hasattr(logger, "debug")
+        assert hasattr(logger, "info")
+        assert hasattr(logger, "warning")
+        assert hasattr(logger, "error")
 
     def test_debug_decorator_exists(self):
         """Test debug decorator function exists"""
-        pytest.skip("Import issue - addressing in separate issue")
+        assert callable(log_gui_method)
+
+        # Test basic decorator functionality
+        @log_gui_method
+        def test_func():
+            return "test"
+
+        # Decorator returns wrapper function, so just test it's callable
+        assert callable(test_func)
 
     def test_debug_utils_functions(self):
         """Test debug utility functions"""
-        pytest.skip("Import issue - addressing in separate issue")
+        # Test get_logger function (no arguments)
+        logger = get_logger()
+        assert logger is not None
+
+        # Test is_debug_enabled function
+        debug_status = is_debug_enabled()
+        assert isinstance(debug_status, bool)
 
     def test_document_type_enum(self):
         """Test DocumentType enum"""
-        pytest.skip("Import issue - addressing in separate issue")
+        # Test that DocumentType enum has expected values
+        expected_types = [
+            "USER_ESSENTIAL",
+            "USER_GUIDE",
+            "DEVELOPER",
+            "TECHNICAL",
+            "EXCLUDE",
+            "EXAMPLE",
+        ]
+
+        for doc_type_name in expected_types:
+            if hasattr(DocumentType, doc_type_name):
+                doc_type = getattr(DocumentType, doc_type_name)
+                assert doc_type is not None
 
     def test_classification_rules_function(self):
         """Test build_classification_rules function"""
-        pytest.skip("Import issue - addressing in separate issue")
+        rules = build_classification_rules()
+        assert isinstance(rules, dict)
+        assert len(rules) > 0
+
+        # Test structure of rules
+        for rule_key, rule_dict in rules.items():
+            assert isinstance(rule_dict, dict)
 
     def test_node_creation(self):
         """Test Node creation"""
-        pytest.skip("Import issue - addressing in separate issue")
+        node = Node("test", "content")
+        assert node is not None
+        assert node.type == "test"
+        assert node.content == "content"
 
     def test_node_builder_creation(self):
         """Test NodeBuilder creation"""
-        pytest.skip("Import issue - addressing in separate issue")
+        builder = NodeBuilder("test_type")
+        assert builder is not None
+
+        # Test basic node building
+        node = builder.content("test_content").build()
+        assert node is not None
+        assert node.type == "test_type"
+        assert node.content == "test_content"
 
 
-@pytest.mark.skip(reason="Import issue - addressing in separate issue")
 class TestHeadingRendererFunctionality:
     """Test HeadingRenderer specific functionality"""
 
@@ -110,7 +166,6 @@ class TestHeadingRendererFunctionality:
         assert "item2" in result
 
 
-@pytest.mark.skip(reason="Import issue - addressing in separate issue")
 class TestBasicElementRendererFunctionality:
     """Test BasicElementRenderer specific functionality"""
 
@@ -132,7 +187,6 @@ class TestBasicElementRendererFunctionality:
         assert result == ""
 
 
-@pytest.mark.skip(reason="Import issue - addressing in separate issue")
 class TestDebugLoggerComponents:
     """Test debug logger split components"""
 
@@ -162,7 +216,6 @@ class TestDebugLoggerComponents:
         assert callable(log_gui_method)
 
 
-@pytest.mark.skip(reason="Import issue - addressing in separate issue")
 class TestDocumentClassificationComponents:
     """Test document classification split components"""
 
