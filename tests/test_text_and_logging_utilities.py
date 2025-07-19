@@ -76,9 +76,13 @@ class TestLoggingUtilitiesComplete:
 
     def test_structured_logger_complete(self):
         """Test StructuredLogger completely"""
-        from kumihan_formatter.core.utilities.structured_logger import StructuredLogger
+        import logging
 
-        logger = StructuredLogger()
+        from kumihan_formatter.core.utilities.structured_logging import StructuredLogger
+
+        # Create base logger
+        base_logger = logging.getLogger("test_logger")
+        logger = StructuredLogger(base_logger)
         assert logger is not None
 
         # Test logging methods

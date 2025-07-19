@@ -10,18 +10,25 @@ from .node import Node
 from .node_builder import NodeBuilder
 
 
-def paragraph(content: Union[str, list[Any]]) -> Node:
+def paragraph(
+    content: Union[str, list[Any]], attributes: dict[str, Any] | None = None
+) -> Node:
     """Create a paragraph node"""
-    return NodeBuilder("p").content(content).build()
+    builder = NodeBuilder("p").content(content)
+    if attributes:
+        for key, value in attributes.items():
+            builder.attribute(key, value)
+    return builder.build()
 
 
 def heading(
-    level: int, content: Union[str, list[Any]], heading_id: str | None = None
+    level: int, content: Union[str, list[Any]], attributes: dict[str, Any] | None = None
 ) -> Node:
     """Create a heading node"""
     builder = NodeBuilder(f"h{level}").content(content)
-    if heading_id:
-        builder.id(heading_id)
+    if attributes:
+        for key, value in attributes.items():
+            builder.attribute(key, value)
     return builder.build()
 
 

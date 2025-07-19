@@ -60,12 +60,15 @@ class HTMLRenderer:
         self.formatter = HTMLFormatter()
 
         # Initialize specialized processors
-        self.heading_renderer = HeadingRenderer(self.element_renderer)
+        self.heading_renderer = HeadingRenderer()
         self.content_processor = ContentProcessor(self)
         self.heading_collector = HeadingCollector()
 
         # Inject this main renderer into element renderer for content processing
         self.element_renderer._main_renderer = self
+
+        # Set main renderer for heading renderer
+        self.heading_renderer._main_renderer = self
 
     def render_nodes(self, nodes: list[Node]) -> str:
         """
