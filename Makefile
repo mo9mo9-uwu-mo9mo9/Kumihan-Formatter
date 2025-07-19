@@ -7,7 +7,7 @@ PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 PYTEST = $(VENV)/bin/pytest
 
-.PHONY: help test lint format check install clean coverage pre-commit lint-docs test-quick test-full quick-check
+.PHONY: help test lint format check install clean coverage pre-commit lint-docs test-quick test-full quick-check test-unit test-integration test-performance test-parallel
 
 # デフォルトターゲット：ヘルプ表示
 help:
@@ -24,6 +24,12 @@ help:
 	@echo "  make lint       - リンター実行（コード品質チェック）"
 	@echo "  make format     - コードフォーマット実行"
 	@echo "  make check      - フォーマット・リンター確認のみ（変更なし）"
+	@echo ""
+	@echo "🧪 テスト実行:"
+	@echo "  make test-unit        - ユニットテストのみ実行"
+	@echo "  make test-integration - 統合テストのみ実行"
+	@echo "  make test-performance - パフォーマンステストのみ実行"
+	@echo "  make test-parallel    - 並行テスト実行（高速）"
 	@echo ""
 	@echo "🚀 高度・詳細:"
 	@echo "  make test-full  - フルテストスイート実行（カバレッジ付き）"
@@ -139,6 +145,31 @@ lint-docs:
 quick-check: format lint test-quick
 	@echo "=== 軽量チェック完了 ⚡ ==="
 	@echo "基本品質チェック完了 ✓"
+
+# ユニットテストのみ実行
+test-unit:
+	@echo "=== ユニットテスト実行 ==="
+	$(PYTEST) -m unit -v
+	@echo "ユニットテスト完了 ✓"
+
+# 統合テストのみ実行
+test-integration:
+	@echo "=== 統合テスト実行 ==="
+	$(PYTEST) -m integration -v
+	@echo "統合テスト完了 ✓"
+
+# パフォーマンステストのみ実行
+test-performance:
+	@echo "=== パフォーマンステスト実行 ==="
+	$(PYTEST) -m performance -v
+	@echo "パフォーマンステスト完了 ✓"
+
+# 並行テスト実行（高速）
+test-parallel:
+	@echo "=== 並行テスト実行（高速）==="
+	@echo "注意: pytest-xdist が必要です"
+	$(PYTEST) -n auto --dist=worksteal -v
+	@echo "並行テスト完了 🚀"
 
 # 🚨 Claude Code 品質ゲート（実装前必須）
 claude-quality-gate:
