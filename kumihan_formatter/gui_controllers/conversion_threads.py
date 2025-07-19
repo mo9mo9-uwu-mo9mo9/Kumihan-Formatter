@@ -29,14 +29,10 @@ except ImportError:
 try:
     from ..commands.convert.convert_command import ConvertCommand
     from ..commands.sample import SampleCommand
-except ImportError:
-    try:
-        from kumihan_formatter.commands.convert.convert_command import ConvertCommand
-        from kumihan_formatter.commands.sample import SampleCommand
-    except ImportError as e:
-        error(f"Failed to import command classes: {e}")
-        ConvertCommand = None  # type: ignore
-        SampleCommand = None  # type: ignore
+except ImportError as e:
+    error(f"Failed to import command classes: {e}")
+    ConvertCommand = None  # type: ignore
+    SampleCommand = None  # type: ignore
 
 
 class ConversionThreads:
