@@ -151,4 +151,69 @@ class KumihanSyntaxValidator:
                 "ブロックの最後に ;;; を追加してください",
             )
 
-    # Methods delegated to specialized modules - removed to reduce file size
+    def _validate_block_keywords(self, line_num: int, line: str) -> None:
+        """ブロックキーワードの妥当性をチェック"""
+        # 基本的な妥当性チェック（簡易実装）
+        keywords_part = line[3:].strip()  # ;;; を除いた部分
+        if not keywords_part:
+            self._add_error(
+                line_num,
+                1,
+                ErrorSeverity.WARNING,
+                ErrorTypes.INVALID_KEYWORD,
+                "空のキーワードブロックです",
+                line,
+            )
+
+    def _check_multiline_syntax(
+        self, line_num: int, line: str, block_start_line: int, block_keywords: list
+    ) -> None:
+        """マルチライン構文エラーをチェック"""
+        self._add_error(
+            line_num,
+            1,
+            ErrorSeverity.ERROR,
+            ErrorTypes.INVALID_SYNTAX,
+            "ブロック内で新しいブロックが開始されています",
+            line,
+            f"ブロックは{block_start_line}行目で開始されていますが、まだ閉じられていません",
+        )
+
+    def _add_error(
+        self,
+        line_number: int,
+        column: int,
+        severity: ErrorSeverity,
+        error_type: ErrorTypes,
+        message: str,
+        context: str,
+        suggestion: str = "",
+    ) -> None:
+        """エラーをエラーリストに追加"""
+        error = SyntaxError(
+            line_number=line_number,
+            column=column,
+            severity=severity,
+            error_type=error_type,
+            message=message,
+            context=context,
+            suggestion=suggestion,
+        )
+        self.errors.append(error)
+
+    def _validate_line_syntax(self, line_num: int, line: str) -> None:
+        """行単位の構文チェック"""
+        # 基本的な構文チェック（簡易実装）
+        stripped = line.strip()
+
+        # 無効な文字パターンをチェック
+        if "(((" in stripped or ")))" in stripped:
+            self._add_error(
+                line_num,
+                1,
+                ErrorSeverity.WARNING,
+                ErrorTypes.INVALID_SYNTAX,
+                "無効な括弧パターンが検出されました",
+                line,
+                "脚注記法は (()) を使用してください",
+            )
