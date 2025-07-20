@@ -10,6 +10,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# 静的なモジュール可用性チェック
+TEST_FILE_COMMAND_AVAILABLE = pytest._has_module(
+    "kumihan_formatter.commands.test_file_command"
+)
+CLI_COMMAND_AVAILABLE = pytest._has_module("kumihan_formatter.cli")
+
 
 @pytest.fixture
 def mock_console_ui():
@@ -24,21 +30,20 @@ def mock_console_ui():
 class TestTestFileCommandComprehensive:
     """Comprehensive tests for TestFileCommand - Issue #512 implementation"""
 
+    @pytest.mark.skipif(
+        not TEST_FILE_COMMAND_AVAILABLE, reason="TestFileCommand module not available"
+    )
     def test_test_command_execution(self):
         """Test basic test command execution"""
         from kumihan_formatter.commands.test_file_command import TestFileCommand
 
-        try:
-            command = TestFileCommand()
-            assert command is not None
-            assert hasattr(command, "execute")
-            assert hasattr(command, "file_ops")
+        command = TestFileCommand()
+        assert command is not None
+        assert hasattr(command, "execute")
+        assert hasattr(command, "file_ops")
 
-            # Test basic instantiation
-            assert command.file_ops is not None
-
-        except ImportError:
-            pytest.skip("TestFileCommand module not available")
+        # Test basic instantiation
+        assert command.file_ops is not None
 
     def test_test_command_with_output_option(self, mock_console_ui):
         """Test test command with output option"""
@@ -211,7 +216,7 @@ class TestTestFileGeneratorMock:
             pytest.skip("Real TestFileGenerator found - not testing mock")
         except ImportError:
             # Expected - mock should be created within the command
-                pass
+            pass
 
         # Test that the command can handle the mock properly
         from kumihan_formatter.commands.test_file_command import TestFileCommand

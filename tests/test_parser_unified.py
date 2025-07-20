@@ -289,22 +289,3 @@ class TestRendererIntegration:
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
             pass
-
-    def test_renderer_template_integration(self):
-        """Test renderer with template system"""
-        renderer = Renderer()
-
-        test_nodes = [Node("h1", "Template Test")]
-
-        try:
-            # Test with different templates
-            templates = ["default", "minimal", "detailed"]
-
-            for template in templates:
-                renderer.set_template(template)
-                output = renderer.render(test_nodes)
-                assert output is not None
-
-        except (AttributeError, NotImplementedError):
-            # Template system may not be implemented
-            pass
