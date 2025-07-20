@@ -48,7 +48,7 @@ class TestFileCommand:
             sys.path.insert(0, str(dev_tools_path))
 
         try:
-            from generate_test_file import TestFileGenerator  # type: ignore
+            from generate_test_file import TestFileGenerator
         except ImportError:
             # Create a mock TestFileGenerator for testing purposes
             class TestFileGenerator:
@@ -174,7 +174,7 @@ class TestFileCommand:
             raise click.ClickException(f"テスト変換中にエラーが発生しました: {e}")
 
 
-def create_test_command():  # type: ignore
+def create_test_command() -> click.Command:
     """Create the test file generation click command"""
 
     @click.command()
@@ -197,15 +197,15 @@ def create_test_command():  # type: ignore
         help="テストケース名を表示（テスト用ファイル変換時）",
     )
     @click.option("--config", type=click.Path(exists=True), help="設定ファイルのパス")
-    def generate_test(  # type: ignore
-        test_output,
-        pattern_count,
-        double_click_mode,
-        output,
-        no_preview,
-        show_test_cases,
-        config,
-    ):
+    def generate_test(
+        test_output: str,
+        pattern_count: int,
+        double_click_mode: bool,
+        output: str,
+        no_preview: bool,
+        show_test_cases: bool,
+        config: str | None,
+    ) -> None:
         """テスト用記法網羅ファイルを生成します"""
         command = TestFileCommand()
         command.execute(
