@@ -89,7 +89,7 @@ class TestConsoleOperationsDeep:
                         assert isinstance(result, (str, bool, dict))
                     except Exception:
                         # エラーは許容
-                    pass
+                        pass
 
     def test_console_operations_conversion_methods(self):
         """変換操作メソッドテスト"""
@@ -119,7 +119,7 @@ class TestConsoleOperationsDeep:
                         try:
                             result = method(test_content, "template")
                         except:
-                        pass
+                            pass
 
     def test_console_operations_validation_methods(self):
         """検証操作メソッドテスト"""
@@ -144,4 +144,4 @@ class TestConsoleOperationsDeep:
                         result = method("test content")
                         assert isinstance(result, (bool, dict, list))
                     except Exception:
-                    pass
+                        pass
