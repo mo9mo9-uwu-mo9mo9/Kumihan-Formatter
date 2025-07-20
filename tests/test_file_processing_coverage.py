@@ -20,8 +20,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.file_reader import FileReader
 
             reader = FileReader()
-        except ImportError:
-            pytest.skip("FileReader not available")
+        except ImportError as e:
+            pytest.skip(f"FileReader not available: {e}")
             return
 
         # Create temporary file
@@ -41,11 +41,12 @@ class TestFileUtilities:
                 encoding = reader.detect_encoding(temp_path)
                 assert isinstance(encoding, str)
             except AttributeError:
+                # Method might not exist
                 pass
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
         finally:
             Path(temp_path).unlink(missing_ok=True)
 
@@ -55,8 +56,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.file_writer import FileWriter
 
             writer = FileWriter()
-        except ImportError:
-            pytest.skip("FileWriter not available")
+        except ImportError as e:
+            pytest.skip(f"FileWriter not available: {e}")
             return
 
         try:
@@ -85,9 +86,9 @@ class TestFileUtilities:
 
             Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
     def test_encoding_utilities(self):
         """Test encoding detection and handling"""
@@ -95,8 +96,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.encoding_utils import EncodingDetector
 
             detector = EncodingDetector()
-        except ImportError:
-            pytest.skip("EncodingDetector not available")
+        except ImportError as e:
+            pytest.skip(f"EncodingDetector not available: {e}")
             return
 
         try:
@@ -127,13 +128,13 @@ class TestFileUtilities:
 
                 except AttributeError:
                     # Methods might not exist
-                    pass
+                    pytest.skip(f"Module not available: {e}")
                 finally:
                     Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestFileConverter:
@@ -145,8 +146,8 @@ class TestFileConverter:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError:
-            pytest.skip("FileConverter not available")
+        except ImportError as e:
+            pytest.skip(f"FileConverter not available: {e}")
             return
 
         try:
@@ -187,14 +188,14 @@ This is a test document with:
 
             except AttributeError:
                 # Methods might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
             finally:
                 Path(input_path).unlink(missing_ok=True)
                 Path(output_path).unlink(missing_ok=True)
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
     def test_batch_file_converter(self):
         """Test batch file conversion"""
@@ -202,8 +203,8 @@ This is a test document with:
             from kumihan_formatter.core.batch_converter import BatchConverter
 
             converter = BatchConverter()
-        except ImportError:
-            pytest.skip("BatchConverter not available")
+        except ImportError as e:
+            pytest.skip(f"BatchConverter not available: {e}")
             return
 
         try:
@@ -229,15 +230,15 @@ This is a test document with:
 
             except AttributeError:
                 # Methods might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
             finally:
                 # Cleanup
                 for file_path in test_files:
                     Path(file_path).unlink(missing_ok=True)
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestErrorHandling:
@@ -249,8 +250,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError:
-            pytest.skip("FileConverter not available")
+        except ImportError as e:
+            pytest.skip(f"FileConverter not available: {e}")
             return
 
         try:
@@ -266,8 +267,8 @@ class TestErrorHandling:
                 # Method might not exist
                 pass
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_permission_error_handling(self):
         """Test handling of permission errors"""
@@ -275,8 +276,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError:
-            pytest.skip("FileConverter not available")
+        except ImportError as e:
+            pytest.skip(f"FileConverter not available: {e}")
             return
 
         try:
@@ -292,8 +293,8 @@ class TestErrorHandling:
                 # Method might not exist
                 pass
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_encoding_error_handling(self):
         """Test handling of encoding errors"""
@@ -301,8 +302,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.utilities.file_reader import FileReader
 
             reader = FileReader()
-        except ImportError:
-            pytest.skip("FileReader not available")
+        except ImportError as e:
+            pytest.skip(f"FileReader not available: {e}")
             return
 
         try:
@@ -329,8 +330,8 @@ class TestErrorHandling:
             finally:
                 Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestFileSystemOperations:
@@ -340,8 +341,8 @@ class TestFileSystemOperations:
         """Test directory creation and management"""
         try:
             from kumihan_formatter.core.utilities.file_utils import FileUtils
-        except ImportError:
-            pytest.skip("FileUtils not available")
+        except ImportError as e:
+            pytest.skip(f"FileUtils not available: {e}")
             return
 
         try:
@@ -361,10 +362,10 @@ class TestFileSystemOperations:
 
             except AttributeError:
                 # Methods might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_file_backup_operations(self):
         """Test file backup functionality"""
@@ -372,8 +373,8 @@ class TestFileSystemOperations:
             from kumihan_formatter.core.utilities.backup_manager import BackupManager
 
             backup_manager = BackupManager()
-        except ImportError:
-            pytest.skip("BackupManager not available")
+        except ImportError as e:
+            pytest.skip(f"BackupManager not available: {e}")
             return
 
         try:
@@ -400,12 +401,12 @@ class TestFileSystemOperations:
 
             except AttributeError:
                 # Methods might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
             finally:
                 Path(original_path).unlink(missing_ok=True)
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestStreamProcessing:
@@ -415,8 +416,8 @@ class TestStreamProcessing:
         """Test stream-based parsing"""
         try:
             from kumihan_formatter.core.stream_parser import StreamParser
-        except ImportError:
-            pytest.skip("StreamParser not available")
+        except ImportError as e:
+            pytest.skip(f"StreamParser not available: {e}")
             return
 
         try:
@@ -432,10 +433,10 @@ class TestStreamProcessing:
 
             except AttributeError:
                 # Method might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_stream_renderer(self):
         """Test stream-based rendering"""
@@ -443,8 +444,8 @@ class TestStreamProcessing:
 
         try:
             from kumihan_formatter.core.stream_renderer import StreamRenderer
-        except ImportError:
-            pytest.skip("StreamRenderer not available")
+        except ImportError as e:
+            pytest.skip(f"StreamRenderer not available: {e}")
             return
 
         try:
@@ -462,10 +463,10 @@ class TestStreamProcessing:
 
             except AttributeError:
                 # Method might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestConfigFileProcessing:
@@ -477,8 +478,8 @@ class TestConfigFileProcessing:
             from kumihan_formatter.config.config_loader import ConfigLoader
 
             loader = ConfigLoader()
-        except ImportError:
-            pytest.skip("ConfigLoader not available")
+        except ImportError as e:
+            pytest.skip(f"ConfigLoader not available: {e}")
             return
 
         try:
@@ -505,19 +506,19 @@ class TestConfigFileProcessing:
 
             except AttributeError:
                 # Method might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
             finally:
                 Path(config_path).unlink(missing_ok=True)
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_config_file_validation(self):
         """Test configuration file validation"""
         try:
             from kumihan_formatter.config.config_validator import ConfigValidator
-        except ImportError:
-            pytest.skip("ConfigValidator not available")
+        except ImportError as e:
+            pytest.skip(f"ConfigValidator not available: {e}")
             return
 
         try:
@@ -538,7 +539,7 @@ class TestConfigFileProcessing:
 
             except AttributeError:
                 # Methods might not exist
-                pass
+                pytest.skip(f"Module not available: {e}")
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
