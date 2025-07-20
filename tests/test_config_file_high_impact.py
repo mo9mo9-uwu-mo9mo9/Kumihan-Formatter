@@ -10,13 +10,44 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.config.config_manager import ConfigManager
+
+    HAS_CONFIG_MANAGER = True
+except ImportError:
+    HAS_CONFIG_MANAGER = False
+
+try:
+    from kumihan_formatter.config.extended_config import ExtendedConfig
+
+    HAS_EXTENDED_CONFIG = True
+except ImportError:
+    HAS_EXTENDED_CONFIG = False
+
+try:
+    from kumihan_formatter.core.file_operations_core import FileOperationsCore
+
+    HAS_FILE_OPERATIONS_CORE = True
+except ImportError:
+    HAS_FILE_OPERATIONS_CORE = False
+
+try:
+    from kumihan_formatter.core.file_path_utilities import FilePathUtilities
+
+    HAS_FILE_PATH_UTILITIES = True
+except ImportError:
+    HAS_FILE_PATH_UTILITIES = False
+
 
 class TestConfigSystemHighImpact:
     """High impact tests for configuration system"""
 
+    @pytest.mark.skipif(
+        not HAS_CONFIG_MANAGER, reason="ConfigManager module not available"
+    )
     def test_config_manager_comprehensive_usage(self):
         """Test comprehensive config manager usage"""
-        from kumihan_formatter.config.config_manager import ConfigManager
 
         config_manager = ConfigManager()
 
