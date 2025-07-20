@@ -1,7 +1,7 @@
-"""Specific Module Coverage Tests
+"""List Parser Coverage Tests
 
-Target specific modules for coverage improvement.
-Tests for TOC generators and list parsers.
+Target list parsers for coverage improvement.
+Tests for list parsing functionality.
 """
 
 from unittest.mock import Mock, patch
@@ -9,137 +9,21 @@ from unittest.mock import Mock, patch
 import pytest
 
 
-class TestSpecificModuleCoverage:
-    """Target specific modules for coverage improvement"""
-
-    def test_toc_generator_functionality(self):
-        """Test table of contents generator"""
-        try:
-            from kumihan_formatter.core.ast_nodes.node import Node
-            from kumihan_formatter.core.toc_generator import TOCGenerator
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
-
-        generator = TOCGenerator()
-
-        # Test TOC generation from nodes
-        test_nodes = [
-            Node("h1", "Chapter 1"),
-            Node("p", "Some content"),
-            Node("h2", "Section 1.1"),
-            Node("p", "More content"),
-            Node("h2", "Section 1.2"),
-            Node("h1", "Chapter 2"),
-        ]
-
-        try:
-            toc = generator.generate(test_nodes)
-            assert toc is not None
-
-            # TOC should contain heading information
-            if isinstance(toc, (list, tuple)):
-                assert len(toc) > 0
-            elif isinstance(toc, str):
-                assert "Chapter" in toc or "Section" in toc
-
-        except (
-            AttributeError,
-            NotImplementedError,
-            TypeError,
-            ValueError,
-            ImportError,
-        ) as e:
-                pass
-
-        # Test TOC formatting options
-        try:
-            formatted_toc = generator.format_toc(test_nodes, style="nested")
-            assert formatted_toc is not None
-        except (
-            AttributeError,
-            NotImplementedError,
-            TypeError,
-            ValueError,
-            ImportError,
-        ) as e:
-                pass
-
-    def test_toc_generator_main_functionality(self):
-        """Test main TOC generator functionality"""
-        try:
-            from kumihan_formatter.core.toc_generator_main import TOCGeneratorMain
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
-
-        generator = TOCGeneratorMain()
-
-        # Test text input processing
-        test_text = """# Main Title
-
-Some content here.
-
-## Section 1
-
-Content for section 1.
-
-### Subsection 1.1
-
-More detailed content.
-
-## Section 2
-
-Content for section 2."""
-
-        try:
-            toc = generator.generate_from_text(test_text)
-            assert toc is not None
-
-            # Should identify headings
-            if isinstance(toc, str):
-                assert "Main Title" in toc or "Section" in toc
-
-        except (
-            AttributeError,
-            NotImplementedError,
-            TypeError,
-            ValueError,
-            ImportError,
-        ) as e:
-                pass
-
-        # Test different TOC styles
-        styles = ["simple", "numbered", "nested", "flat"]
-        for style in styles:
-            try:
-                styled_toc = generator.generate_with_style(test_text, style)
-                assert styled_toc is not None
-            except (
-                AttributeError,
-                NotImplementedError,
-                TypeError,
-                ValueError,
-                ImportError,
-            ) as e:
-                pass
+class TestListParserCoverage:
+    """Target list parsers for coverage improvement"""
 
     def test_list_parser_functionality(self):
         """Test list parser functionality"""
         try:
             from kumihan_formatter.core.list_parser import ListParser
         except ImportError as e:
-            # Method not available - skip silently
-                pass
+            pytest.skip(f"Module not available: {e}")
             return
 
         try:
             parser = ListParser()
         except (TypeError, AttributeError) as e:
-            # Method not available - skip silently
-                pass
+            pytest.skip(f"ListParser constructor issue: {e}")
             return
 
         # Test various list formats
@@ -177,8 +61,7 @@ Content for section 2."""
         try:
             from kumihan_formatter.core.list_parser_core import ListParserCore
         except ImportError as e:
-            # Method not available - skip silently
-                pass
+            pytest.skip(f"Module not available: {e}")
             return
 
         parser = ListParserCore()
@@ -203,7 +86,7 @@ Content for section 2."""
                     or line.strip()[0].isdigit()
                 ):
                     # Should detect as list item
-                pass
+                    pass
 
             except (
                 AttributeError,
@@ -241,8 +124,7 @@ Content for section 2."""
         try:
             from kumihan_formatter.core.nested_list_parser import NestedListParser
         except ImportError as e:
-            # Method not available - skip silently
-                pass
+            pytest.skip(f"Module not available: {e}")
             return
 
         parser = NestedListParser()
@@ -272,7 +154,7 @@ Content for section 2."""
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
         # Test nesting validation
         try:
@@ -285,4 +167,4 @@ Content for section 2."""
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass

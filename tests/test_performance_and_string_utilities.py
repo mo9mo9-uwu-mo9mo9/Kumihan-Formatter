@@ -76,7 +76,7 @@ class TestPerformanceUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass
 
     def test_performance_trackers(self):
         """Test performance trackers"""
@@ -109,8 +109,9 @@ class TestPerformanceUtilities:
                 time_tracker = TimeTracker()
                 time_tracker.start("operation1")
 
-                # Simulate work
-                time.sleep(0.01)
+                # CI/CD最適化: 実際の処理でシミュレート (time.sleep削除)
+                # time.sleep(0.01) - CI/CD最適化のため削除
+                dummy_work = sum(range(100))  # 軽量な実処理
 
                 time_tracker.stop("operation1")
                 duration = time_tracker.get_duration("operation1")
@@ -120,7 +121,7 @@ class TestPerformanceUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass
 
 
 class TestStringUtilities:
@@ -167,7 +168,7 @@ class TestStringUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass
 
     def test_string_formatting(self):
         """Test string formatting utilities"""
@@ -206,4 +207,4 @@ class TestStringUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass

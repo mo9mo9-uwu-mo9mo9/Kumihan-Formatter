@@ -8,20 +8,46 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.core.utilities.dependency_tracker import DependencyTracker
+
+    HAS_DEPENDENCY_TRACKER = True
+except ImportError:
+    HAS_DEPENDENCY_TRACKER = False
+
+try:
+    from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
+
+    HAS_ERROR_ANALYZER = True
+except ImportError:
+    HAS_ERROR_ANALYZER = False
+
+try:
+    from kumihan_formatter.core.utilities.string_similarity import StringSimilarity
+
+    HAS_STRING_SIMILARITY = True
+except ImportError:
+    HAS_STRING_SIMILARITY = False
+
+try:
+    from kumihan_formatter.core.utilities.execution_flow_tracker import (
+        ExecutionFlowTracker,
+    )
+
+    HAS_EXECUTION_FLOW_TRACKER = True
+except ImportError:
+    HAS_EXECUTION_FLOW_TRACKER = False
+
 
 class TestUtilitiesDeepCoverage:
     """Deep coverage for utility modules"""
 
+    @pytest.mark.skipif(
+        not HAS_DEPENDENCY_TRACKER, reason="DependencyTracker module not available"
+    )
     def test_dependency_tracker_functionality(self):
         """Test dependency tracker functionality"""
-        try:
-            from kumihan_formatter.core.utilities.dependency_tracker import (
-                DependencyTracker,
-            )
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
 
         tracker = DependencyTracker()
 
@@ -56,7 +82,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
         # Test dependency resolution order
         try:
@@ -69,16 +95,13 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
+    @pytest.mark.skipif(
+        not HAS_ERROR_ANALYZER, reason="ErrorAnalyzer module not available"
+    )
     def test_error_analyzer_functionality(self):
         """Test error analyzer functionality"""
-        try:
-            from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
 
         analyzer = ErrorAnalyzer()
 
@@ -115,7 +138,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
         # Test error suggestions
         try:
@@ -128,18 +151,13 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
+    @pytest.mark.skipif(
+        not HAS_STRING_SIMILARITY, reason="StringSimilarity module not available"
+    )
     def test_string_similarity_functionality(self):
         """Test string similarity functionality"""
-        try:
-            from kumihan_formatter.core.utilities.string_similarity import (
-                StringSimilarity,
-            )
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
 
         similarity = StringSimilarity()
 
@@ -180,18 +198,14 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
+    @pytest.mark.skipif(
+        not HAS_EXECUTION_FLOW_TRACKER,
+        reason="ExecutionFlowTracker module not available",
+    )
     def test_execution_flow_tracker_functionality(self):
         """Test execution flow tracker functionality"""
-        try:
-            from kumihan_formatter.core.utilities.execution_flow_tracker import (
-                ExecutionFlowTracker,
-            )
-        except ImportError as e:
-            # Method not available - skip silently
-                pass
-            return
 
         tracker = ExecutionFlowTracker()
 
@@ -217,7 +231,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
 
         # Test performance analysis
         try:
@@ -230,4 +244,4 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-                pass
+            pass
