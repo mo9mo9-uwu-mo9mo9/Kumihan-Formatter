@@ -70,7 +70,7 @@ Text with ((valid footnote)) notation.
                     assert result is not None
                 except:
                     # 基本的なオブジェクト作成確認のみ
-                    pass
+                        pass
             except SystemExit as e:
                 # 正常終了のsys.exit(0)は許容
                 assert e.code == 0 or e.code is None
@@ -147,13 +147,13 @@ Invalid syntax patterns.
                 # ファイルエラーの適切な処理確認
             except (FileNotFoundError, SystemExit):
                 # 期待される例外（SystemExitも含む）
-                pass
+            pass
             except AttributeError:
                 # メソッド名違いの場合
                 try:
                     command.check([nonexistent_file])  # リスト形式で渡す
                 except FileNotFoundError:
-                    pass
+                pass
 
         except ImportError:
             pytest.skip("CheckSyntaxCommand module not available")
@@ -269,7 +269,7 @@ Regular paragraph text.
 
             except Exception:
                 # 依存関係エラーは許容
-                pass
+            pass
             finally:
                 Path(test_file).unlink(missing_ok=True)
 
@@ -293,7 +293,7 @@ Regular paragraph text.
 
             except (FileNotFoundError, IOError):
                 # 期待されるエラー
-                pass
+            pass
             except Exception:
                 # その他のエラーも許容（依存関係問題など）
-                pass
+            pass

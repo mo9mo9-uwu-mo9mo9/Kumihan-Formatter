@@ -187,7 +187,7 @@ class TestBlockParser:
                 try:
                     result = parser.parse(line)
                 except:
-                    pass
+                pass
 
     def test_block_parser_multi_line(self):
         """Test multi-line block parsing"""
@@ -218,7 +218,7 @@ class TestBlockParser:
                     for line in lines:
                         parser.parse(line)
                 except:
-                    pass
+                pass
 
 
 class TestParserIntegration:
@@ -284,6 +284,6 @@ class TestParserIntegration:
             except TypeError:
                 # None might not be handled
                 if text is None:
-                    pass
+                pass
                 else:
                     raise

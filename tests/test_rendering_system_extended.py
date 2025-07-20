@@ -29,7 +29,7 @@ class TestRenderingSystemExtended:
                 assert isinstance(result, str)
             except:
                 # Method signature might be different
-                pass
+            pass
 
     def test_html_escaping_comprehensive(self):
         """Comprehensive HTML escaping tests"""
@@ -49,7 +49,7 @@ class TestRenderingSystemExtended:
                     result = escape_html(input_text)
                     assert expected in result or isinstance(result, str)
                 except:
-                    pass
+                pass
         except ImportError:
             # Basic test without import
             import html
@@ -75,7 +75,7 @@ class TestRenderingSystemExtended:
                     result = renderer.render(test_content)
                     assert isinstance(result, str)
                 except:
-                    pass
+                pass
         except ImportError:
             # Alternative test without compound renderer
             assert True  # Skip test if module not available
@@ -98,7 +98,7 @@ class TestRenderingSystemExtended:
                 assert isinstance(result, str)
             except:
                 # Method signature might be different
-                pass
+            pass
 
     def test_div_renderer_comprehensive(self):
         """Comprehensive DivRenderer tests"""
@@ -120,4 +120,4 @@ class TestRenderingSystemExtended:
                 assert "div" in result.lower()
             except:
                 # Method signature might be different
-                pass
+            pass

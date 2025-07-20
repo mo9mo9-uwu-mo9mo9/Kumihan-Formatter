@@ -30,7 +30,7 @@ class TestUtilitiesCoverageBoosting:
                     method("Test message")
                 except Exception:
                     # Logging may fail in test environment
-                    pass
+                pass
 
         # Test logger configuration
         try:
@@ -60,7 +60,7 @@ class TestUtilitiesCoverageBoosting:
             try:
                 structured_logger.log_with_context("INFO", "Test message", **context)
             except Exception:
-                pass
+            pass
 
         # Test performance logging
         try:
@@ -97,18 +97,18 @@ class TestUtilitiesCoverageBoosting:
                 result = processor.normalize_whitespace(text)
                 assert isinstance(result, str)
             except Exception:
-                pass
+            pass
 
             # Test cleaning
             try:
                 result = processor.clean_text(text)
                 assert isinstance(result, str)
             except Exception:
-                pass
+            pass
 
             # Test processing
             try:
                 result = processor.process_text(text)
                 assert isinstance(result, str)
             except Exception:
-                pass
+            pass

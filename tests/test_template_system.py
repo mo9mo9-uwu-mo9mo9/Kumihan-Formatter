@@ -30,7 +30,7 @@ class TestTemplateSystemComplete:
                     template = manager.load_template(template_name)
                     assert template is not None
                 except:
-                    pass
+                pass
 
             # Test template rendering
             if hasattr(manager, "render"):
@@ -39,7 +39,7 @@ class TestTemplateSystemComplete:
                     result = manager.render(template_name, context)
                     assert isinstance(result, str)
                 except:
-                    pass
+                pass
 
         except ImportError:
             pytest.skip("TemplateManager not available")
@@ -63,7 +63,7 @@ class TestTemplateSystemComplete:
                         result = getattr(filters, filter_name)(input_val)
                         assert result == expected
                     except:
-                        pass
+                    pass
 
         except ImportError:
             pytest.skip("TemplateFilters not available")
@@ -83,7 +83,7 @@ class TestTemplateSystemComplete:
                     assert context.get("key1") == "value1"
                     assert context.get("key2") == 42
                 except:
-                    pass
+                pass
 
             # Test context inheritance
             if hasattr(context, "push"):
@@ -92,7 +92,7 @@ class TestTemplateSystemComplete:
                     assert context.get("nested") == "value"
                     context.pop()
                 except:
-                    pass
+                pass
 
         except ImportError:
             pytest.skip("RenderContext not available")

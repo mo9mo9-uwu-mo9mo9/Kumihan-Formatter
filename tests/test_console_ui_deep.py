@@ -47,7 +47,7 @@ class TestConsoleUIDeep:
                             try:
                                 method("Test", "message")
                             except:
-                                pass
+                            pass
 
     def test_console_ui_error_methods(self):
         """ConsoleUIエラー出力メソッドテスト"""
@@ -69,7 +69,7 @@ class TestConsoleUIDeep:
                             try:
                                 method("Error", "details")
                             except:
-                                pass
+                            pass
 
     def test_console_ui_warning_methods(self):
         """ConsoleUI警告出力メソッドテスト"""
@@ -87,7 +87,7 @@ class TestConsoleUIDeep:
                     try:
                         method("Test warning message")
                     except Exception:
-                        pass
+                    pass
 
     def test_console_ui_success_methods(self):
         """ConsoleUI成功出力メソッドテスト"""
@@ -110,7 +110,7 @@ class TestConsoleUIDeep:
                     try:
                         method("Test success message")
                     except Exception:
-                        pass
+                    pass
 
     def test_console_ui_input_methods(self):
         """ConsoleUI入力メソッドテスト"""
@@ -135,7 +135,7 @@ class TestConsoleUIDeep:
                                 result = method()
                                 assert isinstance(result, str)
                             except:
-                                pass
+                            pass
 
     def test_console_ui_confirmation_methods(self):
         """ConsoleUI確認メソッドテスト"""
@@ -160,7 +160,7 @@ class TestConsoleUIDeep:
                                 result = method()
                                 assert isinstance(result, bool)
                             except:
-                                pass
+                            pass
 
     def test_console_ui_progress_methods(self):
         """ConsoleUIプログレス表示メソッドテスト"""
@@ -186,4 +186,4 @@ class TestConsoleUIDeep:
                         try:
                             method(50)
                         except:
-                            pass
+                        pass

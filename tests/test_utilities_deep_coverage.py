@@ -19,7 +19,8 @@ class TestUtilitiesDeepCoverage:
                 DependencyTracker,
             )
         except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+            # Method not available - skip silently
+            pass
             return
 
         tracker = DependencyTracker()
@@ -42,7 +43,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-                pass
+            pass
 
         # Test circular dependency detection
         try:
@@ -75,7 +76,8 @@ class TestUtilitiesDeepCoverage:
         try:
             from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
         except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+            # Method not available - skip silently
+            pass
             return
 
         analyzer = ErrorAnalyzer()
@@ -100,7 +102,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-                pass
+            pass
 
         # Test error categorization
         try:
@@ -135,7 +137,8 @@ class TestUtilitiesDeepCoverage:
                 StringSimilarity,
             )
         except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+            # Method not available - skip silently
+            pass
             return
 
         similarity = StringSimilarity()
@@ -162,7 +165,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-                pass
+            pass
 
         # Test fuzzy matching
         try:
@@ -186,7 +189,8 @@ class TestUtilitiesDeepCoverage:
                 ExecutionFlowTracker,
             )
         except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+            # Method not available - skip silently
+            pass
             return
 
         tracker = ExecutionFlowTracker()

@@ -69,10 +69,10 @@ class TestConvertValidatorDeep:
 
             except (ValueError, TypeError, FileNotFoundError):
                 # 期待される例外
-                pass
+            pass
             except Exception:
                 # 依存関係エラーは許容
-                pass
+            pass
 
 
 class TestConvertWatcherDeep:
@@ -181,7 +181,7 @@ class TestSampleCommandDeep:
 
             except Exception:
                 # 依存関係エラーは許容
-                pass
+            pass
             finally:
                 Path(output_file).unlink(missing_ok=True)
 

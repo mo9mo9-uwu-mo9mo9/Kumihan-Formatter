@@ -81,7 +81,7 @@ class TestConsoleMessagingDeep:
                             result = method("Test", "type")
                             assert isinstance(result, str)
                         except:
-                            pass
+                        pass
 
     def test_console_messaging_templates(self):
         """メッセージテンプレート機能テスト"""
@@ -112,4 +112,4 @@ class TestConsoleMessagingDeep:
                             if result is not None:
                                 assert isinstance(result, str)
                     except Exception:
-                        pass
+                    pass

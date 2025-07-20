@@ -33,7 +33,7 @@ class TestFileSystemUtilities:
                     assert new_dir.exists()
                     assert new_dir.is_dir()
                 except:
-                    pass
+                pass
 
                 # Test get_file_info
                 test_file = temp_path / "test.txt"
@@ -45,14 +45,14 @@ class TestFileSystemUtilities:
                     assert "size" in info
                     assert "modified" in info
                 except:
-                    pass
+                pass
 
                 # Test safe_remove
                 try:
                     safe_remove(test_file)
                     assert not test_file.exists()
                 except:
-                    pass
+                pass
 
         except ImportError:
             # File system utilities may not be available
@@ -72,21 +72,21 @@ class TestFileSystemUtilities:
                 normalized = normalize_path("./test/../file.txt")
                 assert isinstance(normalized, (str, Path))
             except:
-                pass
+            pass
 
             # Test resolve_path
             try:
                 resolved = resolve_path("~/test.txt")
                 assert isinstance(resolved, (str, Path))
             except:
-                pass
+            pass
 
             # Test is_safe_path
             try:
                 assert is_safe_path("/tmp/test.txt") in [True, False]
                 assert is_safe_path("../../../etc/passwd") is False
             except:
-                pass
+            pass
 
         except ImportError:
             pass
@@ -122,7 +122,7 @@ class TestDataConverters:
                 parsed = from_json(json_str)
                 assert parsed == test_data
             except:
-                pass
+            pass
 
             # Test to_dict
             try:
@@ -137,7 +137,7 @@ class TestDataConverters:
                 assert isinstance(dict_result, dict)
                 assert "attr1" in dict_result
             except:
-                pass
+            pass
 
         except ImportError:
             pass
@@ -167,7 +167,7 @@ class TestDataConverters:
                     result = to_bool(value)
                     assert result == expected
                 except:
-                    pass
+                pass
 
             # Test to_int
             try:
@@ -175,21 +175,21 @@ class TestDataConverters:
                 assert to_int("123.45") == 123
                 assert to_int("invalid", default=0) == 0
             except:
-                pass
+            pass
 
             # Test to_float
             try:
                 assert to_float("123.45") == 123.45
                 assert to_float("123") == 123.0
             except:
-                pass
+            pass
 
             # Test to_list
             try:
                 assert to_list("a,b,c") == ["a", "b", "c"]
                 assert to_list([1, 2, 3]) == [1, 2, 3]
             except:
-                pass
+            pass
 
         except ImportError:
             pass

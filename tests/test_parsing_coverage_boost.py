@@ -51,7 +51,7 @@ class TestParsingCoverageBoosting:
                 assert result is not None
             except Exception:
                 # Some parsing may fail due to incomplete implementation
-                pass
+            pass
 
         # Test line parsing
         try:
@@ -82,7 +82,7 @@ class TestParsingCoverageBoosting:
                 assert result is not None
             except Exception:
                 # Some parsing may not be fully implemented
-                pass
+            pass
 
         # Test keyword validation
         try:
@@ -119,7 +119,7 @@ class TestParsingCoverageBoosting:
                 result = parser.detect_marker(marker)
                 assert result is not None
             except Exception:
-                pass
+            pass
 
         # Test marker parsing
         test_texts = [
@@ -133,4 +133,4 @@ class TestParsingCoverageBoosting:
                 result = parser.parse_markers(text)
                 assert result is not None
             except Exception:
-                pass
+            pass

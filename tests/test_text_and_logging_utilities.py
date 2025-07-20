@@ -39,7 +39,7 @@ class TestTextProcessorComplete:
                     assert isinstance(result, str)
                 except:
                     # Method may not exist
-                    pass
+                pass
 
         # Test clean_text
         try:
@@ -97,13 +97,13 @@ class TestLoggingUtilitiesComplete:
                 try:
                     method("Test message")
                 except:
-                    pass
+                pass
 
                 # Test structured logging
                 try:
                     method({"message": "Test", "data": {"key": "value"}})
                 except:
-                    pass
+                pass
 
         # Test log formatting
         try:
@@ -140,7 +140,7 @@ class TestLoggingUtilitiesComplete:
                 parsed = json.loads(formatted)
                 assert isinstance(parsed, dict)
             except:
-                pass
+            pass
 
             # Test plain formatter
             try:
@@ -148,7 +148,7 @@ class TestLoggingUtilitiesComplete:
                 formatted = plain_formatter.format(record)
                 assert isinstance(formatted, str)
             except:
-                pass
+            pass
 
             # Test colored formatter
             try:
@@ -156,7 +156,7 @@ class TestLoggingUtilitiesComplete:
                 formatted = colored_formatter.format(record)
                 assert isinstance(formatted, str)
             except:
-                pass
+            pass
 
         except ImportError:
             # Formatters may not be available
@@ -184,7 +184,7 @@ class TestLoggingUtilitiesComplete:
                 # Check file was written
                 assert Path(temp_path).exists()
             except:
-                pass
+            pass
             finally:
                 Path(temp_path).unlink(missing_ok=True)
 
@@ -193,7 +193,7 @@ class TestLoggingUtilitiesComplete:
                 console_handler = ConsoleHandler()
                 console_handler.emit({"level": "INFO", "message": "Test"})
             except:
-                pass
+            pass
 
         except ImportError:
             # Handlers may not be available
