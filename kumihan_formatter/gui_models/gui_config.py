@@ -5,8 +5,41 @@ Issue #476 Phase2対応 - config_model.py分割（関数数過多解消）
 """
 
 from pathlib import Path
-from tkinter import BooleanVar, StringVar
 from typing import Any, Dict
+
+
+# Tkinterが利用できない場合のフォールバック
+class MockVar:
+    def __init__(self, value=None):
+        self._value = value
+
+    def get(self):
+        return self._value
+
+    def set(self, value):
+        self._value = value
+
+
+try:
+    from tkinter import BooleanVar, StringVar
+
+    _TKINTER_AVAILABLE = True
+except (ImportError, RuntimeError):
+    _TKINTER_AVAILABLE = False
+    BooleanVar = MockVar
+    StringVar = MockVar
+
+
+def _safe_create_var(var_class, value=None):
+    """安全にTkinter変数を作成"""
+    try:
+        if _TKINTER_AVAILABLE:
+            return var_class(value=value)
+        else:
+            return MockVar(value)
+    except RuntimeError:
+        # ルートウィンドウが無い場合はMockVarを使用
+        return MockVar(value)
 
 
 class GuiConfig:
@@ -18,16 +51,16 @@ class GuiConfig:
     def __init__(self) -> None:
         """設定項目の初期化"""
         # ファイル関連設定
-        self.input_file_var = StringVar()
-        self.output_dir_var = StringVar(value="./dist")
+        self.input_file_var = _safe_create_var(StringVar, "")
+        self.output_dir_var = _safe_create_var(StringVar, "./dist")
 
         # テンプレート設定
-        self.template_var = StringVar(value="base.html.j2")
+        self.template_var = _safe_create_var(StringVar, "base.html.j2")
         self.available_templates = ["base.html.j2", "base-with-source-toggle.html.j2"]
 
         # オプション設定
-        self.include_source_var = BooleanVar(value=False)
-        self.no_preview_var = BooleanVar(value=False)
+        self.include_source_var = _safe_create_var(BooleanVar, False)
+        self.no_preview_var = _safe_create_var(BooleanVar, False)
 
     def get_input_file(self) -> str:
         """入力ファイルパスを取得"""
