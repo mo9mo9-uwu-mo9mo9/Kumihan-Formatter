@@ -64,9 +64,14 @@ class TestTestFileCommandComprehensive:
                         content = temp_output.read_text(encoding="utf-8")
                         assert "テスト用記法網羅ファイル" in content
 
+                    except (ImportError, AttributeError) as e:
+                        # Expected dependency issues in test environment
+                        pytest.skip(
+                            f"Test execution skipped due to missing dependency: {e}"
+                        )
                     except Exception as e:
-                        # Some dependencies might not be available in test environment
-                        pytest.skip(f"Test execution skipped due to dependency: {e}")
+                        # Unexpected errors should be logged for debugging
+                        pytest.fail(f"Unexpected error in test execution: {e}")
 
         except ImportError:
             pytest.skip("TestFileCommand module not available")
@@ -102,8 +107,12 @@ class TestTestFileCommandComprehensive:
                         # Verify output
                         assert temp_output.exists()
 
+                    except (ImportError, AttributeError) as e:
+                        pytest.skip(
+                            f"Test execution skipped due to missing dependency: {e}"
+                        )
                     except Exception as e:
-                        pytest.skip(f"Test execution skipped due to dependency: {e}")
+                        pytest.fail(f"Unexpected error in test execution: {e}")
 
         except ImportError:
             pytest.skip("TestFileCommand module not available")
@@ -140,8 +149,12 @@ class TestTestFileCommandComprehensive:
                         content = temp_output.read_text(encoding="utf-8")
                         assert len(content) > 0
 
+                    except (ImportError, AttributeError) as e:
+                        pytest.skip(
+                            f"Test execution skipped due to missing dependency: {e}"
+                        )
                     except Exception as e:
-                        pytest.skip(f"Test execution skipped due to dependency: {e}")
+                        pytest.fail(f"Unexpected error in test execution: {e}")
 
         except ImportError:
             pytest.skip("TestFileCommand module not available")
@@ -185,8 +198,10 @@ class TestTestFileGeneratorMock:
                     assert "((脚注テスト))" in content
                     assert "｜ルビテスト《るびてすと》" in content
 
+                except (ImportError, AttributeError) as e:
+                    pytest.skip(f"Mock test skipped due to missing dependency: {e}")
                 except Exception as e:
-                    pytest.skip(f"Mock test skipped due to dependency: {e}")
+                    pytest.fail(f"Unexpected error in mock test: {e}")
 
     def test_mock_statistics(self):
         """Test Mock TestFileGenerator statistics"""
@@ -196,6 +211,24 @@ class TestTestFileGeneratorMock:
         # This is implicitly tested through the execute method
         command = TestFileCommand()
         assert command is not None
+
+    def test_mock_direct_instantiation(self):
+        """Test direct instantiation of Mock TestFileGenerator"""
+        try:
+            # This should fail and trigger the mock creation
+            from generate_test_file import TestFileGenerator
+
+            pytest.skip("Real TestFileGenerator found - not testing mock")
+        except ImportError:
+            # Expected - mock should be created within the command
+            pass
+
+        # Test that the command can handle the mock properly
+        from kumihan_formatter.commands.test_file_command import TestFileCommand
+
+        command = TestFileCommand()
+        assert hasattr(command, "execute")
+        assert hasattr(command, "file_ops")
 
 
 class TestTestFileCommandCLIIntegration:
