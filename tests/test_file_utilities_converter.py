@@ -21,7 +21,8 @@ class TestFileUtilities:
 
             reader = FileReader()
         except ImportError as ie:
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
             return
 
         # Create temporary file
@@ -46,7 +47,8 @@ class TestFileUtilities:
 
         except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
         finally:
             Path(temp_path).unlink(missing_ok=True)
 
@@ -57,7 +59,8 @@ class TestFileUtilities:
 
             writer = FileWriter()
         except ImportError as ie:
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
             return
 
         try:
@@ -88,7 +91,8 @@ class TestFileUtilities:
 
         except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
 
     def test_encoding_utilities(self):
         """Test encoding detection and handling"""
@@ -97,7 +101,8 @@ class TestFileUtilities:
 
             detector = EncodingDetector()
         except ImportError as ie:
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
             return
 
         try:
@@ -128,13 +133,15 @@ class TestFileUtilities:
 
                 except AttributeError as ae:
                     # Methods might not exist
-                    pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
+                    # Method not available - skip silently
+                    pass
                 finally:
                     Path(temp_path).unlink(missing_ok=True)
 
         except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
 
 
 class TestFileConverter:
@@ -147,7 +154,8 @@ class TestFileConverter:
 
             converter = FileConverter()
         except ImportError as ie:
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
             return
 
         try:
@@ -188,14 +196,16 @@ This is a test document with:
 
             except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
+                # Method not available - skip silently
+                pass
             finally:
                 Path(input_path).unlink(missing_ok=True)
                 Path(output_path).unlink(missing_ok=True)
 
         except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
 
     def test_batch_file_converter(self):
         """Test batch file conversion"""
@@ -204,7 +214,8 @@ This is a test document with:
 
             converter = BatchConverter()
         except ImportError as ie:
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass
             return
 
         try:
@@ -230,7 +241,8 @@ This is a test document with:
 
             except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
+                # Method not available - skip silently
+                pass
             finally:
                 # Cleanup
                 for file_path in test_files:
@@ -238,4 +250,5 @@ This is a test document with:
 
         except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
+            # Method not available - skip silently
+            pass

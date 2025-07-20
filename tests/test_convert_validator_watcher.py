@@ -42,7 +42,7 @@ class TestConvertValidatorDeep:
 
         except Exception:
             # 依存関係の問題は許容
-            pass
+                pass
 
     def test_convert_validator_invalid_input(self):
         """無効入力の検証テスト"""
@@ -95,7 +95,7 @@ class TestConvertWatcherDeep:
 
         except Exception:
             # 依存関係の問題は許容
-            pass
+                pass
 
     def test_convert_watcher_start_stop(self):
         """ウォッチャー開始・停止テスト"""
@@ -124,7 +124,7 @@ class TestConvertWatcherDeep:
 
         except Exception:
             # 依存関係の問題は許容
-            pass
+                pass
 
 
 class TestSampleCommandDeep:
@@ -153,7 +153,7 @@ class TestSampleCommandDeep:
             pytest.skip("SampleCommand module not available")
         except Exception:
             # 依存関係エラーは許容
-            pass
+                pass
 
     def test_sample_command_output(self):
         """サンプル出力テスト"""

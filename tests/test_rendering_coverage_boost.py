@@ -45,7 +45,7 @@ class TestRenderingCoverageBoosting:
             assert isinstance(result, str)
             assert len(result) > 0
         except Exception:
-            pass
+                pass
 
         # Test nesting order
         assert hasattr(renderer, "NESTING_ORDER")
@@ -87,4 +87,4 @@ class TestRenderingCoverageBoosting:
             assert isinstance(result, str)
             # Should contain attributes in some form
         except Exception:
-            pass
+                pass

@@ -145,7 +145,7 @@ Another paragraph.""",
                     if hasattr(node, "content") and isinstance(node.content, str):
                         if node.content and node.content not in result:
                             # Content might be transformed, but some representation should exist
-                            pass
+                        pass
 
             except Exception as e:
                 print(f"Render failed for: {[n.type for n in nodes]} - {e}")
@@ -249,7 +249,7 @@ class TestWorkingConfigDeepCoverage:
                 base_config.merge(merge_data)
 
         except Exception:
-            pass
+                pass
 
         # Test config sections
         try:
@@ -260,4 +260,4 @@ class TestWorkingConfigDeepCoverage:
                 )
 
         except Exception:
-            pass
+                pass
