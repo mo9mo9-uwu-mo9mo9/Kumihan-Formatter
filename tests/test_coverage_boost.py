@@ -27,8 +27,8 @@ class TestCoverageBoost:
             config = ConfigManager()
             assert config is not None
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_utilities_coverage(self):
         """Test utilities to boost coverage"""
@@ -38,8 +38,8 @@ class TestCoverageBoost:
             processor = TextProcessor()
             assert processor is not None
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")
 
     def test_rendering_coverage(self):
         """Test rendering components to boost coverage"""
@@ -49,5 +49,5 @@ class TestCoverageBoost:
             renderer = HTMLRenderer()
             assert renderer is not None
 
-        except ImportError:
-            pass
+        except ImportError as e:
+            pytest.skip(f"Module not available: {e}")

@@ -2,7 +2,7 @@
 GUIアプリケーション用のログビューアーUIコンポーネント
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 # tkinterは必要時にのみインポート（CI環境での問題回避）
 if TYPE_CHECKING:
@@ -31,10 +31,10 @@ class LogViewerUI:
 
     def setup_ui(
         self,
-        clear_callback: callable,
-        toggle_auto_scroll_callback: callable,
-        open_log_file_callback: callable,
-        filter_logs_callback: callable,
+        clear_callback: Callable[[], None],
+        toggle_auto_scroll_callback: Callable[[], None],
+        open_log_file_callback: Callable[[], None],
+        filter_logs_callback: Callable[[str], None],
     ) -> None:
         """UIコンポーネントのセットアップ"""
         self._setup_toolbar(
@@ -48,10 +48,10 @@ class LogViewerUI:
 
     def _setup_toolbar(
         self,
-        clear_callback: callable,
-        toggle_auto_scroll_callback: callable,
-        open_log_file_callback: callable,
-        filter_logs_callback: callable,
+        clear_callback: Callable[[], None],
+        toggle_auto_scroll_callback: Callable[[], None],
+        open_log_file_callback: Callable[[], None],
+        filter_logs_callback: Callable[[str], None],
     ) -> None:
         """ツールバーのセットアップ"""
         # ツールバー
