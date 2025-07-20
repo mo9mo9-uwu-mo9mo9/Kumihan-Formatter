@@ -5,18 +5,18 @@ Issue #476 Phase2対応 - config_model.py分割（関数数過多解消）
 """
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Type
 
 
 # Tkinterが利用できない場合のフォールバック
 class MockVar:
-    def __init__(self, value=None):
+    def __init__(self, value: Any = None) -> None:
         self._value = value
 
-    def get(self):
+    def get(self) -> Any:
         return self._value
 
-    def set(self, value):
+    def set(self, value: Any) -> None:
         self._value = value
 
 
@@ -26,11 +26,11 @@ try:
     _TKINTER_AVAILABLE = True
 except (ImportError, RuntimeError):
     _TKINTER_AVAILABLE = False
-    BooleanVar = MockVar
-    StringVar = MockVar
+    BooleanVar = MockVar  # type: ignore[misc,assignment]
+    StringVar = MockVar  # type: ignore[misc,assignment]
 
 
-def _safe_create_var(var_class, value=None):
+def _safe_create_var(var_class: Type[Any], value: Any = None) -> Any:
     """安全にTkinter変数を作成"""
     try:
         if _TKINTER_AVAILABLE:
