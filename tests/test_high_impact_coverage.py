@@ -56,9 +56,17 @@ Another paragraph.""",
                     node_count = len(list(result))
                     assert node_count >= 0
 
-            except Exception as e:
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
                 # Some scenarios may fail due to incomplete implementation
-                print(f"Parse scenario failed: {scenario[:20]}... - {str(e)[:50]}")
+                pytest.skip(
+                    f"Parse scenario not available: {scenario[:20]}... - {str(e)[:50]}"
+                )
 
     def test_parser_internal_methods(self):
         """Test parser internal methods for coverage"""
@@ -90,8 +98,14 @@ Another paragraph.""",
                     result = parser.classify_line(line)
                     assert result is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestMainRendererHighImpact:
@@ -160,9 +174,15 @@ class TestMainRendererHighImpact:
                         or nodes[0].content in result
                     )
 
-            except Exception as e:
-                print(
-                    f"Render scenario failed: {[n.type for n in nodes]} - {str(e)[:50]}"
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(
+                    f"Render scenario not available: {[n.type for n in nodes]} - {str(e)[:50]}"
                 )
 
     def test_renderer_template_system(self):
@@ -183,8 +203,14 @@ class TestMainRendererHighImpact:
                     result = renderer.render(simple_nodes)
                     assert isinstance(result, str)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test template options
         try:
@@ -195,8 +221,14 @@ class TestMainRendererHighImpact:
                 result = renderer.render(simple_nodes)
                 assert isinstance(result, str)
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestConfigSystemHighImpact:
@@ -238,8 +270,14 @@ class TestConfigSystemHighImpact:
                     is_valid = config_manager.validate()
                     assert isinstance(is_valid, bool)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test config merging
         try:
@@ -256,8 +294,14 @@ class TestConfigSystemHighImpact:
             # New value should be added
             assert config_manager.get("verbose") == True
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
     def test_extended_config_functionality(self):
         """Test extended config functionality"""
@@ -282,8 +326,14 @@ class TestConfigSystemHighImpact:
             exported = config.export()
             assert isinstance(exported, dict)
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
         # Test configuration sections
         sections = ["parser", "renderer", "output", "files"]
@@ -295,8 +345,14 @@ class TestConfigSystemHighImpact:
                 section_config = config.get_section(section)
                 assert isinstance(section_config, dict)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestFileOperationsHighImpact:
@@ -335,15 +391,27 @@ class TestFileOperationsHighImpact:
                     is_valid = file_ops.validate_file(file_path)
                     assert isinstance(is_valid, bool)
 
-                except Exception:
-                    pass
+                except (
+                    AttributeError,
+                    NotImplementedError,
+                    TypeError,
+                    ValueError,
+                    FileNotFoundError,
+                ) as e:
+                    pytest.skip(f"Method or operation not available: {e}")
 
             # Test batch processing
             try:
                 batch_result = file_ops.process_files(test_files)
                 assert batch_result is not None
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         finally:
             # Cleanup
@@ -387,16 +455,28 @@ class TestFileOperationsHighImpact:
                 filename = utils.get_filename(path)
                 assert isinstance(filename, str)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test path construction
         try:
             constructed = utils.join_paths("/base/path", "subdir", "file.txt")
             assert isinstance(constructed, str)
             assert "file.txt" in constructed
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestKeywordParsingHighImpact:
@@ -450,8 +530,14 @@ Plus ((a footnote)) reference.""",
                 extracted = parser.extract_keywords(scenario)
                 assert extracted is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
     def test_marker_parser_comprehensive_detection(self):
         """Test marker parser comprehensive detection"""
@@ -485,8 +571,14 @@ Plus ((a footnote)) reference.""",
                 is_valid = parser.validate_marker(marker)
                 assert isinstance(is_valid, bool)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test full text parsing for markers
         full_text = "Text ;;;highlight;;; content ;;; and ｜ruby《reading》 notation."
@@ -500,8 +592,14 @@ Plus ((a footnote)) reference.""",
                     # Each marker should have position and type info
                     assert isinstance(marker_info, (dict, tuple, list))
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestLoggerHighImpact:
@@ -549,8 +647,14 @@ class TestLoggerHighImpact:
                     handler = logging.StreamHandler()
                     logger.addHandler(handler)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
     def test_structured_logger_base_comprehensive(self):
         """Test structured logger base comprehensive functionality"""
@@ -608,8 +712,14 @@ class TestLoggerHighImpact:
                     # Execute the logging method
                     method(*args, **kwargs)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test context filtering
         try:
@@ -626,5 +736,11 @@ class TestLoggerHighImpact:
                 "INFO", "Operation with sensitive data", **sensitive_context
             )
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")

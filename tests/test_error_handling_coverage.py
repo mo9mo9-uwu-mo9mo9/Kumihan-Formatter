@@ -62,9 +62,15 @@ class TestParserErrorHandling:
                 result = parser.parse(edge_case)
                 assert result is not None
                 assert isinstance(result, list)
-            except Exception:
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
                 # Some edge cases might not be handled
-                pass
+                pytest.skip(f"Edge case handling not available: {e}")
 
     def test_parser_unicode_handling(self):
         """Test Unicode and special character handling"""
@@ -257,9 +263,9 @@ class TestValidationErrorHandling:
                     # Method might not exist
                     pass
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
     def test_structure_validator_errors(self):
         """Test structure validator error handling"""
@@ -286,9 +292,9 @@ class TestValidationErrorHandling:
                     # Invalid structures might raise exceptions
                     pass
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestUtilityErrorHandling:
@@ -313,9 +319,9 @@ class TestUtilityErrorHandling:
             try:
                 result = processor.normalize_whitespace(edge_case)
                 # Should handle or convert appropriately
-            except (TypeError, AttributeError):
+            except (TypeError, AttributeError) as e:
                 # Some edge cases might raise exceptions
-                pass
+                pytest.skip(f"Method or operation not available: {e}")
 
     def test_marker_utils_errors(self):
         """Test marker utilities error handling"""
@@ -323,8 +329,8 @@ class TestUtilityErrorHandling:
             from kumihan_formatter.utils.marker_utils import parse_marker_keywords
 
             # MarkerUtilsクラスが存在しない場合は関数を使用
-        except ImportError:
-            pytest.skip("MarkerUtils not available")
+        except ImportError as e:
+            pytest.skip(f"MarkerUtils not available: {e}")
             return
 
         try:
@@ -348,9 +354,9 @@ class TestUtilityErrorHandling:
                     # Invalid markers might raise exceptions
                     pass
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestConcurrencyErrorHandling:
@@ -379,7 +385,13 @@ class TestConcurrencyErrorHandling:
                 html = renderer.render(nodes)
                 results.append(html)
 
-            except Exception as e:
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
                 errors.append(e)
 
         # Run multiple threads
@@ -402,8 +414,8 @@ class TestConcurrencyErrorHandling:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError:
-            pytest.skip("FileConverter not available")
+        except ImportError as e:
+            pytest.skip(f"FileConverter not available: {e}")
             return
 
         try:
@@ -427,9 +439,9 @@ class TestConcurrencyErrorHandling:
 
             Path(input_path).unlink(missing_ok=True)
 
-        except ImportError:
+        except ImportError as e:
             # Module might not exist
-            pass
+            pytest.skip(f"Module not available: {e}")
 
 
 class TestLoggerErrorHandling:
@@ -457,9 +469,9 @@ class TestLoggerErrorHandling:
             try:
                 logger.info(invalid_input)
                 # Should handle gracefully
-            except (TypeError, AttributeError):
+            except (TypeError, AttributeError) as e:
                 # Some invalid inputs might raise exceptions
-                pass
+                pytest.skip(f"Method or operation not available: {e}")
 
     def test_logger_exception_handling(self):
         """Test logger exception handling"""
@@ -477,6 +489,12 @@ class TestLoggerErrorHandling:
             try:
                 logger.error(f"Exception occurred: {e}")
                 # Should log exception information
-            except Exception:
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
                 # Logger should not raise exceptions
-                pass
+                pytest.skip(f"Method or operation not available: {e}")

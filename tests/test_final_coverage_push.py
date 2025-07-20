@@ -31,8 +31,8 @@ class TestImportCoverageBoost:
         for module_name in core_modules:
             try:
                 __import__(module_name)
-            except ImportError:
-                pass  # Some modules may not be available
+            except ImportError as e:
+                pytest.skip(f"Module not available: {e}")
 
     def test_specific_module_instantiation(self):
         """Test instantiating classes for basic coverage"""
@@ -54,17 +54,29 @@ class TestImportCoverageBoost:
                         if callable(cls):
                             try:
                                 result = cls()
-                            except:
-                                pass
+                            except (
+                                AttributeError,
+                                NotImplementedError,
+                                TypeError,
+                                ValueError,
+                                FileNotFoundError,
+                            ) as e:
+                                pytest.skip(f"Method or operation not available: {e}")
                     else:
                         # Class with args
                         try:
                             instance = cls(*args)
                             assert instance is not None
-                        except:
-                            pass
-            except ImportError:
-                pass
+                        except (
+                            AttributeError,
+                            NotImplementedError,
+                            TypeError,
+                            ValueError,
+                            FileNotFoundError,
+                        ) as e:
+                            pytest.skip(f"Method or operation not available: {e}")
+            except ImportError as e:
+                pytest.skip(f"Module not available: {e}")
 
 
 class TestDataStructuresCoverage:
@@ -80,8 +92,8 @@ class TestDataStructuresCoverage:
             )
 
             # DataStructuresクラスが存在しない場合は個別クラスを使用
-        except ImportError:
-            pytest.skip("DataStructures not available")
+        except ImportError as e:
+            pytest.skip(f"DataStructures not available: {e}")
             return
 
         try:
@@ -113,8 +125,14 @@ class TestDataStructuresCoverage:
                     data_type = ds.get_type(data)
                     assert isinstance(data_type, str)
 
-                except Exception:
-                    pass
+                except (
+                    AttributeError,
+                    NotImplementedError,
+                    TypeError,
+                    ValueError,
+                    FileNotFoundError,
+                ) as e:
+                    pytest.skip(f"Method or operation not available: {e}")
 
             # Test nested structures
             nested_data = {
@@ -129,10 +147,22 @@ class TestDataStructuresCoverage:
                 depth = ds.get_depth(nested_data)
                 assert isinstance(depth, int)
 
-            except Exception:
-                pass
-        except Exception:
-            pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
     def test_converters_comprehensive(self):
         """Test converters comprehensive functionality"""
@@ -143,8 +173,8 @@ class TestDataStructuresCoverage:
             )
 
             # Convertersクラスが存在しない場合は個別関数を使用
-        except ImportError:
-            pytest.skip("Converters not available")
+        except ImportError as e:
+            pytest.skip(f"Converters not available: {e}")
             return
 
         converters = Converters()
@@ -177,16 +207,28 @@ class TestDataStructuresCoverage:
                     reversed_result = converters.reverse_convert(result, conv_type)
                     assert reversed_result is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test batch conversions
         try:
             batch_data = ["item1", "item2", "item3"]
             batch_result = converters.batch_convert(batch_data, "upper")
             assert isinstance(batch_result, list)
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestFileSystemCoverage:
@@ -201,8 +243,8 @@ class TestFileSystemCoverage:
             )
 
             # FileSystemクラスが存在しない場合は個別関数を使用
-        except ImportError:
-            pytest.skip("FileSystem not available")
+        except ImportError as e:
+            pytest.skip(f"FileSystem not available: {e}")
             return
 
         fs = FileSystem()
@@ -239,8 +281,14 @@ class TestFileSystemCoverage:
                 tree = fs.get_directory_tree(str(temp_path))
                 assert tree is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
             # Test file operations
             for file_path in test_files:
@@ -261,8 +309,14 @@ class TestFileSystemCoverage:
                     file_type = fs.get_file_type(file_path)
                     assert isinstance(file_type, str)
 
-                except Exception:
-                    pass
+                except (
+                    AttributeError,
+                    NotImplementedError,
+                    TypeError,
+                    ValueError,
+                    FileNotFoundError,
+                ) as e:
+                    pytest.skip(f"Method or operation not available: {e}")
 
             # Test path operations
             try:
@@ -281,8 +335,14 @@ class TestFileSystemCoverage:
                 basename = fs.get_basename(str(test_files[0]))
                 assert isinstance(basename, str)
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestPerformanceLoggingCoverage:
@@ -321,8 +381,14 @@ class TestPerformanceLoggingCoverage:
                 analysis = perf_logger.analyze_operation(operation_name)
                 assert analysis is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test performance reporting
         try:
@@ -337,8 +403,14 @@ class TestPerformanceLoggingCoverage:
             trends = perf_logger.get_trends()
             assert trends is not None
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
     def test_log_size_control_comprehensive(self):
         """Test log size control comprehensive functionality"""
@@ -366,8 +438,14 @@ class TestPerformanceLoggingCoverage:
             # Test compression
             size_control.compress_old_logs()
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
         # Test log archiving
         try:
@@ -377,8 +455,14 @@ class TestPerformanceLoggingCoverage:
             # Test archive cleanup
             size_control.cleanup_archives()
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestTextProcessorDeepCoverage:
@@ -444,9 +528,15 @@ class TestTextProcessorDeepCoverage:
                         else:
                             assert isinstance(result, str)
 
-                    except Exception:
+                    except (
+                        AttributeError,
+                        NotImplementedError,
+                        TypeError,
+                        ValueError,
+                        FileNotFoundError,
+                    ) as e:
                         # Some methods may fail on edge cases
-                        pass
+                        pytest.skip(f"Method or operation not available: {e}")
 
         # Test text transformation combinations
         try:
@@ -459,8 +549,14 @@ class TestTextProcessorDeepCoverage:
 
             assert isinstance(step3, str)
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
 
 class TestSecurityPatternsCoverage:
@@ -499,8 +595,14 @@ class TestSecurityPatternsCoverage:
                 threat_level = security.detect_threat(input_data)
                 assert threat_level is not None
 
-            except Exception:
-                pass
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                FileNotFoundError,
+            ) as e:
+                pytest.skip(f"Method or operation not available: {e}")
 
         # Test security rules
         try:
@@ -513,8 +615,14 @@ class TestSecurityPatternsCoverage:
             filtered = security.apply_rules(test_input)
             assert isinstance(filtered, str)
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
 
         # Test encoding/escaping
         try:
@@ -538,5 +646,11 @@ class TestSecurityPatternsCoverage:
                 decoded = security.safe_decode(url_encoded)
                 assert isinstance(decoded, str)
 
-        except Exception:
-            pass
+        except (
+            AttributeError,
+            NotImplementedError,
+            TypeError,
+            ValueError,
+            FileNotFoundError,
+        ) as e:
+            pytest.skip(f"Method or operation not available: {e}")
