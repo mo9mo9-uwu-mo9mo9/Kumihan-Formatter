@@ -56,7 +56,7 @@ class TestFileSystemUtilities:
 
         except ImportError:
             # File system utilities may not be available
-            pass
+                pass
 
     def test_path_utilities(self):
         """Test path utilities"""
@@ -72,24 +72,24 @@ class TestFileSystemUtilities:
                 normalized = normalize_path("./test/../file.txt")
                 assert isinstance(normalized, (str, Path))
             except:
-            pass
+                pass
 
             # Test resolve_path
             try:
                 resolved = resolve_path("~/test.txt")
                 assert isinstance(resolved, (str, Path))
             except:
-            pass
+                pass
 
             # Test is_safe_path
             try:
                 assert is_safe_path("/tmp/test.txt") in [True, False]
                 assert is_safe_path("../../../etc/passwd") is False
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
 
 class TestDataConverters:
@@ -122,7 +122,7 @@ class TestDataConverters:
                 parsed = from_json(json_str)
                 assert parsed == test_data
             except:
-            pass
+                pass
 
             # Test to_dict
             try:
@@ -137,10 +137,10 @@ class TestDataConverters:
                 assert isinstance(dict_result, dict)
                 assert "attr1" in dict_result
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
     def test_type_converters(self):
         """Test type converters"""
@@ -175,21 +175,21 @@ class TestDataConverters:
                 assert to_int("123.45") == 123
                 assert to_int("invalid", default=0) == 0
             except:
-            pass
+                pass
 
             # Test to_float
             try:
                 assert to_float("123.45") == 123.45
                 assert to_float("123") == 123.0
             except:
-            pass
+                pass
 
             # Test to_list
             try:
                 assert to_list("a,b,c") == ["a", "b", "c"]
                 assert to_list([1, 2, 3]) == [1, 2, 3]
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass

@@ -36,7 +36,7 @@ class TestUtilitiesCoverageBoosting:
         try:
             logger.setLevel("INFO")
         except Exception:
-            pass
+                pass
 
     def test_structured_logger_base_comprehensive(self):
         """Test structured logger base comprehensive functionality"""
@@ -60,13 +60,13 @@ class TestUtilitiesCoverageBoosting:
             try:
                 structured_logger.log_with_context("INFO", "Test message", **context)
             except Exception:
-            pass
+                pass
 
         # Test performance logging
         try:
             structured_logger.log_performance("test_operation", 0.05, iterations=100)
         except Exception:
-            pass
+                pass
 
         # Test error logging with suggestions
         try:
@@ -74,7 +74,7 @@ class TestUtilitiesCoverageBoosting:
                 "Test error", "Try this fix", error_type="TestError"
             )
         except Exception:
-            pass
+                pass
 
     def test_text_processor_comprehensive(self):
         """Test text processor comprehensive functionality"""
@@ -97,18 +97,18 @@ class TestUtilitiesCoverageBoosting:
                 result = processor.normalize_whitespace(text)
                 assert isinstance(result, str)
             except Exception:
-            pass
+                pass
 
             # Test cleaning
             try:
                 result = processor.clean_text(text)
                 assert isinstance(result, str)
             except Exception:
-            pass
+                pass
 
             # Test processing
             try:
                 result = processor.process_text(text)
                 assert isinstance(result, str)
             except Exception:
-            pass
+                pass

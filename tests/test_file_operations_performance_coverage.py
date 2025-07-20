@@ -51,7 +51,7 @@ class TestFileOperationsCoverage:
         except (AttributeError, NotImplementedError, TypeError, ValueError) as e:
             # File operations may not be fully implemented
             # Method not available - skip silently
-            pass
+                pass
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
@@ -82,7 +82,7 @@ class TestFileOperationsCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test operation registration
         try:
@@ -92,7 +92,7 @@ class TestFileOperationsCoverage:
             assert retrieved is not None
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_file_io_handler_comprehensive(self):
         """Test file I/O handler comprehensive functionality"""
@@ -124,7 +124,7 @@ class TestFileOperationsCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test safe reading
         with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
@@ -147,7 +147,7 @@ class TestFileOperationsCoverage:
 
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
         finally:
             Path(tmp_path).unlink(missing_ok=True)
             # Cleanup potential backup
@@ -185,7 +185,7 @@ class TestFileOperationsCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test confidence scoring
         try:
@@ -194,7 +194,7 @@ class TestFileOperationsCoverage:
             assert 0 <= confidence <= 1 or 0 <= confidence <= 100
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test BOM detection
         bom_tests = [
@@ -214,7 +214,7 @@ class TestFileOperationsCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
 
 class TestPerformanceUtilitiesCoverage:
@@ -238,7 +238,7 @@ class TestPerformanceUtilitiesCoverage:
             assert isinstance(strategies, (list, tuple, set))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test memory optimization
         try:
@@ -246,7 +246,7 @@ class TestPerformanceUtilitiesCoverage:
             # Should not raise exception
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test performance monitoring
         try:
@@ -259,7 +259,7 @@ class TestPerformanceUtilitiesCoverage:
             assert isinstance(metrics, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_performance_trackers_comprehensive(self):
         """Test performance trackers comprehensive functionality"""
@@ -295,7 +295,7 @@ class TestPerformanceUtilitiesCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test report generation
         try:
@@ -303,4 +303,4 @@ class TestPerformanceUtilitiesCoverage:
             assert isinstance(report, (dict, str))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass

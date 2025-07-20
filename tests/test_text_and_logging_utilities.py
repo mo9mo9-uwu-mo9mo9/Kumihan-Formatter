@@ -46,14 +46,14 @@ class TestTextProcessorComplete:
             result = processor.clean_text("  Test Text  ")
             assert isinstance(result, str)
         except:
-            pass
+                pass
 
         # Test process_text
         try:
             result = processor.process_text("Test\n\nText")
             assert isinstance(result, str)
         except:
-            pass
+                pass
 
         # Test strip methods
         try:
@@ -61,14 +61,14 @@ class TestTextProcessorComplete:
             assert "Hello" in result
             assert "<p>" not in result
         except:
-            pass
+                pass
 
         # Test escape methods
         try:
             result = processor.escape_special_chars("Test & < >")
             assert isinstance(result, str)
         except:
-            pass
+                pass
 
 
 class TestLoggingUtilitiesComplete:
@@ -112,14 +112,14 @@ class TestLoggingUtilitiesComplete:
             )
             assert isinstance(formatted, (str, dict))
         except:
-            pass
+                pass
 
         # Test log filtering
         try:
             logger.set_level("INFO")
             logger.add_filter(lambda record: record.get("level") != "DEBUG")
         except:
-            pass
+                pass
 
     def test_logging_formatters(self):
         """Test logging formatters"""
@@ -140,7 +140,7 @@ class TestLoggingUtilitiesComplete:
                 parsed = json.loads(formatted)
                 assert isinstance(parsed, dict)
             except:
-            pass
+                pass
 
             # Test plain formatter
             try:
@@ -148,7 +148,7 @@ class TestLoggingUtilitiesComplete:
                 formatted = plain_formatter.format(record)
                 assert isinstance(formatted, str)
             except:
-            pass
+                pass
 
             # Test colored formatter
             try:
@@ -156,11 +156,11 @@ class TestLoggingUtilitiesComplete:
                 formatted = colored_formatter.format(record)
                 assert isinstance(formatted, str)
             except:
-            pass
+                pass
 
         except ImportError:
             # Formatters may not be available
-            pass
+                pass
 
     def test_logging_handlers(self):
         """Test logging handlers"""
@@ -184,7 +184,7 @@ class TestLoggingUtilitiesComplete:
                 # Check file was written
                 assert Path(temp_path).exists()
             except:
-            pass
+                pass
             finally:
                 Path(temp_path).unlink(missing_ok=True)
 
@@ -193,8 +193,8 @@ class TestLoggingUtilitiesComplete:
                 console_handler = ConsoleHandler()
                 console_handler.emit({"level": "INFO", "message": "Test"})
             except:
-            pass
+                pass
 
         except ImportError:
             # Handlers may not be available
-            pass
+                pass

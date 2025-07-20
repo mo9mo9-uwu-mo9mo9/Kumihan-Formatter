@@ -19,7 +19,7 @@ class TestSpecificModuleCoverage:
             from kumihan_formatter.core.toc_generator import TOCGenerator
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         generator = TOCGenerator()
@@ -51,7 +51,7 @@ class TestSpecificModuleCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test TOC formatting options
         try:
@@ -64,7 +64,7 @@ class TestSpecificModuleCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
     def test_toc_generator_main_functionality(self):
         """Test main TOC generator functionality"""
@@ -72,7 +72,7 @@ class TestSpecificModuleCoverage:
             from kumihan_formatter.core.toc_generator_main import TOCGeneratorMain
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         generator = TOCGeneratorMain()
@@ -109,7 +109,7 @@ Content for section 2."""
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test different TOC styles
         styles = ["simple", "numbered", "nested", "flat"]
@@ -124,7 +124,7 @@ Content for section 2."""
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
     def test_list_parser_functionality(self):
         """Test list parser functionality"""
@@ -132,14 +132,14 @@ Content for section 2."""
             from kumihan_formatter.core.list_parser import ListParser
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         try:
             parser = ListParser()
         except (TypeError, AttributeError) as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         # Test various list formats
@@ -170,7 +170,7 @@ Content for section 2."""
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
     def test_list_parser_core_functionality(self):
         """Test core list parser functionality"""
@@ -178,7 +178,7 @@ Content for section 2."""
             from kumihan_formatter.core.list_parser_core import ListParserCore
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         parser = ListParserCore()
@@ -212,7 +212,7 @@ Content for section 2."""
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
         # Test list nesting level detection
         indented_items = [
@@ -234,7 +234,7 @@ Content for section 2."""
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
     def test_nested_list_parser_functionality(self):
         """Test nested list parser functionality"""
@@ -242,7 +242,7 @@ Content for section 2."""
             from kumihan_formatter.core.nested_list_parser import NestedListParser
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         parser = NestedListParser()
@@ -263,7 +263,7 @@ Content for section 2."""
             # Should handle nesting properly
             if hasattr(result, "children") or isinstance(result, list):
                 # Has some structure
-            pass
+                pass
 
         except (
             AttributeError,
@@ -272,7 +272,7 @@ Content for section 2."""
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test nesting validation
         try:
@@ -285,4 +285,4 @@ Content for section 2."""
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass

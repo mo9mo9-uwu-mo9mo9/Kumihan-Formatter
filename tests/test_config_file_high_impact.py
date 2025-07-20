@@ -83,7 +83,7 @@ class TestConfigSystemHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_extended_config_functionality(self):
         """Test extended config functionality"""
@@ -116,7 +116,7 @@ class TestConfigSystemHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test configuration sections
         sections = ["parser", "renderer", "output", "files"]
@@ -183,7 +183,7 @@ class TestFileOperationsHighImpact:
                     FileNotFoundError,
                 ) as e:
                     # Method not available - skip silently
-            pass
+                pass
 
             # Test batch processing
             try:
@@ -264,4 +264,4 @@ class TestFileOperationsHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass

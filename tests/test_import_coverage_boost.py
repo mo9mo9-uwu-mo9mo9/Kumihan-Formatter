@@ -33,7 +33,7 @@ class TestImportCoverageBoost:
                 __import__(module_name)
             except ImportError as e:
                 # Method not available - skip silently
-            pass
+                pass
 
     def test_specific_module_instantiation(self):
         """Test instantiating classes for basic coverage"""
@@ -63,7 +63,7 @@ class TestImportCoverageBoost:
                                 FileNotFoundError,
                             ) as e:
                                 # Method not available - skip silently
-            pass
+                pass
                     else:
                         # Class with args
                         try:
@@ -77,7 +77,7 @@ class TestImportCoverageBoost:
                             FileNotFoundError,
                         ) as e:
                             # Method not available - skip silently
-            pass
+                pass
             except ImportError as e:
                 # Method not available - skip silently
-            pass
+                pass

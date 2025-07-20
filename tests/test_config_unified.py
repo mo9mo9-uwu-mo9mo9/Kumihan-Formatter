@@ -45,13 +45,13 @@ class TestConfigIntegration:
             config.load_from_file("config.yaml")
         except (FileNotFoundError, AttributeError, NotImplementedError):
             # Config file may not exist or method not implemented
-            pass
+                pass
 
         try:
             config.load_from_dict({"output_format": "html", "encoding": "utf-8"})
         except (AttributeError, NotImplementedError):
             # Method may not be implemented
-            pass
+                pass
 
     def test_config_validation(self):
         """Test config validation"""
@@ -68,7 +68,7 @@ class TestConfigIntegration:
 
         except (AttributeError, NotImplementedError):
             # Validation may not be implemented
-            pass
+                pass
 
     def test_config_environment_integration(self):
         """Test config environment variable integration"""
@@ -81,7 +81,7 @@ class TestConfigIntegration:
             config.load_from_env("KUMIHAN_")
         except (AttributeError, NotImplementedError):
             # Environment loading may not be implemented
-            pass
+                pass
 
     def test_config_merging(self):
         """Test config merging functionality"""
@@ -104,7 +104,7 @@ class TestConfigIntegration:
 
         except (AttributeError, NotImplementedError):
             # Merging may not be implemented
-            pass
+                pass
 
     def test_config_sections(self):
         """Test config sections"""
@@ -122,7 +122,7 @@ class TestConfigIntegration:
 
         except (AttributeError, NotImplementedError):
             # Section support may not be implemented
-            pass
+                pass
 
     def test_config_export_import(self):
         """Test config export and import"""
@@ -149,7 +149,7 @@ class TestConfigIntegration:
 
         except (AttributeError, NotImplementedError):
             # Export/import may not be implemented
-            pass
+                pass
 
 
 class TestConfigAdvanced:
@@ -171,7 +171,7 @@ class TestConfigAdvanced:
 
         except (AttributeError, NotImplementedError):
             # Template system may not be implemented
-            pass
+                pass
 
     def test_config_watchers(self):
         """Test config change watchers"""
@@ -194,7 +194,7 @@ class TestConfigAdvanced:
 
         except (AttributeError, NotImplementedError):
             # Change watchers may not be implemented
-            pass
+                pass
 
     def test_config_schema_validation(self):
         """Test config schema validation"""
@@ -226,4 +226,4 @@ class TestConfigAdvanced:
 
         except (AttributeError, NotImplementedError):
             # Schema validation may not be implemented
-            pass
+                pass

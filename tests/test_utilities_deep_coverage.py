@@ -20,7 +20,7 @@ class TestUtilitiesDeepCoverage:
             )
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         tracker = DependencyTracker()
@@ -43,7 +43,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
         # Test circular dependency detection
         try:
@@ -56,7 +56,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test dependency resolution order
         try:
@@ -69,7 +69,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
     def test_error_analyzer_functionality(self):
         """Test error analyzer functionality"""
@@ -77,7 +77,7 @@ class TestUtilitiesDeepCoverage:
             from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         analyzer = ErrorAnalyzer()
@@ -102,7 +102,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
         # Test error categorization
         try:
@@ -115,7 +115,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test error suggestions
         try:
@@ -128,7 +128,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
     def test_string_similarity_functionality(self):
         """Test string similarity functionality"""
@@ -138,7 +138,7 @@ class TestUtilitiesDeepCoverage:
             )
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         similarity = StringSimilarity()
@@ -165,7 +165,7 @@ class TestUtilitiesDeepCoverage:
                 ValueError,
                 ImportError,
             ) as e:
-            pass
+                pass
 
         # Test fuzzy matching
         try:
@@ -180,7 +180,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
     def test_execution_flow_tracker_functionality(self):
         """Test execution flow tracker functionality"""
@@ -190,7 +190,7 @@ class TestUtilitiesDeepCoverage:
             )
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         tracker = ExecutionFlowTracker()
@@ -217,7 +217,7 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass
 
         # Test performance analysis
         try:
@@ -230,4 +230,4 @@ class TestUtilitiesDeepCoverage:
             ValueError,
             ImportError,
         ) as e:
-            pass
+                pass

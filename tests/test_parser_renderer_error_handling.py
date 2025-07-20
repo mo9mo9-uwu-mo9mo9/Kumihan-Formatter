@@ -96,7 +96,7 @@ class TestParserErrorHandling:
                 assert isinstance(result, list)
             except (UnicodeError, UnicodeDecodeError):
                 # Unicode handling might not be complete
-            pass
+                pass
 
 
 class TestRendererErrorHandling:
@@ -125,7 +125,7 @@ class TestRendererErrorHandling:
                 assert isinstance(result, str)
             except (TypeError, AttributeError, ValueError):
                 # Some invalid nodes might raise exceptions
-            pass
+                pass
 
     def test_renderer_circular_references(self):
         """Test handling of circular references"""
@@ -149,10 +149,10 @@ class TestRendererErrorHandling:
 
         except (RecursionError, RuntimeError):
             # Circular references might cause recursion errors
-            pass
+                pass
         except AttributeError:
             # Content might be read-only
-            pass
+                pass
 
     def test_renderer_memory_limits(self):
         """Test renderer with large structures"""
@@ -174,7 +174,7 @@ class TestRendererErrorHandling:
             assert len(result) > 1000
         except MemoryError:
             # Large structures might cause memory issues
-            pass
+                pass
 
 
 class TestConfigErrorHandling:
@@ -199,10 +199,10 @@ class TestConfigErrorHandling:
                 # Should handle invalid values gracefully
             except (TypeError, ValueError):
                 # Invalid values might raise exceptions
-            pass
+                pass
             except AttributeError:
                 # Method might not exist
-            pass
+                pass
 
     def test_config_file_errors(self):
         """Test configuration file error handling"""
@@ -215,10 +215,10 @@ class TestConfigErrorHandling:
             config_manager.load_from_file("non_existent_config.json")
         except (FileNotFoundError, IOError):
             # Expected behavior
-            pass
+                pass
         except AttributeError:
             # Method might not exist
-            pass
+                pass
 
         # Test malformed JSON
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
@@ -229,9 +229,9 @@ class TestConfigErrorHandling:
             config_manager.load_from_file(malformed_path)
         except (ValueError, TypeError):  # JSON decode error
             # Expected behavior
-            pass
+                pass
         except AttributeError:
             # Method might not exist
-            pass
+                pass
         finally:
             Path(malformed_path).unlink(missing_ok=True)

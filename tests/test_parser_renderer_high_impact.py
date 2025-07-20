@@ -106,7 +106,7 @@ Another paragraph.""",
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
 
 class TestMainRendererHighImpact:
@@ -212,7 +212,7 @@ class TestMainRendererHighImpact:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test template options
         try:
@@ -231,4 +231,4 @@ class TestMainRendererHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass

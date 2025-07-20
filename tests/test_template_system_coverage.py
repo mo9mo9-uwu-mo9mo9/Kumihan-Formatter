@@ -20,7 +20,7 @@ class TestTemplateSystemCoverage:
             from kumihan_formatter.core.template_context import TemplateContext
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         # Test basic context creation
@@ -48,7 +48,7 @@ class TestTemplateSystemCoverage:
         except (AttributeError, NotImplementedError, TypeError) as e:
             # Some methods may not be implemented
             # Method not available - skip silently
-            pass
+                pass
 
         # Test context merging
         try:
@@ -57,7 +57,7 @@ class TestTemplateSystemCoverage:
             assert context.get("version") == "1.0"
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test context export
         try:
@@ -65,7 +65,7 @@ class TestTemplateSystemCoverage:
             assert isinstance(exported, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_template_manager_comprehensive(self):
         """Test template manager comprehensive functionality"""
@@ -73,7 +73,7 @@ class TestTemplateSystemCoverage:
             from kumihan_formatter.core.template_manager import TemplateManager
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         manager = TemplateManager()
@@ -87,7 +87,7 @@ class TestTemplateSystemCoverage:
         except (FileNotFoundError, AttributeError, NotImplementedError) as e:
             # Templates may not exist
             # Method not available - skip silently
-            pass
+                pass
 
         # Test template rendering with context
         try:
@@ -97,7 +97,7 @@ class TestTemplateSystemCoverage:
             assert len(result) > 0
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test template validation
         try:
@@ -105,7 +105,7 @@ class TestTemplateSystemCoverage:
             assert isinstance(is_valid, bool)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test available templates
         try:
@@ -113,7 +113,7 @@ class TestTemplateSystemCoverage:
             assert isinstance(available, (list, tuple, set))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_template_filters_comprehensive(self):
         """Test template filters comprehensive functionality"""
@@ -121,7 +121,7 @@ class TestTemplateSystemCoverage:
             from kumihan_formatter.core.template_filters import TemplateFilters
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         filters = TemplateFilters()
@@ -158,7 +158,7 @@ class TestTemplateSystemCoverage:
                         ValueError,
                     ) as e:
                         # Method not available - skip silently
-            pass
+                pass
 
         # Test number filters
         test_numbers = [42, 3.14159, 1024, 0]
@@ -178,7 +178,7 @@ class TestTemplateSystemCoverage:
                         ValueError,
                     ) as e:
                         # Method not available - skip silently
-            pass
+                pass
 
     def test_template_selector_comprehensive(self):
         """Test template selector comprehensive functionality"""
@@ -186,7 +186,7 @@ class TestTemplateSystemCoverage:
             from kumihan_formatter.core.template_selector import TemplateSelector
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         selector = TemplateSelector()
@@ -211,7 +211,7 @@ class TestTemplateSystemCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test auto-selection
         sample_content = "This is a sample document with some content."
@@ -220,7 +220,7 @@ class TestTemplateSystemCoverage:
             assert isinstance(auto_selected, str)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass
 
         # Test template scoring
         try:
@@ -229,4 +229,4 @@ class TestTemplateSystemCoverage:
             assert isinstance(scores, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             # Method not available - skip silently
-            pass
+                pass

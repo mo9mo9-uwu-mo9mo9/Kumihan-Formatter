@@ -69,7 +69,7 @@ class TestParserComprehensive:
 
             except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
                 # Some parsing may not be fully implemented
-            pass
+                pass
 
         # Test parser configuration
         try:
@@ -77,7 +77,7 @@ class TestParserComprehensive:
             parser.set_config({"allow_html": False})
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-            pass
+                pass
 
     def test_renderer_main_functionality(self):
         """Test main renderer functionality"""
@@ -105,7 +105,7 @@ class TestParserComprehensive:
 
             except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
                 # Some rendering may not be fully implemented
-            pass
+                pass
 
     def test_parse_render_workflow_comprehensive(self):
         """Test complete parse-render workflow"""
@@ -139,7 +139,7 @@ class TestParserComprehensive:
                     assert len(output.strip()) > 0
 
             except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
-            pass
+                pass
 
 
 class TestParserIntegration:
@@ -165,7 +165,7 @@ class TestParserIntegration:
 
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-            pass
+                pass
 
     def test_parser_error_handling(self):
         """Test parser error handling"""
@@ -187,10 +187,10 @@ class TestParserIntegration:
                 assert result is not None or result == []
             except (TypeError, ValueError):
                 # Expected exceptions for invalid input
-            pass
+                pass
             except Exception:
                 # Should not raise unexpected exceptions
-            pass
+                pass
 
     def test_parser_large_input(self):
         """Test parser with large input"""
@@ -209,10 +209,10 @@ class TestParserIntegration:
 
         except (MemoryError, RecursionError):
             # May have limitations with very large inputs
-            pass
+                pass
         except (AttributeError, NotImplementedError):
             # Large input handling may not be optimized
-            pass
+                pass
 
     def test_parser_special_characters(self):
         """Test parser with special characters"""
@@ -232,7 +232,7 @@ class TestParserIntegration:
                 assert result is not None
             except (UnicodeError, AttributeError, NotImplementedError):
                 # Special character handling may be limited
-            pass
+                pass
 
 
 class TestRendererIntegration:
@@ -268,7 +268,7 @@ class TestRendererIntegration:
 
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-            pass
+                pass
 
     def test_renderer_template_integration(self):
         """Test renderer with template system"""
@@ -287,4 +287,4 @@ class TestRendererIntegration:
 
         except (AttributeError, NotImplementedError):
             # Template system may not be implemented
-            pass
+                pass

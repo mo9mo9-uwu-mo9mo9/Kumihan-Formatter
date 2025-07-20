@@ -26,7 +26,7 @@ class TestFileSystemCoverage:
             # FileSystemクラスが存在しない場合は個別関数を使用
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         # Create mock FileSystem class
@@ -82,7 +82,7 @@ class TestFileSystemCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
             # Test file operations
             for file_path in test_files:
@@ -111,7 +111,7 @@ class TestFileSystemCoverage:
                     FileNotFoundError,
                 ) as e:
                     # Method not available - skip silently
-            pass
+                pass
 
             # Test path operations
             try:
@@ -138,4 +138,4 @@ class TestFileSystemCoverage:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass

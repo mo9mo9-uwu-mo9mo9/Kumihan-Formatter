@@ -42,7 +42,7 @@ class TestValidationErrorHandling:
         except ImportError as e:
             # Module might not exist
             # Method not available - skip silently
-            pass
+                pass
 
     def test_structure_validator_errors(self):
         """Test structure validator error handling"""
@@ -72,7 +72,7 @@ class TestValidationErrorHandling:
         except ImportError as e:
             # Module might not exist
             # Method not available - skip silently
-            pass
+                pass
 
 
 class TestUtilityErrorHandling:
@@ -100,7 +100,7 @@ class TestUtilityErrorHandling:
             except (TypeError, AttributeError) as e:
                 # Some edge cases might raise exceptions
                 # Method not available - skip silently
-            pass
+                pass
 
     def test_marker_utils_errors(self):
         """Test marker utilities error handling"""
@@ -110,7 +110,7 @@ class TestUtilityErrorHandling:
             # MarkerUtilsクラスが存在しない場合は関数を使用
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         try:
@@ -137,7 +137,7 @@ class TestUtilityErrorHandling:
         except ImportError as e:
             # Module might not exist
             # Method not available - skip silently
-            pass
+                pass
 
 
 class TestConcurrencyErrorHandling:
@@ -197,7 +197,7 @@ class TestConcurrencyErrorHandling:
             converter = FileConverter()
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
             return
 
         try:
@@ -214,7 +214,7 @@ class TestConcurrencyErrorHandling:
                 converter.convert_file(input_path, "/invalid/path/output.html")
             except (PermissionError, FileNotFoundError, AttributeError):
                 # Expected errors
-            pass
+                pass
 
             # Verify input file still exists (not corrupted)
             assert Path(input_path).exists()
@@ -224,7 +224,7 @@ class TestConcurrencyErrorHandling:
         except ImportError as e:
             # Module might not exist
             # Method not available - skip silently
-            pass
+                pass
 
 
 class TestLoggerErrorHandling:
@@ -255,7 +255,7 @@ class TestLoggerErrorHandling:
             except (TypeError, AttributeError) as e:
                 # Some invalid inputs might raise exceptions
                 # Method not available - skip silently
-            pass
+                pass
 
     def test_logger_exception_handling(self):
         """Test logger exception handling"""
@@ -282,4 +282,4 @@ class TestLoggerErrorHandling:
             ) as e:
                 # Logger should not raise exceptions
                 # Method not available - skip silently
-            pass
+                pass

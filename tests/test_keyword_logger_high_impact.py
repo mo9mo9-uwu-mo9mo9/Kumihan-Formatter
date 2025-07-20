@@ -70,7 +70,7 @@ Plus ((a footnote)) reference.""",
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
     def test_marker_parser_comprehensive_detection(self):
         """Test marker parser comprehensive detection"""
@@ -112,7 +112,7 @@ Plus ((a footnote)) reference.""",
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test full text parsing for markers
         full_text = "Text ;;;highlight;;; content ;;; and ｜ruby《reading》 notation."
@@ -134,7 +134,7 @@ Plus ((a footnote)) reference.""",
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass
 
 
 class TestLoggerHighImpact:
@@ -190,7 +190,7 @@ class TestLoggerHighImpact:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
     def test_structured_logger_base_comprehensive(self):
         """Test structured logger base comprehensive functionality"""
@@ -256,7 +256,7 @@ class TestLoggerHighImpact:
                 FileNotFoundError,
             ) as e:
                 # Method not available - skip silently
-            pass
+                pass
 
         # Test context filtering
         try:
@@ -281,4 +281,4 @@ class TestLoggerHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-            pass
+                pass

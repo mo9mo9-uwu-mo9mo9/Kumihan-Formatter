@@ -35,7 +35,7 @@ class TestDataStructures:
                 ordered_set.remove(1)
                 assert 1 not in ordered_set
             except:
-            pass
+                pass
 
             # Test CaseInsensitiveDict
             try:
@@ -46,7 +46,7 @@ class TestDataStructures:
                 assert ci_dict["KEY"] == "value"
                 assert ci_dict["Key"] == "value"
             except:
-            pass
+                pass
 
             # Test FrozenDict
             try:
@@ -59,10 +59,10 @@ class TestDataStructures:
                 with pytest.raises(Exception):
                     frozen["c"] = 3
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
 
 class TestErrorHandlingUtilities:
@@ -87,7 +87,7 @@ class TestErrorHandlingUtilities:
                 assert "message" in analysis
                 assert analysis["type"] == "ValueError"
             except:
-            pass
+                pass
 
             # Test error context
             try:
@@ -104,7 +104,7 @@ class TestErrorHandlingUtilities:
                     assert isinstance(context, dict)
                     assert "traceback" in context
             except:
-            pass
+                pass
 
             # Test fix suggestions
             try:
@@ -114,7 +114,7 @@ class TestErrorHandlingUtilities:
                 assert isinstance(suggestions, list)
                 assert len(suggestions) > 0
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass

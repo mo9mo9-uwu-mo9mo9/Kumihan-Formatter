@@ -45,7 +45,7 @@ class TestDebugIntegration:
             assert result == "テスト結果"
         except (AttributeError, TypeError):
             # デコレーターの実装詳細による問題は許容
-            pass
+                pass
 
 
 @pytest.mark.tdd_green
@@ -65,7 +65,7 @@ class TestValidationIntegration:
             assert error.message == "テスト構文エラー"
         except (ImportError, TypeError):
             # モジュールがない場合や引数が違う場合はスキップ
-            pass
+                pass
 
     @pytest.mark.file_io
     def test_file_validation_integration(self):
@@ -89,4 +89,4 @@ class TestValidationIntegration:
                     pass
         except ImportError:
             # モジュールが存在しない場合はスキップ
-            pass
+                pass

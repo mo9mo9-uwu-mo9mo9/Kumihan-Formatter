@@ -33,7 +33,7 @@ class TestPerformanceUtilities:
                 result = test_func()
                 assert result == "result"
             except:
-            pass
+                pass
 
             # Test cache decorator
             try:
@@ -55,7 +55,7 @@ class TestPerformanceUtilities:
                 assert result2 == 10
                 assert call_count == 1  # Should not increase
             except:
-            pass
+                pass
 
             # Test retry decorator
             try:
@@ -73,10 +73,10 @@ class TestPerformanceUtilities:
                 assert result == "success"
                 assert attempt_count == 2
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
     def test_performance_trackers(self):
         """Test performance trackers"""
@@ -102,7 +102,7 @@ class TestPerformanceUtilities:
                 report = mem_tracker.get_report()
                 assert isinstance(report, dict)
             except:
-            pass
+                pass
 
             # Test TimeTracker
             try:
@@ -117,10 +117,10 @@ class TestPerformanceUtilities:
                 assert isinstance(duration, float)
                 assert duration > 0
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
 
 class TestStringUtilities:
@@ -146,7 +146,7 @@ class TestStringUtilities:
                 distance = levenshtein_distance("", "test")
                 assert distance == 4
             except:
-            pass
+                pass
 
             # Test similarity ratio
             try:
@@ -157,17 +157,17 @@ class TestStringUtilities:
                 ratio = similarity_ratio("test", "test")
                 assert ratio == 1.0
             except:
-            pass
+                pass
 
             # Test fuzzy match
             try:
                 assert fuzzy_match("hello", "hallo", threshold=0.8) is True
                 assert fuzzy_match("hello", "world", threshold=0.8) is False
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass
 
     def test_string_formatting(self):
         """Test string formatting utilities"""
@@ -185,7 +185,7 @@ class TestStringUtilities:
                 assert len(result) <= 10
                 assert result.endswith("...")
             except:
-            pass
+                pass
 
             # Test wrap_text
             try:
@@ -194,7 +194,7 @@ class TestStringUtilities:
                 lines = wrapped.split("\n")
                 assert all(len(line) <= 20 for line in lines)
             except:
-            pass
+                pass
 
             # Test indent_text
             try:
@@ -203,7 +203,7 @@ class TestStringUtilities:
                 assert indented.startswith("    ")
                 assert "\n    " in indented
             except:
-            pass
+                pass
 
         except ImportError:
-            pass
+                pass

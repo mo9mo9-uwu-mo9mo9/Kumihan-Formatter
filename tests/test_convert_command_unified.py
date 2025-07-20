@@ -124,10 +124,10 @@ class TestConvertCommandBasic:
                 )
             except SystemExit:
                 # sys.exit(1)が呼ばれることを確認
-            pass
+                pass
             except Exception:
                 # その他のエラーハンドリングが動作することを確認
-            pass
+                pass
 
 
 class TestConvertCommandAdvanced:

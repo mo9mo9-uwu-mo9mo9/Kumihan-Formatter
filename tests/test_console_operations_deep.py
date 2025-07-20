@@ -56,10 +56,10 @@ class TestConsoleOperationsDeep:
                             assert isinstance(result, (list, tuple))
                     except (FileNotFoundError, PermissionError):
                         # ファイル操作エラーは期待される
-                    pass
+                        pass
                     except Exception:
                         # その他のエラーは許容
-                    pass
+                        pass
 
     def test_console_operations_text_processing(self):
         """テキスト処理メソッドテスト"""

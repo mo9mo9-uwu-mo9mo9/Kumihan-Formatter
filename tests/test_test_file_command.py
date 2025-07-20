@@ -189,7 +189,7 @@ class TestTestFileGeneratorMock:
 
             except (ImportError, AttributeError) as e:
                 # Method not available - skip silently
-            pass
+                pass
             except Exception as e:
                 pytest.fail(f"Unexpected error in mock test: {e}")
 
@@ -211,7 +211,7 @@ class TestTestFileGeneratorMock:
             pytest.skip("Real TestFileGenerator found - not testing mock")
         except ImportError:
             # Expected - mock should be created within the command
-            pass
+                pass
 
         # Test that the command can handle the mock properly
         from kumihan_formatter.commands.test_file_command import TestFileCommand

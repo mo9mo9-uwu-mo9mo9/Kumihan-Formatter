@@ -249,7 +249,7 @@ class TestWorkingConfigDeepCoverage:
                 base_config.merge(merge_data)
 
         except Exception:
-            pass
+                pass
 
         # Test config sections
         try:
@@ -260,4 +260,4 @@ class TestWorkingConfigDeepCoverage:
                 )
 
         except Exception:
-            pass
+                pass

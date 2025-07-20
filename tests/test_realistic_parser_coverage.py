@@ -254,7 +254,7 @@ class TestParserIntegration:
             parser.set_config(config)
         except AttributeError:
             # Config might not be supported
-            pass
+                pass
 
         # Parse with potential config
         result = parser.parse("# Test Document")

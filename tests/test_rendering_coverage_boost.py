@@ -37,7 +37,7 @@ class TestRenderingCoverageBoosting:
                 assert len(result) > 0
             except Exception:
                 # Some methods may not be fully implemented
-            pass
+                pass
 
         # Test list rendering
         try:
@@ -45,7 +45,7 @@ class TestRenderingCoverageBoosting:
             assert isinstance(result, str)
             assert len(result) > 0
         except Exception:
-            pass
+                pass
 
         # Test nesting order
         assert hasattr(renderer, "NESTING_ORDER")
@@ -75,7 +75,7 @@ class TestRenderingCoverageBoosting:
                 assert content in result
             except Exception:
                 # Some methods may not be implemented
-            pass
+                pass
 
         # Test attribute rendering
         node_with_attrs = Node("div", "content")
@@ -87,4 +87,4 @@ class TestRenderingCoverageBoosting:
             assert isinstance(result, str)
             # Should contain attributes in some form
         except Exception:
-            pass
+                pass

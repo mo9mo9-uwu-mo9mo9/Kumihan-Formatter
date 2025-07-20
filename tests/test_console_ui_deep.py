@@ -47,7 +47,7 @@ class TestConsoleUIDeep:
                             try:
                                 method("Test", "message")
                             except:
-                            pass
+                                pass
 
     def test_console_ui_error_methods(self):
         """ConsoleUIエラー出力メソッドテスト"""
@@ -69,7 +69,7 @@ class TestConsoleUIDeep:
                             try:
                                 method("Error", "details")
                             except:
-                            pass
+                                pass
 
     def test_console_ui_warning_methods(self):
         """ConsoleUI警告出力メソッドテスト"""
@@ -135,7 +135,7 @@ class TestConsoleUIDeep:
                                 result = method()
                                 assert isinstance(result, str)
                             except:
-                            pass
+                                pass
 
     def test_console_ui_confirmation_methods(self):
         """ConsoleUI確認メソッドテスト"""
@@ -160,7 +160,7 @@ class TestConsoleUIDeep:
                                 result = method()
                                 assert isinstance(result, bool)
                             except:
-                            pass
+                                pass
 
     def test_console_ui_progress_methods(self):
         """ConsoleUIプログレス表示メソッドテスト"""

@@ -29,7 +29,7 @@ class TestCoverageBoost:
 
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_utilities_coverage(self):
         """Test utilities to boost coverage"""
@@ -41,7 +41,7 @@ class TestCoverageBoost:
 
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass
 
     def test_rendering_coverage(self):
         """Test rendering components to boost coverage"""
@@ -53,4 +53,4 @@ class TestCoverageBoost:
 
         except ImportError as e:
             # Method not available - skip silently
-            pass
+                pass

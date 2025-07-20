@@ -109,7 +109,7 @@ class TestCoreIntegrationBasic:
             assert isinstance(templates, (list, tuple))
         except AttributeError:
             # Method may not be implemented
-            pass
+                pass
 
     def test_node_builder_integration(self):
         """Test node builder integration"""
@@ -240,7 +240,7 @@ class TestCoreIntegrationAdvanced:
             assert result is None or isinstance(result, str)
         except FileNotFoundError:
             # FileNotFoundError が適切に発生することも正常
-            pass
+                pass
 
         # 不正なエンコーディングデータの処理
         detector = EncodingDetector()
@@ -252,7 +252,7 @@ class TestCoreIntegrationAdvanced:
             assert encoding is None or isinstance(encoding, str)
         except Exception:
             # 何らかの例外が発生するのも正常な動作
-            pass
+                pass
 
 
 class TestCoreIntegrationEndToEnd:
