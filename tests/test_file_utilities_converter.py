@@ -22,7 +22,7 @@ class TestFileUtilities:
             reader = FileReader()
         except ImportError as ie:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         # Create temporary file
@@ -48,7 +48,7 @@ class TestFileUtilities:
         except ImportError as ie:
             # Module might not exist
             # Method not available - skip silently
-                pass
+            pass
         finally:
             Path(temp_path).unlink(missing_ok=True)
 
@@ -60,7 +60,7 @@ class TestFileUtilities:
             writer = FileWriter()
         except ImportError as ie:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         try:
@@ -92,7 +92,7 @@ class TestFileUtilities:
         except ImportError as ie:
             # Module might not exist
             # Method not available - skip silently
-                pass
+            pass
 
     def test_encoding_utilities(self):
         """Test encoding detection and handling"""
@@ -102,7 +102,7 @@ class TestFileUtilities:
             detector = EncodingDetector()
         except ImportError as ie:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         try:
@@ -134,14 +134,14 @@ class TestFileUtilities:
                 except AttributeError as ae:
                     # Methods might not exist
                     # Method not available - skip silently
-                pass
+                    pass
                 finally:
                     Path(temp_path).unlink(missing_ok=True)
 
         except ImportError as ie:
             # Module might not exist
             # Method not available - skip silently
-                pass
+            pass
 
 
 class TestFileConverter:
@@ -155,7 +155,7 @@ class TestFileConverter:
             converter = FileConverter()
         except ImportError as ie:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         try:
@@ -205,7 +205,7 @@ This is a test document with:
         except ImportError as ie:
             # Module might not exist
             # Method not available - skip silently
-                pass
+            pass
 
     def test_batch_file_converter(self):
         """Test batch file conversion"""
@@ -215,7 +215,7 @@ This is a test document with:
             converter = BatchConverter()
         except ImportError as ie:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         try:
@@ -251,4 +251,4 @@ This is a test document with:
         except ImportError as ie:
             # Module might not exist
             # Method not available - skip silently
-                pass
+            pass

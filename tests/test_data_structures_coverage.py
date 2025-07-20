@@ -27,7 +27,7 @@ class TestDataStructuresCoverage:
             # DataStructuresクラスが存在しない場合は個別クラスを使用
         except ImportError as e:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         try:
@@ -89,7 +89,7 @@ class TestDataStructuresCoverage:
                     FileNotFoundError,
                 ) as e:
                     # Method not available - skip silently
-                pass
+                    pass
 
             # Test nested structures
             nested_data = {
@@ -121,7 +121,7 @@ class TestDataStructuresCoverage:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-                pass
+            pass
 
     def test_converters_comprehensive(self):
         """Test converters comprehensive functionality"""
@@ -134,7 +134,7 @@ class TestDataStructuresCoverage:
             # Convertersクラスが存在しない場合は個別関数を使用
         except ImportError as e:
             # Method not available - skip silently
-                pass
+            pass
             return
 
         # Create mock Converters class
@@ -200,4 +200,4 @@ class TestDataStructuresCoverage:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-                pass
+            pass

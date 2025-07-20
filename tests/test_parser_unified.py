@@ -285,7 +285,6 @@ class TestRendererIntegration:
                 renderer.configure(config)
                 output = renderer.render(test_nodes)
                 assert output is not None
-
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
             pass
