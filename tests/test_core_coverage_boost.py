@@ -97,7 +97,22 @@ class TestParsingCoverageBoosting:
         """Test block parser comprehensive functionality"""
         from kumihan_formatter.core.block_parser.block_parser import BlockParser
 
-        parser = BlockParser()
+        try:
+            from kumihan_formatter.core.keyword_parsing.definitions import (
+                KeywordDefinitions,
+            )
+
+            # KeywordParserが存在しない場合はMarkerParserを使用
+            from kumihan_formatter.core.keyword_parsing.marker_parser import (
+                MarkerParser,
+            )
+
+            # 必要な依存関係を作成
+            keyword_definitions = KeywordDefinitions()
+            keyword_parser = MarkerParser(keyword_definitions)
+        except ImportError:
+            pytest.skip("Required keyword parsing modules not available")
+        parser = BlockParser(keyword_parser)
 
         # Test different block types
         test_blocks = [
@@ -158,9 +173,14 @@ class TestParsingCoverageBoosting:
 
     def test_marker_parser_comprehensive(self):
         """Test marker parser comprehensive functionality"""
+        from kumihan_formatter.core.keyword_parsing.definitions import (
+            KeywordDefinitions,
+        )
         from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 
-        parser = MarkerParser()
+        # 必要な依存関係を作成
+        keyword_definitions = KeywordDefinitions()
+        parser = MarkerParser(keyword_definitions)
 
         # Test marker detection
         test_markers = [
@@ -229,11 +249,11 @@ class TestUtilitiesCoverageBoosting:
         import logging
 
         from kumihan_formatter.core.utilities.structured_logger_base import (
-            StructuredLoggerBase,
+            StructuredLogger,
         )
 
         base_logger = logging.getLogger("test_structured")
-        structured_logger = StructuredLoggerBase(base_logger)
+        structured_logger = StructuredLogger(base_logger)
 
         # Test structured logging methods
         test_contexts = [
