@@ -31,7 +31,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Changed from 1 to 0 for full history access
+          fetch-depth: 0  # Full history for PR diff analysis
 
       - name: Run Claude Code
         id: claude

@@ -75,20 +75,31 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+    "--cov-fail-under=10",
+    "--durations=10",
+    "--maxfail=5",
+    "-x",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning:tkinter.*",
+    "ignore::RuntimeWarning:.*",
 ]
 markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "e2e: End-to-end tests",
-    "slow: Slow running tests",
+    "unit: Unit tests - fast, isolated tests",
+    "integration: Integration tests - tests component interactions",
+    "e2e: End-to-end tests - full system tests",
+    "slow: Slow running tests (>1s)",
+    "performance: Performance benchmark tests",
+    "gui: GUI-related tests requiring display",
+    "skip_ci: Tests to skip in CI environment",
 ]
-timeout = 300  # pytest-timeoutプラグインが必要
-log_cli = true
-log_cli_level = "INFO"
+timeout = 300
+log_cli = false
+log_cli_level = "WARNING"
+# 並行実行設定 (pytest-xdist が利用可能な場合)
+# addopts に "-n auto" を追加することで並行実行可能
 
 [tool.coverage.run]
 source = ["kumihan_formatter"]
@@ -96,22 +107,43 @@ omit = [
     "*/tests/*",
     "*/test_*",
     "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
 ]
+branch = true
+parallel = true
 
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
+    "def __str__",
     "if self.debug:",
     "if settings.DEBUG",
     "raise AssertionError",
     "raise NotImplementedError",
     "if 0:",
+    "if False:",
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+    "except ImportError:",
+    "except ModuleNotFoundError:",
+    "# TYPE_CHECKING",
+    "if TYPE_CHECKING:",
 ]
 fail_under = 10
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [tool.isort]
 profile = "black"
