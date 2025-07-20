@@ -10,17 +10,60 @@ from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.core.file_operations import FileOperations
+
+    HAS_FILE_OPERATIONS = True
+except ImportError:
+    HAS_FILE_OPERATIONS = False
+
+try:
+    from kumihan_formatter.core.file_operations_factory import FileOperationsFactory
+
+    HAS_FILE_OPERATIONS_FACTORY = True
+except ImportError:
+    HAS_FILE_OPERATIONS_FACTORY = False
+
+try:
+    from kumihan_formatter.core.file_io_handler import FileIOHandler
+
+    HAS_FILE_IO_HANDLER = True
+except ImportError:
+    HAS_FILE_IO_HANDLER = False
+
+try:
+    from kumihan_formatter.core.encoding_detector import EncodingDetector
+
+    HAS_ENCODING_DETECTOR = True
+except ImportError:
+    HAS_ENCODING_DETECTOR = False
+
+try:
+    from kumihan_formatter.core.utilities.performance_optimizer import (
+        PerformanceOptimizer,
+    )
+
+    HAS_PERFORMANCE_OPTIMIZER = True
+except ImportError:
+    HAS_PERFORMANCE_OPTIMIZER = False
+
+try:
+    from kumihan_formatter.core.utilities.performance_trackers import PerformanceTracker
+
+    HAS_PERFORMANCE_TRACKER = True
+except ImportError:
+    HAS_PERFORMANCE_TRACKER = False
+
 
 class TestFileOperationsCoverage:
     """Boost file operations coverage"""
 
+    @pytest.mark.skipif(
+        not HAS_FILE_OPERATIONS, reason="FileOperations module not available"
+    )
     def test_file_operations_comprehensive(self):
         """Test file operations comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.file_operations import FileOperations
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
 
         file_ops = FileOperations()
 

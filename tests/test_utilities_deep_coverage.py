@@ -8,19 +8,46 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.core.utilities.dependency_tracker import DependencyTracker
+
+    HAS_DEPENDENCY_TRACKER = True
+except ImportError:
+    HAS_DEPENDENCY_TRACKER = False
+
+try:
+    from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
+
+    HAS_ERROR_ANALYZER = True
+except ImportError:
+    HAS_ERROR_ANALYZER = False
+
+try:
+    from kumihan_formatter.core.utilities.string_similarity import StringSimilarity
+
+    HAS_STRING_SIMILARITY = True
+except ImportError:
+    HAS_STRING_SIMILARITY = False
+
+try:
+    from kumihan_formatter.core.utilities.execution_flow_tracker import (
+        ExecutionFlowTracker,
+    )
+
+    HAS_EXECUTION_FLOW_TRACKER = True
+except ImportError:
+    HAS_EXECUTION_FLOW_TRACKER = False
+
 
 class TestUtilitiesDeepCoverage:
     """Deep coverage for utility modules"""
 
+    @pytest.mark.skipif(
+        not HAS_DEPENDENCY_TRACKER, reason="DependencyTracker module not available"
+    )
     def test_dependency_tracker_functionality(self):
         """Test dependency tracker functionality"""
-        try:
-            from kumihan_formatter.core.utilities.dependency_tracker import (
-                DependencyTracker,
-            )
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
 
         tracker = DependencyTracker()
 
@@ -70,13 +97,11 @@ class TestUtilitiesDeepCoverage:
         ) as e:
             pass
 
+    @pytest.mark.skipif(
+        not HAS_ERROR_ANALYZER, reason="ErrorAnalyzer module not available"
+    )
     def test_error_analyzer_functionality(self):
         """Test error analyzer functionality"""
-        try:
-            from kumihan_formatter.core.utilities.error_analyzer import ErrorAnalyzer
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
 
         analyzer = ErrorAnalyzer()
 
@@ -128,15 +153,11 @@ class TestUtilitiesDeepCoverage:
         ) as e:
             pass
 
+    @pytest.mark.skipif(
+        not HAS_STRING_SIMILARITY, reason="StringSimilarity module not available"
+    )
     def test_string_similarity_functionality(self):
         """Test string similarity functionality"""
-        try:
-            from kumihan_formatter.core.utilities.string_similarity import (
-                StringSimilarity,
-            )
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
 
         similarity = StringSimilarity()
 
@@ -179,15 +200,12 @@ class TestUtilitiesDeepCoverage:
         ) as e:
             pass
 
+    @pytest.mark.skipif(
+        not HAS_EXECUTION_FLOW_TRACKER,
+        reason="ExecutionFlowTracker module not available",
+    )
     def test_execution_flow_tracker_functionality(self):
         """Test execution flow tracker functionality"""
-        try:
-            from kumihan_formatter.core.utilities.execution_flow_tracker import (
-                ExecutionFlowTracker,
-            )
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
 
         tracker = ExecutionFlowTracker()
 

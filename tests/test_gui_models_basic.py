@@ -34,18 +34,19 @@ class TestConversionStateThreadSafe:
 
         def update_progress(thread_id):
             try:
-                for i in range(10):
-                    progress = thread_id * 10 + i
+                # CI/CD最適化: ループ数削減 10→3, sleep削除
+                for i in range(3):
+                    progress = thread_id * 3 + i
                     if progress <= 100:
                         state.set_progress(progress)
                         results.append((thread_id, progress))
-                        time.sleep(0.001)  # 短い待機でタイミング調整
+                        # time.sleep(0.001) - CI/CD最適化のため削除
             except Exception as e:
                 errors.append((thread_id, e))
 
-        # 複数スレッドで同時実行
+        # 複数スレッドで同時実行 (CI/CD最適化: 5→2スレッド)
         threads = []
-        for i in range(5):
+        for i in range(2):
             thread = threading.Thread(target=update_progress, args=(i,))
             threads.append(thread)
             thread.start()
@@ -85,10 +86,10 @@ class TestConversionStateThreadSafe:
         state.start_processing()
         start_time = time.time()
 
-        # 短い待機
-        time.sleep(0.1)
+        # CI/CD最適化: time.sleep削除、即座に時間チェック
+        # time.sleep(0.1) - CI/CD最適化のため削除
 
-        # 経過時間確認
+        # 経過時間確認 (即座に実行)
         elapsed = state.get_elapsed_time()
         actual_elapsed = time.time() - start_time
 

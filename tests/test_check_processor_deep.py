@@ -10,29 +10,41 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.commands.check_syntax import CheckSyntaxCommand
+
+    HAS_CHECK_SYNTAX = True
+except ImportError:
+    HAS_CHECK_SYNTAX = False
+
+try:
+    from kumihan_formatter.commands.convert.convert_processor import ConvertProcessor
+
+    HAS_CONVERT_PROCESSOR = True
+except ImportError:
+    HAS_CONVERT_PROCESSOR = False
+
 
 class TestCheckSyntaxDeep:
     """CheckSyntax深度テスト - 73行 0%→70%+目標"""
 
+    @pytest.mark.skipif(
+        not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
+    )
     def test_check_syntax_command_basic(self):
         """基本的な構文チェックテスト"""
-        from kumihan_formatter.commands.check_syntax import CheckSyntaxCommand
+        command = CheckSyntaxCommand()
+        assert command is not None
 
-        try:
-            command = CheckSyntaxCommand()
-            assert command is not None
+        # 基本的なインターフェース確認
+        assert hasattr(command, "execute") or hasattr(command, "check")
 
-            # 基本的なインターフェース確認
-            assert hasattr(command, "execute") or hasattr(command, "check")
-
-        except ImportError:
-            # モジュールが存在しない場合はスキップ
-            pytest.skip("CheckSyntaxCommand module not available")
-
+    @pytest.mark.skipif(
+        not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
+    )
     def test_check_syntax_valid_file(self):
         """有効ファイルの構文チェック"""
-        from kumihan_formatter.commands.check_syntax import CheckSyntaxCommand
-
         try:
             command = CheckSyntaxCommand()
 
@@ -162,11 +174,11 @@ Invalid syntax patterns.
 class TestConvertProcessorDeep:
     """ConvertProcessor深度テスト - 119行 0%→80%+目標"""
 
+    @pytest.mark.skipif(
+        not HAS_CONVERT_PROCESSOR, reason="ConvertProcessor module not available"
+    )
     def test_convert_processor_initialization(self):
         """ConvertProcessor初期化テスト"""
-        from kumihan_formatter.commands.convert.convert_processor import (
-            ConvertProcessor,
-        )
 
         with patch(
             "kumihan_formatter.commands.convert.convert_processor.get_logger"
