@@ -59,7 +59,7 @@ class TestParsingCoverageBoosting:
             result = parser.parse_lines(lines)
             assert result is not None
         except Exception:
-            pass
+                pass
 
     def test_keyword_parser_comprehensive(self):
         """Test keyword parser comprehensive functionality"""
@@ -89,7 +89,7 @@ class TestParsingCoverageBoosting:
             valid_keywords = parser.get_valid_keywords()
             assert isinstance(valid_keywords, (list, set, tuple))
         except Exception:
-            pass
+                pass
 
     def test_marker_parser_comprehensive(self):
         """Test marker parser comprehensive functionality"""

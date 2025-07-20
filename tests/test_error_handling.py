@@ -19,7 +19,7 @@ class TestErrorHandling:
             assert handler is not None
 
         except ImportError:
-            pass
+                pass
 
     def test_validation_errors(self):
         """Test validation error handling"""
@@ -30,4 +30,4 @@ class TestErrorHandling:
             assert isinstance(error, Exception)
 
         except ImportError:
-            pass
+                pass

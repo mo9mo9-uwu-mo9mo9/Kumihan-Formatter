@@ -235,3 +235,54 @@ def debug_helper():
             assert self.debug_data[key] == expected_value
 
     return DebugHelper()
+
+
+# pytest.skip最適化ヘルパー関数
+def _has_module(module_name: str) -> bool:
+    """モジュールが利用可能かチェック（CI/CD最適化用）"""
+    try:
+        __import__(module_name)
+        return True
+    except ImportError:
+        return False
+
+
+def _has_method(obj, method_name: str) -> bool:
+    """オブジェクトがメソッドを持つかチェック（CI/CD最適化用）"""
+    return hasattr(obj, method_name) and callable(getattr(obj, method_name))
+
+
+def _has_dependency(module_name: str, class_name: str = None) -> bool:
+    """依存関係が利用可能かチェック（CI/CD最適化用）"""
+    try:
+        module = __import__(module_name, fromlist=[class_name] if class_name else [])
+        if class_name:
+            return hasattr(module, class_name)
+        return True
+    except ImportError:
+        return False
+
+
+def _has_file_operations() -> bool:
+    """FileOperationsモジュールが利用可能かチェック"""
+    return _has_module("kumihan_formatter.core.file_operations")
+
+
+def _has_gui_modules() -> bool:
+    """GUIモジュールが利用可能かチェック（Tkinter依存）"""
+    try:
+        import tkinter
+
+        return _has_module("kumihan_formatter.gui_models")
+    except ImportError:
+        return False
+
+
+# グローバルに利用可能にするため pytest namespace に追加
+import pytest
+
+pytest._has_module = _has_module
+pytest._has_method = _has_method
+pytest._has_dependency = _has_dependency
+pytest._has_file_operations = _has_file_operations
+pytest._has_gui_modules = _has_gui_modules
