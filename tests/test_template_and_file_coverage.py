@@ -19,7 +19,7 @@ class TestTemplateSystemCoverage:
         try:
             from kumihan_formatter.core.template_context import TemplateContext
         except ImportError as e:
-            pytest.skip(f"TemplateContext not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         # Test basic context creation
@@ -54,21 +54,21 @@ class TestTemplateSystemCoverage:
             context.merge(additional_data)
             assert context.get("version") == "1.0"
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test context export
         try:
             exported = context.to_dict()
             assert isinstance(exported, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
     def test_template_manager_comprehensive(self):
         """Test template manager comprehensive functionality"""
         try:
             from kumihan_formatter.core.template_manager import TemplateManager
         except ImportError as e:
-            pytest.skip(f"TemplateManager not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         manager = TemplateManager()
@@ -81,7 +81,7 @@ class TestTemplateSystemCoverage:
                 assert template is not None
         except (FileNotFoundError, AttributeError, NotImplementedError) as e:
             # Templates may not exist
-            pytest.skip(f"Template not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test template rendering with context
         try:
@@ -90,28 +90,28 @@ class TestTemplateSystemCoverage:
             assert isinstance(result, str)
             assert len(result) > 0
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test template validation
         try:
             is_valid = manager.validate_template("default")
             assert isinstance(is_valid, bool)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test available templates
         try:
             available = manager.get_available_templates()
             assert isinstance(available, (list, tuple, set))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
     def test_template_filters_comprehensive(self):
         """Test template filters comprehensive functionality"""
         try:
             from kumihan_formatter.core.template_filters import TemplateFilters
         except ImportError as e:
-            pytest.skip(f"TemplateFilters not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         filters = TemplateFilters()
@@ -147,7 +147,7 @@ class TestTemplateSystemCoverage:
                         TypeError,
                         ValueError,
                     ) as e:
-                        pytest.skip(f"Method or operation not available: {e}")
+                        pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test number filters
         test_numbers = [42, 3.14159, 1024, 0]
@@ -166,14 +166,14 @@ class TestTemplateSystemCoverage:
                         TypeError,
                         ValueError,
                     ) as e:
-                        pytest.skip(f"Method or operation not available: {e}")
+                        pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
     def test_template_selector_comprehensive(self):
         """Test template selector comprehensive functionality"""
         try:
             from kumihan_formatter.core.template_selector import TemplateSelector
         except ImportError as e:
-            pytest.skip(f"TemplateSelector not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         selector = TemplateSelector()
@@ -197,7 +197,7 @@ class TestTemplateSystemCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test auto-selection
         sample_content = "This is a sample document with some content."
@@ -205,7 +205,7 @@ class TestTemplateSystemCoverage:
             auto_selected = selector.auto_select(sample_content)
             assert isinstance(auto_selected, str)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test template scoring
         try:
@@ -213,7 +213,7 @@ class TestTemplateSystemCoverage:
             scores = selector.score_templates(candidates, {"length": "medium"})
             assert isinstance(scores, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
 
 class TestFileOperationsCoverage:
@@ -224,7 +224,7 @@ class TestFileOperationsCoverage:
         try:
             from kumihan_formatter.core.file_operations import FileOperations
         except ImportError as e:
-            pytest.skip(f"FileOperations not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         file_ops = FileOperations()
@@ -255,7 +255,7 @@ class TestFileOperationsCoverage:
 
         except (AttributeError, NotImplementedError, TypeError, ValueError) as e:
             # File operations may not be fully implemented
-            pytest.skip(f"Method or operation not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
@@ -266,7 +266,7 @@ class TestFileOperationsCoverage:
                 FileOperationsFactory,
             )
         except ImportError as e:
-            pytest.skip(f"FileOperationsFactory not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         factory = FileOperationsFactory()
@@ -285,7 +285,7 @@ class TestFileOperationsCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test operation registration
         try:
@@ -294,14 +294,14 @@ class TestFileOperationsCoverage:
             retrieved = factory.get_operation("test_op")
             assert retrieved is not None
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
     def test_file_io_handler_comprehensive(self):
         """Test file I/O handler comprehensive functionality"""
         try:
             from kumihan_formatter.core.file_io_handler import FileIOHandler
         except ImportError as e:
-            pytest.skip(f"FileIOHandler not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         handler = FileIOHandler()
@@ -325,7 +325,7 @@ class TestFileOperationsCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test safe reading
         with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
@@ -347,7 +347,7 @@ class TestFileOperationsCoverage:
             assert Path(backup_path).exists()
 
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
         finally:
             Path(tmp_path).unlink(missing_ok=True)
             # Cleanup potential backup
@@ -359,7 +359,7 @@ class TestFileOperationsCoverage:
         try:
             from kumihan_formatter.core.encoding_detector import EncodingDetector
         except ImportError as e:
-            pytest.skip(f"EncodingDetector not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         detector = EncodingDetector()
@@ -384,7 +384,7 @@ class TestFileOperationsCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test confidence scoring
         try:
@@ -392,7 +392,7 @@ class TestFileOperationsCoverage:
             assert isinstance(confidence, (int, float))
             assert 0 <= confidence <= 1 or 0 <= confidence <= 100
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test BOM detection
         bom_tests = [
@@ -411,7 +411,7 @@ class TestFileOperationsCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
 
 class TestPerformanceUtilitiesCoverage:
@@ -424,7 +424,7 @@ class TestPerformanceUtilitiesCoverage:
                 PerformanceOptimizer,
             )
         except ImportError as e:
-            pytest.skip(f"PerformanceOptimizer not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         optimizer = PerformanceOptimizer()
@@ -434,14 +434,14 @@ class TestPerformanceUtilitiesCoverage:
             strategies = optimizer.get_available_strategies()
             assert isinstance(strategies, (list, tuple, set))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test memory optimization
         try:
             optimizer.optimize_memory()
             # Should not raise exception
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test performance monitoring
         try:
@@ -453,7 +453,7 @@ class TestPerformanceUtilitiesCoverage:
 
             assert isinstance(metrics, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
     def test_performance_trackers_comprehensive(self):
         """Test performance trackers comprehensive functionality"""
@@ -462,7 +462,7 @@ class TestPerformanceUtilitiesCoverage:
                 PerformanceTracker,
             )
         except ImportError as e:
-            pytest.skip(f"PerformanceTracker not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
             return
 
         tracker = PerformanceTracker()
@@ -488,11 +488,11 @@ class TestPerformanceUtilitiesCoverage:
                 ValueError,
                 FileNotFoundError,
             ) as e:
-                pytest.skip(f"Method or operation not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
         # Test report generation
         try:
             report = tracker.generate_report()
             assert isinstance(report, (dict, str))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Method not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")

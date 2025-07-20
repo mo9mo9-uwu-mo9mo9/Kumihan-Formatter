@@ -20,8 +20,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.file_reader import FileReader
 
             reader = FileReader()
-        except ImportError as e:
-            pytest.skip(f"FileReader not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         # Create temporary file
@@ -40,13 +40,13 @@ class TestFileUtilities:
             try:
                 encoding = reader.detect_encoding(temp_path)
                 assert isinstance(encoding, str)
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
                 pass
 
-        except ImportError as e:
+        except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Module not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
         finally:
             Path(temp_path).unlink(missing_ok=True)
 
@@ -56,8 +56,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.file_writer import FileWriter
 
             writer = FileWriter()
-        except ImportError as e:
-            pytest.skip(f"FileWriter not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -86,9 +86,9 @@ class TestFileUtilities:
 
             Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError as e:
+        except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Module not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_encoding_utilities(self):
         """Test encoding detection and handling"""
@@ -96,8 +96,8 @@ class TestFileUtilities:
             from kumihan_formatter.core.utilities.encoding_utils import EncodingDetector
 
             detector = EncodingDetector()
-        except ImportError as e:
-            pytest.skip(f"EncodingDetector not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -126,15 +126,15 @@ class TestFileUtilities:
                     read_content = detector.read_with_encoding(temp_path, detected)
                     assert content in read_content
 
-                except AttributeError:
+                except AttributeError as ae:
                     # Methods might not exist
-                    pytest.skip(f"Module not available: {e}")
+                    pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
                 finally:
                     Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError as e:
+        except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Module not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
 
 class TestFileConverter:
@@ -146,8 +146,8 @@ class TestFileConverter:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError as e:
-            pytest.skip(f"FileConverter not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -186,16 +186,16 @@ This is a test document with:
                     assert isinstance(output_content, str)
                     assert len(output_content) > 0
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
             finally:
                 Path(input_path).unlink(missing_ok=True)
                 Path(output_path).unlink(missing_ok=True)
 
-        except ImportError as e:
+        except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Module not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_batch_file_converter(self):
         """Test batch file conversion"""
@@ -203,8 +203,8 @@ This is a test document with:
             from kumihan_formatter.core.batch_converter import BatchConverter
 
             converter = BatchConverter()
-        except ImportError as e:
-            pytest.skip(f"BatchConverter not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -228,17 +228,17 @@ This is a test document with:
                 output_files = list(Path(output_dir).glob("*.html"))
                 assert len(output_files) > 0
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
             finally:
                 # Cleanup
                 for file_path in test_files:
                     Path(file_path).unlink(missing_ok=True)
 
-        except ImportError as e:
+        except ImportError as ie:
             # Module might not exist
-            pytest.skip(f"Module not available: {e}")
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
 
 class TestErrorHandling:
@@ -250,8 +250,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError as e:
-            pytest.skip(f"FileConverter not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -263,12 +263,12 @@ class TestErrorHandling:
             except (FileNotFoundError, IOError):
                 # Expected behavior
                 pass
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
                 pass
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_permission_error_handling(self):
         """Test handling of permission errors"""
@@ -276,8 +276,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.file_converter import FileConverter
 
             converter = FileConverter()
-        except ImportError as e:
-            pytest.skip(f"FileConverter not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -289,12 +289,12 @@ class TestErrorHandling:
             except (PermissionError, IOError):
                 # Expected behavior
                 pass
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
                 pass
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_encoding_error_handling(self):
         """Test handling of encoding errors"""
@@ -302,8 +302,8 @@ class TestErrorHandling:
             from kumihan_formatter.core.utilities.file_reader import FileReader
 
             reader = FileReader()
-        except ImportError as e:
-            pytest.skip(f"FileReader not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -324,14 +324,14 @@ class TestErrorHandling:
             except (UnicodeDecodeError, UnicodeError):
                 # Expected behavior
                 pass
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
                 pass
             finally:
                 Path(temp_path).unlink(missing_ok=True)
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
 
 class TestFileSystemOperations:
@@ -341,8 +341,8 @@ class TestFileSystemOperations:
         """Test directory creation and management"""
         try:
             from kumihan_formatter.core.utilities.file_utils import FileUtils
-        except ImportError as e:
-            pytest.skip(f"FileUtils not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -360,12 +360,12 @@ class TestFileSystemOperations:
                 utils.remove_directory(str(test_dir))
                 assert not test_dir.exists()
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_file_backup_operations(self):
         """Test file backup functionality"""
@@ -373,8 +373,8 @@ class TestFileSystemOperations:
             from kumihan_formatter.core.utilities.backup_manager import BackupManager
 
             backup_manager = BackupManager()
-        except ImportError as e:
-            pytest.skip(f"BackupManager not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -399,14 +399,14 @@ class TestFileSystemOperations:
                     restored_content = f.read()
                     assert "Original content" in restored_content
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
             finally:
                 Path(original_path).unlink(missing_ok=True)
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
 
 class TestStreamProcessing:
@@ -416,8 +416,8 @@ class TestStreamProcessing:
         """Test stream-based parsing"""
         try:
             from kumihan_formatter.core.stream_parser import StreamParser
-        except ImportError as e:
-            pytest.skip(f"StreamParser not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -431,12 +431,12 @@ class TestStreamProcessing:
                 result = parser.parse_stream(stream)
                 assert result is not None
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_stream_renderer(self):
         """Test stream-based rendering"""
@@ -444,8 +444,8 @@ class TestStreamProcessing:
 
         try:
             from kumihan_formatter.core.stream_renderer import StreamRenderer
-        except ImportError as e:
-            pytest.skip(f"StreamRenderer not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -461,12 +461,12 @@ class TestStreamProcessing:
                 assert isinstance(result, str)
                 assert "Test content" in result
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
 
 class TestConfigFileProcessing:
@@ -478,8 +478,8 @@ class TestConfigFileProcessing:
             from kumihan_formatter.config.config_loader import ConfigLoader
 
             loader = ConfigLoader()
-        except ImportError as e:
-            pytest.skip(f"ConfigLoader not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -504,21 +504,21 @@ class TestConfigFileProcessing:
                 assert isinstance(loaded_config, dict)
                 assert loaded_config["output_format"] == "html"
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Method might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
             finally:
                 Path(config_path).unlink(missing_ok=True)
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
 
     def test_config_file_validation(self):
         """Test configuration file validation"""
         try:
             from kumihan_formatter.config.config_validator import ConfigValidator
-        except ImportError as e:
-            pytest.skip(f"ConfigValidator not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
             return
 
         try:
@@ -537,9 +537,9 @@ class TestConfigFileProcessing:
                 is_invalid = validator.validate_config(invalid_config)
                 # Result depends on implementation
 
-            except AttributeError:
+            except AttributeError as ae:
                 # Methods might not exist
-                pytest.skip(f"Module not available: {e}")
+                pytest.skip(f"Dependency unavailable: {type(ae).__name__}: {ae}")
 
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
+        except ImportError as ie:
+            pytest.skip(f"Dependency unavailable: {type(ie).__name__}: {ie}")
