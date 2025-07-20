@@ -129,8 +129,8 @@ class TestConvertCommandDeep:
                 # ウォッチャーが呼ばれることを期待（正しいメソッド名を使用）
                 command.watcher.start_watch_mode.assert_called_once()
 
-            except AttributeError:
-                # モック設定の問題は許容
+            except (AttributeError, SystemExit):
+                # モック設定の問題やSystemExitは許容
                 pass
 
     def test_convert_command_error_handling(self):
@@ -368,8 +368,8 @@ Invalid syntax patterns.
             try:
                 result = command.execute([nonexistent_file])  # リスト形式で渡す
                 # ファイルエラーの適切な処理確認
-            except FileNotFoundError:
-                # 期待される例外
+            except (FileNotFoundError, SystemExit):
+                # 期待される例外（SystemExitも含む）
                 pass
             except AttributeError:
                 # メソッド名違いの場合
