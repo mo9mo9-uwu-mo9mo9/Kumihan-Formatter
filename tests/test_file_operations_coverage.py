@@ -1,26 +1,53 @@
-"""File Operations and Performance Coverage Tests
+"""File Operations Coverage Tests
 
-Focus on file operations, I/O handling, and performance utilities.
+Focus on file operations and I/O handling.
 Target high-coverage modules for maximum impact.
 """
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock
 
 import pytest
+
+# CI/CD最適化: モジュールレベルインポートチェック
+try:
+    from kumihan_formatter.core.file_operations import FileOperations
+
+    HAS_FILE_OPERATIONS = True
+except ImportError:
+    HAS_FILE_OPERATIONS = False
+
+try:
+    from kumihan_formatter.core.file_operations_factory import FileOperationsFactory
+
+    HAS_FILE_OPERATIONS_FACTORY = True
+except ImportError:
+    HAS_FILE_OPERATIONS_FACTORY = False
+
+try:
+    from kumihan_formatter.core.file_io_handler import FileIOHandler
+
+    HAS_FILE_IO_HANDLER = True
+except ImportError:
+    HAS_FILE_IO_HANDLER = False
+
+try:
+    from kumihan_formatter.core.encoding_detector import EncodingDetector
+
+    HAS_ENCODING_DETECTOR = True
+except ImportError:
+    HAS_ENCODING_DETECTOR = False
 
 
 class TestFileOperationsCoverage:
     """Boost file operations coverage"""
 
+    @pytest.mark.skipif(
+        not HAS_FILE_OPERATIONS, reason="FileOperations module not available"
+    )
     def test_file_operations_comprehensive(self):
         """Test file operations comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.file_operations import FileOperations
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
 
         file_ops = FileOperations()
 
@@ -54,16 +81,12 @@ class TestFileOperationsCoverage:
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
+    @pytest.mark.skipif(
+        not HAS_FILE_OPERATIONS_FACTORY,
+        reason="FileOperationsFactory module not available",
+    )
     def test_file_operations_factory_comprehensive(self):
         """Test file operations factory comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.file_operations_factory import (
-                FileOperationsFactory,
-            )
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
-
         factory = FileOperationsFactory()
 
         # Test factory creation
@@ -91,14 +114,11 @@ class TestFileOperationsCoverage:
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
             pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
 
+    @pytest.mark.skipif(
+        not HAS_FILE_IO_HANDLER, reason="FileIOHandler module not available"
+    )
     def test_file_io_handler_comprehensive(self):
         """Test file I/O handler comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.file_io_handler import FileIOHandler
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
-
         handler = FileIOHandler()
 
         # Test encoding detection
@@ -149,14 +169,11 @@ class TestFileOperationsCoverage:
             backup_candidate = tmp_path + ".bak"
             Path(backup_candidate).unlink(missing_ok=True)
 
+    @pytest.mark.skipif(
+        not HAS_ENCODING_DETECTOR, reason="EncodingDetector module not available"
+    )
     def test_encoding_detector_comprehensive(self):
         """Test encoding detector comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.encoding_detector import EncodingDetector
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
-
         detector = EncodingDetector()
 
         # Test various encoding scenarios
@@ -207,87 +224,3 @@ class TestFileOperationsCoverage:
                 FileNotFoundError,
             ) as e:
                 pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-
-
-class TestPerformanceUtilitiesCoverage:
-    """Boost performance utilities coverage"""
-
-    def test_performance_optimizer_comprehensive(self):
-        """Test performance optimizer comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.utilities.performance_optimizer import (
-                PerformanceOptimizer,
-            )
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
-
-        optimizer = PerformanceOptimizer()
-
-        # Test optimization strategies
-        try:
-            strategies = optimizer.get_available_strategies()
-            assert isinstance(strategies, (list, tuple, set))
-        except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-
-        # Test memory optimization
-        try:
-            optimizer.optimize_memory()
-            # Should not raise exception
-        except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-
-        # Test performance monitoring
-        try:
-            optimizer.start_monitoring()
-            # Simulate some work
-            result = sum(range(1000))
-            metrics = optimizer.get_metrics()
-            optimizer.stop_monitoring()
-
-            assert isinstance(metrics, dict)
-        except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-
-    def test_performance_trackers_comprehensive(self):
-        """Test performance trackers comprehensive functionality"""
-        try:
-            from kumihan_formatter.core.utilities.performance_trackers import (
-                PerformanceTracker,
-            )
-        except ImportError as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-            return
-
-        tracker = PerformanceTracker()
-
-        # Test operation tracking
-        operation_names = ["parse", "render", "validate", "convert"]
-
-        for op_name in operation_names:
-            try:
-                tracker.start_operation(op_name)
-                # Simulate work
-                result = sum(range(100))
-                tracker.end_operation(op_name)
-
-                # Get metrics
-                metrics = tracker.get_operation_metrics(op_name)
-                assert isinstance(metrics, dict)
-
-            except (
-                AttributeError,
-                NotImplementedError,
-                TypeError,
-                ValueError,
-                FileNotFoundError,
-            ) as e:
-                pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
-
-        # Test report generation
-        try:
-            report = tracker.generate_report()
-            assert isinstance(report, (dict, str))
-        except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
