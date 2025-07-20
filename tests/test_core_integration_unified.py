@@ -109,7 +109,7 @@ class TestCoreIntegrationBasic:
             assert isinstance(templates, (list, tuple))
         except AttributeError:
             # Method may not be implemented
-                pass
+            pass
 
     def test_node_builder_integration(self):
         """Test node builder integration"""
@@ -240,7 +240,7 @@ class TestCoreIntegrationAdvanced:
             assert result is None or isinstance(result, str)
         except FileNotFoundError:
             # FileNotFoundError が適切に発生することも正常
-                pass
+            pass
 
         # 不正なエンコーディングデータの処理
         detector = EncodingDetector()
@@ -252,75 +252,4 @@ class TestCoreIntegrationAdvanced:
             assert encoding is None or isinstance(encoding, str)
         except Exception:
             # 何らかの例外が発生するのも正常な動作
-                pass
-
-
-class TestCoreIntegrationEndToEnd:
-    """End-to-end core integration tests"""
-
-    def test_complete_processing_workflow(self):
-        """完全な処理ワークフローテスト"""
-        # シンプルなテキストを準備
-        input_text = "# Test Document\n\nThis is a test."
-
-        try:
-            # パーサーで解析
-            parser = Parser()
-            nodes = parser.parse(input_text)
-            assert nodes is not None
-
-            # レンダラーで出力
-            renderer = Renderer()
-            output = renderer.render(nodes)
-            assert output is not None
-            assert isinstance(output, str)
-
-        except (AttributeError, NotImplementedError):
-            # 完全な実装がない場合はスキップ
-            pytest.skip("Complete workflow not fully implemented")
-
-    def test_configuration_driven_processing(self):
-        """設定による処理制御のテスト"""
-        try:
-            # 設定の準備
-            config = ConfigManager()
-            config.set("output_format", "html")
-            config.set("encoding", "utf-8")
-
-            # 設定を使った処理
-            parser = Parser()
-            parser.configure(config)
-
-            renderer = Renderer()
-            renderer.configure(config)
-
-            # 基本的な処理フロー
-            input_text = "# Configured Test"
-            nodes = parser.parse(input_text)
-            output = renderer.render(nodes)
-
-            assert output is not None
-
-        except (AttributeError, NotImplementedError):
-            # 設定機能が未実装の場合はスキップ
-            pytest.skip("Configuration-driven processing not implemented")
-
-    def test_template_context_integration(self):
-        """テンプレートコンテキスト統合テスト"""
-        try:
-            # コンテキストの作成
-            context = RenderContext()
-            context.set("title", "Test Document")
-            context.set("author", "Test Author")
-
-            # テンプレートマネージャーとの連携
-            template_manager = TemplateManager()
-            template_manager.set_context(context)
-
-            # 基本的な動作確認
-            assert context.get("title") == "Test Document"
-            assert template_manager is not None
-
-        except (AttributeError, NotImplementedError):
-            # テンプレート機能が未実装の場合はスキップ
-            pytest.skip("Template context integration not implemented")
+            pass

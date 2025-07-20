@@ -67,7 +67,13 @@ class TestParserComprehensive:
                     for node in result:
                         assert hasattr(node, "tag") or hasattr(node, "type")
 
-            except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                ImportError,
+            ):
                 # Some parsing may not be fully implemented
                 pass
 
@@ -77,7 +83,7 @@ class TestParserComprehensive:
             parser.set_config({"allow_html": False})
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-                pass
+            pass
 
     def test_renderer_main_functionality(self):
         """Test main renderer functionality"""
@@ -103,7 +109,13 @@ class TestParserComprehensive:
                     # Should contain some markup or structured content
                     assert any(char in result for char in ["<", ">", "\n"])
 
-            except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                ImportError,
+            ):
                 # Some rendering may not be fully implemented
                 pass
 
@@ -138,7 +150,13 @@ class TestParserComprehensive:
                     # Output should be meaningful (not just empty)
                     assert len(output.strip()) > 0
 
-            except (AttributeError, NotImplementedError, TypeError, ValueError, ImportError):
+            except (
+                AttributeError,
+                NotImplementedError,
+                TypeError,
+                ValueError,
+                ImportError,
+            ):
                 pass
 
 
@@ -165,7 +183,7 @@ class TestParserIntegration:
 
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-                pass
+            pass
 
     def test_parser_error_handling(self):
         """Test parser error handling"""
@@ -197,7 +215,9 @@ class TestParserIntegration:
         parser = Parser()
 
         # Generate large input
-        large_input = "\n".join([f"# Section {i}\n\nContent for section {i}." for i in range(100)])
+        large_input = "\n".join(
+            [f"# Section {i}\n\nContent for section {i}." for i in range(100)]
+        )
 
         try:
             result = parser.parse(large_input)
@@ -209,10 +229,10 @@ class TestParserIntegration:
 
         except (MemoryError, RecursionError):
             # May have limitations with very large inputs
-                pass
+            pass
         except (AttributeError, NotImplementedError):
             # Large input handling may not be optimized
-                pass
+            pass
 
     def test_parser_special_characters(self):
         """Test parser with special characters"""
@@ -222,7 +242,7 @@ class TestParserIntegration:
             "Text with émojis: 🎉🔥⭐",
             "Math symbols: α β γ ∑ ∫",
             "Symbols: © ® ™ § ¶",
-            "Quotes: "smart quotes" and 'apostrophes'",
+            "Quotes: \"smart quotes\" and 'apostrophes'",
             "Dashes: en–dash and em—dash",
         ]
 
@@ -268,7 +288,7 @@ class TestRendererIntegration:
 
         except (AttributeError, NotImplementedError):
             # Configuration may not be implemented
-                pass
+            pass
 
     def test_renderer_template_integration(self):
         """Test renderer with template system"""
@@ -287,4 +307,4 @@ class TestRendererIntegration:
 
         except (AttributeError, NotImplementedError):
             # Template system may not be implemented
-                pass
+            pass
