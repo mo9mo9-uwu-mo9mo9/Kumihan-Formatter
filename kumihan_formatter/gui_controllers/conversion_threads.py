@@ -31,8 +31,8 @@ try:
     from ..commands.sample import SampleCommand
 except ImportError as e:
     error(f"Failed to import command classes: {e}")
-    ConvertCommand = None  # type: ignore
-    SampleCommand = None
+    ConvertCommand = None  # type: ignore[misc,assignment]
+    SampleCommand = None  # type: ignore[misc,assignment]
 
 
 class ConversionThreads:
