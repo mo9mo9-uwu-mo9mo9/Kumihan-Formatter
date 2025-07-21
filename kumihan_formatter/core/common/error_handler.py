@@ -49,7 +49,7 @@ class BaseErrorHandler(ABC):
 class DefaultErrorHandler(BaseErrorHandler):
     """Default error handler that logs errors"""
 
-    def __init__(self, logger=None):
+    def __init__(self, logger: Any = None) -> None:
         """Initialize default error handler
 
         Args:
@@ -99,7 +99,7 @@ class DefaultErrorHandler(BaseErrorHandler):
 class ErrorHandlerChain:
     """Chain of error handlers"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize error handler chain"""
         self.handlers: list[BaseErrorHandler] = []
 

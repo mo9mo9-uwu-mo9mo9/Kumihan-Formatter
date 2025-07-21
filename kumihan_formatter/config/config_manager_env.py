@@ -36,7 +36,7 @@ class ConfigEnvironmentHandler:
         if env_config and hasattr(config, "merge_config"):
             config.merge_config(env_config)
         elif env_config:
-            for key, value in env_config.items():  # type: ignore
+            for key, value in env_config.items():
                 config.set(key, value)
 
     def _extract_env_config(self) -> dict[str, Any]:

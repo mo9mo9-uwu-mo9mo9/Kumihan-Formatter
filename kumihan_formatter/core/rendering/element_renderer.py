@@ -16,7 +16,7 @@ from ..ast_nodes import Node
 from .basic_element_renderer import BasicElementRenderer
 from .div_renderer import DivRenderer
 from .heading_renderer import HeadingRenderer
-from .html_utils import create_simple_tag, render_attributes
+from .html_utils import create_simple_tag
 from .list_renderer import ListRenderer
 
 

@@ -13,25 +13,26 @@ Usage:
 
 import argparse
 import json
-import os
+
+# os removed as unused
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 class TestGuard:
     """テスト保護クラス"""
 
-    def __init__(self, repo_root: Path = None):
+    def __init__(self, repo_root: Path | None = None):
         self.repo_root = repo_root or Path.cwd()
         self.tests_dir = self.repo_root / "tests"
         self.backup_dir = self.repo_root / ".test_backups"
         self.guard_log = self.repo_root / ".test_guard.log"
 
         # テスト保護設定
-        self.protection_config = {
+        self.protection_config: Dict[str, Any] = {
             "max_deletions_allowed": 3,
             "min_test_files_required": 20,
             "protected_patterns": [
@@ -207,7 +208,7 @@ class TestGuard:
                 cwd=self.repo_root,
             )
             return result.stdout.strip() if result.returncode == 0 else "unknown"
-        except:
+        except Exception:
             return "unknown"
 
     def check_staged_changes(self) -> bool:
@@ -257,7 +258,7 @@ class TestGuard:
         """現在の保護状況表示"""
         current_tests = list(self.tests_dir.glob("test_*.py"))
 
-        print(f"\n🛡️  Test Guard Status:")
+        print("\n🛡️  Test Guard Status:")
         print(f"   Current test files: {len(current_tests)}")
         print(
             f"   Minimum required: {self.protection_config['min_test_files_required']}"
@@ -274,7 +275,7 @@ class TestGuard:
             print(f"   Available backups: {len(backups)}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Test Guard - Prevent accidental test deletion"
     )

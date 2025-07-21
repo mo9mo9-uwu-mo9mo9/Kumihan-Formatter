@@ -90,7 +90,7 @@ class WindowsBuilder:
                 [sys.executable, "-m", "pip", "install", "pyinstaller"]
             )
 
-    def build_executable(self) -> None:
+    def build_executable(self) -> Path:
         """Build the Windows executable using PyInstaller"""
         print("[INFO] Building Windows executable...")
 
@@ -218,7 +218,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
 
     def build(
         self, clean: bool = False, test: bool = False, upload: bool = False
-    ) -> None:
+    ) -> bool:
         """Main build process"""
         print("[INFO] Kumihan-Formatter Windows build starting...")
         print(f"   Project directory: {self.root_dir}")
@@ -268,7 +268,7 @@ MIT License - Copyright © 2025 mo9mo9-uwu-mo9mo9
             return False
 
 
-def main() -> None:
+def main() -> int:
     """Main entry point"""
     parser = argparse.ArgumentParser(
         description="Kumihan-Formatter Windows build script",
@@ -290,7 +290,7 @@ def main() -> None:
     builder = WindowsBuilder()
     success = builder.build(clean=args.clean, test=args.test, upload=args.upload)
 
-    sys.exit(0 if success else 1)
+    return 0 if success else 1
 
 
 if __name__ == "__main__":

@@ -9,7 +9,8 @@ Issue #319対応 - 単一責任原則に基づくリファクタリング
 
 from .error_context import ErrorContextManager
 from .error_formatter import ErrorFormatter
-from .error_report import ErrorReport, ErrorReportBuilder
+from .error_report import ErrorReport
+from .error_report_builder import ErrorReportBuilder
 from .error_types import (
     DetailedError,
     ErrorCategory,

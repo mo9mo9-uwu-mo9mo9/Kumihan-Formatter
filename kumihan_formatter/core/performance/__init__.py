@@ -7,7 +7,7 @@ Issue #476対応 - 300行制限に準拠した分割実装
 """
 
 from contextlib import _GeneratorContextManager
-from typing import Any, Generator
+from typing import Any
 
 from .metrics import PerformanceReport
 from .monitor import PerformanceMonitor

@@ -38,7 +38,7 @@ class ErrorContextManager:
         context_lines = []
         for i in range(start, end):
             line_content = self._file_lines[i].rstrip("\n")
-            line_prefix = f"{i+1:3d}:"
+            line_prefix = f"{i + 1:3d}:"
 
             # 問題行をマーク
             if i == line_number - 1:

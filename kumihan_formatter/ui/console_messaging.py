@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - console_ui.py分割
 """
 
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 
 class ConsoleMessaging:

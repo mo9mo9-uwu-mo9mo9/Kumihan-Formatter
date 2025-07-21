@@ -82,7 +82,7 @@ class MainView:
                     widget, (ttk.Button, ttk.Entry, ttk.Combobox, ttk.Checkbutton)
                 ):
                     widget.configure(state=state)
-            except:
+            except Exception:
                 pass
 
             for child in widget.winfo_children():

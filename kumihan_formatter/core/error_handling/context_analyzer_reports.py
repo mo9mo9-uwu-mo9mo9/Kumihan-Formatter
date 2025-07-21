@@ -6,6 +6,7 @@ Issue #401対応 - 300行制限遵守
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -83,14 +84,14 @@ class ContextAnalyzerReports:
         self.logger.info("コンテキストJSONエクスポート開始")
 
         export_data = {
-            "export_timestamp": system_context.timestamp.isoformat(),
+            "export_timestamp": datetime.now().isoformat(),
             "context_stack": [
                 {
-                    "operation_type": ctx.operation_type,
+                    "operation_type": ctx.operation_name,
                     "file_path": ctx.file_path,
                     "line_number": ctx.line_number,
                     "column_number": ctx.column_number,
-                    "timestamp": ctx.timestamp.isoformat() if ctx.timestamp else None,
+                    "timestamp": ctx.started_at.isoformat() if ctx.started_at else None,
                     "metadata": ctx.metadata,
                 }
                 for ctx in context_stack
@@ -99,20 +100,20 @@ class ContextAnalyzerReports:
                 "platform": system_context.platform,
                 "python_version": system_context.python_version,
                 "working_directory": system_context.working_directory,
-                "environment_variables": system_context.environment_variables,
-                "available_memory": system_context.available_memory,
-                "cpu_count": system_context.cpu_count,
+                "memory_usage": system_context.memory_usage,
+                "cpu_usage": system_context.cpu_usage,
+                "disk_space": system_context.disk_space,
             },
             "file_contexts": (
                 {
                     path: {
-                        "size": ctx.size,
+                        "size": ctx.file_size,
                         "encoding": ctx.encoding,
                         "last_modified": (
                             ctx.last_modified.isoformat() if ctx.last_modified else None
                         ),
-                        "content_type": ctx.content_type,
-                        "metadata": ctx.metadata,
+                        "is_readable": ctx.is_readable,
+                        "is_writable": ctx.is_writable,
                     }
                     for path, ctx in file_contexts.items()
                 }
@@ -141,22 +142,22 @@ class ContextAnalyzerReports:
         analysis = {
             "available": True,
             "stack_depth": len(context_stack),
-            "operation_types": [ctx.operation_type for ctx in context_stack],
+            "operation_types": [ctx.operation_name for ctx in context_stack],
             "file_paths": [ctx.file_path for ctx in context_stack if ctx.file_path],
             "timeline": [
                 {
-                    "operation": ctx.operation_type,
-                    "timestamp": ctx.timestamp.isoformat() if ctx.timestamp else None,
+                    "operation": ctx.operation_name,
+                    "timestamp": ctx.started_at.isoformat() if ctx.started_at else None,
                 }
                 for ctx in context_stack
             ],
         }
 
         # 操作パターンの分析
-        operation_counts = {}
+        operation_counts: dict[str, int] = {}
         for ctx in context_stack:
-            operation_counts[ctx.operation_type] = (
-                operation_counts.get(ctx.operation_type, 0) + 1
+            operation_counts[ctx.operation_name] = (
+                operation_counts.get(ctx.operation_name, 0) + 1
             )
 
         analysis["operation_distribution"] = operation_counts
@@ -174,21 +175,18 @@ class ContextAnalyzerReports:
                 "python_version": system_context.python_version,
             },
             "resource_info": {
-                "available_memory": system_context.available_memory,
-                "cpu_count": system_context.cpu_count,
+                "memory_usage": system_context.memory_usage,
+                "cpu_usage": system_context.cpu_usage,
             },
             "environment_info": {
                 "working_directory": system_context.working_directory,
-                "environment_variables_count": len(
-                    system_context.environment_variables
-                ),
             },
         }
 
         # リソース状況の評価
-        if system_context.available_memory:
-            if system_context.available_memory < 100 * 1024 * 1024:  # 100MB未満
-                analysis["resource_warnings"] = ["Low available memory"]
+        if system_context.memory_usage:
+            if system_context.memory_usage > 1024 * 1024 * 1024:  # 1GB以上
+                analysis["resource_warnings"] = ["High memory usage"]
             else:
                 analysis["resource_warnings"] = []
 
@@ -204,16 +202,17 @@ class ContextAnalyzerReports:
         analysis = {
             "available": True,
             "file_count": len(file_contexts),
-            "total_size": sum(ctx.size for ctx in file_contexts.values()),
-            "encodings": list(set(ctx.encoding for ctx in file_contexts.values())),
-            "content_types": list(
-                set(ctx.content_type for ctx in file_contexts.values())
+            "total_size": sum(ctx.file_size or 0 for ctx in file_contexts.values()),
+            "encodings": list(
+                set(ctx.encoding for ctx in file_contexts.values() if ctx.encoding)
             ),
         }
 
         # サイズ別分析
         large_files = [
-            path for path, ctx in file_contexts.items() if ctx.size > 1024 * 1024
+            path
+            for path, ctx in file_contexts.items()
+            if (ctx.file_size or 0) > 1024 * 1024
         ]  # 1MB以上
         if large_files:
             analysis["large_files"] = large_files
@@ -230,7 +229,6 @@ class ContextAnalyzerReports:
         recommendations = []
 
         error_type = type(error).__name__
-        error_msg = str(error)
 
         # エラータイプ別の推奨事項
         if error_type in ["FileNotFoundError", "PermissionError"]:
@@ -264,18 +262,18 @@ class ContextAnalyzerReports:
         if context_stack:
             current_context = context_stack[0]
 
-            if current_context.operation_type == "file_parsing":
+            if current_context.operation_name == "file_parsing":
                 recommendations.append(
                     "構文エラーの可能性があります。記法を確認してください"
                 )
 
-            elif current_context.operation_type == "rendering":
+            elif current_context.operation_name == "rendering":
                 recommendations.append("レンダリング設定を確認してください")
 
         # システムリソースベースの推奨事項
         if (
-            system_context.available_memory
-            and system_context.available_memory < 100 * 1024 * 1024
+            system_context.memory_usage
+            and system_context.memory_usage > 1024 * 1024 * 1024
         ):
             recommendations.append(
                 "メモリ不足の可能性があります。システムリソースを確認してください"

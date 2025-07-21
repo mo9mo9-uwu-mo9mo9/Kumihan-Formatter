@@ -5,8 +5,7 @@
 Issue #401対応 - 300行制限遵守
 """
 
-import json
-import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,7 +43,7 @@ class ContextAnalyzerCore:
         summary = {
             "error_type": type(error).__name__,
             "error_message": str(error),
-            "timestamp": system_context.timestamp,
+            "timestamp": datetime.now().isoformat(),
             "location": self._get_error_location(
                 context_stack[0] if context_stack else None
             ),
@@ -56,12 +55,13 @@ class ContextAnalyzerCore:
         if file_contexts:
             summary["file_contexts"] = {
                 path: {
-                    "size": ctx.size,
+                    "size": ctx.file_size,
                     "encoding": ctx.encoding,
                     "last_modified": (
                         ctx.last_modified.isoformat() if ctx.last_modified else None
                     ),
-                    "content_type": ctx.content_type,
+                    "is_readable": ctx.is_readable,
+                    "is_writable": ctx.is_writable,
                 }
                 for path, ctx in file_contexts.items()
             }
@@ -101,7 +101,7 @@ class ContextAnalyzerCore:
         error_msg = str(error)
 
         # 基本的な原因分析
-        cause_analysis = {
+        cause_analysis: dict[str, Any] = {
             "primary_cause": "unknown",
             "confidence": 0.0,
             "suggestions": [],
@@ -146,14 +146,14 @@ class ContextAnalyzerCore:
             current_context = context_stack[0]
 
             # 操作種別による分析
-            if current_context.operation_type == "file_parsing":
+            if current_context.operation_name == "file_parsing":
                 cause_analysis["related_contexts"].append("file_parsing")
                 if "line" in error_msg.lower():
                     cause_analysis["suggestions"].append(
                         "指定された行番号付近を確認してください"
                     )
 
-            elif current_context.operation_type == "rendering":
+            elif current_context.operation_name == "rendering":
                 cause_analysis["related_contexts"].append("rendering")
                 cause_analysis["suggestions"].append(
                     "レンダリング設定を確認してください"
@@ -177,7 +177,7 @@ class ContextAnalyzerCore:
         breadcrumb_parts = []
         for i, context in enumerate(reversed(context_stack)):
             level_indicator = "→" if i > 0 else "📍"
-            breadcrumb_parts.append(f"{level_indicator} {context.operation_type}")
+            breadcrumb_parts.append(f"{level_indicator} {context.operation_name}")
 
             if context.file_path:
                 breadcrumb_parts.append(f"({Path(context.file_path).name})")
@@ -194,7 +194,7 @@ class ContextAnalyzerCore:
             "file_path": context.file_path,
             "line_number": context.line_number,
             "column_number": context.column_number,
-            "operation_type": context.operation_type,
+            "operation_type": context.operation_name,
         }
 
         return location
@@ -210,11 +210,11 @@ class ContextAnalyzerCore:
         for context in context_stack:
             chain.append(
                 {
-                    "operation_type": context.operation_type,
+                    "operation_type": context.operation_name,
                     "file_path": context.file_path,
                     "line_number": context.line_number,
                     "timestamp": (
-                        context.timestamp.isoformat() if context.timestamp else None
+                        context.started_at.isoformat() if context.started_at else None
                     ),
                 }
             )
@@ -227,7 +227,7 @@ class ContextAnalyzerCore:
             "platform": system_context.platform,
             "python_version": system_context.python_version,
             "working_directory": system_context.working_directory,
-            "environment_variables": system_context.environment_variables,
-            "available_memory": system_context.available_memory,
-            "cpu_count": system_context.cpu_count,
+            "memory_usage": system_context.memory_usage,
+            "cpu_usage": system_context.cpu_usage,
+            "disk_space": system_context.disk_space,
         }

@@ -19,27 +19,24 @@ import logging
 import logging.handlers
 import os
 import threading
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Optional
 
-from .claude_integration import ClaudeCodeIntegrationLogger, get_claude_code_logger
+# datetime.datetime removed as unused
+from pathlib import Path
+from typing import Optional
 
 # 分割済み機能のインポート
-from .log_size_control import LogSizeController
+# .log_size_control.LogSizeController removed as unused
 from .logging import LogHelper
 from .logging_formatters import StructuredLogFormatter
 from .logging_handlers import DevLogHandler
 from .performance_logger import (
-    call_chain_tracker,
     get_log_performance_optimizer,
-    log_performance_decorator,
-    memory_usage_tracker,
 )
 from .structured_logger import (
-    StructuredLogger,
     get_structured_logger,
 )
+
+# .claude_integration removed as unused
 
 
 class KumihanLogger:

@@ -16,31 +16,17 @@
 - error_recovery: エラー回復機能（将来の拡張用）
 """
 
+import kumihan_formatter.core.error_handling.context_manager as cm
+
 from .context_manager import (
     ErrorContextManager,
-    clear_contexts,
 )
 from .context_manager import get_context_manager as get_global_context_manager
-from .context_manager import (
-    get_current_context,
-    operation_context,
-    set_line_position,
-    set_user_input,
-)
 from .context_models import (
     FileContext,
     OperationContext,
     SystemContext,
 )
-
-
-# 後方互換性のため
-def set_global_context_manager(manager: ErrorContextManager) -> None:
-    """グローバルコンテキストマネージャーの設定（後方互換性）"""
-    import kumihan_formatter.core.error_handling.context_manager as cm
-
-    cm._global_context_manager = manager
-
 
 # エラーファクトリー
 from .error_factories import ErrorCatalog  # 後方互換性のためのエイリアス
@@ -80,6 +66,13 @@ from .smart_suggestions import SmartSuggestions
 
 # 新しい統一エラーハンドリングシステム（Issue #401）
 from .unified_handler import UnifiedErrorHandler, get_global_handler, set_global_handler
+
+
+# 後方互換性のため
+def set_global_context_manager(manager: ErrorContextManager) -> None:
+    """グローバルコンテキストマネージャーの設定（後方互換性）"""
+    cm._global_context_manager = manager
+
 
 # パッケージ情報
 __version__ = "1.0.0"

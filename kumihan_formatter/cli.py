@@ -27,12 +27,14 @@ def setup_encoding() -> None:
             logger.info("UTF-8 encoding configured successfully")
         except AttributeError:
             # Python 3.7以前の場合のフォールバック
-            # Note: Removed environment variable modification to avoid global side effects
+            # Note: Removed environment variable modification to avoid global
+            # side effects
             # Applications should handle encoding externally for older Python versions
             import warnings
 
             warnings.warn(
-                "Python 3.7 or earlier detected. Please set PYTHONIOENCODING=utf-8 externally.",
+                "Python 3.7 or earlier detected. Please set "
+                "PYTHONIOENCODING=utf-8 externally.",
                 UserWarning,
             )
             logger.warning(
@@ -122,7 +124,7 @@ def register_commands() -> None:
     try:
         from .commands.check_syntax import create_check_syntax_command
 
-        cli.add_command(create_check_syntax_command(), name="check-syntax")  # type: ignore
+        cli.add_command(create_check_syntax_command(), name="check-syntax")
         logger.debug("check-syntax command registered successfully")
     except ImportError as e:
         import warnings
@@ -134,7 +136,7 @@ def register_commands() -> None:
         from .commands.sample import create_sample_command, create_test_command
 
         cli.add_command(create_sample_command(), name="generate-sample")  # type: ignore
-        cli.add_command(create_test_command(), name="generate-test")  # type: ignore
+        cli.add_command(create_test_command(), name="generate-test")
         logger.debug("Sample generation commands registered successfully")
     except ImportError as e:
         import warnings

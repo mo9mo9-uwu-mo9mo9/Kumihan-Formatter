@@ -7,7 +7,7 @@ Issue #492 Phase 5A - performance_logger.py分割
 
 import logging
 import time
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
 from .performance_trackers import memory_usage_tracker
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .structured_logger import StructuredLogger
 
 try:
-    import psutil
+    import psutil  # noqa: F401
 
     HAS_PSUTIL = True
 except ImportError:
@@ -82,7 +82,7 @@ class LogPerformanceOptimizer:
 
     def _is_high_frequency(self, message_key: str) -> bool:
         """Check if message type is being logged at high frequency"""
-        current_time = time.time()
+        _ = time.time()  # 現在時刻（将来の頻度チェック用）
 
         # Initialize if first occurrence
         if message_key not in self.log_frequency:

@@ -247,6 +247,6 @@ def log_performance(
     # Import here to avoid circular import
     from .logger import get_logger
 
-    logger = get_logger("performance")
+    _ = get_logger("performance")  # パフォーマンスロガー（現在未使用）
     # Note: This would need the _logger_instance reference to be updated
     # when the main logger module is refactored

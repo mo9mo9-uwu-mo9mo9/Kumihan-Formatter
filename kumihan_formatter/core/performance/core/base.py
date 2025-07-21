@@ -8,7 +8,6 @@ import platform
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Dict, List
 
 from ...utilities.logger import get_logger

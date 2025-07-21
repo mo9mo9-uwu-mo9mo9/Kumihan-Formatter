@@ -8,9 +8,7 @@ Single Responsibility Principle適用: 567行から280行に削減
 Issue #476 Phase5対応 - 機能別分割完了
 """
 
-import traceback
 from contextlib import contextmanager
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Generator
 
@@ -22,8 +20,7 @@ from .error_display import ErrorDisplay
 from .error_factories import ErrorFactory
 from .error_recovery import ErrorRecovery
 from .error_statistics import ErrorStatistics
-from .error_types import ErrorCategory, ErrorLevel, UserFriendlyError
-from .smart_suggestions import SmartSuggestions
+from .error_types import UserFriendlyError
 
 
 class UnifiedErrorHandler:
@@ -167,12 +164,6 @@ class UnifiedErrorHandler:
         self, error: SyntaxError, context: ErrorContext | None
     ) -> UserFriendlyError:
         """SyntaxErrorの処理"""
-        suggestions = [
-            "構文エラーを修正してください",
-            "ファイルの文字エンコーディングを確認してください",
-            "記法の使用方法を確認してください",
-        ]
-
         return self.error_factory.create_syntax_error(
             error.lineno if error.lineno else 0,
             error.text or "",

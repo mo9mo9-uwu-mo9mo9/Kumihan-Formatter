@@ -134,7 +134,7 @@ class BenchmarkRendering:
         for i in range(self.config.warmup_iterations):
             func()
             self.logger.debug(
-                f"ウォームアップ {i+1}/{self.config.warmup_iterations} 完了"
+                f"ウォームアップ {i + 1}/{self.config.warmup_iterations} 完了"
             )
 
         # メモリ監視開始
@@ -159,7 +159,7 @@ class BenchmarkRendering:
             execution_time = end_time - start_time
             times.append(execution_time)
             self.logger.debug(
-                f"実行 {i+1}/{self.config.iterations}: {execution_time:.3f}s"
+                f"実行 {i + 1}/{self.config.iterations}: {execution_time:.3f}s"
             )
 
         # プロファイリング終了

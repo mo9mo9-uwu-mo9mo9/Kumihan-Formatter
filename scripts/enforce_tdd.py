@@ -9,7 +9,7 @@ TDD (Test-Driven Development) 強制スクリプト
 import os
 import sys
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 # テストが不要なファイルパターン
 EXCLUDED_PATTERNS = {
@@ -88,7 +88,7 @@ def check_test_exists(source_file: Path) -> bool:
     return any(path.exists() for path in expected_paths)
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     if len(sys.argv) != 2:
         print("Usage: python enforce_tdd.py <source_directory>")

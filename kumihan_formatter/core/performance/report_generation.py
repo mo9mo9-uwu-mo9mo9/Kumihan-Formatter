@@ -5,9 +5,10 @@ Issue #476対応 - ファイルサイズ制限遵守
 """
 
 import statistics
-from typing import Any
 
 from .optimization_types import REGRESSION_THRESHOLDS, OptimizationMetrics
+
+# typing.Any removed as unused
 
 
 class ReportGenerator:

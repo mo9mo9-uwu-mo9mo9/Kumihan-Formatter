@@ -63,7 +63,7 @@ class MemoryGCOptimizer:
         if total_collected > 0:
             self.logger.info(
                 f"GC強制実行完了: {total_collected}オブジェクト解放, "
-                f"{execution_time*1000:.1f}ms"
+                f"{execution_time * 1000:.1f}ms"
             )
         else:
             self.logger.debug("GC強制実行: 解放対象なし")

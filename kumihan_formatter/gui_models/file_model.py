@@ -8,7 +8,7 @@ Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強�
 import logging
 import threading
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 
 class FileManager:
@@ -21,7 +21,7 @@ class FileManager:
     def __init__(self) -> None:
         """ファイル管理の初期化"""
         self._lock = threading.Lock()
-        self._file_cache: Dict[str, Dict] = {}
+        self._file_cache: Dict[str, Dict[str, Any]] = {}
 
     @staticmethod
     def get_output_html_path(input_file: str, output_dir: str) -> Path:
@@ -96,7 +96,7 @@ class FileManager:
             logging.warning(f"ファイルサイズ取得エラー: {e}")
             return 0.0
 
-    def get_file_info(self, file_path: str) -> Optional[Dict]:
+    def get_file_info(self, file_path: str) -> Optional[Dict[str, Any]]:
         """ファイル情報を取得（キャッシュ機能付き）"""
         try:
             with self._lock:

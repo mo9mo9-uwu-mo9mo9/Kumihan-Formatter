@@ -130,3 +130,27 @@ KUMIHAN_DEV_LOG=true KUMIHAN_DEV_LOG_JSON=true kumihan convert input.txt output.
 ---
 
 **注意**: 詳細な実装例・設定は上記リンク先を参照してください。
+
+
+# GitHub Claudeメンション方法
+
+## コードレビュー依頼
+PR（プルリクエスト）でClaude GitHub Actionsによる自動レビューを実行する場合：
+
+```
+@claude PRのレビューをお願いします！
+
+## レビュー観点
+- CI/CD設定の確認
+- コード品質の評価
+- 型安全性の検証
+- セキュリティチェック
+
+Claude レビューをお願いします！
+```
+
+## 重要事項
+- **正しいメンション**: `@claude` （小文字）
+- **間違ったメンション**: `@claude-actions`, `@Claude`, `/claude` 等は無効
+- **実行タイミング**: PR作成後、レビュー依頼時
+- **期待結果**: Claude GitHub Actionsによる自動レビュー実行

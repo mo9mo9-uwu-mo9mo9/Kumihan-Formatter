@@ -22,7 +22,7 @@ else:
 class LogViewerUI:
     """ログビューアーのUIコンポーネント管理"""
 
-    def __init__(self, window: "tk.Widget") -> None:
+    def __init__(self, window: "tk.Tk | tk.Toplevel") -> None:
         self.window = window
         self.log_text: Optional["scrolledtext.ScrolledText"] = None
         self.auto_scroll_var: Optional["tk.BooleanVar"] = None
@@ -88,7 +88,10 @@ class LogViewerUI:
             width=10,
         )
         level_combo.pack(side=tk.LEFT)
-        level_combo.bind("<<ComboboxSelected>>", filter_logs_callback)
+        level_combo.bind(
+            "<<ComboboxSelected>>",
+            lambda event: filter_logs_callback(level_combo.get()),
+        )
 
     def _setup_log_text_area(self) -> None:
         """ログテキストエリアのセットアップ"""

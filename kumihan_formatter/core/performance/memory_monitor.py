@@ -160,4 +160,4 @@ class MemoryMonitor:
 
     def _cleanup_weak_refs(self) -> None:
         """WeakReferenceクリーンアップ（後方互換性）"""
-        self.core._cleanup_weak_refs()
+        self.core.cleanup_weak_refs()

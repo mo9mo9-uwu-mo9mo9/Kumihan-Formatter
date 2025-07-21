@@ -40,7 +40,6 @@ class ConvertWatcher:
     ) -> None:
         """ファイル監視モードを開始"""
         try:
-            from watchdog.events import FileSystemEventHandler
             from watchdog.observers import Observer
         except ImportError:
             get_console_ui().error("watchdog ライブラリがインストールされていません")

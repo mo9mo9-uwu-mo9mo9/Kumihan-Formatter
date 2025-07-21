@@ -14,7 +14,10 @@ from .gui_controllers import *  # noqa: F403, F401
 
 # 非推奨警告
 warnings.warn(
-    "gui_controller.py is deprecated. Use 'from kumihan_formatter.gui_controllers import GuiController' instead.",
+    (
+        "gui_controller.py is deprecated. "
+        "Use 'from kumihan_formatter.gui_controllers import GuiController' instead."
+    ),
     DeprecationWarning,
     stacklevel=2,
 )

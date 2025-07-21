@@ -9,7 +9,6 @@ including compound keywords and error suggestions.
 - keyword_parsing/validator.py: キーワード検証
 """
 
-import re
 from typing import Any
 
 from .ast_nodes import Node, NodeBuilder, error_node

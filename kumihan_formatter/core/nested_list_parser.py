@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - list_parser.py分割
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 from .ast_nodes import Node
 from .list_parser_core import ListParserCore

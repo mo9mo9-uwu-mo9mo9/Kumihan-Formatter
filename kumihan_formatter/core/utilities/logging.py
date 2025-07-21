@@ -22,7 +22,7 @@ class LogHelper:
     def format_duration(seconds: float) -> str:
         """Format duration in human-readable format"""
         if seconds < 1:
-            return f"{seconds*1000:.1f}ms"
+            return f"{seconds * 1000:.1f}ms"
         elif seconds < 60:
             return f"{seconds:.1f}s"
         elif seconds < 3600:

@@ -5,6 +5,7 @@ This module provides syntax checking functionality for Kumihan markup files.
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -15,13 +16,17 @@ from ..ui.console_ui import get_console_ui
 class CheckSyntaxCommand:
     """Check syntax command implementation"""
 
+    def check(self, files: list[str], **kwargs: Any) -> dict[str, Any]:
+        """Alias for execute method for backward compatibility"""
+        return self.execute(files, **kwargs)
+
     def execute(
         self,
         files: list[str],
         recursive: bool = False,
         show_suggestions: bool = True,
         format_output: str = "text",
-    ) -> None:
+    ) -> dict[str, Any]:
         """
         Execute syntax check command
 
@@ -52,7 +57,7 @@ class CheckSyntaxCommand:
             else:
                 self._output_text(results, show_suggestions)
 
-            # Exit with appropriate code
+            # Return results
             if results:
                 if isinstance(results, dict):
                     error_count = sum(
@@ -67,16 +72,17 @@ class CheckSyntaxCommand:
                         1 for error in results if error.severity == ErrorSeverity.ERROR
                     )
 
-                if error_count > 0:
-                    sys.exit(1)
-                else:
-                    sys.exit(0)  # Only warnings
+                return {
+                    "success": error_count == 0,
+                    "error_count": error_count,
+                    "results": results,
+                }
             else:
-                sys.exit(0)  # No errors
+                return {"success": True, "error_count": 0, "results": {}}
 
         except Exception as e:
             get_console_ui().error(f"構文チェック中にエラーが発生しました: {e}")
-            sys.exit(1)
+            return {"success": False, "error": str(e), "results": {}}
 
     def _collect_files(self, file_patterns: list[str], recursive: bool) -> list[Path]:
         """Collect files to check from patterns"""
@@ -165,7 +171,7 @@ class CheckSyntaxCommand:
         print(json.dumps(json_results, ensure_ascii=False, indent=2))
 
 
-def create_check_syntax_command():  # type: ignore
+def create_check_syntax_command() -> click.Command:
     """Create the check-syntax click command"""
 
     @click.command()

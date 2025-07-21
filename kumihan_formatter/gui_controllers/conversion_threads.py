@@ -4,15 +4,15 @@ Single Responsibility Principle適用: 変換スレッド処理の分離
 conversion_controller.py分割による300行制限対応
 """
 
-import threading
+# threading removed as unused
 import webbrowser
 from pathlib import Path
 from tkinter import messagebox
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..gui_models import AppState
-    from ..gui_views import MainView
+    pass  # ..gui_models.AppState removed as unused
+    # ..gui_views.MainView removed as unused
 
 # デバッグロガーのインポート
 try:
@@ -31,8 +31,8 @@ try:
     from ..commands.sample import SampleCommand
 except ImportError as e:
     error(f"Failed to import command classes: {e}")
-    ConvertCommand = None  # type: ignore
-    SampleCommand = None  # type: ignore
+    ConvertCommand = None  # type: ignore[misc,assignment]
+    SampleCommand = None  # type: ignore[misc,assignment]
 
 
 class ConversionThreads:
@@ -41,7 +41,7 @@ class ConversionThreads:
     ファイル変換・サンプル生成のスレッド処理を担当
     """
 
-    def __init__(self, controller) -> None:
+    def __init__(self, controller: Any) -> None:
         """スレッド処理の初期化"""
         self.controller = controller
 
@@ -81,8 +81,6 @@ class ConversionThreads:
                 )
 
                 # 出力パスはparamsから取得
-                from pathlib import Path
-
                 output_path = Path(params.get("output", "output"))
                 if hasattr(self.controller.main_view, "log_frame"):
                     self.controller.main_view.log_frame.add_message(

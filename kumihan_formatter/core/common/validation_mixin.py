@@ -222,13 +222,22 @@ class ValidationMixin:
         """
         if min_val is not None and max_val is not None:
             range_desc = f"between {min_val} and {max_val}"
-            validator = lambda x: min_val <= x <= max_val
+
+            def validator(x: float) -> bool:
+                return min_val <= x <= max_val
+
         elif min_val is not None:
             range_desc = f"at least {min_val}"
-            validator = lambda x: x >= min_val
+
+            def validator(x: float) -> bool:
+                return x >= min_val
+
         elif max_val is not None:
             range_desc = f"at most {max_val}"
-            validator = lambda x: x <= max_val
+
+            def validator(x: float) -> bool:
+                return x <= max_val
+
         else:
             raise ValueError("At least one of min_val or max_val must be provided")
 

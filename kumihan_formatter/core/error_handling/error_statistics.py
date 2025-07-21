@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from ..utilities.logger import get_logger
-from .error_types import ErrorCategory, ErrorLevel, UserFriendlyError
+from .error_types import UserFriendlyError
 
 
 class ErrorStatistics:
@@ -217,7 +217,7 @@ class ErrorStatistics:
         daily_counts: dict[str, int] = {}
         category_trends: dict[str, dict[str, int]] = {}
 
-        cutoff_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        # cutoff_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)  # noqa: ERA001
 
         for error in self._error_history:
             if hasattr(error, "timestamp") and error.timestamp:

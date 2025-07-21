@@ -9,7 +9,7 @@ Claude Code 品質ゲートスクリプト
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 
 class QualityGate:
@@ -228,7 +228,7 @@ class QualityGate:
             return False
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     project_root = Path(__file__).parent.parent
 

@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     """Main processing for alpha build"""
 
     # Move to project root

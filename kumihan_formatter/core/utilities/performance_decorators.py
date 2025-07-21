@@ -12,10 +12,9 @@ import inspect
 import logging
 import time
 import traceback
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
-if TYPE_CHECKING:
-    from .structured_logger import StructuredLogger
+# TYPE_CHECKING import removed as unused
 
 try:
     import psutil
@@ -70,8 +69,6 @@ def log_performance_decorator(
                     start_memory = psutil.Process().memory_info().rss
                 except Exception as e:
                     # Log memory monitoring errors for debugging
-                    import logging
-
                     logging.getLogger("kumihan_formatter.performance").debug(
                         f"Memory monitoring failed: {e}"
                     )

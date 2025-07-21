@@ -9,9 +9,6 @@ from typing import TYPE_CHECKING
 from .debug_logger_core import GUIDebugLogger
 from .debug_logger_decorators import create_gui_method_decorator
 
-if TYPE_CHECKING:
-    from typing import Any, Callable
-
 # グローバルロガーインスタンス（シングルトン使用）
 gui_debug_logger = GUIDebugLogger.get_singleton()
 
@@ -67,8 +64,6 @@ def log_startup_info() -> None:
 
 if __name__ == "__main__":
     # テスト用コード
-    import os
-
     os.environ["KUMIHAN_GUI_DEBUG"] = "true"
     logger = GUIDebugLogger()
     logger.info("Test message")

@@ -7,7 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
-from ....utilities.logger import get_logger
+from kumihan_formatter.core.utilities.logger import get_logger
+
 from .data_persistence import DataPersistence
 
 

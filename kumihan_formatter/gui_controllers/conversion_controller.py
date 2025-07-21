@@ -9,8 +9,8 @@ from tkinter import messagebox
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..gui_models import AppState
-    from ..gui_views import MainView
+    pass  # ..gui_models.AppState removed as unused
+    # ..gui_views.MainView removed as unused
 
 # デバッグロガーのインポート
 try:
@@ -33,7 +33,7 @@ class ConversionController:
     ファイル変換・サンプル生成・プレビュー処理を担当
     """
 
-    def __init__(self, model, view, thread_handler=None) -> None:
+    def __init__(self, model: Any, view: Any, thread_handler: Any = None) -> None:
         """変換コントローラーの初期化
 
         Args:

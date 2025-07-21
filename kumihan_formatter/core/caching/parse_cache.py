@@ -12,7 +12,6 @@ Issue #402対応 - パフォーマンス最適化
 from pathlib import Path
 from typing import Any
 
-from ..ast_nodes import Node
 from .parse_cache_analytics import ParseCacheAnalytics
 from .parse_cache_core import ParseCacheCore
 

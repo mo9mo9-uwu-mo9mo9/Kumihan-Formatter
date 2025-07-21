@@ -6,7 +6,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import threading
 import time
-from typing import Any, Optional, Union
+from typing import Callable, Optional, Union
 
 from ..utilities.logger import get_logger
 
@@ -59,11 +59,11 @@ class MemoryMonitorBasic:
         self._lock = threading.RLock()
 
         # コールバック関数（外部から設定）
-        self._snapshot_callback: Optional[callable] = None
+        self._snapshot_callback: Optional[Callable[[], None]] = None
 
         self.logger.info("メモリモニター基本機能初期化完了")
 
-    def set_snapshot_callback(self, callback: callable) -> None:
+    def set_snapshot_callback(self, callback: Callable[[], None]) -> None:
         """スナップショット取得コールバックを設定
 
         Args:
