@@ -72,9 +72,7 @@ jobs:
       shell: bash
       timeout-minutes: 10
       run: |
-        pip install mypy
-        pip install -r requirements-dev.txt
-        # 型チェック実行（strictモード）
+        # 型チェック実行（strictモード）- dev依存関係は既にインストール済み
         python -m mypy --strict kumihan_formatter/ tests/
 
     - name: Test with pytest (CI ultra-fast)
