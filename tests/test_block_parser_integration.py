@@ -51,7 +51,7 @@ class TestBlockParser:
                 # Method might not exist, try alternative
                 try:
                     result = parser.parse(line)
-                except:
+                except (AttributeError, TypeError):
                     pass
 
     @pytest.mark.skipif(
@@ -78,7 +78,7 @@ class TestBlockParser:
                 try:
                     for line in lines:
                         parser.parse(line)
-                except:
+                except (AttributeError, TypeError):
                     pass
 
 

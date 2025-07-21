@@ -49,7 +49,7 @@ class TestTemplateSystemComplete:
             try:
                 template = manager.load_template(template_name)
                 assert template is not None
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 pass
 
         # Test template rendering
@@ -58,7 +58,7 @@ class TestTemplateSystemComplete:
                 context = {"content": "Test Content"}
                 result = manager.render(template_name, context)
                 assert isinstance(result, str)
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 pass
 
     @pytest.mark.skipif(
@@ -81,7 +81,7 @@ class TestTemplateSystemComplete:
                 try:
                     result = getattr(filters, filter_name)(input_val)
                     assert result == expected
-                except Exception:
+                except (AttributeError, TypeError, ValueError):
                     pass
 
     def test_render_context_comprehensive(self):
@@ -98,7 +98,7 @@ class TestTemplateSystemComplete:
                     context.update(test_data)
                     assert context.get("key1") == "value1"
                     assert context.get("key2") == 42
-                except Exception:
+                except (AttributeError, TypeError, ValueError):
                     pass
 
             # Test context inheritance
@@ -107,7 +107,7 @@ class TestTemplateSystemComplete:
                     context.push({"nested": "value"})
                     assert context.get("nested") == "value"
                     context.pop()
-                except Exception:
+                except (AttributeError, TypeError, ValueError):
                     pass
 
         except ImportError:
