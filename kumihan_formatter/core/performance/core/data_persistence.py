@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ....utilities.logger import get_logger
+from kumihan_formatter.core.utilities.logger import get_logger
 
 
 class DataPersistence:

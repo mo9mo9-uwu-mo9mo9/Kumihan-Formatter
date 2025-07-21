@@ -7,18 +7,18 @@ Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強�
 
 import threading
 import time
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 
 # Tkinterが利用できない場合のフォールバック
 class MockVar:
-    def __init__(self, value=None):
+    def __init__(self, value: Any = None) -> None:
         self._value = value if value is not None else 0
 
-    def get(self):
+    def get(self) -> Any:
         return self._value
 
-    def set(self, value):
+    def set(self, value: Any) -> None:
         self._value = value
 
 
@@ -32,7 +32,7 @@ except (ImportError, RuntimeError):
     StringVar = lambda value="": MockVar(value)
 
 
-def _safe_create_var(var_class, value=None):
+def _safe_create_var(var_class: Any, value: Any = None) -> Any:
     """安全にTkinter変数を作成"""
     try:
         if _TKINTER_AVAILABLE:

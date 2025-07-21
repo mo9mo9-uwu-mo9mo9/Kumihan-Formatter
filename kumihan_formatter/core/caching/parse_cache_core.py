@@ -7,7 +7,7 @@ to maintain the 300-line limit for parse_cache.py.
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from ..ast_nodes import Node
 from ..performance import get_global_monitor
@@ -122,7 +122,7 @@ class ParseCacheCore(SmartCache):
     def get_parse_or_compute(
         self,
         content: str,
-        parser_func: callable,
+        parser_func: Callable,
         file_path: Path | None = None,
         parse_options: dict[str, Any] | None = None,
     ) -> Node:

@@ -72,7 +72,7 @@ class ContentProcessor:
             return "[ERROR: Maximum recursion depth reached]"
 
         if not isinstance(node, Node):
-            return escape(str(node))  # type: ignore
+            return escape(str(node))
 
         # Route to specific rendering method on main renderer
         renderer_method = getattr(

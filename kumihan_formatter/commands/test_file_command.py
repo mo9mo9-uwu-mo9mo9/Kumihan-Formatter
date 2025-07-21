@@ -48,7 +48,9 @@ class TestFileCommand:
             sys.path.insert(0, str(dev_tools_path))
 
         try:
-            from generate_test_file import TestFileGenerator
+            from generate_test_file import (
+                TestFileGenerator,  # type: ignore[import-not-found]
+            )
         except ImportError:
             # Create a mock TestFileGenerator for testing purposes
             class TestFileGenerator:

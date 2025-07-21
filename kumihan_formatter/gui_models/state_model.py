@@ -9,7 +9,7 @@ import logging
 import os
 import threading
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .conversion_state import ConversionState
 from .file_model import FileManager
@@ -218,7 +218,7 @@ class AppState:
         except Exception as e:
             logging.error(f"エラー記録失敗: {e}")
 
-    def get_error_info(self) -> Dict[str, any]:
+    def get_error_info(self) -> Dict[str, Any]:
         """エラー情報を取得（Thread-Safe）"""
         try:
             with self._lock:
