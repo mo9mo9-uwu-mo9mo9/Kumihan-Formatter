@@ -49,8 +49,8 @@ class TestFileCommand:
 
         TestFileGenerator = None
         try:
-            from generate_test_file import (
-                TestFileGenerator as ImportedTestFileGenerator,  # type: ignore[import-not-found]
+            from generate_test_file import (  # type: ignore[import-not-found]  # noqa: E501
+                TestFileGenerator as ImportedTestFileGenerator,
             )
 
             TestFileGenerator = ImportedTestFileGenerator
