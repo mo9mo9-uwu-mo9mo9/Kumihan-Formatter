@@ -77,7 +77,10 @@ class TestFileOperationsCoverage:
 
         except (AttributeError, NotImplementedError, TypeError, ValueError) as e:
             # File operations may not be fully implemented
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
+            operation_type = "file I/O operations"
+            pytest.skip(
+                f"Dependency unavailable: {type(e).__name__}: {operation_type} not fully implemented in FileOperations: {e}"
+            )
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 

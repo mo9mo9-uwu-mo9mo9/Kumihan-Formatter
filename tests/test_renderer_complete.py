@@ -19,7 +19,7 @@ class TestRendererComplete:
             assert renderer is not None
 
         except ImportError:
-                pass
+            pass
 
     def test_heading_renderer(self):
         """Test heading renderer functionality"""
@@ -32,4 +32,4 @@ class TestRendererComplete:
             assert renderer is not None
 
         except ImportError:
-                pass
+            pass

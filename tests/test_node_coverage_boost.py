@@ -93,7 +93,7 @@ class TestNodeCoverageBoosting:
             assert none_node.get_text_content() == ""
         except Exception:
             # May not handle None gracefully
-                pass
+            pass
 
         # Test invalid heading levels
         invalid_headings = ["h0", "h6", "h7", "heading", "p"]

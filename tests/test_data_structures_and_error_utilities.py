@@ -62,7 +62,7 @@ class TestDataStructures:
                 pass
 
         except ImportError:
-                pass
+            pass
 
 
 class TestErrorHandlingUtilities:
@@ -117,4 +117,4 @@ class TestErrorHandlingUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass

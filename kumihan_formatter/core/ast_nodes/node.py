@@ -33,10 +33,13 @@ class Node:
     type: str
     content: Any
     attributes: dict[str, Any] | None = None
+    children: list["Node"] | None = None
 
     def __post_init__(self) -> None:
         if self.attributes is None:
             self.attributes = {}
+        if self.children is None:
+            self.children = []
 
     def add_attribute(self, key: str, value: Any) -> None:
         """Add an attribute to the node"""
@@ -55,6 +58,22 @@ class Node:
         if self.attributes is None:
             return False
         return key in self.attributes
+
+    def remove_attribute(self, key: str) -> None:
+        """Remove an attribute from the node"""
+        if self.attributes is not None and key in self.attributes:
+            del self.attributes[key]
+
+    def add_child(self, child: "Node") -> None:
+        """Add a child node"""
+        if self.children is None:
+            self.children = []
+        self.children.append(child)
+
+    def remove_child(self, child: "Node") -> None:
+        """Remove a child node"""
+        if self.children is not None and child in self.children:
+            self.children.remove(child)
 
     def is_block_element(self) -> bool:
         """Check if this node represents a block-level element"""
