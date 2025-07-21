@@ -85,7 +85,7 @@ class FileIOHandler:
         if sys.platform == "win32":
             fallback_encodings: list[str] = ["cp932"]
         else:
-            fallback_encodings = []
+            fallback_encodings: list[str] = []
 
         for enc in fallback_encodings:
             try:

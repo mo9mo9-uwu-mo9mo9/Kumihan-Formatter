@@ -19,13 +19,13 @@ pytestmark = [pytest.mark.unit, pytest.mark.tdd_green]
 class TestConversionStateThreadSafe:
     """ConversionStateのThread-Safe機能テスト"""
 
-    def test_thread_safe_progress_setting(self):
+    def test_thread_safe_progress_setting(self) -> None:
         """進捗設定のThread-Safe動作テスト"""
         state = ConversionState()
         results = []
         errors = []
 
-        def update_progress(thread_id):
+        def update_progress(thread_id: int) -> None:
             try:
                 for i in range(10):
                     progress = thread_id * 10 + i
@@ -53,13 +53,13 @@ class TestConversionStateThreadSafe:
         final_progress = state.get_progress()
         assert 0 <= final_progress <= 100
 
-    def test_thread_safe_status_updates(self):
+    def test_thread_safe_status_updates(self) -> None:
         """ステータス更新のThread-Safe動作テスト"""
         state = ConversionState()
         statuses = ["processing", "parsing", "rendering", "complete"]
         results = []
 
-        def update_status(status):
+        def update_status(status: str) -> None:
             try:
                 state.set_status(status)
                 current_status = state.get_status()
@@ -82,12 +82,12 @@ class TestConversionStateThreadSafe:
         assert all(isinstance(result, str) for result in results)
         assert not any(result.startswith("error:") for result in results)
 
-    def test_concurrent_progress_and_status_updates(self):
+    def test_concurrent_progress_and_status_updates(self) -> None:
         """進捗とステータスの同時更新テスト"""
         state = ConversionState()
         results = []
 
-        def mixed_operations(thread_id):
+        def mixed_operations(thread_id: int) -> None:
             try:
                 # 進捗設定
                 state.set_progress(thread_id * 20)
@@ -121,12 +121,12 @@ class TestConversionStateThreadSafe:
             assert result[1] != "error"  # progress should not be error
             assert isinstance(result[2], str)  # status should be string
 
-    def test_error_handling_thread_safety(self):
+    def test_error_handling_thread_safety(self) -> None:
         """エラーハンドリングのThread-Safe動作テスト"""
         state = ConversionState()
         errors = []
 
-        def test_invalid_operations(thread_id):
+        def test_invalid_operations(thread_id: int) -> None:
             try:
                 # 無効な進捗値でテスト
                 state.set_progress(-1)  # 無効な値
@@ -155,8 +155,7 @@ class TestConversionStateThreadSafe:
         # （実装によってはエラーが発生しない場合もある）
         assert isinstance(errors, list)
 
-    @pytest.mark.skip_ci
-    def test_reset_functionality_thread_safety(self):
+    def test_reset_functionality_thread_safety(self) -> None:
         """リセット機能のThread-Safe動作テスト（CI/CD最適化版）"""
         state = ConversionState()
 
@@ -166,7 +165,7 @@ class TestConversionStateThreadSafe:
 
         results = []
 
-        def reset_and_check(thread_id):
+        def reset_and_check(thread_id: int) -> None:
             try:
                 state.reset()
                 progress = state.get_progress()

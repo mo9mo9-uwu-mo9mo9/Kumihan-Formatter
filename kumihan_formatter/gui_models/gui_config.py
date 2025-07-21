@@ -64,7 +64,8 @@ class GuiConfig:
 
     def get_input_file(self) -> str:
         """入力ファイルパスを取得"""
-        return self.input_file_var.get().strip()
+        value = self.input_file_var.get()
+        return str(value).strip() if value is not None else ""
 
     def set_input_file(self, path: str) -> None:
         """入力ファイルパスを設定"""
@@ -72,7 +73,8 @@ class GuiConfig:
 
     def get_output_dir(self) -> str:
         """出力ディレクトリを取得"""
-        return self.output_dir_var.get().strip()
+        value = self.output_dir_var.get()
+        return str(value).strip() if value is not None else "./dist"
 
     def set_output_dir(self, path: str) -> None:
         """出力ディレクトリを設定"""
@@ -80,7 +82,8 @@ class GuiConfig:
 
     def get_template(self) -> str:
         """選択されたテンプレートを取得"""
-        return self.template_var.get()
+        value = self.template_var.get()
+        return str(value) if value is not None else "base.html.j2"
 
     def set_template(self, template: str) -> None:
         """テンプレートを設定"""
@@ -89,7 +92,8 @@ class GuiConfig:
 
     def get_include_source(self) -> bool:
         """ソース表示オプションを取得"""
-        return self.include_source_var.get()
+        value = self.include_source_var.get()
+        return bool(value) if value is not None else False
 
     def set_include_source(self, value: bool) -> None:
         """ソース表示オプションを設定"""
@@ -102,7 +106,8 @@ class GuiConfig:
 
     def get_no_preview(self) -> bool:
         """プレビュー無効化オプションを取得"""
-        return self.no_preview_var.get()
+        value = self.no_preview_var.get()
+        return bool(value) if value is not None else False
 
     def set_no_preview(self, value: bool) -> None:
         """プレビュー無効化オプションを設定"""

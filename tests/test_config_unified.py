@@ -4,20 +4,22 @@ Unified tests for Config functionality combining manager and integration tests.
 Issue #540 Phase 2: 重複テスト統合によるCI/CD最適化
 """
 
+from typing import Any
+
 import pytest
 
 
 class TestConfigManagerBasic:
     """Basic config manager tests"""
 
-    def test_config_manager_initialization(self):
+    def test_config_manager_initialization(self) -> None:
         """Test config manager initialization"""
         from kumihan_formatter.config import ConfigManager
 
         config = ConfigManager()
         assert config is not None
 
-    def test_config_basic_operations(self):
+    def test_config_basic_operations(self) -> None:
         """Test basic config operations"""
         from kumihan_formatter.config import ConfigManager
 
@@ -34,7 +36,7 @@ class TestConfigManagerBasic:
 class TestConfigIntegration:
     """Config integration tests"""
 
-    def test_config_file_loading(self):
+    def test_config_file_loading(self) -> None:
         """Test config file loading"""
         from kumihan_formatter.config import ConfigManager
 
@@ -53,7 +55,7 @@ class TestConfigIntegration:
             # Method may not be implemented
             pass
 
-    def test_config_validation(self):
+    def test_config_validation(self) -> None:
         """Test config validation"""
         from kumihan_formatter.config import ConfigManager
 
@@ -70,7 +72,7 @@ class TestConfigIntegration:
             # Validation may not be implemented
             pass
 
-    def test_config_environment_integration(self):
+    def test_config_environment_integration(self) -> None:
         """Test config environment variable integration"""
         from kumihan_formatter.config import ConfigManager
 
@@ -83,7 +85,7 @@ class TestConfigIntegration:
             # Environment loading may not be implemented
             pass
 
-    def test_config_merging(self):
+    def test_config_merging(self) -> None:
         """Test config merging functionality"""
         from kumihan_formatter.config import ConfigManager
 
@@ -106,7 +108,7 @@ class TestConfigIntegration:
             # Merging may not be implemented
             pass
 
-    def test_config_sections(self):
+    def test_config_sections(self) -> None:
         """Test config sections"""
         from kumihan_formatter.config import ConfigManager
 
@@ -124,7 +126,7 @@ class TestConfigIntegration:
             # Section support may not be implemented
             pass
 
-    def test_config_export_import(self):
+    def test_config_export_import(self) -> None:
         """Test config export and import"""
         from kumihan_formatter.config import ConfigManager
 
@@ -155,7 +157,7 @@ class TestConfigIntegration:
 class TestConfigAdvanced:
     """Advanced config functionality tests"""
 
-    def test_config_templates(self):
+    def test_config_templates(self) -> None:
         """Test config templates"""
         from kumihan_formatter.config import ConfigManager
 
@@ -173,7 +175,7 @@ class TestConfigAdvanced:
             # Template system may not be implemented
             pass
 
-    def test_config_watchers(self):
+    def test_config_watchers(self) -> None:
         """Test config change watchers"""
         from kumihan_formatter.config import ConfigManager
 
@@ -183,7 +185,7 @@ class TestConfigAdvanced:
             # Test change notification
             changes = []
 
-            def on_change(key, old_value, new_value):
+            def on_change(key: str, old_value: Any, new_value: Any) -> None:
                 changes.append((key, old_value, new_value))
 
             config.add_change_listener(on_change)
@@ -196,7 +198,7 @@ class TestConfigAdvanced:
             # Change watchers may not be implemented
             pass
 
-    def test_config_schema_validation(self):
+    def test_config_schema_validation(self) -> None:
         """Test config schema validation"""
         from kumihan_formatter.config import ConfigManager
 

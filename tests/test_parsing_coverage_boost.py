@@ -13,7 +13,7 @@ import pytest
 class TestParsingCoverageBoosting:
     """Boost parsing module coverage significantly"""
 
-    def test_block_parser_comprehensive(self):
+    def test_block_parser_comprehensive(self) -> None:
         """Test block parser comprehensive functionality"""
         from kumihan_formatter.core.block_parser.block_parser import BlockParser
 
@@ -61,7 +61,7 @@ class TestParsingCoverageBoosting:
         except Exception:
             pass
 
-    def test_keyword_parser_comprehensive(self):
+    def test_keyword_parser_comprehensive(self) -> None:
         """Test keyword parser comprehensive functionality"""
         from kumihan_formatter.core.keyword_parser import KeywordParser
 
@@ -91,7 +91,7 @@ class TestParsingCoverageBoosting:
         except Exception:
             pass
 
-    def test_marker_parser_comprehensive(self):
+    def test_marker_parser_comprehensive(self) -> None:
         """Test marker parser comprehensive functionality"""
         from kumihan_formatter.core.keyword_parsing.definitions import (
             KeywordDefinitions,

@@ -20,7 +20,7 @@ from kumihan_formatter.renderer import Renderer, render
 class TestParserRendererIntegration:
     """Integration tests for parser-renderer workflow"""
 
-    def test_parse_render_workflow(self):
+    def test_parse_render_workflow(self) -> None:
         """Test complete parse-render workflow"""
         # Simple workflow test
         content = "Hello World"
@@ -48,7 +48,7 @@ class TestParserRendererIntegration:
             assert Parser is not None
             assert Renderer is not None
 
-    def test_function_based_workflow(self):
+    def test_function_based_workflow(self) -> None:
         """Test function-based parse-render workflow"""
         content = "Hello World"
 

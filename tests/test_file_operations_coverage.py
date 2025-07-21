@@ -46,7 +46,7 @@ class TestFileOperationsCoverage:
     @pytest.mark.skipif(
         not HAS_FILE_OPERATIONS, reason="FileOperations module not available"
     )
-    def test_file_operations_comprehensive(self):
+    def test_file_operations_comprehensive(self) -> None:
         """Test file operations comprehensive functionality"""
 
         file_ops = FileOperations()
@@ -88,7 +88,7 @@ class TestFileOperationsCoverage:
         not HAS_FILE_OPERATIONS_FACTORY,
         reason="FileOperationsFactory module not available",
     )
-    def test_file_operations_factory_comprehensive(self):
+    def test_file_operations_factory_comprehensive(self) -> None:
         """Test file operations factory comprehensive functionality"""
         factory = FileOperationsFactory()
 
@@ -120,7 +120,7 @@ class TestFileOperationsCoverage:
     @pytest.mark.skipif(
         not HAS_FILE_IO_HANDLER, reason="FileIOHandler module not available"
     )
-    def test_file_io_handler_comprehensive(self):
+    def test_file_io_handler_comprehensive(self) -> None:
         """Test file I/O handler comprehensive functionality"""
         handler = FileIOHandler()
 
@@ -175,7 +175,7 @@ class TestFileOperationsCoverage:
     @pytest.mark.skipif(
         not HAS_ENCODING_DETECTOR, reason="EncodingDetector module not available"
     )
-    def test_encoding_detector_comprehensive(self):
+    def test_encoding_detector_comprehensive(self) -> None:
         """Test encoding detector comprehensive functionality"""
         detector = EncodingDetector()
 

@@ -14,7 +14,7 @@ import pytest
 class TestMainParserHighImpact:
     """High impact tests for main parser functionality"""
 
-    def test_parser_parse_method_comprehensive(self):
+    def test_parser_parse_method_comprehensive(self) -> None:
         """Test parser.parse() method comprehensively"""
         from kumihan_formatter.parser import Parser
 
@@ -68,7 +68,7 @@ Another paragraph.""",
                     f"Parse scenario not available: {scenario[:20]}... - {str(e)[:50]}"
                 )
 
-    def test_parser_internal_methods(self):
+    def test_parser_internal_methods(self) -> None:
         """Test parser internal methods for coverage"""
         from kumihan_formatter.parser import Parser
 
@@ -112,7 +112,7 @@ Another paragraph.""",
 class TestMainRendererHighImpact:
     """High impact tests for main renderer functionality"""
 
-    def test_renderer_render_method_comprehensive(self):
+    def test_renderer_render_method_comprehensive(self) -> None:
         """Test renderer.render() method comprehensively"""
         from kumihan_formatter.core.ast_nodes.node import Node
         from kumihan_formatter.renderer import Renderer
@@ -186,7 +186,7 @@ class TestMainRendererHighImpact:
                     f"Render scenario not available: {[n.type for n in nodes]} - {str(e)[:50]}"
                 )
 
-    def test_renderer_template_system(self):
+    def test_renderer_template_system(self) -> None:
         """Test renderer template system"""
         from kumihan_formatter.core.ast_nodes.node import Node
         from kumihan_formatter.renderer import Renderer

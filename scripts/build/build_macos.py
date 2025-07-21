@@ -179,14 +179,14 @@ class MacOSBuilder:
         ]
 
         print(f"Signing command: {' '.join(cmd)}")
-        result: subprocess.CompletedProcess[str] = subprocess.run(cmd, text=True)
+        sign_result: subprocess.CompletedProcess[str] = subprocess.run(cmd, text=True)
 
-        if result.returncode == 0:
+        if sign_result.returncode == 0:
             print("[OK] Signing completed")
         else:
             print("[ERROR] Signing failed")
             raise RuntimeError(
-                f"Code signing failed with return code {result.returncode}"
+                f"Code signing failed with return code {sign_result.returncode}"
             )
 
     def notarize_app(self, app_path: Path) -> None:

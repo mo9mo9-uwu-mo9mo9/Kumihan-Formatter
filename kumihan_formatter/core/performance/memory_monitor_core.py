@@ -94,11 +94,11 @@ class MemoryMonitor:
 
     # 後方互換性のためのプロパティ
     @property
-    def snapshots(self):
+    def snapshots(self) -> list[Any]:
         """スナップショットリストへのアクセス"""
         return self.stats_collector.get_snapshots()
 
     @property
-    def stats(self):
+    def stats(self) -> dict[str, Any]:
         """統計情報へのアクセス"""
         return self.data_manager.get_stats()

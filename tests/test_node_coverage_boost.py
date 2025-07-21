@@ -13,7 +13,7 @@ import pytest
 class TestNodeCoverageBoosting:
     """Boost AST Node module coverage significantly"""
 
-    def test_node_comprehensive_functionality(self):
+    def test_node_comprehensive_functionality(self) -> None:
         """Test Node class comprehensive functionality"""
         from kumihan_formatter.core.ast_nodes.node import Node
 
@@ -77,7 +77,7 @@ class TestNodeCoverageBoosting:
         list_children = root.find_children_by_type("ul")
         assert isinstance(list_children, list)
 
-    def test_node_edge_cases(self):
+    def test_node_edge_cases(self) -> None:
         """Test Node class edge cases and error handling"""
         from kumihan_formatter.core.ast_nodes.node import Node
 

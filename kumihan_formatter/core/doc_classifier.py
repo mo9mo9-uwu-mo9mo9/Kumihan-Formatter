@@ -152,3 +152,7 @@ def classify_project_documents(project_dir: Path) -> dict[DocumentType, list[Pat
     """
     classifier = DocumentClassifier()
     return classifier.classify_directory(project_dir)
+
+
+# Export classes and functions
+__all__ = ["DocumentClassifier", "DocumentType", "classify_project_documents"]

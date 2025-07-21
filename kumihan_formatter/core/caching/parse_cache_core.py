@@ -73,11 +73,11 @@ class ParseCacheCore(SmartCache):
         cached_result = self.get(cache_key)
         if cached_result is not None:
             self.parse_stats["cache_hits"] += 1
-            self.monitor.record_cache_hit("parse_cache")
-            return cached_result
+            self.monitor.record_cache_hit()
+            return cached_result  # type: ignore[no-any-return]
 
         self.parse_stats["cache_misses"] += 1
-        self.monitor.record_cache_miss("parse_cache")
+        self.monitor.record_cache_miss()
         return None
 
     def cache_parsed_ast(
@@ -115,14 +115,14 @@ class ParseCacheCore(SmartCache):
             self.parse_stats["total_nodes_cached"] += node_count
             self._update_average_parse_time()
 
-            self.monitor.record_cache_set("parse_cache", cache_key)
+            self.monitor.record_cache_set()
 
         return success
 
     def get_parse_or_compute(
         self,
         content: str,
-        parser_func: Callable,
+        parser_func: Callable[..., Any],
         file_path: Path | None = None,
         parse_options: dict[str, Any] | None = None,
     ) -> Node:
@@ -148,7 +148,7 @@ class ParseCacheCore(SmartCache):
         try:
             ast_node = parser_func(content, **(parse_options or {}))
         except Exception as e:
-            self.monitor.record_error("parse_cache", f"Parse error: {e}")
+            self.monitor.record_error()
             raise
 
         end_time = datetime.now()
@@ -157,7 +157,7 @@ class ParseCacheCore(SmartCache):
         # 結果をキャッシュ
         self.cache_parsed_ast(content, ast_node, file_path, parse_options, parse_time)
 
-        return ast_node
+        return ast_node  # type: ignore[no-any-return]
 
     def _generate_parse_cache_key(
         self,

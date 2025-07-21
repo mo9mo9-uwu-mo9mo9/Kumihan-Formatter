@@ -18,20 +18,20 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 class TestGuard:
     """テスト保護クラス"""
 
-    def __init__(self, repo_root: Path = None):
+    def __init__(self, repo_root: Path | None = None):
         self.repo_root = repo_root or Path.cwd()
         self.tests_dir = self.repo_root / "tests"
         self.backup_dir = self.repo_root / ".test_backups"
         self.guard_log = self.repo_root / ".test_guard.log"
 
         # テスト保護設定
-        self.protection_config = {
+        self.protection_config: Dict[str, Any] = {
             "max_deletions_allowed": 3,
             "min_test_files_required": 20,
             "protected_patterns": [
@@ -274,7 +274,7 @@ class TestGuard:
             print(f"   Available backups: {len(backups)}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Test Guard - Prevent accidental test deletion"
     )

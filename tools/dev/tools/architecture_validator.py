@@ -280,16 +280,17 @@ class ArchitectureValidator:
         report_lines.append("")
 
         # 詳細
-        for severity in [
+        for severity_enum in [
             ViolationSeverity.CRITICAL,
             ViolationSeverity.ERROR,
             ViolationSeverity.WARNING,
         ]:
-            if severity.value not in by_severity:
+            severity_value = severity_enum.value
+            if severity_value not in by_severity:
                 continue
 
-            violations = by_severity[severity.value]
-            report_lines.append(f"## {severity.value.upper()} ({len(violations)}件)")
+            violations = by_severity[severity_value]
+            report_lines.append(f"## {severity_value.upper()} ({len(violations)}件)")
 
             for violation in violations:
                 relative_path = violation.file_path.relative_to(self.project_root)

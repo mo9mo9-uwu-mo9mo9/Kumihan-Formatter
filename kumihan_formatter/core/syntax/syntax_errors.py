@@ -48,3 +48,4 @@ class ErrorTypes:
     MULTIPLE_HEADINGS = "multiple-headings"
     INLINE_MARKER = "inline-marker"
     INVALID_BLOCK_MARKER = "invalid-block-marker"
+    INVALID_SYNTAX = "invalid-syntax"

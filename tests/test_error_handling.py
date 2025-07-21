@@ -10,7 +10,7 @@ import pytest
 class TestErrorHandling:
     """Tests for error handling functionality"""
 
-    def test_basic_error_handling(self):
+    def test_basic_error_handling(self) -> None:
         """Test basic error handling"""
         try:
             from kumihan_formatter.core.error_handler import ErrorHandler
@@ -21,7 +21,7 @@ class TestErrorHandling:
         except ImportError:
             pass
 
-    def test_validation_errors(self):
+    def test_validation_errors(self) -> None:
         """Test validation error handling"""
         try:
             from kumihan_formatter.core.validators import ValidationError

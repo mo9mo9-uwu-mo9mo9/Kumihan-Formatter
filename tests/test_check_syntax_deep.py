@@ -24,7 +24,7 @@ class TestCheckSyntaxDeep:
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_command_basic(self):
+    def test_check_syntax_command_basic(self) -> None:
         """基本的な構文チェックテスト"""
         command = CheckSyntaxCommand()
         assert command is not None
@@ -35,7 +35,7 @@ class TestCheckSyntaxDeep:
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_valid_file(self):
+    def test_check_syntax_valid_file(self) -> None:
         """有効ファイルの構文チェック"""
         try:
             command = CheckSyntaxCommand()
@@ -95,7 +95,7 @@ Text with ((valid footnote)) notation.
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_invalid_file(self):
+    def test_check_syntax_invalid_file(self) -> None:
         """無効ファイルの構文チェック"""
         try:
             command = CheckSyntaxCommand()
@@ -156,7 +156,7 @@ Invalid syntax patterns.
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_nonexistent_file(self):
+    def test_check_syntax_nonexistent_file(self) -> None:
         """存在しないファイルの構文チェック"""
         try:
             command = CheckSyntaxCommand()
@@ -191,7 +191,7 @@ Invalid syntax patterns.
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_empty_file(self):
+    def test_check_syntax_empty_file(self) -> None:
         """空ファイルの構文チェック"""
         try:
             command = CheckSyntaxCommand()
@@ -233,7 +233,7 @@ Invalid syntax patterns.
     @pytest.mark.skipif(
         not HAS_CHECK_SYNTAX, reason="CheckSyntaxCommand module not available"
     )
-    def test_check_syntax_multiple_files(self):
+    def test_check_syntax_multiple_files(self) -> None:
         """複数ファイルの構文チェック"""
         try:
             command = CheckSyntaxCommand()

@@ -8,7 +8,7 @@ import sys
 from datetime import datetime
 
 
-def show_review_reminder():
+def show_review_reminder() -> None:
     """PRレビュー依頼のリマインダーを表示"""
     print("=" * 60)
     print("🔔 PR作成後の必須手順リマインダー")
@@ -35,7 +35,7 @@ def show_review_reminder():
     print()
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     if len(sys.argv) > 1 and sys.argv[1] == "--quiet":
         return

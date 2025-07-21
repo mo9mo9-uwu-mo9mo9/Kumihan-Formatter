@@ -12,7 +12,7 @@ import pytest
 class TestKeywordParsingHighImpact:
     """High impact tests for keyword parsing"""
 
-    def test_keyword_parser_comprehensive_parsing(self):
+    def test_keyword_parser_comprehensive_parsing(self) -> None:
         """Test keyword parser comprehensive parsing"""
         from kumihan_formatter.core.keyword_parser import KeywordParser
 
@@ -70,7 +70,7 @@ Plus ((a footnote)) reference.""",
                 # Method may not be implemented yet
                 pass
 
-    def test_marker_parser_comprehensive_detection(self):
+    def test_marker_parser_comprehensive_detection(self) -> None:
         """Test marker parser comprehensive detection"""
         from kumihan_formatter.core.keyword_parsing.definitions import (
             KeywordDefinitions,

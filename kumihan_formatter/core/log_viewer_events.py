@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class LogViewerEventHandler:
     """ログビューアーのイベント処理クラス"""
 
-    def __init__(self, ui_manager: Any, logger_getter: Callable) -> None:
+    def __init__(self, ui_manager: Any, logger_getter: Callable[[], Any]) -> None:
         self.ui = ui_manager
         self.get_logger = logger_getter
         self.running = False

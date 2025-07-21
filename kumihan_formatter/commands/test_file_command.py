@@ -28,7 +28,7 @@ class TestFileCommand:
         output: str,
         no_preview: bool,
         show_test_cases: bool,
-        config: str,
+        config: str | None,
     ) -> None:
         """
         Execute test file generation command
@@ -47,13 +47,16 @@ class TestFileCommand:
         if str(dev_tools_path) not in sys.path:
             sys.path.insert(0, str(dev_tools_path))
 
+        TestFileGenerator = None
         try:
             from generate_test_file import (
-                TestFileGenerator,  # type: ignore[import-not-found]
+                TestFileGenerator as ImportedTestFileGenerator,  # type: ignore[import-not-found]
             )
+
+            TestFileGenerator = ImportedTestFileGenerator
         except ImportError:
             # Create a mock TestFileGenerator for testing purposes
-            class TestFileGenerator:
+            class MockTestFileGenerator:
                 """Mock TestFileGenerator for environments where dev tools are not available"""
 
                 def __init__(self, max_combinations: int = 100):
@@ -102,7 +105,7 @@ class TestFileCommand:
                     output_file.write_text(test_content, encoding="utf-8")
                     return output_file
 
-                def get_statistics(self) -> dict:
+                def get_statistics(self) -> dict[str, int]:
                     """Return mock statistics"""
                     return {
                         "patterns": 15,
@@ -110,6 +113,8 @@ class TestFileCommand:
                         "generated_lines": 25,
                         "unique_notations": 8,
                     }
+
+            TestFileGenerator = MockTestFileGenerator
 
         get_console_ui().test_file_generation(double_click_mode)
 
@@ -151,7 +156,7 @@ class TestFileCommand:
         self,
         output_file: Path,
         output: str,
-        config: str,
+        config: str | None,
         show_test_cases: bool,
         no_preview: bool,
         double_click_mode: bool,

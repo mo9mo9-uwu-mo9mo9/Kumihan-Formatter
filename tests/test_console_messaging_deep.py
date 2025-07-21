@@ -14,7 +14,7 @@ import pytest
 class TestConsoleMessagingDeep:
     """ConsoleMessaging深度テスト - 43%→70%+目標"""
 
-    def test_console_messaging_initialization(self):
+    def test_console_messaging_initialization(self) -> None:
         """ConsoleMessaging初期化テスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -26,7 +26,7 @@ class TestConsoleMessagingDeep:
         messaging = ConsoleMessaging(mock_console)
         assert messaging is not None
 
-    def test_console_messaging_message_types(self):
+    def test_console_messaging_message_types(self) -> None:
         """メッセージタイプ別テスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -63,7 +63,7 @@ class TestConsoleMessagingDeep:
                         except Exception:
                             pass
 
-    def test_console_messaging_formatting(self):
+    def test_console_messaging_formatting(self) -> None:
         """メッセージフォーマット機能テスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -98,7 +98,7 @@ class TestConsoleMessagingDeep:
                         except:
                             pass
 
-    def test_console_messaging_templates(self):
+    def test_console_messaging_templates(self) -> None:
         """メッセージテンプレート機能テスト"""
         # Mock console object for testing
         from unittest.mock import Mock

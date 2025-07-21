@@ -10,7 +10,7 @@ import pytest
 class TestDataStructures:
     """Test data structure utilities"""
 
-    def test_data_structures(self):
+    def test_data_structures(self) -> None:
         """Test custom data structures"""
         try:
             from kumihan_formatter.core.utilities.data_structures import (
@@ -68,7 +68,7 @@ class TestDataStructures:
 class TestErrorHandlingUtilities:
     """Test error handling utilities"""
 
-    def test_error_analyzer(self):
+    def test_error_analyzer(self) -> None:
         """Test error analyzer utilities"""
         try:
             from kumihan_formatter.core.utilities.error_analyzer import (
@@ -92,7 +92,7 @@ class TestErrorHandlingUtilities:
             # Test error context
             try:
 
-                def problematic_function():
+                def problematic_function() -> float:
                     x = 1
                     y = 0
                     return x / y
@@ -108,8 +108,8 @@ class TestErrorHandlingUtilities:
 
             # Test fix suggestions
             try:
-                error = FileNotFoundError("File 'test.txt' not found")
-                suggestions = suggest_fix(error)
+                file_error: Exception = FileNotFoundError("File 'test.txt' not found")
+                suggestions = suggest_fix(file_error)
 
                 assert isinstance(suggestions, list)
                 assert len(suggestions) > 0

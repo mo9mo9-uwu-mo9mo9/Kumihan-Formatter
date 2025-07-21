@@ -103,13 +103,16 @@ class SmartCache:
         self.stats["file_cache_misses"] += 1
         return default
 
-    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
         """キャッシュに値を設定
 
         Args:
             key: キャッシュキー
             value: 保存する値
             ttl: 生存時間（秒）、未指定時はデフォルトTTL
+
+        Returns:
+            bool: 正常に保存できたかどうか
         """
         ttl = ttl if ttl is not None else self.default_ttl
 
@@ -125,6 +128,8 @@ class SmartCache:
 
         # ファイルキャッシュにも保存
         self.storage.save_to_file(key, entry)
+
+        return True
 
     def get_or_compute(
         self, key: str, compute_func: Callable[[], T], ttl: int | None = None

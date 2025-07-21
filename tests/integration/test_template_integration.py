@@ -13,7 +13,7 @@ class TestTemplateIntegration:
     """テンプレートシステム統合テスト"""
 
     @pytest.mark.unit
-    def test_template_context_integration(self):
+    def test_template_context_integration(self) -> None:
         """テンプレートコンテキスト統合テスト"""
         try:
             from kumihan_formatter.core.template_context import TemplateContext
@@ -25,7 +25,7 @@ class TestTemplateIntegration:
             pass
 
     @pytest.mark.unit
-    def test_template_filters_integration(self):
+    def test_template_filters_integration(self) -> None:
         """テンプレートフィルター統合テスト"""
         try:
             from kumihan_formatter.core.template_filters import escape_html

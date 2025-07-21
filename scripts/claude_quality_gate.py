@@ -228,7 +228,7 @@ class QualityGate:
             return False
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     project_root = Path(__file__).parent.parent
 

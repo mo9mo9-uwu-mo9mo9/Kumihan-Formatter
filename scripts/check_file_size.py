@@ -27,7 +27,7 @@ class FileSizeChecker:
         self.max_functions = max_functions
         self.violations: List[Tuple[str, str, int, int]] = []
 
-    def _load_legacy_files(self) -> set:
+    def _load_legacy_files(self) -> set[str]:
         """技術的負債ファイル一覧を読み込み"""
         legacy_files = set()
         legacy_file_path = Path("technical_debt_legacy_files.txt")
@@ -177,7 +177,7 @@ class FileSizeChecker:
         print("  4. 大きなクラスは責任範囲を見直して分割")
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     parser = argparse.ArgumentParser(
         description="ファイルサイズとコード複雑度チェッカー"

@@ -14,7 +14,7 @@ import pytest
 class TestConsoleUIDeep:
     """ConsoleUI深度テスト - 64%→80%+目標"""
 
-    def test_console_ui_initialization(self):
+    def test_console_ui_initialization(self) -> None:
         """ConsoleUI初期化テスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -25,7 +25,7 @@ class TestConsoleUIDeep:
         # ConsoleUIクラスが何を実装しているかに関係なく、初期化されていることを確認
         assert ui is not None
 
-    def test_console_ui_print_methods(self):
+    def test_console_ui_print_methods(self) -> None:
         """ConsoleUI出力メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -51,7 +51,7 @@ class TestConsoleUIDeep:
                                     f"Expected error in test scenario: {type(e2).__name__}: Method signature mismatch: {e2}"
                                 )
 
-    def test_console_ui_error_methods(self):
+    def test_console_ui_error_methods(self) -> None:
         """ConsoleUIエラー出力メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -75,7 +75,7 @@ class TestConsoleUIDeep:
                                     f"Expected error in test scenario: {type(e2).__name__}: Method signature mismatch: {e2}"
                                 )
 
-    def test_console_ui_warning_methods(self):
+    def test_console_ui_warning_methods(self) -> None:
         """ConsoleUI警告出力メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -93,7 +93,7 @@ class TestConsoleUIDeep:
                     except (TypeError, AttributeError, ValueError) as e:
                         pass
 
-    def test_console_ui_success_methods(self):
+    def test_console_ui_success_methods(self) -> None:
         """ConsoleUI成功出力メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -116,7 +116,7 @@ class TestConsoleUIDeep:
                     except (TypeError, AttributeError, ValueError) as e:
                         pass
 
-    def test_console_ui_input_methods(self):
+    def test_console_ui_input_methods(self) -> None:
         """ConsoleUI入力メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -141,7 +141,7 @@ class TestConsoleUIDeep:
                             except:
                                 pass
 
-    def test_console_ui_confirmation_methods(self):
+    def test_console_ui_confirmation_methods(self) -> None:
         """ConsoleUI確認メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -166,7 +166,7 @@ class TestConsoleUIDeep:
                             except:
                                 pass
 
-    def test_console_ui_progress_methods(self):
+    def test_console_ui_progress_methods(self) -> None:
         """ConsoleUIプログレス表示メソッドテスト"""
         from kumihan_formatter.ui.console_ui import ConsoleUI
 

@@ -39,7 +39,7 @@ class FileController:
     ファイル選択・ディレクトリ操作・ファイルマネージャー連携を担当
     """
 
-    def __init__(self, view) -> None:
+    def __init__(self, view: Any) -> None:
         """ファイルコントローラーの初期化"""
         self.view = view
         # 後方互換性のため、旧形式もサポート

@@ -82,6 +82,21 @@ class PerformanceMonitor:
         with self._lock:
             self._cache_stats["misses"] += 1
 
+    def record_cache_invalidation(self) -> None:
+        """Record a cache invalidation"""
+        # Cache invalidation is a type of miss
+        self.record_cache_miss()
+
+    def record_cache_set(self) -> None:
+        """Record a cache set operation"""
+        # Cache set doesn't affect hit/miss ratio directly
+        pass
+
+    def record_error(self, error_type: str = "general") -> None:
+        """Record an error occurrence"""
+        # For now, just pass - could be extended to track error statistics
+        pass
+
     def get_latest_report(self) -> PerformanceReport | None:
         """Get the most recent performance report"""
         with self._lock:

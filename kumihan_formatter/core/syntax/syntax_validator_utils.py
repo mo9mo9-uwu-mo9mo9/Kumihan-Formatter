@@ -79,7 +79,7 @@ class SyntaxValidatorUtils:
         Returns:
             tuple: (content, errors)
         """
-        errors = []
+        errors: list[SyntaxError] = []
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:

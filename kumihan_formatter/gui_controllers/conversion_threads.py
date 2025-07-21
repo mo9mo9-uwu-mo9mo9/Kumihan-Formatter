@@ -32,7 +32,7 @@ try:
 except ImportError as e:
     error(f"Failed to import command classes: {e}")
     ConvertCommand = None  # type: ignore
-    SampleCommand = None
+    SampleCommand = None  # type: ignore
 
 
 class ConversionThreads:
@@ -41,7 +41,7 @@ class ConversionThreads:
     ファイル変換・サンプル生成のスレッド処理を担当
     """
 
-    def __init__(self, controller) -> None:
+    def __init__(self, controller: Any) -> None:
         """スレッド処理の初期化"""
         self.controller = controller
 

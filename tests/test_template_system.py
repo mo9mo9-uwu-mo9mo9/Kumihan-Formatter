@@ -35,7 +35,7 @@ class TestTemplateSystemComplete:
     @pytest.mark.skipif(
         not HAS_TEMPLATE_MANAGER, reason="TemplateManager not available"
     )
-    def test_template_manager_comprehensive(self):
+    def test_template_manager_comprehensive(self) -> None:
         """Comprehensive test of TemplateManager functionality"""
         manager = TemplateManager()
         assert manager is not None
@@ -64,7 +64,7 @@ class TestTemplateSystemComplete:
     @pytest.mark.skipif(
         not HAS_TEMPLATE_FILTERS, reason="TemplateFilters not available"
     )
-    def test_template_filters_functionality(self):
+    def test_template_filters_functionality(self) -> None:
         """Test template filters functionality"""
         filters = TemplateFilters()
         assert filters is not None
@@ -84,7 +84,7 @@ class TestTemplateSystemComplete:
                 except (AttributeError, TypeError, ValueError):
                     pass
 
-    def test_render_context_comprehensive(self):
+    def test_render_context_comprehensive(self) -> None:
         """Comprehensive test of RenderContext functionality"""
         try:
             context = RenderContext()
@@ -106,7 +106,8 @@ class TestTemplateSystemComplete:
                 try:
                     context.push({"nested": "value"})
                     assert context.get("nested") == "value"
-                    context.pop()
+                    if hasattr(context, "pop"):
+                        context.pop()
                 except (AttributeError, TypeError, ValueError):
                     pass
 

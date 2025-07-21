@@ -88,7 +88,7 @@ class KumihanError(Exception):
         """Add a suggestion to the error"""
         self.suggestions.append(suggestion)
 
-    def with_context(self, **context_updates) -> "KumihanError":
+    def with_context(self, **context_updates: Any) -> "KumihanError":
         """Create a new error with updated context"""
         new_context = ErrorContext(
             file_path=context_updates.get("file_path", self.context.file_path),
@@ -115,7 +115,9 @@ class KumihanError(Exception):
 class FileSystemError(KumihanError):
     """File system operation errors"""
 
-    def __init__(self, message: str, file_path: str | None = None, **kwargs):
+    def __init__(
+        self, message: str, file_path: str | None = None, **kwargs: Any
+    ) -> None:
         context = ErrorContext(file_path=file_path, operation="file_system")
         super().__init__(
             message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs
@@ -125,7 +127,9 @@ class FileSystemError(KumihanError):
 class SyntaxError(KumihanError):
     """Syntax parsing errors"""
 
-    def __init__(self, message: str, line_number: int | None = None, **kwargs):
+    def __init__(
+        self, message: str, line_number: int | None = None, **kwargs: Any
+    ) -> None:
         context = ErrorContext(line_number=line_number, operation="syntax_parsing")
         super().__init__(
             message, category=ErrorCategory.SYNTAX, context=context, **kwargs
@@ -135,12 +139,12 @@ class SyntaxError(KumihanError):
 class ValidationError(KumihanError):
     """Data validation errors"""
 
-    def __init__(self, message: str, **kwargs):
+    def __init__(self, message: str, **kwargs: Any) -> None:
         super().__init__(message, category=ErrorCategory.VALIDATION, **kwargs)
 
 
 class ConfigurationError(KumihanError):
     """Configuration errors"""
 
-    def __init__(self, message: str, **kwargs):
+    def __init__(self, message: str, **kwargs: Any) -> None:
         super().__init__(message, category=ErrorCategory.CONFIGURATION, **kwargs)

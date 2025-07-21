@@ -263,3 +263,7 @@ class TemplateValidator:
             return len(missing_vars) == 0, missing_vars
         except:
             return False, required_vars
+
+
+# Export classes and functions
+__all__ = ["TemplateManager", "RenderContext"]

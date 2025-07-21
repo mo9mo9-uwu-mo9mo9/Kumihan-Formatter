@@ -29,7 +29,7 @@ class TestBlockParser:
         not (HAS_BLOCK_PARSER and HAS_KEYWORD_PARSER),
         reason="BlockParser or KeywordParser not available",
     )
-    def test_block_parser_basic(self):
+    def test_block_parser_basic(self) -> None:
         """Test basic block parser functionality"""
         keyword_parser = KeywordParser()
         parser = BlockParser(keyword_parser)
@@ -58,7 +58,7 @@ class TestBlockParser:
         not (HAS_BLOCK_PARSER and HAS_KEYWORD_PARSER),
         reason="BlockParser or KeywordParser not available",
     )
-    def test_block_parser_multi_line(self):
+    def test_block_parser_multi_line(self) -> None:
         """Test multi-line block parsing"""
         keyword_parser = KeywordParser()
         parser = BlockParser(keyword_parser)
@@ -85,7 +85,7 @@ class TestBlockParser:
 class TestParserIntegration:
     """Test parser integration with other components"""
 
-    def test_parse_function_integration(self):
+    def test_parse_function_integration(self) -> None:
         """Test the parse() function integration"""
         from kumihan_formatter.parser import Parser
 
@@ -102,7 +102,7 @@ class TestParserIntegration:
             result = parser.parse(text)
             assert result is not None
 
-    def test_parser_with_config(self):
+    def test_parser_with_config(self) -> None:
         """Test parser with configuration"""
         from kumihan_formatter.config import ConfigManager
         from kumihan_formatter.parser import Parser
@@ -121,7 +121,7 @@ class TestParserIntegration:
         result = parser.parse("# Test Document")
         assert result is not None
 
-    def test_parser_error_handling(self):
+    def test_parser_error_handling(self) -> None:
         """Test parser error handling"""
         from kumihan_formatter.parser import Parser
 
@@ -149,7 +149,7 @@ class TestParserIntegration:
                 else:
                     raise
 
-    def test_parser_performance_baseline(self):
+    def test_parser_performance_baseline(self) -> None:
         """Test parser performance with larger documents"""
         from kumihan_formatter.parser import Parser
 
@@ -186,7 +186,7 @@ This is a performance baseline test for the parser.
         # Should handle reasonably sized documents
         assert len(result) > 2
 
-    def test_parser_incremental_parsing(self):
+    def test_parser_incremental_parsing(self) -> None:
         """Test incremental parsing capabilities"""
         from kumihan_formatter.parser import Parser
 

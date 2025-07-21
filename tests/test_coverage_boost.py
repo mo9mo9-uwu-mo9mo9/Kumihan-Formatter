@@ -10,7 +10,7 @@ import pytest
 class TestCoverageBoost:
     """Quick tests to boost coverage efficiently"""
 
-    def test_import_coverage(self):
+    def test_import_coverage(self) -> None:
         """Test basic imports to boost coverage"""
         try:
             from kumihan_formatter.config import ConfigManager
@@ -31,7 +31,7 @@ class TestCoverageBoost:
             # Method not available - skip silently
             pass
 
-    def test_utilities_coverage(self):
+    def test_utilities_coverage(self) -> None:
         """Test utilities to boost coverage"""
         try:
             from kumihan_formatter.core.utilities.text_processor import TextProcessor
@@ -43,7 +43,7 @@ class TestCoverageBoost:
             # Method not available - skip silently
             pass
 
-    def test_rendering_coverage(self):
+    def test_rendering_coverage(self) -> None:
         """Test rendering components to boost coverage"""
         try:
             from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer

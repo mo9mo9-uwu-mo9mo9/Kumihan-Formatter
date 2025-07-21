@@ -213,3 +213,57 @@ class ErrorAnalyzer:
             log_context.update(context)
 
         self.logger.warning(message, **log_context, **kwargs)
+
+
+# Standalone functions for backward compatibility and convenience
+def analyze_error(
+    error: Exception, context: Optional[dict[str, Any]] = None
+) -> dict[str, Any]:
+    """Standalone function to analyze an error
+
+    Args:
+        error: The exception to analyze
+        context: Additional context about the error
+
+    Returns:
+        Dict containing error analysis results
+    """
+    from .structured_logger_base import get_structured_logger
+
+    logger = get_structured_logger("error_analysis")
+    analyzer = ErrorAnalyzer(logger)
+    return analyzer.analyze_error(error, context)
+
+
+def get_error_context(error: Exception) -> dict[str, Any]:
+    """Get error context information
+
+    Args:
+        error: The exception to get context for
+
+    Returns:
+        Dict containing error context
+    """
+    return {
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "traceback": traceback.format_exc(),
+    }
+
+
+def suggest_fix(error: Exception) -> list[str]:
+    """Get fix suggestions for an error
+
+    Args:
+        error: The exception to suggest fixes for
+
+    Returns:
+        List of suggested fixes
+    """
+    from .structured_logger_base import get_structured_logger
+
+    logger = get_structured_logger("error_suggestions")
+    analyzer = ErrorAnalyzer(logger)
+    analysis = analyzer.analyze_error(error)
+    suggestions = analysis.get("suggestions", [])
+    return suggestions if isinstance(suggestions, list) else []

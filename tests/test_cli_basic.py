@@ -10,7 +10,7 @@ import pytest
 class TestCLIBasic:
     """Basic tests for CLI functionality"""
 
-    def test_cli_import(self):
+    def test_cli_import(self) -> None:
         """Test CLI module import"""
         try:
             from kumihan_formatter.cli import main
@@ -20,7 +20,7 @@ class TestCLIBasic:
         except ImportError:
             pass
 
-    def test_command_interface(self):
+    def test_command_interface(self) -> None:
         """Test command interface"""
         try:
             from kumihan_formatter.cli.commands import ConvertCommand

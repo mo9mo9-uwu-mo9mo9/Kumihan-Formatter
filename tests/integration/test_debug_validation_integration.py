@@ -16,7 +16,7 @@ class TestDebugIntegration:
     """デバッグシステム統合テスト"""
 
     @pytest.mark.unit
-    def test_debug_logging_integration(self):
+    def test_debug_logging_integration(self) -> None:
         """デバッグログ統合テスト"""
         from kumihan_formatter.core.debug_logger_utils import (
             get_logger,
@@ -30,7 +30,7 @@ class TestDebugIntegration:
         assert isinstance(debug_enabled, bool)
 
     @pytest.mark.unit
-    def test_debug_decorators_integration(self):
+    def test_debug_decorators_integration(self) -> None:
         """デバッグデコレーター統合テスト"""
         from kumihan_formatter.core.debug_logger_decorators import log_gui_method
 
@@ -38,7 +38,7 @@ class TestDebugIntegration:
         try:
 
             @log_gui_method("test_function")
-            def test_function():
+            def test_function() -> str:
                 return "テスト結果"
 
             result = test_function()
@@ -53,14 +53,22 @@ class TestValidationIntegration:
     """検証システム統合テスト"""
 
     @pytest.mark.unit
-    def test_syntax_validation_integration(self):
+    def test_syntax_validation_integration(self) -> None:
         """構文検証の統合テスト"""
         try:
-            from kumihan_formatter.core.syntax.syntax_errors import SyntaxError
+            # 構文エラーの作成（正しい引数順序）
+            from kumihan_formatter.core.syntax.syntax_errors import (
+                ErrorSeverity,
+                SyntaxError,
+            )
 
-            # 構文エラーの作成（正しい引数）
             error = SyntaxError(
-                "INVALID_SYNTAX", "テスト構文エラー", {"line": 1, "column": 1}
+                line_number=1,
+                column=1,
+                severity=ErrorSeverity.ERROR,
+                error_type="INVALID_SYNTAX",
+                message="テスト構文エラー",
+                context="test context",
             )
             assert error.message == "テスト構文エラー"
         except (ImportError, TypeError):
@@ -68,7 +76,7 @@ class TestValidationIntegration:
             pass
 
     @pytest.mark.file_io
-    def test_file_validation_integration(self):
+    def test_file_validation_integration(self) -> None:
         """ファイル検証の統合テスト"""
         try:
             from kumihan_formatter.core.file_validators import validate_input_file

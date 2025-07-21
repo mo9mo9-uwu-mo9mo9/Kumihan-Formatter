@@ -72,8 +72,16 @@ class ErrorContextManager:
 
     def suggest_probable_cause(self, error: Exception) -> str:
         """エラーの推定原因を提案"""
-        current_context = self._tracker.get_current_context()
-        return self._analyzer.suggest_probable_cause(error, current_context)
+        context_stack = self._tracker.get_context_stack()
+        system_context = self._tracker.get_system_context()
+        result = self._analyzer.suggest_probable_cause(
+            error, context_stack, system_context
+        )
+        # dict結果から文字列に変換
+        if isinstance(result, dict):
+            cause = result.get("probable_cause", "原因不明")
+            return str(cause)
+        return str(result)
 
     def get_context_breadcrumb(self) -> str:
         """コンテキストのパンくずリストを生成"""
@@ -99,9 +107,14 @@ class ErrorContextManager:
             for path in [ctx.file_path]
         }
 
-        return self._analyzer.generate_detailed_report(
+        result = self._analyzer.generate_detailed_report(
             error, context_stack, system_context, file_contexts
         )
+        # dict結果から文字列に変換
+        if isinstance(result, dict):
+            report = result.get("detailed_report", str(result))
+            return str(report)
+        return str(result)
 
     def export_context_as_json(
         self, error: Exception, output_file: str | None = None
@@ -116,8 +129,11 @@ class ErrorContextManager:
             for path in [ctx.file_path]
         }
 
+        from pathlib import Path
+
+        output_path = Path(output_file) if output_file else None
         return self._analyzer.export_context_as_json(
-            error, context_stack, system_context, file_contexts, output_file
+            context_stack, system_context, file_contexts, output_path
         )
 
 

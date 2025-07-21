@@ -16,7 +16,7 @@ class TestGUIIntegration:
     """GUI統合テスト"""
 
     @pytest.mark.skip_ci
-    def test_gui_models_integration(self):
+    def test_gui_models_integration(self) -> None:
         """GUIモデルの統合テスト"""
         # Tkinter環境が必要なテストは基本的なモジュール確認のみ
         try:
@@ -29,7 +29,7 @@ class TestGUIIntegration:
             pass
 
     @pytest.mark.mock_heavy
-    def test_gui_controllers_integration(self):
+    def test_gui_controllers_integration(self) -> None:
         """GUIコントローラーの統合テスト"""
         from kumihan_formatter.gui_controllers.gui_controller import GuiController
 
@@ -51,7 +51,7 @@ class TestRenderingIntegration:
     """レンダリングシステム統合テスト"""
 
     @pytest.mark.unit
-    def test_heading_rendering_integration(self):
+    def test_heading_rendering_integration(self) -> None:
         """見出しレンダリングの統合テスト"""
         from kumihan_formatter.core.ast_nodes import Node
         from kumihan_formatter.core.rendering.heading_collector import HeadingCollector
@@ -75,7 +75,7 @@ class TestRenderingIntegration:
         assert renderer.heading_counter == 5
 
     @pytest.mark.mock_heavy
-    def test_element_rendering_integration(self):
+    def test_element_rendering_integration(self) -> None:
         """要素レンダリングの統合テスト"""
         from kumihan_formatter.core.ast_nodes import Node
         from kumihan_formatter.core.rendering.element_renderer import ElementRenderer

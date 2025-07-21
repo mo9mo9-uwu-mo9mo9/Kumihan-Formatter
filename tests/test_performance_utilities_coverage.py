@@ -9,7 +9,7 @@ import pytest
 # CI/CD最適化: モジュールレベルインポートチェック
 try:
     from kumihan_formatter.core.utilities.performance_optimizer import (
-        PerformanceOptimizer,
+        LogPerformanceOptimizer as PerformanceOptimizer,
     )
 
     HAS_PERFORMANCE_OPTIMIZER = True
@@ -31,9 +31,14 @@ class TestPerformanceUtilitiesCoverage:
         not HAS_PERFORMANCE_OPTIMIZER,
         reason="PerformanceOptimizer module not available",
     )
-    def test_performance_optimizer_comprehensive(self):
+    def test_performance_optimizer_comprehensive(self) -> None:
         """Test performance optimizer comprehensive functionality"""
-        optimizer = PerformanceOptimizer()
+        from kumihan_formatter.core.utilities.structured_logger_base import (
+            get_structured_logger,
+        )
+
+        logger = get_structured_logger("test_optimizer")
+        optimizer = PerformanceOptimizer(logger)
 
         # Test optimization strategies
         try:
@@ -73,7 +78,7 @@ class TestPerformanceUtilitiesCoverage:
     @pytest.mark.skipif(
         not HAS_PERFORMANCE_TRACKER, reason="PerformanceTracker module not available"
     )
-    def test_performance_trackers_comprehensive(self):
+    def test_performance_trackers_comprehensive(self) -> None:
         """Test performance trackers comprehensive functionality"""
         tracker = PerformanceTracker()
 
@@ -114,9 +119,14 @@ class TestPerformanceUtilitiesCoverage:
         not HAS_PERFORMANCE_OPTIMIZER,
         reason="PerformanceOptimizer module not available",
     )
-    def test_performance_optimization_strategies(self):
+    def test_performance_optimization_strategies(self) -> None:
         """Test various performance optimization strategies"""
-        optimizer = PerformanceOptimizer()
+        from kumihan_formatter.core.utilities.structured_logger_base import (
+            get_structured_logger,
+        )
+
+        logger = get_structured_logger("test_optimizer_strategies")
+        optimizer = PerformanceOptimizer(logger)
 
         # Test strategy application
         strategies = ["memory", "cpu", "io", "cache"]
@@ -132,7 +142,7 @@ class TestPerformanceUtilitiesCoverage:
     @pytest.mark.skipif(
         not HAS_PERFORMANCE_TRACKER, reason="PerformanceTracker module not available"
     )
-    def test_performance_tracker_advanced_features(self):
+    def test_performance_tracker_advanced_features(self) -> None:
         """Test advanced performance tracking features"""
         tracker = PerformanceTracker()
 
@@ -161,9 +171,14 @@ class TestPerformanceUtilitiesCoverage:
         not HAS_PERFORMANCE_OPTIMIZER,
         reason="PerformanceOptimizer module not available",
     )
-    def test_performance_profiling(self):
+    def test_performance_profiling(self) -> None:
         """Test performance profiling capabilities"""
-        optimizer = PerformanceOptimizer()
+        from kumihan_formatter.core.utilities.structured_logger_base import (
+            get_structured_logger,
+        )
+
+        logger = get_structured_logger("test_optimizer_profiling")
+        optimizer = PerformanceOptimizer(logger)
 
         try:
             # Test profiling start/stop
@@ -185,13 +200,13 @@ class TestPerformanceUtilitiesCoverage:
     @pytest.mark.skipif(
         not HAS_PERFORMANCE_TRACKER, reason="PerformanceTracker module not available"
     )
-    def test_performance_benchmarking(self):
+    def test_performance_benchmarking(self) -> None:
         """Test performance benchmarking functionality"""
         tracker = PerformanceTracker()
 
         try:
             # Test benchmark execution
-            def test_function():
+            def test_function() -> int:
                 return sum(range(100))
 
             benchmark_result = tracker.benchmark(test_function, iterations=5)

@@ -28,7 +28,7 @@ class TestConfigSystemHighImpact:
     @pytest.mark.skipif(
         not HAS_CONFIG_MANAGER, reason="ConfigManager module not available"
     )
-    def test_config_manager_comprehensive_usage(self):
+    def test_config_manager_comprehensive_usage(self) -> None:
         """Test comprehensive config manager usage"""
 
         config_manager = ConfigManager()
@@ -107,7 +107,7 @@ class TestConfigSystemHighImpact:
     @pytest.mark.skipif(
         not HAS_EXTENDED_CONFIG, reason="ExtendedConfig module not available"
     )
-    def test_extended_config_functionality(self):
+    def test_extended_config_functionality(self) -> None:
         """Test extended config functionality"""
         config = ExtendedConfig()
 
@@ -159,7 +159,7 @@ class TestConfigSystemHighImpact:
     @pytest.mark.skipif(
         not HAS_CONFIG_MANAGER, reason="ConfigManager module not available"
     )
-    def test_config_validation_comprehensive(self):
+    def test_config_validation_comprehensive(self) -> None:
         """Test comprehensive config validation"""
         config_manager = ConfigManager()
 
@@ -186,7 +186,7 @@ class TestConfigSystemHighImpact:
     @pytest.mark.skipif(
         not HAS_EXTENDED_CONFIG, reason="ExtendedConfig module not available"
     )
-    def test_config_file_operations(self):
+    def test_config_file_operations(self) -> None:
         """Test config file loading and saving"""
         config = ExtendedConfig()
 

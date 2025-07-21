@@ -18,7 +18,7 @@ class TestUtilitiesIntegration:
     """ユーティリティ統合テスト"""
 
     @pytest.mark.unit
-    def test_logger_integration(self):
+    def test_logger_integration(self) -> None:
         """ロガー統合テスト"""
         from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -31,7 +31,7 @@ class TestUtilitiesIntegration:
         logger.warning("警告メッセージ")
 
     @pytest.mark.file_io
-    def test_file_system_integration(self):
+    def test_file_system_integration(self) -> None:
         """ファイルシステム統合テスト"""
         try:
             from kumihan_formatter.core.utilities.file_system import ensure_directory
@@ -46,21 +46,25 @@ class TestUtilitiesIntegration:
             pass
 
     @pytest.mark.performance
-    def test_performance_monitoring_integration(self):
+    def test_performance_monitoring_integration(self) -> None:
         """パフォーマンス監視統合テスト"""
         try:
             from kumihan_formatter.core.utilities.performance_optimizer import (
-                PerformanceOptimizer,
+                LogPerformanceOptimizer as PerformanceOptimizer,
+            )
+            from kumihan_formatter.core.utilities.structured_logger_base import (
+                get_structured_logger,
             )
 
-            optimizer = PerformanceOptimizer()
+            logger = get_structured_logger("integration_test")
+            optimizer = PerformanceOptimizer(logger)
             assert optimizer is not None
         except ImportError:
             # モジュールが存在しない場合はスキップ
             pass
 
     @pytest.mark.unit
-    def test_memory_tracking_integration(self):
+    def test_memory_tracking_integration(self) -> None:
         """メモリ追跡統合テスト"""
         # 基本的なメモリ使用量の確認
         initial_size = sys.getsizeof({})
@@ -76,7 +80,7 @@ class TestEndToEndWorkflow:
     """エンドツーエンドワークフロー統合テスト"""
 
     @pytest.mark.mock_heavy
-    def test_simple_conversion_workflow(self):
+    def test_simple_conversion_workflow(self) -> None:
         """シンプルな変換ワークフローの統合テスト"""
         from kumihan_formatter.core.ast_nodes import Node
         from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
@@ -123,7 +127,7 @@ class TestEndToEndWorkflow:
             assert "<li>リスト項目1</li>" in result
 
     @pytest.mark.unit
-    def test_error_recovery_workflow(self):
+    def test_error_recovery_workflow(self) -> None:
         """エラー回復ワークフローの統合テスト"""
         from kumihan_formatter.core.error_handling.error_recovery import ErrorRecovery
 
@@ -138,7 +142,7 @@ class TestEndToEndWorkflow:
             pass
 
     @pytest.mark.mock_heavy
-    def test_complete_rendering_pipeline(self):
+    def test_complete_rendering_pipeline(self) -> None:
         """完全なレンダリングパイプラインの統合テスト"""
         from kumihan_formatter.core.rendering.content_processor import ContentProcessor
         from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer

@@ -40,25 +40,20 @@ jobs:
       run: |
         flake8 kumihan_formatter/ tests/ || true
 
-    - name: Type checking (mypy - 警告のみ)
+    - name: Type checking (mypy - strict mode)
       run: |
-        echo "⚠️ 型チェック（Issue #497: 警告表示のみ）"
-        mypy kumihan_formatter/ --strict || echo "🔍 型エラー警告を検出"
+        echo "🔍 型チェック実行（strictモード）"
+        mypy kumihan_formatter/ --strict
 
-    - name: Run tests (基本テストのみ)
-      timeout-minutes: 5
+    - name: Run tests with coverage
+      timeout-minutes: 10
       run: |
-        echo "⚠️ Issue #497: 基本テスト実行（段階的テスト復旧）"
-        # 問題のあるカバレッジテスト・Thread-safeテストを除外して実行
-        pytest tests/ -q --no-cov --maxfail=1 -x --disable-warnings \
-          --ignore=tests/test_file_processing_coverage.py \
-          --ignore=tests/test_template_and_file_coverage.py \
-          --ignore=tests/test_final_coverage_push.py \
-          --ignore=tests/test_gui_models_threadsafe.py \
-          --ignore=tests/test_gui_conversion_state_threadsafe.py || echo "📝 テスト警告を検出（Phase 2-4で本格的テスト追加予定）"
+        echo "🧪 テスト実行（カバレッジ付き）"
+        # 全テスト実行（カバレッジ付き）
+        pytest tests/ -v --cov=kumihan_formatter --cov-report=xml --cov-report=html
 
     - name: Upload coverage reports to Codecov
-      if: false
+      if: true
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml

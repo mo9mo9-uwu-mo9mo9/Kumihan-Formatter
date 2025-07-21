@@ -88,7 +88,7 @@ def check_test_exists(source_file: Path) -> bool:
     return any(path.exists() for path in expected_paths)
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     if len(sys.argv) != 2:
         print("Usage: python enforce_tdd.py <source_directory>")

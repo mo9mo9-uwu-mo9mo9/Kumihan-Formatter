@@ -14,7 +14,7 @@ import pytest
 class TestConsoleOperationsDeep:
     """ConsoleOperations深度テスト - 32%→60%+目標"""
 
-    def test_console_operations_initialization(self):
+    def test_console_operations_initialization(self) -> None:
         """ConsoleOperations初期化テスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -26,7 +26,7 @@ class TestConsoleOperationsDeep:
         ops = ConsoleOperations(mock_console)
         assert ops is not None
 
-    def test_console_operations_file_operations(self):
+    def test_console_operations_file_operations(self) -> None:
         """ファイル操作メソッドテスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -71,7 +71,7 @@ class TestConsoleOperationsDeep:
                         # その他のエラーは許容
                         pass
 
-    def test_console_operations_text_processing(self):
+    def test_console_operations_text_processing(self) -> None:
         """テキスト処理メソッドテスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -106,7 +106,7 @@ class TestConsoleOperationsDeep:
                         # エラーは許容
                         pass
 
-    def test_console_operations_conversion_methods(self):
+    def test_console_operations_conversion_methods(self) -> None:
         """変換操作メソッドテスト"""
         # Mock console object for testing
         from unittest.mock import Mock
@@ -141,7 +141,7 @@ class TestConsoleOperationsDeep:
                         except:
                             pass
 
-    def test_console_operations_validation_methods(self):
+    def test_console_operations_validation_methods(self) -> None:
         """検証操作メソッドテスト"""
         # Mock console object for testing
         from unittest.mock import Mock

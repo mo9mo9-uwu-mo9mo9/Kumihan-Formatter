@@ -166,7 +166,7 @@ class KumihanSyntaxValidator:
             )
 
     def _check_multiline_syntax(
-        self, line_num: int, line: str, block_start_line: int, block_keywords: list
+        self, line_num: int, line: str, block_start_line: int, block_keywords: list[str]
     ) -> None:
         """マルチライン構文エラーをチェック"""
         self._add_error(
@@ -184,7 +184,7 @@ class KumihanSyntaxValidator:
         line_number: int,
         column: int,
         severity: ErrorSeverity,
-        error_type: ErrorTypes,
+        error_type: ErrorTypes | str,
         message: str,
         context: str,
         suggestion: str = "",
@@ -194,7 +194,7 @@ class KumihanSyntaxValidator:
             line_number=line_number,
             column=column,
             severity=severity,
-            error_type=error_type,
+            error_type=getattr(error_type, "value", str(error_type)),
             message=message,
             context=context,
             suggestion=suggestion,
