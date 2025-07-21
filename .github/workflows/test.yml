@@ -75,17 +75,18 @@ jobs:
         pip install -r requirements-dev.txt
         python -m mypy --strict kumihan_formatter/ tests/
 
-    - name: Test with pytest
+    - name: Test with pytest (CI optimized)
       shell: bash
-      timeout-minutes: 15
+      timeout-minutes: 10
       run: |
         if [ -d "tests" ] && [ "$(find tests -name '*.py' -not -name '__init__.py' | wc -l)" -gt 0 ]; then
-          pytest
+          # CI/CD最適化: 高速テスト実行
+          pytest -c pytest-ci.ini --maxfail=3 --tb=line
         else
           echo "No test files found, creating minimal test to ensure pytest works"
           mkdir -p tests
           echo "def test_minimal(): assert True" > tests/test_minimal.py
-          pytest tests/test_minimal.py
+          pytest tests/test_minimal.py --no-cov
         fi
 
     - name: Upload coverage reports to Codecov
