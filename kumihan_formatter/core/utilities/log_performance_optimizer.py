@@ -11,7 +11,7 @@ import logging
 from typing import Any, Optional
 
 try:
-    import psutil
+    import psutil  # noqa: F401
 
     HAS_PSUTIL = True
 except ImportError:

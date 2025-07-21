@@ -7,7 +7,12 @@ to comply with the 300-line limit.
 
 from __future__ import annotations
 
+import re
+
 from .ast_nodes import Node
+from .toc_formatter import TOCFormatter
+from .toc_generator_main import TOCGenerator
+from .toc_validator import TOCValidator
 
 
 class TOCEntry:
@@ -42,16 +47,11 @@ class TOCEntry:
     def get_text_content(self) -> str:
         """Get plain text content of the title"""
         # Remove any HTML tags from title
-        import re
-
         clean_title = re.sub(r"<[^>]+>", "", self.title)
         return clean_title.strip()
 
 
-# Import main classes from separate files for backward compatibility
-from .toc_formatter import TOCFormatter
-from .toc_generator_main import TOCGenerator
-from .toc_validator import TOCValidator
+# Main classes already imported at top
 
 # Re-export all classes to maintain the same public API
 __all__ = ["TOCEntry", "TOCGenerator", "TOCValidator", "TOCFormatter"]

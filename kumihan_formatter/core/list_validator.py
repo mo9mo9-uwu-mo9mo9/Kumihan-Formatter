@@ -42,7 +42,7 @@ class ListValidator:
                 # Check for list type consistency
                 if current_list_type and current_list_type != list_type:
                     issues.append(
-                        f"行 {i+1}: リストタイプが混在しています ({current_list_type} → {list_type})"
+                        f"行 {i + 1}: リストタイプが混在しています ({current_list_type} → {list_type})"
                     )
 
                 current_list_type = list_type

@@ -188,7 +188,7 @@ NPC情報：
 - ;;;見出し3;;; 第一段階
   - 情報収集
   - NPC との会話
-  
+
 - ;;;見出し3;;; 第二段階
   - ;;;太字;;; ダンジョン探索
   - ;;;ハイライト color=#ffe6e6;;; ボス戦
@@ -239,8 +239,20 @@ Kumihan-Formatterを使えば、このような美しく構造化された文書
 
 # サンプル画像のBase64エンコードデータ（小さなプレースホルダー画像）
 SAMPLE_IMAGES = {
-    "scenario_map.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNkYPhfz8DAUMvAwMAIAD94AgN1mm7aAAAAAElFTkSuQmCC""",
-    "character.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8/5+hnoGBgYGBgYGBEQAHDgIBD+kkcQAAAABJRU5ErkJggg==""",
-    "item_icon.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNkYPjfwMDAwMDAwMAIBgAKBAIBG7mFmAAAAABJRU5ErkJggg==""",
-    "flowchart.png": """iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNk+M9Qz8DAwMDAwMAIBgAGjAIBhagGmgAAAABJRU5ErkJggg==""",
+    "scenario_map.png": (
+        "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAA"
+        "FUlEQVR42mNkYPhfz8DAUMvAwMAIAD94AgN1mm7aAAAAAElFTkSuQmCC"
+    ),
+    "character.png": (
+        "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAA"
+        "FUlEQVR42mP8/5+hnoGBgYGBgYGBEQAHDgIBD+kkcQAAAABJRU5ErkJggg=="
+    ),
+    "item_icon.png": (
+        "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAA"
+        "FUlEQVR42mNkYPjfwMDAwMDAwMAIBgAKBAIBG7mFmAAAAABJRU5ErkJggg=="
+    ),
+    "flowchart.png": (
+        "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAA"
+        "FUlEQVR42mNk+M9Qz8DAwMDAwMAIBgAGjAIBhagGmgAAAABJRU5ErkJggg=="
+    ),
 }

@@ -82,10 +82,12 @@ class ArchitectureChecker:
         lines = content.splitlines()
         if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
             if node.end_lineno:
-                return node.end_lineno - node.lineno + 1
+                return int(node.end_lineno - node.lineno + 1)
         return 0
 
-    def _is_method(self, func_node: ast.FunctionDef, tree: ast.AST) -> bool:
+    def _is_method(
+        self, func_node: ast.FunctionDef | ast.AsyncFunctionDef, tree: ast.AST
+    ) -> bool:
         """関数がクラスメソッドかどうか判定"""
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef):
@@ -367,7 +369,7 @@ class ArchitectureChecker:
             print(f"  • 最大ファイル: {relative_path} ({largest_file[1]['lines']}行)")
 
 
-def main():
+def main() -> None:
     """メイン処理"""
     parser = argparse.ArgumentParser(description="アーキテクチャルールチェッカー")
     parser.add_argument(

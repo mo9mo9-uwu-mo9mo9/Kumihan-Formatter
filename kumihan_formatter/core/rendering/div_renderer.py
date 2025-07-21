@@ -48,7 +48,10 @@ class DivRenderer:
         class_attr = ' class="spoiler"' if is_spoiler else ""
 
         # Wrap content in a div to ensure CSS selectors work properly
-        return f'<details{class_attr}><summary>{escape_html(summary)}</summary><div class="details-content">{content}</div></details>'
+        return (
+            f"<details{class_attr}><summary>{escape_html(summary)}</summary>"
+            f'<div class="details-content">{content}</div></details>'
+        )
 
     def _render_content(self, content: Any, depth: int = 0) -> str:
         """
@@ -75,7 +78,8 @@ class DivRenderer:
         elif isinstance(content, Node):
             # Handle single Node objects using main renderer if available
             if self._main_renderer:
-                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
+                result = self._main_renderer._render_node_with_depth(content, depth + 1)
+                return str(result)
             else:
                 return f"{{NODE:{content.type}}}"
         elif isinstance(content, list):
@@ -84,9 +88,10 @@ class DivRenderer:
                 if isinstance(item, Node):
                     # Handle nested nodes using main renderer if available
                     if self._main_renderer:
-                        parts.append(
-                            self._main_renderer._render_node_with_depth(item, depth + 1)
+                        result = self._main_renderer._render_node_with_depth(
+                            item, depth + 1
                         )
+                        parts.append(str(result))
                     else:
                         parts.append(f"{{NODE:{item.type}}}")
                 elif isinstance(item, str):
@@ -126,7 +131,8 @@ class DivRenderer:
         elif isinstance(content, Node):
             # Handle single Node objects using main renderer if available
             if self._main_renderer:
-                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
+                result = self._main_renderer._render_node_with_depth(content, depth + 1)
+                return str(result)
             else:
                 return f"{{NODE:{content.type}}}"
         elif isinstance(content, list):
@@ -135,9 +141,10 @@ class DivRenderer:
                 if isinstance(item, Node):
                     # Handle nested nodes using main renderer if available
                     if self._main_renderer:
-                        parts.append(
-                            self._main_renderer._render_node_with_depth(item, depth + 1)
+                        result = self._main_renderer._render_node_with_depth(
+                            item, depth + 1
                         )
+                        parts.append(str(result))
                     else:
                         parts.append(f"{{NODE:{item.type}}}")
                 elif isinstance(item, str):

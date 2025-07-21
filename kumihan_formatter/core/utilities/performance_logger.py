@@ -11,7 +11,7 @@ Issue #492 Phase 5A - 分割により300行制限対応
 - performance_factory: ファクトリー関数
 """
 
-from typing import Any, Callable, Optional, Union
+# typing imports removed as unused
 
 # 分割されたモジュールからインポート
 from .performance_decorators import log_performance_decorator

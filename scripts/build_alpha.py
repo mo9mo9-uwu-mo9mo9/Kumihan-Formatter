@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     """アルファ版ビルドのメイン処理"""
 
     # プロジェクトルートに移動

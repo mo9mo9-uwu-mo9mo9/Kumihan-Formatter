@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - japanese_messages.py分割
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class ErrorMessageTemplates:

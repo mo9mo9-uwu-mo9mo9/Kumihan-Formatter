@@ -6,9 +6,8 @@ Issue #492 Phase 5A - markdown_converter.py分割
 """
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
-from .markdown_factory import create_markdown_converter
 from .markdown_parser import MarkdownParser
 from .markdown_processor import MarkdownProcessor
 from .markdown_renderer import MarkdownRenderer

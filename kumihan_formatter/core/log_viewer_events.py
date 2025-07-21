@@ -9,13 +9,13 @@ import time
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 if TYPE_CHECKING:
-    import tkinter as tk
+    pass  # tkinter as tk removed as unused
 
 
 class LogViewerEventHandler:
     """ログビューアーのイベント処理クラス"""
 
-    def __init__(self, ui_manager: Any, logger_getter: Callable) -> None:
+    def __init__(self, ui_manager: Any, logger_getter: Callable[[], Any]) -> None:
         self.ui = ui_manager
         self.get_logger = logger_getter
         self.running = False

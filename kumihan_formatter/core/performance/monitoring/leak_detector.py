@@ -121,7 +121,7 @@ class LeakDetector:
 
         # メモリ使用量アラート
         try:
-            import psutil
+            import psutil  # noqa: F401
 
             memory_usage_ratio = (
                 latest_snapshot.total_memory - latest_snapshot.available_memory

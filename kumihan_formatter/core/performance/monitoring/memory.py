@@ -8,7 +8,7 @@ import threading
 import time
 from typing import Any, Dict, List, Optional
 
-from ...utilities.logger import get_logger
+# ...utilities.logger.get_logger removed as unused
 from ..core.base import PerformanceComponent, PerformanceMetric
 from ..core.metrics import MemorySnapshot
 from .leak_detector import LeakDetector

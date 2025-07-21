@@ -6,7 +6,7 @@ Issue #476 Phase5対応 - structured_logger.py分割
 
 from __future__ import annotations
 
-import json
+# json removed as unused
 import time
 from typing import Any, Optional
 

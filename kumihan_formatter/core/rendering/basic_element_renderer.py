@@ -83,7 +83,10 @@ class BasicElementRenderer:
         if line_number:
             error_text = f"[ERROR (Line {line_number}): {content}]"
 
-        return f'<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">{error_text}</span>'
+        return (
+            f'<span style="background-color:#ffe6e6; color:#d32f2f; '
+            f'padding:2px 4px; border-radius:3px;">{error_text}</span>'
+        )
 
     def render_toc_placeholder(self, node: Node) -> str:
         """Render table of contents marker (should be handled by TOC generator)"""
@@ -112,7 +115,8 @@ class BasicElementRenderer:
         elif isinstance(content, Node):
             # Handle single Node objects using main renderer if available
             if self._main_renderer:
-                return self._main_renderer._render_node_with_depth(content, depth + 1)  # type: ignore
+                result = self._main_renderer._render_node_with_depth(content, depth + 1)
+                return str(result)
             else:
                 return f"{{NODE:{content.type}}}"
         elif isinstance(content, list):

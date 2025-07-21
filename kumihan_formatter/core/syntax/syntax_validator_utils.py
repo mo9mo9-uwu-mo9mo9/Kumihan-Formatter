@@ -4,10 +4,11 @@
 """
 
 from pathlib import Path
-from typing import Any
 
 from ...core.error_handling import ErrorCatalog, UserFriendlyError
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
+
+# typing.Any removed as unused
 
 
 class SyntaxValidatorUtils:
@@ -79,7 +80,7 @@ class SyntaxValidatorUtils:
         Returns:
             tuple: (content, errors)
         """
-        errors = []
+        errors: list[SyntaxError] = []
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:

@@ -67,9 +67,11 @@ class TOCFormatter:
                 counters[level] += 1
 
             # Reset counters for deeper levels
-            levels_to_reset = [l for l in counters.keys() if l > level]
-            for l in levels_to_reset:
-                del counters[l]
+            levels_to_reset = [
+                level_key for level_key in counters.keys() if level_key > level
+            ]
+            for level_key in levels_to_reset:
+                del counters[level_key]
 
             # Build number prefix
             number_parts = []

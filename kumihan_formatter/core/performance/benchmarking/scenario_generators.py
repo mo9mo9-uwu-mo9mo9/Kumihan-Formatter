@@ -6,7 +6,7 @@
 import random
 import string
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 class ScenarioDataGenerators:
@@ -32,7 +32,7 @@ class ScenarioDataGenerators:
                     string.ascii_letters + string.digits + " ", k=line_length
                 )
             )
-            lines.append(f"Line {i+1}: {line}")
+            lines.append(f"Line {i + 1}: {line}")
         return "\n".join(lines)
 
     @staticmethod
@@ -81,7 +81,7 @@ class ScenarioDataGenerators:
                     markup_text = pattern.format(text=word)
                 base_text = base_text.replace(word, markup_text, 1)
 
-            lines.append(f"Line {i+1}: {base_text}")
+            lines.append(f"Line {i + 1}: {base_text}")
         return "\n".join(lines)
 
     @staticmethod
@@ -144,7 +144,7 @@ class ScenarioDataGenerators:
             # 様々なパターンのキーを生成
             if i % 3 == 0:
                 # ファイルパス風
-                key = f"file_{i//10}/{random.choice(['doc', 'img', 'data'])}_{i}.txt"
+                key = f"file_{i // 10}/{random.choice(['doc', 'img', 'data'])}_{i}.txt"
             elif i % 3 == 1:
                 # ID風
                 key = f"id_{i:06d}_{random.choice(['user', 'product', 'order'])}"

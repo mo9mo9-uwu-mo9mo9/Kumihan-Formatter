@@ -49,7 +49,7 @@ class BlockValidator:
             elif self.block_parser.is_closing_marker(line_stripped):
                 # Check for matching opening marker
                 if not open_blocks:
-                    issues.append(f"行 {i+1}: 対応する開始マーカーのない閉じマーカー")
+                    issues.append(f"行 {i + 1}: 対応する開始マーカーのない閉じマーカー")
                 else:
                     open_blocks.pop()
 

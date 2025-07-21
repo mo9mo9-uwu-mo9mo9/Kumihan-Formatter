@@ -6,7 +6,7 @@ Issue #402対応 - パフォーマンス最適化
 """
 
 import time
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Sequence
 
 from ..utilities.logger import get_logger
 from .memory_alert_manager import MemoryAlertManager

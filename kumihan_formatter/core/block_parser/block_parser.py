@@ -77,7 +77,8 @@ class BlockParser:
 
         if not is_valid or end_index is None:
             self.logger.error(
-                f"Invalid block structure at line {start_index + 1}: {validation_errors}"
+                f"Invalid block structure at line {start_index + 1}: "
+                f"{validation_errors}"
             )
             return (
                 error_node("; ".join(validation_errors), start_index + 1),

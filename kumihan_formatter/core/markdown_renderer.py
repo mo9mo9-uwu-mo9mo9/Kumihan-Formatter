@@ -5,7 +5,6 @@ HTML生成・段落変換・テンプレート機能
 Issue #492 Phase 5A - markdown_converter.py分割
 """
 
-import re
 from datetime import datetime
 from typing import Any, Optional
 

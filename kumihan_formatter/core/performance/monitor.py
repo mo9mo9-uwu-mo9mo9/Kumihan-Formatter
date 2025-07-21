@@ -33,7 +33,7 @@ class PerformanceMonitor:
         """Context manager for measuring performance"""
         start_time = time.perf_counter()
         start_memory = self._system_info.get_memory_usage()
-        start_cpu = self._system_info.get_cpu_usage()
+        _ = self._system_info.get_cpu_usage()  # CPU使用率は現在未使用
 
         # Reset cache stats for this operation
         cache_hits_start = self._cache_stats["hits"]
@@ -81,6 +81,21 @@ class PerformanceMonitor:
         """Record a cache miss"""
         with self._lock:
             self._cache_stats["misses"] += 1
+
+    def record_cache_invalidation(self) -> None:
+        """Record a cache invalidation"""
+        # Cache invalidation is a type of miss
+        self.record_cache_miss()
+
+    def record_cache_set(self) -> None:
+        """Record a cache set operation"""
+        # Cache set doesn't affect hit/miss ratio directly
+        pass
+
+    def record_error(self, error_type: str = "general") -> None:
+        """Record an error occurrence"""
+        # For now, just pass - could be extended to track error statistics
+        pass
 
     def get_latest_report(self) -> PerformanceReport | None:
         """Get the most recent performance report"""

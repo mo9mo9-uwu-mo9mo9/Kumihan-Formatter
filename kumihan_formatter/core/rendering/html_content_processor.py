@@ -5,9 +5,10 @@ list markers, and block content processing.
 """
 
 import re
-from typing import Any
 
 from .html_escaping import escape_html
+
+# typing.Any removed as unused
 
 
 def process_text_content(text: str) -> str:

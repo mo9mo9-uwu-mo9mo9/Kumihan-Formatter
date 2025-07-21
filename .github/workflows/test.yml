@@ -13,7 +13,7 @@ jobs:
   full-test:
     if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -70,20 +70,18 @@ jobs:
 
     - name: Type check with mypy strict mode (CI optimized)
       shell: bash
-      timeout-minutes: 5
+      timeout-minutes: 10
       run: |
-        pip install mypy
-        pip install -r requirements-dev.txt
-        # CI/CD最適化: エラー数制限でタイムアウト回避
-        python -m mypy --strict kumihan_formatter/ tests/ --error-limit=50 || echo "Type errors found - continuing CI"
+        # 型チェック実行（strictモード）- dev依存関係は既にインストール済み
+        python -m mypy --strict kumihan_formatter/
 
     - name: Test with pytest (CI ultra-fast)
       shell: bash
-      timeout-minutes: 5
+      timeout-minutes: 10
       run: |
         if [ -d "tests" ] && [ "$(find tests -name '*.py' -not -name '__init__.py' | wc -l)" -gt 0 ]; then
-          # CI/CD最適化: 超高速テスト実行（カバレッジなし）
-          pytest -c pytest-ci.ini --maxfail=1 --tb=no -q --disable-warnings -x
+          # テスト実行（カバレッジ付き）
+          pytest tests/ -v --cov=kumihan_formatter --cov-report=xml --cov-report=html
         else
           echo "No test files found, creating minimal test to ensure pytest works"
           mkdir -p tests
@@ -92,7 +90,7 @@ jobs:
         fi
 
     - name: Upload coverage reports to Codecov
-      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12' && false
+      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12'
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
@@ -101,13 +99,13 @@ jobs:
         fail_ci_if_error: false
 
     - name: Generate coverage badge
-      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12' && false
+      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12'
       run: |
         pip install coverage-badge
         coverage-badge -o coverage.svg -f
 
     - name: Upload test results
-      if: always() && false
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.python-version }}

@@ -5,7 +5,6 @@
 
 import re
 from pathlib import Path
-from typing import Dict
 
 from .classification_rules import build_classification_rules, get_conversion_strategies
 from .document_types import DocumentType, get_type_display_names
@@ -152,3 +151,7 @@ def classify_project_documents(project_dir: Path) -> dict[DocumentType, list[Pat
     """
     classifier = DocumentClassifier()
     return classifier.classify_directory(project_dir)
+
+
+# Export classes and functions
+__all__ = ["DocumentClassifier", "DocumentType", "classify_project_documents"]

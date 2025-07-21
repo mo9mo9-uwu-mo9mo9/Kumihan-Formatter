@@ -13,7 +13,7 @@ from ..performance import get_global_monitor
 class ParseCacheAnalytics:
     """パースキャッシュの分析機能"""
 
-    def __init__(self, cache_core):
+    def __init__(self, cache_core: Any) -> None:
         """分析機能を初期化
 
         Args:
@@ -28,7 +28,7 @@ class ParseCacheAnalytics:
         Returns:
             dict: 統計情報
         """
-        stats = self.cache_core.parse_stats.copy()
+        stats: dict[str, Any] = self.cache_core.parse_stats.copy()
 
         # キャッシュヒット率を計算
         total_requests = stats["cache_hits"] + stats["cache_misses"]
@@ -53,7 +53,7 @@ class ParseCacheAnalytics:
         Returns:
             dict: 最適化結果
         """
-        optimization_results = {
+        optimization_results: dict[str, Any] = {
             "actions_taken": [],
             "performance_impact": {},
             "recommendations": [],
@@ -125,7 +125,8 @@ class ParseCacheAnalytics:
             invalidated_count += 1
 
         # パフォーマンス監視に記録
-        self.monitor.record_cache_invalidation("parse_cache", invalidated_count)
+        for _ in range(invalidated_count):
+            self.monitor.record_cache_invalidation()
 
         return invalidated_count
 

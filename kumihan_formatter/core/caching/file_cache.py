@@ -42,7 +42,8 @@ class FileCache(SmartCache):
         """
         self.logger = get_logger(__name__)
         self.logger.info(
-            f"FileCache初期化開始: max_memory={max_memory_mb}MB, max_entries={max_entries}, ttl={default_ttl}s"
+            f"FileCache初期化開始: max_memory={max_memory_mb}MB, "
+            f"max_entries={max_entries}, ttl={default_ttl}s"
         )
 
         super().__init__(

@@ -12,8 +12,9 @@ from .file_controller import FileController
 
 if TYPE_CHECKING:
     from ..core.log_viewer import LogViewerWindow
-    from ..gui_models import AppState
-    from ..gui_views import MainView
+
+    # ..gui_models.AppState removed as unused
+    # ..gui_views.MainView removed as unused
 
 # デバッグロガーのインポート
 try:
@@ -41,7 +42,11 @@ class MainController:
     """
 
     def __init__(
-        self, view, model=None, file_controller=None, conversion_controller=None
+        self,
+        view: Any,
+        model: Any = None,
+        file_controller: Any = None,
+        conversion_controller: Any = None,
     ) -> None:
         """メインコントローラーの初期化"""
         self.view = view
@@ -199,6 +204,6 @@ class MainController:
             raise
 
     @property
-    def log_viewer_property(self):
+    def log_viewer_property(self) -> Optional[Any]:
         """ログビューアープロパティ（テスト用）"""
         return self.log_viewer

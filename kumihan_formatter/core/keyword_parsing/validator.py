@@ -5,7 +5,6 @@
 """
 
 from difflib import get_close_matches
-from typing import Any
 
 from .definitions import KeywordDefinitions
 

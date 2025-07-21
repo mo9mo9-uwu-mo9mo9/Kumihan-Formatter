@@ -12,10 +12,7 @@ Issue #492 Phase 5A - 分割により300行制限対応
 - benchmark_formatters: フォーマット処理
 """
 
-from typing import Any
-
 from .benchmark_analyzer_core import BenchmarkAnalyzerCore
-from .benchmark_types import BenchmarkResult, BenchmarkSummary
 
 
 class BenchmarkAnalyzer(BenchmarkAnalyzerCore):

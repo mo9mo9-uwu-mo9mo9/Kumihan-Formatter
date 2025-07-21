@@ -7,6 +7,7 @@ Issue #492 Phase 5A - file_operations.py分割
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from .encoding_detector import EncodingDetector
 from .utilities.logger import get_logger
@@ -63,29 +64,62 @@ class FileIOHandler:
             f"Detected encoding: {detected_encoding} (confident: {is_confident})"
         )
 
-        # If confident in detection or no encoding specified, use detected
+        # Try detected encoding first if confident
+        content = FileIOHandler._try_detected_encoding(
+            path, detected_encoding, is_confident, encoding, logger
+        )
+        if content is not None:
+            return content
+
+        # Try specified encoding if different
+        content = FileIOHandler._try_specified_encoding(
+            path, encoding, detected_encoding, logger
+        )
+        if content is not None:
+            return content
+
+        # Try platform-specific fallbacks
+        content = FileIOHandler._try_platform_fallbacks(path, logger)
+        if content is not None:
+            return content
+
+        # Last resort: UTF-8 with error replacement
+        return FileIOHandler._read_with_error_replacement(path, logger)
+
+    @staticmethod
+    def _try_detected_encoding(
+        path: Path,
+        detected_encoding: str,
+        is_confident: bool,
+        encoding: str,
+        logger: Any,
+    ) -> str | None:
+        """検出されたエンコーディングで読み取りを試行"""
         if is_confident or encoding == "utf-8":
             try:
                 with open(path, "r", encoding=detected_encoding) as f:
                     return f.read()
             except UnicodeDecodeError:
                 logger.debug(f"Failed to decode with {detected_encoding}")
-                pass
+        return None
 
-        # Try specified encoding if different from detected
+    @staticmethod
+    def _try_specified_encoding(
+        path: Path, encoding: str, detected_encoding: str, logger: Any
+    ) -> str | None:
+        """指定されたエンコーディングで読み取りを試行"""
         if encoding != detected_encoding:
             try:
                 with open(path, "r", encoding=encoding) as f:
                     return f.read()
             except UnicodeDecodeError:
                 logger.debug(f"Failed to decode with specified encoding: {encoding}")
-                pass
+        return None
 
-        # Platform-specific fallbacks (minimal set)
-        if sys.platform == "win32":
-            fallback_encodings: list[str] = ["cp932"]
-        else:
-            fallback_encodings = []
+    @staticmethod
+    def _try_platform_fallbacks(path: Path, logger: Any) -> str | None:
+        """プラットフォーム固有のフォールバックエンコーディングで読み取りを試行"""
+        fallback_encodings: list[str] = ["cp932"] if sys.platform == "win32" else []
 
         for enc in fallback_encodings:
             try:
@@ -93,9 +127,11 @@ class FileIOHandler:
                     return f.read()
             except UnicodeDecodeError:
                 logger.debug(f"Failed to decode with {enc}")
-                continue
+        return None
 
-        # Last resort: UTF-8 with error replacement
+    @staticmethod
+    def _read_with_error_replacement(path: Path, logger: Any) -> str:
+        """エラー置換付きUTF-8で読み取り"""
         logger.warning(f"Using UTF-8 with error replacement for {path}")
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
