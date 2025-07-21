@@ -39,21 +39,21 @@ class TestTextProcessorComplete:
                     assert isinstance(result, str)
                 except:
                     # Method may not exist
-                pass
+                    pass
 
         # Test clean_text
         try:
             result = processor.clean_text("  Test Text  ")
             assert isinstance(result, str)
         except:
-                pass
+            pass
 
         # Test process_text
         try:
             result = processor.process_text("Test\n\nText")
             assert isinstance(result, str)
         except:
-                pass
+            pass
 
         # Test strip methods
         try:
@@ -61,14 +61,14 @@ class TestTextProcessorComplete:
             assert "Hello" in result
             assert "<p>" not in result
         except:
-                pass
+            pass
 
         # Test escape methods
         try:
             result = processor.escape_special_chars("Test & < >")
             assert isinstance(result, str)
         except:
-                pass
+            pass
 
 
 class TestLoggingUtilitiesComplete:
@@ -97,13 +97,13 @@ class TestLoggingUtilitiesComplete:
                 try:
                     method("Test message")
                 except:
-                pass
+                    pass
 
                 # Test structured logging
                 try:
                     method({"message": "Test", "data": {"key": "value"}})
                 except:
-                pass
+                    pass
 
         # Test log formatting
         try:
@@ -112,14 +112,14 @@ class TestLoggingUtilitiesComplete:
             )
             assert isinstance(formatted, (str, dict))
         except:
-                pass
+            pass
 
         # Test log filtering
         try:
             logger.set_level("INFO")
             logger.add_filter(lambda record: record.get("level") != "DEBUG")
         except:
-                pass
+            pass
 
     def test_logging_formatters(self):
         """Test logging formatters"""
@@ -160,7 +160,7 @@ class TestLoggingUtilitiesComplete:
 
         except ImportError:
             # Formatters may not be available
-                pass
+            pass
 
     def test_logging_handlers(self):
         """Test logging handlers"""
@@ -197,4 +197,4 @@ class TestLoggingUtilitiesComplete:
 
         except ImportError:
             # Handlers may not be available
-                pass
+            pass

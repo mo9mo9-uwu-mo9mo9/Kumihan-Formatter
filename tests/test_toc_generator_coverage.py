@@ -8,18 +8,26 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# モジュール可用性チェック
+TOC_GENERATOR_AVAILABLE = pytest._has_module("kumihan_formatter.core.toc_generator")
+AST_NODES_AVAILABLE = pytest._has_module("kumihan_formatter.core.ast_nodes.node")
+TOC_PROCESSOR_AVAILABLE = pytest._has_module("kumihan_formatter.core.toc_processor")
+TOC_GENERATOR_MAIN_AVAILABLE = pytest._has_module(
+    "kumihan_formatter.core.toc_generator_main"
+)
+
 
 class TestTOCGeneratorCoverage:
     """Target TOC generators for coverage improvement"""
 
+    @pytest.mark.skipif(
+        not TOC_GENERATOR_AVAILABLE or not AST_NODES_AVAILABLE,
+        reason="TOCGenerator or AST nodes module not available",
+    )
     def test_toc_generator_functionality(self):
         """Test table of contents generator"""
-        try:
-            from kumihan_formatter.core.ast_nodes.node import Node
-            from kumihan_formatter.core.toc_generator import TOCGenerator
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
+        from kumihan_formatter.core.ast_nodes.node import Node
+        from kumihan_formatter.core.toc_generator import TOCGenerator
 
         generator = TOCGenerator()
 
@@ -65,13 +73,12 @@ class TestTOCGeneratorCoverage:
         ) as e:
             pass
 
+    @pytest.mark.skipif(
+        not TOC_GENERATOR_MAIN_AVAILABLE, reason="TOCGeneratorMain module not available"
+    )
     def test_toc_generator_main_functionality(self):
         """Test main TOC generator functionality"""
-        try:
-            from kumihan_formatter.core.toc_generator_main import TOCGeneratorMain
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
+        from kumihan_formatter.core.toc_generator_main import TOCGeneratorMain
 
         generator = TOCGeneratorMain()
 

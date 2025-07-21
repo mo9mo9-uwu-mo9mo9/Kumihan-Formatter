@@ -8,23 +8,27 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# pytest.skip最適化: 静的モジュール可用性チェック
+LIST_PARSER_AVAILABLE = pytest._has_module("kumihan_formatter.core.list_parser")
+LIST_PARSER_CORE_AVAILABLE = pytest._has_module(
+    "kumihan_formatter.core.list_parser_core"
+)
+NESTED_LIST_PARSER_AVAILABLE = pytest._has_module(
+    "kumihan_formatter.core.nested_list_parser"
+)
+
 
 class TestListParserCoverage:
     """Target list parsers for coverage improvement"""
 
+    @pytest.mark.skipif(
+        not LIST_PARSER_AVAILABLE, reason="ListParser module not available"
+    )
     def test_list_parser_functionality(self):
         """Test list parser functionality"""
-        try:
-            from kumihan_formatter.core.list_parser import ListParser
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
+        from kumihan_formatter.core.list_parser import ListParser
 
-        try:
-            parser = ListParser()
-        except (TypeError, AttributeError) as e:
-            pytest.skip(f"ListParser constructor issue: {e}")
-            return
+        parser = ListParser()
 
         # Test various list formats
         list_inputs = [
@@ -56,13 +60,12 @@ class TestListParserCoverage:
             ) as e:
                 pass
 
+    @pytest.mark.skipif(
+        not LIST_PARSER_CORE_AVAILABLE, reason="ListParserCore module not available"
+    )
     def test_list_parser_core_functionality(self):
         """Test core list parser functionality"""
-        try:
-            from kumihan_formatter.core.list_parser_core import ListParserCore
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
+        from kumihan_formatter.core.list_parser_core import ListParserCore
 
         parser = ListParserCore()
 
@@ -119,13 +122,12 @@ class TestListParserCoverage:
             ) as e:
                 pass
 
+    @pytest.mark.skipif(
+        not NESTED_LIST_PARSER_AVAILABLE, reason="NestedListParser module not available"
+    )
     def test_nested_list_parser_functionality(self):
         """Test nested list parser functionality"""
-        try:
-            from kumihan_formatter.core.nested_list_parser import NestedListParser
-        except ImportError as e:
-            pytest.skip(f"Module not available: {e}")
-            return
+        from kumihan_formatter.core.nested_list_parser import NestedListParser
 
         parser = NestedListParser()
 

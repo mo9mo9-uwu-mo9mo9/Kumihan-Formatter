@@ -112,4 +112,4 @@ class TestConsoleMessagingDeep:
                             if result is not None:
                                 assert isinstance(result, str)
                     except Exception:
-                    pass
+                        pass

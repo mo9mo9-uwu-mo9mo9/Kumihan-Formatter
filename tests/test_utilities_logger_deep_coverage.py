@@ -61,7 +61,7 @@ class TestWorkingUtilitiesDeepCoverage:
                                 log_method(message, extra={"test_key": "test_value"})
 
                             except Exception:
-                            pass
+                                pass
 
                 # Test logger configuration if available
                 if hasattr(logger, "setLevel"):
@@ -187,4 +187,4 @@ class TestWorkingUtilitiesDeepCoverage:
             )
 
         except Exception:
-                pass
+            pass
