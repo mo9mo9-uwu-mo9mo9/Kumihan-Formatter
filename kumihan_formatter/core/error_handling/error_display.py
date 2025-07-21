@@ -57,31 +57,10 @@ class ErrorDisplay:
     ) -> None:
         """UI経由でエラーを表示"""
         try:
-            # エラーレベルに応じたUI表示
-            if error.level == ErrorLevel.CRITICAL:
-                self.console_ui.error(error.user_message)
-            elif error.level == ErrorLevel.ERROR:
-                self.console_ui.error(error.user_message)
-            elif error.level == ErrorLevel.WARNING:
-                self.console_ui.warning(error.user_message)
-            else:
-                self.console_ui.info(error.user_message)
-
-            # 詳細情報の表示
-            if show_details and error.technical_details:
-                self.console_ui.info(f"詳細: {error.technical_details}")
-
-            # 修正提案の表示
-            if show_suggestions and error.solution.detailed_steps:
-                self.console_ui.info("修正提案:")
-                for i, suggestion in enumerate(error.solution.detailed_steps, 1):
-                    self.console_ui.info(f"  {i}. {suggestion}")
-
-            # コンテキスト情報の表示
-            if show_context and error.context:
-                self.console_ui.info("コンテキスト:")
-                for key, value in error.context.items():
-                    self.console_ui.info(f"  {key}: {value}")
+            self._display_error_message(error)
+            self._display_details_if_needed(error, show_details)
+            self._display_suggestions_if_needed(error, show_suggestions)
+            self._display_context_if_needed(error, show_context)
 
         except Exception as e:
             if self.logger:
@@ -89,6 +68,42 @@ class ErrorDisplay:
             self._display_error_fallback(
                 error, show_details, show_suggestions, show_context
             )
+
+    def _display_error_message(self, error: UserFriendlyError) -> None:
+        """エラーレベルに応じたメッセージを表示"""
+        if error.level == ErrorLevel.CRITICAL:
+            self.console_ui.error(error.user_message)
+        elif error.level == ErrorLevel.ERROR:
+            self.console_ui.error(error.user_message)
+        elif error.level == ErrorLevel.WARNING:
+            self.console_ui.warning(error.user_message)
+        else:
+            self.console_ui.info(error.user_message)
+
+    def _display_details_if_needed(
+        self, error: UserFriendlyError, show_details: bool
+    ) -> None:
+        """詳細情報の表示"""
+        if show_details and error.technical_details:
+            self.console_ui.info(f"詳細: {error.technical_details}")
+
+    def _display_suggestions_if_needed(
+        self, error: UserFriendlyError, show_suggestions: bool
+    ) -> None:
+        """修正提案の表示"""
+        if show_suggestions and error.solution.detailed_steps:
+            self.console_ui.info("修正提案:")
+            for i, suggestion in enumerate(error.solution.detailed_steps, 1):
+                self.console_ui.info(f"  {i}. {suggestion}")
+
+    def _display_context_if_needed(
+        self, error: UserFriendlyError, show_context: bool
+    ) -> None:
+        """コンテキスト情報の表示"""
+        if show_context and error.context:
+            self.console_ui.info("コンテキスト:")
+            for key, value in error.context.items():
+                self.console_ui.info(f"  {key}: {value}")
 
     def _display_error_fallback(
         self,
@@ -98,34 +113,50 @@ class ErrorDisplay:
         show_context: bool,
     ) -> None:
         """フォールバック表示（標準出力）"""
-        # エラーレベルに応じた表示
+        self._print_error_message(error)
+        self._print_details_if_needed(error, show_details)
+        self._print_suggestions_if_needed(error, show_suggestions)
+        self._print_context_if_needed(error, show_context)
+        self._log_error_if_enabled(error)
+
+    def _print_error_message(self, error: UserFriendlyError) -> None:
+        """エラーレベルに応じた標準出力表示"""
         level_prefix = {
             ErrorLevel.CRITICAL: "🚨 CRITICAL",
             ErrorLevel.ERROR: "❌ ERROR",
             ErrorLevel.WARNING: "⚠️  WARNING",
             ErrorLevel.INFO: "ℹ️  INFO",
         }
-
         level_str = level_prefix.get(error.level, "❓ UNKNOWN")
         print(f"{level_str}: {error.user_message}")
 
-        # 詳細情報
+    def _print_details_if_needed(
+        self, error: UserFriendlyError, show_details: bool
+    ) -> None:
+        """詳細情報の標準出力表示"""
         if show_details and error.technical_details:
             print(f"詳細: {error.technical_details}")
 
-        # 修正提案
+    def _print_suggestions_if_needed(
+        self, error: UserFriendlyError, show_suggestions: bool
+    ) -> None:
+        """修正提案の標準出力表示"""
         if show_suggestions and error.solution.detailed_steps:
             print("修正提案:")
             for i, suggestion in enumerate(error.solution.detailed_steps, 1):
                 print(f"  {i}. {suggestion}")
 
-        # コンテキスト情報
+    def _print_context_if_needed(
+        self, error: UserFriendlyError, show_context: bool
+    ) -> None:
+        """コンテキスト情報の標準出力表示"""
         if show_context and error.context:
             print("コンテキスト:")
             for key, value in error.context.items():
                 print(f"  {key}: {value}")
 
-        # ログ出力
+    def _log_error_if_enabled(self, error: UserFriendlyError) -> None:
+        """ログ出力（有効な場合のみ）"""
         if self.logger:
             log_level = {
                 ErrorLevel.CRITICAL: "critical",

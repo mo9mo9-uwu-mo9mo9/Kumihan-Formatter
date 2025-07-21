@@ -14,7 +14,10 @@ from .gui_models import *  # noqa: F403, F401
 
 # 非推奨警告
 warnings.warn(
-    "gui_models.py is deprecated. Use 'from kumihan_formatter.gui_models import AppState' instead.",
+    (
+        "gui_models.py is deprecated. "
+        "Use 'from kumihan_formatter.gui_models import AppState' instead."
+    ),
     DeprecationWarning,
     stacklevel=2,
 )

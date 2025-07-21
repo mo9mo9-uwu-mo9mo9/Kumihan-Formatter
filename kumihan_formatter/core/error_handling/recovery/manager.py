@@ -87,49 +87,18 @@ class RecoveryManager:
         Returns:
             Tuple[bool, list[str]]: (回復成功フラグ, 実行された回復操作のメッセージリスト)
         """
-        recovery_messages = []
+        recovery_messages: list[str] = []
 
         if self.logger:
             self.logger.info(f"Attempting recovery for error: {error.error_code}")
 
         for strategy in self.strategies:
             if strategy.can_handle(error, context):
-                try:
-                    success, message = strategy.attempt_recovery(error, context)
-
-                    # 回復履歴に記録
-                    self.recovery_history.append(
-                        {
-                            "strategy": strategy.name,
-                            "error_code": error.error_code,
-                            "success": success,
-                            "message": message,
-                            "timestamp": str(context.get("timestamp", "unknown")),
-                        }
-                    )
-
-                    if success:
-                        if message:
-                            recovery_messages.append(f"[{strategy.name}] {message}")
-
-                        if self.logger:
-                            self.logger.info(
-                                f"Recovery successful with strategy: {strategy.name}"
-                            )
-
-                        return True, recovery_messages
-
-                    elif message:
-                        recovery_messages.append(f"[{strategy.name}] 失敗: {message}")
-
-                except Exception as e:
-                    error_msg = f"戦略実行エラー: {str(e)}"
-                    recovery_messages.append(f"[{strategy.name}] {error_msg}")
-
-                    if self.logger:
-                        self.logger.error(
-                            f"Recovery strategy {strategy.name} failed: {e}"
-                        )
+                success, messages = self._try_strategy_recovery(
+                    strategy, error, context, recovery_messages
+                )
+                if success:
+                    return True, messages
 
         if self.logger:
             self.logger.warning(
@@ -137,6 +106,97 @@ class RecoveryManager:
             )
 
         return False, recovery_messages
+
+    def _try_strategy_recovery(
+        self,
+        strategy: RecoveryStrategy,
+        error: UserFriendlyError,
+        context: dict[str, Any],
+        recovery_messages: list[str],
+    ) -> Tuple[bool, list[str]]:
+        """個別戦略での回復を試行
+
+        Returns:
+            Tuple[bool, list[str]]: (成功フラグ, メッセージリスト)
+        """
+        try:
+            success, message = strategy.attempt_recovery(error, context)
+
+            # Handle None message
+            message_str = message or ""
+
+            self._record_recovery_attempt(
+                strategy, error, success, message_str, context
+            )
+
+            if success:
+                return self._handle_successful_recovery(
+                    strategy, message_str, recovery_messages
+                )
+            else:
+                self._handle_failed_recovery(strategy, message_str, recovery_messages)
+
+        except Exception as e:
+            self._handle_strategy_exception(strategy, e, recovery_messages)
+
+        return False, recovery_messages
+
+    def _record_recovery_attempt(
+        self,
+        strategy: RecoveryStrategy,
+        error: UserFriendlyError,
+        success: bool,
+        message: str,
+        context: dict[str, Any],
+    ) -> None:
+        """回復試行を履歴に記録"""
+        self.recovery_history.append(
+            {
+                "strategy": strategy.name,
+                "error_code": error.error_code,
+                "success": success,
+                "message": message,
+                "timestamp": str(context.get("timestamp", "unknown")),
+            }
+        )
+
+    def _handle_successful_recovery(
+        self,
+        strategy: RecoveryStrategy,
+        message: str,
+        recovery_messages: list[str],
+    ) -> Tuple[bool, list[str]]:
+        """回復成功時の処理"""
+        if message:
+            recovery_messages.append(f"[{strategy.name}] {message}")
+
+        if self.logger:
+            self.logger.info(f"Recovery successful with strategy: {strategy.name}")
+
+        return True, recovery_messages
+
+    def _handle_failed_recovery(
+        self,
+        strategy: RecoveryStrategy,
+        message: str,
+        recovery_messages: list[str],
+    ) -> None:
+        """回復失敗時の処理"""
+        if message:
+            recovery_messages.append(f"[{strategy.name}] 失敗: {message}")
+
+    def _handle_strategy_exception(
+        self,
+        strategy: RecoveryStrategy,
+        exception: Exception,
+        recovery_messages: list[str],
+    ) -> None:
+        """戦略実行時の例外処理"""
+        error_msg = f"戦略実行エラー: {str(exception)}"
+        recovery_messages.append(f"[{strategy.name}] {error_msg}")
+
+        if self.logger:
+            self.logger.error(f"Recovery strategy {strategy.name} failed: {exception}")
 
     def get_recovery_statistics(self) -> dict[str, Any]:
         """回復統計情報を取得
@@ -166,7 +226,9 @@ class RecoveryManager:
         # 成功率を計算
         for strategy, stats in strategy_stats.items():
             stats["success_rate"] = (
-                stats["successes"] / stats["attempts"] if stats["attempts"] > 0 else 0  # type: ignore
+                stats["successes"] / stats["attempts"]
+                if stats["attempts"] > 0
+                else 0  # type: ignore
             )
 
         return {

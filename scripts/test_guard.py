@@ -208,7 +208,7 @@ class TestGuard:
                 cwd=self.repo_root,
             )
             return result.stdout.strip() if result.returncode == 0 else "unknown"
-        except:
+        except Exception:
             return "unknown"
 
     def check_staged_changes(self) -> bool:
@@ -258,7 +258,7 @@ class TestGuard:
         """現在の保護状況表示"""
         current_tests = list(self.tests_dir.glob("test_*.py"))
 
-        print(f"\n🛡️  Test Guard Status:")
+        print("\n🛡️  Test Guard Status:")
         print(f"   Current test files: {len(current_tests)}")
         print(
             f"   Minimum required: {self.protection_config['min_test_files_required']}"

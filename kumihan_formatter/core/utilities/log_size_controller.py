@@ -171,41 +171,69 @@ class LogSizeController:
         Returns:
             Optimized context for Claude Code
         """
-        optimized = {}
+        optimized: dict[str, Any] = {}
 
-        # Prioritize Claude-specific hints
+        # Add priority fields first
+        self._add_priority_fields(context, optimized)
+
+        # Add analysis and suggestions
+        self._add_analysis_and_suggestions(context, optimized)
+
+        # Add location and performance info
+        self._add_location_info(context, optimized)
+        self._add_performance_metrics(context, optimized)
+
+        # Fill remaining space with other context
+        self._add_remaining_context(context, optimized)
+
+        return optimized
+
+    def _add_priority_fields(
+        self, context: dict[str, Any], optimized: dict[str, Any]
+    ) -> None:
+        """優先度の高いフィールドを追加"""
         if "claude_hint" in context:
             optimized["claude_hint"] = context["claude_hint"]
 
-        # Include error analysis if present
+        if "operation" in context:
+            optimized["operation"] = context["operation"]
+
+    def _add_analysis_and_suggestions(
+        self, context: dict[str, Any], optimized: dict[str, Any]
+    ) -> None:
+        """分析と提案を追加"""
         if "error_analysis" in context:
             optimized["error_analysis"] = context["error_analysis"]
 
-        # Include suggestions
         if "suggestion" in context or "suggestions" in context:
             optimized["suggestion"] = context.get("suggestion") or context.get(
                 "suggestions"
             )
 
-        # Include operation context
-        if "operation" in context:
-            optimized["operation"] = context["operation"]
-
-        # Include file/line information
-        for key in ["file_path", "line_number", "function", "module"]:
+    def _add_location_info(
+        self, context: dict[str, Any], optimized: dict[str, Any]
+    ) -> None:
+        """ファイルや行情報を追加"""
+        location_keys = ["file_path", "line_number", "function", "module"]
+        for key in location_keys:
             if key in context:
                 optimized[key] = context[key]
 
-        # Include performance metrics (limited)
-        for key in ["duration_ms", "memory_mb", "success"]:
+    def _add_performance_metrics(
+        self, context: dict[str, Any], optimized: dict[str, Any]
+    ) -> None:
+        """パフォーマンス指標を追加"""
+        performance_keys = ["duration_ms", "memory_mb", "success"]
+        for key in performance_keys:
             if key in context:
                 optimized[key] = context[key]
 
-        # Add remaining important context (up to limit)
+    def _add_remaining_context(
+        self, context: dict[str, Any], optimized: dict[str, Any]
+    ) -> None:
+        """残りのコンテキストを制限まで追加"""
         remaining_space = self.content_filters["max_context_entries"] - len(optimized)
         for key, value in context.items():
             if key not in optimized and remaining_space > 0:
                 optimized[key] = value
                 remaining_space -= 1
-
-        return optimized

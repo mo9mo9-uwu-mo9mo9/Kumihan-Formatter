@@ -29,15 +29,27 @@ jobs:
 
     - name: Code formatting check (Black)
       run: |
-        black --check kumihan_formatter/ tests/ || true
+        if [ -d "tests" ]; then
+          black --check kumihan_formatter/ tests/ || true
+        else
+          black --check kumihan_formatter/ || true
+        fi
 
     - name: Import sorting check (isort)
       run: |
-        isort --check-only --diff kumihan_formatter/ tests/ || true
+        if [ -d "tests" ]; then
+          isort --check-only --diff kumihan_formatter/ tests/ || true
+        else
+          isort --check-only --diff kumihan_formatter/ || true
+        fi
 
     - name: Linting (flake8)
       run: |
-        flake8 kumihan_formatter/ tests/ || true
+        if [ -d "tests" ]; then
+          flake8 kumihan_formatter/ tests/ || true
+        else
+          flake8 kumihan_formatter/ || true
+        fi
 
     - name: Type checking (mypy - strict mode)
       run: |

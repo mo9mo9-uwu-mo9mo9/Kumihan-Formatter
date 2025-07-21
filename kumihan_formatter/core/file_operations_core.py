@@ -26,7 +26,6 @@ class FileOperationsCore:
 
     def copy_images(self, input_path: Path, output_path: Path, ast: list[Any]) -> None:
         """Copy image files to output directory"""
-        # Extract image nodes from AST
         image_nodes = [node for node in ast if getattr(node, "type", None) == "image"]
 
         if not image_nodes:
@@ -37,45 +36,95 @@ class FileOperationsCore:
             f"Copying {len(image_nodes)} images from {input_path} to {output_path}"
         )
 
-        # Check images folder in input file directory
+        source_images_dir = self._get_source_images_dir(input_path)
+        if not source_images_dir:
+            return
+
+        dest_images_dir = self._create_dest_images_dir(output_path)
+        copy_results = self._copy_all_images(
+            image_nodes, source_images_dir, dest_images_dir
+        )
+        self._report_copy_results(copy_results)
+
+    def _get_source_images_dir(self, input_path: Path) -> Path | None:
+        """ソース画像ディレクトリを取得"""
         source_images_dir = input_path.parent / "images"
 
         if not source_images_dir.exists():
             self.logger.warning(f"Images directory not found: {source_images_dir}")
             if self.ui:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
-            return
+            return None
 
-        # Create output images directory
+        return source_images_dir
+
+    def _create_dest_images_dir(self, output_path: Path) -> Path:
+        """出力画像ディレクトリを作成"""
         dest_images_dir = output_path / "images"
         dest_images_dir.mkdir(parents=True, exist_ok=True)
+        return dest_images_dir
 
-        # Copy each image file
-        copied_files = []
-        missing_files = []
-        duplicate_files = {}
+    def _copy_all_images(
+        self, image_nodes: list[Any], source_dir: Path, dest_dir: Path
+    ) -> dict[str, Any]:
+        """すべての画像をコピー"""
+        copied_files: list[str] = []
+        missing_files: list[str] = []
+        duplicate_files: dict[str, int] = {}
 
         for node in image_nodes:
             filename = node.content
-            source_file = source_images_dir / filename
-            dest_file = dest_images_dir / filename
+            result = self._copy_single_image(
+                filename, source_dir, dest_dir, copied_files, duplicate_files
+            )
 
-            if source_file.exists():
-                # Check for filename duplicates
-                if filename in copied_files:
-                    if filename not in duplicate_files:
-                        duplicate_files[filename] = 2
-                    else:
-                        duplicate_files[filename] += 1
-                else:
-                    shutil.copy2(source_file, dest_file)
-                    copied_files.append(filename)
-                    self.logger.debug(f"Copied image: {filename}")
-            else:
+            if result == "missing":
                 missing_files.append(filename)
-                self.logger.warning(f"Image file not found: {filename}")
 
-        # Report results
+        return {
+            "copied": copied_files,
+            "missing": missing_files,
+            "duplicates": duplicate_files,
+        }
+
+    def _copy_single_image(
+        self,
+        filename: str,
+        source_dir: Path,
+        dest_dir: Path,
+        copied_files: list[str],
+        duplicate_files: dict[str, int],
+    ) -> str:
+        """個別画像のコピー処理
+
+        Returns:
+            str: "copied", "duplicate", or "missing"
+        """
+        source_file = source_dir / filename
+        dest_file = dest_dir / filename
+
+        if not source_file.exists():
+            self.logger.warning(f"Image file not found: {filename}")
+            return "missing"
+
+        if filename in copied_files:
+            if filename not in duplicate_files:
+                duplicate_files[filename] = 2
+            else:
+                duplicate_files[filename] += 1
+            return "duplicate"
+
+        shutil.copy2(source_file, dest_file)
+        copied_files.append(filename)
+        self.logger.debug(f"Copied image: {filename}")
+        return "copied"
+
+    def _report_copy_results(self, results: dict[str, Any]) -> None:
+        """コピー結果を報告"""
+        copied_files = results["copied"]
+        missing_files = results["missing"]
+        duplicate_files = results["duplicates"]
+
         if copied_files:
             self.logger.info(f"Successfully copied {len(copied_files)} image files")
             if self.ui:

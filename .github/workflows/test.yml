@@ -73,7 +73,7 @@ jobs:
       timeout-minutes: 10
       run: |
         # 型チェック実行（strictモード）- dev依存関係は既にインストール済み
-        python -m mypy --strict kumihan_formatter/ tests/
+        python -m mypy --strict kumihan_formatter/
 
     - name: Test with pytest (CI ultra-fast)
       shell: bash

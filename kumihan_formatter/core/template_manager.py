@@ -234,7 +234,7 @@ class TemplateValidator:
             try:
                 self.template_manager.get_template(template_name)
                 results[template_name] = True
-            except:
+            except Exception:
                 results[template_name] = False
 
         return results
@@ -260,11 +260,11 @@ class TemplateValidator:
             missing_vars = []
             for var in required_vars:
                 # Simple check for variable usage
-                if f"{{{{{ var }}}}}" not in source and f"{{{{{ var }|" not in source:
+                if f"{{{{{var}}}}}" not in source and f"{{{{{var}|" not in source:
                     missing_vars.append(var)
 
             return len(missing_vars) == 0, missing_vars
-        except:
+        except Exception:
             return False, required_vars
 
 
