@@ -42,12 +42,14 @@ class TestConsoleUIDeep:
                     if callable(method):
                         try:
                             method("Test message")
-                        except Exception:
+                        except (TypeError, AttributeError) as e:
                             # パラメータが違う場合の代替テスト
                             try:
                                 method("Test", "message")
-                            except:
-                                pass
+                            except (TypeError, AttributeError) as e2:
+                                pytest.skip(
+                                    f"Expected error in test scenario: {type(e2).__name__}: Method signature mismatch: {e2}"
+                                )
 
     def test_console_ui_error_methods(self):
         """ConsoleUIエラー出力メソッドテスト"""
@@ -65,11 +67,13 @@ class TestConsoleUIDeep:
                     if callable(method):
                         try:
                             method("Test error message")
-                        except Exception:
+                        except (TypeError, AttributeError) as e:
                             try:
                                 method("Error", "details")
-                            except:
-                                pass
+                            except (TypeError, AttributeError) as e2:
+                                pytest.skip(
+                                    f"Expected error in test scenario: {type(e2).__name__}: Method signature mismatch: {e2}"
+                                )
 
     def test_console_ui_warning_methods(self):
         """ConsoleUI警告出力メソッドテスト"""
@@ -86,7 +90,7 @@ class TestConsoleUIDeep:
                 if callable(method):
                     try:
                         method("Test warning message")
-                    except Exception:
+                    except (TypeError, AttributeError, ValueError) as e:
                         pass
 
     def test_console_ui_success_methods(self):
@@ -109,7 +113,7 @@ class TestConsoleUIDeep:
                 if callable(method):
                     try:
                         method("Test success message")
-                    except Exception:
+                    except (TypeError, AttributeError, ValueError) as e:
                         pass
 
     def test_console_ui_input_methods(self):
@@ -130,7 +134,7 @@ class TestConsoleUIDeep:
                         try:
                             result = method("Enter something: ")
                             assert isinstance(result, str)
-                        except Exception:
+                        except (TypeError, AttributeError, ValueError) as e:
                             try:
                                 result = method()
                                 assert isinstance(result, str)
@@ -155,7 +159,7 @@ class TestConsoleUIDeep:
                         try:
                             result = method("Continue?")
                             assert isinstance(result, bool)
-                        except Exception:
+                        except (TypeError, AttributeError, ValueError) as e:
                             try:
                                 result = method()
                                 assert isinstance(result, bool)
@@ -182,7 +186,7 @@ class TestConsoleUIDeep:
                 if callable(method):
                     try:
                         method(50, 100, "Processing...")
-                    except Exception:
+                    except (TypeError, AttributeError, ValueError) as e:
                         try:
                             method(50)
                         except:

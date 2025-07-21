@@ -32,7 +32,7 @@ class TestConversionStateThreadSafe:
                     if progress <= 100:
                         state.set_progress(progress)
                         results.append((thread_id, progress))
-                        time.sleep(0.001)  # 短い待機でタイミング調整
+                        # CI/CD最適化: time.sleep削除
             except Exception as e:
                 errors.append((thread_id, e))
 

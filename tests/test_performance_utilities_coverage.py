@@ -40,14 +40,20 @@ class TestPerformanceUtilitiesCoverage:
             strategies = optimizer.get_available_strategies()
             assert isinstance(strategies, (list, tuple, set))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
+            method_name = "get_available_strategies"
+            pytest.skip(
+                f"Dependency unavailable: {type(e).__name__}: Method '{method_name}' not available in PerformanceOptimizer: {e}"
+            )
 
         # Test memory optimization
         try:
             optimizer.optimize_memory()
             # Should not raise exception
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
+            method_name = "optimize_memory"
+            pytest.skip(
+                f"Dependency unavailable: {type(e).__name__}: Method '{method_name}' not available in PerformanceOptimizer: {e}"
+            )
 
         # Test performance monitoring
         try:
@@ -59,7 +65,10 @@ class TestPerformanceUtilitiesCoverage:
 
             assert isinstance(metrics, dict)
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
+            method_names = "start_monitoring/get_metrics/stop_monitoring"
+            pytest.skip(
+                f"Dependency unavailable: {type(e).__name__}: Methods '{method_names}' not available in PerformanceOptimizer: {e}"
+            )
 
     @pytest.mark.skipif(
         not HAS_PERFORMANCE_TRACKER, reason="PerformanceTracker module not available"
@@ -96,7 +105,10 @@ class TestPerformanceUtilitiesCoverage:
             report = tracker.generate_report()
             assert isinstance(report, (dict, str))
         except (AttributeError, NotImplementedError, TypeError, FileNotFoundError) as e:
-            pytest.skip(f"Dependency unavailable: {type(e).__name__}: {e}")
+            method_name = "generate_report"
+            pytest.skip(
+                f"Dependency unavailable: {type(e).__name__}: Method '{method_name}' not available in PerformanceTracker: {e}"
+            )
 
     @pytest.mark.skipif(
         not HAS_PERFORMANCE_OPTIMIZER,

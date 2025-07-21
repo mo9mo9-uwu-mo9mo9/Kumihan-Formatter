@@ -111,4 +111,5 @@ class TestTemplateSystemComplete:
                     pass
 
         except ImportError:
-            pytest.skip("RenderContext not available")
+            # This should not happen due to module-level skipif, but handle gracefully
+            assert False, "RenderContext not available despite module-level check"
