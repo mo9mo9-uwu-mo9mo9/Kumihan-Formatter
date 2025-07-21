@@ -6,7 +6,7 @@ Issue #492 Phase 5A - console_ui.py分割
 """
 
 import sys
-from typing import Any, Dict, Tuple
+from typing import Tuple
 
 from rich.console import Console
 

@@ -6,10 +6,11 @@ Issue #402対応 - パフォーマンス最適化
 """
 
 from dataclasses import dataclass, field
-from typing import Dict
+
+# typing.Dict removed as unused
 
 try:
-    import psutil
+    import psutil  # noqa: F401
 
     HAS_PSUTIL = True
 except ImportError:

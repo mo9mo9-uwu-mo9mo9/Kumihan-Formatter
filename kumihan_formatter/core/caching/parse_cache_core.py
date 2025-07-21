@@ -147,7 +147,7 @@ class ParseCacheCore(SmartCache):
 
         try:
             ast_node = parser_func(content, **(parse_options or {}))
-        except Exception as e:
+        except Exception:
             self.monitor.record_error()
             raise
 

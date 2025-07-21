@@ -6,7 +6,7 @@ Issue #492 Phase 5A - benchmark_analyzer.py分割
 """
 
 import statistics
-from typing import Any, Union
+from typing import Any
 
 from .benchmark_types import PERFORMANCE_THRESHOLDS, BenchmarkResult
 

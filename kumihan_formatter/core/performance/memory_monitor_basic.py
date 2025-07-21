@@ -6,7 +6,7 @@ Issue #402対応 - パフォーマンス最適化
 
 import threading
 import time
-from typing import Any, Callable, Optional, Union
+from typing import Callable, Optional, Union
 
 from ..utilities.logger import get_logger
 

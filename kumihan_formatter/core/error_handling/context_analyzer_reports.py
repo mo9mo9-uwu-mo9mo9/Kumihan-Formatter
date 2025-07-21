@@ -229,7 +229,6 @@ class ContextAnalyzerReports:
         recommendations = []
 
         error_type = type(error).__name__
-        error_msg = str(error)
 
         # エラータイプ別の推奨事項
         if error_type in ["FileNotFoundError", "PermissionError"]:

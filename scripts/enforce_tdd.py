@@ -9,7 +9,7 @@ TDD (Test-Driven Development) 強制スクリプト
 import os
 import sys
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 # テストが不要なファイルパターン
 EXCLUDED_PATTERNS = {

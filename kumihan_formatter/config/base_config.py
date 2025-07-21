@@ -25,7 +25,9 @@ class BaseConfig:
         "container_background": "white",
         "text_color": "#333",
         "line_height": "1.8",
-        "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+        "font_family": (
+            "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
+        ),
     }
 
     def __init__(self, config_data: dict[str, Any] | None = None):

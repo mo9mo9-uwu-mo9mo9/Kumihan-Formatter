@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from .performance_logging import call_chain_tracker, memory_usage_tracker
 

@@ -5,7 +5,7 @@
 Issue #476対応 - ファイルサイズ制限遵守（300行制限）
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from ..caching.file_cache import FileCache
 from ..caching.parse_cache import ParseCache

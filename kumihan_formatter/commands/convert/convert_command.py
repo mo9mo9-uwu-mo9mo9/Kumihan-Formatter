@@ -63,7 +63,8 @@ class ConvertCommand:
             f"Starting conversion: input_file='{input_file}', output='{output}'"
         )
         self.logger.debug(
-            f"Options: no_preview={no_preview}, watch={watch}, syntax_check={syntax_check}"
+            f"Options: no_preview={no_preview}, watch={watch}, "
+            f"syntax_check={syntax_check}"
         )
 
         try:
@@ -91,7 +92,7 @@ class ConvertCommand:
                 if error_report.has_errors():
                     # エラーが見つかった場合は変換を中止
                     self.logger.error(
-                        f"Syntax errors found: {error_report.error_count} errors"  # type: ignore
+                        f"Syntax errors found: {error_report.error_count} " "errors"
                     )
                     get_console_ui().error(
                         "記法エラーが検出されました。変換を中止します。"
@@ -111,7 +112,8 @@ class ConvertCommand:
                 elif error_report.has_warnings():
                     # 警告のみの場合は続行するが表示
                     self.logger.warning(
-                        f"Syntax warnings found: {error_report.warning_count} warnings"  # type: ignore
+                        f"Syntax warnings found: {error_report.warning_count} "
+                        "warnings"
                     )
                     get_console_ui().warning("記法に関する警告があります:")
                     print(error_report.to_console_output())

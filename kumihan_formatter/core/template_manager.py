@@ -10,7 +10,8 @@ from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 from .template_context import RenderContext
 from .template_filters import TemplateFilters
-from .template_selector import TemplateSelector
+
+# .template_selector.TemplateSelector removed as unused
 
 
 class TemplateManager:
@@ -145,7 +146,9 @@ class TemplateManager:
             template = self.get_template(template_name)
             # Try to parse the template to check for syntax errors
             # Get the template source code and parse it
-            source_template = template.environment.get_template(template_name)
+            _ = template.environment.get_template(
+                template_name
+            )  # テンプレート取得（構文チェック用）
             # Access source through loader
             source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
             template.environment.parse(source)

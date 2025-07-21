@@ -9,7 +9,7 @@ import time
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 if TYPE_CHECKING:
-    import tkinter as tk
+    pass  # tkinter as tk removed as unused
 
 
 class LogViewerEventHandler:

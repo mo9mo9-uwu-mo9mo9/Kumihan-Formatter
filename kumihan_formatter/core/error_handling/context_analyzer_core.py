@@ -5,8 +5,6 @@
 Issue #401対応 - 300行制限遵守
 """
 
-import json
-import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any

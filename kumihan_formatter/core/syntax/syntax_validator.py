@@ -4,7 +4,6 @@ This module contains the main validation logic for Kumihan markup syntax,
 including block validation, keyword validation, and line-by-line checking.
 """
 
-import re
 from pathlib import Path
 
 from ...core.error_handling import ErrorCatalog, UserFriendlyError

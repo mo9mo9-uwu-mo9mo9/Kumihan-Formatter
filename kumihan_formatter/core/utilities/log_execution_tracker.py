@@ -7,7 +7,7 @@ Issue #492 Phase 5A - log_analysis.py分割
 
 import logging
 import time
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 
 class ExecutionFlowTracker:

@@ -10,7 +10,7 @@ from typing import Any, Generator
 
 from ..utilities.logger import get_logger
 from .context_analyzer import ContextAnalyzer
-from .context_models import FileContext, OperationContext, SystemContext
+from .context_models import OperationContext
 from .context_tracker import ContextTracker
 
 

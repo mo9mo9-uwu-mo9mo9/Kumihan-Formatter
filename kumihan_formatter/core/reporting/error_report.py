@@ -19,10 +19,7 @@ from .error_types import (
 
 
 class ErrorReport:
-    """エラーレポート統合クラス
-
-    責任: エラーの収集・分類・サマリー生成
-    """
+    """エラーレポート統合クラス - エラー収集・分類・サマリー生成"""
 
     def __init__(self, source_file: Path | None = None):
         self.source_file = source_file
@@ -47,6 +44,16 @@ class ErrorReport:
     def has_warnings(self) -> bool:
         """警告が存在するかチェック"""
         return len(self.warnings) > 0
+
+    @property
+    def error_count(self) -> int:
+        """エラー数を取得"""
+        return len(self.errors)
+
+    @property
+    def warning_count(self) -> int:
+        """警告数を取得"""
+        return len(self.warnings)
 
     def get_total_count(self) -> int:
         """総問題数を取得"""
@@ -245,10 +252,7 @@ class ErrorReport:
 
 
 class ErrorReportBuilder:
-    """エラーレポートビルダー
-
-    責任: エラーレポートの段階的構築
-    """
+    """エラーレポートビルダー - エラーレポートの段階的構築"""
 
     def __init__(self, source_file: Path | None = None):
         self.report = ErrorReport(source_file)
@@ -256,7 +260,7 @@ class ErrorReportBuilder:
     def add_syntax_error(
         self, line: int, message: str, suggestion: str | None = None
     ) -> "ErrorReportBuilder":
-        """構文エラーを追加"""
+        """構文エラー追加"""
         error = DetailedError(
             error_id=f"syntax_{line}",
             severity=ErrorSeverity.ERROR,
@@ -275,7 +279,7 @@ class ErrorReportBuilder:
     def add_keyword_error(
         self, line: int, keyword: str, suggestion: str | None = None
     ) -> "ErrorReportBuilder":
-        """キーワードエラーを追加"""
+        """キーワードエラー追加"""
         error = DetailedError(
             error_id=f"keyword_{line}_{keyword}",
             severity=ErrorSeverity.ERROR,

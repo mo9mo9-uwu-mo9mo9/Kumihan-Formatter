@@ -121,7 +121,7 @@ class MemoryReportGenerator:
 
         leak_summary = {
             "total_leaks": len(leaks),
-            "critical_leaks": len([l for l in leaks if l.is_critical_leak()]),
+            "critical_leaks": len([leak for leak in leaks if leak.is_critical_leak()]),
             "leaks_by_severity": leaks_by_severity,
             "top_leaks": top_leaks,
         }
@@ -177,7 +177,7 @@ class MemoryReportGenerator:
             )
 
         # メモリリークチェック
-        if leaks and len([l for l in leaks if l.is_critical_leak()]) > 0:
+        if leaks and len([leak for leak in leaks if leak.is_critical_leak()]) > 0:
             recommendations.append(
                 "Critical: クリティカルなメモリリークが検出されています。アプリケーションの再起動を検討してください。"
             )

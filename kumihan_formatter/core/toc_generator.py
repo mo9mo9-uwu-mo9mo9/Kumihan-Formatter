@@ -7,6 +7,8 @@ to comply with the 300-line limit.
 
 from __future__ import annotations
 
+import re
+
 from .ast_nodes import Node
 
 
@@ -42,8 +44,6 @@ class TOCEntry:
     def get_text_content(self) -> str:
         """Get plain text content of the title"""
         # Remove any HTML tags from title
-        import re
-
         clean_title = re.sub(r"<[^>]+>", "", self.title)
         return clean_title.strip()
 

@@ -5,7 +5,6 @@
 Issue #492 Phase 5A - console_ui.py分割
 """
 
-import sys
 from typing import Any, Optional
 
 from rich.console import Console

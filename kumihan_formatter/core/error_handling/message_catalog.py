@@ -6,7 +6,7 @@ Issue #492 Phase 5A - japanese_messages.py分割
 """
 
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from .error_message_templates import ErrorMessageTemplates
 from .error_types import ErrorCategory, ErrorLevel, ErrorSolution, UserFriendlyError

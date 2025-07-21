@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - benchmark_analyzer.py分割
 """
 
-from typing import Any, Union
+from typing import Any
 
 from .benchmark_statistics import BenchmarkStatistics
 from .benchmark_types import BenchmarkResult, BenchmarkSummary, RegressionAnalysis

@@ -5,7 +5,8 @@
 """
 
 import json
-import statistics
+
+# statistics removed as unused
 from datetime import datetime
 from pathlib import Path
 from typing import Any

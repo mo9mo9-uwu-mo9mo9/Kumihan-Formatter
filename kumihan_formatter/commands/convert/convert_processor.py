@@ -107,7 +107,7 @@ class ConvertProcessor:
         html_filename = f"{input_path.stem}.html"
         return output_path / html_filename
 
-    def _parse_with_progress(self, text: str, config, input_path: Path) -> Any:  # type: ignore
+    def _parse_with_progress(self, text: str, config: Any, input_path: Path) -> Any:
         """プログレス表示付きでパース処理を実行"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
         self.logger.debug(f"Parsing file of size: {size_mb:.2f} MB")
@@ -235,6 +235,8 @@ class ConvertProcessor:
         # 大きなファイルの場合のみ詳細統計を表示
         if stats["input_size_mb"] > 1.0 or stats["node_count"] > 500:
             self.logger.info(
-                f"Detailed stats: input={stats['input_size_mb']:.2f}MB, output={stats['output_size_mb']:.2f}MB, nodes={stats['node_count']}"
+                f"Detailed stats: input={stats['input_size_mb']:.2f}MB, "
+                f"output={stats['output_size_mb']:.2f}MB, "
+                f"nodes={stats['node_count']}"
             )
             get_console_ui().show_detailed_stats(stats)  # type: ignore

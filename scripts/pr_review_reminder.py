@@ -3,7 +3,7 @@
 PR作成後のレビュー依頼リマインダー
 PR作成時に自動で実行されるスクリプト
 """
-import os
+# os removed as unused
 import sys
 from datetime import datetime
 

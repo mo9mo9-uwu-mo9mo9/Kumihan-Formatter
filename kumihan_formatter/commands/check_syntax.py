@@ -171,7 +171,7 @@ class CheckSyntaxCommand:
         print(json.dumps(json_results, ensure_ascii=False, indent=2))
 
 
-def create_check_syntax_command():  # type: ignore
+def create_check_syntax_command() -> click.Command:
     """Create the check-syntax click command"""
 
     @click.command()

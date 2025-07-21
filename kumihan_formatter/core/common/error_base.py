@@ -70,7 +70,7 @@ class KumihanError(Exception):
         user_msg = self.message
 
         if self.suggestions:
-            user_msg += f"\n\nSuggestions:\n"
+            user_msg += "\n\nSuggestions:\n"
             for i, suggestion in enumerate(self.suggestions, 1):
                 user_msg += f"{i}. {suggestion}\n"
 

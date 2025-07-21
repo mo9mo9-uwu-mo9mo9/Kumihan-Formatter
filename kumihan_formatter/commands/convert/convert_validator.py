@@ -7,9 +7,11 @@ Issue #319対応 - convert.py から分離
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from ...core.file_ops import FileOperations, PathValidator
 from ...core.reporting import ErrorReport
+from ...core.reporting.error_types import DetailedError
 from ...core.syntax import check_files
 from ...ui.console_ui import get_console_ui
 
@@ -82,10 +84,9 @@ class ConvertValidator:
             # 空のレポートを返す
             return ErrorReport(source_file=input_path)
 
-    def _convert_to_detailed_error(self, error, file_path: Path):  # type: ignore # type: ignore
+    def _convert_to_detailed_error(self, error: Any, file_path: Path) -> DetailedError:
         """旧エラー形式から新DetailedError形式に変換"""
         from ...core.reporting import (
-            DetailedError,
             ErrorCategory,
             ErrorLocation,
             ErrorSeverity,

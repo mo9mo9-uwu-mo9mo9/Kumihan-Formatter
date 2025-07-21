@@ -13,7 +13,8 @@ Usage:
 
 import argparse
 import json
-import os
+
+# os removed as unused
 import subprocess
 import sys
 from datetime import datetime

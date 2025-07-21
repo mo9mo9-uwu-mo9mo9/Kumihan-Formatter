@@ -12,8 +12,9 @@ from .file_controller import FileController
 
 if TYPE_CHECKING:
     from ..core.log_viewer import LogViewerWindow
-    from ..gui_models import AppState
-    from ..gui_views import MainView
+
+    # ..gui_models.AppState removed as unused
+    # ..gui_views.MainView removed as unused
 
 # デバッグロガーのインポート
 try:

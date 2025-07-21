@@ -33,7 +33,7 @@ class PerformanceMonitor:
         """Context manager for measuring performance"""
         start_time = time.perf_counter()
         start_memory = self._system_info.get_memory_usage()
-        start_cpu = self._system_info.get_cpu_usage()
+        _ = self._system_info.get_cpu_usage()  # CPU使用率は現在未使用
 
         # Reset cache stats for this operation
         cache_hits_start = self._cache_stats["hits"]

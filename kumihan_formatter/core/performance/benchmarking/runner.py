@@ -6,9 +6,9 @@ Issue #476 Phase2対応 - パフォーマンスモジュール統合
 
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
-from ...utilities.logger import get_logger
+# ...utilities.logger.get_logger removed as unused
 from ..core.base import PerformanceComponent, PerformanceMetric
 from ..core.metrics import BenchmarkConfig, BenchmarkResult
 from ..core.persistence import BaselineManager, get_global_persistence

@@ -10,12 +10,12 @@ Issue #402対応 - パフォーマンス最適化
 
 from contextlib import _GeneratorContextManager
 from pathlib import Path
-from typing import Any, Callable, Generator
+from typing import Any, Callable
 
 from ..utilities.logger import get_logger
 from .profiler_analysis import ProfilingAnalyzer, ProfilingReporter
 from .profiler_core import FunctionProfiler, MemoryTracker, ProfilingSessionManager
-from .profiler_types import FunctionProfile, ProfilingSession
+from .profiler_types import ProfilingSession
 
 
 class AdvancedProfiler:

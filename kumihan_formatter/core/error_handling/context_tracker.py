@@ -235,7 +235,7 @@ class ContextTracker:
             if summary["current_position"]["column"]:
                 lines.append(f", Column {summary['current_position']['column']}")
 
-        lines.append(f"\nSystem Info:")
+        lines.append("\nSystem Info:")
         sys_info = summary["system_info"]
         lines.append(f"  Platform: {sys_info['platform']}")
         lines.append(f"  Python: {sys_info['python_version']}")
@@ -247,7 +247,7 @@ class ContextTracker:
 
         if "file_info" in summary:
             file_info = summary["file_info"]
-            lines.append(f"\nFile Info:")
+            lines.append("\nFile Info:")
             lines.append(f"  Path: {file_info['file_path']}")
             if file_info["file_size"]:
                 lines.append(f"  Size: {file_info['file_size']} bytes")

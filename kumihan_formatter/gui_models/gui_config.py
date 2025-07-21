@@ -5,7 +5,7 @@ Issue #476 Phase2対応 - config_model.py分割（関数数過多解消）
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 
 
 # Tkinterが利用できない場合のフォールバック

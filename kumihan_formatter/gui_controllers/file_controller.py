@@ -11,8 +11,8 @@ from tkinter import filedialog
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..gui_models import AppState
-    from ..gui_views import MainView
+    pass  # ..gui_models.AppState removed as unused
+    # ..gui_views.MainView removed as unused
 
 # デバッグロガーのインポート
 try:

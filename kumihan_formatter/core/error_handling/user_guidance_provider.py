@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - japanese_messages.py分割
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from .error_types import ErrorCategory, UserFriendlyError
 

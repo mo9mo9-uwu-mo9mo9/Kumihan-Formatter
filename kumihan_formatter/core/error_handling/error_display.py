@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..utilities.logger import get_logger
-from .error_types import ErrorCategory, ErrorLevel, UserFriendlyError
+from .error_types import ErrorLevel, UserFriendlyError
 
 
 class ErrorDisplay:

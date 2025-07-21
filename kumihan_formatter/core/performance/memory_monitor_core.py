@@ -58,7 +58,7 @@ class MemoryMonitor:
 
     def _take_snapshot_callback(self) -> None:
         """スナップショット取得のコールバック"""
-        snapshot = self.stats_collector.take_snapshot()
+        _ = self.stats_collector.take_snapshot()
         # 統計を更新
         snapshots_count = self.data_manager.get_stats().get("total_snapshots", 0)
         if isinstance(snapshots_count, int):

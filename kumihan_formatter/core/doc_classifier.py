@@ -5,7 +5,6 @@
 
 import re
 from pathlib import Path
-from typing import Dict
 
 from .classification_rules import build_classification_rules, get_conversion_strategies
 from .document_types import DocumentType, get_type_display_names

@@ -57,7 +57,8 @@ class TestFileCommand:
         except ImportError:
             # Create a mock TestFileGenerator for testing purposes
             class MockTestFileGenerator:
-                """Mock TestFileGenerator for environments where dev tools are not available"""
+                """Mock TestFileGenerator for environments where dev tools
+                are not available"""
 
                 def __init__(self, max_combinations: int = 100):
                     self.max_combinations = max_combinations

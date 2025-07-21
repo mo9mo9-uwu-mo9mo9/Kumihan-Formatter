@@ -60,7 +60,9 @@ def validate_ast(nodes: list[Node]) -> list[str]:
 
     for i, node in enumerate(nodes):
         if not isinstance(node, Node):
-            issues.append(f"Item {i} is not a Node instance: {type(node)}")  # type: ignore
+            issues.append(
+                f"Item {i} is not a Node instance: {type(node)}"
+            )  # type: ignore
             continue
 
         if not node.type:
