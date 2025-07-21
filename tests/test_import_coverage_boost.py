@@ -63,7 +63,7 @@ class TestImportCoverageBoost:
                                 FileNotFoundError,
                             ) as e:
                                 # Method not available - skip silently
-                pass
+                                pass
                     else:
                         # Class with args
                         try:
@@ -77,7 +77,7 @@ class TestImportCoverageBoost:
                             FileNotFoundError,
                         ) as e:
                             # Method not available - skip silently
-                pass
+                            pass
             except ImportError as e:
                 # Method not available - skip silently
                 pass
