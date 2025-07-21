@@ -9,6 +9,8 @@ import threading
 import time
 from typing import Any, Callable, Optional
 
+from ..core.utilities.logger import get_logger
+
 
 # Tkinterが利用できない場合のフォールバック
 class MockVar:
@@ -61,6 +63,7 @@ class ConversionState:
         self._lock = threading.Lock()
         self._start_time: Optional[float] = None
         self._callback: Optional[Callable[[float, str], None]] = None
+        self.logger = get_logger(__name__)
 
     def get_progress(self) -> float:
         """進捗率を取得（Thread-Safe）"""
@@ -87,9 +90,7 @@ class ConversionState:
                     self._callback(value, self.get_status())
         except Exception as e:
             # エラーハンドリング - ログに記録して継続
-            import logging
-
-            logging.warning(f"進捗設定エラー: {e}")
+            self.logger.warning(f"進捗設定エラー: {e}")
 
     def get_status(self) -> str:
         """ステータスメッセージを取得（Thread-Safe）"""
@@ -110,9 +111,7 @@ class ConversionState:
                     self._callback(self.get_progress(), message)
         except Exception as e:
             # エラーハンドリング - ログに記録して継続
-            import logging
-
-            logging.warning(f"ステータス設定エラー: {e}")
+            self.logger.warning(f"ステータス設定エラー: {e}")
 
     def update_progress(self, value: float, status: str = "") -> None:
         """進捗とステータスを同時更新（Thread-Safe）"""
@@ -139,9 +138,7 @@ class ConversionState:
                     current_status = status if status else self.status_var.get()
                     self._callback(value, str(current_status))
         except Exception as e:
-            import logging
-
-            logging.error(f"進捗更新エラー: {e}")
+            self.logger.error(f"進捗更新エラー: {e}")
 
     def start_processing(self) -> None:
         """処理開始（Thread-Safe）"""
@@ -157,9 +154,7 @@ class ConversionState:
                 if self._callback:
                     self._callback(0, "処理中...")
         except Exception as e:
-            import logging
-
-            logging.error(f"処理開始エラー: {e}")
+            self.logger.error(f"処理開始エラー: {e}")
 
     def finish_processing(self, success: bool = True) -> None:
         """処理完了（Thread-Safe）"""
@@ -186,9 +181,7 @@ class ConversionState:
                         self._callback(0, "エラー")
                 self._start_time = None
         except Exception as e:
-            import logging
-
-            logging.error(f"処理完了エラー: {e}")
+            self.logger.error(f"処理完了エラー: {e}")
 
     def reset(self) -> None:
         """状態をリセット（Thread-Safe）"""
@@ -201,9 +194,7 @@ class ConversionState:
                 self._start_time = None
                 self._callback = None
         except Exception as e:
-            import logging
-
-            logging.error(f"状態リセットエラー: {e}")
+            self.logger.error(f"状態リセットエラー: {e}")
 
     def set_callback(self, callback: Optional[Callable[[float, str], None]]) -> None:
         """進捗更新コールバックを設定（Thread-Safe）"""
