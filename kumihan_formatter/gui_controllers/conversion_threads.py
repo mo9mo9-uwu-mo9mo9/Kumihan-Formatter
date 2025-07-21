@@ -32,7 +32,7 @@ try:
 except ImportError as e:
     error(f"Failed to import command classes: {e}")
     ConvertCommand = None  # type: ignore
-    SampleCommand = None  # type: ignore
+    SampleCommand = None
 
 
 class ConversionThreads:

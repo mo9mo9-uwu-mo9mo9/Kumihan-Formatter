@@ -6,7 +6,7 @@ import platform
 import subprocess
 import threading
 import time
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class LogViewerEventHandler:
     """ログビューアーのイベント処理クラス"""
 
-    def __init__(self, ui_manager, logger_getter: callable) -> None:
+    def __init__(self, ui_manager: Any, logger_getter: Callable) -> None:
         self.ui = ui_manager
         self.get_logger = logger_getter
         self.running = False
