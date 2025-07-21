@@ -231,4 +231,4 @@ class TestMainRendererHighImpact:
             FileNotFoundError,
         ) as e:
             # Method not available - skip silently
-                pass
+            pass

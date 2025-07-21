@@ -49,7 +49,7 @@ class TestRenderingSystemExtended:
                     result = escape_html(input_text)
                     assert expected in result or isinstance(result, str)
                 except:
-                pass
+                    pass
         except ImportError:
             # Basic test without import
             import html
@@ -75,7 +75,7 @@ class TestRenderingSystemExtended:
                     result = renderer.render(test_content)
                     assert isinstance(result, str)
                 except:
-                pass
+                    pass
         except ImportError:
             # Alternative test without compound renderer
             assert True  # Skip test if module not available

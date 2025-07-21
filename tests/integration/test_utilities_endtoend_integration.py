@@ -43,7 +43,7 @@ class TestUtilitiesIntegration:
                 assert result is not None
         except ImportError:
             # モジュールが存在しない場合はスキップ
-                pass
+            pass
 
     @pytest.mark.performance
     def test_performance_monitoring_integration(self):
@@ -57,7 +57,7 @@ class TestUtilitiesIntegration:
             assert optimizer is not None
         except ImportError:
             # モジュールが存在しない場合はスキップ
-                pass
+            pass
 
     @pytest.mark.unit
     def test_memory_tracking_integration(self):
@@ -135,7 +135,7 @@ class TestEndToEndWorkflow:
             recovery.recover_from_error(Exception("テストエラー"))
         except Exception:
             # エラー回復が未実装の場合は例外を許容
-                pass
+            pass
 
     @pytest.mark.mock_heavy
     def test_complete_rendering_pipeline(self):

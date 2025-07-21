@@ -33,7 +33,7 @@ class TestFileSystemUtilities:
                     assert new_dir.exists()
                     assert new_dir.is_dir()
                 except:
-                pass
+                    pass
 
                 # Test get_file_info
                 test_file = temp_path / "test.txt"
@@ -45,18 +45,18 @@ class TestFileSystemUtilities:
                     assert "size" in info
                     assert "modified" in info
                 except:
-                pass
+                    pass
 
                 # Test safe_remove
                 try:
                     safe_remove(test_file)
                     assert not test_file.exists()
                 except:
-                pass
+                    pass
 
         except ImportError:
             # File system utilities may not be available
-                pass
+            pass
 
     def test_path_utilities(self):
         """Test path utilities"""
@@ -89,7 +89,7 @@ class TestFileSystemUtilities:
                 pass
 
         except ImportError:
-                pass
+            pass
 
 
 class TestDataConverters:
@@ -140,7 +140,7 @@ class TestDataConverters:
                 pass
 
         except ImportError:
-                pass
+            pass
 
     def test_type_converters(self):
         """Test type converters"""
@@ -167,7 +167,7 @@ class TestDataConverters:
                     result = to_bool(value)
                     assert result == expected
                 except:
-                pass
+                    pass
 
             # Test to_int
             try:
@@ -192,4 +192,4 @@ class TestDataConverters:
                 pass
 
         except ImportError:
-                pass
+            pass

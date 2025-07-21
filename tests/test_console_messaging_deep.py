@@ -16,16 +16,26 @@ class TestConsoleMessagingDeep:
 
     def test_console_messaging_initialization(self):
         """ConsoleMessaging初期化テスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_messaging import ConsoleMessaging
 
-        messaging = ConsoleMessaging()
+        mock_console = Mock()
+
+        messaging = ConsoleMessaging(mock_console)
         assert messaging is not None
 
     def test_console_messaging_message_types(self):
         """メッセージタイプ別テスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_messaging import ConsoleMessaging
 
-        messaging = ConsoleMessaging()
+        mock_console = Mock()
+
+        messaging = ConsoleMessaging(mock_console)
 
         # メッセージタイプテスト
         message_types = [
@@ -55,9 +65,14 @@ class TestConsoleMessagingDeep:
 
     def test_console_messaging_formatting(self):
         """メッセージフォーマット機能テスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_messaging import ConsoleMessaging
 
-        messaging = ConsoleMessaging()
+        mock_console = Mock()
+
+        messaging = ConsoleMessaging(mock_console)
 
         # フォーマット機能テスト
         format_methods = [
@@ -85,9 +100,14 @@ class TestConsoleMessagingDeep:
 
     def test_console_messaging_templates(self):
         """メッセージテンプレート機能テスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_messaging import ConsoleMessaging
 
-        messaging = ConsoleMessaging()
+        mock_console = Mock()
+
+        messaging = ConsoleMessaging(mock_console)
 
         # テンプレート機能テスト
         template_methods = [
@@ -112,4 +132,4 @@ class TestConsoleMessagingDeep:
                             if result is not None:
                                 assert isinstance(result, str)
                     except Exception:
-                    pass
+                        pass

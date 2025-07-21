@@ -10,6 +10,9 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+# モジュール可用性チェック
+HAS_SAMPLE_COMMAND = pytest._has_module("kumihan_formatter.commands.sample_command")
+
 
 class TestConvertValidatorDeep:
     """ConvertValidator深度テスト - 50行 0%→70%+目標"""
@@ -42,7 +45,7 @@ class TestConvertValidatorDeep:
 
         except Exception:
             # 依存関係の問題は許容
-                pass
+            pass
 
     def test_convert_validator_invalid_input(self):
         """無効入力の検証テスト"""
@@ -95,7 +98,7 @@ class TestConvertWatcherDeep:
 
         except Exception:
             # 依存関係の問題は許容
-                pass
+            pass
 
     def test_convert_watcher_start_stop(self):
         """ウォッチャー開始・停止テスト"""
@@ -124,66 +127,59 @@ class TestConvertWatcherDeep:
 
         except Exception:
             # 依存関係の問題は許容
-                pass
+            pass
 
 
 class TestSampleCommandDeep:
     """SampleCommand深度テスト - 小さいが重要"""
 
+    @pytest.mark.skipif(
+        not HAS_SAMPLE_COMMAND, reason="SampleCommand module not available"
+    )
     def test_sample_command_basic(self):
         """SampleCommand基本テスト"""
         from kumihan_formatter.commands.sample_command import SampleCommand
 
-        try:
-            sample = SampleCommand()
-            assert sample is not None
+        sample = SampleCommand()
+        assert sample is not None
 
-            # サンプル生成テスト
-            if hasattr(sample, "execute"):
-                result = sample.execute()
-                assert isinstance(result, (str, Path))
-            elif hasattr(sample, "generate"):
-                result = sample.generate()
-                assert isinstance(result, (str, Path))
-            elif hasattr(sample, "create_sample"):
-                result = sample.create_sample()
-                assert isinstance(result, (str, Path))
+        # サンプル生成テスト
+        if hasattr(sample, "execute"):
+            result = sample.execute()
+            assert isinstance(result, (str, Path))
+        elif hasattr(sample, "generate"):
+            result = sample.generate()
+            assert isinstance(result, (str, Path))
+        elif hasattr(sample, "create_sample"):
+            result = sample.create_sample()
+            assert isinstance(result, (str, Path))
 
-        except ImportError:
-            pytest.skip("SampleCommand module not available")
-        except Exception:
-            # 依存関係エラーは許容
-                pass
-
+    @pytest.mark.skipif(
+        not HAS_SAMPLE_COMMAND, reason="SampleCommand module not available"
+    )
     def test_sample_command_output(self):
         """サンプル出力テスト"""
         from kumihan_formatter.commands.sample_command import SampleCommand
 
+        sample = SampleCommand()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            output_file = f.name
+
         try:
-            sample = SampleCommand()
+            # ファイル出力テスト
+            if hasattr(sample, "execute"):
+                result = sample.execute(output_file.replace(".txt", ""))
+                assert isinstance(result, Path)
+            elif hasattr(sample, "save_to"):
+                sample.save_to(output_file)
+                assert Path(output_file).exists()
+            elif hasattr(sample, "write_sample"):
+                sample.write_sample(output_file)
+                assert Path(output_file).exists()
 
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".txt", delete=False
-            ) as f:
-                output_file = f.name
-
-            try:
-                # ファイル出力テスト
-                if hasattr(sample, "execute"):
-                    result = sample.execute(output_file.replace(".txt", ""))
-                    assert isinstance(result, Path)
-                elif hasattr(sample, "save_to"):
-                    sample.save_to(output_file)
-                    assert Path(output_file).exists()
-                elif hasattr(sample, "write_sample"):
-                    sample.write_sample(output_file)
-                    assert Path(output_file).exists()
-
-            except Exception:
-                # 依存関係エラーは許容
-                pass
-            finally:
-                Path(output_file).unlink(missing_ok=True)
-
-        except ImportError:
-            pytest.skip("SampleCommand module not available")
+        except Exception:
+            # 依存関係エラーは許容
+            pass
+        finally:
+            Path(output_file).unlink(missing_ok=True)
