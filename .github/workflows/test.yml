@@ -92,7 +92,7 @@ jobs:
         fi
 
     - name: Upload coverage reports to Codecov
-      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12'
+      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12' && false
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
@@ -101,13 +101,13 @@ jobs:
         fail_ci_if_error: false
 
     - name: Generate coverage badge
-      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12'
+      if: matrix.os == 'macos-latest' && matrix.python-version == '3.12' && false
       run: |
         pip install coverage-badge
         coverage-badge -o coverage.svg -f
 
     - name: Upload test results
-      if: always()
+      if: always() && false
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.python-version }}
