@@ -4,10 +4,12 @@
 Issue #554: CI/CD正常化のための緊急対応健全化
 """
 
+from typing import Any, Dict
+
 import pytest
 
 
-def test_minimal_import():
+def test_minimal_import() -> None:
     """最小限のインポートテスト"""
     import kumihan_formatter
 
@@ -18,7 +20,7 @@ def test_minimal_import():
     assert len(version) > 0
 
 
-def test_config_import():
+def test_config_import() -> None:
     """設定モジュールのインポートテスト"""
     from kumihan_formatter.config import BaseConfig
 
@@ -36,11 +38,13 @@ def test_config_import():
     assert "background_color" in css_vars
 
 
-def test_config_with_custom_data():
+def test_config_with_custom_data() -> None:
     """カスタム設定データでのConfigテスト"""
     from kumihan_formatter.config import BaseConfig
 
-    custom_config = {"css": {"max_width": "1000px", "custom_color": "#123456"}}
+    custom_config: Dict[str, Dict[str, str]] = {
+        "css": {"max_width": "1000px", "custom_color": "#123456"}
+    }
     config = BaseConfig(custom_config)
     css_vars = config.get_css_variables()
 
@@ -51,7 +55,7 @@ def test_config_with_custom_data():
     assert "background_color" in css_vars
 
 
-def test_ui_console_import():
+def test_ui_console_import() -> None:
     """UIコンソールモジュールのインポートテスト"""
     from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -65,7 +69,7 @@ def test_ui_console_import():
     assert callable(ui.error)
 
 
-def test_parser_import():
+def test_parser_import() -> None:
     """パーサーモジュールのインポートテスト"""
     try:
         from kumihan_formatter.parser import KumihanParser
@@ -81,7 +85,7 @@ def test_parser_import():
         pytest.skip("KumihanParser not available")
 
 
-def test_core_imports():
+def test_core_imports() -> None:
     """コアモジュール群のインポートテスト"""
     # 基本的なコアモジュールが存在することを確認
     import kumihan_formatter.core
