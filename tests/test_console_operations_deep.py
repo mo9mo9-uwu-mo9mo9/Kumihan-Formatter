@@ -16,16 +16,26 @@ class TestConsoleOperationsDeep:
 
     def test_console_operations_initialization(self):
         """ConsoleOperations初期化テスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_operations import ConsoleOperations
 
-        ops = ConsoleOperations()
+        mock_console = Mock()
+
+        ops = ConsoleOperations(mock_console)
         assert ops is not None
 
     def test_console_operations_file_operations(self):
         """ファイル操作メソッドテスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_operations import ConsoleOperations
 
-        ops = ConsoleOperations()
+        mock_console = Mock()
+
+        ops = ConsoleOperations(mock_console)
 
         # ファイル操作メソッドテスト
         file_methods = [
@@ -63,9 +73,14 @@ class TestConsoleOperationsDeep:
 
     def test_console_operations_text_processing(self):
         """テキスト処理メソッドテスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_operations import ConsoleOperations
 
-        ops = ConsoleOperations()
+        mock_console = Mock()
+
+        ops = ConsoleOperations(mock_console)
 
         # テキスト処理メソッドテスト
         text_methods = [
@@ -93,9 +108,14 @@ class TestConsoleOperationsDeep:
 
     def test_console_operations_conversion_methods(self):
         """変換操作メソッドテスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_operations import ConsoleOperations
 
-        ops = ConsoleOperations()
+        mock_console = Mock()
+
+        ops = ConsoleOperations(mock_console)
 
         # 変換メソッドテスト
         conversion_methods = [
@@ -123,9 +143,14 @@ class TestConsoleOperationsDeep:
 
     def test_console_operations_validation_methods(self):
         """検証操作メソッドテスト"""
+        # Mock console object for testing
+        from unittest.mock import Mock
+
         from kumihan_formatter.ui.console_operations import ConsoleOperations
 
-        ops = ConsoleOperations()
+        mock_console = Mock()
+
+        ops = ConsoleOperations(mock_console)
 
         # 検証メソッドテスト
         validation_methods = [

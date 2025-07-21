@@ -26,7 +26,7 @@ class TestGUIIntegration:
             assert AppState is not None
         except RuntimeError:
             # Tkinter環境が利用できない場合はスキップ
-                pass
+            pass
 
     @pytest.mark.mock_heavy
     def test_gui_controllers_integration(self):

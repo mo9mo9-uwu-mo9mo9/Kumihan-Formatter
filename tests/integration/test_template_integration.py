@@ -22,7 +22,7 @@ class TestTemplateIntegration:
             assert context is not None
         except ImportError:
             # モジュールが存在しない場合はスキップ
-                pass
+            pass
 
     @pytest.mark.unit
     def test_template_filters_integration(self):
@@ -35,4 +35,4 @@ class TestTemplateIntegration:
             assert "&lt;/script&gt;" in result
         except ImportError:
             # モジュールが存在しない場合はスキップ
-                pass
+            pass

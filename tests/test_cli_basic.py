@@ -18,7 +18,7 @@ class TestCLIBasic:
             assert callable(main)
 
         except ImportError:
-                pass
+            pass
 
     def test_command_interface(self):
         """Test command interface"""
@@ -29,4 +29,4 @@ class TestCLIBasic:
             assert command is not None
 
         except ImportError:
-                pass
+            pass
