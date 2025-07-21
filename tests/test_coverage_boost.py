@@ -6,17 +6,18 @@ CI/CD正常化のため、基本的な機能の動作確認を行う
 
 import tempfile
 from pathlib import Path
+from typing import Any, Dict
 
 import pytest
 
 
-def test_actual_config_execution():
+def test_actual_config_execution() -> None:
     """実際の設定処理実行テスト"""
     from kumihan_formatter.config.base_config import BaseConfig
 
     # デフォルト設定での実行
     config = BaseConfig()
-    css_vars = config.get_css_variables()
+    css_vars: Dict[str, Any] = config.get_css_variables()
 
     # 各CSS変数の取得と検証
     assert css_vars["max_width"] == "800px"
@@ -26,7 +27,9 @@ def test_actual_config_execution():
     assert css_vars["line_height"] == "1.8"
 
     # カスタム設定での実行
-    custom_data = {"css": {"max_width": "1200px", "custom_property": "custom_value"}}
+    custom_data: Dict[str, Dict[str, str]] = {
+        "css": {"max_width": "1200px", "custom_property": "custom_value"}
+    }
     custom_config = BaseConfig(custom_data)
     custom_css = custom_config.get_css_variables()
 
@@ -37,7 +40,7 @@ def test_actual_config_execution():
     assert custom_css["background_color"] == "#f9f9f9"
 
 
-def test_console_ui_execution():
+def test_console_ui_execution() -> None:
     """コンソールUIの実際の実行テスト"""
     from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -60,7 +63,7 @@ def test_console_ui_execution():
         pytest.fail(f"Console UI method failed: {e}")
 
 
-def test_file_operations_execution():
+def test_file_operations_execution() -> None:
     """ファイル操作の実際の実行テスト"""
     from kumihan_formatter.core.file_operations import FileOperations
 
@@ -75,7 +78,7 @@ def test_file_operations_execution():
     assert callable(file_ops.copy_images)
 
 
-def test_version_import_execution():
+def test_version_import_execution() -> None:
     """バージョン情報の実際の取得テスト"""
     import kumihan_formatter
 
@@ -87,7 +90,7 @@ def test_version_import_execution():
     assert len(version) > 0
 
     # セマンティックバージョニングパターンの確認
-    version_parts = version.split(".")
+    version_parts: list[str] = version.split(".")
     assert len(version_parts) >= 2
 
     # メジャーバージョンの確認
@@ -95,7 +98,7 @@ def test_version_import_execution():
     assert major_version.isdigit() or major_version == "0"
 
 
-def test_config_module_init():
+def test_config_module_init() -> None:
     """config モジュールの __init__.py 実行テスト"""
     from kumihan_formatter.config import BaseConfig, ConfigManager
 
@@ -111,7 +114,7 @@ def test_config_module_init():
     assert config_manager is not None
 
 
-def test_ui_module_init():
+def test_ui_module_init() -> None:
     """ui モジュールの __init__.py 実行テスト"""
     from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -124,7 +127,7 @@ def test_ui_module_init():
 
 
 @pytest.mark.unit
-def test_integrated_functionality():
+def test_integrated_functionality() -> None:
     """統合機能テスト - 複数モジュール連携"""
     # 設定の作成
     from kumihan_formatter.config.base_config import BaseConfig
@@ -148,7 +151,7 @@ def test_integrated_functionality():
     assert file_ops.ui is ui
 
     # 設定の実際の使用
-    css_vars = config.get_css_variables()
+    css_vars: Dict[str, Any] = config.get_css_variables()
     assert len(css_vars) > 0
 
     # UIの実際の使用
