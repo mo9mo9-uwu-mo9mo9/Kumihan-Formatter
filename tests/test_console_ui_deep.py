@@ -87,7 +87,7 @@ class TestConsoleUIDeep:
                     try:
                         method("Test warning message")
                     except Exception:
-                    pass
+                        pass
 
     def test_console_ui_success_methods(self):
         """ConsoleUI成功出力メソッドテスト"""
@@ -110,7 +110,7 @@ class TestConsoleUIDeep:
                     try:
                         method("Test success message")
                     except Exception:
-                    pass
+                        pass
 
     def test_console_ui_input_methods(self):
         """ConsoleUI入力メソッドテスト"""
@@ -186,4 +186,4 @@ class TestConsoleUIDeep:
                         try:
                             method(50)
                         except:
-                        pass
+                            pass
