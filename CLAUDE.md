@@ -61,6 +61,7 @@ AI運用5原則
 - **継続的リファクタリング**: 安全な設計改善
 
 ### Pull Request必須ルール
+- **PR作成時レビュー依頼必須**: PR作成時のbodyに必ず`@claude`メンションを含める
 - **Claude自動レビュー**: PR作成時に自動でClaude Codeレビュー実行
 - **mo9mo9手動マージ**: レビュー完了後、mo9mo9による手動マージ実行
 - **品質保証**: GitHub Actions品質チェック + Claudeレビューの二重チェック
@@ -134,8 +135,8 @@ KUMIHAN_DEV_LOG=true KUMIHAN_DEV_LOG_JSON=true kumihan convert input.txt output.
 
 # GitHub Claudeメンション方法
 
-## コードレビュー依頼
-PR（プルリクエスト）でClaude GitHub Actionsによる自動レビューを実行する場合：
+## PR作成時の必須レビュー依頼テンプレート
+**重要**: Pull Request作成時は必ずbodyに以下のClaudeレビュー依頼を含める：
 
 ```
 @claude PRのレビューをお願いします！
