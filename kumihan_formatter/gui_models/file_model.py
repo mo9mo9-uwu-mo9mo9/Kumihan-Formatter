@@ -5,10 +5,11 @@ Issue #476 Phase2対応 - gui_models.py分割（2/3）
 Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強化
 """
 
-import logging
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+from ..core.utilities.logger import get_logger
 
 
 class FileManager:
@@ -16,15 +17,16 @@ class FileManager:
 
     ファイル選択、パス管理、出力パス生成等のファイル関連処理
     マルチスレッド環境での安全なファイル操作を保証
+    KumihanLogger統一ログシステムを使用
     """
 
     def __init__(self) -> None:
         """ファイル管理の初期化"""
+        self.logger = get_logger(__name__)
         self._lock = threading.Lock()
         self._file_cache: Dict[str, Dict[str, Any]] = {}
 
-    @staticmethod
-    def get_output_html_path(input_file: str, output_dir: str) -> Path:
+    def get_output_html_path(self, input_file: str, output_dir: str) -> Path:
         """入力ファイルから出力HTMLファイルのパスを生成（Thread-Safe）"""
         try:
             if not input_file:
@@ -47,11 +49,10 @@ class FileManager:
             output_path = Path(output_dir) / f"{input_path.stem}.html"
             return output_path
         except Exception as e:
-            logging.error(f"出力パス生成エラー: {e}")
+            self.logger.error(f"出力パス生成エラー: {e}")
             raise
 
-    @staticmethod
-    def validate_file_exists(file_path: str) -> bool:
+    def validate_file_exists(self, file_path: str) -> bool:
         """ファイルの存在確認（エラーハンドリング強化）"""
         try:
             if not file_path or not isinstance(file_path, str):
@@ -59,11 +60,10 @@ class FileManager:
             path = Path(file_path)
             return path.exists() and path.is_file()
         except (OSError, ValueError) as e:
-            logging.warning(f"ファイル存在確認エラー: {e}")
+            self.logger.warning(f"ファイル存在確認エラー: {e}")
             return False
 
-    @staticmethod
-    def validate_directory_writable(dir_path: str) -> bool:
+    def validate_directory_writable(self, dir_path: str) -> bool:
         """ディレクトリの書き込み可能性確認（エラーハンドリング強化）"""
         try:
             if not dir_path or not isinstance(dir_path, str):
@@ -79,11 +79,10 @@ class FileManager:
 
             return directory.is_dir()
         except (OSError, PermissionError) as e:
-            logging.warning(f"ディレクトリ書き込み確認エラー: {e}")
+            self.logger.warning(f"ディレクトリ書き込み確認エラー: {e}")
             return False
 
-    @staticmethod
-    def get_file_size_mb(file_path: str) -> float:
+    def get_file_size_mb(self, file_path: str) -> float:
         """ファイルサイズをMB単位で取得（エラーハンドリング強化）"""
         try:
             if not file_path or not isinstance(file_path, str):
@@ -93,7 +92,7 @@ class FileManager:
                 return 0.0
             return path.stat().st_size / (1024 * 1024)
         except (OSError, FileNotFoundError) as e:
-            logging.warning(f"ファイルサイズ取得エラー: {e}")
+            self.logger.warning(f"ファイルサイズ取得エラー: {e}")
             return 0.0
 
     def get_file_info(self, file_path: str) -> Optional[Dict[str, Any]]:
@@ -128,18 +127,17 @@ class FileManager:
                 return info
 
         except Exception as e:
-            logging.error(f"ファイル情報取得エラー: {e}")
+            self.logger.error(f"ファイル情報取得エラー: {e}")
             return None
 
-    @staticmethod
-    def get_sample_output_path(output_dir: str = "kumihan_sample") -> Path:
+    def get_sample_output_path(self, output_dir: str = "kumihan_sample") -> Path:
         """サンプル生成用の出力パスを取得（エラーハンドリング強化）"""
         try:
             if not isinstance(output_dir, str):
                 output_dir = str(output_dir)
             return Path(output_dir)
         except Exception as e:
-            logging.warning(f"サンプル出力パス生成エラー: {e}")
+            self.logger.warning(f"サンプル出力パス生成エラー: {e}")
             return Path("kumihan_sample")
 
     def clear_cache(self) -> None:
