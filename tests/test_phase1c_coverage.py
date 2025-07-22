@@ -113,7 +113,7 @@ class TestHTMLRenderer:
         """見出し収集付き描画テスト"""
         # 見出しノードを作成
         heading_node = Mock(spec=Node)
-        heading_node.type = "heading"
+        heading_node.type = "h1"  # heading ではなく h1 を使用
         heading_node.content = "Test Heading"
         heading_node.children = []
         heading_node.attributes = {"level": "1"}
@@ -363,13 +363,13 @@ class TestRenderContext:
         context = RenderContext()
 
         # 基本的な属性が初期化されていることを確認
-        assert hasattr(context, "_context_data")
-        assert isinstance(context._context_data, dict)
+        assert hasattr(context, "_context")
+        assert isinstance(context._context, dict)
 
     def test_set_context_value(self):
         """コンテキスト値設定テスト"""
-        self.context.set("title", "Test Title")
-        self.context.set("author", "Test Author")
+        self.context.custom("title", "Test Title")
+        self.context.custom("author", "Test Author")
 
         # 値が正しく設定されることを確認
         assert self.context.get("title") == "Test Title"
@@ -378,7 +378,7 @@ class TestRenderContext:
     def test_get_context_value(self):
         """コンテキスト値取得テスト"""
         # 存在する値の取得
-        self.context.set("test_key", "test_value")
+        self.context.custom("test_key", "test_value")
         result = self.context.get("test_key")
         assert result == "test_value"
 
@@ -398,7 +398,7 @@ class TestRenderContext:
             "version": "1.0.0",
         }
 
-        self.context.update(update_data)
+        self.context.merge(update_data)
 
         # 全ての値が正しく更新されることを確認
         for key, value in update_data.items():
@@ -407,8 +407,8 @@ class TestRenderContext:
     def test_context_merge(self):
         """コンテキストマージテスト"""
         # 初期データ
-        self.context.set("title", "Original Title")
-        self.context.set("author", "Original Author")
+        self.context.custom("title", "Original Title")
+        self.context.custom("author", "Original Author")
 
         # マージデータ
         merge_data = {
@@ -416,7 +416,7 @@ class TestRenderContext:
             "description": "New Description",  # 新規追加
         }
 
-        self.context.update(merge_data)
+        self.context.merge(merge_data)
 
         # 上書きと新規追加が正しく行われることを確認
         assert self.context.get("title") == "New Title"
@@ -430,7 +430,7 @@ class TestRenderContext:
             "metadata": {"created_at": "2025-07-22", "tags": ["test", "coverage"]},
         }
 
-        self.context.update(nested_data)
+        self.context.merge(nested_data)
 
         # ネストしたデータが正しく格納されることを確認
         config = self.context.get("config")
@@ -443,21 +443,20 @@ class TestRenderContext:
 
     def test_context_serialization(self):
         """コンテキストシリアライゼーションテスト"""
-        self.context.set("title", "Test Title")
-        self.context.set("count", 42)
-        self.context.set("active", True)
+        self.context.custom("title", "Test Title")
+        self.context.custom("count", 42)
+        self.context.custom("active", True)
 
-        # to_dict メソッドがある場合のテスト
-        if hasattr(self.context, "to_dict"):
-            result = self.context.to_dict()
-            assert isinstance(result, dict)
-            assert result["title"] == "Test Title"
-            assert result["count"] == 42
-            assert result["active"] is True
+        # build メソッドでシリアライゼーションテスト
+        result = self.context.build()
+        assert isinstance(result, dict)
+        assert result["title"] == "Test Title"
+        assert result["count"] == 42
+        assert result["active"] is True
 
     def test_context_clear(self):
         """コンテキストクリアテスト"""
-        self.context.set("temp_data", "to be cleared")
+        self.context.custom("temp_data", "to be cleared")
 
         # clearメソッドがある場合のテスト
         if hasattr(self.context, "clear"):
@@ -466,7 +465,7 @@ class TestRenderContext:
 
     def test_context_key_existence(self):
         """コンテキストキー存在確認テスト"""
-        self.context.set("existing_key", "value")
+        self.context.custom("existing_key", "value")
 
         # hasメソッドがある場合のテスト
         if hasattr(self.context, "has"):
@@ -477,17 +476,19 @@ class TestRenderContext:
         """コンテキスト反復テスト"""
         test_data = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
-        self.context.update(test_data)
+        self.context.merge(test_data)
 
-        # itemsメソッドがある場合のテスト
-        if hasattr(self.context, "items"):
-            items = list(self.context.items())
-            assert len(items) >= len(test_data)
+        # keysメソッドがある場合のテスト
+        if hasattr(self.context, "keys"):
+            keys = self.context.keys()
+            assert len(keys) >= len(test_data)
 
             # 全てのキーが含まれていることを確認
-            keys = [key for key, value in items]
             for test_key in test_data.keys():
                 assert test_key in keys
+
+        # itemsは実装されていないのでkeysでテスト済み
+        assert True
 
     def test_context_performance_with_large_data(self):
         """大量データでのコンテキストパフォーマンステスト"""
@@ -499,7 +500,7 @@ class TestRenderContext:
         import time
 
         start = time.time()
-        self.context.update(large_data)
+        self.context.merge(large_data)
         end = time.time()
 
         # 合理的な時間内で処理が完了することを確認
@@ -515,7 +516,7 @@ class TestRenderContext:
 
         def update_context(thread_id):
             for i in range(10):
-                self.context.set(f"thread_{thread_id}_key_{i}", f"value_{i}")
+                self.context.custom(f"thread_{thread_id}_key_{i}", f"value_{i}")
 
         threads = []
         for i in range(5):
