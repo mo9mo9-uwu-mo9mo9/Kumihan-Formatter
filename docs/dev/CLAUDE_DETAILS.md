@@ -114,4 +114,60 @@ cat /tmp/kumihan_formatter/dev_log_*.log
 
 ---
 
+## 🔧 ブランチ管理・PR作成手順
+
+### 基本方針
+**⚠️ 重要**: PR作成前は必ずmainブランチとの同期を確認すること
+
+### 作業開始時の手順
+```bash
+# 1. mainブランチを最新に更新
+git checkout main
+git pull origin main
+
+# 2. 作業ブランチ作成・切り替え
+git checkout -b feat/issue-xxx-description
+# または既存ブランチ: git checkout feat/issue-xxx-description
+```
+
+### PR作成前の必須手順
+```bash
+# 1. 現在の状態確認
+git status
+git log --oneline -5
+
+# 2. mainブランチの最新を取得
+git checkout main
+git pull origin main
+
+# 3. 作業ブランチにmainの最新を適用
+git checkout feat/issue-xxx-description
+git rebase main
+
+# 4. コンフリクト解決（必要な場合）
+# git add . && git rebase --continue
+
+# 5. 強制プッシュ（rebase後）
+git push --force-with-lease
+
+# 6. PR作成
+gh pr create --title "タイトル" --body "本文"
+```
+
+### 緊急対応
+PRが「ブランチが最新でない」エラーになった場合:
+```bash
+git checkout main && git pull origin main
+git checkout feat/issue-xxx-description && git rebase main
+git push --force-with-lease
+```
+
+### よくある失敗パターン
+❌ **NG**: mainブランチを更新せずにPR作成
+❌ **NG**: rebaseせずに古いコミットでPR作成
+❌ **NG**: `git merge main`を使用（履歴が汚くなる）
+✅ **OK**: 必ずrebaseを使用してlinearな履歴を維持
+
+---
+
 開発を楽しみましょう 🎉
