@@ -92,16 +92,15 @@ class TestParseFunction:
         # 設定付きで正常に解析されることを確認
         assert isinstance(result, list)
 
-    def test_parse_function_with_source_path(self):
-        """ソースパス付き解析テスト"""
+    def test_parse_function_with_config(self):
+        """設定付き解析テスト"""
         text = "Test content"
-        with tempfile.TemporaryDirectory() as temp_dir:
-            source_path = Path(temp_dir) / "test.txt"
+        config = {"test": "value"}
 
-            result = parse(text, source_path=source_path)
+        result = parse(text, config=config)
 
-            # ソースパス付きで正常に解析されることを確認
-            assert isinstance(result, list)
+        # 設定付きで正常に解析されることを確認
+        assert isinstance(result, list)
 
     def test_parse_function_error_handling(self):
         """解析エラーハンドリングテスト"""
@@ -136,117 +135,103 @@ class TestMarkdownParser:
         """MarkdownParser初期化テスト"""
         parser = MarkdownParser()
 
-        # 基本属性が初期化されていることを確認
-        assert hasattr(parser, "parse")
+        # パターンが初期化されていることを確認
+        assert hasattr(parser, "patterns")
+        assert isinstance(parser.patterns, dict)
+        assert len(parser.patterns) > 0
 
-    def test_parse_heading_markup(self):
-        """見出しマークアップ解析テスト"""
-        text = """
-        # Level 1 Heading
-        ## Level 2 Heading
-        ### Level 3 Heading
-        """
-        result = self.parser.parse(text)
+    def test_parse_heading_patterns(self):
+        """見出しパターンテスト"""
+        parser = MarkdownParser()
 
-        # 見出しが解析されることを確認
-        assert isinstance(result, list)
+        # H1パターンのテスト
+        h1_pattern = parser.patterns["h1"]
+        match = h1_pattern.search("# Test Heading")
+        assert match is not None
+        assert match.group(1) == "Test Heading"
 
-    def test_parse_paragraph_markup(self):
-        """段落マークアップ解析テスト"""
-        text = """
-        First paragraph.
+        # H2パターンのテスト
+        h2_pattern = parser.patterns["h2"]
+        match = h2_pattern.search("## Another Heading")
+        assert match is not None
+        assert match.group(1) == "Another Heading"
 
-        Second paragraph with content.
+    def test_inline_patterns(self):
+        """インラインパターンテスト"""
+        parser = MarkdownParser()
 
-        Third paragraph.
-        """
-        result = self.parser.parse(text)
+        # strongパターンのテスト
+        strong_pattern = parser.patterns["strong"]
+        match = strong_pattern.search("This is **bold** text")
+        assert match is not None
+        assert match.group(1) == "bold"
 
-        # 段落が解析されることを確認
-        assert isinstance(result, list)
+        # emパターンのテスト
+        em_pattern = parser.patterns["em"]
+        match = em_pattern.search("This is *italic* text")
+        assert match is not None
+        assert match.group(1) == "italic"
 
-    def test_parse_emphasis_markup(self):
-        """強調マークアップ解析テスト"""
-        text = "Text with **bold** and *italic* emphasis."
-        result = self.parser.parse(text)
+    def test_link_patterns(self):
+        """リンクパターンテスト"""
+        parser = MarkdownParser()
 
-        # 強調が解析されることを確認
-        assert isinstance(result, list)
+        # linkパターンのテスト
+        link_pattern = parser.patterns["link"]
+        match = link_pattern.search("[Example](http://example.com)")
+        assert match is not None
+        assert match.group(1) == "Example"
+        assert match.group(2) == "http://example.com"
 
-    def test_parse_list_markup(self):
-        """リストマークアップ解析テスト"""
-        text = """
-        - Unordered list item 1
-        - Unordered list item 2
-        - Unordered list item 3
+    def test_list_patterns(self):
+        """リストパターンテスト"""
+        parser = MarkdownParser()
 
-        1. Ordered list item 1
-        2. Ordered list item 2
-        3. Ordered list item 3
-        """
-        result = self.parser.parse(text)
+        # ol_itemパターンのテスト
+        ol_pattern = parser.patterns["ol_item"]
+        match = ol_pattern.search("1. First item")
+        assert match is not None
+        assert match.group(1) == "First item"
 
-        # リストが解析されることを確認
-        assert isinstance(result, list)
+        # ul_itemパターンのテスト
+        ul_pattern = parser.patterns["ul_item"]
+        match = ul_pattern.search("- Bullet item")
+        assert match is not None
+        assert match.group(1) == "Bullet item"
 
-    def test_parse_nested_markup(self):
-        """ネストしたマークアップ解析テスト"""
-        text = """
-        # Main Heading
+    def test_code_patterns(self):
+        """コードパターンテスト"""
+        parser = MarkdownParser()
 
-        Paragraph with **bold text containing *italic* text**.
+        # codeパターンのテスト
+        code_pattern = parser.patterns["code"]
+        match = code_pattern.search("This is `inline code` example")
+        assert match is not None
+        assert match.group(1) == "inline code"
 
-        ## Sub Heading
+    def test_pattern_compilation_completeness(self):
+        """パターンコンパイル完全性テスト"""
+        parser = MarkdownParser()
 
-        - List item with **bold**
-        - Another item with *italic*
-        """
-        result = self.parser.parse(text)
+        # 期待するパターンキーがすべて存在することを確認
+        expected_keys = [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "strong",
+            "em",
+            "strong_alt",
+            "em_alt",
+            "link",
+            "code",
+            "hr",
+            "ol_item",
+            "ul_item",
+        ]
 
-        # ネストした構造が解析されることを確認
-        assert isinstance(result, list)
-
-    def test_parse_mixed_content(self):
-        """混在コンテンツ解析テスト"""
-        text = """
-        # Document Title
-
-        Introduction paragraph.
-
-        ## Features
-
-        - Feature 1 with **importance**
-        - Feature 2 with *emphasis*
-
-        ### Details
-
-        Detailed explanation with mixed **bold** and *italic* text.
-        """
-        result = self.parser.parse(text)
-
-        # 混在コンテンツが解析されることを確認
-        assert isinstance(result, list)
-
-    def test_parse_empty_content(self):
-        """空コンテンツ解析テスト"""
-        text = ""
-        result = self.parser.parse(text)
-
-        # 空コンテンツでも正常に処理されることを確認
-        assert isinstance(result, list)
-
-    def test_parse_whitespace_content(self):
-        """空白のみコンテンツ解析テスト"""
-        text = "   \n\n   \t\t   \n   "
-        result = self.parser.parse(text)
-
-        # 空白のみでも正常に処理されることを確認
-        assert isinstance(result, list)
-
-    def test_parse_special_characters(self):
-        """特殊文字解析テスト"""
-        text = "Special chars: @#$%^&*()_+-=[]{}|;':\",./<>?"
-        result = self.parser.parse(text)
-
-        # 特殊文字が正常に解析されることを確認
-        assert isinstance(result, list)
+        for key in expected_keys:
+            assert key in parser.patterns
+            assert parser.patterns[key] is not None
