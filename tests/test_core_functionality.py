@@ -5,11 +5,12 @@ CI/CD正常化のための基本的なコア機能テスト
 """
 
 from pathlib import Path
+from typing import List
 
 import pytest
 
 
-def test_file_operations_basic():
+def test_file_operations_basic() -> None:
     """基本的なファイル操作テスト"""
     try:
         from kumihan_formatter.core.file_operations import FileOperations
@@ -26,7 +27,7 @@ def test_file_operations_basic():
         pytest.skip("FileOperations not available")
 
 
-def test_console_ui_methods():
+def test_console_ui_methods() -> None:
     """Console UI メソッドテスト"""
     from kumihan_formatter.ui.console_ui import ConsoleUI
 
@@ -45,7 +46,7 @@ def test_console_ui_methods():
     assert callable(ui.success)
 
 
-def test_config_manager_basic():
+def test_config_manager_basic() -> None:
     """設定マネージャーの基本テスト"""
     try:
         from kumihan_formatter.config.config_manager import ConfigManager
@@ -58,7 +59,7 @@ def test_config_manager_basic():
         pytest.skip("ConfigManager not available")
 
 
-def test_parser_initialization():
+def test_parser_initialization() -> None:
     """パーサーの初期化テスト"""
     try:
         from kumihan_formatter.parser import KumihanParser
@@ -76,7 +77,7 @@ def test_parser_initialization():
         pytest.skip("KumihanParser not available")
 
 
-def test_renderer_basic():
+def test_renderer_basic() -> None:
     """レンダラーの基本テスト"""
     try:
         from kumihan_formatter.renderer import KumihanRenderer
@@ -90,10 +91,10 @@ def test_renderer_basic():
 
 
 @pytest.mark.unit
-def test_import_structure():
+def test_import_structure() -> None:
     """インポート構造の健全性テスト"""
     # 主要モジュールのインポートが可能であることを確認
-    modules_to_test = [
+    modules_to_test: List[str] = [
         "kumihan_formatter",
         "kumihan_formatter.config",
         "kumihan_formatter.core",
@@ -107,7 +108,7 @@ def test_import_structure():
             pytest.fail(f"Failed to import {module_name}: {e}")
 
 
-def test_version_consistency():
+def test_version_consistency() -> None:
     """バージョン整合性テスト"""
     import kumihan_formatter
 
@@ -116,7 +117,7 @@ def test_version_consistency():
     assert len(version) > 0
 
     # セマンティックバージョニングの基本確認
-    version_parts = version.split(".")
+    version_parts: List[str] = version.split(".")
     assert len(version_parts) >= 2  # 最低でもX.Yの形式
 
     # 最初の部分が数字であることを確認

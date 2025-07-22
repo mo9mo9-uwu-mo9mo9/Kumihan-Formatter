@@ -190,12 +190,19 @@ type-check:
 	$(PYTHON) -m mypy --strict kumihan_formatter/
 	@echo "✅ 型チェック完了"
 
+# テストファイルの型チェック（Issue #559対応）
+mypy:
+	@echo "🔍 === テストファイル型チェック ==="
+	$(PYTHON) -m mypy --strict tests/
+	@echo "✅ テストファイル型チェック完了"
+
 # 完全品質チェック（コミット前必須）
-full-quality-check: clean format lint type-check tdd-check test
+full-quality-check: clean format lint type-check mypy tdd-check test
 	@echo "🎉 === 完全品質チェック完了 ==="
 	@echo "✅ フォーマット: 適用済み"
 	@echo "✅ リント: 合格"
 	@echo "✅ 型チェック: strict mode 合格"
+	@echo "✅ テスト型チェック: strict mode 合格"
 	@echo "✅ TDD: 準拠確認"
 	@echo "✅ テスト: 全て成功"
 	@echo ""
