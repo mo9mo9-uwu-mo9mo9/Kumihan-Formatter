@@ -5,6 +5,7 @@ Goal: Phase 3最終段階での大幅カバレッジ向上
 """
 
 import tempfile
+import time
 from pathlib import Path
 from unittest.mock import Mock, patch
 
