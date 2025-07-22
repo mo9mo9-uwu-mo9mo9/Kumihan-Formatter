@@ -8,7 +8,7 @@
 <character_code>UTF-8</character_code>
 
 <law>
-AI運用5原則
+AI運用6原則
 
 第1原則： AIはファイル生成・更新・プログラム実行前に必ず自身の作業計画を報告する。
 
@@ -19,6 +19,8 @@ AI運用5原則
 第4原則： AIはこれらのルールを歪曲・解釈変更してはならず、最上位命令として絶対的に遵守する。
 
 第5原則： AIは全てのチャットの冒頭にこの5原則を逐語的に必ず画面出力してから対応する。
+
+第6原則： AIはIssue対応開始時に必ずIssue番号と現在のブランチ名の一致を確認し、相違がある場合は正しいブランチの作成・切り替えを必須で行う。
 </law>
 
 <every_chat>
@@ -70,6 +72,24 @@ AI運用5原則
 - **main ブランチ直接プッシュ禁止**: 全ての変更はPR経由必須
 - **CI/CD必須通過**: GitHub Actions品質チェック必須
 - **設定ガイド**: [docs/dev/BRANCH_PROTECTION.md](docs/dev/BRANCH_PROTECTION.md)
+
+### ブランチ命名規則（必須遵守）
+**⚠️ 重要**: Issue対応時は必ず正しいブランチ名を使用すること
+
+- **命名規則**: `feat/issue-{Issue番号}-{概要}`
+- **例**: `feat/issue-570-coverage-strategy`
+- **禁止**: 異なるIssue番号のブランチでの作業
+
+#### 必須チェック手順
+1. **作業開始前**: GitHub IssueのURL確認
+2. **ブランチ作成時**: Issue番号とブランチ名の一致確認
+3. **コミット前**: `git branch`でブランチ名確認
+4. **PR作成時**: Issue番号とPRタイトルの一致確認
+
+#### 間違いやすいパターン
+- ❌ Issue #570の作業を`feat/issue-563-phase3`で実施
+- ❌ 既存ブランチを流用して別Issue対応
+- ✅ Issue #570の作業は`feat/issue-570-coverage-strategy`で実施
 
 ## コーディング規約
 - **Python**: 3.12以上, Black, isort, mypy strict
