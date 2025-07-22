@@ -52,7 +52,7 @@ class QualityGate:
 
         # Black formatting check
         success, output = self.run_command(
-            ["python", "-m", "black", "--check", "kumihan_formatter/"],
+            ["python3", "-m", "black", "--check", "kumihan_formatter/"],
             "Black formatting check",
         )
         if not success:
@@ -60,7 +60,7 @@ class QualityGate:
 
         # isort check
         success, output = self.run_command(
-            ["python", "-m", "isort", "--check-only", "kumihan_formatter/"],
+            ["python3", "-m", "isort", "--check-only", "kumihan_formatter/"],
             "isort import sorting check",
         )
         if not success:
@@ -68,7 +68,7 @@ class QualityGate:
 
         # flake8 check
         success, output = self.run_command(
-            ["python", "-m", "flake8", "kumihan_formatter/", "--select=E9,F63,F7,F82"],
+            ["python3", "-m", "flake8", "kumihan_formatter/", "--select=E9,F63,F7,F82"],
             "flake8 syntax check",
         )
         if not success:
@@ -98,17 +98,16 @@ class QualityGate:
             )
             # 除外ファイルをmypy設定で指定
             mypy_cmd = [
-                "python",
+                "python3",
                 "-m",
                 "mypy",
                 "--strict",
                 "kumihan_formatter/",
-                "--exclude",
             ]
             for excluded_file in excluded_files:
                 mypy_cmd.extend(["--exclude", excluded_file])
         else:
-            mypy_cmd = ["python", "-m", "mypy", "--strict", "kumihan_formatter/"]
+            mypy_cmd = ["python3", "-m", "mypy", "--strict", "kumihan_formatter/"]
 
         success, output = self.run_command(
             mypy_cmd,
@@ -132,7 +131,7 @@ class QualityGate:
 
         # Quick test run
         success, output = self.run_command(
-            ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "-x"],
+            ["python3", "-m", "pytest", "tests/", "-v", "--tb=short", "-x"],
             "Quick test run (fail-fast)",
         )
 
@@ -148,7 +147,7 @@ class QualityGate:
         print("🧪 Checking TDD compliance...")
 
         success, output = self.run_command(
-            ["python", "scripts/enforce_tdd.py", "kumihan_formatter/"],
+            ["python3", "scripts/enforce_tdd.py", "kumihan_formatter/"],
             "TDD compliance check",
         )
 
@@ -165,7 +164,7 @@ class QualityGate:
 
         # File size check
         success, output = self.run_command(
-            ["python", "scripts/check_file_size.py", "--max-lines=300"],
+            ["python3", "scripts/check_file_size.py", "--max-lines=300"],
             "File size check (300 lines max)",
         )
 

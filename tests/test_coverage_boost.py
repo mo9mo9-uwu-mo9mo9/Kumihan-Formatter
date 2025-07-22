@@ -6,7 +6,7 @@ CI/CD正常化のため、基本的な機能の動作確認を行う
 
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import pytest
 
@@ -90,7 +90,7 @@ def test_version_import_execution() -> None:
     assert len(version) > 0
 
     # セマンティックバージョニングパターンの確認
-    version_parts: list[str] = version.split(".")
+    version_parts: List[str] = version.split(".")
     assert len(version_parts) >= 2
 
     # メジャーバージョンの確認
