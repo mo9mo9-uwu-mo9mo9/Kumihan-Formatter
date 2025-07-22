@@ -71,17 +71,17 @@ class TestConvertProcessorMethods:
         mock_ui = Mock()
         mock_console_ui.return_value = mock_ui
         mock_parse.return_value = [Mock(), Mock()]  # AST nodes as list
-        mock_render.return_value = "<html>変換済み</html>"
+        mock_render.return_value = "<html>Converted Content</html>"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
             output_path = Path(temp_dir) / "output.html"
             mock_determine_path.return_value = output_path
 
             # file_opsをモック化
             with patch.object(self.processor, "file_ops") as mock_file_ops:
-                mock_file_ops.read_text_file.return_value = "テストコンテンツ"
+                mock_file_ops.read_text_file.return_value = "Test Content"
                 mock_file_ops.write_file.return_value = None
 
                 result_path = self.processor.convert_file(
@@ -98,7 +98,7 @@ class TestConvertProcessorMethods:
     def test_convert_file_with_invalid_path(self):
         """無効なパスでのファイル変換テスト"""
         # 存在しないファイルパス
-        invalid_path = Path("/非存在/ファイル.txt")
+        invalid_path = Path("/nonexistent/file.txt")
 
         # 例外が適切に処理されることを確認
         with pytest.raises(Exception):
@@ -120,13 +120,13 @@ class TestConvertProcessorMethods:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
             output_path = Path(temp_dir) / "output.html"
             mock_determine_path.return_value = output_path
 
             # file_opsをモック化
             with patch.object(self.processor, "file_ops") as mock_file_ops:
-                mock_file_ops.read_text_file.return_value = "テストコンテンツ"
+                mock_file_ops.read_text_file.return_value = "Test Content"
                 mock_file_ops.write_file.return_value = None
 
                 self.processor.convert_file(
@@ -135,7 +135,7 @@ class TestConvertProcessorMethods:
 
                 # _parse_with_progressが設定オブジェクトと共に呼ばれることを確認
                 mock_parse.assert_called_once_with(
-                    "テストコンテンツ", mock_config, input_path
+                    "Test Content", mock_config, input_path
                 )
 
     @patch("kumihan_formatter.commands.convert.convert_processor.get_console_ui")
@@ -159,13 +159,13 @@ class TestConvertProcessorMethods:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
             output_path = Path(temp_dir) / "output.html"
             mock_determine_path.return_value = output_path
 
             # file_opsをモック化
             with patch.object(self.processor, "file_ops") as mock_file_ops:
-                mock_file_ops.read_text_file.return_value = "テストコンテンツ"
+                mock_file_ops.read_text_file.return_value = "Test Content"
                 mock_file_ops.write_file.return_value = None
 
                 self.processor.convert_file(
@@ -173,13 +173,13 @@ class TestConvertProcessorMethods:
                 )
 
                 # _show_test_casesが呼ばれることを確認
-                mock_show_test_cases.assert_called_once_with("テストコンテンツ")
+                mock_show_test_cases.assert_called_once_with("Test Content")
 
     def test_convert_file_with_template_option(self):
         """テンプレートオプション付きファイル変換テスト"""
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
 
             with patch.object(
                 self.processor.file_ops, "read_text_file", return_value="content"
@@ -205,7 +205,7 @@ class TestConvertProcessorMethods:
         """ソース含有オプション付きファイル変換テスト"""
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
 
             with patch.object(
                 self.processor.file_ops, "read_text_file", return_value="content"
@@ -274,11 +274,11 @@ class TestConvertProcessorErrorHandling:
     @patch("kumihan_formatter.commands.convert.convert_processor.parse")
     def test_convert_file_parse_error(self, mock_parse):
         """パースエラー時のテスト"""
-        mock_parse.side_effect = Exception("パースエラー")
+        mock_parse.side_effect = Exception("Parse error")
 
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
 
             with patch.object(
                 self.processor.file_ops, "read_text_file", return_value="content"
@@ -292,11 +292,11 @@ class TestConvertProcessorErrorHandling:
     @patch("kumihan_formatter.commands.convert.convert_processor.render")
     def test_convert_file_render_error(self, mock_render):
         """レンダーエラー時のテスト"""
-        mock_render.side_effect = Exception("レンダーエラー")
+        mock_render.side_effect = Exception("Render error")
 
         with tempfile.TemporaryDirectory() as temp_dir:
             input_path = Path(temp_dir) / "input.txt"
-            input_path.write_text("テストコンテンツ")
+            input_path.write_text("Test Content", encoding="utf-8")
 
             with patch.object(
                 self.processor.file_ops, "read_text_file", return_value="content"
