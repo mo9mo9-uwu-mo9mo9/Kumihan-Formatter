@@ -5,12 +5,12 @@ Issue #476 Phase2対応 - gui_models.py分割（3/3）
 Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強化
 """
 
-import logging
 import os
 import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ..core.utilities.logger import get_logger
 from .conversion_state import ConversionState
 from .file_model import FileManager
 from .gui_config import GuiConfig
@@ -19,6 +19,7 @@ from .gui_config import GuiConfig
 class LogManager:
     """ログ管理クラス（Thread-Safe対応）
 
+    KumihanLogger統一ログシステムを使用したスレッドセーフなログ管理
     GUIログの管理、メッセージレベル、タイムスタンプ処理
     マルチスレッド環境での安全なログ操作を保証
     """
@@ -27,12 +28,12 @@ class LogManager:
 
     def __init__(self, max_messages: int = 1000) -> None:
         """ログ管理の初期化"""
+        self.logger = get_logger(__name__)
         self.messages: List[Dict[str, str]] = []
         self._lock = threading.Lock()
         self._max_messages = max_messages
 
-    @staticmethod
-    def format_log_message(message: str, level: str = "info") -> str:
+    def format_log_message(self, message: str, level: str = "info") -> str:
         """ログメッセージのフォーマット（エラーハンドリング強化）"""
         try:
             import datetime
@@ -46,7 +47,7 @@ class LogManager:
             prefix = LogManager.LOG_LEVELS.get(level, "ℹ️")
             return f"[{timestamp}] {prefix} {message}"
         except Exception as e:
-            logging.error(f"ログメッセージフォーマットエラー: {e}")
+            self.logger.error(f"ログメッセージフォーマットエラー: {e}")
             return f"[ERROR] {message}"
 
     def add_message(self, message: str, level: str = "info") -> str:
@@ -73,7 +74,7 @@ class LogManager:
 
                 return formatted
         except Exception as e:
-            logging.error(f"ログメッセージ追加エラー: {e}")
+            self.logger.error(f"ログメッセージ追加エラー: {e}")
             return f"[ERROR] {message}"
 
     def _get_timestamp(self) -> str:
@@ -93,7 +94,7 @@ class LogManager:
                     return []
                 return [msg["formatted"] for msg in self.messages[-count:]]
         except Exception as e:
-            logging.error(f"最新メッセージ取得エラー: {e}")
+            self.logger.error(f"最新メッセージ取得エラー: {e}")
             return []
 
     def get_messages_by_level(self, level: str) -> List[Dict[str, str]]:
@@ -102,7 +103,7 @@ class LogManager:
             with self._lock:
                 return [msg for msg in self.messages if msg.get("level") == level]
         except Exception as e:
-            logging.error(f"レベル別メッセージ取得エラー: {e}")
+            self.logger.error(f"レベル別メッセージ取得エラー: {e}")
             return []
 
     def clear_messages(self) -> None:
@@ -111,7 +112,7 @@ class LogManager:
             with self._lock:
                 self.messages.clear()
         except Exception as e:
-            logging.error(f"ログメッセージクリアエラー: {e}")
+            self.logger.error(f"ログメッセージクリアエラー: {e}")
 
     def clear_log(self) -> None:
         """ログをクリア（互換性メソッド）"""
@@ -132,6 +133,7 @@ class AppState:
 
     def __init__(self) -> None:
         """アプリケーション状態の初期化"""
+        self.logger = get_logger(__name__)
         self._lock = threading.Lock()
 
         try:
@@ -148,7 +150,7 @@ class AppState:
             self._last_error: Optional[str] = None
 
         except Exception as e:
-            logging.error(f"AppState初期化エラー: {e}")
+            self.logger.error(f"AppState初期化エラー: {e}")
             # 基本的な初期化を試行
             self._initialize_fallback()
 
@@ -163,14 +165,14 @@ class AppState:
             self._error_count = 0
             self._last_error = None
         except Exception as e:
-            logging.critical(f"フォールバック初期化も失敗: {e}")
+            self.logger.critical(f"フォールバック初期化も失敗: {e}")
 
     def _check_debug_mode(self) -> bool:
         """デバッグモードの確認（エラーハンドリング強化）"""
         try:
             return os.environ.get("KUMIHAN_GUI_DEBUG", "false").lower() == "true"
         except Exception as e:
-            logging.warning(f"デバッグモード確認エラー: {e}")
+            self.logger.warning(f"デバッグモード確認エラー: {e}")
             return False
 
     def is_ready_for_conversion(self) -> tuple[bool, str]:
@@ -192,7 +194,7 @@ class AppState:
 
                 return True, "変換可能"
         except Exception as e:
-            logging.error(f"変換準備チェックエラー: {e}")
+            self.logger.error(f"変換準備チェックエラー: {e}")
             self._record_error(f"変換準備チェックエラー: {e}")
             return False, "システムエラーが発生しました"
 
@@ -204,7 +206,7 @@ class AppState:
                     self.config.get_input_file(), self.config.get_output_dir()
                 )
         except Exception as e:
-            logging.error(f"出力ファイルパス取得エラー: {e}")
+            self.logger.error(f"出力ファイルパス取得エラー: {e}")
             self._record_error(f"出力ファイルパス取得エラー: {e}")
             return None
 
@@ -216,7 +218,7 @@ class AppState:
             if hasattr(self, "log_manager"):
                 self.log_manager.add_message(error_message, "error")
         except Exception as e:
-            logging.error(f"エラー記録失敗: {e}")
+            self.logger.error(f"エラー記録失敗: {e}")
 
     def get_error_info(self) -> Dict[str, Any]:
         """エラー情報を取得（Thread-Safe）"""
@@ -228,7 +230,7 @@ class AppState:
                     "has_errors": self._error_count > 0,
                 }
         except Exception as e:
-            logging.error(f"エラー情報取得エラー: {e}")
+            self.logger.error(f"エラー情報取得エラー: {e}")
             return {"error_count": 0, "last_error": None, "has_errors": False}
 
     def reset_errors(self) -> None:
@@ -238,7 +240,7 @@ class AppState:
                 self._error_count = 0
                 self._last_error = None
         except Exception as e:
-            logging.error(f"エラー状態リセットエラー: {e}")
+            self.logger.error(f"エラー状態リセットエラー: {e}")
 
 
 # 後方互換性のためのStateModelクラス定義

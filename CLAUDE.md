@@ -77,6 +77,38 @@ AI運用5原則
 - **行長**: 88文字
 - **命名**: snake_case, PascalCase, UPPER_SNAKE_CASE
 
+### ログ使用規約（統一必須）
+**⚠️ 重要**: 全てのモジュールでKumihanLogger統一ログシステムを使用すること
+
+```python
+# ✅ 正しい実装（必須）
+from kumihan_formatter.core.utilities.logger import get_logger
+
+class ExampleClass:
+    def __init__(self):
+        self.logger = get_logger(__name__)  # 統一ログ取得
+        self.logger.info("ExampleClass initialized")
+
+    def process(self):
+        try:
+            # 処理実行
+            self.logger.info("Processing started")
+        except Exception as e:
+            self.logger.error(f"Processing failed: {e}")  # エラーログ記録
+```
+
+```python
+# ❌ 禁止事項
+import logging  # 標準loggingの直接import禁止
+logging.error("直接使用は禁止")  # 統一性を破る
+```
+
+**規約詳細**:
+- **統一ログ取得**: `get_logger(__name__)` を使用
+- **インスタンス変数**: `self.logger = get_logger(__name__)` でクラス内保持
+- **エラーハンドリング**: 全ての`try/except`でログ記録必須
+- **標準logging禁止**: `import logging` による直接使用は禁止
+
 ## 核心ルール
 
 ### 1. 品質ゲート（詳細: [docs/dev/QUALITY_GATE.md](docs/dev/QUALITY_GATE.md)）
