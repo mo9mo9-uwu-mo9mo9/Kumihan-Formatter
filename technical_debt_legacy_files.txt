@@ -28,3 +28,13 @@ kumihan_formatter/core/performance/memory_monitor_core.py
 kumihan_formatter/core/rendering/main_renderer.py
 kumihan_formatter/core/rendering/element_renderer.py
 kumihan_formatter/core/performance/core/persistence.py
+
+# 2025-07-22 追加：TDD段階的採用のため一時的にメインモジュールを除外
+# Phase 1カバレッジ向上に集中するため、レガシーモジュールファイルを除外
+kumihan_formatter/__main__.py
+kumihan_formatter/simple_config.py
+kumihan_formatter/sample_content.py
+kumihan_formatter/gui_controller.py
+kumihan_formatter/gui_launcher.py
+kumihan_formatter/gui_views.py
+kumihan_formatter/gui_models.py

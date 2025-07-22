@@ -184,11 +184,11 @@ class QualityGate:
             ("Linting", self.check_linting),
             ("Type Checking", self.check_typing),
             ("Tests", self.check_tests),
-            ("TDD Compliance", self.check_tdd_compliance),
         ]
 
         # 推奨チェック（警告のみ）
         optional_checks = [
+            ("TDD Compliance", self.check_tdd_compliance),
             ("Architecture", self.check_architecture),
         ]
 

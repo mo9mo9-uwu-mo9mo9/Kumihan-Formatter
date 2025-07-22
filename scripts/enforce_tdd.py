@@ -55,8 +55,12 @@ def find_python_files(directory: Path) -> List[Path]:
 
 def get_expected_test_paths(source_file: Path) -> List[Path]:
     """ソースファイルに対する期待されるテストファイルパスを生成"""
-    # 相対パスを取得
-    relative_path = source_file.relative_to(Path.cwd())
+    # 相対パスを取得 (絶対パスの場合の安全な処理)
+    try:
+        relative_path = source_file.relative_to(Path.cwd())
+    except ValueError:
+        # 既に相対パス、または別のルートからの場合
+        relative_path = source_file
 
     # kumihan_formatter/core/utilities/logger.py の場合
     # tests/unit/test_logger.py
