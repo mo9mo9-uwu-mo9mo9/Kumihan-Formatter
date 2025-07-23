@@ -91,6 +91,54 @@ AI運用6原則
 - ❌ 既存ブランチを流用して別Issue対応
 - ✅ Issue #570の作業は`feat/issue-570-coverage-strategy`で実施
 
+### ブランチ最新化手順（PR作成前必須）
+**⚠️ 重要**: PR作成前は必ずmainブランチとの同期を確認すること
+
+#### 作業開始時
+```bash
+# mainブランチを最新に更新
+git checkout main
+git pull origin main
+
+# 作業ブランチに切り替え（または新規作成）
+git checkout feat/issue-xxx-description
+# または: git checkout -b feat/issue-xxx-description
+```
+
+#### PR作成前（必須手順）
+```bash
+# 現在のブランチ状態確認
+git status
+git log --oneline -5
+
+# mainブランチの最新変更を取得
+git checkout main
+git pull origin main
+
+# 作業ブランチにmainの最新を適用
+git checkout feat/issue-xxx-description
+git rebase main
+
+# コンフリクトがある場合は解決後
+# git add . && git rebase --continue
+
+# 強制プッシュ（rebase後）
+git push --force-with-lease
+
+# PR作成
+gh pr create --title "タイトル" --body "本文"
+```
+
+#### 緊急時の対応
+```bash
+# PRが「ブランチが最新でない」エラーの場合
+git checkout main
+git pull origin main
+git checkout feat/issue-xxx-description
+git rebase main
+git push --force-with-lease
+```
+
 ## コーディング規約
 - **Python**: 3.12以上, Black, isort, mypy strict
 - **インデント**: スペース4つ
