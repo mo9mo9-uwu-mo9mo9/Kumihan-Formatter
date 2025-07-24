@@ -15,18 +15,40 @@ from kumihan_formatter.core.utilities.logger import get_logger
 class EmergencyBypassTracker:
     """緊急回避の自動追跡・Issue作成."""
 
-    # 悪用防止設定
-    MAX_BYPASSES_PER_DAY = 3  # 24時間内の最大回避回数
-    MIN_REASON_LENGTH = 10  # 理由の最小文字数
+    # 悪用防止設定（さらなる厳格化）
+    MAX_BYPASSES_PER_DAY = 2  # 24時間内の最大回避回数（減少）
+    MAX_BYPASSES_PER_WEEK = 5  # 7日間の上限
+    MIN_REASON_LENGTH = 20  # 理由の最小文字数（増加）
+    REQUIRED_KEYWORDS = [  # 必須キーワード（いずれか必須）
+        "緊急",
+        "障害",
+        "セキュリティ",
+        "本番",
+        "サーバー",
+        "CI/CD",
+        "ビルド",
+        "リリース",
+        "critical",
+        "urgent",
+        "production",
+        "security",
+    ]
     FORBIDDEN_REASONS = [
         "急いでいる",
         "時間がない",
         "後で直す",
         "一時的",
+        "とりあえず",
+        "いったん",
         "temp",
         "temporary",
         "later",
         "fix later",
+        "test",
+        "testing",
+        "work in progress",
+        "wip",
+        "テスト",
     ]
 
     def __init__(self) -> None:
@@ -132,8 +154,8 @@ class EmergencyBypassTracker:
                     "具体的で技術的な理由を記載してください"
                 )
 
-        # 4. 頻度制限チェック
-        recent_bypasses = self._get_recent_bypasses()
+        # 4a. 24時間内の頻度制限チェック
+        recent_bypasses = self._get_recent_bypasses(hours=24)
         if len(recent_bypasses) >= self.MAX_BYPASSES_PER_DAY:
             last_bypass = recent_bypasses[-1]
             raise ValueError(
@@ -142,11 +164,33 @@ class EmergencyBypassTracker:
                 f"最終回避: {last_bypass['timestamp']} - {last_bypass['reason']}"
             )
 
-    def _get_recent_bypasses(self) -> List[Dict[str, str]]:
-        """直近24時間の緊急回避履歴取得.
+        # 4b. 7日間の頻度制限チェック
+        weekly_bypasses = self._get_recent_bypasses(hours=168)  # 7日 = 168時間
+        if len(weekly_bypasses) >= self.MAX_BYPASSES_PER_WEEK:
+            raise ValueError(
+                f"🚫 7日間の緊急回避上限を超えました\n"
+                f"上限: {self.MAX_BYPASSES_PER_WEEK}回/週\n"
+                f"現在の使用数: {len(weekly_bypasses)}回"
+            )
+
+        # 5. 必須キーワードチェック
+        has_required_keyword = any(
+            keyword in reason_clean for keyword in self.REQUIRED_KEYWORDS
+        )
+        if not has_required_keyword:
+            raise ValueError(
+                f"🚫 理由に緊急性を示すキーワードがありません\n"
+                f"必要なキーワード（いずれか必須）: {', '.join(self.REQUIRED_KEYWORDS[:8])}..."
+            )
+
+    def _get_recent_bypasses(self, hours: int = 24) -> List[Dict[str, str]]:
+        """指定時間内の緊急回避履歴取得.
+
+        Args:
+            hours: 過去何時間分を取得するか
 
         Returns:
-            直近24時間の回避リスト
+            指定時間内の回避リスト
         """
         if not self.bypass_log.exists():
             return []
@@ -155,8 +199,8 @@ class EmergencyBypassTracker:
             with open(self.bypass_log, "r", encoding="utf-8") as f:
                 all_bypasses = json.load(f)
 
-            # 24時間以内のレコードをフィルタリング
-            cutoff_time = datetime.now() - timedelta(hours=24)
+            # 指定時間以内のレコードをフィルタリング
+            cutoff_time = datetime.now() - timedelta(hours=hours)
             recent_bypasses = []
 
             for bypass in all_bypasses:
@@ -204,9 +248,16 @@ class EmergencyBypassTracker:
         issue_title = f"🚨 緊急回避の技術的負債解消: {bypass_info['commit']}"
         deadline = datetime.now() + timedelta(days=7)
 
-        # 緊急度評価
-        recent_count = len(self._get_recent_bypasses())
-        urgency_level = "HIGH" if recent_count >= 2 else "MEDIUM"
+        # 緊急度評価（厳格化）
+        daily_count = len(self._get_recent_bypasses(hours=24))
+        weekly_count = len(self._get_recent_bypasses(hours=168))
+
+        if daily_count >= 2 or weekly_count >= 4:
+            urgency_level = "CRITICAL"
+        elif daily_count >= 1 or weekly_count >= 2:
+            urgency_level = "HIGH"
+        else:
+            urgency_level = "MEDIUM"
 
         issue_body = f"""
 ## 🚨 緊急回避の詳細
@@ -216,7 +267,8 @@ class EmergencyBypassTracker:
 - **コミット**: {bypass_info['commit']}
 - **ブランチ**: {bypass_info['branch']}
 - **解消期限**: {deadline.strftime('%Y-%m-%d')}
-- **緊急度**: {urgency_level} ({recent_count + 1}/3 回 直近24h)
+- **緊急度**: {urgency_level}
+- **使用状況**: {daily_count + 1}/{self.MAX_BYPASSES_PER_DAY}回/日, {weekly_count + 1}/{self.MAX_BYPASSES_PER_WEEK}回/週
 
 ## 📋 必須タスク
 - [ ] 品質ゲートの適用
@@ -227,8 +279,9 @@ class EmergencyBypassTracker:
 
 ## ⚠️  警告
 - この課題が**7日以内**に解決されない場合、新機能開発をブロックします
-- 24時間内の緊急回避上限: **3回**
-- 現在の使用回数: **{recent_count + 1}回**
+- 24時間内の緊急回避上限: **{self.MAX_BYPASSES_PER_DAY}回**
+- 7日間の緊急回避上限: **{self.MAX_BYPASSES_PER_WEEK}回**
+- 現在の使用回数: **{daily_count + 1}回/日, {weekly_count + 1}回/週**
 
 ---
 *このIssueは悪用防止機能付き緊急回避システムにより自動作成されました*

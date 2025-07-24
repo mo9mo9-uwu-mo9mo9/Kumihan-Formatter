@@ -1,5 +1,12 @@
+# 依存関係固定化とセキュリティ強化された品質ゲート
 name: 強制品質ゲート
 run-name: 🚫 Quality Gate Enforcement - ${{ github.event.pull_request.title || github.ref }}
+
+# セキュリティ設定
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -15,18 +22,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: チェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1  # バージョン固定化
         with:
           fetch-depth: 0
 
       - name: Pythonセットアップ
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.0.0  # バージョン固定化
         with:
-          python-version: '3.12'
+          python-version: '3.12.1'  # マイナーバージョンも固定
 
       - name: 依存関係インストール
         run: |
-          pip install -e .
+          # セキュリティ強化: pipのアップグレードと信頼できるホストの指定
+          python -m pip install --upgrade pip==23.3.2
+          pip install -e . --trusted-host pypi.org --trusted-host pypi.python.org
 
       - name: Token使用量分析
         id: token_analysis
@@ -54,12 +63,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: チェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1  # バージョン固定化
 
       - name: Pythonセットアップ
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.0.0  # バージョン固定化
         with:
-          python-version: '3.12'
+          python-version: '3.12.1'  # マイナーバージョンも固定
 
       - name: 300行制限チェック
         run: |
@@ -71,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: チェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1  # バージョン固定化
 
       - name: 緊急修正Issueチェック
         env:
