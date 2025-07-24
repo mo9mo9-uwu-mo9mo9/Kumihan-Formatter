@@ -50,7 +50,7 @@ class QualityGate:
         """ドキュメント品質チェック（Issue #578統合）"""
         success, output = self.run_command(
             [
-                "python",
+                ".venv/bin/python",
                 "scripts/doc_validator.py",
                 "--root",
                 ".",
@@ -169,7 +169,7 @@ class QualityGate:
         print("🧪 Checking TDD compliance...")
 
         success, output = self.run_command(
-            ["python3", "scripts/enforce_tdd.py", "kumihan_formatter/"],
+            [".venv/bin/python", "scripts/enforce_tdd.py", "kumihan_formatter/"],
             "TDD compliance check",
         )
 
