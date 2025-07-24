@@ -46,6 +46,28 @@ class QualityGate:
             print(f"💥 {description} - Exception: {e}")
             return False, str(e)
 
+    def check_documentation(self) -> bool:
+        """ドキュメント品質チェック（Issue #578統合）"""
+        success, output = self.run_command(
+            [
+                "python",
+                "scripts/doc_validator.py",
+                "--root",
+                ".",
+                "--report-format",
+                "json",
+            ],
+            "ドキュメント品質チェック",
+        )
+
+        if not success:
+            self.failed_checks.append("ドキュメント品質チェック失敗")
+            # 重要なエラーのみを警告として扱う
+            if "broken_relative_link" in output:
+                self.warnings.append("ドキュメントリンク切れを検出")
+
+        return success
+
     def check_linting(self) -> bool:
         """リントチェック"""
         print("🔍 Running linting checks...")
@@ -184,6 +206,7 @@ class QualityGate:
             ("Linting", self.check_linting),
             ("Type Checking", self.check_typing),
             ("Tests", self.check_tests),
+            ("Documentation Quality", self.check_documentation),  # Issue #578追加
         ]
 
         # 推奨チェック（警告のみ）

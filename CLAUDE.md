@@ -57,6 +57,17 @@ make pre-commit    # コミット前チェック
 kumihan convert input.txt output.txt  # 基本変換
 ```
 
+# qcheck系コマンド（Issue #578）
+
+Claude Code品質チェック用ショートカット:
+
+```bash
+qcheck   # 全体品質チェック（コード・ドキュメント・アーキテクチャ）
+qcheckf  # 変更されたファイルの関数レベルチェック
+qcheckt  # テスト品質・カバレッジチェック
+qdoc     # ドキュメント品質チェック
+```
+
 # 記法仕様
 
 - **基本**: `;;;装飾名;;; 内容 ;;;`
@@ -68,6 +79,7 @@ kumihan convert input.txt output.txt  # 基本変換
 - **基本指示**: [PREAMBLE.md](PREAMBLE.md)
 - **開発詳細**: [docs/dev/CLAUDE_DETAILS.md](docs/dev/CLAUDE_DETAILS.md)
 - **コマンド集**: [docs/dev/CLAUDE_COMMANDS.md](docs/dev/CLAUDE_COMMANDS.md)
+- **qcheckガイド**: [docs/dev/CLAUDE_QCHECK_GUIDE.md](docs/dev/CLAUDE_QCHECK_GUIDE.md)
 - **品質管理**: [docs/dev/QUALITY_GATE.md](docs/dev/QUALITY_GATE.md)
 - **技術的負債**: [docs/dev/TECHNICAL_DEBT.md](docs/dev/TECHNICAL_DEBT.md)
 
