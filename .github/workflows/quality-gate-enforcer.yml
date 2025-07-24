@@ -1,0 +1,140 @@
+name: 強制品質ゲート
+run-name: 🚫 Quality Gate Enforcement - ${{ github.event.pull_request.title || github.ref }}
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+      - 'release/**'
+
+jobs:
+  token-usage-check:
+    name: 📊 Token使用量チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pythonセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 依存関係インストール
+        run: |
+          pip install -e .
+
+      - name: Token使用量分析
+        id: token_analysis
+        run: |
+          echo "🔍 PR差分のToken使用量を分析中..."
+          python scripts/token_usage_monitor.py > token_report.txt 2>&1
+          exit_code=$?
+
+          # レポート表示
+          cat token_report.txt
+
+          # GitHub Actionsサマリーに追加
+          if [ $exit_code -ne 0 ]; then
+            echo "## ❌ Token使用量エラー" >> $GITHUB_STEP_SUMMARY
+            echo "プルリクエストのToken使用量が上限を超えています。" >> $GITHUB_STEP_SUMMARY
+            echo "ファイル分割を検討してください。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Token使用量チェック合格" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          exit $exit_code
+
+  file-size-check:
+    name: 📄 300行制限チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 300行制限チェック
+        run: |
+          echo "🔍 全ファイルの行数チェック中..."
+          python scripts/check_file_size.py --max-lines=300 --strict
+
+  tech-debt-check:
+    name: 🚨 技術的負債チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 緊急修正Issueチェック
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 未解決の緊急修正Issueを確認中..."
+
+          URGENT_ISSUES=$(gh issue list \
+            --label "緊急" \
+            --state open \
+            --search "in:title '緊急修正の技術的負債解消'" \
+            --json number,title,createdAt \
+            --jq 'length')
+
+          if [ "$URGENT_ISSUES" -gt 0 ]; then
+            echo "⚠️  警告: $URGENT_ISSUES 件の未解決緊急修正Issueがあります"
+            echo "## ⚠️  技術的負債警告" >> $GITHUB_STEP_SUMMARY
+            echo "$URGENT_ISSUES 件の未解決緊急修正Issueがあります。" >> $GITHUB_STEP_SUMMARY
+            echo "早急に解消してください。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ 未解決の緊急修正Issueはありません"
+          fi
+
+  quality-gate-summary:
+    name: 🎯 品質ゲートサマリー
+    runs-on: ubuntu-latest
+    needs: [token-usage-check, file-size-check, tech-debt-check]
+    if: always()
+    steps:
+      - name: 結果集計
+        run: |
+          echo "# 🎯 品質ゲート結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Token使用量チェック
+          if [ "${{ needs.token-usage-check.result }}" == "success" ]; then
+            echo "✅ Token使用量: 合格" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Token使用量: 不合格" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 300行制限チェック
+          if [ "${{ needs.file-size-check.result }}" == "success" ]; then
+            echo "✅ 300行制限: 合格" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ 300行制限: 不合格" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 技術的負債チェック
+          if [ "${{ needs.tech-debt-check.result }}" == "success" ]; then
+            echo "✅ 技術的負債: チェック完了" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️  技術的負債: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 全体結果
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.token-usage-check.result }}" == "success" ] && \
+             [ "${{ needs.file-size-check.result }}" == "success" ]; then
+            echo "## 🎉 品質ゲート合格" >> $GITHUB_STEP_SUMMARY
+            echo "すべての品質チェックに合格しました！" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 🚫 品質ゲート不合格" >> $GITHUB_STEP_SUMMARY
+            echo "品質基準を満たしていません。上記のエラーを修正してください。" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
