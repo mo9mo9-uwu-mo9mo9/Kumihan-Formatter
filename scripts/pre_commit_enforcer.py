@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -36,7 +37,7 @@ class PreCommitEnforcer:
 
         if result.returncode != 0:
             self.logger.error("🚫 pre-commitチェック失敗")
-            self._show_bypass_instructions()
+            self._show_bypass_instructions()  # ここで終了
 
         return result.returncode
 
@@ -54,18 +55,27 @@ class PreCommitEnforcer:
         except subprocess.CalledProcessError:
             self.logger.error("緊急回避Issue作成失敗")
 
-    def _show_bypass_instructions(self) -> None:
-        """緊急回避手順の表示."""
+    def _show_bypass_instructions(self) -> NoReturn:
+        """緊急回避手順の表示と終了."""
         print("\n" + "=" * 60)
         print("🚨 pre-commitチェック失敗")
         print("=" * 60)
         print("\n緊急回避が必要な場合:")
-        print("  KUMIHAN_EMERGENCY_SKIP=true git commit -m 'メッセージ'")
+        print("  KUMIHAN_EMERGENCY_SKIP=true python scripts/pre_commit_enforcer.py")
+        print("  または")
+        print("  KUMIHAN_EMERGENCY_SKIP=true git commit -m '具体的な緊急理由'")
         print("\n⚠️  緊急回避を使用すると:")
+        print("  - 理由の入力が必須です（10文字以上）")
+        print("  - 24時間内に3回までの制限があります")
         print("  - 自動でGitHub Issueが作成されます")
         print("  - 7日以内に解消が必要です")
         print("  - 未解決の場合、新機能開発がブロックされます")
+        print("\n🔧 最初に試してみるべきこと:")
+        print("  1. pre-commitフックの再実行: pre-commit run --all-files")
+        print("  2. 特定フックのスキップ: SKIP=mypy-strict pre-commit run")
+        print("  3. ファイル自動修正: black . && isort .")
         print("=" * 60)
+        sys.exit(1)
 
 
 def main() -> None:

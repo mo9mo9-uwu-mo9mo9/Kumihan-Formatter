@@ -136,7 +136,9 @@ class TokenUsageMonitor:
 
             print("=" * 60)
 
-    def save_history(self, analysis: Dict[str, int]) -> None:
+    def save_history(
+        self, analysis: Dict[str, Union[int, str, Dict[str, int]]]
+    ) -> None:
         """履歴保存.
 
         Args:
