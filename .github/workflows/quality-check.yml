@@ -83,3 +83,10 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+
+    - name: Documentation Quality Check (Issue #578)
+      run: |
+        echo "📚 ドキュメント品質チェック実行"
+        python scripts/doc_validator.py --root . --report-format json > doc-validation-report.json || true
+        echo "リンク切れ検証完了"
+        cat doc-validation-report.json

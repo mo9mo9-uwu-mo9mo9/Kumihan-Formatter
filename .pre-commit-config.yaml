@@ -113,3 +113,22 @@ repos:
         stages: [pre-commit, manual, pre-push]
         always_run: true
         verbose: true
+
+      # ドキュメント品質チェック（Issue #578: Phase 1）
+      - id: doc-validator
+        name: 📚 ドキュメント品質チェック
+        entry: python scripts/doc_validator.py --root . --report-format text
+        language: python
+        files: '\.md$'
+        pass_filenames: false
+        stages: [pre-commit]
+        additional_dependencies: [requests]
+
+  # Markdownリンター（Issue #578: Phase 1）
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        name: 📝 Markdownリンター
+        args: ['--config', '.markdownlint.json']
+        files: '\.md$'
