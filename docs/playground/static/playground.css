@@ -1,0 +1,16 @@
+/*
+Kumihan Formatter Playground - Main CSS
+Issue #580 - ドキュメント改善 Phase 2
+
+統合スタイルシート (300行制限対応)
+*/
+
+/* CSS分割ファイル読み込み */
+@import url('base.css');
+@import url('components.css');
+@import url('responsive.css');
+
+/* 追加カスタムスタイル */
+.playground-custom {
+    /* 将来の拡張用 */
+}
