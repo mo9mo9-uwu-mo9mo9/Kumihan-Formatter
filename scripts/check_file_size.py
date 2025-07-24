@@ -20,15 +20,24 @@ class FileSizeChecker:
     """ファイルサイズとコード複雑度チェッカー"""
 
     def __init__(
-        self, max_lines: int = 300, max_classes: int = 5, max_functions: int = 20
+        self,
+        max_lines: int = 300,
+        max_classes: int = 5,
+        max_functions: int = 20,
+        strict: bool = False,
     ):
         self.max_lines = max_lines
         self.max_classes = max_classes
         self.max_functions = max_functions
+        self.strict = strict
         self.violations: List[Tuple[str, str, int, int]] = []
 
     def _load_legacy_files(self) -> set[str]:
         """技術的負債ファイル一覧を読み込み"""
+        if self.strict:
+            # strictモードでは例外を許可しない
+            return set()
+
         legacy_files = set()
         legacy_file_path = Path("technical_debt_legacy_files.txt")
 
@@ -200,6 +209,11 @@ def main() -> None:
     parser.add_argument(
         "--fail-fast", action="store_true", help="最初の違反で即座に終了"
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="厳格モード: 例外ファイルを許可しない（技術的負債完全防止）",
+    )
 
     args = parser.parse_args()
 
@@ -213,6 +227,7 @@ def main() -> None:
         max_lines=args.max_lines,
         max_classes=args.max_classes,
         max_functions=args.max_functions,
+        strict=args.strict,
     )
 
     print(f"🔍 ファイルサイズチェック開始")
@@ -220,6 +235,8 @@ def main() -> None:
     print(
         f"制限: 行数≤{args.max_lines}, クラス≤{args.max_classes}, 関数≤{args.max_functions}"
     )
+    if args.strict:
+        print("⚠️  厳格モード: 例外ファイルを許可しません")
     print("-" * 60)
 
     success = checker.check_directory(args.target_dir)
