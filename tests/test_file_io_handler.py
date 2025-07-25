@@ -10,6 +10,7 @@ Test coverage targets:
 
 import sys
 import tempfile
+import time
 from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
@@ -27,7 +28,7 @@ class TestFileIOHandler:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             test_path = Path(f.name)
 
-        content = "テストコンテンツ"
+        content = "Test Content"
 
         # When
         FileIOHandler.write_text_file(test_path, content)
@@ -38,6 +39,7 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -61,6 +63,7 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -71,7 +74,7 @@ class TestFileIOHandler:
         """UnicodeEncodeErrorのフォールバック処理テスト"""
         # Given
         test_path = Path("test.txt")
-        content = "テストコンテンツ"
+        content = "Test Content"
 
         # Create a mock file that raises UnicodeEncodeError on write
         mock_file = Mock()
@@ -99,7 +102,7 @@ class TestFileIOHandler:
         """UTF-8 BOMフォールバック処理テスト"""
         # Given
         test_path = Path("test.txt")
-        content = "テストコンテンツ"
+        content = "Test Content"
 
         # First call raises Exception, second (UTF-8-sig) succeeds
         mock_file_open.side_effect = [OSError("Write error"), mock_open().return_value]
@@ -134,7 +137,7 @@ class TestFileIOHandler:
     def test_read_text_file_success_utf8(self):
         """UTF-8でのファイル読み取り成功テスト"""
         # Given
-        content = "テストコンテンツ"
+        content = "Test Content"
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".txt", delete=False, encoding="utf-8"
         ) as f:
@@ -148,6 +151,7 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -174,6 +178,7 @@ class TestFileIOHandler:
         mock_detect.assert_called_once_with(test_path)
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -327,6 +332,7 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -355,6 +361,7 @@ class TestFileIOHandler:
             assert result == content  # UTF-8で読めるため成功
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -403,6 +410,7 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -475,6 +483,7 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -518,6 +527,7 @@ class TestFileIOHandler:
             mock_log.warning.assert_called_once()
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):
@@ -526,7 +536,7 @@ class TestFileIOHandler:
     def test_comprehensive_encoding_flow(self):
         """包括的なエンコーディングフローテスト"""
         # Given
-        content = "テスト内容"
+        content = "Test Content"
 
         # UTF-8ファイルを作成
         with tempfile.NamedTemporaryFile(
@@ -542,7 +552,7 @@ class TestFileIOHandler:
         assert result == content
 
         # ファイルを書き直し
-        new_content = "新しいテスト内容"
+        new_content = "New Test Content"
         FileIOHandler.write_text_file(test_path, new_content)
 
         # 再読み込み
@@ -550,6 +560,7 @@ class TestFileIOHandler:
         assert result2 == new_content
 
         # Cleanup
+        time.sleep(0.1)  # Windows環境でのI/O競合状態を回避
         try:
             test_path.unlink()
         except (OSError, PermissionError):

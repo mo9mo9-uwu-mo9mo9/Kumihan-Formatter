@@ -57,7 +57,10 @@ class TestPathValidator:
             PathValidator.validate_input_file(test_dir)
 
         # Cleanup
-        Path(test_dir).rmdir()
+        try:
+            Path(test_dir).rmdir()
+        except (OSError, PermissionError):
+            pass  # Windows環境でディレクトリ削除に失敗することがある
 
     def test_validate_output_directory_existing(self):
         """既存ディレクトリの出力検証テスト"""
@@ -73,7 +76,10 @@ class TestPathValidator:
         assert result.is_dir()
 
         # Cleanup
-        result.rmdir()
+        try:
+            result.rmdir()
+        except (OSError, PermissionError):
+            pass
 
     def test_validate_output_directory_create_new(self):
         """新規ディレクトリ作成の出力検証テスト"""
@@ -90,8 +96,14 @@ class TestPathValidator:
         assert result.is_dir()
 
         # Cleanup
-        new_dir.rmdir()
-        Path(base_dir).rmdir()
+        try:
+            new_dir.rmdir()
+        except (OSError, PermissionError):
+            pass
+        try:
+            Path(base_dir).rmdir()
+        except (OSError, PermissionError):
+            pass
 
     def test_validate_output_directory_nested_creation(self):
         """ネストしたディレクトリ作成の出力検証テスト"""
@@ -108,10 +120,22 @@ class TestPathValidator:
         assert result.is_dir()
 
         # Cleanup
-        nested_dir.rmdir()
-        nested_dir.parent.rmdir()
-        nested_dir.parent.parent.rmdir()
-        Path(base_dir).rmdir()
+        try:
+            nested_dir.rmdir()
+        except (OSError, PermissionError):
+            pass
+        try:
+            nested_dir.parent.rmdir()
+        except (OSError, PermissionError):
+            pass
+        try:
+            nested_dir.parent.parent.rmdir()
+        except (OSError, PermissionError):
+            pass
+        try:
+            Path(base_dir).rmdir()
+        except (OSError, PermissionError):
+            pass
 
     def test_validate_source_directory_success(self):
         """有効なソースディレクトリの検証テスト"""
@@ -127,7 +151,10 @@ class TestPathValidator:
         assert result.is_dir()
 
         # Cleanup
-        result.rmdir()
+        try:
+            result.rmdir()
+        except (OSError, PermissionError):
+            pass
 
     def test_validate_source_directory_not_exists(self):
         """存在しないソースディレクトリの検証エラーテスト"""
