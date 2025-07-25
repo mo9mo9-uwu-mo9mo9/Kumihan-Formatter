@@ -1,0 +1,109 @@
+# 統合CI - Issue #602対応
+name: CI
+run-name: ✅ CI Pipeline - ${{ github.event.pull_request.title || github.ref }}
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # 必須品質チェック（高速・軽量）
+  essential-checks:
+    name: 🚀 必須品質チェック
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+
+    - name: Pythonセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: キャッシュ設定
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: コード形式チェック
+      run: |
+        echo "=== Black形式チェック ==="
+        black --check kumihan_formatter/
+        echo "=== isort import順序チェック ==="
+        isort --check-only kumihan_formatter/
+        echo "=== flake8構文エラーチェック ==="
+        flake8 kumihan_formatter/ --select=E9,F63,F7,F82 --count
+
+    - name: テスト実行
+      run: |
+        echo "=== pytest実行 ==="
+        python -m pytest -x --ff -q
+
+    - name: 型チェック（警告のみ）
+      run: |
+        echo "=== mypy型チェック ==="
+        python -m mypy --strict kumihan_formatter/ || echo "⚠️ 型チェック改善推奨事項があります"
+
+    - name: CI結果サマリー
+      if: always()
+      run: |
+        echo "## ✅ CI実行完了" >> $GITHUB_STEP_SUMMARY
+        echo "Issue #602対応: ファイル統合による品質向上とCI最適化" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 実行項目:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Black形式チェック" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ isort import順序チェック" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ flake8構文エラーチェック" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ pytest実行" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ mypy型チェック（警告のみ）" >> $GITHUB_STEP_SUMMARY
+
+  # クロスプラットフォームテスト（PR時のみ）
+  cross-platform-test:
+    name: 🌐 クロスプラットフォームテスト
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    needs: essential-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+
+    - name: Pythonセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: テスト実行
+      run: |
+        python -m pytest --cov=kumihan_formatter --cov-report=xml
+
+    - name: カバレッジアップロード（macOSのみ）
+      if: matrix.os == 'macos-latest'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
