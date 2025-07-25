@@ -337,7 +337,9 @@ class TestConvertProcessor:
         # [TEST-3] Complex: This is a complex test
         """
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
@@ -359,7 +361,9 @@ class TestConvertProcessor:
         # Given
         text_without_tests = "Regular content without test cases"
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
@@ -385,7 +389,9 @@ class TestConvertProcessor:
 
         mock_size_info.return_value = {"size_mb": 0.1}
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
@@ -402,18 +408,23 @@ class TestConvertProcessor:
     def test_show_conversion_stats_with_errors(self, mock_size_info):
         """エラーありの変換統計表示テスト"""
         # Given
-        ast = [
-            {"type": "text", "content": "test1"},
-            {"type": "error", "message": "error1"},
-            {"type": "error", "message": "error2"},
-        ]
+        text_node = Mock()
+        text_node.type = "text"
+        error_node1 = Mock()
+        error_node1.type = "error"
+        error_node2 = Mock()
+        error_node2.type = "error"
+
+        ast = [text_node, error_node1, error_node2]
         text = "test content"
         output_file = Path("output.html")
         input_path = Path("regular_file.txt")
 
         mock_size_info.return_value = {"size_mb": 0.1}
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
@@ -430,14 +441,18 @@ class TestConvertProcessor:
     def test_show_conversion_stats_sample_file_errors(self, mock_size_info):
         """サンプルファイルでのエラー統計表示テスト"""
         # Given
-        ast = [{"type": "error", "message": "error1"}]
+        error_node = Mock()
+        error_node.type = "error"
+        ast = [error_node]
         text = "test content"
         output_file = Path("output.html")
         input_path = Path("02-basic.txt")  # サンプルファイル
 
         mock_size_info.return_value = {"size_mb": 0.1}
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
@@ -464,7 +479,9 @@ class TestConvertProcessor:
             {"size_mb": 2.0},  # output file
         ]
 
-        with patch("kumihan_formatter.ui.console_ui.get_console_ui") as mock_ui:
+        with patch(
+            "kumihan_formatter.commands.convert.convert_processor.get_console_ui"
+        ) as mock_ui:
             mock_console = Mock()
             mock_ui.return_value = mock_console
 
