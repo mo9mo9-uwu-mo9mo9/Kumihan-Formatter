@@ -1,134 +1,45 @@
 # Kumihan-Formatter Pre-commit Hooks
-# Issue #371対応: 段階的チェック体制
-# 必須フック（毎回実行）+ 推奨フック（CI時実行）
+# Issue #590対応: 簡潔で効果的なテスト体制
+# Essential Tier: 必須チェックのみ実行
 
 repos:
-  # 標準的な品質チェック
+  # 基本的な品質チェック（必須）
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-added-large-files
-        args: ['--maxkb=500']
       - id: check-merge-conflict
 
-  # Python コードフォーマット
+  # Python コードフォーマット（必須）
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:
       - id: black
-        language_version: python3
         args: [--line-length=88]
 
-  # Import整理（必須フック）
+  # Import整理（必須）
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
-        args: [--profile=black, --line-length=88]
+        args: [--profile=black]
 
-  # 基本的な構文チェック（必須フック）
+  # 基本構文チェック（必須）
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: ['--max-line-length=127', '--select=E9,F63,F7,F82']
+        args: ['--select=E9,F63,F7,F82']
         files: ^kumihan_formatter/.*\.py$
 
-# --- 軽量化設定（Issue #371対応）---
-# 以下のフックは重いため、CI実行時のみ有効化
-# ローカル開発では `SKIP=heavy-checks pre-commit run` で除外可能
-
-  # Kumihan-Formatter 推奨チェック（重いフック）
+  # 軽量テスト（必須）
   - repo: local
     hooks:
-      # 軽量テストチェック（必須フック）
       - id: quick-test
-        name: ⚡ 軽量テストチェック
-        entry: bash
-        args: [-c, 'python -m pytest tests/unit tests/integration -v --tb=short || echo "⚠️ テスト失敗: 詳細はCIで確認してください"']
+        name: ⚡ 軽量テスト
+        entry: python3 -m pytest -x --ff -q
         language: system
         pass_filenames: false
-        always_run: true
         stages: [pre-commit]
-
-      # ファイルサイズ制限チェック（必須フック - 技術的負債予防）
-      - id: file-size-check
-        name: 📏 ファイルサイズチェック (300行制限)
-        entry: python scripts/check_file_size.py --max-lines=300
-        language: python
-        files: ^kumihan_formatter/.*\.py$
-        pass_filenames: false
-        stages: [pre-commit]
-
-      # ファイル自動分割（必須フック - 300行超過時の自動対応）
-      - id: auto-file-split
-        name: ✂️ ファイル自動分割 (300行超過時)
-        entry: bash scripts/auto_split_files.sh
-        language: system
-        files: ^kumihan_formatter/.*\.py$
-        pass_filenames: false
-        stages: [pre-commit]
-
-      # アーキテクチャルールチェック（推奨フック）
-      - id: architecture-check
-        name: 🏗️ アーキテクチャルールチェック
-        entry: python scripts/architecture_check.py --target-dir=kumihan_formatter
-        language: python
-        files: ^kumihan_formatter/.*\.py$
-        pass_filenames: false
-        stages: [manual, pre-push]
-        alias: heavy-checks
-
-      # 複雑度チェック（推奨フック）
-      - id: complexity-check
-        name: 🧠 複雑度チェック
-        entry: python -m radon cc kumihan_formatter/ --min=B --show-complexity
-        language: python
-        files: ^kumihan_formatter/.*\.py$
-        pass_filenames: false
-        additional_dependencies: [radon]
-        stages: [manual, pre-push]
-        alias: heavy-checks
-
-      # フルテスト（推奨フック）
-      - id: full-test
-        name: 🧪 フルテストスイート
-        entry: python -m pytest --cov=kumihan_formatter --cov-report=term-missing
-        language: python
-        pass_filenames: false
-        stages: [manual, pre-push]
-        alias: heavy-checks
-
-      # 型チェック（Issue #497: 警告表示のみ）
-      - id: mypy-strict
-        name: 🔍 mypy strict mode型チェック（警告のみ）
-        entry: bash
-        args: [-c, 'echo "⚠️ 型チェック（Issue #497: 警告表示のみ）" && python -m mypy --config-file=mypy.ini kumihan_formatter/ || echo "🔍 型エラー警告を検出（Phase 2-4で段階的修正予定）"']
-        language: system
-        files: ^kumihan_formatter/.*\.py$
-        pass_filenames: false
-        stages: [pre-commit, manual, pre-push]
-        always_run: true
-        verbose: true
-
-      # ドキュメント品質チェック（Issue #578: Phase 1）
-      - id: doc-validator
-        name: 📚 ドキュメント品質チェック
-        entry: python scripts/doc_validator.py --root . --report-format text
-        language: python
-        files: '\.md$'
-        pass_filenames: false
-        stages: [pre-commit]
-        additional_dependencies: [requests]
-
-  # Markdownリンター（Issue #578: Phase 1）
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.37.0
-    hooks:
-      - id: markdownlint
-        name: 📝 Markdownリンター
-        args: ['--config', '.markdownlint.json']
-        files: '\.md$'

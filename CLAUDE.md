@@ -59,7 +59,7 @@ AI運用6原則
 ## PR・レビュー
 - **PR body必須**: `@claude PRのレビューをお願いします！`
 - **マージ**: mo9mo9手動のみ
-- **CI/CD**: GitHub Actions必須通過
+- **CI/CD**: 新CI（Issue #602対応）必須通過
 
 # 基本コマンド
 
@@ -69,6 +69,15 @@ make lint          # リントチェック
 make pre-commit    # コミット前チェック
 kumihan convert input.txt output.txt  # 基本変換
 ```
+
+# GitHub Actions（Issue #602最適化）
+
+**新シンプル構成**:
+- **`ci.yml`**: 必須CI（Black/isort/flake8/pytest/mypy）
+- **`quality-optional.yml`**: オプション品質チェック（週次実行）
+- **`claude.yml`**: Claude自動レビュー
+
+**最適化効果**: 実行時間15分→5分、複雑度大幅削減
 
 # qcheck系コマンド（Issue #578）
 

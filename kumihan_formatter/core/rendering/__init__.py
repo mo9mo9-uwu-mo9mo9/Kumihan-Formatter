@@ -22,7 +22,7 @@ from .html_utils import (
     render_attributes,
     sort_keywords_by_nesting_order,
 )
-from .main_renderer import CompoundElementRenderer, HTMLRenderer
+from .main_renderer import HTMLRenderer
 
 __all__ = [
     "HTMLRenderer",

@@ -24,11 +24,10 @@ class TestElementRenderer:
         """ElementRenderer初期化テスト"""
         renderer = ElementRenderer()
 
-        # 必要なコンポーネントレンダラーが初期化されていることを確認
-        assert hasattr(renderer, "basic_renderer")
-        assert hasattr(renderer, "heading_renderer")
-        assert hasattr(renderer, "list_renderer")
-        assert hasattr(renderer, "div_renderer")
+        # 統合版ElementRendererの基本属性確認
+        assert hasattr(renderer, "_main_renderer")
+        assert hasattr(renderer, "heading_counter")
+        assert renderer.heading_counter == 0
 
     def test_render_paragraph_element(self):
         """段落要素レンダリングテスト"""
