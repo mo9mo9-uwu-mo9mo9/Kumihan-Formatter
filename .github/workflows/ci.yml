@@ -69,6 +69,23 @@ jobs:
         echo "- ✅ pytest実行" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ mypy型チェック（警告のみ）" >> $GITHUB_STEP_SUMMARY
 
+  # Status Check用（ブランチ保護との互換性）
+  status-check:
+    name: quality-check
+    runs-on: ubuntu-latest
+    needs: [essential-checks]
+    if: always()
+    steps:
+    - name: Status Check
+      run: |
+        if [ "${{ needs.essential-checks.result }}" == "success" ]; then
+          echo "✅ 必須品質チェック成功"
+          exit 0
+        else
+          echo "❌ 必須品質チェック失敗"
+          exit 1
+        fi
+
   # クロスプラットフォームテスト（PR時のみ）
   cross-platform-test:
     name: 🌐 クロスプラットフォームテスト
