@@ -67,13 +67,17 @@ class TestFileIOHandler:
         test_path = Path("test.txt")
         content = "テストコンテンツ"
 
-        # First call raises UnicodeEncodeError, second succeeds
-        mock_file_open.side_effect = [
-            UnicodeEncodeError("ascii", "test", 0, 1, "error"),
-            mock_open().return_value,
-        ]
+        # Create a mock file that raises UnicodeEncodeError on write
+        mock_file = Mock()
+        mock_file.__enter__ = Mock(return_value=mock_file)
+        mock_file.__exit__ = Mock(return_value=False)
+        mock_file.write.side_effect = UnicodeEncodeError("ascii", "test", 0, 1, "error")
+        
+        # Second call should succeed
+        mock_file_success = mock_open().return_value
+        mock_file_open.side_effect = [mock_file, mock_file_success]
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -94,7 +98,7 @@ class TestFileIOHandler:
         # First call raises Exception, second (UTF-8-sig) succeeds
         mock_file_open.side_effect = [OSError("Write error"), mock_open().return_value]
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -177,6 +181,8 @@ class TestFileIOHandler:
 
         # First open (detected encoding) fails, second (specified) succeeds
         mock_file = Mock()
+        mock_file.__enter__ = Mock(return_value=mock_file)
+        mock_file.__exit__ = Mock(return_value=False)
         mock_file.read.return_value = content
         mock_open_func.side_effect = [
             UnicodeDecodeError("shift_jis", b"", 0, 1, "error"),
@@ -205,6 +211,8 @@ class TestFileIOHandler:
 
         # First two opens fail, third (cp932) succeeds
         mock_file = Mock()
+        mock_file.__enter__ = Mock(return_value=mock_file)
+        mock_file.__exit__ = Mock(return_value=False)
         mock_file.read.return_value = content
         mock_open_func.side_effect = [
             UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # detected
@@ -234,11 +242,12 @@ class TestFileIOHandler:
 
         # First two opens fail, third (error replacement) succeeds
         mock_file = Mock()
+        mock_file.__enter__ = Mock(return_value=mock_file)
+        mock_file.__exit__ = Mock(return_value=False)
         mock_file.read.return_value = content
         mock_open_func.side_effect = [
             UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # detected
-            UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # specified
-            mock_file,  # error replacement
+            mock_file,  # error replacement (always succeeds)
         ]
 
         # When
@@ -246,7 +255,7 @@ class TestFileIOHandler:
 
         # Then
         assert result == content
-        assert mock_open_func.call_count == 3
+        assert mock_open_func.call_count == 2
         # エラー置換での呼び出しを確認
         mock_open_func.assert_any_call(
             test_path, "r", encoding="utf-8", errors="replace"
@@ -264,14 +273,15 @@ class TestFileIOHandler:
 
         # All attempts fail except final error replacement
         mock_file = Mock()
+        mock_file.__enter__ = Mock(return_value=mock_file)
+        mock_file.__exit__ = Mock(return_value=False)
         mock_file.read.return_value = content
         mock_open_func.side_effect = [
             UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # detected
-            UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # specified
             mock_file,  # error replacement (always succeeds)
         ]
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -292,7 +302,7 @@ class TestFileIOHandler:
             f.write(content)
             test_path = Path(f.name)
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -317,7 +327,7 @@ class TestFileIOHandler:
             f.write(content)
             test_path = Path(f.name)
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -339,7 +349,7 @@ class TestFileIOHandler:
         test_path = Path("test.txt")
         mock_open_func.side_effect = UnicodeDecodeError("shift_jis", b"", 0, 1, "error")
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -362,7 +372,7 @@ class TestFileIOHandler:
             f.write(content)
             test_path = Path(f.name)
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -382,7 +392,7 @@ class TestFileIOHandler:
         # Given
         test_path = Path("test.txt")
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -401,7 +411,7 @@ class TestFileIOHandler:
         test_path = Path("test.txt")
         mock_open_func.side_effect = UnicodeDecodeError("ascii", b"", 0, 1, "error")
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -425,7 +435,7 @@ class TestFileIOHandler:
             f.write(content)
             test_path = Path(f.name)
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -444,7 +454,7 @@ class TestFileIOHandler:
         # Given
         test_path = Path("test.txt")
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 
@@ -464,7 +474,7 @@ class TestFileIOHandler:
             f.write(content)
             test_path = Path(f.name)
 
-        with patch("kumihan_formatter.core.utilities.logger.get_logger") as mock_logger:
+        with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
 

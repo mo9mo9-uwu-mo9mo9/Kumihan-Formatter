@@ -343,7 +343,7 @@ class TestErrorHandler:
         """初期化時のデバッグログ出力テスト"""
         # Given & When
         with patch(
-            "kumihan_formatter.core.utilities.logger.get_logger"
+            "kumihan_formatter.core.file_validators.get_logger"
         ) as mock_get_logger:
             mock_logger = Mock()
             mock_get_logger.return_value = mock_logger
