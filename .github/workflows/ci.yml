@@ -1,5 +1,5 @@
 # 統合CI - Issue #602対応
-name: CI
+name: quality-check
 run-name: ✅ CI Pipeline - ${{ github.event.pull_request.title || github.ref }}
 
 on:
