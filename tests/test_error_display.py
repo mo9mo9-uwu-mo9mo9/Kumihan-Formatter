@@ -56,9 +56,12 @@ class TestErrorDisplay:
         mock_console = Mock()
         display = ErrorDisplay(console_ui=mock_console)
         error = UserFriendlyError(
-            message="Test error message",
-            original_error=ValueError("Original error"),
+            error_code="TEST_ERROR",
             level=ErrorLevel.ERROR,
+            category="test",
+            user_message="Test error message",
+            solution="Fix the test",
+            technical_details="ValueError: Original error",
         )
 
         # When
@@ -73,9 +76,12 @@ class TestErrorDisplay:
         # Given
         display = ErrorDisplay(console_ui=None)
         error = UserFriendlyError(
-            message="Test error message",
-            original_error=ValueError("Original error"),
+            error_code="TEST_ERROR",
             level=ErrorLevel.ERROR,
+            category="test",
+            user_message="Test error message",
+            solution="Fix the test",
+            technical_details="ValueError: Original error",
         )
 
         # When
