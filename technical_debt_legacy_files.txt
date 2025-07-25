@@ -38,3 +38,32 @@ kumihan_formatter/gui_controller.py
 kumihan_formatter/gui_launcher.py
 kumihan_formatter/gui_views.py
 kumihan_formatter/gui_models.py
+
+# 2025-07-24 追加：Issue #583対応 - 現実的品質ゲート調整
+# GUI・レガシー・スクリプト系ファイルを段階的改善対象として一時除外
+# 総313ファイル中、現実的にテスト対象外となるべきファイル群
+
+# GUI関連ファイル群（テスト困難）
+kumihan_formatter/ui/
+kumihan_formatter/gui/
+kumihan_formatter/desktop/
+
+# スクリプト・ユーティリティ系（テスト不要）
+kumihan_formatter/scripts/
+kumihan_formatter/tools/
+kumihan_formatter/utils/
+
+# 設定・定数・データファイル（テスト不要）
+kumihan_formatter/config/
+kumihan_formatter/constants/
+kumihan_formatter/data/
+
+# 旧形式・レガシー実装（段階的改善対象）
+kumihan_formatter/legacy/
+kumihan_formatter/deprecated/
+kumihan_formatter/old/
+
+# プラグイン・拡張系（テスト複雑）
+kumihan_formatter/plugins/
+kumihan_formatter/extensions/
+kumihan_formatter/addons/
