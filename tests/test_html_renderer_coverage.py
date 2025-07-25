@@ -28,9 +28,9 @@ class TestHTMLRenderer:
 
         # 必要な属性が初期化されていることを確認
         assert hasattr(renderer, "element_renderer")
-        assert hasattr(renderer, "heading_renderer")
         assert hasattr(renderer, "formatter")
         assert hasattr(renderer, "content_processor")
+        assert hasattr(renderer, "heading_collector")
 
     def test_html_renderer_components_integration(self):
         """HTMLRendererコンポーネント統合テスト"""
@@ -38,9 +38,9 @@ class TestHTMLRenderer:
 
         # 各コンポーネントが正しく初期化されていることを確認
         assert renderer.element_renderer is not None
-        assert renderer.heading_renderer is not None
         assert renderer.formatter is not None
         assert renderer.content_processor is not None
+        assert renderer.heading_collector is not None
 
     def test_render_empty_ast(self):
         """空のAST描画テスト"""

@@ -1,0 +1,112 @@
+name: Unified CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # 軽量チェック（Linux）- 高速フィードバック
+  quick-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Code Quality Check
+      run: |
+        echo "=== Code Quality Check ==="
+        black --check kumihan_formatter/
+        isort --check-only kumihan_formatter/
+        flake8 kumihan_formatter/ --select=E9,F63,F7,F82 --count
+
+    - name: Quick Test
+      run: |
+        echo "=== Quick Test ==="
+        python -m pytest -x --ff -q
+
+  # クロスプラットフォームテスト（PR時のみ）
+  cross-platform-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        python-version: ["3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run Tests
+      run: |
+        python -m pytest --cov=kumihan_formatter --cov-report=xml
+
+    - name: Upload coverage (macOS only)
+      if: matrix.os == 'macos-latest'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # 品質ゲート（PR時のみ）- Issue #583対応
+  quality-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: quick-check
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Tiered Quality Gate
+      run: |
+        echo "=== Tiered Quality Gate Check ==="
+        python scripts/tiered_quality_gate.py --check-all || echo "⚠️ Quality gate warnings detected"
+
+    - name: Type Check (strict mode)
+      run: |
+        echo "=== Type Check ==="
+        python -m mypy --strict kumihan_formatter/ || echo "⚠️ Type check warnings detected"

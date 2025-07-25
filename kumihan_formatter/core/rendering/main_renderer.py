@@ -12,7 +12,8 @@ from .compound_renderer import CompoundElementRenderer
 from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
 from .heading_collector import HeadingCollector
-from .heading_renderer import HeadingRenderer
+
+# HeadingRenderer is now part of ElementRenderer
 from .html_formatter import HTMLFormatter
 from .html_utils import process_text_content
 
@@ -60,15 +61,11 @@ class HTMLRenderer:
         self.formatter = HTMLFormatter()
 
         # Initialize specialized processors
-        self.heading_renderer = HeadingRenderer()
         self.content_processor = ContentProcessor(self)
         self.heading_collector = HeadingCollector()
 
         # Inject this main renderer into element renderer for content processing
-        self.element_renderer._main_renderer = self
-
-        # Set main renderer for heading renderer
-        self.heading_renderer._main_renderer = self
+        self.element_renderer.set_main_renderer(self)
 
     def render_nodes(self, nodes: list[Node]) -> str:
         """
@@ -128,27 +125,27 @@ class HTMLRenderer:
 
     def _render_h1(self, node: Node) -> str:
         """Render h1 heading"""
-        return self.heading_renderer.render_h1(node)
+        return self.element_renderer.render_heading(node, 1)
 
     def _render_h2(self, node: Node) -> str:
         """Render h2 heading"""
-        return self.heading_renderer.render_h2(node)
+        return self.element_renderer.render_heading(node, 2)
 
     def _render_h3(self, node: Node) -> str:
         """Render h3 heading"""
-        return self.heading_renderer.render_h3(node)
+        return self.element_renderer.render_heading(node, 3)
 
     def _render_h4(self, node: Node) -> str:
         """Render h4 heading"""
-        return self.heading_renderer.render_h4(node)
+        return self.element_renderer.render_heading(node, 4)
 
     def _render_h5(self, node: Node) -> str:
         """Render h5 heading"""
-        return self.heading_renderer.render_h5(node)
+        return self.element_renderer.render_heading(node, 5)
 
     def _render_heading(self, node: Node, level: int) -> str:
         """Render heading with ID"""
-        return self.heading_renderer.render_heading(node, level)
+        return self.element_renderer.render_heading(node, level)
 
     def _render_ul(self, node: Node) -> str:
         """Render unordered list"""
@@ -231,19 +228,18 @@ class HTMLRenderer:
 
     def reset_counters(self) -> None:
         """Reset internal counters"""
-        self.heading_renderer.reset_counters()
         self.heading_collector.reset_counters()
-        self.element_renderer.reset_counters()
+        self.element_renderer.heading_counter = 0
 
     @property
     def heading_counter(self) -> int:
         """Get current heading counter"""
-        return self.heading_renderer.heading_counter
+        return self.element_renderer.heading_counter
 
     @heading_counter.setter
     def heading_counter(self, value: int) -> None:
         """Set heading counter"""
-        self.heading_renderer.heading_counter = value
+        self.element_renderer.heading_counter = value
         self.heading_collector.heading_counter = value
 
 
