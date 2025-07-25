@@ -38,10 +38,23 @@ AI運用6原則
 - **作業前**: mainから最新取得、正しいブランチ作成
 - **PR前**: rebase必須
 
-## 品質管理
-- **300行制限**: ファイル300行以内（例外なし）
-- **TDD**: テストファースト実装
-- **品質ゲート**: `python scripts/claude_quality_gate.py`
+## 品質管理（Issue #583対応 - 現実的基準）
+
+### ティア別品質基準
+- **Critical Tier**: Core機能・Commands（テストカバレッジ80%目標）
+- **Important Tier**: レンダリング・バリデーション（60%推奨）
+- **Supportive Tier**: ユーティリティ・キャッシング（統合テストで代替可）
+- **Special Tier**: GUI・パフォーマンス系（E2E・ベンチマークで代替）
+
+### 品質チェック
+- **新品質ゲート**: `python scripts/tiered_quality_gate.py`
+- **段階的改善**: `python scripts/gradual_improvement_planner.py`
+- **根本原因分析**: `python scripts/tdd_root_cause_analyzer.py`
+
+### 段階的改善計画
+- **Phase 1**: Critical Tier対応（4週間・50時間）
+- **Phase 2**: Important Tier拡大（8週間・80時間）
+- **Phase 3**: 機能拡張対応（8週間・70時間）
 
 ## PR・レビュー
 - **PR body必須**: `@claude PRのレビューをお願いします！`

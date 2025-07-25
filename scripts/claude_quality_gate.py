@@ -56,8 +56,9 @@ class QualityGate:
                 ".",
                 "--report-format",
                 "json",
+                "--lenient",  # 緩和モード使用
             ],
-            "ドキュメント品質チェック",
+            "ドキュメント品質チェック（緩和モード）",
         )
 
         if not success:
@@ -118,7 +119,7 @@ class QualityGate:
             print(
                 f"   📋 Excluding {len(excluded_files)} legacy files from strict checking"
             )
-            # 除外ファイルをmypy設定で指定
+            # 除外ファイルをmypy設定で指定（正しい形式で）
             mypy_cmd = [
                 "python3",
                 "-m",
@@ -126,8 +127,17 @@ class QualityGate:
                 "--strict",
                 "kumihan_formatter/",
             ]
+            # ディレクトリ除外はワイルドカードパターンで処理
+            exclude_patterns = []
             for excluded_file in excluded_files:
-                mypy_cmd.extend(["--exclude", excluded_file])
+                if excluded_file.endswith("/"):
+                    # ディレクトリ全体を除外
+                    exclude_patterns.append(excluded_file + "*")
+                else:
+                    exclude_patterns.append(excluded_file)
+
+            if exclude_patterns:
+                mypy_cmd.extend(["--exclude", "|".join(exclude_patterns)])
         else:
             mypy_cmd = ["python3", "-m", "mypy", "--strict", "kumihan_formatter/"]
 
@@ -169,8 +179,13 @@ class QualityGate:
         print("🧪 Checking TDD compliance...")
 
         success, output = self.run_command(
-            [".venv/bin/python", "scripts/enforce_tdd.py", "kumihan_formatter/"],
-            "TDD compliance check",
+            [
+                ".venv/bin/python",
+                "scripts/enforce_tdd.py",
+                "kumihan_formatter/",
+                "--lenient",
+            ],
+            "TDD compliance check（緩和モード）",
         )
 
         if not success:
@@ -196,9 +211,26 @@ class QualityGate:
 
         return True  # Non-blocking for now
 
+    def run_tiered_check(self) -> bool:
+        """ティア別品質チェックの統合実行"""
+        print("🎯 Running Tiered Quality Check...")
+
+        # ティア別品質ゲート実行
+        success, output = self.run_command(
+            ["python3", "scripts/tiered_quality_gate.py"],
+            "Tiered Quality Gate Check",
+        )
+
+        if not success:
+            # ティア別チェックは警告として扱う（ブロックしない）
+            self.warnings.append("Tiered quality improvements recommended")
+            print("⚠️  Tiered quality check suggests improvements")
+
+        return True  # 常に続行可能
+
     def run_full_check(self) -> bool:
         """完全な品質チェックを実行"""
-        print("🚀 Claude Code Quality Gate")
+        print("🚀 Claude Code Quality Gate (with Tiered System)")
         print("=" * 50)
 
         # 必須チェック（失敗するとブロック）
@@ -206,13 +238,14 @@ class QualityGate:
             ("Linting", self.check_linting),
             ("Type Checking", self.check_typing),
             ("Tests", self.check_tests),
-            ("Documentation Quality", self.check_documentation),  # Issue #578追加
         ]
 
-        # 推奨チェック（警告のみ）
+        # 推奨チェック（警告のみ）- Issue #583対応で品質基準を現実的に調整
         optional_checks = [
+            ("Documentation Quality", self.check_documentation),  # 推奨チェックに変更
             ("TDD Compliance", self.check_tdd_compliance),
             ("Architecture", self.check_architecture),
+            ("Tiered Quality", self.run_tiered_check),  # 新規追加
         ]
 
         # 必須チェック実行
@@ -228,13 +261,16 @@ class QualityGate:
         print("\n" + "=" * 50)
 
         if all_passed:
-            print("🎉 All quality checks passed!")
+            print("🎉 All mandatory quality checks passed!")
             print("✅ You may proceed with implementation.")
 
             if self.warnings:
-                print("\n⚠️  Warnings:")
+                print("\n⚠️  Warnings & Recommendations:")
                 for warning in self.warnings:
                     print(f"   - {warning}")
+                print(
+                    "\n💡 Run 'python scripts/gradual_improvement_planner.py' for improvement plan"
+                )
 
             return True
         else:

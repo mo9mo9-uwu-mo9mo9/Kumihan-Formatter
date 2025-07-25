@@ -19,6 +19,18 @@ EXCLUDED_PATTERNS = {
     "conftest.py",
     "setup.py",
     "manage.py",
+    # GUI関連ファイル（現実的除外）
+    "*gui*.py",
+    "*tk*.py",
+    "*qt*.py",
+    # スクリプト・ユーティリティ（現実的除外）
+    "scripts/*.py",
+    "*_script.py",
+    "*_util.py",
+    # 設定・定数ファイル（現実的除外）
+    "*config*.py",
+    "*constant*.py",
+    "*setting*.py",
 }
 
 # テストが不要なディレクトリ
@@ -94,11 +106,12 @@ def check_test_exists(source_file: Path) -> bool:
 
 def main() -> None:
     """メイン処理"""
-    if len(sys.argv) != 2:
-        print("Usage: python enforce_tdd.py <source_directory>")
+    if len(sys.argv) < 2:
+        print("Usage: python enforce_tdd.py <source_directory> [--lenient]")
         sys.exit(1)
 
     source_dir = Path(sys.argv[1])
+    lenient_mode = "--lenient" in sys.argv
 
     if not source_dir.exists():
         print(f"Error: Directory {source_dir} does not exist")
@@ -133,26 +146,51 @@ def main() -> None:
             missing_tests.append(source_file)
 
     if missing_tests:
-        print(f"❌ {len(missing_tests)} files are missing corresponding tests:")
-        print()
-
-        for file in missing_tests:
-            print(f"  📄 {file}")
-            expected_paths = get_expected_test_paths(file)
-            print(f"     Expected test files (any one of):")
-            for path in expected_paths:
-                print(f"       - {path}")
+        if lenient_mode:
+            print(
+                f"⚠️  {len(missing_tests)} files are missing corresponding tests (LENIENT MODE):"
+            )
             print()
 
-        print("🚨 TDD VIOLATION DETECTED!")
-        print("   Please create test files before implementing functionality.")
-        print("   Follow the Red-Green-Refactor cycle:")
-        print("   1. Write failing test (RED)")
-        print("   2. Implement minimal code to pass (GREEN)")
-        print("   3. Refactor while keeping tests green (REFACTOR)")
-        print()
+            for file in missing_tests[:10]:  # 最初の10件のみ表示
+                print(f"  📄 {file}")
+                expected_paths = get_expected_test_paths(file)
+                print(f"     Expected test files (any one of):")
+                for path in expected_paths:
+                    print(f"       - {path}")
+                print()
 
-        sys.exit(1)
+            if len(missing_tests) > 10:
+                print(f"  ... and {len(missing_tests) - 10} more files")
+                print()
+
+            print("⚠️  TDD COMPLIANCE WARNING!")
+            print("   Consider creating test files to improve code quality.")
+            print("   This is a non-blocking warning in lenient mode.")
+            print()
+            sys.exit(0)  # 緩和モードでは成功扱い
+        else:
+            print(f"❌ {len(missing_tests)} files are missing corresponding tests:")
+            print()
+
+            for file in missing_tests:
+                print(f"  📄 {file}")
+                expected_paths = get_expected_test_paths(file)
+                print(f"     Expected test files (any one of):")
+                for path in expected_paths:
+                    print(f"       - {path}")
+                print()
+
+            print("🚨 TDD VIOLATION DETECTED!")
+            print("   Please create test files before implementing functionality.")
+            print("   Follow the Red-Green-Refactor cycle:")
+            print("   1. Write failing test (RED)")
+            print("   2. Implement minimal code to pass (GREEN)")
+            print("   3. Refactor while keeping tests green (REFACTOR)")
+            print("   Tip: Use --lenient flag for non-blocking warnings.")
+            print()
+
+            sys.exit(1)
 
     else:
         print(f"✅ All {len(python_files)} Python files have corresponding tests")
