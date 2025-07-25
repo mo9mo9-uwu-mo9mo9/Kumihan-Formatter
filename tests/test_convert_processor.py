@@ -75,7 +75,10 @@ class TestConvertProcessor:
                 mock_write.assert_called_once_with(expected_output, "<html>test</html>")
 
         # Cleanup
-        input_file.unlink()
+        try:
+            input_file.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("kumihan_formatter.commands.convert.convert_processor.parse")
     @patch("kumihan_formatter.commands.convert.convert_processor.render")
@@ -117,7 +120,10 @@ class TestConvertProcessor:
                 )
 
         # Cleanup
-        input_file.unlink()
+        try:
+            input_file.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("kumihan_formatter.commands.convert.convert_processor.parse")
     @patch("kumihan_formatter.commands.convert.convert_processor.render")
@@ -162,7 +168,10 @@ class TestConvertProcessor:
                     mock_show_tests.assert_called_once_with(test_content)
 
         # Cleanup
-        input_file.unlink()
+        try:
+            input_file.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_determine_output_path_creates_directory(self):
         """出力ディレクトリが存在しない場合の作成テスト"""
@@ -537,4 +546,7 @@ class TestConvertProcessor:
                             assert len(timing_logs) > 0
 
         # Cleanup
-        input_file.unlink()
+        try:
+            input_file.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある

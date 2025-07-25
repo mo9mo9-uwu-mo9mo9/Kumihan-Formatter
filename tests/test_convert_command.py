@@ -80,7 +80,10 @@ class TestConvertCommand:
                     mock_exit.assert_called_once_with(0)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_with_syntax_check_errors(self, mock_exit):
@@ -134,7 +137,10 @@ class TestConvertCommand:
                         assert exit_calls[-1] == call(1)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_with_syntax_check_warnings_only(self, mock_exit):
@@ -187,7 +193,10 @@ class TestConvertCommand:
                         mock_exit.assert_called_once_with(0)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_execute_with_large_file_user_cancellation(self):
         """大きなファイルでユーザーがキャンセルした場合のテスト"""
@@ -225,7 +234,10 @@ class TestConvertCommand:
                     mock_exit.assert_called()
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     @patch("webbrowser.open")
@@ -268,7 +280,10 @@ class TestConvertCommand:
                     mock_exit.assert_called_once_with(0)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_with_watch_mode(self, mock_exit):
@@ -319,7 +334,10 @@ class TestConvertCommand:
                         )
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_handles_file_not_found_error(self, mock_exit):
@@ -383,7 +401,10 @@ class TestConvertCommand:
             mock_exit.assert_called_once_with(1)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_handles_permission_error(self, mock_exit):
@@ -417,7 +438,10 @@ class TestConvertCommand:
             mock_exit.assert_called_once_with(1)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.exit")
     def test_execute_handles_generic_error(self, mock_exit):
@@ -451,7 +475,10 @@ class TestConvertCommand:
             mock_exit.assert_called_once_with(1)
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_private_error_handlers_call_friendly_error_handler(self):
         """プライベートエラーハンドラーがFriendlyErrorHandlerを呼び出すことをテスト"""
@@ -523,4 +550,7 @@ class TestConvertCommand:
                         )
 
         # Cleanup
-        Path(input_file).unlink()
+        try:
+            Path(input_file).unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある

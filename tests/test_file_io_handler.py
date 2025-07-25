@@ -38,7 +38,10 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_write_text_file_success_custom_encoding(self):
         """カスタムエンコーディングでのファイル書き込み成功テスト"""
@@ -58,7 +61,10 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("builtins.open")
     def test_write_text_file_unicode_encode_error_fallback(self, mock_file_open):
@@ -72,7 +78,7 @@ class TestFileIOHandler:
         mock_file.__enter__ = Mock(return_value=mock_file)
         mock_file.__exit__ = Mock(return_value=False)
         mock_file.write.side_effect = UnicodeEncodeError("ascii", "test", 0, 1, "error")
-        
+
         # Second call should succeed
         mock_file_success = mock_open().return_value
         mock_file_open.side_effect = [mock_file, mock_file_success]
@@ -142,7 +148,10 @@ class TestFileIOHandler:
         assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     def test_read_text_file_confident_detection_success(self, mock_detect):
@@ -165,7 +174,10 @@ class TestFileIOHandler:
         mock_detect.assert_called_once_with(test_path)
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     @patch("builtins.open")
@@ -315,7 +327,10 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_try_detected_encoding_not_confident_utf8_fallback(self):
         """確信度の低い検出でのUTF-8フォールバックテスト"""
@@ -340,7 +355,10 @@ class TestFileIOHandler:
             assert result == content  # UTF-8で読めるため成功
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("builtins.open")
     def test_try_detected_encoding_decode_error(self, mock_open_func):
@@ -385,7 +403,10 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_try_specified_encoding_same_as_detected(self):
         """指定エンコーディングが検出と同じ場合のスキップテスト"""
@@ -429,11 +450,19 @@ class TestFileIOHandler:
         """Windows環境でのプラットフォームフォールバック成功テスト"""
         # Given
         content = "Test content"
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".txt", delete=False, encoding="cp932"
-        ) as f:
-            f.write(content)
-            test_path = Path(f.name)
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, encoding="cp932"
+            ) as f:
+                f.write(content)
+                test_path = Path(f.name)
+        except (UnicodeEncodeError, LookupError):
+            # cp932が利用できない環境ではutf-8でファイルを作成
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, encoding="utf-8"
+            ) as f:
+                f.write(content)
+                test_path = Path(f.name)
 
         with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
@@ -446,7 +475,10 @@ class TestFileIOHandler:
             assert result == content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     @patch("sys.platform", "linux")
     def test_try_platform_fallbacks_linux_no_fallbacks(self):
@@ -486,7 +518,10 @@ class TestFileIOHandler:
             mock_log.warning.assert_called_once()
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
 
     def test_comprehensive_encoding_flow(self):
         """包括的なエンコーディングフローテスト"""
@@ -515,4 +550,7 @@ class TestFileIOHandler:
         assert result2 == new_content
 
         # Cleanup
-        test_path.unlink()
+        try:
+            test_path.unlink()
+        except (OSError, PermissionError):
+            pass  # Windows環境でファイル削除に失敗することがある
