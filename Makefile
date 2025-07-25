@@ -6,22 +6,26 @@ VENV = .venv
 PYTHON = $(VENV)/bin/python
 PYTEST = $(VENV)/bin/pytest
 
-.PHONY: help test lint format check install clean coverage
+.PHONY: help test lint format check install clean coverage quality-gate pre-commit
 
 # デフォルトターゲット：ヘルプ表示
 help:
 	@echo "Kumihan-Formatter - 簡潔な開発コマンド"
 	@echo ""
-	@echo "必須コマンド（5つのみ）:"
-	@echo "  make test    - テスト実行"
-	@echo "  make lint    - リンター実行（チェックのみ）"
-	@echo "  make format  - コードフォーマット適用"
-	@echo "  make check   - format + lint + test（開発完了時）"
-	@echo "  make coverage- カバレッジ付きテスト"
+	@echo "必須コマンド："
+	@echo "  make test         - テスト実行"
+	@echo "  make lint         - リンター実行（チェックのみ）"
+	@echo "  make format       - コードフォーマット適用"
+	@echo "  make check        - format + lint + test（開発完了時）"
+	@echo "  make pre-commit   - コミット前チェック（Issue #589対応）"
+	@echo ""
+	@echo "品質管理（Issue #589新機能）:"
+	@echo "  make quality-gate - ティア別品質ゲート実行"
+	@echo "  make coverage     - カバレッジ付きテスト"
 	@echo ""
 	@echo "その他:"
-	@echo "  make install - 開発用依存関係インストール"
-	@echo "  make clean   - 一時ファイル削除"
+	@echo "  make install      - 開発用依存関係インストール"
+	@echo "  make clean        - 一時ファイル削除"
 
 # テスト実行
 test:
@@ -58,6 +62,17 @@ install:
 	@echo "=== 開発用依存関係インストール ==="
 	pip install -e .[dev]
 	@echo "インストール完了 ✓"
+
+# Issue #589: ティア別品質ゲート（新システム）
+quality-gate:
+	@echo "=== ティア別品質ゲート実行 ==="
+	$(PYTHON) scripts/tiered_quality_gate.py
+	@echo "品質ゲートチェック完了 ✓"
+
+# Issue #589: コミット前チェック（統合）
+pre-commit: format lint test
+	@echo "=== コミット前チェック完了 ✓ ==="
+	@echo "安全にコミットできます"
 
 # 一時ファイル削除
 clean:

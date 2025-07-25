@@ -42,6 +42,11 @@ python -m kumihan_formatter convert input.txt
 
 # 開発ログの有効化（Claude Code向け）
 KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
+
+# 品質チェック（Issue #589新システム）
+make quality-gate    # ティア別品質ゲート
+make pre-commit      # コミット前チェック
+make test           # テスト実行
 ```
 
 ## 💡 基本的な記法
