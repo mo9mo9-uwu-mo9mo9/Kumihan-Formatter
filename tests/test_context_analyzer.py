@@ -38,9 +38,9 @@ class TestContextAnalyzer:
         error = ValueError("Test error")
         context_stack = [
             OperationContext(
-                operation_type="parse",
-                description="Parse markdown file",
-                start_time=datetime.now(),
+                operation_name="parse",
+                component="markdown_parser",
+                started_at=datetime.now(),
             )
         ]
         system_context = SystemContext(
