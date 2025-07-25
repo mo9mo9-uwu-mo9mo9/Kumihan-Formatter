@@ -293,10 +293,18 @@ class TestFileIOHandler:
         mock_file.__enter__ = Mock(return_value=mock_file)
         mock_file.__exit__ = Mock(return_value=False)
         mock_file.read.return_value = content
-        mock_open_func.side_effect = [
-            UnicodeDecodeError("utf-8", b"", 0, 1, "error"),  # detected
-            mock_file,  # error replacement (always succeeds)
-        ]
+
+        # プラットフォームに応じた失敗回数を設定
+        import sys
+
+        # errors='replace'を含む呼び出しはエラーが発生しない
+        def mock_open_side_effect(path, mode, **kwargs):
+            if kwargs.get("errors") == "replace":
+                return mock_file
+            else:
+                raise UnicodeDecodeError("utf-8", b"", 0, 1, "error")
+
+        mock_open_func.side_effect = mock_open_side_effect
 
         with patch("kumihan_formatter.core.file_io_handler.get_logger") as mock_logger:
             mock_log = Mock()
