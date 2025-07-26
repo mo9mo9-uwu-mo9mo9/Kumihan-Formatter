@@ -237,6 +237,21 @@ class TestPerformanceValidator:
         assert memory_issues[0].level == "warning"
         assert memory_issues[0].category == "performance"
 
+    def test_validate_memory_usage_moderate_text_for_ci(self):
+        """Test validation of moderate-sized text for CI environments"""
+        # CI-friendly test with smaller memory footprint
+        moderate_text = "Content line\n" * 50000  # ~650KB instead of 50MB
+        issues = self.validator.validate_memory_usage(moderate_text)
+        
+        # Should not trigger high memory usage warning for moderate size
+        memory_issues = [issue for issue in issues if issue.code == "HIGH_MEMORY_USAGE"]
+        assert len(memory_issues) == 0
+        
+        # But might trigger many lines warning
+        line_issues = [issue for issue in issues if issue.code == "MANY_LINES"]
+        # 50000 lines should not trigger warning (threshold is 100000)
+        assert len(line_issues) == 0
+
     def test_validate_memory_usage_many_lines(self):
         """Test validation of text with many lines"""
         # Create text with many lines
@@ -347,6 +362,30 @@ class TestPerformanceValidator:
             issue for issue in issues if issue.code == "MANY_AST_NODES"
         ]
         assert len(many_nodes_issues) == 0  # Exactly at threshold, not over
+
+    def test_performance_scalability_ci_friendly(self):
+        """Test performance with CI-friendly smaller datasets"""
+        # Test with smaller node counts for CI efficiency
+        moderate_node_count = 50000  # Half the threshold
+        moderate_nodes = []
+        for i in range(moderate_node_count):
+            mock_node = Mock(spec=Node)
+            mock_node.children = []
+            mock_node.content = f"Node {i}"  # Small content
+            moderate_nodes.append(mock_node)
+        
+        issues = self.validator.validate_ast_performance(moderate_nodes)
+        
+        # Should not trigger any performance warnings
+        perf_issues = [
+            issue for issue in issues 
+            if issue.code in ["MANY_AST_NODES", "DEEP_NESTING", "LARGE_CONTENT_BLOCK"]
+        ]
+        assert len(perf_issues) == 0
+        
+        # Test memory efficiency
+        text_size_kb = len(str(moderate_nodes)) / 1024
+        assert text_size_kb < 10240  # Should be under 10MB for CI
 
     def test_multiple_performance_issues(self):
         """Test AST with multiple performance issues"""
