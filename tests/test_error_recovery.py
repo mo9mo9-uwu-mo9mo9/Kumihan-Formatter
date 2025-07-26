@@ -11,7 +11,12 @@ from unittest.mock import Mock, patch
 import pytest
 
 from kumihan_formatter.core.error_handling.error_recovery import ErrorRecovery
-from kumihan_formatter.core.error_handling.error_types import UserFriendlyError
+from kumihan_formatter.core.error_handling.error_types import (
+    ErrorCategory,
+    ErrorLevel,
+    ErrorSolution,
+    UserFriendlyError,
+)
 
 
 class TestErrorRecovery:
@@ -31,8 +36,11 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
         )
         context = {"operation": "test"}
 
@@ -48,8 +56,11 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
         )
 
         # When
@@ -63,8 +74,11 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
         )
 
         # When
@@ -79,11 +93,14 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         error = UserFriendlyError(
-            message="Encoding error",
-            original_error=UnicodeDecodeError(
-                "utf-8", b"\x80", 0, 1, "invalid start byte"
+            error_code="ENCODING_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.ENCODING,
+            user_message="Encoding error",
+            solution=ErrorSolution(
+                quick_fix="Try different encoding",
+                detailed_steps=["Try shift_jis encoding", "Try cp932 encoding"],
             ),
-            suggestions=["Try shift_jis encoding", "Try cp932 encoding"],
         )
 
         # When
@@ -97,8 +114,11 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
         )
 
         # When
@@ -116,8 +136,11 @@ class TestErrorRecovery:
         recovery._recovery_attempts = recovery._max_attempts
 
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
         )
 
         # When
@@ -147,9 +170,13 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         encoding_error = UserFriendlyError(
-            message="Failed to decode file",
-            original_error=UnicodeDecodeError(
-                "utf-8", b"\x82\xa0", 0, 2, "invalid start byte"
+            error_code="ENCODING_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.ENCODING,
+            user_message="Failed to decode file",
+            solution=ErrorSolution(
+                quick_fix="Try different encoding",
+                detailed_steps=["Try shift_jis encoding"],
             ),
             context={
                 "file_path": "test.txt",
@@ -171,8 +198,14 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         syntax_error = UserFriendlyError(
-            message="Invalid markdown syntax",
-            original_error=ValueError("Unclosed decoration"),
+            error_code="SYNTAX_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.SYNTAX,
+            user_message="Invalid markdown syntax",
+            solution=ErrorSolution(
+                quick_fix="Fix syntax",
+                detailed_steps=["Close decoration tags"],
+            ),
             context={
                 "line_number": 10,
                 "line_content": ";;;unclosed",
@@ -194,8 +227,14 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
         permission_error = UserFriendlyError(
-            message="Permission denied",
-            original_error=PermissionError("Cannot write to file"),
+            error_code="PERMISSION_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.PERMISSION,
+            user_message="Permission denied",
+            solution=ErrorSolution(
+                quick_fix="Use temporary file",
+                detailed_steps=["Write to temporary location"],
+            ),
             context={
                 "file_path": "/protected/file.txt",
                 "operation": "write",
@@ -223,8 +262,11 @@ class TestErrorRecovery:
             "encoding": "utf-8",
         }
         error = UserFriendlyError(
-            message="Test error",
-            original_error=ValueError("Original"),
+            error_code="TEST_ERROR",
+            level=ErrorLevel.ERROR,
+            category=ErrorCategory.UNKNOWN,
+            user_message="Test error",
+            solution=ErrorSolution(quick_fix="Test fix", detailed_steps=["Step 1"]),
             context=context_data,
         )
 
@@ -240,19 +282,25 @@ class TestErrorRecovery:
         # Given
         recovery = ErrorRecovery()
 
-        error_types = [
-            FileNotFoundError("File not found"),
-            PermissionError("Permission denied"),
-            UnicodeDecodeError("utf-8", b"", 0, 1, "error"),
-            ValueError("Invalid value"),
-            MemoryError("Out of memory"),
+        error_categories = [
+            ErrorCategory.FILE_SYSTEM,
+            ErrorCategory.PERMISSION,
+            ErrorCategory.ENCODING,
+            ErrorCategory.SYNTAX,
+            ErrorCategory.SYSTEM,
         ]
 
         # When/Then
-        for original_error in error_types:
+        for category in error_categories:
             error = UserFriendlyError(
-                message=f"Error: {type(original_error).__name__}",
-                original_error=original_error,
+                error_code=f"{category.value.upper()}_ERROR",
+                level=ErrorLevel.ERROR,
+                category=category,
+                user_message=f"Error: {category.value}",
+                solution=ErrorSolution(
+                    quick_fix=f"Fix {category.value}",
+                    detailed_steps=[f"Step for {category.value}"],
+                ),
             )
             result = recovery.attempt_recovery(error)
             assert result is False  # 現在の実装では全てFalse

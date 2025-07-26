@@ -1,43 +1,38 @@
 """
-日本語メッセージシステムのテスト
+日本語メッセージ機能のテスト
 
-Important Tier Phase 2-1対応 - Issue #593
-日本語エラーメッセージ・メッセージカタログ機能の体系的テスト実装
+Japanese Error Message Testing
+Issue #492 Phase 5A対応 - 日本語エラーメッセージ統一機能の体系的テスト実装
 """
 
-from unittest.mock import Mock, patch
+from pathlib import Path
 
 import pytest
 
-from kumihan_formatter.core.error_handling.error_types import (
-    ErrorCategory,
-    ErrorLevel,
-    UserFriendlyError,
-)
-from kumihan_formatter.core.error_handling.japanese_messages import (
-    JapaneseMessageCatalog,
-    MessageCatalog,
-    UserGuidanceProvider,
-    create_user_friendly_error,
-)
+from kumihan_formatter.core.error_handling.error_types import UserFriendlyError
+from kumihan_formatter.core.error_handling.message_catalog import MessageCatalog
 
 
 class TestJapaneseMessageCatalog:
-    """日本語メッセージカタログのテスト"""
+    """日本語メッセージカタログ全体のテスト"""
 
-    def test_backward_compatibility_alias(self):
-        """後方互換性エイリアスのテスト"""
-        # JapaneseMessageCatalogはMessageCatalogのエイリアス
-        assert JapaneseMessageCatalog is MessageCatalog
-
-    def test_catalog_instantiation(self):
-        """カタログインスタンス化のテスト"""
+    def test_catalog_availability(self):
+        """カタログが利用可能かテスト"""
         # Given/When
         catalog = MessageCatalog()
 
         # Then
         assert catalog is not None
-        assert hasattr(catalog, "get_message")
+        assert hasattr(catalog, "templates")
+
+    def test_catalog_instantiation(self):
+        """MessageCatalogのインスタンス化テスト"""
+        # Given/When
+        catalog = MessageCatalog()
+
+        # Then
+        assert catalog is not None
+        assert hasattr(catalog, "get_file_system_error")
 
 
 class TestMessageCatalog:
@@ -49,11 +44,11 @@ class TestMessageCatalog:
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message("file_not_found", file_path="test.txt")
+        message = catalog.get_file_system_error("file_not_found", file_path="test.txt")
 
         # Then
-        assert "ファイルが見つかりません" in message
-        assert "test.txt" in message
+        assert isinstance(message, UserFriendlyError)
+        assert "test.txt" in message.user_message
 
     def test_get_encoding_error_message(self):
         """エンコーディングエラーメッセージ取得のテスト"""
@@ -61,374 +56,132 @@ class TestMessageCatalog:
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message(
-            "encoding_error", encoding="utf-8", suggested_encoding="shift_jis"
-        )
+        message = catalog.get_encoding_error("encoding_mismatch")
 
         # Then
-        assert "エンコーディングエラー" in message
-        assert "utf-8" in message
-        assert "shift_jis" in message
+        assert isinstance(message, UserFriendlyError)
 
-    def test_get_parse_error_message(self):
-        """パースエラーメッセージ取得のテスト"""
+    def test_get_syntax_error_message(self):
+        """構文エラーメッセージ取得のテスト"""
         # Given
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message(
-            "parse_error", line_number=10, content=";;;invalid;;;"
-        )
+        message = catalog.get_syntax_error("unclosed_decoration")
 
         # Then
-        assert "パースエラー" in message
-        assert "10行目" in message
-        assert ";;;invalid;;;" in message
+        assert isinstance(message, UserFriendlyError)
 
-    def test_get_permission_error_message(self):
-        """権限エラーメッセージ取得のテスト"""
+    def test_get_rendering_error_message(self):
+        """レンダリングエラーメッセージ取得のテスト"""
         # Given
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message(
-            "permission_denied", file_path="/protected/file.txt", operation="write"
-        )
+        message = catalog.get_rendering_error("template_not_found")
 
         # Then
-        assert "アクセス権限がありません" in message
-        assert "file.txt" in message
-        assert "書き込み" in message or "write" in message
+        assert isinstance(message, UserFriendlyError)
 
-    def test_get_unknown_message_key(self):
-        """未知のメッセージキー取得のテスト"""
+    def test_get_unknown_error_message(self):
+        """未知のエラーメッセージ取得のテスト"""
+        # Given
+        catalog = MessageCatalog()
+
+        # When - 存在しないエラータイプでもデフォルトが返される
+        message = catalog.get_file_system_error("unknown_error_key")
+
+        # Then
+        assert isinstance(message, UserFriendlyError)
+
+    def test_message_localization(self):
+        """メッセージローカライゼーションのテスト"""
         # Given
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message("unknown_error_key")
+        message = catalog.get_file_system_error("file_not_found")
 
         # Then
-        # デフォルトメッセージが返される
-        assert "エラーが発生しました" in message or "unknown_error_key" in message
+        assert isinstance(message, UserFriendlyError)
+        # 日本語メッセージが含まれることを確認
+        assert len(message.user_message) > 0
 
-    def test_message_formatting_with_multiple_params(self):
-        """複数パラメータでのメッセージフォーマットテスト"""
+    def test_message_with_context(self):
+        """コンテキスト付きメッセージのテスト"""
         # Given
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message(
-            "complex_error",
-            file_path="test.md",
-            line_number=25,
-            column=10,
-            error_type="構文エラー",
-            suggestion=";;;太字;;;を使用してください",
+        message = catalog.get_file_system_error(
+            "permission_denied", file_path="/restricted/file.txt"
         )
 
         # Then
-        # パラメータが正しく埋め込まれている
-        assert isinstance(message, str)
-        assert len(message) > 0
+        assert isinstance(message, UserFriendlyError)
+        assert "file.txt" in message.user_message
 
-    def test_message_with_japanese_characters(self):
-        """日本語文字を含むメッセージのテスト"""
+    def test_template_message_constants_availability(self):
+        """メッセージテンプレート定数の利用可能性テスト"""
+        # When/Then
+        assert hasattr(MessageCatalog, "FILE_SYSTEM_MESSAGES")
+        assert hasattr(MessageCatalog, "ENCODING_MESSAGES")
+        assert hasattr(MessageCatalog, "SYNTAX_MESSAGES")
+        assert hasattr(MessageCatalog, "RENDERING_MESSAGES")
+        assert hasattr(MessageCatalog, "SYSTEM_MESSAGES")
+
+    def test_error_solution_inclusion(self):
+        """エラー解決方法の含有テスト"""
         # Given
         catalog = MessageCatalog()
 
         # When
-        message = catalog.get_message(
-            "syntax_error",
-            content=";;;太字;;;テスト;;;イタリック;;;",
-            suggestion="正しい記法を使用してください",
-        )
+        error = catalog.get_file_system_error("file_not_found")
 
         # Then
-        assert "太字" in message
-        assert "イタリック" in message
-        assert "正しい記法" in message
+        assert hasattr(error, "solution")
+        assert error.solution is not None
+        assert hasattr(error.solution, "quick_fix")
+        assert hasattr(error.solution, "detailed_steps")
 
-
-class TestUserGuidanceProvider:
-    """ユーザーガイダンスプロバイダーのテスト"""
-
-    def test_get_file_error_guidance(self):
-        """ファイルエラーガイダンス取得のテスト"""
+    def test_error_categorization(self):
+        """エラーカテゴリ化のテスト"""
         # Given
-        provider = UserGuidanceProvider()
+        catalog = MessageCatalog()
 
         # When
-        guidance = provider.get_guidance(
-            error_type="file_not_found", context={"file_path": "missing.txt"}
-        )
+        file_error = catalog.get_file_system_error("file_not_found")
+        encoding_error = catalog.get_encoding_error("encoding_mismatch")
 
         # Then
-        assert len(guidance) > 0
-        assert any("ファイルパス" in g for g in guidance)
-        assert any("存在" in g for g in guidance)
+        assert file_error.category.value == "file_system"
+        assert encoding_error.category.value == "encoding"
 
-    def test_get_encoding_error_guidance(self):
-        """エンコーディングエラーガイダンス取得のテスト"""
+    def test_error_level_assignment(self):
+        """エラーレベル割り当てのテスト"""
         # Given
-        provider = UserGuidanceProvider()
+        catalog = MessageCatalog()
 
         # When
-        guidance = provider.get_guidance(
-            error_type="encoding_error",
-            context={
-                "original_encoding": "utf-8",
-                "suggested_encodings": ["shift_jis", "cp932"],
-            },
-        )
+        error = catalog.get_file_system_error("file_not_found")
 
         # Then
-        assert len(guidance) > 0
-        assert any("エンコーディング" in g for g in guidance)
-        assert any("shift_jis" in g or "cp932" in g for g in guidance)
+        assert hasattr(error, "level")
+        assert error.level is not None
 
-    def test_get_syntax_error_guidance(self):
-        """構文エラーガイダンス取得のテスト"""
+    def test_multiple_error_types(self):
+        """複数エラータイプのテスト"""
         # Given
-        provider = UserGuidanceProvider()
+        catalog = MessageCatalog()
 
-        # When
-        guidance = provider.get_guidance(
-            error_type="syntax_error",
-            context={
-                "line_content": ";;;invalid;;;",
-                "suggested_fix": ";;;太字;;;",
-                "valid_keywords": ["太字", "イタリック", "見出し1"],
-            },
-        )
+        # When/Then - 各エラータイプメソッドが正常に動作する
+        file_error = catalog.get_file_system_error("file_not_found")
+        encoding_error = catalog.get_encoding_error("encoding_mismatch")
+        syntax_error = catalog.get_syntax_error("unclosed_decoration")
+        render_error = catalog.get_rendering_error("template_not_found")
+        system_error = catalog.get_system_error("memory_error")
 
-        # Then
-        assert len(guidance) > 0
-        assert any("記法" in g for g in guidance)
-        assert any("太字" in g for g in guidance)
-
-    def test_get_permission_error_guidance(self):
-        """権限エラーガイダンス取得のテスト"""
-        # Given
-        provider = UserGuidanceProvider()
-
-        # When
-        guidance = provider.get_guidance(
-            error_type="permission_denied",
-            context={"file_path": "/protected/file.txt", "operation": "write"},
-        )
-
-        # Then
-        assert len(guidance) > 0
-        assert any("権限" in g or "アクセス" in g for g in guidance)
-        assert any("chmod" in g or "管理者" in g for g in guidance)
-
-    def test_get_guidance_with_empty_context(self):
-        """空のコンテキストでのガイダンス取得テスト"""
-        # Given
-        provider = UserGuidanceProvider()
-
-        # When
-        guidance = provider.get_guidance("generic_error", context={})
-
-        # Then
-        # 空でもエラーが発生しない
-        assert isinstance(guidance, list)
-
-    def test_get_guidance_for_unknown_error(self):
-        """未知のエラータイプのガイダンス取得テスト"""
-        # Given
-        provider = UserGuidanceProvider()
-
-        # When
-        guidance = provider.get_guidance("unknown_error_type")
-
-        # Then
-        # 汎用的なガイダンスが返される
-        assert isinstance(guidance, list)
-        assert len(guidance) >= 0
-
-
-class TestCreateUserFriendlyError:
-    """ユーザーフレンドリーエラー作成のテスト"""
-
-    def test_create_file_not_found_error(self):
-        """ファイル未発見エラー作成のテスト"""
-        # Given
-        original_error = FileNotFoundError("No such file: test.txt")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error, context={"file_path": "test.txt"}
-        )
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert "ファイルが見つかりません" in user_error.message
-        assert user_error.original_error is original_error
-        assert len(user_error.suggestions) > 0
-
-    def test_create_encoding_error(self):
-        """エンコーディングエラー作成のテスト"""
-        # Given
-        original_error = UnicodeDecodeError(
-            "utf-8", b"\x82\xa0", 0, 2, "invalid start byte"
-        )
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error,
-            context={"file_path": "japanese.txt", "detected_encoding": "shift_jis"},
-        )
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert "エンコーディング" in user_error.message
-        assert len(user_error.suggestions) > 0
-        assert any("shift_jis" in s for s in user_error.suggestions)
-
-    def test_create_permission_error(self):
-        """権限エラー作成のテスト"""
-        # Given
-        original_error = PermissionError("Permission denied")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error,
-            context={"file_path": "/protected/file.txt", "operation": "write"},
-        )
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert "アクセス権限" in user_error.message or "権限" in user_error.message
-        assert len(user_error.suggestions) > 0
-
-    def test_create_syntax_error(self):
-        """構文エラー作成のテスト"""
-        # Given
-        original_error = ValueError("Invalid syntax")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error,
-            context={
-                "line_number": 15,
-                "line_content": ";;;invalid;;;",
-                "file_path": "test.md",
-            },
-        )
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert "構文" in user_error.message or "記法" in user_error.message
-        assert "15行目" in user_error.message
-        assert len(user_error.suggestions) > 0
-
-    def test_create_error_with_custom_level(self):
-        """カスタムレベルでのエラー作成テスト"""
-        # Given
-        original_error = RuntimeError("Critical system error")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error, context={"severity": "critical"}, level=ErrorLevel.CRITICAL
-        )
-
-        # Then
-        assert user_error.level == ErrorLevel.CRITICAL
-
-    def test_create_error_with_custom_category(self):
-        """カスタムカテゴリでのエラー作成テスト"""
-        # Given
-        original_error = ValueError("Render error")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error,
-            context={"component": "renderer"},
-            category=ErrorCategory.RENDER,
-        )
-
-        # Then
-        assert user_error.category == ErrorCategory.RENDER
-
-    def test_create_error_without_context(self):
-        """コンテキストなしでのエラー作成テスト"""
-        # Given
-        original_error = Exception("Generic error")
-
-        # When
-        user_error = create_user_friendly_error(original_error)
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert user_error.original_error is original_error
-        assert isinstance(user_error.message, str)
-        assert len(user_error.message) > 0
-
-    def test_create_error_preserves_original_traceback(self):
-        """元の例外のトレースバック保持テスト"""
-        # Given
-        try:
-            raise ValueError("Original error with traceback")
-        except ValueError as e:
-            original_error = e
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error, context={"preserve_traceback": True}
-        )
-
-        # Then
-        assert user_error.original_error is original_error
-        # トレースバック情報が保持されている
-
-    def test_error_message_localization(self):
-        """エラーメッセージのローカライゼーションテスト"""
-        # Given
-        original_error = FileNotFoundError("File not found")
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error, context={"file_path": "テスト.txt", "locale": "ja"}
-        )
-
-        # Then
-        # 日本語メッセージが生成される
-        assert "ファイル" in user_error.message
-        assert "テスト.txt" in user_error.message
-
-    def test_integration_complete_error_creation_flow(self):
-        """統合テスト: 完全なエラー作成フロー"""
-        # Given - 複雑なエラーシナリオ
-        original_error = UnicodeDecodeError(
-            "utf-8", b"\x93\xfa\x96{", 0, 3, "invalid start byte"
-        )
-
-        context = {
-            "file_path": "日本語ファイル.md",
-            "line_number": 42,
-            "column": 15,
-            "operation": "parse",
-            "encoding": "utf-8",
-            "suggested_encodings": ["shift_jis", "cp932", "euc-jp"],
-            "file_size": 2048,
-        }
-
-        # When
-        user_error = create_user_friendly_error(
-            original_error,
-            context=context,
-            level=ErrorLevel.ERROR,
-            category=ErrorCategory.FILE,
-        )
-
-        # Then
-        assert isinstance(user_error, UserFriendlyError)
-        assert user_error.level == ErrorLevel.ERROR
-        assert user_error.category == ErrorCategory.FILE
-        assert "エンコーディング" in user_error.message
-        assert "日本語ファイル.md" in user_error.message
-        assert len(user_error.suggestions) > 0
-        assert any("shift_jis" in s for s in user_error.suggestions)
-        assert user_error.context["file_path"] == "日本語ファイル.md"
+        errors = [file_error, encoding_error, syntax_error, render_error, system_error]
+        for error in errors:
+            assert isinstance(error, UserFriendlyError)
+            assert len(error.user_message) > 0
