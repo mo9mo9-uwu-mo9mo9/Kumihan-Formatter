@@ -91,7 +91,7 @@ jobs:
     name: 🌐 クロスプラットフォームテスト
     if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     needs: essential-checks
     strategy:
       fail-fast: false
