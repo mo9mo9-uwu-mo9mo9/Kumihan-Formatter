@@ -28,7 +28,8 @@ class TestFileValidator:
 
     def test_validate_file_path_nonexistent_file(self):
         """Test validation of non-existent file"""
-        non_existent = Path("/non/existent/file.txt")
+        # Use platform-agnostic path that doesn't exist
+        non_existent = Path(tempfile.gettempdir()) / "non_existent_test_file.txt"
         issues = self.validator.validate_file_path(non_existent)
 
         assert len(issues) == 1
@@ -55,6 +56,7 @@ class TestFileValidator:
         ) as temp_file:
             temp_file.write("Test content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -64,7 +66,10 @@ class TestFileValidator:
                 error_issues = [issue for issue in issues if issue.level == "error"]
                 assert len(error_issues) == 0
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_path_non_txt_extension(self):
         """Test validation of file with non-.txt extension"""
@@ -73,6 +78,7 @@ class TestFileValidator:
         ) as temp_file:
             temp_file.write("Test content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -90,7 +96,10 @@ class TestFileValidator:
                 assert len(extension_warnings) == 1
                 assert ".md" in extension_warnings[0].message
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_path_invalid_encoding(self):
         """Test validation of file with invalid UTF-8 encoding"""
@@ -100,6 +109,7 @@ class TestFileValidator:
             # Write invalid UTF-8 bytes
             temp_file.write(b"\xff\xfe\x00\x49\x6e\x76\x61\x6c\x69\x64")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -119,7 +129,10 @@ class TestFileValidator:
                     # If no encoding error, at least ensure we didn't crash
                     assert isinstance(issues, list)
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_path_permission_denied(self):
         """Test validation when file permissions are denied"""
@@ -129,25 +142,35 @@ class TestFileValidator:
         ) as temp_file:
             temp_file.write("Test content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
-                # Remove read permission
-                os.chmod(temp_file.name, 0o000)
+                # Remove read permission (may not work on Windows)
+                try:
+                    os.chmod(temp_file.name, 0o000)
+                    issues = self.validator.validate_file_path(file_path)
 
-                issues = self.validator.validate_file_path(file_path)
-
-                # Should have permission error
-                permission_errors = [
-                    issue for issue in issues if issue.code == "PERMISSION_DENIED"
-                ]
-                if permission_errors:  # May not work on all systems
-                    assert len(permission_errors) == 1
-                    assert permission_errors[0].level == "error"
+                    # Should have permission error
+                    permission_errors = [
+                        issue for issue in issues if issue.code == "PERMISSION_DENIED"
+                    ]
+                    if permission_errors:  # May not work on all systems
+                        assert len(permission_errors) == 1
+                        assert permission_errors[0].level == "error"
+                except (OSError, PermissionError):
+                    # Permissions can't be changed on this system (e.g., Windows)
+                    pytest.skip("Permission modification not supported on this system")
             finally:
                 # Restore permissions to delete file
-                os.chmod(temp_file.name, 0o644)
-                os.unlink(temp_file.name)
+                try:
+                    os.chmod(temp_file.name, 0o644)
+                except (OSError, PermissionError):
+                    pass
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_output_path_valid(self):
         """Test validation of valid output path"""
@@ -161,7 +184,10 @@ class TestFileValidator:
 
     def test_validate_output_path_missing_directory(self):
         """Test validation when output directory doesn't exist"""
-        non_existent_dir = Path("/non/existent/directory")
+        # Use platform-agnostic path that doesn't exist
+        import uuid
+        unique_name = f"non_existent_directory_test_{uuid.uuid4().hex[:8]}"
+        non_existent_dir = Path(tempfile.gettempdir()) / unique_name
         output_path = non_existent_dir / "output.html"
         issues = self.validator.validate_output_path(output_path)
 
@@ -173,6 +199,7 @@ class TestFileValidator:
     def test_validate_output_path_existing_file(self):
         """Test validation when output file already exists"""
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as temp_file:
+            temp_file.close()  # Explicitly close file for Windows compatibility
             try:
                 output_path = Path(temp_file.name)
                 issues = self.validator.validate_output_path(output_path)
@@ -184,10 +211,19 @@ class TestFileValidator:
                 assert len(existing_warnings) == 1
                 assert existing_warnings[0].level == "warning"
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_output_path_write_permission_denied(self):
         """Test validation when write permission is denied"""
+        # Skip on Windows as permission model is different
+        import platform
+
+        if platform.system() == "Windows":
+            pytest.skip("Permission tests not reliable on Windows")
+
         # Create read-only directory
         with tempfile.TemporaryDirectory() as temp_dir:
             readonly_dir = Path(temp_dir) / "readonly"
@@ -220,7 +256,7 @@ class TestFileValidator:
                 # Restore permissions to allow cleanup
                 try:
                     os.chmod(readonly_dir, 0o755)
-                except:
+                except (OSError, PermissionError):
                     pass
 
     def test_edge_cases(self):
@@ -244,6 +280,7 @@ class TestFileValidator:
         ) as temp_file:
             temp_file.write("Test content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -258,7 +295,10 @@ class TestFileValidator:
                     if issue.code:
                         assert isinstance(issue.code, str)
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_multiple_issues(self):
         """Test file that generates multiple validation issues"""
@@ -267,6 +307,7 @@ class TestFileValidator:
         ) as temp_file:
             temp_file.write("Test content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -282,4 +323,7 @@ class TestFileValidator:
                 error_issues = [issue for issue in issues if issue.level == "error"]
                 assert len(error_issues) == 0
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues

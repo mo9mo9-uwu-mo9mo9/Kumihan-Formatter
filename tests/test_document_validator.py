@@ -190,6 +190,7 @@ class TestDocumentValidator:
         ) as temp_file:
             temp_file.write("# Valid Content\n\nThis is valid content.")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -212,11 +213,15 @@ class TestDocumentValidator:
                     issues = self.validator.validate_file(file_path)
                     assert len(issues) == 0
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_not_found(self):
         """Test validation of non-existent file"""
-        non_existent_file = Path("/non/existent/file.txt")
+        # Use platform-agnostic path that doesn't exist
+        non_existent_file = Path(tempfile.gettempdir()) / "non_existent_test_file.txt"
 
         file_not_found_issue = ValidationIssue(
             "error", "file", "File not found", code="FILE_NOT_FOUND"
@@ -239,6 +244,7 @@ class TestDocumentValidator:
         ) as temp_file:
             temp_file.write("Content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -266,11 +272,15 @@ class TestDocumentValidator:
                     assert len(read_errors) == 1
                     assert "Simulated read error" in read_errors[0].message
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_output_path(self):
         """Test output path validation delegation"""
-        output_path = Path("/tmp/output.html")
+        # Use platform-agnostic temp directory
+        output_path = Path(tempfile.gettempdir()) / "output.html"
         expected_issues = [
             ValidationIssue("warning", "file", "Output warning", code="OUTPUT_WARNING")
         ]
@@ -435,6 +445,7 @@ class TestDocumentValidator:
         ) as temp_file:
             temp_file.write("Valid content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -459,7 +470,10 @@ class TestDocumentValidator:
                     assert len(issues) == 0
                     assert len(self.validator.issues) == 0
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_integration_with_all_validators(self):
         """Test integration between all validator components"""

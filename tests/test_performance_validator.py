@@ -45,6 +45,7 @@ class TestPerformanceValidator:
         ) as temp_file:
             temp_file.write("Normal content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -58,7 +59,10 @@ class TestPerformanceValidator:
                 ]
                 assert len(size_issues) == 0
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_size_empty(self):
         """Test validation of empty file"""
@@ -67,6 +71,7 @@ class TestPerformanceValidator:
         ) as temp_file:
             # Don't write anything - file is empty
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -78,7 +83,10 @@ class TestPerformanceValidator:
                 assert empty_issues[0].level == "error"
                 assert empty_issues[0].category == "performance"
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_size_large(self):
         """Test validation of large file (using patch)"""
@@ -87,6 +95,7 @@ class TestPerformanceValidator:
         ) as temp_file:
             temp_file.write("Content")
             temp_file.flush()
+            temp_file.close()  # Explicitly close file for Windows compatibility
 
             try:
                 file_path = Path(temp_file.name)
@@ -110,11 +119,15 @@ class TestPerformanceValidator:
                     assert large_issues[0].category == "performance"
                     assert "20.0MB" in large_issues[0].message
             finally:
-                os.unlink(temp_file.name)
+                try:
+                    os.unlink(temp_file.name)
+                except (OSError, FileNotFoundError):
+                    pass  # Handle Windows file locking issues
 
     def test_validate_file_size_nonexistent(self):
         """Test validation of non-existent file"""
-        non_existent_file = Path("/non/existent/file.txt")
+        # Use platform-agnostic path that doesn't exist
+        non_existent_file = Path(tempfile.gettempdir()) / "non_existent_test_file.txt"
         issues = self.validator.validate_file_size(non_existent_file)
 
         # Should have no issues (file doesn't exist to check)
