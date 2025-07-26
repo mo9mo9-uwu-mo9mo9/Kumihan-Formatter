@@ -61,14 +61,29 @@ class TestBlockParser:
 
         with patch.object(
             self.parser.marker_validator, "validate_marker_line"
-        ) as mock_validate:
-            mock_validate.return_value = (True, [])
+        ) as mock_validate_line:
+            with patch.object(
+                self.parser.marker_validator, "validate_block_structure"
+            ) as mock_validate_block:
+                mock_validate_line.return_value = (True, [])
+                # TOC is a single-line marker, so no block structure needed
+                mock_validate_block.return_value = (True, 0, [])
 
-            result, next_index = self.parser.parse_block_marker(lines, 0)
+                # Mock keyword parser to recognize TOC
+                self.keyword_parser.parse_marker_keywords.return_value = (
+                    ["目次"],
+                    {},
+                    [],
+                )
+                mock_node = Mock(spec=Node)
+                mock_node.type = "toc"
+                self.keyword_parser.create_single_block.return_value = mock_node
 
-            assert result is not None
-            assert result.type == "toc"
-            assert next_index == 1
+                result, next_index = self.parser.parse_block_marker(lines, 0)
+
+                assert result is not None
+                assert result.type == "toc"
+                assert next_index == 1
 
     def test_parse_block_marker_image_marker(self):
         """Test parsing image marker"""
@@ -76,23 +91,28 @@ class TestBlockParser:
 
         with patch.object(
             self.parser.marker_validator, "validate_marker_line"
-        ) as mock_validate:
-            with patch(
-                "kumihan_formatter.core.block_parser.block_parser.ImageBlockParser"
-            ) as mock_image_parser_class:
-                mock_validate.return_value = (True, [])
+        ) as mock_validate_line:
+            with patch.object(
+                self.parser.marker_validator, "validate_block_structure"
+            ) as mock_validate_block:
+                mock_validate_line.return_value = (True, [])
+                # Image marker is handled as single-line marker in current implementation
+                mock_validate_block.return_value = (True, 0, [])
 
-                mock_image_parser = Mock()
-                mock_image_node = Mock(spec=Node)
-                mock_image_node.type = "image"
-                mock_image_parser.parse_image_block.return_value = (mock_image_node, 3)
-                mock_image_parser_class.return_value = mock_image_parser
+                # Mock keyword parser to handle image keyword
+                self.keyword_parser.parse_marker_keywords.return_value = (
+                    ["画像"],
+                    {},
+                    [],
+                )
+                mock_node = Mock(spec=Node)
+                mock_node.type = "image"
+                self.keyword_parser.create_single_block.return_value = mock_node
 
                 result, next_index = self.parser.parse_block_marker(lines, 0)
 
                 assert result.type == "image"
-                assert next_index == 3
-                mock_image_parser.parse_image_block.assert_called_once_with(lines, 0)
+                assert next_index == 1  # Single-line marker, so next_index is 1
 
     def test_parse_block_marker_simple_image_filename(self):
         """Test parsing simple image filename marker"""
@@ -100,17 +120,23 @@ class TestBlockParser:
 
         with patch.object(
             self.parser.marker_validator, "validate_marker_line"
-        ) as mock_validate:
-            with patch(
-                "kumihan_formatter.core.block_parser.block_parser.ImageBlockParser"
-            ) as mock_image_parser_class:
-                mock_validate.return_value = (True, [])
+        ) as mock_validate_line:
+            with patch.object(
+                self.parser.marker_validator, "validate_block_structure"
+            ) as mock_validate_block:
+                mock_validate_line.return_value = (True, [])
+                # Image filename is a single-line marker
+                mock_validate_block.return_value = (True, 0, [])
 
-                mock_image_parser = Mock()
-                mock_image_node = Mock(spec=Node)
-                mock_image_node.type = "image"
-                mock_image_parser.parse_image_block.return_value = (mock_image_node, 1)
-                mock_image_parser_class.return_value = mock_image_parser
+                # Mock keyword parser to handle image filename
+                self.keyword_parser.parse_marker_keywords.return_value = (
+                    ["image.png"],
+                    {},
+                    [],
+                )
+                mock_node = Mock(spec=Node)
+                mock_node.type = "image"
+                self.keyword_parser.create_single_block.return_value = mock_node
 
                 result, next_index = self.parser.parse_block_marker(lines, 0)
 

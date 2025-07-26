@@ -70,16 +70,30 @@ class TestParser:
         """Test parsing comment lines (lines starting with #)"""
         comment_text = "# This is a comment\nActual content\n# Another comment"
 
-        with patch.object(self.parser.block_parser, "parse_paragraph") as mock_parse:
-            mock_node = Mock(spec=Node)
-            mock_node.type = "paragraph"
-            mock_parse.return_value = (mock_node, 2)  # Skip to line after comment
+        with patch.object(self.parser.block_parser, "skip_empty_lines") as mock_skip:
+            with patch.object(
+                self.parser.block_parser, "is_opening_marker"
+            ) as mock_is_marker:
+                with patch.object(
+                    self.parser.list_parser, "is_list_line"
+                ) as mock_is_list:
+                    with patch.object(
+                        self.parser.block_parser, "parse_paragraph"
+                    ) as mock_parse:
+                        # Setup mocks
+                        mock_skip.side_effect = lambda lines, idx: idx  # Don't skip
+                        mock_is_marker.return_value = False
+                        mock_is_list.return_value = ""
 
-            result = self.parser.parse(comment_text)
+                        mock_node = Mock(spec=Node)
+                        mock_node.type = "paragraph"
+                        mock_parse.return_value = (mock_node, 3)  # Parse to end
 
-            # Should skip comment lines and parse only actual content
-            assert len(result) == 1
-            mock_parse.assert_called_once()
+                        result = self.parser.parse(comment_text)
+
+                        # Should skip comment lines and parse only actual content
+                        assert len(result) == 1
+                        mock_parse.assert_called_once()
 
     def test_parse_block_marker(self):
         """Test parsing block markers"""

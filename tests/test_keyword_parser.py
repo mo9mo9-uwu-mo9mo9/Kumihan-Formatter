@@ -160,7 +160,7 @@ class TestKeywordParser:
 
         assert isinstance(result, Node)
         assert result.type == "div"
-        assert hasattr(result, "css_class")
+        assert result.attributes.get("class") == "box"
 
     def test_create_single_block_with_summary(self):
         """Test creating single block with summary attribute"""

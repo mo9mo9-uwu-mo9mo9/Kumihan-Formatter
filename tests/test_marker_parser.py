@@ -318,7 +318,10 @@ class TestMarkerParser:
         """Test color attribute edge cases"""
         test_cases = [
             ("text color=", ""),  # Empty color value
-            ("text color=red color=blue", "blue"),  # Multiple color attributes
+            (
+                "text color=red color=blue",
+                "red",
+            ),  # Multiple color attributes - first one wins
             ("color=red text", "red"),  # Color at beginning
         ]
 

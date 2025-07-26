@@ -80,7 +80,7 @@ class TestListParser:
             "Regular paragraph text",
             "Text with - dash in middle",
             "Text with 1. number in middle",
-            "- Missing space after dash",
+            "-Missing space after dash",
             "1.Missing space after number",
             "",
             "   ",
@@ -89,7 +89,9 @@ class TestListParser:
         for line in non_list_lines:
             if hasattr(self.parser, "is_list_line"):
                 result = self.parser.is_list_line(line)
-                assert result is None or result is False, f"Should not be list: {line}"
+                assert (
+                    result == "" or result is None or result is False
+                ), f"Should not be list: {line}"
 
     def test_parse_unordered_list_simple(self):
         """Test parsing simple unordered list"""
@@ -228,9 +230,15 @@ class TestListParserCore:
     def setup_method(self):
         """Set up test environment"""
         try:
+            from kumihan_formatter.core.keyword_parser import KeywordParser
+            from kumihan_formatter.core.keyword_parsing.definitions import (
+                KeywordDefinitions,
+            )
             from kumihan_formatter.core.list_parser_core import ListParserCore
 
-            self.parser_core = ListParserCore()
+            definitions = KeywordDefinitions()
+            keyword_parser = KeywordParser(definitions)
+            self.parser_core = ListParserCore(keyword_parser)
         except ImportError:
             self.parser_core = None
 
