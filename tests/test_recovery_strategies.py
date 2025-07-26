@@ -676,9 +676,9 @@ class TestRecoveryManager:
             user_message="ファイルが見つかりません",
             solution=ErrorSolution(
                 quick_fix="ファイルパスを確認してください",
-                detailed_steps=["ファイルが存在するか確認"]
+                detailed_steps=["ファイルが存在するか確認"],
             ),
-            technical_details="FileNotFoundError"
+            technical_details="FileNotFoundError",
         )
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -713,9 +713,9 @@ class TestRecoveryManager:
             user_message="不明なエラー",
             solution=ErrorSolution(
                 quick_fix="システム管理者に連絡してください",
-                detailed_steps=["ログを確認"]
+                detailed_steps=["ログを確認"],
             ),
-            technical_details="ValueError"
+            technical_details="ValueError",
         )
         context = {}
 
@@ -745,9 +745,9 @@ class TestRecoveryManager:
             user_message="ファイルが見つかりません",
             solution=ErrorSolution(
                 quick_fix="ファイルパスを確認してください",
-                detailed_steps=["ファイルが存在するか確認"]
+                detailed_steps=["ファイルが存在するか確認"],
             ),
-            technical_details="FileNotFoundError"
+            technical_details="FileNotFoundError",
         )
         context = {"file_path": "/impossible/path/that/cannot/be/created"}
 
@@ -771,7 +771,7 @@ class TestRecoveryManager:
             },
             {
                 "error_type": "MemoryError",
-                "strategy": "MemoryErrorRecoveryStrategy", 
+                "strategy": "MemoryErrorRecoveryStrategy",
                 "success": True,
             },
             {
@@ -805,7 +805,7 @@ class TestRecoveryManager:
 
     def test_priority_based_recovery(self):
         """優先度ベースの回復テスト"""
-        # Given  
+        # Given
         manager = RecoveryManager()
         from kumihan_formatter.core.error_handling.error_types import (
             ErrorCategory,
@@ -820,10 +820,9 @@ class TestRecoveryManager:
             category=ErrorCategory.UNKNOWN,
             user_message="テストエラー",
             solution=ErrorSolution(
-                quick_fix="テスト用エラー",
-                detailed_steps=["テスト用"]
+                quick_fix="テスト用エラー", detailed_steps=["テスト用"]
             ),
-            technical_details="ValueError"
+            technical_details="ValueError",
         )
 
         # Create strategies with different priorities
@@ -831,13 +830,19 @@ class TestRecoveryManager:
         high_priority_strategy.name = "HighPriorityStrategy"
         high_priority_strategy.priority = 1  # 高優先度（小さい数値）
         high_priority_strategy.can_handle.return_value = True
-        high_priority_strategy.attempt_recovery.return_value = (True, ["high priority recovery"])
+        high_priority_strategy.attempt_recovery.return_value = (
+            True,
+            ["high priority recovery"],
+        )
 
         low_priority_strategy = Mock(spec=RecoveryStrategy)
         low_priority_strategy.name = "LowPriorityStrategy"
         low_priority_strategy.priority = 10  # 低優先度（大きい数値）
         low_priority_strategy.can_handle.return_value = True
-        low_priority_strategy.attempt_recovery.return_value = (True, ["low priority recovery"])
+        low_priority_strategy.attempt_recovery.return_value = (
+            True,
+            ["low priority recovery"],
+        )
 
         # Register strategies - manager should sort by priority
         manager.strategies = [low_priority_strategy, high_priority_strategy]

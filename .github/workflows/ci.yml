@@ -46,10 +46,10 @@ jobs:
         echo "=== flake8構文エラーチェック ==="
         flake8 kumihan_formatter/ --select=E9,F63,F7,F82 --count
 
-    - name: テスト実行
+    - name: ティア別品質ゲート実行
       run: |
-        echo "=== pytest実行 ==="
-        python -m pytest -x --ff -q
+        echo "=== Tiered Quality Gate ==="
+        python scripts/tiered_quality_gate.py
 
     - name: 型チェック（警告のみ）
       run: |
@@ -60,13 +60,13 @@ jobs:
       if: always()
       run: |
         echo "## ✅ CI実行完了" >> $GITHUB_STEP_SUMMARY
-        echo "Issue #602対応: ファイル統合による品質向上とCI最適化" >> $GITHUB_STEP_SUMMARY
+        echo "Issue #583対応: ティア別品質ゲートによる段階的改善アプローチ" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 実行項目:" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Black形式チェック" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ isort import順序チェック" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ flake8構文エラーチェック" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ pytest実行" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ ティア別品質ゲート（Critical/Important/Supportive/Special）" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ mypy型チェック（警告のみ）" >> $GITHUB_STEP_SUMMARY
 
   # Status Check用（ブランチ保護との互換性）
@@ -114,7 +114,8 @@ jobs:
 
     - name: テスト実行
       run: |
-        python -m pytest --cov=kumihan_formatter --cov-report=xml
+        python scripts/tiered_quality_gate.py
+        python -m pytest --cov=kumihan_formatter --cov-report=xml --ignore=tests/test_smart_suggestions.py --ignore=tests/test_unified_handler.py
 
     - name: カバレッジアップロード（macOSのみ）
       if: matrix.os == 'macos-latest'

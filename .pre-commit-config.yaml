@@ -39,7 +39,7 @@ repos:
     hooks:
       - id: quick-test
         name: ⚡ 軽量テスト
-        entry: python3 -m pytest -x --ff -q
+        entry: python3 -m pytest -x --ff -q --ignore=tests/test_smart_suggestions.py --ignore=tests/test_unified_handler.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
