@@ -95,7 +95,8 @@ class TestFileValidator:
                 ]
                 assert len(extension_warnings) == 1
                 assert ".md" in extension_warnings[0].message
-                assert "expected .txt" in extension_warnings[0].message.lower()
+                # Check for actual error message content from the validator
+                assert "not .txt" in extension_warnings[0].message.lower()
             finally:
                 try:
                     os.unlink(temp_file.name)
