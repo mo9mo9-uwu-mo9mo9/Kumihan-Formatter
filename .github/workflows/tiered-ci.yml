@@ -52,8 +52,14 @@ jobs:
     - name: Critical Tierテスト実行
       run: |
         echo "=== Critical Tier Tests (並列実行) ==="
-        python -m pytest -n auto tests/unit/test_commands_core.py tests/unit/test_core_parser_advanced.py \
-          --durations=5 --maxfail=3 --timeout=60 -v
+        if [ -f "tests/unit/test_commands_core.py" ] && [ -f "tests/unit/test_core_parser_advanced.py" ]; then
+          python -m pytest -n auto tests/unit/test_commands_core.py tests/unit/test_core_parser_advanced.py \
+            --durations=5 --maxfail=3 --timeout=60 -v
+        else
+          echo "⚠️ Critical Tierテストファイルが見つかりません。全unit テストを実行します。"
+          python -m pytest -n auto tests/unit/ -m "not slow and not gui" \
+            --durations=5 --maxfail=3 --timeout=60 -v
+        fi
 
   # Important Tier: PR時のみ実行
   important-tier:
