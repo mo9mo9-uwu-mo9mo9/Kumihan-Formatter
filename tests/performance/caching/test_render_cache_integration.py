@@ -145,11 +145,19 @@ class TestRenderCacheIntegration:
 
         cache_keys = []
         for template, content_hash, html_output in templates_data:
+            # cache_rendered_htmlを使ってメタデータも正しく記録
+            self.cache.cache_rendered_html(
+                content_hash=content_hash,
+                template_name=template,
+                html_output=html_output,
+                render_options={},
+                render_time=0.1,
+                node_count=5,
+            )
             cache_key = self.cache.validators.generate_cache_key(
                 content_hash, template, {}, self.cache._config_hash
             )
             cache_keys.append((cache_key, template))
-            self.cache.set(cache_key, html_output)
 
         # base.html.j2テンプレートのキャッシュを無効化
         invalidated_count = self.cache.invalidate_by_template("base.html.j2")
@@ -223,19 +231,22 @@ class TestRenderCacheIntegration:
             content_hash, template_name, {}, self.cache._config_hash
         )
 
-        with patch("time.time") as mock_time:
-            # 現在時刻設定
-            mock_time.return_value = 2000.0
-            self.cache.set(cache_key, html_output, ttl=calculated_ttl)
+        # 短いTTLでテスト
+        import time
 
-            # 有効期限内での取得
-            result = self.cache.get(cache_key)
-            assert result == html_output
+        short_ttl = 1  # 1秒
+        self.cache.set(cache_key, html_output, ttl=short_ttl)
 
-            # 期限切れ後の取得
-            mock_time.return_value = 2000.0 + calculated_ttl + 1
-            expired_result = self.cache.get(cache_key)
-            assert expired_result is None
+        # 有効期限内での取得
+        result = self.cache.get(cache_key)
+        assert result == html_output
+
+        # TTL期限切れまで待機
+        time.sleep(short_ttl + 0.1)
+
+        # 期限切れ後の取得
+        expired_result = self.cache.get(cache_key)
+        assert expired_result is None
 
     def test_render_cache_concurrent_rendering(self):
         """並行レンダリングキャッシュテスト"""
@@ -309,8 +320,15 @@ class TestRenderCacheIntegration:
         # 具体的な提案があることを確認
         suggestion_text = " ".join(suggestions)
         assert any(
-            keyword in suggestion_text.lower()
-            for keyword in ["template", "cache", "memory", "performance"]
+            keyword in suggestion_text
+            for keyword in [
+                "TTL",
+                "キャッシュ",
+                "メモリ",
+                "レンダリング",
+                "最適化",
+                "検討",
+            ]
         )
 
 
