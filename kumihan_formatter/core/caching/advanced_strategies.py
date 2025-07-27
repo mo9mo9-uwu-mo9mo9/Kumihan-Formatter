@@ -72,3 +72,41 @@ class PerformanceAwareStrategy(CacheStrategy):
 
         # アクセス頻度と最新アクセスの組み合わせ
         return -(frequency_score * 0.7 + access_score * 0.3)
+
+
+class FrequencyBasedStrategy(CacheStrategy):
+    """頻度ベース戦略 - アクセス頻度に基づく管理"""
+
+    def __init__(self, frequency_threshold: int = 5):
+        """
+        Args:
+            frequency_threshold: 最低保持アクセス回数閾値
+        """
+        self.frequency_threshold = frequency_threshold
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        # 期限切れまたは低頻度アクセスで削除対象
+        return entry.is_expired() or entry.access_count < self.frequency_threshold
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # アクセス頻度が低いほど優先度が低い（先に削除）
+        return float(entry.access_count)
+
+
+class SizeAwareStrategy(CacheStrategy):
+    """サイズ認識戦略 - ファイルサイズを考慮した管理"""
+
+    def __init__(self, max_size_mb: float = 10.0):
+        """
+        Args:
+            max_size_mb: 大きなファイルとみなすサイズ閾値（MB）
+        """
+        self.max_size_bytes = max_size_mb * 1024 * 1024
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        # 期限切れまたは大きなファイルで削除対象
+        return entry.is_expired() or (entry.size_bytes or 0) > self.max_size_bytes
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # ファイルサイズが大きいほど優先度が低い（先に削除）
+        return float(entry.size_bytes or 0)

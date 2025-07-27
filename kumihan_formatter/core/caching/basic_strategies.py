@@ -53,3 +53,14 @@ class TTLStrategy(CacheStrategy):
     def get_priority(self, entry: CacheEntry) -> float:
         # 作成時刻が古いほど優先度が低い
         return entry.created_at.timestamp()
+
+
+class FIFOStrategy(CacheStrategy):
+    """First In First Out (先入先出) 戦略"""
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        return entry.is_expired()
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # 作成時刻が古いほど優先度が低い（先に削除）
+        return entry.created_at.timestamp()
