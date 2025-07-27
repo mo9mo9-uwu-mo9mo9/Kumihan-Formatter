@@ -62,10 +62,14 @@ class TestRenderCacheIntegration:
             content_hash = f"template_test_hash_{i}"
             html_output = f"<html><body><h1>Template {template}</h1></body></html>"
 
-            cache_key = self.cache.validators.generate_cache_key(
-                content_hash, template, {}, self.cache._config_hash
+            # cache_rendered_htmlを使用してメタデータも保存
+            self.cache.cache_rendered_html(
+                content_hash=content_hash,
+                template_name=template,
+                html_output=html_output,
+                render_time=0.1,
+                node_count=10,
             )
-            self.cache.set(cache_key, html_output)
 
         # テンプレート最適化実行
         optimization_result = self.cache.optimize_for_templates()

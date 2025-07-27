@@ -104,6 +104,8 @@ class RenderCacheAnalytics:
             "actions_taken": [],
             "space_freed": 0,
             "entries_optimized": 0,
+            "optimized_templates": [],
+            "performance_improvement": 0.0,
         }
 
         if not metadata:
@@ -130,6 +132,11 @@ class RenderCacheAnalytics:
                     optimization_report["actions_taken"].append(  # type: ignore
                         f"Removed {invalidated} entries for low-usage template: {template}"
                     )
+                    optimization_report["optimized_templates"].append(template)  # type: ignore
+
+        # パフォーマンス改善の推定値を計算
+        if optimization_report["entries_optimized"] > 0:
+            optimization_report["performance_improvement"] = min(0.2, optimization_report["entries_optimized"] * 0.01)  # type: ignore
 
         return optimization_report
 
