@@ -110,26 +110,38 @@ class TestSmartCache:
 
     def test_auto_optimization_scheduling(self):
         """自動最適化スケジューリングテスト"""
+        # 時間制御の標準化モック
+        self._mock_time_progression(
+            start_time=1000.0,
+            progression_seconds=6.0,
+            test_function=self._run_optimization_test,
+        )
+
+    def _mock_time_progression(self, start_time, progression_seconds, test_function):
+        """時間依存テストの標準化モック"""
         with patch("time.time") as mock_time:
-            mock_time.return_value = 1000.0
+            mock_time.return_value = start_time
+            test_function(mock_time, start_time, progression_seconds)
 
-            # 最適化間隔を短く設定
-            self.smart_cache.optimization_interval = 5  # 5秒間隔
+    def _run_optimization_test(self, mock_time, start_time, progression_seconds):
+        """最適化テストの実行"""
+        # 最適化間隔を短く設定
+        self.smart_cache.optimization_interval = 5  # 5秒間隔
 
-            # データを追加
-            for i in range(20):
-                self.smart_cache.put(f"key_{i}", f"value_{i}", ttl=3600)
+        # データを追加
+        for i in range(20):
+            self.smart_cache.put(f"key_{i}", f"value_{i}", ttl=3600)
 
-            # 時間を進める
-            mock_time.return_value = 1006.0  # 6秒後
+        # 時間を進める
+        mock_time.return_value = start_time + progression_seconds
 
-            # 最適化がトリガーされることを確認
-            self.smart_cache._check_auto_optimization()
+        # 最適化がトリガーされることを確認
+        self.smart_cache._check_auto_optimization()
 
-            # 最適化統計の確認
-            opt_stats = self.smart_cache.get_optimization_statistics()
-            assert opt_stats["last_optimization_time"] > 0
-            assert opt_stats["optimization_count"] > 0
+        # 最適化統計の確認
+        opt_stats = self.smart_cache.get_optimization_statistics()
+        assert opt_stats["last_optimization_time"] > 0
+        assert opt_stats["optimization_count"] > 0
 
     def test_cache_preloading_suggestions(self):
         """キャッシュプリロード提案テスト"""

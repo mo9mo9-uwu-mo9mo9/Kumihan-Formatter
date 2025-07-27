@@ -197,7 +197,7 @@ class TestCacheStorage:
 
     def test_memory_usage_calculation(self):
         """メモリ使用量計算テスト"""
-        # 初期状態
+        # 初期状態での使用量確認
         assert self.storage.get_memory_usage_bytes() == 0
 
         # エントリを追加

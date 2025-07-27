@@ -330,13 +330,13 @@ class TestCacheStrategiesIntegration:
             cache.clear()
 
     def test_strategy_concurrent_access(self):
-        """戦略の並行アクセステスト"""
+        """戦略の並行アクセステスト - 高負荷対応版"""
         import threading
 
         cache = SmartCache(
             name="concurrent_strategy_test",
-            max_memory_entries=20,
-            max_memory_mb=10.0,
+            max_memory_entries=50,  # より多くのエントリを許可
+            max_memory_mb=20.0,  # メモリ上限も増加
             strategy=AdaptiveStrategy(),
             cache_dir=self.temp_dir,
         )
@@ -347,9 +347,9 @@ class TestCacheStrategiesIntegration:
         def concurrent_strategy_operation(thread_id):
             try:
                 # 各スレッドで独立した操作
-                for i in range(10):
+                for i in range(15):  # 操作数増加
                     key = f"thread_{thread_id}_key_{i}"
-                    value = f"thread_{thread_id}_value_{i}"
+                    value = f"thread_{thread_id}_value_{i}" * 10  # データサイズ増加
 
                     cache.set(key, value)
                     retrieved_value = cache.get(key)
@@ -359,9 +359,10 @@ class TestCacheStrategiesIntegration:
             except Exception as e:
                 errors.append((thread_id, str(e)))
 
-        # 並行実行
+        # 高負荷並行実行（スレッド数を3倍に増加）
         threads = []
-        for i in range(5):
+        thread_count = 15  # 5 → 15スレッドに増加
+        for i in range(thread_count):
             thread = threading.Thread(target=concurrent_strategy_operation, args=(i,))
             threads.append(thread)
             thread.start()
@@ -370,14 +371,20 @@ class TestCacheStrategiesIntegration:
         for thread in threads:
             thread.join()
 
-        # 結果確認
-        assert len(errors) == 0, f"並行アクセスでエラーが発生: {errors}"
-        assert len(results) == 50  # 5スレッド × 10操作
-        assert all(success for _, success in results), "一部の並行操作が失敗"
+        # 結果確認（高負荷での検証）
+        assert len(errors) == 0, f"高負荷並行アクセスでエラーが発生: {errors}"
+        expected_operations = thread_count * 15  # 15スレッド × 15操作 = 225操作
+        assert len(results) == expected_operations
+        assert all(success for _, success in results), "高負荷並行操作の一部が失敗"
 
-        # 戦略が正常に動作していることを確認
+        # 戦略が高負荷でも正常に動作していることを確認
         stats = cache.get_stats()
-        assert stats["entry_count"] <= 20
+        assert stats["entry_count"] <= 50  # 上限内であることを確認
+
+        # 高負荷テストの統計情報を記録
+        print(
+            f"高負荷テスト完了: {thread_count}スレッド, {expected_operations}操作, エラー数: {len(errors)}"
+        )
 
         cache.clear()
 
