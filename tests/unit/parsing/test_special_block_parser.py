@@ -16,7 +16,8 @@ class TestSpecialBlockParser:
 
     def setup_method(self):
         """テスト前のセットアップ"""
-        self.special_parser = SpecialBlockParser()
+        self.mock_block_parser = Mock()
+        self.special_parser = SpecialBlockParser(self.mock_block_parser)
 
     def test_special_parser_initialization(self):
         """特殊パーサー初期化テスト"""
@@ -562,3 +563,178 @@ class TestSpecialBlockParser:
             assert (
                 success_rate >= 0.8
             ), f"ワーカー{worker_id}の成功率が低い: {success_rate:.1%}"
+
+    def test_parse_table_block_pipe_separated(self):
+        """パイプ区切りテーブル解析テスト"""
+        lines = [
+            ";;;テーブル;;;",
+            "| 名前 | 年齢 | 職業 |",
+            "| 田中 | 30 | エンジニア |",
+            "| 佐藤 | 25 | デザイナー |",
+            ";;;",
+        ]
+
+        node, next_index = self.special_parser.parse_table_block(lines, 0)
+
+        assert node.type == "table"
+        assert next_index == 5
+
+        # テーブル構造の確認
+        table_content = node.content
+        assert len(table_content) == 2  # thead + tbody
+
+        # ヘッダー確認
+        thead = table_content[0]
+        assert thead.type == "thead"
+
+        # データ行確認
+        tbody = table_content[1]
+        assert tbody.type == "tbody"
+        assert len(tbody.content) == 2  # 2つのデータ行
+
+    def test_parse_table_block_comma_separated(self):
+        """カンマ区切りテーブル解析テスト"""
+        lines = [
+            ";;;テーブル;;;",
+            "項目, 値, 説明",
+            "データ1, 100, 説明1",
+            "データ2, 200, 説明2",
+            ";;;",
+        ]
+
+        node, next_index = self.special_parser.parse_table_block(lines, 0)
+
+        assert node.type == "table"
+        assert next_index == 5
+
+        # テーブル構造の確認
+        table_content = node.content
+        assert len(table_content) == 2  # thead + tbody
+
+    def test_parse_table_block_single_column(self):
+        """単一列テーブル解析テスト"""
+        lines = [
+            ";;;テーブル;;;",
+            "タイトル",
+            "データ1",
+            "データ2",
+            "データ3",
+            ";;;",
+        ]
+
+        node, next_index = self.special_parser.parse_table_block(lines, 0)
+
+        assert node.type == "table"
+        assert next_index == 6
+
+        # 単一列テーブルの確認
+        table_content = node.content
+        assert len(table_content) == 2  # thead + tbody
+
+    def test_parse_table_block_no_closing_marker(self):
+        """閉じマーカーなしテーブル解析テスト"""
+        lines = [
+            ";;;テーブル;;;",
+            "| 名前 | 年齢 |",
+            "| 田中 | 30 |",
+            # 閉じマーカーなし
+        ]
+
+        node, next_index = self.special_parser.parse_table_block(lines, 0)
+
+        assert node.type == "error"
+        assert "閉じマーカーが見つかりません" in node.content
+        assert next_index == 1
+
+    def test_parse_table_block_empty_content(self):
+        """空内容テーブル解析テスト"""
+        lines = [
+            ";;;テーブル;;;",
+            ";;;",
+        ]
+
+        node, next_index = self.special_parser.parse_table_block(lines, 0)
+
+        assert node.type == "error"
+        assert "内容がありません" in node.content
+        assert next_index == 2
+
+    def test_looks_like_header_method(self):
+        """ヘッダー判定メソッドテスト"""
+        # ヘッダーらしい行
+        header_rows = [
+            ["名前", "年齢", "職業"],
+            ["項目", "値", "説明"],
+            ["タイトル", "内容"],
+            ["ID", "データ", "作成日"],
+            ["商品名", "価格", "在庫数"],  # 混合パターン
+        ]
+
+        for row in header_rows:
+            assert self.special_parser._looks_like_header(row) == True
+
+        # データ行らしい行（数値が70%以上）
+        data_rows = [
+            ["123", "456", "789"],  # 100% 数値
+            ["100", "200"],  # 100% 数値
+            ["1.5", "2.5", "3.5"],  # 100% 数値
+            ["田中", "100", "200"],  # 66% 数値（ヘッダーと判定される）
+        ]
+
+        for i, row in enumerate(data_rows[:3]):  # 純粋な数値行のみテスト
+            result = self.special_parser._looks_like_header(row)
+            assert result == False, f"数値行 {row} がヘッダーと誤判定された"
+
+    def test_is_numeric_value_method(self):
+        """数値判定メソッドテスト"""
+        # 数値として認識されるべき値
+        numeric_values = [
+            "123",
+            "123.45",
+            "1,234",
+            "1,234.56",
+            "-123",
+            "+123",
+            "50%",
+            "¥1000",
+            "$100",
+            "€200",
+        ]
+
+        for value in numeric_values:
+            assert (
+                self.special_parser._is_numeric_value(value) == True
+            ), f"{value} が数値と認識されない"
+
+        # 数値として認識されないべき値
+        non_numeric_values = [
+            "名前",
+            "abc123",
+            "123abc",
+            "商品A",
+            "未定",
+            "",
+            "N/A",
+        ]
+
+        for value in non_numeric_values:
+            assert (
+                self.special_parser._is_numeric_value(value) == False
+            ), f"{value} が数値と誤認識された"
+
+    def test_enhanced_header_detection(self):
+        """改善されたヘッダー検出テスト"""
+        # 複雑なケース
+        test_cases = [
+            # (行データ, 期待されるヘッダー判定結果)
+            (["商品", "100", "200"], True),  # 混合（33% 数値）
+            (["100", "200", "商品"], True),  # 混合（66% 数値）
+            (["100", "200", "300"], False),  # 純粋数値（100% 数値）
+            (["¥100", "¥200", "¥300"], False),  # 通貨形式（100% 数値）
+            (["50%", "60%", "70%"], False),  # パーセント（100% 数値）
+            (["名前", "価格", "数量"], True),  # 典型的ヘッダー（0% 数値）
+        ]
+
+        for row, expected in test_cases:
+            result = self.special_parser._looks_like_header(row)
+            assert result == expected, f"行 {row}: 期待値 {expected}, 実際 {result}"
