@@ -156,7 +156,14 @@ class RenderCacheAnalytics:
         """
         return {
             "timestamp": datetime.now().isoformat(),
+            "cache_statistics": statistics,
             "cache_performance": statistics,
+            "template_usage": self.analyze_template_usage(metadata),
+            "performance_metrics": {
+                "hit_rate": statistics.get("hit_rate", 0.0),
+                "avg_render_time": statistics.get("avg_render_time", 0.0),
+                "cache_size": statistics.get("entry_count", 0),
+            },
             "optimization_suggestions": self.generate_optimization_suggestions(
                 statistics
             ),
