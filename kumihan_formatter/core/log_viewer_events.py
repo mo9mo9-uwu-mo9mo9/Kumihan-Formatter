@@ -156,9 +156,9 @@ class LogViewerEventHandler:
                 if not log_file_path.is_file():
                     self.ui.set_status("指定されたパスはファイルではありません")
                     return
-                
+
                 log_file = str(log_file_path)
-                
+
                 # プラットフォーム別の安全なコマンド実行
                 if platform.system() == "Darwin":  # macOS
                     subprocess.run(["open", "-t", "--", log_file], check=True)

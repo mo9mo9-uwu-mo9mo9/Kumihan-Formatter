@@ -111,14 +111,16 @@ class FileController:
             if not directory_path.is_dir():
                 debug(f"Path is not a directory: {directory_path}")
                 return
-            
+
             # プラットフォーム別の安全なコマンド実行
             if platform.system() == "Darwin":  # macOS
                 subprocess.run(["open", "--", str(directory_path)], check=True)
             elif platform.system() == "Windows":  # Windows
                 # Windowsではexplorerはシェルインジェクションに脆弱性があるため、
                 # 絶対パスを使用し、追加の引数を防ぐ
-                subprocess.run(["explorer.exe", str(directory_path)], check=True, shell=False)
+                subprocess.run(
+                    ["explorer.exe", str(directory_path)], check=True, shell=False
+                )
             else:  # Linux
                 subprocess.run(["xdg-open", str(directory_path)], check=True)
         except subprocess.CalledProcessError as e:
