@@ -1,0 +1,165 @@
+# ティア別CI実行 - Issue #610対応
+name: tiered-ci
+run-name: 🏎️ Tiered CI Pipeline - ${{ github.event.pull_request.title || github.ref }}
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      test_tier:
+        description: 'テスト実行ティア'
+        required: false
+        default: 'critical'
+        type: choice
+        options:
+        - critical
+        - important
+        - full
+
+jobs:
+  # Critical Tier: 高速実行（全PR・プッシュ）
+  critical-tier:
+    name: 🚀 Critical Tier Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+
+    - name: Pythonセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: キャッシュ設定
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          .pytest_cache
+        key: ${{ runner.os }}-pytest-${{ hashFiles('**/pyproject.toml') }}-${{ hashFiles('tests/**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pytest-
+
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Critical Tierテスト実行
+      run: |
+        echo "=== Critical Tier Tests (並列実行) ==="
+        python -m pytest -n auto tests/unit/test_commands_core.py tests/unit/test_core_parser_advanced.py \
+          --durations=5 --maxfail=3 --timeout=60 -v
+
+  # Important Tier: PR時のみ実行
+  important-tier:
+    name: 📊 Important Tier Tests
+    if: github.event_name == 'pull_request' || github.event.inputs.test_tier == 'important' || github.event.inputs.test_tier == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    needs: critical-tier
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+
+    - name: Pythonセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: キャッシュ設定
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          .pytest_cache
+        key: ${{ runner.os }}-pytest-${{ hashFiles('**/pyproject.toml') }}-${{ hashFiles('tests/**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pytest-
+
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Important Tierテスト実行
+      run: |
+        echo "=== Important Tier Tests (並列実行) ==="
+        python -m pytest -n auto tests/unit/test_rendering_advanced.py tests/unit/test_validation_advanced.py \
+          --durations=10 --maxfail=5 --timeout=120 -v
+
+  # Full Tests: mainブランチまたは手動実行時のみ
+  full-tier:
+    name: 🔬 Full Test Suite
+    if: github.ref == 'refs/heads/main' || github.event.inputs.test_tier == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [critical-tier, important-tier]
+    strategy:
+      matrix:
+        test-group: [unit, integration]
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+
+    - name: Pythonセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: キャッシュ設定
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          .pytest_cache
+        key: ${{ runner.os }}-pytest-full-${{ hashFiles('**/pyproject.toml') }}-${{ hashFiles('tests/**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pytest-
+
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: 全テスト実行
+      run: |
+        if [ "${{ matrix.test-group }}" == "unit" ]; then
+          echo "=== Unit Tests (並列実行) ==="
+          python -m pytest -n auto tests/unit/ --cov=kumihan_formatter --cov-report=xml \
+            --durations=10 --maxfail=10 -m "not slow and not gui"
+        else
+          echo "=== Integration Tests (並列実行) ==="
+          python -m pytest -n auto tests/integration/ --durations=10 --maxfail=5
+        fi
+
+    - name: カバレッジアップロード
+      if: matrix.test-group == 'unit'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Status Check用
+  status-check:
+    name: tiered-ci
+    runs-on: ubuntu-latest
+    needs: [critical-tier, important-tier]
+    if: always()
+    steps:
+    - name: Status Check
+      run: |
+        if [ "${{ needs.critical-tier.result }}" == "success" ] &&
+           [ "${{ needs.important-tier.result }}" == "success" ] || [ "${{ needs.important-tier.result }}" == "skipped" ]; then
+          echo "✅ ティア別CI成功"
+          exit 0
+        else
+          echo "❌ ティア別CI失敗"
+          exit 1
+        fi

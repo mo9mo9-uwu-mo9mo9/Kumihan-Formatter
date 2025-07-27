@@ -101,6 +101,14 @@ markers = [
     "performance: Performance benchmark tests",
     "gui: GUI-related tests requiring display",
     "skip_ci: Tests to skip in CI environment",
+    # プラットフォーム固有マーカー - Issue #610対応
+    "windows_only: Tests that only run on Windows",
+    "macos_only: Tests that only run on macOS",
+    "linux_only: Tests that only run on Linux",
+    "unix_like: Tests for Unix-like systems (macOS/Linux)",
+    "file_sensitive: Tests sensitive to filesystem differences",
+    "encoding_sensitive: Tests sensitive to encoding differences",
+    "path_sensitive: Tests sensitive to path handling differences",
 ]
 timeout = 300
 log_cli = false
@@ -121,6 +129,8 @@ omit = [
 ]
 branch = true
 parallel = true
+# CI最適化: 並列実行でのカバレッジ測定
+concurrency = ["multiprocessing", "thread"]
 
 [tool.coverage.report]
 exclude_lines = [
