@@ -382,15 +382,24 @@ class QualityMonitoringDashboard:
                     threshold = thresholds["medium"]
 
                 if severity:
-                    alert = QualityAlert(
-                        severity=severity,
-                        component=metric_name,
-                        message=f"{metric_name}が閾値を下回りました: {value:.1f} < {threshold}",
-                        timestamp=now,
-                        metric_value=value,
-                        threshold=threshold,
-                    )
-                    self.alerts.append(alert)
+                    # 重複アラート防止: 同じコンポーネントの最新アラートから1時間以内なら追加しない
+                    recent_alerts = [
+                        a
+                        for a in self.alerts
+                        if a.component == metric_name
+                        and (now - a.timestamp).total_seconds() < 3600
+                    ]
+
+                    if not recent_alerts:
+                        alert = QualityAlert(
+                            severity=severity,
+                            component=metric_name,
+                            message=f"{metric_name}が閾値を下回りました: {value:.1f} < {threshold}",
+                            timestamp=now,
+                            metric_value=value,
+                            threshold=threshold,
+                        )
+                        self.alerts.append(alert)
 
     def scan_technical_debt(self):
         """技術的負債をスキャン"""
