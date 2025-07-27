@@ -21,9 +21,9 @@ class TestParsingSystemIntegration:
 
     def setup_method(self):
         """テスト前のセットアップ"""
-        self.block_parser = BlockParser()
         self.keyword_parser = KeywordParser()
-        self.list_parser = ListParser()
+        self.block_parser = BlockParser(self.keyword_parser)
+        self.list_parser = ListParser(self.keyword_parser)
         self.markdown_parser = MarkdownParser()
         self.coordinator = ParsingCoordinator()
 
