@@ -124,7 +124,7 @@ class TieredQualityGate:
 
     def run_tiered_quality_check(self) -> Dict:
         """ティア別品質チェック実行"""
-        print("🚀 Tiered Quality Gate")
+        safe_print("🚀 Tiered Quality Gate", "Tiered Quality Gate")
         print("=" * 50)
 
         results = {
@@ -147,7 +147,7 @@ class TieredQualityGate:
         for file_path, tier in self.file_tiers.items():
             tier_stats[tier] += 1
 
-        print(f"\n📊 Tier Distribution:")
+        safe_print(f"\n📊 Tier Distribution:", f"\nTier Distribution:")
         for tier, count in tier_stats.items():
             print(f"  {tier.upper()}: {count} files")
 
@@ -172,7 +172,10 @@ class TieredQualityGate:
 
     def _run_basic_checks(self) -> bool:
         """基本チェック（全ティア共通）"""
-        print("🔧 Running Basic Checks (All Tiers)...")
+        safe_print(
+            "🔧 Running Basic Checks (All Tiers)...",
+            "Running Basic Checks (All Tiers)...",
+        )
 
         checks = [
             (
@@ -220,19 +223,22 @@ class TieredQualityGate:
                     timeout=120,
                 )
                 if result.returncode == 0:
-                    print(f"✅ {description}")
+                    safe_print(f"✅ {description}", f"[OK] {description}")
                 else:
-                    print(f"❌ {description}")
+                    safe_print(f"❌ {description}", f"[FAIL] {description}")
                     all_passed = False
             except Exception as e:
-                print(f"💥 {description} - Error: {e}")
+                safe_print(
+                    f"💥 {description} - Error: {e}",
+                    f"[ERROR] {description} - Error: {e}",
+                )
                 all_passed = False
 
         return all_passed
 
     def _check_critical_tier(self) -> Dict:
         """Critical tierの詳細チェック"""
-        print("\n🎯 Critical Tier Analysis...")
+        safe_print("\n🎯 Critical Tier Analysis...", "\nCritical Tier Analysis...")
 
         critical_files = [f for f, t in self.file_tiers.items() if t == "critical"]
         result = {
@@ -259,8 +265,14 @@ class TieredQualityGate:
             (tested_files / len(critical_files)) * 100 if critical_files else 0
         )
 
-        print(f"  📋 Critical files: {len(critical_files)}")
-        print(f"  🧪 Test coverage: {result['test_coverage']:.1f}%")
+        safe_print(
+            f"  📋 Critical files: {len(critical_files)}",
+            f"  Critical files: {len(critical_files)}",
+        )
+        safe_print(
+            f"  🧪 Test coverage: {result['test_coverage']:.1f}%",
+            f"  Test coverage: {result['test_coverage']:.1f}%",
+        )
 
         # 段階的基準適用（即座にブロックしない）
         if result["test_coverage"] < 30:  # 緩い基準から開始
@@ -330,22 +342,30 @@ class TieredQualityGate:
         print("\n" + "=" * 50)
 
         if results["overall_status"] == "PASS":
-            print("🎉 Quality Gate: PASSED")
-            print("✅ Development can continue")
+            safe_print("🎉 Quality Gate: PASSED", "Quality Gate: PASSED")
+            safe_print("✅ Development can continue", "Development can continue")
         else:
-            print("⚠️  Quality Gate: NEEDS ATTENTION")
-            print("🔄 Development can continue with warnings")
+            safe_print(
+                "⚠️  Quality Gate: NEEDS ATTENTION", "Quality Gate: NEEDS ATTENTION"
+            )
+            safe_print(
+                "🔄 Development can continue with warnings",
+                "Development can continue with warnings",
+            )
 
         # Critical tier状況
         critical_result = results["tier_results"].get("critical", {})
         if critical_result:
-            print(f"\n🎯 Critical Tier Status:")
+            safe_print(f"\n🎯 Critical Tier Status:", f"\nCritical Tier Status:")
             print(f"   Files: {critical_result['total_files']}")
             print(f"   Test Coverage: {critical_result.get('test_coverage', 0):.1f}%")
 
         # 警告事項
         if results["warnings"]:
-            print(f"\n⚠️  Warnings ({len(results['warnings'])}):")
+            safe_print(
+                f"\n⚠️  Warnings ({len(results['warnings'])}):",
+                f"\nWarnings ({len(results['warnings'])}):",
+            )
             for warning in results["warnings"][:5]:  # 最初の5個のみ表示
                 print(f"   • {warning}")
             if len(results["warnings"]) > 5:
@@ -353,14 +373,43 @@ class TieredQualityGate:
 
         # 推奨事項
         if results["recommendations"]:
-            print(f"\n💡 Recommendations:")
+            safe_print(f"\n💡 Recommendations:", f"\nRecommendations:")
             for rec in results["recommendations"]:
                 print(f"   • {rec}")
 
-        print(f"\n📈 Next Steps:")
+        safe_print(f"\n📈 Next Steps:", f"\nNext Steps:")
         print(f"   1. Address critical tier test coverage")
         print(f"   2. Review warnings for improvement opportunities")
         print(f"   3. Follow gradual improvement plan")
+
+
+def safe_print(text: str, fallback: str = None) -> None:
+    """Windows環境でのエンコーディング安全な出力"""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        if fallback:
+            print(fallback)
+        else:
+            # 絵文字を代替文字に置換
+            safe_text = (
+                text.replace("🚀", "[ROCKET]")
+                .replace("🔧", "[TOOL]")
+                .replace("✅", "[CHECK]")
+                .replace("❌", "[X]")
+                .replace("💥", "[BOOM]")
+                .replace("🎯", "[TARGET]")
+                .replace("🧪", "[TEST]")
+                .replace("📋", "[CLIPBOARD]")
+                .replace("🔄", "[REFRESH]")
+                .replace("⚠️", "[WARNING]")
+                .replace("💡", "[BULB]")
+                .replace("📈", "[CHART]")
+                .replace("🤖", "[ROBOT]")
+                .replace("🎉", "[PARTY]")
+                .replace("📊", "[BAR_CHART]")
+            )
+            print(safe_text)
 
 
 def main():
@@ -374,10 +423,7 @@ def main():
         except:
             pass
 
-    try:
-        print("🤖 Tiered Quality Gate")
-    except UnicodeEncodeError:
-        print("Tiered Quality Gate")
+    safe_print("🤖 Tiered Quality Gate", "Tiered Quality Gate")
     print("   Building sustainable quality standards")
     print()
 
