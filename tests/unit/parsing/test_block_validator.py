@@ -712,3 +712,98 @@ class TestValidationRules:
 
         except Exception as e:
             pytest.fail(f"ルール優先度設定でエラー: {e}")
+
+    def test_validate_block_nesting_basic(self):
+        """基本ブロックネスト検証テスト"""
+        # 実際のBlockParserを使用
+        self.mock_block_parser.is_opening_marker.side_effect = lambda line: (
+            line.startswith(";;;")
+            and line != ";;;"
+            and not (line.endswith(";;;") and line.count(";;;") > 1)
+        )
+        self.mock_block_parser.is_closing_marker.side_effect = (
+            lambda line: line.strip() == ";;;"
+        )
+
+        # 有効なネスト構造
+        valid_lines = [
+            ";;;外部ブロック;;;",
+            "外部内容",
+            ";;;内部ブロック;;;",
+            "内部内容",
+            ";;;",
+            "外部に戻る",
+            ";;;",
+        ]
+
+        issues = self.validator.validate_block_nesting(valid_lines)
+        assert len(issues) == 0, f"有効なネスト構造でエラー: {issues}"
+
+    def test_validate_block_nesting_unclosed(self):
+        """未閉鎖ブロックネスト検証テスト"""
+        self.mock_block_parser.is_opening_marker.side_effect = lambda line: (
+            line.startswith(";;;")
+            and line != ";;;"
+            and not (line.endswith(";;;") and line.count(";;;") > 1)
+        )
+        self.mock_block_parser.is_closing_marker.side_effect = (
+            lambda line: line.strip() == ";;;"
+        )
+
+        # 未閉鎖ネスト構造
+        unclosed_lines = [
+            ";;;外部ブロック;;;",
+            "外部内容",
+            ";;;内部ブロック;;;",
+            "内部内容",
+            # 内部ブロック閉じマーカーなし
+            ";;;",  # 外部ブロックのみ閉じ
+        ]
+
+        issues = self.validator.validate_block_nesting(unclosed_lines)
+        assert len(issues) > 0, "未閉鎖ネスト構造でエラーが検出されない"
+        assert "入れ子ブロック" in " ".join(
+            issues
+        ), "入れ子ブロックエラーメッセージがない"
+
+    def test_validate_block_nesting_depth_limit(self):
+        """ネスト深度制限テスト"""
+        self.mock_block_parser.is_opening_marker.side_effect = lambda line: (
+            line.startswith(";;;")
+            and line != ";;;"
+            and not (line.endswith(";;;") and line.count(";;;") > 1)
+        )
+        self.mock_block_parser.is_closing_marker.side_effect = (
+            lambda line: line.strip() == ";;;"
+        )
+
+        # 深すぎるネスト構造（11レベル）
+        deep_lines = []
+        for i in range(11):
+            deep_lines.append(f";;;レベル{i+1};;;")
+            deep_lines.append(f"内容{i+1}")
+        for i in range(11):
+            deep_lines.append(";;;")
+
+        issues = self.validator.validate_block_nesting(deep_lines)
+        assert len(issues) > 0, "深すぎるネスト構造でエラーが検出されない"
+        assert "深すぎます" in " ".join(issues), "深度制限エラーメッセージがない"
+
+    def test_is_valid_nested_marker_basic(self):
+        """基本ネストマーカー検証テスト"""
+        # 有効なマーカー
+        assert self.validator._is_valid_nested_marker("") == True
+        assert self.validator._is_valid_nested_marker("目次") == True
+        assert self.validator._is_valid_nested_marker("画像") == True
+        assert self.validator._is_valid_nested_marker("太字") == True
+        assert self.validator._is_valid_nested_marker("見出し1") == True
+
+        # 属性付きマーカー
+        assert self.validator._is_valid_nested_marker("太字[style=bold]") == True
+        assert self.validator._is_valid_nested_marker("attr=value") == True
+
+    def test_is_valid_nested_marker_invalid(self):
+        """無効ネストマーカー検証テスト"""
+        # ネストされた;;;マーカー
+        assert self.validator._is_valid_nested_marker(";;;内容;;;") == False
+        assert self.validator._is_valid_nested_marker("テキスト;;;追加;;;") == False

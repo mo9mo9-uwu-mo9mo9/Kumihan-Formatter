@@ -5,8 +5,14 @@
 Issue #490対応 - cache_strategies.py から分離
 """
 
+from typing import Final
+
 from .basic_strategies import CacheStrategy
 from .cache_types import CacheEntry
+
+# 定数定義
+BYTES_PER_MB: Final[int] = 1024 * 1024
+DEFAULT_SIZE_DIVISOR: Final[int] = 1024
 
 
 class StandardStrategy(CacheStrategy):
@@ -47,7 +53,11 @@ class AdaptiveStrategy(CacheStrategy):
         frequency_score = entry.access_count
 
         # サイズによる優先度 (小さいファイル = 高優先度)
-        size_score = 1.0 / (entry.size_bytes or 1024) if entry.size_bytes else 1.0
+        size_score = (
+            1.0 / (entry.size_bytes or DEFAULT_SIZE_DIVISOR)
+            if entry.size_bytes
+            else 1.0
+        )
 
         # 重み付き合計 (低い値 = 先に削除)
         return -(
@@ -72,3 +82,64 @@ class PerformanceAwareStrategy(CacheStrategy):
 
         # アクセス頻度と最新アクセスの組み合わせ
         return -(frequency_score * 0.7 + access_score * 0.3)
+
+
+class FrequencyBasedStrategy(CacheStrategy):
+    """頻度ベース戦略 - アクセス頻度に基づく管理
+
+    アクセス頻度が閾値未満のエントリを削除対象とし、
+    よく使用されるファイルを優先的に保持する戦略。
+
+    使用例:
+        >>> strategy = FrequencyBasedStrategy(frequency_threshold=3)
+        >>> entry = CacheEntry(key="file.txt", access_count=2)
+        >>> strategy.should_evict(entry)  # True (低頻度のため削除)
+        >>>
+        >>> entry.access_count = 5
+        >>> strategy.should_evict(entry)  # False (高頻度のため保持)
+    """
+
+    def __init__(self, frequency_threshold: int = 5):
+        """
+        Args:
+            frequency_threshold: 最低保持アクセス回数閾値
+        """
+        self.frequency_threshold = frequency_threshold
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        # 期限切れまたは低頻度アクセスで削除対象
+        return entry.is_expired() or entry.access_count < self.frequency_threshold
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # アクセス頻度が低いほど優先度が低い（先に削除）
+        return float(entry.access_count)
+
+
+class SizeAwareStrategy(CacheStrategy):
+    """サイズ認識戦略 - ファイルサイズを考慮した管理
+
+    大きなファイルを優先的に削除し、メモリ使用量を効率的に管理する戦略。
+
+    使用例:
+        >>> strategy = SizeAwareStrategy(max_size_mb=5.0)
+        >>> large_entry = CacheEntry(key="large.txt", size_bytes=10*1024*1024)  # 10MB
+        >>> strategy.should_evict(large_entry)  # True (閾値超過のため削除)
+        >>>
+        >>> small_entry = CacheEntry(key="small.txt", size_bytes=1024*1024)  # 1MB
+        >>> strategy.should_evict(small_entry)  # False (閾値内のため保持)
+    """
+
+    def __init__(self, max_size_mb: float = 10.0):
+        """
+        Args:
+            max_size_mb: 大きなファイルとみなすサイズ閾値（MB）
+        """
+        self.max_size_bytes = max_size_mb * BYTES_PER_MB
+
+    def should_evict(self, entry: CacheEntry) -> bool:
+        # 期限切れまたは大きなファイルで削除対象
+        return entry.is_expired() or (entry.size_bytes or 0) > self.max_size_bytes
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # ファイルサイズが大きいほど優先度が低い（先に削除）
+        return float(entry.size_bytes or 0)

@@ -13,10 +13,13 @@ from .cache_types import CacheEntry
 class CacheStrategy(ABC):
     """キャッシュ戦略の抽象基底クラス"""
 
-    @abstractmethod
     def should_evict(self, entry: CacheEntry) -> bool:
-        """エントリを削除すべきかを判定"""
-        pass
+        """エントリを削除すべきかを判定
+
+        基本実装では期限切れのみをチェック。
+        サブクラスで追加条件を実装する場合はオーバーライド可能。
+        """
+        return entry.is_expired()
 
     @abstractmethod
     def get_priority(self, entry: CacheEntry) -> float:
@@ -27,18 +30,12 @@ class CacheStrategy(ABC):
 class LRUStrategy(CacheStrategy):
     """Least Recently Used (最近最少使用) 戦略"""
 
-    def should_evict(self, entry: CacheEntry) -> bool:
-        return entry.is_expired()
-
     def get_priority(self, entry: CacheEntry) -> float:
         return entry.last_accessed.timestamp()
 
 
 class LFUStrategy(CacheStrategy):
     """Least Frequently Used (最少頻度使用) 戦略"""
-
-    def should_evict(self, entry: CacheEntry) -> bool:
-        return entry.is_expired()
 
     def get_priority(self, entry: CacheEntry) -> float:
         return float(entry.access_count)
@@ -47,9 +44,14 @@ class LFUStrategy(CacheStrategy):
 class TTLStrategy(CacheStrategy):
     """Time To Live (有効期限) 戦略"""
 
-    def should_evict(self, entry: CacheEntry) -> bool:
-        return entry.is_expired()
-
     def get_priority(self, entry: CacheEntry) -> float:
         # 作成時刻が古いほど優先度が低い
+        return entry.created_at.timestamp()
+
+
+class FIFOStrategy(CacheStrategy):
+    """First In First Out (先入先出) 戦略"""
+
+    def get_priority(self, entry: CacheEntry) -> float:
+        # 作成時刻が古いほど優先度が低い（先に削除）
         return entry.created_at.timestamp()

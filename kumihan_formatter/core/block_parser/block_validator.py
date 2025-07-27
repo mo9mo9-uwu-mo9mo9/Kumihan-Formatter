@@ -3,7 +3,11 @@
 This module handles validation of block structures and syntax.
 """
 
-from typing import Any
+import re
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .block_parser import BlockParser
 
 
 class BlockValidator:
@@ -24,7 +28,7 @@ class BlockValidator:
     - エラーメッセージの生成
     """
 
-    def __init__(self, block_parser: Any) -> None:
+    def __init__(self, block_parser: "BlockParser") -> None:
         self.block_parser = block_parser
 
     def validate_document_structure(self, lines: list[str]) -> list[str]:
@@ -62,7 +66,46 @@ class BlockValidator:
     def validate_block_nesting(self, lines: list[str]) -> list[str]:
         """Validate block nesting rules"""
         issues: list[str] = []
-        # TODO: Implement nesting validation
+        nesting_stack = []  # Stack to track nested blocks
+
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+
+            if self.block_parser.is_opening_marker(line_stripped):
+                # Extract marker content for nesting validation
+                marker_content = line_stripped[3:].strip()
+                nesting_stack.append(
+                    {
+                        "line_num": i + 1,
+                        "marker": marker_content,
+                        "full_line": line_stripped,
+                    }
+                )
+
+                # Check for invalid nested marker content
+                if not self._is_valid_nested_marker(marker_content):
+                    issues.append(
+                        f"行 {i + 1}: 入れ子構造で無効なマーカー: {marker_content}"
+                    )
+
+                # Check nesting depth (limit to reasonable depth)
+                if len(nesting_stack) > 10:
+                    issues.append(f"行 {i + 1}: 入れ子構造が深すぎます (最大10レベル)")
+
+            elif self.block_parser.is_closing_marker(line_stripped):
+                if not nesting_stack:
+                    issues.append(f"行 {i + 1}: 対応する開始マーカーのない閉じマーカー")
+                else:
+                    # Validate proper closing
+                    opened_block = nesting_stack.pop()
+                    # Additional validation could be added here for specific block types
+
+        # Check for unclosed nested blocks
+        for block in nesting_stack:
+            issues.append(
+                f"行 {block['line_num']}: 閉じマーカーのない入れ子ブロック: {block['marker']}"
+            )
+
         return issues
 
     def validate_content_structure(self, content: str) -> list[str]:
@@ -77,5 +120,57 @@ class BlockValidator:
 
     def _is_valid_nested_marker(self, content: str) -> bool:
         """Check if nested markers are valid"""
-        # TODO: Implement nested marker validation
+        if not content:
+            return True  # Empty markers are valid
+
+        # Special markers that are always valid
+        special_markers = {"目次", "画像"}
+        if content in special_markers:
+            return True
+
+        # Check if content contains disallowed nested markers
+        nested_marker_pattern = r";;;.*?;;;"
+        if ";;;" in content:
+            # Look for nested ;;; patterns within the marker content
+            matches = re.findall(nested_marker_pattern, content)
+            if matches:
+                return False  # Nested ;;; markers are not allowed
+
+        # Check for valid keyword patterns
+        # Allow keywords separated by spaces and attributes
+        parts = content.split()
+        if not parts:
+            return True
+
+        # Extract first part as potential keyword
+        first_part = parts[0]
+
+        # Valid keywords from keyword parser
+        valid_keywords = {
+            "太字",
+            "イタリック",
+            "枠線",
+            "ハイライト",
+            "見出し1",
+            "見出し2",
+            "見出し3",
+            "見出し4",
+            "見出し5",
+            "折りたたみ",
+            "ネタバレ",
+            "目次",
+            "画像",
+        }
+
+        # If first part is a valid keyword, consider it valid
+        if first_part in valid_keywords:
+            return True
+
+        # Check for attribute patterns (key=value)
+        if "=" in content:
+            # Allow attribute-only markers for flexibility
+            return True
+
+        # For unknown patterns, be permissive but log warning
+        # This allows for future extension
         return True
