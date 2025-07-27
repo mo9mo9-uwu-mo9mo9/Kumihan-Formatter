@@ -33,7 +33,7 @@ class TestConvertCommandCore:
         cmd = ConvertCommand()
 
         # 無効な引数での実行
-        with pytest.raises((TypeError, ValueError, SystemExit)):
+        with pytest.raises(TypeError):
             cmd.execute(
                 input_file=None,
                 output="",
@@ -50,7 +50,7 @@ class TestConvertCommandCore:
         cmd = ConvertCommand()
 
         # 存在しないファイルでの実行
-        with pytest.raises((SystemExit, FileNotFoundError)):
+        with pytest.raises(FileNotFoundError):
             cmd.execute(
                 input_file="nonexistent.txt",
                 output="output.html",
@@ -103,7 +103,7 @@ class TestConvertCommandCore:
                 )
 
                 # ConvertProcessorが呼び出されたことを確認
-                # mock_convert.assert_called_once()
+                mock_convert.assert_called_once()
 
         finally:
             # 一時ファイルを削除
@@ -127,7 +127,7 @@ class TestConvertProcessorCore:
     def test_convert_processor_file_validation(self):
         """ファイルバリデーション機能テスト"""
         # 存在しないファイルのバリデーション
-        with pytest.raises((FileNotFoundError, ValueError)):
+        with pytest.raises(FileNotFoundError):
             self.processor.validate_files("nonexistent.txt", "output.txt")
 
     def test_convert_processor_content_processing(self):
@@ -367,7 +367,7 @@ class TestCommandsIntegration:
         check_cmd = CheckSyntaxCommand()
 
         # 存在しないファイルでのエラーハンドリング
-        with pytest.raises((SystemExit, FileNotFoundError)):
+        with pytest.raises(FileNotFoundError):
             convert_cmd.execute(["nonexistent.txt", "output.html"])
 
         with pytest.raises(SystemExit):

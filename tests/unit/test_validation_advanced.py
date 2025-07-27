@@ -147,6 +147,61 @@ class TestDocumentValidatorAdvanced:
             result = self.validator.validate_document(complex_ast)
             assert result is not None
 
+    def test_validate_deeply_nested_structure(self):
+        """深くネストされた構造のバリデーションテスト"""
+        deep_ast = MagicMock()
+
+        # 5レベルの深いネスト構造を作成
+        current_node = deep_ast
+        for i in range(5):
+            container = MagicMock()
+            container.type = "decoration"
+            container.keywords = [f"レベル{i+1}"]
+
+            inner_content = MagicMock()
+            inner_content.type = "text"
+            inner_content.content = f"ネストレベル{i+1}のコンテンツ"
+
+            if i == 0:
+                current_node.children = [container]
+            else:
+                current_node.children = [container]
+
+            container.children = [inner_content]
+            current_node = container
+
+        with patch.object(self.validator, "validate_document") as mock_validate:
+            mock_validate.return_value = {"is_valid": True, "errors": []}
+
+            result = self.validator.validate_document(deep_ast)
+            assert result is not None
+
+    def test_validate_mixed_language_content(self):
+        """多言語混在コンテンツのバリデーションテスト"""
+        mixed_ast = MagicMock()
+
+        # 日本語、英語、中国語の混在
+        nodes = [
+            self._create_text_node("これは日本語のテキストです。"),
+            self._create_text_node("This is English text."),
+            self._create_text_node("这是中文文本。"),
+        ]
+
+        mixed_ast.children = nodes
+
+        with patch.object(self.validator, "validate_document") as mock_validate:
+            mock_validate.return_value = {"is_valid": True, "errors": []}
+
+            result = self.validator.validate_document(mixed_ast)
+            assert result is not None
+
+    def _create_text_node(self, content: str):
+        """テキストノードを作成するヘルパーメソッド"""
+        node = MagicMock()
+        node.type = "text"
+        node.content = content
+        return node
+
 
 class TestStructureValidatorAdvanced:
     """StructureValidatorの高度なテスト"""
@@ -248,6 +303,20 @@ class TestSyntaxValidatorAdvanced:
         """テストセットアップ"""
         self.validator = SyntaxValidator()
 
+    def _get_error_message(self, error_type: str, lang: str = "ja") -> str:
+        """エラーメッセージの国際化対応"""
+        messages = {
+            "ja": {
+                "unclosed_decoration": "装飾が閉じられていません",
+                "mismatched_marker": "閉じマーカーが一致しません",
+            },
+            "en": {
+                "unclosed_decoration": "Unclosed decoration at end of content",
+                "mismatched_marker": "Mismatched closing marker",
+            },
+        }
+        return messages.get(lang, messages["en"]).get(error_type, "Unknown error")
+
     def test_syntax_validator_initialization(self):
         """SyntaxValidator初期化テスト"""
         assert self.validator is not None
@@ -270,7 +339,7 @@ class TestSyntaxValidatorAdvanced:
         with patch.object(self.validator, "validate_syntax") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
-                "errors": ["Unclosed decoration at end of content"],
+                "errors": [self._get_error_message("unclosed_decoration")],
             }
 
             result = self.validator.validate_syntax(unclosed_syntax)
@@ -283,7 +352,7 @@ class TestSyntaxValidatorAdvanced:
         with patch.object(self.validator, "validate_syntax") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
-                "errors": ["Mismatched closing marker"],
+                "errors": [self._get_error_message("mismatched_marker")],
             }
 
             result = self.validator.validate_syntax(mismatched_syntax)
