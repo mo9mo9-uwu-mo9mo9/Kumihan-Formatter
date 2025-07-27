@@ -107,8 +107,8 @@ class FrequencyBasedStrategy(CacheStrategy):
         self.frequency_threshold = frequency_threshold
 
     def should_evict(self, entry: CacheEntry) -> bool:
-        # 期限切れまたは低頻度アクセスで削除対象
-        return entry.is_expired() or entry.access_count < self.frequency_threshold
+        # 期限切れのみをチェック（削除は優先度で決定）
+        return entry.is_expired()
 
     def get_priority(self, entry: CacheEntry) -> float:
         # アクセス頻度が低いほど優先度が低い（先に削除）

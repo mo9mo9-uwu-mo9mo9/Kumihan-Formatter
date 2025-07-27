@@ -188,14 +188,11 @@ class CacheStorage:
             if self._remove_from_memory(key):
                 evicted_count += 1
 
-        # まだ制限を超えている場合は戦略を使用
+        # まだ制限を超えている場合は戦略を使用（少なくとも1つは削除）
         while (
             len(self._memory_cache) > self.max_memory_entries
             or self._memory_size > self.max_memory_bytes
-        ):
-
-            if not self._memory_cache:
-                break
+        ) and self._memory_cache:
 
             # 最も優先度の低いエントリを検索
             min_priority = float("inf")
@@ -207,10 +204,13 @@ class CacheStorage:
                     min_priority = priority
                     evict_key = key
 
-            if evict_key and self._remove_from_memory(evict_key):
-                evicted_count += 1
+            if evict_key:
+                if self._remove_from_memory(evict_key):
+                    evicted_count += 1
+                else:
+                    break  # 削除に失敗した場合は無限ループを防ぐ
             else:
-                break
+                break  # 削除対象が見つからない場合は終了
 
         return evicted_count
 
