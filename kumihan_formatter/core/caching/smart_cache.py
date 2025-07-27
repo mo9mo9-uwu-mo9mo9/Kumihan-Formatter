@@ -204,6 +204,8 @@ class SmartCache:
             "memory_stats": memory_stats,
             "hit_rate": hit_rate,
             "total_requests": total_requests,
+            "entry_count": memory_stats["entries"],
+            "memory_usage_mb": memory_stats["size_bytes"] / (1024 * 1024),
             **self.stats,
         }
 

@@ -29,13 +29,14 @@ class TestFrequencyBasedStrategy:
         assert self.strategy.frequency_threshold == 3
 
     def test_should_evict_low_frequency(self):
-        """低頻度アクセスエントリの削除判定テスト"""
+        """低頻度アクセスエントリの削除判定テスト - 期限切れのみチェック"""
         # 低頻度アクセスエントリ (access_count < threshold)
         low_freq_entry = Mock(spec=CacheEntry)
         low_freq_entry.is_expired.return_value = False
         low_freq_entry.access_count = 2
 
-        assert self.strategy.should_evict(low_freq_entry) is True
+        # should_evictは期限切れのみをチェック、削除は優先度で決定
+        assert self.strategy.should_evict(low_freq_entry) is False
 
     def test_should_evict_high_frequency(self):
         """高頻度アクセスエントリの保持判定テスト"""
@@ -70,19 +71,22 @@ class TestFrequencyBasedStrategy:
         assert self.strategy.get_priority(entry3) < self.strategy.get_priority(entry2)
 
     def test_custom_threshold(self):
-        """カスタム閾値テスト"""
+        """カスタム閾値テスト - 優先度ベースの動作確認"""
         custom_strategy = FrequencyBasedStrategy(frequency_threshold=10)
 
         entry = Mock(spec=CacheEntry)
         entry.is_expired.return_value = False
         entry.access_count = 5
 
-        # 閾値10の場合、access_count=5は削除対象
-        assert custom_strategy.should_evict(entry) is True
+        # should_evictは期限切れのみをチェック
+        assert custom_strategy.should_evict(entry) is False
+        # 優先度は低い（削除されやすい）
+        assert custom_strategy.get_priority(entry) == 5.0
 
         entry.access_count = 15
-        # 閾値10の場合、access_count=15は保持
+        # 高頻度なので優先度が高い（保持されやすい）
         assert custom_strategy.should_evict(entry) is False
+        assert custom_strategy.get_priority(entry) == 15.0
 
 
 class TestSizeAwareStrategy:
