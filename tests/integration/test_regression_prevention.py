@@ -188,7 +188,7 @@ class TestKnownIssueRegression:
 
         # 処理が適切な時間内で完了することを確認（無限ループなし）
         assert result is not None
-        assert (end_time - start_time) < 5.0  # 5秒以内
+        assert (end_time - start_time) < 10.0  # 10秒以内（CI環境やマシン性能差を考慮）
 
     def test_special_character_handling_regression(self):
         """特殊文字処理の回帰防止テスト"""

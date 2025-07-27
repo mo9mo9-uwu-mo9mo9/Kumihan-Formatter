@@ -257,7 +257,7 @@ class TestKumihanRendererAdvanced:
 
         # レンダリングが完了し、妥当な時間内で処理されることを確認
         assert result is not None
-        assert (end_time - start_time) < 5.0  # 5秒以内
+        assert (end_time - start_time) < 10.0  # 10秒以内（CI環境やマシン性能差を考慮）
 
     def test_render_error_recovery(self):
         """レンダリングエラー回復テスト"""

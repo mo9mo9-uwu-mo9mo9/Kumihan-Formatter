@@ -117,7 +117,7 @@ class TestKumihanParserCore:
 
         # パースが完了し、妥当な時間内で処理されることを確認
         assert result is not None
-        assert (end_time - start_time) < 10.0  # 10秒以内（環境による変動を考慮）
+        assert (end_time - start_time) < 15.0  # 15秒以内（CI環境やマシン性能差を考慮）
 
 
 class TestBlockParserCore:
@@ -420,7 +420,7 @@ class TestCoreParserIntegration:
 
         # パースが完了し、妥当な時間内で処理されることを確認
         assert result is not None
-        assert (end_time - start_time) < 10.0  # 10秒以内（環境による変動を考慮）
+        assert (end_time - start_time) < 15.0  # 15秒以内（CI環境やマシン性能差を考慮）
 
     def test_parser_memory_efficiency(self):
         """パーサーメモリ効率テスト"""

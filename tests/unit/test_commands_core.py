@@ -191,8 +191,10 @@ class TestCheckSyntaxCommandCore:
 
     def test_check_syntax_validation_empty_args(self):
         """空の引数でのバリデーションテスト"""
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc_info:
             self.cmd.execute([])
+        # エラーコードが非零であることを確認
+        assert exc_info.value.code != 0
 
     def test_check_syntax_file_validation(self):
         """ファイル構文チェック機能テスト"""
@@ -370,5 +372,7 @@ class TestCommandsIntegration:
         with pytest.raises(FileNotFoundError):
             convert_cmd.execute(["nonexistent.txt", "output.html"])
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc_info:
             check_cmd.execute(["nonexistent.txt"])
+        # エラーコードが非零であることを確認
+        assert exc_info.value.code != 0
