@@ -11,7 +11,20 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 
 class ParsingCoordinator:
-    """構文解析コーディネーター - 複数パーサーの統括管理"""
+    """構文解析コーディネーター - 複数パーサーの統括管理
+
+    文書内容を解析し、最適なパーサーを自動選択して処理を実行する。
+
+    使用例:
+        >>> coordinator = ParsingCoordinator()
+        >>> content = ["# Markdownタイトル", "**太字**テキスト"]
+        >>> result = coordinator.parse_document(content)
+        >>> result["parser_type"]  # "markdown"
+        >>>
+        >>> block_content = [";;;重要;;;", "重要な内容", ";;;"]
+        >>> result = coordinator.parse_document(block_content)
+        >>> result["parser_type"]  # "block"
+    """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -29,7 +42,8 @@ class ParsingCoordinator:
             "markdown": 4,  # Markdown要素
         }
 
-        # 結果キャッシュ
+        # 結果キャッシュ（将来の最適化用）
+        # 現在は基本実装のため未使用だが、パフォーマンス改善時に活用予定
         self._result_cache: Dict[str, Any] = {}
 
     def parse_document(
@@ -89,40 +103,51 @@ class ParsingCoordinator:
         parser_scores = {"block": 0, "keyword": 0, "list": 0, "markdown": 0}
 
         for line in content_lines:
-            line_stripped = line.strip()
-
-            # ブロック記法の検出
-            if line_stripped.startswith(";;;") and line_stripped.endswith(";;;"):
-                parser_scores["block"] += 3
-            elif ";;;" in line_stripped:
-                parser_scores["block"] += 2
-
-            # キーワード記法の検出
-            if ";;;" in line_stripped:
-                parser_scores["keyword"] += 2
-
-            # リスト記法の検出
-            if line_stripped.startswith(("- ", "* ", "+ ")) or line_stripped.startswith(
-                "  - "
-            ):
-                parser_scores["list"] += 2
-
-            # Markdown記法の検出
-            if line_stripped.startswith("#"):
-                parser_scores["markdown"] += 2
-            elif "**" in line_stripped or "*" in line_stripped:
-                parser_scores["markdown"] += 1
-            elif line_stripped.startswith("```"):
-                parser_scores["markdown"] += 3
+            line_content = line.strip()
+            self._analyze_line_for_parser_scoring(line_content, parser_scores)
 
         # 最高スコアのパーサーを選択
-        best_parser = max(parser_scores.items(), key=lambda x: x[1])
+        optimal_parser_info = max(parser_scores.items(), key=lambda x: x[1])
 
         # スコアが同じ場合は優先順位で決定
-        if best_parser[1] == 0:
+        if optimal_parser_info[1] == 0:
             return "coordinator"  # どの記法も検出されない場合
 
-        return best_parser[0]
+        return optimal_parser_info[0]
+
+    def _analyze_line_for_parser_scoring(
+        self, line_content: str, parser_scores: Dict[str, int]
+    ) -> None:
+        """
+        行の内容を解析してパーサースコアを更新する
+
+        Args:
+            line_content: 解析対象の行内容（トリム済み）
+            parser_scores: 更新対象のパーサースコア辞書
+        """
+        # ブロック記法の検出
+        if line_content.startswith(";;;") and line_content.endswith(";;;"):
+            parser_scores["block"] += 3
+        elif ";;;" in line_content:
+            parser_scores["block"] += 2
+
+        # キーワード記法の検出
+        if ";;;" in line_content:
+            parser_scores["keyword"] += 2
+
+        # リスト記法の検出
+        if line_content.startswith(("- ", "* ", "+ ")) or line_content.startswith(
+            "  - "
+        ):
+            parser_scores["list"] += 2
+
+        # Markdown記法の検出
+        if line_content.startswith("#"):
+            parser_scores["markdown"] += 2
+        elif "**" in line_content or "*" in line_content:
+            parser_scores["markdown"] += 1
+        elif line_content.startswith("```"):
+            parser_scores["markdown"] += 3
 
     def get_parsing_statistics(self) -> Dict[str, Any]:
         """
