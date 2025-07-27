@@ -15,7 +15,11 @@ class TestMarkerParserAdvanced:
 
     def setup_method(self):
         """テスト前のセットアップ"""
+        # モック戦略統一: MarkerParserは軽量なため実際のインスタンスを使用
         self.marker_parser = MarkerParser()
+
+        # 必要に応じてモック化（重い処理や外部依存がある場合）
+        self.mock_marker_parser = Mock(spec=MarkerParser)
 
     def test_marker_parser_initialization(self):
         """マーカーパーサー初期化テスト"""

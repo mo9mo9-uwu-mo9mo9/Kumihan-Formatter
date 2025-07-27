@@ -8,8 +8,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from kumihan_formatter.core.block_parser.block_parser import BlockParser
 from kumihan_formatter.core.block_parser.block_validator import BlockValidator
-from kumihan_formatter.core.common.validation_mixin import ValidationMixin
+from kumihan_formatter.core.keyword_parser import KeywordParser
 
 
 class TestBlockValidator:
@@ -17,8 +18,14 @@ class TestBlockValidator:
 
     def setup_method(self):
         """テスト前のセットアップ"""
-        self.mock_block_parser = Mock()
+        # モック戦略統一: 単体テストでは依存コンポーネントをモック化
+        self.mock_block_parser = Mock(spec=BlockParser)
         self.validator = BlockValidator(self.mock_block_parser)
+
+        # 統合テスト用の実際のインスタンス（必要に応じて使用）
+        self.keyword_parser = KeywordParser()
+        self.real_block_parser = BlockParser(self.keyword_parser)
+        self.integration_validator = BlockValidator(self.real_block_parser)
 
     def test_block_validator_initialization(self):
         """ブロックバリデーター初期化テスト"""

@@ -417,13 +417,40 @@ class TestMarkdownParserAdvanced:
 
         execution_time = time.time() - start_time
 
-        # 性能基準確認
-        assert execution_time < 3.0, f"Markdown解析が遅すぎる: {execution_time}秒"
+        # 詳細な性能測定ロジック強化
+        document_text = "\n".join(large_markdown)
+        document_size_bytes = len(document_text.encode("utf-8"))
+        document_size_kb = document_size_bytes / 1024
 
-        # リアルタイム解析基準（50ms/KB）
-        doc_size_kb = len("\n".join(large_markdown)) / 1024
-        ms_per_kb = (execution_time * 1000) / doc_size_kb
-        assert ms_per_kb < 50, f"KB当たり処理時間が遅い: {ms_per_kb}ms/KB"
+        # 解析速度計算（ms/KB）
+        ms_per_kb = (execution_time * 1000) / document_size_kb
+
+        # 詳細な性能メトリクス
+        markdown_performance_metrics = {
+            "execution_time_ms": execution_time * 1000,
+            "document_size_bytes": document_size_bytes,
+            "document_size_kb": document_size_kb,
+            "ms_per_kb": ms_per_kb,
+            "sections_count": 50,  # セクション数
+            "lines_per_second": (
+                len(large_markdown) / execution_time if execution_time > 0 else 0
+            ),
+            "bytes_per_second": (
+                document_size_bytes / execution_time if execution_time > 0 else 0
+            ),
+        }
+
+        # 性能基準確認
+        assert execution_time < 3.0, (
+            f"Markdown解析が遅すぎる: {execution_time:.3f}秒\n"
+            f"性能詳細: {markdown_performance_metrics}"
+        )
+
+        # Issue #597要求仕様: リアルタイム解析基準（<50ms/KB）
+        assert ms_per_kb < 50.0, (
+            f"KB当たり処理時間が目標超過: {ms_per_kb:.2f}ms/KB (目標: <50ms/KB)\n"
+            f"性能詳細: {markdown_performance_metrics}"
+        )
 
     def test_regex_pattern_compilation(self):
         """正規表現パターンコンパイルテスト"""
@@ -434,7 +461,7 @@ class TestMarkdownParserAdvanced:
 
             # 各パターンがコンパイル済み
             for pattern_name, pattern in patterns.items():
-                assert hasattr(pattern, "match")  # re.Pattern object
+                assert hasattr(pattern, "match")  # 正規表現パターンオブジェクト
 
         elif hasattr(self.markdown_parser, "patterns"):
             # パターン辞書がある場合

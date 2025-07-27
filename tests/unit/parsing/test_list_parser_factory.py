@@ -8,9 +8,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from kumihan_formatter.core.list_parser_factory import ListParserFactory
-
-# パーサーレジストリ機能のモック
+from kumihan_formatter.core.keyword_parser import KeywordParser
+from kumihan_formatter.core.list_parser_factory import (
+    create_list_parser,
+    create_list_validator,
+    create_nested_list_parser,
+)
 
 
 class TestListParserComponents:
@@ -18,13 +21,18 @@ class TestListParserComponents:
 
     def setup_method(self):
         """テスト前のセットアップ"""
-        self.factory = ListParserComponents()
+        # 依存関係の明確化: ファクトリー関数群はKeywordParserに依存
+        self.keyword_parser = KeywordParser()
+        self.list_parser = create_list_parser(self.keyword_parser)
+        self.nested_parser = create_nested_list_parser(self.keyword_parser)
+        self.list_validator = create_list_validator(self.keyword_parser)
 
-    def test_factory_initialization(self):
-        """ファクトリー初期化テスト"""
-        assert self.factory is not None
-        assert hasattr(self.factory, "create_parser")
-        assert hasattr(self.factory, "get_component")
+    def test_factory_components_initialization(self):
+        """ファクトリーコンポーネント初期化テスト"""
+        assert self.list_parser is not None
+        assert self.nested_parser is not None
+        assert self.list_validator is not None
+        assert self.keyword_parser is not None
 
     def test_basic_parser_creation(self):
         """基本パーサー生成テスト"""

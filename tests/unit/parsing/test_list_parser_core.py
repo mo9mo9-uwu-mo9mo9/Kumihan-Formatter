@@ -8,9 +8,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from kumihan_formatter.core.keyword_parser import KeywordParser
 from kumihan_formatter.core.list_parser_core import ListParserCore
-
-# リストパターン機能のモック
 
 
 class TestListParserCore:
@@ -18,7 +17,9 @@ class TestListParserCore:
 
     def setup_method(self):
         """テスト前のセットアップ"""
-        self.core_parser = ListParserCore()
+        # 依存関係の明確化: ListParserCoreはKeywordParserに依存
+        self.keyword_parser = KeywordParser()
+        self.core_parser = ListParserCore(self.keyword_parser)
 
     def test_core_parser_initialization(self):
         """コアパーサー初期化テスト"""

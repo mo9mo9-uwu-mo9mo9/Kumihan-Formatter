@@ -202,14 +202,42 @@ class TestBlockParserAdvanced:
 
         execution_time = time.time() - start_time
 
+        # 詳細な性能測定ロジック強化
+        document_text = "\n".join(large_document)
+        document_size_bytes = len(document_text.encode("utf-8"))
+        document_size_kb = document_size_bytes / 1024
+
+        # 解析速度計算（ms/KB）
+        ms_per_kb = (execution_time * 1000) / document_size_kb
+
+        # 詳細な性能メトリクス
+        performance_metrics = {
+            "execution_time_ms": execution_time * 1000,
+            "document_size_bytes": document_size_bytes,
+            "document_size_kb": document_size_kb,
+            "ms_per_kb": ms_per_kb,
+            "parsed_blocks": parsed_blocks,
+            "target_blocks": 100,
+            "blocks_per_second": (
+                parsed_blocks / execution_time if execution_time > 0 else 0
+            ),
+            "bytes_per_second": (
+                document_size_bytes / execution_time if execution_time > 0 else 0
+            ),
+        }
+
         # 性能基準の確認
-        assert execution_time < 1.0, f"大規模解析が遅すぎます: {execution_time}秒"
+        assert execution_time < 1.0, (
+            f"大規模解析が遅すぎます: {execution_time:.3f}秒\n"
+            f"性能詳細: {performance_metrics}"
+        )
         assert parsed_blocks == 100, f"解析ブロック数が不正: {parsed_blocks}/100"
 
-        # 1KBあたり50ms以下の目標
-        document_size_kb = len("\n".join(large_document)) / 1024
-        ms_per_kb = (execution_time * 1000) / document_size_kb
-        assert ms_per_kb < 50, f"KB当たり処理時間が目標超過: {ms_per_kb}ms/KB"
+        # Issue #597要求仕様: <50ms/KB解析
+        assert ms_per_kb < 50.0, (
+            f"KB当たり処理時間が目標超過: {ms_per_kb:.2f}ms/KB (目標: <50ms/KB)\n"
+            f"性能詳細: {performance_metrics}"
+        )
 
     def test_memory_efficiency_parsing(self):
         """メモリ効率性テスト"""
