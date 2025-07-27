@@ -56,7 +56,12 @@ class ListParserCore:
             line = lines[current_index].strip()
 
             # Check if this is a list item
-            if not (line.startswith("- ") or line.startswith("・")):
+            if not (
+                line.startswith("- ")
+                or line.startswith("・")
+                or line.startswith("* ")
+                or line.startswith("+ ")
+            ):
                 break
 
             # Parse the list item
@@ -123,11 +128,15 @@ class ListParserCore:
                 return list_item(""), 1
             content = match.group(1)
         else:
-            # Remove bullet prefix ("- " or "・")
+            # Remove bullet prefix ("- ", "・", "* ", or "+ ")
             if line.startswith("- "):
                 content = line[2:]
             elif line.startswith("・"):
                 content = line[1:]
+            elif line.startswith("* "):
+                content = line[2:]
+            elif line.startswith("+ "):
+                content = line[2:]
             else:
                 content = line
 
@@ -197,7 +206,17 @@ class ListParserCore:
         """
         line = line.strip()
 
-        if line.startswith("- ") or line.startswith("・"):
+        # Check for unordered list markers with proper spacing
+        # Note: ・ doesn't require a space after it
+        if (
+            line.startswith("- ")
+            or line.startswith("・")
+            or line.startswith("* ")
+            or line.startswith("+ ")
+        ):
+            # Special case: ensure - has a space after it
+            if line.startswith("-") and not line.startswith("- "):
+                return ""
             return "ul"
         elif re.match(r"^\d+\.\s", line):
             return "ol"
@@ -239,6 +258,10 @@ class ListParserCore:
                 items.append(line[2:])
             elif line.startswith("・"):
                 items.append(line[1:])
+            elif line.startswith("* "):
+                items.append(line[2:])
+            elif line.startswith("+ "):
+                items.append(line[2:])
             elif re.match(r"^\d+\.\s", line):
                 match = re.match(r"^\d+\.\s(.*)$", line)
                 if match:

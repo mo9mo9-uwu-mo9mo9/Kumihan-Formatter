@@ -198,7 +198,11 @@ class BlockParser:
     def is_block_marker_line(self, line: str) -> bool:
         """Check if a line is a block marker"""
         line = line.strip()
-        return line.startswith(";;;") and (line.endswith(";;;") or line == ";;;")
+        # Must start with ;;; and not have text after a space
+        if not line.startswith(";;;"):
+            return False
+        # Check if it's just ;;; or has content without space after ;;;
+        return line == ";;;" or (len(line) > 3 and line[3] != " ")
 
     def is_opening_marker(self, line: str) -> bool:
         """Check if a line is an opening block marker"""

@@ -74,9 +74,6 @@ class Parser:
                 self.logger.debug(
                     f"Parsed node type: {node.type} at line {self.current}"
                 )
-            else:
-                # Skip empty lines
-                self.current += 1
 
         self.logger.info(
             f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors"

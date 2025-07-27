@@ -91,7 +91,7 @@ jobs:
     name: 🌐 クロスプラットフォームテスト
     if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     needs: essential-checks
     strategy:
       fail-fast: false
@@ -115,7 +115,7 @@ jobs:
     - name: テスト実行
       run: |
         python scripts/tiered_quality_gate.py
-        python -m pytest --cov=kumihan_formatter --cov-report=xml --ignore=tests/test_smart_suggestions.py --ignore=tests/test_unified_handler.py
+        python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --ignore=tests/test_smart_suggestions.py --ignore=tests/test_unified_handler.py
 
     - name: カバレッジアップロード（macOSのみ）
       if: matrix.os == 'macos-latest'

@@ -269,7 +269,8 @@ class MarkerValidator:
         # Simple validation - expand as needed
         for i in range(start_index + 1, len(lines)):
             line = lines[i].strip()
-            if line.startswith(";;;") and line.endswith(";;;"):
+            # Look for closing marker (;;; only, not ;;;something;;;)
+            if line == ";;;":
                 end_index = i
                 break
 

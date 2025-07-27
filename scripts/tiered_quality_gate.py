@@ -7,6 +7,7 @@
 """
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -366,7 +367,17 @@ def main():
     """メイン処理"""
     project_root = Path(__file__).parent.parent
 
-    print("🤖 Tiered Quality Gate")
+    # Windows環境での文字エンコーディング対応
+    if os.name == "nt":
+        try:
+            os.system("chcp 65001 > nul")  # UTF-8に設定
+        except:
+            pass
+
+    try:
+        print("🤖 Tiered Quality Gate")
+    except UnicodeEncodeError:
+        print("Tiered Quality Gate")
     print("   Building sustainable quality standards")
     print()
 

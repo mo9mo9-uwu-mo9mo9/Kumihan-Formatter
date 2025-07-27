@@ -28,22 +28,13 @@ class TestRendererErrorHandling:
             result = self.renderer.render(invalid_nodes)
             # エラーハンドリングされて何らかの結果が返される
             assert isinstance(result, str)
-        except Exception:
-            # 例外が適切に処理されることを確認
+        except (TypeError, ValueError, AttributeError):
+            # 型エラーや値エラー、属性エラーが適切に処理されることを確認
             assert True
 
     def test_render_to_file_invalid_path(self):
-        """無効パスでのファイル出力エラーテスト"""
-        nodes = []
-        invalid_path = Path("/invalid/path/that/does/not/exist.html")
-
-        try:
-            self.renderer.render_to_file(nodes, invalid_path)
-            # エラーが適切に処理される
-            assert True
-        except Exception:
-            # 例外が発生することも期待される
-            assert True
+        """無効パスでのファイル出力エラーテスト（render_to_fileメソッドは存在しないためスキップ）"""
+        pytest.skip("render_to_fileメソッドは現在のRendererクラスに存在しません")
 
 
 class TestRenderFunction:
@@ -56,7 +47,7 @@ class TestRenderFunction:
         try:
             result = render(nodes)
             assert isinstance(result, str)
-        except Exception:
+        except (ImportError, AttributeError):
             pytest.skip("依存関係エラー")
 
     def test_render_function_with_config(self):
@@ -67,17 +58,18 @@ class TestRenderFunction:
         try:
             result = render(nodes, config=config)
             assert isinstance(result, str)
-        except Exception:
+        except (ImportError, AttributeError):
             pytest.skip("依存関係エラー")
 
     def test_render_function_with_options(self):
-        """オプション付きrender関数テスト"""
+        """オプション付きrender関数テスト（現在のAPIに合わせて修正）"""
         nodes = []
 
         try:
-            result = render(nodes, include_toc=True, debug=True)
+            # 現在のrender関数APIに存在する引数のみ使用（存在するテンプレートを指定）
+            result = render(nodes, title="Test Title", template="base.html.j2")
             assert isinstance(result, str)
-        except Exception:
+        except (ImportError, AttributeError):
             pytest.skip("依存関係エラー")
 
 
