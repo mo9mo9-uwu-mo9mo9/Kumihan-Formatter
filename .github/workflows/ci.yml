@@ -115,7 +115,7 @@ jobs:
     - name: テスト実行
       run: |
         python scripts/tiered_quality_gate.py
-        python -m pytest --cov=kumihan_formatter --cov-report=xml
+        python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml
 
     - name: カバレッジアップロード（macOSのみ）
       if: matrix.os == 'macos-latest'
