@@ -103,13 +103,27 @@ class FileController:
             directory_path: 開くディレクトリのパス
         """
         try:
+            # パスの検証とサニタイズ
+            directory_path = Path(directory_path).resolve()
+            if not directory_path.exists():
+                debug(f"Directory does not exist: {directory_path}")
+                return
+            if not directory_path.is_dir():
+                debug(f"Path is not a directory: {directory_path}")
+                return
+            
+            # プラットフォーム別の安全なコマンド実行
             if platform.system() == "Darwin":  # macOS
-                subprocess.run(["open", str(directory_path)], check=True)
+                subprocess.run(["open", "--", str(directory_path)], check=True)
             elif platform.system() == "Windows":  # Windows
-                subprocess.run(["explorer", str(directory_path)], check=True)
+                # Windowsではexplorerはシェルインジェクションに脆弱性があるため、
+                # 絶対パスを使用し、追加の引数を防ぐ
+                subprocess.run(["explorer.exe", str(directory_path)], check=True, shell=False)
             else:  # Linux
                 subprocess.run(["xdg-open", str(directory_path)], check=True)
         except subprocess.CalledProcessError as e:
             debug(f"Failed to open directory in file manager: {e}")
         except FileNotFoundError:
             debug("File manager not found")
+        except Exception as e:
+            debug(f"Unexpected error opening directory: {e}")

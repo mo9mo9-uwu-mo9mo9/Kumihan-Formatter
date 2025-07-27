@@ -148,15 +148,29 @@ class LogViewerEventHandler:
         try:
             logger = self.get_logger()
             if logger and logger.get_log_file_path().exists():
-                log_file = str(logger.get_log_file_path())
+                # パスの検証とサニタイズ
+                log_file_path = logger.get_log_file_path().resolve()
+                if not log_file_path.exists():
+                    self.ui.set_status("ログファイルが見つかりません")
+                    return
+                if not log_file_path.is_file():
+                    self.ui.set_status("指定されたパスはファイルではありません")
+                    return
+                
+                log_file = str(log_file_path)
+                
+                # プラットフォーム別の安全なコマンド実行
                 if platform.system() == "Darwin":  # macOS
-                    subprocess.run(["open", log_file])
+                    subprocess.run(["open", "-t", "--", log_file], check=True)
                 elif platform.system() == "Windows":
-                    subprocess.run(["notepad", log_file])
+                    # notepad.exeの完全パスを使用してセキュリティを向上
+                    subprocess.run(["notepad.exe", log_file], check=True, shell=False)
                 else:  # Linux
-                    subprocess.run(["xdg-open", log_file])
-                self.ui.set_status(f"ログファイルを開きました: {log_file}")
+                    subprocess.run(["xdg-open", log_file], check=True)
+                self.ui.set_status(f"ログファイルを開きました: {log_file_path.name}")
             else:
                 self.ui.set_status("ログファイルが見つかりません")
+        except subprocess.CalledProcessError as e:
+            self.ui.set_status(f"エディタの起動に失敗しました: {str(e)}")
         except Exception as e:
             self.ui.set_status(f"ファイルオープンエラー: {str(e)}")
