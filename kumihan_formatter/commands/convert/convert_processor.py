@@ -30,6 +30,31 @@ class ConvertProcessor:
         self.file_ops = FileOperations(ui=get_console_ui())
         self.logger.debug("ConvertProcessor initialized")
 
+    def validate_files(self, input_file: str, output_file: str) -> None:
+        """ファイルバリデーション
+
+        Args:
+            input_file: 入力ファイルパス
+            output_file: 出力ファイルパス
+
+        Raises:
+            FileNotFoundError: 入力ファイルが存在しない場合
+            ValueError: ファイルパスが無効な場合
+        """
+        input_path = Path(input_file)
+
+        if not input_path.exists():
+            raise FileNotFoundError(f"Input file not found: {input_file}")
+
+        if not input_path.is_file():
+            raise ValueError(f"Input path is not a file: {input_file}")
+
+        # 出力ディレクトリの存在確認（必要に応じて作成）
+        output_path = Path(output_file)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        self.logger.debug(f"File validation passed: {input_file} -> {output_file}")
+
     def convert_file(  # type: ignore
         self,
         input_path: Path,
