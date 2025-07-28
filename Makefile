@@ -6,7 +6,7 @@ VENV = .venv
 PYTHON = $(VENV)/bin/python
 PYTEST = $(VENV)/bin/pytest
 
-.PHONY: help test lint format check install clean coverage quality-gate pre-commit
+.PHONY: help test lint format check install clean coverage quality-gate pre-commit ci-critical ci-important ci-full platform-check
 
 # デフォルトターゲット：ヘルプ表示
 help:
@@ -22,6 +22,12 @@ help:
 	@echo "品質管理（Issue #589新機能）:"
 	@echo "  make quality-gate - ティア別品質ゲート実行"
 	@echo "  make coverage     - カバレッジ付きテスト"
+	@echo ""
+	@echo "CI最適化（Issue #610新機能）:"
+	@echo "  make ci-critical  - Critical Tierテスト（2-4分）"
+	@echo "  make ci-important - Important Tierテスト（5-8分）"
+	@echo "  make ci-full      - 全テスト実行（10-15分）"
+	@echo "  make platform-check - プラットフォーム互換性診断"
 	@echo ""
 	@echo "その他:"
 	@echo "  make install      - 開発用依存関係インストール"
@@ -81,3 +87,24 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -name "*.pyc" -delete 2>/dev/null || true
 	@echo "クリーンアップ完了 ✓"
+
+# Issue #610: CI最適化コマンド
+ci-critical:
+	@echo "=== Critical Tier テスト（並列実行）==="
+	$(PYTHON) scripts/ci_optimizer.py critical
+	@echo "Critical Tier完了 ✓"
+
+ci-important:
+	@echo "=== Important Tier テスト（並列実行）==="
+	$(PYTHON) scripts/ci_optimizer.py important
+	@echo "Important Tier完了 ✓"
+
+ci-full:
+	@echo "=== 全テスト実行（並列最適化）==="
+	$(PYTHON) scripts/ci_optimizer.py all
+	@echo "全テスト完了 ✓"
+
+platform-check:
+	@echo "=== プラットフォーム互換性診断 ==="
+	$(PYTHON) scripts/cross_platform_diagnostics.py --output platform_diagnosis.json
+	@echo "プラットフォーム診断完了 ✓"

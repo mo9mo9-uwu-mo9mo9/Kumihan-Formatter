@@ -25,18 +25,18 @@ class TestDocumentValidatorAdvanced:
     def test_document_validator_initialization(self):
         """DocumentValidator初期化テスト"""
         assert self.validator is not None
-        assert hasattr(self.validator, "validate_document")
-        assert hasattr(self.validator, "get_validation_errors")
+        assert hasattr(self.validator, "validate_text")
+        assert hasattr(self.validator, "validate_ast")
 
     def test_validate_empty_document(self):
         """空ドキュメントバリデーションテスト"""
         empty_ast = MagicMock()
         empty_ast.children = []
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(empty_ast)
+            result = self.validator.validate_ast(empty_ast)
             assert result is not None
             assert result.get("is_valid", False) or len(result.get("errors", [])) == 0
 
@@ -56,10 +56,10 @@ class TestDocumentValidatorAdvanced:
 
         well_formed_ast.children = [header_node, content_node]
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(well_formed_ast)
+            result = self.validator.validate_ast(well_formed_ast)
             assert result is not None
 
     def test_validate_malformed_document(self):
@@ -73,13 +73,13 @@ class TestDocumentValidatorAdvanced:
 
         malformed_ast.children = [invalid_node]
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": ["Unknown node type: unknown_type", "Invalid content: None"],
             }
 
-            result = self.validator.validate_document(malformed_ast)
+            result = self.validator.validate_ast(malformed_ast)
             assert result is not None
 
     def test_validate_nested_structure(self):
@@ -98,10 +98,10 @@ class TestDocumentValidatorAdvanced:
         outer_node.children = [inner_node]
         nested_ast.children = [outer_node]
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(nested_ast)
+            result = self.validator.validate_ast(nested_ast)
             assert result is not None
 
     def test_validate_complex_document_structure(self):
@@ -141,10 +141,10 @@ class TestDocumentValidatorAdvanced:
 
         complex_ast.children = nodes
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(complex_ast)
+            result = self.validator.validate_ast(complex_ast)
             assert result is not None
 
     def test_validate_deeply_nested_structure(self):
@@ -170,10 +170,10 @@ class TestDocumentValidatorAdvanced:
             container.children = [inner_content]
             current_node = container
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(deep_ast)
+            result = self.validator.validate_ast(deep_ast)
             assert result is not None
 
     def test_validate_mixed_language_content(self):
@@ -189,10 +189,10 @@ class TestDocumentValidatorAdvanced:
 
         mixed_ast.children = nodes
 
-        with patch.object(self.validator, "validate_document") as mock_validate:
+        with patch.object(self.validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_document(mixed_ast)
+            result = self.validator.validate_ast(mixed_ast)
             assert result is not None
 
     def _create_text_node(self, content: str):
@@ -213,7 +213,7 @@ class TestStructureValidatorAdvanced:
     def test_structure_validator_initialization(self):
         """StructureValidator初期化テスト"""
         assert self.validator is not None
-        assert hasattr(self.validator, "validate_structure")
+        assert hasattr(self.validator, "validate_ast_structure")
 
     def test_validate_header_hierarchy(self):
         """ヘッダー階層バリデーションテスト"""
@@ -224,10 +224,10 @@ class TestStructureValidatorAdvanced:
             {"type": "header", "level": 3, "content": "H3"},
         ]
 
-        with patch.object(self.validator, "validate_structure") as mock_validate:
+        with patch.object(self.validator, "validate_ast_structure") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_structure(correct_hierarchy)
+            result = self.validator.validate_ast_structure(correct_hierarchy)
             assert result is not None
 
     def test_validate_incorrect_header_hierarchy(self):
@@ -238,13 +238,13 @@ class TestStructureValidatorAdvanced:
             {"type": "header", "level": 3, "content": "H3"},  # H2をスキップ
         ]
 
-        with patch.object(self.validator, "validate_structure") as mock_validate:
+        with patch.object(self.validator, "validate_ast_structure") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": ["Header level skipped: H1 to H3"],
             }
 
-            result = self.validator.validate_structure(incorrect_hierarchy)
+            result = self.validator.validate_ast_structure(incorrect_hierarchy)
             assert result is not None
 
     def test_validate_list_structure(self):
@@ -259,10 +259,10 @@ class TestStructureValidatorAdvanced:
             ],
         }
 
-        with patch.object(self.validator, "validate_structure") as mock_validate:
+        with patch.object(self.validator, "validate_ast_structure") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_structure(correct_list)
+            result = self.validator.validate_ast_structure(correct_list)
             assert result is not None
 
     def test_validate_nested_list_structure(self):
@@ -289,10 +289,10 @@ class TestStructureValidatorAdvanced:
             ],
         }
 
-        with patch.object(self.validator, "validate_structure") as mock_validate:
+        with patch.object(self.validator, "validate_ast_structure") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_structure(nested_list)
+            result = self.validator.validate_ast_structure(nested_list)
             assert result is not None
 
 
@@ -320,72 +320,72 @@ class TestSyntaxValidatorAdvanced:
     def test_syntax_validator_initialization(self):
         """SyntaxValidator初期化テスト"""
         assert self.validator is not None
-        assert hasattr(self.validator, "validate_syntax")
+        assert hasattr(self.validator, "validate_marker_syntax")
 
     def test_validate_correct_syntax(self):
         """正しい構文バリデーションテスト"""
         correct_syntax = ";;;強調;;; 正しいコンテンツ ;;;"
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_syntax(correct_syntax)
+            result = self.validator.validate_marker_syntax(correct_syntax)
             assert result is not None
 
     def test_validate_unclosed_decoration(self):
         """未閉じ装飾構文バリデーションテスト"""
         unclosed_syntax = ";;;強調;;; 未閉じコンテンツ"
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": [self._get_error_message("unclosed_decoration")],
             }
 
-            result = self.validator.validate_syntax(unclosed_syntax)
+            result = self.validator.validate_marker_syntax(unclosed_syntax)
             assert result is not None
 
     def test_validate_mismatched_markers(self):
         """不一致マーカー構文バリデーションテスト"""
         mismatched_syntax = ";;;強調;;; コンテンツ ;;"  # 閉じマーカーが不一致
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": [self._get_error_message("mismatched_marker")],
             }
 
-            result = self.validator.validate_syntax(mismatched_syntax)
+            result = self.validator.validate_marker_syntax(mismatched_syntax)
             assert result is not None
 
     def test_validate_nested_syntax(self):
         """ネスト構文バリデーションテスト"""
         nested_syntax = ";;;外側;;; ;;;内側;;; ネストコンテンツ ;;; 外側コンテンツ ;;;"
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_syntax(nested_syntax)
+            result = self.validator.validate_marker_syntax(nested_syntax)
             assert result is not None
 
     def test_validate_ruby_syntax(self):
         """ルビ構文バリデーションテスト"""
         ruby_syntax = "｜漢字《かんじ》"
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_syntax(ruby_syntax)
+            result = self.validator.validate_marker_syntax(ruby_syntax)
             assert result is not None
 
     def test_validate_footnote_syntax(self):
         """脚注構文バリデーションテスト"""
         footnote_syntax = "テキスト ((脚注の内容)) 続きのテキスト"
 
-        with patch.object(self.validator, "validate_syntax") as mock_validate:
+        with patch.object(self.validator, "validate_marker_syntax") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_syntax(footnote_syntax)
+            result = self.validator.validate_marker_syntax(footnote_syntax)
             assert result is not None
 
 
@@ -399,7 +399,7 @@ class TestFileValidatorAdvanced:
     def test_file_validator_initialization(self):
         """FileValidator初期化テスト"""
         assert self.validator is not None
-        assert hasattr(self.validator, "validate_file")
+        assert hasattr(self.validator, "validate_file_path")
 
     def test_validate_existing_file(self):
         """存在するファイルバリデーションテスト"""
@@ -411,10 +411,10 @@ class TestFileValidatorAdvanced:
             file_path = test_file.name
 
         try:
-            with patch.object(self.validator, "validate_file") as mock_validate:
+            with patch.object(self.validator, "validate_file_path") as mock_validate:
                 mock_validate.return_value = {"is_valid": True, "errors": []}
 
-                result = self.validator.validate_file(file_path)
+                result = self.validator.validate_file_path(file_path)
                 assert result is not None
 
         finally:
@@ -424,16 +424,16 @@ class TestFileValidatorAdvanced:
         """存在しないファイルバリデーションテスト"""
         nonexistent_path = "/path/to/nonexistent/file.txt"
 
-        with patch.object(self.validator, "validate_file") as mock_validate:
+        with patch.object(self.validator, "validate_file_path") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": ["File not found: /path/to/nonexistent/file.txt"],
             }
 
-            result = self.validator.validate_file(nonexistent_path)
+            result = self.validator.validate_file_path(nonexistent_path)
             assert result is not None
 
-    def test_validate_file_encoding(self):
+    def test_validate_file_path_encoding(self):
         """ファイルエンコーディングバリデーションテスト"""
         # UTF-8ファイルを作成
         with tempfile.NamedTemporaryFile(
@@ -443,16 +443,16 @@ class TestFileValidatorAdvanced:
             file_path = test_file.name
 
         try:
-            with patch.object(self.validator, "validate_file") as mock_validate:
+            with patch.object(self.validator, "validate_file_path") as mock_validate:
                 mock_validate.return_value = {"is_valid": True, "errors": []}
 
-                result = self.validator.validate_file(file_path)
+                result = self.validator.validate_file_path(file_path)
                 assert result is not None
 
         finally:
             Path(file_path).unlink(missing_ok=True)
 
-    def test_validate_file_size(self):
+    def test_validate_file_path_size(self):
         """ファイルサイズバリデーションテスト"""
         # 大きなファイルを作成
         large_content = "A" * 10000  # 10KB
@@ -464,10 +464,10 @@ class TestFileValidatorAdvanced:
             file_path = test_file.name
 
         try:
-            with patch.object(self.validator, "validate_file") as mock_validate:
+            with patch.object(self.validator, "validate_file_path") as mock_validate:
                 mock_validate.return_value = {"is_valid": True, "errors": []}
 
-                result = self.validator.validate_file(file_path)
+                result = self.validator.validate_file_path(file_path)
                 assert result is not None
 
         finally:
@@ -484,7 +484,7 @@ class TestPerformanceValidatorAdvanced:
     def test_performance_validator_initialization(self):
         """PerformanceValidator初期化テスト"""
         assert self.validator is not None
-        assert hasattr(self.validator, "validate_performance")
+        assert hasattr(self.validator, "validate_ast_performance")
 
     def test_validate_processing_time(self):
         """処理時間バリデーションテスト"""
@@ -494,10 +494,10 @@ class TestPerformanceValidatorAdvanced:
             "total_time": 0.8,  # 800ms
         }
 
-        with patch.object(self.validator, "validate_performance") as mock_validate:
+        with patch.object(self.validator, "validate_ast_performance") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_performance(performance_data)
+            result = self.validator.validate_ast_performance(performance_data)
             assert result is not None
 
     def test_validate_memory_usage(self):
@@ -507,10 +507,10 @@ class TestPerformanceValidatorAdvanced:
             "peak_memory": 80 * 1024 * 1024,  # 80MB
         }
 
-        with patch.object(self.validator, "validate_performance") as mock_validate:
+        with patch.object(self.validator, "validate_ast_performance") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = self.validator.validate_performance(performance_data)
+            result = self.validator.validate_ast_performance(performance_data)
             assert result is not None
 
     def test_validate_excessive_processing_time(self):
@@ -521,13 +521,13 @@ class TestPerformanceValidatorAdvanced:
             "total_time": 8.0,  # 8秒（過度）
         }
 
-        with patch.object(self.validator, "validate_performance") as mock_validate:
+        with patch.object(self.validator, "validate_ast_performance") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": ["Excessive processing time: 8.0s exceeds 5.0s limit"],
             }
 
-            result = self.validator.validate_performance(performance_data)
+            result = self.validator.validate_ast_performance(performance_data)
             assert result is not None
 
     def test_validate_memory_leak(self):
@@ -538,13 +538,13 @@ class TestPerformanceValidatorAdvanced:
             "memory_increase": 400 * 1024 * 1024,  # 400MB増加
         }
 
-        with patch.object(self.validator, "validate_performance") as mock_validate:
+        with patch.object(self.validator, "validate_ast_performance") as mock_validate:
             mock_validate.return_value = {
                 "is_valid": False,
                 "errors": ["Potential memory leak: 400MB increase detected"],
             }
 
-            result = self.validator.validate_performance(performance_data)
+            result = self.validator.validate_ast_performance(performance_data)
             assert result is not None
 
 
@@ -563,9 +563,11 @@ class TestValidationIntegration:
         test_ast = MagicMock()
 
         with (
-            patch.object(syntax_validator, "validate_syntax") as mock_syntax,
-            patch.object(structure_validator, "validate_structure") as mock_structure,
-            patch.object(document_validator, "validate_document") as mock_document,
+            patch.object(syntax_validator, "validate_marker_syntax") as mock_syntax,
+            patch.object(
+                structure_validator, "validate_ast_structure"
+            ) as mock_structure,
+            patch.object(document_validator, "validate_ast") as mock_document,
         ):
 
             # 各バリデーターの結果をモック
@@ -574,9 +576,9 @@ class TestValidationIntegration:
             mock_document.return_value = {"is_valid": True, "errors": []}
 
             # バリデーションパイプライン実行
-            syntax_result = syntax_validator.validate_syntax(test_content)
-            structure_result = structure_validator.validate_structure(test_ast)
-            document_result = document_validator.validate_document(test_ast)
+            syntax_result = syntax_validator.validate_marker_syntax(test_content)
+            structure_result = structure_validator.validate_ast_structure(test_ast)
+            document_result = document_validator.validate_ast(test_ast)
 
             # 全てのバリデーションが実行されたことを確認
             mock_syntax.assert_called_once()
@@ -631,10 +633,10 @@ class TestValidationIntegration:
 
         start_time = time.time()
 
-        with patch.object(validator, "validate_document") as mock_validate:
+        with patch.object(validator, "validate_ast") as mock_validate:
             mock_validate.return_value = {"is_valid": True, "errors": []}
 
-            result = validator.validate_document(large_ast)
+            result = validator.validate_ast(large_ast)
 
         end_time = time.time()
 
