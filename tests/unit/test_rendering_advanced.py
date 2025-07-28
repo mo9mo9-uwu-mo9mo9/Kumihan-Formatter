@@ -25,6 +25,7 @@ class KumihanRenderer:
         pass
 
 
+@pytest.mark.file_sensitive
 class TestKumihanRendererAdvanced:
     """KumihanRendererの高度なテスト"""
 
@@ -277,6 +278,7 @@ class TestKumihanRendererAdvanced:
             assert str(e) is not None
 
 
+@pytest.mark.file_sensitive
 class TestHTMLRendererAdvanced:
     """HTMLRendererの高度なテスト"""
 
@@ -363,6 +365,7 @@ class TestHTMLRendererAdvanced:
             assert result is not None
 
 
+@pytest.mark.file_sensitive
 class TestElementRendererAdvanced:
     """ElementRendererの高度なテスト"""
 
@@ -450,6 +453,7 @@ class TestElementRendererAdvanced:
             assert result is not None
 
 
+@pytest.mark.file_sensitive
 class TestTemplateRendererAdvanced:
     """TemplateRendererの高度なテスト"""
 
@@ -537,6 +541,7 @@ class TestTemplateRendererAdvanced:
                 assert "Template not found" in str(e)
 
 
+@pytest.mark.file_sensitive
 class TestRenderingIntegration:
     """レンダリング機能統合テスト"""
 

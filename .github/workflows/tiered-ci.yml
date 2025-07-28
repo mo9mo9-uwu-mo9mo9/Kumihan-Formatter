@@ -96,7 +96,7 @@ jobs:
       run: |
         echo "=== Important Tier Tests (並列実行) ==="
         python -m pytest -n auto tests/unit/test_rendering_advanced.py tests/unit/test_validation_advanced.py \
-          --durations=10 --maxfail=5 --timeout=120 -v
+          --cov=kumihan_formatter --cov-fail-under=4 --durations=10 --maxfail=5 --timeout=120 -v
 
   # Full Tests: mainブランチまたは手動実行時のみ
   full-tier:
@@ -137,7 +137,7 @@ jobs:
         if [ "${{ matrix.test-group }}" == "unit" ]; then
           echo "=== Unit Tests (並列実行) ==="
           python -m pytest -n auto tests/unit/ --cov=kumihan_formatter --cov-report=xml \
-            --durations=10 --maxfail=10 -m "not slow and not gui"
+            --cov-fail-under=4 --durations=10 --maxfail=10 -m "not slow and not gui"
         else
           echo "=== Integration Tests (並列実行) ==="
           python -m pytest -n auto tests/integration/ --durations=10 --maxfail=5
