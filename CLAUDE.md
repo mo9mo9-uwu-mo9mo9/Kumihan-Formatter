@@ -99,11 +99,9 @@ qdoc     # ドキュメント品質チェック
 # 詳細ドキュメント
 
 - **基本指示**: [PREAMBLE.md](PREAMBLE.md)
-- **開発詳細**: [docs/dev/CLAUDE_DETAILS.md](docs/dev/CLAUDE_DETAILS.md)
-- **コマンド集**: [docs/dev/CLAUDE_COMMANDS.md](docs/dev/CLAUDE_COMMANDS.md)
-- **qcheckガイド**: [docs/dev/CLAUDE_QCHECK_GUIDE.md](docs/dev/CLAUDE_QCHECK_GUIDE.md)
-- **品質管理**: [docs/dev/QUALITY_GATE.md](docs/dev/QUALITY_GATE.md)
-- **技術的負債**: [docs/dev/TECHNICAL_DEBT.md](docs/dev/TECHNICAL_DEBT.md)
+- **開発詳細**: [docs/dev/DEVELOPMENT_GUIDE.md](docs/dev/DEVELOPMENT_GUIDE.md) - 包括的開発ガイド
+- **技術仕様**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - システム全体アーキテクチャ  
+- **ユーザーガイド**: [docs/user/docs/USER_GUIDE.md](docs/user/docs/USER_GUIDE.md) - エンドユーザー向け完全ガイド
 
 # AI防止システム
 

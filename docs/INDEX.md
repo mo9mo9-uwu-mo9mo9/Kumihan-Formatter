@@ -1,31 +1,25 @@
-# Kumihan-Formatter ドキュメント一覧
+# Kumihan-Formatter ドキュメント一覧（最新統合版）
 
 ## 📚 ユーザー向けドキュメント
 
-### 🚀 はじめての方
-- [初回実行ガイド](user/FIRST_RUN.md) - 最初に読むファイル
-- [起動ガイド](user/LAUNCH_GUIDE.md) - スクリプトの使い方
-- [クイックスタート](QUICKSTART.md) - 5分で始める基本的な使い方
-- [トラブルシューティング](user/TROUBLESHOOTING.md) - Windows・macOS問題解決
-
-### 📖 基本的な使い方
-- [記法リファレンス](SYNTAX_REFERENCE.md) - すべての記法を詳しく
-- [改行処理ガイド](user/LINE_BREAK_GUIDE.md) - 直感的な改行処理の特長と使い方
-- [ダブルクリックガイド](user/DOUBLE_CLICK_GUIDE.md) - マウスだけで使う方法
-- [記法チートシート](user/SYNTAX_CHEATSHEET.txt) - 記法をコンパクトに
-
-### 🔧 詳細・上級者向け
-- [CLIリファレンス](user/CLI_REFERENCE.md) - コマンドラインの詳細
-- [設定ガイド](user/CONFIG_GUIDE.md) - カスタマイズ方法
-- [テスト生成機能](user/USAGE_GENERATE_TEST.md) - テストパターン生成
-- [ユーザーマニュアル](user/USER_MANUAL.txt) - 完全ガイド（1566行）
+### 🚀 統合ガイド
+- **[ユーザーガイド](user/docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
+  - クイックスタート、基本記法、設定、トラブルシューティング等を統合
 
 ## 🔧 開発者向けドキュメント
 
-- [開発ガイドライン](dev/CLAUDE.md) - Claude Code向け開発指針
-- [アーキテクチャ](dev/ARCHITECTURE.md) - システム設計と内部構造
-- [コントリビューション](dev/CONTRIBUTING.md) - 開発参加ガイド
-- [テストガイド](dev/TESTING.md) - テストの書き方と実行方法
+### 🏗️ 技術仕様・アーキテクチャ
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - システム全体の包括的仕様書
+  - システムアーキテクチャ、記法仕様、プロジェクト構造、技術詳細
+
+### 👨‍💻 開発ガイド
+- **[DEVELOPMENT_GUIDE.md](dev/DEVELOPMENT_GUIDE.md)** - 開発者向け統合ガイド
+  - 開発環境、ワークフロー、品質管理、Claude Code開発、テスト・デバッグ
+
+## 📋 コア文書
+- **[README.md](../README.md)** - プロジェクト概要
+- **[CLAUDE.md](../CLAUDE.md)** - Claude Code指示ファイル
+- **[SPEC.md](../SPEC.md)** - 記法仕様書（統合版リンク集）
 
 ## 📋 ドキュメントマップ
 
