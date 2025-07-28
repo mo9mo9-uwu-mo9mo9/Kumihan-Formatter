@@ -72,17 +72,17 @@ def test_ui_console_import() -> None:
 def test_parser_import() -> None:
     """パーサーモジュールのインポートテスト"""
     try:
-        from kumihan_formatter.parser import KumihanParser
+        from kumihan_formatter.parser import Parser
 
-        assert KumihanParser is not None
+        assert Parser is not None
 
         # パーサーの基本インスタンス作成
-        parser = KumihanParser()
+        parser = Parser()
         assert parser is not None
         assert hasattr(parser, "parse")
 
     except ImportError:
-        pytest.skip("KumihanParser not available")
+        pytest.skip("Parser not available")
 
 
 def test_core_imports() -> None:
