@@ -98,6 +98,7 @@ class TestConvertCommand:
         # Mock error report with errors
         mock_error_report = Mock()
         mock_error_report.has_errors.return_value = True
+        mock_error_report.has_warnings.return_value = False
         mock_error_report.error_count = 3
         mock_error_report.to_console_output.return_value = "Error details"
 
@@ -114,27 +115,29 @@ class TestConvertCommand:
                         mock_validate.return_value = Path(input_file)
                         mock_size.return_value = True
                         mock_syntax.return_value = mock_error_report
+                        
+                        # sys.exitがSystemExitを発生させるよう設定
+                        mock_exit.side_effect = SystemExit
 
-                        # When
-                        self.command.execute(
-                            input_file=input_file,
-                            output=output_dir,
-                            no_preview=True,
-                            watch=False,
-                            config=None,
-                            show_test_cases=False,
-                            template_name=None,
-                            include_source=False,
-                            syntax_check=True,
-                        )
+                        # When - エラー時にsys.exit(1)が呼ばれるため例外が発生
+                        with pytest.raises(SystemExit):
+                            self.command.execute(
+                                input_file=input_file,
+                                output=output_dir,
+                                no_preview=True,
+                                watch=False,
+                                config=None,
+                                show_test_cases=False,
+                                template_name=None,
+                                include_source=False,
+                                syntax_check=True,
+                            )
 
                         # Then
                         mock_syntax.assert_called_once()
                         mock_save.assert_called_once()
-                        # sys.exitが最後に1で呼ばれることを確認
-                        exit_calls = mock_exit.call_args_list
-                        assert len(exit_calls) >= 1
-                        assert exit_calls[-1] == call(1)
+                        # sys.exitが1で呼ばれることを確認
+                        mock_exit.assert_called_with(1)
 
         # Cleanup
         try:
