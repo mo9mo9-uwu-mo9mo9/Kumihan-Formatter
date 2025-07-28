@@ -13,6 +13,7 @@ from typing import Any
 from rich.progress import Progress
 
 from ...core.file_ops import FileOperations
+from ...core.file_io_handler import FileIOHandler
 from ...core.utilities.logger import get_logger
 from ...parser import parse
 from ...renderer import render
@@ -70,7 +71,7 @@ class ConvertProcessor:
 
         # ファイル読み込み
         get_console_ui().processing_start("読み込み中", str(input_path))
-        text = self.file_ops.read_text_file(input_path)
+        text = FileIOHandler.read_text_file(input_path)
         self.logger.debug(f"File read successfully: {len(text)} characters")
 
         # テストケース表示
@@ -108,7 +109,7 @@ class ConvertProcessor:
             "保存中", f"ファイルを保存しています: {output_file.name}"
         )
         self.logger.info(f"Saving output file: {output_file}")
-        self.file_ops.write_text_file(output_file, html)
+        FileIOHandler.write_text_file(output_file, html)
 
         # 統計情報表示
         self._show_conversion_stats(ast, text, output_file, input_path)
