@@ -92,18 +92,30 @@ class ConvertValidator:
             ErrorSeverity,
         )
 
+        # エラーオブジェクトから行番号を安全に取得
+        line_number = None
+        if hasattr(error, "line"):
+            line_number = error.line
+        elif hasattr(error, "lineno"):
+            line_number = error.lineno
+        
+        # メッセージの安全な取得
+        message = error.message if hasattr(error, 'message') else str(error)
+        
+        error_id = f"syntax_{line_number or 0}_{hash(message)}"
+        
         return DetailedError(
-            error_id=f"syntax_{error.line}_{hash(error.message)}",
+            error_id=error_id,
             severity=(
                 ErrorSeverity.ERROR
-                if error.severity == ErrorSeverity.ERROR
+                if hasattr(error, 'severity') and error.severity == ErrorSeverity.ERROR
                 else ErrorSeverity.WARNING
             ),
             category=ErrorCategory.SYNTAX,
             title="記法エラー",
-            message=error.message,
+            message=message,
             file_path=file_path,
-            location=ErrorLocation(line=error.line) if hasattr(error, "line") else None,
+            location=ErrorLocation(line=line_number) if line_number else None,
         )
 
     def save_error_report(
