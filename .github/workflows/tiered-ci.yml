@@ -98,10 +98,10 @@ jobs:
         python -m pytest -n auto tests/unit/test_rendering_advanced.py tests/unit/test_validation_advanced.py \
           --cov=kumihan_formatter --cov-fail-under=4 --durations=10 --maxfail=5 --timeout=120 -v
 
-  # Full Tests: mainブランチまたは手動実行時のみ
+  # Full Tests: mainブランチ、PR、または手動実行時
   full-tier:
     name: 🔬 Full Test Suite
-    if: github.ref == 'refs/heads/main' || github.event.inputs.test_tier == 'full'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request' || github.event.inputs.test_tier == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [critical-tier, important-tier]

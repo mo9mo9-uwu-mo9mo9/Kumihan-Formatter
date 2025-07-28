@@ -337,6 +337,10 @@ class TestPerformanceRegression:
 class TestAPIBackwardCompatibility:
     """API後方互換性テスト"""
 
+    def setup_method(self):
+        """テストセットアップ"""
+        self.logger = get_logger(__name__)
+
     def test_parser_api_compatibility(self):
         """Parser APIの後方互換性テスト"""
         parser = KumihanParser()
@@ -389,17 +393,17 @@ class TestAPIBackwardCompatibility:
                 output_path = output_file.name
 
             # APIの基本形式が維持されていることを確認
-            with patch.object(processor, "convert") as mock_convert:
+            with patch.object(processor, "convert_file") as mock_convert:
                 mock_convert.return_value = True
-                result = processor.convert(input_path, output_path)
+                result = processor.convert_file(input_path, output_path)
 
         except Exception as e:
             # Windows環境での一時ファイル処理エラーをスキップ
             self.logger.warning(f"一時ファイル処理エラー (Windows対応): {e}")
             # モック処理で基本APIのテストを継続
-            with patch.object(processor, "convert") as mock_convert:
+            with patch.object(processor, "convert_file") as mock_convert:
                 mock_convert.return_value = True
-                result = processor.convert("dummy_input.txt", "dummy_output.html")
+                result = processor.convert_file("dummy_input.txt", "dummy_output.html")
         finally:
             # Windows環境でのファイル削除処理を堅牢化
             for file_path in [input_path, output_path]:

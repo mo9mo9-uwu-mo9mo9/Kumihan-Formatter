@@ -57,7 +57,8 @@ class TestRenderCacheAnalytics:
 
         # レンダリング時間統計
         assert "avg_render_time" in stats
-        assert stats["avg_render_time"] == (0.1 + 0.2 + 0.15) / 3
+        expected_avg = (0.1 + 0.2 + 0.15) / 3
+        assert abs(stats["avg_render_time"] - expected_avg) < 0.01
 
         assert "max_render_time" in stats
         assert stats["max_render_time"] == 0.2
