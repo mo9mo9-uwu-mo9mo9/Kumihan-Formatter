@@ -1,0 +1,6 @@
+This is a test file to verify Claude Code review functionality.
+
+Changes:
+- Created test file for Claude review
+- Testing @claude mention functionality
+- Verifying GitHub Actions integration
