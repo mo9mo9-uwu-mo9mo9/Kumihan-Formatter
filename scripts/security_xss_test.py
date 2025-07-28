@@ -583,5 +583,65 @@ def main():
         logger.error(f"💥 XSSテスト実行エラー: {e}")
         return 1
 
+def run_unit_tests():
+    """簡易単体テスト実行"""
+    logger.info("🧪 XSS検出システム単体テスト開始")
+    
+    test_cases = [
+        {
+            "name": "危険なHTML出力検出",
+            "code": "html = f\"<div>{user_input}</div>\"",
+            "expected_vulnerable": True
+        },
+        {
+            "name": "安全なエスケープ処理",
+            "code": "html = f\"<div>{escape(user_input)}</div>\"",
+            "expected_vulnerable": False
+        },
+        {
+            "name": "JavaScript挿入脆弱性",
+            "code": "script = \"<script>alert('\" + data + \"')</script>\"",
+            "expected_vulnerable": True
+        },
+        {
+            "name": "特殊文字対応テスト（エッジケース）",
+            "code": f"html = \"{'©' * 1000}<p>content</p>\"",
+            "expected_vulnerable": False
+        }
+    ]
+    
+    passed = 0
+    for i, test_case in enumerate(test_cases, 1):
+        try:
+            from pathlib import Path
+            project_root = Path(".").resolve()
+            tester = XSSTester(project_root)
+            
+            # 簡易パターンマッチングテスト
+            has_dangerous_pattern = any(
+                __import__('re').search(pattern, test_case["code"])
+                for pattern in tester.dangerous_html_patterns
+                if pattern
+            )
+            
+            if has_dangerous_pattern == test_case["expected_vulnerable"]:
+                logger.info(f"✅ テスト{i}: {test_case['name']} - PASS")
+                passed += 1
+            else:
+                logger.warning(f"❌ テスト{i}: {test_case['name']} - FAIL")
+                
+        except Exception as e:
+            logger.error(f"❌ テスト{i}: {test_case['name']} - ERROR: {e}")
+    
+    logger.info(f"📊 単体テスト結果: {passed}/{len(test_cases)} PASS")
+    return passed == len(test_cases)
+
 if __name__ == "__main__":
-    sys.exit(main())
+    import sys
+    
+    # --unit-testオプション対応
+    if len(sys.argv) > 1 and sys.argv[1] == "--unit-test":
+        success = run_unit_tests()
+        sys.exit(0 if success else 1)
+    else:
+        sys.exit(main())

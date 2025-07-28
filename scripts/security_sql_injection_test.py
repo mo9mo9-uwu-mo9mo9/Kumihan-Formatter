@@ -475,5 +475,64 @@ def main():
         logger.error("💥 SQLインジェクションテスト実行エラーが発生しました")
         return 1
 
+def run_unit_tests():
+    """簡易単体テスト実行"""
+    logger.info("🧪 SQLインジェクション検出システム単体テスト開始")
+    
+    test_cases = [
+        {
+            "name": "危険なSQL文字列連結検出",
+            "code": "query = \"SELECT * FROM users WHERE id = '\" + user_id + \"'\"",
+            "expected_vulnerable": True
+        },
+        {
+            "name": "安全なパラメーター化クエリ",
+            "code": "cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))",
+            "expected_vulnerable": False
+        },
+        {
+            "name": "format使用の危険なクエリ",
+            "code": "query = \"SELECT * FROM users WHERE name = '{}'\".format(username)",
+            "expected_vulnerable": True
+        },
+        {
+            "name": "巨大ファイル対応テスト（エッジケース）",
+            "code": "# " + "A" * 10000 + "\nquery = \"SELECT * FROM table\"",
+            "expected_vulnerable": False
+        }
+    ]
+    
+    passed = 0
+    for i, test_case in enumerate(test_cases, 1):
+        try:
+            from pathlib import Path
+            project_root = Path(".").resolve()
+            tester = SQLInjectionTester(project_root)
+            
+            # 簡易パターンマッチングテスト
+            has_dangerous_pattern = any(
+                __import__('re').search(pattern, test_case["code"])
+                for pattern in tester.dangerous_sql_patterns
+            )
+            
+            if has_dangerous_pattern == test_case["expected_vulnerable"]:
+                logger.info(f"✅ テスト{i}: {test_case['name']} - PASS")
+                passed += 1
+            else:
+                logger.warning(f"❌ テスト{i}: {test_case['name']} - FAIL")
+                
+        except Exception as e:
+            logger.error(f"❌ テスト{i}: {test_case['name']} - ERROR: {e}")
+    
+    logger.info(f"📊 単体テスト結果: {passed}/{len(test_cases)} PASS")
+    return passed == len(test_cases)
+
 if __name__ == "__main__":
-    sys.exit(main())
+    import sys
+    
+    # --unit-testオプション対応
+    if len(sys.argv) > 1 and sys.argv[1] == "--unit-test":
+        success = run_unit_tests()
+        sys.exit(0 if success else 1)
+    else:
+        sys.exit(main())
