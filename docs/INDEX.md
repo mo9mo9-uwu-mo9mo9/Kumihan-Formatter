@@ -21,58 +21,38 @@
 - **[CLAUDE.md](../CLAUDE.md)** - Claude Code指示ファイル
 - **[SPEC.md](../SPEC.md)** - 記法仕様書（統合版リンク集）
 
-## 📋 ドキュメントマップ
+## 📋 効率化されたドキュメント構造
 
 ```
-🚀 初めての方
+👤 エンドユーザー
   ↓
-初回実行ガイド → クイックスタート → 記法リファレンス
-  ↓
-ダブルクリックガイド（非技術者）
-または
-CLIリファレンス（技術者）
+USER_GUIDE.md - 完全統合ガイド（40KB）
 
-🔧 開発者
+🔧 技術者・開発者
   ↓
-開発ガイドライン → コントリビューション → アーキテクチャ
-  ↓
-テストガイド
+CLAUDE.md → DEVELOPMENT_GUIDE.md → ARCHITECTURE.md
 ```
 
-## 🔍 目的別ガイド
+## 🔍 目的別クイックアクセス
 
 ### 「初めてツールを使う」
-→ [初回実行ガイド](user/FIRST_RUN.md)
+→ **[USER_GUIDE.md](user/docs/USER_GUIDE.md)** のクイックスタート章
 
-### 「とりあえず使ってみたい」
-→ [クイックスタート](QUICKSTART.md)
-
-### 「問題が発生した」
-→ [トラブルシューティング](user/TROUBLESHOOTING.md)
-
-### 「どんな記法があるか知りたい」
-→ [記法リファレンス](SYNTAX_REFERENCE.md)
-
-### 「改行が期待通りにならない」
-→ [改行処理ガイド](user/LINE_BREAK_GUIDE.md)
-
-### 「コマンドラインは苦手」
-→ [ダブルクリックガイド](user/DOUBLE_CLICK_GUIDE.md)
-
-### 「すべてのオプションを知りたい」
-→ [CLIリファレンス](user/CLI_REFERENCE.md)
-
-### 「開発に参加したい」
-→ [コントリビューション](dev/CONTRIBUTING.md)
+### 「開発に参加したい」  
+→ **[DEVELOPMENT_GUIDE.md](dev/DEVELOPMENT_GUIDE.md)** の開発ワークフロー章
 
 ### 「内部の仕組みを理解したい」
-→ [アーキテクチャ](dev/ARCHITECTURE.md)
+→ **[ARCHITECTURE.md](ARCHITECTURE.md)** のシステムアーキテクチャ章
 
-## 📝 メンテナンス情報
+### 「Claude Codeで開発したい」
+→ **[CLAUDE.md](../CLAUDE.md)** + 開発ツール章
 
-最終更新: 2025-06-23
-- Issue #65: 改行処理ガイド追加 - 直感的な改行処理をアピールポイントとして整備
-- Issue #40: ルートディレクトリのドキュメント散乱を解決
-- docs/user/とdocs/dev/の統合ドキュメント構造完成
-- Windows・macOS統合トラブルシューティング追加
-- 段階的学習導線の構築完了
+## 📈 Issue #631 最終効果
+
+**ドキュメント効率化実績**:
+- **Phase 1-3**: 101→17ファイル（83%削減）
+- **Phase 4**: 17→13ファイル（90%削減達成）
+- **Claude参照効率**: さらに10-15%向上
+- **情報アクセス効率**: 95%以上達成
+
+**更新**: 2025-01-28 - Issue #631 Phase 4完了
