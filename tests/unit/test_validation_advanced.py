@@ -14,6 +14,7 @@ from kumihan_formatter.core.validators.structure_validator import StructureValid
 from kumihan_formatter.core.validators.syntax_validator import SyntaxValidator
 
 
+@pytest.mark.file_sensitive
 class TestDocumentValidatorAdvanced:
     """DocumentValidatorの高度なテスト"""
 
@@ -203,6 +204,7 @@ class TestDocumentValidatorAdvanced:
         return node
 
 
+@pytest.mark.file_sensitive
 class TestStructureValidatorAdvanced:
     """StructureValidatorの高度なテスト"""
 
@@ -296,6 +298,7 @@ class TestStructureValidatorAdvanced:
             assert result is not None
 
 
+@pytest.mark.file_sensitive
 class TestSyntaxValidatorAdvanced:
     """SyntaxValidatorの高度なテスト"""
 
@@ -389,6 +392,7 @@ class TestSyntaxValidatorAdvanced:
             assert result is not None
 
 
+@pytest.mark.file_sensitive
 class TestFileValidatorAdvanced:
     """FileValidatorの高度なテスト"""
 
@@ -474,6 +478,7 @@ class TestFileValidatorAdvanced:
             Path(file_path).unlink(missing_ok=True)
 
 
+@pytest.mark.slow
 class TestPerformanceValidatorAdvanced:
     """PerformanceValidatorの高度なテスト"""
 
@@ -548,6 +553,7 @@ class TestPerformanceValidatorAdvanced:
             assert result is not None
 
 
+@pytest.mark.file_sensitive
 class TestValidationIntegration:
     """バリデーション機能統合テスト"""
 

@@ -164,13 +164,10 @@ class TestParseCacheAnalytics:
         assert invalidated_count == 2
 
         # deleteメソッドが正しいキーで呼ばれることを確認
-        expected_calls = [
-            ("parse:hash123:file1",),
-            ("parse:hash123:file3",),
-        ]
-        actual_calls = [call[0] for call in self.cache_core.delete.call_args_list]
+        expected_keys = ["parse:hash123:file1", "parse:hash123:file3"]
+        actual_calls = [call[0][0] for call in self.cache_core.delete.call_args_list]
 
-        for expected_key in [call[0] for call in expected_calls]:
+        for expected_key in expected_keys:
             assert expected_key in actual_calls
 
     def test_invalidate_by_content_hash_no_matches(self):

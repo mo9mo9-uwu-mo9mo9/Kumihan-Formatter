@@ -57,7 +57,13 @@ class CrossPlatformDiagnostics:
         self, test_pattern: Optional[str] = None
     ) -> Dict[str, any]:
         """テスト失敗の診断実行"""
-        print(f"🔍 プラットフォーム診断開始: {self.platform_info['system']}")
+        # Windows環境で絵文字エラーを避けるため、ASCII文字を使用
+        try:
+            print(f"🔍 プラットフォーム診断開始: {self.platform_info['system']}")
+        except UnicodeEncodeError:
+            print(
+                f"[DEBUG] Platform diagnostics starting: {self.platform_info['system']}"
+            )
 
         results = {
             "platform": self.platform_info,
@@ -185,7 +191,11 @@ class CrossPlatformDiagnostics:
         self, test_pattern: Optional[str] = None
     ) -> Dict[str, any]:
         """問題のあるテストの特定"""
-        print("🧪 問題テストの特定中...")
+        # Windows環境で絵文字エラーを避けるため、ASCII文字を使用
+        try:
+            print("🧪 問題テストの特定中...")
+        except UnicodeEncodeError:
+            print("[DEBUG] Identifying problematic tests...")
 
         # プラットフォーム固有で失敗しやすいテストパターン
         platform_sensitive_patterns = [
@@ -314,13 +324,20 @@ def main():
     results = diagnostics.diagnose_test_failures(args.test_pattern)
 
     # 結果表示
-    print("\n📊 診断結果:")
+    # Windows環境で絵文字エラーを避けるため、ASCII文字を使用
+    try:
+        print("\n📊 診断結果:")
+    except UnicodeEncodeError:
+        print("\n[RESULTS] Diagnostic results:")
     print(f"プラットフォーム: {results['platform']['system']}")
     print(f"ファイルシステム問題: {len(results['file_system_issues'])}件")
     print(f"エンコーディング問題: {len(results['encoding_issues'])}件")
     print(f"パス問題: {len(results['path_issues'])}件")
 
-    print("\n💡 推奨対応策:")
+    try:
+        print("\n💡 推奨対応策:")
+    except UnicodeEncodeError:
+        print("\n[RECOMMENDATIONS] Suggested solutions:")
     for rec in results["recommendations"]:
         print(f"  - {rec}")
 
@@ -328,10 +345,16 @@ def main():
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
-        print(f"\n📄 詳細結果を {args.output} に出力しました")
+        try:
+            print(f"\n📄 詳細結果を {args.output} に出力しました")
+        except UnicodeEncodeError:
+            print(f"\n[OUTPUT] Detailed results written to {args.output}")
 
     # プラットフォームマーカー設定出力
-    print("\n🏷️ 推奨pytest.ini追加設定:")
+    try:
+        print("\n🏷️ 推奨pytest.ini追加設定:")
+    except UnicodeEncodeError:
+        print("\n[MARKERS] Recommended pytest.ini markers:")
     print(diagnostics.generate_platform_markers())
 
 
