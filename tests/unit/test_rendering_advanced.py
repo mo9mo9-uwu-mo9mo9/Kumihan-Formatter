@@ -460,7 +460,7 @@ class TestTemplateRendererAdvanced:
     def test_template_renderer_initialization(self):
         """TemplateRenderer初期化テスト"""
         assert self.template_renderer is not None
-        assert hasattr(self.template_renderer, "render_with_template")
+        assert hasattr(self.template_renderer, "render_template")
 
     def test_render_with_default_template(self):
         """デフォルトテンプレートでのレンダリングテスト"""
@@ -471,9 +471,7 @@ class TestTemplateRendererAdvanced:
             "author": "テスト作成者",
         }
 
-        with patch.object(
-            self.template_renderer, "render_with_template"
-        ) as mock_render:
+        with patch.object(self.template_renderer, "render_template") as mock_render:
             mock_render.return_value = f"""
 <!DOCTYPE html>
 <html>
@@ -482,9 +480,7 @@ class TestTemplateRendererAdvanced:
 </html>
             """
 
-            result = self.template_renderer.render_with_template(
-                "default.html.j2", context
-            )
+            result = self.template_renderer.render_template("default.html.j2", context)
             assert result is not None
             assert "テストドキュメント" in result or len(result) > 0
 
@@ -493,14 +489,10 @@ class TestTemplateRendererAdvanced:
         content = "<p>カスタムコンテンツ</p>"
         context = {"content": content, "custom_data": "カスタムデータ"}
 
-        with patch.object(
-            self.template_renderer, "render_with_template"
-        ) as mock_render:
+        with patch.object(self.template_renderer, "render_template") as mock_render:
             mock_render.return_value = f'<div class="custom">{context["content"]}</div>'
 
-            result = self.template_renderer.render_with_template(
-                "custom.html.j2", context
-            )
+            result = self.template_renderer.render_template("custom.html.j2", context)
             assert result is not None
 
     def test_render_template_with_variables(self):
@@ -511,9 +503,7 @@ class TestTemplateRendererAdvanced:
             "show_footer": True,
         }
 
-        with patch.object(
-            self.template_renderer, "render_with_template"
-        ) as mock_render:
+        with patch.object(self.template_renderer, "render_template") as mock_render:
             mock_render.return_value = """
 <html>
 <head><title>ダイナミックタイトル</title></head>
@@ -528,9 +518,7 @@ class TestTemplateRendererAdvanced:
 </html>
             """
 
-            result = self.template_renderer.render_with_template(
-                "dynamic.html.j2", context
-            )
+            result = self.template_renderer.render_template("dynamic.html.j2", context)
             assert result is not None
 
     def test_render_template_error_handling(self):
@@ -538,13 +526,11 @@ class TestTemplateRendererAdvanced:
         # 存在しないテンプレートでのエラー処理
         context = {"content": "テスト"}
 
-        with patch.object(
-            self.template_renderer, "render_with_template"
-        ) as mock_render:
+        with patch.object(self.template_renderer, "render_template") as mock_render:
             mock_render.side_effect = FileNotFoundError("Template not found")
 
             try:
-                result = self.template_renderer.render_with_template(
+                result = self.template_renderer.render_template(
                     "nonexistent.html.j2", context
                 )
             except FileNotFoundError as e:
@@ -572,7 +558,7 @@ class TestRenderingIntegration:
         with (
             patch.object(kumihan_renderer, "render") as mock_kumihan,
             patch.object(html_renderer, "render_to_html") as mock_html,
-            patch.object(template_renderer, "render_with_template") as mock_template,
+            patch.object(template_renderer, "render_template") as mock_template,
         ):
 
             # Mock設定
@@ -585,7 +571,7 @@ class TestRenderingIntegration:
             # パイプライン実行
             step1_result = kumihan_renderer.render(ast)
             step2_result = html_renderer.render_to_html(ast)
-            final_result = template_renderer.render_with_template(
+            final_result = template_renderer.render_template(
                 "default.html.j2", {"content": step2_result}
             )
 
