@@ -93,6 +93,12 @@ KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
 - **使い方相談**: [Discussions](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/discussions)
 - **開発に参加**: [Contributing Guide](CONTRIBUTING.md)
 
+### 🚨 コードレビュー規則
+**重要**: このプロジェクトでは **日本語でのレビューを義務付け** しています。
+- ✅ すべてのPRレビューは日本語で行ってください
+- ❌ 英語でのレビューは受け付けません
+- 詳細: [CONTRIBUTING.md](CONTRIBUTING.md#-日本語レビュー必須規則)
+
 ## 📄 ライセンス
 
 Proprietary License - Copyright © 2025 mo9mo9-uwu-mo9mo9
