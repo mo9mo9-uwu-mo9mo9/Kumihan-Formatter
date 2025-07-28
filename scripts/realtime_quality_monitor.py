@@ -25,6 +25,7 @@ import signal
 import hashlib
 
 from kumihan_formatter.core.utilities.logger import get_logger
+from scripts.security_utils import get_alert_thresholds, load_security_config
 
 logger = get_logger(__name__)
 
@@ -78,12 +79,7 @@ class RealTimeQualityMonitor:
         self.last_file_hashes = {}
         
         # アラート設定
-        self.alert_thresholds = {
-            "coverage_drop": 5.0,      # カバレッジ5%以上の低下
-            "complexity_increase": 3.0, # 複雑度3以上の増加
-            "test_failure": 1,          # テスト失敗1件以上
-            "quality_score_drop": 10.0  # 品質スコア10以上の低下
-        }
+        self.alert_thresholds = get_alert_thresholds()
         
         # シグナルハンドラー設定
         signal.signal(signal.SIGINT, self._signal_handler)
