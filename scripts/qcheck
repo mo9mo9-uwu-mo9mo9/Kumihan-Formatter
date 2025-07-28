@@ -1,4 +1,0 @@
-#!/bin/bash
-# qcheck - 全体品質チェック（Issue #578）
-source venv/bin/activate 2>/dev/null || true
-python scripts/qcheck_commands.py qcheck
