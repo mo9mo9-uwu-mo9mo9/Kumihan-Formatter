@@ -33,4 +33,9 @@
 
 ---
 
+## 🔗 相互参照リンク
+- **[CLAUDE.md](CLAUDE.md)** - Claude Code開発指示・基本コマンド
+- **[docs/INDEX.md](docs/INDEX.md)** - 効率化されたドキュメント構造
+- **[README.md](README.md)** - プロジェクト概要・使用方法
+
 **⚠️ 注意**: 従来の分割ファイル（SPEC_CORE.md、SPEC_SYNTAX.md等）は統合により削除されました。新しい統合ファイルを参照してください。
