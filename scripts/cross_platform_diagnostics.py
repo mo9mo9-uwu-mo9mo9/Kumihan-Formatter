@@ -57,7 +57,13 @@ class CrossPlatformDiagnostics:
         self, test_pattern: Optional[str] = None
     ) -> Dict[str, any]:
         """テスト失敗の診断実行"""
-        print(f"🔍 プラットフォーム診断開始: {self.platform_info['system']}")
+        # Windows環境で絵文字エラーを避けるため、ASCII文字を使用
+        try:
+            print(f"🔍 プラットフォーム診断開始: {self.platform_info['system']}")
+        except UnicodeEncodeError:
+            print(
+                f"[DEBUG] Platform diagnostics starting: {self.platform_info['system']}"
+            )
 
         results = {
             "platform": self.platform_info,
