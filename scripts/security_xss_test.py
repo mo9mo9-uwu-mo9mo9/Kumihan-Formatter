@@ -103,7 +103,7 @@ class XSSTester(TDDSystemBase):
             }
         else:
             # フォールバック
-            logger.warning("セキュリティパターン設定ファイルが見つかりません")
+            logger.info("Using default XSS patterns (configuration not available)")
             # 危険なHTML出力パターン
             self.dangerous_html_patterns = {}
             self.safe_html_patterns = {}

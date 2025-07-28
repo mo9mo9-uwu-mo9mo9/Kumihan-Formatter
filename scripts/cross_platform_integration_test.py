@@ -188,15 +188,17 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
     
     def _should_scan_file(self, file_path: Path) -> bool:
         """ファイルをスキャンすべきかチェック"""
-        file_str = str(file_path)
+        # pathlib.Pathでクロスプラットフォーム対応
+        relative_path = file_path.relative_to(self.project_root)
+        path_parts = relative_path.parts
         
         exclude_patterns = [
-            "tests/", "venv/", ".venv/", "__pycache__/",
-            ".git/", "build/", "dist/", ".tox/", "node_modules/"
+            "tests", "venv", ".venv", "__pycache__",
+            ".git", "build", "dist", ".tox", "node_modules"
         ]
         
         for pattern in exclude_patterns:
-            if pattern in file_str:
+            if any(pattern in part for part in path_parts):
                 return False
         
         return True

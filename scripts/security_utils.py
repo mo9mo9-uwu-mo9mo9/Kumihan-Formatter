@@ -11,16 +11,40 @@ Security Test Utilities - Issue #640 Phase 3
 
 import math
 import statistics
+import fcntl
+import time
 from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path
 import json
 
 def load_security_config() -> Dict[str, Any]:
-    """セキュリティ設定を読み込み"""
+    """セキュリティ設定を読み込み（排他制御付き）"""
     config_file = Path(__file__).parent / "security_config.json"
     if config_file.exists():
-        with open(config_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    # Unix系でのファイルロック
+                    try:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                        config_data = json.load(f)
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                        return config_data
+                    except (OSError, BlockingIOError):
+                        # Windows対応またはロック失敗時は短時間待機後リトライ
+                        if attempt < max_retries - 1:
+                            time.sleep(0.1 * (attempt + 1))
+                            continue
+                        else:
+                            # ロックなしで読み込み
+                            f.seek(0)
+                            return json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+                if attempt < max_retries - 1:
+                    time.sleep(0.05)
+                    continue
+                break
     return {}
 
 def calculate_statistical_confidence(
@@ -70,13 +94,27 @@ def calculate_statistical_confidence(
     # 信頼区間幅
     margin = z * se
     
-    # 信頼度計算（区間幅が狭いほど高い信頼度）
-    # 最大マージンを0.5と仮定
-    confidence = max(0.0, min(1.0, 1.0 - (margin / 0.5)))
+    # 信頼度計算（理論的根拠に基づく）
+    # 最大理論マージンは比率が0.5の時に最大となる: z * sqrt(0.25/n)
+    max_theoretical_margin = z * math.sqrt(0.25 / sample_size)
     
-    # サンプルサイズによる調整
-    size_factor = min(1.0, math.log(sample_size + 1) / math.log(100))
-    confidence *= size_factor
+    # 相対的信頼度（実際のマージンと理論的最大マージンの比較）
+    if max_theoretical_margin > 0:
+        relative_precision = max(0.0, 1.0 - (margin / max_theoretical_margin))
+    else:
+        relative_precision = 1.0
+    
+    # サンプルサイズによる信頼度調整（より段階的）
+    if sample_size >= 100:
+        size_factor = 1.0
+    elif sample_size >= 30:
+        size_factor = 0.7 + 0.3 * (sample_size - 30) / 70
+    elif sample_size >= 10:
+        size_factor = 0.4 + 0.3 * (sample_size - 10) / 20
+    else:
+        size_factor = 0.1 + 0.3 * sample_size / 10
+    
+    confidence = relative_precision * size_factor
     
     return round(confidence, 3)
 

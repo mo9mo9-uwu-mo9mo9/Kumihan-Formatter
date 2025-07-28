@@ -92,10 +92,18 @@ class SQLInjectionTester(TDDSystemBase):
                 for pat_info in sql_patterns.get('safe_patterns', {}).values()
             }
         else:
-            # フォールバック
-            self.dangerous_sql_patterns = {}
-            self.safe_sql_patterns = {}
-            logger.warning("セキュリティパターン設定ファイルが見つかりません")
+            # フォールバック: 基本的なパターンを提供
+            self.dangerous_sql_patterns = {
+                r"[\"']?\s*\+\s*[\"']?": "String concatenation in SQL query",
+                r"\.format\s*\(": "String formatting in SQL query",
+                r"%s|%d|%[A-Za-z]": "Printf-style formatting in SQL query"
+            }
+            self.safe_sql_patterns = {
+                r"execute\s*\([^,]+,\s*\[": "Parameterized query with list",
+                r"execute\s*\([^,]+,\s*\(": "Parameterized query with tuple", 
+                r"executemany\s*\(": "Batch parameterized execution"
+            }
+            logger.info("Using default SQL injection patterns (configuration not available)")
         
         # スキャン対象ファイル
         self.scan_patterns = [
@@ -144,7 +152,7 @@ class SQLInjectionTester(TDDSystemBase):
             return result
             
         except Exception as e:
-            logger.error(f"SQLインジェクションテスト実行エラー: {e}")
+            logger.error("SQLインジェクションテスト実行エラーが発生しました")
             raise TDDSystemError(f"テスト実行失敗: {e}")
     
     def _scan_source_files(self):
@@ -464,7 +472,7 @@ def main():
             return 0 if result.overall_risk in [SQLInjectionRisk.SAFE, SQLInjectionRisk.LOW] else 1
             
     except Exception as e:
-        logger.error(f"💥 SQLインジェクションテスト実行エラー: {e}")
+        logger.error("💥 SQLインジェクションテスト実行エラーが発生しました")
         return 1
 
 if __name__ == "__main__":

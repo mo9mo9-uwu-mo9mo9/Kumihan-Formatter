@@ -14,7 +14,7 @@ import os
 import sys
 import json
 import subprocess
-# Optional dependency
+# Optional dependency with proper error handling
 try:
     import requests
     HAS_REQUESTS = True
@@ -122,6 +122,11 @@ class DependencyIntegrityChecker(TDDSystemBase):
         self.dependency_tree = {}
         self.security_issues = []
         self.license_issues = []
+        
+        # requests依存関係チェック
+        if not HAS_REQUESTS:
+            logger.warning("requests not available - vulnerability checking disabled")
+            logger.info("Install requests package for enhanced vulnerability checking: pip install requests")
         self.version_conflicts = []
         self.unused_deps = []
         self.outdated_deps = []
