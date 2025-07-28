@@ -1,0 +1,103 @@
+{
+  "test_summary": {
+    "total_tests": 12,
+    "successful_tests": 12,
+    "failed_tests": 0,
+    "success_rate": 100.0,
+    "total_execution_time": 23.16215443611145
+  },
+  "test_results": [
+    {
+      "test_name": "_test_secure_subprocess_integration",
+      "success": true,
+      "execution_time": 0.017407894134521484,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:28.665331"
+    },
+    {
+      "test_name": "_test_memory_management_integration",
+      "success": true,
+      "execution_time": 22.10854196548462,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:50.774071"
+    },
+    {
+      "test_name": "_test_performance_optimization_integration",
+      "success": true,
+      "execution_time": 0.2943079471588135,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.069343"
+    },
+    {
+      "test_name": "_test_system_base_integration",
+      "success": true,
+      "execution_time": 0.002046823501586914,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.071501"
+    },
+    {
+      "test_name": "_test_session_management_integration",
+      "success": true,
+      "execution_time": 0.0005900859832763672,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.072226"
+    },
+    {
+      "test_name": "_test_quality_gate_integration",
+      "success": true,
+      "execution_time": 0.00044798851013183594,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.072832"
+    },
+    {
+      "test_name": "_test_realtime_monitoring_integration",
+      "success": true,
+      "execution_time": 0.0004177093505859375,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.073384"
+    },
+    {
+      "test_name": "_test_full_tdd_workflow",
+      "success": true,
+      "execution_time": 0.626849889755249,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.700383"
+    },
+    {
+      "test_name": "_test_concurrent_operations",
+      "success": true,
+      "execution_time": 0.1075141429901123,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.808747"
+    },
+    {
+      "test_name": "_test_resource_cleanup",
+      "success": true,
+      "execution_time": 0.003467082977294922,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.813085"
+    },
+    {
+      "test_name": "_test_error_handling",
+      "success": true,
+      "execution_time": 0.00017714500427246094,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.813700"
+    },
+    {
+      "test_name": "_test_scalability",
+      "success": true,
+      "execution_time": 0.0003857612609863281,
+      "error_message": null,
+      "timestamp": "2025-07-28T23:40:51.814653"
+    }
+  ],
+  "failed_tests_details": [],
+  "overall_assessment": "excellent",
+  "recommendations": [
+    "定期的な統合テストの実行を継続してください",
+    "パフォーマンス監視を継続してください",
+    "セキュリティチェックを定期的に実行してください"
+  ],
+  "report_timestamp": "2025-07-28T23:40:51.814993"
+}
