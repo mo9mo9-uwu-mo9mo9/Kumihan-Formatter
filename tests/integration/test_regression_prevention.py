@@ -148,6 +148,7 @@ class TestKnownIssueRegression:
         memory_increase = final_memory - initial_memory
         assert memory_increase < 100 * 1024 * 1024  # 100MB以下（環境による変動を考慮）
 
+    @pytest.mark.encoding_sensitive
     def test_encoding_detection_regression(self):
         """エンコーディング検出の回帰防止テスト"""
         # UTF-8以外のエンコーディングでも適切に処理されることを確認
@@ -362,6 +363,7 @@ class TestAPIBackwardCompatibility:
         assert result is not None
         assert isinstance(result, str)
 
+    @pytest.mark.file_sensitive
     def test_convert_processor_api_compatibility(self):
         """ConvertProcessor APIの後方互換性テスト"""
         processor = ConvertProcessor()

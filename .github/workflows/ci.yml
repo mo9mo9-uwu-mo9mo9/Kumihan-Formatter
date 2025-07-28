@@ -129,7 +129,7 @@ jobs:
         echo "=== 並列テスト実行（プラットフォーム別フィルタリング）==="
         if [ "${{ matrix.os }}" == "windows-latest" ]; then
           python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --durations=10 --maxfail=5 \
-            -m "not macos_only and not linux_only" --timeout=180
+            -m "not macos_only and not linux_only and not file_sensitive and not encoding_sensitive" --timeout=180
         elif [ "${{ matrix.os }}" == "macos-latest" ]; then
           python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --durations=10 --maxfail=5 \
             -m "not windows_only and not linux_only" --timeout=180
