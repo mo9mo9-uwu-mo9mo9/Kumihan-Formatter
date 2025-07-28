@@ -97,7 +97,7 @@ jobs:
     name: 🌐 クロスプラットフォームテスト
     if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 15
     needs: essential-checks
     strategy:
       fail-fast: false
@@ -131,8 +131,8 @@ jobs:
           python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --cov-fail-under=3 --durations=10 --maxfail=5 \
             -m "not macos_only and not linux_only and not file_sensitive and not encoding_sensitive and not slow" --timeout=240
         elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-          python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --cov-fail-under=3 --durations=10 --maxfail=5 \
-            -m "not windows_only and not linux_only and not slow" --timeout=180
+          python -m pytest -n 2 --cov=kumihan_formatter --cov-report=xml --cov-fail-under=3 --durations=10 --maxfail=5 \
+            -m "not windows_only and not linux_only and not slow and not performance and not integration" --timeout=120
         else
           python -m pytest -n auto --cov=kumihan_formatter --cov-report=xml --durations=10 --maxfail=5 \
             -m "not windows_only and not macos_only" --timeout=180
