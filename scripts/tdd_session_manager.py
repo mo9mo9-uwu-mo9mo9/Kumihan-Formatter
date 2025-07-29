@@ -438,6 +438,9 @@ class TDDSessionManager:
 
     def _generate_session_report(self, session: TDDSession):
         """セッションレポート生成"""
+        # ログディレクトリが存在することを確保
+        self.log_dir.mkdir(exist_ok=True)
+        
         report_path = self.log_dir / f"{session.session_id}_report.md"
 
         report_content = f"""# TDDセッションレポート
