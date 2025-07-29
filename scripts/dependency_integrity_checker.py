@@ -433,6 +433,11 @@ class DependencyIntegrityChecker(TDDSystemBase):
     
     def _advanced_vulnerability_check(self):
         """高度な脆弱性チェック（requests利用）"""
+        # requests が利用可能かチェック
+        if not HAS_REQUESTS or requests is None:
+            logger.info("requests未利用または未インストール - 高度な脆弱性チェックをスキップ")
+            return
+        
         try:
             # PyPI Advisory Database API呼び出し
             for pkg_name, pkg_info in self.dependency_tree.items():
@@ -462,7 +467,8 @@ class DependencyIntegrityChecker(TDDSystemBase):
                                     dependency_path=[]
                                 )
                                 self.security_issues.append(issue)
-                except (requests.RequestException, KeyError, ValueError) as e:
+                except Exception as e:
+                    # requests が None の場合の AttributeError も含めて包括的にキャッチ
                     logger.debug(f"パッケージ {pkg_name} の脆弱性チェック失敗: {e}")
                     continue
                     

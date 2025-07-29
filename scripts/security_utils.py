@@ -180,12 +180,34 @@ def calculate_statistical_confidence(
         extreme_correction = stat_params.get("extreme_value_correction", {})
         if p == 0 or p == 1:
             if extreme_correction.get("use_wilson_interval", True):
-                # Wilson区間を使用して補正
+                # Wilson区間を使用して補正（最優先）
                 lower, upper = wilson_confidence_interval(sample_size, positive_samples, confidence_level)
                 interval_width = upper - lower
                 precision = max(0.0, 1.0 - interval_width)
+            elif extreme_correction.get("use_jeffreys_prior", False):
+                # Jeffreys無情報事前分布による Bayesian 補正
+                alpha = extreme_correction.get("jeffreys_alpha", 0.5)
+                beta = extreme_correction.get("jeffreys_beta", 0.5)
+                
+                # Beta分布の事後平均を使用
+                posterior_alpha = positive_samples + alpha
+                posterior_beta = (sample_size - positive_samples) + beta
+                posterior_mean = posterior_alpha / (posterior_alpha + posterior_beta)
+                
+                # Beta分布の事後分散から標準誤差計算
+                posterior_variance = (posterior_alpha * posterior_beta) / (
+                    (posterior_alpha + posterior_beta)**2 * (posterior_alpha + posterior_beta + 1)
+                )
+                se = math.sqrt(posterior_variance)
+                
+                z_scores = stat_params.get("z_scores", {"0.95": 1.96})
+                z = z_scores.get(str(confidence_level), 1.96)
+                margin = z * se
+                max_theoretical_margin = z * math.sqrt(0.25 / sample_size)
+                precision = max(0.0, 1.0 - (margin / max_theoretical_margin)) if max_theoretical_margin > 0 else 1.0
             else:
-                # 従来の固定値補正
+                # 最大エントロピー原理に基づく均等分布補正（Shannon 1948）
+                # p=0.5が最大エントロピーを持つため、理論的に最も保守的な推定
                 correction_factor = extreme_correction.get("fallback_correction_factor", 0.5)
                 se = correction_factor / math.sqrt(sample_size)
                 z_scores = stat_params.get("z_scores", {"0.95": 1.96})

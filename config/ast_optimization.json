@@ -24,7 +24,18 @@
     "max_ast_nodes": 10000,
     "memory_pressure_threshold_mb": 500,
     "enable_weak_references": true,
-    "cleanup_interval_seconds": 300
+    "cleanup_interval_seconds": 300,
+    "vulnerability_list_max_size": 1000,
+    "enable_memory_leak_detection": true
+  },
+  "parallel_processing": {
+    "enable_parallel_parsing": true,
+    "max_workers": "auto",
+    "worker_pool_type": "thread",
+    "chunk_size": 10,
+    "timeout_per_file": 30,
+    "enable_load_balancing": true,
+    "memory_per_worker_mb": 50
   },
   "selective_parsing": {
     "parse_function_defs": true,

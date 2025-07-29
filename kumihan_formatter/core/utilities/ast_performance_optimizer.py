@@ -23,6 +23,9 @@ from enum import Enum
 import threading
 import json
 import pickle
+import concurrent.futures
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -571,6 +574,81 @@ class ASTPerformanceOptimizer:
         except Exception as e:
             logger.debug(f"ディスクキャッシュクリーンアップエラー: {e}")
     
+    def parse_files_parallel(
+        self, 
+        file_paths: List[Union[str, Path]], 
+        max_workers: Optional[int] = None
+    ) -> Dict[Path, Optional[ast.AST]]:
+        """複数ファイルの並列パーシング"""
+        
+        parallel_config = self.config.get("parallel_processing", {})
+        
+        if not parallel_config.get("enable_parallel_parsing", True):
+            # 並列処理無効時は順次処理
+            results = {}
+            for file_path in file_paths:
+                results[Path(file_path)] = self.parse_file_optimized(file_path)
+            return results
+        
+        # ワーカー数決定
+        if max_workers is None:
+            max_workers_config = parallel_config.get("max_workers", "auto")
+            if max_workers_config == "auto":
+                max_workers = min(multiprocessing.cpu_count(), len(file_paths), 8)
+            else:
+                max_workers = int(max_workers_config)
+        
+        # ワーカープール種別決定
+        pool_type = parallel_config.get("worker_pool_type", "thread")
+        timeout_per_file = parallel_config.get("timeout_per_file", 30)
+        
+        results = {}
+        
+        # ThreadPoolExecutor使用（I/Oバウンドなタスクのため）
+        if pool_type == "thread":
+            executor_class = ThreadPoolExecutor
+        else:
+            executor_class = ProcessPoolExecutor
+            
+        try:
+            with executor_class(max_workers=max_workers) as executor:
+                # ファイルパスをチャンクに分割
+                chunk_size = parallel_config.get("chunk_size", 10)
+                file_chunks = [file_paths[i:i + chunk_size] for i in range(0, len(file_paths), chunk_size)]
+                
+                # 並列タスク実行
+                future_to_files = {}
+                for chunk in file_chunks:
+                    for file_path in chunk:
+                        future = executor.submit(self._parse_file_safe, file_path)
+                        future_to_files[future] = Path(file_path)
+                
+                # 結果収集
+                for future in as_completed(future_to_files, timeout=timeout_per_file * len(file_paths)):
+                    file_path = future_to_files[future]
+                    try:
+                        results[file_path] = future.result()
+                    except Exception as e:
+                        logger.warning(f"並列パーシング失敗: {file_path} - {e}")
+                        results[file_path] = None
+                        
+        except Exception as e:
+            logger.error(f"並列パーシングエラー: {e}")
+            # フォールバック: 順次処理
+            for file_path in file_paths:
+                if Path(file_path) not in results:
+                    results[Path(file_path)] = self.parse_file_optimized(file_path)
+        
+        return results
+    
+    def _parse_file_safe(self, file_path: Union[str, Path]) -> Optional[ast.AST]:
+        """並列処理用の安全なファイルパーシング"""
+        try:
+            return self.parse_file_optimized(file_path)
+        except Exception as e:
+            logger.debug(f"安全パーシング失敗: {file_path} - {e}")
+            return None
+
     def get_performance_metrics(self) -> Dict[str, Any]:
         """パフォーマンスメトリクス取得"""
         with self._cache_lock:

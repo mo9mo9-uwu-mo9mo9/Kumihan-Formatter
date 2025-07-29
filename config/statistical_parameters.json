@@ -8,8 +8,16 @@
     },
     "extreme_value_correction": {
       "use_wilson_interval": true,
+      "use_jeffreys_prior": true,
       "fallback_correction_factor": 0.5,
-      "description": "p=0またはp=1の極端な値の場合の補正方法"
+      "jeffreys_alpha": 0.5,
+      "jeffreys_beta": 0.5,
+      "description": "p=0またはp=1の極端な値の場合の補正方法",
+      "theoretical_basis": {
+        "wilson_interval": "Wilson (1927) による二項分布の正確な信頼区間",
+        "jeffreys_prior": "Jeffreys (1961) 無情報事前分布による Bayesian 補正",
+        "fallback_0_5": "最大エントロピー原理に基づく均等分布仮定（Shannon 1948）"
+      }
     },
     "sample_size_thresholds": {
       "high_confidence": 100,
