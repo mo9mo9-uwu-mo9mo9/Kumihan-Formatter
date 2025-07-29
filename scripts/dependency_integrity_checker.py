@@ -191,8 +191,21 @@ class DependencyIntegrityChecker(TDDSystemBase):
             return result
             
         except Exception as e:
-            logger.error(f"依存関係チェック実行エラー: {e}")
-            raise TDDSystemError(f"チェック実行失敗: {e}")
+            # セキュアエラーハンドリング適用
+            try:
+                from kumihan_formatter.core.utilities.secure_error_handler import safe_handle_exception, ExposureRisk, ErrorSeverity
+                sanitized_error = safe_handle_exception(
+                    e, 
+                    context={"operation": "dependency_integrity_check", "project_root": str(self.project_root)},
+                    user_exposure=ExposureRisk.INTERNAL,
+                    severity=ErrorSeverity.HIGH
+                )
+                logger.error(f"依存関係チェック実行エラー [{sanitized_error.trace_id}]: {sanitized_error.user_message}")
+                raise TDDSystemError(f"チェック実行失敗 [{sanitized_error.error_code}]: {sanitized_error.user_message}")
+            except ImportError:
+                # フォールバック: 従来のエラーハンドリング
+                logger.error(f"依存関係チェック実行エラー: {e}")
+                raise TDDSystemError(f"チェック実行失敗: {e}")
     
     def _collect_dependency_info(self):
         """依存関係情報収集"""
@@ -403,12 +416,59 @@ class DependencyIntegrityChecker(TDDSystemBase):
                             self.security_issues.append(issue)
                     except json.JSONDecodeError:
                         logger.warning("safety check結果の解析に失敗")
+            else:
+                logger.info("safetyパッケージのインストールに失敗 - 代替チェック実行")
                         
         except Exception as e:
             logger.warning(f"セキュリティ脆弱性チェックエラー: {e}")
-            # フォールバック: 簡易チェック
-            self._simple_security_check()
+        
+        # 高度な脆弱性チェック（requests利用）
+        if HAS_REQUESTS:
+            self._advanced_vulnerability_check()
+        else:
+            logger.info("requests未インストール - オンライン脆弱性チェックをスキップ")
+        
+        # フォールバック: 簡易チェック
+        self._simple_security_check()
     
+    def _advanced_vulnerability_check(self):
+        """高度な脆弱性チェック（requests利用）"""
+        try:
+            # PyPI Advisory Database API呼び出し
+            for pkg_name, pkg_info in self.dependency_tree.items():
+                try:
+                    # タイムアウト付きでAPIにリクエスト
+                    response = requests.get(
+                        f"https://pypi.org/pypi/{pkg_name}/json",
+                        timeout=5,
+                        headers={'User-Agent': 'Kumihan-Formatter/1.0'}
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        # 基本的な脆弱性情報をチェック
+                        if 'vulnerabilities' in data:
+                            for vuln in data['vulnerabilities']:
+                                issue = DependencyIssue(
+                                    package_name=pkg_name,
+                                    current_version=pkg_info.version,
+                                    issue_type='security_vulnerability',
+                                    severity=DependencyRisk.HIGH,
+                                    description=f"PyPI Advisory: {vuln.get('summary', '脆弱性検出')}",
+                                    recommendation="最新バージョンにアップデートしてください",
+                                    vulnerability_id=vuln.get('id'),
+                                    affected_versions=vuln.get('fixed_in'),
+                                    fixed_version=None,
+                                    license_issue=None,
+                                    dependency_path=[]
+                                )
+                                self.security_issues.append(issue)
+                except (requests.RequestException, KeyError, ValueError) as e:
+                    logger.debug(f"パッケージ {pkg_name} の脆弱性チェック失敗: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.warning(f"高度な脆弱性チェックでエラー: {e}")
+
     def _simple_security_check(self):
         """簡易セキュリティチェック"""
         

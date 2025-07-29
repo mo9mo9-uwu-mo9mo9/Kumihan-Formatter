@@ -192,13 +192,26 @@ class SQLInjectionTester(TDDSystemBase):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # ASTを使用して関数を抽出
+            # AST最適化システムを使用して関数を抽出
             try:
-                tree = ast.parse(content)
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.FunctionDef):
-                        self._scan_function(file_path, node, content)
-                        self.scanned_functions += 1
+                from kumihan_formatter.core.utilities.ast_performance_optimizer import parse_file_fast
+                tree = parse_file_fast(file_path, content)
+                USE_OPTIMIZED_AST = True
+            except ImportError:
+                USE_OPTIMIZED_AST = False
+                
+            try:
+                if not USE_OPTIMIZED_AST:
+                    # フォールバック: 従来のAST解析
+                    tree = ast.parse(content)
+                
+                if tree is not None:
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.FunctionDef):
+                            self._scan_function(file_path, node, content)
+                            self.scanned_functions += 1
+                else:
+                    logger.debug(f"AST解析結果が空: {file_path}")
                         
             except SyntaxError:
                 # 構文エラーの場合は文字列ベースのスキャン

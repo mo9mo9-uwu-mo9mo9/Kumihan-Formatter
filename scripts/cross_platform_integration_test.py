@@ -88,31 +88,8 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
             "processor": platform.processor() if hasattr(platform, 'processor') else 'unknown'
         }
         
-        # プラットフォーム固有の問題パターン
-        self.platform_specific_patterns = {
-            # パス区切り文字
-            r'[\\/]': 'Mixed path separators - use os.path.join() or pathlib.Path',
-            r'["\'][C-Z]:[\\\/]': 'Windows absolute path hardcoded',
-            r'["\']\/[^"\']*["\']': 'Unix absolute path hardcoded',
-            
-            # ファイルパーミッション
-            r'os\.chmod\s*\(\s*[^,]*,\s*0o?\d+\s*\)': 'File permission setting (Unix-specific)',
-            r'stat\.S_I[RWX]+': 'Unix file permission constants',
-            
-            # プロセス実行
-            r'subprocess\.[^(]*\([^)]*shell\s*=\s*True': 'Shell execution with potential platform differences',
-            r'os\.system\s*\(': 'os.system() usage - platform dependent',
-            
-            # 環境変数
-            r'os\.environ\[["\'][A-Z_]+["\']\]': 'Environment variable access without default',
-            r'HOME|USERPROFILE': 'Platform-specific home directory variable',
-            
-            # ファイルロック
-            r'fcntl\.|msvcrt\.': 'Platform-specific file locking',
-            
-            # ネットワーク
-            r'socket\..*AF_UNIX': 'Unix domain socket (not available on Windows)',
-        }
+        # プラットフォーム固有の問題パターンを外部設定から読み込み
+        self.platform_specific_patterns = self._load_platform_patterns()
         
         # テストケース定義
         self.test_cases = [
@@ -129,7 +106,67 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
         self.platform_issues = []
         self.test_results = {}
         self.performance_metrics = {}
+        
+        # 外部設定からのパターン情報
+        self.pattern_config = None
     
+    def _load_platform_patterns(self) -> Dict[str, str]:
+        """プラットフォーム固有パターンを外部設定から読み込み（統一ロック機構使用）"""
+        config_path = self.project_root / "config" / "cross_platform_patterns.json"
+        
+        # 統一ロック機構を使用
+        try:
+            from kumihan_formatter.core.utilities.config_lock_manager import safe_read_config
+            USE_UNIFIED_LOCKING = True
+        except ImportError:
+            USE_UNIFIED_LOCKING = False
+        
+        try:
+            if USE_UNIFIED_LOCKING:
+                # 統一ロック機構で安全に読み込み
+                config_data = safe_read_config(config_path, default={}, timeout=5.0)
+                if config_data:
+                    self.pattern_config = config_data
+                    
+                    # パターンと説明のマッピングを作成
+                    patterns = {}
+                    for pattern_id, pattern_info in self.pattern_config.get("platform_specific_patterns", {}).items():
+                        patterns[pattern_info["pattern"]] = pattern_info["description"]
+                    
+                    logger.info(f"統一ロック機構で外部設定から{len(patterns)}個のパターンを読み込み: {config_path}")
+                    return patterns
+                else:
+                    logger.warning(f"設定ファイルが空またはアクセスできません: {config_path}")
+            else:
+                # フォールバック: 従来のファイル読み込み
+                if config_path.exists():
+                    with open(config_path, 'r', encoding='utf-8') as f:
+                        self.pattern_config = json.load(f)
+                    
+                    # パターンと説明のマッピングを作成
+                    patterns = {}
+                    for pattern_id, pattern_info in self.pattern_config["platform_specific_patterns"].items():
+                        patterns[pattern_info["pattern"]] = pattern_info["description"]
+                    
+                    logger.info(f"外部設定から{len(patterns)}個のパターンを読み込み: {config_path}")
+                    return patterns
+                else:
+                    logger.warning(f"設定ファイルが見つかりません: {config_path}")
+            
+            # フォールバック用の基本パターン
+            return {
+                r'[\\/]': 'Mixed path separators - use os.path.join() or pathlib.Path',
+                r'os\.system\s*\(': 'os.system() usage - platform dependent',
+            }
+                
+        except Exception as e:
+            logger.error(f"パターン設定読み込みエラー: {e}")
+            # フォールバック用の基本パターン
+            return {
+                r'[\\/]': 'Mixed path separators - use os.path.join() or pathlib.Path',
+                r'os\.system\s*\(': 'os.system() usage - platform dependent',
+            }
+
     def initialize(self) -> bool:
         """システム初期化"""
         logger.info("🔍 クロスプラットフォーム統合テストシステム初期化中...")
@@ -175,8 +212,21 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
             return result
             
         except Exception as e:
-            logger.error(f"クロスプラットフォームテスト実行エラー: {e}")
-            raise TDDSystemError(f"テスト実行失敗: {e}")
+            # セキュアエラーハンドリング適用
+            try:
+                from kumihan_formatter.core.utilities.secure_error_handler import safe_handle_exception, ExposureRisk, ErrorSeverity
+                sanitized_error = safe_handle_exception(
+                    e, 
+                    context={"operation": "cross_platform_integration_test", "platform": self.platform_info["system"]},
+                    user_exposure=ExposureRisk.INTERNAL,
+                    severity=ErrorSeverity.HIGH
+                )
+                logger.error(f"クロスプラットフォームテスト実行エラー [{sanitized_error.trace_id}]: {sanitized_error.user_message}")
+                raise TDDSystemError(f"テスト実行失敗 [{sanitized_error.error_code}]: {sanitized_error.user_message}")
+            except ImportError:
+                # フォールバック: 従来のエラーハンドリング
+                logger.error(f"クロスプラットフォームテスト実行エラー: {e}")
+                raise TDDSystemError(f"テスト実行失敗: {e}")
     
     def _analyze_source_code(self):
         """ソースコード静的解析"""
@@ -192,10 +242,15 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
         relative_path = file_path.relative_to(self.project_root)
         path_parts = relative_path.parts
         
-        exclude_patterns = [
-            "tests", "venv", ".venv", "__pycache__",
-            ".git", "build", "dist", ".tox", "node_modules"
-        ]
+        # 外部設定から除外パターンを取得
+        if self.pattern_config and "test_configuration" in self.pattern_config:
+            exclude_patterns = self.pattern_config["test_configuration"].get("exclude_directories", [])
+        else:
+            # フォールバック
+            exclude_patterns = [
+                "tests", "venv", ".venv", "__pycache__",
+                ".git", "build", "dist", ".tox", "node_modules"
+            ]
         
         for pattern in exclude_patterns:
             if any(pattern in part for part in path_parts):
@@ -239,6 +294,20 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
     
     def _assess_pattern_severity(self, pattern: str, match: str) -> PlatformCompatibilityRisk:
         """パターン重要度評価"""
+        if self.pattern_config:
+            # 外部設定から重要度を取得
+            for pattern_id, pattern_info in self.pattern_config["platform_specific_patterns"].items():
+                if pattern_info["pattern"] == pattern:
+                    severity_str = pattern_info.get("severity", "medium")
+                    severity_mapping = {
+                        "critical": PlatformCompatibilityRisk.CRITICAL,
+                        "high": PlatformCompatibilityRisk.HIGH,
+                        "medium": PlatformCompatibilityRisk.MEDIUM,
+                        "low": PlatformCompatibilityRisk.LOW
+                    }
+                    return severity_mapping.get(severity_str, PlatformCompatibilityRisk.MEDIUM)
+        
+        # フォールバック: パターンベースの判定
         critical_patterns = [r'os\.system\s*\(', r'["\'][C-Z]:[\\\/]']
         high_patterns = [r'subprocess\.[^(]*\([^)]*shell\s*=\s*True', r'fcntl\.|msvcrt\.']
         
@@ -254,6 +323,14 @@ class CrossPlatformIntegrationTester(TDDSystemBase):
     
     def _get_pattern_recommendation(self, pattern: str) -> str:
         """パターン別推奨事項"""
+        if self.pattern_config:
+            # 外部設定から推奨事項を取得
+            for pattern_id, pattern_info in self.pattern_config["platform_specific_patterns"].items():
+                if pattern_info["pattern"] == pattern:
+                    return pattern_info.get("recommendation", 
+                        'プラットフォーム固有の実装を避け、標準ライブラリの抽象化機能を使用してください')
+        
+        # フォールバック: パターンベースの推奨事項
         recommendations = {
             r'[\\/]': 'pathlib.Pathまたはos.path.join()を使用してください',
             r'["\'][C-Z]:[\\\/]': 'ハードコードされたパスを環境変数や設定ファイルから取得してください',

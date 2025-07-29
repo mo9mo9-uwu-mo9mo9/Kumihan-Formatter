@@ -1,0 +1,86 @@
+{
+  "cache_level": "hybrid",
+  "max_memory_cache_size": 100,
+  "max_memory_usage_mb": 200,
+  "cache_ttl_hours": 24,
+  "disk_cache_dir": "/tmp/kumihan_ast_cache",
+  "parse_strategies": {
+    "small_files": "full",
+    "medium_files": "selective",
+    "large_files": "minimal",
+    "huge_files": "incremental",
+    "size_thresholds": {
+      "small_kb": 1,
+      "medium_kb": 100,
+      "large_kb": 1024
+    }
+  },
+  "memory_optimization": {
+    "enable_gc_tuning": true,
+    "gc_threshold0": 700,
+    "gc_threshold1": 10,
+    "gc_threshold2": 10,
+    "force_gc_interval": 50,
+    "max_ast_nodes": 10000,
+    "memory_pressure_threshold_mb": 500,
+    "enable_weak_references": true,
+    "cleanup_interval_seconds": 300
+  },
+  "selective_parsing": {
+    "parse_function_defs": true,
+    "parse_class_defs": true,
+    "parse_imports": true,
+    "parse_strings": false,
+    "parse_comments": false,
+    "skip_docstrings": true,
+    "parse_decorators": true,
+    "parse_assignments": false,
+    "max_depth": 10
+  },
+  "incremental_parsing": {
+    "chunk_size_lines": 1000,
+    "max_chunks_per_file": 10,
+    "overlap_lines": 50,
+    "syntax_validation": true,
+    "merge_strategy": "first_valid_chunk"
+  },
+  "performance_monitoring": {
+    "enable_metrics": true,
+    "track_memory_usage": true,
+    "track_parse_times": true,
+    "track_cache_effectiveness": true,
+    "leak_detection_threshold": 100,
+    "metrics_retention_hours": 168
+  },
+  "file_type_handling": {
+    "python_files": {
+      "extensions": [".py", ".pyw"],
+      "default_strategy": "selective",
+      "enable_caching": true
+    },
+    "notebook_files": {
+      "extensions": [".ipynb"],
+      "default_strategy": "minimal",
+      "enable_caching": false
+    },
+    "template_files": {
+      "extensions": [".py.j2", ".py.template"],
+      "default_strategy": "minimal",
+      "enable_caching": true
+    }
+  },
+  "error_handling": {
+    "syntax_error_strategy": "skip",
+    "encoding_error_strategy": "fallback",
+    "memory_error_strategy": "minimal_retry",
+    "max_retries": 3,
+    "fallback_encodings": ["utf-8", "latin-1", "cp1252"]
+  },
+  "cache_persistence": {
+    "enable_disk_cache": true,
+    "compress_cache_files": true,
+    "cache_file_format": "pickle",
+    "max_cache_size_mb": 1024,
+    "cleanup_on_startup": true
+  }
+}
