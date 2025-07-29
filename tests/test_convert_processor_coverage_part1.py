@@ -79,17 +79,17 @@ class TestConvertProcessorMethods:
             output_path = Path(temp_dir) / "output.html"
             mock_determine_path.return_value = output_path
 
-            # file_opsをモック化
-            with patch.object(self.processor, "file_ops") as mock_file_ops:
-                mock_file_ops.read_text_file.return_value = "Test Content"
-                mock_file_ops.write_file.return_value = None
+            # FileIOHandlerをモック化（実際の実装に合わせる）
+            with patch("kumihan_formatter.commands.convert.convert_processor.FileIOHandler") as mock_file_io:
+                mock_file_io.read_text_file.return_value = "Test Content"
+                mock_file_io.write_file.return_value = None
 
                 result_path = self.processor.convert_file(
                     input_path=input_path, output_dir=temp_dir
                 )
 
                 # 必要なメソッドが呼ばれることを確認
-                mock_file_ops.read_text_file.assert_called_once_with(input_path)
+                mock_file_io.read_text_file.assert_called_once_with(input_path)
                 mock_parse.assert_called_once()
                 mock_render.assert_called_once()
                 mock_determine_path.assert_called_once()
