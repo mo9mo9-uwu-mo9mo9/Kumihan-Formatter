@@ -190,3 +190,12 @@ logs/
 
 # Temporary files
 *.tmp
+
+# TDD-First開発システム (Issue #640)
+.tdd_session.json
+.tdd_logs/
+scripts/tdd_templates/
+
+# TDD生成ファイル（日本語ファイル名対応）
+**/test_*tdd*.py
+**/commands/*tdd*.py
