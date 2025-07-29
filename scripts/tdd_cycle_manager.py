@@ -531,12 +531,19 @@ class TDDCycleManager:
             return
             
         session["current_phase"] = phase
+        # メトリクスのdatetimeオブジェクトを文字列に変換
+        metrics_dict = None
+        if validation.metrics_after:
+            metrics_dict = asdict(validation.metrics_after)
+            if 'timestamp' in metrics_dict and hasattr(metrics_dict['timestamp'], 'isoformat'):
+                metrics_dict['timestamp'] = metrics_dict['timestamp'].isoformat()
+        
         session["phase_history"].append({
             "phase": phase,
             "result": validation.result.value,
             "message": validation.message,
             "timestamp": datetime.now().isoformat(),
-            "metrics": asdict(validation.metrics_after) if validation.metrics_after else None
+            "metrics": metrics_dict
         })
         
         with open(self.session_file, "w", encoding="utf-8") as f:
