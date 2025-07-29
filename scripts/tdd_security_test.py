@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import subprocess
 import logging
+import yaml
 
 # ログ設定
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -47,8 +48,59 @@ class TDDSecurityTestRunner:
         self.test_results: List[SecurityTestResult] = []
         self.report_file = self.project_root / ".tdd_logs" / f"security_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         
+        # 設定ファイル読み込み
+        self.config = self._load_config()
+        
         # レポートディレクトリ作成
         self.report_file.parent.mkdir(exist_ok=True)
+    
+    def _load_config(self) -> Dict[str, Any]:
+        """設定ファイル読み込み"""
+        config_path = self.project_root / "config" / "tdd_security_config.yaml"
+        try:
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    return yaml.safe_load(f)
+            else:
+                logger.warning(f"設定ファイルが見つかりません: {config_path}")
+                return self._get_default_config()
+        except Exception as e:
+            logger.error(f"設定ファイル読み込みエラー: {e}")
+            return self._get_default_config()
+    
+    def _get_default_config(self) -> Dict[str, Any]:
+        """デフォルト設定"""
+        return {
+            "security_patterns": {
+                "sql_injection": {
+                    "dangerous_patterns": [
+                        r'SELECT\s+.*\s+FROM\s+.*\s+WHERE\s+.*\+',
+                        r'\.execute\([^)]*%[^)]*\)',
+                        r'f".*SELECT.*{.*}.*"',
+                        r'".*\'\s*\+\s*.*\+\s*\'"'
+                    ],
+                    "safe_patterns": [
+                        r'\.execute\(["\'].*\?.*["\']',
+                        r'PreparedStatement',
+                        r'cursor\.execute\([^,]+,\s*\(',
+                        r'connection\.execute\(text\('
+                    ]
+                }
+            },
+            "timeouts": {
+                "base_timeout": 60,
+                "per_test_factor": 2,
+                "maximum_timeout": 600,
+                "minimum_timeout": 30
+            },
+            "messages": {
+                "ja": {
+                    "sql_injection_found": "潜在的なSQLインジェクション脆弱性を{count}件発見",
+                    "no_vulnerabilities": "脆弱性は検出されませんでした",
+                    "test_execution_error": "テスト実行エラー: {error}"
+                }
+            }
+        }
     
     def run_all_security_tests(self) -> Dict[str, Any]:
         """全セキュリティテストを実行"""
@@ -111,105 +163,150 @@ class TDDSecurityTestRunner:
         return report
     
     def _test_sql_injection(self):
-        """SQLインジェクション脆弱性テスト"""
+        """SQLインジェクション脆弱性テスト（改善版）"""
         logger.info("🔍 SQLインジェクション検査開始")
         
         try:
-            # データベース関連コードの検索
-            sql_patterns = [
-                r'SELECT\s+.*\s+FROM\s+.*\s+WHERE\s+.*\+',  # SQL文字列連結
-                r'\.execute\([^)]*%[^)]*\)',  # format使用
-                r'f".*SELECT.*{.*}.*"',  # f-string使用
-                r'".*\'\s*\+\s*.*\+\s*\'"',  # 文字列連結
-            ]
+            # 設定からパターン取得
+            sql_config = self.config.get("security_patterns", {}).get("sql_injection", {})
+            dangerous_patterns = sql_config.get("dangerous_patterns", [])
+            safe_patterns = sql_config.get("safe_patterns", [])
             
             vulnerabilities = []
-            for py_file in self.source_dir.rglob("*.py"):
+            false_positives = []
+            
+            for py_file in self._get_scan_files():
                 try:
                     content = py_file.read_text(encoding='utf-8')
-                    for pattern in sql_patterns:
+                    
+                    # 危険なパターンをチェック
+                    for pattern in dangerous_patterns:
                         matches = re.finditer(pattern, content, re.IGNORECASE)
                         for match in matches:
                             line_num = content[:match.start()].count('\n') + 1
-                            vulnerabilities.append({
+                            line_content = content.split('\n')[line_num - 1].strip()
+                            
+                            # セーフパターンでホワイトリストチェック
+                            is_safe = any(re.search(safe_pattern, line_content, re.IGNORECASE) 
+                                         for safe_pattern in safe_patterns)
+                            
+                            vulnerability_data = {
                                 "file": str(py_file.relative_to(self.project_root)),
                                 "line": line_num,
                                 "pattern": pattern,
-                                "code": match.group()
-                            })
+                                "code": line_content,
+                                "match": match.group(),
+                                "severity": "low" if is_safe else "high"
+                            }
+                            
+                            if is_safe:
+                                false_positives.append(vulnerability_data)
+                            else:
+                                vulnerabilities.append(vulnerability_data)
+                                
                 except Exception as e:
                     logger.warning(f"ファイル読み込みエラー {py_file}: {e}")
             
+            # 結果判定
             if vulnerabilities:
+                message = self._get_message("sql_injection_found", count=len(vulnerabilities))
                 self.test_results.append(SecurityTestResult(
                     "SQL Injection Check",
                     "FAIL",
-                    f"潜在的なSQLインジェクション脆弱性を{len(vulnerabilities)}件発見",
-                    {"vulnerabilities": vulnerabilities}
+                    message,
+                    {
+                        "vulnerabilities": vulnerabilities,
+                        "false_positives_filtered": len(false_positives),
+                        "total_matches": len(vulnerabilities) + len(false_positives)
+                    }
                 ))
             else:
+                message = self._get_message("no_vulnerabilities")
                 self.test_results.append(SecurityTestResult(
                     "SQL Injection Check",
                     "PASS",
-                    "SQLインジェクション脆弱性は検出されませんでした"
+                    f"SQLインジェクション: {message}",
+                    {"false_positives_filtered": len(false_positives)}
                 ))
                 
         except Exception as e:
+            message = self._get_message("test_execution_error", error=str(e))
             self.test_results.append(SecurityTestResult(
                 "SQL Injection Check",
                 "FAIL",
-                f"テスト実行エラー: {str(e)}"
+                message
             ))
     
     def _test_xss_protection(self):
-        """XSS対策検証テスト"""
+        """XSS対策検証テスト（改善版）"""
         logger.info("🔍 XSS対策検証開始")
         
         try:
-            # HTML出力関連コードの検索
-            xss_patterns = [
-                r'\.write\([^)]*\+[^)]*\)',  # HTML文字列連結
-                r'f"<.*{.*}.*>"',  # f-stringでのHTML生成
-                r'"<.*"\s*\+\s*.*\+\s*".*>"',  # HTML文字列連結
-                r'render_template\([^)]*\+[^)]*\)',  # テンプレート文字列連結
-            ]
+            # 設定からパターン取得
+            xss_config = self.config.get("security_patterns", {}).get("xss_protection", {})
+            dangerous_patterns = xss_config.get("dangerous_patterns", [])
+            safe_patterns = xss_config.get("safe_patterns", [])
             
             vulnerabilities = []
-            for py_file in self.source_dir.rglob("*.py"):
+            false_positives = []
+            
+            for py_file in self._get_scan_files():
                 try:
                     content = py_file.read_text(encoding='utf-8')
-                    for pattern in xss_patterns:
+                    
+                    for pattern in dangerous_patterns:
                         matches = re.finditer(pattern, content, re.IGNORECASE)
                         for match in matches:
                             line_num = content[:match.start()].count('\n') + 1
-                            vulnerabilities.append({
+                            line_content = content.split('\n')[line_num - 1].strip()
+                            
+                            # セーフパターンチェック
+                            is_safe = any(re.search(safe_pattern, line_content, re.IGNORECASE) 
+                                         for safe_pattern in safe_patterns)
+                            
+                            vulnerability_data = {
                                 "file": str(py_file.relative_to(self.project_root)),
                                 "line": line_num,
                                 "pattern": pattern,
-                                "code": match.group()
-                            })
+                                "code": line_content,
+                                "match": match.group(),
+                                "severity": "low" if is_safe else "medium"
+                            }
+                            
+                            if is_safe:
+                                false_positives.append(vulnerability_data)
+                            else:
+                                vulnerabilities.append(vulnerability_data)
+                                
                 except Exception as e:
                     logger.warning(f"ファイル読み込みエラー {py_file}: {e}")
             
             if vulnerabilities:
+                message = self._get_message("xss_vulnerability_found", count=len(vulnerabilities))
                 self.test_results.append(SecurityTestResult(
                     "XSS Protection Check",
                     "WARNING",
-                    f"潜在的なXSS脆弱性を{len(vulnerabilities)}件発見",
-                    {"vulnerabilities": vulnerabilities}
+                    message,
+                    {
+                        "vulnerabilities": vulnerabilities,
+                        "false_positives_filtered": len(false_positives)
+                    }
                 ))
             else:
+                message = self._get_message("no_vulnerabilities")
                 self.test_results.append(SecurityTestResult(
                     "XSS Protection Check",
                     "PASS",
-                    "XSS脆弱性は検出されませんでした"
+                    f"XSS対策: {message}",
+                    {"false_positives_filtered": len(false_positives)}
                 ))
                 
         except Exception as e:
+            message = self._get_message("test_execution_error", error=str(e))
             self.test_results.append(SecurityTestResult(
                 "XSS Protection Check",
                 "FAIL",
-                f"テスト実行エラー: {str(e)}"
+                message
             ))
     
     def _test_csrf_protection(self):
@@ -572,6 +669,60 @@ class TDDSecurityTestRunner:
             return "ACCEPTABLE"
         else:
             return "NEEDS_IMPROVEMENT"
+    
+    def _get_scan_files(self) -> List[Path]:
+        """スキャン対象ファイルを取得（除外パターン適用）"""
+        exclusions = self.config.get("exclusions", {})
+        file_patterns = exclusions.get("file_patterns", [])
+        directories = exclusions.get("directories", [])
+        
+        all_files = list(self.source_dir.rglob("*.py"))
+        filtered_files = []
+        
+        for py_file in all_files:
+            should_exclude = False
+            
+            # ディレクトリ除外チェック
+            for exclude_dir in directories:
+                if exclude_dir in str(py_file):
+                    should_exclude = True
+                    break
+            
+            # ファイルパターン除外チェック
+            if not should_exclude:
+                import fnmatch
+                for pattern in file_patterns:
+                    if fnmatch.fnmatch(str(py_file), pattern):
+                        should_exclude = True
+                        break
+            
+            if not should_exclude:
+                filtered_files.append(py_file)
+        
+        return filtered_files
+    
+    def _get_message(self, key: str, **kwargs) -> str:
+        """国際化対応メッセージ取得"""
+        messages = self.config.get("messages", {})
+        lang_messages = messages.get("ja", {})  # デフォルトは日本語
+        
+        template = lang_messages.get(key, f"Message not found: {key}")
+        try:
+            return template.format(**kwargs)
+        except KeyError as e:
+            logger.warning(f"メッセージテンプレートのキーが不足: {e}")
+            return template
+    
+    def calculate_timeout(self, test_count: int) -> int:
+        """動的タイムアウト計算"""
+        timeout_config = self.config.get("timeouts", {})
+        base = timeout_config.get("base_timeout", 60)
+        factor = timeout_config.get("per_test_factor", 2)
+        maximum = timeout_config.get("maximum_timeout", 600)
+        minimum = timeout_config.get("minimum_timeout", 30)
+        
+        calculated = base + (test_count * factor)
+        return max(minimum, min(maximum, calculated))
     
     def _generate_recommendations(self) -> List[str]:
         """推奨事項を生成"""
