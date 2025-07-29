@@ -49,8 +49,8 @@ class TestCheckSyntaxCommandCritical(unittest.TestCase):
         test_file = str(self.temp_dir / "test.txt")
         Path(test_file).write_text("test content", encoding="utf-8")
         
-        # Mock設定
-        mock_check_files.return_value = {"errors": []}
+        # Mock設定 - 空の結果を返すとsuccess()が呼ばれる
+        mock_check_files.return_value = {}  # 空辞書でエラーなしを表現
         mock_ui = MagicMock()
         mock_console.return_value = mock_ui
         
@@ -59,7 +59,10 @@ class TestCheckSyntaxCommandCritical(unittest.TestCase):
         self.assertEqual(result["success"], True)
         self.assertEqual(result["error_count"], 0)
         mock_check_files.assert_called_once()
-        mock_ui.success.assert_called()
+        # エラーがない場合、success()が呼ばれる
+        mock_ui.success.assert_called_once_with(
+            "構文チェック完了", "記法エラーは見つかりませんでした"
+        )
 
     @patch('kumihan_formatter.commands.check_syntax.check_files')
     @patch('kumihan_formatter.commands.check_syntax.get_console_ui')

@@ -11,6 +11,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.12"
+  # パフォーマンス測定用
+  CI_START_TIME: ${{ github.event.head_commit.timestamp }}
 
 jobs:
   tdd-cycle-validation:
@@ -34,11 +36,19 @@ jobs:
 
       - name: Cache Python dependencies
         uses: actions/cache@v4
+        id: pip-cache
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      
+      - name: Cache Performance Report
+        run: |
+          echo "🚀 Performance Metrics:"
+          echo "Cache Hit: ${{ steps.pip-cache.outputs.cache-hit }}"
+          echo "Build Start: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "NODE_START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -140,11 +150,19 @@ jobs:
 
       - name: Cache Python dependencies
         uses: actions/cache@v4
+        id: pip-cache
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      
+      - name: Cache Performance Report
+        run: |
+          echo "🚀 Performance Metrics:"
+          echo "Cache Hit: ${{ steps.pip-cache.outputs.cache-hit }}"
+          echo "Build Start: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "NODE_START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -231,11 +249,19 @@ jobs:
 
       - name: Cache Python dependencies
         uses: actions/cache@v4
+        id: pip-cache
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      
+      - name: Cache Performance Report
+        run: |
+          echo "🚀 Performance Metrics:"
+          echo "Cache Hit: ${{ steps.pip-cache.outputs.cache-hit }}"
+          echo "Build Start: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "NODE_START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -288,11 +314,19 @@ jobs:
 
       - name: Cache Python dependencies
         uses: actions/cache@v4
+        id: pip-cache
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      
+      - name: Cache Performance Report
+        run: |
+          echo "🚀 Performance Metrics:"
+          echo "Cache Hit: ${{ steps.pip-cache.outputs.cache-hit }}"
+          echo "Build Start: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "NODE_START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -435,3 +469,21 @@ jobs:
           echo "  - Security tests 100% passed"
           echo ""
           echo "🚀 Pull request approved for merge"
+
+      - name: Performance Summary Report
+        if: always()
+        run: |
+          END_TIME=$(date +%s)
+          TOTAL_DURATION=$((END_TIME - ${NODE_START_TIME:-$END_TIME}))
+          echo ""
+          echo "📊 CI/CD Performance Report:"
+          echo "  - Total Duration: ${TOTAL_DURATION}s ($(($TOTAL_DURATION / 60))m $(($TOTAL_DURATION % 60))s)"
+          echo "  - Cache Strategy: Enabled (Pip + Test + Security)"
+          echo "  - Parallel Execution: Security tests (4 parallel)"
+          echo "  - Early Exit: Enabled on failures"
+          echo ""
+          if [ $TOTAL_DURATION -lt 480 ]; then
+            echo "🚀 Performance Target: ✅ Under 8 minutes (Target achieved!)"
+          else
+            echo "⚠️  Performance Target: ❌ Over 8 minutes (Previous: ~15min)"
+          fi
