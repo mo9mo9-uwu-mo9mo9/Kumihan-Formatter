@@ -29,12 +29,8 @@ from typing import Optional
 from .logging import LogHelper
 from .logging_formatters import StructuredLogFormatter
 from .logging_handlers import DevLogHandler
-from .performance_logger import (
-    get_log_performance_optimizer,
-)
-from .structured_logger import (
-    get_structured_logger,
-)
+# Performance logger removed during cleanup
+# Structured logger removed during cleanup
 
 # .claude_integration removed as unused
 
@@ -78,7 +74,8 @@ class KumihanLogger:
         self._setup_root_logger()
 
         # パフォーマンスロガーの初期化
-        self.performance_logger = get_log_performance_optimizer("kumihan_performance")
+        # Performance logger removed during cleanup
+        self.performance_logger = None
 
         # LogHelper の初期化
         self.log_helper = LogHelper()

@@ -6,9 +6,47 @@ including block validation, keyword validation, and line-by-line checking.
 
 from pathlib import Path
 
-from ...core.error_handling import ErrorCatalog, UserFriendlyError
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
 from .syntax_rules import SyntaxRules
+
+
+class UserFriendlyError:
+    """Simple error class for user-friendly error messages"""
+
+    def __init__(self, message: str, details: str = "", severity: str = "error"):
+        self.message = message
+        self.details = details
+        self.severity = severity
+
+
+class ErrorCatalog:
+    """Simple error catalog for creating user-friendly errors"""
+
+    @staticmethod
+    def create_encoding_error(file_path: str) -> UserFriendlyError:
+        return UserFriendlyError(
+            f"エラー: {file_path} のエンコーディングが UTF-8 ではありません",
+            "ファイルを UTF-8 エンコーディングで保存し直してください。",
+            "error",
+        )
+
+    @staticmethod
+    def create_file_not_found_error(file_path: str) -> UserFriendlyError:
+        return UserFriendlyError(
+            f"エラー: ファイル {file_path} が見つかりません",
+            "ファイルパスを確認してください。",
+            "error",
+        )
+
+    @staticmethod
+    def create_syntax_error(
+        line_num: int, invalid_content: str, file_path: str
+    ) -> UserFriendlyError:
+        return UserFriendlyError(
+            f"構文エラー: {file_path} の {line_num} 行目",
+            f"無効な内容: {invalid_content}",
+            "error",
+        )
 
 
 class KumihanSyntaxValidator:
