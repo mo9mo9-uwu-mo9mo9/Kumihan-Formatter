@@ -1,5 +1,11 @@
 {
   "sql_injection": {
+    "analysis_config": {
+      "false_positive_reduction": true,
+      "context_analysis": true,
+      "severity_weighting": true,
+      "statistical_scoring": true
+    },
     "dangerous_patterns": {
       "string_concatenation": {
         "pattern": "[\"']?\\s*\\+\\s*[\"']",

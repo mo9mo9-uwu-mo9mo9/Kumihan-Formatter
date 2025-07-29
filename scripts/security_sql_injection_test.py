@@ -41,34 +41,70 @@ def load_security_patterns():
 
 # 統計的分析による偽陽性削減
 class SecurityContextAnalyzer:
-    """セキュリティコンテキスト分析クラス"""
+    """セキュリティコンテキスト分析クラス - 改良版"""
     
     def __init__(self):
+        # 安全なコンテキストパターン（偽陽性削減）
         self.safe_patterns = [
             # ログ・デバッグ用途
             r'logger\.\w+.*\+.*',
             r'print\(.*\+.*\)',
             r'debug.*\+.*',
-            
-            # テンプレート・フォーマット用途  
-            r'\.format\(',
+            # 文字列フォーマット（f-string、format）
             r'f["\'].*\{.*\}.*["\']',
-            r'%.*%',
-            
-            # 定数・設定用途
-            r'[A-Z_]+\s*=.*\+',
-            r'config\[.*\]\s*\+',
-            
-            # URL・パス構築
-            r'url.*\+.*',
-            r'path.*\+.*',
-            r'os\.path\.join',
-            
-            # 文字列処理・変換
-            r'str\(.*\)\s*\+',
-            r'repr\(.*\)\s*\+',
-            r'\\n|\\t|\\r'
+            r'.*\.format\(',
+            # コメント・ドキュメント文字列
+            r'#.*\+.*',
+            r'""".*\+.*"""',
+            r"'''.*\+.*'''",
+            # パス・ファイル操作
+            r'Path\(.*\+.*\)',
+            r'os\.path\.join\(',
+            # 設定・定数
+            r'[A-Z_]+\s*\+\s*[A-Z_]+',
         ]
+        
+        # 危険度重み付け
+        self.risk_weights = {
+            'sql_query_construction': 10.0,
+            'user_input_concatenation': 8.0,
+            'dynamic_query_building': 7.0,
+            'unsafe_string_format': 5.0,
+            'potential_injection': 3.0,
+        }
+    
+    def analyze_context(self, code_line: str, function_context: str) -> Tuple[bool, float]:
+        """コンテキスト分析で偽陽性を削減"""
+        # 安全なパターンチェック
+        for pattern in self.safe_patterns:
+            if re.search(pattern, code_line, re.IGNORECASE):
+                return True, 0.0  # 安全と判定
+        
+        # 危険度スコア計算
+        risk_score = 0.0
+        
+        # SQLキーワードの存在確認
+        sql_keywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE']
+        for keyword in sql_keywords:
+            if keyword.lower() in code_line.lower():
+                risk_score += 2.0
+        
+        # ユーザー入力関連
+        user_input_patterns = ['input', 'request', 'params', 'args', 'form']
+        for pattern in user_input_patterns:
+            if pattern in code_line.lower():
+                risk_score += 3.0
+        
+        # 動的クエリ構築
+        if '+' in code_line and any(keyword.lower() in code_line.lower() for keyword in sql_keywords):
+            risk_score += 5.0
+        
+        return False, risk_score
+        
+    def calculate_severity_score(self, vulnerability_type: str, context_score: float) -> float:
+        """重大度スコア計算"""
+        base_weight = self.risk_weights.get(vulnerability_type, 1.0)
+        return min(10.0, base_weight + context_score)
         
         self.high_risk_contexts = [
             # データベース関連

@@ -27,6 +27,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -121,23 +133,51 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run Coverage Check with TDD Standards
+      - name: Cache test results
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pytest_cache
+            .coverage
+            coverage.json
+          key: ${{ runner.os }}-test-cache-${{ hashFiles('tests/**/*.py', 'kumihan_formatter/**/*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-test-cache-
+
+      - name: Run Coverage Check with TDD Standards (Fast Fail)
         id: coverage-check
         run: |
           echo "Running coverage check with TDD standards..."
           
-          # Critical Tier: 90%以上必須
+          # 段階的実行: 失敗時の早期終了
+          set -e  # エラー時即座に終了
+          
+          # Critical Tier: 90%以上必須 (maxfail=3で高速化)
           python -m pytest \
             --cov=kumihan_formatter \
             --cov-report=json \
             --cov-report=term-missing \
             --cov-fail-under=90 \
+            --maxfail=3 \
+            --tb=short \
             tests/ > coverage_output.log 2>&1
           
           coverage_exit_code=$?
@@ -148,6 +188,8 @@ jobs:
           else
             echo "coverage_meets_standard=false" >> $GITHUB_OUTPUT
             echo "❌ Coverage below TDD standard (<90%)"
+            # 早期終了でリソース節約
+            exit 1
           fi
           
           # カバレッジレポート表示
@@ -182,6 +224,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -227,51 +281,67 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Enforce Security Tests
+      - name: Cache security test results
+        uses: actions/cache@v4
+        with:
+          path: |
+            .security_cache
+            security_test_results.json
+          key: ${{ runner.os }}-security-cache-${{ hashFiles('scripts/security_*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-security-cache-
+
+      - name: Enforce Security Tests (Parallel Execution)
         id: security-enforcement
         run: |
-          echo "Enforcing security test requirements..."
+          echo "Enforcing security test requirements (parallel execution)..."
           
           security_tests_passed=0
           security_tests_total=4
           
-          # SQL Injection Test
-          if python scripts/security_sql_injection_test.py; then
-            echo "✅ SQL Injection test passed"
-            ((security_tests_passed++))
-          else
-            echo "❌ SQL Injection test failed"
-          fi
+          # 並列実行で時間短縮
+          (
+            python scripts/security_sql_injection_test.py && echo "SQL_INJECTION_PASSED" > .sql_result || echo "SQL_INJECTION_FAILED" > .sql_result
+          ) &
+          (
+            python scripts/security_xss_test.py && echo "XSS_PASSED" > .xss_result || echo "XSS_FAILED" > .xss_result
+          ) &
+          (
+            python scripts/security_csrf_test.py && echo "CSRF_PASSED" > .csrf_result || echo "CSRF_FAILED" > .csrf_result
+          ) &
+          (
+            python scripts/security_file_upload_test.py && echo "FILE_UPLOAD_PASSED" > .file_result || echo "FILE_UPLOAD_FAILED" > .file_result
+          ) &
           
-          # XSS Test
-          if python scripts/security_xss_test.py; then
-            echo "✅ XSS protection test passed"
-            ((security_tests_passed++))
-          else
-            echo "❌ XSS protection test failed"
-          fi
+          # 全テスト完了を待機
+          wait
           
-          # CSRF Test
-          if python scripts/security_csrf_test.py; then
-            echo "✅ CSRF protection test passed"
-            ((security_tests_passed++))
-          else
-            echo "❌ CSRF protection test failed"
-          fi
+          # 結果集計
+          [ "$(cat .sql_result 2>/dev/null)" = "SQL_INJECTION_PASSED" ] && ((security_tests_passed++)) && echo "✅ SQL Injection test passed" || echo "❌ SQL Injection test failed"
+          [ "$(cat .xss_result 2>/dev/null)" = "XSS_PASSED" ] && ((security_tests_passed++)) && echo "✅ XSS protection test passed" || echo "❌ XSS protection test failed"
+          [ "$(cat .csrf_result 2>/dev/null)" = "CSRF_PASSED" ] && ((security_tests_passed++)) && echo "✅ CSRF protection test passed" || echo "❌ CSRF protection test failed"
+          [ "$(cat .file_result 2>/dev/null)" = "FILE_UPLOAD_PASSED" ] && ((security_tests_passed++)) && echo "✅ File upload security test passed" || echo "❌ File upload security test failed"
           
-          # File Upload Security Test
-          if python scripts/security_file_upload_test.py; then
-            echo "✅ File upload security test passed"
-            ((security_tests_passed++))
-          else
-            echo "❌ File upload security test failed"
-          fi
+          # クリーンアップ
+          rm -f .sql_result .xss_result .csrf_result .file_result
           
           security_pass_rate=$((security_tests_passed * 100 / security_tests_total))
           echo "security_pass_rate=$security_pass_rate" >> $GITHUB_OUTPUT
@@ -284,6 +354,8 @@ jobs:
           else
             echo "security_100_percent=false" >> $GITHUB_OUTPUT
             echo "❌ Security tests incomplete ($security_pass_rate%)"
+            # 100%必須のため失敗時は早期終了
+            exit 1
           fi
 
   # TDD強制判定
