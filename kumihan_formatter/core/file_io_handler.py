@@ -18,32 +18,55 @@ class FileIOHandler:
 
     @staticmethod
     def write_text_file(path: Path, content: str, encoding: str = "utf-8") -> None:
-        """Write text file with proper encoding and error handling"""
+        """Write text file with proper encoding and error handling
+        
+        Raises:
+            PermissionError: When file cannot be written due to permissions
+            OSError: When disk is full or other OS-level errors occur
+            UnicodeEncodeError: When content cannot be encoded
+        """
         logger = get_logger(__name__)
         logger.debug(f"Writing file: {path} with encoding: {encoding}")
 
         try:
-            # Try with UTF-8 first
+            # Ensure parent directory exists
+            path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Try with specified encoding first
             with open(path, "w", encoding=encoding, errors="replace") as f:
                 f.write(content)
-        except UnicodeEncodeError:
+                
+        except PermissionError as e:
+            logger.error(f"Permission denied writing file: {path} - {e}")
+            raise PermissionError(f"ファイル書き込み権限がありません: {path}")
+            
+        except OSError as e:
+            # Handle disk full, network errors, etc.
+            logger.error(f"OS error writing file: {path} - {e}")
+            raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
+            
+        except UnicodeEncodeError as e:
             # Fallback with error replacement
             logger.warning(f"Unicode encode error for {path}, using error replacement")
-            with open(path, "w", encoding=encoding, errors="replace") as f:
-                f.write(content)
-        except Exception as e:
-            # For Windows, try with BOM
-            if encoding.lower() == "utf-8":
-                try:
-                    logger.debug(f"Trying UTF-8 with BOM for {path}")
-                    with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
-                        f.write(content)
-                except Exception:
-                    logger.error(f"Failed to write file {path}: {e}")
-                    raise e
-            else:
-                logger.error(f"Failed to write file {path}: {e}")
-                raise
+            try:
+                with open(path, "w", encoding=encoding, errors="replace") as f:
+                    f.write(content)
+            except Exception as fallback_error:
+                # For Windows, try with BOM
+                if encoding.lower() == "utf-8":
+                    try:
+                        logger.debug(f"Trying UTF-8 with BOM for {path}")
+                        with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
+                            f.write(content)
+                    except Exception:
+                        logger.error(f"Failed to write file {path} after all fallbacks: {fallback_error}")
+                        raise UnicodeEncodeError(
+                            encoding, content, 0, len(content), 
+                            f"ファイル書き込み中にエンコーディングエラーが発生しました: {path}"
+                        )
+                else:
+                    logger.error(f"Failed to write file {path}: {fallback_error}")
+                    raise
 
     @staticmethod
     def read_text_file(path: Path, encoding: str = "utf-8") -> str:
@@ -54,37 +77,63 @@ class FileIOHandler:
         2. Try specified encoding
         3. Try platform-specific common encodings
         4. Fallback to UTF-8 with error replacement
+        
+        Raises:
+            FileNotFoundError: When file does not exist
+            PermissionError: When file cannot be read due to permissions
+            OSError: When other OS-level errors occur
+            MemoryError: When file is too large to read into memory
         """
         logger = get_logger(__name__)
         logger.debug(f"Reading file: {path}")
 
-        # Use encoding detector for efficiency
-        detected_encoding, is_confident = EncodingDetector.detect(path)
-        logger.debug(
-            f"Detected encoding: {detected_encoding} (confident: {is_confident})"
-        )
+        # Check if file exists and is readable
+        if not path.exists():
+            logger.error(f"File not found: {path}")
+            raise FileNotFoundError(f"ファイルが見つかりません: {path}")
+        
+        if not path.is_file():
+            logger.error(f"Path is not a file: {path}")
+            raise IsADirectoryError(f"指定されたパスはファイルではありません: {path}")
 
-        # Try detected encoding first if confident
-        content = FileIOHandler._try_detected_encoding(
-            path, detected_encoding, is_confident, encoding, logger
-        )
-        if content is not None:
-            return content
+        try:
+            # Use encoding detector for efficiency
+            detected_encoding, is_confident = EncodingDetector.detect(path)
+            logger.debug(
+                f"Detected encoding: {detected_encoding} (confident: {is_confident})"
+            )
 
-        # Try specified encoding if different
-        content = FileIOHandler._try_specified_encoding(
-            path, encoding, detected_encoding, logger
-        )
-        if content is not None:
-            return content
+            # Try detected encoding first if confident
+            content = FileIOHandler._try_detected_encoding(
+                path, detected_encoding, is_confident, encoding, logger
+            )
+            if content is not None:
+                return content
 
-        # Try platform-specific fallbacks
-        content = FileIOHandler._try_platform_fallbacks(path, logger)
-        if content is not None:
-            return content
+            # Try specified encoding if different
+            content = FileIOHandler._try_specified_encoding(
+                path, encoding, detected_encoding, logger
+            )
+            if content is not None:
+                return content
 
-        # Last resort: UTF-8 with error replacement
-        return FileIOHandler._read_with_error_replacement(path, logger)
+            # Try platform-specific fallbacks
+            content = FileIOHandler._try_platform_fallbacks(path, logger)
+            if content is not None:
+                return content
+
+            # Last resort: UTF-8 with error replacement
+            return FileIOHandler._read_with_error_replacement(path, logger)
+            
+        except PermissionError as e:
+            logger.error(f"Permission denied reading file: {path} - {e}")
+            raise PermissionError(f"ファイル読み取り権限がありません: {path}")
+        except MemoryError as e:
+            logger.error(f"Memory error reading file: {path} - {e}")
+            raise MemoryError(f"ファイルが大きすぎてメモリに読み込めません: {path}")
+        except OSError as e:
+            logger.error(f"OS error reading file: {path} - {e}")
+            raise OSError(f"ファイル読み取り中にOSエラーが発生しました: {path} - {e}")
 
     @staticmethod
     def _try_detected_encoding(
