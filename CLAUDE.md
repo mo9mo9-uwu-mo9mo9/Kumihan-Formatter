@@ -31,6 +31,44 @@ AI運用6原則
 - **ログ**: `from kumihan_formatter.core.utilities.logger import get_logger`
 - **リリース**: v0.9.0-alpha.1 (正式リリースはユーザー許可必須)
 
+# 🎯 TDD-First開発システム（Issue #640完全実装済み）
+
+## TDD開発必須フロー
+**重要**: 全ての新機能・バグ修正は必ずTDD-Firstで開発すること
+
+### 1. TDDセッション開始（必須）
+```bash
+make tdd-start ISSUE_NUMBER=640
+```
+
+### 2. Red → Green → Refactor サイクル実行
+```bash
+make tdd-red      # ❌ 失敗するテスト作成
+make tdd-green    # ✅ 最小実装でテスト成功
+make tdd-refactor # 🔄 品質向上・リファクタリング
+```
+
+### 3. セキュリティテスト統合
+```bash
+make tdd-security # 🛡️ 必須セキュリティテスト実行
+```
+
+### 4. TDDサイクル完了
+```bash
+make tdd-complete # 🏁 品質チェック・完了確認
+```
+
+## TDD品質要求（強制）
+- **Critical Tier**: 90%カバレッジ必須
+- **Important Tier**: 80%カバレッジ推奨  
+- **セキュリティテスト**: 100%パス必須
+- **TDD履歴**: Red→Green→Refactor記録必須
+
+## TDD違反時の対応
+- GitHub Actions による自動マージブロック
+- TDD未実施PRは自動却下
+- `make tdd-enforce` でローカル強制チェック
+
 # 必須ルール
 
 ## ブランチ管理
@@ -40,9 +78,9 @@ AI運用6原則
 
 ## 品質管理（Issue #583対応 - 現実的基準）
 
-### ティア別品質基準
-- **Critical Tier**: Core機能・Commands（テストカバレッジ80%目標）
-- **Important Tier**: レンダリング・バリデーション（60%推奨）
+### ティア別品質基準（Issue #640更新）
+- **Critical Tier**: Core機能・Commands（テストカバレッジ90%必須）
+- **Important Tier**: レンダリング・バリデーション（80%推奨）
 - **Supportive Tier**: ユーティリティ・キャッシング（統合テストで代替可）
 - **Special Tier**: GUI・パフォーマンス系（E2E・ベンチマークで代替）
 
@@ -70,6 +108,15 @@ AI運用6原則
 # 基本コマンド
 
 ```bash
+# TDD-First開発システム（Issue #640実装済み）
+make tdd-start ISSUE_NUMBER=640  # TDDセッション開始
+make tdd-red                     # Red Phase実行
+make tdd-green                   # Green Phase実行  
+make tdd-refactor                # Refactor Phase実行
+make tdd-security                # セキュリティテスト実行
+make tdd-complete                # TDDサイクル完了
+
+# 従来コマンド
 make test          # テスト実行
 make lint          # リントチェック
 make pre-commit    # コミット前チェック
