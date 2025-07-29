@@ -1,0 +1,56 @@
+{
+  "overall_status": "fail",
+  "total_coverage": 50.0,
+  "tier_results": {
+    "critical": {
+      "module_count": 1,
+      "average_coverage": 50.0,
+      "required_coverage": 90.0,
+      "status": "fail",
+      "failing_modules": [
+        "kumihan_formatter/commands/convert/convert_processor.py"
+      ]
+    },
+    "important": {
+      "module_count": 0,
+      "average_coverage": 0.0,
+      "required_coverage": 80.0,
+      "status": "skip"
+    },
+    "supportive": {
+      "module_count": 0,
+      "average_coverage": 0.0,
+      "required_coverage": 0.0,
+      "status": "skip"
+    },
+    "special": {
+      "module_count": 0,
+      "average_coverage": 0.0,
+      "required_coverage": 0.0,
+      "status": "skip"
+    }
+  },
+  "module_results": [
+    {
+      "module_path": "kumihan_formatter/commands/convert/convert_processor.py",
+      "tier": "critical",
+      "coverage_percent": 50.0,
+      "required_percent": 90.0,
+      "line_count": 10,
+      "covered_lines": 5,
+      "missing_lines": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "status": "fail"
+    }
+  ],
+  "critical_failures": [
+    "Critical Tier: 50.0% < 90.0% (必須)"
+  ],
+  "recommendations": [],
+  "execution_time": 1.1920928955078125e-05
+}
