@@ -110,23 +110,16 @@ kumihan convert input.txt output.txt  # 基本変換
 
 
 
-# 開発ツール（統合版）
+# 開発ツール（軽量版）
 
-## 開発者向けツール
-- **実行コマンド**: `make lint`, `make pre-commit`
+## 基本ツール
+- **実行コマンド**: `make lint`
 - **依存関係管理**: `pip install -e ".[dev]"`
-- **開発支援ツール**: `dev/tools/` 配下に配置
-- **トラブルシューティング**: 仮想環境・モジュール・パーミッション対応
-
-## 記法ツール（自動化システム）
 - **記法検証**: `python -m kumihan_formatter check-syntax file.txt`
-- **自動修正**: `dev/tools/syntax_fixer.py` による自動修正
-- **サンプルファイル**: `tools/syntax/記法ツール/サンプルファイル/` 配下
-- **効果**: 90%以上のトークン消費削減、ドラッグ&ドロップ対応
 
 ## クイックリファレンス
 
-### 緊急時対応フロー
+### 基本フロー
 ```bash
 # 1. エラー確認
 make lint
@@ -138,29 +131,18 @@ python -m kumihan_formatter check-syntax file.txt
 pip install -e ".[dev]"
 ```
 
-### トラブルシューティング1分チェックリスト
-- [ ] 仮想環境アクティベート済み？
-- [ ] プロジェクトルートディレクトリにいる？
-- [ ] 実行権限が付与されている？
-- [ ] Python 3.12以上を使用？
-
 # 記法仕様
 
 - **基本**: `;;;装飾名;;; 内容 ;;;`
 - **脚注**: `((content))` → 巻末移動
 - **傍注**: `｜content《reading》` → ルビ表現
 
-# 詳細ドキュメント
+# ドキュメント
 
-- **Claude Code効率化**: [docs/REFERENCE.md](docs/REFERENCE.md) - Claude Code向けリファレンス（推奨）
-- **開発詳細**: [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - 包括的開発ガイド
-- **技術仕様**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - システム全体アーキテクチャ  
-- **ユーザーガイド**: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) - エンドユーザー向け完全ガイド
-- **配布・運用**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 配布パッケージング・本番運用
-
-
----
-**重要**: 詳細情報は上記リンク先を参照
+- **アーキテクチャ**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - システム仕様
+- **ユーザーガイド**: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 利用方法
+- **リファレンス**: [docs/REFERENCE.md](docs/REFERENCE.md) - Claude Code向け
+- **配布**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - パッケージング
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

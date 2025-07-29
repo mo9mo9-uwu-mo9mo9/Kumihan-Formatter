@@ -42,7 +42,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["dev*", "tests*", "tools*"]
+exclude = ["dev*", "tools*"]
 
 [tool.setuptools.package-data]
 kumihan_formatter = [

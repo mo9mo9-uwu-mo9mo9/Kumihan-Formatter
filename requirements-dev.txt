@@ -1,7 +1,0 @@
-pre-commit
-requests
-types-psutil
-types-PyYAML
-types-click
-types-Jinja2
-types-MarkupSafe
