@@ -288,15 +288,15 @@ class TestSyntaxValidator:
         """Test handling of Unicode characters beyond Basic Multilingual Plane"""
         # BMP外文字（Plane 1: 𝕌𝕟𝕚𝕔𝕠𝕕𝕖, 𝐌𝐚𝐭𝐡𝐞𝐦𝐚𝐭𝐢𝐜𝐚𝐥 𝐀𝐥𝐩𝐡𝐚𝐛𝐞𝐭）
         bmp_beyond_text = "Mathematical: 𝕌𝕟𝕚𝕔𝕠𝕕𝕖 𝔸𝕝𝔽𝒶\n"
-        
+
         # Plane 2: CJK拡張
         bmp_beyond_text += "CJK Ext: 𠀀𠀁𠀂\n"
-        
+
         # Plane 14: Tags and variation selectors
         bmp_beyond_text += "Emoji variation: 👨‍👩‍👧‍👦\n"
-        
+
         issues = self.validator.validate_encoding(bmp_beyond_text)
-        
+
         # Should handle BMP-beyond characters without issues
         unicode_errors = [issue for issue in issues if issue.code == "INVALID_UNICODE"]
         assert len(unicode_errors) == 0
@@ -307,12 +307,12 @@ class TestSyntaxValidator:
         combining_text = (
             "Base + combining: é (e + ́)\n"  # e + combining acute
             "Complex: நி (Tamil)\n"  # Tamil script with combining
-            "Arabic: مُحَمَّد\n"       # Arabic with diacritics
-            "Thai: สำคัญ\n"          # Thai with tone marks
+            "Arabic: مُحَمَّد\n"  # Arabic with diacritics
+            "Thai: สำคัญ\n"  # Thai with tone marks
         )
-        
+
         issues = self.validator.validate_encoding(combining_text)
-        
+
         # Should handle combining characters without issues
         unicode_errors = [issue for issue in issues if issue.code == "INVALID_UNICODE"]
         assert len(unicode_errors) == 0
@@ -322,29 +322,29 @@ class TestSyntaxValidator:
         complex_cases = [
             # Zero-width characters
             "Zero-width: Hello\u200bWorld\u200c\u200d\u2060",
-            
             # Bidirectional text
             "BiDi: Hello \u202eworld\u202c!",
-            
             # Private use area
             "Private use: \ue000\ue001\uf8ff",
-            
             # Surrogate pairs (handled by Python automatically)
             "Emoji: 👨‍💻🧑‍🎨👩‍🔬",
-            
             # Mixed scripts
             "Mixed: Hello世界سلامΓεια سدر ሰላም",
         ]
-        
+
         for case_text in complex_cases:
             issues = self.validator.validate_encoding(case_text)
-            
+
             # Should handle complex Unicode without crashing
-            unicode_errors = [issue for issue in issues if issue.code == "INVALID_UNICODE"]
+            unicode_errors = [
+                issue for issue in issues if issue.code == "INVALID_UNICODE"
+            ]
             # Private use area might trigger warnings, but shouldn't error
             if unicode_errors:
-                assert all(issue.level in ["warning", "info"] for issue in unicode_errors)
-            
+                assert all(
+                    issue.level in ["warning", "info"] for issue in unicode_errors
+                )
+
             # Ensure validator didn't crash
             assert isinstance(issues, list)
 
@@ -355,18 +355,21 @@ class TestSyntaxValidator:
             "Some text ;;; marker not at start",
             "Regular text line",
         ]
-        
+
         issues = self.validator.validate_marker_syntax(invalid_lines)
         position_errors = [
             issue for issue in issues if issue.code == "INVALID_MARKER_POSITION"
         ]
-        
+
         if position_errors:
             error_msg = position_errors[0].message
             # Should mention line number
             assert "line" in error_msg.lower()
             # Should provide guidance
-            assert any(word in error_msg.lower() for word in ["start", "beginning", "move", "position"])
+            assert any(
+                word in error_msg.lower()
+                for word in ["start", "beginning", "move", "position"]
+            )
             # Should show the problematic content
             assert ";;;" in error_msg
 
@@ -375,14 +378,17 @@ class TestSyntaxValidator:
         # Test invalid Unicode character
         invalid_text = "Text with \ufffd replacement character"
         issues = self.validator.validate_encoding(invalid_text)
-        
+
         unicode_issues = [issue for issue in issues if issue.code == "INVALID_UNICODE"]
         if unicode_issues:
             error_msg = unicode_issues[0].message
             # Should mention Unicode
             assert "unicode" in error_msg.lower()
             # Should mention characters or invalid content
-            assert any(word in error_msg.lower() for word in ["characters", "invalid", "contains"])
+            assert any(
+                word in error_msg.lower()
+                for word in ["characters", "invalid", "contains"]
+            )
         else:
             # If no Unicode issues are detected, the validator may be working correctly
             # by not triggering on the Unicode replacement character

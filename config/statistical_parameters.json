@@ -16,7 +16,7 @@
       "theoretical_basis": {
         "wilson_interval": "Wilson (1927) による二項分布の正確な信頼区間",
         "jeffreys_prior": "Jeffreys (1961) 無情報事前分布による Bayesian 補正",
-        "fallback_0_5": "最大エントロピー原理に基づく均等分布仮定（Shannon 1948）"
+        "fallback_0_5": "最大エントロピー原理に基づく均等分布仮定（Shannon 1948）- correction_factor=0.5は情報理論的最大不確実性原理から導出"
       }
     },
     "sample_size_thresholds": {

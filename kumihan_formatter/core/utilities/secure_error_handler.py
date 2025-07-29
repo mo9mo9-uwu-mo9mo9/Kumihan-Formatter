@@ -24,24 +24,30 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class ErrorSeverity(Enum):
     """エラー重要度"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
 
+
 class ExposureRisk(Enum):
     """情報露出リスク"""
-    SAFE = "safe"           # 公開情報
-    INTERNAL = "internal"   # 内部情報（ログのみ）
-    SENSITIVE = "sensitive" # 機密情報（管理者のみ）
-    CRITICAL = "critical"   # 極秘情報（監査ログのみ）
+
+    SAFE = "safe"  # 公開情報
+    INTERNAL = "internal"  # 内部情報（ログのみ）
+    SENSITIVE = "sensitive"  # 機密情報（管理者のみ）
+    CRITICAL = "critical"  # 極秘情報（監査ログのみ）
+
 
 @dataclass
 class SanitizedError:
     """サニタイズ済みエラー情報"""
+
     user_message: str
     error_code: str
     severity: ErrorSeverity
@@ -50,34 +56,40 @@ class SanitizedError:
     internal_details: Optional[Dict[str, Any]] = None
     original_error: Optional[str] = None
 
+
 class SecureErrorHandler:
     """セキュアエラーハンドラー"""
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """初期化"""
-        self.config_path = config_path or Path(__file__).parent.parent.parent.parent / "config" / "error_sanitization.json"
+        self.config_path = (
+            config_path
+            or Path(__file__).parent.parent.parent.parent
+            / "config"
+            / "error_sanitization.json"
+        )
         self.config = self._load_config()
-        
+
         # 機密情報パターン
         self.sensitive_patterns = self._compile_sensitive_patterns()
-        
+
         # エラーコードマッピング
         self.error_code_mapping = self.config.get("error_code_mapping", {})
-        
+
         # ユーザー向けメッセージテンプレート
         self.user_message_templates = self.config.get("user_message_templates", {})
-        
+
         logger.info("セキュアエラーハンドラー初期化完了")
-    
+
     def _load_config(self) -> Dict[str, Any]:
         """設定ファイル読み込み"""
         try:
             if self.config_path.exists():
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, "r", encoding="utf-8") as f:
                     return json.load(f)
         except Exception as e:
             logger.warning(f"エラーサニタイズ設定読み込み失敗: {e}")
-        
+
         # デフォルト設定
         return {
             "sensitive_patterns": {
@@ -88,7 +100,7 @@ class SecureErrorHandler:
                 "urls": r"https?://[^\s\"']+",
                 "email_addresses": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
                 "version_info": r"(?i)version[\s=:\"']*[\d.]+",
-                "stack_traces": r"(?i)traceback|at\s+[^\s]+\.[^\s]+\(\w+\.py:\d+\)"
+                "stack_traces": r"(?i)traceback|at\s+[^\s]+\.[^\s]+\(\w+\.py:\d+\)",
             },
             "sanitization_replacements": {
                 "file_paths": "[PATH_SANITIZED]",
@@ -98,7 +110,7 @@ class SecureErrorHandler:
                 "urls": "[URL_SANITIZED]",
                 "email_addresses": "[EMAIL_SANITIZED]",
                 "version_info": "[VERSION_SANITIZED]",
-                "stack_traces": "[STACK_TRACE_SANITIZED]"
+                "stack_traces": "[STACK_TRACE_SANITIZED]",
             },
             "error_code_mapping": {
                 "FileNotFoundError": "ERR_FILE_ACCESS_001",
@@ -108,7 +120,7 @@ class SecureErrorHandler:
                 "KeyError": "ERR_DATA_001",
                 "ImportError": "ERR_MODULE_001",
                 "ConnectionError": "ERR_NETWORK_001",
-                "TimeoutError": "ERR_NETWORK_002"
+                "TimeoutError": "ERR_NETWORK_002",
             },
             "user_message_templates": {
                 "ERR_FILE_ACCESS_001": "指定されたファイルまたはディレクトリにアクセスできません",
@@ -119,46 +131,48 @@ class SecureErrorHandler:
                 "ERR_MODULE_001": "必要なモジュールが利用できません",
                 "ERR_NETWORK_001": "ネットワーク接続に問題があります",
                 "ERR_NETWORK_002": "処理がタイムアウトしました",
-                "ERR_GENERIC": "予期しないエラーが発生しました"
+                "ERR_GENERIC": "予期しないエラーが発生しました",
             },
             "exposure_control": {
                 "development": "internal",
-                "staging": "internal", 
-                "production": "safe"
-            }
+                "staging": "internal",
+                "production": "safe",
+            },
         }
-    
+
     def _compile_sensitive_patterns(self) -> Dict[str, re.Pattern]:
         """機密情報パターンをコンパイル"""
         patterns = {}
         sensitive_patterns = self.config.get("sensitive_patterns", {})
-        
+
         for pattern_name, pattern_regex in sensitive_patterns.items():
             try:
-                patterns[pattern_name] = re.compile(pattern_regex, re.MULTILINE | re.DOTALL)
+                patterns[pattern_name] = re.compile(
+                    pattern_regex, re.MULTILINE | re.DOTALL
+                )
             except re.error as e:
                 logger.warning(f"不正なパターン {pattern_name}: {e}")
-        
+
         return patterns
-    
+
     def sanitize_error_message(
-        self,
-        error_message: str,
-        exposure_level: ExposureRisk = ExposureRisk.SAFE
+        self, error_message: str, exposure_level: ExposureRisk = ExposureRisk.SAFE
     ) -> str:
         """エラーメッセージのサニタイズ"""
-        
+
         if not error_message:
             return ""
-        
+
         sanitized = error_message
         replacements = self.config.get("sanitization_replacements", {})
-        
+
         # 機密情報パターンの置換
         for pattern_name, pattern in self.sensitive_patterns.items():
-            replacement = replacements.get(pattern_name, f"[{pattern_name.upper()}_SANITIZED]")
+            replacement = replacements.get(
+                pattern_name, f"[{pattern_name.upper()}_SANITIZED]"
+            )
             sanitized = pattern.sub(replacement, sanitized)
-        
+
         # 露出レベルに応じた追加制御
         if exposure_level == ExposureRisk.SAFE:
             # 最小限の情報のみ
@@ -166,9 +180,9 @@ class SecureErrorHandler:
         elif exposure_level == ExposureRisk.INTERNAL:
             # 内部向けは技術的詳細を一部保持
             sanitized = self._filter_internal_safe_info(sanitized)
-        
+
         return sanitized.strip()
-    
+
     def _minimize_technical_details(self, message: str) -> str:
         """技術的詳細を最小化"""
         # 行数、ファイル名、モジュール名などの詳細を削除
@@ -176,155 +190,183 @@ class SecureErrorHandler:
             r"line \d+",
             r"at line \d+",
             r"in \w+\.\w+",
-            r"module '[^']+'"
+            r"module '[^']+'",
         ]
-        
+
         minimized = message
         for pattern in technical_patterns:
-            minimized = re.sub(pattern, "[TECHNICAL_DETAIL_REMOVED]", minimized, flags=re.IGNORECASE)
-        
+            minimized = re.sub(
+                pattern, "[TECHNICAL_DETAIL_REMOVED]", minimized, flags=re.IGNORECASE
+            )
+
         return minimized
-    
+
     def _filter_internal_safe_info(self, message: str) -> str:
         """内部向けに安全な情報をフィルタリング"""
         # 機密情報は除去するが、デバッグに必要な技術情報は保持
         return message
-    
+
     def create_error_code(self, exception: Exception) -> str:
         """例外からエラーコードを生成"""
         exception_name = type(exception).__name__
-        
+
         # 設定済みマッピングを確認
         if exception_name in self.error_code_mapping:
             return self.error_code_mapping[exception_name]
-        
+
         # 動的エラーコード生成
-        error_hash = hashlib.md5(
-            f"{exception_name}_{str(exception)[:50]}".encode()
-        ).hexdigest()[:8].upper()
-        
+        error_hash = (
+            hashlib.md5(f"{exception_name}_{str(exception)[:50]}".encode())
+            .hexdigest()[:8]
+            .upper()
+        )
+
         return f"ERR_DYNAMIC_{error_hash}"
-    
+
     def generate_trace_id(self) -> str:
         """トレースID生成"""
         timestamp = datetime.now().isoformat()
-        trace_hash = hashlib.sha256(
-            f"{timestamp}_{id(self)}".encode()
-        ).hexdigest()[:16].upper()
-        
+        trace_hash = (
+            hashlib.sha256(f"{timestamp}_{id(self)}".encode()).hexdigest()[:16].upper()
+        )
+
         return f"TRACE_{trace_hash}"
-    
+
     def handle_exception(
         self,
         exception: Exception,
         context: Optional[Dict[str, Any]] = None,
         user_exposure: ExposureRisk = ExposureRisk.SAFE,
-        severity: ErrorSeverity = ErrorSeverity.MEDIUM
+        severity: ErrorSeverity = ErrorSeverity.MEDIUM,
     ) -> SanitizedError:
         """例外の安全な処理"""
-        
+
         # トレースID生成
         trace_id = self.generate_trace_id()
-        
+
         # エラーコード生成
         error_code = self.create_error_code(exception)
-        
+
         # 元のエラーメッセージ取得
         original_message = str(exception)
         full_traceback = traceback.format_exc()
-        
+
         # ユーザー向けメッセージ取得
         user_message = self.user_message_templates.get(
             error_code,
-            self.user_message_templates.get("ERR_GENERIC", "エラーが発生しました")
+            self.user_message_templates.get("ERR_GENERIC", "エラーが発生しました"),
         )
-        
+
         # サニタイズ済みメッセージ生成
         if user_exposure in [ExposureRisk.INTERNAL, ExposureRisk.SENSITIVE]:
             # 内部向けには詳細情報を含める
             detailed_message = f"{original_message}\n\nContext: {context or {}}"
-            sanitized_message = self.sanitize_error_message(detailed_message, user_exposure)
+            sanitized_message = self.sanitize_error_message(
+                detailed_message, user_exposure
+            )
         else:
             # 外部向けには汎用メッセージのみ
             sanitized_message = user_message
-        
+
         # 内部詳細情報（ログ用）
         internal_details = {
             "original_error": original_message,
             "exception_type": type(exception).__name__,
-            "traceback": self.sanitize_error_message(full_traceback, ExposureRisk.INTERNAL),
+            "traceback": self.sanitize_error_message(
+                full_traceback, ExposureRisk.INTERNAL
+            ),
             "context": context,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
         # ログ出力
         self._log_error(
             error_code=error_code,
             trace_id=trace_id,
             severity=severity,
             internal_details=internal_details,
-            user_message=user_message
+            user_message=user_message,
         )
-        
+
         return SanitizedError(
             user_message=sanitized_message,
             error_code=error_code,
             severity=severity,
             timestamp=datetime.now(),
             trace_id=trace_id,
-            internal_details=internal_details if user_exposure != ExposureRisk.SAFE else None,
-            original_error=original_message if user_exposure in [ExposureRisk.SENSITIVE, ExposureRisk.CRITICAL] else None
+            internal_details=(
+                internal_details if user_exposure != ExposureRisk.SAFE else None
+            ),
+            original_error=(
+                original_message
+                if user_exposure in [ExposureRisk.SENSITIVE, ExposureRisk.CRITICAL]
+                else None
+            ),
         )
-    
+
     def _log_error(
         self,
         error_code: str,
         trace_id: str,
         severity: ErrorSeverity,
         internal_details: Dict[str, Any],
-        user_message: str
+        user_message: str,
     ):
         """エラーの内部ログ出力"""
-        
+
         log_entry = {
             "error_code": error_code,
             "trace_id": trace_id,
             "severity": severity.value,
             "user_message": user_message,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
         # 重要度に応じたログレベル
         if severity == ErrorSeverity.CRITICAL:
-            logger.critical(f"Critical Error [{trace_id}]: {error_code}", extra={"details": internal_details})
+            logger.critical(
+                f"Critical Error [{trace_id}]: {error_code}",
+                extra={"details": internal_details},
+            )
         elif severity == ErrorSeverity.HIGH:
-            logger.error(f"High Severity Error [{trace_id}]: {error_code}", extra={"details": internal_details})
+            logger.error(
+                f"High Severity Error [{trace_id}]: {error_code}",
+                extra={"details": internal_details},
+            )
         elif severity == ErrorSeverity.MEDIUM:
-            logger.warning(f"Medium Severity Error [{trace_id}]: {error_code}", extra={"details": internal_details})
+            logger.warning(
+                f"Medium Severity Error [{trace_id}]: {error_code}",
+                extra={"details": internal_details},
+            )
         elif severity == ErrorSeverity.LOW:
-            logger.info(f"Low Severity Error [{trace_id}]: {error_code}", extra={"details": internal_details})
+            logger.info(
+                f"Low Severity Error [{trace_id}]: {error_code}",
+                extra={"details": internal_details},
+            )
         else:
-            logger.debug(f"Info Level Error [{trace_id}]: {error_code}", extra={"details": internal_details})
-    
+            logger.debug(
+                f"Info Level Error [{trace_id}]: {error_code}",
+                extra={"details": internal_details},
+            )
+
     def create_user_friendly_message(
         self,
         error_code: str,
         context: Optional[Dict[str, Any]] = None,
-        include_support_info: bool = True
+        include_support_info: bool = True,
     ) -> str:
         """ユーザーフレンドリーなエラーメッセージ作成"""
-        
+
         base_message = self.user_message_templates.get(
-            error_code,
-            "申し訳ございません。問題が発生しました。"
+            error_code, "申し訳ございません。問題が発生しました。"
         )
-        
+
         if include_support_info:
             support_message = f"\n\nサポートが必要な場合は、エラーコード '{error_code}' をお伝えください。"
             base_message += support_message
-        
+
         return base_message
-    
+
     def get_error_statistics(self) -> Dict[str, Any]:
         """エラー統計情報取得"""
         # 実装は将来的にエラー発生頻度の追跡機能として拡張可能
@@ -332,11 +374,13 @@ class SecureErrorHandler:
             "total_patterns": len(self.sensitive_patterns),
             "total_error_codes": len(self.error_code_mapping),
             "config_loaded": self.config_path.exists() if self.config_path else False,
-            "sanitization_active": True
+            "sanitization_active": True,
         }
+
 
 # グローバルインスタンス
 _global_error_handler: Optional[SecureErrorHandler] = None
+
 
 def get_secure_error_handler() -> SecureErrorHandler:
     """グローバルセキュアエラーハンドラー取得"""
@@ -345,27 +389,33 @@ def get_secure_error_handler() -> SecureErrorHandler:
         _global_error_handler = SecureErrorHandler()
     return _global_error_handler
 
+
 # 便利な関数群
 def safe_handle_exception(
     exception: Exception,
     context: Optional[Dict[str, Any]] = None,
     user_exposure: ExposureRisk = ExposureRisk.SAFE,
-    severity: ErrorSeverity = ErrorSeverity.MEDIUM
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
 ) -> SanitizedError:
     """例外の安全な処理（関数版）"""
-    return get_secure_error_handler().handle_exception(exception, context, user_exposure, severity)
+    return get_secure_error_handler().handle_exception(
+        exception, context, user_exposure, severity
+    )
+
 
 def sanitize_message(
-    message: str,
-    exposure_level: ExposureRisk = ExposureRisk.SAFE
+    message: str, exposure_level: ExposureRisk = ExposureRisk.SAFE
 ) -> str:
     """メッセージのサニタイズ（関数版）"""
     return get_secure_error_handler().sanitize_error_message(message, exposure_level)
 
+
 def create_user_message(
     error_code: str,
     context: Optional[Dict[str, Any]] = None,
-    include_support_info: bool = True
+    include_support_info: bool = True,
 ) -> str:
     """ユーザー向けメッセージ作成（関数版）"""
-    return get_secure_error_handler().create_user_friendly_message(error_code, context, include_support_info)
+    return get_secure_error_handler().create_user_friendly_message(
+        error_code, context, include_support_info
+    )
