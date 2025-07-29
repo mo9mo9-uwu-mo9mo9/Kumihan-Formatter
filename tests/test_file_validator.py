@@ -182,7 +182,7 @@ class TestFileValidator:
             (b"\xff\xfe\x00\x00A\x00\x00\x00", "UTF-32 LE BOM"),
             (b"\xfe\xff\x00A", "UTF-16 BE BOM"),
         ]
-        
+
         for byte_content, description in test_cases:
             with tempfile.NamedTemporaryFile(
                 suffix=".txt", mode="wb", delete=False
@@ -190,15 +190,15 @@ class TestFileValidator:
                 temp_file.write(byte_content)
                 temp_file.flush()
                 temp_file.close()
-                
+
                 try:
                     file_path = Path(temp_file.name)
                     issues = self.validator.validate_file_path(file_path)
-                    
+
                     # Should handle different encodings gracefully
                     # May generate warnings but shouldn't crash
                     assert isinstance(issues, list)
-                    
+
                 finally:
                     try:
                         os.unlink(temp_file.name)
@@ -219,6 +219,7 @@ class TestFileValidator:
         """Test validation when output directory doesn't exist"""
         # Use platform-agnostic path that doesn't exist
         import uuid
+
         unique_name = f"non_existent_directory_test_{uuid.uuid4().hex[:8]}"
         non_existent_dir = Path(tempfile.gettempdir()) / unique_name
         output_path = non_existent_dir / "output.html"
@@ -310,30 +311,35 @@ class TestFileValidator:
         """Test that error messages are specific and actionable"""
         # Test non-existent file error message specificity
         import uuid
+
         unique_name = f"definitely_non_existent_{uuid.uuid4().hex[:8]}.txt"
         non_existent = Path(tempfile.gettempdir()) / unique_name
         issues = self.validator.validate_file_path(non_existent)
-        
-        file_not_found_issues = [issue for issue in issues if issue.code == "FILE_NOT_FOUND"]
+
+        file_not_found_issues = [
+            issue for issue in issues if issue.code == "FILE_NOT_FOUND"
+        ]
         assert len(file_not_found_issues) == 1
-        
+
         error_msg = file_not_found_issues[0].message
         # Should contain specific file path
         assert str(non_existent) in error_msg
         # Should clearly indicate file not found
         assert "not found" in error_msg.lower() or "does not exist" in error_msg.lower()
-        
+
         # Test directory instead of file error message
         with tempfile.TemporaryDirectory() as temp_dir:
             dir_path = Path(temp_dir)
             issues = self.validator.validate_file_path(dir_path)
-            
+
             not_file_issues = [issue for issue in issues if issue.code == "NOT_A_FILE"]
             assert len(not_file_issues) == 1
-            
+
             error_msg = not_file_issues[0].message
             # Should clearly indicate it's a directory
-            assert any(word in error_msg.lower() for word in ["directory", "folder", "file"])
+            assert any(
+                word in error_msg.lower() for word in ["directory", "folder", "file"]
+            )
             # Should provide guidance
             assert "file" in error_msg.lower()
 

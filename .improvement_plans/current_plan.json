@@ -1,0 +1,252 @@
+{
+  "plan_id": "improvement-plan-20250729-171402",
+  "created_at": "2025-07-29T17:14:02.551763",
+  "current_phase": "analysis",
+  "phases": {
+    "critical_tier": {
+      "coverage_current": 11.99002493765586,
+      "coverage_target": 90.0,
+      "complexity_current": 18.68888888888889,
+      "complexity_target": 12.0,
+      "technical_debt_current": 75.0,
+      "technical_debt_target": 40.0,
+      "estimated_weeks": 4,
+      "estimated_hours": 50
+    },
+    "important_tier": {
+      "coverage_current": 90.0,
+      "coverage_target": 85.0,
+      "complexity_current": 12.0,
+      "complexity_target": 10.0,
+      "technical_debt_current": 40.0,
+      "technical_debt_target": 25.0,
+      "estimated_weeks": 8,
+      "estimated_hours": 80
+    },
+    "feature_expansion": {
+      "coverage_current": 85.0,
+      "coverage_target": 80.0,
+      "complexity_current": 10.0,
+      "complexity_target": 8.0,
+      "technical_debt_current": 25.0,
+      "technical_debt_target": 15.0,
+      "estimated_weeks": 8,
+      "estimated_hours": 70
+    }
+  },
+  "tasks": [
+    {
+      "task_id": "CRIT-001",
+      "title": "SimpleMarkdownConverterテスト拡充",
+      "description": "Critical Tierコンポーネントの包括的テスト実装",
+      "phase": "ImprovementPhase.CRITICAL_TIER",
+      "priority": "Priority.CRITICAL",
+      "estimated_hours": 12.0,
+      "dependencies": [],
+      "expected_impact": "カバレッジ20%向上、バグ検出率80%向上",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ90%以上",
+        "Code Review承認"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/core/parsers/simple_markdown_converter.py"
+      ]
+    },
+    {
+      "task_id": "CRIT-002",
+      "title": "CheckSyntaxCommandテスト完全実装",
+      "description": "コマンド系の統合テスト・エラーハンドリングテスト",
+      "phase": "ImprovementPhase.CRITICAL_TIER",
+      "priority": "Priority.CRITICAL",
+      "estimated_hours": 10.0,
+      "dependencies": [],
+      "expected_impact": "コマンド信頼性95%向上",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ90%以上",
+        "Code Review承認"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/commands/check_syntax_command.py"
+      ]
+    },
+    {
+      "task_id": "CRIT-003",
+      "title": "FileOperations例外処理強化",
+      "description": "ファイル操作の堅牢性向上・エラーケーステスト",
+      "phase": "ImprovementPhase.CRITICAL_TIER",
+      "priority": "Priority.CRITICAL",
+      "estimated_hours": 8.0,
+      "dependencies": [],
+      "expected_impact": "ファイル操作エラー90%削減",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ90%以上",
+        "Code Review承認"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/core/file_operations/"
+      ]
+    },
+    {
+      "task_id": "CRIT-004",
+      "title": "TDD自動テスト生成システム統合",
+      "description": "Issue #640 TDDシステムとの完全統合",
+      "phase": "ImprovementPhase.CRITICAL_TIER",
+      "priority": "Priority.CRITICAL",
+      "estimated_hours": 15.0,
+      "dependencies": [],
+      "expected_impact": "開発効率300%向上、品質安定化",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ90%以上",
+        "Code Review承認"
+      ],
+      "assigned_components": [
+        "scripts/tdd_*.py"
+      ]
+    },
+    {
+      "task_id": "IMP-005",
+      "title": "レンダリングエンジンテスト強化",
+      "description": "HTML/CSS出力の品質テスト・パフォーマンステスト",
+      "phase": "ImprovementPhase.IMPORTANT_TIER",
+      "priority": "Priority.HIGH",
+      "estimated_hours": 18.0,
+      "dependencies": [
+        "CRIT-001",
+        "CRIT-002",
+        "CRIT-003",
+        "CRIT-004"
+      ],
+      "expected_impact": "レンダリング品質95%向上",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ80%以上",
+        "パフォーマンス基準クリア"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/core/renderers/"
+      ]
+    },
+    {
+      "task_id": "IMP-006",
+      "title": "バリデーションシステム拡張",
+      "description": "入力検証・セキュリティチェック強化",
+      "phase": "ImprovementPhase.IMPORTANT_TIER",
+      "priority": "Priority.HIGH",
+      "estimated_hours": 16.0,
+      "dependencies": [
+        "CRIT-001",
+        "CRIT-002",
+        "CRIT-003",
+        "CRIT-004"
+      ],
+      "expected_impact": "セキュリティリスク80%削減",
+      "completion_criteria": [
+        "全テストパス",
+        "カバレッジ80%以上",
+        "パフォーマンス基準クリア"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/core/validators/"
+      ]
+    },
+    {
+      "task_id": "SUP-007",
+      "title": "ユーティリティ関数テスト整備",
+      "description": "ログ・キャッシュ・ヘルパー関数の単体テスト",
+      "phase": "ImprovementPhase.SUPPORTIVE_TIER",
+      "priority": "Priority.MEDIUM",
+      "estimated_hours": 12.0,
+      "dependencies": [
+        "IMP-005",
+        "IMP-006"
+      ],
+      "expected_impact": "基盤安定性向上",
+      "completion_criteria": [
+        "テストパス",
+        "パフォーマンス基準達成"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/core/utilities/"
+      ]
+    },
+    {
+      "task_id": "SUP-008",
+      "title": "パフォーマンス最適化",
+      "description": "メモリ使用量・処理速度の最適化",
+      "phase": "ImprovementPhase.SUPPORTIVE_TIER",
+      "priority": "Priority.MEDIUM",
+      "estimated_hours": 20.0,
+      "dependencies": [
+        "IMP-005",
+        "IMP-006"
+      ],
+      "expected_impact": "処理速度50%向上",
+      "completion_criteria": [
+        "テストパス",
+        "パフォーマンス基準達成"
+      ],
+      "assigned_components": [
+        "kumihan_formatter/performance/"
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "milestone_id": "M1-CRITICAL",
+      "title": "Critical Tier 90%カバレッジ達成",
+      "target_date": "2025-08-26T17:14:02.551728",
+      "success_criteria": [
+        "Critical Tier カバレッジ90%以上",
+        "全Critical Tierテストパス",
+        "TDDシステム完全稼働"
+      ],
+      "deliverables": [
+        "Critical Tierテストスイート",
+        "TDD自動化システム",
+        "品質ゲート機能"
+      ]
+    },
+    {
+      "milestone_id": "M2-IMPORTANT",
+      "title": "Important Tier統合・全体カバレッジ85%",
+      "target_date": "2025-10-21T17:14:02.551738",
+      "success_criteria": [
+        "全体カバレッジ85%以上",
+        "Important Tierテスト完了",
+        "パフォーマンス基準達成"
+      ],
+      "deliverables": [
+        "統合テストスイート",
+        "パフォーマンス監視システム",
+        "セキュリティテスト自動化"
+      ]
+    },
+    {
+      "milestone_id": "M3-COMPLETE",
+      "title": "完全品質システム確立",
+      "target_date": "2025-12-16T17:14:02.551740",
+      "success_criteria": [
+        "全体カバレッジ80%維持",
+        "技術的負債15%以下",
+        "完全自動化CI/CD"
+      ],
+      "deliverables": [
+        "完全自動化システム",
+        "品質監視ダッシュボード",
+        "持続可能な開発プロセス"
+      ]
+    }
+  ],
+  "roi_estimation": {
+    "investment_hours": 200,
+    "benefit_hours_annual": 400.0,
+    "roi_percentage": 100.0,
+    "payback_months": 6.0,
+    "quality_improvement_score": 85.0,
+    "risk_reduction_percentage": 90.0
+  }
+}

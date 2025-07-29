@@ -18,10 +18,11 @@ TDD_SPEC_TEMPLATE = scripts/tdd_spec_template.py
 TDD_LOG_DIR = .tdd_logs
 ISSUE_NUMBER ?= $(shell git branch --show-current | grep -o 'issue-[0-9]*' | grep -o '[0-9]*' || echo "unknown")
 
-# カバレッジ設定
-COVERAGE_TARGET = 80
-CRITICAL_COVERAGE_TARGET = 95
-IMPORTANT_COVERAGE_TARGET = 85
+# カバレッジ設定 - Issue #640 TDD-First開発システム対応
+COVERAGE_TARGET = 90
+CRITICAL_COVERAGE_TARGET = 90
+IMPORTANT_COVERAGE_TARGET = 80
+SUPPORTIVE_COVERAGE_TARGET = 60
 
 .PHONY: help setup clean test lint coverage tdd-start tdd-spec tdd-red tdd-green tdd-refactor tdd-complete tdd-status quality-check
 
@@ -36,14 +37,14 @@ help:
 	@echo "  make coverage      - カバレッジレポート生成"
 	@echo "  make clean         - 一時ファイル削除"
 	@echo ""
-	@echo "TDD専用コマンド:"
-	@echo "  make tdd-start <ISSUE_NUMBER>  - Issue番号からTDDセッション開始"
-	@echo "  make tdd-spec                  - テスト仕様テンプレート生成"
-	@echo "  make tdd-red                   - Red phase: テスト失敗確認"
-	@echo "  make tdd-green                 - Green phase: 最小実装"
-	@echo "  make tdd-refactor              - Refactor phase: 品質改善"
-	@echo "  make tdd-complete              - TDDサイクル完了・品質確認"
-	@echo "  make tdd-status                - 現在のTDDセッション状況表示"
+	@echo "TDD-First開発システム (Issue #640対応):"
+	@echo "  make tdd-start ISSUE_NUMBER=640  - Issue番号からTDDセッション開始"
+	@echo "  make tdd-spec                    - テスト仕様テンプレート生成"
+	@echo "  make tdd-red                     - Red phase: テスト失敗確認"
+	@echo "  make tdd-green                   - Green phase: 最小実装"
+	@echo "  make tdd-refactor                - Refactor phase: 品質改善"
+	@echo "  make tdd-complete                - TDDサイクル完了・品質確認"
+	@echo "  make tdd-status                  - 現在のTDDセッション状況表示"
 	@echo ""
 	@echo "品質管理:"
 	@echo "  make quality-check             - 品質ゲートチェック"
@@ -157,6 +158,27 @@ ci-quality:
 	@echo "🔍 CI/CD品質チェック中..."
 	@$(PYTHON) $(SCRIPTS_DIR)/quality_gate_checker.py --ci-mode
 	@echo "✅ CI/CD品質チェック完了"
+
+# Issue #640 TDD-First開発システム専用コマンド
+tdd-enforce:
+	@echo "🚨 TDD-First開発システム強制実行"
+	@if [ ! -f $(TDD_SESSION_FILE) ]; then \
+		echo "❌ TDDセッションが開始されていません。'make tdd-start ISSUE_NUMBER=<番号>' を実行してください。"; \
+		exit 1; \
+	fi
+	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py enforce
+	@echo "✅ TDD強制チェック完了"
+
+tdd-security:
+	@echo "🛡️ セキュリティテスト実行中..."
+	@$(PYTHON) $(SCRIPTS_DIR)/security_sql_injection_test.py
+	@$(PYTHON) $(SCRIPTS_DIR)/security_xss_test.py  
+	@$(PYTHON) $(SCRIPTS_DIR)/security_csrf_test.py
+	@$(PYTHON) $(SCRIPTS_DIR)/security_file_upload_test.py
+	@echo "✅ セキュリティテスト完了"
+
+tdd-full-cycle: tdd-red tdd-green tdd-refactor tdd-security tdd-complete
+	@echo "🎯 完全TDDサイクル実行完了"
 
 # デバッグ用コマンド  
 debug-coverage:

@@ -115,7 +115,7 @@ class TestConvertCommand:
                         mock_validate.return_value = Path(input_file)
                         mock_size.return_value = True
                         mock_syntax.return_value = mock_error_report
-                        
+
                         # sys.exitがSystemExitを発生させるよう設定
                         mock_exit.side_effect = SystemExit
 

@@ -98,17 +98,17 @@ class ConvertValidator:
             line_number = error.line
         elif hasattr(error, "lineno"):
             line_number = error.lineno
-        
+
         # メッセージの安全な取得
-        message = error.message if hasattr(error, 'message') else str(error)
-        
+        message = error.message if hasattr(error, "message") else str(error)
+
         error_id = f"syntax_{line_number or 0}_{hash(message)}"
-        
+
         return DetailedError(
             error_id=error_id,
             severity=(
                 ErrorSeverity.ERROR
-                if hasattr(error, 'severity') and error.severity == ErrorSeverity.ERROR
+                if hasattr(error, "severity") and error.severity == ErrorSeverity.ERROR
                 else ErrorSeverity.WARNING
             ),
             category=ErrorCategory.SYNTAX,
