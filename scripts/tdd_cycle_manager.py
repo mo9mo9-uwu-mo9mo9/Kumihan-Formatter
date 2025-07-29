@@ -91,6 +91,64 @@ class TDDCycleManager:
         except (PermissionError, OSError) as e:
             raise FileNotFoundError(f"セッションファイル作成に失敗: {e}")
     
+    def validate_phase_transition(self, from_phase: str, to_phase: str) -> bool:
+        """フェーズ遷移の妥当性検証"""
+        valid_transitions = {
+            "initialized": ["red"],
+            "red": ["green"],
+            "green": ["refactor", "red"],  # 次の機能開発またはリファクタリング
+            "refactor": ["red", "complete"]  # 次の機能開発または完了
+        }
+        
+        allowed_next = valid_transitions.get(from_phase, [])
+        if to_phase not in allowed_next:
+            raise ValueError(
+                f"不正なフェーズ遷移: {from_phase} → {to_phase}. "
+                f"許可される遷移: {', '.join(allowed_next)}"
+            )
+        return True
+
+    def execute_red_phase(self) -> CycleValidation:
+        """Red Phase実行・検証（必ず失敗するテスト作成）"""
+        session = self._load_current_session()
+        if not session:
+            raise RuntimeError("アクティブなTDDセッションがありません")
+        
+        # フェーズ遷移検証
+        current_phase = session.get("current_phase", "initialized")
+        self.validate_phase_transition(current_phase, "red")
+        
+        # テスト実行前のメトリクス取得
+        metrics_before = self._collect_metrics()
+        
+        # テスト実行
+        test_result = self._run_tests()
+        
+        # Red Phaseでは必ずテストが失敗する必要がある
+        if test_result["failed_count"] == 0:
+            return CycleValidation(
+                phase="red",
+                result=PhaseValidationResult.FAILURE,
+                message="Red Phase違反: テストがすべて通過しています。失敗するテストを作成してください。",
+                metrics_before=metrics_before,
+                metrics_after=self._collect_metrics(),
+                validation_details={"test_result": test_result}
+            )
+        
+        # セッション更新
+        session["current_phase"] = "red"
+        session["red_phase_completed"] = datetime.now().isoformat()
+        self._save_session(session)
+        
+        return CycleValidation(
+            phase="red",
+            result=PhaseValidationResult.SUCCESS,
+            message=f"Red Phase完了: {test_result['failed_count']}個のテストが期待通り失敗",
+            metrics_before=metrics_before,
+            metrics_after=self._collect_metrics(),
+            validation_details={"test_result": test_result}
+        )
+
     def execute_green_phase(self) -> CycleValidation:
         """Green Phase実行・検証（Red Phase完了チェック付き）"""
         session = self._load_current_session()
@@ -98,6 +156,12 @@ class TDDCycleManager:
             raise RuntimeError("アクティブなTDDセッションがありません")
             
         # Red Phase完了確認
+        current_phase = session.get("current_phase")
+        if current_phase != "red":
+            raise RuntimeError(f"Green Phaseの前にRed Phaseを完了してください（現在: {current_phase}）")
+        
+        # フェーズ遷移検証
+        self.validate_phase_transition(current_phase, "green")
         if not self._is_phase_completed("red"):
             raise RuntimeError("Red Phaseが未完了です。先にRed Phaseを実行してください")
             
@@ -232,6 +296,79 @@ class TDDCycleManager:
         missing_phases = [phase for phase in required_phases if phase not in completed_phases]
         if missing_phases:
             raise ValueError(f"未完了のフェーズがあります: {missing_phases}")
+
+    def _load_current_session(self) -> Optional[Dict]:
+        """現在のセッション読み込み"""
+        if not self.session_file.exists():
+            return None
+        
+        try:
+            with open(self.session_file, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError) as e:
+            logger.error(f"セッションファイル読み込みエラー: {e}")
+            return None
+
+    def _save_session(self, session_data: Dict) -> None:
+        """セッションデータ保存"""
+        try:
+            with open(self.session_file, 'w') as f:
+                json.dump(session_data, f, indent=2)
+        except (IOError, OSError) as e:
+            raise IOError(f"セッションファイル保存エラー: {e}")
+
+    def _is_phase_completed(self, phase: str) -> bool:
+        """指定フェーズ完了チェック"""
+        session = self._load_current_session()
+        if not session:
+            return False
+        
+        return session.get(f"{phase}_phase_completed") is not None
+
+    def _collect_metrics(self) -> PhaseMetrics:
+        """現在のメトリクス収集"""
+        # 簡易的なメトリクス取得
+        return PhaseMetrics(
+            coverage_percentage=0.0,
+            test_count=0,
+            failed_test_count=0,
+            complexity_score=0.0,
+            code_lines=0,
+            commit_hash="mock_hash",
+            timestamp=datetime.now()
+        )
+
+    def _run_tests(self) -> Dict:
+        """テスト実行"""
+        try:
+            result = subprocess.run(
+                ["python3", "-m", "pytest", "-v"],
+                cwd=self.project_root,
+                capture_output=True,
+                text=True,
+                timeout=300  # 5分タイムアウト
+            )
+            
+            # 簡易的な結果解析
+            lines = result.stdout.split('\n')
+            failed_count = len([line for line in lines if "FAILED" in line])
+            passed_count = len([line for line in lines if "PASSED" in line])
+            
+            return {
+                "return_code": result.returncode,
+                "failed_count": failed_count,
+                "passed_count": passed_count,
+                "stdout": result.stdout,
+                "stderr": result.stderr
+            }
+        except subprocess.TimeoutExpired:
+            return {
+                "return_code": -1,
+                "failed_count": 0,
+                "passed_count": 0,
+                "stdout": "",
+                "stderr": "テスト実行がタイムアウトしました"
+            }
     
     def _is_phase_completed(self, phase: str) -> bool:
         """指定フェーズの完了確認"""
