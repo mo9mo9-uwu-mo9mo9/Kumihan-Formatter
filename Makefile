@@ -119,6 +119,11 @@ tdd-complete:
 	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py complete
 	@echo "✅ TDDサイクル完了"
 
+tdd-security:
+	@echo "🔒 TDD Security Phase: セキュリティテスト実行"
+	@$(PYTHON) $(SCRIPTS_DIR)/tdd_security_test.py
+	@echo "✅ Security Phase完了"
+
 tdd-status:
 	@echo "📊 現在のTDDセッション状況"
 	@$(PYTHON) $(SCRIPTS_DIR)/tdd_session_manager.py status

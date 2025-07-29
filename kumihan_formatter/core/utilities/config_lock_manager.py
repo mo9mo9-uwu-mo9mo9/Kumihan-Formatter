@@ -7,16 +7,16 @@ Config Lock Manager - Issue #643 Medium Priority Issue対応
       排他制御を統一的に管理
 """
 
-import threading
-import time
 import json
 import os
-from pathlib import Path
-from typing import Dict, Optional, Any, Union, ContextManager
+import threading
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
+from typing import Any, ContextManager, Dict, Optional, Union
 
 from kumihan_formatter.core.utilities.logger import get_logger
 

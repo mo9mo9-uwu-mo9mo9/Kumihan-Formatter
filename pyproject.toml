@@ -116,6 +116,12 @@ log_cli_level = "WARNING"
 # 並行実行設定 (pytest-xdist が利用可能な場合)
 # addopts に "-n auto" を追加することで並行実行可能
 
+# TDD専用設定 - Issue #640 Phase A.3
+[tool.tdd]
+red_addopts = ["-v", "--tb=short", "--no-cov"]
+green_addopts = ["-v", "--tb=short", "--cov=kumihan_formatter", "--cov-report=term-missing"]
+refactor_addopts = ["-v", "--tb=short", "--cov=kumihan_formatter", "--cov-report=term-missing", "--cov-report=html"]
+
 [tool.coverage.run]
 source = ["kumihan_formatter"]
 omit = [
@@ -131,6 +137,17 @@ branch = true
 parallel = true
 # CI最適化: 並列実行でのカバレッジ測定
 concurrency = ["multiprocessing", "thread"]
+
+# Issue #640 ティア別品質基準（カスタム設定）
+[tool.coverage.tdd]
+critical_paths = ["kumihan_formatter/cli.py", "kumihan_formatter/core/", "kumihan_formatter/commands/"]
+critical_target = 90
+important_paths = ["kumihan_formatter/renderer.py", "kumihan_formatter/core/validators/", "kumihan_formatter/core/parsers/"]
+important_target = 80
+supportive_paths = ["kumihan_formatter/utils/", "kumihan_formatter/config/"]
+supportive_target = 60
+special_paths = ["kumihan_formatter/gui*", "kumihan_formatter/performance/"]
+special_target = 40
 
 [tool.coverage.report]
 exclude_lines = [

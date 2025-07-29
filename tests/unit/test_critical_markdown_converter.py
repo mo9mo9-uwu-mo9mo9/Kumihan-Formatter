@@ -6,10 +6,11 @@ TDD-First開発システムに基づく90%カバレッジ達成のためのテ�
 Critical Tier: Core機能・Commands（テストカバレッジ90%必須）
 """
 
+import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
-import tempfile
+from unittest.mock import Mock, mock_open, patch
+
 import pytest
 
 from kumihan_formatter.core.markdown_converter import SimpleMarkdownConverter
@@ -26,6 +27,7 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
     def tearDown(self):
         """テスト後処理"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_init_creates_components(self):
@@ -44,13 +46,13 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
         test_file.write_text(test_content, encoding="utf-8")
 
         # 変換実行
-        with patch.object(self.converter, 'convert_text') as mock_convert:
+        with patch.object(self.converter, "convert_text") as mock_convert:
             mock_convert.return_value = "<h1>Test Header</h1><p>This is a test.</p>"
-            with patch.object(self.converter, '_create_full_html') as mock_create:
+            with patch.object(self.converter, "_create_full_html") as mock_create:
                 mock_create.return_value = "<html>Test</html>"
-                
+
                 result = self.converter.convert_file(test_file)
-                
+
                 self.assertEqual(result, "<html>Test</html>")
                 mock_convert.assert_called_once_with(test_content)
                 mock_create.assert_called_once()
@@ -58,10 +60,10 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
     def test_convert_file_nonexistent_raises_error(self):
         """存在しないファイルの場合FileNotFoundErrorが発生すること"""
         nonexistent_file = self.temp_dir / "nonexistent.md"
-        
+
         with self.assertRaises(FileNotFoundError) as context:
             self.converter.convert_file(nonexistent_file)
-        
+
         self.assertIn("ファイルが見つかりません", str(context.exception))
 
     def test_convert_file_with_shift_jis_encoding(self):
@@ -71,13 +73,15 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
         test_file.write_text(test_content, encoding="shift_jis")
 
         # convert_textとcreate_full_htmlをモック
-        with patch.object(self.converter, 'convert_text') as mock_convert:
-            mock_convert.return_value = "<h1>テストヘッダー</h1><p>これはテストです。</p>"
-            with patch.object(self.converter, '_create_full_html') as mock_create:
+        with patch.object(self.converter, "convert_text") as mock_convert:
+            mock_convert.return_value = (
+                "<h1>テストヘッダー</h1><p>これはテストです。</p>"
+            )
+            with patch.object(self.converter, "_create_full_html") as mock_create:
                 mock_create.return_value = "<html>Test</html>"
-                
+
                 result = self.converter.convert_file(test_file)
-                
+
                 self.assertEqual(result, "<html>Test</html>")
                 mock_convert.assert_called_once()
 
@@ -87,29 +91,31 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
         test_file.write_text("# Header\n\nContent", encoding="utf-8")
         custom_title = "Custom Title"
 
-        with patch.object(self.converter, 'convert_text') as mock_convert:
+        with patch.object(self.converter, "convert_text") as mock_convert:
             mock_convert.return_value = "<h1>Header</h1><p>Content</p>"
-            with patch.object(self.converter, '_create_full_html') as mock_create:
+            with patch.object(self.converter, "_create_full_html") as mock_create:
                 mock_create.return_value = "<html>Custom</html>"
-                
+
                 result = self.converter.convert_file(test_file, title=custom_title)
-                
+
                 # カスタムタイトルが渡されることを確認
                 self.assertEqual(result, "<html>Custom</html>")
-                mock_create.assert_called_once_with(custom_title, "<h1>Header</h1><p>Content</p>", "test.md")
+                mock_create.assert_called_once_with(
+                    custom_title, "<h1>Header</h1><p>Content</p>", "test.md"
+                )
 
     def test_convert_empty_file(self):
         """空のファイルの処理が正しく行われること"""
         test_file = self.temp_dir / "empty.md"
         test_file.write_text("", encoding="utf-8")
 
-        with patch.object(self.converter, 'convert_text') as mock_convert:
+        with patch.object(self.converter, "convert_text") as mock_convert:
             mock_convert.return_value = ""
-            with patch.object(self.converter, '_create_full_html') as mock_create:
+            with patch.object(self.converter, "_create_full_html") as mock_create:
                 mock_create.return_value = "<html>Empty</html>"
-                
+
                 result = self.converter.convert_file(test_file)
-                
+
                 self.assertEqual(result, "<html>Empty</html>")
                 mock_convert.assert_called_once_with("")
 
@@ -119,13 +125,13 @@ class TestSimpleMarkdownConverterCritical(unittest.TestCase):
         test_content = "# Title & <Special>\n\n**Bold** _italic_ `code`"
         test_file.write_text(test_content, encoding="utf-8")
 
-        with patch.object(self.converter, 'convert_text') as mock_convert:
+        with patch.object(self.converter, "convert_text") as mock_convert:
             mock_convert.return_value = "<h1>Title &amp; &lt;Special&gt;</h1><p><strong>Bold</strong> <em>italic</em> <code>code</code></p>"
-            with patch.object(self.converter, '_create_full_html') as mock_create:
+            with patch.object(self.converter, "_create_full_html") as mock_create:
                 mock_create.return_value = "<html>Special</html>"
-                
+
                 result = self.converter.convert_file(test_file)
-                
+
                 self.assertEqual(result, "<html>Special</html>")
                 mock_convert.assert_called_once_with(test_content)
 

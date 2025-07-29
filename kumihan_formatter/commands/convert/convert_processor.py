@@ -12,8 +12,8 @@ from typing import Any
 
 from rich.progress import Progress
 
-from ...core.file_ops import FileOperations
 from ...core.file_io_handler import FileIOHandler
+from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
 from ...parser import parse
 from ...renderer import render
