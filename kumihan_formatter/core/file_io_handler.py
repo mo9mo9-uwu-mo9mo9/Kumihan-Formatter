@@ -42,8 +42,18 @@ class FileIOHandler:
             
         except OSError as e:
             # Handle disk full, network errors, etc.
-            logger.error(f"OS error writing file: {path} - {e}")
-            raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
+            logger.warning(f"OS error writing file: {path} - {e}, trying UTF-8 with BOM")
+            # Try UTF-8 with BOM as fallback for OS errors
+            if encoding.lower() == "utf-8":
+                try:
+                    with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
+                        f.write(content)
+                except Exception as fallback_error:
+                    logger.error(f"Failed to write file {path} after OS error fallback: {fallback_error}")
+                    raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
+            else:
+                logger.error(f"OS error writing file: {path} - {e}")
+                raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
             
         except UnicodeEncodeError as e:
             # Fallback with error replacement

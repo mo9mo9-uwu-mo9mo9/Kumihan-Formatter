@@ -184,16 +184,21 @@ class TestFileIOHandler:
         except (OSError, PermissionError):
             pass  # Windows環境でファイル削除に失敗することがある
 
+    @patch("pathlib.Path.is_file")
+    @patch("pathlib.Path.exists")
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     @patch("builtins.open")
     def test_read_text_file_detection_fallback_to_specified(
-        self, mock_open_func, mock_detect
+        self, mock_open_func, mock_detect, mock_exists, mock_is_file
     ):
         """検出エンコーディング失敗時の指定エンコーディングフォールバックテスト"""
         # Given
         test_path = Path("test.txt")
         content = "Test content"
 
+        # Mock file existence checks
+        mock_exists.return_value = True
+        mock_is_file.return_value = True
         mock_detect.return_value = ("shift_jis", True)
 
         # First open (detected encoding) fails, second (specified) succeeds
@@ -213,17 +218,22 @@ class TestFileIOHandler:
         assert result == content
         assert mock_open_func.call_count == 2
 
+    @patch("pathlib.Path.is_file")
+    @patch("pathlib.Path.exists")
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     @patch("builtins.open")
     @patch("sys.platform", "win32")
     def test_read_text_file_platform_fallback_windows(
-        self, mock_open_func, mock_detect
+        self, mock_open_func, mock_detect, mock_exists, mock_is_file
     ):
         """Windows環境でのプラットフォームフォールバックテスト"""
         # Given
         test_path = Path("test.txt")
         content = "Test content"
 
+        # Mock file existence checks
+        mock_exists.return_value = True
+        mock_is_file.return_value = True
         mock_detect.return_value = ("utf-8", False)
 
         # First two opens fail, third (cp932) succeeds
@@ -246,15 +256,20 @@ class TestFileIOHandler:
         # cp932での呼び出しを確認
         mock_open_func.assert_any_call(test_path, "r", encoding="cp932")
 
+    @patch("pathlib.Path.is_file")
+    @patch("pathlib.Path.exists")
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     @patch("builtins.open")
     @patch("sys.platform", "linux")
-    def test_read_text_file_platform_fallback_linux(self, mock_open_func, mock_detect):
+    def test_read_text_file_platform_fallback_linux(self, mock_open_func, mock_detect, mock_exists, mock_is_file):
         """Linux環境でのプラットフォームフォールバック（無し）テスト"""
         # Given
         test_path = Path("test.txt")
         content = "Test content"
 
+        # Mock file existence checks
+        mock_exists.return_value = True
+        mock_is_file.return_value = True
         mock_detect.return_value = ("utf-8", False)
 
         # First two opens fail, third (error replacement) succeeds
@@ -278,14 +293,19 @@ class TestFileIOHandler:
             test_path, "r", encoding="utf-8", errors="replace"
         )
 
+    @patch("pathlib.Path.is_file")
+    @patch("pathlib.Path.exists")
     @patch("kumihan_formatter.core.encoding_detector.EncodingDetector.detect")
     @patch("builtins.open")
-    def test_read_text_file_final_error_replacement(self, mock_open_func, mock_detect):
+    def test_read_text_file_final_error_replacement(self, mock_open_func, mock_detect, mock_exists, mock_is_file):
         """最終手段のエラー置換読み取りテスト"""
         # Given
         test_path = Path("test.txt")
         content = "Test content with �"  # 置換文字含む
 
+        # Mock file existence checks
+        mock_exists.return_value = True
+        mock_is_file.return_value = True
         mock_detect.return_value = ("utf-8", False)
 
         # All attempts fail except final error replacement
