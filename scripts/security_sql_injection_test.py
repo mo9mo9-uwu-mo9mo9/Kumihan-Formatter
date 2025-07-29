@@ -39,6 +39,101 @@ def load_security_patterns():
             return json.load(f)
     return None
 
+# 統計的分析による偽陽性削減
+class SecurityContextAnalyzer:
+    """セキュリティコンテキスト分析クラス"""
+    
+    def __init__(self):
+        self.safe_patterns = [
+            # ログ・デバッグ用途
+            r'logger\.\w+.*\+.*',
+            r'print\(.*\+.*\)',
+            r'debug.*\+.*',
+            
+            # テンプレート・フォーマット用途  
+            r'\.format\(',
+            r'f["\'].*\{.*\}.*["\']',
+            r'%.*%',
+            
+            # 定数・設定用途
+            r'[A-Z_]+\s*=.*\+',
+            r'config\[.*\]\s*\+',
+            
+            # URL・パス構築
+            r'url.*\+.*',
+            r'path.*\+.*',
+            r'os\.path\.join',
+            
+            # 文字列処理・変換
+            r'str\(.*\)\s*\+',
+            r'repr\(.*\)\s*\+',
+            r'\\n|\\t|\\r'
+        ]
+        
+        self.high_risk_contexts = [
+            # データベース関連
+            r'execute\s*\(',
+            r'query\s*\(',
+            r'SELECT|UPDATE|INSERT|DELETE',
+            r'cursor\.',
+            r'sql\s*=',
+            
+            # 動的実行
+            r'eval\s*\(',
+            r'exec\s*\(',
+            r'compile\s*\(',
+            
+            # シェルコマンド
+            r'os\.system',
+            r'subprocess\.',
+            r'shell\s*=\s*True'
+        ]
+    
+    def calculate_risk_probability(self, code_context: str, pattern_match: str) -> float:
+        """統計的リスク確率計算"""
+        risk_score = 0.5  # ベーススコア
+        
+        # セーフパターンによる減点
+        for safe_pattern in self.safe_patterns:
+            if re.search(safe_pattern, code_context, re.IGNORECASE):
+                risk_score -= 0.2
+        
+        # 高リスクコンテキストによる加点
+        for risk_pattern in self.high_risk_contexts:
+            if re.search(risk_pattern, code_context, re.IGNORECASE):
+                risk_score += 0.3
+        
+        # パターンマッチの複雑さ
+        if len(pattern_match) > 50:
+            risk_score += 0.1
+        
+        # 特殊文字の密度
+        special_chars = len(re.findall(r'[;\'"\\%\-\+\*]', pattern_match))
+        if special_chars > 3:
+            risk_score += 0.2
+        
+        return max(0.0, min(1.0, risk_score))
+    
+    def is_likely_false_positive(self, code_context: str, pattern_match: str) -> bool:
+        """偽陽性の可能性判定"""
+        # コメント内の場合
+        if re.search(r'#.*' + re.escape(pattern_match), code_context):
+            return True
+        
+        # 文字列リテラル定義の場合  
+        if re.search(r'["\'].*' + re.escape(pattern_match) + r'.*["\']', code_context):
+            return True
+        
+        # テストファイルの場合（より寛容）
+        if 'test_' in code_context.lower() and 'assert' in code_context:
+            return True
+        
+        # ドキュメント文字列の場合
+        if re.search(r'""".*' + re.escape(pattern_match) + r'.*"""', code_context, re.DOTALL):
+            return True
+        
+        return False
+
 
 class SQLInjectionRisk(Enum):
     """SQLインジェクションリスク レベル"""
