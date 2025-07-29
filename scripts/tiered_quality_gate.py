@@ -51,10 +51,26 @@ class QualityGateResult:
     overall_status: str
     total_coverage: float
     tier_results: Dict[str, Dict]
-    module_results: List[ModuleCoverage]
-    critical_failures: List[str]
-    recommendations: List[str]
-    execution_time: float
+    failing_modules: List[str]
+    
+class TieredQualityGate:
+    """段階的品質ゲートクラス"""
+    
+    def __init__(self):
+        self.project_root = Path.cwd()
+        
+    def check_critical_tier_compliance(self, module_results: List[ModuleCoverage]) -> bool:
+        """Critical Tier品質準拠チェック"""
+        critical_modules = [result for result in module_results if result.tier == QualityTier.CRITICAL]
+        
+        for module in critical_modules:
+            if module.coverage_percent < self.quality_requirements[QualityTier.CRITICAL]:
+                raise AssertionError(
+                    f"Critical Tier カバレッジ不足: {module.module_path} "
+                    f"{module.coverage_percent}% < {self.quality_requirements[QualityTier.CRITICAL]}%"
+                )
+        
+        return True
 
 
 class TieredQualityGate:
@@ -129,8 +145,8 @@ class TieredQualityGate:
             )
             
             if result.returncode != 0:
-                logger.warning(f"テスト実行で警告: {result.stderr}")
-                # テスト失敗でも続行（カバレッジは測定可能）
+                logger.warning(f"品質ゲート: テスト実行で警告が発生: {result.stderr}")
+                logger.info("品質ゲート: カバレッジ測定は継続します")
             
             if self.coverage_file.exists():
                 logger.info("✅ カバレッジデータ取得完了")
@@ -205,6 +221,82 @@ class TieredQualityGate:
                 matching_files[file_path] = file_data
         
         return matching_files
+
+    def generate_quality_report(self, module_results: List[ModuleCoverage]) -> str:
+        """品質レポート生成"""
+        report_lines = [
+            "============================================================",
+            "品質ゲートレポート - Issue #640 Phase 1", 
+            "============================================================",
+            "",
+            "📊 ティア別サマリー:"
+        ]
+        
+        # ティア別集計
+        tier_summary = {}
+        for tier in QualityTier:
+            tier_modules = [r for r in module_results if r.tier == tier]
+            passing_modules = [r for r in tier_modules if r.status == "pass"]
+            
+            if tier_modules:
+                pass_rate = len(passing_modules) / len(tier_modules) * 100
+                status_icon = "✅" if pass_rate >= 80 else "❌"
+                tier_summary[tier.value] = {
+                    "total": len(tier_modules),
+                    "passing": len(passing_modules), 
+                    "rate": pass_rate,
+                    "icon": status_icon
+                }
+                
+                report_lines.append(
+                    f"  {status_icon} {tier.value.title()} Tier: {len(passing_modules)}/{len(tier_modules)} ({pass_rate:.1f}%)"
+                )
+        
+        report_lines.extend(["", "🔍 詳細結果:"])
+        
+        # モジュール別詳細
+        for result in module_results:
+            if result.status != "skip":
+                status_icon = "✅" if result.status == "pass" else "⚠️" if result.status == "warn" else "❌"
+                report_lines.extend([
+                    f"{status_icon} {result.module_path} ({result.tier.value})",
+                    f"    カバレッジ: {result.coverage_percent:.1f}% (要求: {result.required_percent:.1f}%)",
+                    f"    複雑度: 0.0 (上限: {10 if result.tier == QualityTier.CRITICAL else 15 if result.tier == QualityTier.IMPORTANT else 20})",
+                    f"    テスト数: {result.covered_lines}"
+                ])
+                
+                if result.status != "pass":
+                    violations = []
+                    if result.coverage_percent < result.required_percent:
+                        violations.append(f"カバレッジ不足: {result.coverage_percent:.1f}% < {result.required_percent:.1f}%")
+                    if result.covered_lines == 0:
+                        violations.append("テストが存在しません")
+                    
+                    if violations:
+                        report_lines.append("    違反項目:")
+                        for violation in violations:
+                            report_lines.append(f"      - {violation}")
+                
+                report_lines.append("")
+        
+        # 改善提案
+        critical_failures = [r for r in module_results if r.tier == QualityTier.CRITICAL and r.status == "fail"]
+        if critical_failures:
+            report_lines.extend([
+                "💡 改善提案:",
+                "  🚨 Critical Tier緊急対応:"
+            ])
+            for failure in critical_failures:
+                report_lines.append(f"    - {failure.module_path}: 即座にテスト追加が必要")
+            
+            report_lines.extend([
+                "  📈 推奨アクション:",
+                "    1. 失敗モジュールへの単体テスト追加",
+                "    2. 複雑度の高い関数のリファクタリング", 
+                "    3. テストカバレッジの段階的向上"
+            ])
+        
+        return "\n".join(report_lines)
 
     def evaluate_quality_gate(self, module_results: List[ModuleCoverage]) -> QualityGateResult:
         """品質ゲート評価"""

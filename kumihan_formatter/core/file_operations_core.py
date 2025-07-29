@@ -61,7 +61,18 @@ class FileOperationsCore:
     def _create_dest_images_dir(self, output_path: Path) -> Path:
         """出力画像ディレクトリを作成"""
         dest_images_dir = output_path / "images"
-        dest_images_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            dest_images_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError as e:
+            self.logger.error(f"Permission denied creating images directory: {dest_images_dir} - {e}")
+            if self.ui:
+                self.ui.error(f"画像ディレクトリの作成に失敗しました: {dest_images_dir}")
+            raise
+        except OSError as e:
+            self.logger.error(f"OS error creating images directory: {dest_images_dir} - {e}")
+            if self.ui:
+                self.ui.error(f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}")
+            raise
         return dest_images_dir
 
     def _copy_all_images(
