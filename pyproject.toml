@@ -36,10 +36,6 @@ dev = [
     "flake8>=6.0",
     "beautifulsoup4>=4.9",
     "psutil>=5.9",
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "pytest-timeout>=2.0",
-    "pytest-xdist>=3.5.0",
     "mypy>=1.0",
     "types-psutil",
     "types-PyYAML",
@@ -64,120 +60,6 @@ kumihan_formatter = [
 line-length = 88
 target-version = ['py312']
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-collect_ignore = [
-    "kumihan_formatter/commands/test_file_command.py",
-    "scripts/test_guard.py",
-]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-minversion = "6.0"
-addopts = [
-    "-v",
-    "--strict-markers",
-    "--tb=short",
-    "--cov=kumihan_formatter",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-    "--cov-fail-under=90",
-    "--durations=10",
-    "--maxfail=5",
-    "-x",
-]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::UserWarning:tkinter.*",
-    "ignore::RuntimeWarning:.*",
-]
-markers = [
-    "unit: Unit tests - fast, isolated tests",
-    "integration: Integration tests - tests component interactions",
-    "e2e: End-to-end tests - full system tests",
-    "slow: Slow running tests (>1s)",
-    "performance: Performance benchmark tests",
-    "gui: GUI-related tests requiring display",
-    "skip_ci: Tests to skip in CI environment",
-    # プラットフォーム固有マーカー - Issue #610対応
-    "windows_only: Tests that only run on Windows",
-    "macos_only: Tests that only run on macOS",
-    "linux_only: Tests that only run on Linux",
-    "unix_like: Tests for Unix-like systems (macOS/Linux)",
-    "file_sensitive: Tests sensitive to filesystem differences",
-    "encoding_sensitive: Tests sensitive to encoding differences",
-    "path_sensitive: Tests sensitive to path handling differences",
-]
-timeout = 300
-log_cli = false
-log_cli_level = "WARNING"
-# 並行実行設定 (pytest-xdist が利用可能な場合)
-# addopts に "-n auto" を追加することで並行実行可能
-
-# TDD専用設定 - Issue #640 Phase A.3
-[tool.tdd]
-red_addopts = ["-v", "--tb=short", "--no-cov"]
-green_addopts = ["-v", "--tb=short", "--cov=kumihan_formatter", "--cov-report=term-missing"]
-refactor_addopts = ["-v", "--tb=short", "--cov=kumihan_formatter", "--cov-report=term-missing", "--cov-report=html"]
-
-[tool.coverage.run]
-source = ["kumihan_formatter"]
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/__pycache__/*",
-    "*/migrations/*",
-    "*/venv/*",
-    "*/.venv/*",
-    "*/site-packages/*",
-]
-branch = true
-parallel = true
-# CI最適化: 並列実行でのカバレッジ測定
-concurrency = ["multiprocessing", "thread"]
-
-# Issue #640 ティア別品質基準（カスタム設定）
-[tool.coverage.tdd]
-critical_paths = ["kumihan_formatter/cli.py", "kumihan_formatter/core/", "kumihan_formatter/commands/"]
-critical_target = 90
-important_paths = ["kumihan_formatter/renderer.py", "kumihan_formatter/core/validators/", "kumihan_formatter/core/parsers/"]
-important_target = 80
-supportive_paths = ["kumihan_formatter/utils/", "kumihan_formatter/config/"]
-supportive_target = 60
-special_paths = ["kumihan_formatter/gui*", "kumihan_formatter/performance/"]
-special_target = 40
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "def __str__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if False:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-    "except ImportError:",
-    "except ModuleNotFoundError:",
-    "# TYPE_CHECKING",
-    "if TYPE_CHECKING:",
-]
-fail_under = 0
-precision = 2
-show_missing = true
-skip_covered = false
-
-[tool.coverage.html]
-directory = "htmlcov"
-
-[tool.coverage.xml]
-output = "coverage.xml"
 
 [tool.isort]
 profile = "black"

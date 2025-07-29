@@ -19,7 +19,7 @@ class FileIOHandler:
     @staticmethod
     def write_text_file(path: Path, content: str, encoding: str = "utf-8") -> None:
         """Write text file with proper encoding and error handling
-        
+
         Raises:
             PermissionError: When file cannot be written due to permissions
             OSError: When disk is full or other OS-level errors occur
@@ -31,30 +31,38 @@ class FileIOHandler:
         try:
             # Ensure parent directory exists
             path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Try with specified encoding first
             with open(path, "w", encoding=encoding, errors="replace") as f:
                 f.write(content)
-                
+
         except PermissionError as e:
             logger.error(f"Permission denied writing file: {path} - {e}")
             raise PermissionError(f"ファイル書き込み権限がありません: {path}")
-            
+
         except OSError as e:
             # Handle disk full, network errors, etc.
-            logger.warning(f"OS error writing file: {path} - {e}, trying UTF-8 with BOM")
+            logger.warning(
+                f"OS error writing file: {path} - {e}, trying UTF-8 with BOM"
+            )
             # Try UTF-8 with BOM as fallback for OS errors
             if encoding.lower() == "utf-8":
                 try:
                     with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
                         f.write(content)
                 except Exception as fallback_error:
-                    logger.error(f"Failed to write file {path} after OS error fallback: {fallback_error}")
-                    raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
+                    logger.error(
+                        f"Failed to write file {path} after OS error fallback: {fallback_error}"
+                    )
+                    raise OSError(
+                        f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
+                    )
             else:
                 logger.error(f"OS error writing file: {path} - {e}")
-                raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
-            
+                raise OSError(
+                    f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
+                )
+
         except UnicodeEncodeError as e:
             # Fallback with error replacement
             logger.warning(f"Unicode encode error for {path}, using error replacement")
@@ -66,13 +74,20 @@ class FileIOHandler:
                 if encoding.lower() == "utf-8":
                     try:
                         logger.debug(f"Trying UTF-8 with BOM for {path}")
-                        with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
+                        with open(
+                            path, "w", encoding="utf-8-sig", errors="replace"
+                        ) as f:
                             f.write(content)
                     except Exception:
-                        logger.error(f"Failed to write file {path} after all fallbacks: {fallback_error}")
+                        logger.error(
+                            f"Failed to write file {path} after all fallbacks: {fallback_error}"
+                        )
                         raise UnicodeEncodeError(
-                            encoding, content, 0, len(content), 
-                            f"ファイル書き込み中にエンコーディングエラーが発生しました: {path}"
+                            encoding,
+                            content,
+                            0,
+                            len(content),
+                            f"ファイル書き込み中にエンコーディングエラーが発生しました: {path}",
                         )
                 else:
                     logger.error(f"Failed to write file {path}: {fallback_error}")
@@ -87,7 +102,7 @@ class FileIOHandler:
         2. Try specified encoding
         3. Try platform-specific common encodings
         4. Fallback to UTF-8 with error replacement
-        
+
         Raises:
             FileNotFoundError: When file does not exist
             PermissionError: When file cannot be read due to permissions
@@ -101,7 +116,7 @@ class FileIOHandler:
         if not path.exists():
             logger.error(f"File not found: {path}")
             raise FileNotFoundError(f"ファイルが見つかりません: {path}")
-        
+
         if not path.is_file():
             logger.error(f"Path is not a file: {path}")
             raise IsADirectoryError(f"指定されたパスはファイルではありません: {path}")
@@ -134,7 +149,7 @@ class FileIOHandler:
 
             # Last resort: UTF-8 with error replacement
             return FileIOHandler._read_with_error_replacement(path, logger)
-            
+
         except PermissionError as e:
             logger.error(f"Permission denied reading file: {path} - {e}")
             raise PermissionError(f"ファイル読み取り権限がありません: {path}")

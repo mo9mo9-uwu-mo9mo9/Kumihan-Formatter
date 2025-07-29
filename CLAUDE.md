@@ -109,16 +109,6 @@ kumihan convert input.txt output.txt  # 基本変換
 ```
 
 
-# qcheck系コマンド（Issue #578）
-
-Claude Codeチェック用ショートカット:
-
-```bash
-qcheck   # 全体チェック（コード・ドキュメント・アーキテクチャ）
-qcheckf  # 変更されたファイルの関数レベルチェック
-qcheckt  # コードチェック
-qdoc     # ドキュメントチェック
-```
 
 # 開発ツール（統合版）
 
@@ -141,13 +131,10 @@ qdoc     # ドキュメントチェック
 # 1. エラー確認
 make lint
 
-# 2. コードチェック
-qcheck
-
-# 3. 記法問題修正
+# 2. 記法問題修正
 python -m kumihan_formatter check-syntax file.txt
 
-# 4. 依存関係修正
+# 3. 依存関係修正
 pip install -e ".[dev]"
 ```
 
@@ -165,10 +152,11 @@ pip install -e ".[dev]"
 
 # 詳細ドキュメント
 
-- **基本指示**: [PREAMBLE.md](PREAMBLE.md)
-- **開発詳細**: [docs/dev/DEVELOPMENT_GUIDE.md](docs/dev/DEVELOPMENT_GUIDE.md) - 包括的開発ガイド
+- **Claude Code効率化**: [docs/REFERENCE.md](docs/REFERENCE.md) - Claude Code向けリファレンス（推奨）
+- **開発詳細**: [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - 包括的開発ガイド
 - **技術仕様**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - システム全体アーキテクチャ  
-- **ユーザーガイド**: [docs/user/docs/USER_GUIDE.md](docs/user/docs/USER_GUIDE.md) - エンドユーザー向け完全ガイド
+- **ユーザーガイド**: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) - エンドユーザー向け完全ガイド
+- **配布・運用**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 配布パッケージング・本番運用
 
 
 ---

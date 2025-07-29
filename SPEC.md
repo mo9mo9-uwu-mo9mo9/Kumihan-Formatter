@@ -1,41 +1,21 @@
 # Kumihan記法 仕様書
 
 > **Kumihan-Formatter のKumihan記法テキスト変換仕様**
-> 
-> **📢 重要**: 仕様書は統合されました。詳細は以下のファイルを参照してください：
 
-## 📋 統合後の仕様書構成
+## 📋 ドキュメント構成
 
 ### 🏗️ アーキテクチャ仕様（技術者向け）
 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - システム全体の包括的仕様書
-- システムアーキテクチャ
-- 記法仕様（基本構文・ブロックキーワード・複合キーワード）
-- プロジェクト構造
-- クラス依存関係
-- データフロー
-- 設計原則
-- 拡張ポイント
-- 技術的負債管理
-- 開発ガイドライン
 
-### 👤 ユーザー向けドキュメント
-**[docs/user/](docs/user/)** - エンドユーザー向け詳細ガイド
-- ユーザーマニュアル
-- クイックスタートガイド
-- 使用例とサンプル
+### 👨‍💻 開発者向けドキュメント  
+**[docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md)** - 開発ガイド
+
+### 📖 ユーザー向けドキュメント  
+**[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
+
+### 🔧 Claude Code向けリファレンス
+**[docs/REFERENCE.md](docs/REFERENCE.md)** - Claude Code効率化リファレンス
 
 ---
 
-## 🚀 クイックスタート
-
-- **技術者・開発者**: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** から読み始めてください
-- **エンドユーザー**: **[docs/user/](docs/user/)** のドキュメントを参照してください
-
----
-
-## 🔗 相互参照リンク
-- **[CLAUDE.md](CLAUDE.md)** - Claude Code開発指示・基本コマンド
-- **[docs/INDEX.md](docs/INDEX.md)** - 効率化されたドキュメント構造
-- **[README.md](README.md)** - プロジェクト概要・使用方法
-
-**⚠️ 注意**: 従来の分割ファイル（SPEC_CORE.md、SPEC_SYNTAX.md等）は統合により削除されました。新しい統合ファイルを参照してください。
+**⚠️ 注意**: 本ファイルは統合完了により案内のみとなりました。詳細は上記リンク先を参照してください。

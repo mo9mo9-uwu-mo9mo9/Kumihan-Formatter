@@ -64,14 +64,22 @@ class FileOperationsCore:
         try:
             dest_images_dir.mkdir(parents=True, exist_ok=True)
         except PermissionError as e:
-            self.logger.error(f"Permission denied creating images directory: {dest_images_dir} - {e}")
+            self.logger.error(
+                f"Permission denied creating images directory: {dest_images_dir} - {e}"
+            )
             if self.ui:
-                self.ui.error(f"画像ディレクトリの作成に失敗しました: {dest_images_dir}")
+                self.ui.error(
+                    f"画像ディレクトリの作成に失敗しました: {dest_images_dir}"
+                )
             raise
         except OSError as e:
-            self.logger.error(f"OS error creating images directory: {dest_images_dir} - {e}")
+            self.logger.error(
+                f"OS error creating images directory: {dest_images_dir} - {e}"
+            )
             if self.ui:
-                self.ui.error(f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}")
+                self.ui.error(
+                    f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}"
+                )
             raise
         return dest_images_dir
 
