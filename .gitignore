@@ -190,3 +190,6 @@ logs/
 
 # Temporary files
 *.tmp
+
+# pytest cache files (Issue #640)
+*.pkl
