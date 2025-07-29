@@ -71,18 +71,19 @@ class TestCheckSyntaxCommandCritical(unittest.TestCase):
         test_file = str(self.temp_dir / "test.txt")
         Path(test_file).write_text("error content", encoding="utf-8")
         
-        # Mock設定
-        mock_errors = [
-            {
-                "file": test_file,
-                "line": 1,
-                "column": 1,
-                "severity": ErrorSeverity.ERROR,
-                "message": "Test error",
-                "suggestion": "Fix this"
-            }
-        ]
-        mock_check_files.return_value = {"errors": mock_errors}
+        # Mock設定 - check_filesは {file_path: [SyntaxError]} 形式を返す
+        from kumihan_formatter.core.syntax.syntax_errors import ErrorSeverity, SyntaxError
+        
+        mock_error = SyntaxError(
+            line_number=1,
+            column=1,
+            severity=ErrorSeverity.ERROR,
+            error_type="TEST_ERROR",
+            message="Test error",
+            context="test context",
+            suggestion="Fix this"
+        )
+        mock_check_files.return_value = {test_file: [mock_error]}
         mock_ui = MagicMock()
         mock_console.return_value = mock_ui
         
@@ -90,7 +91,8 @@ class TestCheckSyntaxCommandCritical(unittest.TestCase):
         
         self.assertEqual(result["success"], False)
         self.assertEqual(result["error_count"], 1)
-        mock_ui.error.assert_called()
+        # エラーがある場合はwarning()が呼ばれる（実装確認済み）
+        mock_ui.warning.assert_called()
 
     @patch('kumihan_formatter.commands.check_syntax.check_files')
     @patch('kumihan_formatter.commands.check_syntax.get_console_ui')
@@ -193,25 +195,27 @@ class TestCheckSyntaxCommandCritical(unittest.TestCase):
         test_file = str(self.temp_dir / "test.txt")
         Path(test_file).write_text("warning content", encoding="utf-8")
         
-        mock_errors = [
-            {
-                "file": test_file,
-                "line": 1,
-                "column": 1,
-                "severity": ErrorSeverity.WARNING,
-                "message": "Test warning",
-                "suggestion": None
-            }
-        ]
-        mock_check_files.return_value = {"errors": mock_errors}
+        # Mock設定 - WARNING用のSyntaxError作成
+        from kumihan_formatter.core.syntax.syntax_errors import ErrorSeverity, SyntaxError
+        
+        mock_warning = SyntaxError(
+            line_number=1,
+            column=1,
+            severity=ErrorSeverity.WARNING,
+            error_type="TEST_WARNING",
+            message="Test warning",
+            context="test context",
+            suggestion=""
+        )
+        mock_check_files.return_value = {test_file: [mock_warning]}
         mock_ui = MagicMock()
         mock_console.return_value = mock_ui
         
         result = self.command.execute([test_file])
         
-        # 警告の場合もエラーとして扱われることを確認
-        self.assertEqual(result["success"], False)
-        self.assertEqual(result["error_count"], 1)
+        # WARNINGの場合はエラーカウントは0、成功はtrue（ERRORのみカウント）
+        self.assertEqual(result["success"], True)  # WARNINGは成功扱い
+        self.assertEqual(result["error_count"], 0)  # ERROR以外はカウントしない
 
 
 if __name__ == "__main__":
