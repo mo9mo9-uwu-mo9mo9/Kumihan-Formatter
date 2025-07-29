@@ -67,9 +67,8 @@ make test           # テスト実行
 
 ## 📖 ドキュメント
 
-- **[📚 はじめてのガイド](docs/user/quickstart.md)** - 初回セットアップから使い方まで
-- **[📝 記法リファレンス](docs/user/syntax.md)** - Kumihan記法の完全ガイド
-- **[⚙️ インストール詳細](docs/user/installation.md)** - Python環境構築
+- **[📚 ユーザーガイド](docs/user/docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
+- **[📝 記法仕様](SPEC.md)** - Kumihan記法の詳細仕様
 - **[🛠️ 開発者向け](docs/dev/)** - API・貢献方法
 
 ## 🔧 開発者向け機能
@@ -85,7 +84,6 @@ KUMIHAN_GUI_DEBUG=true python3 -m kumihan_formatter.gui_launcher
 KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
 ```
 
-**詳細**: [デバッグガイド](docs/dev/DEBUGGING.md)
 
 ## 🤝 サポート
 

@@ -167,7 +167,6 @@ EOF
 3. **修正対応**: 指摘事項があれば修正して追加コミット
 4. **承認取得**: レビュー承認を確認後マージ
 
-**📋 詳細手順**: [.github/PR_CHECKLIST.md](.github/PR_CHECKLIST.md) を参照
 
 ### 🚨 日本語レビュー必須規則
 
@@ -200,13 +199,11 @@ Potential memory leak. Consider using try-finally for resource cleanup.
 
 ### レビューコメントの記載方法
 
-**詳細なレビューガイド**: [PR_REVIEW_GUIDE.md](docs/dev/PR_REVIEW_GUIDE.md) を参照
 
 ### デバッグ手順
 
 開発中に問題が発生した場合、以下のデバッグ機能を活用してください：
 
-**詳細なデバッグガイド**: [DEBUGGING.md](docs/dev/DEBUGGING.md) を参照
 
 #### GUIアプリケーションのデバッグ
 ```bash
@@ -234,7 +231,6 @@ cat /tmp/kumihan_formatter/dev_log_*.log
 
 #### Issue作成時
 - **Issue作成直後**: 内容に応じて適切なラベルを付与
-- **詳細なラベル管理**: [LABEL_GUIDE.md](docs/dev/LABEL_GUIDE.md) を参照
 
 #### 作業段階別ラベル
 - **作業開始時**: 「作業中」ラベル付与
@@ -243,7 +239,6 @@ cat /tmp/kumihan_formatter/dev_log_*.log
 
 ### Issue完了報告
 
-**Issue完了報告テンプレート**: [ISSUE_TEMPLATE.md](docs/dev/ISSUE_TEMPLATE.md) を参照
 
 ---
 
@@ -256,7 +251,6 @@ cat /tmp/kumihan_formatter/dev_log_*.log
 
 ### コミット前クリーンアップ
 
-**クリーンアップ詳細**: [QUALITY_GUIDE.md](docs/dev/QUALITY_GUIDE.md) を参照
 
 ---
 

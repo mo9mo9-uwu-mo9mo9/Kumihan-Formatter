@@ -1,5 +1,5 @@
 # Kumihan-Formatter Makefile
-# Issue #640 Phase 2: TDD実行基盤実装
+# Kumihan-Formatter Makefile
 
 # Python環境設定
 PYTHON = python3
@@ -12,23 +12,20 @@ SRC_DIR = $(PROJECT_NAME)
 TEST_DIR = tests
 SCRIPTS_DIR = scripts
 
-# TDD設定
-TDD_SESSION_FILE = .tdd_session.json
-TDD_SPEC_TEMPLATE = scripts/tdd_spec_template.py
-TDD_LOG_DIR = .tdd_logs
+# プロジェクト設定
 ISSUE_NUMBER ?= $(shell git branch --show-current | grep -o 'issue-[0-9]*' | grep -o '[0-9]*' || echo "unknown")
 
-# カバレッジ設定 - Issue #640 TDD-First開発システム対応
+# カバレッジ設定
 COVERAGE_TARGET = 90
 CRITICAL_COVERAGE_TARGET = 90
 IMPORTANT_COVERAGE_TARGET = 80
 SUPPORTIVE_COVERAGE_TARGET = 60
 
-.PHONY: help setup clean test lint coverage tdd-start tdd-spec tdd-red tdd-green tdd-refactor tdd-complete tdd-status quality-check
+.PHONY: help setup clean test lint coverage quality-check
 
 # デフォルトターゲット
 help:
-	@echo "Kumihan-Formatter TDD実行基盤 - Issue #640 Phase 2"
+	@echo "Kumihan-Formatter Build System"
 	@echo ""
 	@echo "基本コマンド:"
 	@echo "  make setup         - 開発環境セットアップ"
@@ -37,14 +34,6 @@ help:
 	@echo "  make coverage      - カバレッジレポート生成"
 	@echo "  make clean         - 一時ファイル削除"
 	@echo ""
-	@echo "TDD-First開発システム (Issue #640対応):"
-	@echo "  make tdd-start ISSUE_NUMBER=640  - Issue番号からTDDセッション開始"
-	@echo "  make tdd-spec                    - テスト仕様テンプレート生成"
-	@echo "  make tdd-red                     - Red phase: テスト失敗確認"
-	@echo "  make tdd-green                   - Green phase: 最小実装"
-	@echo "  make tdd-refactor                - Refactor phase: 品質改善"
-	@echo "  make tdd-complete                - TDDサイクル完了・品質確認"
-	@echo "  make tdd-status                  - 現在のTDDセッション状況表示"
 	@echo ""
 	@echo "品質管理:"
 	@echo "  make quality-check             - 品質ゲートチェック"
@@ -84,49 +73,8 @@ clean:
 	rm -rf .coverage
 	rm -rf coverage.json
 	rm -rf .pytest_cache/
-	rm -rf $(TDD_LOG_DIR)/
-	rm -f $(TDD_SESSION_FILE)
 	@echo "✅ クリーンアップ完了"
 
-# TDD専用コマンド実装
-tdd-start:
-	@echo "🎯 TDDセッション開始 - Issue #$(ISSUE_NUMBER)"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_session_manager.py start --issue=$(ISSUE_NUMBER)
-	@echo "✅ TDDセッション開始完了"
-
-tdd-spec:
-	@echo "📋 テスト仕様テンプレート生成中..."
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_spec_generator.py
-	@echo "✅ テスト仕様テンプレート生成完了"
-
-tdd-red:
-	@echo "🔴 TDD Red Phase: テスト失敗確認"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py red
-	@echo "✅ Red Phase完了"
-
-tdd-green:
-	@echo "🟢 TDD Green Phase: 最小実装"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py green
-	@echo "✅ Green Phase完了"
-
-tdd-refactor:
-	@echo "🔵 TDD Refactor Phase: 品質改善"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py refactor
-	@echo "✅ Refactor Phase完了"
-
-tdd-complete:
-	@echo "🏁 TDDサイクル完了・品質確認"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py complete
-	@echo "✅ TDDサイクル完了"
-
-tdd-security:
-	@echo "🔒 TDD Security Phase: セキュリティテスト実行"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_security_test.py
-	@echo "✅ Security Phase完了"
-
-tdd-status:
-	@echo "📊 現在のTDDセッション状況"
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_session_manager.py status
 
 # 品質管理コマンド
 quality-check:
@@ -138,9 +86,6 @@ pre-commit: lint quality-check test
 	@echo "✅ コミット前チェック完了"
 
 # 開発用便利コマンド
-watch-tests:
-	@echo "👀 テストファイル監視開始..."
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_automation.py
 
 install-hooks:
 	@echo "🪝 Git hooks インストール中..."
@@ -159,17 +104,8 @@ ci-quality:
 	@$(PYTHON) $(SCRIPTS_DIR)/quality_gate_checker.py --ci-mode
 	@echo "✅ CI/CD品質チェック完了"
 
-# Issue #640 TDD-First開発システム専用コマンド
-tdd-enforce:
-	@echo "🚨 TDD-First開発システム強制実行"
-	@if [ ! -f $(TDD_SESSION_FILE) ]; then \
-		echo "❌ TDDセッションが開始されていません。'make tdd-start ISSUE_NUMBER=<番号>' を実行してください。"; \
-		exit 1; \
-	fi
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_cycle_manager.py enforce
-	@echo "✅ TDD強制チェック完了"
-
-tdd-security:
+# セキュリティテストコマンド
+security-test:
 	@echo "🛡️ セキュリティテスト実行中..."
 	@$(PYTHON) $(SCRIPTS_DIR)/security_sql_injection_test.py
 	@$(PYTHON) $(SCRIPTS_DIR)/security_xss_test.py  
@@ -177,14 +113,8 @@ tdd-security:
 	@$(PYTHON) $(SCRIPTS_DIR)/security_file_upload_test.py
 	@echo "✅ セキュリティテスト完了"
 
-tdd-full-cycle: tdd-red tdd-green tdd-refactor tdd-security tdd-complete
-	@echo "🎯 完全TDDサイクル実行完了"
-
 # デバッグ用コマンド  
 debug-coverage:
 	@echo "🐛 カバレッジデバッグ情報表示..."
 	$(PYTEST) --cov=$(SRC_DIR) --cov-report=term-missing:skip-covered --cov-branch -v
 
-debug-tdd:
-	@echo "🐛 TDDセッション詳細表示..."
-	@$(PYTHON) $(SCRIPTS_DIR)/tdd_session_manager.py debug

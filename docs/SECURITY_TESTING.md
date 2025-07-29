@@ -678,8 +678,6 @@ def generate_security_dashboard():
 - `scripts/integrated_security_test_runner.py` - 統合セキュリティテストランナー
 
 ### 関連ドキュメント
-- [TDD開発システム実装マニュアル](./TDD_DEVELOPMENT_GUIDE.md)
-- [品質ゲート仕様書](./QUALITY_GATES.md)
 - [システム全体アーキテクチャ](./ARCHITECTURE.md)
 - [開発ガイド](./dev/DEVELOPMENT_GUIDE.md)
 
