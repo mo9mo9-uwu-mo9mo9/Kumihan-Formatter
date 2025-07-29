@@ -88,14 +88,20 @@ class TDDSessionManager:
                 logger.warning(
                     f"既存セッションが存在します: Issue #{existing_session.issue_number}"
                 )
-                response = input(
-                    "既存セッションを終了して新しいセッションを開始しますか? (y/N): "
-                )
-                if response.lower() != "y":
-                    logger.info("セッション開始をキャンセルしました")
-                    return existing_session
-                else:
+                # 非対話環境での自動処理
+                import sys
+                if not sys.stdin.isatty():
+                    logger.info("非対話環境: 既存セッションをアーカイブして新セッション開始")
                     self._archive_session(existing_session)
+                else:
+                    response = input(
+                        "既存セッションを終了して新しいセッションを開始しますか? (y/N): "
+                    )
+                    if response.lower() != "y":
+                        logger.info("セッション開始をキャンセルしました")
+                        return existing_session
+                    else:
+                        self._archive_session(existing_session)
 
         # Issue情報取得
         issue_info = self._fetch_issue_info(issue_number)
