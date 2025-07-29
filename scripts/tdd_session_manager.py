@@ -218,8 +218,16 @@ class TDDSessionManager:
             # datetime文字列をdatetimeオブジェクトに変換
             data["start_time"] = datetime.fromisoformat(data["start_time"])
             data["current_phase"] = TDDPhase(data["current_phase"])
+            
+            # 不要なフィールドを除外（後方互換性のため）
+            session_fields = {
+                "issue_number", "issue_title", "issue_description", "branch_name",
+                "start_time", "current_phase", "cycles_completed", "test_files",
+                "implementation_files", "phase_history", "quality_metrics", "session_id"
+            }
+            filtered_data = {k: v for k, v in data.items() if k in session_fields}
 
-            return TDDSession(**data)
+            return TDDSession(**filtered_data)
 
         except Exception as e:
             logger.error(f"セッション読み込み失敗: {e}")
