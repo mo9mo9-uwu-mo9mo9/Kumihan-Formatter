@@ -1,19 +1,12 @@
 # Kumihan-Formatter
 
-![Tests](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/workflows/Tests/badge.svg)
-![Version](https://img.shields.io/badge/version-0.9.0--alpha.1-orange.svg)
+![Version](https://img.shields.io/badge/version-0.9.0--alpha.8-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
 > CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツール
 
-**⚠️ 現在のバージョン**: v0.9.0-alpha.1 (アルファ版・テスト改善用)
-
-## 🚀 Issue #499 Phase 2 進行中
-- 技術的負債削減: 300行制限違反の解決
-- TDDベースコア機能テスト作成
-- アーキテクチャ品質向上
-**注意**: このバージョンはテスト目的です。正式リリースではありません。
+**⚠️ 現在のバージョン**: v0.9.0-alpha.8 (アルファ版・開発中)
 
 ## ✨ 特徴
 
@@ -43,10 +36,8 @@ python -m kumihan_formatter convert input.txt
 # 開発ログの有効化（Claude Code向け）
 KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
 
-# 品質チェック（Issue #589新システム）
-make quality-gate    # ティア別品質ゲート
-make pre-commit      # コミット前チェック
-make test           # テスト実行
+# 品質チェック
+make lint           # コード品質チェック
 ```
 
 ## 💡 基本的な記法
@@ -67,9 +58,10 @@ make test           # テスト実行
 
 ## 📖 ドキュメント
 
-- **[📚 ユーザーガイド](docs/user/docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
+- **[📚 ユーザーガイド](docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
 - **[📝 記法仕様](SPEC.md)** - Kumihan記法の詳細仕様
-- **[🛠️ 開発者向け](docs/dev/)** - API・貢献方法
+- **[🛠️ 開発者向け](docs/DEVELOPMENT_GUIDE.md)** - 開発ガイド
+- **[🔧 Claude Code向け](docs/REFERENCE.md)** - Claude Code効率化リファレンス
 
 ## 🔧 開発者向け機能
 

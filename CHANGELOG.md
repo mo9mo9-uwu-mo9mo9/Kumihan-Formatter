@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **目次機能**: `;;;目次;;;`マーカーで自動目次生成
 - **ソーストグル機能**: 記法と結果を切り替え表示（`--with-source-toggle`オプション）
 - **Windows/macOS対応**: 両OS用のバッチファイル/コマンドファイル
-- **GitHub Actions**: テスト・ビルドの自動化
 - **サンプルファイル**: 基本・高度・ショーケースの3種類
 
 ### Changed
@@ -23,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - showcase.htmlのテンプレートをデフォルトに変更（トグルボタン削除）
 
 ### Fixed
-- GitHub Actions CLIテストの失敗修正（ソーストグルプロンプト対応）
 - Windows/macOSバッチファイルの動作同期
 
 ### Technical
