@@ -209,37 +209,152 @@ class TDDSessionManager:
     def load_session(self) -> Optional[TDDSession]:
         """TDDセッション読み込み"""
         if not self.session_file.exists():
+            logger.debug(f"TDDセッションファイルが存在しません: {self.session_file}")
             return None
 
         try:
             with open(self.session_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            
+            logger.debug(f"TDDセッションデータ読み込み: {len(data)} fields")
+
+            # 必須フィールドの検証
+            required_fields = {"issue_number", "start_time", "current_phase"}
+            missing_fields = required_fields - data.keys()
+            if missing_fields:
+                logger.error(f"必須フィールドが不足: {missing_fields}")
+                self._backup_corrupted_session(data)
+                return None
 
             # datetime文字列をdatetimeオブジェクトに変換
-            data["start_time"] = datetime.fromisoformat(data["start_time"])
-            data["current_phase"] = TDDPhase(data["current_phase"])
+            try:
+                data["start_time"] = datetime.fromisoformat(data["start_time"])
+            except (ValueError, TypeError) as e:
+                logger.error(f"start_time形式エラー: {data.get('start_time')} - {e}")
+                self._backup_corrupted_session(data)
+                return None
+                
+            # TDDPhase enum変換
+            try:
+                data["current_phase"] = TDDPhase(data["current_phase"])
+            except (ValueError, TypeError) as e:
+                logger.error(f"current_phase形式エラー: {data.get('current_phase')} - {e}")
+                self._backup_corrupted_session(data)
+                return None
+            
+            # 不要なフィールドを除外（後方互換性のため）
+            session_fields = {
+                "issue_number", "issue_title", "issue_description", "branch_name",
+                "start_time", "current_phase", "cycles_completed", "test_files",
+                "implementation_files", "phase_history", "quality_metrics", "session_id"
+            }
+            filtered_data = {k: v for k, v in data.items() if k in session_fields}
+            
+            # デフォルト値設定
+            defaults = {
+                "issue_title": f"Issue #{filtered_data.get('issue_number', 'Unknown')}",
+                "issue_description": "",
+                "branch_name": f"feat/issue-{filtered_data.get('issue_number', 'unknown')}",
+                "cycles_completed": 0,
+                "test_files": [],
+                "implementation_files": [],
+                "phase_history": [],
+                "quality_metrics": {},
+                "session_id": f"tdd-{filtered_data.get('issue_number', 'unknown')}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+            }
+            
+            for key, default_value in defaults.items():
+                if key not in filtered_data:
+                    filtered_data[key] = default_value
+                    logger.debug(f"デフォルト値設定: {key} = {default_value}")
 
-            return TDDSession(**data)
+            session = TDDSession(**filtered_data)
+            logger.info(f"✅ TDDセッション読み込み成功: {session.issue_number}")
+            return session
 
-        except Exception as e:
-            logger.error(f"セッション読み込み失敗: {e}")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSONパースエラー: {e}")
+            self._backup_corrupted_session(f"Invalid JSON: {e}")
             return None
+        except FileNotFoundError as e:
+            logger.error(f"セッションファイル読み込みエラー: {e}")
+            return None
+        except TypeError as e:
+            logger.error(f"TDDSessionオブジェクト作成エラー: {e}")
+            self._backup_corrupted_session(data if 'data' in locals() else {})
+            return None
+        except Exception as e:
+            logger.error(f"予期しないセッション読み込みエラー: {type(e).__name__}: {e}")
+            import traceback
+            logger.debug(f"スタックトレース: {traceback.format_exc()}")
+            self._backup_corrupted_session(data if 'data' in locals() else {})
+            return None
+
+    def _backup_corrupted_session(self, corrupted_data):
+        """破損したセッションデータをバックアップ"""
+        try:
+            backup_file = self.session_file.with_suffix('.json.backup')
+            with open(backup_file, 'w', encoding='utf-8') as f:
+                if isinstance(corrupted_data, dict):
+                    json.dump(corrupted_data, f, indent=2, ensure_ascii=False, default=str)
+                else:
+                    f.write(str(corrupted_data))
+            logger.info(f"🗃️  破損セッションをバックアップ: {backup_file}")
+        except Exception as e:
+            logger.warning(f"バックアップ作成失敗: {e}")
 
     def save_session(self, session: TDDSession):
         """TDDセッション保存"""
         try:
+            # セッションデータの検証
+            if not session.issue_number:
+                raise ValueError("issue_numberが設定されていません")
+            if not session.start_time:
+                raise ValueError("start_timeが設定されていません")
+            
             data = asdict(session)
+            
             # datetimeオブジェクトを文字列に変換
-            data["start_time"] = session.start_time.isoformat()
-            data["current_phase"] = session.current_phase.value
+            try:
+                data["start_time"] = session.start_time.isoformat()
+            except AttributeError as e:
+                logger.error(f"start_time変換エラー: {session.start_time} - {e}")
+                raise ValueError(f"無効なstart_time: {session.start_time}")
+                
+            # enum値を文字列に変換
+            try:
+                data["current_phase"] = session.current_phase.value
+            except AttributeError as e:
+                logger.error(f"current_phase変換エラー: {session.current_phase} - {e}")
+                raise ValueError(f"無効なcurrent_phase: {session.current_phase}")
 
-            with open(self.session_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            # 一時ファイルに書き込み後、原子的に置換
+            temp_file = self.session_file.with_suffix('.json.tmp')
+            try:
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                
+                # 原子的置換
+                temp_file.replace(self.session_file)
+                logger.info(f"✅ TDDセッション保存完了: {session.session_id}")
+                
+            except Exception as e:
+                # 一時ファイルの削除
+                if temp_file.exists():
+                    temp_file.unlink()
+                raise e
 
-            logger.debug(f"セッション保存完了: {session.session_id}")
-
+        except (ValueError, TypeError) as e:
+            logger.error(f"セッションデータ検証エラー: {e}")
+            raise e
+        except OSError as e:
+            logger.error(f"ファイル保存エラー: {e}")
+            raise e
         except Exception as e:
-            logger.error(f"セッション保存失敗: {e}")
+            logger.error(f"予期しないセッション保存エラー: {type(e).__name__}: {e}")
+            import traceback
+            logger.debug(f"スタックトレース: {traceback.format_exc()}")
+            raise e
 
     def get_session_status(self) -> Dict:
         """セッション状況取得"""
@@ -323,6 +438,9 @@ class TDDSessionManager:
 
     def _generate_session_report(self, session: TDDSession):
         """セッションレポート生成"""
+        # ログディレクトリが存在することを確保
+        self.log_dir.mkdir(exist_ok=True)
+        
         report_path = self.log_dir / f"{session.session_id}_report.md"
 
         report_content = f"""# TDDセッションレポート

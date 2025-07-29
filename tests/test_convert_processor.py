@@ -36,7 +36,8 @@ class TestConvertProcessor:
 
     @patch("kumihan_formatter.commands.convert.convert_processor.parse")
     @patch("kumihan_formatter.commands.convert.convert_processor.render")
-    def test_convert_file_basic_flow(self, mock_render, mock_parse):
+    @patch("kumihan_formatter.commands.convert.convert_processor.FileIOHandler")
+    def test_convert_file_basic_flow(self, mock_fileio, mock_render, mock_parse):
         """基本的なファイル変換フローのテスト"""
         # Given
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
@@ -51,28 +52,28 @@ class TestConvertProcessor:
         mock_parse.return_value = mock_ast
         mock_render.return_value = "<html>test</html>"
 
-        with patch.object(self.processor.file_ops, "read_text_file") as mock_read:
-            with patch.object(self.processor.file_ops, "write_text_file") as mock_write:
-                mock_read.return_value = "test content"
+        # Setup mocks
+        mock_fileio.read_text_file.return_value = "test content"
+        mock_fileio.write_text_file.return_value = None
 
-                # When
-                result = self.processor.convert_file(
-                    input_path=input_file,
-                    output_dir=output_dir,
-                    config_obj=None,
-                    show_test_cases=False,
-                    template=None,
-                    include_source=False,
-                )
+        # When
+        result = self.processor.convert_file(
+            input_path=input_file,
+            output_dir=output_dir,
+            config_obj=None,
+            show_test_cases=False,
+            template=None,
+            include_source=False,
+        )
 
-                # Then
-                assert result == expected_output
-                mock_read.assert_called_once_with(input_file)
-                mock_parse.assert_called_once_with("test content", None)
-                mock_render.assert_called_once_with(
-                    mock_ast, None, template=None, title=input_file.stem
-                )
-                mock_write.assert_called_once_with(expected_output, "<html>test</html>")
+        # Then
+        assert result == expected_output
+        mock_fileio.read_text_file.assert_called_once_with(input_file)
+        mock_parse.assert_called_once_with("test content", None)
+        mock_render.assert_called_once_with(
+            mock_ast, None, template=None, title=input_file.stem
+        )
+        mock_fileio.write_text_file.assert_called_once_with(expected_output, "<html>test</html>")
 
         # Cleanup
         try:
