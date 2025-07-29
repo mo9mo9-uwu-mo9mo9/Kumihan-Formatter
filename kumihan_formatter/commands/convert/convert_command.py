@@ -8,7 +8,7 @@ Issue #319対応 - convert.py から分離
 import sys
 import webbrowser
 
-from ...core.error_handling import ErrorHandler as FriendlyErrorHandler
+# Error handling removed during cleanup - using basic error handling
 from ...core.utilities.logger import get_logger
 from ...ui.console_ui import get_console_ui
 from .convert_processor import ConvertProcessor
@@ -27,7 +27,8 @@ class ConvertCommand:
         self.validator = ConvertValidator()
         self.processor = ConvertProcessor()
         self.watcher = ConvertWatcher(self.processor, self.validator)
-        self.friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
+        # Error handler removed during cleanup - using basic error handling
+        self.friendly_error_handler = None
         self.logger.debug("ConvertCommand initialized")
 
     def execute(
@@ -89,16 +90,18 @@ class ConvertCommand:
                 self.logger.info("Performing syntax check")
                 error_report = self.validator.perform_syntax_check(input_path)
 
-                if error_report.has_errors():
+                if error_report.get("has_errors", False):
                     # エラーが見つかった場合は変換を中止
                     self.logger.error(
-                        f"Syntax errors found: {error_report.error_count} " "errors"
+                        f"Syntax errors found: {len(error_report.get('errors', []))} errors"
                     )
                     get_console_ui().error(
                         "記法エラーが検出されました。変換を中止します。"
                     )
                     get_console_ui().info("\n=== 詳細エラーレポート ===")
-                    print(error_report.to_console_output())
+                    # Display errors from dict format
+                    for error in error_report.get('errors', []):
+                        print(f"  エラー: {error.get('message', 'Unknown error')}")
 
                     # エラーレポートファイルを生成
                     self.validator.save_error_report(error_report, input_path, output)
@@ -167,36 +170,32 @@ class ConvertCommand:
 
     def _handle_file_error(self, e: FileNotFoundError, input_file: str | None) -> None:
         """ファイル未発見エラーの処理"""
-        error = self.friendly_error_handler.handle_exception(
-            e, context={"file_path": input_file or ""}
-        )
-        self.friendly_error_handler.display_error(error, verbose=True)
+        # Basic error handling - friendly error handler removed
+        self.logger.error(f"File not found: {e}")
+        print(f"エラー: ファイルが見つかりません - {input_file or 'Unknown'}")
         sys.exit(1)
 
     def _handle_encoding_error(
         self, e: UnicodeDecodeError, input_file: str | None
     ) -> None:
         """文字エンコーディングエラーの処理"""
-        error = self.friendly_error_handler.handle_exception(
-            e, context={"file_path": input_file or ""}
-        )
-        self.friendly_error_handler.display_error(error, verbose=True)
+        # Basic error handling - friendly error handler removed
+        self.logger.error(f"Encoding error: {e}")
+        print(f"エラー: 文字エンコーディングエラー - {input_file or 'Unknown'}")
         sys.exit(1)
 
     def _handle_permission_error(
         self, e: PermissionError, input_file: str | None
     ) -> None:
         """ファイル権限エラーの処理"""
-        error = self.friendly_error_handler.handle_exception(
-            e, context={"file_path": input_file or "", "operation": "読み取り"}
-        )
-        self.friendly_error_handler.display_error(error, verbose=True)
+        # Basic error handling - friendly error handler removed
+        self.logger.error(f"Permission error: {e}")
+        print(f"エラー: ファイル権限エラー - {input_file or 'Unknown'}")
         sys.exit(1)
 
     def _handle_generic_error(self, e: Exception, input_file: str | None) -> None:
         """一般的なエラーの処理"""
-        error = self.friendly_error_handler.handle_exception(
-            e, context={"input_file": input_file, "operation": "ファイル変換"}
-        )
-        self.friendly_error_handler.display_error(error, verbose=True)
+        # Basic error handling - friendly error handler removed
+        self.logger.error(f"Generic error: {e}")
+        print(f"エラー: {e}")
         sys.exit(1)
