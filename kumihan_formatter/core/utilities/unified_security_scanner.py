@@ -11,29 +11,29 @@ Unified Security Scanner - Issue #643 Medium Priority Issue対応
 
 import ast
 import gc
+import threading
 import weakref
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Any, Iterator, Callable, Union
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import threading
-from collections import deque
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Union
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
 # 統合システムからインポート
 try:
     from kumihan_formatter.core.utilities.ast_performance_optimizer import (
-        parse_file_fast,
         get_ast_optimizer,
-    )
-    from kumihan_formatter.core.utilities.secure_error_handler import (
-        safe_handle_exception,
-        ExposureRisk,
-        ErrorSeverity,
+        parse_file_fast,
     )
     from kumihan_formatter.core.utilities.config_lock_manager import safe_read_config
+    from kumihan_formatter.core.utilities.secure_error_handler import (
+        ErrorSeverity,
+        ExposureRisk,
+        safe_handle_exception,
+    )
 
     USE_INTEGRATED_SYSTEMS = True
 except ImportError:

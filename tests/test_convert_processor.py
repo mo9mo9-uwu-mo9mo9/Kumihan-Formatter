@@ -73,7 +73,9 @@ class TestConvertProcessor:
         mock_render.assert_called_once_with(
             mock_ast, None, template=None, title=input_file.stem
         )
-        mock_fileio.write_text_file.assert_called_once_with(expected_output, "<html>test</html>")
+        mock_fileio.write_text_file.assert_called_once_with(
+            expected_output, "<html>test</html>"
+        )
 
         # Cleanup
         try:

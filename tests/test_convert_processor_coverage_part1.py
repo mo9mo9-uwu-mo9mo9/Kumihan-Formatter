@@ -80,7 +80,9 @@ class TestConvertProcessorMethods:
             mock_determine_path.return_value = output_path
 
             # FileIOHandlerをモック化（実際の実装に合わせる）
-            with patch("kumihan_formatter.commands.convert.convert_processor.FileIOHandler") as mock_file_io:
+            with patch(
+                "kumihan_formatter.commands.convert.convert_processor.FileIOHandler"
+            ) as mock_file_io:
                 mock_file_io.read_text_file.return_value = "Test Content"
                 mock_file_io.write_file.return_value = None
 

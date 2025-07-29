@@ -11,21 +11,21 @@ ASTパース負荷軽減とメモリリーク対策システム
 """
 
 import ast
+import concurrent.futures
 import gc
 import hashlib
+import json
+import multiprocessing
+import pickle
+import threading
 import time
 import weakref
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Union, Iterator, Set
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import threading
-import json
-import pickle
-import concurrent.futures
-import multiprocessing
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional, Set, Union
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
