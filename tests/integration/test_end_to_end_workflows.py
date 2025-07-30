@@ -53,41 +53,41 @@ class TestCompleteProcessingWorkflow:
     def test_complex_document_processing(self, temp_dir):
         """Test processing of complex document with various notations."""
         # Create complex input document
-        complex_content = """;;;見出し1
+        complex_content = """#見出し1
 統合テストドキュメント
-;;;
+##
 
 このドキュメントは統合テストを目的としています。
 
-;;;見出し2
+#見出し2
 基本記法のテスト
-;;;
+##
 
-;;;太字 太字テキスト;;;、;;;下線 下線テキスト;;;、;;;斜体 斜体テキスト;;;を含みます。
+#太字 太字テキスト#、#下線 下線テキスト#、#斜体 斜体テキスト#を含みます。
 
-;;;見出し3
+#見出し3
 リスト記法のテスト
-;;;
+##
 
-;;;リスト
+#リスト
 - 基本項目1
-- ;;;太字 装飾された項目2;;;
+- #太字 装飾された項目2#
 - 基本項目3
   - ネストした項目3-1
-  - ;;;下線 装飾されたネスト項目3-2;;;
-;;;
+  - #下線 装飾されたネスト項目3-2#
+##
 
-;;;見出し2
+#見出し2
 複合記法のテスト
-;;;
+##
 
-;;;太字
+#太字
 ブロック形式の太字内に
-;;;下線 インライン下線;;;
+#下線 インライン下線#
 を含むテスト
-;;;
+##
 
-最終段落には;;;斜体 締めくくりの斜体;;;があります。"""
+最終段落には#斜体 締めくくりの斜体#があります。"""
         
         input_file = temp_dir / "complex_input.txt"
         input_file.write_text(complex_content, encoding="utf-8")
@@ -117,13 +117,13 @@ class TestCompleteProcessingWorkflow:
     def test_error_handling_workflow(self, temp_dir):
         """Test error handling in processing workflow."""
         # Create input with intentional errors
-        error_content = """;;;見出し1
+        error_content = """#見出し1
 エラーテストドキュメント
-;;; missing proper closing
+# missing proper closing
 
-;;;不明装飾 未知のキーワード;;;
+#不明装飾 未知のキーワード#
 
-;;;太字 未完了の記法
+#太字 未完了の記法
 # missing closing marker"""
         
         error_file = temp_dir / "error_input.txt"
@@ -152,23 +152,23 @@ class TestCompleteProcessingWorkflow:
         """Test batch processing of multiple files."""
         # Create multiple input files
         file_contents = {
-            "doc1.txt": """;;;見出し1
+            "doc1.txt": """#見出し1
 ドキュメント1
-;;;
+##
 
-;;;太字 最初のドキュメント;;;の内容です。""",
+#太字 最初のドキュメント#の内容です。""",
             
-            "doc2.txt": """;;;見出し1
+            "doc2.txt": """#見出し1
 ドキュメント2
-;;;
+##
 
-;;;下線 2番目のドキュメント;;;の内容です。""",
+#下線 2番目のドキュメント#の内容です。""",
             
-            "doc3.txt": """;;;見出し1
+            "doc3.txt": """#見出し1
 ドキュメント3
-;;;
+##
 
-;;;斜体 3番目のドキュメント;;;の内容です。""",
+#斜体 3番目のドキュメント#の内容です。""",
         }
         
         input_files = []
@@ -305,16 +305,16 @@ class TestRenderingIntegration:
         if self.renderer is None:
             pytest.skip("HTMLRenderer not available")
         
-        test_content = """;;;見出し1
+        test_content = """#見出し1
 テンプレートテスト
-;;;
+##
 
-;;;太字 テンプレート機能;;;のテストです。
+#太字 テンプレート機能#のテストです。
 
-;;;リスト
+#リスト
 - 項目1
 - 項目2
-;;;"""
+#"""
         
         try:
             # Test different template options
@@ -403,18 +403,18 @@ class TestStressIntegration:
         # Generate large test file (1MB)
         large_content_parts = []
         for i in range(1000):
-            section = f""";;;見出し1
+            section = f"""#見出し1
 大容量テストセクション{i}
-;;;
+##
 
 これは大容量テスト用のセクション{i}です。
-;;;太字 重要な情報{i};;;を含んでいます。
+#太字 重要な情報{i}#を含んでいます。
 
-;;;リスト
-- 項目{i}-1: ;;;下線 詳細{i};;;
+#リスト
+- 項目{i}-1: #下線 詳細{i}#
 - 項目{i}-2: 通常項目
-- 項目{i}-3: ;;;斜体 補足{i};;;
-;;;
+- 項目{i}-3: #斜体 補足{i}#
+##
 
 通常のテキスト内容がここに続きます。
 

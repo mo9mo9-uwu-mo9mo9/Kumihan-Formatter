@@ -45,7 +45,7 @@ class TestSimpleValidation:
     
     def test_potential_notation_text(self):
         """Test validation of text that might contain notation."""
-        notation_text = ";;;太字 テスト内容;;;"
+        notation_text = "#太字 テスト内容#"
         
         try:
             result = self.validator.validate_text(notation_text)

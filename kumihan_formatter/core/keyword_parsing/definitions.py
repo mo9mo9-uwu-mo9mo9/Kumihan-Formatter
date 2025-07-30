@@ -4,13 +4,14 @@ Kumihan記法キーワード定義 - Issue #476対応
 キーワードの定義、設定、管理機能。
 """
 
-import re
 from typing import Any
 
 # デフォルトブロックキーワード定義
 DEFAULT_BLOCK_KEYWORDS = {
     "太字": {"tag": "strong"},
     "イタリック": {"tag": "em"},
+    "斜体": {"tag": "em"},  # イタリックの別名
+    "下線": {"tag": "u"},
     "枠線": {"tag": "div", "class": "box"},
     "ハイライト": {"tag": "div", "class": "highlight"},
     "見出し1": {"tag": "h1"},
@@ -18,6 +19,7 @@ DEFAULT_BLOCK_KEYWORDS = {
     "見出し3": {"tag": "h3"},
     "見出し4": {"tag": "h4"},
     "見出し5": {"tag": "h5"},
+    "リスト": {"tag": "ul"},
     "折りたたみ": {"tag": "details", "summary": "詳細を表示"},
     "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
 }
@@ -26,12 +28,14 @@ DEFAULT_BLOCK_KEYWORDS = {
 NESTING_ORDER = [
     "details",  # 折りたたみ, ネタバレ
     "div",  # 枠線, ハイライト
+    "ul",  # リスト
     "h1",
     "h2",
     "h3",
     "h4",
     "h5",  # 見出し
     "strong",  # 太字
+    "u",  # 下線
     "em",  # イタリック
 ]
 
@@ -135,6 +139,17 @@ class KeywordDefinitions:
         info = self.get_keyword_info(keyword)
         return info.get("tag") if info else None
 
+    def normalize_keyword(self, keyword: str) -> str:
+        """キーワード名を正規化（テスト互換性のため）
+        
+        Args:
+            keyword: 正規化するキーワード
+            
+        Returns:
+            str: 正規化されたキーワード
+        """
+        return keyword.strip()
+
     def _validate_keyword_name(self, keyword: str) -> str | None:
         """
         キーワード名の妥当性を検証
@@ -198,6 +213,7 @@ class KeywordDefinitions:
             "p",
             "strong",
             "em",
+            "u",
             "h1",
             "h2",
             "h3",

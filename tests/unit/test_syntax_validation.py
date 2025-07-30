@@ -25,12 +25,12 @@ class TestKumihanSyntaxValidator:
     def test_valid_syntax_validation(self):
         """Test validation of syntactically correct text."""
         valid_texts = [
-            ";;;太字 正常なテキスト;;;",
+            "#太字 正常なテキスト#",
             "これは通常のテキストです。",
-            """;;;見出し1
+            """#見出し1
 ブロック形式のテキスト
-;;;""",
-            ";;;太字 内容;;; と ;;;下線 内容;;; の組み合わせ",
+#""",
+            "#太字 内容# と #下線 内容# の組み合わせ",
         ]
         
         for text in valid_texts:
@@ -62,9 +62,9 @@ class TestKumihanSyntaxValidator:
         """Test proper error severity classification."""
         # Test text that might produce different severity levels
         test_cases = [
-            (";;;太字 正常;;;", 0),  # Should have no severe errors
-            (";;;不明な記法 内容;;;", None),  # May have warnings
-            (";;;太字 未完了", None),  # Should have errors
+            ("#太字 正常#", 0),  # Should have no severe errors
+            ("#不明な記法 内容#", None),  # May have warnings
+            ("#太字 未完了", None),  # Should have errors
         ]
         
         for text, expected_severe_count in test_cases:
@@ -81,7 +81,7 @@ class TestKumihanSyntaxValidator:
             validator_strict = KumihanSyntaxValidator(strict=True)
             validator_lenient = KumihanSyntaxValidator(strict=False)
             
-            test_text = ";;;微妙な記法 内容;;;"
+            test_text = "#微妙な記法 内容#"
             
             strict_errors = validator_strict.validate_text(test_text)
             lenient_errors = validator_lenient.validate_text(test_text)
@@ -169,7 +169,7 @@ class TestSyntaxRules:
     
     def test_rule_application(self):
         """Test syntax rule application."""
-        test_text = ";;;太字 テスト内容;;;"
+        test_text = "#太字 テスト内容#"
         
         # Apply rules to test text
         violations = self.rules.check_text(test_text)
@@ -198,7 +198,7 @@ class TestSyntaxRules:
             # Try to add a custom rule
             custom_rule = {
                 'name': 'test_rule',
-                'pattern': r';;;[\w]+',
+                'pattern': r'#[\w]+',
                 'message': 'Test rule violation'
             }
             
@@ -223,7 +223,7 @@ class TestSyntaxValidatorUtils:
     
     def test_text_preprocessing(self):
         """Test text preprocessing utilities."""
-        test_text = "  ;;;太字 内容;;;  \n\n  "
+        test_text = "  #太字 内容#  \n\n  "
         processed = self.utils.preprocess_text(test_text)
         
         assert isinstance(processed, str)
@@ -232,7 +232,7 @@ class TestSyntaxValidatorUtils:
     
     def test_position_calculation(self):
         """Test position calculation utilities."""
-        text = "行1\n行2\n;;;太字 内容;;;\n行4"
+        text = "行1\n行2\n#太字 内容#\n行4"
         
         try:
             line_number = self.utils.get_line_number(text, text.find("太字"))
@@ -249,7 +249,7 @@ class TestSyntaxValidatorUtils:
     
     def test_error_context_extraction(self):
         """Test error context extraction."""
-        text = "前の行\n;;;エラーのある行;;;\n次の行"
+        text = "前の行\n#エラーのある行#\n次の行"
         error_position = text.find("エラー")
         
         try:
@@ -265,7 +265,7 @@ class TestSyntaxValidatorUtils:
     
     def test_marker_boundary_detection(self):
         """Test marker boundary detection utilities."""
-        text = "通常テキスト;;;太字 マーカー内容;;;通常テキスト"
+        text = "通常テキスト#太字 マーカー内容#通常テキスト"
         
         try:
             boundaries = self.utils.find_marker_boundaries(text)

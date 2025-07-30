@@ -63,7 +63,7 @@ class FileIOHandler:
                     f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
                 )
 
-        except UnicodeEncodeError as e:
+        except UnicodeEncodeError:
             # Fallback with error replacement
             logger.warning(f"Unicode encode error for {path}, using error replacement")
             try:

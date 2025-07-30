@@ -81,14 +81,15 @@ class TestKeywordValidator:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.validator = KeywordValidator()
+        self.definitions = KeywordDefinitions()
+        self.validator = KeywordValidator(self.definitions)
     
     def test_valid_keyword_validation(self):
         """Test validation of valid keywords."""
         valid_texts = [
-            ";;;太字 有効なテキスト;;;",
-            ";;;見出し1 タイトル;;;",
-            ";;;下線 強調文字;;;",
+            "#太字 有効なテキスト#",
+            "#見出し1 タイトル#",
+            "#下線 強調文字#",
         ]
         
         for text in valid_texts:
@@ -99,9 +100,9 @@ class TestKeywordValidator:
         """Test validation of invalid keywords."""
         # Test with potentially invalid structures
         invalid_texts = [
-            ";;;; 不正な開始マーカー",
-            "太字 不正な終了マーカー;;;",
-            ";;;太字 未完了の記法",
+            "#; 不正な開始マーカー",
+            "太字 不正な終了マーカー#",
+            "#太字 未完了の記法",
         ]
         
         for text in invalid_texts:
@@ -112,11 +113,11 @@ class TestKeywordValidator:
     
     def test_nested_keyword_validation(self):
         """Test validation of nested keyword structures."""
-        nested_text = """;;;太字
+        nested_text = """#太字
 外側のコンテンツ
-;;;下線 内側のコンテンツ;;;
+#下線 内側のコンテンツ#
 継続するコンテンツ
-;;;"""
+#"""
         
         errors = self.validator.validate(nested_text)
         assert isinstance(errors, list)
@@ -125,8 +126,8 @@ class TestKeywordValidator:
     def test_empty_content_validation(self):
         """Test validation of empty content."""
         empty_content_texts = [
-            ";;;太字 ;;;",
-            ";;;太字\n;;;",
+            "#太字 #",
+            "#太字\n#",
         ]
         
         for text in empty_content_texts:
@@ -147,7 +148,7 @@ class TestMarkerParser:
     
     def test_parse_result_structure(self):
         """Test ParseResult data structure."""
-        text = ";;;太字 テスト内容;;;"
+        text = "#太字 テスト内容#"
         result = self.parser.parse(text)
         
         assert isinstance(result, ParseResult)
@@ -161,9 +162,9 @@ class TestMarkerParser:
     def test_simple_marker_parsing(self):
         """Test parsing of simple markers."""
         test_cases = [
-            (";;;太字 内容;;;", "太字", "内容"),
-            (";;;見出し1 タイトル;;;", "見出し1", "タイトル"),
-            (";;;下線 強調;;;", "下線", "強調"),
+            ("#太字 内容#", "太字", "内容"),
+            ("#見出し1 タイトル#", "見出し1", "タイトル"),
+            ("#下線 強調#", "下線", "強調"),
         ]
         
         for text, expected_marker, expected_content in test_cases:
@@ -175,10 +176,10 @@ class TestMarkerParser:
     
     def test_block_marker_parsing(self):
         """Test parsing of block-style markers."""
-        block_text = """;;;見出し1
+        block_text = """#見出し1
 複数行の
 タイトルテキスト
-;;;"""
+#"""
         
         result = self.parser.parse(block_text)
         
@@ -189,7 +190,7 @@ class TestMarkerParser:
     
     def test_marker_position_tracking(self):
         """Test marker position tracking."""
-        text = "前置き;;;太字 中身;;;後置き"
+        text = "前置き#太字 中身#後置き"
         result = self.parser.parse(text)
         
         if hasattr(result, 'position') or hasattr(result, 'start') or hasattr(result, 'end'):
@@ -201,7 +202,7 @@ class TestMarkerParser:
     
     def test_multiple_markers_parsing(self):
         """Test parsing text with multiple markers."""
-        text = ";;;太字 最初;;; 中間テキスト ;;;下線 次;;; 終了"
+        text = "#太字 最初# 中間テキスト #下線 次# 終了"
         result = self.parser.parse(text)
         
         assert result is not None
@@ -211,10 +212,10 @@ class TestMarkerParser:
     def test_malformed_marker_handling(self):
         """Test handling of malformed markers."""
         malformed_texts = [
-            ";;太字 一つ少ない開始マーカー;;;",
-            ";;;太字 一つ少ない終了マーカー;;",
-            ";;;太字 終了マーカーなし",
-            "太字 開始マーカーなし;;;",
+            "#太字 一つ少ない開始マーカー",
+            "#太字 一つ少ない終了マーカー",
+            "#太字 終了マーカーなし",
+            "太字 開始マーカーなし#",
         ]
         
         for text in malformed_texts:
@@ -225,10 +226,10 @@ class TestMarkerParser:
     def test_edge_case_content(self):
         """Test parsing with edge case content."""
         edge_cases = [
-            ";;;太字 ;;;含む内容;;;",  # Contains marker-like text
-            ";;;太字 \n\n\n;;;",  # Multiple newlines
-            ";;;太字     ;;;",  # Only whitespace
-            ";;;太字 ≪特殊文字≫;;;",  # Special Unicode characters
+            "#太字 #含む内容#",  # Contains marker-like text
+            "#太字 \n\n\n#",  # Multiple newlines
+            "#太字     #",  # Only whitespace
+            "#太字 ≪特殊文字≫#",  # Special Unicode characters
         ]
         
         for text in edge_cases:

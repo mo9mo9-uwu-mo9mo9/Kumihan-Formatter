@@ -153,3 +153,76 @@ class SyntaxRules:
     def get_sorted_keywords(cls) -> list[str]:
         """Get sorted list of valid keywords for error messages"""
         return sorted(cls.VALID_KEYWORDS)
+
+    @staticmethod
+    def get_all_rules() -> dict[str, list[str]]:
+        """すべての構文ルールを辞書形式で返す（テスト互換性のため）
+        
+        Returns:
+            dict: ルールカテゴリ別のキーワードリスト
+        """
+        return {
+            "valid_keywords": SyntaxRules.VALID_KEYWORDS,
+            "color_keywords": SyntaxRules.COLOR_KEYWORDS,
+            "alt_keywords": SyntaxRules.ALT_KEYWORDS,
+            "heading_keywords": SyntaxRules.HEADING_KEYWORDS,
+        }
+
+    
+    @staticmethod
+    def check_text(text: str) -> list[str]:
+        """テキストに対してルールチェックを実行（新記法のみ対応）
+        
+        Args:
+            text: チェック対象のテキスト
+            
+        Returns:
+            list[str]: 検出された違反事項のリスト
+        """
+        violations = []
+        
+        # 簡易的なキーワード抽出とチェック（新記法のみ）
+        import re
+        
+        # 新記法のみ対応
+        pattern = r'[#＃]([^#＃]+?)[#＃]'  # 新記法
+        
+        found_keywords = []
+        matches = re.findall(pattern, text)
+        for match in matches:
+            keyword = match.strip().split()[0]  # 最初の単語を取得
+            found_keywords.append(keyword)
+        
+        # キーワードの妥当性チェック
+        for keyword in found_keywords:
+            if not SyntaxRules.is_valid_keyword(keyword):
+                violations.append(f"無効なキーワード: {keyword}")
+                
+        # 重複チェック
+        duplicates = SyntaxRules.find_duplicate_keywords(found_keywords)
+        for duplicate in duplicates:
+            violations.append(f"重複するキーワード: {duplicate}")
+        
+        # 見出し競合チェック
+        headings = [kw for kw in found_keywords if SyntaxRules.is_heading(kw)]
+        if len(headings) > 1:
+            violations.append(f"競合する見出しレベル: {', '.join(headings)}")
+            
+        return violations
+
+    
+    @staticmethod
+    def get_rule_categories() -> dict[str, str]:
+        """ルールカテゴリの説明を取得（テスト互換性のため）
+        
+        Returns:
+            dict: カテゴリ名と説明の辞書
+        """
+        return {
+            "keyword_validation": "有効なキーワードの検証",
+            "color_validation": "色指定属性の検証", 
+            "alt_validation": "代替テキスト属性の検証",
+            "heading_validation": "見出しレベルの検証",
+            "duplicate_detection": "重複キーワードの検出",
+            "conflict_resolution": "競合する記法の解決"
+        }
