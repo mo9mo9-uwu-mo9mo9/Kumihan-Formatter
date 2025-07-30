@@ -1,6 +1,6 @@
 # Kumihan-Formatter ユーザーガイド（統合版）
 
-> **バージョン v0.9.0-alpha.1対応** - CoC6th TRPGシナリオ作成に特化したテキスト→HTML変換ツール
+> **バージョン v2.1.0-alpha対応** - CoC6th TRPGシナリオ作成に特化したテキスト→HTML変換ツール
 
 ## 📚 目次
 
@@ -251,6 +251,14 @@ python -m kumihan_formatter convert input.txt -o output/
 
 ### 📌 基本記法（必須習得）
 
+**🚨 重要なルール（v2.1.0-alpha以降）**:
+- **混在禁止**: 半角`#`と全角`＃`を同じマーカーペア内で混在させることは禁止
+  - ✅ `# 太字 # 内容` または `＃太字＃ 内容`
+  - ❌ `# 太字 ＃ 内容` (半角・全角混在)
+- **color属性**: 英単語色名（red, blue等）も使用可能、大文字小文字混在禁止
+  - ✅ `# ハイライト color=red # 内容` または `# ハイライト color=RED # 内容`
+  - ❌ `# ハイライト color=Red # 内容` (大文字小文字混在)
+
 #### 1. 見出し
 
 **Kumihan記法:**
@@ -451,15 +459,15 @@ NPC詳細設定：
 
 **Kumihan記法:**
 ```
-#画像 alt=古い洋館の外観#
+#画像#
 mansion_exterior.jpg
 ##
 
-#画像 alt=血痕のある手紙#
+#画像#
 bloody_letter.png
 ##
 
-#画像 alt=ダンジョンマップ#
+#画像#
 dungeon_map.gif
 ##
 ```
