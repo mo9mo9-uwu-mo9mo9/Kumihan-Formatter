@@ -95,13 +95,15 @@ class MarkerParser:
         # color 属性を抽出（プリコンパイルパターン使用）
         color_match = self._COLOR_ATTRIBUTE_PATTERN.search(marker_content)
         if color_match:
-            attributes["color"] = color_match.group(1)
+            color_value = self._sanitize_color_attribute(color_match.group(1))
+            attributes["color"] = color_value
             marker_content = re.sub(r"\s*color=[#\w]+", "", marker_content)
 
         # alt 属性を抽出（画像用、プリコンパイルパターン使用）
         alt_match = self._ALT_ATTRIBUTE_PATTERN.search(marker_content)
         if alt_match:
-            attributes["alt"] = alt_match.group(1).strip()
+            alt_value = self._sanitize_alt_attribute(alt_match.group(1).strip())
+            attributes["alt"] = alt_value
             marker_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
 
         # キーワードを + または ＋ で分割（プリコンパイルパターン使用）
@@ -336,3 +338,65 @@ class MarkerParser:
             content = match.group(1).strip()
             return content if content else None
         return None
+
+    def _sanitize_color_attribute(self, color_value: str) -> str:
+        """
+        color属性値をサニタイゼーション
+
+        Args:
+            color_value: 生のcolor値
+
+        Returns:
+            str: サニタイゼーション済みのcolor値
+        """
+        # 基本的なサニタイゼーション
+        sanitized = color_value.strip()
+
+        # HTMLエンティティエスケープ
+        sanitized = sanitized.replace("&", "&amp;")
+        sanitized = sanitized.replace("<", "&lt;")
+        sanitized = sanitized.replace(">", "&gt;")
+        sanitized = sanitized.replace('"', "&quot;")
+        sanitized = sanitized.replace("'", "&#x27;")
+
+        # JavaScriptプロトコルの除去
+        if sanitized.lower().startswith(("javascript:", "data:", "vbscript:")):
+            return "#000000"  # デフォルトの黒色
+
+        # 長さ制限（最大20文字）
+        if len(sanitized) > 20:
+            sanitized = sanitized[:20]
+
+        return sanitized
+
+    def _sanitize_alt_attribute(self, alt_value: str) -> str:
+        """
+        alt属性値をサニタイゼーション
+
+        Args:
+            alt_value: 生のalt値
+
+        Returns:
+            str: サニタイゼーション済みのalt値
+        """
+        # 基本的なサニタイゼーション
+        sanitized = alt_value.strip()
+
+        # HTMLエンティティエスケープ
+        sanitized = sanitized.replace("&", "&amp;")
+        sanitized = sanitized.replace("<", "&lt;")
+        sanitized = sanitized.replace(">", "&gt;")
+        sanitized = sanitized.replace('"', "&quot;")
+        sanitized = sanitized.replace("'", "&#x27;")
+
+        # 改行文字を削除
+        sanitized = sanitized.replace("\n", " ").replace("\r", " ")
+
+        # 連続スペースを単一スペースに
+        sanitized = re.sub(r"\s+", " ", sanitized)
+
+        # 長さ制限（最大100文字）
+        if len(sanitized) > 100:
+            sanitized = sanitized[:97] + "..."
+
+        return sanitized

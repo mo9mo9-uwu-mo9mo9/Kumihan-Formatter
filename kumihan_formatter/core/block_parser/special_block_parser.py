@@ -4,7 +4,7 @@ This module handles parsing of special block types including code blocks,
 tables, and other special formatting elements.
 """
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .block_parser import BlockParser

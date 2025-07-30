@@ -241,5 +241,3 @@ class KeywordParser:
             return len(self.NESTING_ORDER)  # Unknown tags go last
 
         return sorted(keywords, key=get_nesting_index)
-
-

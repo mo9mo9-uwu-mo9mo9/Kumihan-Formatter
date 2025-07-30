@@ -29,6 +29,7 @@ from typing import Optional
 from .logging import LogHelper
 from .logging_formatters import StructuredLogFormatter
 from .logging_handlers import DevLogHandler
+
 # Performance logger removed during cleanup
 # Structured logger removed during cleanup
 
@@ -160,9 +161,10 @@ class KumihanLogger:
             duration: Duration in seconds
             size: Optional size in bytes
         """
-        self.performance_logger.record_log_event(
-            logging.INFO, f"performance_{operation}", duration
-        )
+        if self.performance_logger:
+            self.performance_logger.record_log_event(
+                logging.INFO, f"performance_{operation}", duration
+            )
 
         context = {
             "operation": operation,
@@ -173,9 +175,8 @@ class KumihanLogger:
         if size is not None:
             context["size_bytes"] = size
 
-        # 構造化ログとして記録
-        structured_logger = get_structured_logger(logger.name)
-        structured_logger.performance(operation, duration * 1000, context)
+        # 構造化ログとして記録（簡易版）
+        logger.info(f"Performance: {operation} took {duration * 1000:.2f}ms", extra=context)
 
 
 # シングルトンインスタンス

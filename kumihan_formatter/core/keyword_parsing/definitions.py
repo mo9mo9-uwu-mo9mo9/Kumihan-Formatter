@@ -4,6 +4,7 @@ Kumihan記法キーワード定義 - Issue #476対応
 キーワードの定義、設定、管理機能。
 """
 
+import re
 from typing import Any
 
 # デフォルトブロックキーワード定義
@@ -84,7 +85,20 @@ class KeywordDefinitions:
         Args:
             keyword: キーワード名
             definition: キーワード定義
+
+        Raises:
+            ValueError: 無効なキーワード名またはキーワード定義の場合
         """
+        # キーワード名の検証
+        validation_error = self._validate_keyword_name(keyword)
+        if validation_error:
+            raise ValueError(validation_error)
+
+        # キーワード定義の検証
+        definition_error = self._validate_keyword_definition(definition)
+        if definition_error:
+            raise ValueError(definition_error)
+
         self.BLOCK_KEYWORDS[keyword] = definition
 
     def remove_keyword(self, keyword: str) -> bool:
@@ -120,3 +134,95 @@ class KeywordDefinitions:
         """
         info = self.get_keyword_info(keyword)
         return info.get("tag") if info else None
+
+    def _validate_keyword_name(self, keyword: str) -> str | None:
+        """
+        キーワード名の妥当性を検証
+
+        Args:
+            keyword: 検証するキーワード名
+
+        Returns:
+            str | None: エラーメッセージ（問題ない場合はNone）
+        """
+        if not keyword or not keyword.strip():
+            return "キーワード名が空です"
+
+        # 長さチェック
+        if len(keyword) > 20:
+            return f"キーワード名が長すぎます（20文字以内）: '{keyword}'"
+
+        # 無効な文字チェック
+        invalid_chars = set(keyword) & {"<", ">", '"', "'", "&", "#", "+", "＋"}
+        if invalid_chars:
+            return (
+                f"キーワード名に無効な文字が含まれています: {', '.join(invalid_chars)}"
+            )
+
+        # 予約語チェック
+        reserved_words = ["javascript", "data", "vbscript", "html", "css"]
+        if keyword.lower() in reserved_words:
+            return f"予約語はキーワード名として使用できません: '{keyword}'"
+
+        # 数字のみのキーワードチェック
+        if keyword.isdigit():
+            return f"数字のみのキーワード名は使用できません: '{keyword}'"
+
+        return None
+
+    def _validate_keyword_definition(self, definition: dict[str, Any]) -> str | None:
+        """
+        キーワード定義の妥当性を検証
+
+        Args:
+            definition: 検証するキーワード定義
+
+        Returns:
+            str | None: エラーメッセージ（問題ない場合はNone）
+        """
+        if not isinstance(definition, dict):
+            return "キーワード定義は辞書である必要があります"
+
+        # tagフィールドは必須
+        if "tag" not in definition:
+            return "キーワード定義に'tag'フィールドが必要です"
+
+        tag = definition["tag"]
+        if not isinstance(tag, str) or not tag.strip():
+            return "tagフィールドは空でない文字列である必要があります"
+
+        # 有効なHTMLタグかチェック
+        valid_tags = {
+            "div",
+            "span",
+            "p",
+            "strong",
+            "em",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "details",
+            "summary",
+            "code",
+            "pre",
+            "blockquote",
+            "ul",
+            "ol",
+            "li",
+            "table",
+            "tr",
+            "td",
+            "th",
+            "thead",
+            "tbody",
+            "img",
+            "a",
+        }
+
+        if tag.lower() not in valid_tags:
+            return f"無効なHTMLタグです: '{tag}'"
+
+        return None

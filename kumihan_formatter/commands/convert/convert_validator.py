@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ...core.file_ops import FileOperations, PathValidator
+
 # Reporting module removed during cleanup - using simplified error reporting
 # Error types module removed during cleanup - using simplified error handling
 from ...core.syntax import check_files
@@ -69,7 +70,7 @@ class ConvertValidator:
             error_report = {
                 "source_file": str(input_path),
                 "errors": [],
-                "has_errors": False
+                "has_errors": False,
             }
 
             if results:
@@ -87,11 +88,7 @@ class ConvertValidator:
         except Exception as e:
             get_console_ui().error("記法チェック中にエラーが発生しました", str(e))
             # 空のレポートを返す
-            return {
-                "source_file": str(input_path),
-                "errors": [],
-                "has_errors": False
-            }
+            return {"source_file": str(input_path), "errors": [], "has_errors": False}
 
     def _convert_to_error_info(self, error: Any, file_path: Path) -> dict[str, Any]:
         """エラーオブジェクトを辞書形式の情報に変換"""
@@ -132,25 +129,27 @@ class ConvertValidator:
             )
         except Exception as e:
             get_console_ui().warning("エラーレポートの保存に失敗しました", str(e))
-    
-    def _save_error_report_to_file(self, error_report: dict[str, Any], output_path: Path) -> None:
+
+    def _save_error_report_to_file(
+        self, error_report: dict[str, Any], output_path: Path
+    ) -> None:
         """エラーレポートを実際にファイルに書き出し"""
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(f"エラーレポート: {error_report['source_file']}\n")
             f.write("=" * 50 + "\n\n")
-            
-            if not error_report['has_errors']:
+
+            if not error_report["has_errors"]:
                 f.write("エラーは検出されませんでした。\n")
             else:
                 f.write(f"検出されたエラー数: {len(error_report['errors'])}\n\n")
-                
-                for i, error in enumerate(error_report['errors'], 1):
+
+                for i, error in enumerate(error_report["errors"], 1):
                     f.write(f"エラー {i}:\n")
                     f.write(f"  重要度: {error['severity']}\n")
                     f.write(f"  カテゴリ: {error['category']}\n")
                     f.write(f"  タイトル: {error['title']}\n")
                     f.write(f"  メッセージ: {error['message']}\n")
                     f.write(f"  ファイル: {error['file_path']}\n")
-                    if error['line_number']:
+                    if error["line_number"]:
                         f.write(f"  行番号: {error['line_number']}\n")
                     f.write("\n")
