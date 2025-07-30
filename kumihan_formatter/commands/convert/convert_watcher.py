@@ -127,25 +127,34 @@ class ConvertWatcher:
                 if self.syntax_check:
                     error_report = self.validator.perform_syntax_check(self.input_file)
 
-                    if error_report.has_errors():
+                    if error_report.get("has_errors", False):
                         get_console_ui().error("記法エラーが検出されました")
-                        print(error_report.to_console_output())
+                        # Display errors from dict format
+                        for error in error_report.get("errors", []):
+                            print(f"  エラー: {error.get('message', 'Unknown error')}")
                         return
-                    elif error_report.has_warnings():
+                    elif error_report.get("has_warnings", False):
                         get_console_ui().warning("記法に関する警告があります")
-                        print(error_report.to_console_output())
+                        # Display warnings from dict format
+                        for warning in error_report.get("warnings", []):
+                            print(
+                                f"  警告: {warning.get('message', 'Unknown warning')}"
+                            )
 
-                # ファイル変換
-                output_file = self.processor.convert_file(
-                    self.input_file,
-                    self.output,
-                    self.config,
-                    show_test_cases=self.show_test_cases,
-                    template=self.template_name,
-                    include_source=self.include_source,
-                )
-
-                get_console_ui().watch_update_complete(str(output_file))
+                # ファイル変換実行
+                try:
+                    output_file = self.processor.convert_file(
+                        self.input_file,
+                        self.output,
+                        self.config,
+                        show_test_cases=self.show_test_cases,
+                        template=self.template_name,
+                        include_source=self.include_source,
+                    )
+                    get_console_ui().watch_file_converted(str(output_file))
+                except Exception as e:
+                    get_console_ui().error("変換処理中にエラーが発生しました", str(e))
+                    return
 
         from watchdog.events import FileSystemEventHandler
 

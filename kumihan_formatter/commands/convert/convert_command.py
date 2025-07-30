@@ -119,8 +119,9 @@ class ConvertCommand:
                         f"Syntax warnings found: {warnings_count} warnings"
                     )
                     get_console_ui().warning("記法に関する警告があります:")
-                    if "console_output" in error_report:
-                        print(error_report["console_output"])
+                    # 警告の詳細表示（警告があれば）
+                    for warning in error_report.get("warnings", []):
+                        print(f"  警告: {warning.get('message', 'Unknown warning')}")
 
             # ファイル変換実行
             self.logger.info("Starting file conversion")
