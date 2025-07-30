@@ -14,20 +14,31 @@ def create_simple_tag(
     content: str = "",
     attributes: dict[str, Any] | None = None,
     self_closing: bool = False,
+    formatter=None,
 ) -> str:
     """
-    Create a simple HTML tag
+    Create a simple HTML tag with Phase 4 enhancements
 
     Args:
         tag: Tag name
         content: Tag content
         attributes: Tag attributes
         self_closing: Whether tag is self-closing
+        formatter: HTMLFormatter instance for enhanced processing
 
     Returns:
         str: HTML tag string
     """
-    attr_str = render_attributes(attributes)
+    # Phase 4: Use enhanced attribute rendering if formatter is provided
+    if formatter:
+        from .html_escaping import render_attributes_with_enhancements
+
+        attr_str = render_attributes_with_enhancements(
+            tag, attributes, content, formatter
+        )
+    else:
+        attr_str = render_attributes(attributes)
+
     attr_part = f" {attr_str}" if attr_str else ""
 
     if self_closing:

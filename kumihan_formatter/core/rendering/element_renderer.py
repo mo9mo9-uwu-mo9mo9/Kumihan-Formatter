@@ -22,6 +22,7 @@ from .html_utils import (
     escape_html,
     process_text_content,
     render_attributes,
+    render_attributes_with_enhancements,
 )
 
 
@@ -40,6 +41,11 @@ class ElementRenderer:
         self._main_renderer: Any | None = None  # Will be set by main renderer
         self.heading_counter = 0  # 見出しID生成用
 
+        # Phase 4: HTMLFormatter for accessibility and CSS class generation
+        from .html_formatter import HTMLFormatter
+
+        self.formatter = HTMLFormatter()
+
     def set_main_renderer(self, renderer: Any) -> None:
         """メインレンダラーを設定（コンポーネント間通信用）"""
         self._main_renderer = renderer
@@ -47,18 +53,42 @@ class ElementRenderer:
     # === 基本要素レンダリング機能 ===
 
     def render_paragraph(self, node: Node) -> str:
-        """段落要素をレンダリング"""
+        """段落要素をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
+
+        # Phase 4: Always apply enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "p", node.attributes, content, self.formatter
+        )
+
+        if attr_str:
+            return f"<p {attr_str}>{content}</p>"
         return f"<p>{content}</p>"
 
     def render_strong(self, node: Node) -> str:
-        """太字要素をレンダリング"""
+        """太字要素をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
+
+        # Phase 4: Always apply enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "strong", node.attributes, content, self.formatter
+        )
+
+        if attr_str:
+            return f"<strong {attr_str}>{content}</strong>"
         return f"<strong>{content}</strong>"
 
     def render_emphasis(self, node: Node) -> str:
-        """斜体要素をレンダリング"""
+        """斜体要素をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
+
+        # Phase 4: Always apply enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "em", node.attributes, content, self.formatter
+        )
+
+        if attr_str:
+            return f"<em {attr_str}>{content}</em>"
         return f"<em>{content}</em>"
 
     def render_preformatted(self, node: Node) -> str:
@@ -90,16 +120,24 @@ class ElementRenderer:
             return f"<code>{content}</code>"
 
     def render_image(self, node: Node) -> str:
-        """画像要素をレンダリング"""
+        """画像要素をレンダリング（Phase 4: アクセシビリティ改善）"""
         filename = node.content if isinstance(node.content, str) else str(node.content)
-        alt_text = node.get_attribute("alt", "")
-
         src = f"images/{filename}"
 
-        if alt_text:
-            return f'<img src="{escape_html(src)}" alt="{escape_html(alt_text)}" />'
-        else:
-            return f'<img src="{escape_html(src)}" />'
+        # Phase 4: Enhanced accessibility and CSS class handling
+        attributes = node.attributes.copy() if node.attributes else {}
+        attributes["src"] = src
+
+        # Generate alt text if not provided
+        if "alt" not in attributes:
+            attributes["alt"] = self.formatter._generate_alt_text(filename)
+
+        # Use enhanced attribute rendering with accessibility features
+        attr_str = render_attributes_with_enhancements(
+            "img", attributes, filename, self.formatter
+        )
+
+        return f"<img {attr_str} />"
 
     def render_error(self, node: Node) -> str:
         """エラー要素をレンダリング"""
@@ -122,7 +160,7 @@ class ElementRenderer:
     # === 見出し要素レンダリング機能 ===
 
     def render_heading(self, node: Node, level: int) -> str:
-        """見出し要素をIDと共にレンダリング
+        """見出し要素をIDと共にレンダリング（Phase 4: アクセシビリティ改善）
 
         Args:
             node: 見出しノード
@@ -132,84 +170,89 @@ class ElementRenderer:
             str: HTML見出し要素
         """
         content = self._render_content(node.content, 0)
-
-        # 見出しIDを生成（存在しない場合）
-        heading_id = node.get_attribute("id")
-        if not heading_id:
-            self.heading_counter += 1
-            heading_id = f"heading-{self.heading_counter}"
-            node.add_attribute("id", heading_id)
-
-        attributes = render_attributes(node.attributes)
         tag = f"h{min(max(level, 1), 6)}"  # h1-h6に制限
 
-        if attributes:
-            return f"<{tag} {attributes}>{content}</{tag}>"
-        else:
-            return f'<{tag} id="{heading_id}">{content}</{tag}>'
+        # 見出しIDを生成（存在しない場合）
+        attributes = node.attributes.copy() if node.attributes else {}
+        if "id" not in attributes:
+            self.heading_counter += 1
+            attributes["id"] = f"heading-{self.heading_counter}"
+
+        # Phase 4: Enhanced accessibility and CSS class handling
+        attr_str = render_attributes_with_enhancements(
+            tag, attributes, content, self.formatter
+        )
+
+        return f"<{tag} {attr_str}>{content}</{tag}>"
 
     # === リスト要素レンダリング機能 ===
 
     def render_unordered_list(self, node: Node) -> str:
-        """順序なしリストをレンダリング"""
+        """順序なしリストをレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
-        attributes = render_attributes(node.attributes)
 
-        if attributes:
-            return f"<ul {attributes}>{content}</ul>"
-        else:
-            return f"<ul>{content}</ul>"
+        # Phase 4: Enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "ul", node.attributes, content, self.formatter
+        )
+
+        return f"<ul {attr_str}>{content}</ul>"
 
     def render_ordered_list(self, node: Node) -> str:
-        """順序ありリストをレンダリング"""
+        """順序ありリストをレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
-        attributes = render_attributes(node.attributes)
 
-        if attributes:
-            return f"<ol {attributes}>{content}</ol>"
-        else:
-            return f"<ol>{content}</ol>"
+        # Phase 4: Enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "ol", node.attributes, content, self.formatter
+        )
+
+        return f"<ol {attr_str}>{content}</ol>"
 
     def render_list_item(self, node: Node) -> str:
-        """リスト項目をレンダリング"""
+        """リスト項目をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
-        attributes = render_attributes(node.attributes)
 
-        if attributes:
-            return f"<li {attributes}>{content}</li>"
-        else:
-            return f"<li>{content}</li>"
+        # Phase 4: Enhanced attribute rendering
+        attr_str = render_attributes_with_enhancements(
+            "li", node.attributes, content, self.formatter
+        )
+
+        return f"<li {attr_str}>{content}</li>"
 
     # === Div・Details要素レンダリング機能 ===
 
     def render_div(self, node: Node) -> str:
-        """div要素をレンダリング"""
+        """div要素をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
-        attributes = render_attributes(node.attributes)
 
-        if attributes:
-            return f"<div {attributes}>{content}</div>"
-        else:
-            return f"<div>{content}</div>"
+        # Phase 4: Always apply enhanced attribute rendering with
+        # accessibility and CSS classes
+        attr_str = render_attributes_with_enhancements(
+            "div", node.attributes, content, self.formatter
+        )
+
+        if attr_str:
+            return f"<div {attr_str}>{content}</div>"
+        return f"<div>{content}</div>"
 
     def render_details(self, node: Node) -> str:
-        """details要素をレンダリング"""
+        """details要素をレンダリング（Phase 4: アクセシビリティ改善）"""
         # summaryとcontentを分離
         summary_text = node.get_attribute("summary", "詳細")
         content = self._render_content(node.content, 0)
 
         # 他の属性を処理（summaryを除く）
-        filtered_attributes = {
-            k: v for k, v in node.attributes.items() if k != "summary"
-        }
-        attributes = render_attributes(filtered_attributes)
+        attributes = {k: v for k, v in node.attributes.items() if k != "summary"}
+
+        # Phase 4: Enhanced accessibility and CSS class handling
+        attr_str = render_attributes_with_enhancements(
+            "details", attributes, summary_text, self.formatter
+        )
 
         summary_html = f"<summary>{escape_html(summary_text)}</summary>"
 
-        if attributes:
-            return f"<details {attributes}>{summary_html}{content}</details>"
-        else:
-            return f"<details>{summary_html}{content}</details>"
+        return f"<details {attr_str}>{summary_html}{content}</details>"
 
     def render_summary(self, node: Node) -> str:
         """summary要素をレンダリング"""
@@ -267,9 +310,11 @@ class ElementRenderer:
         return self.render_element(node)
 
     def _render_unknown_element(self, node: Node) -> str:
-        """未知の要素タイプをレンダリング"""
+        """未知の要素タイプをレンダリング（Phase 4: 統一機能適用）"""
         content = self._render_content(node.content, 0)
-        return create_simple_tag(node.type, content, node.attributes)
+        return create_simple_tag(
+            node.type, content, node.attributes, formatter=self.formatter
+        )
 
     # === ヘルパーメソッド ===
 

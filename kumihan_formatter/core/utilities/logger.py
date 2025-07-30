@@ -176,7 +176,9 @@ class KumihanLogger:
             context["size_bytes"] = size
 
         # 構造化ログとして記録（簡易版）
-        logger.info(f"Performance: {operation} took {duration * 1000:.2f}ms", extra=context)
+        logger.info(
+            f"Performance: {operation} took {duration * 1000:.2f}ms", extra=context
+        )
 
 
 # シングルトンインスタンス
