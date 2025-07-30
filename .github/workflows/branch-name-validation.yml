@@ -68,32 +68,33 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `🚨 **ブランチ名エラー**
-            
-このPRのブランチ名に日本語が含まれています: \`${branchName}\`
-
-## 📋 対応方法
-1. 英語のブランチ名に変更してください
-   - 推奨形式: \`{type}/issue-{番号}-{英語概要}\`
-   - 例: \`feat/issue-123-add-new-feature\`
-
-2. ブランチ名変更コマンド:
-\`\`\`bash
-# 新しいブランチを作成
-git checkout -b feat/issue-XXX-english-description
-
-# 変更をプッシュ
-git push origin feat/issue-XXX-english-description
-
-# 古いブランチを削除
-git push origin --delete ${branchName}
-\`\`\`
-
-3. PRのブランチを更新してください
-
-## 🔒 システム要件
-- 日本語ブランチ名は **システム的に禁止** されています
-- この制限はCLAUDE.mdで定められた開発ルールです
-
-変更後、このPRは自動的に新しいブランチ名で更新されます。`
+            body: |
+              🚨 **ブランチ名エラー**
+              
+              このPRのブランチ名に日本語が含まれています: `${{ github.event.pull_request.head.ref }}`
+              
+              ## 📋 対応方法
+              1. 英語のブランチ名に変更してください
+                 - 推奨形式: `{type}/issue-{番号}-{英語概要}`
+                 - 例: `feat/issue-123-add-new-feature`
+              
+              2. ブランチ名変更コマンド:
+              ```bash
+              # 新しいブランチを作成
+              git checkout -b feat/issue-XXX-english-description
+              
+              # 変更をプッシュ
+              git push origin feat/issue-XXX-english-description
+              
+              # 古いブランチを削除
+              git push origin --delete ${{ github.event.pull_request.head.ref }}
+              ```
+              
+              3. PRのブランチを更新してください
+              
+              ## 🔒 システム要件
+              - 日本語ブランチ名は **システム的に禁止** されています
+              - この制限はCLAUDE.mdで定められた開発ルールです
+              
+              変更後、このPRは自動的に新しいブランチ名で更新されます。
           });
