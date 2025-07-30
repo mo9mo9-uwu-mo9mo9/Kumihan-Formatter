@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from ...core.error_handling import ErrorCatalog, UserFriendlyError
+from .syntax_validator import ErrorCatalog, UserFriendlyError
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
 
 # typing.Any removed as unused
