@@ -67,7 +67,7 @@
 ### 📋 命名規則（厳格適用）
 - **必須形式**: `{type}/issue-{Issue番号}-{英語概要}`
 - **type例**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-- **英語概要**: ハイフン區切り、小文字英数字のみ
+- **英語概要**: ハイフン区切り、小文字英数字のみ
 - **例**: `feat/issue-123-add-user-authentication`
 
 ### 🔧 作業フロー
