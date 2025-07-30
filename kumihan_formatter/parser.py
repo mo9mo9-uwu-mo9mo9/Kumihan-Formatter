@@ -98,12 +98,7 @@ class Parser:
             else f"Processing line {self.current}: {line}"
         )
 
-        # Skip comment lines (lines starting with #)
-        if line.startswith("#"):
-            self.current += 1
-            return None
-
-        # Parse block markers
+        # Parse block markers first (to handle new notation #keyword#)
         if self.block_parser.is_opening_marker(line):
             self.logger.debug(f"Found block marker at line {self.current}")
             node, next_index = self.block_parser.parse_block_marker(
@@ -111,6 +106,12 @@ class Parser:
             )
             self.current = next_index
             return node
+
+        # Skip comment lines (lines starting with # but not new notation)
+        # This check is now after block marker check to avoid conflict
+        if line.startswith("#") and not self.block_parser.is_opening_marker(line):
+            self.current += 1
+            return None
 
         # Parse lists
         list_type = self.list_parser.is_list_line(line)
