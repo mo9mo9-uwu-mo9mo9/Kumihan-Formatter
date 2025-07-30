@@ -4,6 +4,7 @@
 キーワードの有効性チェック、エラーメッセージ、サジェスト機能。
 """
 
+import re
 from difflib import get_close_matches
 
 from .definitions import KeywordDefinitions
@@ -132,3 +133,152 @@ class KeywordValidator:
                 )
 
         return warnings
+
+    def validate_keyword_combination(
+        self, keywords: list[str]
+    ) -> tuple[bool, list[str]]:
+        """
+        キーワード組み合わせの妥当性を包括的に検証
+
+        Args:
+            keywords: 検証するキーワードのリスト
+
+        Returns:
+            tuple: (is_valid, error_messages)
+        """
+        errors = []
+
+        # 基本的なキーワード検証
+        valid_keywords, validation_errors = self.validate_keywords(keywords)
+        errors.extend(validation_errors)
+
+        if not valid_keywords:
+            return False, errors
+
+        # 見出しレベルの重複チェック
+        heading_keywords = [k for k in valid_keywords if k.startswith("見出し")]
+        if len(heading_keywords) > 1:
+            errors.append(
+                f"複数の見出しレベルは使用できません: {', '.join(heading_keywords)}"
+            )
+
+        # details型（折りたたみ・ネタバレ）の重複チェック
+        details_keywords = [
+            k for k in valid_keywords if k in ["折りたたみ", "ネタバレ"]
+        ]
+        if len(details_keywords) > 1:
+            errors.append(
+                f"複数のdetails型は使用できません: {', '.join(details_keywords)}"
+            )
+
+        # 論理的に矛盾する組み合わせのチェック
+        # 見出しとdetailsの組み合わせは推奨しない（警告レベル）
+        if heading_keywords and details_keywords:
+            errors.append(
+                f"見出しとdetails型の組み合わせは推奨されません: 見出し={heading_keywords}, details={details_keywords}"
+            )
+
+        # 同じタグの重複チェック（警告レベル）
+        warnings = self.check_keyword_conflicts(valid_keywords)
+        errors.extend(warnings)
+
+        return len(errors) == 0, errors
+
+    def validate_color_value(self, color_value: str) -> tuple[bool, str | None]:
+        """
+        color属性値の妥当性を検証
+
+        Args:
+            color_value: 検証するcolor値
+
+        Returns:
+            tuple: (is_valid, error_message)
+        """
+        if not color_value:
+            return False, "color値が空です"
+
+        # 16進数カラーコード (#RGB, #RRGGBB)
+        hex_pattern = re.compile(r"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
+        if hex_pattern.match(color_value):
+            return True, None
+
+        # CSS名前付きカラー（基本的なもの）
+        named_colors = {
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
+            "black",
+            "white",
+            "gray",
+            "grey",
+            "cyan",
+            "magenta",
+            "lime",
+            "navy",
+            "teal",
+            "olive",
+            "maroon",
+            "silver",
+            "aqua",
+            "fuchsia",
+            "lightblue",
+            "lightgreen",
+            "lightyellow",
+            "lightgray",
+            "darkblue",
+            "darkgreen",
+            "darkred",
+            "transparent",
+        }
+
+        if color_value.lower() in named_colors:
+            return True, None
+
+        # RGB/RGBA形式 (rgb(r,g,b), rgba(r,g,b,a))
+        rgb_pattern = re.compile(
+            r"^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[0-9.]+)?\s*\)$"
+        )
+        if rgb_pattern.match(color_value):
+            return True, None
+
+        return (
+            False,
+            f"無効なcolor値です: '{color_value}' (例: #ff0000, red, rgb(255,0,0))",
+        )
+
+    def validate_attributes(self, attributes: dict[str, str]) -> list[str]:
+        """
+        属性値の妥当性を検証
+
+        Args:
+            attributes: 検証する属性辞書
+
+        Returns:
+            list[str]: エラーメッセージのリスト
+        """
+        errors = []
+
+        # color属性の検証
+        if "color" in attributes:
+            is_valid, error_msg = self.validate_color_value(attributes["color"])
+            if not is_valid:
+                errors.append(error_msg)
+
+        # alt属性の検証（画像用）
+        if "alt" in attributes:
+            alt_value = attributes["alt"]
+            if len(alt_value) > 100:
+                errors.append(
+                    f"alt属性が長すぎます（100文字以内）: '{alt_value[:20]}...'"
+                )
+
+            # HTML特殊文字の検証
+            if any(char in alt_value for char in ["<", ">", '"', "'"]):
+                errors.append("alt属性にHTML特殊文字が含まれています")
+
+        return errors

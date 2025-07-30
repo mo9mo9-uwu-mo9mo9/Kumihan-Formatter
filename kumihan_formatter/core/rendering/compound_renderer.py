@@ -8,14 +8,19 @@ from html import escape
 from typing import Any
 
 from .html_utils import process_text_content, sort_keywords_by_nesting_order
+from ..keyword_parsing.definitions import KeywordDefinitions
 
 
 class CompoundElementRenderer:
     """Renderer for compound elements with multiple keywords"""
 
-    def __init__(self) -> None:
-        """Initialize compound element renderer"""
-        pass
+    def __init__(self, keyword_definitions: KeywordDefinitions | None = None) -> None:
+        """Initialize compound element renderer
+
+        Args:
+            keyword_definitions: キーワード定義（Noneの場合はデフォルト作成）
+        """
+        self.keyword_definitions = keyword_definitions or KeywordDefinitions()
 
     def render_compound_element(
         self, keywords: list[str], content: str, attributes: dict[str, Any]
@@ -138,20 +143,8 @@ class CompoundElementRenderer:
                 f"Multiple details types not allowed: {', '.join(details_keywords)}",
             )
 
-        # Check for unknown keywords
-        known_keywords = {
-            "太字",
-            "イタリック",
-            "枠線",
-            "ハイライト",
-            "折りたたみ",
-            "ネタバレ",
-            "見出し1",
-            "見出し2",
-            "見出し3",
-            "見出し4",
-            "見出し5",
-        }
+        # Check for unknown keywords using dynamic keyword definitions
+        known_keywords = set(self.keyword_definitions.get_all_keywords())
 
         unknown_keywords = [k for k in keywords if k not in known_keywords]
         if unknown_keywords:

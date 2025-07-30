@@ -100,7 +100,7 @@ class ConvertCommand:
                     )
                     get_console_ui().info("\n=== 詳細エラーレポート ===")
                     # Display errors from dict format
-                    for error in error_report.get('errors', []):
+                    for error in error_report.get("errors", []):
                         print(f"  エラー: {error.get('message', 'Unknown error')}")
 
                     # エラーレポートファイルを生成
@@ -112,14 +112,15 @@ class ConvertCommand:
                     )
                     sys.exit(1)
 
-                elif error_report.has_warnings():
+                elif error_report.get("has_warnings", False):
                     # 警告のみの場合は続行するが表示
+                    warnings_count = len(error_report.get("warnings", []))
                     self.logger.warning(
-                        f"Syntax warnings found: {error_report.warning_count} "
-                        "warnings"
+                        f"Syntax warnings found: {warnings_count} warnings"
                     )
                     get_console_ui().warning("記法に関する警告があります:")
-                    print(error_report.to_console_output())
+                    if "console_output" in error_report:
+                        print(error_report["console_output"])
 
             # ファイル変換実行
             self.logger.info("Starting file conversion")

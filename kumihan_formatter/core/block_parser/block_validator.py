@@ -4,7 +4,7 @@ This module handles validation of block structures and syntax.
 """
 
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .block_parser import BlockParser
