@@ -88,7 +88,7 @@ class StructureValidator:
         # Check for proper heading structure
         heading_levels = []
         for i, line in enumerate(lines):
-            if line.strip().startswith(";;;見出し"):
+            if line.strip().startswith("#見出し"):
                 level = self._extract_heading_level(line)
                 if level:
                     heading_levels.append((i + 1, level))
@@ -116,11 +116,9 @@ class StructureValidator:
 
     def _extract_heading_level(self, line: str) -> int | None:
         """Extract heading level from line"""
-        import re
+        # import re  # 未使用import削除（Phase 1）
 
-        match = re.match(r";;;見出し(\d)", line.strip())
-        if match:
-            return int(match.group(1))
+        # ;;;記法は削除されました（Phase 1完了）
         return None
 
     def _validate_heading_hierarchy(

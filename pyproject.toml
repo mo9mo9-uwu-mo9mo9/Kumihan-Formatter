@@ -128,7 +128,8 @@ markers = [
     "performance: Performance tests",
     "slow: Slow running tests",
     "notation: Tests for notation system",
-    "error_handling: Error handling tests"
+    "error_handling: Error handling tests",
+    "phase1: Phase 1 implementation tests"
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

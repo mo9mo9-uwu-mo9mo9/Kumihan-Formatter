@@ -23,43 +23,41 @@ class KeywordValidator:
 
     def validate(self, text: str) -> list[str]:
         """テキストを解析してキーワード検証を実行（新記法のみ対応）
-        
+
         Args:
             text: 検証対象のテキスト
-            
+
         Returns:
             list[str]: エラーメッセージのリスト
         """
         errors = []
-        
+
         # 新記法のみに対応
-        if '#' in text or '＃' in text:
+        if "#" in text or "＃" in text:
             # 新記法の解析
             keywords = self._extract_keywords_from_new_format(text)
         else:
             return []  # 記法が見つからない場合はエラーなし
-            
+
         # キーワード検証
         if keywords:
             _, validation_errors = self.validate_keywords(keywords)
             errors.extend(validation_errors)
-            
-        return errors
-        
 
-        
+        return errors
+
     def _extract_keywords_from_new_format(self, text: str) -> list[str]:
         """新記法からキーワードを抽出"""
         keywords = []
-        
+
         # #キーワード# 形式
-        pattern = r'[#＃]([^#＃]+?)[#＃]'
+        pattern = r"[#＃]([^#＃]+?)[#＃]"
         matches = re.findall(pattern, text)
         for match in matches:
             keyword = match.strip().split()[0]  # 最初の単語をキーワードとして扱う
             if keyword:
                 keywords.append(keyword)
-                
+
         return keywords
 
     def validate_keywords(self, keywords: list[str]) -> tuple[list[str], list[str]]:

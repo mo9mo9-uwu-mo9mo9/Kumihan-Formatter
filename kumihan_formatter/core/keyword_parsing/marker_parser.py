@@ -14,6 +14,7 @@ from .definitions import KeywordDefinitions
 @dataclass
 class ParseResult:
     """テスト互換性のためのパース結果オブジェクト"""
+
     markers: list[str]
     content: str
     keywords: list[str] = field(default_factory=list)
@@ -29,7 +30,7 @@ class MarkerParser:
     _INLINE_CONTENT_PATTERN = re.compile(r"^[#＃]\s*.+?\s*[#＃]\s*(.*)")
     _FORMAT_CHECK_PATTERN = re.compile(r"^[#＃]\s*.+\s*[#＃]")
     _COLOR_ATTRIBUTE_PATTERN = re.compile(r"color=([#\w]+)")
-    _ALT_ATTRIBUTE_PATTERN = re.compile(r"alt=([^;]+)")
+    # _ALT_ATTRIBUTE_PATTERN = re.compile(r"alt=([^;]+)")  # alt属性は削除されました（Phase 1）
     _KEYWORD_SPLIT_PATTERN = re.compile(r"[+＋]")
 
     def __init__(self, definitions: KeywordDefinitions) -> None:
@@ -47,10 +48,10 @@ class MarkerParser:
     def parse(self, text: str) -> ParseResult | None:
         """
         テキストを解析してマーカー情報を抽出（新記法のみ対応）
-        
+
         Args:
             text: 解析対象のテキスト
-            
+
         Returns:
             ParseResult: 解析結果、解析対象がない場合はNone
         """
@@ -60,48 +61,50 @@ class MarkerParser:
 
         # テキストから#記法#パターンを抽出
         import re
-        
+
         all_keywords = []
         all_content = []
         all_attributes = {}
-        
+
         # 改良されたマーカー検出アルゴリズム
         # 複数のマーカーペアを正しく検出する
         i = 0
         while i < len(text):
-            if text[i] in '#＃':
+            if text[i] in "#＃":
                 start_pos = i
                 start_marker = text[i]
                 i += 1
-                
+
                 # 有効なマーカーペアを探す
                 # 戦略: バランスの取れたマーカーペアを見つける
                 end_pos = self._find_matching_marker(text, start_pos, start_marker)
-                
+
                 if end_pos > start_pos:
                     # マーカー内容を抽出
-                    full_content = text[start_pos + 1:end_pos].strip()
-                    
+                    full_content = text[start_pos + 1 : end_pos].strip()
+
                     if full_content:
                         # キーワードとコンテンツを分離
                         parts = full_content.split(None, 1)  # 最初の空白で分割
-                        
+
                         if parts:
                             keyword = parts[0]
                             content = parts[1] if len(parts) > 1 else ""
-                            
+
                             # 属性解析（color=, alt= など）
-                            if 'color=' in keyword:
+                            if "color=" in keyword:
                                 # color属性の処理は既存メソッドを利用
                                 _, attrs, _ = self.parse_marker_keywords(full_content)
                                 all_attributes.update(attrs)
                                 # color属性を除いたキーワードを抽出
-                                keyword = re.sub(r'\s*color=[#\w]+', '', keyword).strip()
-                            
+                                keyword = re.sub(
+                                    r"\s*color=[#\w]+", "", keyword
+                                ).strip()
+
                             all_keywords.append(keyword)
                             if content:
                                 all_content.append(content.strip())
-                    
+
                     # 処理した部分をスキップ
                     i = end_pos + 1
                 else:
@@ -109,10 +112,10 @@ class MarkerParser:
                     pass
             else:
                 i += 1
-        
+
         # ブロック形式もチェック（インライン形式が見つからない場合）
         if not all_keywords:
-            block_pattern = r'^[#＃]([^#＃]+?)$'
+            block_pattern = r"^[#＃]([^#＃]+?)$"
             block_match = re.match(block_pattern, text)
             if block_match:
                 keyword_part = block_match.group(1).strip()
@@ -122,142 +125,158 @@ class MarkerParser:
                     content="",
                     keywords=[keyword] if keyword else [],
                     attributes={},
-                    errors=[]
+                    errors=[],
                 )
             return None
 
         # コンテンツを結合
         combined_content = " ".join(all_content) if all_content else ""
-        
+
         if all_keywords:
             return ParseResult(
                 markers=all_keywords,
                 content=combined_content,
                 keywords=all_keywords,
                 attributes=all_attributes,
-                errors=[]
+                errors=[],
             )
-        
+
         return None
 
-    def _find_matching_marker(self, text: str, start_pos: int, start_marker: str) -> int:
+    def _find_matching_marker(
+        self, text: str, start_pos: int, start_marker: str
+    ) -> int:
         """
         開始マーカーに対応する終了マーカーを見つける（特殊文字と複数マーカー両対応）
-        
+
         Args:
             text: 検索対象のテキスト
             start_pos: 開始マーカーの位置
             start_marker: 開始マーカー文字（# または ＃）
-            
+
         Returns:
             int: 終了マーカーの位置、見つからない場合は-1
         """
         # 戦略: コンテキストに応じて最適なマッチング戦略を選択
-        
+
         # 1. 後続にさらにマーカーがあるかチェック
-        remaining_text = text[start_pos + 1:]
+        remaining_text = text[start_pos + 1 :]
         marker_positions = []
-        
+
         for i, char in enumerate(remaining_text):
             if char == start_marker:
                 abs_pos = start_pos + 1 + i
                 marker_positions.append(abs_pos)
-        
+
         if not marker_positions:
             return -1
-        
+
         # 2. 最適な終了マーカーを決定
         # 複数マーカー検出ヒューリスティック：
         # - 文中に「と」「に」「が」などの接続詞がある場合は複数マーカーの可能性が高い
         # - 特殊文字（!@#$%^&*()など）が多い場合は単一マーカーの可能性が高い
-        
-        connection_words = ['と', 'に', 'が', 'で', 'を', 'は', 'の']
-        special_chars = ['!', '@', '$', '%', '^', '&', '*', '(', ')', '_', '=', '+']
-        
-        content_to_first = text[start_pos + 1:marker_positions[0]]
-        
-        connection_count = sum(1 for word in connection_words if word in content_to_first)
+
+        connection_words = ["と", "に", "が", "で", "を", "は", "の"]
+        special_chars = ["!", "@", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+"]
+
+        content_to_first = text[start_pos + 1 : marker_positions[0]]
+
+        connection_count = sum(
+            1 for word in connection_words if word in content_to_first
+        )
         special_count = sum(1 for char in special_chars if char in content_to_first)
-        
+
         # 複数マーカーの可能性が高い場合：最初のマーカーを選択
         if connection_count > 0 and len(marker_positions) > 1:
             # さらに検証：最初のマーカーまでの内容に有効なキーワード+コンテンツがあるか
             if self._looks_like_complete_marker(content_to_first):
                 return marker_positions[0]
-        
+
         # 特殊文字が多い場合または複数マーカーでない場合：最後のマーカーを選択
         if special_count >= 2 or len(marker_positions) == 1:
             return marker_positions[-1]
-        
+
         # デフォルト：最初のマーカーを選択（より保守的）
         return marker_positions[0]
 
-    
     def _looks_like_complete_marker(self, content: str) -> bool:
         """
         コンテンツが完全なマーカー内容に見えるかチェック
-        
+
         Args:
             content: チェックするコンテンツ
-            
+
         Returns:
             bool: 完全なマーカーに見える場合True
         """
         content = content.strip()
         if not content:
             return False
-            
+
         # キーワード + スペース + コンテンツ の形式かチェック
         parts = content.split(None, 1)
         if not parts:
             return False
-            
+
         keyword = parts[0]
-        
+
         # 有効なキーワードかチェック（簡易版）
-        valid_keywords = ['太字', '下線', '斜体', '見出し1', '見出し2', '見出し3', 
-                         '見出し4', '見出し5', 'イタリック', 'ハイライト', 'リスト']
-        
+        valid_keywords = [
+            "太字",
+            "下線",
+            "斜体",
+            "見出し1",
+            "見出し2",
+            "見出し3",
+            "見出し4",
+            "見出し5",
+            "イタリック",
+            "ハイライト",
+            "リスト",
+        ]
+
         # キーワードが有効で、適度な長さのコンテンツがある場合
         if keyword in valid_keywords:
             if len(parts) == 1:  # キーワードのみ（空のコンテンツ）
                 return True
             elif len(parts) == 2 and len(parts[1]) > 0:  # キーワード + コンテンツ
                 return True
-                
+
         return False
-    
-    def _is_valid_marker_pair(self, text: str, start: int, end: int, marker: str) -> bool:
+
+    def _is_valid_marker_pair(
+        self, text: str, start: int, end: int, marker: str
+    ) -> bool:
         """
         マーカーペアが有効かどうかを判定
-        
+
         Args:
             text: テキスト
             start: 開始位置
             end: 終了位置
             marker: マーカー文字
-            
+
         Returns:
             bool: 有効なペアの場合True
         """
         # 基本的な検証
         if end <= start:
             return False
-            
+
         # 中間にコンテンツがあることを確認
-        content = text[start + 1:end].strip()
+        content = text[start + 1 : end].strip()
         if not content:
             return False
-            
+
         # より高度な検証は必要に応じて追加
         # 現在は基本的な構造チェックのみ
         return True
-        
+
     def _parse_new_format(self, text: str) -> ParseResult:
         """新記法の解析処理"""
         # インライン内容を抽出
         inline_content = self.extract_inline_content(text)
-        
+
         # マーカー解析
         result = self.parse_new_marker_format(text)
         if result:
@@ -267,22 +286,16 @@ class MarkerParser:
                 content=inline_content or "",
                 keywords=keywords,
                 attributes=attributes,
-                errors=errors
+                errors=errors,
             )
-        
+
         return ParseResult(
             markers=[],
             content=inline_content or "",
             keywords=[],
             attributes={},
-            errors=["新記法の解析に失敗しました"]
+            errors=["新記法の解析に失敗しました"],
         )
-        
-
-        
-
-        
-
 
     def normalize_marker_syntax(self, marker_content: str) -> str:
         """
@@ -305,8 +318,8 @@ class MarkerParser:
         # color= の前にスペースがない場合は追加
         normalized = re.sub(r"([^\s])color=", r"\1 color=", normalized)
 
-        # alt= の前にスペースがない場合は追加
-        normalized = re.sub(r"([^\s])alt=", r"\1 alt=", normalized)
+        # alt= の前にスペースがない場合は追加（alt属性は削除されました - Phase 1）
+        # normalized = re.sub(r"([^\s])alt=", r"\1 alt=", normalized)
 
         # 複数スペースを単一スペースに正規化
         normalized = re.sub(r"\s+", " ", normalized)
@@ -323,7 +336,7 @@ class MarkerParser:
         マーカーコンテンツからキーワードと属性を解析
 
         Args:
-            marker_content: ;;; マーカー間のコンテンツ
+            marker_content: # マーカー間のコンテンツ（新記法）
 
         Returns:
             tuple: (キーワード, 属性, エラー)
@@ -342,12 +355,12 @@ class MarkerParser:
             attributes["color"] = color_value
             marker_content = re.sub(r"\s*color=[#\w]+", "", marker_content)
 
-        # alt 属性を抽出（画像用、プリコンパイルパターン使用）
-        alt_match = self._ALT_ATTRIBUTE_PATTERN.search(marker_content)
-        if alt_match:
-            alt_value = self._sanitize_alt_attribute(alt_match.group(1).strip())
-            attributes["alt"] = alt_value
-            marker_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
+        # alt 属性を抽出（画像用、プリコンパイルパターン使用）- alt属性は削除されました（Phase 1）
+        # alt_match = self._ALT_ATTRIBUTE_PATTERN.search(marker_content)
+        # if alt_match:
+        #     alt_value = self._sanitize_alt_attribute(alt_match.group(1).strip())
+        #     attributes["alt"] = alt_value
+        #     marker_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
 
         # キーワードを + または ＋ で分割（プリコンパイルパターン使用）
         if "+" in marker_content or "＋" in marker_content:
@@ -381,21 +394,21 @@ class MarkerParser:
             return color, cleaned_content
         return None, marker_content
 
-    def extract_alt_attribute(self, marker_content: str) -> tuple[str | None, str]:
-        """マーカーコンテンツからalt属性を抽出
-
-        Args:
-            marker_content: マーカーコンテンツ
-
-        Returns:
-            tuple: (alt値, alt属性を除去したコンテンツ)
-        """
-        alt_match = re.search(r"alt=([^;]+)", marker_content)
-        if alt_match:
-            alt = alt_match.group(1).strip()
-            cleaned_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
-            return alt, cleaned_content
-        return None, marker_content
+    # def extract_alt_attribute(self, marker_content: str) -> tuple[str | None, str]:
+    #     """マーカーコンテンツからalt属性を抽出 - alt属性は削除されました（Phase 1）
+    #
+    #     Args:
+    #         marker_content: マーカーコンテンツ
+    #
+    #     Returns:
+    #         tuple: (alt値, alt属性を除去したコンテンツ)
+    #     """
+    #     alt_match = re.search(r"alt=([^;]+)", marker_content)
+    #     if alt_match:
+    #         alt = alt_match.group(1).strip()
+    #         cleaned_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
+    #         return alt, cleaned_content
+    #     return None, marker_content
 
     def split_compound_keywords(self, keyword_content: str) -> list[str]:
         """複合キーワードを分割
@@ -459,7 +472,8 @@ class MarkerParser:
                 [],
                 {},
                 [
-                    f"無効なマーカー文字: {start_marker}{keyword_part}{end_marker}。正しい形式: # キーワード # または ＃キーワード＃"
+                    f"無効なマーカー文字: {start_marker}{keyword_part}{end_marker}。"
+                    "正しい形式: # キーワード # または ＃キーワード＃"
                 ],
             )
 
@@ -541,10 +555,12 @@ class MarkerParser:
         """
         line = line.strip()
         # インライン形式 #キーワード# または ブロック形式 #キーワード を検出
-        inline_pattern = r'[#＃][^#＃]+[#＃]'
-        block_pattern = r'^[#＃][^#＃]+$'
-        
-        return bool(re.search(inline_pattern, line)) or bool(re.match(block_pattern, line))
+        inline_pattern = r"[#＃][^#＃]+[#＃]"
+        block_pattern = r"^[#＃][^#＃]+$"
+
+        return bool(re.search(inline_pattern, line)) or bool(
+            re.match(block_pattern, line)
+        )
 
     def is_block_end_marker(self, line: str) -> bool:
         """
@@ -616,34 +632,34 @@ class MarkerParser:
 
         return sanitized
 
-    def _sanitize_alt_attribute(self, alt_value: str) -> str:
-        """
-        alt属性値をサニタイゼーション
-
-        Args:
-            alt_value: 生のalt値
-
-        Returns:
-            str: サニタイゼーション済みのalt値
-        """
-        # 基本的なサニタイゼーション
-        sanitized = alt_value.strip()
-
-        # HTMLエンティティエスケープ
-        sanitized = sanitized.replace("&", "&amp;")
-        sanitized = sanitized.replace("<", "&lt;")
-        sanitized = sanitized.replace(">", "&gt;")
-        sanitized = sanitized.replace('"', "&quot;")
-        sanitized = sanitized.replace("'", "&#x27;")
-
-        # 改行文字を削除
-        sanitized = sanitized.replace("\n", " ").replace("\r", " ")
-
-        # 連続スペースを単一スペースに
-        sanitized = re.sub(r"\s+", " ", sanitized)
-
-        # 長さ制限（最大100文字）
-        if len(sanitized) > 100:
-            sanitized = sanitized[:97] + "..."
-
-        return sanitized
+    # def _sanitize_alt_attribute(self, alt_value: str) -> str:
+    #     """
+    #     alt属性値をサニタイゼーション - alt属性は削除されました（Phase 1）
+    #
+    #     Args:
+    #         alt_value: 生のalt値
+    #
+    #     Returns:
+    #         str: サニタイゼーション済みのalt値
+    #     """
+    #     # 基本的なサニタイゼーション
+    #     sanitized = alt_value.strip()
+    #
+    #     # HTMLエンティティエスケープ
+    #     sanitized = sanitized.replace("&", "&amp;")
+    #     sanitized = sanitized.replace("<", "&lt;")
+    #     sanitized = sanitized.replace(">", "&gt;")
+    #     sanitized = sanitized.replace('"', "&quot;")
+    #     sanitized = sanitized.replace("'", "&#x27;")
+    #
+    #     # 改行文字を削除
+    #     sanitized = sanitized.replace("\n", " ").replace("\r", " ")
+    #
+    #     # 連続スペースを単一スペースに
+    #     sanitized = re.sub(r"\s+", " ", sanitized)
+    #
+    #     # 長さ制限（最大100文字）
+    #     if len(sanitized) > 100:
+    #         sanitized = sanitized[:97] + "..."
+    #
+    #     return sanitized

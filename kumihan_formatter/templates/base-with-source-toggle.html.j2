@@ -455,8 +455,8 @@
             
             let text = sourceContent.textContent;
             
-            // ブロックマーカーのハイライト
-            text = text.replace(/^;;;(.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">;;;$1</span>');
+            // ブロックマーカーのハイライト（新記法対応）
+            text = text.replace(/^#(.*)#$/gm, '<span style="color: #005cc5; font-weight: bold;">#$1#</span>');
             
             // リスト項目のハイライト  
             text = text.replace(/^- (.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">-</span> $1');

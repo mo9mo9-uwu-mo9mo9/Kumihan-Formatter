@@ -31,7 +31,7 @@ class SyntaxValidatorUtils:
                 ErrorTypes.UNKNOWN_KEYWORD,
             ]:
                 # Extract invalid content from context
-                invalid_content = error.context.replace(";;;", "").strip()
+                invalid_content = error.context.strip()
                 friendly_error = ErrorCatalog.create_syntax_error(
                     line_num=error.line_number,
                     invalid_content=invalid_content,
@@ -112,23 +112,23 @@ class SyntaxValidatorUtils:
     @staticmethod
     def preprocess_text(text: str) -> str:
         """テキストの前処理（テスト互換性のため）
-        
+
         Args:
             text: 前処理対象のテキスト
-            
+
         Returns:
             str: 前処理済みのテキスト
         """
         if not text:
             return ""
-            
+
         # 改行コードの統一
-        processed = text.replace('\r\n', '\n').replace('\r', '\n')
-        
+        processed = text.replace("\r\n", "\n").replace("\r", "\n")
+
         # 末尾の空白行を除去
         processed = processed.rstrip()
-        
+
         # 全角スペースを半角スペースに置換（部分的）
-        processed = processed.replace('\u3000', ' ')
-        
+        processed = processed.replace("\u3000", " ")
+
         return processed

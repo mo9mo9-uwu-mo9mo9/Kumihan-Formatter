@@ -141,10 +141,10 @@ class KeywordDefinitions:
 
     def normalize_keyword(self, keyword: str) -> str:
         """キーワード名を正規化（テスト互換性のため）
-        
+
         Args:
             keyword: 正規化するキーワード
-            
+
         Returns:
             str: 正規化されたキーワード
         """

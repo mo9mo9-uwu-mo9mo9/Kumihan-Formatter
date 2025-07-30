@@ -35,11 +35,11 @@ def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
         attributes["color"] = color_match.group(1)
         keyword_part = re.sub(r"\s+color=[#\w]+", "", keyword_part)
 
-    # alt属性の検出と分離（画像用）
-    alt_match = re.search(r"\s+alt=([^;]+)", keyword_part)
-    if alt_match:
-        attributes["alt"] = alt_match.group(1).strip()
-        keyword_part = re.sub(r"\s+alt=[^;]+", "", keyword_part)
+    # alt属性の検出と分離（画像用）- alt属性は削除されました（Phase 1）
+    # alt_match = re.search(r"\s+alt=([^;]+)", keyword_part)
+    # if alt_match:
+    #     attributes["alt"] = alt_match.group(1).strip()
+    #     keyword_part = re.sub(r"\s+alt=[^;]+", "", keyword_part)
 
     # キーワードの分割（+または＋で区切る）
     if "+" in keyword_part or "＋" in keyword_part:

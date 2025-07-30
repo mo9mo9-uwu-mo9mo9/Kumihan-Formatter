@@ -3,7 +3,7 @@
 キーワードとブロック構文の検証機能
 """
 
-import re
+# re module removed in Phase 1
 from typing import Any
 
 from .syntax_errors import ErrorSeverity, ErrorTypes
@@ -72,21 +72,7 @@ class KeywordBlockValidator:
                     "色は #RRGGBB 形式で指定してください（例: #ff0000）",
                 )
 
-        # Check for alt attribute
-        elif SyntaxRules.has_alt_attribute(keyword):
-            base_keyword = SyntaxRules.extract_base_keyword(keyword)
-
-            if not SyntaxRules.supports_alt(base_keyword):
-                SyntaxValidatorUtils.add_error(
-                    errors,
-                    line_num,
-                    1,
-                    ErrorSeverity.ERROR,
-                    ErrorTypes.INVALID_ALT_USAGE,
-                    f"'{base_keyword}' キーワードはalt属性をサポートしていません",
-                    context,
-                    f"alt属性は {', '.join(SyntaxRules.ALT_KEYWORDS)} でのみ使用可能です",
-                )
+        # alt属性は削除されました（Phase 1）
 
         else:
             # Check base keyword validity
@@ -144,56 +130,13 @@ class KeywordBlockValidator:
         existing_keywords: list[str],
     ) -> None:
         """Check for invalid multi-line syntax patterns"""
-        keywords = SyntaxRules.parse_keywords(stripped[3:])
-
-        if keywords:
-            # This is a multi-line syntax error
-            combined_keywords = existing_keywords + keywords
-            suggestion = f";;;{'+'.join(combined_keywords)}"
-
-            SyntaxValidatorUtils.add_error(
-                errors,
-                line_num,
-                1,
-                ErrorSeverity.ERROR,
-                ErrorTypes.MULTILINE_SYNTAX,
-                f"複数行記法は無効です。行 {block_start_line} からのブロックを1行にまとめてください",
-                stripped,
-                suggestion,
-            )
+        # ;;;記法は削除されました（Phase 1）
+        # この機能は新記法で置き換えられます
+        pass
 
     @staticmethod
     def validate_line_syntax(errors: list[Any], line_num: int, line: str) -> None:
         """Validate individual line for syntax issues"""
-        # Check for invalid ;;; usage (but allow list item syntax: - ;;;keyword;;; text)
-        if ";;;" in line and not line.strip().startswith(";;;"):
-            # Check if it's a valid list item syntax
-            stripped = line.strip()
-            is_list_item = (
-                stripped.startswith("- ;;;") and stripped.count(";;;") >= 2
-            ) or (re.match(r"^\d+\.\s+;;;", stripped) and stripped.count(";;;") >= 2)
-            if not is_list_item:
-                SyntaxValidatorUtils.add_error(
-                    errors,
-                    line_num,
-                    line.find(";;;") + 1,
-                    ErrorSeverity.WARNING,
-                    ErrorTypes.INLINE_MARKER,
-                    ";;; は行頭でのみ有効です（リスト内記法以外）",
-                    line,
-                    ";;; は行の先頭に配置するか、リスト内記法 '- ;;;キーワード;;; テキスト' を使用してください",
-                )
-
-        # Check for empty block markers with spaces
-        stripped = line.strip()
-        if re.match(r"^;;;[\s]+$", stripped):
-            SyntaxValidatorUtils.add_error(
-                errors,
-                line_num,
-                1,
-                ErrorSeverity.ERROR,
-                ErrorTypes.INVALID_BLOCK_MARKER,
-                "空白文字が含まれた無効なブロックマーカーです",
-                line,
-                "単純に ;;; のみ記述してください",
-            )
+        # ;;;記法は削除されました（Phase 1）
+        # この機能は新記法で置き換えられます
+        pass

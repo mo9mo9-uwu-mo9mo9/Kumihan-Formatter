@@ -21,7 +21,7 @@ class ParsingCoordinator:
         >>> result = coordinator.parse_document(content)
         >>> result["parser_type"]  # "markdown"
         >>>
-        >>> block_content = [";;;重要;;;", "重要な内容", ";;;"]
+        >>> block_content = ["#重要#", "重要な内容", "##"]
         >>> result = coordinator.parse_document(block_content)
         >>> result["parser_type"]  # "block"
     """
@@ -126,14 +126,10 @@ class ParsingCoordinator:
             parser_scores: 更新対象のパーサースコア辞書
         """
         # ブロック記法の検出
-        if line_content.startswith(";;;") and line_content.endswith(";;;"):
-            parser_scores["block"] += 3
-        elif ";;;" in line_content:
-            parser_scores["block"] += 2
+        # ;;;記法は削除されました（Phase 1）
 
         # キーワード記法の検出
-        if ";;;" in line_content:
-            parser_scores["keyword"] += 2
+        # ;;;記法は削除されました（Phase 1）
 
         # リスト記法の検出
         if line_content.startswith(("- ", "* ", "+ ")) or line_content.startswith(

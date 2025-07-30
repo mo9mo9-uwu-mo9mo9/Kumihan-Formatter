@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .block_parser import BlockParser
 
-from ..ast_nodes import Node, NodeBuilder, error_node, paragraph
+from ..ast_nodes import Node, NodeBuilder, paragraph
 
 
 class SpecialBlockParser:
@@ -19,28 +19,17 @@ class SpecialBlockParser:
         self.block_parser = block_parser
 
     def parse_code_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
-        """Parse a code block"""
-        # Find closing marker
-        end_index = None
-        for i in range(start_index + 1, len(lines)):
-            if lines[i].strip() == ";;;":
-                end_index = i
-                break
+        """Parse a code block
 
-        if end_index is None:
-            return (
-                error_node("コードブロックの閉じマーカーが見つかりません"),
-                start_index + 1,
-            )
+        ;;;記法は削除されました（Phase 1）
+        この機能は新記法で置き換えられます
+        """
+        from kumihan_formatter.core.ast_nodes.node_factory import error_node
 
-        # Extract code content
-        code_lines = lines[start_index + 1 : end_index]
-        code_content = "\n".join(code_lines)
-
-        # Create code block node
-        builder = NodeBuilder("pre").content(code_content)
-
-        return builder.build(), end_index + 1
+        return (
+            error_node(";;;記法は削除されました（Phase 1）"),
+            start_index + 1,
+        )
 
     def parse_details_block(self, summary_text: str, content: str) -> Node:
         """Parse a details/summary block"""
@@ -54,38 +43,17 @@ class SpecialBlockParser:
         return builder.build()
 
     def parse_table_block(self, lines: list[str], start_index: int) -> tuple[Node, int]:
-        """Parse a table block"""
-        # Find closing marker
-        end_index = None
-        for i in range(start_index + 1, len(lines)):
-            if lines[i].strip() == ";;;":
-                end_index = i
-                break
+        """Parse a table block
 
-        if end_index is None:
-            return (
-                error_node("テーブルブロックの閉じマーカーが見つかりません"),
-                start_index + 1,
-            )
+        ;;;記法は削除されました（Phase 1）
+        この機能は新記法で置き換えられます
+        """
+        from kumihan_formatter.core.ast_nodes.node_factory import error_node
 
-        # Extract table content
-        table_lines = lines[start_index + 1 : end_index]
-
-        if not table_lines:
-            return (
-                error_node("テーブルに内容がありません"),
-                end_index + 1,
-            )
-
-        # Parse table structure
-        try:
-            table_node = self._parse_table_content(table_lines)
-            return table_node, end_index + 1
-        except Exception as e:
-            return (
-                error_node(f"テーブル解析エラー: {str(e)}"),
-                end_index + 1,
-            )
+        return (
+            error_node(";;;記法は削除されました（Phase 1）"),
+            start_index + 1,
+        )
 
     def _parse_table_content(self, lines: list[str]) -> Node:
         """Parse table content into table structure"""
