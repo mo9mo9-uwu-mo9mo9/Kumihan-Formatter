@@ -7,8 +7,8 @@ and complex nesting logic.
 from html import escape
 from typing import Any
 
-from .html_utils import process_text_content, sort_keywords_by_nesting_order
 from ..keyword_parsing.definitions import KeywordDefinitions
+from .html_utils import process_text_content, sort_keywords_by_nesting_order
 
 
 class CompoundElementRenderer:

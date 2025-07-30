@@ -10,7 +10,13 @@ from typing import List
 
 class HTMLFormatter:
     """
-    HTML整形・フォーマット（Pretty-print、バリデーション）
+    HTML整形・フォーマット（Pretty-print、バリデーション、セマンティック改善）
+
+    Phase 4対応:
+    - セマンティックHTML生成の改善
+    - アクセシビリティ対応
+    - CSSクラス名統一化
+    - カラー属性処理
 
     設計ドキュメント:
     - 仕様: /SPEC.md#出力形式オプション
@@ -27,16 +33,26 @@ class HTMLFormatter:
     - タグの改行・圧縮制御
     - 空白文字の正規化
     - HTML妥当性チェック
+    - セマンティックHTML生成
+    - アクセシビリティ属性管理
     """
 
-    def __init__(self, indent_size: int = 2):
+    def __init__(self, indent_size: int = 2, semantic_mode: bool = True):
         """
         Initialize HTML formatter
 
         Args:
             indent_size: Number of spaces per indentation level
+            semantic_mode: Enable semantic HTML generation
         """
         self.indent_size = indent_size
+        self.semantic_mode = semantic_mode
+
+        # CSS class naming conventions (Issue #665 Phase 4)
+        self.css_class_prefix = "kumihan"
+
+        # Color processing support
+        self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "hsla", "named"]
 
     def format_html(self, html: str, preserve_inline: bool = True) -> str:
         """
@@ -157,6 +173,218 @@ class HTMLFormatter:
         text = re.sub(r"\s+", " ", text)
 
         return text.strip()
+
+    def generate_css_class(self, element_type: str, modifier: str = "") -> str:
+        """
+        Generate standardized CSS class name (Issue #665 Phase 4)
+
+        Args:
+            element_type: Type of element (e.g., 'heading', 'emphasis')
+            modifier: Optional modifier (e.g., 'level-1', 'highlight')
+
+        Returns:
+            str: Standardized CSS class name
+        """
+        base_class = f"{self.css_class_prefix}-{element_type}"
+        if modifier:
+            return f"{base_class}--{modifier}"
+        return base_class
+
+    def add_accessibility_attributes(
+        self, tag: str, attributes: dict, content: str = ""
+    ) -> dict:
+        """
+        Add accessibility attributes to HTML elements (Issue #665 Phase 4)
+
+        Args:
+            tag: HTML tag name
+            attributes: Existing attributes dictionary
+            content: Element content for generating alt text
+
+        Returns:
+            dict: Updated attributes with accessibility enhancements
+        """
+        updated_attributes = attributes.copy()
+
+        # Add ARIA attributes based on element type
+        if tag == "img" and "alt" not in updated_attributes:
+            # Generate alt text from content or filename
+            if content:
+                updated_attributes["alt"] = self._generate_alt_text(content)
+            else:
+                updated_attributes["alt"] = ""
+
+        elif tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+            # Add heading role for screen readers
+            if "role" not in updated_attributes:
+                updated_attributes["role"] = "heading"
+
+        elif tag == "details":
+            # Add expandable region role
+            if "role" not in updated_attributes:
+                updated_attributes["role"] = "region"
+
+        elif tag == "code":
+            # Add code role
+            if "role" not in updated_attributes:
+                updated_attributes["role"] = "code"
+
+        return updated_attributes
+
+    def process_color_attribute(self, color: str) -> str:
+        """
+        Process and validate color attribute values (Issue #665 Phase 4)
+
+        Args:
+            color: Color value in various formats
+
+        Returns:
+            str: Processed and validated color value
+        """
+        if not color:
+            return ""
+
+        color = color.strip()
+
+        # Hex color validation and normalization
+        if color.startswith("#"):
+            return self._process_hex_color(color)
+
+        # RGB/RGBA validation
+        elif color.startswith(("rgb(", "rgba(")):
+            return self._process_rgb_color(color)
+
+        # HSL/HSLA validation
+        elif color.startswith(("hsl(", "hsla(")):
+            return self._process_hsl_color(color)
+
+        # Named colors
+        elif self._is_named_color(color):
+            return color.lower()
+
+        # Invalid color - return empty string
+        return ""
+
+    def _generate_alt_text(self, content: str) -> str:
+        """Generate meaningful alt text from content"""
+        if not content:
+            return ""
+
+        # If it's a filename, extract meaningful part
+        if "." in content:
+            base_name = content.split(".")[0]
+            # Replace underscores and hyphens with spaces
+            return base_name.replace("_", " ").replace("-", " ").strip()
+
+        return content[:100]  # Limit alt text length
+
+    def _process_hex_color(self, color: str) -> str:
+        """Process hex color format"""
+        # Remove # and validate
+        hex_part = color[1:]
+
+        # Validate hex format (3 or 6 characters)
+        if len(hex_part) == 3:
+            # Expand short hex (e.g., #abc to #aabbcc)
+            return f"#{hex_part[0] * 2}{hex_part[1] * 2}{hex_part[2] * 2}"
+        elif len(hex_part) == 6:
+            # Validate all characters are hex
+            try:
+                int(hex_part, 16)
+                return color.lower()
+            except ValueError:
+                return ""
+
+        return ""
+
+    def _process_rgb_color(self, color: str) -> str:
+        """Process RGB/RGBA color format"""
+        import re
+
+        # Extract numbers from rgb() or rgba()
+        if color.startswith("rgb("):
+            pattern = r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)"
+            match = re.match(pattern, color)
+            if match:
+                r, g, b = map(int, match.groups())
+                if all(0 <= val <= 255 for val in [r, g, b]):
+                    return f"rgb({r}, {g}, {b})"
+
+        elif color.startswith("rgba("):
+            pattern = r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)"
+            match = re.match(pattern, color)
+            if match:
+                r, g, b, a = match.groups()
+                r, g, b = map(int, [r, g, b])
+                a = float(a)
+                if all(0 <= val <= 255 for val in [r, g, b]) and 0 <= a <= 1:
+                    return f"rgba({r}, {g}, {b}, {a})"
+
+        return ""
+
+    def _process_hsl_color(self, color: str) -> str:
+        """Process HSL/HSLA color format"""
+        import re
+
+        if color.startswith("hsl("):
+            pattern = r"hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)"
+            match = re.match(pattern, color)
+            if match:
+                h, s, light = map(int, match.groups())
+                if 0 <= h <= 360 and 0 <= s <= 100 and 0 <= light <= 100:
+                    return f"hsl({h}, {s}%, {light}%)"
+
+        elif color.startswith("hsla("):
+            pattern = r"hsla\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*,\s*([\d.]+)\s*\)"
+            match = re.match(pattern, color)
+            if match:
+                h, s, light, a = match.groups()
+                h, s, light = map(int, [h, s, light])
+                a = float(a)
+                if (
+                    0 <= h <= 360
+                    and 0 <= s <= 100
+                    and 0 <= light <= 100
+                    and 0 <= a <= 1
+                ):
+                    return f"hsla({h}, {s}%, {light}%, {a})"
+
+        return ""
+
+    def _is_named_color(self, color: str) -> bool:
+        """Check if color is a valid named color"""
+        named_colors = {
+            "black",
+            "white",
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "cyan",
+            "magenta",
+            "gray",
+            "grey",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
+            "navy",
+            "teal",
+            "lime",
+            "olive",
+            "maroon",
+            "aqua",
+            "fuchsia",
+            "silver",
+            "darkred",
+            "darkgreen",
+            "darkblue",
+            "lightred",
+            "lightgreen",
+            "lightblue",
+            "transparent",
+        }
+        return color.lower() in named_colors
 
     def _tokenize_html(self, html: str) -> list[str]:
         """

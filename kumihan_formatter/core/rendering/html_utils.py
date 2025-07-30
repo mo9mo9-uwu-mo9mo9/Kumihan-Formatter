@@ -15,7 +15,12 @@ from .html_content_processor import (
     process_collapsible_content,
     process_text_content,
 )
-from .html_escaping import contains_html_tags, escape_html, render_attributes
+from .html_escaping import (
+    contains_html_tags,
+    escape_html,
+    render_attributes,
+    render_attributes_with_enhancements,
+)
 from .html_tag_utils import (
     create_self_closing_tag,
     create_simple_tag,
@@ -41,6 +46,7 @@ __all__ = [
     # HTML エスケープ関連
     "escape_html",
     "render_attributes",
+    "render_attributes_with_enhancements",  # Phase 4 追加
     "contains_html_tags",
     # コンテンツ処理関連
     "process_text_content",
