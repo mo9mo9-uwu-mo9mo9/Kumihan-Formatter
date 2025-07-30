@@ -40,6 +40,24 @@ KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
 make lint           # コード品質チェック
 ```
 
+### 🌟 開発参加者向け重要事項
+
+**ブランチ命名規則**（厳格適用）:
+```bash
+# ✅ 正しいブランチ名
+feat/issue-123-add-user-authentication
+fix/issue-456-fix-parsing-error
+docs/issue-789-update-readme
+
+# ❌ 禁止（システム的に拒否される）
+feat/issue-123-ユーザー認証追加  # 日本語禁止
+feature-branch                    # Issue番号なし
+```
+
+**システム的制約**:
+- 日本語ブランチ名は **Git hooks・GitHub Actions で自動検出・拒否**
+- 詳細は [CLAUDE.md](./CLAUDE.md) を参照
+
 ## 💡 基本的な記法
 
 ```
