@@ -5,19 +5,26 @@ import re
 
 def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
     """
-    マーカー行からキーワードと属性を抽出する共通関数
+    マーカー行からキーワードと属性を抽出する共通関数（新記法対応）
 
     Args:
-        marker_line: ;;;で囲まれたマーカー行（例: ";;;見出し1+太字 color=#ff0000;;;"）
+        marker_line: #で囲まれたマーカー行（例: "# 見出し1+太字 color=#ff0000 #"）
 
     Returns:
         tuple: (キーワードリスト, 属性辞書)
     """
-    # ;;;を除去してキーワード部分を取得
-    if marker_line.startswith(";;;") and marker_line.endswith(";;;"):
-        keyword_part = marker_line[3:-3].strip()
+    # # または ＃を除去してキーワード部分を取得
+    keyword_part = marker_line.strip()
+
+    # 新記法パターンマッチング
+    pattern = r"^[#＃]\s*(.+?)\s*[#＃]"
+    match = re.match(pattern, keyword_part)
+
+    if match:
+        keyword_part = match.group(1).strip()
     else:
-        keyword_part = marker_line.strip()
+        # パターンに一致しない場合はそのまま処理
+        keyword_part = keyword_part.strip()
 
     # 属性の抽出（例: color=#ff0000）
     attributes = {}

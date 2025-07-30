@@ -1,12 +1,14 @@
 """Block parsing utilities for Kumihan-Formatter
 
 This module handles the parsing of basic block-level elements.
+新記法 #キーワード# 対応 - Issue #665
 """
 
 import re
+from typing import Any
 
 from ..ast_nodes import Node, error_node, paragraph, toc_marker
-from ..keyword_parser import KeywordParser, MarkerValidator
+from ..keyword_parser import KeywordParser
 from ..utilities.logger import get_logger
 
 
@@ -16,95 +18,114 @@ class BlockParser:
     def __init__(self, keyword_parser: KeywordParser):
         self.logger = get_logger(__name__)
         self.keyword_parser = keyword_parser
-        self.marker_validator = MarkerValidator()
         self.heading_counter = 0
         self.logger.debug("BlockParser initialized")
 
-    def parse_block_marker(
+    def parse_new_format_marker(
         self, lines: list[str], start_index: int
     ) -> tuple[Node | None, int]:
         """
-        Parse a block marker starting from the given index
+        新記法 # キーワード # 形式のマーカーを解析
 
         Args:
             lines: All lines in the document
-            start_index: Index of the opening marker
+            start_index: Index of the marker line
 
         Returns:
             tuple: (parsed_node, next_index)
         """
-        self.logger.debug(f"Parsing block marker at line {start_index + 1}")
+        self.logger.debug(f"Parsing new format marker at line {start_index + 1}")
         if start_index >= len(lines):
             return None, start_index
 
         opening_line = lines[start_index].strip()
         self.logger.debug(f"Opening line: {opening_line}")
 
-        # Validate opening marker
-        is_valid, errors = self.marker_validator.validate_marker_line(opening_line)
-        if not is_valid:
-            self.logger.warning(f"Invalid marker at line {start_index + 1}: {errors}")
-            return error_node("; ".join(errors), start_index + 1), start_index + 1
+        # 新記法のマーカーパース
+        parse_result = self.keyword_parser.marker_parser.parse_new_marker_format(
+            opening_line
+        )
+        if parse_result is None:
+            return None, start_index
 
-        # Extract marker content
-        marker_content = opening_line[3:].strip()
-        self.logger.debug(f"Marker content: '{marker_content}'")
+        keywords, attributes, parse_errors = parse_result
 
-        # Handle special markers
-        if marker_content == "目次":
-            self.logger.info("Found TOC marker")
-            return toc_marker(), start_index + 1
+        if parse_errors:
+            self.logger.error(f"Parse errors in new format keywords: {parse_errors}")
+            return error_node("; ".join(parse_errors), start_index + 1), start_index + 1
 
-        # Handle image markers - delegate to image parser
-        if (
-            marker_content.startswith("画像")
-            or ";;;画像" in opening_line
-            or self._is_simple_image_marker(opening_line)
-        ):
-            self.logger.info(f"Found image marker at line {start_index + 1}")
-            # Import here to avoid circular imports
-            from .image_block_parser import ImageBlockParser
+        # インライン内容を抽出
+        inline_content = self.keyword_parser.marker_parser.extract_inline_content(
+            opening_line
+        )
 
-            image_parser = ImageBlockParser(self)
-            return image_parser.parse_image_block(lines, start_index)
-
-        # Find closing marker
-        (
-            is_valid,
-            end_index,
-            validation_errors,
-        ) = self.marker_validator.validate_block_structure(lines, start_index)
-
-        if not is_valid or end_index is None:
-            self.logger.error(
-                f"Invalid block structure at line {start_index + 1}: "
-                f"{validation_errors}"
+        if inline_content:
+            # インライン記法: # キーワード # 内容
+            self.logger.debug(f"Processing inline content: {inline_content}")
+            if len(keywords) == 1:
+                node = self.keyword_parser.create_single_block(
+                    keywords[0], inline_content, attributes
+                )
+            else:
+                node = self.keyword_parser.create_compound_block(
+                    keywords, inline_content, attributes
+                )
+            return node, start_index + 1
+        else:
+            # ブロック記法: # キーワード # \n 内容 \n ##
+            return self._parse_new_format_block(
+                lines, start_index, keywords, attributes
             )
+
+    def _parse_new_format_block(
+        self,
+        lines: list[str],
+        start_index: int,
+        keywords: list[str],
+        attributes: dict[str, Any],
+    ) -> tuple[Node | None, int]:
+        """
+        新記法のブロック形式を解析
+
+        Args:
+            lines: All lines in the document
+            start_index: Index of the opening marker
+            keywords: Parsed keywords
+            attributes: Parsed attributes
+
+        Returns:
+            tuple: (parsed_node, next_index)
+        """
+        self.logger.debug(f"Parsing new format block at line {start_index + 1}")
+
+        # ブロック終了マーカーを探す
+        end_index = None
+        for i in range(start_index + 1, len(lines)):
+            line = lines[i].strip()
+            if self.keyword_parser.marker_parser.is_block_end_marker(line):
+                end_index = i
+                break
+
+        if end_index is None:
+            self.logger.error(f"Block end marker not found for line {start_index + 1}")
             return (
-                error_node("; ".join(validation_errors), start_index + 1),
+                error_node(
+                    "ブロックの終了マーカー ## が見つかりません", start_index + 1
+                ),
                 start_index + 1,
             )
 
-        # Extract content between markers
+        # コンテンツを抽出
         content_lines = lines[start_index + 1 : end_index]
         content = "\n".join(content_lines).strip()
         self.logger.debug(f"Block content: {len(content)} characters")
 
-        # Handle empty marker (;;; with no keywords)
-        if not marker_content:
-            self.logger.debug("Empty marker, creating paragraph")
-            return paragraph(content), end_index + 1
+        # 特殊キーワードの処理
+        if "目次" in keywords:
+            self.logger.info("Found TOC marker in new format")
+            return toc_marker(), end_index + 1
 
-        # Parse keywords and attributes
-        keywords, attributes, parse_errors = self.keyword_parser.parse_marker_keywords(
-            marker_content
-        )
-
-        if parse_errors:
-            self.logger.error(f"Parse errors in keywords: {parse_errors}")
-            return error_node("; ".join(parse_errors), start_index + 1), end_index + 1
-
-        # Create block node
+        # ブロックノードを作成
         if len(keywords) == 1:
             self.logger.debug(f"Creating single block with keyword: {keywords[0]}")
             node = self.keyword_parser.create_single_block(
@@ -116,37 +137,59 @@ class BlockParser:
                 keywords, content, attributes
             )
 
-        # Add heading ID if this is a heading
+        # 見出しIDの追加
         if any(keyword.startswith("見出し") for keyword in keywords):
             self.heading_counter += 1
             if hasattr(node, "add_attribute"):
                 node.add_attribute("id", f"heading-{self.heading_counter}")
             self.logger.debug(f"Added heading ID: heading-{self.heading_counter}")
 
-        self.logger.debug(f"Block parsed successfully, next index: {end_index + 1}")
+        self.logger.debug(
+            f"New format block parsed successfully, next index: {end_index + 1}"
+        )
         return node, end_index + 1
+
+    def parse_block_marker(
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node | None, int]:
+        """
+        Parse a block marker starting from the given index (new format only)
+
+        Args:
+            lines: All lines in the document
+            start_index: Index of the opening marker
+
+        Returns:
+            tuple: (parsed_node, next_index)
+        """
+        # 新記法専用パーサーに委譲
+        return self.parse_new_format_marker(lines, start_index)
 
     def _is_simple_image_marker(self, line: str) -> bool:
         """
-        Check if a line is a simple image marker (;;;filename.ext;;;)
+        Check if a line is a simple image marker (# 画像 # filename.ext)
         """
         line = line.strip()
-        if not (
-            line.startswith(";;;") and line.endswith(";;;") and line.count(";;;") >= 2
-        ):
+
+        # 新記法での画像マーカーチェック
+        parse_result = self.keyword_parser.marker_parser.parse_new_marker_format(line)
+        if parse_result is None:
             return False
 
-        parts = line.split(";;;")
-        if len(parts) < 3:
+        keywords, _, _ = parse_result
+
+        # 画像キーワードが含まれているかチェック
+        if "画像" not in keywords:
             return False
 
-        filename = parts[1].strip()
-        if not filename:
+        # インライン内容があるかチェック（ファイル名）
+        inline_content = self.keyword_parser.marker_parser.extract_inline_content(line)
+        if not inline_content:
             return False
 
-        # Check for common image extensions
+        # 画像拡張子チェック
         image_extensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"]
-        return any(filename.lower().endswith(ext) for ext in image_extensions)
+        return any(inline_content.lower().endswith(ext) for ext in image_extensions)
 
     def parse_paragraph(
         self, lines: list[str], start_index: int
@@ -177,8 +220,8 @@ class BlockParser:
             if line.startswith("- ") or re.match(r"^\d+\.\s", line):
                 break
 
-            # Stop at block markers
-            if line.startswith(";;;"):
+            # Stop at block markers (new format)
+            if self.is_block_marker_line(line):
                 break
 
             paragraph_lines.append(line)
@@ -196,29 +239,23 @@ class BlockParser:
         return paragraph(content), current_index
 
     def is_block_marker_line(self, line: str) -> bool:
-        """Check if a line is a block marker"""
+        """Check if a line is a block marker (new format only)"""
         line = line.strip()
-        # Must start with ;;; and not have text after a space
-        if not line.startswith(";;;"):
-            return False
-        # Check if it's just ;;; or has content without space after ;;;
-        return line == ";;;" or (len(line) > 3 and line[3] != " ")
+
+        # 新記法チェック: # キーワード # または ##
+        return self.keyword_parser.marker_parser.is_new_marker_format(
+            line
+        ) or self.keyword_parser.marker_parser.is_block_end_marker(line)
 
     def is_opening_marker(self, line: str) -> bool:
-        """Check if a line is an opening block marker"""
+        """Check if a line is an opening block marker (new format only)"""
         line = line.strip()
-        # Opening marker: ;;;keyword but NOT just ;;;
-        # ;;; alone is always a closing marker
-        # Also not ;;;something;;; (single-line markers)
-        return (
-            line.startswith(";;;")
-            and line != ";;;"
-            and not (line.endswith(";;;") and line.count(";;;") > 1)
-        )
+        # 新記法: # キーワード # 形式（インライン・ブロック両対応）
+        return self.keyword_parser.marker_parser.is_new_marker_format(line)
 
     def is_closing_marker(self, line: str) -> bool:
-        """Check if a line is a closing block marker"""
-        return line.strip() == ";;;"
+        """Check if a line is a closing block marker (new format only)"""
+        return self.keyword_parser.marker_parser.is_block_end_marker(line)
 
     def skip_empty_lines(self, lines: list[str], start_index: int) -> int:
         """Skip empty lines and return the next non-empty line index"""
