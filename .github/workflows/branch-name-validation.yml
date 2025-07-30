@@ -25,8 +25,8 @@ jobs:
         echo "🔍 検証対象ブランチ: $BRANCH_NAME"
         
         # 日本語文字（ひらがな、カタカナ、漢字）が含まれているかチェック
-        # Unicodeエスケープをより確実な形式に修正
-        if echo "$BRANCH_NAME" | grep -P '[\x{3040}-\x{309F}\x{30A0}-\x{30FF}\x{4E00}-\x{9FAF}]' > /dev/null; then
+        # 日本語の文字範囲をチェック（UTF-8対応）
+        if echo "$BRANCH_NAME" | grep -E '[あ-んア-ヶ一-龠]' > /dev/null; then
           echo "🚨 エラー: ブランチ名に日本語が含まれています"
           echo "ブランチ名: $BRANCH_NAME"
           echo ""
