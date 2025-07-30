@@ -133,10 +133,9 @@ def register_commands() -> None:
         logger.error(f"Failed to load check-syntax command: {e}")
 
     try:
-        from .commands.sample import create_sample_command, create_test_command
+        from .commands.sample import create_sample_command
 
         cli.add_command(create_sample_command(), name="generate-sample")  # type: ignore
-        cli.add_command(create_test_command(), name="generate-test")
         logger.debug("Sample generation commands registered successfully")
     except ImportError as e:
         import warnings
