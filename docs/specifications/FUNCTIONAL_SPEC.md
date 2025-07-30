@@ -73,14 +73,14 @@ Kumihan-Formatter
 
 **基本記法処理**:
 ```
-入力: ;;;太字;;; 重要な情報
+入力: #太字# 重要な情報
 処理: KeywordParser → ASTNode(type="bold", content="重要な情報")
 出力: <strong>重要な情報</strong>
 ```
 
 **複合記法処理**:
 ```
-入力: ;;;太字+枠線;;; 最重要情報
+入力: #太字+枠線# 最重要情報
 処理: 
   1. KeywordParser → ["太字", "枠線"]
   2. ASTNode(type="compound", keywords=["bold","border"], content="最重要情報")
@@ -89,7 +89,7 @@ Kumihan-Formatter
 
 **属性処理**:
 ```
-入力: ;;;ハイライト color=#ffe6e6;;; 警告
+入力: #ハイライト color=#ffe6e6# 警告
 処理:
   1. AttributeParser → keyword="ハイライト", attributes={"color": "#ffe6e6"}
   2. StyleGenerator → style="background-color: #ffe6e6"
@@ -272,7 +272,7 @@ kumihan convert input.txt --config custom.yaml
 │ 出力先: ./dist/                        │
 │                                         │
 │ ┌─ プレビュー ─────────────────────────┐ │
-│ │ ;;;見出し1;;; 第1章                 │ │
+│ │ #見出し1# 第1章                 │ │
 │ │ 本文の内容がここに表示されます...     │ │
 │ │                                     │ │
 │ └─────────────────────────────────────┘ │
@@ -300,7 +300,7 @@ kumihan convert input.txt --config custom.yaml
 ```bash
 ❌ エラー: 15行目 - セミコロンが不足しています
    問題のある記法: ;;太字;;
-   正しい記法: ;;;太字;;;
+   正しい記法: #太字#
 
 ⚠️  警告: 画像ファイル「map.jpg」が見つかりません
    探索場所: images/map.jpg

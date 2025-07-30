@@ -30,7 +30,7 @@ class ListParserCore:
     責務:
     - "- " および "・" 形式の順序なしリスト解析
     - "1. " 形式の順序付きリスト解析
-    - キーワード付きリスト項目の処理（;;;キーワード;;; 記法）
+    - キーワード付きリスト項目の処理（;;;記法は削除されました）
     """
 
     def __init__(self, keyword_parser: KeywordParser):
@@ -140,59 +140,18 @@ class ListParserCore:
             else:
                 content = line
 
-        # Check for keyword syntax in list item
-        if content.startswith(";;;") and ";;; " in content:
-            return self._parse_keyword_list_item(content), 1
-        else:
-            return list_item(content), 1
+        # ;;;記法は削除されました（Phase 1）
+        # この機能は新記法で置き換えられます
+        return list_item(content), 1
 
     def _parse_keyword_list_item(self, content: str) -> Node:
         """
         Parse a list item with keyword syntax
 
-        Format: ;;;keyword;;; content
-
-        Args:
-            content: The content of the list item
-
-        Returns:
-            Node: List item node with keyword styling applied
+        ;;;記法は削除されました（Phase 1）
+        この機能は新記法で置き換えられます
         """
-        # Extract keyword and content
-        parts = content.split(";;; ", 1)
-        if len(parts) != 2:
-            return list_item(content)  # Fallback to regular item
-
-        keyword_part = parts[0][3:]  # Remove leading ;;;
-        text_content = parts[1]
-
-        # Parse keywords
-        keywords, attributes, errors = self.keyword_parser.parse_marker_keywords(
-            keyword_part
-        )
-
-        if errors or not keywords:
-            # If there are errors, create regular list item with error indication
-            error_content = (
-                f"[ERROR: {'; '.join(errors)}] {text_content}"
-                if errors
-                else text_content
-            )
-            return list_item(error_content)
-
-        # Create styled content
-        if len(keywords) == 1:
-            # Single keyword
-            styled_content = self.keyword_parser.create_single_block(
-                keywords[0], text_content, attributes
-            )
-        else:
-            # Compound keywords
-            styled_content = self.keyword_parser.create_compound_block(
-                keywords, text_content, attributes
-            )
-
-        return list_item(styled_content)
+        return list_item(content)
 
     def is_list_line(self, line: str) -> str:
         """

@@ -7,7 +7,7 @@ including block validation, keyword validation, and line-by-line checking.
 from pathlib import Path
 
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
-from .syntax_rules import SyntaxRules
+# from .syntax_rules import SyntaxRules  # 下部で再定義されているため削除
 
 
 class UserFriendlyError:
@@ -58,19 +58,19 @@ class KumihanSyntaxValidator:
 
     def validate_text(self, text: str) -> list[SyntaxError]:
         """テキスト内容を直接検証（テスト互換性のため）
-        
+
         Args:
             text: 検証対象のテキスト
-            
+
         Returns:
             list[SyntaxError]: 検出されたエラーのリスト
         """
         self.errors.clear()
         self.current_file = "<text>"
-        
+
         lines = text.splitlines()
         self._validate_syntax(lines)
-        
+
         return self.errors
 
     def get_friendly_errors(self) -> list[UserFriendlyError]:
@@ -89,7 +89,7 @@ class KumihanSyntaxValidator:
                 ErrorTypes.UNKNOWN_KEYWORD,
             ]:
                 # Extract invalid content from context
-                invalid_content = error.context.replace(";;;", "").strip()
+                invalid_content = error.context.strip()
                 friendly_error = ErrorCatalog.create_syntax_error(
                     line_num=error.line_number,
                     invalid_content=invalid_content,
@@ -143,15 +143,15 @@ class KumihanSyntaxValidator:
 
     def validate_files(self, file_paths: list[str]) -> list[SyntaxError]:
         """複数ファイルをバッチ検証（テスト互換性のため）
-        
+
         Args:
             file_paths: 検証するファイルパスのリスト
-            
+
         Returns:
             list[SyntaxError]: 全ファイルからの検証エラーリスト
         """
         all_errors = []
-        
+
         for file_path in file_paths:
             try:
                 errors = self.validate_file(file_path)
@@ -159,33 +159,34 @@ class KumihanSyntaxValidator:
             except Exception as e:
                 # ファイル読み取りエラーなどの場合
                 from kumihan_formatter.core.syntax.syntax_errors import SyntaxError
+
                 error = SyntaxError(
                     file=file_path,
                     line=0,
                     column=0,
                     error_type="FileError",
                     message=f"ファイル読み取りエラー: {str(e)}",
-                    severity="error"
+                    severity="error",
                 )
                 all_errors.append(error)
-                
+
         return all_errors
 
     def _validate_syntax(self, lines: list[str]) -> None:
         """Validate syntax for all lines (新記法対応)"""
         import re
-        
-        in_block = False
-        block_start_line = 0
-        block_keywords = []  # type: ignore
+
+        # in_block = False  # 未使用変数
+        # block_start_line = 0  # 未使用変数
+        # block_keywords = []  # 未使用変数
         in_new_block = False
         new_block_start_line = 0
 
         for line_num, line in enumerate(lines, 1):
             stripped = line.strip()
-            
+
             # 新記法のブロック検証
-            if stripped == '#' or stripped == '＃':
+            if stripped == "#" or stripped == "＃":
                 if in_new_block:
                     in_new_block = False
                 else:
@@ -198,7 +199,7 @@ class KumihanSyntaxValidator:
                         "ブロック開始マーカーなしに # が見つかりました",
                         line,
                     )
-            elif re.match(r'^[#＃][^#＃\s]+$', stripped):
+            elif re.match(r"^[#＃][^#＃\s]+$", stripped):
                 # 新記法ブロック開始
                 if in_new_block:
                     # 前のブロックが閉じられていない
@@ -208,74 +209,26 @@ class KumihanSyntaxValidator:
                         ErrorSeverity.ERROR,
                         ErrorTypes.UNCLOSED_BLOCK,
                         "ブロックが # で閉じられていません",
-                        lines[new_block_start_line - 1] if new_block_start_line <= len(lines) else "",
+                        (
+                            lines[new_block_start_line - 1]
+                            if new_block_start_line <= len(lines)
+                            else ""
+                        ),
                     )
                 in_new_block = True
                 new_block_start_line = line_num
-            
+
             # 新記法の個別行検証
             self._validate_new_notation(line_num, line)
 
-            # Check for inline notation first: ;;;keyword content;;; (旧記法、互換性維持)
-            if self._is_inline_notation(stripped):
-                # インライン記法の場合は有効として処理
-                continue
-
-            # Check for block markers (旧記法、互換性維持)
-            if stripped.startswith(";;;"):
-                if stripped == ";;;":
-                    # Standalone ;;; marker
-                    if not in_block:
-                        # Standalone ;;; without being in a block is always an error
-                        self._add_error(
-                            line_num,
-                            1,
-                            ErrorSeverity.ERROR,
-                            ErrorTypes.UNMATCHED_BLOCK_END,
-                            "ブロック開始マーカーなしに ;;; が見つかりました",
-                            line,
-                        )
-                    else:
-                        # End of block
-                        in_block = False
-                        block_keywords.clear()
-                else:
-                    # Block start marker or keyword line
-                    if in_block:
-                        # If we're in an empty block, this is a new block (not multi-line syntax)
-                        if not block_keywords:
-                            # End the empty block and start a new one
-                            in_block = True
-                            block_start_line = line_num
-                            block_keywords = SyntaxRules.parse_keywords(stripped[3:])
-                            self._validate_block_keywords(line_num, stripped)
-                        else:
-                            # Check for multi-line syntax error
-                            self._check_multiline_syntax(
-                                line_num, stripped, block_start_line, block_keywords
-                            )
-                    else:
-                        # Start of new block
-                        in_block = True
-                        block_start_line = line_num
-                        block_keywords = SyntaxRules.parse_keywords(stripped[3:])
-                        self._validate_block_keywords(line_num, stripped)
+            # ;;;記法は削除されました（Phase 1完了）
+            # 新記法のチェックは _validate_new_notation で実行されます
 
             # Check for other syntax issues
             self._validate_line_syntax(line_num, line)
 
-        # Check for unclosed blocks (旧記法)
-        if in_block:
-            self._add_error(
-                block_start_line,
-                1,
-                ErrorSeverity.ERROR,
-                ErrorTypes.UNCLOSED_BLOCK,
-                "ブロックが ;;; で閉じられていません",
-                lines[block_start_line - 1] if block_start_line <= len(lines) else "",
-                "ブロックの最後に ;;; を追加してください",
-            )
-            
+        # ;;;記法のuncloded blockチェックは削除されました（Phase 1完了）
+
         # Check for unclosed blocks (新記法)
         if in_new_block:
             self._add_error(
@@ -284,37 +237,41 @@ class KumihanSyntaxValidator:
                 ErrorSeverity.ERROR,
                 ErrorTypes.UNCLOSED_BLOCK,
                 "ブロックが # で閉じられていません",
-                lines[new_block_start_line - 1] if new_block_start_line <= len(lines) else "",
+                (
+                    lines[new_block_start_line - 1]
+                    if new_block_start_line <= len(lines)
+                    else ""
+                ),
                 "ブロックの最後に # を追加してください",
             )
 
     def _validate_new_notation(self, line_num: int, line: str) -> None:
         """新記法（#記法#）の検証"""
         import re
-        
+
         stripped = line.strip()
-        
+
         # ブロック形式の開始/終了マーカーをスキップ
         # 単独の # はブロック終了マーカー
-        if stripped == '#' or stripped == '＃':
+        if stripped == "#" or stripped == "＃":
             return
-            
+
         # ブロック形式と未完了インライン形式を区別
         # ブロック形式: #キーワード（単語のみ、空白なし）
         # 未完了インライン: #キーワード 内容（空白がある）
-        if re.match(r'^[#＃][^#＃\s]+$', stripped):
+        if re.match(r"^[#＃][^#＃\s]+$", stripped):
             # 空白がない場合はブロック開始マーカーとして有効
             return
-        
+
         # インライン形式の未完了マーカーを検出
         # パターン: 行に # があるが、適切にペアになっていない
-        if '#' in stripped or '＃' in stripped:
+        if "#" in stripped or "＃" in stripped:
             # 完全なインライン形式 #キーワード 内容# があるかチェック
-            has_complete_inline = bool(re.search(r'[#＃][^#＃]+[#＃]', stripped))
-            
+            has_complete_inline = bool(re.search(r"[#＃][^#＃]+[#＃]", stripped))
+
             if not has_complete_inline:
                 # # があるが完全なインライン形式ではない場合はエラー
-                if re.search(r'[#＃][^#＃]+', stripped):
+                if re.search(r"[#＃][^#＃]+", stripped):
                     self._add_error(
                         line_num,
                         1,
@@ -325,19 +282,40 @@ class KumihanSyntaxValidator:
                         "マーカーの最後に # を追加してください",
                     )
 
-    def _validate_block_keywords(self, line_num: int, line: str) -> None:
-        """ブロックキーワードの妥当性をチェック"""
-        # 基本的な妥当性チェック（簡易実装）
-        keywords_part = line[3:].strip()  # ;;; を除いた部分
-        if not keywords_part:
+    def _validate_mixing_rules(self, line_num: int, line: str) -> None:
+        """混在禁止ルールの検証（Phase 1）"""
+        from kumihan_formatter.core.syntax.syntax_rules import SyntaxRules
+
+        # マーカー混在チェック
+        marker_violations = SyntaxRules.check_marker_mixing(line)
+        for violation in marker_violations:
             self._add_error(
                 line_num,
                 1,
-                ErrorSeverity.WARNING,
-                ErrorTypes.INVALID_KEYWORD,
-                "空のキーワードブロックです",
+                ErrorSeverity.ERROR,
+                ErrorTypes.SYNTAX_ERROR,
+                violation,
                 line,
+                "同一テキスト内では半角（#）または全角（＃）のいずれかのマーカーに統一してください",
             )
+
+        # color属性混在チェック
+        color_violations = SyntaxRules.check_color_case_mixing(line)
+        for violation in color_violations:
+            self._add_error(
+                line_num,
+                1,
+                ErrorSeverity.ERROR,
+                ErrorTypes.SYNTAX_ERROR,
+                violation,
+                line,
+                "color属性は大文字・小文字・混在表記のいずれかに統一してください",
+            )
+
+    def _validate_block_keywords(self, line_num: int, line: str) -> None:
+        """ブロックキーワードの妥当性をチェック（;;;記法削除により未使用）"""
+        # ;;;記法は削除されました（Phase 1完了）
+        return
 
     def _check_multiline_syntax(
         self, line_num: int, line: str, block_start_line: int, block_keywords: list[str]
@@ -377,6 +355,9 @@ class KumihanSyntaxValidator:
 
     def _validate_line_syntax(self, line_num: int, line: str) -> None:
         """行単位の構文チェック"""
+        # Phase 1: 混在禁止ルールを追加
+        self._validate_mixing_rules(line_num, line)
+
         # 基本的な構文チェック（簡易実装）
         stripped = line.strip()
 
@@ -394,14 +375,8 @@ class KumihanSyntaxValidator:
 
     def _is_inline_notation(self, line: str) -> bool:
         """インライン記法かどうかを判定
-        
-        Args:
-            line: 判定対象の行
-            
-        Returns:
-            bool: インライン記法の場合True
+
+        ;;;記法は削除されました（Phase 1）
+        この機能は新記法で置き換えられます
         """
-        import re
-        # ;;;キーワード 内容;;; パターンをチェック
-        pattern = r';;;[^;]+;;;'
-        return bool(re.search(pattern, line))
+        return False

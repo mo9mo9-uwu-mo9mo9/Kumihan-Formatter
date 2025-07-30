@@ -3,7 +3,7 @@
 This module handles validation of block structures and syntax.
 """
 
-import re
+# import re  # 未使用import削除（Phase 1）
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -112,65 +112,12 @@ class BlockValidator:
         """Validate content within blocks"""
         issues = []
 
-        # Check for invalid content patterns
-        if ";;;" in content and not self._is_valid_nested_marker(content):
-            issues.append("ブロック内での不正なマーカー使用")
+        # ;;;記法チェックは削除されました（Phase 1完了）
+        # 新記法のチェックが必要な場合はここに追加します
 
         return issues
 
     def _is_valid_nested_marker(self, content: str) -> bool:
-        """Check if nested markers are valid"""
-        if not content:
-            return True  # Empty markers are valid
-
-        # Special markers that are always valid
-        special_markers = {"目次", "画像"}
-        if content in special_markers:
-            return True
-
-        # Check if content contains disallowed nested markers
-        nested_marker_pattern = r";;;.*?;;;"
-        if ";;;" in content:
-            # Look for nested ;;; patterns within the marker content
-            matches = re.findall(nested_marker_pattern, content)
-            if matches:
-                return False  # Nested ;;; markers are not allowed
-
-        # Check for valid keyword patterns
-        # Allow keywords separated by spaces and attributes
-        parts = content.split()
-        if not parts:
-            return True
-
-        # Extract first part as potential keyword
-        first_part = parts[0]
-
-        # Valid keywords from keyword parser
-        valid_keywords = {
-            "太字",
-            "イタリック",
-            "枠線",
-            "ハイライト",
-            "見出し1",
-            "見出し2",
-            "見出し3",
-            "見出し4",
-            "見出し5",
-            "折りたたみ",
-            "ネタバレ",
-            "目次",
-            "画像",
-        }
-
-        # If first part is a valid keyword, consider it valid
-        if first_part in valid_keywords:
-            return True
-
-        # Check for attribute patterns (key=value)
-        if "=" in content:
-            # Allow attribute-only markers for flexibility
-            return True
-
-        # For unknown patterns, be permissive but log warning
-        # This allows for future extension
+        """Check if nested markers are valid（;;;記法削除により未使用）"""
+        # ;;;記法は削除されました（Phase 1完了）
         return True

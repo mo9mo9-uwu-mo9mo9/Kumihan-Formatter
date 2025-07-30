@@ -59,40 +59,8 @@ class SyntaxValidator:
 
     def validate_marker_syntax(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate marker syntax in lines"""
-        issues = []
-
-        for i, line in enumerate(lines):
-            # Check for invalid marker usage
-            if ";;;" in line and not line.strip().startswith(";;;"):
-                issues.append(
-                    ValidationIssue(
-                        level="error",
-                        category="syntax",
-                        message="Marker ;;; must be at the beginning of the line",
-                        line_number=i + 1,
-                        suggestion="Move ;;; to the start of the line",
-                        code="INVALID_MARKER_POSITION",
-                    )
-                )
-
-            # Validate marker syntax
-            if line.strip().startswith(";;;"):
-                is_valid, error_messages = self.marker_validator.validate_marker_line(
-                    line.strip()
-                )
-                if not is_valid:
-                    for error_msg in error_messages:
-                        issues.append(
-                            ValidationIssue(
-                                level="error",
-                                category="syntax",
-                                message=error_msg,
-                                line_number=i + 1,
-                                code="INVALID_MARKER",
-                            )
-                        )
-
-        return issues
+        # ;;;記法は削除されました（Phase 1完了）
+        return []
 
     def validate_list_syntax(self, lines: list[str]) -> list[ValidationIssue]:
         """Validate list syntax in lines"""

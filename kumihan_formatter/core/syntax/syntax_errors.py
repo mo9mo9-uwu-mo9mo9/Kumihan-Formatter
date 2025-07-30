@@ -43,9 +43,10 @@ class ErrorTypes:
     EMPTY_KEYWORD = "empty-keyword"
     INVALID_COLOR_USAGE = "invalid-color-usage"
     INVALID_COLOR_FORMAT = "invalid-color-format"
-    INVALID_ALT_USAGE = "invalid-alt-usage"
+    # INVALID_ALT_USAGE = "invalid-alt-usage"  # alt属性は削除されました（Phase 1）
     DUPLICATE_KEYWORD = "duplicate-keyword"
     MULTIPLE_HEADINGS = "multiple-headings"
     INLINE_MARKER = "inline-marker"
     INVALID_BLOCK_MARKER = "invalid-block-marker"
     INVALID_SYNTAX = "invalid-syntax"
+    SYNTAX_ERROR = "syntax-error"

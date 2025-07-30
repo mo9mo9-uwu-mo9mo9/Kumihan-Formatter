@@ -47,12 +47,8 @@ class ListValidator:
 
                 current_list_type = list_type
 
-                # Validate keyword syntax in list items
-                if list_type == "ul" and ";;;" in line_stripped:
-                    keyword_issues = self._validate_keyword_list_item(
-                        line_stripped, i + 1
-                    )
-                    issues.extend(keyword_issues)
+                # ;;;記法は削除されました（Phase 1）
+                # この機能は新記法で置き換えられます
             else:
                 current_list_type = None
 
@@ -60,38 +56,6 @@ class ListValidator:
 
     def _validate_keyword_list_item(self, line: str, line_number: int) -> List[str]:
         """Validate keyword syntax in a list item"""
-        issues: List[str] = []
-
-        # Extract content after "- " or "・"
-        if line.startswith("- "):
-            content = line[2:]
-        elif line.startswith("・"):
-            content = line[1:]
-        else:
-            return issues
-
-        # Check keyword format
-        if content.startswith(";;;"):
-            if ";;; " not in content:
-                issues.append(f"行 {line_number}: キーワードリスト項目の構文が不正です")
-            else:
-                # Extract and validate keyword
-                parts = content.split(";;; ", 1)
-                if len(parts) == 2:
-                    keyword_part = parts[0][3:]  # Remove ;;;
-                    keywords, _, errors = (
-                        self.list_parser.keyword_parser.parse_marker_keywords(
-                            keyword_part
-                        )
-                    )
-
-                    for error in errors:
-                        issues.append(f"行 {line_number}: {error}")
-
-                    valid_keywords, validation_errors = (
-                        self.list_parser.keyword_parser.validate_keywords(keywords)
-                    )
-                    for error in validation_errors:
-                        issues.append(f"行 {line_number}: {error}")
-
-        return issues
+        # ;;;記法は削除されました（Phase 1）
+        # この機能は新記法で置き換えられます
+        return []
