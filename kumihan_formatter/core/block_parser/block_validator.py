@@ -97,7 +97,7 @@ class BlockValidator:
                     issues.append(f"行 {i + 1}: 対応する開始マーカーのない閉じマーカー")
                 else:
                     # Validate proper closing
-                    opened_block = nesting_stack.pop()
+                    _ = nesting_stack.pop()
                     # Additional validation could be added here for specific block types
 
         # Check for unclosed nested blocks

@@ -11,14 +11,13 @@ Secure Error Handler - Issue #643 Medium Priority Issue対応
 
 import hashlib
 import json
-import logging
 import re
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -314,7 +313,7 @@ class SecureErrorHandler:
     ):
         """エラーの内部ログ出力"""
 
-        log_entry = {
+        _ = {
             "error_code": error_code,
             "trace_id": trace_id,
             "severity": severity.value,

@@ -5,8 +5,8 @@
 
 from pathlib import Path
 
-from .syntax_validator import ErrorCatalog, UserFriendlyError
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
+from .syntax_validator import ErrorCatalog, UserFriendlyError
 
 # typing.Any removed as unused
 
@@ -108,3 +108,27 @@ class SyntaxValidatorUtils:
                 str(file_path),
             )
             return "", errors
+
+    @staticmethod
+    def preprocess_text(text: str) -> str:
+        """テキストの前処理（テスト互換性のため）
+        
+        Args:
+            text: 前処理対象のテキスト
+            
+        Returns:
+            str: 前処理済みのテキスト
+        """
+        if not text:
+            return ""
+            
+        # 改行コードの統一
+        processed = text.replace('\r\n', '\n').replace('\r', '\n')
+        
+        # 末尾の空白行を除去
+        processed = processed.rstrip()
+        
+        # 全角スペースを半角スペースに置換（部分的）
+        processed = processed.replace('\u3000', ' ')
+        
+        return processed

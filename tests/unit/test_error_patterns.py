@@ -29,9 +29,9 @@ class TestSyntaxErrors:
     def test_unclosed_marker_error(self):
         """Test detection of unclosed markers."""
         error_texts = [
-            ";;;太字 未完了のマーカー",
-            ";;;見出し1\n複数行\nでも未完了",
-            ";;;下線 開始だけ",
+            "#太字 未完了のマーカー",
+            "#見出し1\n複数行\nでも未完了",
+            "#下線 開始だけ",
         ]
         
         for text in error_texts:
@@ -46,9 +46,9 @@ class TestSyntaxErrors:
     def test_unopened_marker_error(self):
         """Test detection of unopened closing markers."""
         error_texts = [
-            "未開始のマーカー;;;",
-            "複数行の\n内容で\n未開始;;;",
-            "text 下線 終了だけ;;;",
+            "未開始のマーカー#",
+            "複数行の\n内容で\n未開始#",
+            "text 下線 終了だけ#",
         ]
         
         for text in error_texts:
@@ -60,9 +60,9 @@ class TestSyntaxErrors:
     def test_mismatched_marker_nesting(self):
         """Test detection of improperly nested markers."""
         error_texts = [
-            ";;;太字;;;下線 交差したネスト;;;;;;",
-            ";;;見出し1\n;;;太字 内側\n;;;\n外側続行;;;",
-            ";;;下線;;;太字 重複開始;;;",
+            "#太字#下線 交差したネスト##",
+            "#見出し1\n#太字 内側\n#\n外側続行#",
+            "#下線#太字 重複開始#",
         ]
         
         for text in error_texts:
@@ -74,11 +74,11 @@ class TestSyntaxErrors:
     def test_invalid_marker_syntax(self):
         """Test detection of invalid marker syntax."""
         invalid_syntax = [
-            ";;太字 マーカー不足;;;",  # Missing one semicolon
-            ";;;;太字 マーカー過多;;;",  # Extra semicolon
-            ";;;太字 内容;;",  # Missing one closing semicolon
-            ";;太字 内容;;;;;;",  # Too many closing semicolons
-            ";;;  スペースのみ  ;;;",  # Only whitespace in marker name
+            "#太字 マーカー不足",  # Missing closing marker
+            ";#太字 マーカー過多#",  # Extra semicolon
+            "#太字 内容",  # Missing closing marker
+            "#太字 内容##",  # Too many closing markers
+            "#  スペースのみ  #",  # Only whitespace in marker name
         ]
         
         for text in invalid_syntax:
@@ -89,9 +89,9 @@ class TestSyntaxErrors:
     def test_empty_marker_name(self):
         """Test handling of empty marker names."""
         empty_marker_texts = [
-            ";;; 空のマーカー名;;;",
-            ";;;\n空行のマーカー名\n;;;",
-            ";;;   \n   ;;;",  # Only whitespace
+            "# 空のマーカー名#",
+            "#\n空行のマーカー名\n#",
+            "#   \n   #",  # Only whitespace
         ]
         
         for text in empty_marker_texts:
@@ -102,11 +102,11 @@ class TestSyntaxErrors:
     def test_unknown_keyword_handling(self):
         """Test handling of unknown/undefined keywords."""
         unknown_keywords = [
-            ";;;存在しない装飾 内容;;;",
-            ";;;未定義キーワード テキスト;;;",
-            ";;;typo_keyword 英語キーワード;;;",
-            ";;;123数字 数字開始;;;",
-            ";;;特殊$記号 記号含み;;;",
+            "#存在しない装飾 内容#",
+            "#未定義キーワード テキスト#",
+            "#typo_keyword 英語キーワード#",
+            "#123数字 数字開始#",
+            "#特殊$記号 記号含み#",
         ]
         
         for text in unknown_keywords:
@@ -130,7 +130,7 @@ class TestProcessingErrors:
         """Test handling of extremely long content."""
         # Generate very long content
         long_content = "非常に長い内容です。" * 10000
-        text = f";;;太字 {long_content};;;"
+        text = f"#太字 {long_content}#"
         
         # Should handle without crashing
         try:
@@ -148,7 +148,7 @@ class TestProcessingErrors:
     def test_deeply_nested_structures(self):
         """Test handling of deeply nested structures."""
         # Create deeply nested structure
-        nested_text = ";;;太字\n" * 100 + "中心内容" + "\n;;;" * 100
+        nested_text = "#太字\n" * 100 + "中心内容" + "\n#" * 100
         
         try:
             result = self.parser.parse(nested_text)
@@ -166,11 +166,11 @@ class TestProcessingErrors:
     def test_special_character_handling(self):
         """Test handling of special and Unicode characters."""
         special_chars = [
-            ";;;太字 \\n\\t\\r エスケープ文字;;;",
-            ";;;太字 🚀🎯📝 絵文字;;;",
-            ";;;太字 αβγδε ギリシャ文字;;;",
-            ";;;太字 特殊引用符;;;",
-            ";;;太字 制御文字;;;",
+            "#太字 \\n\\t\\r エスケープ文字#",
+            "#太字 🚀🎯📝 絵文字#",
+            "#太字 αβγδε ギリシャ文字#",
+            "#太字 特殊引用符#",
+            "#太字 制御文字#",
         ]
         
         for text in special_chars:
@@ -189,7 +189,7 @@ class TestProcessingErrors:
     
     def test_encoding_edge_cases(self, temp_dir):
         """Test handling of different encodings."""
-        test_content = ";;;太字 日本語テスト内容;;;"
+        test_content = "#太字 日本語テスト内容#"
         
         # Test different encodings
         encodings = ['utf-8', 'shift_jis', 'euc-jp']
@@ -229,7 +229,7 @@ class TestProcessingErrors:
         """Test handling of permission denied scenarios."""
         # Create a file and remove read permissions
         test_file = temp_dir / "no_permission.txt"
-        test_file.write_text(";;;太字 テスト内容;;;", encoding="utf-8")
+        test_file.write_text("#太字 テスト内容#", encoding="utf-8")
         
         try:
             test_file.chmod(0o000)  # Remove all permissions
@@ -293,10 +293,10 @@ class TestEdgeCaseScenarios:
     def test_marker_at_text_boundaries(self):
         """Test markers at the beginning and end of text."""
         boundary_cases = [
-            ";;;太字 開始マーカー;;;後続テキスト",
-            "前置きテキスト;;;太字 終了マーカー;;;",
-            ";;;太字 全体がマーカー;;;",
-            ";;;太字 開始マーカー;;; 中間 ;;;下線 終了マーカー;;;",
+            "#太字 開始マーカー#後続テキスト",
+            "前置きテキスト#太字 終了マーカー#",
+            "#太字 全体がマーカー#",
+            "#太字 開始マーカー# 中間 #下線 終了マーカー#",
         ]
         
         for text in boundary_cases:
@@ -309,9 +309,9 @@ class TestEdgeCaseScenarios:
     def test_repeated_markers(self):
         """Test repeated identical markers."""
         repeated_patterns = [
-            ";;;太字 最初;;;;;;太字 次;;;;;;太字 最後;;;",
-            ";;;見出し1 A;;; ;;;見出し1 B;;; ;;;見出し1 C;;;",
-            ";;;下線 重複;;;下線 重複;;;下線 重複;;;",
+            "#太字 最初##太字 次##太字 最後#",
+            "#見出し1 A# #見出し1 B# #見出し1 C#",
+            "#下線 重複#下線 重複#下線 重複#",
         ]
         
         for text in repeated_patterns:
@@ -325,19 +325,19 @@ class TestEdgeCaseScenarios:
         """Test mixed content with various elements."""
         mixed_content = """通常のテキスト
 
-;;;見出し1
+#見出し1
 セクション1のタイトル
-;;;
+##
 
 段落テキストがあります。
 
-;;;太字 重要な情報;;; と ;;;下線 強調情報;;; が混在。
+#太字 重要な情報# と #下線 強調情報# が混在。
 
-;;;リスト
+#リスト
 - 項目1
 - 項目2
 - 項目3
-;;;
+##
 
 最後の段落です。"""
         
@@ -356,11 +356,11 @@ class TestEdgeCaseScenarios:
         
         for i in range(file_count):
             test_file = temp_dir / f"stress_test_{i}.txt"
-            content = f""";;;見出し1
+            content = f"""#見出し1
 ストレステストファイル {i}
-;;;
+##
 
-;;;太字 ファイル{i}の重要情報;;;
+#太字 ファイル{i}の重要情報#
 
 通常のテキスト内容です。"""
             test_file.write_text(content, encoding="utf-8")

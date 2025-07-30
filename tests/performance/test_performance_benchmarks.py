@@ -56,21 +56,21 @@ class TestParsingPerformance:
     
     def generate_test_content(self, size_factor: int) -> str:
         """Generate test content of specified size."""
-        base_content = """;;;見出し1
+        base_content = """#見出し1
 テストセクション{num}
-;;;
+##
 
 これはパフォーマンステスト用のセクション{num}です。
-;;;太字 重要な情報{num};;;を含んでいます。
+#太字 重要な情報{num}#を含んでいます。
 
-;;;リスト
+#リスト
 - 項目{num}-1
 - 項目{num}-2
 - 項目{num}-3
-;;;
+##
 
 通常のテキスト内容がここに続きます。
-;;;下線 強調部分{num};;;もあります。
+#下線 強調部分{num}#もあります。
 
 """
         
@@ -204,16 +204,16 @@ class TestValidationPerformance:
     @pytest.mark.benchmark(group="validation_small")
     def test_small_content_validation(self, benchmark):
         """Benchmark validation of small content."""
-        content = """;;;見出し1
+        content = """#見出し1
 小さなテストコンテンツ
-;;;
+##
 
-;;;太字 重要情報;;;があります。
+#太字 重要情報#があります。
 
-;;;リスト
+#リスト
 - 項目1
 - 項目2
-;;;"""
+#"""
         
         def validate_content():
             return self.validator.validate_text(content)
@@ -225,18 +225,18 @@ class TestValidationPerformance:
     def test_error_heavy_validation(self, benchmark):
         """Benchmark validation of content with many errors."""
         # Generate content with intentional errors
-        error_content = """;;;見出し1
+        error_content = """#見出し1
 未完了セクション
-;;; missing closing
+# missing closing
 
-;;;太字 別の未完了
+#太字 別の未完了
 # missing proper closing
 
-;;;不明装飾 未知のキーワード;;;
+#不明装飾 未知のキーワード#
 
-;;;;過剰マーカー 内容;;;;
+#;過剰マーカー 内容#;
 
-;;不足マーカー 内容;;;"""
+#不足マーカー 内容"""
         
         def validate_errors():
             return self.validator.validate_text(error_content)
@@ -252,19 +252,19 @@ class TestValidationPerformance:
         
         for i in range(file_count):
             test_file = temp_dir / f"perf_test_{i}.txt"
-            content = f""";;;見出し1
+            content = f"""#見出し1
 パフォーマンステストファイル {i}
-;;;
+##
 
-;;;太字 ファイル{i}の重要情報;;;
+#太字 ファイル{i}の重要情報#
 
 通常のテキスト内容です。
 
-;;;リスト
+#リスト
 - 項目{i}-1
 - 項目{i}-2
 - 項目{i}-3
-;;;"""
+#"""
             test_file.write_text(content, encoding="utf-8")
             files.append(test_file)
         
@@ -284,17 +284,17 @@ class TestValidationPerformance:
     def test_concurrent_validation_simulation(self, temp_dir):
         """Simulate concurrent validation scenarios."""
         # Create test content
-        content = """;;;見出し1
+        content = """#見出し1
 並行処理テスト
-;;;
+##
 
-;;;太字 複数の処理;;;が同時に実行されることを想定したテストです。
+#太字 複数の処理#が同時に実行されることを想定したテストです。
 
-;;;リスト
+#リスト
 - テスト項目1
 - テスト項目2
 - テスト項目3
-;;;
+##
 
 複雑な構造を含むテキストです。"""
         
@@ -342,17 +342,17 @@ class TestMemoryEfficiency:
         initial_memory = psutil.Process(os.getpid()).memory_info().rss
         
         # Perform many parsing operations
-        test_content = """;;;見出し1
+        test_content = """#見出し1
 メモリリークテスト
-;;;
+##
 
-;;;太字 繰り返し処理による メモリ使用量の確認;;;
+#太字 繰り返し処理による メモリ使用量の確認#
 
-;;;リスト
+#リスト
 - 項目1
 - 項目2
 - 項目3
-;;;"""
+#"""
         
         for i in range(1000):
             # Vary content slightly to prevent caching
@@ -384,7 +384,7 @@ class TestMemoryEfficiency:
         import gc
         
         # Create very large content
-        large_content = ";;;太字 " + "テスト内容 " * 100000 + ";;;"
+        large_content = "#太字 " + "テスト内容 " * 100000 + "#"
         
         initial_memory = psutil.Process(os.getpid()).memory_info().rss
         
@@ -423,7 +423,7 @@ class TestScalabilityLimits:
         """Test performance with maximum nesting depth."""
         # Create deeply nested structure
         max_depth = 50
-        nested_content = ";;;見出し1\n" * max_depth + "最深部の内容" + "\n;;;" * max_depth
+        nested_content = "#見出し1\n" * max_depth + "最深部の内容" + "\n#" * max_depth
         
         start_time = time.perf_counter()
         
@@ -444,12 +444,12 @@ class TestScalabilityLimits:
     def test_maximum_content_length(self):
         """Test processing of maximum reasonable content length."""
         # Generate very large content (5MB)
-        base_section = """;;;見出し1
+        base_section = """#見出し1
 大容量テストセクション
-;;;
+##
 
 これは大容量テスト用のセクションです。
-;;;太字 重要な情報;;;を含んでいます。
+#太字 重要な情報#を含んでいます。
 
 """
         
@@ -483,7 +483,7 @@ class TestScalabilityLimits:
         notations = []
         
         for i in range(notation_count):
-            notations.append(f";;;太字 小さな記法{i};;;")
+            notations.append(f"#太字 小さな記法{i}#")
         
         content = " ".join(notations)
         

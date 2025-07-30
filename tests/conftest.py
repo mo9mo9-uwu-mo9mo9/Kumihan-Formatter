@@ -31,45 +31,45 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
     
     # Basic notation test file
     basic_file = temp_dir / "basic_notation.txt"
-    basic_file.write_text(""";;;見出し1
+    basic_file.write_text("""#見出し1
 メインタイトル
-;;;
+##
 
 これは基本的なテキストです。
 
-;;;太字
+#太字
 重要な情報
-;;;
+##
 
 通常のテキストが続きます。""", encoding="utf-8")
     files["basic"] = basic_file
     
     # Complex notation test file
     complex_file = temp_dir / "complex_notation.txt"
-    complex_file.write_text(""";;;見出し1
+    complex_file.write_text("""#見出し1
 複合記法テスト
-;;;
+##
 
-;;;太字
-重要情報：;;;下線
+#太字
+重要情報：#下線
 強調されたテキスト
-;;;
-;;;
+##
+##
 
-;;;リスト
+#リスト
 - 項目1
 - 項目2
 - 項目3
-;;;""", encoding="utf-8")
+#""", encoding="utf-8")
     files["complex"] = complex_file
     
     # Error test file (invalid syntax)
     error_file = temp_dir / "error_syntax.txt"
-    error_file.write_text(""";;;見出し1
+    error_file.write_text("""#見出し1
 エラーテスト
-;;; # Missing closing marker
+# # Missing closing marker
 
-;;;太字
+#太字
 未完了の記法
 # Missing end marker""", encoding="utf-8")
     files["error"] = error_file
@@ -80,16 +80,16 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 @pytest.fixture
 def large_text_content() -> str:
     """Generate large text content for performance testing."""
-    base_text = """;;;見出し{num}
+    base_text = """#見出し{num}
 セクション{num}のタイトル
-;;;
+##
 
 これはセクション{num}の内容です。
 複数行にわたる長いテキストコンテンツを含んでいます。
 
-;;;太字
+#太字
 重要な情報{num}
-;;;
+##
 
 さらに詳細なテキストが続きます。
 """
