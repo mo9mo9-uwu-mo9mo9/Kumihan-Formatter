@@ -1,0 +1,99 @@
+name: Branch Name Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches-ignore:
+      - main
+      - develop
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check branch name for Japanese characters
+      run: |
+        # PR の場合は head branch を、push の場合は ref から branch 名を取得
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          BRANCH_NAME="${{ github.head_ref }}"
+        else
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+        fi
+        
+        echo "🔍 検証対象ブランチ: $BRANCH_NAME"
+        
+        # 日本語文字（ひらがな、カタカナ、漢字）が含まれているかチェック
+        # Unicodeエスケープをより確実な形式に修正
+        if echo "$BRANCH_NAME" | grep -P '[\x{3040}-\x{309F}\x{30A0}-\x{30FF}\x{4E00}-\x{9FAF}]' > /dev/null; then
+          echo "🚨 エラー: ブランチ名に日本語が含まれています"
+          echo "ブランチ名: $BRANCH_NAME"
+          echo ""
+          echo "📋 対応方法："
+          echo "1. 英語のブランチ名に変更してください"
+          echo "   例: feat/issue-{Issue番号}-{英語概要}"
+          echo ""
+          echo "2. ブランチ名変更コマンド例："
+          echo "   git branch -m $BRANCH_NAME feat/issue-XXX-english-description"
+          echo "   git push origin feat/issue-XXX-english-description"
+          echo "   git push origin --delete $BRANCH_NAME"
+          echo ""
+          echo "🔒 ワークフローが失敗しました。"
+          exit 1
+        fi
+        
+        # 推奨命名規則チェック（警告）
+        if ! echo "$BRANCH_NAME" | grep -E '^(feat|fix|docs|style|refactor|test|chore)/issue-[0-9]+-[a-zA-Z0-9-]+$' > /dev/null; then
+          if [ "$BRANCH_NAME" != "main" ] && [ "$BRANCH_NAME" != "develop" ]; then
+            echo "⚠️  警告: 推奨ブランチ命名規則に従っていません"
+            echo "現在のブランチ: $BRANCH_NAME"
+            echo "推奨形式: {type}/issue-{番号}-{英語概要}"
+            echo "例: feat/issue-123-add-new-feature"
+            echo ""
+            echo "ℹ️  ワークフローは継続しますが、命名規則の見直しを推奨します。"
+          fi
+        fi
+        
+        echo "✅ ブランチ名検証完了: $BRANCH_NAME"
+
+    - name: Add PR comment for Japanese branch name (if PR)
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const branchName = context.payload.pull_request.head.ref;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🚨 **ブランチ名エラー**
+            
+このPRのブランチ名に日本語が含まれています: \`${branchName}\`
+
+## 📋 対応方法
+1. 英語のブランチ名に変更してください
+   - 推奨形式: \`{type}/issue-{番号}-{英語概要}\`
+   - 例: \`feat/issue-123-add-new-feature\`
+
+2. ブランチ名変更コマンド:
+\`\`\`bash
+# 新しいブランチを作成
+git checkout -b feat/issue-XXX-english-description
+
+# 変更をプッシュ
+git push origin feat/issue-XXX-english-description
+
+# 古いブランチを削除
+git push origin --delete ${branchName}
+\`\`\`
+
+3. PRのブランチを更新してください
+
+## 🔒 システム要件
+- 日本語ブランチ名は **システム的に禁止** されています
+- この制限はCLAUDE.mdで定められた開発ルールです
+
+変更後、このPRは自動的に新しいブランチ名で更新されます。`
+          });

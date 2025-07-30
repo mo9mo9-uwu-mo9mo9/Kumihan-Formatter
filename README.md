@@ -30,6 +30,9 @@ cd Kumihan-Formatter
 python -m pip install -e .
 python -m pip install -r requirements-dev.txt
 
+# Git hooks セットアップ（必須）
+./scripts/install-hooks.sh
+
 # 開発用CLI使用例
 python -m kumihan_formatter convert input.txt
 
@@ -39,6 +42,47 @@ KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
 # 品質チェック
 make lint           # コード品質チェック
 ```
+
+### 🌟 開発参加者向け重要事項
+
+**ブランチ命名規則**（厳格適用）:
+```bash
+# ✅ 正しいブランチ名
+feat/issue-123-add-user-authentication
+fix/issue-456-fix-parsing-error
+docs/issue-789-update-readme
+
+# ❌ 禁止（システム的に拒否される）
+feat/issue-123-ユーザー認証追加  # 日本語禁止
+feature-branch                    # Issue番号なし
+```
+
+**システム的制約**:
+- 日本語ブランチ名は **Git hooks・GitHub Actions で自動検出・拒否**
+- **初回セットアップ時は必ず** `./scripts/install-hooks.sh` を実行
+- 詳細は [CLAUDE.md](./CLAUDE.md) を参照
+
+### 🚀 初回セットアップガイド
+
+開発環境の初回セットアップは以下の順序で実行してください：
+
+```bash
+# 1. リポジトリクローン
+git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
+cd Kumihan-Formatter
+
+# 2. Python依存関係インストール
+python -m pip install -e .
+python -m pip install -r requirements-dev.txt
+
+# 3. Git hooks インストール（重要！）
+./scripts/install-hooks.sh
+
+# 4. 動作確認
+make lint
+```
+
+**⚠️ 重要**: `./scripts/install-hooks.sh` を実行しないと、日本語ブランチ名でのプッシュ時にローカルでエラーが発生しません。GitHub Actions でのみ検出されるため、必ず実行してください。
 
 ## 💡 基本的な記法
 
