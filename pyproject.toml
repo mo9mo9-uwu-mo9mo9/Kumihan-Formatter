@@ -39,6 +39,9 @@ dev = [
     "mypy>=1.0",
     "types-psutil",
     "types-PyYAML",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-benchmark>=4.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -104,3 +107,30 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 exclude = ["dist/**/*"]
+
+# pytest設定
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--cov=kumihan_formatter",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests", 
+    "performance: Performance tests",
+    "slow: Slow running tests",
+    "notation: Tests for notation system",
+    "error_handling: Error handling tests"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
+]
