@@ -4,19 +4,14 @@ Kumihan-Formatter プロジェクト用の Claude Code + Serena MCP Server 統�
 
 ## 📁 スクリプト一覧
 
-### 1. `start-claude-serena.sh`
-**基本的な Serena MCP Server 起動スクリプト**
-- Serena MCP Server を直接起動
-- シンプルな設定で最小限の機能
-
-### 2. `start-claude-with-serena.sh` ⭐ **推奨**
+### 1. `start-claude-with-serena.sh` ⭐ **推奨**
 **Claude Code + Serena 統合起動スクリプト**  
 - Claude Code CLI と Serena MCP Server を統合
 - 美しいログ出力とエラーハンドリング
 - MCP設定の自動生成
 - 依存関係の自動チェック
 
-### 3. `setup-claude-alias.sh`
+### 2. `setup-claude-alias.sh`
 **エイリアス設定スクリプト**
 - `claude-kumihan` エイリアスを自動設定
 - シェル自動検出（bash/zsh/fish対応）
