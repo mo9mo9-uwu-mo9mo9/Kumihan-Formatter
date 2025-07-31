@@ -7,6 +7,7 @@ including block validation, keyword validation, and line-by-line checking.
 from pathlib import Path
 
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
+
 # from .syntax_rules import SyntaxRules  # 下部で再定義されているため削除
 
 
