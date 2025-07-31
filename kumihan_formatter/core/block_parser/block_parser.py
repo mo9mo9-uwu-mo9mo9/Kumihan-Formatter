@@ -32,20 +32,35 @@ class BlockParser:
         Args:
             lines: 処理対象の行データリスト
         """
+        if not lines:
+            self.logger.warning("Empty lines list provided to _preprocess_lines")
+            self._block_end_indices.clear()
+            self._lines_cache = []
+            return
+
         # キャッシュリセット
         self._block_end_indices.clear()
-        self._lines_cache = lines
+        self._lines_cache = lines.copy()  # 安全なコピーを作成
 
         # ブロック終了マーカーの位置を事前計算（O(n)で一回のみ）
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            if self.keyword_parser.marker_parser.is_block_end_marker(stripped):
-                self._block_end_indices.append(i)
+        try:
+            for i, line in enumerate(lines):
+                if i >= 10000:  # 安全弁: 極端に大きなファイルの処理防止
+                    self.logger.warning(f"File too large, stopping preprocessing at line {i}")
+                    break
+                    
+                stripped = line.strip()
+                if self.keyword_parser.marker_parser.is_block_end_marker(stripped):
+                    self._block_end_indices.append(i)
 
-        self.logger.debug(
-            f"Preprocessed {len(lines)} lines, "
-            f"found {len(self._block_end_indices)} block end markers"
-        )
+            self.logger.debug(
+                f"Preprocessed {len(lines)} lines, "
+                f"found {len(self._block_end_indices)} block end markers"
+            )
+        except Exception as e:
+            self.logger.error(f"Error during preprocessing: {e}")
+            self._block_end_indices.clear()
+            self._lines_cache = []
 
     def _find_next_block_end(self, start_index: int) -> int | None:
         """最適化された次のブロック終了マーカー検索（O(log n)二分探索）
@@ -58,11 +73,25 @@ class BlockParser:
         """
         import bisect
 
+        # 安全性チェック: キャッシュが初期化されているか確認
+        if not self._block_end_indices:
+            self.logger.warning(f"Block end indices cache is empty at start_index {start_index}")
+            return None
+
+        # 範囲チェック: start_indexが有効範囲内か確認
+        if start_index < 0 or (self._lines_cache and start_index >= len(self._lines_cache)):
+            self.logger.warning(f"Invalid start_index {start_index}, lines count: {len(self._lines_cache) if self._lines_cache else 0}")
+            return None
+
         # 二分探索でstart_indexより大きい最初のインデックスを検索
         pos = bisect.bisect_right(self._block_end_indices, start_index)
 
         if pos < len(self._block_end_indices):
-            return self._block_end_indices[pos]
+            result = self._block_end_indices[pos]
+            self.logger.debug(f"Found block end at index {result} for start_index {start_index}")
+            return result
+        
+        self.logger.debug(f"No block end found after start_index {start_index}")
         return None
 
     @staticmethod
@@ -179,6 +208,11 @@ class BlockParser:
             raise ValueError("Keywords list cannot be empty")
 
         self.logger.debug(f"Parsing new format block at line {start_index + 1}")
+
+        # 前処理が未実行またはキャッシュが古い場合は実行
+        if not self._lines_cache or self._lines_cache != lines:
+            self.logger.debug("Preprocessing lines for block parsing")
+            self._preprocess_lines(lines)
 
         # 最適化された終了マーカー検索（O(log n)二分探索）
         end_index = self._find_next_block_end(start_index)
