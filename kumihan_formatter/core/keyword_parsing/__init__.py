@@ -7,11 +7,15 @@ Kumihan記法キーワード解析システム - Issue #476対応
 from .definitions import DEFAULT_BLOCK_KEYWORDS, NESTING_ORDER, KeywordDefinitions
 from .marker_parser import MarkerParser
 from .validator import KeywordValidator
+from .keyword_registry import KeywordRegistry, KeywordDefinition, KeywordType
 
 __all__ = [
     "KeywordDefinitions",
-    "DEFAULT_BLOCK_KEYWORDS",
+    "DEFAULT_BLOCK_KEYWORDS", 
     "NESTING_ORDER",
     "MarkerParser",
     "KeywordValidator",
+    "KeywordRegistry",
+    "KeywordDefinition",
+    "KeywordType",
 ]

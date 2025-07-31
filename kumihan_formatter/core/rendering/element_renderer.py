@@ -100,6 +100,22 @@ class ElementRenderer:
 
         attributes = render_attributes(node.attributes)
 
+        # キーワード属性に基づく特別処理の判定
+        keyword = node.get_attribute("keyword")
+        should_wrap_with_code = False
+        
+        if keyword:
+            # KeywordDefinitionsから設定を取得
+            from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+            keyword_defs = KeywordDefinitions()
+            keyword_info = keyword_defs.get_keyword_info(keyword)
+            
+            if keyword_info and keyword_info.get("wrap_with_code", False):
+                should_wrap_with_code = True
+        
+        if should_wrap_with_code:
+            content = f"<code>{content}</code>"
+
         if attributes:
             return f"<pre {attributes}>{content}</pre>"
         else:
