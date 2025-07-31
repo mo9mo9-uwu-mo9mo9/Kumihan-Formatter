@@ -15,17 +15,83 @@ from ..utilities.logger import get_logger
 class BlockParser:
     """Parser for block-level elements"""
 
-    def __init__(self, keyword_parser: KeywordParser):
+    def __init__(self, keyword_parser: KeywordParser) -> None:
         self.logger = get_logger(__name__)
         self.keyword_parser = keyword_parser
         self.heading_counter = 0
-        self.logger.debug("BlockParser initialized")
+
+        # パフォーマンス最適化: キャッシュとインデックス
+        self._block_end_indices: list[int] = []
+        self._lines_cache: list[str] = []
+
+        self.logger.debug("BlockParser initialized with performance optimizations")
+
+    def _preprocess_lines(self, lines: list[str]) -> None:
+        """行データの前処理でパフォーマンス最適化
+
+        Args:
+            lines: 処理対象の行データリスト
+        """
+        # キャッシュリセット
+        self._block_end_indices.clear()
+        self._lines_cache = lines
+
+        # ブロック終了マーカーの位置を事前計算（O(n)で一回のみ）
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if self.keyword_parser.marker_parser.is_block_end_marker(stripped):
+                self._block_end_indices.append(i)
+
+        self.logger.debug(
+            f"Preprocessed {len(lines)} lines, "
+            f"found {len(self._block_end_indices)} block end markers"
+        )
+
+    def _find_next_block_end(self, start_index: int) -> int | None:
+        """最適化された次のブロック終了マーカー検索（O(log n)二分探索）
+
+        Args:
+            start_index: 検索開始位置
+
+        Returns:
+            次のブロック終了インデックス、見つからない場合はNone
+        """
+        import bisect
+
+        # 二分探索でstart_indexより大きい最初のインデックスを検索
+        pos = bisect.bisect_right(self._block_end_indices, start_index)
+
+        if pos < len(self._block_end_indices):
+            return self._block_end_indices[pos]
+        return None
+
+    @staticmethod
+    def _is_block_marker_cached(line: str, keyword_parser: KeywordParser) -> bool:
+        """キャッシュを使用した高速ブロックマーカー判定（LRUキャッシュ対応）
+
+        Args:
+            line: 判定対象の行
+            keyword_parser: キーワードパーサーインスタンス
+
+        Returns:
+            ブロックマーカーの場合True
+        """
+        from functools import lru_cache
+
+        @lru_cache(maxsize=512)  # メモリ上限設定
+        def _cached_marker_check(stripped_line: str) -> bool:
+            """内部キャッシュ関数"""
+            return keyword_parser.marker_parser.is_new_marker_format(
+                stripped_line
+            ) or keyword_parser.marker_parser.is_block_end_marker(stripped_line)
+
+        return _cached_marker_check(line)
 
     def parse_new_format_marker(
         self, lines: list[str], start_index: int
     ) -> tuple[Node | None, int]:
         """
-        新記法 # キーワード # 形式のマーカーを解析
+        新記法 # キーワード # 形式のマーカーを解析（最適化版）
 
         Args:
             lines: All lines in the document
@@ -33,10 +99,20 @@ class BlockParser:
 
         Returns:
             tuple: (parsed_node, next_index)
+
+        Raises:
+            ValueError: start_indexが範囲外の場合
         """
+        if start_index < 0 or start_index >= len(lines):
+            raise ValueError(
+                f"start_index {start_index} is out of range [0, {len(lines)})"
+            )
+
         self.logger.debug(f"Parsing new format marker at line {start_index + 1}")
-        if start_index >= len(lines):
-            return None, start_index
+
+        # 前処理が未実行の場合は実行
+        if not self._lines_cache or self._lines_cache != lines:
+            self._preprocess_lines(lines)
 
         opening_line = lines[start_index].strip()
         self.logger.debug(f"Opening line: {opening_line}")
@@ -85,7 +161,7 @@ class BlockParser:
         attributes: dict[str, Any],
     ) -> tuple[Node | None, int]:
         """
-        新記法のブロック形式を解析
+        新記法のブロック形式を解析（最適化版）
 
         Args:
             lines: All lines in the document
@@ -95,16 +171,17 @@ class BlockParser:
 
         Returns:
             tuple: (parsed_node, next_index)
+
+        Raises:
+            ValueError: パラメータが不正な場合
         """
+        if not keywords:
+            raise ValueError("Keywords list cannot be empty")
+
         self.logger.debug(f"Parsing new format block at line {start_index + 1}")
 
-        # ブロック終了マーカーを探す
-        end_index = None
-        for i in range(start_index + 1, len(lines)):
-            line = lines[i].strip()
-            if self.keyword_parser.marker_parser.is_block_end_marker(line):
-                end_index = i
-                break
+        # 最適化された終了マーカー検索（O(log n)二分探索）
+        end_index = self._find_next_block_end(start_index)
 
         if end_index is None:
             self.logger.error(f"Block end marker not found for line {start_index + 1}")
@@ -168,6 +245,12 @@ class BlockParser:
     def _is_simple_image_marker(self, line: str) -> bool:
         """
         Check if a line is a simple image marker (# 画像 # filename.ext)
+
+        Args:
+            line: 判定対象の行
+
+        Returns:
+            画像マーカーの場合True
         """
         line = line.strip()
 
@@ -195,7 +278,7 @@ class BlockParser:
         self, lines: list[str], start_index: int
     ) -> tuple[Node | None, int]:
         """
-        Parse a paragraph starting from the given index
+        Parse a paragraph starting from the given index（最適化版）
 
         Args:
             lines: All lines in the document
@@ -203,25 +286,38 @@ class BlockParser:
 
         Returns:
             tuple: (paragraph_node, next_index)
+
+        Raises:
+            ValueError: start_indexが範囲外の場合
         """
+        if start_index < 0 or start_index >= len(lines):
+            raise ValueError(
+                f"start_index {start_index} is out of range [0, {len(lines)})"
+            )
+
         self.logger.debug(f"Parsing paragraph at line {start_index + 1}")
-        paragraph_lines = []
+
+        # 前処理が未実行の場合は実行
+        if not self._lines_cache or self._lines_cache != lines:
+            self._preprocess_lines(lines)
+
+        paragraph_lines: list[str] = []
         current_index = start_index
 
-        # Collect consecutive non-empty lines
+        # 高速化された連続行収集
         while current_index < len(lines):
             line = lines[current_index].strip()
 
-            # Stop at empty lines
+            # 空行で停止
             if not line:
                 break
 
-            # Stop at list items
-            if line.startswith("- ") or re.match(r"^\d+\.\s", line):
+            # リスト項目で停止（高速チェック）
+            if line.startswith(("- ", "* ", "+ ")) or re.match(r"^\d+\.\s", line):
                 break
 
-            # Stop at block markers (new format)
-            if self.is_block_marker_line(line):
+            # ブロックマーカーで停止（LRUキャッシュ使用）
+            if self._is_block_marker_cached(line, self.keyword_parser):
                 break
 
             paragraph_lines.append(line)
@@ -230,7 +326,7 @@ class BlockParser:
         if not paragraph_lines:
             return None, start_index
 
-        # Join lines with space
+        # 行をスペースで結合
         content = " ".join(paragraph_lines)
         self.logger.debug(
             f"Paragraph parsed: {len(content)} characters, {len(paragraph_lines)} lines"
@@ -239,26 +335,51 @@ class BlockParser:
         return paragraph(content), current_index
 
     def is_block_marker_line(self, line: str) -> bool:
-        """Check if a line is a block marker (new format only)"""
-        line = line.strip()
+        """Check if a line is a block marker (new format only)
 
-        # 新記法チェック: # キーワード # または ##
-        return self.keyword_parser.marker_parser.is_new_marker_format(
-            line
-        ) or self.keyword_parser.marker_parser.is_block_end_marker(line)
+        Args:
+            line: 判定対象の行
+
+        Returns:
+            ブロックマーカーの場合True
+        """
+        line = line.strip()
+        return self._is_block_marker_cached(line, self.keyword_parser)
 
     def is_opening_marker(self, line: str) -> bool:
-        """Check if a line is an opening block marker (new format only)"""
+        """Check if a line is an opening block marker (new format only)
+
+        Args:
+            line: 判定対象の行
+
+        Returns:
+            開始マーカーの場合True
+        """
         line = line.strip()
         # 新記法: # キーワード # 形式（インライン・ブロック両対応）
         return self.keyword_parser.marker_parser.is_new_marker_format(line)
 
     def is_closing_marker(self, line: str) -> bool:
-        """Check if a line is a closing block marker (new format only)"""
+        """Check if a line is a closing block marker (new format only)
+
+        Args:
+            line: 判定対象の行
+
+        Returns:
+            終了マーカーの場合True
+        """
         return self.keyword_parser.marker_parser.is_block_end_marker(line)
 
     def skip_empty_lines(self, lines: list[str], start_index: int) -> int:
-        """Skip empty lines and return the next non-empty line index"""
+        """Skip empty lines and return the next non-empty line index
+
+        Args:
+            lines: 全行データ
+            start_index: 開始インデックス
+
+        Returns:
+            次の非空行のインデックス
+        """
         index = start_index
         while index < len(lines) and not lines[index].strip():
             index += 1
@@ -267,7 +388,15 @@ class BlockParser:
     def find_next_significant_line(
         self, lines: list[str], start_index: int
     ) -> int | None:
-        """Find the next line that contains significant content"""
+        """Find the next line that contains significant content
+
+        Args:
+            lines: 全行データ
+            start_index: 開始インデックス
+
+        Returns:
+            有意な内容を含む次の行のインデックス、見つからない場合はNone
+        """
         for i in range(start_index, len(lines)):
             line = lines[i].strip()
             if line and not self._is_comment_line(line):
@@ -275,5 +404,12 @@ class BlockParser:
         return None
 
     def _is_comment_line(self, line: str) -> bool:
-        """Check if a line is a comment (starts with #)"""
+        """Check if a line is a comment (starts with #)
+
+        Args:
+            line: 判定対象の行
+
+        Returns:
+            コメント行の場合True
+        """
         return line.strip().startswith("#")
