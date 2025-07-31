@@ -1,0 +1,187 @@
+name: 📚 ドキュメント改善 - Documentation
+description: ドキュメントの改善、追加、修正に関するご提案をお寄せください。
+title: "[ドキュメント] "
+labels: ["documentation"]
+assignees:
+  - mo9mo9-uwu-mo9mo9
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **ドキュメント改善のご提案ありがとうございます！**
+        より良いドキュメントは全ユーザーの体験向上につながります。
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: 📋 ドキュメントの種類
+      description: どのようなドキュメントに関する提案ですか？
+      options:
+        - 📖 ユーザーガイド (USER_GUIDE.md)
+        - 🏗️ アーキテクチャ文書 (ARCHITECTURE.md)
+        - 🤖 Claude開発者向け (REFERENCE.md)
+        - 📦 デプロイガイド (DEPLOYMENT.md)
+        - 🔧 CLAUDE.md (Claude Code 指示ファイル)
+        - 📝 README.md
+        - 🚀 CONTRIBUTING.md
+        - 📄 新規ドキュメント作成
+        - ❓ その他 (詳細をコメントに記載)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 🎯 改善の種類
+      description: どのような改善をお考えですか？
+      options:
+        - ➕ 新しい内容の追加
+        - ✏️ 既存内容の修正・更新
+        - 🔄 構成・構造の改善
+        - 🌍 翻訳・多言語対応
+        - 🎨 フォーマット・見た目の改善
+        - 🔗 リンク・参照の修正
+        - 📝 例文・サンプルの追加
+        - ❌ 古い・不正確な情報の削除
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: 🔍 現在の問題点
+      description: 現在のドキュメントで分かりにくい点や不足している点はありますか？
+      placeholder: |
+        例：
+        - 初心者向けの説明が不足している
+        - 特定の記法の使用例が少ない
+        - 設定方法が分からない
+        - 用語の説明が不十分
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-improvement
+    attributes:
+      label: ✨ 改善提案
+      description: どのような改善を提案しますか？具体的に説明してください
+      placeholder: |
+        例：
+        - セクション「○○」に、××の説明を追加
+        - 既存の例文を、より実用的な内容に変更
+        - 手順の説明を図解付きで詳しく記載
+        - FAQ セクションを新設
+    validations:
+      required: true
+
+  - type: textarea
+    id: specific-content
+    attributes:
+      label: 📝 具体的な内容案
+      description: 追加・修正したい具体的な内容があれば記載してください
+      placeholder: |
+        例：
+        ```markdown
+        ## 新しいセクション案
+        
+        ### 基本的な使い方
+        1. アプリケーションを起動
+        2. ファイルを選択
+        3. 変換実行
+        ```
+        
+        または、修正したい箇所の具体的な文章案
+    validations:
+      required: false
+
+  - type: dropdown
+    id: target-audience
+    attributes:
+      label: 👥 対象読者
+      description: この改善は主にどのような読者を想定していますか？
+      options:
+        - 🔰 初心者ユーザー
+        - 🎯 一般ユーザー
+        - 🔧 上級ユーザー
+        - 👨‍💻 開発者・コントリビューター
+        - 🤖 Claude Code 使用者
+        - 🌍 全ユーザー共通
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⏰ 緊急度
+      description: この改善の緊急度はいかがですか？
+      options:
+        - 🔴 高 (重要な情報が不足・誤解を招く)
+        - 🟡 中 (改善されると便利)
+        - 🟢 低 (時間があるときに対応)
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference-materials
+    attributes:
+      label: 📚 参考資料
+      description: 参考になるURL、他のドキュメント、類似プロジェクトなどがあれば記載してください
+      placeholder: |
+        例：
+        - 参考にしたいドキュメントのURL
+        - 類似ツールのドキュメント例
+        - 関連するIssueやPR
+    validations:
+      required: false
+
+  - type: textarea
+    id: user-feedback
+    attributes:
+      label: 💬 ユーザーの声
+      description: 他のユーザーからの質問や要望があれば記載してください
+      placeholder: |
+        例：
+        - よく質問される内容
+        - つまずきやすいポイント
+        - 改善要望の声
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: 🛠️ 実装時の注意点
+      description: ドキュメント作成・更新時の注意点があれば記載してください
+      placeholder: |
+        例：
+        - 他のドキュメントとの整合性
+        - 既存リンクへの影響
+        - 翻訳が必要な範囲
+        - スクリーンショット更新の必要性
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 追加情報
+      description: その他の関連情報があれば記載してください
+      placeholder: |
+        - 関連するコード変更
+        - 将来的な拡張予定
+        - その他の改善アイデア
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 確認事項
+      description: 以下の項目を確認してください
+      options:
+        - label: 既存のドキュメントを確認しました
+          required: true
+        - label: 類似の改善提案がないことを確認しました
+          required: true
+        - label: 対象読者を明確にして提案しました
+          required: true
