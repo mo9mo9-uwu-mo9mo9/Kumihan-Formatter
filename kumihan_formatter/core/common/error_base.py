@@ -157,6 +157,16 @@ class GracefulSyntaxError:
     suggestion: str = ""  # 修正提案
     file_path: str = ""
 
+    # Phase2: 高度なエラー表示機能
+    highlight_start: int = 0  # ハイライト開始位置
+    highlight_end: int = 0  # ハイライト終了位置
+    correction_suggestions: list[str] = None  # 具体的な修正提案リスト
+    error_pattern: str = ""  # エラーパターン識別子（統計用）
+
+    def __post_init__(self):
+        if self.correction_suggestions is None:
+            self.correction_suggestions = []
+
     # Phase 1: HTML表示用プロパティ
     @property
     def html_class(self) -> str:
@@ -200,8 +210,77 @@ class GracefulSyntaxError:
             "file_path": self.file_path,
             "html_class": self.html_class,
             "display_title": self.display_title,
+            # Phase2: 拡張フィールド
+            "highlight_start": self.highlight_start,
+            "highlight_end": self.highlight_end,
+            "correction_suggestions": self.correction_suggestions,
+            "error_pattern": self.error_pattern,
             "html_content": self.html_content,
         }
+
+    # Phase2: 高度なエラー表示機能メソッド
+    def get_highlighted_context(self) -> str:
+        """ハイライト付きコンテキストを返す"""
+        if not self.context or self.highlight_start == self.highlight_end:
+            return self.context
+
+        # HTMLエスケープ
+        import html
+
+        safe_context = html.escape(self.context)
+
+        # ハイライト部分を囲む
+        if self.highlight_end > self.highlight_start >= 0:
+            before = safe_context[: self.highlight_start]
+            highlight = safe_context[self.highlight_start : self.highlight_end]
+            after = safe_context[self.highlight_end :]
+            return f"{before}<mark class='error-highlight'>{highlight}</mark>{after}"
+
+        return safe_context
+
+    def get_correction_suggestions_html(self) -> str:
+        """修正提案のHTML形式を返す"""
+        if not self.correction_suggestions:
+            return ""
+
+        import html
+
+        suggestions_html = "<ul class='correction-suggestions'>"
+        for suggestion in self.correction_suggestions:
+            safe_suggestion = html.escape(suggestion)
+            suggestions_html += f"<li>{safe_suggestion}</li>"
+        suggestions_html += "</ul>"
+        return suggestions_html
+
+    def add_correction_suggestion(self, suggestion: str) -> None:
+        """修正提案を追加"""
+        if suggestion not in self.correction_suggestions:
+            self.correction_suggestions.append(suggestion)
+
+    def set_highlight_range(self, start: int, end: int) -> None:
+        """ハイライト範囲を設定"""
+        self.highlight_start = max(0, start)
+        self.highlight_end = max(self.highlight_start, end)
+
+    def classify_error_pattern(self) -> str:
+        """エラーパターンを分類して統計用IDを返す"""
+        if self.error_pattern:
+            return self.error_pattern
+
+        # 基本的なパターン分類
+        message_lower = self.message.lower()
+        if "marker" in message_lower and "mismatch" in message_lower:
+            self.error_pattern = "marker_mismatch"
+        elif "incomplete" in message_lower and "marker" in message_lower:
+            self.error_pattern = "incomplete_marker"
+        elif "invalid" in message_lower and "syntax" in message_lower:
+            self.error_pattern = "invalid_syntax"
+        elif "missing" in message_lower:
+            self.error_pattern = "missing_element"
+        else:
+            self.error_pattern = "general_syntax"
+
+        return self.error_pattern
 
 
 class ValidationError(KumihanError):

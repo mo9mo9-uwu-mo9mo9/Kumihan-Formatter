@@ -284,6 +284,13 @@ class HTMLRenderer:
         warning_count = sum(1 for e in self.graceful_errors if e.severity == "warning")
         total_count = len(self.graceful_errors)
 
+        # Phase2: エラー統計レポート生成
+        from ..error_analysis.statistics_generator import StatisticsGenerator
+
+        stats_generator = StatisticsGenerator()
+        statistics = stats_generator.generate_statistics(self.graceful_errors)
+        stats_html = stats_generator.generate_html_report(statistics)
+
         summary_html = f"""
 <div class="kumihan-error-summary" id="error-summary">
     <h3>🔍 記法エラーレポート</h3>
@@ -292,6 +299,7 @@ class HTMLRenderer:
         <span class="warning-count">⚠️ 警告: {warning_count}件</span>
         <span class="total-count">📊 合計: {total_count}件</span>
     </div>
+    {stats_html}
     <details class="error-details">
         <summary>詳細を表示</summary>
         <div class="error-list">
@@ -308,6 +316,10 @@ class HTMLRenderer:
                 error.html_content
             )  # html_contentプロパティ内で既にエスケープ済み
 
+            # Phase2: ハイライト付きコンテキストと修正提案を追加
+            highlighted_context = error.get_highlighted_context()
+            correction_suggestions_html = error.get_correction_suggestions_html()
+
             error_html = f"""
             <div class="error-item {error.html_class}" data-line="{error.line_number}">
                 <div class="error-header">
@@ -317,6 +329,8 @@ class HTMLRenderer:
                 </div>
                 <div class="error-content">
                     {safe_content}
+                    {f'<div class="error-context-highlighted">{highlighted_context}</div>' if highlighted_context != error.context else ''}
+                    {f'<div class="correction-suggestions"><h4>修正提案:</h4>{correction_suggestions_html}</div>' if correction_suggestions_html else ''}
                 </div>
             </div>
 """

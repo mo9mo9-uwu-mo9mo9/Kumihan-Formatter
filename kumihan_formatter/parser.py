@@ -55,6 +55,12 @@ class Parser:
         # Issue #700: graceful error handling
         self.graceful_errors = graceful_errors
         self.graceful_syntax_errors: list["GracefulSyntaxError"] = []
+        
+        # Phase2: 修正提案エンジン
+        if graceful_errors:
+            from .core.error_analysis.correction_engine import CorrectionEngine
+            self.correction_engine = CorrectionEngine()
+            self.logger.info("Correction engine initialized for graceful error handling")
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
@@ -280,6 +286,11 @@ class Parser:
             suggestion=suggestion,
             file_path="",  # ファイルパスは後で設定
         )
+
+        # Phase2: 修正提案エンジンで拡張
+        if hasattr(self, 'correction_engine'):
+            graceful_error = self.correction_engine.enhance_error_with_suggestions(graceful_error)
+            self.logger.info(f"Enhanced error with {len(graceful_error.correction_suggestions)} suggestions")
 
         self.graceful_syntax_errors.append(graceful_error)
         self.logger.info(f"Graceful error recorded: {message} at line {line_number}")
