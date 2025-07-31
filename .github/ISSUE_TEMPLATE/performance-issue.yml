@@ -1,0 +1,201 @@
+name: ⚡ パフォーマンス問題 - Performance Issue
+description: 処理速度、メモリ使用量、レスポンス時間などのパフォーマンスに関する問題を報告してください。
+title: "[パフォーマンス] "
+labels: ["performance"]
+assignees:
+  - mo9mo9-uwu-mo9mo9
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **パフォーマンス問題の報告ありがとうございます！**
+        詳細な情報により、効果的な最適化を実施できます。
+
+  - type: dropdown
+    id: performance-type
+    attributes:
+      label: 🎯 パフォーマンス問題の種類
+      description: どのような種類のパフォーマンス問題ですか？
+      options:
+        - 🐌 処理速度が遅い (変換処理、ファイル読み込みなど)
+        - 💾 メモリ使用量が多い
+        - ⏱️ 応答時間が長い (UI操作のレスポンス)
+        - 🔥 CPU使用率が高い
+        - 📁 大容量ファイル処理の問題
+        - 🖥️ GUI操作の重い動作
+        - 🔄 繰り返し処理の非効率性
+        - ❓ その他 (詳細をコメントに記載)
+    validations:
+      required: true
+
+  - type: textarea
+    id: performance-description
+    attributes:
+      label: 🔍 問題の詳細
+      description: パフォーマンス問題について具体的に説明してください
+      placeholder: |
+        例：
+        - 1MBのテキストファイルの変換に5分以上かかる
+        - アプリケーション起動時にメモリを2GB以上消費
+        - ボタンクリック後の反応が3秒以上かかる
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 再現手順
+      description: パフォーマンス問題を再現するための具体的な手順を記載してください
+      placeholder: |
+        1. アプリケーションを起動
+        2. 大容量ファイル (○○MB) を読み込み
+        3. 変換処理を実行
+        4. 処理時間・リソース使用量を確認
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-data
+    attributes:
+      label: 📊 テストデータ・環境
+      description: テストに使用したファイルサイズ、データ量、実行環境について記載してください
+      placeholder: |
+        例：
+        - ファイルサイズ: 2.5MB (50,000行)
+        - 使用記法: 太字、見出し、コードブロック多用
+        - 実行環境: Windows 11, 16GB RAM, Intel i7-10700K
+        - 同時実行プロセス: なし
+    validations:
+      required: true
+
+  - type: textarea
+    id: measured-metrics
+    attributes:
+      label: 📈 測定結果
+      description: 実際に測定したパフォーマンス数値があれば記載してください
+      placeholder: |
+        例：
+        - 処理時間: 3分42秒
+        - CPU使用率: 85% (処理中)
+        - メモリ使用量: 1.2GB (最大)
+        - レスポンス時間: 2.8秒 (ボタンクリック後)
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-performance
+    attributes:
+      label: ✅ 期待するパフォーマンス
+      description: どの程度のパフォーマンスを期待しますか？
+      placeholder: |
+        例：
+        - 同サイズのファイルを30秒以内で処理
+        - メモリ使用量を500MB以下に抑制
+        - UI操作のレスポンスを1秒以内に改善
+    validations:
+      required: true
+
+  - type: dropdown
+    id: system-specs
+    attributes:
+      label: 💻 システム仕様
+      description: 実行環境のスペックはどの程度ですか？
+      options:
+        - 🔥 高性能 (最新CPU、16GB以上RAM)
+        - 🎯 標準的 (中級CPU、8-16GB RAM)
+        - 🐌 低性能 (古いCPU、8GB以下RAM)
+        - 📱 軽量環境 (ノートPC、省電力モード)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-level
+    attributes:
+      label: 🎯 影響度
+      description: この問題がユーザー体験に与える影響はどの程度ですか？
+      options:
+        - 🔴 Critical (アプリケーションが実用的でない)
+        - 🟠 High (日常使用に大きな支障)
+        - 🟡 Medium (使用可能だが不便)
+        - 🟢 Low (改善されれば嬉しい程度)
+    validations:
+      required: true
+
+  - type: textarea
+    id: comparison-benchmarks
+    attributes:
+      label: 📊 比較・ベンチマーク
+      description: 他のツールとの比較や、以前のバージョンとの性能差があれば記載してください
+      placeholder: |
+        例：
+        - 旧バージョン (v1.x) では同じファイルを30秒で処理できた
+        - 類似ツール○○では10秒で同様の処理が完了
+        - 前回使用時 (1週間前) より明らかに遅くなった
+    validations:
+      required: false
+
+  - type: textarea
+    id: profiling-data
+    attributes:
+      label: 🔬 プロファイリング情報
+      description: タスクマネージャーやパフォーマンス監視ツールの情報があれば記載してください
+      placeholder: |
+        例：
+        - タスクマネージャーでのCPU・メモリ使用率
+        - 処理の重いタイミング (ファイル読み込み時、変換処理時など)
+        - エラーログやデバッグ情報
+    validations:
+      required: false
+
+  - type: textarea
+    id: workarounds
+    attributes:
+      label: 🔄 回避策
+      description: 現在使用している回避策や軽減方法があれば記載してください
+      placeholder: |
+        例：
+        - ファイルを小分けして処理
+        - 他のアプリケーションを終了してから実行
+        - 特定の記法を避けて使用
+    validations:
+      required: false
+
+  - type: textarea
+    id: optimization-suggestions
+    attributes:
+      label: 💡 最適化提案
+      description: 技術的な最適化案やアイデアがあれば記載してください
+      placeholder: |
+        例：
+        - マルチスレッド処理の導入
+        - メモリ効率的なデータ構造への変更
+        - 段階的処理 (ストリーミング処理)
+        - キャッシュ機能の追加
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 追加情報
+      description: その他の関連情報があれば記載してください
+      placeholder: |
+        - システムログ
+        - スクリーンショット
+        - 関連する設定変更
+        - その他の気づいた点
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 確認事項
+      description: 以下の項目を確認してください
+      options:
+        - label: 再現可能なパフォーマンス問題です
+          required: true
+        - label: 具体的な測定データを提供しました
+          required: true
+        - label: 類似の問題報告がないことを確認しました
+          required: true

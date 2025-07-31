@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📋 バグ報告 - Bug Report
+    url: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues/new?assignees=mo9mo9-uwu-mo9mo9&labels=bug&template=bug-report.yml
+    about: バグや不具合を報告する場合はこちらをご利用ください
+  - name: ✨ 機能要求 - Feature Request  
+    url: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues/new?assignees=mo9mo9-uwu-mo9mo9&labels=enhancement&template=feature-request.yml
+    about: 新機能の提案やUIの改善要求はこちらをご利用ください
+  - name: 📚 ドキュメント改善 - Documentation
+    url: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues/new?assignees=mo9mo9-uwu-mo9mo9&labels=documentation&template=documentation.yml
+    about: ドキュメントの改善や追加はこちらをご利用ください
+  - name: ⚡ パフォーマンス問題 - Performance Issue
+    url: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues/new?assignees=mo9mo9-uwu-mo9mo9&labels=performance&template=performance-issue.yml
+    about: パフォーマンスに関する問題報告はこちらをご利用ください

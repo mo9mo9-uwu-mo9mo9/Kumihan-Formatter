@@ -1,0 +1,146 @@
+name: 🐛 バグ報告 - Bug Report
+description: バグや不具合の報告をお願いします。詳細な情報をご提供いただくことで、迅速な対応が可能になります。
+title: "[バグ] "
+labels: ["bug"]
+assignees:
+  - mo9mo9-uwu-mo9mo9
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **バグ報告ありがとうございます！**
+        以下の項目をできるだけ詳しく記入してください。より早く問題を解決するために役立ちます。
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🔍 バグの説明
+      description: 発生したバグについて詳しく説明してください
+      placeholder: |
+        例：
+        - 特定の記法を使用すると変換結果が期待と異なる
+        - アプリケーションがクラッシュする
+        - 処理が正常に完了しない
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 🔄 再現手順
+      description: バグを再現するための手順を詳しく記載してください
+      placeholder: |
+        1. アプリケーションを起動
+        2. 次のファイルを読み込み: `sample.txt`
+        3. 変換ボタンをクリック
+        4. エラーが発生
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ 期待される動作
+      description: 本来どのような動作になるべきかを説明してください
+      placeholder: |
+        例：正常に変換が完了し、HTMLファイルが出力される
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ 実際の動作
+      description: 実際に何が起こったかを説明してください
+      placeholder: |
+        例：エラーメッセージが表示され、処理が中断される
+    validations:
+      required: true
+
+  - type: textarea
+    id: sample-input
+    attributes:
+      label: 📝 サンプル入力
+      description: バグが発生する入力例を貼り付けてください
+      placeholder: |
+        ```
+        # 太字 # テスト内容
+        通常のテキストです。
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: error-messages
+    attributes:
+      label: 🚨 エラーメッセージ
+      description: 表示されるエラーメッセージがあれば貼り付けてください
+      placeholder: |
+        ```
+        エラーメッセージをここに貼り付け
+        ```
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 💻 実行環境
+      description: どの環境で問題が発生しましたか？
+      options:
+        - Windows 10/11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux (Ubuntu)
+        - Linux (その他)
+        - その他 (詳細をコメントに記載)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 📦 バージョン情報
+      description: 使用しているKumihan-Formatterのバージョンを記載してください
+      placeholder: "例: v2.1.0-alpha"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🎯 重要度
+      description: このバグの重要度をお選びください
+      options:
+        - 🔴 Critical (アプリケーションが使用不可)
+        - 🟠 High (主要機能に重大な影響)
+        - 🟡 Medium (機能の一部に影響)
+        - 🟢 Low (軽微な問題、回避策あり)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 追加情報
+      description: その他の関連情報があれば記載してください
+      placeholder: |
+        - スクリーンショット
+        - 関連するログ
+        - 回避策（もしあれば）
+        - その他気づいた点
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 確認事項
+      description: 以下の項目を確認してください
+      options:
+        - label: 類似のIssueがないことを確認しました
+          required: true
+        - label: バグの再現を確認しました
+          required: true
+        - label: 必要な情報を可能な限り提供しました
+          required: true

@@ -1,0 +1,178 @@
+name: ✨ 機能要求 - Feature Request
+description: 新機能の提案やUIの改善要求をお寄せください。詳細な情報により、より良い機能を実装できます。
+title: "[機能要求] "
+labels: ["enhancement"]
+assignees:
+  - mo9mo9-uwu-mo9mo9
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **機能要求ありがとうございます！**
+        新しいアイデアは Kumihan-Formatter の発展に欠かせません。以下の項目を記入してご提案ください。
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: 🎯 機能の概要
+      description: 提案する機能について簡潔に説明してください
+      placeholder: |
+        例：
+        - リアルタイムプレビュー機能の追加
+        - 新しい記法の対応（表記法、脚注など）
+        - UIの改善（ダークモード対応など）
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 🔍 動機・背景
+      description: なぜこの機能が必要だと思いますか？現在の課題や不便さを教えてください
+      placeholder: |
+        例：
+        - 現在は変換後にファイルを開く必要があり、編集→確認の作業が煩雑
+        - 複雑な表を記述する際に既存の記法では表現力が不足
+        - 夜間作業時に画面が眩しく、目に負担がかかる
+    validations:
+      required: true
+
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: 📋 詳細な説明
+      description: 機能の具体的な動作や実装イメージを詳しく説明してください
+      placeholder: |
+        例：
+        - エディタの右側にリアルタイムでHTMLが表示される
+        - 新しい記法として `||表|セル1|セル2||` のような形式を追加
+        - 設定画面でライト/ダークモードの切り替えが可能
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: 🎬 使用例・シナリオ
+      description: この機能がどのような場面で役立つか、具体的な使用例を教えてください
+      placeholder: |
+        例：
+        - 長文ドキュメント作成時の効率向上
+        - プレゼンテーション資料の作成
+        - 技術文書やマニュアルの作成
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup-example
+    attributes:
+      label: 🎨 モックアップ・例
+      description: UI変更の場合はスケッチを、記法の追加の場合は使用例を記載してください
+      placeholder: |
+        記法の例：
+        ```
+        # 新記法の例
+        ||表のタイトル||
+        |見出し1|見出し2|見出し3|
+        |データ1|データ2|データ3|
+        ```
+        
+        UI改善の場合：
+        - 画面レイアウトの説明
+        - 操作フローの説明
+        - (可能であれば画像やスケッチも添付)
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🎯 優先度
+      description: この機能の優先度をどのように考えますか？
+      options:
+        - 🔴 High (重要な機能、早期実装希望)
+        - 🟡 Medium (便利な機能、中期実装希望)
+        - 🟢 Low (あれば嬉しい機能、長期実装可)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 🛠️ 実装の複雑さ（予想）
+      description: この機能の実装はどの程度複雑だと思いますか？
+      options:
+        - 🟢 Simple (設定変更や小さな機能追加)
+        - 🟡 Medium (新しいUIコンポーネントや中規模機能)
+        - 🔴 Complex (アーキテクチャ変更や大規模機能)
+        - ❓ Unknown (技術的な判断が困難)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-users
+    attributes:
+      label: 👥 対象ユーザー
+      description: この機能は主にどのようなユーザーに向けたものですか？
+      options:
+        - 🔰 初心者ユーザー (簡単操作・直感的UI)
+        - 🎯 一般ユーザー (日常的な文書作成)
+        - 🔧 上級ユーザー (高度な機能・カスタマイズ)
+        - 👨‍💻 開発者・技術文書作成者
+        - 🎨 デザイナー・コンテンツクリエイター
+        - 🌍 全ユーザー共通
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 代替案・類似機能
+      description: 他のツールで似たような機能があれば、参考例として教えてください
+      placeholder: |
+        例：
+        - VS Code のライブプレビュー機能
+        - Notion の表作成機能
+        - Typora のリアルタイム編集機能
+    validations:
+      required: false
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: ⚙️ 技術的考慮事項
+      description: 技術的な制約や注意点があれば記載してください
+      placeholder: |
+        例：
+        - パフォーマンスへの影響
+        - 他機能との互換性
+        - セキュリティ上の考慮点
+        - 既存コードへの影響範囲
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 追加情報
+      description: その他の関連情報があれば記載してください
+      placeholder: |
+        - 参考資料やURL
+        - 関連Issue
+        - 実装時の注意点
+        - その他のアイデア
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 確認事項
+      description: 以下の項目を確認してください
+      options:
+        - label: 類似の機能要求がないことを確認しました
+          required: true
+        - label: 機能の目的と背景を明確に説明しました
+          required: true
+        - label: 実装可能性を考慮した提案内容です
+          required: true
