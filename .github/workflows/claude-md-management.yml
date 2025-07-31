@@ -1,0 +1,253 @@
+name: CLAUDE.md Management System
+
+on:
+  pull_request:
+    paths:
+      - 'CLAUDE.md'
+  push:
+    branches:
+      - main
+    paths:
+      - 'CLAUDE.md'
+  workflow_dispatch:
+
+jobs:
+  claude-md-check:
+    runs-on: ubuntu-latest
+    name: CLAUDE.md Size and Structure Check
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+      
+      - name: CLAUDE.md Size Check
+        id: size_check
+        run: |
+          python3 << 'EOF'
+          import os
+          import sys
+          
+          # Configuration
+          CLAUDE_MD_PATH = "CLAUDE.md"
+          RECOMMENDED_LINES = 150
+          RECOMMENDED_BYTES = 8192  # 8KB
+          WARNING_LINES = 200
+          WARNING_BYTES = 10240  # 10KB
+          
+          def check_claude_md():
+              if not os.path.exists(CLAUDE_MD_PATH):
+                  print("❌ CLAUDE.md not found")
+                  return False
+              
+              with open(CLAUDE_MD_PATH, 'r', encoding='utf-8') as f:
+                  content = f.read()
+                  lines = content.splitlines()
+              
+              line_count = len(lines)
+              byte_count = len(content.encode('utf-8'))
+              
+              print(f"📊 CLAUDE.md Statistics:")
+              print(f"   Lines: {line_count}")
+              print(f"   Bytes: {byte_count} ({byte_count/1024:.1f}KB)")
+              
+              # Size thresholds
+              status = "✅ GOOD"
+              exit_code = 0
+              
+              if line_count > WARNING_LINES or byte_count > WARNING_BYTES:
+                  status = "🚨 CRITICAL"
+                  exit_code = 1
+                  print(f"🚨 CRITICAL: CLAUDE.md exceeds limits!")
+                  print(f"   Lines: {line_count}/{WARNING_LINES} (limit)")
+                  print(f"   Bytes: {byte_count}/{WARNING_BYTES} (limit)")
+              elif line_count > RECOMMENDED_LINES or byte_count > RECOMMENDED_BYTES:
+                  status = "⚠️  WARNING"
+                  print(f"⚠️  WARNING: CLAUDE.md approaching limits")
+                  print(f"   Lines: {line_count}/{RECOMMENDED_LINES} (recommended)")
+                  print(f"   Bytes: {byte_count}/{RECOMMENDED_BYTES} (recommended)")
+              else:
+                  print(f"✅ GOOD: CLAUDE.md within recommended limits")
+              
+              # Section analysis
+              section_count = content.count('#')
+              deep_nesting = content.count('####')
+              
+              print(f"📋 Structure Analysis:")
+              print(f"   Total sections: {section_count}")
+              print(f"   Deep nesting (####): {deep_nesting}")
+              
+              if deep_nesting > 10:
+                  print(f"⚠️  WARNING: Too much deep nesting ({deep_nesting} sections)")
+                  status = "⚠️  WARNING" if status == "✅ GOOD" else status
+              
+              print(f"📊 Overall Status: {status}")
+              
+              # Export metrics for history tracking
+              with open("claude_md_metrics.txt", "w") as f:
+                  f.write(f"{line_count},{byte_count},{section_count},{deep_nesting}")
+              
+              return exit_code == 0
+          
+          success = check_claude_md()
+          sys.exit(0 if success else 1)
+          EOF
+      
+      - name: Upload metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: claude-md-metrics
+          path: claude_md_metrics.txt
+          retention-days: 90
+      
+      - name: Size History Tracking
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          from datetime import datetime
+          
+          # Read current metrics
+          if os.path.exists("claude_md_metrics.txt"):
+              with open("claude_md_metrics.txt", "r") as f:
+                  lines, bytes_count, sections, deep_nesting = f.read().strip().split(",")
+              
+              # Create history entry
+              entry = {
+                  "timestamp": datetime.now().isoformat(),
+                  "commit": os.environ.get("GITHUB_SHA", "unknown"),
+                  "lines": int(lines),
+                  "bytes": int(bytes_count),
+                  "sections": int(sections),
+                  "deep_nesting": int(deep_nesting)
+              }
+              
+              print(f"📈 Tracking CLAUDE.md metrics: {entry}")
+          EOF
+      
+      - name: Structure Validation
+        run: |
+          python3 << 'EOF'
+          import re
+          
+          def validate_structure():
+              with open("CLAUDE.md", "r", encoding="utf-8") as f:
+                  content = f.read()
+              
+              issues = []
+              
+              # Check for required sections
+              required_sections = [
+                  "AI運用7原則",
+                  "基本設定", 
+                  "必須ルール",
+                  "記法仕様"
+              ]
+              
+              for section in required_sections:
+                  if section not in content:
+                      issues.append(f"❌ Missing required section: {section}")
+              
+              # Check for duplicated content
+              lines = content.splitlines()
+              seen_lines = {}
+              for i, line in enumerate(lines):
+                  if line.strip() and not line.startswith('#'):
+                      if line in seen_lines:
+                          issues.append(f"⚠️  Duplicate content at line {i+1}: {line[:50]}...")
+                      else:
+                          seen_lines[line] = i+1
+              
+              # Check section length
+              sections = re.split(r'^#+\s', content, flags=re.MULTILINE)
+              for i, section in enumerate(sections[1:], 1):  # Skip first empty split
+                  section_lines = len(section.splitlines())
+                  if section_lines > 20:
+                      section_title = section.split('\n')[0][:30]
+                      issues.append(f"⚠️  Long section ({section_lines} lines): {section_title}...")
+              
+              if issues:
+                  print("🔍 Structure Issues Found:")
+                  for issue in issues:
+                      print(f"   {issue}")
+                  return False
+              else:
+                  print("✅ Structure validation passed")
+                  return True
+          
+          validate_structure()
+          EOF
+
+  claude-md-optimization:
+    runs-on: ubuntu-latest
+    name: CLAUDE.md Optimization Suggestions
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Analyze Optimization Opportunities
+        run: |
+          python3 << 'EOF'
+          import re
+          
+          def analyze_optimization():
+              with open("CLAUDE.md", "r", encoding="utf-8") as f:
+                  content = f.read()
+              
+              suggestions = []
+              
+              # Find verbose sections
+              sections = re.split(r'^(#+\s.*)', content, flags=re.MULTILINE)
+              for i in range(1, len(sections), 2):
+                  if i+1 < len(sections):
+                      title = sections[i].strip()
+                      body = sections[i+1]
+                      lines = len(body.splitlines())
+                      if lines > 15:
+                          suggestions.append(f"📝 Consider condensing: {title} ({lines} lines)")
+              
+              # Find repetitive patterns
+              lines = content.splitlines()
+              patterns = {}
+              for line in lines:
+                  if line.startswith('- **'):
+                      pattern = re.sub(r'\*\*.*?\*\*', '**X**', line)
+                      patterns[pattern] = patterns.get(pattern, 0) + 1
+              
+              for pattern, count in patterns.items():
+                  if count > 3:
+                      suggestions.append(f"🔄 Repetitive pattern ({count}x): {pattern[:50]}...")
+              
+              # Find outdated content markers
+              outdated_markers = ['TODO', 'FIXME', 'v1.', 'alpha-', 'beta-']
+              for marker in outdated_markers:
+                  if marker in content:
+                      suggestions.append(f"🕐 Potentially outdated content: {marker}")
+              
+              if suggestions:
+                  print("💡 Optimization Suggestions:")
+                  for suggestion in suggestions:
+                      print(f"   {suggestion}")
+              else:
+                  print("✨ No optimization suggestions found")
+          
+          analyze_optimization()
+          EOF
