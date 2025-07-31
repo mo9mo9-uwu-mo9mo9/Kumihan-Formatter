@@ -12,8 +12,15 @@ DEFAULT_BLOCK_KEYWORDS = {
     "イタリック": {"tag": "em"},
     "斜体": {"tag": "em"},  # イタリックの別名
     "下線": {"tag": "u"},
+    "取り消し線": {"tag": "del"},
+    "コード": {"tag": "code"},
+    "引用": {"tag": "blockquote"},
     "枠線": {"tag": "div", "class": "box"},
     "ハイライト": {"tag": "div", "class": "highlight"},
+    "中央寄せ": {"tag": "div", "style": "text-align: center"},
+    "注意": {"tag": "div", "class": "alert warning"},
+    "情報": {"tag": "div", "class": "alert info"},
+    "コードブロック": {"tag": "pre", "wrap_with_code": True},
     "見出し1": {"tag": "h1"},
     "見出し2": {"tag": "h2"},
     "見出し3": {"tag": "h3"},
@@ -27,7 +34,9 @@ DEFAULT_BLOCK_KEYWORDS = {
 # キーワードネスト順序 (外側から内側へ)
 NESTING_ORDER = [
     "details",  # 折りたたみ, ネタバレ
-    "div",  # 枠線, ハイライト
+    "div",  # 枠線, ハイライト, 中央寄せ, 注意, 情報
+    "pre",  # コードブロック
+    "blockquote",  # 引用
     "ul",  # リスト
     "h1",
     "h2",
@@ -36,7 +45,9 @@ NESTING_ORDER = [
     "h5",  # 見出し
     "strong",  # 太字
     "u",  # 下線
+    "del",  # 取り消し線
     "em",  # イタリック
+    "code",  # コード
 ]
 
 
@@ -150,6 +161,78 @@ class KeywordDefinitions:
         """
         return keyword.strip()
 
+    def get_keyword_registry(self) -> Any:
+        """多言語対応キーワードレジストリを取得
+        
+        Returns:
+            KeywordRegistry: キーワードレジストリインスタンス
+        """
+        from .keyword_registry import KeywordRegistry
+        
+        if not hasattr(self, '_registry'):
+            self._registry = KeywordRegistry()
+        
+        return self._registry
+    
+    def switch_language(self, language: str) -> bool:
+        """使用言語を変更（国際化対応）
+        
+        Args:
+            language: 言語コード（ja, en等）
+            
+        Returns:
+            bool: 変更成功時True
+        """
+        registry = self.get_keyword_registry()
+        if registry.switch_language(language):
+            # レジストリから新しい言語のキーワード辞書を取得
+            self.BLOCK_KEYWORDS = registry.convert_to_legacy_format(language)
+            return True
+        return False
+    
+    def get_supported_languages(self) -> list[str]:
+        """サポート対象言語一覧を取得
+        
+        Returns:
+            list[str]: 言語コードのリスト
+        """
+        registry = self.get_keyword_registry()
+        return registry.get_supported_languages()
+    
+    def is_css_dependent(self, keyword: str) -> bool:
+        """キーワードがCSS依存かどうかを判定
+        
+        Args:
+            keyword: キーワード名
+            
+        Returns:
+            bool: CSS依存の場合True
+        """
+        registry = self.get_keyword_registry()
+        keyword_def = registry.get_keyword_by_display_name(keyword)
+        
+        if keyword_def and keyword_def.css_requirements:
+            return len(keyword_def.css_requirements) > 0
+        
+        return False
+    
+    def get_css_requirements(self, keyword: str) -> list[str]:
+        """キーワードのCSS要件を取得
+        
+        Args:
+            keyword: キーワード名
+            
+        Returns:
+            list[str]: 必要なCSSクラス名のリスト
+        """
+        registry = self.get_keyword_registry()
+        keyword_def = registry.get_keyword_by_display_name(keyword)
+        
+        if keyword_def and keyword_def.css_requirements:
+            return keyword_def.css_requirements[:]
+        
+        return []
+
     def _validate_keyword_name(self, keyword: str) -> str | None:
         """
         キーワード名の妥当性を検証
@@ -214,6 +297,7 @@ class KeywordDefinitions:
             "strong",
             "em",
             "u",
+            "del",
             "h1",
             "h2",
             "h3",

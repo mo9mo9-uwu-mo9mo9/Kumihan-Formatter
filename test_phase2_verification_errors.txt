@@ -1,0 +1,26 @@
+エラーレポート: test_phase2_verification.txt
+==================================================
+
+検出されたエラー数: 3
+
+エラー 1:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: test_phase2_verification.txt
+
+エラー 2:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: test_phase2_verification.txt
+
+エラー 3:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: test_phase2_verification.txt
+
