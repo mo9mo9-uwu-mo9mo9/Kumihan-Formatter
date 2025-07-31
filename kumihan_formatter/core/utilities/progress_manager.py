@@ -4,10 +4,10 @@ Issue #694対応 - ETA算出・キャンセル機能付きプログレス追跡
 """
 
 import time
-from typing import Optional, Callable, Dict, Any, List
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from threading import Event
+from typing import Any, Callable, Dict, List, Optional
 
 from .logger import get_logger
 
@@ -210,12 +210,12 @@ class ProgressManager:
     def get_state(self) -> ProgressState:
         """現在のプログレス状態を取得"""
         return self.state
-    
+
     def save_progress_log(self, filepath: str):
         """プログレス情報をJSONファイルに保存"""
         import json
         from pathlib import Path
-        
+
         log_data = {
             "task_name": self.task_name,
             "summary": self.get_summary(),
@@ -230,16 +230,16 @@ class ProgressManager:
                 "errors": self.state.errors_count,
                 "warnings": self.state.warnings_count,
                 "memory_peak_mb": self.state.memory_mb,
-            }
+            },
         }
-        
+
         try:
             output_path = Path(filepath)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            with open(output_path, 'w', encoding='utf-8') as f:
+
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(log_data, f, indent=2, ensure_ascii=False)
-            
+
             self.logger.info(f"Progress log saved to: {filepath}")
         except Exception as e:
             self.logger.error(f"Failed to save progress log: {e}")
@@ -294,7 +294,7 @@ class ProgressManager:
             self.state.memory_mb = process.memory_info().rss / 1024 / 1024
         except ImportError:
             # psutilが利用できない場合は0のまま
-            if not hasattr(self, '_psutil_warned'):
+            if not hasattr(self, "_psutil_warned"):
                 self.logger.warning(
                     "psutil is not installed. Memory statistics will not be available. "
                     "Install with: pip install psutil"
@@ -436,7 +436,7 @@ class ProgressContextManager:
                     self.progress_manager.save_progress_log(self.progress_log)
                 except Exception as e:
                     self.logger.error(f"Failed to save progress log: {e}")
-            
+
             # 最終統計出力
             if self.verbosity.value >= self.VerbosityLevel.DETAILED.value:
                 self._display_final_stats()
@@ -514,29 +514,31 @@ class ProgressContextManager:
     def _setup_rich_progress(self):
         """Rich Progress初期化"""
         try:
+            from rich.console import Console
             from rich.progress import (
+                BarColumn,
                 Progress,
                 SpinnerColumn,
-                TextColumn,
-                BarColumn,
                 TaskProgressColumn,
-                TimeRemainingColumn,
+                TextColumn,
                 TimeElapsedColumn,
+                TimeRemainingColumn,
             )
-            from rich.console import Console
 
             # プログレススタイルと詳細度に応じてカラム構成を調整
             # スタイル別の基本カラム設定
             if self.progress_style == "spinner":
                 columns = [SpinnerColumn(), TextColumn("[bold blue]{task.description}")]
             elif self.progress_style == "percentage":
-                columns = [TextColumn("[bold blue]{task.description}"), 
-                          TextColumn("[progress.percentage]{task.percentage:>3.0f}%")]
+                columns = [
+                    TextColumn("[bold blue]{task.description}"),
+                    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                ]
             else:  # bar (default)
                 columns = [TextColumn("[bold blue]{task.description}")]
                 if self.verbosity.value >= self.VerbosityLevel.MINIMAL.value:
                     columns.extend([BarColumn(), TaskProgressColumn()])
-            
+
             # 詳細レベルに応じた追加カラム
             if self.verbosity.value >= self.VerbosityLevel.DETAILED.value:
                 if self.enable_eta and self.progress_style != "percentage":

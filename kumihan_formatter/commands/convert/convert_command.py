@@ -47,6 +47,8 @@ class ConvertCommand:
         enable_cancellation: bool = True,
         progress_style: str = "bar",
         progress_log: str | None = None,
+        continue_on_error: bool = False,
+        graceful_errors: bool = False,
     ) -> None:
         """
         変換コマンドを実行
@@ -66,6 +68,8 @@ class ConvertCommand:
             enable_cancellation: キャンセル機能を有効化
             progress_style: プログレス表示スタイル (bar/spinner/percentage)
             progress_log: プログレスログ出力先ファイル
+            continue_on_error: Issue #700: 記法エラーが発生してもHTML生成を継続
+            graceful_errors: Issue #700: エラー情報をHTMLに埋め込んで表示
 
         Returns:
             None: プログラム終了時のみ
@@ -75,7 +79,8 @@ class ConvertCommand:
         )
         self.logger.debug(
             f"Options: no_preview={no_preview}, watch={watch}, "
-            f"syntax_check={syntax_check}"
+            f"syntax_check={syntax_check}, continue_on_error={continue_on_error}, "
+            f"graceful_errors={graceful_errors}"
         )
 
         try:
@@ -101,26 +106,47 @@ class ConvertCommand:
                 error_report = self.validator.perform_syntax_check(input_path)
 
                 if error_report.get("has_errors", False):
-                    # エラーが見つかった場合は変換を中止
-                    self.logger.error(
-                        f"Syntax errors found: {len(error_report.get('errors', []))} errors"
-                    )
-                    get_console_ui().error(
-                        "記法エラーが検出されました。変換を中止します。"
-                    )
-                    get_console_ui().info("\n=== 詳細エラーレポート ===")
-                    # Display errors from dict format
-                    for error in error_report.get("errors", []):
-                        print(f"  エラー: {error.get('message', 'Unknown error')}")
+                    # Issue #700: graceful error handling対応
+                    if continue_on_error:
+                        # エラーがあるが処理を継続
+                        self.logger.warning(
+                            f"Syntax errors found but continuing: {len(error_report.get('errors', []))} errors"
+                        )
+                        get_console_ui().warning(
+                            "記法エラーが検出されましたが、処理を継続します。"
+                        )
 
-                    # エラーレポートファイルを生成
-                    self.validator.save_error_report(error_report, input_path, output)
-                    self.logger.info("Error report saved")
+                        if graceful_errors:
+                            get_console_ui().info(
+                                "エラー情報はHTML内に埋め込まれます。"
+                            )
 
-                    get_console_ui().dim(
-                        "--no-syntax-check オプションで記法チェックをスキップできます"
-                    )
-                    sys.exit(1)
+                        # エラー詳細を表示
+                        get_console_ui().info("\n=== 検出されたエラー ===")
+                        for error in error_report.get("errors", []):
+                            print(f"  ❌ {error.get('message', 'Unknown error')}")
+                    else:
+                        # 従来の処理：エラーがあれば中止
+                        self.logger.error(
+                            f"Syntax errors found: {len(error_report.get('errors', []))} errors"
+                        )
+                        get_console_ui().error(
+                            "記法エラーが検出されました。変換を中止します。"
+                        )
+                        get_console_ui().info("\n=== 詳細エラーレポート ===")
+                        for error in error_report.get("errors", []):
+                            print(f"  エラー: {error.get('message', 'Unknown error')}")
+
+                        # エラーレポートファイルを生成
+                        self.validator.save_error_report(
+                            error_report, input_path, output
+                        )
+                        self.logger.info("Error report saved")
+
+                        get_console_ui().dim(
+                            "--continue-on-error オプションでエラーがあっても処理を継続できます"
+                        )
+                        sys.exit(1)
 
                 elif error_report.get("has_warnings", False):
                     # 警告のみの場合は続行するが表示
@@ -149,6 +175,8 @@ class ConvertCommand:
                 enable_cancellation=enable_cancellation,
                 progress_style=progress_style,
                 progress_log=progress_log,
+                continue_on_error=continue_on_error,
+                graceful_errors=graceful_errors,
             )
             self.logger.info(f"Conversion completed: {output_file}")
 

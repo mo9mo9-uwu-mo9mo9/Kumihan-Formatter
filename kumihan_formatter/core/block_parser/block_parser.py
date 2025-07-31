@@ -46,9 +46,11 @@ class BlockParser:
         try:
             for i, line in enumerate(lines):
                 if i >= 10000:  # 安全弁: 極端に大きなファイルの処理防止
-                    self.logger.warning(f"File too large, stopping preprocessing at line {i}")
+                    self.logger.warning(
+                        f"File too large, stopping preprocessing at line {i}"
+                    )
                     break
-                    
+
                 stripped = line.strip()
                 if self.keyword_parser.marker_parser.is_block_end_marker(stripped):
                     self._block_end_indices.append(i)
@@ -75,12 +77,18 @@ class BlockParser:
 
         # 安全性チェック: キャッシュが初期化されているか確認
         if not self._block_end_indices:
-            self.logger.warning(f"Block end indices cache is empty at start_index {start_index}")
+            self.logger.warning(
+                f"Block end indices cache is empty at start_index {start_index}"
+            )
             return None
 
         # 範囲チェック: start_indexが有効範囲内か確認
-        if start_index < 0 or (self._lines_cache and start_index >= len(self._lines_cache)):
-            self.logger.warning(f"Invalid start_index {start_index}, lines count: {len(self._lines_cache) if self._lines_cache else 0}")
+        if start_index < 0 or (
+            self._lines_cache and start_index >= len(self._lines_cache)
+        ):
+            self.logger.warning(
+                f"Invalid start_index {start_index}, lines count: {len(self._lines_cache) if self._lines_cache else 0}"
+            )
             return None
 
         # 二分探索でstart_indexより大きい最初のインデックスを検索
@@ -88,9 +96,11 @@ class BlockParser:
 
         if pos < len(self._block_end_indices):
             result = self._block_end_indices[pos]
-            self.logger.debug(f"Found block end at index {result} for start_index {start_index}")
+            self.logger.debug(
+                f"Found block end at index {result} for start_index {start_index}"
+            )
             return result
-        
+
         self.logger.debug(f"No block end found after start_index {start_index}")
         return None
 

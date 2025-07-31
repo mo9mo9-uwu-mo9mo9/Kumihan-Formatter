@@ -5,6 +5,7 @@ to maintain the 300-line limit for error_framework.py.
 """
 
 import traceback
+from dataclasses import dataclass
 from typing import Any
 
 from .error_types import ErrorCategory, ErrorContext, ErrorSeverity
@@ -134,6 +135,73 @@ class SyntaxError(KumihanError):
         super().__init__(
             message, category=ErrorCategory.SYNTAX, context=context, **kwargs
         )
+
+
+@dataclass
+class GracefulSyntaxError:
+    """
+    Issue #700対応: graceful error handling用の拡張SyntaxErrorデータクラス
+
+    Phase 1: 基本的なエラー継続処理
+    - エラー詳細情報の保持
+    - HTML埋め込み用の詳細データ
+    - 修正提案情報
+    """
+
+    line_number: int
+    column: int
+    error_type: str
+    severity: str  # 'error', 'warning', 'info'
+    message: str
+    context: str  # エラー発生箇所の前後コンテキスト
+    suggestion: str = ""  # 修正提案
+    file_path: str = ""
+
+    # Phase 1: HTML表示用プロパティ
+    @property
+    def html_class(self) -> str:
+        """エラー表示用のCSSクラス名を返す"""
+        return f"kumihan-error-{self.severity}"
+
+    @property
+    def display_title(self) -> str:
+        """エラー表示用のタイトルを返す"""
+        return f"記法エラー (行 {self.line_number})"
+
+    @property
+    def html_content(self) -> str:
+        """HTML埋め込み用のエラー内容を返す"""
+        # HTMLエスケープ処理（セキュリティ対策）
+        import html
+
+        safe_message = html.escape(self.message)
+        content = f"<strong>{safe_message}</strong>"
+
+        if self.context:
+            safe_context = html.escape(self.context)
+            content += f"<br><code>{safe_context}</code>"
+
+        if self.suggestion:
+            safe_suggestion = html.escape(self.suggestion)
+            content += f"<br><em>提案: {safe_suggestion}</em>"
+
+        return content
+
+    def to_dict(self) -> dict[str, Any]:
+        """辞書形式でエラー情報を返す"""
+        return {
+            "line_number": self.line_number,
+            "column": self.column,
+            "error_type": self.error_type,
+            "severity": self.severity,
+            "message": self.message,
+            "context": self.context,
+            "suggestion": self.suggestion,
+            "file_path": self.file_path,
+            "html_class": self.html_class,
+            "display_title": self.display_title,
+            "html_content": self.html_content,
+        }
 
 
 class ValidationError(KumihanError):

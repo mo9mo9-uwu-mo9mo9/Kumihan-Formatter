@@ -15,7 +15,7 @@ from rich.progress import Progress
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-from ...parser import parse, StreamingParser
+from ...parser import StreamingParser, parse
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -69,19 +69,19 @@ class ConvertProcessor:
         enable_cancellation: bool = True,
         progress_style: str = "bar",
         progress_log: str | None = None,
+        continue_on_error: bool = False,
+        graceful_errors: bool = False,
     ) -> Path:
         """ファイルを変換してHTMLを生成（Issue #695対応: 高度プログレス管理）"""
         from ...core.utilities.progress_manager import ProgressContextManager
 
         self.logger.info(f"Starting file conversion: {input_path} -> {output_dir}")
-        
+
         # 未実装機能の警告
         if progress_style != "bar":
             self.logger.warning(
                 f"Progress style '{progress_style}' is not implemented yet. Using default 'bar' style."
             )
-        
-
 
         # プログレスレベルをenumに変換
         verbosity_map = {
@@ -139,7 +139,12 @@ class ConvertProcessor:
 
             self.logger.info("Starting parse phase")
             ast = self._parse_with_enhanced_progress(
-                text, config_obj, input_path, progress
+                text,
+                config_obj,
+                input_path,
+                progress,
+                continue_on_error,
+                graceful_errors,
             )
             if not ast:
                 progress.add_error("パース処理が失敗しました")
@@ -169,8 +174,27 @@ class ConvertProcessor:
                 current_step += 1
                 progress.update(current_step, "変換", "ソース表示を準備中...")
 
+            # Issue #700: パーサーからgraceful errorsを取得
+            parser_errors = []
+            if (
+                graceful_errors
+                and hasattr(ast, "parser")
+                and hasattr(ast.parser, "get_graceful_errors")
+            ):
+                parser_errors = ast.parser.get_graceful_errors()
+                self.logger.info(
+                    f"Retrieved {len(parser_errors)} graceful errors from parser"
+                )
+
             html = self._render_with_enhanced_progress(
-                ast, config_obj, template, input_path.stem, progress, **source_args
+                ast,
+                config_obj,
+                template,
+                input_path.stem,
+                progress,
+                graceful_errors=graceful_errors,
+                parser_errors=parser_errors,
+                **source_args,
             )
             self.logger.debug(f"Render completed: {len(html)} characters")
             current_step += int(estimated_steps * 0.4)  # レンダリングも約40%
@@ -219,12 +243,19 @@ class ConvertProcessor:
         return max(base_steps, 10)  # 最低10ステップ
 
     def _parse_with_enhanced_progress(
-        self, text: str, config_obj, input_path: Path, progress_manager
+        self,
+        text: str,
+        config_obj,
+        input_path: Path,
+        progress_manager,
+        continue_on_error: bool = False,
+        graceful_errors: bool = False,
     ):
         """プログレス管理付きパース処理（Issue #695対応）"""
         from ...parser import Parser
 
-        parser = Parser()
+        # Issue #700: graceful error handling対応
+        parser = Parser(graceful_errors=graceful_errors)
 
         # ファイルサイズベースでストリーミング解析を選択
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
@@ -269,6 +300,8 @@ class ConvertProcessor:
         template: str | None,
         title: str,
         progress_manager,
+        graceful_errors: bool = False,
+        parser_errors: list = None,
         **source_args,
     ) -> str:
         """プログレス管理付きレンダリング処理（Issue #695対応）"""
@@ -310,9 +343,17 @@ class ConvertProcessor:
             if hasattr(renderer, "set_progress_callback"):
                 renderer.set_progress_callback(render_progress_callback)
 
-            html = renderer.render(
-                ast, template=template, title=title, **source_args
-            )
+            # Issue #700: graceful error handling対応
+            if graceful_errors and parser_errors:
+                # HTMLレンダラーにエラー情報を設定
+                html_renderer = renderer.html_renderer
+                if hasattr(html_renderer, "set_graceful_errors"):
+                    html_renderer.set_graceful_errors(parser_errors, embed_in_html=True)
+                    self.logger.info(
+                        f"Set {len(parser_errors)} graceful errors for HTML embedding"
+                    )
+
+            html = renderer.render(ast, template=template, title=title, **source_args)
 
             return html
 
@@ -354,8 +395,6 @@ class ConvertProcessor:
         self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int
     ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
-        from ...parser import StreamingParser
-
         self.logger.info(
             f"Using streaming parser for large file: {size_mb:.1f}MB, {line_count} lines"
         )
@@ -427,8 +466,6 @@ class ConvertProcessor:
                 self.logger.error(f"Streaming parse failed: {e}")
                 # フォールバック: 従来の解析方式
                 self.logger.info("Falling back to traditional parser")
-                from ...parser import parse
-
                 nodes = parse(text, config)
 
         return nodes
@@ -437,7 +474,6 @@ class ConvertProcessor:
         self, text: str, config: Any, size_mb: float
     ) -> Any:
         """従来のパーサーを使用した解析（既存の動作を維持）"""
-        from ...parser import parse
 
         with Progress() as progress:
             if size_mb > 10:  # 10MB以上

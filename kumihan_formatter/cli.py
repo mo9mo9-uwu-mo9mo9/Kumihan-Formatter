@@ -120,6 +120,18 @@ def register_commands() -> None:
             envvar="KUMIHAN_PROGRESS_LOG",
             help="プログレスログの出力先ファイル（JSONフォーマット）",
         )
+        @click.option(
+            "--continue-on-error",
+            is_flag=True,
+            envvar="KUMIHAN_CONTINUE_ON_ERROR",
+            help="Issue #700: 記法エラーが発生してもHTML生成を継続する",
+        )
+        @click.option(
+            "--graceful-errors",
+            is_flag=True,
+            envvar="KUMIHAN_GRACEFUL_ERRORS",
+            help="Issue #700: エラー情報をHTMLに埋め込んで表示する",
+        )
         def convert_command(
             input_file: str | None,
             output: str,
@@ -135,6 +147,8 @@ def register_commands() -> None:
             disable_cancellation: bool,
             progress_style: str,
             progress_log: str | None,
+            continue_on_error: bool,
+            graceful_errors: bool,
         ) -> None:
             """テキストファイルをHTMLに変換する"""
             command = ConvertCommand()
@@ -153,6 +167,8 @@ def register_commands() -> None:
                 enable_cancellation=not disable_cancellation,
                 progress_style=progress_style,
                 progress_log=progress_log,
+                continue_on_error=continue_on_error,
+                graceful_errors=graceful_errors,
             )
 
         cli.add_command(convert_command, name="convert")
