@@ -125,8 +125,7 @@ class KeywordParser:
         # Handle color attribute for highlight
         if keyword == "ハイライト" and "color" in attributes:
             color = attributes["color"]
-            if not color.startswith("#"):
-                color = "#" + color
+            color = self._normalize_color_value(color)
             builder.style(f"background-color:{color}")
 
         # Add other attributes
@@ -135,6 +134,62 @@ class KeywordParser:
                 builder.attribute(key, value)
 
         return builder.build()
+
+    def _normalize_color_value(self, color: str) -> str:
+        """色値を正規化（色名を16進数に変換）"""
+        # 色名から16進数への変換マッピング
+        color_map = {
+            # 基本色（ハイライト用淡い色）
+            "red": "#ffcccc",
+            "green": "#ccffcc", 
+            "blue": "#ccccff",
+            "yellow": "#ffff00",
+            "orange": "#ffa500",
+            "purple": "#800080",
+            "pink": "#ffc0cb",
+            "brown": "#a52a2a",
+            "black": "#000000",
+            "white": "#ffffff",
+            "gray": "#808080",
+            "grey": "#808080",
+            # 追加色
+            "navy": "#000080",
+            "maroon": "#800000",
+            "olive": "#808000",
+            "lime": "#00ff00",
+            "aqua": "#00ffff",
+            "teal": "#008080",
+            "silver": "#c0c0c0",
+            "fuchsia": "#ff00ff",
+            "cyan": "#00ffff",
+            "magenta": "#ff00ff",
+            # 日本語色名（ハイライト用淡い色）
+            "赤": "#ffcccc",
+            "緑": "#ccffcc",
+            "青": "#ccccff",
+            "黄": "#ffff00",
+            "オレンジ": "#ffa500",
+            "紫": "#800080",
+            "ピンク": "#ffc0cb",
+            "茶": "#a52a2a",
+            "黒": "#000000",
+            "白": "#ffffff",
+            "灰": "#808080"
+        }
+        
+        # 既に16進数形式の場合はそのまま返す
+        if color.startswith("#"):
+            return color
+            
+        # 色名の場合は16進数に変換
+        color_lower = color.lower()
+        if color_lower in color_map:
+            return color_map[color_lower]
+        elif color in color_map:  # 日本語色名の場合
+            return color_map[color]
+        else:
+            # 不明な色名の場合は#を付けて返す（従来の動作）
+            return f"#{color}"
 
     def create_compound_block(
         self, keywords: list[str], content: str, attributes: dict[str, Any]
@@ -175,8 +230,7 @@ class KeywordParser:
                 # Handle color attribute for highlight
                 if keyword == "ハイライト" and "color" in attributes:
                     color = attributes["color"]
-                    if not color.startswith("#"):
-                        color = "#" + color
+                    color = self._normalize_color_value(color)
                     builder.style(f"background-color:{color}")
 
                 # Add other attributes
@@ -219,10 +273,68 @@ class KeywordParser:
         processed_content = self._process_inline_keywords(content)
         return [processed_content]
 
-    def _process_inline_keywords(self, content: str) -> str:
-        """Process inline keywords within content"""
-        # Simple inline processing - expand this as needed
-        return content
+    def _process_inline_keywords(self, content: str) -> Any:
+        """Process inline keywords within content (# keyword # content format)"""
+        import re
+        from .ast_nodes.factories import heading, strong, emphasis, highlight
+        from .ast_nodes import Node
+        from .ast_nodes.node_builder import NodeBuilder
+        
+        # Pattern for inline notation: # keyword # content
+        pattern = r'#\s*(.*?)\s*#\s*(.*?)(?=\s*(?:#|$))'
+        
+        # If no inline notation found, return as plain text
+        if not re.search(pattern, content):
+            return content
+            
+        # Process inline notations
+        parts = []
+        last_end = 0
+        
+        for match in re.finditer(pattern, content):
+            # Add text before the match
+            if match.start() > last_end:
+                text_before = content[last_end:match.start()]
+                if text_before.strip():
+                    parts.append(text_before)
+            
+            keyword = match.group(1).strip().lower()
+            text_content = match.group(2).strip()
+            
+            # Create appropriate AST node based on keyword
+            if keyword == "見出し3":
+                # For h3 in list items, just return strong styling instead
+                parts.append(NodeBuilder("strong").content(text_content).build())
+            elif keyword == "太字":
+                parts.append(strong(text_content))
+            elif keyword == "イタリック":
+                parts.append(emphasis(text_content))
+            elif keyword == "下線":
+                parts.append(NodeBuilder("u").content(text_content).build())
+            elif keyword == "ハイライト":
+                parts.append(highlight(text_content))
+            elif keyword == "コード":
+                parts.append(NodeBuilder("code").content(text_content).build())
+            else:
+                # Unknown keyword - return original text
+                parts.append(match.group(0))
+            
+            last_end = match.end()
+        
+        # Add remaining text after last match
+        if last_end < len(content):
+            remaining = content[last_end:]
+            if remaining.strip():
+                parts.append(remaining)
+        
+        # If only one part and it's a string, return it directly
+        if len(parts) == 1 and isinstance(parts[0], str):
+            return parts[0]
+        elif len(parts) == 1:
+            return parts[0]
+        else:
+            # Return multiple parts as a list for the list item to handle
+            return parts
 
     def _sort_keywords_by_nesting_order(self, keywords: list[str]) -> list[str]:
         """Sort keywords by their nesting order (outer to inner)"""

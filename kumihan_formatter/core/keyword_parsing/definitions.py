@@ -15,7 +15,7 @@ DEFAULT_BLOCK_KEYWORDS = {
     "コード": {"tag": "code"},
     "引用": {"tag": "blockquote"},
     "枠線": {"tag": "div", "class": "bordered"},
-    "ハイライト": {"tag": "span", "class": "highlight"},
+    "ハイライト": {"tag": "div", "class": "highlight"},
     "見出し1": {"tag": "h1"},
     "見出し2": {"tag": "h2"},
     "見出し3": {"tag": "h3"},
