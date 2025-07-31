@@ -222,9 +222,9 @@ class ConvertProcessor:
         self, text: str, config_obj, input_path: Path, progress_manager
     ):
         """プログレス管理付きパース処理（Issue #695対応）"""
-        from ...parser import KumihanParser
+        from ...parser import Parser
 
-        parser = KumihanParser()
+        parser = Parser()
 
         # ファイルサイズベースでストリーミング解析を選択
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
@@ -272,9 +272,9 @@ class ConvertProcessor:
         **source_args,
     ) -> str:
         """プログレス管理付きレンダリング処理（Issue #695対応）"""
-        from ...renderer import KumihanRenderer
+        from ...renderer import Renderer
 
-        renderer = KumihanRenderer()
+        renderer = Renderer()
 
         # レンダリング進捗の段階的更新
         node_count = len(ast) if ast else 0
@@ -311,7 +311,7 @@ class ConvertProcessor:
                 renderer.set_progress_callback(render_progress_callback)
 
             html = renderer.render(
-                ast, template_name=template, title=title, **source_args
+                ast, template=template, title=title, **source_args
             )
 
             return html
