@@ -42,6 +42,11 @@ class ConvertCommand:
         template_name: str | None,
         include_source: bool,
         syntax_check: bool = True,
+        progress_level: str = "detailed",
+        show_progress_tooltip: bool = True,
+        enable_cancellation: bool = True,
+        progress_style: str = "bar",
+        progress_log: str | None = None,
     ) -> None:
         """
         変換コマンドを実行
@@ -56,6 +61,11 @@ class ConvertCommand:
             template_name: 使用するテンプレート名
             include_source: ソース表示を含める
             syntax_check: 変換前の構文チェックを有効化
+            progress_level: プログレス表示レベル (silent/minimal/detailed/verbose)
+            show_progress_tooltip: プログレスツールチップ表示を有効化
+            enable_cancellation: キャンセル機能を有効化
+            progress_style: プログレス表示スタイル (bar/spinner/percentage)
+            progress_log: プログレスログ出力先ファイル
 
         Returns:
             None: プログラム終了時のみ
@@ -123,8 +133,10 @@ class ConvertCommand:
                     for warning in error_report.get("warnings", []):
                         print(f"  警告: {warning.get('message', 'Unknown warning')}")
 
-            # ファイル変換実行
-            self.logger.info("Starting file conversion")
+            # ファイル変換実行 (Issue #695対応: 高度プログレス管理)
+            self.logger.info(
+                "Starting file conversion with enhanced progress management"
+            )
             output_file = self.processor.convert_file(
                 input_path,
                 output,
@@ -132,6 +144,11 @@ class ConvertCommand:
                 show_test_cases=show_test_cases,
                 template=template_name,
                 include_source=include_source,
+                progress_level=progress_level,
+                show_progress_tooltip=show_progress_tooltip,
+                enable_cancellation=enable_cancellation,
+                progress_style=progress_style,
+                progress_log=progress_log,
             )
             self.logger.info(f"Conversion completed: {output_file}")
 

@@ -43,6 +43,9 @@ dev = [
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",
 ]
+performance = [
+    "psutil>=5.9",  # メモリ使用量追跡用
+]
 
 [tool.setuptools.packages.find]
 exclude = ["dev*", "tools*"]
