@@ -132,6 +132,23 @@ def register_commands() -> None:
             envvar="KUMIHAN_GRACEFUL_ERRORS",
             help="Issue #700: エラー情報をHTMLに埋め込んで表示する",
         )
+        @click.option(
+            "--error-level",
+            type=click.Choice(["strict", "normal", "lenient", "ignore"], case_sensitive=False),
+            default="normal",
+            envvar="KUMIHAN_ERROR_LEVEL",
+            help="Phase3: エラー処理レベル設定（strict/normal/lenient/ignore）",
+        )
+        @click.option(
+            "--no-suggestions",
+            is_flag=True,
+            help="Phase3: エラー修正提案を非表示",
+        )
+        @click.option(
+            "--no-statistics",
+            is_flag=True,
+            help="Phase3: エラー統計を非表示",
+        )
         def convert_command(
             input_file: str | None,
             output: str,
@@ -149,6 +166,9 @@ def register_commands() -> None:
             progress_log: str | None,
             continue_on_error: bool,
             graceful_errors: bool,
+            error_level: str,
+            no_suggestions: bool,
+            no_statistics: bool,
         ) -> None:
             """テキストファイルをHTMLに変換する"""
             command = ConvertCommand()
@@ -169,6 +189,9 @@ def register_commands() -> None:
                 progress_log=progress_log,
                 continue_on_error=continue_on_error,
                 graceful_errors=graceful_errors,
+                error_level=error_level,
+                no_suggestions=no_suggestions,
+                no_statistics=no_statistics,
             )
 
         cli.add_command(convert_command, name="convert")

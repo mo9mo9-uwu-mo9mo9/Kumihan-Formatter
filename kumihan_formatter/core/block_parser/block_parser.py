@@ -26,6 +26,11 @@ class BlockParser:
 
         self.logger.debug("BlockParser initialized with performance optimizations")
 
+    def set_parser_reference(self, parser) -> None:
+        """Issue #700: graceful error handling用にパーサー参照を設定"""
+        self.parser_ref = parser
+        self.logger.debug("Parser reference set for graceful error handling")
+
     def _preprocess_lines(self, lines: list[str]) -> None:
         """行データの前処理でパフォーマンス最適化
 
@@ -161,6 +166,17 @@ class BlockParser:
             opening_line
         )
         if parse_result is None:
+            # Issue #700: graceful error handling対応 - 不正な記法をgraceful errorとして記録
+            if hasattr(self, 'parser_ref') and self.parser_ref and self.parser_ref.graceful_errors:
+                self.parser_ref._record_graceful_error(
+                    start_index + 1,  # 1-based line number
+                    1,  # column
+                    "invalid_marker_format",
+                    "error",
+                    "不正なマーカー記法: 終了マーカー # が見つかりません",
+                    opening_line,
+                    "正しい記法: # キーワード # 内容 または # キーワード #\n内容\n##",
+                )
             return None, start_index
 
         keywords, attributes, parse_errors = parse_result
@@ -229,6 +245,19 @@ class BlockParser:
 
         if end_index is None:
             self.logger.error(f"Block end marker not found for line {start_index + 1}")
+            
+            # Issue #700: graceful error handling対応
+            if hasattr(self, 'parser_ref') and self.parser_ref and self.parser_ref.graceful_errors:
+                self.parser_ref._record_graceful_error(
+                    start_index + 1,  # 1-based line number
+                    1,  # column
+                    "incomplete_block_marker",
+                    "error",
+                    "未完了のマーカー: 終了マーカー # が見つかりません",
+                    lines[start_index].strip(),
+                    "ブロック記法を確認し、終了マーカー # を追加してください",
+                )
+            
             return (
                 error_node(
                     "ブロックの終了マーカー ## が見つかりません", start_index + 1

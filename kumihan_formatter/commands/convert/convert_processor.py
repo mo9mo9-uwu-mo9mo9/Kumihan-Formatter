@@ -15,7 +15,7 @@ from rich.progress import Progress
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-from ...parser import StreamingParser, parse
+from ...parser import StreamingParser, parse, parse_with_error_config
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -71,6 +71,8 @@ class ConvertProcessor:
         progress_log: str | None = None,
         continue_on_error: bool = False,
         graceful_errors: bool = False,
+        # Phase3: エラー設定管理
+        error_config_manager: Any = None,
     ) -> Path:
         """ファイルを変換してHTMLを生成（Issue #695対応: 高度プログレス管理）"""
         from ...core.utilities.progress_manager import ProgressContextManager
@@ -138,13 +140,14 @@ class ConvertProcessor:
                 raise KeyboardInterrupt("ユーザーによりキャンセルされました")
 
             self.logger.info("Starting parse phase")
-            ast = self._parse_with_enhanced_progress(
+            ast, parser = self._parse_with_enhanced_progress(
                 text,
                 config_obj,
                 input_path,
                 progress,
                 continue_on_error,
                 graceful_errors,
+                error_config_manager,
             )
             if not ast:
                 progress.add_error("パース処理が失敗しました")
@@ -178,10 +181,10 @@ class ConvertProcessor:
             parser_errors = []
             if (
                 graceful_errors
-                and hasattr(ast, "parser")
-                and hasattr(ast.parser, "get_graceful_errors")
+                and parser
+                and hasattr(parser, "get_graceful_errors")
             ):
-                parser_errors = ast.parser.get_graceful_errors()
+                parser_errors = parser.get_graceful_errors()
                 self.logger.info(
                     f"Retrieved {len(parser_errors)} graceful errors from parser"
                 )
@@ -250,12 +253,18 @@ class ConvertProcessor:
         progress_manager,
         continue_on_error: bool = False,
         graceful_errors: bool = False,
+        error_config_manager: Any = None,
     ):
         """プログレス管理付きパース処理（Issue #695対応）"""
         from ...parser import Parser
 
-        # Issue #700: graceful error handling対応
-        parser = Parser(graceful_errors=graceful_errors)
+        # Phase3: エラー設定管理対応
+        if error_config_manager:
+            effective_graceful_errors = error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error
+        else:
+            effective_graceful_errors = graceful_errors
+            
+        parser = Parser(graceful_errors=effective_graceful_errors)
 
         # ファイルサイズベースでストリーミング解析を選択
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
@@ -288,10 +297,13 @@ class ConvertProcessor:
             nodes = list(
                 parser.parse_streaming_from_text(text, enhanced_progress_callback)
             )
-            return nodes
+            # Issue #700: パーサーオブジェクトも返す
+            return (nodes, parser)
         else:
             # 従来の解析方式
-            return parser.parse(text)
+            nodes = parser.parse(text)
+            # Issue #700: パーサーオブジェクトも返す
+            return (nodes, parser)
 
     def _render_with_enhanced_progress(
         self,
@@ -375,7 +387,7 @@ class ConvertProcessor:
         html_filename = f"{input_path.stem}.html"
         return output_path / html_filename
 
-    def _parse_with_progress(self, text: str, config: Any, input_path: Path) -> Any:
+    def _parse_with_progress(self, text: str, config: Any, input_path: Path, error_config_manager: Any = None) -> Any:
         """プログレス表示付きでパース処理を実行（ストリーミング対応）"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
         line_count = len(text.split("\n"))
@@ -386,20 +398,26 @@ class ConvertProcessor:
 
         if use_streaming:
             return self._parse_with_streaming_progress(
-                text, config, input_path, size_mb, line_count
+                text, config, input_path, size_mb, line_count, error_config_manager
             )
         else:
-            return self._parse_with_traditional_progress(text, config, size_mb)
+            return self._parse_with_traditional_progress(text, config, size_mb, error_config_manager)
 
     def _parse_with_streaming_progress(
-        self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int
+        self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int, error_config_manager: Any = None
     ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
         self.logger.info(
             f"Using streaming parser for large file: {size_mb:.1f}MB, {line_count} lines"
         )
 
+        # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
         parser = StreamingParser(config=config)
+        
+        # 現時点ではStreamingParserはgraceful_errorsをサポートしていないため、
+        # エラー設定がある場合は警告を出す
+        if error_config_manager and (error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error):
+            self.logger.warning("StreamingParser does not yet support graceful error handling. Errors will be handled traditionally.")
         nodes = []
 
         with Progress() as progress:
@@ -466,12 +484,18 @@ class ConvertProcessor:
                 self.logger.error(f"Streaming parse failed: {e}")
                 # フォールバック: 従来の解析方式
                 self.logger.info("Falling back to traditional parser")
-                nodes = parse(text, config)
+                if error_config_manager:
+                    nodes, errors = parse_with_error_config(text, config, error_config_manager)
+                    # パーサーにエラーを設定
+                    if hasattr(parser, 'graceful_syntax_errors'):
+                        parser.graceful_syntax_errors.extend(errors)
+                else:
+                    nodes = parse(text, config)
 
         return nodes
 
     def _parse_with_traditional_progress(
-        self, text: str, config: Any, size_mb: float
+        self, text: str, config: Any, size_mb: float, error_config_manager: Any = None
     ) -> Any:
         """従来のパーサーを使用した解析（既存の動作を維持）"""
 
@@ -491,10 +515,16 @@ class ConvertProcessor:
                     progress.update(task, completed=i * 10)
                     time.sleep(0.1)
 
-                ast = parse(text, config)
+                if error_config_manager:
+                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                else:
+                    ast = parse(text, config)
                 progress.update(task, completed=100)
             else:
-                ast = parse(text, config)
+                if error_config_manager:
+                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                else:
+                    ast = parse(text, config)
                 elapsed = time.time() - start_time
                 self.logger.debug(f"Parse completed in {elapsed:.2f} seconds")
 

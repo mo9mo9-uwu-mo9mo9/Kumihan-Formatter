@@ -81,6 +81,10 @@ class HTMLRenderer:
         Returns:
             str: Generated HTML
         """
+        # Issue #700: graceful errors対応
+        if self.graceful_errors and self.embed_errors_in_html:
+            return self.render_nodes_with_errors(nodes)
+        
         html_parts = []
 
         for node in nodes:

@@ -66,6 +66,10 @@ class Parser:
         self.keyword_parser = KeywordParser()
         self.list_parser = ListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
+        
+        # Issue #700: graceful error handling対応 - sub-parsersにパーサー参照を設定
+        if graceful_errors:
+            self.block_parser.set_parser_reference(self)
 
         self.logger.debug(
             f"Parser initialized with specialized parsers (graceful_errors={graceful_errors})"
@@ -89,7 +93,12 @@ class Parser:
         self.logger.info(f"Starting parse of {len(self.lines)} lines")
         self.logger.debug(f"Input text length: {len(text)} characters")
 
-        while self.current < len(self.lines):
+        # 無限ループ防止のための安全装置
+        max_iterations = len(self.lines) * 2  # 最大反復数
+        iteration_count = 0
+
+        while self.current < len(self.lines) and iteration_count < max_iterations:
+            previous_current = self.current
             node = self._parse_line()
 
             if node:
@@ -97,6 +106,17 @@ class Parser:
                 self.logger.debug(
                     f"Parsed node type: {node.type} at line {self.current}"
                 )
+
+            # 無限ループ防止: currentが進んでいない場合
+            if self.current == previous_current:
+                self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
+                self.current += 1
+
+            iteration_count += 1
+
+        if iteration_count >= max_iterations:
+            self.logger.error(f"Parser hit maximum iteration limit ({max_iterations}), stopping")
+            self.add_error(f"Parser exceeded maximum iterations at line {self.current}")
 
         self.logger.info(
             f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors"
@@ -170,6 +190,8 @@ class Parser:
 
     def _parse_line_with_graceful_errors(self) -> Node | None:
         """graceful error handling対応のパース処理"""
+        # 無限ループ防止のための安全装置
+        start_current = self.current
         line = self.lines[self.current].strip()
 
         try:
@@ -251,7 +273,10 @@ class Parser:
                 line,
                 "テキスト内容を確認してください",
             )
-            self.current += 1
+            # 安全装置: currentが進んでいない場合は強制的に進める
+            if self.current == start_current:
+                self.current += 1
+                self.logger.warning(f"Force advancing line due to parsing error at line {self.current}")
             return self._create_error_node(line, str(e))
 
     def get_errors(self) -> list[str]:
@@ -348,6 +373,32 @@ def parse(text: str, config=None) -> list[Node]:  # type: ignore
     """
     parser = Parser(config)
     return parser.parse(text)
+
+
+def parse_with_error_config(text: str, config=None, error_config_manager=None) -> tuple[list[Node], list]:
+    """
+    Phase3: エラー設定管理対応のパース関数
+    
+    Args:
+        text: Input text to parse
+        config: Optional configuration
+        error_config_manager: Error configuration manager for Phase3
+        
+    Returns:
+        tuple[list[Node], list]: Parsed AST nodes and graceful errors
+    """
+    # エラー設定に基づいてパーサーを初期化
+    graceful_errors = False
+    if error_config_manager:
+        graceful_errors = error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error
+    
+    parser = Parser(config, graceful_errors=graceful_errors)
+    nodes = parser.parse(text)
+    
+    # エラー情報を収集
+    errors = parser.get_graceful_errors() if hasattr(parser, 'get_graceful_errors') else []
+    
+    return nodes, errors
 
 
 class StreamingParser:

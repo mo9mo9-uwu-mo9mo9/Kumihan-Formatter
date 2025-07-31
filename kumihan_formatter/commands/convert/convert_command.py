@@ -49,6 +49,10 @@ class ConvertCommand:
         progress_log: str | None = None,
         continue_on_error: bool = False,
         graceful_errors: bool = False,
+        # Phase3: 設定可能なエラー処理レベル
+        error_level: str = "normal",
+        no_suggestions: bool = False,
+        no_statistics: bool = False,
     ) -> None:
         """
         変換コマンドを実行
@@ -70,6 +74,9 @@ class ConvertCommand:
             progress_log: プログレスログ出力先ファイル
             continue_on_error: Issue #700: 記法エラーが発生してもHTML生成を継続
             graceful_errors: Issue #700: エラー情報をHTMLに埋め込んで表示
+            error_level: Phase3: エラー処理レベル (strict/normal/lenient/ignore)
+            no_suggestions: Phase3: エラー修正提案を非表示
+            no_statistics: Phase3: エラー統計を非表示
 
         Returns:
             None: プログラム終了時のみ
@@ -80,7 +87,24 @@ class ConvertCommand:
         self.logger.debug(
             f"Options: no_preview={no_preview}, watch={watch}, "
             f"syntax_check={syntax_check}, continue_on_error={continue_on_error}, "
-            f"graceful_errors={graceful_errors}"
+            f"graceful_errors={graceful_errors}, error_level={error_level}"
+        )
+
+        # Phase3: エラー処理設定の初期化
+        from ...core.error_analysis.error_config import ErrorConfigManager
+        from pathlib import Path
+        
+        error_config_manager = ErrorConfigManager(
+            config_dir=Path(input_file).parent if input_file else Path.cwd()
+        )
+        
+        # CLIオプションを設定に適用
+        error_config_manager.apply_cli_options(
+            error_level=error_level,
+            graceful_errors=graceful_errors,
+            continue_on_error=continue_on_error,
+            show_suggestions=not no_suggestions,
+            show_statistics=not no_statistics
         )
 
         try:
@@ -106,35 +130,43 @@ class ConvertCommand:
                 error_report = self.validator.perform_syntax_check(input_path)
 
                 if error_report.get("has_errors", False):
-                    # Issue #700: graceful error handling対応
-                    if continue_on_error:
+                    # Phase3: 設定可能なエラー処理レベルを使用
+                    errors = error_report.get("errors", [])
+                    should_continue = error_config_manager.should_continue_on_error(
+                        "syntax_error", len(errors)
+                    )
+                    
+                    if should_continue:
                         # エラーがあるが処理を継続
                         self.logger.warning(
-                            f"Syntax errors found but continuing: {len(error_report.get('errors', []))} errors"
+                            f"Syntax errors found but continuing (level={error_level}): {len(errors)} errors"
                         )
                         get_console_ui().warning(
-                            "記法エラーが検出されましたが、処理を継続します。"
+                            f"記法エラーが検出されましたが、処理を継続します (レベル: {error_level})。"
                         )
 
-                        if graceful_errors:
+                        if error_config_manager.config.graceful_errors:
                             get_console_ui().info(
                                 "エラー情報はHTML内に埋め込まれます。"
                             )
 
-                        # エラー詳細を表示
-                        get_console_ui().info("\n=== 検出されたエラー ===")
-                        for error in error_report.get("errors", []):
-                            print(f"  ❌ {error.get('message', 'Unknown error')}")
+                        # エラー詳細を表示（設定に応じて）
+                        if error_config_manager.config.show_suggestions:
+                            get_console_ui().info("\n=== 検出されたエラー ===")
+                            for error in errors:
+                                severity = error_config_manager.get_error_severity("syntax_error")
+                                icon = "❌" if severity == "error" else "⚠️" if severity == "warning" else "ℹ️"
+                                print(f"  {icon} {error.get('message', 'Unknown error')}")
                     else:
-                        # 従来の処理：エラーがあれば中止
+                        # エラーレベルに基づき処理を中止
                         self.logger.error(
-                            f"Syntax errors found: {len(error_report.get('errors', []))} errors"
+                            f"Syntax errors found, stopping (level={error_level}): {len(errors)} errors"
                         )
                         get_console_ui().error(
-                            "記法エラーが検出されました。変換を中止します。"
+                            f"記法エラーが検出されました。変換を中止します (レベル: {error_level})。"
                         )
                         get_console_ui().info("\n=== 詳細エラーレポート ===")
-                        for error in error_report.get("errors", []):
+                        for error in errors:
                             print(f"  エラー: {error.get('message', 'Unknown error')}")
 
                         # エラーレポートファイルを生成
@@ -144,7 +176,7 @@ class ConvertCommand:
                         self.logger.info("Error report saved")
 
                         get_console_ui().dim(
-                            "--continue-on-error オプションでエラーがあっても処理を継続できます"
+                            "--error-level lenient または --continue-on-error でエラーがあっても処理を継続できます"
                         )
                         sys.exit(1)
 
@@ -163,6 +195,10 @@ class ConvertCommand:
             self.logger.info(
                 "Starting file conversion with enhanced progress management"
             )
+            # Phase3: エラー設定から実際の値を取得
+            effective_continue_on_error = error_config_manager.config.continue_on_error
+            effective_graceful_errors = error_config_manager.config.graceful_errors
+            
             output_file = self.processor.convert_file(
                 input_path,
                 output,
@@ -175,8 +211,10 @@ class ConvertCommand:
                 enable_cancellation=enable_cancellation,
                 progress_style=progress_style,
                 progress_log=progress_log,
-                continue_on_error=continue_on_error,
-                graceful_errors=graceful_errors,
+                continue_on_error=effective_continue_on_error,
+                graceful_errors=effective_graceful_errors,
+                # Phase3: エラー設定管理を渡す
+                error_config_manager=error_config_manager,
             )
             self.logger.info(f"Conversion completed: {output_file}")
 
