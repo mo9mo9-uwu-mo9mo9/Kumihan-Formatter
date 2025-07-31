@@ -819,6 +819,25 @@ kumihan convert input.txt --config config.yaml
 kumihan convert input.txt --config config.json
 ```
 
+### 環境変数サポート
+
+プログレス関連のオプションは環境変数でも設定できます：
+
+| 環境変数 | 対応オプション | 説明 |
+|---------|----------------|------|
+| `KUMIHAN_PROGRESS_LEVEL` | `--progress-level` | プログレス表示レベル |
+| `KUMIHAN_NO_PROGRESS_TOOLTIP` | `--no-progress-tooltip` | ツールチップ無効化 |
+| `KUMIHAN_DISABLE_CANCELLATION` | `--disable-cancellation` | キャンセル機能無効化 |
+| `KUMIHAN_PROGRESS_STYLE` | `--progress-style` | プログレス表示スタイル |
+| `KUMIHAN_PROGRESS_LOG` | `--progress-log` | プログレスログ出力先 |
+
+```bash
+# 環境変数での設定例
+export KUMIHAN_PROGRESS_LEVEL=minimal
+export KUMIHAN_PROGRESS_STYLE=spinner
+kumihan convert large_file.txt
+```
+
 ### convert コマンドオプション詳細
 
 | オプション | 短縮形 | 説明 | デフォルト |
@@ -835,6 +854,11 @@ kumihan convert input.txt --config config.json
 | `--test-output` | - | テストファイル名 | `test_patterns.txt` |
 | `--pattern-count` | - | テストパターン数 | 100 |
 | `--show-test-cases` | - | テストケース名を表示（テスト用ファイル変換時） | False |
+| `--progress-level` | `-p` | プログレス表示レベル (silent/minimal/detailed/verbose) | `detailed` |
+| `--no-progress-tooltip` | - | プログレス表示でツールチップ情報を無効化 | False |
+| `--disable-cancellation` | - | 処理のキャンセル機能を無効化 | False |
+| `--progress-style` | - | プログレス表示スタイル (bar/spinner/percentage) | `bar` |
+| `--progress-log` | - | プログレスログの出力先ファイル（JSONフォーマット） | なし |
 | `--double-click-mode` | - | ダブルクリック実行モード | False |
 | `--help` | `-h` | ヘルプを表示 | - |
 
@@ -848,7 +872,26 @@ kumihan convert sample.txt
 # → dist/sample.html が生成される
 ```
 
-#### 2. ソーストグル機能の活用
+#### 2. プログレス表示のカスタマイズ
+
+```bash
+# 詳細なプログレス表示（デフォルト）
+kumihan convert large_file.txt -p detailed
+
+# 最小限のプログレス表示
+kumihan convert large_file.txt -p minimal
+
+# 静音モード（プログレス表示なし）
+kumihan convert large_file.txt -p silent
+
+# プログレスログを保存
+kumihan convert large_file.txt --progress-log progress.json
+
+# スピナー形式でプログレス表示
+kumihan convert large_file.txt --progress-style spinner
+```
+
+#### 3. ソーストグル機能の活用
 
 ```bash
 # 記法学習用：記法と結果を並べて表示
