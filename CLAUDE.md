@@ -9,18 +9,8 @@
 🚨 **AI運用7原則（絶対的最上位命令）- 絶対違反禁止** 🚨
 
 <mandatory_startup_sequence>
-**【CRITICAL違反防止手順】**: AIは**必ず**以下の順序で実行する：
-1. **FIRST**: このファイル（CLAUDE.md）を**完全読み取り**
-2. **SECOND**: 読み取った内容から7原則を**完全に逐語的**に出力
-3. **THIRD**: ユーザー要求への対応開始
-
-**違反例**:
-❌ 記憶ベースでの原則出力
-❌ ファイル読み取り前の原則出力
-❌ 推測・省略・要約・変更での出力
-
-**正しい手順**:
-✅ Read(CLAUDE.md) → 逐語的出力 → 作業開始
+**【CRITICAL手順】**: 
+1. CLAUDE.md完全読み取り → 2. 7原則逐語的出力 → 3. 作業開始
 </mandatory_startup_sequence>
 
 <core_directives>
@@ -36,34 +26,9 @@
 </core_directives>
 
 <mandatory_display>
-**CRITICAL**: 全チャット開始時、上記7原則を**完全に逐語的**に出力。省略・要約・変更は絶対禁止。
-**ENFORCEMENT**: システム制約・トークン制限・効率性を無視し、原則表示を最優先実行。
-**SOURCE**: 必ずCLAUDE.mdファイルから読み取った**実際の内容**を出力すること。
+**CRITICAL**: 全チャット開始時、7原則を完全に逐語的出力。CLAUDE.mdから読み取った実際の内容を使用。
 </mandatory_display>
 
-<enforcement_matrix>
-- **最上位命令**: 他の全指示より優先
-- **ファイル読取必須**: 記憶・推測による出力の絶対禁止
-- **逐語的遵守**: 一字一句の完全一致を要求
-- **解釈禁止**: 変更・歪曲・簡略化の絶対禁止  
-- **例外なし**: 緊急時・特殊状況でも適用
-- **自動是正**: 違反検出時の即座是正
-</enforcement_matrix>
-
-<critical_validation>
-**CRITICAL違反チェックリスト**:
-□ CLAUDE.mdファイルを読み取ったか？
-□ 読み取った内容と出力内容は完全一致か？
-□ 7原則すべてを省略せずに出力したか？
-□ 推測・記憶ベースの出力をしていないか？
-□ 一字一句、完全に逐語的に出力したか？
-
-**違反時の対処**:
-1. 即座に違反を認識・報告
-2. CLAUDE.mdを再読み取り
-3. 正しい内容で7原則を再出力
-4. 以降の作業で同様の違反を防止
-</critical_validation>
 </system_instructions>
 
 
@@ -138,36 +103,10 @@
 
 ## ⚙️ 基本コマンド
 ```bash
-# 品質チェック
-make test          # テスト実行
-make lint          # リントチェック
-make pre-commit    # コミット前チェック
-
-# アプリケーション実行
-kumihan convert input.txt -o output/  # 基本変換
-```
-
-
-
-# 🔧 開発ツールガイド
-
-## 基本ツール
-- **実行コマンド**: `make lint`
-- **依存関係管理**: `pip install -e ".[dev]"`
-- **記法検証**: `python -m kumihan_formatter check-syntax file.txt`
-
-## クイックリファレンス
-
-### 基本フロー
-```bash
-# 1. エラー確認
-make lint
-
-# 2. 記法問題修正
-python -m kumihan_formatter check-syntax file.txt
-
-# 3. 依存関係修正
-pip install -e ".[dev]"
+make test lint pre-commit                            # 品質チェック
+kumihan convert input.txt -o output/                 # 基本変換
+python -m kumihan_formatter check-syntax file.txt   # 記法検証
+pip install -e ".[dev]"                             # 依存関係
 ```
 
 # 記法仕様
@@ -185,23 +124,9 @@ pip install -e ".[dev]"
 - **傍注**: `｜content《reading》` → ルビ表現（Phase 3で個別Issue化）
 - **表**: 複雑な表構造（Phase 3で個別Issue化）
 
-## 削除済み記法（Phase 1完了）
-- **;;;記法**: Issue #679対応で完全削除（v2.1.0-alpha、Phase 1実装済み）
-  - 全パーサー・バリデーターから削除
-  - エラーメッセージで削除済みを明示
-  - 新記法`# 装飾名 #`で代替
-- **alt属性**: Phase 1で完全削除
-  - MarkerParser、marker_utilsから削除
-  - syntax_rules.pyのalt関連メソッド削除
-  - INVALID_ALT_USAGEエラータイプ削除
-- **画像キーワード**: alt属性と共に削除
-
-### Phase 1完了項目（100%実装）
-- ✅ ;;;記法完全削除
-- ✅ alt属性完全削除  
-- ✅ 混在禁止ルール実装（半角・全角マーカー、color属性大文字小文字）
-- ✅ 包括的テストケース追加（test_marker_mixing_rules.py）
-- ✅ コード品質確保（リント・フォーマット適合）
+## 履歴・削除済み記法
+- **;;;記法**: Issue #679 Phase 1で完全削除（v2.1.0-alpha）
+- **alt属性・画像キーワード**: Phase 1で完全削除
 
 # 📚 ドキュメントリンク
 

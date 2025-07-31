@@ -1,0 +1,77 @@
+# CLAUDE.md Management System Configuration
+# Issue #686 対応設定ファイル
+
+limits:
+  # サイズ制限
+  recommended_lines: 150
+  recommended_bytes: 8192  # 8KB
+  warning_lines: 200
+  warning_bytes: 10240    # 10KB
+  
+  # 構造制限
+  max_section_lines: 20
+  max_nesting_depth: 3
+
+structure:
+  # 必須セクション
+  required_sections:
+    - "AI運用7原則"
+    - "基本設定"
+    - "必須ルール"
+    - "記法仕様"
+  
+  # 古いマーカー検出
+  outdated_markers:
+    - "TODO"
+    - "FIXME"
+    - "v1."
+    - "alpha-"
+    - "beta-"
+    - "Phase 1"  # 完了したPhaseマーカー
+  
+  # 禁止パターン
+  forbidden_patterns:
+    - "日本語ブランチ名"  # 既に禁止されている項目
+    - "手動レビュー無効"   # 変更された項目
+
+optimization:
+  enabled: true
+  auto_fix: false  # 安全性重視でデフォルト無効
+  backup_before_fix: true
+  
+  # 自動修正対象
+  auto_fix_types:
+    - "trailing_whitespace"
+    - "excess_newlines"
+    - "simple_duplicates"
+  
+  # 最適化提案
+  suggestion_types:
+    - "section_consolidation"
+    - "content_deduplication"
+    - "outdated_removal"
+    - "size_reduction"
+
+monitoring:
+  # 履歴管理
+  keep_history_days: 90
+  max_history_entries: 100
+  
+  # アラート設定
+  alert_on_critical: true
+  alert_on_size_increase: true
+  alert_threshold_percent: 10  # 10%以上のサイズ増加で警告
+
+# Phase 3: プロセス統合設定
+process_integration:
+  issue_completion:
+    auto_archive_completed: true
+    move_to_history_section: true
+    
+  release_cycle:
+    auto_cleanup_on_release: true
+    version_archive: true
+    
+  documentation_split:
+    max_main_size_kb: 8
+    external_docs_dir: "docs/claude_instructions"

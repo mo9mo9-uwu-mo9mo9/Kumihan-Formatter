@@ -1,0 +1,29 @@
+repos:
+  - repo: local
+    hooks:
+      - id: claude-md-check
+        name: CLAUDE.md Size & Structure Check
+        entry: make claude-check
+        language: system
+        files: 'CLAUDE\.md$'
+        pass_filenames: false
+        
+      - id: python-lint
+        name: Python Linting (Black, isort, flake8, mypy)
+        entry: make lint
+        language: system
+        files: '\.py$'
+        pass_filenames: false
+        
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+        exclude: '\.md$'
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: debug-statements
