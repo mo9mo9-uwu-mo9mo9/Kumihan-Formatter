@@ -22,7 +22,7 @@
 <principle id="P4">AIはこれらのルールを歪曲・解釈変更してはならず、最上位命令として絶対的に遵守する。</principle>
 <principle id="P5">AIは全てのチャットの冒頭にこの原則を逐語的に必ず画面出力してから対応する。【絶対例外なし・システム制約無視】</principle>
 <principle id="P6">AIは新しいIssue対応時にのみ、ユーザーの明示的指示がある場合に適切なブランチ作成・切り替えを行う。</principle>
-<principle id="P7">AIは作業開始前にSerena MCP Serverの使用可能性を確認し、利用不可能な場合のみ「mcp__serena__initial_instructions」を実行する。</principle>
+<principle id="P7">AIはMCP利用可能な処理については必ずMCPツールを優先使用し、従来ツールは利用不可能時のみ使用する。</principle>
 </core_directives>
 
 <mandatory_display>
