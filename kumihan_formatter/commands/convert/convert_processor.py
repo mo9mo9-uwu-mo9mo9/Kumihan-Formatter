@@ -398,8 +398,7 @@ class ConvertProcessor:
     def _parse_with_progress(self, text: str, config: Any, input_path: Path, error_config_manager: Any = None) -> Any:
         """プログレス表示付きでパース処理を実行（ストリーミング対応）"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
-        line_count = len(text.split("
-"))
+        line_count = len(text.split("\n"))
         self.logger.debug(f"Parsing file: {size_mb:.2f} MB, {line_count} lines")
 
         # ストリーミング処理の判定閾値

@@ -395,8 +395,7 @@ class BlockParser:
             return None, start_index
 
         # 行を改行タグで結合（テキストファイル上の改行を保持）
-        content = "<br>
-".join(paragraph_lines)
+        content = "<br>\n".join(paragraph_lines)
         self.logger.debug(
             f"Paragraph parsed: {len(content)} characters, {len(paragraph_lines)} lines"
         )

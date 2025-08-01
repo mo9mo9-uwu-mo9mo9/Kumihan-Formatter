@@ -5,7 +5,7 @@ parser.py file. Each parsing responsibility is now handled by specialized module
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Iterator, Any
 
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
@@ -497,8 +497,7 @@ class StreamingParser:
         # プログレス管理システムを初期化
         from .core.utilities.progress_manager import ProgressManager
         progress_manager = ProgressManager(
-            total_items=len(text.split("
-")),
+            total_items=len(text.split("\n")),
             task_name="テキスト解析"
         )
 
@@ -507,8 +506,7 @@ class StreamingParser:
 
         try:
             # テキストを行に分割
-            lines = text.split("
-")
+            lines = text.split("\n")
             self.total_lines = len(lines)
             
             # チャンクバッファを初期化
