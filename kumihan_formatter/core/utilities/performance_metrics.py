@@ -383,8 +383,7 @@ class PerformanceMonitor:
                 )
                 report_lines.append(f"  処理速度: {rate_status}")
 
-        return "
-".join(report_lines)
+        return "\n".join(report_lines)
 
     def _calculate_trend(self, values: List[float]) -> float:
         """値の傾向を計算（簡易線形回帰）"""

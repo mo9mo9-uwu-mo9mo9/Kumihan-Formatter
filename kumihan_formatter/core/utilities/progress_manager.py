@@ -120,25 +120,6 @@ class ProgressManager:
         Args:
             current: 現在の進捗値
             substage: サブステージ名
-            
-=======
-            last_update_time=time.time(),
-        )
-        self.cancelled.clear()
-        self._progress_history.clear()
-
-        self.logger.info(
-            f"Progress tracking started: {total_items} items, stage: {stage}"
-        )
-        self._notify_progress()
-
-    def update(self, current: int, substage: str = "") -> bool:
-        """
-        プログレスを更新
-
-        Args:
-            current: 現在の進捗値
-            substage: サブステージ名
 
         Returns:
             bool: 継続可能な場合True キャンセル時False
