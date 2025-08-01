@@ -3,9 +3,7 @@ CSS関連のユーティリティ機能
 Phase 2のCSS依存問題対応
 """
 
-import os
 from pathlib import Path
-from typing import Optional
 
 
 def get_default_css_path() -> Path:

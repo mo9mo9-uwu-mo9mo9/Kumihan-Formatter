@@ -47,7 +47,7 @@ class MarkdownRenderer:
 
                 # 現在の段落を終了
                 if current_paragraph:
-                    para_text = " ".join(current_paragraph).strip()
+                    para_text = "<br>\n".join(current_paragraph).strip()
                     if para_text:
                         result.append(f"<p>{para_text}</p>")
                     current_paragraph = []
@@ -62,14 +62,14 @@ class MarkdownRenderer:
                 else:
                     # 空行で段落を区切る
                     if current_paragraph:
-                        para_text = " ".join(current_paragraph).strip()
+                        para_text = "<br>\n".join(current_paragraph).strip()
                         if para_text:
                             result.append(f"<p>{para_text}</p>")
                         current_paragraph = []
 
         # 最後の段落を処理
         if current_paragraph:
-            para_text = " ".join(current_paragraph).strip()
+            para_text = "<br>\n".join(current_paragraph).strip()
             if para_text:
                 result.append(f"<p>{para_text}</p>")
 

@@ -84,6 +84,33 @@ make lint
 
 **⚠️ 重要**: `./scripts/install-hooks.sh` を実行しないと、日本語ブランチ名でのプッシュ時にローカルでエラーが発生しません。GitHub Actions でのみ検出されるため、必ず実行してください。
 
+## ⚙️ オプション依存関係
+
+Kumihan-Formatterでは、特定機能を利用する際に追加パッケージのインストールが必要です：
+
+### 📊 パフォーマンス監視機能
+```bash
+# メモリ使用量追跡機能を利用する場合
+pip install "kumihan-formatter[performance]"
+
+# または個別インストール
+pip install psutil>=5.9
+```
+
+**利用可能な機能**:
+- リアルタイムメモリ使用量表示
+- プログレスバーでのメモリ統計
+- パフォーマンス監視レポート
+
+**対応コマンド**:
+```bash
+# メモリ監視付き変換（psutil必須）
+kumihan convert input.txt --progress-level verbose
+
+# プログレスログ出力（メモリ統計含む）
+kumihan convert input.txt --progress-log progress.json
+```
+
 ## 💡 基本的な記法
 
 ```

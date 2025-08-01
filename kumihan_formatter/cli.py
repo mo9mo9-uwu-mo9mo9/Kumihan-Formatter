@@ -85,6 +85,70 @@ def register_commands() -> None:
         @click.option(
             "--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ"
         )
+        @click.option(
+            "--progress-level",
+            "-p",  # 短縮オプション追加
+            type=click.Choice(
+                ["silent", "minimal", "detailed", "verbose"], case_sensitive=False
+            ),
+            default="detailed",
+            envvar="KUMIHAN_PROGRESS_LEVEL",  # 環境変数サポート
+            help="プログレス表示の詳細レベル (silent/minimal/detailed/verbose)",
+        )
+        @click.option(
+            "--no-progress-tooltip",
+            is_flag=True,
+            envvar="KUMIHAN_NO_PROGRESS_TOOLTIP",  # 環境変数サポート
+            help="プログレス表示でツールチップ情報を無効化",
+        )
+        @click.option(
+            "--disable-cancellation",
+            is_flag=True,
+            envvar="KUMIHAN_DISABLE_CANCELLATION",  # 環境変数サポート
+            help="処理のキャンセル機能を無効化",
+        )
+        @click.option(
+            "--progress-style",
+            type=click.Choice(["bar", "spinner", "percentage"], case_sensitive=False),
+            default="bar",
+            envvar="KUMIHAN_PROGRESS_STYLE",
+            help="プログレス表示スタイル (bar/spinner/percentage)",
+        )
+        @click.option(
+            "--progress-log",
+            type=click.Path(dir_okay=False, writable=True),
+            envvar="KUMIHAN_PROGRESS_LOG",
+            help="プログレスログの出力先ファイル（JSONフォーマット）",
+        )
+        @click.option(
+            "--continue-on-error",
+            is_flag=True,
+            envvar="KUMIHAN_CONTINUE_ON_ERROR",
+            help="Issue #700: 記法エラーが発生してもHTML生成を継続する",
+        )
+        @click.option(
+            "--graceful-errors",
+            is_flag=True,
+            envvar="KUMIHAN_GRACEFUL_ERRORS",
+            help="Issue #700: エラー情報をHTMLに埋め込んで表示する",
+        )
+        @click.option(
+            "--error-level",
+            type=click.Choice(["strict", "normal", "lenient", "ignore"], case_sensitive=False),
+            default="normal",
+            envvar="KUMIHAN_ERROR_LEVEL",
+            help="Phase3: エラー処理レベル設定（strict/normal/lenient/ignore）",
+        )
+        @click.option(
+            "--no-suggestions",
+            is_flag=True,
+            help="Phase3: エラー修正提案を非表示",
+        )
+        @click.option(
+            "--no-statistics",
+            is_flag=True,
+            help="Phase3: エラー統計を非表示",
+        )
         def convert_command(
             input_file: str | None,
             output: str,
@@ -95,6 +159,16 @@ def register_commands() -> None:
             template: str | None,
             include_source: bool,
             no_syntax_check: bool,
+            progress_level: str,
+            no_progress_tooltip: bool,
+            disable_cancellation: bool,
+            progress_style: str,
+            progress_log: str | None,
+            continue_on_error: bool,
+            graceful_errors: bool,
+            error_level: str,
+            no_suggestions: bool,
+            no_statistics: bool,
         ) -> None:
             """テキストファイルをHTMLに変換する"""
             command = ConvertCommand()
@@ -108,6 +182,16 @@ def register_commands() -> None:
                 template_name=template,
                 include_source=include_source,
                 syntax_check=not no_syntax_check,
+                progress_level=progress_level,
+                show_progress_tooltip=not no_progress_tooltip,
+                enable_cancellation=not disable_cancellation,
+                progress_style=progress_style,
+                progress_log=progress_log,
+                continue_on_error=continue_on_error,
+                graceful_errors=graceful_errors,
+                error_level=error_level,
+                no_suggestions=no_suggestions,
+                no_statistics=no_statistics,
             )
 
         cli.add_command(convert_command, name="convert")

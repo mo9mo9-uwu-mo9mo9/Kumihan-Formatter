@@ -14,8 +14,8 @@ DEFAULT_BLOCK_KEYWORDS = {
     "取り消し線": {"tag": "del"},
     "コード": {"tag": "code"},
     "引用": {"tag": "blockquote"},
-    "枠線": {"tag": "div", "class": "bordered"},
-    "ハイライト": {"tag": "span", "class": "highlight"},
+    "枠線": {"tag": "div", "class": "box"},
+    "ハイライト": {"tag": "div", "class": "highlight"},
     "見出し1": {"tag": "h1"},
     "見出し2": {"tag": "h2"},
     "見出し3": {"tag": "h3"},
@@ -26,7 +26,8 @@ DEFAULT_BLOCK_KEYWORDS = {
     "中央寄せ": {"tag": "div", "style": "text-align: center"},
     "注意": {"tag": "div", "class": "warning"},
     "情報": {"tag": "div", "class": "info"},
-    "コードブロック": {"tag": "pre"},
+    "コードブロック": {"tag": "pre", "class": "code-block"},
+    "テスト": {"tag": "div", "class": "test"},
 }
 
 # キーワードネスト順序 (外側から内側へ)

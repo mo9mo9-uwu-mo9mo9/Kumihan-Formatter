@@ -1,47 +1,54 @@
-エラーレポート: test_color_mixing.txt
+エラーレポート: 02_intermediate_features.txt
 ==================================================
 
-検出されたエラー数: 6
+検出されたエラー数: 7
 
 エラー 1:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
   メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
-  ファイル: test_color_mixing.txt
+  ファイル: 02_intermediate_features.txt
 
 エラー 2:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
   メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
-  ファイル: test_color_mixing.txt
+  ファイル: 02_intermediate_features.txt
 
 エラー 3:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
-  メッセージ: color属性で大文字・小文字・混在表記の混用は禁止されています
-  ファイル: test_color_mixing.txt
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: 02_intermediate_features.txt
 
 エラー 4:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
-  メッセージ: color属性で大文字・小文字・混在表記の混用は禁止されています
-  ファイル: test_color_mixing.txt
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: 02_intermediate_features.txt
 
 エラー 5:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
   メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
-  ファイル: test_color_mixing.txt
+  ファイル: 02_intermediate_features.txt
 
 エラー 6:
   重要度: warning
   カテゴリ: syntax
   タイトル: 記法エラー
-  メッセージ: color属性で大文字・小文字・混在表記の混用は禁止されています
-  ファイル: test_color_mixing.txt
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: 02_intermediate_features.txt
+
+エラー 7:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: 02_intermediate_features.txt
 

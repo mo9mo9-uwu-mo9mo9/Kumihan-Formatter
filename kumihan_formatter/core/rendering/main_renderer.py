@@ -67,6 +67,10 @@ class HTMLRenderer:
         # Inject this main renderer into element renderer for content processing
         self.element_renderer.set_main_renderer(self)
 
+        # Issue #700: graceful error handling support
+        self.graceful_errors: list[Any] = []
+        self.embed_errors_in_html = False
+
     def render_nodes(self, nodes: list[Node]) -> str:
         """
         Render a list of nodes to HTML
@@ -77,6 +81,10 @@ class HTMLRenderer:
         Returns:
             str: Generated HTML
         """
+        # Issue #700: graceful errors対応
+        if self.graceful_errors and self.embed_errors_in_html:
+            return self.render_nodes_with_errors(nodes)
+        
         html_parts = []
 
         for node in nodes:
@@ -241,6 +249,141 @@ class HTMLRenderer:
         """Set heading counter"""
         self.element_renderer.heading_counter = value
         self.heading_collector.heading_counter = value
+
+    def set_graceful_errors(
+        self, errors: list[Any], embed_in_html: bool = True
+    ) -> None:
+        """Issue #700: graceful error handlingのエラー情報を設定"""
+
+        self.graceful_errors = errors
+        self.embed_errors_in_html = embed_in_html
+
+    def render_nodes_with_errors(self, nodes: list[Node]) -> str:
+        """Issue #700: エラー情報を埋め込みながらノードをレンダリング"""
+        html_parts = []
+
+        for node in nodes:
+            html = self.render_node(node)
+            if html:
+                html_parts.append(html)
+
+        # エラー情報をHTMLに埋め込み
+        if self.embed_errors_in_html and self.graceful_errors:
+            error_summary_html = self._render_error_summary()
+            html_parts.insert(0, error_summary_html)
+
+            # 各エラー箇所にマーカーを挿入
+            html_with_markers = self._embed_error_markers("\n".join(html_parts))
+            return html_with_markers
+
+        return "\n".join(html_parts)
+
+    def _render_error_summary(self) -> str:
+        """エラーサマリーをHTMLで生成"""
+        if not self.graceful_errors:
+            return ""
+
+        # エラー数とレベル別の統計
+        error_count = sum(1 for e in self.graceful_errors if e.severity == "error")
+        warning_count = sum(1 for e in self.graceful_errors if e.severity == "warning")
+        total_count = len(self.graceful_errors)
+
+        # Phase2: エラー統計レポート生成
+        from ..error_analysis.statistics_generator import StatisticsGenerator
+
+        stats_generator = StatisticsGenerator()
+        statistics = stats_generator.generate_statistics(self.graceful_errors)
+        stats_html = stats_generator.generate_html_report(statistics)
+
+        summary_html = f"""
+<div class="kumihan-error-summary" id="error-summary">
+    <h3>🔍 記法エラーレポート</h3>
+    <div class="error-stats">
+        <span class="error-count">❌ エラー: {error_count}件</span>
+        <span class="warning-count">⚠️ 警告: {warning_count}件</span>
+        <span class="total-count">📊 合計: {total_count}件</span>
+    </div>
+    {stats_html}
+    <details class="error-details">
+        <summary>詳細を表示</summary>
+        <div class="error-list">
+"""
+
+        # 各エラーの詳細を追加
+        for i, error in enumerate(self.graceful_errors, 1):
+            from .html_escaping import escape_html
+
+            # XSS対策: エラー情報のエスケープ処理
+            safe_title = escape_html(error.display_title)
+            safe_severity = escape_html(error.severity.upper())
+            safe_content = (
+                error.html_content
+            )  # html_contentプロパティ内で既にエスケープ済み
+
+            # Phase2: ハイライト付きコンテキストと修正提案を追加
+            highlighted_context = error.get_highlighted_context()
+            correction_suggestions_html = error.get_correction_suggestions_html()
+
+            error_html = f"""
+            <div class="error-item {error.html_class}" data-line="{error.line_number}">
+                <div class="error-header">
+                    <span class="error-number">#{i}</span>
+                    <span class="error-title">{safe_title}</span>
+                    <span class="error-severity">{safe_severity}</span>
+                </div>
+                <div class="error-content">
+                    {safe_content}
+                    {f'<div class="error-context-highlighted">{highlighted_context}</div>' if highlighted_context != error.context else ''}
+                    {f'<div class="correction-suggestions"><h4>修正提案:</h4>{correction_suggestions_html}</div>' if correction_suggestions_html else ''}
+                </div>
+            </div>
+"""
+            summary_html += error_html
+
+        summary_html += """
+        </div>
+    </details>
+</div>
+"""
+        return summary_html
+
+    def _embed_error_markers(self, html: str) -> str:
+        """HTML内のエラー発生箇所にマーカーを埋め込み"""
+        if not self.graceful_errors:
+            return html
+
+        # 簡易実装: エラーが発生した行の近傍にマーカーを挿入
+        # より高度な実装では、実際の行番号とHTMLの対応付けが必要
+        lines = html.split("\n")
+        modified_lines = []
+
+        for line_no, line in enumerate(lines, 1):
+            modified_lines.append(line)
+
+            # この行にエラーがあるかチェック
+            line_errors = [e for e in self.graceful_errors if e.line_number == line_no]
+
+            for error in line_errors:
+                from .html_escaping import escape_html
+
+                # XSS対策: エラー情報のエスケープ処理
+                safe_message = escape_html(error.message)
+                safe_suggestion = (
+                    escape_html(error.suggestion) if error.suggestion else ""
+                )
+                error_icon = "❌" if error.severity == "error" else "⚠️"
+
+                error_marker = f"""
+<div class="kumihan-error-marker {error.html_class}" data-line="{error.line_number}">
+    <div class="error-indicator">
+        <span class="error-icon">{error_icon}</span>
+        <span class="error-message">{safe_message}</span>
+        {f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''}
+    </div>
+</div>"""
+                modified_lines.append(error_marker)
+
+        return "\n".join(modified_lines)
 
 
 # Module-level function for backward compatibility

@@ -15,7 +15,7 @@ from rich.progress import Progress
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-from ...parser import parse, StreamingParser
+
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -64,66 +64,328 @@ class ConvertProcessor:
         show_test_cases: bool = False,
         template: str | None = None,
         include_source: bool = False,
+        progress_level: str = "detailed",
+        show_progress_tooltip: bool = True,
+        enable_cancellation: bool = True,
+        progress_style: str = "bar",
+        progress_log: str | None = None,
+        continue_on_error: bool = False,
+        graceful_errors: bool = False,
+        # Phase3: エラー設定管理
+        error_config_manager: Any = None,
     ) -> Path:
-        """ファイルを変換してHTMLを生成"""
+        """ファイルを変換してHTMLを生成（Issue #695対応: 高度プログレス管理）"""
+        from ...core.utilities.progress_manager import ProgressContextManager
+
         self.logger.info(f"Starting file conversion: {input_path} -> {output_dir}")
-        start_time = time.time()
 
-        # ファイル読み込み
-        get_console_ui().processing_start("読み込み中", str(input_path))
+        # 未実装機能の警告
+        if progress_style != "bar":
+            self.logger.warning(
+                f"Progress style '{progress_style}' is not implemented yet. Using default 'bar' style."
+            )
+
+        # プログレスレベルをenumに変換
+        verbosity_map = {
+            "silent": ProgressContextManager.VerbosityLevel.SILENT,
+            "minimal": ProgressContextManager.VerbosityLevel.MINIMAL,
+            "detailed": ProgressContextManager.VerbosityLevel.DETAILED,
+            "verbose": ProgressContextManager.VerbosityLevel.VERBOSE,
+        }
+        verbosity = verbosity_map.get(
+            progress_level.lower(), ProgressContextManager.VerbosityLevel.DETAILED
+        )
+
+        # 推定処理ステップ数を計算
         text = FileIOHandler.read_text_file(input_path)
-        self.logger.debug(f"File read successfully: {len(text)} characters")
+        estimated_steps = self._estimate_processing_steps(
+            text, show_test_cases, include_source
+        )
 
-        # テストケース表示
+        # プログレスコンテキストマネージャで全体処理を管理
+        with ProgressContextManager(
+            task_name=f"変換処理: {input_path.name}",
+            total_items=estimated_steps,
+            verbosity=verbosity,
+            show_tooltips=show_progress_tooltip,
+            enable_cancellation=enable_cancellation,
+            progress_style=progress_style,
+            progress_log=progress_log,
+        ) as progress:
+
+            current_step = 0
+
+            # ステップ1: ファイル読み込み
+            progress.update(current_step, "初期化", "ファイル読み込み中...")
+            if progress.is_cancelled():
+                self.logger.info("Conversion cancelled during file reading")
+                raise KeyboardInterrupt("ユーザーによりキャンセルされました")
+
+            self.logger.debug(f"File read successfully: {len(text)} characters")
+            current_step += 1
+
+            # ステップ2: テストケース表示（オプション）
+            if show_test_cases:
+                progress.update(current_step, "テストケース", "テストケースを表示中...")
+                if progress.is_cancelled():
+                    raise KeyboardInterrupt("ユーザーによりキャンセルされました")
+
+                self.logger.debug("Showing test cases")
+                self._show_test_cases(text)
+                current_step += 1
+
+            # ステップ3: パース処理
+            progress.update(current_step, "解析", "テキスト構造を解析中...")
+            if progress.is_cancelled():
+                raise KeyboardInterrupt("ユーザーによりキャンセルされました")
+
+            self.logger.info("Starting parse phase")
+            ast, parser = self._parse_with_enhanced_progress(
+                text,
+                config_obj,
+                input_path,
+                progress,
+                continue_on_error,
+                graceful_errors,
+                error_config_manager,
+            )
+            if not ast:
+                progress.add_error("パース処理が失敗しました")
+                raise ValueError("パース処理に失敗しました")
+
+            self.logger.debug(f"Parse completed: {len(ast)} nodes")
+            current_step += int(estimated_steps * 0.4)  # パース処理は全体の約40%
+
+            # ステップ4: 出力パス決定
+            progress.update(current_step, "準備", "出力ファイルパスを決定中...")
+            output_file = self._determine_output_path(input_path, output_dir)
+            self.logger.debug(f"Output path determined: {output_file}")
+            current_step += 1
+
+            # ステップ5: レンダリング処理
+            progress.update(current_step, "変換", "HTML生成中...")
+            if progress.is_cancelled():
+                raise KeyboardInterrupt("ユーザーによりキャンセルされました")
+
+            self.logger.info("Starting render phase")
+
+            # ソース表示用の引数を準備
+            source_args = {}
+            if include_source:
+                source_args = {"source_text": text, "source_filename": input_path.name}
+                self.logger.debug("Source display enabled")
+                current_step += 1
+                progress.update(current_step, "変換", "ソース表示を準備中...")
+
+            # Issue #700: パーサーからgraceful errorsを取得
+            parser_errors = []
+            if (
+                graceful_errors
+                and parser
+                and hasattr(parser, "get_graceful_errors")
+            ):
+                parser_errors = parser.get_graceful_errors()
+                self.logger.info(
+                    f"Retrieved {len(parser_errors)} graceful errors from parser"
+                )
+
+            html = self._render_with_enhanced_progress(
+                ast,
+                config_obj,
+                template,
+                input_path.stem,
+                progress,
+                graceful_errors=graceful_errors,
+                parser_errors=parser_errors,
+                **source_args,
+            )
+            self.logger.debug(f"Render completed: {len(html)} characters")
+            current_step += int(estimated_steps * 0.4)  # レンダリングも約40%
+
+            # ステップ6: ファイル保存
+            progress.update(current_step, "保存", f"ファイル保存中: {output_file.name}")
+            if progress.is_cancelled():
+                raise KeyboardInterrupt("ユーザーによりキャンセルされました")
+
+            self.logger.info(f"Saving output file: {output_file}")
+            FileIOHandler.write_text_file(output_file, html)
+            current_step += 1
+
+            # ステップ7: 統計情報表示
+            progress.update(current_step, "完了", "統計情報を生成中...")
+            self._show_conversion_stats(ast, text, output_file, input_path)
+
+            # 最終ステップ
+            progress.update(estimated_steps, "完了", "変換処理が完了しました")
+
+            self.logger.info("Conversion completed successfully")
+            return output_file
+
+    def _estimate_processing_steps(
+        self, text: str, show_test_cases: bool, include_source: bool
+    ) -> int:
+        """処理ステップ数を推定（Issue #695対応）"""
+        base_steps = 5  # 読み込み、パース、出力パス決定、レンダリング、保存
+
+        # テキストサイズに基づく追加ステップ
+        text_size_mb = len(text.encode("utf-8")) / (1024 * 1024)
+        if text_size_mb > 1.0:
+            base_steps += int(text_size_mb * 10)  # 1MB毎に10ステップ追加
+
+        # オプション機能による追加ステップ
         if show_test_cases:
-            self.logger.debug("Showing test cases")
-            self._show_test_cases(text)
-
-        # パース処理
-        get_console_ui().processing_start("解析中", "テキスト構造を解析しています...")
-        self.logger.info("Starting parse phase")
-        ast = self._parse_with_progress(text, config_obj, input_path)
-        self.logger.debug(f"Parse completed: {len(ast) if ast else 0} nodes")
-
-        # 出力ファイルパスの決定
-        output_file = self._determine_output_path(input_path, output_dir)
-        self.logger.debug(f"Output path determined: {output_file}")
-
-        # レンダリング処理
-        get_console_ui().processing_start("変換中", "HTMLを生成しています...")
-        self.logger.info("Starting render phase")
-
-        # ソース表示用の引数を準備
-        source_args = {}
+            base_steps += 2
         if include_source:
-            source_args = {"source_text": text, "source_filename": input_path.name}
-            self.logger.debug("Source display enabled")
+            base_steps += 3
 
-        html = self._render_with_progress(
-            ast, config_obj, template, title=input_path.stem, **source_args
-        )
-        self.logger.debug(f"Render completed: {len(html)} characters")
+        # 行数に基づく追加推定
+        line_count = text.count("\n") + 1
+        if line_count > 1000:
+            base_steps += int(line_count / 100)  # 100行毎に1ステップ
 
-        # ファイル保存
-        get_console_ui().processing_start(
-            "保存中", f"ファイルを保存しています: {output_file.name}"
-        )
-        self.logger.info(f"Saving output file: {output_file}")
-        FileIOHandler.write_text_file(output_file, html)
+        return max(base_steps, 10)  # 最低10ステップ
 
-        # 統計情報表示
-        self._show_conversion_stats(ast, text, output_file, input_path)
+    def _parse_with_enhanced_progress(
+        self,
+        text: str,
+        config_obj,
+        input_path: Path,
+        progress_manager,
+        continue_on_error: bool = False,
+        graceful_errors: bool = False,
+        error_config_manager: Any = None,
+    ):
+        """プログレス管理付きパース処理（Issue #695対応）"""
+        from ...parser import Parser
 
-        duration = time.time() - start_time
-        self.logger.info(f"Conversion completed in {duration:.2f} seconds")
+        # Phase3: エラー設定管理対応
+        if error_config_manager:
+            effective_graceful_errors = error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error
+        else:
+            effective_graceful_errors = graceful_errors
+            
+        parser = Parser(graceful_errors=effective_graceful_errors)
 
-        return output_file
+        # ファイルサイズベースでストリーミング解析を選択
+        size_mb = len(text.encode("utf-8")) / (1024 * 1024)
+        line_count = text.count("\n") + 1
+
+        if size_mb > 5.0 or line_count > 10000:  # 大容量ファイル
+            self.logger.info(
+                f"Large file detected ({size_mb:.1f}MB, {line_count} lines), using streaming parse"
+            )
+
+            # ストリーミング解析用プログレスコールバック
+            def enhanced_progress_callback(progress_info: dict):
+                if progress_manager.is_cancelled():
+                    parser.cancel_parsing()
+                    return
+
+                current = progress_info["current_line"]
+                total = progress_info["total_lines"]
+                percent = progress_info["progress_percent"]
+
+                # プログレスマネージャーに反映
+                estimated_current = int(
+                    (current / total) * progress_manager.total_items * 0.4
+                )
+                progress_manager.update(
+                    estimated_current, "解析", f"行 {current}/{total} ({percent:.1f}%)"
+                )
+
+            # ストリーミング解析実行
+            nodes = list(
+                parser.parse_streaming_from_text(text, enhanced_progress_callback)
+            )
+            # Issue #700: パーサーオブジェクトも返す
+            return (nodes, parser)
+        else:
+            # 従来の解析方式
+            nodes = parser.parse(text)
+            # Issue #700: パーサーオブジェクトも返す
+            return (nodes, parser)
+
+    def _render_with_enhanced_progress(
+        self,
+        ast,
+        config_obj,
+        template: str | None,
+        title: str,
+        progress_manager,
+        graceful_errors: bool = False,
+        parser_errors: list = None,
+        **source_args,
+    ) -> str:
+        """プログレス管理付きレンダリング処理（Issue #695対応）"""
+        from ...renderer import Renderer
+
+        renderer = Renderer()
+
+        # レンダリング進捗の段階的更新
+        node_count = len(ast) if ast else 0
+        processed_nodes = 0
+
+        def render_progress_callback():
+            nonlocal processed_nodes
+            processed_nodes += 1
+
+            if progress_manager.is_cancelled():
+                raise KeyboardInterrupt("レンダリングがキャンセルされました")
+
+            if processed_nodes % max(1, node_count // 20) == 0:  # 5%刻みで更新
+                percent = (
+                    (processed_nodes / node_count) * 100 if node_count > 0 else 100
+                )
+                base_progress = int(
+                    progress_manager.total_items * 0.6
+                )  # 60%位置から開始
+                current_progress = base_progress + int(
+                    (percent / 100) * progress_manager.total_items * 0.3
+                )
+
+                progress_manager.update(
+                    current_progress,
+                    "変換",
+                    f"ノード {processed_nodes}/{node_count} ({percent:.1f}%)",
+                )
+
+        # レンダリング実行
+        try:
+            # プログレスコールバックを設定
+            if hasattr(renderer, "set_progress_callback"):
+                renderer.set_progress_callback(render_progress_callback)
+
+            # Issue #700: graceful error handling対応
+            if graceful_errors and parser_errors:
+                # HTMLレンダラーにエラー情報を設定
+                html_renderer = renderer.html_renderer
+                if hasattr(html_renderer, "set_graceful_errors"):
+                    html_renderer.set_graceful_errors(parser_errors, embed_in_html=True)
+                    self.logger.info(
+                        f"Set {len(parser_errors)} graceful errors for HTML embedding"
+                    )
+
+            html = renderer.render(ast, template=template, title=title, **source_args)
+
+            return html
+
+        except Exception as e:
+            progress_manager.add_error(f"レンダリングエラー: {str(e)}")
+            raise
 
     def _determine_output_path(self, input_path: Path, output_dir: str) -> Path:
         """出力ファイルパスを決定"""
         self.logger.debug(f"Determining output path for: {input_path}")
         output_path = Path(output_dir)
 
+        # 出力パスがファイル名（.html拡張子）の場合は直接ファイル出力
+        if output_path.suffix == '.html':
+            # 親ディレクトリが存在しない場合は作成
+            if not output_path.parent.exists():
+                self.logger.info(f"Creating parent directory: {output_path.parent}")
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+            return output_path
+        
         # 出力ディレクトリが存在しない場合は作成
         if not output_path.exists():
             self.logger.info(f"Creating output directory: {output_path}")
@@ -133,27 +395,38 @@ class ConvertProcessor:
         html_filename = f"{input_path.stem}.html"
         return output_path / html_filename
 
-    def _parse_with_progress(self, text: str, config: Any, input_path: Path) -> Any:
+    def _parse_with_progress(self, text: str, config: Any, input_path: Path, error_config_manager: Any = None) -> Any:
         """プログレス表示付きでパース処理を実行（ストリーミング対応）"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
-        line_count = len(text.split('\n'))
+        line_count = len(text.split("
+"))
         self.logger.debug(f"Parsing file: {size_mb:.2f} MB, {line_count} lines")
 
         # ストリーミング処理の判定閾値
         use_streaming = size_mb > 1.0 or line_count > 200
-        
+
         if use_streaming:
-            return self._parse_with_streaming_progress(text, config, input_path, size_mb, line_count)
+            return self._parse_with_streaming_progress(
+                text, config, input_path, size_mb, line_count, error_config_manager
+            )
         else:
-            return self._parse_with_traditional_progress(text, config, size_mb)
-    
-    def _parse_with_streaming_progress(self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int) -> Any:
+            return self._parse_with_traditional_progress(text, config, size_mb, error_config_manager)
+
+    def _parse_with_streaming_progress(
+        self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int, error_config_manager: Any = None
+    ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
-        from ...parser import StreamingParser
-        
-        self.logger.info(f"Using streaming parser for large file: {size_mb:.1f}MB, {line_count} lines")
-        
+        self.logger.info(
+            f"Using streaming parser for large file: {size_mb:.1f}MB, {line_count} lines"
+        )
+
+        # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
         parser = StreamingParser(config=config)
+        
+        # 現時点ではStreamingParserはgraceful_errorsをサポートしていないため、
+        # エラー設定がある場合は警告を出す
+        if error_config_manager and (error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error):
+            self.logger.warning("StreamingParser does not yet support graceful error handling. Errors will be handled traditionally.")
         nodes = []
         
         with Progress() as progress:
@@ -239,10 +512,16 @@ class ConvertProcessor:
                     progress.update(task, completed=i * 10)
                     time.sleep(0.1)
 
-                ast = parse(text, config)
+                if error_config_manager:
+                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                else:
+                    ast = parse(text, config)
                 progress.update(task, completed=100)
             else:
-                ast = parse(text, config)
+                if error_config_manager:
+                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                else:
+                    ast = parse(text, config)
                 elapsed = time.time() - start_time
                 self.logger.debug(f"Parse completed in {elapsed:.2f} seconds")
 
