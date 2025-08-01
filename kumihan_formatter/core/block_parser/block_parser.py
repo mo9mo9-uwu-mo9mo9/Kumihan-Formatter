@@ -269,6 +269,11 @@ class BlockParser:
         if "目次" in keywords:
             self.logger.info("Found TOC marker in new format")
             return toc_marker(), end_index + 1
+            
+        # 新リスト記法の処理
+        if "リスト" in keywords:
+            self.logger.info("Found list block in new format")
+            return self._parse_list_block(lines, start_index, keywords, attributes)
 
         # ブロックノードを作成
         if len(keywords) == 1:
@@ -293,6 +298,36 @@ class BlockParser:
             f"New format block parsed successfully, next index: {end_index + 1}"
         )
         return node, end_index + 1
+
+    def _parse_list_block(
+        self,
+        lines: list[str],
+        start_index: int,
+        keywords: list[str],
+        attributes: dict[str, Any],
+    ) -> tuple[Node | None, int]:
+        """
+        新リスト記法 # リスト # ブロックの解析
+        
+        Args:
+            lines: 全行データ
+            start_index: 開始インデックス
+            keywords: パースされたキーワード
+            attributes: パースされた属性
+            
+        Returns:
+            tuple: (list_node, next_index)
+        """
+        from kumihan_formatter.core.list_parser_core import ListParserCore
+        
+        self.logger.debug(f"Parsing list block at line {start_index + 1}")
+        
+        # ListParserCoreを使用して新リスト記法を処理
+        list_parser = ListParserCore(self.keyword_parser)
+        list_node, next_index = list_parser.parse_list_block(lines, start_index)
+        
+        self.logger.debug(f"List block parsed, next index: {next_index}")
+        return list_node, next_index
 
     def parse_block_marker(
         self, lines: list[str], start_index: int
