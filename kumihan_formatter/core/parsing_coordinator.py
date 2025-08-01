@@ -125,20 +125,26 @@ class ParsingCoordinator:
             line_content: 解析対象の行内容（トリム済み）
             parser_scores: 更新対象のパーサースコア辞書
         """
-        # ブロック記法の検出
-        # ;;;記法は削除されました（Phase 1）
-
-        # キーワード記法の検出
-        # ;;;記法は削除されました（Phase 1）
-
-        # リスト記法の検出
-        if line_content.startswith(("- ", "* ", "+ ")) or line_content.startswith(
-            "  - "
-        ):
-            parser_scores["list"] += 2
-
-        # Markdown記法の検出
-        if line_content.startswith("#"):
+        import re
+        
+        # 新記法 # リスト # の検出
+        if re.match(r'^[#＃]\s*リスト\s*[#＃]', line_content):
+            parser_scores["list"] += 5  # 高スコア
+            
+        # 新記法インライン形式の検出 # キーワード # 内容
+        if re.search(r'[#＃][^#＃]+[#＃]', line_content):
+            parser_scores["keyword"] += 3
+            
+        # 新記法ブロック開始の検出 # キーワード #
+        if re.match(r'^[#＃]\s*[^#＃\s]+\s*[#＃]$', line_content):
+            parser_scores["block"] += 4
+            
+        # ブロック終了マーカーの検出
+        if line_content in ["##", "＃＃"]:
+            parser_scores["block"] += 2
+            
+        # Markdown記法の検出（互換性維持）
+        if line_content.startswith("#") and not re.match(r'^[#＃]\s*[^#＃\s]+\s*[#＃]', line_content):
             parser_scores["markdown"] += 2
         elif "**" in line_content or "*" in line_content:
             parser_scores["markdown"] += 1

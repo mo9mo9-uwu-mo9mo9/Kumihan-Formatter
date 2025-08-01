@@ -229,8 +229,18 @@ class ElementRenderer:
         return f"<ol {attr_str}>{content}</ol>"
 
     def render_list_item(self, node: Node) -> str:
-        """リスト項目をレンダリング（Phase 4: 統合機能適用）"""
+        """リスト項目をレンダリング（ネスト対応版）"""
         content = self._render_content(node.content, 0)
+        
+        # 子要素（ネストしたリスト）もレンダリング
+        if hasattr(node, 'children') and node.children:
+            for child in node.children:
+                if self._main_renderer:
+                    child_html = self._main_renderer.render_node(child)
+                    content += child_html
+                else:
+                    # フォールバック処理
+                    content += str(child)
 
         # Phase 4: Enhanced attribute rendering
         attr_str = render_attributes_with_enhancements(
