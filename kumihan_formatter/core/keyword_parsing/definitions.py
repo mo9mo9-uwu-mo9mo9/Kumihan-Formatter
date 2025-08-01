@@ -27,6 +27,7 @@ DEFAULT_BLOCK_KEYWORDS = {
     "注意": {"tag": "div", "class": "warning"},
     "情報": {"tag": "div", "class": "info"},
     "コードブロック": {"tag": "pre"},
+    "テスト": {"tag": "div", "class": "test"},
 }
 
 # キーワードネスト順序 (外側から内側へ)

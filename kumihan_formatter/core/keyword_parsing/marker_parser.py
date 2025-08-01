@@ -26,10 +26,10 @@ class MarkerParser:
     """マーカー構文解析クラス"""
 
     # プリコンパイルされた正規表現パターン（性能改善）
-    _NEW_FORMAT_PATTERN = re.compile(r"^([#＃])\s*(\S.+?)\s*([#＃])\s*(.*)")
+    _NEW_FORMAT_PATTERN = re.compile(r"^([#＃])\s*(.+)\s*([#＃])\s*(.*)")
     _INLINE_CONTENT_PATTERN = re.compile(r"^[#＃]\s*.+?\s*[#＃]\s*(.*)")
     _FORMAT_CHECK_PATTERN = re.compile(r"^[#＃]\s*.+\s*[#＃]")
-    _COLOR_ATTRIBUTE_PATTERN = re.compile(r"color=([#\w]+)")
+    _COLOR_ATTRIBUTE_PATTERN = re.compile(r"\s*color=(#?[a-fA-F0-9]{3,6}|[a-zA-Z]+)")
     # _ALT_ATTRIBUTE_PATTERN = re.compile(r"alt=([^;]+)")  # alt属性は削除されました（Phase 1）
     _KEYWORD_SPLIT_PATTERN = re.compile(r"[+＋]")
 
@@ -97,9 +97,7 @@ class MarkerParser:
                                 _, attrs, _ = self.parse_marker_keywords(full_content)
                                 all_attributes.update(attrs)
                                 # color属性を除いたキーワードを抽出
-                                keyword = re.sub(
-                                    r"\s*color=[#\w]+", "", keyword
-                                ).strip()
+                                keyword = self._COLOR_ATTRIBUTE_PATTERN.sub("", keyword).strip()
 
                             all_keywords.append(keyword)
                             if content:
@@ -177,7 +175,7 @@ class MarkerParser:
         # - 特殊文字（!@#$%^&*()など）が多い場合は単一マーカーの可能性が高い
 
         connection_words = ["と", "に", "が", "で", "を", "は", "の"]
-        special_chars = ["!", "@", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+"]
+        special_chars = ["!", "@", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "#"]
 
         content_to_first = text[start_pos + 1 : marker_positions[0]]
 
@@ -191,6 +189,14 @@ class MarkerParser:
             # さらに検証：最初のマーカーまでの内容に有効なキーワード+コンテンツがあるか
             if self._looks_like_complete_marker(content_to_first):
                 return marker_positions[0]
+
+        # color属性を持つ場合の特別な処理
+        if "color=" in content_to_first and len(marker_positions) > 1:
+            # 次の位置が16進数カラーコードかチェック
+            first_marker_pos = marker_positions[0]
+            if first_marker_pos + 1 < len(text):
+                # color=#xxx の # は終了マーカーではないので、最後のマーカーを選択
+                return marker_positions[-1]
 
         # 特殊文字が多い場合または複数マーカーでない場合：最後のマーカーを選択
         if special_count >= 2 or len(marker_positions) == 1:
@@ -353,7 +359,7 @@ class MarkerParser:
         if color_match:
             color_value = self._sanitize_color_attribute(color_match.group(1))
             attributes["color"] = color_value
-            marker_content = re.sub(r"\s*color=[#\w]+", "", marker_content)
+            marker_content = re.sub(self._COLOR_ATTRIBUTE_PATTERN, "", marker_content)
 
         # alt 属性を抽出（画像用、プリコンパイルパターン使用）- alt属性は削除されました（Phase 1）
         # alt_match = self._ALT_ATTRIBUTE_PATTERN.search(marker_content)
@@ -456,15 +462,25 @@ class MarkerParser:
         """
         line = line.strip()
 
-        # 新記法のパターンマッチング（境界条件修正済み）
-        # # キーワード # 形式の検出 (半角・全角・混在対応)
-        # \S.+? で非空白文字必須、空白のみキーワードを防止
-        match = self._NEW_FORMAT_PATTERN.match(line)
-
-        if not match:
+        # 手動で最後の#マーカーを探す（color属性対応）
+        if not (line.startswith('#') or line.startswith('＃')):
             return None
-
-        start_marker, keyword_part, end_marker, content = match.groups()
+            
+        start_marker = line[0]
+        
+        # 最後の#または＃を探す
+        last_hash_pos = -1
+        for i in range(len(line) - 1, 0, -1):
+            if line[i] in ['#', '＃']:
+                last_hash_pos = i
+                break
+        
+        if last_hash_pos == -1 or last_hash_pos == 0:
+            return None
+            
+        end_marker = line[last_hash_pos]
+        keyword_part = line[1:last_hash_pos].strip()
+        content = line[last_hash_pos + 1:].strip()
 
         # マーカーの整合性チェック（混在も許可）
         if start_marker not in self.HASH_MARKERS or end_marker not in self.HASH_MARKERS:
@@ -554,9 +570,16 @@ class MarkerParser:
             bool: 新記法の場合True
         """
         line = line.strip()
+        
+        # リスト項目の場合は除外（リスト内のインライン記法は別途処理）
+        if (line.startswith("- ") or line.startswith("・") or 
+            line.startswith("* ") or line.startswith("+ ") or
+            re.match(r"^\d+\.\s", line)):
+            return False
+            
         # インライン形式 #キーワード# または ブロック形式 #キーワード を検出
-        inline_pattern = r"[#＃][^#＃]+[#＃]"
-        block_pattern = r"^[#＃][^#＃]+$"
+        inline_pattern = r"[#\uff03][^#\uff03]+[#\uff03]"
+        block_pattern = r"^[#\uff03][^#\uff03]+$"
 
         return bool(re.search(inline_pattern, line)) or bool(
             re.match(block_pattern, line)

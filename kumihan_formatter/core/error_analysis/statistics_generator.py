@@ -151,7 +151,7 @@ class StatisticsGenerator:
             "</div>",
         ]
 
-        return "\\n".join(html_parts)
+        return "\n".join(html_parts)
 
     def _generate_no_errors_html(self) -> str:
         """エラーなしの場合のHTML"""
@@ -198,7 +198,7 @@ class StatisticsGenerator:
                 )
 
         chart_html.append("</div>")
-        return "\\n".join(chart_html)
+        return "\n".join(chart_html)
 
     def _generate_pattern_analysis(
         self, most_common_errors: List[Dict[str, Any]]
@@ -243,7 +243,7 @@ class StatisticsGenerator:
             )
 
         html_parts.append("</div>")
-        return "\\n".join(html_parts)
+        return "\n".join(html_parts)
 
     def _generate_line_range_chart(self, line_range_counts: Dict[str, int]) -> str:
         """行範囲別チャートHTML生成"""
@@ -270,7 +270,7 @@ class StatisticsGenerator:
                 )
 
         html_parts.append("</div>")
-        return "\\n".join(html_parts)
+        return "\n".join(html_parts)
 
     def save_statistics_json(
         self, statistics: ErrorStatistics, output_path: Path
@@ -325,4 +325,4 @@ class StatisticsGenerator:
                 percentage = error_info["percentage"]
                 summary_lines.append(f"  {i}. {pattern}: {count}件 ({percentage:.1f}%)")
 
-        return "\\n".join(summary_lines)
+        return "\n".join(summary_lines)

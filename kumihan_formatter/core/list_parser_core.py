@@ -140,9 +140,10 @@ class ListParserCore:
             else:
                 content = line
 
-        # ;;;記法は削除されました（Phase 1）
-        # この機能は新記法で置き換えられます
-        return list_item(content), 1
+        # Process inline notation (# keyword # content) within list items
+        processed_content = self.keyword_parser._process_inline_keywords(content)
+        
+        return list_item(processed_content), 1
 
     def _parse_keyword_list_item(self, content: str) -> Node:
         """
