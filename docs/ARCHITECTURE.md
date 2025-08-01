@@ -12,6 +12,12 @@
 - [クラス設計](#クラス設計)
 - [技術仕様](#技術仕様)
 
+## 📚 関連ドキュメント
+
+- **[記法仕様詳細](specifications/NOTATION_SPEC.md)** - Kumihan記法の完全仕様
+- **[機能仕様](specifications/FUNCTIONAL_SPEC.md)** - システム機能の詳細仕様
+- **[エラーメッセージ仕様](specifications/ERROR_MESSAGES_SPEC.md)** - エラー仕様一覧
+
 ## システム概要
 
 **日本語テキスト装飾・整形フォーマッター** - Claude Code専用最適化
