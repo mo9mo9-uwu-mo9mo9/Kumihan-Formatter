@@ -375,35 +375,9 @@ def parse(text: str, config=None) -> list[Node]:  # type: ignore
     return parser.parse(text)
 
 
-def parse_with_error_config(text: str, config=None, error_config_manager=None) -> tuple[list[Node], list]:
-    """
-    Phase3: エラー設定管理対応のパース関数
-    
-    Args:
-        text: Input text to parse
-        config: Optional configuration
-        error_config_manager: Error configuration manager for Phase3
-        
-    Returns:
-        tuple[list[Node], list]: Parsed AST nodes and graceful errors
-    """
-    # エラー設定に基づいてパーサーを初期化
-    graceful_errors = False
-    if error_config_manager:
-        graceful_errors = error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error
-    
-    parser = Parser(config, graceful_errors=graceful_errors)
-    nodes = parser.parse(text)
-    
-    # エラー情報を収集
-    errors = parser.get_graceful_errors() if hasattr(parser, 'get_graceful_errors') else []
-    
-    return nodes, errors
-
-
 class StreamingParser:
     """
-    大容量ファイル対応のストリーミングパーサー
+    大容量ファイル対応ストリーミングパーサー（Issue #694 Phase 3対応）
 
     特徴:
     - ジェネレーターベース：メモリ使用量を最小化
@@ -417,8 +391,9 @@ class StreamingParser:
     - 10MBファイル対応
     """
 
-    CHUNK_SIZE = 50  # 一度に処理する行数
-    PROGRESS_UPDATE_INTERVAL = 50  # プログレス更新間隔
+    # クラス定数
+    CHUNK_SIZE = 200  # チャンクサイズ（行数）
+    PROGRESS_UPDATE_INTERVAL = 50  # プログレス更新間隔（行数）
 
     def __init__(self, config=None) -> None:
         self.config = config
@@ -433,35 +408,24 @@ class StreamingParser:
         self.list_parser = ListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
 
-        # Initialize advanced error recovery system
-        from .core.utilities.error_recovery import AdvancedErrorRecoverySystem
-
-        self.error_recovery = AdvancedErrorRecoverySystem()
-
-        # Initialize performance monitoring system
+        # パフォーマンス監視を初期化
         from .core.utilities.performance_metrics import PerformanceMonitor
+        self.performance_monitor = PerformanceMonitor()
 
-        self.performance_monitor = PerformanceMonitor(
-            monitoring_interval=0.5,  # 0.5秒間隔で監視
-            history_size=500,  # 500サンプルまで保持
-        )
+        self.logger.info("StreamingParser initialized with performance monitoring")
 
-        self.logger.debug(
-            "StreamingParser initialized for large file processing with error recovery and performance monitoring"
-        )
-
-    def parse_streaming(
+    def parse_streaming_from_file(
         self, file_path: Path, progress_callback=None
     ) -> Iterator[Node]:
         """
-        ファイルをストリーミング形式で解析
+        ファイルからストリーミング解析を実行
 
         Args:
             file_path: 解析対象ファイルパス
-            progress_callback: プログレス通知用コールバック関数
+            progress_callback: プログレス更新コールバック
 
         Yields:
-            Node: 解析済みAST nodes（リアルタイム生成）
+            Node: 解析済みAST node
 
         Raises:
             FileNotFoundError: ファイルが存在しない場合
@@ -471,6 +435,9 @@ class StreamingParser:
         self._cancelled = False
         self.errors = []
 
+        # パフォーマンス監視開始
+        self.performance_monitor.start_monitoring()
+
         try:
             # ファイルサイズと行数の事前取得
             file_size = file_path.stat().st_size
@@ -478,63 +445,28 @@ class StreamingParser:
             self.current_line = 0
 
             self.logger.info(
-                f"File analysis: {file_size} bytes, {self.total_lines} lines"
+                f"File info: {file_size:,} bytes, {self.total_lines:,} lines"
             )
 
-            # パフォーマンス監視開始
-            self.performance_monitor.start_monitoring(
-                self.total_lines, f"ファイル解析: {file_path.name}"
-            )
-
-            # パフォーマンスアラートコールバック設定
-            def performance_alert_callback(alert_type: str, alert_data: dict):
-                self.logger.warning(
-                    f"Performance alert [{alert_type}]: {alert_data['message']}"
-                )
-
-            self.performance_monitor.add_alert_callback(performance_alert_callback)
-
-            # チャンク単位でファイルを処理
-            with open(file_path, "r", encoding="utf-8", buffering=8192) as file:
-                chunk_buffer = []
-
+            # ファイルをストリーミング読み込み
+            with open(file_path, "r", encoding="utf-8") as file:
                 for line_num, line in enumerate(file, 1):
                     if self._cancelled:
                         self.logger.info("Parse cancelled by user")
                         break
 
-                    chunk_buffer.append(line.rstrip("\n"))
-                    self.current_line = line_num
+                    # プログレス更新
+                    if progress_callback and line_num % self.PROGRESS_UPDATE_INTERVAL == 0:
+                        progress_info = self._calculate_progress(line_num)
+                        progress_callback(progress_info)
 
-                    # チャンクサイズに達したら処理実行
-                    if len(chunk_buffer) >= self.CHUNK_SIZE:
-                        yield from self._process_chunk(
-                            chunk_buffer, line_num - len(chunk_buffer) + 1
-                        )
-                        chunk_buffer.clear()
+                    # パフォーマンス監視にアイテム処理を記録
+                    self.performance_monitor.record_item_processed()
 
-                        # プログレス更新
-                        if line_num % self.PROGRESS_UPDATE_INTERVAL == 0:
-                            # パフォーマンス統計更新
-                            self.performance_monitor.update_progress(
-                                line_num,
-                                f"チャンク処理中 ({line_num}/{self.total_lines}行)",
-                            )
-
-                            if progress_callback:
-                                progress_info = self._calculate_progress(line_num)
-                                progress_callback(progress_info)
-
-                # 残りのチャンクを処理
-                if chunk_buffer and not self._cancelled:
-                    yield from self._process_chunk(
-                        chunk_buffer, self.current_line - len(chunk_buffer) + 1
-                    )
-
-                    # 最終プログレス更新
-                    if progress_callback:
-                        final_progress = self._calculate_progress(self.total_lines)
-                        progress_callback(final_progress)
+                # 最終プログレス更新
+                if progress_callback:
+                    final_progress = self._calculate_progress(self.total_lines)
+                    progress_callback(final_progress)
 
         except Exception as e:
             self.logger.error(f"Streaming parse error: {e}", exc_info=True)
@@ -546,146 +478,72 @@ class StreamingParser:
             # パフォーマンス監視停止
             self.performance_monitor.stop_monitoring()
 
-            # パフォーマンスレポート生成
-            performance_report = self.performance_monitor.generate_performance_report()
-            self.logger.info(f"Performance Report:\n{performance_report}")
-
-        self.logger.info(
-            f"Streaming parse complete: {self.current_line} lines processed, {len(self.errors)} errors"
-        )
-
     def parse_streaming_from_text(
         self, text: str, progress_callback=None
     ) -> Iterator[Node]:
         """
-        テキストをストリーミング形式で解析（真のメモリ効率版）
+        テキストからストリーミング解析を実行（最適化版）
 
         Args:
             text: 解析対象テキスト
-            progress_callback: プログレス通知用コールバック関数
+            progress_callback: プログレス更新コールバック
 
         Yields:
-            Node: 解析済みAST nodes
+            Node: 解析済みAST node
         """
-        from io import StringIO
-
-        from .core.utilities.progress_manager import ProgressManager
-
-        self.logger.info(
-            f"Starting optimized streaming parse of text: {len(text)} characters"
-        )
+        self.logger.info(f"Starting optimized streaming parse of text: {len(text)} chars")
         self._cancelled = False
-        self.errors = []
 
-        # プログレス管理システム初期化
-        progress_manager = ProgressManager("最適化テキスト解析")
-
-        # テキストサイズから行数を推定（メモリ効率のため）
-        estimated_lines = text.count("\n") + 1
-        self.total_lines = estimated_lines
-        self.current_line = 0
+        # プログレス管理システムを初期化
+        from .core.utilities.progress_manager import ProgressManager
+        progress_manager = ProgressManager(
+            total_items=len(text.split("
+")),
+            task_name="テキスト解析"
+        )
 
         # パフォーマンス監視開始
-        self.performance_monitor.start_monitoring(
-            estimated_lines, "テキスト解析（ストリーミング）"
-        )
-
-        # パフォーマンスアラートコールバック設定
-        def performance_alert_callback(alert_type: str, alert_data: dict):
-            self.logger.warning(
-                f"Performance alert [{alert_type}]: {alert_data['message']}"
-            )
-
-        self.performance_monitor.add_alert_callback(performance_alert_callback)
-
-        # プログレス追跡開始
-        progress_manager.start(estimated_lines, "最適化ストリーミング解析")
-
-        # プログレス更新コールバック設定
-        if progress_callback:
-
-            def enhanced_progress_callback(state):
-                progress_info = {
-                    "current_line": state.current,
-                    "total_lines": state.total,
-                    "progress_percent": state.progress_percent,
-                    "eta_seconds": state.eta_seconds,
-                    "errors_count": len(self.errors),
-                    "processing_rate": state.processing_rate,
-                    "stage": state.stage,
-                    "substage": state.substage,
-                }
-                progress_callback(progress_info)
-
-            progress_manager.set_progress_callback(enhanced_progress_callback)
-
-        # キャンセル機能設定
-        progress_manager.set_cancellation_callback(self.cancel_parsing)
-
-        chunk_buffer = []
+        self.performance_monitor.start_monitoring()
 
         try:
-            # StringIOを使用してメモリ効率的な行単位読み込み
-            text_stream = StringIO(text)
+            # テキストを行に分割
+            lines = text.split("
+")
+            self.total_lines = len(lines)
+            
+            # チャンクバッファを初期化
+            chunk_buffer = []
 
-            for line_num, line in enumerate(text_stream, 1):
+            for line_num, line in enumerate(lines, 1):
+                chunk_buffer.append(line)
+                
                 # キャンセルチェック
                 if self._cancelled or progress_manager.is_cancelled():
                     self.logger.info("Parse cancelled by user")
                     break
 
-                # 行末の改行文字を除去
-                line = line.rstrip("\n\r")
-                chunk_buffer.append(line)
-                self.current_line = line_num
-
                 # チャンクサイズに達したら処理実行
                 if len(chunk_buffer) >= self.CHUNK_SIZE:
                     # チャンク処理
                     chunk_start_line = line_num - len(chunk_buffer) + 1
-                    progress_manager.update(
-                        line_num, f"チャンク{chunk_start_line}-{line_num}行処理中"
-                    )
+                    
+                    for node in self._parse_chunk_optimized(chunk_buffer, chunk_start_line):
+                        if node:
+                            yield node
 
-                    # メモリ効率的なチャンク処理
-                    for node in self._process_chunk_optimized(
-                        chunk_buffer, chunk_start_line
-                    ):
-                        yield node
-
-                    # チャンクバッファを即座にクリア（メモリ解放）
+                    # バッファクリア
                     chunk_buffer.clear()
 
-                # プログレス更新（定期的）
+                # プログレス更新
                 if line_num % self.PROGRESS_UPDATE_INTERVAL == 0:
-                    # パフォーマンス統計更新
-                    self.performance_monitor.update_progress(
-                        line_num, f"テキスト解析中 ({line_num}/{estimated_lines}行)"
-                    )
-
-                    if not progress_manager.update(
-                        line_num, f"{line_num}/{estimated_lines}行解析完了"
-                    ):
-                        break  # キャンセルされた場合
+                    progress_manager.update_progress(line_num, f"行 {line_num}/{self.total_lines}")
 
             # 残りのチャンクを処理
-            if chunk_buffer and not (
-                self._cancelled or progress_manager.is_cancelled()
-            ):
-                progress_manager.set_stage("最終処理", "残りチャンクを処理中")
-                chunk_start_line = self.current_line - len(chunk_buffer) + 1
-
-                for node in self._process_chunk_optimized(
-                    chunk_buffer, chunk_start_line
-                ):
-                    yield node
-
-                # 最終クリーンアップ
-                chunk_buffer.clear()
-
-            # 完了処理
-            if not (self._cancelled or progress_manager.is_cancelled()):
-                progress_manager.finish("解析完了")
+            if chunk_buffer:
+                chunk_start_line = self.total_lines - len(chunk_buffer) + 1
+                for node in self._parse_chunk_optimized(chunk_buffer, chunk_start_line):
+                    if node:
+                        yield node
 
         except Exception as e:
             progress_manager.add_error(f"解析エラー: {str(e)}")
@@ -697,14 +555,6 @@ class StreamingParser:
             # パフォーマンス監視停止
             self.performance_monitor.stop_monitoring()
 
-            # パフォーマンスレポート生成
-            performance_report = self.performance_monitor.generate_performance_report()
-            self.logger.info(f"Performance Report:\n{performance_report}")
-
-            # メモリ解放の確実な実行
-            chunk_buffer.clear()
-            text_stream.close()
-
             # 最終サマリー
             summary = progress_manager.get_summary()
             self.logger.info(
@@ -712,21 +562,8 @@ class StreamingParser:
                 f"{summary['elapsed_time']:.2f}s, {summary['errors_count']} errors"
             )
 
-    def _process_chunk(self, lines: list[str], start_line_num: int) -> Iterator[Node]:
-        """
-        チャンク（行のまとまり）を処理してノードを生成
-
-        Args:
-            lines: 処理対象の行リスト
-            start_line_num: チャンク開始行番号
-
-        Yields:
-            Node: 解析済みノード
-        """
-        self.logger.debug(
-            f"Processing chunk: lines {start_line_num}-{start_line_num + len(lines) - 1}"
-        )
-
+    def _parse_chunk_optimized(self, lines: list[str], start_line: int) -> Iterator[Node]:
+        """最適化されたチャンク解析（高速版）"""
         current = 0
         while current < len(lines):
             # 空行をスキップ
@@ -736,30 +573,20 @@ class StreamingParser:
 
             line = lines[current].strip()
 
+            # 高速パターンマッチング
             try:
-                # ブロックマーカーの解析
+                # ブロックマーカー解析
                 if self.block_parser.is_opening_marker(line):
-                    node, next_index = self._parse_block_in_chunk(
-                        lines, current, start_line_num
-                    )
+                    node, next_index = self._parse_block_in_chunk(lines, current)
                     if node:
                         yield node
                     current = next_index
                     continue
 
-                # コメント行をスキップ
-                if line.startswith("#") and not self.block_parser.is_opening_marker(
-                    line
-                ):
-                    current += 1
-                    continue
-
                 # リスト解析
                 list_type = self.list_parser.is_list_line(line)
                 if list_type:
-                    node, next_index = self._parse_list_in_chunk(
-                        lines, current, list_type
-                    )
+                    node, next_index = self._parse_list_in_chunk(lines, current, list_type)
                     if node:
                         yield node
                     current = next_index
@@ -772,32 +599,21 @@ class StreamingParser:
                 current = next_index
 
             except Exception as e:
-                self.logger.warning(
-                    f"Error processing line {start_line_num + current}: {e}"
-                )
-                self.add_error(f"Line {start_line_num + current}: {str(e)}")
-                # パフォーマンス監視に警告記録
-                if hasattr(self, "performance_monitor"):
-                    self.performance_monitor.add_warning()
-                current += 1  # エラー時は次の行へ
+                self.logger.warning(f"Chunk parse error at line {start_line + current}: {e}")
+                self.add_error(f"Chunk parse error: {str(e)}")
+                current += 1
 
-    def _parse_block_in_chunk(
-        self, lines: list[str], current: int, start_line_num: int
-    ) -> tuple[Node | None, int]:
+    def _parse_block_in_chunk(self, lines: list[str], current: int) -> tuple[Node | None, int]:
         """チャンク内でブロックマーカーを解析"""
         try:
             node, next_index = self.block_parser.parse_block_marker(lines, current)
             return node, next_index
         except Exception as e:
-            self.logger.warning(
-                f"Block parse error at line {start_line_num + current}: {e}"
-            )
+            self.logger.warning(f"Block parse error: {e}")
             self.add_error(f"Block parse error: {str(e)}")
             return None, current + 1
 
-    def _parse_list_in_chunk(
-        self, lines: list[str], current: int, list_type: str
-    ) -> tuple[Node | None, int]:
+    def _parse_list_in_chunk(self, lines: list[str], current: int, list_type: str) -> tuple[Node | None, int]:
         """チャンク内でリストを解析"""
         try:
             if list_type == "ul":
@@ -810,9 +626,7 @@ class StreamingParser:
             self.add_error(f"List parse error: {str(e)}")
             return None, current + 1
 
-    def _parse_paragraph_in_chunk(
-        self, lines: list[str], current: int
-    ) -> tuple[Node | None, int]:
+    def _parse_paragraph_in_chunk(self, lines: list[str], current: int) -> tuple[Node | None, int]:
         """チャンク内でパラグラフを解析"""
         try:
             node, next_index = self.block_parser.parse_paragraph(lines, current)
@@ -822,207 +636,10 @@ class StreamingParser:
             self.add_error(f"Paragraph parse error: {str(e)}")
             return None, current + 1
 
-    def _process_chunk_optimized(
-        self, lines: list[str], start_line_num: int
-    ) -> Iterator[Node]:
-        """
-        メモリ効率最適化されたチャンク処理
-
-        Args:
-            lines: 処理対象の行リスト
-            start_line_num: チャンク開始行番号
-
-        Yields:
-            Node: 解析済みノード
-        """
-        self.logger.debug(
-            f"Processing optimized chunk: lines {start_line_num}-{start_line_num + len(lines) - 1}"
-        )
-
-        current = 0
-        processed_nodes = 0
-
-        while current < len(lines):
-            # 空行をスキップ
-            current = self.block_parser.skip_empty_lines(lines, current)
-            if current >= len(lines):
-                break
-
-            line = lines[current].strip()
-
-            try:
-                # ブロックマーカーの解析
-                if self.block_parser.is_opening_marker(line):
-                    node, next_index = self._parse_block_in_chunk_safe(
-                        lines, current, start_line_num
-                    )
-                    if node:
-                        yield node
-                        processed_nodes += 1
-                    current = next_index
-                    continue
-
-                # コメント行をスキップ
-                if line.startswith("#") and not self.block_parser.is_opening_marker(
-                    line
-                ):
-                    current += 1
-                    continue
-
-                # リスト解析
-                list_type = self.list_parser.is_list_line(line)
-                if list_type:
-                    node, next_index = self._parse_list_in_chunk_safe(
-                        lines, current, list_type
-                    )
-                    if node:
-                        yield node
-                        processed_nodes += 1
-                    current = next_index
-                    continue
-
-                # パラグラフ解析
-                node, next_index = self._parse_paragraph_in_chunk_safe(lines, current)
-                if node:
-                    yield node
-                    processed_nodes += 1
-                current = next_index
-
-            except Exception as e:
-                self.logger.warning(
-                    f"Error processing line {start_line_num + current}: {e}"
-                )
-                self.add_error(f"Line {start_line_num + current}: {str(e)}")
-                # パフォーマンス監視に警告記録
-                if hasattr(self, "performance_monitor"):
-                    self.performance_monitor.add_warning()
-                current += 1  # エラー時は次の行へ
-
-        self.logger.debug(
-            f"Optimized chunk completed: {processed_nodes} nodes processed"
-        )
-
-    def _parse_block_in_chunk_safe(
-        self, lines: list[str], current: int, start_line_num: int
-    ) -> tuple[Node | None, int]:
-        """高度なエラー回復機能付きブロック解析"""
-        try:
-            node, next_index = self.block_parser.parse_block_marker(lines, current)
-            return node, next_index
-        except Exception as e:
-            # エラーコンテキストを作成
-            from .core.utilities.error_recovery import ErrorType
-
-            context_info = {
-                "line_number": start_line_num + current,
-                "content_snippet": lines[current] if current < len(lines) else "",
-                "parsing_context": "block_marker",
-            }
-
-            error_context = self.error_recovery.classify_error(e, context_info)
-
-            # エラー種別に応じた処理
-            if error_context.error_type == ErrorType.BLOCK_STRUCTURE_ERROR:
-                # 高度な回復を試行
-                recovery_result = self.error_recovery.recover_from_error(
-                    error_context, lines
-                )
-
-                if recovery_result.success:
-                    self.logger.info(
-                        f"Block error recovery: {recovery_result.recovery_message}"
-                    )
-
-                    # 警告をエラーリストに追加
-                    for warning in recovery_result.warnings:
-                        self.add_error(f"Warning: {warning}")
-
-                    return None, recovery_result.skip_to_line
-
-            # フォールバック: 従来の回復処理
-            recovery_index = self._find_block_end_marker(lines, current)
-            if recovery_index > current:
-                self.logger.info(
-                    f"Block error recovered at line {start_line_num + recovery_index}"
-                )
-                return None, recovery_index
-
-            self.logger.warning(
-                f"Block parse error at line {start_line_num + current}: {e}"
-            )
-            self.add_error(f"Block parse error: {str(e)}")
-            return None, current + 1
-
-    def _parse_list_in_chunk_safe(
-        self, lines: list[str], current: int, list_type: str
-    ) -> tuple[Node | None, int]:
-        """安全なリスト解析（エラー回復機能付き）"""
-        try:
-            if list_type == "ul":
-                node, next_index = self.list_parser.parse_unordered_list(lines, current)
-            else:  # 'ol'
-                node, next_index = self.list_parser.parse_ordered_list(lines, current)
-            return node, next_index
-        except Exception as e:
-            # エラー回復: リスト終了を検出
-            recovery_index = self._find_list_end(lines, current, list_type)
-            if recovery_index > current:
-                self.logger.info(f"List error recovered at line {recovery_index}")
-                return None, recovery_index
-
-            self.logger.warning(f"List parse error: {e}")
-            self.add_error(f"List parse error: {str(e)}")
-            return None, current + 1
-
-    def _parse_paragraph_in_chunk_safe(
-        self, lines: list[str], current: int
-    ) -> tuple[Node | None, int]:
-        """安全なパラグラフ解析（エラー回復機能付き）"""
-        try:
-            node, next_index = self.block_parser.parse_paragraph(lines, current)
-            return node, next_index
-        except Exception as e:
-            # エラー回復: 次の空行まで進む
-            recovery_index = self._find_next_empty_line(lines, current)
-            if recovery_index > current:
-                self.logger.info(f"Paragraph error recovered at line {recovery_index}")
-                return None, recovery_index
-
-            self.logger.warning(f"Paragraph parse error: {e}")
-            self.add_error(f"Paragraph parse error: {str(e)}")
-            return None, current + 1
-
-    def _find_block_end_marker(self, lines: list[str], start: int) -> int:
-        """ブロック終了マーカーを検索"""
-        for i in range(start + 1, len(lines)):
-            line = lines[i].strip()
-            if line == "##" or (
-                line.startswith("#") and self.block_parser.is_opening_marker(line)
-            ):
-                return i
-        return start + 1  # 見つからない場合は次の行
-
-    def _find_list_end(self, lines: list[str], start: int, list_type: str) -> int:
-        """リスト終了位置を検索"""
-        for i in range(start + 1, len(lines)):
-            line = lines[i].strip()
-            if not line:  # 空行でリスト終了
-                return i
-            if not self.list_parser.is_list_line(line):  # リスト以外の行
-                return i
-        return start + 1
-
-    def _find_next_empty_line(self, lines: list[str], start: int) -> int:
-        """次の空行を検索"""
-        for i in range(start + 1, len(lines)):
-            if not lines[i].strip():
-                return i
-        return start + 1
-
     def _count_lines_efficiently(self, file_path: Path) -> int:
         """効率的な行数カウント"""
         try:
-            with open(file_path, "rb") as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 line_count = sum(1 for _ in file)
             return line_count
         except Exception:
@@ -1038,26 +655,14 @@ class StreamingParser:
             eta_seconds = 0
         else:
             progress_percent = min(100.0, (current_line / self.total_lines) * 100)
-
-            # ETA算出（簡易版）
-            if current_line > 0 and progress_percent > 0:
-                # 現在の処理速度から残り時間を推定
-                elapsed_estimate = (
-                    current_line / max(1, self.PROGRESS_UPDATE_INTERVAL) * 0.1
-                )  # 概算
-                remaining_percent = 100.0 - progress_percent
-                eta_seconds = (elapsed_estimate * remaining_percent) / max(
-                    0.1, progress_percent
-                )
-            else:
-                eta_seconds = 0
+            # ETAは簡易計算（実際の実装では処理速度を考慮）
+            eta_seconds = max(0, int((self.total_lines - current_line) * 0.01))
 
         return {
             "current_line": current_line,
             "total_lines": self.total_lines,
             "progress_percent": progress_percent,
-            "eta_seconds": int(eta_seconds),
-            "errors_count": len(self.errors),
+            "eta_seconds": eta_seconds,
         }
 
     def cancel_parsing(self) -> None:
@@ -1065,22 +670,20 @@ class StreamingParser:
         self._cancelled = True
         self.logger.info("Parse cancellation requested")
 
-    def get_errors(self) -> list[str]:
-        """解析エラーを取得"""
-        return self.errors
-
     def add_error(self, error: str) -> None:
         """解析エラーを追加"""
         self.errors.append(error)
         self.logger.warning(f"Parse error: {error}")
 
+    def get_errors(self) -> list[str]:
+        """解析エラーを取得"""
+        return self.errors[:]
+
 
 # 既存Parserクラスとの互換性維持のためのラッパー関数
-def parse_with_streaming(
-    text: str, config=None, use_streaming: bool = None
-) -> list[Node]:
+def parse_with_error_config(text: str, config: Any = None, use_streaming: bool | None = None) -> list[Node]:
     """
-    ストリーミングパーサーを使用した解析（互換性維持）
+    エラー設定対応の解析関数（ストリーミング対応）
 
     Args:
         text: 解析対象テキスト
@@ -1093,8 +696,8 @@ def parse_with_streaming(
     # ストリーミング使用判定
     if use_streaming is None:
         # テキストサイズが大きい場合はストリーミングを使用
-        text_size_mb = len(text.encode("utf-8")) / (1024 * 1024)
-        use_streaming = text_size_mb > 1.0 or len(text.split("\n")) > 200
+        size_mb = len(text.encode('utf-8')) / (1024 * 1024)
+        use_streaming = size_mb > 1.0
 
     if use_streaming:
         parser = StreamingParser(config=config)

@@ -59,14 +59,6 @@ class ProcessingStats:
         duration = self.duration_seconds
         return self.items_processed / duration if duration > 0 else 0
 
-    @property
-    def completion_rate(self) -> float:
-        """完了率（0-100）"""
-        return (
-            (self.items_processed / self.total_items * 100)
-            if self.total_items > 0
-            else 0
-        )
 
 
 class PerformanceMonitor:
@@ -391,7 +383,8 @@ class PerformanceMonitor:
                 )
                 report_lines.append(f"  処理速度: {rate_status}")
 
-        return "\n".join(report_lines)
+        return "
+".join(report_lines)
 
     def _calculate_trend(self, values: List[float]) -> float:
         """値の傾向を計算（簡易線形回帰）"""
@@ -456,10 +449,3 @@ def monitor_performance(total_items: int = 0, stage: str = "処理中"):
             finally:
                 monitor.stop_monitoring()
 
-                # パフォーマンスレポート出力
-                report = monitor.generate_performance_report()
-                print(f"\n{report}")
-
-        return wrapper
-
-    return decorator

@@ -26,10 +26,6 @@ class BlockParser:
 
         self.logger.debug("BlockParser initialized with performance optimizations")
 
-    def set_parser_reference(self, parser) -> None:
-        """Issue #700: graceful error handling用にパーサー参照を設定"""
-        self.parser_ref = parser
-        self.logger.debug("Parser reference set for graceful error handling")
 
     def _preprocess_lines(self, lines: list[str]) -> None:
         """行データの前処理でパフォーマンス最適化
@@ -399,7 +395,8 @@ class BlockParser:
             return None, start_index
 
         # 行を改行タグで結合（テキストファイル上の改行を保持）
-        content = "<br>\n".join(paragraph_lines)
+        content = "<br>
+".join(paragraph_lines)
         self.logger.debug(
             f"Paragraph parsed: {len(content)} characters, {len(paragraph_lines)} lines"
         )
