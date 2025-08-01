@@ -77,7 +77,8 @@ class KeywordParser:
         
         # パフォーマンス改善: 正規表現パターンを事前コンパイル
         import re
-        self._inline_pattern = re.compile(r'#\s*([^#]+?)\s*#\s*(.*?)\s*##')
+        # インライン記法: #keyword content# のパターン（##で終わらない）
+        self._inline_pattern = re.compile(r'#([^#]+?)#')
         
         # インライン記法キーワードマッピング
         from .ast_nodes.factories import strong, emphasis, highlight
@@ -90,6 +91,7 @@ class KeywordParser:
             "下線": lambda text: NodeBuilder("u").content(text).build(),
             "コード": lambda text: NodeBuilder("code").content(text).build(),
             "取り消し線": lambda text: NodeBuilder("del").content(text).build(),
+            "ルビ": self._create_ruby_node,  # ルビ記法用の特殊処理
         }
 
     def _normalize_marker_syntax(self, marker_content: str) -> str:
@@ -288,13 +290,18 @@ class KeywordParser:
 
         # Check for inline keywords in content
         processed_content = self._process_inline_keywords(content)
-        return [processed_content]
+        
+        # 処理結果が配列の場合は、そのまま配列として返す
+        if isinstance(processed_content, list):
+            return processed_content
+        else:
+            return [processed_content]
 
     def _process_inline_keywords(self, content: str, nesting_level: int = 0) -> Any:
-        """Process inline keywords within content (# keyword # content ## format)
+        """Process inline keywords within content (# keyword content # format)
         
         仕様:
-        - 終了マーカー ## を明示的に処理
+        - インライン記法: #keyword content# のパターン
         - 単一行内で完結（複数行は現時点では非対応）
         - 制限付きネスト（1レベルまで）対応
         
@@ -319,8 +326,7 @@ class KeywordParser:
                 if text_before.strip():
                     parts.append(text_before)
             
-            keyword = match.group(1).strip().lower()
-            text_content = match.group(2).strip()
+            full_keyword = match.group(1).strip()
             
             # ネストレベルチェック（最大1レベルまで）
             if nesting_level >= 1:
@@ -329,8 +335,29 @@ class KeywordParser:
                 last_end = match.end()
                 continue
             
+            # ルビ記法の特殊処理
+            if full_keyword.startswith("ルビ "):
+                # ルビ記法の場合は、"ルビ "を除去した残りがコンテンツ
+                ruby_content = full_keyword[3:].strip()  # "ルビ "を除去
+                if ruby_content:
+                    ruby_node = self._create_ruby_node(ruby_content)
+                    # ルビ解析が失敗した場合（文字列が返ってきた）は元のマーカー付きテキストを使用
+                    if isinstance(ruby_node, str):
+                        parts.append(match.group(0))  # 元のマーカー付きテキスト
+                    else:
+                        parts.append(ruby_node)
+                else:
+                    parts.append(match.group(0))  # 解析失敗時は元のまま
+                last_end = match.end()
+                continue
+            
+            # 通常のキーワードの場合は、スペースで分割
+            keyword_parts = full_keyword.split(' ', 1)
+            keyword = keyword_parts[0]
+            text_content = keyword_parts[1] if len(keyword_parts) > 1 else ""
+            
             # テキストコンテンツ内でのネストした記法を再帰処理
-            if nesting_level == 0 and self._inline_pattern.search(text_content):
+            if nesting_level == 0 and text_content and self._inline_pattern.search(text_content):
                 text_content = self._process_inline_keywords(text_content, nesting_level + 1)
             
             # ノード作成（改善されたキーワードマッピング使用）
@@ -358,13 +385,45 @@ class KeywordParser:
             if remaining.strip():
                 parts.append(remaining)
         
-        # Return normalized result
-        if len(parts) == 1 and isinstance(parts[0], str):
-            return parts[0]
+        # Return normalized result - 修正: 配列の場合の適切な処理
+        if len(parts) == 0:
+            return content  # 何も処理されなかった場合は元のコンテンツを返す
         elif len(parts) == 1:
-            return parts[0]
+            return parts[0]  # 単一要素の場合はそのまま返す
         else:
-            return parts
+            # 複数要素の場合: 文字列とNodeの混合配列を適切に処理
+            # レンダラーが処理できるよう、配列としてそのまま返す
+            # ただし、すべてが文字列の場合は結合する
+            if all(isinstance(part, str) for part in parts):
+                return ''.join(parts)
+            else:
+                return parts
+
+    
+    def _create_ruby_node(self, content: str) -> Any:
+        """
+        ルビ記法専用のノード作成メソッド
+        
+        Args:
+            content: ルビのコンテンツ（例: "海砂利水魚(かいじゃりすいぎょ)"）
+            
+        Returns:
+            Node: rubyノード
+        """
+        from .ast_nodes.node_builder import NodeBuilder
+        
+        # MarkerParserのルビ解析機能を使用
+        ruby_info = self.marker_parser._parse_ruby_content(content)
+        
+        if ruby_info and "ruby_base" in ruby_info and "ruby_text" in ruby_info:
+            # ルビノードを作成（attributeメソッドを使用）
+            return (NodeBuilder("ruby")
+                   .attribute("ruby_base", ruby_info["ruby_base"])
+                   .attribute("ruby_text", ruby_info["ruby_text"])
+                   .build())
+        else:
+            # 解析失敗時は元のコンテンツを返す
+            return content
 
     def _sort_keywords_by_nesting_order(self, keywords: list[str]) -> list[str]:
         """Sort keywords by their nesting order (outer to inner)"""

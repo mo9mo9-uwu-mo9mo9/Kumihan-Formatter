@@ -191,6 +191,10 @@ class HTMLRenderer:
         """Render table of contents marker"""
         return self.element_renderer.render_toc_placeholder(node)
 
+    def _render_ruby(self, node: Node) -> str:
+        """Render ruby (ルビ) element"""
+        return self.element_renderer.render_ruby(node)
+
     def _render_content(self, content: Any, depth: int = 0) -> str:
         """Render node content (recursive)"""
         return self.content_processor.render_content(content, depth)

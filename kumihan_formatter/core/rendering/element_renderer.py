@@ -176,6 +176,31 @@ class ElementRenderer:
         """目次プレースホルダーをレンダリング"""
         return "<!-- TOC placeholder -->"
 
+    def render_ruby(self, node: Node) -> str:
+        """
+        Render ruby element (#ルビ 海砂利水魚(かいじゃりすいぎょ)#)
+        
+        Args:
+            node: Ruby node to render
+            
+        Returns:
+            str: HTML ruby element
+        """
+        if not hasattr(node, 'attributes') or not node.attributes:
+            return escape_html(str(node.content))
+        
+        ruby_base = node.attributes.get('ruby_base', '')
+        ruby_text = node.attributes.get('ruby_text', '')
+        
+        if not ruby_base or not ruby_text:
+            return escape_html(str(node.content))
+        
+        # HTML ruby要素を生成
+        safe_base = escape_html(ruby_base)
+        safe_text = escape_html(ruby_text)
+        
+        return f'<ruby><rb>{safe_base}</rb><rt>{safe_text}</rt></ruby>'
+
     # === 見出し要素レンダリング機能 ===
 
     def render_heading(self, node: Node, level: int) -> str:

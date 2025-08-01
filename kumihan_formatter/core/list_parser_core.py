@@ -103,6 +103,31 @@ class ListParserCore:
             current_index += 1
             
         return items
+
+    
+    def is_list_line(self, line: str) -> str | None:
+        """
+        旧記法互換性のためのis_list_lineメソッド
+        
+        Args:
+            line: チェックする行
+            
+        Returns:
+            str | None: リストタイプ（'unordered', 'ordered'）または None
+        """
+        line = line.strip()
+        if not line:
+            return None
+            
+        # 順序なしリストパターン
+        if line.startswith(('- ', '・', '* ', '+ ')):
+            return 'unordered'
+            
+        # 順序ありリストパターン  
+        if re.match(r'^\d+\.\s', line):
+            return 'ordered'
+            
+        return None
     
     def _parse_child_items(self, lines: list[str], start_index: int, target_level: int) -> tuple[list[Node], int]:
         """指定レベルの子項目を解析"""

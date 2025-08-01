@@ -121,7 +121,7 @@ pip install -e ".[dev]"                             # 依存関係
 
 ## 将来実装予定記法
 - **脚注**: `((content))` → 巻末移動（基本検証のみ実装済み）
-- **傍注**: `｜content《reading》` → ルビ表現（Phase 3で個別Issue化）
+- **ルビ**: `#ルビ content(reading)#` → ルビ表現（Issue #661で実装）
 - **表**: 複雑な表構造（Phase 3で個別Issue化）
 
 ## 履歴・削除済み記法

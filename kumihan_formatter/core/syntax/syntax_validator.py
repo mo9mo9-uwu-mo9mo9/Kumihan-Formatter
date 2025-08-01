@@ -268,6 +268,7 @@ class KumihanSyntaxValidator:
         # パターン: 行に # があるが、適切にペアになっていない
         if "#" in stripped or "＃" in stripped:
             # 完全なインライン形式 #キーワード 内容# があるかチェック
+            # ルビ記法も含むパターンを考慮: #ルビ 内容(読み)#
             has_complete_inline = bool(re.search(r"[#＃][^#＃]+[#＃]", stripped))
 
             if not has_complete_inline:
