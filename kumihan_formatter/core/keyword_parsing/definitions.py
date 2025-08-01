@@ -28,6 +28,7 @@ DEFAULT_BLOCK_KEYWORDS = {
     "情報": {"tag": "div", "class": "info"},
     "コードブロック": {"tag": "pre", "class": "code-block"},
     "テスト": {"tag": "div", "class": "test"},
+    "ルビ": {"tag": "ruby", "content_parser": "ruby"},
 }
 
 # キーワードネスト順序 (外側から内側へ)
@@ -47,6 +48,7 @@ NESTING_ORDER = [
     "del",  # 取り消し線
     "em",  # イタリック
     "code",  # コード
+    "ruby",  # ルビ
 ]
 
 
@@ -319,6 +321,7 @@ class KeywordDefinitions:
             "tbody",
             "img",
             "a",
+            "ruby",
         }
 
         if tag.lower() not in valid_tags:

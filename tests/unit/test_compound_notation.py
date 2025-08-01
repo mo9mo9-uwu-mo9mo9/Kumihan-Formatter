@@ -362,8 +362,8 @@ print(f"結果: {result}")
     
     def test_ruby_like_patterns(self):
         """Test ruby-like patterns if supported."""
-        ruby_pattern = """日本語には｜漢字《かんじ》や｜平仮名《ひらがな》があります。
-これらは#太字 ｜重要《じゅうよう》な要素#です。"""
+        ruby_pattern = """日本語には#ルビ 漢字(かんじ)#や#ルビ 平仮名(ひらがな)#があります。
+これらは#太字 #ルビ 重要(じゅうよう)#な要素#です。"""
         
         result = self.parser.parse(ruby_pattern)
         errors = self.validator.validate_text(ruby_pattern)

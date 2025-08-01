@@ -27,7 +27,7 @@ class MarkerParser:
 
     # プリコンパイルされた正規表現パターン（性能改善）
     _NEW_FORMAT_PATTERN = re.compile(r"^([#＃])\s*(.+)\s*([#＃])\s*(.*)")
-    _INLINE_CONTENT_PATTERN = re.compile(r"^[#＃]\s*.+?\s*[#＃]\s*(.*)")
+    _INLINE_CONTENT_PATTERN = re.compile(r"^([#＃])\s*(.+?)\s*([#＃])\s*(.*)")
     _FORMAT_CHECK_PATTERN = re.compile(r"^[#＃]\s*.+\s*[#＃]")
     _COLOR_ATTRIBUTE_PATTERN = re.compile(r"\s*color=(#?[a-fA-F0-9]{3,6}|[a-zA-Z]+)")
     # _ALT_ATTRIBUTE_PATTERN = re.compile(r"alt=([^;]+)")  # alt属性は削除されました（Phase 1）
@@ -91,6 +91,16 @@ class MarkerParser:
                             keyword = parts[0]
                             content = parts[1] if len(parts) > 1 else ""
 
+                            # ルビ記法の特殊処理
+                            if keyword == "ルビ":
+                                ruby_result = self._parse_ruby_content(content)
+                                if ruby_result:
+                                    all_attributes.update(ruby_result)
+                                all_keywords.append(keyword)
+                                if content:
+                                    all_content.append(content.strip())
+                                continue
+                            
                             # 属性解析（color=, alt= など）
                             if "color=" in keyword:
                                 # color属性の処理は既存メソッドを利用
@@ -413,6 +423,15 @@ class MarkerParser:
         #     attributes["alt"] = alt_value
         #     marker_content = re.sub(r"\s*alt=[^;]+", "", marker_content)
 
+        # ルビ記法の特殊処理
+        if marker_content.strip().startswith("ルビ "):
+            ruby_content = marker_content.strip()[3:].strip()  # "ルビ "を除去
+            ruby_result = self._parse_ruby_content(ruby_content)
+            keywords.append("ルビ")
+            if ruby_result:
+                attributes.update(ruby_result)
+            return keywords, attributes, errors
+        
         # キーワードを + または ＋ で分割（プリコンパイルパターン使用）
         if "+" in marker_content or "＋" in marker_content:
             # 複合キーワード
@@ -702,8 +721,49 @@ class MarkerParser:
         match = self._INLINE_CONTENT_PATTERN.match(line)
 
         if match:
-            content = match.group(1).strip()
+            content = match.group(4).strip()
             return content if content else None
+        return None
+
+    def _parse_ruby_content(self, content: str) -> dict[str, Any] | None:
+        """
+        ルビ記法のコンテンツを解析（#ルビ 海砂利水魚(かいじゃりすいぎょ)#形式）
+        
+        Args:
+            content: ルビのコンテンツ部分
+            
+        Returns:
+            dict: ルビ情報（base_text, ruby_text）、解析失敗時はNone
+        """
+        import re
+        
+        if not content:
+            return None
+        
+        # 括弧パターンの検出（()と（）両対応、混在チェック）
+        paren_patterns = [
+            r'(.+?)\(([^)]+)\)',  # 半角括弧
+            r'(.+?)（([^）]+)）'    # 全角括弧
+        ]
+        
+        for pattern in paren_patterns:
+            match = re.search(pattern, content)
+            if match:
+                base_text = match.group(1).strip()
+                ruby_text = match.group(2).strip()
+                
+                # 混在チェック
+                if '(' in content and '（' in content:
+                    return None  # 混在は無効
+                if ')' in content and '）' in content:
+                    return None  # 混在は無効
+                
+                if base_text and ruby_text:
+                    return {
+                        "ruby_base": base_text,
+                        "ruby_text": ruby_text
+                    }
+        
         return None
 
     def _sanitize_color_attribute(self, color_value: str) -> str:

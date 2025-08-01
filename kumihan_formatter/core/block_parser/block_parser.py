@@ -569,11 +569,23 @@ class BlockParser:
 
         # 行を改行タグで結合（テキストファイル上の改行を保持）
         content = "<br>\n".join(paragraph_lines)
+        
+        # インライン記法を処理
+        processed_content = self.keyword_parser._process_inline_keywords(content)
+        
+        # 処理結果が配列の場合は、段落ノードに適切に設定
+        if isinstance(processed_content, list):
+            # 配列の場合は、段落の内容として配列をそのまま渡す
+            paragraph_node = paragraph(processed_content)
+        else:
+            # 単一要素の場合は従来通り
+            paragraph_node = paragraph(processed_content)
+        
         self.logger.debug(
             f"Paragraph parsed: {len(content)} characters, {len(paragraph_lines)} lines"
         )
 
-        return paragraph(content), current_index
+        return paragraph_node, current_index
 
     def is_block_marker_line(self, line: str) -> bool:
         """Check if a line is a block marker (new format only)
