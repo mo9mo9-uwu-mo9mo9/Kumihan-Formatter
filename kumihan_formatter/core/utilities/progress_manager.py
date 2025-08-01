@@ -141,7 +141,7 @@ class ProgressManager:
             substage: サブステージ名
 
         Returns:
-            bool: 継続可能な場合True、キャンセル時False
+            bool: 継続可能な場合True キャンセル時False
         """
         if self.cancelled.is_set():
             return False
@@ -339,7 +339,7 @@ class ProgressContextManager:
     Issue #695対応: より透明で対話的なファイル処理体験を提供
     - 多段階進捗追跡
     - 詳細レベル制御 (SILENT, MINIMAL, DETAILED, VERBOSE)
-    - 高頻度更新 (100ms)
+    - 高頻度更新 (100ミリ秒間隔)
     - ツールチップ・統計情報
     - 安全なキャンセル機能
     """
@@ -466,7 +466,7 @@ class ProgressContextManager:
         プログレス更新
 
         Returns:
-            bool: 継続可能な場合True、キャンセル時False
+            bool: 継続可能な場合True キャンセル時False
         """
         if self._cancellation_requested.is_set():
             return False
@@ -662,4 +662,5 @@ class ProgressContextManager:
             f"Warnings: {stats.get('warnings_count', 0)} | "
             f"Stages: {stats['stages_completed']}"
         )
+
 

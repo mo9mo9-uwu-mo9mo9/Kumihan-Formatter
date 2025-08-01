@@ -74,6 +74,23 @@ class KeywordParser:
 
         # 後方互換性のため既存プロパティを維持
         self.BLOCK_KEYWORDS = self.definitions.BLOCK_KEYWORDS
+        
+        # パフォーマンス改善: 正規表現パターンを事前コンパイル
+        import re
+        self._inline_pattern = re.compile(r'#\s*([^#]+?)\s*#\s*(.*?)\s*##')
+        
+        # インライン記法キーワードマッピング
+        from .ast_nodes.factories import strong, emphasis, highlight
+        from .ast_nodes.node_builder import NodeBuilder
+        
+        self._inline_keyword_mapping = {
+            "太字": strong,
+            "イタリック": emphasis, 
+            "ハイライト": highlight,
+            "下線": lambda text: NodeBuilder("u").content(text).build(),
+            "コード": lambda text: NodeBuilder("code").content(text).build(),
+            "取り消し線": lambda text: NodeBuilder("del").content(text).build(),
+        }
 
     def _normalize_marker_syntax(self, marker_content: str) -> str:
         """後方互換性のため分割されたコンポーネントに委譲"""
@@ -273,25 +290,29 @@ class KeywordParser:
         processed_content = self._process_inline_keywords(content)
         return [processed_content]
 
-    def _process_inline_keywords(self, content: str) -> Any:
-        """Process inline keywords within content (# keyword # content format)"""
-        import re
-        from .ast_nodes.factories import heading, strong, emphasis, highlight
-        from .ast_nodes import Node
+    def _process_inline_keywords(self, content: str, nesting_level: int = 0) -> Any:
+        """Process inline keywords within content (# keyword # content ## format)
+        
+        仕様:
+        - 終了マーカー ## を明示的に処理
+        - 単一行内で完結（複数行は現時点では非対応）
+        - 制限付きネスト（1レベルまで）対応
+        
+        Args:
+            content: 処理対象のコンテンツ
+            nesting_level: 現在のネストレベル（0=トップレベル、1=1レベルネスト）
+        """
         from .ast_nodes.node_builder import NodeBuilder
         
-        # Pattern for inline notation: # keyword # content
-        pattern = r'#\s*(.*?)\s*#\s*(.*?)(?=\s*(?:#|$))'
-        
-        # If no inline notation found, return as plain text
-        if not re.search(pattern, content):
+        # 事前コンパイル済みパターンを使用してパフォーマンス向上
+        if not self._inline_pattern.search(content):
             return content
             
         # Process inline notations
         parts = []
         last_end = 0
         
-        for match in re.finditer(pattern, content):
+        for match in self._inline_pattern.finditer(content):
             # Add text before the match
             if match.start() > last_end:
                 text_before = content[last_end:match.start()]
@@ -301,22 +322,32 @@ class KeywordParser:
             keyword = match.group(1).strip().lower()
             text_content = match.group(2).strip()
             
-            # Create appropriate AST node based on keyword
-            if keyword == "見出し3":
-                # For h3 in list items, just return strong styling instead
+            # ネストレベルチェック（最大1レベルまで）
+            if nesting_level >= 1:
+                # 1レベルを超えるネストは禁止、そのまま返す
+                parts.append(match.group(0))
+                last_end = match.end()
+                continue
+            
+            # テキストコンテンツ内でのネストした記法を再帰処理
+            if nesting_level == 0 and self._inline_pattern.search(text_content):
+                text_content = self._process_inline_keywords(text_content, nesting_level + 1)
+            
+            # ノード作成（改善されたキーワードマッピング使用）
+            base_keyword = keyword.split(' ')[0]  # 色属性を除いた基本キーワード
+            
+            if base_keyword in self._inline_keyword_mapping:
+                node = self._create_styled_inline_node(
+                    self._inline_keyword_mapping[base_keyword], 
+                    text_content, 
+                    keyword
+                )
+                parts.append(node)
+            elif keyword == "見出し3":
+                # For h3 in list items, use strong styling instead
                 parts.append(NodeBuilder("strong").content(text_content).build())
-            elif keyword == "太字":
-                parts.append(strong(text_content))
-            elif keyword == "イタリック":
-                parts.append(emphasis(text_content))
-            elif keyword == "下線":
-                parts.append(NodeBuilder("u").content(text_content).build())
-            elif keyword == "ハイライト":
-                parts.append(highlight(text_content))
-            elif keyword == "コード":
-                parts.append(NodeBuilder("code").content(text_content).build())
             else:
-                # Unknown keyword - return original text
+                # Unknown keyword - return original text with markers
                 parts.append(match.group(0))
             
             last_end = match.end()
@@ -327,13 +358,12 @@ class KeywordParser:
             if remaining.strip():
                 parts.append(remaining)
         
-        # If only one part and it's a string, return it directly
+        # Return normalized result
         if len(parts) == 1 and isinstance(parts[0], str):
             return parts[0]
         elif len(parts) == 1:
             return parts[0]
         else:
-            # Return multiple parts as a list for the list item to handle
             return parts
 
     def _sort_keywords_by_nesting_order(self, keywords: list[str]) -> list[str]:
@@ -353,3 +383,31 @@ class KeywordParser:
             return len(self.NESTING_ORDER)  # Unknown tags go last
 
         return sorted(keywords, key=get_nesting_index)
+
+    def _create_styled_inline_node(self, node_factory, text_content: str, keyword: str) -> Any:
+        """色属性付きインライン記法ノード作成のヘルパーメソッド
+        
+        Args:
+            node_factory: ノード生成関数（strong, emphasis等）
+            text_content: ノードの内容
+            keyword: キーワード（色属性含む可能性）
+        
+        Returns:
+            Node: 作成されたノード（色属性適用済み）
+        """
+        node = node_factory(text_content)
+        
+        # 色属性の処理
+        if ' color=' in keyword:
+            color_part = keyword.split(' color=')[1]
+            color_value = self._normalize_color_value(color_part)
+            
+            # ハイライトは背景色、それ以外は文字色
+            if keyword.startswith("ハイライト"):
+                if hasattr(node, 'attributes'):
+                    node.attributes['style'] = f'background-color: {color_value}'
+            else:
+                if hasattr(node, 'attributes'):
+                    node.attributes['style'] = f'color: {color_value}'
+        
+        return node
