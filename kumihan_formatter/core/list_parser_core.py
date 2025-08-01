@@ -109,7 +109,7 @@ class ListParserCore:
         self, lines: list[str], index: int, is_ordered: bool
     ) -> Tuple[Node, int]:
         """
-        Parse a single list item
+        Parse a single list item with support for nested content and multi-line items
 
         Args:
             lines: All lines in the document
@@ -120,6 +120,7 @@ class ListParserCore:
             tuple: (list_item_node, lines_consumed)
         """
         line = lines[index].strip()
+        lines_consumed = 1
 
         if is_ordered:
             # Remove number prefix (e.g., "1. ")
@@ -140,10 +141,175 @@ class ListParserCore:
             else:
                 content = line
 
-        # Process inline notation (# keyword # content) within list items
-        processed_content = self.keyword_parser._process_inline_keywords(content)
+        # Collect multi-line content and nested items
+        collected_content = [content] if content.strip() else []
+        current_index = index + 1
+
+        while current_index < len(lines):
+            next_line = lines[current_index].strip()
+            
+            # Stop at empty line
+            if not next_line:
+                break
+                
+            # Handle nested list items (with additional indentation)
+            original_line = lines[current_index]
+            
+            # Stop at next list item at same level (not indented)
+            if self.is_list_line(next_line) and not (original_line.startswith("  ") or original_line.startswith("\t")):
+                break
+            if original_line.startswith("  ") or original_line.startswith("\t"):
+                # This is indented content - could be nested list or continuation
+                indented_content = original_line.lstrip()
+                
+                # Check if it's a nested list item
+                if self.is_list_line(indented_content):
+                    # Parse nested list (collect all items at same level)
+                    nested_list_type = self.is_list_line(indented_content)
+                    if nested_list_type == "ul":
+                        nested_list, consumed = self._parse_nested_unordered_list(lines, current_index)
+                    else:
+                        nested_list, consumed = self._parse_nested_ordered_list(lines, current_index)
+                    
+                    collected_content.append(nested_list)
+                    current_index += consumed
+                    lines_consumed += consumed
+                    
+                    # Skip processing any further nested items at this level
+                    # as they were already consumed by the nested list parser
+                    continue
+                else:
+                    # Regular indented continuation
+                    collected_content.append(indented_content)
+            else:
+                # Regular continuation line
+                collected_content.append(next_line)
+            
+            current_index += 1
+            lines_consumed += 1
+
+        # Process inline notation in all content
+        if len(collected_content) == 1 and isinstance(collected_content[0], str):
+            # Single line content
+            processed_content = self.keyword_parser._process_inline_keywords(collected_content[0])
+        else:
+            # Multi-line or mixed content
+            processed_parts = []
+            for part in collected_content:
+                if isinstance(part, str):
+                    processed_parts.append(self.keyword_parser._process_inline_keywords(part))
+                else:
+                    # Nested node (list, etc.)
+                    processed_parts.append(part)
+            processed_content = processed_parts
+
+        return list_item(processed_content), lines_consumed
+
+    def _parse_nested_unordered_list(
+        self, lines: list[str], start_index: int
+    ) -> Tuple[Node, int]:
+        """
+        Parse a nested unordered list starting from the given index
         
-        return list_item(processed_content), 1
+        Args:
+            lines: All lines in the document
+            start_index: Index where nested list starts
+            
+        Returns:
+            tuple: (nested_list_node, lines_consumed)
+        """
+        items = []
+        current_index = start_index
+        lines_consumed = 0
+        base_indent = self._get_line_indent(lines[start_index])
+
+        while current_index < len(lines):
+            line = lines[current_index].strip()
+            original_line = lines[current_index]
+            
+            # Stop if line is not indented at same level or is empty
+            if not line or self._get_line_indent(original_line) < base_indent:
+                break
+                
+            # Stop if this is not a list item at this indent level
+            if self._get_line_indent(original_line) == base_indent:
+                if not self.is_list_line(line):
+                    break
+                    
+                # Parse this nested list item
+                item_node, consumed = self._parse_list_item(lines, current_index, is_ordered=False)
+                items.append(item_node)
+                current_index += consumed
+                lines_consumed += consumed
+            else:
+                # Skip deeper nested content (will be handled by recursive calls)
+                current_index += 1
+                lines_consumed += 1
+
+        return unordered_list(items), lines_consumed
+    
+    def _parse_nested_ordered_list(
+        self, lines: list[str], start_index: int
+    ) -> Tuple[Node, int]:
+        """
+        Parse a nested ordered list starting from the given index
+        
+        Args:
+            lines: All lines in the document
+            start_index: Index where nested list starts
+            
+        Returns:
+            tuple: (nested_list_node, lines_consumed)
+        """
+        items = []
+        current_index = start_index
+        lines_consumed = 0
+        base_indent = self._get_line_indent(lines[start_index])
+
+        while current_index < len(lines):
+            line = lines[current_index].strip()
+            original_line = lines[current_index]
+            
+            # Stop if line is not indented at same level or is empty
+            if not line or self._get_line_indent(original_line) < base_indent:
+                break
+                
+            # Stop if this is not a list item at this indent level  
+            if self._get_line_indent(original_line) == base_indent:
+                if not re.match(r"^\s*\d+\.\s", original_line):
+                    break
+                    
+                # Parse this nested list item
+                item_node, consumed = self._parse_list_item(lines, current_index, is_ordered=True)
+                items.append(item_node)
+                current_index += consumed
+                lines_consumed += consumed
+            else:
+                # Skip deeper nested content (will be handled by recursive calls)
+                current_index += 1
+                lines_consumed += 1
+
+        return ordered_list(items), lines_consumed
+    
+    def _get_line_indent(self, line: str) -> int:
+        """
+        Get the indentation level of a line
+        
+        Args:
+            line: Line text to analyze
+            
+        Returns:
+            int: Number of leading spaces (tabs count as 4 spaces)
+        """
+        indent = 0
+        for char in line:
+            if char == ' ':
+                indent += 1
+            elif char == '\t':
+                indent += 4
+            else:
+                break
+        return indent
 
     def _parse_keyword_list_item(self, content: str) -> Node:
         """
