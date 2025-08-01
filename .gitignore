@@ -205,3 +205,7 @@ scripts/tdd_templates/
 
 # Serena (AI assistant tool)
 .serena/
+
+# MCP (Model Context Protocol) configuration files
+.mcp.json
+mcp-*.json

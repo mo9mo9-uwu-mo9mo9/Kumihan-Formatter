@@ -273,10 +273,10 @@ class HTMLRenderer:
             html_parts.insert(0, error_summary_html)
 
             # 各エラー箇所にマーカーを挿入
-            html_with_markers = self._embed_error_markers("\\n".join(html_parts))
+            html_with_markers = self._embed_error_markers("\n".join(html_parts))
             return html_with_markers
 
-        return "\\n".join(html_parts)
+        return "\n".join(html_parts)
 
     def _render_error_summary(self) -> str:
         """エラーサマリーをHTMLで生成"""
@@ -354,7 +354,7 @@ class HTMLRenderer:
 
         # 簡易実装: エラーが発生した行の近傍にマーカーを挿入
         # より高度な実装では、実際の行番号とHTMLの対応付けが必要
-        lines = html.split("\\n")
+        lines = html.split("\n")
         modified_lines = []
 
         for line_no, line in enumerate(lines, 1):
@@ -383,7 +383,7 @@ class HTMLRenderer:
 </div>"""
                 modified_lines.append(error_marker)
 
-        return "\\n".join(modified_lines)
+        return "\n".join(modified_lines)
 
 
 # Module-level function for backward compatibility

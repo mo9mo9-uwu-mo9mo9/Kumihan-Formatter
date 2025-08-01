@@ -378,6 +378,14 @@ class ConvertProcessor:
         self.logger.debug(f"Determining output path for: {input_path}")
         output_path = Path(output_dir)
 
+        # 出力パスがファイル名（.html拡張子）の場合は直接ファイル出力
+        if output_path.suffix == '.html':
+            # 親ディレクトリが存在しない場合は作成
+            if not output_path.parent.exists():
+                self.logger.info(f"Creating parent directory: {output_path.parent}")
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+            return output_path
+        
         # 出力ディレクトリが存在しない場合は作成
         if not output_path.exists():
             self.logger.info(f"Creating output directory: {output_path}")

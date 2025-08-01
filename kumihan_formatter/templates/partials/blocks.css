@@ -168,3 +168,24 @@ li h2 {
 li strong, li em {
     display: inline;  /* インライン表示を明示 */
 }
+
+/* 引用ブロック */
+blockquote, .kumihan-blockquote {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid #007acc;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    font-style: italic;
+    color: #495057;
+}
+
+/* 引用ブロック内の段落 */
+blockquote p, .kumihan-blockquote p {
+    margin: 0.5em 0;
+    text-align: left;
+}
+
+blockquote p:last-child, .kumihan-blockquote p:last-child {
+    margin-bottom: 0;
+}
