@@ -59,7 +59,6 @@ class BlockParser:
                 stripped = line.strip()
                 if self.keyword_parser.marker_parser.is_block_end_marker(stripped):
                     self._block_end_indices.append(i)
-
             self.logger.debug(
                 f"Preprocessed {len(lines)} lines, "
                 f"found {len(self._block_end_indices)} block end markers"
