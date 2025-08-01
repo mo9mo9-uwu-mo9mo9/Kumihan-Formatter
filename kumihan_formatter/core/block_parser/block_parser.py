@@ -26,6 +26,15 @@ class BlockParser:
 
         self.logger.debug("BlockParser initialized with performance optimizations")
 
+    def set_parser_reference(self, parser) -> None:
+        """
+        Issue #700対応: graceful error handlingのためのパーサー参照を設定
+
+        Args:
+            parser: メインパーサーのインスタンス（循環参照回避のため型ヒントなし）
+        """
+        self.parser_ref = parser
+        self.logger.debug("Parser reference set for graceful error handling")
 
     def _preprocess_lines(self, lines: list[str]) -> None:
         """行データの前処理でパフォーマンス最適化
@@ -65,43 +74,66 @@ class BlockParser:
             self._lines_cache = []
 
     def _find_next_block_end(self, start_index: int) -> int | None:
-        """最適化された次のブロック終了マーカー検索（O(log n)二分探索）
+        """
+        最適化された次のブロック終了マーカー検索（Issue #713対応改善版）
 
         Args:
             start_index: 検索開始位置
 
         Returns:
             次のブロック終了インデックス、見つからない場合はNone
+
+        Notes:
+            Issue #713対応: エンドマーカー検出の信頼性向上
+            - 前処理キャッシュに依存しない動的検索
+            - 複雑記法パターンでの見落としを防止
+            - リアルタイム検証機能を追加
         """
-        import bisect
-
-        # 安全性チェック: キャッシュが初期化されているか確認
-        if not self._block_end_indices:
-            self.logger.warning(
-                f"Block end indices cache is empty at start_index {start_index}"
-            )
+        if not self._lines_cache:
             return None
 
-        # 範囲チェック: start_indexが有効範囲内か確認
-        if start_index < 0 or (
-            self._lines_cache and start_index >= len(self._lines_cache)
-        ):
-            self.logger.warning(
-                f"Invalid start_index {start_index}, lines count: {len(self._lines_cache) if self._lines_cache else 0}"
-            )
-            return None
+        # Issue #713修正: 前処理キャッシュとリアルタイム検索のハイブリッド方式
+        # キャッシュがある場合はそれを使用し、ない場合は動的に検索
 
-        # 二分探索でstart_indexより大きい最初のインデックスを検索
-        pos = bisect.bisect_right(self._block_end_indices, start_index)
+        # 方式1: 前処理キャッシュを使用した高速検索（O(log n)）
+        if self._block_end_indices:
+            import bisect
 
-        if pos < len(self._block_end_indices):
-            result = self._block_end_indices[pos]
-            self.logger.debug(
-                f"Found block end at index {result} for start_index {start_index}"
-            )
-            return result
+            if start_index < 0 or start_index >= len(self._lines_cache):
+                return None
 
-        self.logger.debug(f"No block end found after start_index {start_index}")
+            # 二分探索でstart_indexより大きい最初のインデックスを検索
+            pos = bisect.bisect_right(self._block_end_indices, start_index)
+
+            if pos < len(self._block_end_indices):
+                cached_result = self._block_end_indices[pos]
+
+                # Issue #713新機能: キャッシュ結果の検証
+                # キャッシュが古い場合やエラーがある場合の安全装置
+                if cached_result < len(self._lines_cache):
+                    line = self._lines_cache[cached_result].strip()
+                    if self.keyword_parser.marker_parser.is_block_end_marker(line):
+                        return cached_result
+
+        # 方式2: 動的検索（キャッシュが無効な場合のフォールバック）
+        # Issue #713対応: 確実性を重視した線形検索
+        for i in range(start_index + 1, len(self._lines_cache)):
+            line = self._lines_cache[i].strip()
+            if self.keyword_parser.marker_parser.is_block_end_marker(line):
+                # Issue #713新機能: リアルタイムキャッシュ更新
+                # 見つかったエンドマーカーをキャッシュに追加
+                if i not in self._block_end_indices:
+                    self._block_end_indices.append(i)
+                    self._block_end_indices.sort()  # ソート状態を維持
+
+                return i
+
+        # Issue #713新機能: エンドマーカーが見つからない場合のログ出力
+        self.logger.warning(
+            f"Block end marker not found after line {start_index + 1}. "
+            f"This may indicate an unclosed block marker."
+        )
+
         return None
 
     @staticmethod
@@ -162,7 +194,11 @@ class BlockParser:
         )
         if parse_result is None:
             # Issue #700: graceful error handling対応 - 不正な記法をgraceful errorとして記録
-            if hasattr(self, 'parser_ref') and self.parser_ref and self.parser_ref.graceful_errors:
+            if (
+                hasattr(self, "parser_ref")
+                and self.parser_ref
+                and self.parser_ref.graceful_errors
+            ):
                 self.parser_ref._record_graceful_error(
                     start_index + 1,  # 1-based line number
                     1,  # column
@@ -211,7 +247,7 @@ class BlockParser:
         attributes: dict[str, Any],
     ) -> tuple[Node | None, int]:
         """
-        新記法のブロック形式を解析（最適化版）
+        新記法のブロック形式を解析（Issue #713対応最適化版）
 
         Args:
             lines: All lines in the document
@@ -224,35 +260,68 @@ class BlockParser:
 
         Raises:
             ValueError: パラメータが不正な場合
+
+        Notes:
+            Issue #713対応: エンドマーカー検出の信頼性向上とエラー回復機能を強化
         """
         if not keywords:
             raise ValueError("Keywords list cannot be empty")
 
         self.logger.debug(f"Parsing new format block at line {start_index + 1}")
 
-        # 前処理が未実行またはキャッシュが古い場合は実行
+        # 前処理が未実行または古い場合は実行
         if not self._lines_cache or self._lines_cache != lines:
             self.logger.debug("Preprocessing lines for block parsing")
             self._preprocess_lines(lines)
 
-        # 最適化された終了マーカー検索（O(log n)二分探索）
+        # Issue #713修正: より堅牢なエンドマーカー検索
         end_index = self._find_next_block_end(start_index)
 
         if end_index is None:
+            # Issue #713対応: エンドマーカーが見つからない場合の改善されたエラーハンドリング
             self.logger.error(f"Block end marker not found for line {start_index + 1}")
-            
-            # Issue #700: graceful error handling対応
-            if hasattr(self, 'parser_ref') and self.parser_ref and self.parser_ref.graceful_errors:
+
+            # Graceful error handling対応
+            if (
+                hasattr(self, "parser_ref")
+                and self.parser_ref
+                and self.parser_ref.graceful_errors
+            ):
+                # Issue #713新機能: より詳細なエラー情報とサジェスチョン
+                opening_line = lines[start_index].strip()
+                suggested_fix = self._generate_block_fix_suggestions(
+                    opening_line, keywords
+                )
+
                 self.parser_ref._record_graceful_error(
                     start_index + 1,  # 1-based line number
                     1,  # column
                     "incomplete_block_marker",
                     "error",
-                    "未完了のマーカー: 終了マーカー # が見つかりません",
-                    lines[start_index].strip(),
-                    "ブロック記法を確認し、終了マーカー # を追加してください",
+                    "未完了のマーカー: 終了マーカー ## が見つかりません",
+                    opening_line,
+                    suggested_fix,
                 )
-            
+
+                # Issue #713新機能: 部分的な回復を試行
+                # ファイル終端まで検索して、可能な限りコンテンツを回復
+                recovered_content = self._attempt_content_recovery(lines, start_index)
+                if recovered_content:
+                    self.logger.info(
+                        f"Recovered {len(recovered_content)} lines of content"
+                    )
+                    # 回復したコンテンツでノードを作成
+                    if len(keywords) == 1:
+                        node = self.keyword_parser.create_single_block(
+                            keywords[0], recovered_content, attributes
+                        )
+                    else:
+                        node = self.keyword_parser.create_compound_block(
+                            keywords, recovered_content, attributes
+                        )
+                    return node, len(lines)  # ファイル終端まで処理済み
+
+            # 従来のエラーノード作成
             return (
                 error_node(
                     "ブロックの終了マーカー ## が見つかりません", start_index + 1
@@ -269,7 +338,7 @@ class BlockParser:
         if "目次" in keywords:
             self.logger.info("Found TOC marker in new format")
             return toc_marker(), end_index + 1
-            
+
         # 新リスト記法の処理
         if "リスト" in keywords:
             self.logger.info("Found list block in new format")
@@ -299,6 +368,75 @@ class BlockParser:
         )
         return node, end_index + 1
 
+    def _generate_block_fix_suggestions(
+        self, opening_line: str, keywords: list[str]
+    ) -> str:
+        """
+        Issue #713新機能: ブロックマーカーエラーに対する修正提案を生成
+
+        Args:
+            opening_line: 開始マーカー行
+            keywords: パースされたキーワード
+
+        Returns:
+            str: 修正提案メッセージ
+        """
+        suggestions = []
+
+        # 基本的な修正提案
+        suggestions.append("ブロック記法を確認し、終了マーカー ## を追加してください")
+
+        # キーワード固有の提案
+        if len(keywords) == 1:
+            keyword = keywords[0]
+            suggestions.append(f"例: {opening_line}\\n内容\\n##")
+        else:
+            suggestions.append(
+                f"複合キーワード ({'+'.join(keywords)}) の場合も ## で終了してください"
+            )
+
+        # よくある間違いの指摘
+        if "color=" in opening_line:
+            suggestions.append(
+                "color属性がある場合も、必ず ## で終了する必要があります"
+            )
+
+        return " | ".join(suggestions)
+
+    def _attempt_content_recovery(self, lines: list[str], start_index: int) -> str:
+        """
+        Issue #713新機能: エンドマーカーが見つからない場合のコンテンツ回復を試行
+
+        Args:
+            lines: 全行データ
+            start_index: ブロック開始位置
+
+        Returns:
+            str: 回復されたコンテンツ（空の場合もある）
+        """
+        if start_index + 1 >= len(lines):
+            return ""
+
+        recovery_lines = []
+        max_recovery_lines = 50  # 回復する最大行数（無制限な回復を防止）
+
+        for i in range(
+            start_index + 1, min(len(lines), start_index + 1 + max_recovery_lines)
+        ):
+            line = lines[i].strip()
+
+            # 明らかに新しいブロックが始まっている場合は停止
+            if self.keyword_parser.marker_parser.is_new_marker_format(line):
+                break
+
+            # リスト項目の場合も停止
+            if line.startswith(("- ", "* ", "+ ")) or re.match(r"^\d+\.\s", line):
+                break
+
+            recovery_lines.append(lines[i])  # 元の行（stripしない）
+
+        return "\n".join(recovery_lines).strip()
+
     def _parse_list_block(
         self,
         lines: list[str],
@@ -308,24 +446,24 @@ class BlockParser:
     ) -> tuple[Node | None, int]:
         """
         新リスト記法 # リスト # ブロックの解析
-        
+
         Args:
             lines: 全行データ
             start_index: 開始インデックス
             keywords: パースされたキーワード
             attributes: パースされた属性
-            
+
         Returns:
             tuple: (list_node, next_index)
         """
         from kumihan_formatter.core.list_parser_core import ListParserCore
-        
+
         self.logger.debug(f"Parsing list block at line {start_index + 1}")
-        
+
         # ListParserCoreを使用して新リスト記法を処理
         list_parser = ListParserCore(self.keyword_parser)
         list_node, next_index = list_parser.parse_list_block(lines, start_index)
-        
+
         self.logger.debug(f"List block parsed, next index: {next_index}")
         return list_node, next_index
 
