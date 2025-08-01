@@ -468,19 +468,24 @@ class MarkerParser:
             
         start_marker = line[0]
         
+        # ##または＃＃で終わる場合は取り除く
+        working_line = line
+        if working_line.endswith('##') or working_line.endswith('＃＃'):
+            working_line = working_line[:-2].rstrip()
+        
         # 最後の#または＃を探す
         last_hash_pos = -1
-        for i in range(len(line) - 1, 0, -1):
-            if line[i] in ['#', '＃']:
+        for i in range(len(working_line) - 1, 0, -1):
+            if working_line[i] in ['#', '＃']:
                 last_hash_pos = i
                 break
         
         if last_hash_pos == -1 or last_hash_pos == 0:
             return None
             
-        end_marker = line[last_hash_pos]
-        keyword_part = line[1:last_hash_pos].strip()
-        content = line[last_hash_pos + 1:].strip()
+        end_marker = working_line[last_hash_pos]
+        keyword_part = working_line[1:last_hash_pos].strip()
+        content = working_line[last_hash_pos + 1:].strip()
 
         # マーカーの整合性チェック（混在も許可）
         if start_marker not in self.HASH_MARKERS or end_marker not in self.HASH_MARKERS:
