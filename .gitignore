@@ -209,3 +209,6 @@ scripts/tdd_templates/
 # MCP (Model Context Protocol) configuration files
 .mcp.json
 mcp-*.json
+
+# Temporary test files directory
+tmp/
