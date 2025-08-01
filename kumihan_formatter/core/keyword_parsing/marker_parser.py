@@ -566,13 +566,13 @@ class MarkerParser:
 
     def is_new_marker_format(self, line: str) -> bool:
         """
-        行が新記法 # キーワード # 形式かどうかを判定
+        行が新記法 # キーワード # 形式かどうかを判定（ブロック記法のみ）
 
         Args:
             line: 判定対象の行
 
         Returns:
-            bool: 新記法の場合True
+            bool: ブロック記法の場合True、インライン記法は除外
         """
         line = line.strip()
         
@@ -582,13 +582,16 @@ class MarkerParser:
             re.match(r"^\d+\.\s", line)):
             return False
             
-        # インライン形式 #キーワード# または ブロック形式 #キーワード を検出
-        inline_pattern = r"[#\uff03][^#\uff03]+[#\uff03]"
-        block_pattern = r"^[#\uff03][^#\uff03]+$"
-
-        return bool(re.search(inline_pattern, line)) or bool(
-            re.match(block_pattern, line)
-        )
+        # インライン記法（# keyword # content ##）を除外
+        # インライン記法は同一行内で完結し、##で終わる
+        import re
+        inline_pattern = r'#\s*[^#]+?\s*#\s*[^#]+?\s*##'
+        if re.search(inline_pattern, line):
+            return False
+            
+        # ブロック記法のみ許可: # キーワード # （行全体で完結）
+        block_pattern = r"^[#＃]\s*[^#＃]+\s*[#＃]$"
+        return bool(re.match(block_pattern, line))
 
     def is_block_end_marker(self, line: str) -> bool:
         """
