@@ -94,6 +94,226 @@ class HTMLRenderer:
 
         return "\n".join(html_parts)
 
+    def render_nodes_optimized(self, nodes: list[Node]) -> str:
+        """
+        最適化されたノードリストのHTML生成（Issue #727 パフォーマンス最適化対応）
+
+        改善点:
+        - StringBuilder パターンでガベージコレクション負荷軽減
+        - HTML文字列結合の最適化
+        - メモリ効率向上
+        - 処理速度75%改善目標
+
+        Args:
+            nodes: List of AST nodes to render
+
+        Returns:
+            str: Generated HTML (optimized)
+        """
+        # パフォーマンス監視開始
+        from ..utilities.performance_metrics import monitor_performance
+        
+        with monitor_performance("optimized_html_rendering") as perf_monitor:
+            # Issue #700: graceful errors対応
+            if self.graceful_errors and self.embed_errors_in_html:
+                return self.render_nodes_with_errors_optimized(nodes)
+            
+            # StringBuilder パターン: リスト蓄積でガベージコレクション負荷軽減
+            html_parts = []
+            html_parts_append = html_parts.append  # メソッド参照キャッシュ
+
+            # 最適化されたレンダリングループ
+            for node in nodes:
+                html = self.render_node_optimized(node)
+                if html:
+                    html_parts_append(html)
+                    # パフォーマンス監視にアイテム処理を記録
+                    perf_monitor.record_item_processed()
+
+            # 高速文字列結合（join最適化）
+            return "\n".join(html_parts)
+
+    def render_node_optimized(self, node: Node) -> str:
+        """
+        単一ノードの最適化HTML生成
+
+        Args:
+            node: AST node to render
+
+        Returns:
+            str: Generated HTML for the node (optimized)
+        """
+        if not isinstance(node, Node):
+            from .html_escaping import escape_html
+            return escape_html(str(node))
+
+        # 最適化: メソッド動的検索を避けるため事前キャッシュ
+        renderer_method = self._get_cached_renderer_method(node.type)
+        return renderer_method(node)
+
+    def _get_cached_renderer_method(self, node_type: str):
+        """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
+        
+        # レンダラーメソッドキャッシュが未初期化なら作成
+        if not hasattr(self, '_renderer_method_cache'):
+            self._renderer_method_cache = {}
+        
+        # キャッシュから取得
+        if node_type not in self._renderer_method_cache:
+            method_name = f"_render_{node_type}"
+            self._renderer_method_cache[node_type] = getattr(
+                self, method_name, self._render_generic
+            )
+        
+        return self._renderer_method_cache[node_type]
+
+    def render_nodes_with_errors_optimized(self, nodes: list[Node]) -> str:
+        """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
+        
+        # StringBuilder パターン
+        html_parts = []
+        html_parts_append = html_parts.append
+
+        for node in nodes:
+            html = self.render_node_optimized(node)
+            if html:
+                html_parts_append(html)
+
+        # エラー情報をHTML前に効率的に挿入
+        if self.embed_errors_in_html and self.graceful_errors:
+            error_summary_html = self._render_error_summary_optimized()
+            html_parts.insert(0, error_summary_html)
+
+            # 効率的なエラーマーカー埋め込み
+            html_with_markers = self._embed_error_markers_optimized("\n".join(html_parts))
+            return html_with_markers
+
+        return "\n".join(html_parts)
+
+    def _render_error_summary_optimized(self) -> str:
+        """最適化されたエラーサマリーHTML生成"""
+        if not self.graceful_errors:
+            return ""
+
+        # 統計情報の効率的計算
+        error_count = 0
+        warning_count = 0
+        
+        for error in self.graceful_errors:
+            if error.severity == "error":
+                error_count += 1
+            elif error.severity == "warning":
+                warning_count += 1
+        
+        total_count = len(self.graceful_errors)
+
+        # StringBuilder パターンでHTML構築
+        html_parts = [
+            '<div class="kumihan-error-summary" id="error-summary">',
+            '    <h3>🔍 記法エラーレポート</h3>',
+            '    <div class="error-stats">',
+            f'        <span class="error-count">❌ エラー: {error_count}件</span>',
+            f'        <span class="warning-count">⚠️ 警告: {warning_count}件</span>',
+            f'        <span class="total-count">📊 合計: {total_count}件</span>',
+            '    </div>',
+            '    <details class="error-details">',
+            '        <summary>詳細を表示</summary>',
+            '        <div class="error-list">'
+        ]
+
+        # 各エラーの詳細を効率的に追加
+        for i, error in enumerate(self.graceful_errors, 1):
+            error_html = self._render_single_error_optimized(error, i)
+            html_parts.append(error_html)
+
+        html_parts.extend([
+            '        </div>',
+            '    </details>',
+            '</div>'
+        ])
+
+        return "\n".join(html_parts)
+
+    def _render_single_error_optimized(self, error, error_number: int) -> str:
+        """単一エラーの最適化レンダリング"""
+        from .html_escaping import escape_html
+        
+        # XSS対策: エラー情報のエスケープ処理（最適化）
+        safe_title = escape_html(error.display_title)
+        safe_severity = escape_html(error.severity.upper())
+        safe_content = error.html_content  # 既にエスケープ済み
+
+        # 文字列テンプレート最適化
+        return f"""
+            <div class="error-item {error.html_class}" data-line="{error.line_number}">
+                <div class="error-header">
+                    <span class="error-number">#{error_number}</span>
+                    <span class="error-title">{safe_title}</span>
+                    <span class="error-severity">{safe_severity}</span>
+                </div>
+                <div class="error-content">
+                    {safe_content}
+                </div>
+            </div>"""
+
+    def _embed_error_markers_optimized(self, html: str) -> str:
+        """最適化されたエラーマーカー埋め込み"""
+        if not self.graceful_errors:
+            return html
+
+        # 行分割の最適化
+        lines = html.splitlines()
+        modified_lines = []
+        modified_lines_append = modified_lines.append
+
+        # エラー行のインデックス作成（検索最適化）
+        error_by_line = {}
+        for error in self.graceful_errors:
+            line_no = error.line_number
+            if line_no not in error_by_line:
+                error_by_line[line_no] = []
+            error_by_line[line_no].append(error)
+
+        # 効率的な行処理
+        for line_no, line in enumerate(lines, 1):
+            modified_lines_append(line)
+
+            # エラーマーカー挿入（最適化）
+            if line_no in error_by_line:
+                for error in error_by_line[line_no]:
+                    error_marker = self._create_error_marker_optimized(error)
+                    modified_lines_append(error_marker)
+
+        return "\n".join(modified_lines)
+
+    def _create_error_marker_optimized(self, error) -> str:
+        """最適化されたエラーマーカー作成"""
+        from .html_escaping import escape_html
+        
+        safe_message = escape_html(error.message)
+        safe_suggestion = escape_html(error.suggestion) if error.suggestion else ""
+        error_icon = "❌" if error.severity == "error" else "⚠️"
+
+        # f-string最適化
+        suggestion_html = f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''
+        
+        return f"""<div class="kumihan-error-marker {error.html_class}" data-line="{error.line_number}">
+    <div class="error-indicator">
+        <span class="error-icon">{error_icon}</span>
+        <span class="error-message">{safe_message}</span>
+        {suggestion_html}
+    </div>
+</div>"""
+
+    def get_rendering_metrics(self) -> dict:
+        """レンダリングメトリクスを取得"""
+        return {
+            "renderer_cache_size": len(getattr(self, '_renderer_method_cache', {})),
+            "graceful_errors_count": len(self.graceful_errors),
+            "embed_errors_enabled": self.embed_errors_in_html,
+            "heading_counter": self.heading_counter,
+        }
+
     def render_node(self, node: Node) -> str:
         """
         Render a single node to HTML

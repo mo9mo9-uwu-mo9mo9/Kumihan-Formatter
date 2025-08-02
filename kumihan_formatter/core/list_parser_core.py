@@ -128,6 +128,78 @@ class ListParserCore:
             return 'ordered'
             
         return None
+
+    
+    def parse_unordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
+        """
+        旧記法互換性のための順序なしリストパーサー
+        
+        Args:
+            lines: 全行
+            start_index: リスト開始インデックス
+            
+        Returns:
+            tuple: (list_node, next_index)
+        """
+
+        
+        items = []
+        current_index = start_index
+        
+        while current_index < len(lines):
+            line = lines[current_index].strip()
+            
+            # 空行または非リスト行で終了
+            if not line or not line.startswith(('- ', '• ', '* ', '+ ')):
+                break
+                
+            # リスト項目を解析
+            content = line[2:].strip()  # プレフィックスを除去
+            processed_content = self.keyword_parser._process_inline_keywords(content)
+            item_node = list_item(processed_content)
+            items.append(item_node)
+            
+            current_index += 1
+        
+        list_node = unordered_list(items)
+        return list_node, current_index
+    
+    def parse_ordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
+        """
+        旧記法互換性のための順序ありリストパーサー
+        
+        Args:
+            lines: 全行
+            start_index: リスト開始インデックス
+            
+        Returns:
+            tuple: (list_node, next_index)
+        """
+
+        import re
+        
+        items = []
+        current_index = start_index
+        
+        while current_index < len(lines):
+            line = lines[current_index].strip()
+            
+            # 空行または非順序リスト行で終了
+            if not line or not re.match(r'^\d+\.\s', line):
+                break
+                
+            # リスト項目を解析
+            match = re.match(r'^\d+\.\s(.+)', line)
+            if match:
+                content = match.group(1)
+                processed_content = self.keyword_parser._process_inline_keywords(content)
+                item_node = list_item(processed_content)
+                items.append(item_node)
+            
+            current_index += 1
+        
+        list_node = ordered_list(items)
+        return list_node, current_index
     
     def _parse_child_items(self, lines: list[str], start_index: int, target_level: int) -> tuple[list[Node], int]:
         """指定レベルの子項目を解析"""
