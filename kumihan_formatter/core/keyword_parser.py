@@ -11,7 +11,7 @@ including compound keywords and error suggestions.
 
 from typing import Any
 
-from .ast_nodes import Node, NodeBuilder, error_node
+from .ast_nodes import Node, NodeBuilder, error_node, strong, emphasis, highlight
 from .keyword_parsing import KeywordDefinitions, KeywordValidator, MarkerParser
 
 
@@ -77,12 +77,12 @@ class KeywordParser:
         
         # パフォーマンス改善: 正規表現パターンを事前コンパイル
         import re
-        # インライン記法: #keyword content# のパターン（##で終わらない）
-        self._inline_pattern = re.compile(r'#([^#]+?)#')
+        # インライン記法: #keyword content## のパターン（##で終わる）
+        self._inline_pattern = re.compile(r'#([^#]+?)#([^#]+?)##')
         
         # インライン記法キーワードマッピング
-        from .ast_nodes.factories import strong, emphasis, highlight
-        from .ast_nodes.node_builder import NodeBuilder
+
+
         
         self._inline_keyword_mapping = {
             "太字": strong,
@@ -309,7 +309,7 @@ class KeywordParser:
             content: 処理対象のコンテンツ
             nesting_level: 現在のネストレベル（0=トップレベル、1=1レベルネスト）
         """
-        from .ast_nodes.node_builder import NodeBuilder
+
         
         # 事前コンパイル済みパターンを使用してパフォーマンス向上
         if not self._inline_pattern.search(content):
@@ -327,6 +327,7 @@ class KeywordParser:
                     parts.append(text_before)
             
             full_keyword = match.group(1).strip()
+            text_content = match.group(2).strip()
             
             # ネストレベルチェック（最大1レベルまで）
             if nesting_level >= 1:
@@ -354,7 +355,7 @@ class KeywordParser:
             # 通常のキーワードの場合は、スペースで分割
             keyword_parts = full_keyword.split(' ', 1)
             keyword = keyword_parts[0]
-            text_content = keyword_parts[1] if len(keyword_parts) > 1 else ""
+            # text_contentは既にmatch.group(2)から取得済み
             
             # テキストコンテンツ内でのネストした記法を再帰処理
             if nesting_level == 0 and text_content and self._inline_pattern.search(text_content):
@@ -410,7 +411,7 @@ class KeywordParser:
         Returns:
             Node: rubyノード
         """
-        from .ast_nodes.node_builder import NodeBuilder
+
         
         # MarkerParserのルビ解析機能を使用
         ruby_info = self.marker_parser._parse_ruby_content(content)
