@@ -1,22 +1,22 @@
-# 全記法網羅サンプル - Kumihan記法完全版
+#見出し1# 全記法網羅サンプル - Kumihan記法完全版##
 
 #目次#
 
-## 装飾系キーワード（8種）
+#見出し2# 装飾系キーワード（8種）##
 
 #見出し2#
 装飾系記法の確認
 ##
 
-#太字# 太字で強調された文字です
+#太字# 太字で強調された文字です##
 
-#イタリック# イタリック（斜体）で表現された文字です#イタリック#
+#イタリック# イタリック（斜体）で表現された文字です##
 
-#下線# 下線が引かれた重要な文字です
+#下線# 下線が引かれた重要な文字です##
 
-#取り消し線# 削除または訂正された文字です
+#取り消し線# 削除または訂正された文字です##
 
-#コード# function() { return "コード表現"; }
+#コード# function() { return "コード表現"; }##
 
 #引用#
 「引用文の表現です。
@@ -29,19 +29,19 @@
 重要な情報や注意事項をまとめるのに最適です。
 ##
 
-#ハイライト# デフォルトハイライト
+#ハイライト# デフォルトハイライト##
 
-#ハイライト color=yellow# 黄色ハイライト
+#ハイライト color=yellow# 黄色ハイライト##
 
-#ハイライト color=red# 赤色ハイライト
+#ハイライト color=red# 赤色ハイライト##
 
-#ハイライト color=green# 緑色ハイライト
+#ハイライト color=green# 緑色ハイライト##
 
-#ハイライト color=blue# 青色ハイライト
+#ハイライト color=blue# 青色ハイライト##
 
-#ハイライト color=#ff6600# オレンジ色ハイライト（16進数）
+#ハイライト color=#ff6600# オレンジ色ハイライト（16進数）##
 
-## 構造系キーワード（6種）
+#見出し2# 構造系キーワード（6種）##
 
 #見出し1#
 最上位レベル（h1）
@@ -71,7 +71,7 @@
 
 #目次#
 
-## 機能系キーワード（4種）
+#見出し2# 機能系キーワード（4種）##
 
 #折りたたみ#
 折りたたみ機能のテストです。
@@ -90,14 +90,14 @@
 例：犯人は執事でした。
 ##
 
-#画像# sample_image.jpg
+#画像# sample_image.jpg##
 
 #中央寄せ#
 中央寄せ機能のテスト
 このテキストは中央に配置されます
 ##
 
-## レイアウト系キーワード（3種）
+#見出し2# レイアウト系キーワード（3種）##
 
 #注意#
 ⚠️ 注意事項の表示テスト
@@ -129,73 +129,73 @@ function allNotationsTest() {
 allNotationsTest();
 ##
 
-## マーカー種類テスト
+#見出し2# マーカー種類テスト##
 
-### 半角マーカー使用例
-#太字# 半角マーカーによる太字
+#見出し3# 半角マーカー使用例##
+#太字# 半角マーカーによる太字##
 
-### 全角マーカー使用例
-＃太字＃ 全角マーカーによる太字
+#見出し3# 全角マーカー使用例##
+＃太字＃ 全角マーカーによる太字＃＃
 
-### ブロック形式（半角）
+#見出し3# ブロック形式（半角）##
 #枠線#
 半角マーカーによるブロック
 ##
 
-### ブロック形式（全角）
+#見出し3# ブロック形式（全角）##
 ＃枠線＃
 全角マーカーによるブロック
 ＃＃
 
-## 色指定全パターン
+#見出し2# 色指定全パターン##
 
-### 英単語色名（30色）
+#見出し3# 英単語色名（30色）##
 
-#ハイライト color=red# red
-#ハイライト color=green# green
-#ハイライト color=blue# blue
-#ハイライト color=yellow# yellow
-#ハイライト color=orange# orange
-#ハイライト color=purple# purple
-#ハイライト color=pink# pink
-#ハイライト color=brown# brown
-#ハイライト color=black# black（文字が見えにくい場合があります）
-#ハイライト color=white# white（背景によっては見えにくい場合があります）
+#ハイライト color=red# red##
+#ハイライト color=green# green##
+#ハイライト color=blue# blue##
+#ハイライト color=yellow# yellow##
+#ハイライト color=orange# orange##
+#ハイライト color=purple# purple##
+#ハイライト color=pink# pink##
+#ハイライト color=brown# brown##
+#ハイライト color=black# black（文字が見えにくい場合があります）##
+#ハイライト color=white# white（背景によっては見えにくい場合があります）##
 
-#ハイライト color=gray# gray
-#ハイライト color=grey# grey
-#ハイライト color=silver# silver
+#ハイライト color=gray# gray##
+#ハイライト color=grey# grey##
+#ハイライト color=silver# silver##
 
-#ハイライト color=lightblue# lightblue
-#ハイライト color=lightgreen# lightgreen
-#ハイライト color=lightyellow# lightyellow
-#ハイライト color=lightgray# lightgray
+#ハイライト color=lightblue# lightblue##
+#ハイライト color=lightgreen# lightgreen##
+#ハイライト color=lightyellow# lightyellow##
+#ハイライト color=lightgray# lightgray##
 
-#ハイライト color=darkblue# darkblue
-#ハイライト color=darkgreen# darkgreen
-#ハイライト color=darkred# darkred
+#ハイライト color=darkblue# darkblue##
+#ハイライト color=darkgreen# darkgreen##
+#ハイライト color=darkred# darkred##
 
-#ハイライト color=cyan# cyan
-#ハイライト color=magenta# magenta
-#ハイライト color=lime# lime
-#ハイライト color=navy# navy
-#ハイライト color=teal# teal
-#ハイライト color=olive# olive
-#ハイライト color=maroon# maroon
-#ハイライト color=aqua# aqua
-#ハイライト color=fuchsia# fuchsia
-#ハイライト color=transparent# transparent
+#ハイライト color=cyan# cyan##
+#ハイライト color=magenta# magenta##
+#ハイライト color=lime# lime##
+#ハイライト color=navy# navy##
+#ハイライト color=teal# teal##
+#ハイライト color=olive# olive##
+#ハイライト color=maroon# maroon##
+#ハイライト color=aqua# aqua##
+#ハイライト color=fuchsia# fuchsia##
+#ハイライト color=transparent# transparent##
 
-### 16進数カラーコード例
+#見出し3# 16進数カラーコード例##
 
-#ハイライト color=#ff0000# #ff0000（赤）
-#ハイライト color=#00ff00# #00ff00（緑）
-#ハイライト color=#0000ff# #0000ff（青）
-#ハイライト color=#ffff00# #ffff00（黄）
-#ハイライト color=#ff6600# #ff6600（オレンジ）
-#ハイライト color=#9900ff# #9900ff（紫）
+#ハイライト color=#ff0000# #ff0000（赤）##
+#ハイライト color=#00ff00# #00ff00（緑）##
+#ハイライト color=#0000ff# #0000ff（青）##
+#ハイライト color=#ffff00# #ffff00（黄）##
+#ハイライト color=#ff6600# #ff6600（オレンジ）##
+#ハイライト color=#9900ff# #9900ff（紫）##
 
-## 複合記法テスト
+#見出し2# 複合記法テスト##
 
 #太字+枠線#
 太字と枠線の組み合わせ
@@ -219,18 +219,18 @@ allNotationsTest();
 注意事項や重要情報に最適
 ##
 
-#下線+太字# 下線と太字の組み合わせ
+#下線+太字# 下線と太字の組み合わせ##
 
-#コード+ハイライト color=#f0f0f0# const highlighted = "code";
+#コード+ハイライト color=#f0f0f0# const highlighted = "code";##
 
-## 大文字・小文字色名テスト
+#見出し2# 大文字・小文字色名テスト##
 
-#ハイライト color=red# 小文字red
-#ハイライト color=blue# 小文字blue  
-#ハイライト color=yellow# 小文字yellow
-#ハイライト color=green# 小文字green
+#ハイライト color=red# 小文字red##
+#ハイライト color=blue# 小文字blue##  
+#ハイライト color=yellow# 小文字yellow##
+#ハイライト color=green# 小文字green##
 
-## まとめ
+#見出し2# まとめ##
 
 このサンプルファイルでは：
 - 装飾系キーワード：8種類
