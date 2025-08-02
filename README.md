@@ -111,17 +111,30 @@ kumihan convert input.txt --progress-level verbose
 kumihan convert input.txt --progress-log progress.json
 ```
 
-## 💡 基本的な記法
+## 💡 基本的な記法（v3.0.0）
 
 ```
-#見出し1# シナリオタイトル
+#見出し1#
+シナリオタイトル
+##
 
 このシナリオは...
 
-#太字# 重要な情報
+#太字#
+重要な情報
+##
+
+#ハイライト color=yellow#
+注目すべきポイント
+##
+
+#目次#
+##
 ```
 
 → **プロ品質のHTML出力**
+
+**⚠️ 重要変更**: v3.0.0から全記法がブロック形式に統一され、単一行記法は完全廃止されました。
 
 ## 📖 ドキュメント
 

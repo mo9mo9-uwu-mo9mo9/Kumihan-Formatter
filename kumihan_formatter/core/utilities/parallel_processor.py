@@ -197,10 +197,10 @@ class ParallelChunkProcessor:
         Yields:
             Any: 処理結果（順序保証付き）
         """
+<<<<<<< HEAD
         self.logger.info(
             f"Starting optimized parallel processing: {len(chunks)} chunks"
         )
-
         if not chunks:
             return
 
@@ -218,7 +218,6 @@ class ParallelChunkProcessor:
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=optimal_workers
             ) as executor:
-
                 # 全チャンクを並列で開始（最適化されたsubmit）
                 future_to_chunk = {}
                 for chunk in chunks:
@@ -287,7 +286,6 @@ class ParallelChunkProcessor:
         try:
             # スレッドローカル情報でデバッグ改善
             thread_id = threading.get_ident()
-
             self.logger.debug(
                 f"Thread {thread_id}: Processing chunk {chunk.chunk_id} "
                 f"(lines {chunk.start_line}-{chunk.end_line})"
@@ -323,7 +321,6 @@ class ParallelChunkProcessor:
 
         # CPU コア数ベースの計算
         cpu_count = os.cpu_count() or 1
-
         # チャンク数に応じた調整
         if chunk_count <= 2:
             optimal = 1  # 少数チャンクは並列化不要
@@ -361,7 +358,6 @@ class ParallelChunkProcessor:
         """最適化されたプログレス情報作成"""
 
         progress_percent = (completed / total) * 100 if total > 0 else 100
-
         return {
             "completed_chunks": completed,
             "total_chunks": total,

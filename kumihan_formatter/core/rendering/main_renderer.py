@@ -119,7 +119,6 @@ class HTMLRenderer:
             # Issue #700: graceful errors対応
             if self.graceful_errors and self.embed_errors_in_html:
                 return self.render_nodes_with_errors_optimized(nodes)
-
             # StringBuilder パターン: リスト蓄積でガベージコレクション負荷軽減
             html_parts = []
             html_parts_append = html_parts.append  # メソッド参照キャッシュ
@@ -171,7 +170,6 @@ class HTMLRenderer:
             self.logger.debug(
                 f"Renderer method cache trimmed to {len(self._renderer_method_cache)} items"
             )
-
         # キャッシュから取得
         if node_type not in self._renderer_method_cache:
             method_name = f"_render_{node_type}"
@@ -183,7 +181,6 @@ class HTMLRenderer:
 
     def render_nodes_with_errors_optimized(self, nodes: list[Node]) -> str:
         """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
-
         # StringBuilder パターン
         html_parts = []
         html_parts_append = html_parts.append
@@ -199,9 +196,13 @@ class HTMLRenderer:
             html_parts.insert(0, error_summary_html)
 
             # 効率的なエラーマーカー埋め込み
+<<<<<<< HEAD
+            html_with_markers = self._embed_error_markers_optimized("\n".join(html_parts))
+=======
             html_with_markers = self._embed_error_markers_optimized(
                 "\n".join(html_parts)
             )
+>>>>>>> origin/main
             return html_with_markers
 
         return "\n".join(html_parts)
@@ -268,7 +269,7 @@ class HTMLRenderer:
 
         # 文字列テンプレート最適化（f-string使用）
         return f"""
-            <div class="error-item {safe_html_class}" data-line="{safe_line_number}">
+            <div class="error-item {safe_html_class}" data-line="{safe_line_number}">"""
                 <div class="error-header">
                     <span class="error-number">#{error_number}</span>
                     <span class="error-title">{safe_title}</span>
@@ -323,7 +324,6 @@ class HTMLRenderer:
             if safe_suggestion
             else ""
         )
-
         return f"""<div class="kumihan-error-marker {error.html_class}" data-line="{error.line_number}">
     <div class="error-indicator">
         <span class="error-icon">{error_icon}</span>
