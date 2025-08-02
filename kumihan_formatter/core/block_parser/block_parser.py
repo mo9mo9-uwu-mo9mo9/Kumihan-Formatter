@@ -162,7 +162,7 @@ class BlockParser:
         self, lines: list[str], start_index: int
     ) -> tuple[Node | None, int]:
         """
-        新記法 # キーワード # 形式のマーカーを解析（最適化版）
+        新記法 # キーワード # 形式のマーカーを解析（v3.0.0: ブロック記法のみ）
 
         Args:
             lines: All lines in the document
@@ -206,7 +206,7 @@ class BlockParser:
                     "error",
                     "不正なマーカー記法: 終了マーカー # が見つかりません",
                     opening_line,
-                    "正しい記法: # キーワード # 内容 または # キーワード #\n内容\n##",
+                    "正しい記法: # キーワード #\n内容\n##",
                 )
             return None, start_index
 
@@ -216,23 +216,29 @@ class BlockParser:
             self.logger.error(f"Parse errors in new format keywords: {parse_errors}")
             return error_node("; ".join(parse_errors), start_index + 1), start_index + 1
 
-        # インライン内容を抽出
+        # v3.0.0: インライン内容の確認 - 単一行記法使用時はエラー
         inline_content = self.keyword_parser.marker_parser.extract_inline_content(
             opening_line
         )
 
         if inline_content:
-            # インライン記法: # キーワード # 内容
-            self.logger.debug(f"Processing inline content: {inline_content}")
-            if len(keywords) == 1:
-                node = self.keyword_parser.create_single_block(
-                    keywords[0], inline_content, attributes
+            # v3.0.0: 単一行記法は完全廃止 - エラーを発生
+            error_msg = f"v3.0.0では単一行記法は廃止されました。ブロック記法を使用してください:\n# {' + '.join(keywords)} #\n{inline_content}\n##"
+            if (
+                hasattr(self, "parser_ref")
+                and self.parser_ref
+                and self.parser_ref.graceful_errors
+            ):
+                self.parser_ref._record_graceful_error(
+                    start_index + 1,  # 1-based line number
+                    1,  # column
+                    "inline_notation_deprecated",
+                    "error",
+                    error_msg,
+                    opening_line,
+                    f"# {' + '.join(keywords)} #\n{inline_content}\n##",
                 )
-            else:
-                node = self.keyword_parser.create_compound_block(
-                    keywords, inline_content, attributes
-                )
-            return node, start_index + 1
+            return error_node(error_msg, start_index + 1), start_index + 1
         else:
             # ブロック記法: # キーワード # \n 内容 \n ##
             return self._parse_new_format_block(

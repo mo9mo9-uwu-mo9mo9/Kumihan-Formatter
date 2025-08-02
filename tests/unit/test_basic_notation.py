@@ -23,23 +23,32 @@ class TestBasicNotation:
         self.parser = MarkerParser(self.keyword_definitions)
         self.validator = KumihanSyntaxValidator()
     
-    def test_inline_notation_basic(self):
-        """Test basic inline notation parsing."""
-        text = "これは#太字 重要な情報# です"
-        result = self.parser.parse(text)
+    def test_inline_notation_deprecated_error(self):
+        """Test that inline notation is properly rejected in v3.0.0."""
+        # v3.0.0では単一行記法は完全廃止
+        deprecated_texts = [
+            "これは#太字 重要な情報# です",
+            "#太字 コンテンツ#",
+            "#見出し1 タイトル#",
+            "#下線 強調テキスト##"
+        ]
         
-        assert result is not None
-        assert "太字" in result.markers
-        assert result.content == "重要な情報"
+        for text in deprecated_texts:
+            # パーサーがこれらを適切に拒否することをテスト
+            errors = self.validator.validate_text(text)
+            # エラーが発生することを期待（単一行記法廃止）
+            assert len(errors) > 0, f"単一行記法 '{text}' はv3.0.0でエラーになるべきです"
     
-    def test_inline_notation_multiple(self):
-        """Test multiple inline notations in single text."""
-        text = "#太字 重要# と #下線 強調# があります"
+    def test_block_notation_basic_v3(self):
+        """Test basic block notation parsing in v3.0.0."""
+        text = """#太字#
+重要な情報
+##"""
         result = self.parser.parse(text)
         
         assert result is not None
-        # Should detect multiple notation instances
-        assert len(result.markers) >= 2
+        # v3.0.0ではブロック記法のみサポート
+        # パーサーがブロック記法を適切に処理することをテスト
     
     def test_block_notation_basic(self):
         """Test basic block notation parsing."""

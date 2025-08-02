@@ -630,13 +630,13 @@ class MarkerParser:
 
     def is_new_marker_format(self, line: str) -> bool:
         """
-        行が新記法 # キーワード # 形式かどうかを判定（ブロック記法のみ）
+        行が新記法 # キーワード # 形式かどうかを判定（v3.0.0: ブロック記法のみ）
 
         Args:
             line: 判定対象の行
 
         Returns:
-            bool: ブロック記法の場合True、インライン記法は除外
+            bool: ブロック記法の場合True、v3.0.0では単一行記法は完全拒否
         """
         import re  # Issue #713修正: reモジュールのインポートを最初に移動
 
@@ -652,15 +652,30 @@ class MarkerParser:
         ):
             return False
 
-        # インライン記法（# keyword # content ##）を除外
-        # インライン記法は同一行内で完結し、##で終わる
-        inline_pattern = r"#\s*[^#]+?\s*#\s*[^#]+?\s*##"
-        if re.search(inline_pattern, line):
+        # v3.0.0: 単一行記法を完全拒否（より厳密な検出）
+        # パターン1: #keyword# content 形式
+        inline_pattern_1 = r"^[#＃]\s*[^#＃]+\s*[#＃]\s+.+$"
+        # パターン2: #keyword content# 形式  
+        inline_pattern_2 = r"^[#＃]\s*[^#＃]+\s+[^#＃]+\s*[#＃]$"
+        # パターン3: #keyword content## 形式
+        inline_pattern_3 = r"^[#＃]\s*[^#＃]+\s+[^#＃]+\s*[#＃]{2}$"
+        
+        if (re.match(inline_pattern_1, line) or 
+            re.match(inline_pattern_2, line) or
+            re.match(inline_pattern_3, line)):
             return False
 
-        # ブロック記法のみ許可: # キーワード # （行全体で完結）
-        block_pattern = r"^[#＃]\s*[^#＃]+\s*[#＃]$"
-        return bool(re.match(block_pattern, line))
+        # ブロック記法のみ許可: # キーワード # （行全体で完結、属性付きも含む）
+        # 基本パターン: #keyword#
+        basic_pattern = r"^[#＃]\s*[^#＃]+\s*[#＃]$"
+        # 属性付きパターン: #keyword attr=value#
+        attribute_pattern = r"^[#＃]\s*[^#＃]+\s+[^#＃]+=\S+\s*[#＃]$"
+        # 複合パターン: #keyword1+keyword2#
+        compound_pattern = r"^[#＃]\s*[^#＃]+[+＋][^#＃]+\s*[#＃]$"
+        
+        return (bool(re.match(basic_pattern, line)) or
+                bool(re.match(attribute_pattern, line)) or
+                bool(re.match(compound_pattern, line)))
 
     def is_block_end_marker(self, line: str) -> bool:
         """
@@ -707,22 +722,15 @@ class MarkerParser:
 
     def extract_inline_content(self, line: str) -> str | None:
         """
-        新記法からインライン内容を抽出
-
-        例: "# 太字 # これが内容" → "これが内容"
+        v3.0.0: 単一行記法完全廃止 - 常にNoneを返す
 
         Args:
             line: 解析対象の行
 
         Returns:
-            str: インライン内容、ブロック記法の場合はNone
+            None: v3.0.0ではブロック記法のみサポートのため常にNone
         """
-        line = line.strip()
-        match = self._INLINE_CONTENT_PATTERN.match(line)
-
-        if match:
-            content = match.group(4).strip()
-            return content if content else None
+        # v3.0.0: 単一行記法は完全廃止、ブロック記法のみサポート
         return None
 
     def _parse_ruby_content(self, content: str) -> dict[str, Any] | None:
