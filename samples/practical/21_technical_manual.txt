@@ -1,4 +1,4 @@
-# Kumihan-Formatter API リファレンス v2.2.0-alpha
+#見出し1# Kumihan-Formatter API リファレンス v2.2.0-alpha##
 
 #目次#
 
@@ -6,7 +6,7 @@
 概要とクイックスタート
 ##
 
-## API概要
+#見出し2# API概要##
 
 #枠線+ハイライト color=#e1f5fe#
 📡 **Kumihan-Formatter REST API**
@@ -20,18 +20,18 @@
 
 #注意#
 ⚠️ **重要な注意事項**
-このAPIは#太字# アルファ版#太字#です。
+このAPIは#太字# アルファ版##です。
 本番環境での使用は#ハイライト color=#ffe6e6# 推奨されません#ハイライト color=#ffe6e6#。
 仕様は予告なく変更される可能性があります。
 ##
 
-## 認証
+#見出し2# 認証##
 
 #見出し2#
 API Keyの取得
 ##
 
-APIを使用するためには、まず#太字# API Key#太字#を取得する必要があります。
+APIを使用するためには、まず#太字# API Key##を取得する必要があります。
 
 #コードブロック#
 curl -X POST https://api.kumihan-formatter.example.com/v2/auth/register \
@@ -50,19 +50,19 @@ curl -X POST https://api.kumihan-formatter.example.com/v2/auth/register \
 
 #枠線#
 **必須ヘッダー**:
-- #コード# Authorization: Bearer YOUR_API_KEY#コード#
-- #コード# Content-Type: application/json#コード#
+- #コード# Authorization: Bearer YOUR_API_KEY##
+- #コード# Content-Type: application/json##
 
 **オプションヘッダー**:
-- #コード# X-Client-Version: 2.2.0#コード#
-- #コード# X-Request-ID: unique-request-id#コード#
+- #コード# X-Client-Version: 2.2.0##
+- #コード# X-Request-ID: unique-request-id##
 ##
 
 #見出し1#
 エンドポイント仕様
 ##
 
-## テキスト変換エンドポイント
+#見出し2# テキスト変換エンドポイント##
 
 #見出し2#
 POST /convert
@@ -70,7 +70,7 @@ POST /convert
 
 Kumihanテキストを指定形式に変換します。
 
-### リクエスト仕様
+#見出し3# リクエスト仕様##
 
 #コードブロック#
 POST /v2/convert
@@ -79,7 +79,7 @@ Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
 {
-  "input": "#太字# テスト文書#太字#",
+  "input": "#太字# テスト文書##",
   "output_format": "html",
   "options": {
     "theme": "default",
@@ -89,30 +89,30 @@ Content-Type: application/json
 }
 ##
 
-### パラメータ詳細
+#見出し3# パラメータ詳細##
 
 #枠線+ハイライト color=#f0f8ff#
 📋 **リクエストパラメータ**
 
-#### 必須パラメータ
-- #太字# `input`#太字# (string): 変換するKumihanテキスト
-- #太字# `output_format`#太字# (string): 出力形式
+#見出し4# 必須パラメータ##
+- #太字# `input`## (string): 変換するKumihanテキスト
+- #太字# `output_format`## (string): 出力形式
 
-#### 出力形式オプション
-- #コード# `html`#コード#: HTML形式（推奨）
-- #コード# `markdown`#コード#: Markdown形式  
-- #コード# `pdf`#コード#: PDF形式（プレミアム機能）
-- #コード# `epub`#コード#: EPUB形式（プレミアム機能）
+#見出し4# 出力形式オプション##
+- #コード# `html`##: HTML形式（推奨）
+- #コード# `markdown`##: Markdown形式  
+- #コード# `pdf`##: PDF形式（プレミアム機能）
+- #コード# `epub`##: EPUB形式（プレミアム機能）
 
-#### オプションパラメータ
-- #太字# `options.theme`#太字# (string): テーマ名
+#見出し4# オプションパラメータ##
+- #太字# `options.theme`## (string): テーマ名
   - デフォルト: #ハイライト color=yellow# "default"#ハイライト color=yellow#
   - 選択肢: "default", "dark", "minimal", "academic"
-- #太字# `options.include_css`#太字# (boolean): CSS埋め込み
-- #太字# `options.minify`#太字# (boolean): 出力の最小化
+- #太字# `options.include_css`## (boolean): CSS埋め込み
+- #太字# `options.minify`## (boolean): 出力の最小化
 ##
 
-### レスポンス例
+#見出し3# レスポンス例##
 
 #見出し3#
 成功レスポンス（200 OK）
@@ -175,7 +175,7 @@ Content-Type: application/json
 ##
 ##
 
-## バッチ変換エンドポイント
+#見出し2# バッチ変換エンドポイント##
 
 #見出し2#
 POST /convert/batch
@@ -190,7 +190,7 @@ POST /convert/batch
 - 進捗状況の追跡機能
 ##
 
-### リクエスト例
+#見出し3# リクエスト例##
 
 #コードブロック#
 {
@@ -202,7 +202,7 @@ POST /convert/batch
     },
     {
       "name": "document2.txt", 
-      "content": "#太字# 重要な情報#太字#",
+      "content": "#太字# 重要な情報##",
       "output_format": "pdf"
     }
   ],
@@ -214,7 +214,7 @@ POST /convert/batch
 }
 ##
 
-### レスポンス
+#見出し3# レスポンス##
 
 #コードブロック#
 {
@@ -227,7 +227,7 @@ POST /convert/batch
 }
 ##
 
-## 記法検証エンドポイント
+#見出し2# 記法検証エンドポイント##
 
 #見出し2#
 POST /validate
@@ -244,17 +244,17 @@ Kumihanテキストの記法を検証し、エラーや警告を返します。
 - パフォーマンス影響の評価
 ##
 
-### リクエスト
+#見出し3# リクエスト##
 
 #コードブロック#
 {
-  "input": "#太字# テスト#太字# #ハイライト color=invalidcolor# エラー例#ハイライト#",
+  "input": "#太字# テスト## #ハイライト color=invalidcolor# エラー例#ハイライト#",
   "strict_mode": true,
   "check_performance": true
 }
 ##
 
-### レスポンス
+#見出し3# レスポンス##
 
 #コードブロック#
 {
@@ -289,7 +289,7 @@ Kumihanテキストの記法を検証し、エラーや警告を返します。
 SDKとコード例
 ##
 
-## Python SDK
+#見出し2# Python SDK##
 
 #見出し2#
 インストール
@@ -306,20 +306,20 @@ pip install kumihan-formatter-sdk
 #コードブロック#
 from kumihan_formatter_sdk import KumihanClient
 
-# クライアント初期化
+#見出し1# クライアント初期化##
 client = KumihanClient(api_key="your_api_key")
 
-# テキスト変換
+#見出し1# テキスト変換##
 result = client.convert(
-    input_text="#太字# Hello World#太字#",
+    input_text="#太字# Hello World##",
     output_format="html",
     theme="default"
 )
 
 print(result.converted_content)
-# 出力: <strong>Hello World</strong>
+#見出し1# 出力: <strong>Hello World</strong>##
 
-# バッチ処理
+#見出し1# バッチ処理##
 batch_job = client.convert_batch([
     {"name": "doc1.txt", "content": "#見出し1# タイトル##"},
     {"name": "doc2.txt", "content": "#枠線# 重要な情報##"}
@@ -328,7 +328,7 @@ batch_job = client.convert_batch([
 print(f"バッチID: {batch_job.batch_id}")
 ##
 
-## JavaScript SDK
+#見出し2# JavaScript SDK##
 
 #見出し2#
 インストール
@@ -378,101 +378,101 @@ convertText();
 #枠線+ハイライト color=#fff0f0#
 ⚠️ **HTTPステータスコード**
 
-### 4xx クライアントエラー
-- #太字# 400 Bad Request#太字#: リクエスト形式エラー
-- #太字# 401 Unauthorized#太字#: 認証エラー
-- #太字# 403 Forbidden#太字#: 権限不足
-- #太字# 404 Not Found#太字#: エンドポイント未存在
-- #太字# 413 Payload Too Large#太字#: ファイルサイズ超過
-- #太字# 429 Too Many Requests#太字#: レート制限
+#見出し3# 4xx クライアントエラー##
+- #太字# 400 Bad Request##: リクエスト形式エラー
+- #太字# 401 Unauthorized##: 認証エラー
+- #太字# 403 Forbidden##: 権限不足
+- #太字# 404 Not Found##: エンドポイント未存在
+- #太字# 413 Payload Too Large##: ファイルサイズ超過
+- #太字# 429 Too Many Requests##: レート制限
 
-### 5xx サーバーエラー  
-- #太字# 500 Internal Server Error#太字#: サーバー内部エラー
-- #太字# 502 Bad Gateway#太字#: アップストリームエラー
-- #太字# 503 Service Unavailable#太字#: サービス一時停止
+#見出し3# 5xx サーバーエラー  ##
+- #太字# 500 Internal Server Error##: サーバー内部エラー
+- #太字# 502 Bad Gateway##: アップストリームエラー
+- #太字# 503 Service Unavailable##: サービス一時停止
 ##
 
 #折りたたみ#
 🔍 **詳細エラーコード**
 
-### 記法関連エラー
-- #コード# INVALID_NOTATION#コード#: 不正な記法構文
-- #コード# INCOMPLETE_MARKER#コード#: 未完了のマーカー
-- #コード# MIXED_MARKER_TYPE#コード#: 半角・全角マーカー混在
-- #コード# INVALID_COLOR#コード#: 無効な色指定
-- #コード# UNSUPPORTED_COMBINATION#コード#: 未サポートの記法組み合わせ
+#見出し3# 記法関連エラー##
+- #コード# INVALID_NOTATION##: 不正な記法構文
+- #コード# INCOMPLETE_MARKER##: 未完了のマーカー
+- #コード# MIXED_MARKER_TYPE##: 半角・全角マーカー混在
+- #コード# INVALID_COLOR##: 無効な色指定
+- #コード# UNSUPPORTED_COMBINATION##: 未サポートの記法組み合わせ
 
-### 処理関連エラー
-- #コード# PROCESSING_TIMEOUT#コード#: 処理タイムアウト
-- #コード# MEMORY_LIMIT_EXCEEDED#コード#: メモリ制限超過
-- #コード# INVALID_OUTPUT_FORMAT#コード#: 未サポートの出力形式
+#見出し3# 処理関連エラー##
+- #コード# PROCESSING_TIMEOUT##: 処理タイムアウト
+- #コード# MEMORY_LIMIT_EXCEEDED##: メモリ制限超過
+- #コード# INVALID_OUTPUT_FORMAT##: 未サポートの出力形式
 
-### 認証・権限エラー
-- #コード# INVALID_API_KEY#コード#: APIキー無効
-- #コード# API_KEY_EXPIRED#コード#: APIキー期限切れ
-- #コード# INSUFFICIENT_QUOTA#コード#: クォータ不足
-- #コード# PREMIUM_FEATURE_REQUIRED#コード#: プレミアム機能が必要
+#見出し3# 認証・権限エラー##
+- #コード# INVALID_API_KEY##: APIキー無効
+- #コード# API_KEY_EXPIRED##: APIキー期限切れ
+- #コード# INSUFFICIENT_QUOTA##: クォータ不足
+- #コード# PREMIUM_FEATURE_REQUIRED##: プレミアム機能が必要
 ##
 
 #見出し1#
 ベストプラクティス
 ##
 
-## パフォーマンス最適化
+#見出し2# パフォーマンス最適化##
 
 #情報#
 💡 **推奨事項**
 
-### リクエスト最適化
-- ファイルサイズは#太字# 1MB以下#太字#に制限
+#見出し3# リクエスト最適化##
+- ファイルサイズは#太字# 1MB以下##に制限
 - バッチ処理では#ハイライト color=lightblue# 並列処理数を調整#ハイライト color=lightblue#
 - 不要なオプションは指定しない
 
-### キャッシュ活用
+#見出し3# キャッシュ活用##
 - 同一テキストの再変換を避ける
-- #コード# ETag#コード#ヘッダーによるキャッシュ制御
+- #コード# ETag##ヘッダーによるキャッシュ制御
 - CDN経由での配信を推奨
 
-### エラーハンドリング
+#見出し3# エラーハンドリング##
 - 指数バックオフによるリトライ実装
 - ログ記録とモニタリング
 - ユーザーフレンドリーなエラーメッセージ
 ##
 
-## セキュリティ
+#見出し2# セキュリティ##
 
 #注意#
 🔒 **セキュリティ考慮事項**
 
-### APIキー管理
-- APIキーは#太字# 環境変数#太字#で管理
+#見出し3# APIキー管理##
+- APIキーは#太字# 環境変数##で管理
 - 定期的なローテーション実施
 - 最小権限の原則を適用
 
-### 入力検証
+#見出し3# 入力検証##
 - ユーザー入力の#ハイライト color=#ffe6e6# サニタイズ#ハイライト color=#ffe6e6#
 - ファイルサイズ制限の実装
 - 悪意のあるコンテンツのフィルタリング
 
-### 通信セキュリティ
+#見出し3# 通信セキュリティ##
 - HTTPS通信の強制
 - 証明書の検証
 - Request ID による追跡
 ##
 
-## レート制限とクォータ
+#見出し2# レート制限とクォータ##
 
 #枠線#
 📊 **制限値**
 
-### 無料プラン
-- API呼び出し: #太字# 1,000回/時間#太字#
+#見出し3# 無料プラン##
+- API呼び出し: #太字# 1,000回/時間##
 - ファイルサイズ: 最大1MB
 - バッチ処理: 5ファイル/回
 - 同時接続: 3接続
 
-### プレミアムプラン
-- API呼び出し: #太字# 10,000回/時間#太字#
+#見出し3# プレミアムプラン##
+- API呼び出し: #太字# 10,000回/時間##
 - ファイルサイズ: 最大10MB
 - バッチ処理: 50ファイル/回
 - 同時接続: 20接続
@@ -483,46 +483,46 @@ convertText();
 変更履歴とマイグレーション
 ##
 
-## v2.2.0-alpha の変更点
+#見出し2# v2.2.0-alpha の変更点##
 
 #ネタバレ#
 📝 **主要な変更点**
 
-### 新機能
-- #太字# ルビ記法#太字#のサポート追加
+#見出し3# 新機能##
+- #太字# ルビ記法##のサポート追加
 - バッチ処理APIの性能向上（30%高速化）
 - 新しいテーマ「academic」の追加
 
-### 破壊的変更
+#見出し3# 破壊的変更##
 - ;;;記法の完全廃止（Phase 1完了）
 - alt属性の削除
 - デフォルトテーマの変更
 
-### 修正
+#見出し3# 修正##
 - 複合記法の処理精度向上
 - メモリリーク問題の解決
 - エラーメッセージの日本語化
 ##
 
-## マイグレーションガイド
+#見出し2# マイグレーションガイド##
 
 #枠線+ハイライト color=#fff3cd#
 ⚠️ **v2.1から v2.2への移行**
 
-### 必須対応
-1. #太字# ;;;記法の置換#太字#
+#見出し3# 必須対応##
+1. #太字# ;;;記法の置換##
    - 置換前: `;;;太字;;; 内容 ;;;`
    - 置換後: `#太字# 内容##`
 
-2. #太字# alt属性の削除#太字#
+2. #太字# alt属性の削除##
    - 削除: `#画像 alt=説明# image.jpg`
    - 変更後: `#画像# image.jpg`
 
-3. #太字# APIキーの更新#太字#
+3. #太字# APIキーの更新##
    - 新しい形式のAPIキーを取得
    - レート制限値の確認
 
-### 推奨対応
+#見出し3# 推奨対応##
 - 新しいSDKバージョンへの更新
 - エラーハンドリングの見直し
 - パフォーマンステストの実施
