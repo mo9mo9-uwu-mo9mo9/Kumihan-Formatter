@@ -458,28 +458,44 @@ class ProgressiveOutputSystem:
         self.logger.info(f"Progressive output system initialized: buffer_size={buffer_size}")
 
     def initialize_output_stream(self, template_content: str = "", css_content: str = ""):
-        """出力ストリームの初期化"""
-        
-        if not self.output_path:
-            return  # ファイル出力無効
+    """出力ストリームの初期化（ファイルハンドルリーク対策強化）"""
+    
+    if not self.output_path:
+        return  # ファイル出力無効
 
-        try:
-            self.output_stream = open(self.output_path, 'w', encoding='utf-8', buffering=1)
-            
-            # HTMLヘッダーの準備
-            self.css_content = css_content
-            self.html_header = self._create_html_header(template_content)
-            self.html_footer = self._create_html_footer()
-            
-            # ヘッダーを即座に出力
-            self.output_stream.write(self.html_header)
-            self.output_stream.flush()
-            
-            self.logger.info(f"Progressive output stream started: {self.output_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to initialize output stream: {e}")
-            self.output_stream = None
+    try:
+        # 既存ストリームが開いている場合は先にクローズ
+        if self.output_stream:
+            try:
+                self.output_stream.close()
+            except Exception as close_error:
+                self.logger.warning(f"Error closing existing stream: {close_error}")
+            finally:
+                self.output_stream = None
+        
+        self.output_stream = open(self.output_path, 'w', encoding='utf-8', buffering=1)
+        
+        # HTMLヘッダーの準備
+        self.css_content = css_content
+        self.html_header = self._create_html_header(template_content)
+        self.html_footer = self._create_html_footer()
+        
+        # ヘッダーを即座に出力
+        self.output_stream.write(self.html_header)
+        self.output_stream.flush()
+        
+        self.logger.info(f"Progressive output stream started: {self.output_path}")
+        
+    except Exception as e:
+        self.logger.error(f"Failed to initialize output stream: {e}")
+        # エラー時は確実にストリームをクリーンアップ
+        if self.output_stream:
+            try:
+                self.output_stream.close()
+            except:
+                pass  # クローズエラーは無視
+            finally:
+                self.output_stream = None
 
     def add_processed_node(self, node_html: str, node_info: dict = None):
         """処理済みノードの追加"""

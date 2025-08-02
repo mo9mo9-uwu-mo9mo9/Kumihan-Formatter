@@ -4,10 +4,11 @@ This module provides the main HTMLRenderer class that coordinates
 all specialized renderers and maintains backward compatibility.
 """
 
-from html import escape
+# XSS protection: Use unified escape_html from html_escaping module
 from typing import Any, List
 
 from ..ast_nodes import Node
+from ..utilities.logger import get_logger
 from .compound_renderer import CompoundElementRenderer
 from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
@@ -56,6 +57,7 @@ class HTMLRenderer:
 
     def __init__(self) -> None:
         """Initialize HTML renderer with specialized renderers"""
+        self.logger = get_logger(__name__)
         self.element_renderer = ElementRenderer()
         self.compound_renderer = CompoundElementRenderer()
         self.formatter = HTMLFormatter()
@@ -84,7 +86,7 @@ class HTMLRenderer:
         # Issue #700: graceful errors対応
         if self.graceful_errors and self.embed_errors_in_html:
             return self.render_nodes_with_errors(nodes)
-        
+
         html_parts = []
 
         for node in nodes:
@@ -112,12 +114,11 @@ class HTMLRenderer:
         """
         # パフォーマンス監視開始
         from ..utilities.performance_metrics import monitor_performance
-        
+
         with monitor_performance("optimized_html_rendering") as perf_monitor:
             # Issue #700: graceful errors対応
             if self.graceful_errors and self.embed_errors_in_html:
                 return self.render_nodes_with_errors_optimized(nodes)
-            
             # StringBuilder パターン: リスト蓄積でガベージコレクション負荷軽減
             html_parts = []
             html_parts_append = html_parts.append  # メソッド参照キャッシュ
@@ -145,6 +146,7 @@ class HTMLRenderer:
         """
         if not isinstance(node, Node):
             from .html_escaping import escape_html
+
             return escape_html(str(node))
 
         # 最適化: メソッド動的検索を避けるため事前キャッシュ
@@ -152,24 +154,33 @@ class HTMLRenderer:
         return renderer_method(node)
 
     def _get_cached_renderer_method(self, node_type: str):
-        """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
-        
+        """レンダラーメソッドのキャッシュ取得（メモリリーク対策強化）"""
+
         # レンダラーメソッドキャッシュが未初期化なら作成
-        if not hasattr(self, '_renderer_method_cache'):
+        if not hasattr(self, "_renderer_method_cache"):
             self._renderer_method_cache = {}
-        
+
+        # キャッシュサイズ制限（メモリリーク防止）
+        MAX_CACHE_SIZE = 100
+        if len(self._renderer_method_cache) > MAX_CACHE_SIZE:
+            # LRU的な削除（最初の半分を削除）
+            cache_items = list(self._renderer_method_cache.items())
+            keep_items = cache_items[len(cache_items) // 2 :]
+            self._renderer_method_cache = dict(keep_items)
+            self.logger.debug(
+                f"Renderer method cache trimmed to {len(self._renderer_method_cache)} items"
+            )
         # キャッシュから取得
         if node_type not in self._renderer_method_cache:
             method_name = f"_render_{node_type}"
             self._renderer_method_cache[node_type] = getattr(
                 self, method_name, self._render_generic
             )
-        
+
         return self._renderer_method_cache[node_type]
 
     def render_nodes_with_errors_optimized(self, nodes: list[Node]) -> str:
         """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
-        
         # StringBuilder パターン
         html_parts = []
         html_parts_append = html_parts.append
@@ -185,7 +196,13 @@ class HTMLRenderer:
             html_parts.insert(0, error_summary_html)
 
             # 効率的なエラーマーカー埋め込み
+<<<<<<< HEAD
             html_with_markers = self._embed_error_markers_optimized("\n".join(html_parts))
+=======
+            html_with_markers = self._embed_error_markers_optimized(
+                "\n".join(html_parts)
+            )
+>>>>>>> origin/main
             return html_with_markers
 
         return "\n".join(html_parts)
@@ -198,27 +215,27 @@ class HTMLRenderer:
         # 統計情報の効率的計算
         error_count = 0
         warning_count = 0
-        
+
         for error in self.graceful_errors:
             if error.severity == "error":
                 error_count += 1
             elif error.severity == "warning":
                 warning_count += 1
-        
+
         total_count = len(self.graceful_errors)
 
         # StringBuilder パターンでHTML構築
         html_parts = [
             '<div class="kumihan-error-summary" id="error-summary">',
-            '    <h3>🔍 記法エラーレポート</h3>',
+            "    <h3>🔍 記法エラーレポート</h3>",
             '    <div class="error-stats">',
             f'        <span class="error-count">❌ エラー: {error_count}件</span>',
             f'        <span class="warning-count">⚠️ 警告: {warning_count}件</span>',
             f'        <span class="total-count">📊 合計: {total_count}件</span>',
-            '    </div>',
+            "    </div>",
             '    <details class="error-details">',
-            '        <summary>詳細を表示</summary>',
-            '        <div class="error-list">'
+            "        <summary>詳細を表示</summary>",
+            '        <div class="error-list">',
         ]
 
         # 各エラーの詳細を効率的に追加
@@ -226,26 +243,33 @@ class HTMLRenderer:
             error_html = self._render_single_error_optimized(error, i)
             html_parts.append(error_html)
 
-        html_parts.extend([
-            '        </div>',
-            '    </details>',
-            '</div>'
-        ])
+        html_parts.extend(["        </div>", "    </details>", "</div>"])
 
         return "\n".join(html_parts)
 
     def _render_single_error_optimized(self, error, error_number: int) -> str:
-        """単一エラーの最適化レンダリング"""
+        """単一エラーの最適化レンダリング（XSS対策強化）"""
         from .html_escaping import escape_html
-        
-        # XSS対策: エラー情報のエスケープ処理（最適化）
-        safe_title = escape_html(error.display_title)
-        safe_severity = escape_html(error.severity.upper())
-        safe_content = error.html_content  # 既にエスケープ済み
 
-        # 文字列テンプレート最適化
+        # XSS対策: エラー情報の一貫したエスケープ処理（最適化）
+        safe_title = escape_html(str(getattr(error, "display_title", "Unknown Error")))
+        safe_severity = escape_html(str(getattr(error, "severity", "error")).upper())
+        safe_line_number = int(getattr(error, "line_number", 0))
+
+        # HTML内容の安全な取得（既にエスケープ済みと仮定、但し検証）
+        raw_content = getattr(error, "html_content", "")
+        # 安全性確保のため再エスケープ（冪等性保証）
+        safe_content = (
+            escape_html(str(raw_content)) if raw_content else escape_html("内容なし")
+        )
+
+        # HTMLクラス名の安全化
+        html_class = getattr(error, "html_class", "error")
+        safe_html_class = "".join(c for c in html_class if c.isalnum() or c in "-_")
+
+        # 文字列テンプレート最適化（f-string使用）
         return f"""
-            <div class="error-item {error.html_class}" data-line="{error.line_number}">
+            <div class="error-item {safe_html_class}" data-line="{safe_line_number}">"""
                 <div class="error-header">
                     <span class="error-number">#{error_number}</span>
                     <span class="error-title">{safe_title}</span>
@@ -289,14 +313,17 @@ class HTMLRenderer:
     def _create_error_marker_optimized(self, error) -> str:
         """最適化されたエラーマーカー作成"""
         from .html_escaping import escape_html
-        
+
         safe_message = escape_html(error.message)
         safe_suggestion = escape_html(error.suggestion) if error.suggestion else ""
         error_icon = "❌" if error.severity == "error" else "⚠️"
 
         # f-string最適化
-        suggestion_html = f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''
-        
+        suggestion_html = (
+            f'<div class="error-suggestion">💡 {safe_suggestion}</div>'
+            if safe_suggestion
+            else ""
+        )
         return f"""<div class="kumihan-error-marker {error.html_class}" data-line="{error.line_number}">
     <div class="error-indicator">
         <span class="error-icon">{error_icon}</span>
@@ -308,7 +335,7 @@ class HTMLRenderer:
     def get_rendering_metrics(self) -> dict:
         """レンダリングメトリクスを取得"""
         return {
-            "renderer_cache_size": len(getattr(self, '_renderer_method_cache', {})),
+            "renderer_cache_size": len(getattr(self, "_renderer_method_cache", {})),
             "graceful_errors_count": len(self.graceful_errors),
             "embed_errors_enabled": self.embed_errors_in_html,
             "heading_counter": self.heading_counter,
@@ -325,7 +352,9 @@ class HTMLRenderer:
             str: Generated HTML for the node
         """
         if not isinstance(node, Node):
-            return escape(str(node))  # type: ignore
+            from .html_escaping import escape_html
+
+            return escape_html(str(node))
 
         # Route to specific rendering method
         renderer_method = getattr(self, f"_render_{node.type}", self._render_generic)
