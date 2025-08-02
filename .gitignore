@@ -212,3 +212,17 @@ mcp-*.json
 
 # Temporary test files directory
 tmp/
+
+# Performance test output and debug files
+test_*.py
+*_debug.py
+*_debug*.py
+issue_*_performance_report.md
+samples_backup_before_*_fix/
+scripts/performance_*_test.py
+scripts/ultra_*_processor.py
+scripts/issue_*_test.py
+test_*_inline.py
+test_*_paragraph.py
+test_*_regex*.py
+test_*_table*.py

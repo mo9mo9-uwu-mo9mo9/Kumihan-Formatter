@@ -24,7 +24,7 @@ class SpecialBlockParser:
         ;;;記法は削除されました（Phase 1）
         この機能は新記法で置き換えられます
         """
-        from kumihan_formatter.core.ast_nodes.node_factory import error_node
+        from kumihan_formatter.core.ast_nodes.factories import error_node
 
         return (
             error_node(";;;記法は削除されました（Phase 1）"),
@@ -48,7 +48,7 @@ class SpecialBlockParser:
         ;;;記法は削除されました（Phase 1）
         この機能は新記法で置き換えられます
         """
-        from kumihan_formatter.core.ast_nodes.node_factory import error_node
+        from kumihan_formatter.core.ast_nodes.factories import error_node
 
         return (
             error_node(";;;記法は削除されました（Phase 1）"),
