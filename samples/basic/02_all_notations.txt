@@ -10,7 +10,7 @@
 
 #太字# 太字で強調された文字です
 
-#イタリック# イタリック（斜体）で表現された文字です
+#イタリック# イタリック（斜体）で表現された文字です#イタリック#
 
 #下線# 下線が引かれた重要な文字です
 
@@ -225,9 +225,9 @@ allNotationsTest();
 
 ## 大文字・小文字色名テスト
 
-#ハイライト color=RED# 大文字RED
-#ハイライト color=Blue# 先頭大文字Blue  
-#ハイライト color=YELLOW# 大文字YELLOW
+#ハイライト color=red# 小文字red
+#ハイライト color=blue# 小文字blue  
+#ハイライト color=yellow# 小文字yellow
 #ハイライト color=green# 小文字green
 
 ## まとめ
