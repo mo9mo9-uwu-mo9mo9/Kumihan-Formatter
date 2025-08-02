@@ -10,14 +10,17 @@ Kumihan-Formatter/
 ├── CLAUDE.md                    # Claude Code指示ファイル（最重要）
 ├── CONTRIBUTING.md              # 開発プロセス
 ├── CHANGELOG.md                 # 変更履歴
-├── SPEC.md                      # 記法仕様（リンク集）
 ├── Makefile                     # 開発コマンド
 └── docs/                        # ドキュメント集
     ├── REFERENCE.md             # 本ファイル（Claude Code用）
     ├── ARCHITECTURE.md          # システム全体仕様
     ├── DEVELOPMENT_GUIDE.md     # 開発ガイド（統合版）
     ├── USER_GUIDE.md            # ユーザーガイド（統合版）
-    └── DEPLOYMENT.md            # 配布・運用ガイド（統合版）
+    ├── DEPLOYMENT.md            # 配布・運用ガイド（統合版）
+    └── specifications/          # 詳細仕様書
+        ├── NOTATION_SPEC.md     # 記法仕様詳細
+        ├── FUNCTIONAL_SPEC.md   # 機能仕様
+        └── ERROR_MESSAGES_SPEC.md # エラーメッセージ仕様
 ```
 
 ## 🎯 Claude Code推奨ワークフロー
@@ -121,7 +124,7 @@ kumihan check-syntax file.txt           # 記法チェック
 4. **作業**: docs/DEVELOPMENT_GUIDE.md、CONTRIBUTING.md
 
 ### 情報探索のコツ
-- **記法関連**: SPEC.md → docs/ARCHITECTURE.md
+- **記法関連**: docs/specifications/NOTATION_SPEC.md → docs/ARCHITECTURE.md
 - **実装関連**: docs/DEVELOPMENT_GUIDE.md → ソースコード
 - **ユーザー機能**: docs/USER_GUIDE.md
 - **配布・運用**: docs/DEPLOYMENT.md

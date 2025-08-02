@@ -130,12 +130,20 @@ pip install -e ".[dev]"                             # 依存関係
 
 # 📚 ドキュメントリンク
 
+## 主要ドキュメント
 | カテゴリ | ファイル | 説明 |
 |----------|--------|------|
 | 🏢 アーキテクチャ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | システム設計・構造 |
 | 📖 ユーザーガイド | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | 利用者向け使用方法 |
 | 🤖 Claudeリファレンス | [docs/REFERENCE.md](docs/REFERENCE.md) | Claude Code専用ガイド |
 | 📦 デプロイガイド | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | パッケージング・配布 |
+
+## 詳細仕様書
+| カテゴリ | ファイル | 説明 |
+|----------|--------|------|
+| 📝 記法仕様 | [docs/specifications/NOTATION_SPEC.md](docs/specifications/NOTATION_SPEC.md) | Kumihan記法の完全仕様 |
+| ⚙️ 機能仕様 | [docs/specifications/FUNCTIONAL_SPEC.md](docs/specifications/FUNCTIONAL_SPEC.md) | システム機能の詳細仕様 |
+| ❗ エラー仕様 | [docs/specifications/ERROR_MESSAGES_SPEC.md](docs/specifications/ERROR_MESSAGES_SPEC.md) | エラーメッセージ一覧 |
 
 ---
 

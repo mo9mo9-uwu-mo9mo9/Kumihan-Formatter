@@ -125,10 +125,16 @@ kumihan convert input.txt --progress-log progress.json
 
 ## 📖 ドキュメント
 
+### 主要ドキュメント
 - **[📚 ユーザーガイド](docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
-- **[📝 記法仕様](SPEC.md)** - Kumihan記法の詳細仕様
+- **[📝 記法仕様](SPEC.md)** - Kumihan記法の詳細仕様（概要）
 - **[🛠️ 開発者向け](docs/DEVELOPMENT_GUIDE.md)** - 開発ガイド
 - **[🔧 Claude Code向け](docs/REFERENCE.md)** - Claude Code効率化リファレンス
+
+### 詳細仕様書
+- **[📋 記法仕様詳細](docs/specifications/NOTATION_SPEC.md)** - 記法の完全仕様
+- **[⚙️ 機能仕様](docs/specifications/FUNCTIONAL_SPEC.md)** - システム機能仕様
+- **[❗ エラーメッセージ仕様](docs/specifications/ERROR_MESSAGES_SPEC.md)** - エラー仕様
 
 ## 🔧 開発者向け機能
 
