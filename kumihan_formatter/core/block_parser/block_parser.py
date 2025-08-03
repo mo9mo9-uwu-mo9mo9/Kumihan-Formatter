@@ -162,7 +162,7 @@ class BlockParser:
         self, lines: list[str], start_index: int
     ) -> tuple[Node | None, int]:
         """
-        新記法 # キーワード # 形式のマーカーを解析（v3.0.0: ブロック記法のみ）
+        新記法 # キーワード # 形式のマーカーを解析（α-dev: ブロック記法のみ）
 
         Args:
             lines: All lines in the document
@@ -216,14 +216,14 @@ class BlockParser:
             self.logger.error(f"Parse errors in new format keywords: {parse_errors}")
             return error_node("; ".join(parse_errors), start_index + 1), start_index + 1
 
-        # v3.0.0: インライン内容の確認 - 単一行記法使用時はエラー
+        # α-dev: インライン内容の確認 - 単一行記法使用時はエラー
         inline_content = self.keyword_parser.marker_parser.extract_inline_content(
             opening_line
         )
 
         if inline_content:
-            # v3.0.0: 単一行記法は完全廃止 - エラーを発生
-            error_msg = f"v3.0.0では単一行記法は廃止されました。ブロック記法を使用してください:\n# {' + '.join(keywords)} #\n{inline_content}\n##"
+            # α-dev: 単一行記法は完全廃止 - エラーを発生
+            error_msg = f"α-devでは単一行記法は廃止されました。ブロック記法を使用してください:\n# {' + '.join(keywords)} #\n{inline_content}\n##"
             if (
                 hasattr(self, "parser_ref")
                 and self.parser_ref
