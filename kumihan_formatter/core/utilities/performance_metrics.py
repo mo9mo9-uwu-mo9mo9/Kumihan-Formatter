@@ -4,6 +4,8 @@ Issue #694 Phase 3対応 - 詳細な性能測定・分析
 """
 
 import json
+import os
+import sys
 import threading
 import time
 from collections import deque
@@ -600,7 +602,7 @@ let processedNodes = 0;
 function updateProgressInfo() {{
     const info = document.querySelector('.kumihan-progressive-info');
     if (info) {{
-        info.textContent = `処理中... ${processedNodes} nodes`;
+        info.textContent = 'Kumihan-Formatter 処理中... ' + (window.processedNodes || 0) + ' nodes';
     }}
 }}
 setInterval(updateProgressInfo, 1000);
