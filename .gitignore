@@ -143,6 +143,9 @@ output/
 *.html
 !templates/*.html
 
+# Moved test debug files
+tests/debug/
+
 # Claude Code settings (重要: 削除禁止)
 .claude/
 # Claude specific - Discord設定ファイルを除外
