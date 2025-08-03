@@ -15,7 +15,7 @@ import threading
 # プロジェクトのパスを追加
 sys.path.insert(0, str(Path(__file__).parent))
 
-from kumihan_formatter.parser import StreamingParser, parse_with_streaming
+from kumihan_formatter.parser import Parser, parse_with_error_config
 from kumihan_formatter.core.utilities.performance_metrics import PerformanceMonitor
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -154,8 +154,8 @@ def test_repeated_parsing():
         
         # 解析実行
         start_time = time.time()
-        parser = StreamingParser()
-        nodes = list(parser.parse_streaming_from_text(test_content))
+        parser = Parser()
+        nodes = parser.parse_streaming_from_text(test_content)
         end_time = time.time()
         
         # メモリ使用量記録
@@ -211,12 +211,10 @@ def test_long_running_processing():
         test_content = generate_test_content(size_kb)
         
         # ストリーミング解析実行
-        parser = StreamingParser()
+        parser = Parser()
         start_time = time.time()
         
-        nodes = []
-        for node in parser.parse_streaming_from_text(test_content):
-            nodes.append(node)
+        nodes = parser.parse_streaming_from_text(test_content)
         
         end_time = time.time()
         
@@ -264,8 +262,8 @@ def test_concurrent_processing():
             test_content = generate_test_content(200)  # 200KB
             
             for i in range(5):  # 各スレッドで5回処理
-                parser = StreamingParser()
-                nodes = list(parser.parse_streaming_from_text(test_content))
+                parser = Parser()
+                nodes = parser.parse_streaming_from_text(test_content)
                 
                 results[f"thread_{thread_id}_iter_{i}"] = len(nodes)
                 
