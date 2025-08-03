@@ -136,6 +136,24 @@ kumihan convert input.txt --progress-log progress.json
 
 **⚠️ 重要変更**: v3.0.0から全記法がブロック形式に統一され、単一行記法は完全廃止されました。
 
+## 📁 プロジェクト構造
+
+```
+Kumihan-Formatter/
+├── kumihan_formatter/      # メインパッケージ
+├── tests/                  # テストファイル
+│   └── debug/             # デバッグ用テストファイル
+├── docs/                   # ドキュメント
+│   ├── reports/           # テストレポート
+│   └── specifications/    # 詳細仕様書
+├── scripts/               # ユーティリティスクリプト
+├── samples/               # サンプルファイル
+├── output/                # 出力ファイル（gitignore対象）
+├── tools/                 # 開発ツール
+├── archive/               # アーカイブファイル
+└── [設定ファイル]         # .gitignore, pyproject.toml等
+```
+
 ## 📖 ドキュメント
 
 ### 主要ドキュメント
