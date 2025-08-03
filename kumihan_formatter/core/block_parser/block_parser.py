@@ -222,28 +222,80 @@ class BlockParser:
         )
 
         if inline_content:
-            # α-dev: 単一行記法は完全廃止 - エラーを発生
-            error_msg = f"α-devでは単一行記法は廃止されました。ブロック記法を使用してください:\n# {' + '.join(keywords)} #\n{inline_content}\n##"
-            if (
-                hasattr(self, "parser_ref")
-                and self.parser_ref
-                and self.parser_ref.graceful_errors
-            ):
-                self.parser_ref._record_graceful_error(
-                    start_index + 1,  # 1-based line number
-                    1,  # column
-                    "inline_notation_deprecated",
-                    "error",
-                    error_msg,
-                    opening_line,
-                    f"# {' + '.join(keywords)} #\n{inline_content}\n##",
-                )
-            return error_node(error_msg, start_index + 1), start_index + 1
+            # Issue #751対応: インライン記法をサポート
+            return self._parse_inline_format(
+                keywords, attributes, inline_content, start_index
+            )
         else:
             # ブロック記法: # キーワード # \n 内容 \n ##
             return self._parse_new_format_block(
                 lines, start_index, keywords, attributes
             )
+
+    def _parse_inline_format(
+        self, keywords: list[str], attributes: dict, content: str, start_index: int
+    ) -> tuple[Node | None, int]:
+        """
+        Issue #751対応: インライン記法を処理
+
+        Args:
+            keywords: 抽出されたキーワードリスト
+            attributes: 抽出された属性辞書
+            content: インライン内容
+            start_index: 開始インデックス
+
+        Returns:
+            tuple: (parsed_node, next_index)
+        """
+        if not keywords or not content:
+            return None, start_index + 1
+
+        # 最初のキーワードを使用してノードを作成
+        primary_keyword = keywords[0]
+        
+        # ファクトリ関数をインポート
+        from kumihan_formatter.core.ast_nodes.factories import (
+            strong, emphasis, heading, highlight
+        )
+        from kumihan_formatter.core.ast_nodes import NodeBuilder
+        
+        # キーワードに基づいてノードタイプを決定
+        if primary_keyword in ["太字", "bold"]:
+            node = strong(content)
+        elif primary_keyword in ["イタリック", "italic", "斜体"]:
+            node = emphasis(content)
+        elif primary_keyword in ["見出し1", "h1"]:
+            node = heading(1, content)
+        elif primary_keyword in ["見出し2", "h2"]:
+            node = heading(2, content)
+        elif primary_keyword in ["見出し3", "h3"]:
+            node = heading(3, content)
+        elif primary_keyword in ["見出し4", "h4"]:
+            node = heading(4, content)
+        elif primary_keyword in ["見出し5", "h5"]:
+            node = heading(5, content)
+        elif primary_keyword in ["ハイライト", "highlight", "mark"]:
+            node = highlight(content)
+        elif primary_keyword in ["下線", "underline"]:
+            node = NodeBuilder("u").content(content).build()
+        elif primary_keyword in ["コード", "code"]:
+            node = NodeBuilder("code").content(content).build()
+        else:
+            # 未知のキーワードの場合、そのまま表示
+            node = NodeBuilder("span").content(f"{primary_keyword}: {content}").build()
+
+        # 属性があれば適用
+        if attributes:
+            for key, value in attributes.items():
+                if key == "color":
+                    if hasattr(node, 'attributes'):
+                        node.attributes = node.attributes or {}
+                        node.attributes["style"] = f"color: {value};"
+                    else:
+                        setattr(node, 'attributes', {"style": f"color: {value};"})
+
+        self.logger.debug(f"Inline format parsed: {primary_keyword} -> {content}")
+        return paragraph(node), start_index + 1
 
     def _parse_new_format_block(
         self,
