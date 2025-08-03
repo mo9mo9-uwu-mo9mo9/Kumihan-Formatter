@@ -1148,9 +1148,7 @@ class Parser:
         Yields:
             Node: 解析されたASTノード（リアルタイム出力）
         """
-        import os
         import time
-        from pathlib import Path
 
         self.logger.info(f"Starting true streaming parse from file: {file_path}")
 
