@@ -6,7 +6,7 @@ parser.py file. Each parsing responsibility is now handled by specialized module
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Any
+from typing import TYPE_CHECKING, Iterator, Any, Optional, Callable
 
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
@@ -183,6 +183,39 @@ class Parser:
             )
             
         return nodes
+
+    def parse_streaming_from_text(self, text: str, progress_callback: Optional[Callable[[dict], None]] = None) -> list[Node]:
+        """
+        緊急修正: ConvertProcessor互換性のためのストリーミングパース
+        
+        Issue #728の緊急対応として、parse_streaming_from_textメソッドを追加。
+        現在はparse_optimized()への単純なラッパーとして実装。
+        
+        将来的な改善案:
+        - 大容量ファイル対応の真のストリーミング実装
+        - プログレスコールバック機能の実装
+        - メモリ効率の最適化
+        
+        Args:
+            text: 解析対象のテキスト
+            progress_callback: プログレス通知用コールバック（現在未実装）
+                               将来実装時の仕様: {"current_line": int, "total_lines": int, "progress_percent": float}
+            
+        Returns:
+            list[Node]: 解析されたASTノードリスト
+            
+        Note:
+            現在はparse_optimized()への単純な委譲実装。
+            MVP版では基本機能のみ実装し、Phase 2で本格的なストリーミング機能を追加予定。
+        """
+        self.logger.info("parse_streaming_from_text called - delegating to parse_optimized")
+        
+        # プログレスコールバックが提供された場合の警告（現在未対応）
+        if progress_callback:
+            self.logger.warning("Progress callback provided but not yet implemented in MVP")
+        
+        # MVP緊急修正: parse_optimized()に委譲
+        return self.parse_optimized(text)
 
     def _split_lines_optimized(self, text: str) -> list[str]:
         """最適化された行分割処理"""
