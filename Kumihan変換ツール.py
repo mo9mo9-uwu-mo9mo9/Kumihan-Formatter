@@ -51,178 +51,9 @@ def extract_body_content(html_content):
     return html_content.strip()
 
 
-def main_menu():
-    """メインメニュー表示と選択"""
-    print("🚀 Kumihan-Formatter 変換ツール")
-    print("=" * 70)
-    print("📝 Kumihan記法をHTMLに変換する高性能ツール")
-    print("=" * 70)
-    print("📋 利用可能なモード:")
-    print("  1️⃣  対話型変換 (リアルタイム記法テスト)")
-    print("  2️⃣  ファイル変換 (ドラッグ&ドロップによる一括変換)")
-    print("-" * 70)
-    print("💡 ヒント: Kumihan-Formatter.app をダブルクリックで簡単起動！")
-    
-    while True:
-        try:
-            choice = input("\nモードを選択してください (1/2) または 'quit' で終了: ").strip()
-            
-            if choice.lower() in ['quit', 'exit']:
-                print("👋 終了します")
-                return None
-            elif choice == '1':
-                return 'interactive'
-            elif choice == '2':
-                return 'file_conversion'
-            else:
-                print("❌ 無効な選択です。1または2を入力してください。")
-        except KeyboardInterrupt:
-            print("\n👋 Ctrl+C で終了します")
-            return None
-        except EOFError:
-            print("\n👋 EOF で終了します")
-            return None
 
 
-def interactive_repl():
-    """対話型変換REPL"""
-    # プロジェクトルートをPythonパスに追加
-    project_root = Path(__file__).parent
-    sys.path.insert(0, str(project_root))
-    
-    # エンコーディング設定
-    setup_encoding()
-    
-    try:
-        from kumihan_formatter.parser import Parser
-        from kumihan_formatter.renderer import Renderer
-        from kumihan_formatter.core.utilities.logger import get_logger
-        import logging
-    except ImportError as e:
-        print(f"❌ インポートエラー: {e}")
-        print("💡 プロジェクトディレクトリで実行していることを確認してください")
-        input("\nEnterキーを押して終了...")
-        return
-    
-    logger = get_logger(__name__)
-    
-    # 対話型モード専用: ログレベルを最小限に設定
-    logging.getLogger('kumihan_formatter').setLevel(logging.ERROR)
-    logging.getLogger('performance').setLevel(logging.CRITICAL)
-    logging.getLogger().setLevel(logging.ERROR)
-    
-    print("\n📝 対話型変換モード")
-    print("=" * 60)
-    print("📝 Kumihan記法を入力してHTML変換をテストできます")
-    print("💡 コマンド:")
-    print("   - 'exit' または 'quit': 終了")
-    print("   - 'back': メインメニューに戻る")
-    print("   - 'help': ヘルプ表示")
-    print("   - 'clear': 画面クリア")
-    print("   - 'history': 変換履歴表示")
-    print("   - 'examples': 記法例表示")
-    print("-" * 60)
-    
-    parser = Parser()
-    renderer = Renderer()
-    
-    history = []
-    
-    while True:
-        try:
-            # プロンプト表示
-            user_input = input("\n📝 Kumihan記法> ").strip()
-            
-            if not user_input:
-                continue
-            
-            # 特殊コマンド処理
-            if user_input.lower() in ['exit', 'quit']:
-                print("👋 終了します")
-                break
-                
-            elif user_input.lower() == 'help':
-                print("\n📖 ヘルプ:")
-                print("  🔹 Kumihan記法を入力するとHTML変換されます")
-                print("  🔹 基本構文: # 装飾名 #内容##")
-                print("  🔹 例: # 太字 #重要なテキスト##")
-                print("  🔹 'examples' で詳細な記法例を確認")
-                continue
-                
-            elif user_input.lower() == 'clear':
-                os.system('clear' if os.name == 'posix' else 'cls')
-                print("🚀 Kumihan-Formatter 対話型変換ツール")
-                print("=" * 60)
-                continue
-                
-            elif user_input.lower() == 'history':
-                if not history:
-                    print("📚 変換履歴は空です")
-                else:
-                    print("\n📚 変換履歴 (最新10件):")
-                    for i, (input_text, output_html) in enumerate(history[-10:], 1):
-                        print(f"  {i:2d}. 入力: {input_text[:40]}{'...' if len(input_text) > 40 else ''}")
-                        print(f"      出力: {output_html[:80]}{'...' if len(output_html) > 80 else ''}")
-                        print()
-                continue
-                
-            elif user_input.lower() == 'examples':
-                print("\n📖 Kumihan記法例:")
-                examples = [
-                    ("# 太字 #重要##", "太字（strong）"),
-                    ("# イタリック #強調##", "イタリック（em）"),
-                    ("# 見出し1 #メインタイトル##", "見出し1（h1）"),
-                    ("# 見出し2 #サブタイトル##", "見出し2（h2）"),
-                    ("# ハイライト #注目##", "ハイライト（mark）"),
-                    ("# 太字 #重要## な # イタリック #内容##", "複合記法"),
-                ]
-                for example, desc in examples:
-                    print(f"  🔹 {example}")
-                    print(f"    → {desc}")
-                    print()
-                continue
-            
-            # Kumihan記法の変換実行
-            try:
-                # パース処理
-                result = parser.parse(user_input)
-                
-                # HTML生成（軽量テンプレート使用）
-                html_content = renderer.render(result, template=None, title="")
-                
-                # 対話型用: HTMLコンテンツ部分のみ抽出
-                body_content = extract_body_content(html_content)
-                
-                # プレーンテキスト表示
-                import re
-                plain_text = re.sub(r'<[^>]+>', '', body_content)
-                
-                # 結果表示（改善版）
-                print(f"\n✅ 変換成功:")
-                print(f"📄 HTML: {body_content}")
-                if plain_text.strip() and plain_text != body_content:
-                    print(f"📋 プレビュー: {plain_text.strip()}")
-                
-                # 履歴に追加
-                history.append((user_input, body_content))
-                
-            except Exception as parse_error:
-                print(f"\n❌ 変換エラー: {parse_error}")
-                print("💡 記法を確認してください。'examples' で例を参照")
-                logger.error(f"Parse error: {parse_error}")
-                
-        except KeyboardInterrupt:
-            print("\n\n👋 Ctrl+C で終了します")
-            break
-        except EOFError:
-            print("\n👋 EOF で終了します")
-            break
-        except Exception as e:
-            print(f"\n❌ 予期しないエラー: {e}")
-            logger.error(f"Unexpected error: {e}")
-    
-    print("\n🎉 対話セッション終了")
-    input("Enterキーを押してウィンドウを閉じます...")
+
 
 def file_conversion_mode():
     """ファイル変換モード（D&D対応）"""
@@ -240,7 +71,7 @@ def file_conversion_mode():
     except ImportError as e:
         print(f"❌ インポートエラー: {e}")
         print("💡 プロジェクトディレクトリで実行していることを確認してください")
-        input("\nEnterキーを押してメインメニューに戻る...")
+        input("\nEnterキーを押して終了...")
         return
     
     logger = get_logger(__name__)
@@ -253,7 +84,6 @@ def file_conversion_mode():
     print("   2. 複数ファイルはカンマ区切りで指定")
     print("   3. ディレクトリを指定すると配下の.kumihanファイルを一括変換")
     print("💡 コマンド:")
-    print("   - 'back': メインメニューに戻る")
     print("   - 'quit': 終了")
     print("-" * 60)
     
@@ -269,11 +99,7 @@ def file_conversion_mode():
                 continue
             
             # 特殊コマンド処理
-            if user_input.lower() == 'back':
-                print("🔙 メインメニューに戻ります")
-                break
-                
-            elif user_input.lower() in ['quit', 'exit']:
+            if user_input.lower() in ['quit', 'exit']:
                 print("👋 終了します")
                 sys.exit(0)
             
@@ -281,10 +107,10 @@ def file_conversion_mode():
             process_files(user_input, parser, renderer, logger)
                 
         except KeyboardInterrupt:
-            print("\n\n👋 Ctrl+C でメインメニューに戻ります")
+            print("\n\n👋 Ctrl+C で終了します")
             break
         except EOFError:
-            print("\n👋 EOF でメインメニューに戻ります")
+            print("\n👋 EOF で終了します")
             break
         except Exception as e:
             print(f"\n❌ 予期しないエラー: {e}")
@@ -479,21 +305,21 @@ def find_kumihan_files(directory: Path) -> list[Path]:
 
 
 def main():
-    """メインエントリーポイント"""
+    """メインエントリーポイント - ファイル変換モード直接起動"""
     setup_encoding()
     
-    while True:
-        mode = main_menu()
-        
-        if mode is None:  # ユーザーが終了を選択
-            break
-        elif mode == 'interactive':
-            interactive_repl()
-        elif mode == 'file_conversion':
-            file_conversion_mode()
-            
+    print("🚀 Kumihan-Formatter ファイル変換ツール")
+    print("=" * 70)
+    print("📝 Kumihan記法をHTMLに変換する高性能ツール")
+    print("=" * 70)
+    print("📁 ファイル変換モード")
+    print("💡 ヒント: 'quit' で終了")
+    print("-" * 70)
+    
+    # ファイル変換モードを直接起動
+    file_conversion_mode()
+    
     print("👋 Kumihan-Formatter を終了します")
-
 
 if __name__ == "__main__":
     main()
