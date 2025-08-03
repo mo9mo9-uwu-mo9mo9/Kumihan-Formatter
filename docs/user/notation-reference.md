@@ -1,6 +1,6 @@
 # Kumihan記法クイックリファレンス
 
-> **バージョン**: v0.9.0-alpha.8  
+> **ステータス**: 開発中 (α-dev)  
 > **詳細仕様**: [../specs/notation.md](../specs/notation.md)
 
 ## 基本記法

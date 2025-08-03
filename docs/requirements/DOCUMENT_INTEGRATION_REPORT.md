@@ -43,7 +43,7 @@ docs/specifications/
 
 **参照状況**:
 - ✅ `FUNCTIONAL_SPEC.md`: MVPスコープ策定時に参照
-- ✅ `NOTATION_SPEC.md`: v3.0.0記法システムに準拠
+- ✅ `NOTATION_SPEC.md`: α-dev記法システムに準拠
 - ✅ `ERROR_MESSAGES_SPEC.md`: MVP基本エラーハンドリングに反映
 
 ### 3.3 その他関連ドキュメント
@@ -86,7 +86,7 @@ DOCUMENT_INTEGRATION_REPORT.md (統合確認)
 - ✅ **コード品質**: Black, isort, mypy strict準拠
 
 ### 5.2 機能スコープの整合性
-- ✅ **基本記法**: NOTATION_SPEC.mdのv3.0.0記法に準拠
+- ✅ **基本記法**: NOTATION_SPEC.mdのα-dev記法に準拠
 - ✅ **CLI機能**: FUNCTIONAL_SPEC.mdの基本コマンドに対応
 - ✅ **HTML出力**: アーキテクチャ設計に準拠
 

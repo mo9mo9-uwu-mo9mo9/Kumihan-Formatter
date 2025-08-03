@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- バージョン情報を開発中ステータスに統一（Issue #749）
+- プロジェクトバージョンを「開発中 (Development)」に変更
+- Kumihan記法バージョンを「α-dev」に変更
+- リリース準備が整わない状態を正確に反映
+
 ## [0.9.0-alpha.8] - 2025-08-03
 
 ### Added
