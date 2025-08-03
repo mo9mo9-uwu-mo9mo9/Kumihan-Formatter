@@ -156,16 +156,24 @@ Kumihan-Formatter/
 
 ## 📖 ドキュメント
 
-### 主要ドキュメント
-- **[📚 ユーザーガイド](docs/USER_GUIDE.md)** - エンドユーザー向け完全ガイド
-- **[📝 記法仕様](SPEC.md)** - Kumihan記法の詳細仕様（概要）
-- **[🛠️ 開発者向け](docs/DEVELOPMENT_GUIDE.md)** - 開発ガイド
-- **[🔧 Claude Code向け](docs/REFERENCE.md)** - Claude Code効率化リファレンス
+### ユーザー向け
+- **[🚀 クイックスタート](docs/user/getting-started.md)** - 30分で始める
+- **[📚 ユーザーガイド](docs/user/user-guide.md)** - 詳細な使い方
+- **[📝 記法リファレンス](docs/user/notation-reference.md)** - 記法のクイックリファレンス
+- **[❓ FAQ](docs/user/faq.md)** - よくある質問
 
-### 詳細仕様書
-- **[📋 記法仕様詳細](docs/specifications/NOTATION_SPEC.md)** - 記法の完全仕様
-- **[⚙️ 機能仕様](docs/specifications/FUNCTIONAL_SPEC.md)** - システム機能仕様
-- **[❗ エラーメッセージ仕様](docs/specifications/ERROR_MESSAGES_SPEC.md)** - エラー仕様
+### 開発者向け
+- **[🏗️ アーキテクチャ](docs/dev/architecture.md)** - システム設計
+- **[🚀 デプロイガイド](docs/dev/deployment.md)** - パッケージング・配布
+
+### 仕様書
+- **[📝 記法仕様概要](SPEC.md)** - 基本的な記法仕様
+- **[📋 記法仕様詳細](docs/specs/notation.md)** - 完全な記法仕様
+- **[⚙️ 機能仕様](docs/specs/functional.md)** - システム機能仕様
+- **[❗ エラーメッセージ仕様](docs/specs/error-messages.md)** - エラー仕様
+
+### Claude Code向け
+- **[🔧 Claude Code リファレンス](docs/claude/reference.md)** - Claude Code効率化ガイド
 
 ## 🔧 開発者向け機能
 

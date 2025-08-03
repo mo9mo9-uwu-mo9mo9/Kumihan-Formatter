@@ -14,9 +14,9 @@
 
 ## 📚 関連ドキュメント
 
-- **[記法仕様詳細](specifications/NOTATION_SPEC.md)** - Kumihan記法の完全仕様
-- **[機能仕様](specifications/FUNCTIONAL_SPEC.md)** - システム機能の詳細仕様
-- **[エラーメッセージ仕様](specifications/ERROR_MESSAGES_SPEC.md)** - エラー仕様一覧
+- **[記法仕様詳細](../specs/notation.md)** - Kumihan記法の完全仕様
+- **[機能仕様](../specs/functional.md)** - システム機能の詳細仕様
+- **[エラーメッセージ仕様](../specs/error-messages.md)** - エラー仕様一覧
 
 ## システム概要
 

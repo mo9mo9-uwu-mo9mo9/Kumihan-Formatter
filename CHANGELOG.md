@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.8] - 2025-08-03
+
+### Added
+- プロジェクトルートディレクトリの整理（Issue #745）
+- ドキュメント構造の再構成（Issue #747）
+- SPEC.md記法仕様概要版の追加
+- ユーザー向けドキュメントの再編成
+
+### Changed
+- ドキュメント配置の大幅な変更
+- バージョン情報の統一（v0.9.0-alpha.8）
+- Claude Code関連ファイルとユーザー向けドキュメントの分離
+
+### Fixed
+- 欠落していたSPEC.mdファイルの作成
+- ドキュメント間のリンク切れの修正
+- バージョン不整合の解決
+
 ## [0.1.0] - 2025-06-23
 
 ### Added

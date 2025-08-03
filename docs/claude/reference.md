@@ -124,7 +124,7 @@ kumihan check-syntax file.txt           # 記法チェック
 4. **作業**: docs/DEVELOPMENT_GUIDE.md、CONTRIBUTING.md
 
 ### 情報探索のコツ
-- **記法関連**: docs/specifications/NOTATION_SPEC.md → docs/ARCHITECTURE.md
+- **記法関連**: docs/specs/notation.md → docs/ARCHITECTURE.md
 - **実装関連**: docs/DEVELOPMENT_GUIDE.md → ソースコード
 - **ユーザー機能**: docs/USER_GUIDE.md
 - **配布・運用**: docs/DEPLOYMENT.md

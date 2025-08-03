@@ -1,6 +1,6 @@
 # Kumihan-Formatter ユーザーガイド（統合版）
 
-> **バージョン v3.0.0対応** - CoC6th TRPGシナリオ作成に特化したテキスト→HTML変換ツール
+> **バージョン v0.9.0-alpha.8** - CoC6th TRPGシナリオ作成に特化したテキスト→HTML変換ツール
 > **重要**: v3.0.0から全記法がブロック形式に統一されました
 
 ## 📚 目次
@@ -252,7 +252,7 @@ python -m kumihan_formatter convert input.txt -o output/
 
 ## 📝 Kumihan記法完全リファレンス
 
-> **詳細な仕様については**: [記法仕様詳細](specifications/NOTATION_SPEC.md)を参照してください
+> **詳細な仕様については**: [記法仕様詳細](../specs/notation.md)を参照してください
 
 ### 📌 基本記法（必須習得）
 
@@ -741,7 +741,7 @@ GMのみ（真相）
 
 ## ⌨️ コマンドラインリファレンス
 
-> **詳細な機能仕様については**: [機能仕様](specifications/FUNCTIONAL_SPEC.md)を参照してください
+> **詳細な機能仕様については**: [機能仕様](../specs/functional.md)を参照してください
 
 ### 基本構文
 
@@ -1476,7 +1476,7 @@ wkhtmltopdf dist/シナリオ.html シナリオ.pdf
 
 ## 🚨 トラブルシューティング
 
-> **エラーメッセージの詳細については**: [エラーメッセージ仕様](specifications/ERROR_MESSAGES_SPEC.md)を参照してください
+> **エラーメッセージの詳細については**: [エラーメッセージ仕様](../specs/error-messages.md)を参照してください
 
 ### よくあるエラーと解決方法
 
