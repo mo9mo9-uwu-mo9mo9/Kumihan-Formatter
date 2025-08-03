@@ -428,7 +428,10 @@ class ConvertProcessor:
         )
 
         # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
-        parser = StreamingParser(config=config)
+        # 注意: StreamingParserは未実装のため、通常のParserを使用
+        from kumihan_formatter.parser import Parser
+
+        parser = Parser(config=config)
 
         # 現時点ではStreamingParserはgraceful_errorsをサポートしていないため、
         # エラー設定がある場合は警告を出す
@@ -534,17 +537,23 @@ class ConvertProcessor:
                     time.sleep(0.1)
 
                 if error_config_manager:
-                    ast, errors = parse_with_error_config(
-                        text, config, error_config_manager
-                    )
+                    # エラー設定管理は将来実装予定
+                    # 現時点では通常のparse処理を実行
+                    from ...parser import parse
+
+                    ast = parse(text, config)
+                    errors = []
                 else:
                     ast = parse(text, config)
                 progress.update(task, completed=100)
             else:
                 if error_config_manager:
-                    ast, errors = parse_with_error_config(
-                        text, config, error_config_manager
-                    )
+                    # エラー設定管理は将来実装予定
+                    # 現時点では通常のparse処理を実行
+                    from ...parser import parse
+
+                    ast = parse(text, config)
+                    errors = []
                 else:
                     ast = parse(text, config)
                 elapsed = time.time() - start_time
