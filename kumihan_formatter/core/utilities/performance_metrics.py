@@ -60,7 +60,6 @@ class ProcessingStats:
         return self.items_processed / duration if duration > 0 else 0
 
 
-
 class PerformanceMonitor:
     """
     リアルタイムパフォーマンス監視システム
@@ -426,6 +425,7 @@ class PerformanceMonitor:
         except Exception as e:
             self.logger.error(f"Failed to save metrics to file: {e}")
 
+
 class ProgressiveOutputSystem:
     """
     プログレッシブ出力システム（Issue #727 対応）
@@ -441,88 +441,96 @@ class ProgressiveOutputSystem:
         self.logger = get_logger(__name__)
         self.output_path = output_path
         self.buffer_size = buffer_size
-        
+
         # 出力管理
         self.html_buffer = []
         self.total_nodes_processed = 0
         self.current_section = "header"
-        
+
         # テンプレート部分
         self.html_header = ""
         self.html_footer = ""
         self.css_content = ""
-        
+
         # ストリーム出力ファイル
         self.output_stream = None
-        
-        self.logger.info(f"Progressive output system initialized: buffer_size={buffer_size}")
 
-    def initialize_output_stream(self, template_content: str = "", css_content: str = ""):
+        self.logger.info(
+            f"Progressive output system initialized: buffer_size={buffer_size}"
+        )
+
+    def initialize_output_stream(
+        self, template_content: str = "", css_content: str = ""
+    ):
         """出力ストリームの初期化"""
-        
+
         if not self.output_path:
             return  # ファイル出力無効
 
         try:
-            self.output_stream = open(self.output_path, 'w', encoding='utf-8', buffering=1)
-            
+            self.output_stream = open(
+                self.output_path, "w", encoding="utf-8", buffering=1
+            )
+
             # HTMLヘッダーの準備
             self.css_content = css_content
             self.html_header = self._create_html_header(template_content)
             self.html_footer = self._create_html_footer()
-            
+
             # ヘッダーを即座に出力
             self.output_stream.write(self.html_header)
             self.output_stream.flush()
-            
+
             self.logger.info(f"Progressive output stream started: {self.output_path}")
-            
+
         except Exception as e:
             self.logger.error(f"Failed to initialize output stream: {e}")
             self.output_stream = None
 
     def add_processed_node(self, node_html: str, node_info: dict = None):
         """処理済みノードの追加"""
-        
+
         if not node_html.strip():
             return
-            
+
         self.html_buffer.append(node_html)
         self.total_nodes_processed += 1
-        
+
         # バッファサイズに達したら出力
         if len(self.html_buffer) >= self.buffer_size:
             self.flush_buffer()
-            
+
         # プログレス表示
         if self.total_nodes_processed % 100 == 0:
-            self.logger.info(f"Progressive output: {self.total_nodes_processed} nodes processed")
+            self.logger.info(
+                f"Progressive output: {self.total_nodes_processed} nodes processed"
+            )
 
     def flush_buffer(self):
         """バッファの強制出力"""
-        
+
         if not self.html_buffer or not self.output_stream:
             return
-            
+
         try:
             # バッファ内容をファイルに書き込み
             content = "\n".join(self.html_buffer)
             self.output_stream.write(content + "\n")
             self.output_stream.flush()
-            
+
             # バッファクリア
             self.html_buffer.clear()
-            
+
             self.logger.debug(f"Buffer flushed: {len(self.html_buffer)} items")
-            
+
         except Exception as e:
             self.logger.error(f"Buffer flush error: {e}")
 
     def add_section_marker(self, section_name: str, section_content: str = ""):
         """セクションマーカーの追加"""
-        
+
         self.current_section = section_name
-        
+
         if section_content:
             section_html = f"""
 <!-- ===== {section_name.upper()} SECTION START ===== -->
@@ -533,33 +541,33 @@ class ProgressiveOutputSystem:
 
     def finalize_output(self):
         """出力の最終化"""
-        
+
         if not self.output_stream:
             return
-            
+
         try:
             # 残りバッファを出力
             self.flush_buffer()
-            
+
             # フッターを出力
             self.output_stream.write(self.html_footer)
             self.output_stream.flush()
-            
+
             # ストリームクローズ
             self.output_stream.close()
             self.output_stream = None
-            
+
             self.logger.info(
                 f"Progressive output finalized: {self.total_nodes_processed} nodes, "
                 f"output: {self.output_path}"
             )
-            
+
         except Exception as e:
             self.logger.error(f"Output finalization error: {e}")
 
     def _create_html_header(self, template_content: str) -> str:
         """HTMLヘッダーの作成"""
-        
+
         return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -606,7 +614,7 @@ setInterval(updateProgressInfo, 1000);
 
     def _create_html_footer(self) -> str:
         """HTMLフッターの作成"""
-        
+
         return f"""
 <!-- PROGRESSIVE CONTENT END -->
 </div>
@@ -626,9 +634,9 @@ document.querySelectorAll('.kumihan-processing').forEach(el => {{
 
     def create_progress_html(self, current: int, total: int, stage: str = "") -> str:
         """プログレス表示HTML生成"""
-        
+
         progress_percent = (current / total * 100) if total > 0 else 0
-        
+
         return f"""
 <div class="kumihan-progress-update" data-current="{current}" data-total="{total}">
     <div class="progress-bar" style="width: {progress_percent:.1f}%; background: linear-gradient(90deg, #4CAF50, #2196F3);"></div>
@@ -638,7 +646,7 @@ document.querySelectorAll('.kumihan-processing').forEach(el => {{
 
     def get_output_statistics(self) -> dict:
         """出力統計の取得"""
-        
+
         return {
             "total_nodes_processed": self.total_nodes_processed,
             "buffer_size": len(self.html_buffer),
@@ -654,6 +662,7 @@ document.querySelectorAll('.kumihan-processing').forEach(el => {{
     def __exit__(self, exc_type, exc_val, exc_tb):
         """コンテキストマネージャー終了"""
         self.finalize_output()
+
 
 class PerformanceBenchmark:
     """
@@ -673,9 +682,9 @@ class PerformanceBenchmark:
 
     def run_comprehensive_benchmark(self) -> dict:
         """包括的ベンチマーク実行"""
-        
+
         self.logger.info("🚀 Starting comprehensive performance benchmark...")
-        
+
         benchmark_results = {
             "metadata": {
                 "timestamp": time.time(),
@@ -683,7 +692,7 @@ class PerformanceBenchmark:
                 "platform": sys.platform,
                 "cpu_count": os.cpu_count(),
             },
-            "tests": {}
+            "tests": {},
         }
 
         # テストケース定義
@@ -691,17 +700,20 @@ class PerformanceBenchmark:
             {"name": "small", "lines": 1000, "description": "小規模ファイル(1K行)"},
             {"name": "medium", "lines": 5000, "description": "中規模ファイル(5K行)"},
             {"name": "large", "lines": 10000, "description": "大規模ファイル(10K行)"},
-            {"name": "extra_large", "lines": 50000, "description": "超大規模ファイル(50K行)"},
+            {
+                "name": "extra_large",
+                "lines": 50000,
+                "description": "超大規模ファイル(50K行)",
+            },
         ]
 
         for test_case in test_cases:
             self.logger.info(f"📊 Testing {test_case['description']}...")
-            
+
             test_results = self._run_single_benchmark(
-                test_case["name"], 
-                test_case["lines"]
+                test_case["name"], test_case["lines"]
             )
-            
+
             benchmark_results["tests"][test_case["name"]] = test_results
 
         # 目標達成評価
@@ -719,10 +731,10 @@ class PerformanceBenchmark:
 
     def _run_single_benchmark(self, test_name: str, line_count: int) -> dict:
         """単一ベンチマークの実行"""
-        
+
         # テストデータ生成
         test_text = self._generate_test_data(line_count)
-        
+
         results = {
             "test_info": {
                 "name": test_name,
@@ -734,12 +746,14 @@ class PerformanceBenchmark:
             "optimized_parser": {},
             "streaming_parser": {},
             "parallel_parser": {},
-            "improvement_ratios": {}
+            "improvement_ratios": {},
         }
 
         # Traditional Parser テスト
         try:
-            results["traditional_parser"] = self._benchmark_traditional_parser(test_text)
+            results["traditional_parser"] = self._benchmark_traditional_parser(
+                test_text
+            )
         except Exception as e:
             self.logger.error(f"Traditional parser test failed: {e}")
             results["traditional_parser"] = {"error": str(e)}
@@ -765,19 +779,19 @@ class PerformanceBenchmark:
 
     def _benchmark_traditional_parser(self, test_text: str) -> dict:
         """従来パーサーのベンチマーク"""
-        
+
         from ...parser import Parser
-        
+
         # メモリ使用量測定開始
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
         start_time = time.time()
-        
+
         # パーサー実行
         parser = Parser()
         nodes = parser.parse(test_text)
-        
+
         parse_time = time.time() - start_time
         peak_memory = process.memory_info().rss / 1024 / 1024  # MB
         memory_used = peak_memory - initial_memory
@@ -787,24 +801,26 @@ class PerformanceBenchmark:
             "memory_used_mb": memory_used,
             "peak_memory_mb": peak_memory,
             "nodes_count": len(nodes),
-            "throughput_lines_per_second": len(test_text.split('\n')) / parse_time if parse_time > 0 else 0,
+            "throughput_lines_per_second": (
+                len(test_text.split("\n")) / parse_time if parse_time > 0 else 0
+            ),
             "errors_count": len(parser.get_errors()),
         }
 
     def _benchmark_optimized_parser(self, test_text: str) -> dict:
         """最適化パーサーのベンチマーク"""
-        
+
         from ...parser import Parser
-        
+
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
 
         start_time = time.time()
-        
+
         # 最適化パーサー実行
         parser = Parser()
         nodes = parser.parse_optimized(test_text)
-        
+
         parse_time = time.time() - start_time
         peak_memory = process.memory_info().rss / 1024 / 1024
         memory_used = peak_memory - initial_memory
@@ -814,24 +830,26 @@ class PerformanceBenchmark:
             "memory_used_mb": memory_used,
             "peak_memory_mb": peak_memory,
             "nodes_count": len(nodes),
-            "throughput_lines_per_second": len(test_text.split('\n')) / parse_time if parse_time > 0 else 0,
+            "throughput_lines_per_second": (
+                len(test_text.split("\n")) / parse_time if parse_time > 0 else 0
+            ),
             "errors_count": len(parser.get_errors()),
         }
 
     def _benchmark_streaming_parser(self, test_text: str) -> dict:
         """ストリーミングパーサーのベンチマーク"""
-        
+
         from ...parser import StreamingParser
-        
+
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
 
         start_time = time.time()
-        
+
         # ストリーミングパーサー実行
         parser = StreamingParser()
         nodes = list(parser.parse_streaming_from_text(test_text))
-        
+
         parse_time = time.time() - start_time
         peak_memory = process.memory_info().rss / 1024 / 1024
         memory_used = peak_memory - initial_memory
@@ -841,23 +859,25 @@ class PerformanceBenchmark:
             "memory_used_mb": memory_used,
             "peak_memory_mb": peak_memory,
             "nodes_count": len(nodes),
-            "throughput_lines_per_second": len(test_text.split('\n')) / parse_time if parse_time > 0 else 0,
+            "throughput_lines_per_second": (
+                len(test_text.split("\n")) / parse_time if parse_time > 0 else 0
+            ),
             "errors_count": len(parser.get_errors()),
         }
 
     def _generate_test_data(self, line_count: int) -> str:
         """テストデータの生成"""
-        
+
         if line_count in self.test_data_cache:
             return self.test_data_cache[line_count]
 
         lines = []
-        
+
         # 多様なKumihan記法パターンを含むテストデータ
         patterns = [
             "これは通常のパラグラフです。",
             "# 太字 # このテキストは太字になります",
-            "# イタリック # このテキストはイタリックになります", 
+            "# イタリック # このテキストはイタリックになります",
             "# 見出し1 # 大きな見出し",
             "- リスト項目1",
             "- リスト項目2",
@@ -872,35 +892,43 @@ class PerformanceBenchmark:
         for i in range(line_count):
             pattern = patterns[i % len(patterns)]
             if "項目" in pattern or "リスト" in pattern:
-                lines.append(pattern.replace("項目", f"項目{i+1}").replace("リスト", f"リスト{i+1}"))
+                lines.append(
+                    pattern.replace("項目", f"項目{i+1}").replace(
+                        "リスト", f"リスト{i+1}"
+                    )
+                )
             else:
                 lines.append(f"{pattern} (行 {i+1})")
 
         test_text = "\n".join(lines)
         self.test_data_cache[line_count] = test_text
-        
+
         return test_text
 
     def _calculate_improvement_ratios(self, results: dict) -> dict:
         """改善率の計算"""
-        
+
         improvement = {}
-        
+
         traditional = results.get("traditional_parser", {})
         optimized = results.get("optimized_parser", {})
         streaming = results.get("streaming_parser", {})
 
-        if traditional.get("parse_time_seconds") and optimized.get("parse_time_seconds"):
+        if traditional.get("parse_time_seconds") and optimized.get(
+            "parse_time_seconds"
+        ):
             improvement["optimized_vs_traditional_speed"] = (
                 traditional["parse_time_seconds"] / optimized["parse_time_seconds"]
             )
-            
+
         if traditional.get("memory_used_mb") and optimized.get("memory_used_mb"):
             improvement["optimized_vs_traditional_memory"] = (
                 traditional["memory_used_mb"] / optimized["memory_used_mb"]
             )
 
-        if traditional.get("parse_time_seconds") and streaming.get("parse_time_seconds"):
+        if traditional.get("parse_time_seconds") and streaming.get(
+            "parse_time_seconds"
+        ):
             improvement["streaming_vs_traditional_speed"] = (
                 traditional["parse_time_seconds"] / streaming["parse_time_seconds"]
             )
@@ -909,7 +937,7 @@ class PerformanceBenchmark:
 
     def _assess_performance_goals(self, test_results: dict) -> dict:
         """Issue #727 パフォーマンス目標の達成評価"""
-        
+
         assessment = {
             "goals": {
                 "10k_lines_under_15s": False,
@@ -917,34 +945,46 @@ class PerformanceBenchmark:
                 "100k_lines_under_180s": False,
                 "10k_lines_under_30s": False,
             },
-            "details": {}
+            "details": {},
         }
 
         # 10K行ファイル15秒以内目標
         large_test = test_results.get("large", {})
         if large_test:
-            optimized_time = large_test.get("optimized_parser", {}).get("parse_time_seconds", float('inf'))
-            streaming_time = large_test.get("streaming_parser", {}).get("parse_time_seconds", float('inf'))
-            
+            optimized_time = large_test.get("optimized_parser", {}).get(
+                "parse_time_seconds", float("inf")
+            )
+            streaming_time = large_test.get("streaming_parser", {}).get(
+                "parse_time_seconds", float("inf")
+            )
+
             best_time = min(optimized_time, streaming_time)
             assessment["goals"]["10k_lines_under_15s"] = best_time <= 15.0
             assessment["details"]["10k_best_time"] = best_time
 
         # メモリ使用量66%削減目標
         if large_test:
-            traditional_memory = large_test.get("traditional_parser", {}).get("memory_used_mb", 0)
-            optimized_memory = large_test.get("optimized_parser", {}).get("memory_used_mb", 0)
-            
+            traditional_memory = large_test.get("traditional_parser", {}).get(
+                "memory_used_mb", 0
+            )
+            optimized_memory = large_test.get("optimized_parser", {}).get(
+                "memory_used_mb", 0
+            )
+
             if traditional_memory > 0:
-                memory_reduction = (traditional_memory - optimized_memory) / traditional_memory * 100
-                assessment["goals"]["memory_reduction_66_percent"] = memory_reduction >= 66.0
+                memory_reduction = (
+                    (traditional_memory - optimized_memory) / traditional_memory * 100
+                )
+                assessment["goals"]["memory_reduction_66_percent"] = (
+                    memory_reduction >= 66.0
+                )
                 assessment["details"]["memory_reduction_percent"] = memory_reduction
 
         return assessment
 
     def _generate_benchmark_summary(self, benchmark_results: dict) -> dict:
         """ベンチマーク結果サマリー生成"""
-        
+
         summary = {
             "overall_performance": "unknown",
             "key_achievements": [],
@@ -953,10 +993,10 @@ class PerformanceBenchmark:
         }
 
         goals = benchmark_results.get("goal_assessment", {}).get("goals", {})
-        
+
         achieved_goals = sum(1 for achieved in goals.values() if achieved)
         total_goals = len(goals)
-        
+
         if achieved_goals >= total_goals * 0.8:
             summary["overall_performance"] = "excellent"
             summary["key_achievements"].append("ほぼ全ての性能目標を達成")
@@ -970,7 +1010,7 @@ class PerformanceBenchmark:
         # 推奨事項
         if not goals.get("10k_lines_under_15s"):
             summary["recommendations"].append("大容量ファイル処理の更なる最適化が必要")
-            
+
         if not goals.get("memory_reduction_66_percent"):
             summary["recommendations"].append("メモリ効率の改善が必要")
 
@@ -978,7 +1018,7 @@ class PerformanceBenchmark:
 
     def generate_benchmark_report(self, results: dict) -> str:
         """ベンチマークレポートの生成"""
-        
+
         report_lines = [
             "🔬 Kumihan-Formatter パフォーマンスベンチマークレポート",
             "=" * 60,
@@ -991,18 +1031,17 @@ class PerformanceBenchmark:
 
         for test_name, test_data in results["tests"].items():
             info = test_data["test_info"]
-            report_lines.extend([
-                f"\n🔍 {info['name'].upper()} ({info['line_count']:,}行, {info['text_size_mb']:.1f}MB):",
-                
-                f"  従来パーサー: {test_data['traditional_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
-                f"{test_data['traditional_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
-                
-                f"  最適化パーサー: {test_data['optimized_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
-                f"{test_data['optimized_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
-                
-                f"  ストリーミング: {test_data['streaming_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
-                f"{test_data['streaming_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
-            ])
+            report_lines.extend(
+                [
+                    f"\n🔍 {info['name'].upper()} ({info['line_count']:,}行, {info['text_size_mb']:.1f}MB):",
+                    f"  従来パーサー: {test_data['traditional_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"{test_data['traditional_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
+                    f"  最適化パーサー: {test_data['optimized_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"{test_data['optimized_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
+                    f"  ストリーミング: {test_data['streaming_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"{test_data['streaming_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
+                ]
+            )
 
             # 改善率
             improvements = test_data.get("improvement_ratios", {})
@@ -1015,20 +1054,24 @@ class PerformanceBenchmark:
 
         # 目標達成状況
         goals = results.get("goal_assessment", {}).get("goals", {})
-        report_lines.extend([
-            "",
-            "🎯 目標達成状況:",
-            f"  10K行15秒以内: {'✅' if goals.get('10k_lines_under_15s') else '❌'}",
-            f"  メモリ66%削減: {'✅' if goals.get('memory_reduction_66_percent') else '❌'}",
-            f"  100K行180秒以内: {'✅' if goals.get('100k_lines_under_180s') else '❌'}",
-        ])
+        report_lines.extend(
+            [
+                "",
+                "🎯 目標達成状況:",
+                f"  10K行15秒以内: {'✅' if goals.get('10k_lines_under_15s') else '❌'}",
+                f"  メモリ66%削減: {'✅' if goals.get('memory_reduction_66_percent') else '❌'}",
+                f"  100K行180秒以内: {'✅' if goals.get('100k_lines_under_180s') else '❌'}",
+            ]
+        )
 
         # サマリー
         summary = results.get("summary", {})
-        report_lines.extend([
-            "",
-            f"📈 総合評価: {summary.get('overall_performance', 'unknown').upper()}",
-        ])
+        report_lines.extend(
+            [
+                "",
+                f"📈 総合評価: {summary.get('overall_performance', 'unknown').upper()}",
+            ]
+        )
 
         if summary.get("key_achievements"):
             report_lines.append("✨ 主な成果:")
@@ -1050,31 +1093,31 @@ def monitor_performance(task_name: str = "処理"):
 
     Args:
         task_name: タスク名
-        
+
     Returns:
         PerformanceContext: パフォーマンス監視コンテキスト
     """
     return PerformanceContext(task_name)
 
+
 class PerformanceContext:
     """パフォーマンス監視コンテキストマネージャー"""
-    
+
     def __init__(self, task_name: str):
         self.task_name = task_name
         self.monitor = PerformanceMonitor()
         self.start_time = None
-        
+
     def __enter__(self):
         self.start_time = time.time()
         self.monitor.start_monitoring(total_items=1000, initial_stage=self.task_name)
         return self
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.monitor.stop_monitoring()
-        
+
     def record_item_processed(self):
         """アイテム処理の記録"""
-        if hasattr(self.monitor, 'update_progress'):
+        if hasattr(self.monitor, "update_progress"):
             # 簡易的な進捗更新
             pass
-

@@ -15,7 +15,6 @@ from rich.progress import Progress
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -179,11 +178,7 @@ class ConvertProcessor:
 
             # Issue #700: パーサーからgraceful errorsを取得
             parser_errors = []
-            if (
-                graceful_errors
-                and parser
-                and hasattr(parser, "get_graceful_errors")
-            ):
+            if graceful_errors and parser and hasattr(parser, "get_graceful_errors"):
                 parser_errors = parser.get_graceful_errors()
                 self.logger.info(
                     f"Retrieved {len(parser_errors)} graceful errors from parser"
@@ -260,10 +255,13 @@ class ConvertProcessor:
 
         # Phase3: エラー設定管理対応
         if error_config_manager:
-            effective_graceful_errors = error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error
+            effective_graceful_errors = (
+                error_config_manager.config.graceful_errors
+                or error_config_manager.config.continue_on_error
+            )
         else:
             effective_graceful_errors = graceful_errors
-            
+
         parser = Parser(graceful_errors=effective_graceful_errors)
 
         # ファイルサイズベースでストリーミング解析を選択
@@ -379,13 +377,13 @@ class ConvertProcessor:
         output_path = Path(output_dir)
 
         # 出力パスがファイル名（.html拡張子）の場合は直接ファイル出力
-        if output_path.suffix == '.html':
+        if output_path.suffix == ".html":
             # 親ディレクトリが存在しない場合は作成
             if not output_path.parent.exists():
                 self.logger.info(f"Creating parent directory: {output_path.parent}")
                 output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
-        
+
         # 出力ディレクトリが存在しない場合は作成
         if not output_path.exists():
             self.logger.info(f"Creating output directory: {output_path}")
@@ -395,7 +393,9 @@ class ConvertProcessor:
         html_filename = f"{input_path.stem}.html"
         return output_path / html_filename
 
-    def _parse_with_progress(self, text: str, config: Any, input_path: Path, error_config_manager: Any = None) -> Any:
+    def _parse_with_progress(
+        self, text: str, config: Any, input_path: Path, error_config_manager: Any = None
+    ) -> Any:
         """プログレス表示付きでパース処理を実行（ストリーミング対応）"""
         size_mb = len(text.encode("utf-8")) / (1024 * 1024)
         line_count = len(text.split("\n"))
@@ -409,10 +409,18 @@ class ConvertProcessor:
                 text, config, input_path, size_mb, line_count, error_config_manager
             )
         else:
-            return self._parse_with_traditional_progress(text, config, size_mb, error_config_manager)
+            return self._parse_with_traditional_progress(
+                text, config, size_mb, error_config_manager
+            )
 
     def _parse_with_streaming_progress(
-        self, text: str, config: Any, input_path: Path, size_mb: float, line_count: int, error_config_manager: Any = None
+        self,
+        text: str,
+        config: Any,
+        input_path: Path,
+        size_mb: float,
+        line_count: int,
+        error_config_manager: Any = None,
     ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
         self.logger.info(
@@ -421,80 +429,94 @@ class ConvertProcessor:
 
         # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
         parser = StreamingParser(config=config)
-        
+
         # 現時点ではStreamingParserはgraceful_errorsをサポートしていないため、
         # エラー設定がある場合は警告を出す
-        if error_config_manager and (error_config_manager.config.graceful_errors or error_config_manager.config.continue_on_error):
-            self.logger.warning("StreamingParser does not yet support graceful error handling. Errors will be handled traditionally.")
+        if error_config_manager and (
+            error_config_manager.config.graceful_errors
+            or error_config_manager.config.continue_on_error
+        ):
+            self.logger.warning(
+                "StreamingParser does not yet support graceful error handling. Errors will be handled traditionally."
+            )
         nodes = []
-        
+
         with Progress() as progress:
             # 詳細なプログレス表示
             task = progress.add_task(
-                f"[cyan]大容量ファイル解析 ({size_mb:.1f}MB, {line_count:,}行)", 
-                total=100
+                f"[cyan]大容量ファイル解析 ({size_mb:.1f}MB, {line_count:,}行)",
+                total=100,
             )
-            
+
             start_time = time.time()
-            
+
             def progress_callback(progress_info: dict) -> None:
                 """ストリーミング解析のプログレス更新"""
-                current = progress_info['current_line']
-                total = progress_info['total_lines']
-                percent = progress_info['progress_percent']
-                eta = progress_info['eta_seconds']
-                
+                current = progress_info["current_line"]
+                total = progress_info["total_lines"]
+                percent = progress_info["progress_percent"]
+                eta = progress_info["eta_seconds"]
+
                 # プログレスバー更新
                 progress.update(task, completed=percent)
-                
+
                 # 詳細情報をログ出力
                 if current % 100 == 0:  # 100行ごとに詳細ログ
-                    self.logger.debug(f"Progress: {current}/{total} lines ({percent:.1f}%), ETA: {eta}s")
-            
+                    self.logger.debug(
+                        f"Progress: {current}/{total} lines ({percent:.1f}%), ETA: {eta}s"
+                    )
+
             try:
                 # ストリーミング解析実行
                 for node in parser.parse_streaming_from_text(text, progress_callback):
                     nodes.append(node)
-                    
+
                     # キャンセルチェック（将来の拡張用）
-                    if hasattr(parser, '_cancelled') and parser._cancelled:
+                    if hasattr(parser, "_cancelled") and parser._cancelled:
                         self.logger.info("Parse cancelled by user")
                         break
-                
+
                 # 完了処理
                 progress.update(task, completed=100)
-                
+
                 elapsed = time.time() - start_time
-                self.logger.info(f"Streaming parse completed: {len(nodes)} nodes in {elapsed:.2f}s")
-                
+                self.logger.info(
+                    f"Streaming parse completed: {len(nodes)} nodes in {elapsed:.2f}s"
+                )
+
                 # パフォーマンスサマリー取得
-                if hasattr(parser, 'performance_monitor'):
-                    performance_summary = parser.performance_monitor.get_performance_summary()
+                if hasattr(parser, "performance_monitor"):
+                    performance_summary = (
+                        parser.performance_monitor.get_performance_summary()
+                    )
                     self.logger.info(
                         f"Performance Summary: "
                         f"{performance_summary['items_per_second']:.0f} items/sec, "
                         f"peak memory: {performance_summary['peak_memory_mb']:.1f}MB, "
                         f"avg CPU: {performance_summary['avg_cpu_percent']:.1f}%"
                     )
-                
+
                 # エラーサマリー
                 errors = parser.get_errors()
                 if errors:
                     self.logger.warning(f"Parse completed with {len(errors)} errors")
-                    
+
             except Exception as e:
                 self.logger.error(f"Streaming parse failed: {e}")
                 # フォールバック: 従来の解析方式
                 self.logger.info("Falling back to traditional parser")
                 from ...parser import parse
+
                 nodes = parse(text, config)
-        
+
         return nodes
-    
-    def _parse_with_traditional_progress(self, text: str, config: Any, size_mb: float) -> Any:
+
+    def _parse_with_traditional_progress(
+        self, text: str, config: Any, size_mb: float
+    ) -> Any:
         """従来のパーサーを使用した解析（既存の動作を維持）"""
         from ...parser import parse
-        
+
         with Progress() as progress:
             if size_mb > 10:  # 10MB以上
                 task = progress.add_task(
@@ -512,13 +534,17 @@ class ConvertProcessor:
                     time.sleep(0.1)
 
                 if error_config_manager:
-                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                    ast, errors = parse_with_error_config(
+                        text, config, error_config_manager
+                    )
                 else:
                     ast = parse(text, config)
                 progress.update(task, completed=100)
             else:
                 if error_config_manager:
-                    ast, errors = parse_with_error_config(text, config, error_config_manager)
+                    ast, errors = parse_with_error_config(
+                        text, config, error_config_manager
+                    )
                 else:
                     ast = parse(text, config)
                 elapsed = time.time() - start_time

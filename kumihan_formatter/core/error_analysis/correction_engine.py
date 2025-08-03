@@ -6,8 +6,8 @@ Issue #700対応 - 高度なエラー表示機能
 """
 
 import re
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from ..common.error_base import GracefulSyntaxError
 from ..utilities.logger import get_logger

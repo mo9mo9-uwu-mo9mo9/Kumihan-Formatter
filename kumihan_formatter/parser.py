@@ -6,7 +6,7 @@ parser.py file. Each parsing responsibility is now handled by specialized module
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Any, Optional, Callable
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional
 
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
@@ -56,18 +56,21 @@ class Parser:
         # Issue #700: graceful error handling
         self.graceful_errors = graceful_errors
         self.graceful_syntax_errors: list["GracefulSyntaxError"] = []
-        
+
         # Phase2: 修正提案エンジン
         if graceful_errors:
             from .core.error_analysis.correction_engine import CorrectionEngine
+
             self.correction_engine = CorrectionEngine()
-            self.logger.info("Correction engine initialized for graceful error handling")
+            self.logger.info(
+                "Correction engine initialized for graceful error handling"
+            )
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
         self.list_parser = ListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
-        
+
         # Issue #700: graceful error handling対応 - sub-parsersにパーサー参照を設定
         if graceful_errors:
             self.block_parser.set_parser_reference(self)
@@ -110,13 +113,17 @@ class Parser:
 
             # 無限ループ防止: currentが進んでいない場合
             if self.current == previous_current:
-                self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
+                self.logger.warning(
+                    f"Parser stuck at line {self.current}, forcing advance"
+                )
                 self.current += 1
 
             iteration_count += 1
 
         if iteration_count >= max_iterations:
-            self.logger.error(f"Parser hit maximum iteration limit ({max_iterations}), stopping")
+            self.logger.error(
+                f"Parser hit maximum iteration limit ({max_iterations}), stopping"
+            )
             self.add_error(f"Parser exceeded maximum iterations at line {self.current}")
 
         self.logger.info(
@@ -141,7 +148,7 @@ class Parser:
             list[Node]: Parsed AST nodes
         """
         self.logger.info(f"Starting optimized parse of {len(text)} characters")
-        
+
         # 最適化: 行分割を効率化（split最適化）
         self.lines = self._split_lines_optimized(text)
         self.current = 0
@@ -150,19 +157,19 @@ class Parser:
 
         # パフォーマンス監視開始
         from .core.utilities.performance_metrics import monitor_performance
-        
+
         with monitor_performance("optimized_parse") as perf_monitor:
             # パターンキャッシュ初期化
             pattern_cache = {}
             line_type_cache = {}
-            
+
             # 最適化: 事前にラインタイプを一括解析（O(n)で処理）
             line_types = self._analyze_line_types_batch(self.lines)
-            
+
             # メインパースループ（最適化版）
             while self.current < len(self.lines):
                 previous_current = self.current
-                
+
                 # 最適化されたライン解析
                 node = self._parse_line_optimized(
                     line_types, pattern_cache, line_type_cache
@@ -175,45 +182,53 @@ class Parser:
 
                 # 進捗チェック（最適化）
                 if self.current == previous_current:
-                    self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
+                    self.logger.warning(
+                        f"Parser stuck at line {self.current}, forcing advance"
+                    )
                     self.current += 1
 
             self.logger.info(
                 f"Optimized parse complete: {len(nodes)} nodes, {len(self.errors)} errors"
             )
-            
+
         return nodes
 
-    def parse_streaming_from_text(self, text: str, progress_callback: Optional[Callable[[dict], None]] = None) -> list[Node]:
+    def parse_streaming_from_text(
+        self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
+    ) -> list[Node]:
         """
         緊急修正: ConvertProcessor互換性のためのストリーミングパース
-        
+
         Issue #728の緊急対応として、parse_streaming_from_textメソッドを追加。
         現在はparse_optimized()への単純なラッパーとして実装。
-        
+
         将来的な改善案:
         - 大容量ファイル対応の真のストリーミング実装
         - プログレスコールバック機能の実装
         - メモリ効率の最適化
-        
+
         Args:
             text: 解析対象のテキスト
             progress_callback: プログレス通知用コールバック（現在未実装）
                                将来実装時の仕様: {"current_line": int, "total_lines": int, "progress_percent": float}
-            
+
         Returns:
             list[Node]: 解析されたASTノードリスト
-            
+
         Note:
             現在はparse_optimized()への単純な委譲実装。
             MVP版では基本機能のみ実装し、Phase 2で本格的なストリーミング機能を追加予定。
         """
-        self.logger.info("parse_streaming_from_text called - delegating to parse_optimized")
-        
+        self.logger.info(
+            "parse_streaming_from_text called - delegating to parse_optimized"
+        )
+
         # プログレスコールバックが提供された場合の警告（現在未対応）
         if progress_callback:
-            self.logger.warning("Progress callback provided but not yet implemented in MVP")
-        
+            self.logger.warning(
+                "Progress callback provided but not yet implemented in MVP"
+            )
+
         # MVP緊急修正: parse_optimized()に委譲
         return self.parse_optimized(text)
 
@@ -225,39 +240,43 @@ class Parser:
     def _analyze_line_types_batch(self, lines: list[str]) -> dict[int, str]:
         """
         行タイプの一括解析（O(n)で全行のタイプを事前決定）
-        
+
         Returns:
             dict: {line_index: line_type} のマッピング
         """
         line_types = {}
-        
+
         # 一度のループで全行のタイプを判定
         for i, line in enumerate(lines):
             stripped_line = line.strip()
-            
+
             if not stripped_line:
                 line_types[i] = "empty"
             elif self.block_parser.is_opening_marker(stripped_line):
                 line_types[i] = "block_marker"
-            elif stripped_line.startswith("#") and not self.block_parser.is_opening_marker(stripped_line):
+            elif stripped_line.startswith(
+                "#"
+            ) and not self.block_parser.is_opening_marker(stripped_line):
                 line_types[i] = "comment"
             elif self.list_parser.is_list_line(stripped_line):
                 line_types[i] = "list"
             else:
                 line_types[i] = "paragraph"
-        
+
         return line_types
 
     def _parse_line_optimized(
         self, line_types: dict[int, str], pattern_cache: dict, line_type_cache: dict
     ) -> Node | None:
         """最適化された行解析（キャッシュ活用）"""
-        
+
         if self.current >= len(self.lines):
             return None
 
         # 空行スキップ（最適化）
-        self.current = self._skip_empty_lines_optimized(self.lines, self.current, line_types)
+        self.current = self._skip_empty_lines_optimized(
+            self.lines, self.current, line_types
+        )
         if self.current >= len(self.lines):
             return None
 
@@ -282,22 +301,22 @@ class Parser:
         self, line_type: str, pattern_cache: dict
     ) -> Node | None:
         """タイプ別の最適化された従来パース処理"""
-        
+
         if line_type == "block_marker":
             node, next_index = self.block_parser.parse_block_marker(
                 self.lines, self.current
             )
             self.current = next_index
             return node
-            
+
         elif line_type == "comment":
             self.current += 1
             return None
-            
+
         elif line_type == "list":
             line = self.lines[self.current].strip()
             list_type = self.list_parser.is_list_line(line)
-            
+
             if list_type == "ul":
                 node, next_index = self.list_parser.parse_unordered_list(
                     self.lines, self.current
@@ -306,10 +325,10 @@ class Parser:
                 node, next_index = self.list_parser.parse_ordered_list(
                     self.lines, self.current
                 )
-            
+
             self.current = next_index
             return node
-            
+
         else:  # paragraph
             node, next_index = self.block_parser.parse_paragraph(
                 self.lines, self.current
@@ -321,7 +340,7 @@ class Parser:
         self, line_type: str, line_type_cache: dict
     ) -> Node | None:
         """タイプ別の最適化されたgracefulパース処理"""
-        
+
         start_current = self.current
         line = self.lines[self.current].strip()
 
@@ -334,9 +353,13 @@ class Parser:
                 return node
         except Exception as e:
             self._record_graceful_error(
-                self.current + 1, 1, "block_marker_error", "error",
-                f"ブロックマーカー解析エラー: {str(e)}", line,
-                "マーカーの記法を確認してください"
+                self.current + 1,
+                1,
+                "block_marker_error",
+                "error",
+                f"ブロックマーカー解析エラー: {str(e)}",
+                line,
+                "マーカーの記法を確認してください",
             )
             self.current += 1
             return self._create_error_node(line, str(e))
@@ -345,7 +368,7 @@ class Parser:
             if line_type == "comment":
                 self.current += 1
                 return None
-                
+
             elif line_type == "list":
                 list_type = self.list_parser.is_list_line(line)
                 if list_type == "ul":
@@ -356,14 +379,18 @@ class Parser:
                     node, next_index = self.list_parser.parse_ordered_list(
                         self.lines, self.current
                     )
-                
+
                 self.current = next_index
                 return node
         except Exception as e:
             self._record_graceful_error(
-                self.current + 1, 1, "list_parse_error", "error",
-                f"リスト解析エラー: {str(e)}", line,
-                "リスト記法を確認してください"
+                self.current + 1,
+                1,
+                "list_parse_error",
+                "error",
+                f"リスト解析エラー: {str(e)}",
+                line,
+                "リスト記法を確認してください",
             )
             self.current += 1
             return self._create_error_node(line, str(e))
@@ -377,9 +404,13 @@ class Parser:
             return node
         except Exception as e:
             self._record_graceful_error(
-                self.current + 1, 1, "paragraph_parse_error", "warning",
-                f"パラグラフ解析エラー: {str(e)}", line,
-                "テキスト内容を確認してください"
+                self.current + 1,
+                1,
+                "paragraph_parse_error",
+                "warning",
+                f"パラグラフ解析エラー: {str(e)}",
+                line,
+                "テキスト内容を確認してください",
             )
             # 安全装置
             if self.current == start_current:
@@ -389,11 +420,15 @@ class Parser:
     def get_performance_statistics(self) -> dict:
         """パフォーマンス統計を取得"""
         return {
-            "total_lines": len(self.lines) if hasattr(self, 'lines') else 0,
+            "total_lines": len(self.lines) if hasattr(self, "lines") else 0,
             "current_position": self.current,
             "errors_count": len(self.errors),
-            "graceful_errors_count": len(self.graceful_syntax_errors) if hasattr(self, 'graceful_syntax_errors') else 0,
-            "heading_count": getattr(self.block_parser, 'heading_counter', 0),
+            "graceful_errors_count": (
+                len(self.graceful_syntax_errors)
+                if hasattr(self, "graceful_syntax_errors")
+                else 0
+            ),
+            "heading_count": getattr(self.block_parser, "heading_counter", 0),
         }
 
     def _parse_line(self) -> Node | None:
@@ -549,7 +584,9 @@ class Parser:
             # 安全装置: currentが進んでいない場合は強制的に進める
             if self.current == start_current:
                 self.current += 1
-                self.logger.warning(f"Force advancing line due to parsing error at line {self.current}")
+                self.logger.warning(
+                    f"Force advancing line due to parsing error at line {self.current}"
+                )
             return self._create_error_node(line, str(e))
 
     def get_errors(self) -> list[str]:
@@ -586,16 +623,20 @@ class Parser:
         )
 
         # Phase2: 修正提案エンジンで拡張
-        if hasattr(self, 'correction_engine'):
-            graceful_error = self.correction_engine.enhance_error_with_suggestions(graceful_error)
-            self.logger.info(f"Enhanced error with {len(graceful_error.correction_suggestions)} suggestions")
+        if hasattr(self, "correction_engine"):
+            graceful_error = self.correction_engine.enhance_error_with_suggestions(
+                graceful_error
+            )
+            self.logger.info(
+                f"Enhanced error with {len(graceful_error.correction_suggestions)} suggestions"
+            )
 
         self.graceful_syntax_errors.append(graceful_error)
         self.logger.info(f"Graceful error recorded: {message} at line {line_number}")
 
     def _create_error_node(self, line: str, error_message: str) -> Node:
         """エラー発生箇所にエラー情報を含むノードを作成"""
-        
+
         error_content = f"❌ 解析エラー: {error_message}"
         return error_node(
             error_content, {"original_line": line, "error_type": "parse_error"}
@@ -677,7 +718,7 @@ class StreamingParser:
         self.current_line = 0
         self.total_lines = 0
         self._cancelled = False
-        
+
         # タイムアウト設定
         self.timeout_seconds = timeout_seconds
         self._start_time = None
@@ -689,12 +730,15 @@ class StreamingParser:
 
         # パフォーマンス監視を初期化
         from .core.utilities.performance_metrics import PerformanceMonitor
+
         self.performance_monitor = PerformanceMonitor(
             monitoring_interval=0.5,  # 監視間隔短縮（1.0→0.5秒）
-            history_size=500  # 履歴サイズ最適化（1000→500）
+            history_size=500,  # 履歴サイズ最適化（1000→500）
         )
 
-        self.logger.info("Optimized StreamingParser initialized with enhanced performance monitoring")
+        self.logger.info(
+            "Optimized StreamingParser initialized with enhanced performance monitoring"
+        )
 
     def parse_streaming_from_file(
         self, file_path: Path, progress_callback=None
@@ -720,7 +764,7 @@ class StreamingParser:
         # パフォーマンス監視開始
         self.performance_monitor.start_monitoring(
             total_items=self._estimate_lines_fast(file_path),
-            initial_stage="ファイル読み込み開始"
+            initial_stage="ファイル読み込み開始",
         )
 
         try:
@@ -745,7 +789,7 @@ class StreamingParser:
         self, file_path: Path, progress_callback=None
     ) -> Iterator[Node]:
         """最適化されたファイルストリーミング処理"""
-        
+
         line_buffer = []
         buffer_line_start = 0
         total_processed = 0
@@ -756,16 +800,20 @@ class StreamingParser:
             for line_num, line in enumerate(file, 1):
                 # タイムアウトチェック
                 if self._check_timeout():
-                    self.logger.warning(f"Processing timeout after {self.timeout_seconds}s")
-                    self.add_error(f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds")
+                    self.logger.warning(
+                        f"Processing timeout after {self.timeout_seconds}s"
+                    )
+                    self.add_error(
+                        f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds"
+                    )
                     break
-                    
+
                 # キャンセルチェック
                 if self._cancelled:
                     self.logger.info("Parse cancelled by user")
                     break
 
-                line_buffer.append(line.rstrip('\n\r'))
+                line_buffer.append(line.rstrip("\n\r"))
 
                 # チャンクサイズに達した場合の処理
                 if len(line_buffer) >= self.CHUNK_SIZE:
@@ -798,9 +846,13 @@ class StreamingParser:
 
                     # メモリ使用量チェック（安全性強化）
                     try:
-                        if hasattr(self.performance_monitor, 'get_current_snapshot'):
+                        if hasattr(self.performance_monitor, "get_current_snapshot"):
                             snapshot = self.performance_monitor.get_current_snapshot()
-                            if snapshot and hasattr(snapshot, 'memory_mb') and snapshot.memory_mb > self.MEMORY_THRESHOLD_MB:
+                            if (
+                                snapshot
+                                and hasattr(snapshot, "memory_mb")
+                                and snapshot.memory_mb > self.MEMORY_THRESHOLD_MB
+                            ):
                                 self.logger.warning(
                                     f"High memory usage detected: {snapshot.memory_mb:.1f}MB"
                                 )
@@ -809,7 +861,9 @@ class StreamingParser:
 
         # 残りのバッファを処理
         if line_buffer:
-            for node in self._process_line_buffer_optimized(line_buffer, buffer_line_start):
+            for node in self._process_line_buffer_optimized(
+                line_buffer, buffer_line_start
+            ):
                 if node:
                     yield node
                     total_processed += 1
@@ -819,16 +873,18 @@ class StreamingParser:
             final_progress = self._calculate_progress_optimized(total_processed)
             progress_callback(final_progress)
 
-        self.logger.info(f"Optimized streaming completed: {total_processed} nodes processed")
+        self.logger.info(
+            f"Optimized streaming completed: {total_processed} nodes processed"
+        )
 
     def _process_line_buffer_optimized(
         self, lines: list[str], start_line: int
     ) -> Iterator[Node]:
         """最適化されたラインバッファ処理（高速版）"""
-        
+
         # パーサーコンポーネントの取得（キャッシュ活用）
         parsers = self._get_cached_parsers()
-        
+
         current = 0
         while current < len(lines):
             # キャンセルチェック
@@ -847,10 +903,10 @@ class StreamingParser:
                 node, next_index = self._parse_line_optimized(
                     parsers, lines, current, line
                 )
-                
+
                 if node:
                     yield node
-                    
+
                 current = next_index
 
             except Exception as e:
@@ -862,7 +918,7 @@ class StreamingParser:
         self, parsers: dict, lines: list[str], current: int, line: str
     ) -> tuple[Node | None, int]:
         """最適化された行解析（パターンマッチング高速化）"""
-        
+
         # パターンキャッシュチェック（サイズ制限追加）
         cache_key = line[:50]  # 最初の50文字でキャッシュ
         if cache_key in self._pattern_cache:
@@ -873,17 +929,19 @@ class StreamingParser:
                 # 古いエントリを削除（LRU風）
                 oldest_key = next(iter(self._pattern_cache))
                 del self._pattern_cache[oldest_key]
-            
+
             # パターン判定（最適化）
             if parsers["block_parser"].is_opening_marker(line):
                 pattern_type = "block"
-            elif line.startswith("#") and not parsers["block_parser"].is_opening_marker(line):
-                pattern_type = "comment" 
+            elif line.startswith("#") and not parsers["block_parser"].is_opening_marker(
+                line
+            ):
+                pattern_type = "comment"
             elif parsers["list_parser"].is_list_line(line):
                 pattern_type = "list"
             else:
                 pattern_type = "paragraph"
-            
+
             # キャッシュに保存
             self._pattern_cache[cache_key] = pattern_type
 
@@ -904,9 +962,9 @@ class StreamingParser:
     def _get_cached_parsers(self) -> dict:
         """パーサーコンポーネントのキャッシュ取得（メモリ効率化）"""
         if not self._parser_cache:
-            from .core.keyword_parser import KeywordParser
-            from .core.list_parser import ListParser  
             from .core.block_parser.block_parser import BlockParser
+            from .core.keyword_parser import KeywordParser
+            from .core.list_parser import ListParser
 
             keyword_parser = KeywordParser()
             self._parser_cache = {
@@ -914,7 +972,7 @@ class StreamingParser:
                 "list_parser": ListParser(keyword_parser),
                 "block_parser": BlockParser(keyword_parser),
             }
-            
+
             self.logger.debug("Parser components cached for optimized reuse")
 
         return self._parser_cache
@@ -936,8 +994,8 @@ class StreamingParser:
                 sample = file.read(sample_size)
                 if not sample:
                     return 0
-                
-                sample_lines = sample.count('\n')
+
+                sample_lines = sample.count("\n")
                 if len(sample) < file_path.stat().st_size:
                     # 全体の行数を推定
                     estimated_lines = int(
@@ -946,7 +1004,7 @@ class StreamingParser:
                     return max(estimated_lines, 1)
                 else:
                     return sample_lines + 1
-                    
+
         except Exception as e:
             self.logger.warning(f"Line estimation error: {e}")
             # フォールバック: ファイルサイズベースの推定
@@ -958,28 +1016,31 @@ class StreamingParser:
             self.total_lines = current_line + 1000  # 動的調整
 
         progress_percent = min(100.0, (current_line / self.total_lines) * 100)
-        
+
         # ETA計算の最適化（エラー処理強化）
         eta_seconds = 0
         memory_mb = 0
         processing_rate = 0
-        
+
         try:
-            if hasattr(self.performance_monitor, 'stats') and self.performance_monitor.stats:
+            if (
+                hasattr(self.performance_monitor, "stats")
+                and self.performance_monitor.stats
+            ):
                 stats = self.performance_monitor.stats
-                if hasattr(stats, 'items_per_second') and stats.items_per_second > 0:
+                if hasattr(stats, "items_per_second") and stats.items_per_second > 0:
                     remaining_items = max(0, self.total_lines - current_line)
                     eta_seconds = int(remaining_items / stats.items_per_second)
-                
-                if hasattr(stats, 'items_per_second'):
+
+                if hasattr(stats, "items_per_second"):
                     processing_rate = stats.items_per_second
         except Exception as e:
             self.logger.debug(f"ETA calculation error: {e}")
-        
+
         try:
-            if hasattr(self.performance_monitor, 'get_current_snapshot'):
+            if hasattr(self.performance_monitor, "get_current_snapshot"):
                 snapshot = self.performance_monitor.get_current_snapshot()
-                if snapshot and hasattr(snapshot, 'memory_mb'):
+                if snapshot and hasattr(snapshot, "memory_mb"):
                     memory_mb = snapshot.memory_mb
         except Exception as e:
             self.logger.debug(f"Memory snapshot error: {e}")
@@ -990,7 +1051,7 @@ class StreamingParser:
             "progress_percent": progress_percent,
             "eta_seconds": eta_seconds,
             "memory_mb": memory_mb,
-            "processing_rate": processing_rate
+            "processing_rate": processing_rate,
         }
 
     def parse_streaming_from_text(
@@ -1010,10 +1071,9 @@ class StreamingParser:
         self._cancelled = False
 
         # パフォーマンス監視開始
-        estimated_lines = text.count('\n') + 1
+        estimated_lines = text.count("\n") + 1
         self.performance_monitor.start_monitoring(
-            total_items=estimated_lines,
-            initial_stage="テキスト解析開始"
+            total_items=estimated_lines, initial_stage="テキスト解析開始"
         )
 
         try:
@@ -1031,7 +1091,7 @@ class StreamingParser:
         self, text: str, progress_callback=None
     ) -> Iterator[Node]:
         """最適化されたテキストストリーミング処理"""
-        
+
         # テキストをジェネレーターで行に分割（メモリ効率）
         lines_gen = self._split_text_streaming(text)
         line_buffer = []
@@ -1042,10 +1102,14 @@ class StreamingParser:
         for line in lines_gen:
             # タイムアウトチェック
             if self._check_timeout():
-                self.logger.warning(f"Text processing timeout after {self.timeout_seconds}s")
-                self.add_error(f"TIMEOUT_ERROR: Text processing exceeded {self.timeout_seconds} seconds")
+                self.logger.warning(
+                    f"Text processing timeout after {self.timeout_seconds}s"
+                )
+                self.add_error(
+                    f"TIMEOUT_ERROR: Text processing exceeded {self.timeout_seconds} seconds"
+                )
                 break
-                
+
             if self._cancelled:
                 break
 
@@ -1055,7 +1119,9 @@ class StreamingParser:
             # チャンクサイズに達したら処理
             if len(line_buffer) >= self.CHUNK_SIZE:
                 processed_count = 0
-                for node in self._process_line_buffer_optimized(line_buffer, line_count - len(line_buffer)):
+                for node in self._process_line_buffer_optimized(
+                    line_buffer, line_count - len(line_buffer)
+                ):
                     if node:
                         yield node
                         processed_count += 1
@@ -1065,7 +1131,10 @@ class StreamingParser:
                 total_processed += processed_count
 
                 # プログレス更新
-                if progress_callback and line_count % self.PROGRESS_UPDATE_INTERVAL == 0:
+                if (
+                    progress_callback
+                    and line_count % self.PROGRESS_UPDATE_INTERVAL == 0
+                ):
                     progress_info = self._calculate_progress_optimized(line_count)
                     progress_callback(progress_info)
 
@@ -1075,7 +1144,9 @@ class StreamingParser:
 
         # 残りバッファの処理
         if line_buffer:
-            for node in self._process_line_buffer_optimized(line_buffer, line_count - len(line_buffer)):
+            for node in self._process_line_buffer_optimized(
+                line_buffer, line_count - len(line_buffer)
+            ):
                 if node:
                     yield node
                     total_processed += 1
@@ -1086,10 +1157,10 @@ class StreamingParser:
         """テキストを行単位でストリーミング分割（メモリ効率版）"""
         start = 0
         for i, char in enumerate(text):
-            if char == '\n':
+            if char == "\n":
                 yield text[start:i]
                 start = i + 1
-        
+
         # 最後の行（改行なしの場合）
         if start < len(text):
             yield text[start:]
@@ -1103,7 +1174,7 @@ class StreamingParser:
         """タイムアウトチェック"""
         if self._start_time is None:
             return False
-        
+
         elapsed = time.time() - self._start_time
         return elapsed > self.timeout_seconds
 
@@ -1125,30 +1196,35 @@ class StreamingParser:
             "memory_usage_mb": 0,
             "processing_rate": 0,
             "cache_limit": self._cache_limit,
-            "timeout_seconds": self.timeout_seconds
+            "timeout_seconds": self.timeout_seconds,
         }
-        
+
         try:
-            if hasattr(self.performance_monitor, 'get_current_snapshot'):
+            if hasattr(self.performance_monitor, "get_current_snapshot"):
                 snapshot = self.performance_monitor.get_current_snapshot()
-                if snapshot and hasattr(snapshot, 'memory_mb'):
+                if snapshot and hasattr(snapshot, "memory_mb"):
                     metrics["memory_usage_mb"] = snapshot.memory_mb
         except Exception as e:
             self.logger.debug(f"Memory metrics error: {e}")
-        
+
         try:
-            if hasattr(self.performance_monitor, 'stats') and self.performance_monitor.stats:
+            if (
+                hasattr(self.performance_monitor, "stats")
+                and self.performance_monitor.stats
+            ):
                 stats = self.performance_monitor.stats
-                if hasattr(stats, 'items_per_second'):
+                if hasattr(stats, "items_per_second"):
                     metrics["processing_rate"] = stats.items_per_second
         except Exception as e:
             self.logger.debug(f"Processing rate metrics error: {e}")
-        
+
         return metrics
 
 
 # 既存Parserクラスとの互換性維持のためのラッパー関数
-def parse_with_error_config(text: str, config: Any = None, use_streaming: bool | None = None) -> list[Node]:
+def parse_with_error_config(
+    text: str, config: Any = None, use_streaming: bool | None = None
+) -> list[Node]:
     """
     エラー設定対応の解析関数（ストリーミング対応）
 
@@ -1163,7 +1239,7 @@ def parse_with_error_config(text: str, config: Any = None, use_streaming: bool |
     # ストリーミング使用判定
     if use_streaming is None:
         # テキストサイズが大きい場合はストリーミングを使用
-        size_mb = len(text.encode('utf-8')) / (1024 * 1024)
+        size_mb = len(text.encode("utf-8")) / (1024 * 1024)
         use_streaming = size_mb > 1.0
 
     if use_streaming:

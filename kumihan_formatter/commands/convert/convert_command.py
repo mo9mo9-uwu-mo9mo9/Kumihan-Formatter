@@ -91,20 +91,21 @@ class ConvertCommand:
         )
 
         # Phase3: エラー処理設定の初期化
-        from ...core.error_analysis.error_config import ErrorConfigManager
         from pathlib import Path
-        
+
+        from ...core.error_analysis.error_config import ErrorConfigManager
+
         error_config_manager = ErrorConfigManager(
             config_dir=Path(input_file).parent if input_file else Path.cwd()
         )
-        
+
         # CLIオプションを設定に適用
         error_config_manager.apply_cli_options(
             error_level=error_level,
             graceful_errors=graceful_errors,
             continue_on_error=continue_on_error,
             show_suggestions=not no_suggestions,
-            show_statistics=not no_statistics
+            show_statistics=not no_statistics,
         )
 
         try:
@@ -135,7 +136,7 @@ class ConvertCommand:
                     should_continue = error_config_manager.should_continue_on_error(
                         "syntax_error", len(errors)
                     )
-                    
+
                     if should_continue:
                         # エラーがあるが処理を継続
                         self.logger.warning(
@@ -154,9 +155,17 @@ class ConvertCommand:
                         if error_config_manager.config.show_suggestions:
                             get_console_ui().info("\n=== 検出されたエラー ===")
                             for error in errors:
-                                severity = error_config_manager.get_error_severity("syntax_error")
-                                icon = "❌" if severity == "error" else "⚠️" if severity == "warning" else "ℹ️"
-                                print(f"  {icon} {error.get('message', 'Unknown error')}")
+                                severity = error_config_manager.get_error_severity(
+                                    "syntax_error"
+                                )
+                                icon = (
+                                    "❌"
+                                    if severity == "error"
+                                    else "⚠️" if severity == "warning" else "ℹ️"
+                                )
+                                print(
+                                    f"  {icon} {error.get('message', 'Unknown error')}"
+                                )
                     else:
                         # エラーレベルに基づき処理を中止
                         self.logger.error(
@@ -198,7 +207,7 @@ class ConvertCommand:
             # Phase3: エラー設定から実際の値を取得
             effective_continue_on_error = error_config_manager.config.continue_on_error
             effective_graceful_errors = error_config_manager.config.graceful_errors
-            
+
             output_file = self.processor.convert_file(
                 input_path,
                 output,
