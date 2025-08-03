@@ -20,7 +20,7 @@ class KeywordParser:
     Kumihan記法キーワードパーサー（記法解析の中核）
 
     設計ドキュメント:
-    - 記法仕様: /SPEC.md#ブロックキーワード→タグ対照表
+    - 記法仕様: /SPEC.md (基本記法)
     - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
     - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
 

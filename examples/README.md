@@ -219,7 +219,7 @@ kumihan convert samples/special/31_error_patterns.txt -o output/ --strict
 
 ## 🔗 関連ドキュメント
 
-- **[記法仕様詳細](../docs/specifications/NOTATION_SPEC.md)** - 完全な記法仕様
+- **[記法仕様詳細](../docs/specs/notation.md)** - 完全な記法仕様
 - **[ユーザーガイド](../docs/USER_GUIDE.md)** - 基本的な使用方法
 - **[記法チェックリスト](NOTATION_CHECKLIST.md)** - 記法の完全リスト
 
