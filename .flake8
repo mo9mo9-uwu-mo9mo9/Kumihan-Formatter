@@ -1,5 +1,8 @@
 [flake8]
-max-line-length = 88
+# AI開発に適した設定 - Issue #767対応
+max-line-length = 100
+
+# 除外ディレクトリ
 exclude =
     .git,
     __pycache__,
@@ -15,5 +18,19 @@ exclude =
     .test_backups,
     .test_backups/**
 
-ignore = E203,W503
+# AI開発で無視する低優先度エラー
+ignore = E203,W503,E226,E704
+
+# 重要なエラーのみ検出
 select = E,W,F,C
+
+# ファイル別設定
+per-file-ignores =
+    __init__.py:F401,F403
+    test_*.py:F401,F811
+    tests/*.py:F401,F811
+
+# その他の設定
+max-complexity = 15
+statistics = True
+count = True
