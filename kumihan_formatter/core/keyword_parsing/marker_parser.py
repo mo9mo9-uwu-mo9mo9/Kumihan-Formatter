@@ -567,7 +567,7 @@ class MarkerParser:
 
         end_marker = working_line[last_hash_pos]
         keyword_part = working_line[1:last_hash_pos].strip()
-        content = working_line[last_hash_pos + 1 :].strip()
+        _ = working_line[last_hash_pos + 1 :].strip()  # content (未使用)
 
         # マーカーの整合性チェック（混在も許可）
         if start_marker not in self.HASH_MARKERS or end_marker not in self.HASH_MARKERS:

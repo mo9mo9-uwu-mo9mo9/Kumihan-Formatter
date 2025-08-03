@@ -9,7 +9,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from ..common.error_base import GracefulSyntaxError
 from ..utilities.logger import get_logger
@@ -135,12 +135,18 @@ class StatisticsGenerator:
 
         html_parts = [
             '<div class="error-statistics-report">',
-            f"<h3>エラー統計レポート</h3>",
+            "<h3>エラー統計レポート</h3>",
             f'<p class="timestamp">生成日時: {statistics.processing_timestamp}</p>',
             # 概要
             '<div class="stats-overview">',
-            f'<div class="stat-item"><span class="stat-label">総エラー数:</span> <span class="stat-value">{statistics.total_errors}</span></div>',
-            f'<div class="stat-item"><span class="stat-label">修正提案数:</span> <span class="stat-value">{statistics.suggestions_generated}</span></div>',
+            f'<div class="stat-item">'
+            f'<span class="stat-label">総エラー数:</span> '
+            f'<span class="stat-value">{statistics.total_errors}</span>'
+            f"</div>",
+            f'<div class="stat-item">'
+            f'<span class="stat-label">修正提案数:</span> '
+            f'<span class="stat-value">{statistics.suggestions_generated}</span>'
+            f"</div>",
             "</div>",
             # 重要度別グラフ
             self._generate_severity_chart(statistics.error_by_severity),
@@ -302,7 +308,7 @@ class StatisticsGenerator:
             return "エラーは検出されませんでした。"
 
         summary_lines = [
-            f"=== エラー統計サマリー ===",
+            "=== エラー統計サマリー ===",
             f"総エラー数: {statistics.total_errors}",
             f"修正提案数: {statistics.suggestions_generated}",
             "",
