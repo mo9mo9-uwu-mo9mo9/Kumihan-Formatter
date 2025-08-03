@@ -4,7 +4,10 @@ This module handles the parsing of basic block-level elements.
 新記法 #キーワード# 対応 - Issue #665
 """
 
+import bisect
+import os
 import re
+from functools import lru_cache
 from typing import Any
 
 from ..ast_nodes import Node, error_node, paragraph, toc_marker
@@ -23,15 +26,13 @@ class BlockParser:
         # パフォーマンス最適化: キャッシュとインデックス
         self._block_end_indices: list[int] = []
         self._lines_cache: list[str] = []
-        
+
         # Issue #755対応: 正規表現のプリコンパイルとキャッシュ
-        import re
-        from functools import lru_cache
-        
+
         # よく使用される正規表現パターンをプリコンパイル
         self._list_pattern = re.compile(r"^[-・*+]\s|^\d+\.\s")
         self._empty_line_pattern = re.compile(r"^\s*$")
-        
+
         # マーカー判定キャッシュ（LRU）
         self._is_marker_cache = lru_cache(maxsize=10000)(self._is_marker_internal)
         self._is_list_cache = lru_cache(maxsize=10000)(self._is_list_internal)
@@ -41,7 +42,7 @@ class BlockParser:
     def _is_marker_internal(self, line: str) -> bool:
         """内部用マーカー判定（キャッシュされる）"""
         return self.keyword_parser.marker_parser.is_new_marker_format(line)
-    
+
     def _is_list_internal(self, line: str) -> bool:
         """内部用リスト判定（キャッシュされる）"""
         return bool(self._list_pattern.match(line))
@@ -73,9 +74,10 @@ class BlockParser:
         self._lines_cache = lines.copy()  # 安全なコピーを作成
 
         # Issue #755対応: 前処理行数制限を環境変数で設定可能に（デフォルト500,000行）
-        import os
-        max_preprocess_lines = int(os.environ.get('KUMIHAN_MAX_PREPROCESS_LINES', '500000'))
-        
+        max_preprocess_lines = int(
+            os.environ.get("KUMIHAN_MAX_PREPROCESS_LINES", "500000")
+        )
+
         # ブロック終了マーカーの位置を事前計算（O(n)で一回のみ）
         try:
             for i, line in enumerate(lines):
@@ -121,7 +123,6 @@ class BlockParser:
 
         # 方式1: 前処理キャッシュを使用した高速検索（O(log n)）
         if self._block_end_indices:
-            import bisect
 
             if start_index < 0 or start_index >= len(self._lines_cache):
                 return None
@@ -171,7 +172,6 @@ class BlockParser:
         Returns:
             ブロックマーカーの場合True
         """
-        from functools import lru_cache
 
         @lru_cache(maxsize=512)  # メモリ上限設定
         def _cached_marker_check(stripped_line: str) -> bool:
@@ -276,13 +276,16 @@ class BlockParser:
 
         # 最初のキーワードを使用してノードを作成
         primary_keyword = keywords[0]
-        
+
         # ファクトリ関数をインポート
-        from kumihan_formatter.core.ast_nodes.factories import (
-            strong, emphasis, heading, highlight
-        )
         from kumihan_formatter.core.ast_nodes import NodeBuilder
-        
+        from kumihan_formatter.core.ast_nodes.factories import (
+            emphasis,
+            heading,
+            highlight,
+            strong,
+        )
+
         # キーワードに基づいてノードタイプを決定
         if primary_keyword in ["太字", "bold"]:
             node = strong(content)
@@ -312,11 +315,11 @@ class BlockParser:
         if attributes:
             for key, value in attributes.items():
                 if key == "color":
-                    if hasattr(node, 'attributes'):
+                    if hasattr(node, "attributes"):
                         node.attributes = node.attributes or {}
                         node.attributes["style"] = f"color: {value};"
                     else:
-                        setattr(node, 'attributes', {"style": f"color: {value};"})
+                        setattr(node, "attributes", {"style": f"color: {value};"})
 
         self.logger.debug(f"Inline format parsed: {primary_keyword} -> {content}")
         return paragraph(node), start_index + 1
@@ -651,10 +654,10 @@ class BlockParser:
 
         # 行を改行タグで結合（テキストファイル上の改行を保持）
         content = "<br>\n".join(paragraph_lines)
-        
+
         # インライン記法を処理
         processed_content = self.keyword_parser._process_inline_keywords(content)
-        
+
         # 処理結果が配列の場合は、段落ノードに適切に設定
         if isinstance(processed_content, list):
             # 配列の場合は、段落の内容として配列をそのまま渡す
@@ -662,7 +665,7 @@ class BlockParser:
         else:
             # 単一要素の場合は従来通り
             paragraph_node = paragraph(processed_content)
-        
+
         self.logger.debug(
             f"Paragraph parsed: {len(content)} characters, {len(paragraph_lines)} lines"
         )
@@ -680,7 +683,9 @@ class BlockParser:
         """
         line = line.strip()
         # Issue #755対応: キャッシュで高速化
-        return self._is_marker_cache(line) or self.keyword_parser.marker_parser.is_block_end_marker(line)
+        return self._is_marker_cache(
+            line
+        ) or self.keyword_parser.marker_parser.is_block_end_marker(line)
 
     def is_opening_marker(self, line: str) -> bool:
         """Check if a line is an opening block marker (new format only)

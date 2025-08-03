@@ -26,7 +26,7 @@ def process_text_content(text: str) -> str:
 
     # First convert newlines to <br> tags (before HTML escaping)
     processed = text.replace("\n", "<br>")
-    
+
     # Then HTML escape the content, but preserve <br> tags
     processed = escape_html(processed).replace("&lt;br&gt;", "<br>")
 

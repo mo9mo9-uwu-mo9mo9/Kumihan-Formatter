@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from .definitions import KeywordDefinitions
 from ..utilities.logger import get_logger
+from .definitions import KeywordDefinitions
 
 
 @dataclass
@@ -46,18 +46,20 @@ class MarkerParser:
         # 新記法対応: マーカー文字の定義
         self.HASH_MARKERS = ["#", "＃"]  # 半角・全角両対応
         self.BLOCK_END_MARKERS = ["##", "＃＃"]  # ブロック終了マーカー
-        
+
         # Issue #751対応: パフォーマンス改善のため正規表現を事前コンパイル
         # インライン記法パターン
         self._inline_pattern_1 = re.compile(r"^[#＃]\s*([^#＃]+)\s*[#＃]\s+(.+)$")
         self._inline_pattern_2 = re.compile(r"^[#＃]\s*([^#＃]+)\s+([^#＃]+)\s*[#＃]$")
-        self._inline_pattern_3 = re.compile(r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃]{2}$")
-        
+        self._inline_pattern_3 = re.compile(
+            r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃]{2}$"
+        )
+
         # ブロック記法パターン
         self._basic_pattern = re.compile(r"^[#＃]\s*[^#＃]+\s*[#＃]$")
         self._attribute_pattern = re.compile(r"^[#＃]\s*[^#＃]+\s+[^#＃]+=\S+\s*[#＃]$")
         self._compound_pattern = re.compile(r"^[#＃]\s*[^#＃]+[+＋][^#＃]+\s*[#＃]$")
-        
+
         # リストアイテムパターン
         self._list_item_pattern = re.compile(r"^\d+\.\s")  # ブロック終了マーカー
 
@@ -116,7 +118,7 @@ class MarkerParser:
                                 if content:
                                     all_content.append(content.strip())
                                 continue
-                            
+
                             # 属性解析（color=, alt= など）
                             if "color=" in keyword:
                                 # color属性の処理は既存メソッドを利用
@@ -447,7 +449,7 @@ class MarkerParser:
             if ruby_result:
                 attributes.update(ruby_result)
             return keywords, attributes, errors
-        
+
         # キーワードを + または ＋ で分割（プリコンパイルパターン使用）
         if "+" in marker_content or "＋" in marker_content:
             # 複合キーワード
@@ -668,15 +670,19 @@ class MarkerParser:
 
         try:
             # Issue #751対応: インライン記法パターンをチェック
-            if (self._inline_pattern_1.match(line) or 
-                self._inline_pattern_2.match(line) or
-                self._inline_pattern_3.match(line)):
+            if (
+                self._inline_pattern_1.match(line)
+                or self._inline_pattern_2.match(line)
+                or self._inline_pattern_3.match(line)
+            ):
                 return True
 
             # ブロック記法のみ許可: # キーワード # （行全体で完結、属性付きも含む）
-            return (bool(self._basic_pattern.match(line)) or
-                    bool(self._attribute_pattern.match(line)) or
-                    bool(self._compound_pattern.match(line)))
+            return (
+                bool(self._basic_pattern.match(line))
+                or bool(self._attribute_pattern.match(line))
+                or bool(self._compound_pattern.match(line))
+            )
         except Exception as e:
             self.logger.warning(f"Regex error in is_new_marker_format: {e}")
             return False
@@ -735,23 +741,23 @@ class MarkerParser:
             str | None: 抽出されたコンテンツ、該当しない場合はNone
         """
         line = line.strip()
-        
+
         try:
             # パターン1: #keyword# content 形式
             match = self._inline_pattern_1.match(line)
             if match:
                 return match.group(2).strip()
-                
-            # パターン2: #keyword content# 形式  
+
+            # パターン2: #keyword content# 形式
             match = self._inline_pattern_2.match(line)
             if match:
                 return match.group(2).strip()
-                
+
             # パターン3: # keyword #content## 形式
             match = self._inline_pattern_3.match(line)
             if match:
                 return match.group(2).strip()
-            
+
             return None
         except Exception as e:
             self.logger.warning(f"Regex error in extract_inline_content: {e}")
@@ -760,42 +766,39 @@ class MarkerParser:
     def _parse_ruby_content(self, content: str) -> dict[str, Any] | None:
         """
         ルビ記法のコンテンツを解析（#ルビ 海砂利水魚(かいじゃりすいぎょ)#形式）
-        
+
         Args:
             content: ルビのコンテンツ部分
-            
+
         Returns:
             dict: ルビ情報（base_text, ruby_text）、解析失敗時はNone
         """
         import re
-        
+
         if not content:
             return None
-        
+
         # 括弧パターンの検出（()と（）両対応、混在チェック）
         paren_patterns = [
-            r'(.+?)\(([^)]+)\)',  # 半角括弧
-            r'(.+?)（([^）]+)）'    # 全角括弧
+            r"(.+?)\(([^)]+)\)",  # 半角括弧
+            r"(.+?)（([^）]+)）",  # 全角括弧
         ]
-        
+
         for pattern in paren_patterns:
             match = re.search(pattern, content)
             if match:
                 base_text = match.group(1).strip()
                 ruby_text = match.group(2).strip()
-                
+
                 # 混在チェック
-                if '(' in content and '（' in content:
+                if "(" in content and "（" in content:
                     return None  # 混在は無効
-                if ')' in content and '）' in content:
+                if ")" in content and "）" in content:
                     return None  # 混在は無効
-                
+
                 if base_text and ruby_text:
-                    return {
-                        "ruby_base": base_text,
-                        "ruby_text": ruby_text
-                    }
-        
+                    return {"ruby_base": base_text, "ruby_text": ruby_text}
+
         return None
 
     def _sanitize_color_attribute(self, color_value: str) -> str:

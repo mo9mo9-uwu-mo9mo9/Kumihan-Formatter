@@ -136,51 +136,60 @@ class ParallelChunkProcessor:
         Yields:
             Any: 処理結果（順序保証付き）
         """
-        self.logger.info(f"Starting optimized parallel processing: {len(chunks)} chunks")
-        
+        self.logger.info(
+            f"Starting optimized parallel processing: {len(chunks)} chunks"
+        )
+
         if not chunks:
             return
 
         # 動的ワーカー数計算（CPU効率最大化）
         optimal_workers = self._calculate_optimal_workers(len(chunks))
-        
+
         # 結果収集用の順序保証辞書
         results_dict = {}
         errors_dict = {}
-        
+
         # パフォーマンス監視
         from .performance_metrics import monitor_performance
-        
+
         with monitor_performance("parallel_chunk_processing") as perf_monitor:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=optimal_workers) as executor:
-                
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=optimal_workers
+            ) as executor:
+
                 # 全チャンクを並列で開始（最適化されたsubmit）
                 future_to_chunk = {}
                 for chunk in chunks:
                     future = executor.submit(
-                        self._process_single_chunk_optimized, chunk, processing_func, perf_monitor
+                        self._process_single_chunk_optimized,
+                        chunk,
+                        processing_func,
+                        perf_monitor,
                     )
                     future_to_chunk[future] = chunk
 
                 completed_chunks = 0
-                
+
                 # 完了順に結果を収集
                 for future in concurrent.futures.as_completed(future_to_chunk):
                     chunk = future_to_chunk[future]
-                    
+
                     try:
                         results = future.result()
                         results_dict[chunk.chunk_id] = results
-                        
+
                         completed_chunks += 1
-                        
+
                         # プログレス更新（最適化）
-                        if progress_callback and completed_chunks % 5 == 0:  # 更新頻度調整
+                        if (
+                            progress_callback and completed_chunks % 5 == 0
+                        ):  # 更新頻度調整
                             progress_info = self._create_progress_info_optimized(
                                 completed_chunks, len(chunks), chunk
                             )
                             progress_callback(progress_info)
-                    
+
                     except Exception as e:
                         error_msg = f"Chunk {chunk.chunk_id} processing failed: {e}"
                         self.logger.error(error_msg)
@@ -202,17 +211,17 @@ class ParallelChunkProcessor:
         )
 
     def _process_single_chunk_optimized(
-        self, 
-        chunk: ChunkInfo, 
+        self,
+        chunk: ChunkInfo,
         processing_func: Callable[[ChunkInfo], Iterator[Any]],
-        perf_monitor
+        perf_monitor,
     ) -> List[Any]:
         """単一チャンクの最適化処理（効率向上版）"""
-        
+
         try:
             # スレッドローカル情報でデバッグ改善
             thread_id = threading.get_ident()
-            
+
             self.logger.debug(
                 f"Thread {thread_id}: Processing chunk {chunk.chunk_id} "
                 f"(lines {chunk.start_line}-{chunk.end_line})"
@@ -235,17 +244,17 @@ class ParallelChunkProcessor:
 
         except Exception as e:
             self.logger.error(
-                f"Thread {threading.get_ident()}: Error in chunk {chunk.chunk_id}: {e}", 
-                exc_info=True
+                f"Thread {threading.get_ident()}: Error in chunk {chunk.chunk_id}: {e}",
+                exc_info=True,
             )
             raise
 
     def _calculate_optimal_workers(self, chunk_count: int) -> int:
         """最適ワーカー数の動的計算"""
-        
+
         # CPU コア数ベースの計算
         cpu_count = os.cpu_count() or 1
-        
+
         # チャンク数に応じた調整
         if chunk_count <= 2:
             optimal = 1  # 少数チャンクは並列化不要
@@ -254,39 +263,40 @@ class ParallelChunkProcessor:
         else:
             # CPU集約的処理のため、CPU数+2を上限とする
             optimal = min(cpu_count + 2, self.max_workers or cpu_count + 2)
-        
+
         # メモリ使用量も考慮（簡易版）
         try:
             import psutil
+
             memory_percent = psutil.virtual_memory().percent
             if memory_percent > 80:  # メモリ使用率が高い場合は並列度を下げる
                 optimal = max(1, optimal // 2)
         except ImportError:
             pass  # psutil未利用環境では無視
-        
-        self.logger.info(f"Calculated optimal workers: {optimal} (chunks: {chunk_count}, CPU: {cpu_count})")
+
+        self.logger.info(
+            f"Calculated optimal workers: {optimal} (chunks: {chunk_count}, CPU: {cpu_count})"
+        )
         return optimal
 
     def _create_progress_info_optimized(
         self, completed: int, total: int, current_chunk: ChunkInfo
     ) -> dict:
         """最適化されたプログレス情報作成"""
-        
+
         progress_percent = (completed / total) * 100 if total > 0 else 100
-        
+
         return {
             "completed_chunks": completed,
             "total_chunks": total,
             "chunk_id": current_chunk.chunk_id,
             "progress_percent": progress_percent,
             "current_lines": f"{current_chunk.start_line}-{current_chunk.end_line}",
-            "efficiency": "high" if progress_percent > 0 else "starting"
+            "efficiency": "high" if progress_percent > 0 else "starting",
         }
 
     def create_chunks_adaptive(
-        self, 
-        lines: List[str], 
-        target_chunk_count: Optional[int] = None
+        self, lines: List[str], target_chunk_count: Optional[int] = None
     ) -> List[ChunkInfo]:
         """
         適応的チャンク作成（処理量に応じてサイズ調整）
@@ -298,7 +308,7 @@ class ParallelChunkProcessor:
         Returns:
             List[ChunkInfo]: 最適化されたチャンクリスト
         """
-        
+
         total_lines = len(lines)
         if total_lines == 0:
             return []
@@ -316,7 +326,7 @@ class ParallelChunkProcessor:
 
         # 適応的チャンクサイズ計算
         adaptive_chunk_size = max(1, total_lines // target_chunk_count)
-        
+
         self.logger.info(
             f"Adaptive chunking: {total_lines} lines → {target_chunk_count} chunks "
             f"(size: ~{adaptive_chunk_size})"

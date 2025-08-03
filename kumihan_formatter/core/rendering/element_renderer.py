@@ -179,27 +179,27 @@ class ElementRenderer:
     def render_ruby(self, node: Node) -> str:
         """
         Render ruby element (#ルビ 海砂利水魚(かいじゃりすいぎょ)#)
-        
+
         Args:
             node: Ruby node to render
-            
+
         Returns:
             str: HTML ruby element
         """
-        if not hasattr(node, 'attributes') or not node.attributes:
+        if not hasattr(node, "attributes") or not node.attributes:
             return escape_html(str(node.content))
-        
-        ruby_base = node.attributes.get('ruby_base', '')
-        ruby_text = node.attributes.get('ruby_text', '')
-        
+
+        ruby_base = node.attributes.get("ruby_base", "")
+        ruby_text = node.attributes.get("ruby_text", "")
+
         if not ruby_base or not ruby_text:
             return escape_html(str(node.content))
-        
+
         # HTML ruby要素を生成
         safe_base = escape_html(ruby_base)
         safe_text = escape_html(ruby_text)
-        
-        return f'<ruby><rb>{safe_base}</rb><rt>{safe_text}</rt></ruby>'
+
+        return f"<ruby><rb>{safe_base}</rb><rt>{safe_text}</rt></ruby>"
 
     # === 見出し要素レンダリング機能 ===
 
@@ -256,9 +256,9 @@ class ElementRenderer:
     def render_list_item(self, node: Node) -> str:
         """リスト項目をレンダリング（ネスト対応版）"""
         content = self._render_content(node.content, 0)
-        
+
         # 子要素（ネストしたリスト）もレンダリング
-        if hasattr(node, 'children') and node.children:
+        if hasattr(node, "children") and node.children:
             for child in node.children:
                 if self._main_renderer:
                     child_html = self._main_renderer.render_node(child)

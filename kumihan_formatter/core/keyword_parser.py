@@ -11,7 +11,7 @@ including compound keywords and error suggestions.
 
 from typing import Any
 
-from .ast_nodes import Node, NodeBuilder, error_node, strong, emphasis, highlight
+from .ast_nodes import Node, NodeBuilder, emphasis, error_node, highlight, strong
 from .keyword_parsing import KeywordDefinitions, KeywordValidator, MarkerParser
 
 
@@ -74,19 +74,18 @@ class KeywordParser:
 
         # 後方互換性のため既存プロパティを維持
         self.BLOCK_KEYWORDS = self.definitions.BLOCK_KEYWORDS
-        
+
         # パフォーマンス改善: 正規表現パターンを事前コンパイル
         import re
+
         # インライン記法: #keyword content## のパターン（##で終わる）
-        self._inline_pattern = re.compile(r'#\s*([^#]+?)\s*#([^#]+?)##')
-        
+        self._inline_pattern = re.compile(r"#\s*([^#]+?)\s*#([^#]+?)##")
+
         # インライン記法キーワードマッピング
 
-
-        
         self._inline_keyword_mapping = {
             "太字": strong,
-            "イタリック": emphasis, 
+            "イタリック": emphasis,
             "ハイライト": highlight,
             "下線": lambda text: NodeBuilder("u").content(text).build(),
             "コード": lambda text: NodeBuilder("code").content(text).build(),
@@ -160,7 +159,7 @@ class KeywordParser:
         color_map = {
             # 基本色（ハイライト用淡い色）
             "red": "#ffcccc",
-            "green": "#ccffcc", 
+            "green": "#ccffcc",
             "blue": "#ccccff",
             "yellow": "#ffff00",
             "orange": "#ffa500",
@@ -193,13 +192,13 @@ class KeywordParser:
             "茶": "#a52a2a",
             "黒": "#000000",
             "白": "#ffffff",
-            "灰": "#808080"
+            "灰": "#808080",
         }
-        
+
         # 既に16進数形式の場合はそのまま返す
         if color.startswith("#"):
             return color
-            
+
         # 色名の場合は16進数に変換
         color_lower = color.lower()
         if color_lower in color_map:
@@ -290,7 +289,7 @@ class KeywordParser:
 
         # Check for inline keywords in content
         processed_content = self._process_inline_keywords(content)
-        
+
         # 処理結果が配列の場合は、そのまま配列として返す
         if isinstance(processed_content, list):
             return processed_content
@@ -299,43 +298,42 @@ class KeywordParser:
 
     def _process_inline_keywords(self, content: str, nesting_level: int = 0) -> Any:
         """Process inline keywords within content (# keyword content # format)
-        
+
         仕様:
         - インライン記法: #keyword content# のパターン
         - 単一行内で完結（複数行は現時点では非対応）
         - 制限付きネスト（1レベルまで）対応
-        
+
         Args:
             content: 処理対象のコンテンツ
             nesting_level: 現在のネストレベル（0=トップレベル、1=1レベルネスト）
         """
 
-        
         # 事前コンパイル済みパターンを使用してパフォーマンス向上
         if not self._inline_pattern.search(content):
             return content
-            
+
         # Process inline notations
         parts = []
         last_end = 0
-        
+
         for match in self._inline_pattern.finditer(content):
             # Add text before the match
             if match.start() > last_end:
-                text_before = content[last_end:match.start()]
+                text_before = content[last_end : match.start()]
                 if text_before.strip():
                     parts.append(text_before)
-            
+
             full_keyword = match.group(1).strip()
             text_content = match.group(2).strip()
-            
+
             # ネストレベルチェック（最大1レベルまで）
             if nesting_level >= 1:
                 # 1レベルを超えるネストは禁止、そのまま返す
                 parts.append(match.group(0))
                 last_end = match.end()
                 continue
-            
+
             # ルビ記法の特殊処理
             if full_keyword.startswith("ルビ "):
                 # ルビ記法の場合は、"ルビ "を除去した残りがコンテンツ
@@ -351,24 +349,28 @@ class KeywordParser:
                     parts.append(match.group(0))  # 解析失敗時は元のまま
                 last_end = match.end()
                 continue
-            
+
             # 通常のキーワードの場合は、スペースで分割
-            keyword_parts = full_keyword.split(' ', 1)
+            keyword_parts = full_keyword.split(" ", 1)
             keyword = keyword_parts[0]
             # text_contentは既にmatch.group(2)から取得済み
-            
+
             # テキストコンテンツ内でのネストした記法を再帰処理
-            if nesting_level == 0 and text_content and self._inline_pattern.search(text_content):
-                text_content = self._process_inline_keywords(text_content, nesting_level + 1)
-            
+            if (
+                nesting_level == 0
+                and text_content
+                and self._inline_pattern.search(text_content)
+            ):
+                text_content = self._process_inline_keywords(
+                    text_content, nesting_level + 1
+                )
+
             # ノード作成（改善されたキーワードマッピング使用）
-            base_keyword = keyword.split(' ')[0]  # 色属性を除いた基本キーワード
-            
+            base_keyword = keyword.split(" ")[0]  # 色属性を除いた基本キーワード
+
             if base_keyword in self._inline_keyword_mapping:
                 node = self._create_styled_inline_node(
-                    self._inline_keyword_mapping[base_keyword], 
-                    text_content, 
-                    keyword
+                    self._inline_keyword_mapping[base_keyword], text_content, keyword
                 )
                 parts.append(node)
             elif keyword == "見出し3":
@@ -377,15 +379,15 @@ class KeywordParser:
             else:
                 # Unknown keyword - return original text with markers
                 parts.append(match.group(0))
-            
+
             last_end = match.end()
-        
+
         # Add remaining text after last match
         if last_end < len(content):
             remaining = content[last_end:]
             if remaining.strip():
                 parts.append(remaining)
-        
+
         # Return normalized result - 修正: 配列の場合の適切な処理
         if len(parts) == 0:
             return content  # 何も処理されなかった場合は元のコンテンツを返す
@@ -396,32 +398,32 @@ class KeywordParser:
             # レンダラーが処理できるよう、配列としてそのまま返す
             # ただし、すべてが文字列の場合は結合する
             if all(isinstance(part, str) for part in parts):
-                return ''.join(parts)
+                return "".join(parts)
             else:
                 return parts
 
-    
     def _create_ruby_node(self, content: str) -> Any:
         """
         ルビ記法専用のノード作成メソッド
-        
+
         Args:
             content: ルビのコンテンツ（例: "海砂利水魚(かいじゃりすいぎょ)"）
-            
+
         Returns:
             Node: rubyノード
         """
 
-        
         # MarkerParserのルビ解析機能を使用
         ruby_info = self.marker_parser._parse_ruby_content(content)
-        
+
         if ruby_info and "ruby_base" in ruby_info and "ruby_text" in ruby_info:
             # ルビノードを作成（attributeメソッドを使用）
-            return (NodeBuilder("ruby")
-                   .attribute("ruby_base", ruby_info["ruby_base"])
-                   .attribute("ruby_text", ruby_info["ruby_text"])
-                   .build())
+            return (
+                NodeBuilder("ruby")
+                .attribute("ruby_base", ruby_info["ruby_base"])
+                .attribute("ruby_text", ruby_info["ruby_text"])
+                .build()
+            )
         else:
             # 解析失敗時は元のコンテンツを返す
             return content
@@ -444,30 +446,32 @@ class KeywordParser:
 
         return sorted(keywords, key=get_nesting_index)
 
-    def _create_styled_inline_node(self, node_factory, text_content: str, keyword: str) -> Any:
+    def _create_styled_inline_node(
+        self, node_factory, text_content: str, keyword: str
+    ) -> Any:
         """色属性付きインライン記法ノード作成のヘルパーメソッド
-        
+
         Args:
             node_factory: ノード生成関数（strong, emphasis等）
             text_content: ノードの内容
             keyword: キーワード（色属性含む可能性）
-        
+
         Returns:
             Node: 作成されたノード（色属性適用済み）
         """
         node = node_factory(text_content)
-        
+
         # 色属性の処理
-        if ' color=' in keyword:
-            color_part = keyword.split(' color=')[1]
+        if " color=" in keyword:
+            color_part = keyword.split(" color=")[1]
             color_value = self._normalize_color_value(color_part)
-            
+
             # ハイライトは背景色、それ以外は文字色
             if keyword.startswith("ハイライト"):
-                if hasattr(node, 'attributes'):
-                    node.attributes['style'] = f'background-color: {color_value}'
+                if hasattr(node, "attributes"):
+                    node.attributes["style"] = f"background-color: {color_value}"
             else:
-                if hasattr(node, 'attributes'):
-                    node.attributes['style'] = f'color: {color_value}'
-        
+                if hasattr(node, "attributes"):
+                    node.attributes["style"] = f"color: {color_value}"
+
         return node

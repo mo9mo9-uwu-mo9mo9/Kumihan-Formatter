@@ -251,8 +251,13 @@ def file_conversion_mode():
 
 
 def process_files(input_paths: str, parser, renderer, logger):
-    """ファイル処理メイン関数"""
+    """ファイル処理メイン関数（セキュリティ・パフォーマンス強化版）"""
     import glob
+    import time
+    
+    # セキュリティ設定
+    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB制限
+    MAX_FILES_COUNT = 1000  # 最大処理ファイル数
     
     # カンマ区切りでパス分割
     paths = [path.strip().strip('"\'') for path in input_paths.split(',')]
@@ -266,18 +271,27 @@ def process_files(input_paths: str, parser, renderer, logger):
         if path.is_file():
             # 単一ファイル
             if is_kumihan_file(path):
-                all_files.append(path)
+                if is_file_safe(path, MAX_FILE_SIZE):
+                    all_files.append(path)
+                else:
+                    print(f"⚠️  スキップ: {path.name} (ファイルサイズが大きすぎます: {path.stat().st_size / 1024 / 1024:.1f}MB)")
             else:
                 print(f"⚠️  スキップ: {path.name} (Kumihanファイルではありません)")
                 
         elif path.is_dir():
             # ディレクトリ：.kumihanファイルを検索
             kumihan_files = find_kumihan_files(path)
-            if kumihan_files:
-                all_files.extend(kumihan_files)
-                print(f"📂 {path.name}: {len(kumihan_files)}個のKumihanファイルを発見")
+            # ファイルサイズチェック
+            safe_files = [f for f in kumihan_files if is_file_safe(f, MAX_FILE_SIZE)]
+            
+            if safe_files:
+                all_files.extend(safe_files)
+                skipped_count = len(kumihan_files) - len(safe_files)
+                print(f"📂 {path.name}: {len(safe_files)}個のKumihanファイルを発見")
+                if skipped_count > 0:
+                    print(f"    ⚠️  {skipped_count}個のファイルをサイズ制限によりスキップ")
             else:
-                print(f"📂 {path.name}: Kumihanファイルが見つかりませんでした")
+                print(f"📂 {path.name}: 処理可能なKumihanファイルが見つかりませんでした")
                 
         else:
             # ワイルドカード対応
@@ -285,7 +299,7 @@ def process_files(input_paths: str, parser, renderer, logger):
                 matched_files = glob.glob(str(path))
                 for matched_path in matched_files:
                     file_path = Path(matched_path)
-                    if file_path.is_file() and is_kumihan_file(file_path):
+                    if file_path.is_file() and is_kumihan_file(file_path) and is_file_safe(file_path, MAX_FILE_SIZE):
                         all_files.append(file_path)
                         
                 if not matched_files:
@@ -293,27 +307,44 @@ def process_files(input_paths: str, parser, renderer, logger):
             except Exception as e:
                 print(f"❌ パス処理エラー: {path_str} - {e}")
     
+    # ファイル数制限チェック
+    if len(all_files) > MAX_FILES_COUNT:
+        print(f"⚠️  ファイル数が制限を超えています。最初の{MAX_FILES_COUNT}個のみ処理します。")
+        all_files = all_files[:MAX_FILES_COUNT]
+    
     if not all_files:
         print("❌ 変換可能なKumihanファイルが見つかりませんでした")
         return
     
     # 変換実行
     print(f"\n🚀 {len(all_files)}個のファイルを変換開始...")
+    start_time = time.time()
     
     success_count = 0
     error_count = 0
+    total_input_size = 0
+    total_output_size = 0
     
     for i, file_path in enumerate(all_files, 1):
         try:
-            print(f"\n[{i:3d}/{len(all_files)}] {file_path.name}")
+            # プログレス表示の改善
+            print(f"\n[{i:3d}/{len(all_files)}] {file_path.name} ", end="", flush=True)
             
             # ファイル読み込み
+            file_stat = file_path.stat()
+            total_input_size += file_stat.st_size
+            
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
+            print("📖 ", end="", flush=True)  # 読み込み完了
+            
             # パース＆レンダリング
             result = parser.parse(content)
+            print("🔄 ", end="", flush=True)  # パース完了
+            
             html_content = renderer.render(result)
+            print("🎨 ", end="", flush=True)  # レンダリング完了
             
             # 出力ファイル名決定
             output_path = file_path.with_suffix('.html')
@@ -322,27 +353,75 @@ def process_files(input_paths: str, parser, renderer, logger):
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
             
-            print(f"    ✅ 成功: {output_path.name}")
+            output_stat = output_path.stat()
+            total_output_size += output_stat.st_size
+            
+            print(f"✅ 成功: {output_path.name} ({output_stat.st_size / 1024:.1f}KB)")
             success_count += 1
             
+        except UnicodeDecodeError as e:
+            print(f"❌ 文字エンコーディングエラー: {e}")
+            error_count += 1
+            logger.error(f"Encoding error for {file_path}: {e}")
+        except MemoryError as e:
+            print(f"❌ メモリ不足: ファイルが大きすぎます")
+            error_count += 1
+            logger.error(f"Memory error for {file_path}: {e}")
         except Exception as e:
-            print(f"    ❌ 失敗: {e}")
+            print(f"❌ 失敗: {e}")
             error_count += 1
             logger.error(f"File conversion error for {file_path}: {e}")
     
-    # 結果サマリー
+    # 結果サマリー（詳細版）
+    elapsed_time = time.time() - start_time
+    
     print(f"\n📊 変換完了:")
     print(f"   ✅ 成功: {success_count}ファイル")
     if error_count > 0:
         print(f"   ❌ 失敗: {error_count}ファイル")
     
     print(f"   📁 出力ディレクトリ: {all_files[0].parent if all_files else '(なし)'}")
-
+    print(f"   ⏱️  処理時間: {elapsed_time:.2f}秒")
+    print(f"   📊 入力サイズ: {total_input_size / 1024:.1f}KB")
+    print(f"   📊 出力サイズ: {total_output_size / 1024:.1f}KB")
+    
+    if success_count > 0:
+        avg_time = elapsed_time / success_count
+        print(f"   📈 平均処理時間: {avg_time:.2f}秒/ファイル")
 
 def is_kumihan_file(file_path: Path) -> bool:
     """Kumihanファイルかどうかを判定"""
     valid_extensions = {'.kumihan', '.txt', '.md'}
     return file_path.suffix.lower() in valid_extensions
+
+def is_file_safe(file_path: Path, max_size: int) -> bool:
+    """ファイルが安全に処理可能かをチェック
+    
+    Args:
+        file_path: チェック対象のファイルパス
+        max_size: 最大ファイルサイズ（バイト）
+    
+    Returns:
+        bool: 安全に処理可能な場合True
+    """
+    try:
+        # ファイルサイズチェック
+        file_stat = file_path.stat()
+        if file_stat.st_size > max_size:
+            return False
+        
+        # 読み取り権限チェック
+        if not file_path.is_file() or not os.access(file_path, os.R_OK):
+            return False
+            
+        # 空ファイルチェック
+        if file_stat.st_size == 0:
+            return False
+            
+        return True
+        
+    except (OSError, PermissionError):
+        return False
 
 
 def find_kumihan_files(directory: Path) -> list[Path]:

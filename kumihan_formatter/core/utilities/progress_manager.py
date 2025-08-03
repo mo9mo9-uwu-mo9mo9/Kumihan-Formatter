@@ -27,12 +27,14 @@ class ProgressState:
     errors_count: int = 0
     warnings_count: int = 0
     memory_mb: float = 0.0  # 現在のメモリ使用量（MB）
+
     @property
     def progress_percent(self) -> float:
         """進捗率を取得（0-100）"""
         if self.total == 0:
             return 100.0
         return min(100.0, (self.current / self.total) * 100)
+
     @property
     def elapsed_time(self) -> float:
         """経過時間（秒）"""
@@ -116,7 +118,7 @@ class ProgressManager:
     def update(self, current: int, substage: str = "") -> bool:
         """
         プログレスを更新
-        
+
         Args:
             current: 現在の進捗値
             substage: サブステージ名
@@ -643,5 +645,3 @@ class ProgressContextManager:
             f"Warnings: {stats.get('warnings_count', 0)} | "
             f"Stages: {stats['stages_completed']}"
         )
-
-

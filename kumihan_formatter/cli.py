@@ -134,7 +134,9 @@ def register_commands() -> None:
         )
         @click.option(
             "--error-level",
-            type=click.Choice(["strict", "normal", "lenient", "ignore"], case_sensitive=False),
+            type=click.Choice(
+                ["strict", "normal", "lenient", "ignore"], case_sensitive=False
+            ),
             default="normal",
             envvar="KUMIHAN_ERROR_LEVEL",
             help="Phase3: エラー処理レベル設定（strict/normal/lenient/ignore）",
@@ -285,6 +287,111 @@ def main() -> None:
         )
         friendly_error_handler.display_error(error, verbose=True)
         sys.exit(1)
+
+
+def interactive_repl():
+    """対話型変換REPL - ダブルクリック実行用"""
+    import os
+    import sys
+    from pathlib import Path
+
+    # プロジェクトルートをPythonパスに追加
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+
+    try:
+        from kumihan_formatter.core.parser.kumihan_parser import KumihanParser
+        from kumihan_formatter.core.renderer.html_renderer import HTMLRenderer
+        from kumihan_formatter.core.utilities.logger import get_logger
+    except ImportError as e:
+        print(f"❌ インポートエラー: {e}")
+        input("Enterキーを押して終了...")
+        return
+
+    logger = get_logger(__name__)
+
+    # エンコーディング設定
+    setup_encoding()
+
+    print("🚀 Kumihan-Formatter 対話型変換ツール")
+    print("=" * 50)
+    print("📝 テキストを入力してHTML変換をテストできます")
+    print("💡 'exit' または 'quit' で終了")
+    print("💡 'help' でヘルプ表示")
+    print("💡 'clear' で画面クリア")
+    print("-" * 50)
+
+    parser = KumihanParser()
+    renderer = HTMLRenderer()
+
+    history = []
+
+    while True:
+        try:
+            # プロンプト表示
+            user_input = input("\n📝 Kumihan記法: ").strip()
+
+            if not user_input:
+                continue
+
+            # 特殊コマンド処理
+            if user_input.lower() in ["exit", "quit"]:
+                print("👋 終了します")
+                break
+            elif user_input.lower() == "help":
+                print("\n📖 ヘルプ:")
+                print("  - Kumihan記法を入力するとHTML変換されます")
+                print("  - 例: # 太字 #テスト## → <strong>テスト</strong>")
+                print("  - 'history' で履歴表示")
+                print("  - 'clear' で画面クリア")
+                print("  - 'exit' で終了")
+                continue
+            elif user_input.lower() == "clear":
+                os.system("clear" if os.name == "posix" else "cls")
+                continue
+            elif user_input.lower() == "history":
+                print("\n📚 変換履歴:")
+                for i, (input_text, output_html) in enumerate(history[-10:], 1):
+                    print(f"  {i}. 入力: {input_text[:50]}...")
+                    print(f"     出力: {output_html[:100]}...")
+                continue
+
+            # Kumihan記法の変換実行
+            try:
+                # パース処理
+                result = parser.parse_text(user_input)
+
+                # HTML生成
+                html_content = renderer.render(result)
+
+                # 結果表示
+                print(f"\n✅ 変換成功:")
+                print(f"📄 HTML: {html_content}")
+
+                # 履歴に追加
+                history.append((user_input, html_content))
+
+            except Exception as parse_error:
+                print(f"\n❌ 変換エラー: {parse_error}")
+                logger.error(f"Parse error: {parse_error}")
+
+        except KeyboardInterrupt:
+            print("\n\n👋 Ctrl+C で終了します")
+            break
+        except Exception as e:
+            print(f"\n❌ 予期しないエラー: {e}")
+            logger.error(f"Unexpected error: {e}")
+
+    input("\nEnterキーを押して終了...")
+
+
+if __name__ == "__main__":
+    # ダブルクリック実行時は対話REPLを起動
+    if len(sys.argv) == 1:
+        interactive_repl()
+    else:
+        # コマンドライン引数がある場合は通常のCLI
+        main()
 
 
 if __name__ == "__main__":
