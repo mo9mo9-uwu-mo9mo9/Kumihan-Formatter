@@ -178,9 +178,9 @@ pip install -e ".[dev]"                             # 依存関係
 ## 詳細仕様書
 | カテゴリ | ファイル | 説明 |
 |----------|--------|------|
-| 📝 記法仕様 | [docs/specifications/NOTATION_SPEC.md](docs/specifications/NOTATION_SPEC.md) | Kumihan記法の完全仕様 |
-| ⚙️ 機能仕様 | [docs/specifications/FUNCTIONAL_SPEC.md](docs/specifications/FUNCTIONAL_SPEC.md) | システム機能の詳細仕様 |
-| ❗ エラー仕様 | [docs/specifications/ERROR_MESSAGES_SPEC.md](docs/specifications/ERROR_MESSAGES_SPEC.md) | エラーメッセージ一覧 |
+| 📝 記法仕様 | [docs/specs/notation.md](docs/specs/notation.md) | Kumihan記法の完全仕様 |
+| ⚙️ 機能仕様 | [docs/specs/functional.md](docs/specs/functional.md) | システム機能の詳細仕様 |
+| ❗ エラー仕様 | [docs/specs/error-messages.md](docs/specs/error-messages.md) | エラーメッセージ一覧 |
 
 ---
 
