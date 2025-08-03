@@ -43,6 +43,7 @@ def setup_encoding() -> None:
 
 
 @click.group()
+@click.version_option(version="3.0.0-dev", prog_name="kumihan-formatter")
 def cli() -> None:
     """Kumihan-Formatter - 開発用CLIツール
 
