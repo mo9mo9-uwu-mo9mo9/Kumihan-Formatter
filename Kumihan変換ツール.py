@@ -31,6 +31,26 @@ def setup_encoding():
         pass
 
 
+def extract_body_content(html_content):
+    """HTMLからbody部分のコンテンツのみを抽出（対話型モード用）"""
+    import re
+    
+    # <body>内のコンテンツを抽出
+    body_match = re.search(r'<body[^>]*>(.*?)</body>', html_content, re.DOTALL)
+    if body_match:
+        body_inner = body_match.group(1)
+        
+        # .containerの中身を抽出
+        container_match = re.search(r'<div class="container"[^>]*>(.*?)</div>', body_inner, re.DOTALL)
+        if container_match:
+            return container_match.group(1).strip()
+        
+        return body_inner.strip()
+    
+    # bodyタグが見つからない場合はそのまま返す
+    return html_content.strip()
+
+
 def main_menu():
     """メインメニュー表示と選択"""
     print("🚀 Kumihan-Formatter 変換ツール")
@@ -77,6 +97,7 @@ def interactive_repl():
         from kumihan_formatter.parser import Parser
         from kumihan_formatter.renderer import Renderer
         from kumihan_formatter.core.utilities.logger import get_logger
+        import logging
     except ImportError as e:
         print(f"❌ インポートエラー: {e}")
         print("💡 プロジェクトディレクトリで実行していることを確認してください")
@@ -84,6 +105,11 @@ def interactive_repl():
         return
     
     logger = get_logger(__name__)
+    
+    # 対話型モード専用: ログレベルを最小限に設定
+    logging.getLogger('kumihan_formatter').setLevel(logging.ERROR)
+    logging.getLogger('performance').setLevel(logging.CRITICAL)
+    logging.getLogger().setLevel(logging.ERROR)
     
     print("\n📝 対話型変換モード")
     print("=" * 60)
@@ -161,21 +187,24 @@ def interactive_repl():
                 # パース処理
                 result = parser.parse(user_input)
                 
-                # HTML生成
-                html_content = renderer.render(result)
+                # HTML生成（軽量テンプレート使用）
+                html_content = renderer.render(result, template=None, title="")
                 
-                # 結果表示
-                print(f"\n✅ 変換成功:")
-                print(f"📄 HTML: {html_content}")
+                # 対話型用: HTMLコンテンツ部分のみ抽出
+                body_content = extract_body_content(html_content)
                 
-                # プレーンテキスト表示（デバッグ用）
+                # プレーンテキスト表示
                 import re
-                plain_text = re.sub(r'<[^>]+>', '', html_content)
-                if plain_text != html_content:
-                    print(f"📋 Text: {plain_text}")
+                plain_text = re.sub(r'<[^>]+>', '', body_content)
+                
+                # 結果表示（改善版）
+                print(f"\n✅ 変換成功:")
+                print(f"📄 HTML: {body_content}")
+                if plain_text.strip() and plain_text != body_content:
+                    print(f"📋 プレビュー: {plain_text.strip()}")
                 
                 # 履歴に追加
-                history.append((user_input, html_content))
+                history.append((user_input, body_content))
                 
             except Exception as parse_error:
                 print(f"\n❌ 変換エラー: {parse_error}")
