@@ -78,7 +78,7 @@ class KeywordParser:
         # パフォーマンス改善: 正規表現パターンを事前コンパイル
         import re
         # インライン記法: #keyword content## のパターン（##で終わる）
-        self._inline_pattern = re.compile(r'#([^#]+?)#([^#]+?)##')
+        self._inline_pattern = re.compile(r'#\s*([^#]+?)\s*#([^#]+?)##')
         
         # インライン記法キーワードマッピング
 

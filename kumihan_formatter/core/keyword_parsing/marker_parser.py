@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .definitions import KeywordDefinitions
+from ..utilities.logger import get_logger
 
 
 @dataclass
@@ -40,10 +41,25 @@ class MarkerParser:
             definitions: キーワード定義
         """
         self.definitions = definitions
+        self.logger = get_logger(__name__)
 
         # 新記法対応: マーカー文字の定義
         self.HASH_MARKERS = ["#", "＃"]  # 半角・全角両対応
         self.BLOCK_END_MARKERS = ["##", "＃＃"]  # ブロック終了マーカー
+        
+        # Issue #751対応: パフォーマンス改善のため正規表現を事前コンパイル
+        # インライン記法パターン
+        self._inline_pattern_1 = re.compile(r"^[#＃]\s*([^#＃]+)\s*[#＃]\s+(.+)$")
+        self._inline_pattern_2 = re.compile(r"^[#＃]\s*([^#＃]+)\s+([^#＃]+)\s*[#＃]$")
+        self._inline_pattern_3 = re.compile(r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃]{2}$")
+        
+        # ブロック記法パターン
+        self._basic_pattern = re.compile(r"^[#＃]\s*[^#＃]+\s*[#＃]$")
+        self._attribute_pattern = re.compile(r"^[#＃]\s*[^#＃]+\s+[^#＃]+=\S+\s*[#＃]$")
+        self._compound_pattern = re.compile(r"^[#＃]\s*[^#＃]+[+＋][^#＃]+\s*[#＃]$")
+        
+        # リストアイテムパターン
+        self._list_item_pattern = re.compile(r"^\d+\.\s")  # ブロック終了マーカー
 
     def parse(self, text: str) -> ParseResult | None:
         """
@@ -630,16 +646,14 @@ class MarkerParser:
 
     def is_new_marker_format(self, line: str) -> bool:
         """
-        行が新記法 # キーワード # 形式かどうかを判定（α-dev: ブロック記法のみ）
+        行が新記法 # キーワード # 形式かどうかを判定（α-dev: ブロック記法とインライン記法両対応）
 
         Args:
             line: 判定対象の行
 
         Returns:
-            bool: ブロック記法の場合True、α-devでは単一行記法は完全拒否
+            bool: 新記法の場合True（ブロック記法またはインライン記法）
         """
-        import re  # Issue #713修正: reモジュールのインポートを最初に移動
-
         line = line.strip()
 
         # リスト項目の場合は除外（リスト内のインライン記法は別途処理）
@@ -648,34 +662,24 @@ class MarkerParser:
             or line.startswith("・")
             or line.startswith("* ")
             or line.startswith("+ ")
-            or re.match(r"^\d+\.\s", line)
+            or self._list_item_pattern.match(line)
         ):
             return False
 
-        # α-dev: 単一行記法を完全拒否（より厳密な検出）
-        # パターン1: #keyword# content 形式
-        inline_pattern_1 = r"^[#＃]\s*[^#＃]+\s*[#＃]\s+.+$"
-        # パターン2: #keyword content# 形式  
-        inline_pattern_2 = r"^[#＃]\s*[^#＃]+\s+[^#＃]+\s*[#＃]$"
-        # パターン3: #keyword content## 形式
-        inline_pattern_3 = r"^[#＃]\s*[^#＃]+\s+[^#＃]+\s*[#＃]{2}$"
-        
-        if (re.match(inline_pattern_1, line) or 
-            re.match(inline_pattern_2, line) or
-            re.match(inline_pattern_3, line)):
-            return False
+        try:
+            # Issue #751対応: インライン記法パターンをチェック
+            if (self._inline_pattern_1.match(line) or 
+                self._inline_pattern_2.match(line) or
+                self._inline_pattern_3.match(line)):
+                return True
 
-        # ブロック記法のみ許可: # キーワード # （行全体で完結、属性付きも含む）
-        # 基本パターン: #keyword#
-        basic_pattern = r"^[#＃]\s*[^#＃]+\s*[#＃]$"
-        # 属性付きパターン: #keyword attr=value#
-        attribute_pattern = r"^[#＃]\s*[^#＃]+\s+[^#＃]+=\S+\s*[#＃]$"
-        # 複合パターン: #keyword1+keyword2#
-        compound_pattern = r"^[#＃]\s*[^#＃]+[+＋][^#＃]+\s*[#＃]$"
-        
-        return (bool(re.match(basic_pattern, line)) or
-                bool(re.match(attribute_pattern, line)) or
-                bool(re.match(compound_pattern, line)))
+            # ブロック記法のみ許可: # キーワード # （行全体で完結、属性付きも含む）
+            return (bool(self._basic_pattern.match(line)) or
+                    bool(self._attribute_pattern.match(line)) or
+                    bool(self._compound_pattern.match(line)))
+        except Exception as e:
+            self.logger.warning(f"Regex error in is_new_marker_format: {e}")
+            return False
 
     def is_block_end_marker(self, line: str) -> bool:
         """
@@ -722,16 +726,36 @@ class MarkerParser:
 
     def extract_inline_content(self, line: str) -> str | None:
         """
-        α-dev: 単一行記法完全廃止 - 常にNoneを返す
+        Issue #751対応: インライン記法からコンテンツを抽出
 
         Args:
             line: 解析対象の行
 
         Returns:
-            None: α-devではブロック記法のみサポートのため常にNone
+            str | None: 抽出されたコンテンツ、該当しない場合はNone
         """
-        # α-dev: 単一行記法は完全廃止、ブロック記法のみサポート
-        return None
+        line = line.strip()
+        
+        try:
+            # パターン1: #keyword# content 形式
+            match = self._inline_pattern_1.match(line)
+            if match:
+                return match.group(2).strip()
+                
+            # パターン2: #keyword content# 形式  
+            match = self._inline_pattern_2.match(line)
+            if match:
+                return match.group(2).strip()
+                
+            # パターン3: # keyword #content## 形式
+            match = self._inline_pattern_3.match(line)
+            if match:
+                return match.group(2).strip()
+            
+            return None
+        except Exception as e:
+            self.logger.warning(f"Regex error in extract_inline_content: {e}")
+            return None
 
     def _parse_ruby_content(self, content: str) -> dict[str, Any] | None:
         """
