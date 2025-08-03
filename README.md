@@ -1,12 +1,12 @@
 # Kumihan-Formatter
 
-![Version](https://img.shields.io/badge/version-0.9.0--alpha.8-orange.svg)
+![Status](https://img.shields.io/badge/status-Development-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
 > CoC6th同人シナリオなどのテキストファイルを、**ワンコマンドで美しいHTML**に変換する日本語ツール
 
-**⚠️ 現在のバージョン**: v0.9.0-alpha.8 (アルファ版・開発中)
+**⚠️ 現在のステータス**: 開発中 (Development) - リリース前アルファ版
 
 ## ✨ 特徴
 
@@ -111,7 +111,7 @@ kumihan convert input.txt --progress-level verbose
 kumihan convert input.txt --progress-log progress.json
 ```
 
-## 💡 基本的な記法（v3.0.0）
+## 💡 基本的な記法（α-dev）
 
 ```
 #見出し1#
@@ -134,7 +134,7 @@ kumihan convert input.txt --progress-log progress.json
 
 → **プロ品質のHTML出力**
 
-**⚠️ 重要変更**: v3.0.0から全記法がブロック形式に統一され、単一行記法は完全廃止されました。
+**⚠️ 重要変更**: α-devから全記法がブロック形式に統一され、単一行記法は完全廃止されました。
 
 ## 📁 プロジェクト構造
 

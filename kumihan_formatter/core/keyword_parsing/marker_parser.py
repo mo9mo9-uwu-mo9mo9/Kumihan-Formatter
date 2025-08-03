@@ -630,13 +630,13 @@ class MarkerParser:
 
     def is_new_marker_format(self, line: str) -> bool:
         """
-        行が新記法 # キーワード # 形式かどうかを判定（v3.0.0: ブロック記法のみ）
+        行が新記法 # キーワード # 形式かどうかを判定（α-dev: ブロック記法のみ）
 
         Args:
             line: 判定対象の行
 
         Returns:
-            bool: ブロック記法の場合True、v3.0.0では単一行記法は完全拒否
+            bool: ブロック記法の場合True、α-devでは単一行記法は完全拒否
         """
         import re  # Issue #713修正: reモジュールのインポートを最初に移動
 
@@ -652,7 +652,7 @@ class MarkerParser:
         ):
             return False
 
-        # v3.0.0: 単一行記法を完全拒否（より厳密な検出）
+        # α-dev: 単一行記法を完全拒否（より厳密な検出）
         # パターン1: #keyword# content 形式
         inline_pattern_1 = r"^[#＃]\s*[^#＃]+\s*[#＃]\s+.+$"
         # パターン2: #keyword content# 形式  
@@ -722,15 +722,15 @@ class MarkerParser:
 
     def extract_inline_content(self, line: str) -> str | None:
         """
-        v3.0.0: 単一行記法完全廃止 - 常にNoneを返す
+        α-dev: 単一行記法完全廃止 - 常にNoneを返す
 
         Args:
             line: 解析対象の行
 
         Returns:
-            None: v3.0.0ではブロック記法のみサポートのため常にNone
+            None: α-devではブロック記法のみサポートのため常にNone
         """
-        # v3.0.0: 単一行記法は完全廃止、ブロック記法のみサポート
+        # α-dev: 単一行記法は完全廃止、ブロック記法のみサポート
         return None
 
     def _parse_ruby_content(self, content: str) -> dict[str, Any] | None:

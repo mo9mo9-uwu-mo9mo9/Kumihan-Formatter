@@ -8,7 +8,7 @@ import random
 import os
 from pathlib import Path
 
-# Kumihan記法の全キーワード（v3.0.0 対応）
+# Kumihan記法の全キーワード（α-dev 対応）
 KEYWORDS = [
     "太字", "イタリック", "下線", "取り消し線", "コード", "引用", "枠線", "ハイライト",
     "見出し1", "見出し2", "見出し3", "見出し4", "見出し5",
@@ -75,8 +75,8 @@ def get_random_color():
         return random.choice(HEX_COLORS)
 
 def generate_inline_notation(keyword, content, use_color=False):
-    """v3.0.0: インライン記法は廃止 - ブロック記法に統一"""
-    # v3.0.0ではインライン記法は廃止、ブロック記法のみ使用
+    """α-dev: インライン記法は廃止 - ブロック記法に統一"""
+    # α-devではインライン記法は廃止、ブロック記法のみ使用
     return generate_block_notation(keyword, content, use_color)
 
 def generate_block_notation(keyword, content, use_color=False):
