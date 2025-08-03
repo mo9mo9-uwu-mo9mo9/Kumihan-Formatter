@@ -133,6 +133,9 @@ markers = [
     "notation: Tests for notation system",
     "error_handling: Error handling tests",
     "phase1: Phase 1 implementation tests",
+    "parser: Parser functionality tests",
+    "cli: CLI functionality tests",
+    "renderer: Renderer functionality tests",
     "benchmark: Benchmark performance tests"
 ]
 filterwarnings = [
