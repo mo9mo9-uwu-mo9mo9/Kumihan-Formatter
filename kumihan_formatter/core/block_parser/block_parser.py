@@ -473,7 +473,6 @@ class BlockParser:
 
         # キーワード固有の提案
         if len(keywords) == 1:
-            keyword = keywords[0]
             suggestions.append(f"例: {opening_line}\\n内容\\n##")
         else:
             suggestions.append(

@@ -456,7 +456,6 @@ class Parser:
             Node: 解析されたASTノード（ストリーミング出力）
         """
         import time
-        from typing import Iterator
 
         self.logger.info(
             f"Starting streaming parse: {len(text)} chars, "
@@ -602,7 +601,6 @@ class Parser:
             MemoryError: メモリ不足による処理中断
         """
         import time
-        from concurrent.futures import ThreadPoolExecutor
 
         # 入力検証
         if not isinstance(text, str):
@@ -752,8 +750,6 @@ class Parser:
         Raises:
             MemoryMonitoringError: メモリ監視でエラーが発生した場合
         """
-        import time
-
         try:
             # メモリ監視の初期化
             memory_monitor = self._init_enhanced_memory_monitor()
@@ -866,7 +862,6 @@ class Parser:
             dict: パフォーマンス統計情報
         """
         import os
-        import time
 
         metrics = {
             # システム情報
@@ -1291,10 +1286,9 @@ class Parser:
         Yields:
             Node: 解析されたASTノード
         """
-        import os
         from pathlib import Path
 
-        self.logger.info(f"Starting hybrid optimized parse")
+        self.logger.info("Starting hybrid optimized parse")
 
         # 入力タイプ判定
         if isinstance(input_source, (str, Path)):
@@ -1703,8 +1697,6 @@ class Parser:
 
     def _get_thread_local_parser(self):
         """スレッドローカルパーサーインスタンスを取得"""
-        import threading
-
         if not hasattr(self._thread_local_storage, "parser"):
             # スレッド固有のパーサーインスタンスを作成
             self._thread_local_storage.parser = Parser(
@@ -1811,28 +1803,6 @@ class Parser:
         """ストリーミング解析の安全なキャンセル（Issue #757）"""
         self.logger.info("Cancelling streaming parse...")
         self._cancelled = True
-
-        try:
-            # paragraph
-            node, next_index = self.block_parser.parse_paragraph(
-                self.lines, self.current
-            )
-            self.current = next_index
-            return node
-        except Exception as e:
-            self._record_graceful_error(
-                self.current + 1,
-                1,
-                "paragraph_parse_error",
-                "warning",
-                f"パラグラフ解析エラー: {str(e)}",
-                line,
-                "テキスト内容を確認してください",
-            )
-            # 安全装置
-            if self.current == start_current:
-                self.current += 1
-            return self._create_error_node(line, str(e))
 
     def get_performance_statistics(self) -> dict:
         """パフォーマンス統計を取得"""

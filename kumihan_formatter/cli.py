@@ -365,7 +365,7 @@ def interactive_repl():
                 html_content = renderer.render(result)
 
                 # 結果表示
-                print(f"\n✅ 変換成功:")
+                print("\n✅ 変換成功:")
                 print(f"📄 HTML: {html_content}")
 
                 # 履歴に追加

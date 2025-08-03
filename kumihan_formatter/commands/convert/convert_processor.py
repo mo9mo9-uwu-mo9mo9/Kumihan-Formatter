@@ -440,7 +440,8 @@ class ConvertProcessor:
             or error_config_manager.config.continue_on_error
         ):
             self.logger.warning(
-                "StreamingParser does not yet support graceful error handling. Errors will be handled traditionally."
+                "StreamingParser does not yet support graceful error handling. "
+                "Errors will be handled traditionally."
             )
         nodes = []
 
@@ -536,26 +537,10 @@ class ConvertProcessor:
                     progress.update(task, completed=i * 10)
                     time.sleep(0.1)
 
-                if error_config_manager:
-                    # エラー設定管理は将来実装予定
-                    # 現時点では通常のparse処理を実行
-                    from ...parser import parse
-
-                    ast = parse(text, config)
-                    errors = []
-                else:
-                    ast = parse(text, config)
+                ast = parse(text, config)
                 progress.update(task, completed=100)
             else:
-                if error_config_manager:
-                    # エラー設定管理は将来実装予定
-                    # 現時点では通常のparse処理を実行
-                    from ...parser import parse
-
-                    ast = parse(text, config)
-                    errors = []
-                else:
-                    ast = parse(text, config)
+                ast = parse(text, config)
                 elapsed = time.time() - start_time
                 self.logger.debug(f"Parse completed in {elapsed:.2f} seconds")
 
