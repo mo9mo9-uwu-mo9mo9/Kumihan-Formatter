@@ -10,6 +10,6 @@ from .test_leak_detection import MemoryLeakDetectionTest
 
 __all__ = [
     "LongRunningMemoryTest",
-    "ResourceManagementTest", 
+    "ResourceManagementTest",
     "MemoryLeakDetectionTest"
 ]

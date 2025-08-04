@@ -70,7 +70,7 @@
 
 #引用#
 **Nordic Languages:**
-- Svenska: Åsa äter äpplen på ön.  
+- Svenska: Åsa äter äpplen på ön.
 - Norsk: Åse spiser epler på øya.
 - Dansk: Åse spiser æbler på øen.
 - Suomi: Äiti syö omena saarella.
@@ -203,7 +203,7 @@
 
 #見出し2# 基本絵文字##
 
-#見出し2#  
+#見出し2#
 顔・感情表現
 ##
 

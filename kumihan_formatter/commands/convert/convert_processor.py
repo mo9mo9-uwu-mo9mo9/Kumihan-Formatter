@@ -58,11 +58,11 @@ class ConvertProcessor:
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
             self.logger.debug(f"File validation passed: {input_file} -> {output_file}")
-            
+
         except Exception as e:
             # Issue #770: 統一エラーハンドリング
             result = self.error_handler.handle_error(
-                e, 
+                e,
                 context={
                     "input_file": input_file,
                     "output_file": output_file,

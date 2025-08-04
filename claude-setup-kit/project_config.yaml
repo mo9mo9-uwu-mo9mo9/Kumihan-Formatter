@@ -57,7 +57,7 @@ serena_enforcement:
   level: "strict"
   monitoring: true
   auto_correction: true
-  
+
 # 禁止ツール（従来ツール）
 forbidden_legacy_tools:
   - "Edit"
@@ -75,19 +75,19 @@ language_configs:
     linter: "flake8"
     type_checker: "mypy"
     test_runner: "pytest"
-    
+
   JavaScript:
     formatter: "prettier"
     linter: "eslint"
     type_checker: "typescript"
     test_runner: "jest"
-    
+
   Go:
     formatter: "gofmt"
     linter: "golangci-lint"
     type_checker: "go"
     test_runner: "go test"
-    
+
   Rust:
     formatter: "rustfmt"
     linter: "clippy"

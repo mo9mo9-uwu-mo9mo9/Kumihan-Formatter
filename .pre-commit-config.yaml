@@ -6,7 +6,7 @@ repos:
         name: Claude Serena-Expert使用履歴チェック
         entry: python tools/claude_serena_precommit.py
         language: python
-        stages: [commit]
+        stages: [pre-commit]
         files: '^(src/|tests/|docs/|tools/|kumihan_formatter/|.*\.py$|.*\.md$)'
         pass_filenames: false
         always_run: true
@@ -18,14 +18,14 @@ repos:
         language: system
         files: 'CLAUDE\.md$'
         pass_filenames: false
-        
+
       - id: python-lint
         name: Python Linting (Black, isort, flake8, mypy)
         entry: make lint
         language: system
         files: '\.py$'
         pass_filenames: false
-        
+
       - id: kumihan-lint-fix
         name: Kumihan Auto-fix flake8 errors
         entry: python -m kumihan_formatter.cli lint --fix --dry-run
@@ -33,7 +33,7 @@ repos:
         files: '\.py$'
         pass_filenames: true
         description: "Automatically fix common flake8 errors (E501, E226, F401, E704, E702)"
-        
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

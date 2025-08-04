@@ -198,11 +198,11 @@
         flex-direction: column;
         gap: 0.25rem;
     }
-    
+
     .error-header {
         flex-wrap: wrap;
     }
-    
+
     .error-title {
         flex-basis: 100%;
         margin-top: 0.25rem;
@@ -216,29 +216,29 @@
         border-color: #ffc107;
         color: #e9ecef;
     }
-    
+
     .kumihan-error-summary h3 {
         color: #ffc107;
     }
-    
+
     .error-item {
         background: #1e1e1e;
         color: #e9ecef;
     }
-    
+
     .error-item:hover {
         background: #2d2d30;
     }
-    
+
     .error-header {
         background: rgba(0,0,0,0.3);
     }
-    
+
     .error-content code {
         background: #3c3c3c;
         color: #f8d7da;
     }
-    
+
     .error-suggestion {
         background: rgba(40,167,69,0.2);
         color: #d4edda;
@@ -337,19 +337,19 @@
         border-color: #cc6666;
         color: #ff9999;
     }
-    
+
     .correction-suggestions {
         background-color: #1a2332;
         border-color: #4a90e2;
         color: #e2e8f0;
     }
-    
+
     .error-statistics-report {
         background: #2d3748;
         border-color: #4a5568;
         color: #e2e8f0;
     }
-    
+
     .stat-item {
         background: #4a5568;
         border-color: #718096;

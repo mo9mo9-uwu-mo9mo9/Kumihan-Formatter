@@ -35,13 +35,13 @@ echo "PYTHON_SCRIPT: $PYTHON_SCRIPT" >> "$LOG_FILE"
 detect_python() {
     local python_candidates=(
         "python3.12"
-        "python3.11" 
+        "python3.11"
         "python3.10"
         "python3.9"
         "python3"
         "python"
     )
-    
+
     for py in "${python_candidates[@]}"; do
         if command -v "$py" >/dev/null 2>&1; then
             # より正確なバージョン比較
@@ -70,13 +70,13 @@ cd "$PROJECT_DIR"
 # Python環境チェック & 依存関係確認
 check_dependencies() {
     echo "$(date): Checking dependencies..." >> "$LOG_FILE"
-    
+
     if ! $PYTHON_CMD -c "import kumihan_formatter" >/dev/null 2>&1; then
         echo "$(date): Kumihan-Formatter not found, requesting user permission for installation..." >> "$LOG_FILE"
-        
+
         # ユーザーに確認を求める
         user_choice=$(osascript -e 'display dialog "Kumihan-Formatterの依存関係をインストールする必要があります。\n\n自動インストールを実行しますか？" buttons {"キャンセル", "手動で実行", "自動インストール"} default button "自動インストール"' 2>/dev/null | awk -F'button returned:' '{print $2}' || echo "キャンセル")
-        
+
         case "$user_choice" in
             "自動インストール")
                 echo "$(date): User approved automatic installation" >> "$LOG_FILE"
@@ -97,7 +97,7 @@ check_dependencies() {
                 ;;
         esac
     fi
-    
+
     return 0
 }
 

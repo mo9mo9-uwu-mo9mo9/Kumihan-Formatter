@@ -5,7 +5,7 @@ def test_semicolon_edge_cases():
     x = 1
     y = 2
     z = 3
-    
+
     # String protection cases
     sql = "SELECT id; DELETE FROM table;"
     executed = True
@@ -13,10 +13,10 @@ def test_semicolon_edge_cases():
     normal = "normal"
     mixed = 'Single "quote; with" semicolon'
     processed = False
-    
-    # Complex nested cases  
+
+    # Complex nested cases
     result = complex_func(arg1="test;data", arg2=value); status = "ok"; count = result + 1
-    
+
     # Triple quoted strings
     query = """
     SELECT * FROM users;

@@ -127,11 +127,11 @@ class TestProgressManager:
 
         # 初期コールバック
         assert len(callback_calls) >= 1
-        
+
         # UPDATE_INTERVAL を短縮して確実に更新されるようにする
         pm.UPDATE_INTERVAL = 0.0  # 即座に更新
         pm.update(50)
-        
+
         # コールバックが呼ばれているかチェック（値は更新頻度に依存）
         assert len(callback_calls) >= 2
 

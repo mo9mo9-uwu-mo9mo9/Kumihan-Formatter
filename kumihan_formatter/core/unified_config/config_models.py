@@ -39,7 +39,7 @@ class ErrorHandlingLevel(str, Enum):
 
 class ParallelConfig(BaseModel):
     """並列処理設定
-    
+
     ParallelProcessingConfigの統一版
     """
     # 並列処理しきい値
@@ -53,14 +53,14 @@ class ParallelConfig(BaseModel):
         ge=1024 * 1024,  # 1MB
         description="並列処理を開始するファイルサイズのしきい値(bytes)"
     )
-    
+
     # チャンク設定
     min_chunk_size: int = Field(default=50, ge=10, description="最小チャンクサイズ")
     max_chunk_size: int = Field(default=2000, le=10000, description="最大チャンクサイズ")
     target_chunks_per_core: int = Field(
         default=2, ge=1, le=10, description="CPUコアあたりのチャンク数"
     )
-    
+
     # メモリ監視
     memory_warning_threshold_mb: int = Field(
         default=150, ge=50, description="メモリ警告しきい値(MB)"
@@ -71,7 +71,7 @@ class ParallelConfig(BaseModel):
     memory_check_interval: int = Field(
         default=10, ge=1, description="メモリチェック間隔(チャンク数)"
     )
-    
+
     # タイムアウト設定
     processing_timeout_seconds: int = Field(
         default=300, ge=10, description="処理タイムアウト(秒)"
@@ -79,7 +79,7 @@ class ParallelConfig(BaseModel):
     chunk_timeout_seconds: int = Field(
         default=30, ge=5, description="チャンクタイムアウト(秒)"
     )
-    
+
     # パフォーマンス設定
     enable_progress_callbacks: bool = Field(
         default=True, description="プログレスコールバック有効"
@@ -93,7 +93,7 @@ class ParallelConfig(BaseModel):
     enable_gc_optimization: bool = Field(
         default=True, description="GC最適化有効"
     )
-    
+
     @field_validator('max_chunk_size')
     @classmethod
     def validate_chunk_sizes(cls, v, info):
@@ -101,7 +101,7 @@ class ParallelConfig(BaseModel):
         if hasattr(info, 'data') and 'min_chunk_size' in info.data and v <= info.data['min_chunk_size']:
             raise ValueError('max_chunk_size must be greater than min_chunk_size')
         return v
-    
+
     @field_validator('memory_critical_threshold_mb')
     @classmethod
     def validate_memory_thresholds(cls, v, info):
@@ -115,7 +115,7 @@ class ParallelConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     """ログ設定
-    
+
     KumihanLoggerの統一版
     """
     log_level: LogLevel = Field(default=LogLevel.INFO, description="ログレベル")
@@ -123,33 +123,33 @@ class LoggingConfig(BaseModel):
         default_factory=lambda: Path.home() / ".kumihan" / "logs",
         description="ログディレクトリ"
     )
-    
+
     # 開発ログ設定
     dev_log_enabled: bool = Field(default=False, description="開発ログ有効")
     dev_log_json: bool = Field(default=False, description="開発ログJSON形式")
-    
+
     # ファイルローテーション設定
     log_rotation_when: str = Field(default="midnight", description="ログローテーション頻度")
     log_rotation_interval: int = Field(default=1, ge=1, description="ローテーション間隔")
     log_backup_count: int = Field(default=30, ge=1, description="バックアップファイル数")
-    
+
     # パフォーマンスログ設定
     performance_logging_enabled: bool = Field(
         default=True, description="パフォーマンスログ有効"
     )
-    
+
     model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")
 
 
 class ErrorConfig(BaseModel):
     """エラー処理設定
-    
+
     ErrorConfigManagerの統一版
     """
     default_level: ErrorHandlingLevel = Field(
         default=ErrorHandlingLevel.NORMAL, description="デフォルトエラー処理レベル"
     )
-    
+
     # エラー表示設定
     graceful_errors: bool = Field(
         default=False, description="エラー情報HTML埋め込み"
@@ -163,7 +163,7 @@ class ErrorConfig(BaseModel):
     show_statistics: bool = Field(
         default=True, description="エラー統計表示"
     )
-    
+
     # エラー制限設定
     error_display_limit: int = Field(
         default=10, ge=1, description="表示エラー数制限"
@@ -171,18 +171,18 @@ class ErrorConfig(BaseModel):
     max_error_context_lines: int = Field(
         default=3, ge=0, description="エラーコンテキスト行数"
     )
-    
+
     # カテゴリ別設定
     category_settings: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict, description="カテゴリ別エラー設定"
     )
-    
+
     model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")
 
 
 class RenderingConfig(BaseModel):
     """レンダリング設定
-    
+
     BaseConfigのCSS設定等を統合
     """
     # CSS設定
@@ -195,31 +195,31 @@ class RenderingConfig(BaseModel):
         default="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
         description="フォントファミリー"
     )
-    
+
     # テーマ設定
     theme_name: str = Field(default="デフォルト", description="テーマ名")
     custom_css: Dict[str, str] = Field(
         default_factory=dict, description="カスタムCSS"
     )
-    
+
     # レンダリング設定
     include_source: bool = Field(default=False, description="ソース表示機能")
     enable_syntax_highlighting: bool = Field(
         default=True, description="構文ハイライト有効"
     )
-    
+
     model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")
 
 
 class UIConfig(BaseModel):
     """UI設定
-    
+
     GUI・CLI関連設定の統合
     """
     # プレビュー設定
     auto_preview: bool = Field(default=True, description="自動プレビュー")
     preview_browser: Optional[str] = Field(default=None, description="プレビューブラウザ")
-    
+
     # プログレス表示設定
     progress_level: str = Field(
         default="detailed",
@@ -228,7 +228,7 @@ class UIConfig(BaseModel):
     )
     progress_style: str = Field(
         default="bar",
-        pattern="^(bar|spinner|percentage)$", 
+        pattern="^(bar|spinner|percentage)$",
         description="プログレス表示スタイル"
     )
     show_progress_tooltip: bool = Field(
@@ -237,17 +237,17 @@ class UIConfig(BaseModel):
     enable_cancellation: bool = Field(
         default=True, description="キャンセル機能有効"
     )
-    
+
     # ファイル監視設定
     watch_enabled: bool = Field(default=False, description="ファイル監視有効")
     watch_interval: float = Field(default=1.0, ge=0.1, description="監視間隔(秒)")
-    
+
     model_config = ConfigDict(env_prefix="KUMIHAN_UI_")
 
 
 class KumihanConfig(BaseModel):
     """Kumihan-Formatter統一設定
-    
+
     全設定の最上位コンテナ
     """
     # サブ設定群
@@ -256,16 +256,16 @@ class KumihanConfig(BaseModel):
     error: ErrorConfig = Field(default_factory=ErrorConfig)
     rendering: RenderingConfig = Field(default_factory=RenderingConfig)
     ui: UIConfig = Field(default_factory=UIConfig)
-    
+
     # メタ設定
     config_version: str = Field(default="1.0", description="設定バージョン")
     config_file_path: Optional[Path] = Field(default=None, description="設定ファイルパス")
     last_updated: Optional[str] = Field(default=None, description="最終更新日時")
-    
+
     # 環境情報
     environment: str = Field(default="production", description="実行環境")
     debug_mode: bool = Field(default=False, description="デバッグモード")
-    
+
     @model_validator(mode='before')
     @classmethod
     def validate_config_consistency(cls, values):
@@ -276,17 +276,17 @@ class KumihanConfig(BaseModel):
             if isinstance(logging_dict, dict):
                 if logging_dict.get('log_level') not in ['DEBUG', 'INFO']:
                     logging_dict['log_level'] = 'DEBUG'
-                
+
         return values
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式で設定を出力"""
         return self.dict()
-    
+
     def get_env_vars(self) -> Dict[str, str]:
         """現在の設定から環境変数を生成"""
         env_vars = {}
-        
+
         # 各サブ設定から環境変数を抽出
         for field_name, field_value in self.dict().items():
             if isinstance(field_value, dict):
@@ -294,9 +294,9 @@ class KumihanConfig(BaseModel):
                 for key, value in field_value.items():
                     env_key = f"{prefix}{key.upper()}"
                     env_vars[env_key] = str(value)
-                    
+
         return env_vars
-    
+
     model_config = ConfigDict(
         validate_assignment=True,
         extra="forbid",

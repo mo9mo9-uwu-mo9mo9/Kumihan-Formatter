@@ -302,9 +302,9 @@ if (file.exists()) {
 #見出し2# 改行コード##
 
 #コードブロック#
-Windows CRLF: 
-Unix LF: 
-Mac CR: 
+Windows CRLF:
+Unix LF:
+Mac CR:
 ##
 
 #見出し2# 文字コード問題##

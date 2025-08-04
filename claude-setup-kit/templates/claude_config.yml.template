@@ -26,7 +26,7 @@ enforcement:
 # 禁止ツール（従来ツール使用禁止）
 forbidden_tools:
   - "Edit"
-  - "MultiEdit" 
+  - "MultiEdit"
   - "Read"
   - "Write"
   - "Bash"
@@ -47,7 +47,7 @@ serena:
     - "mcp__serena__insert_after_symbol"
     - "mcp__serena__search_for_pattern"
     - "mcp__serena__get_symbols_overview"
-  
+
   required_checks:
     - onboarding_performed
     - memory_usage
@@ -59,7 +59,7 @@ monitoring:
   log_file: ".claude-usage.log"
   track_violations: true
   generate_reports: true
-  
+
 # 品質保証
 quality_assurance:
   code_style: "{{FORMATTER}}"

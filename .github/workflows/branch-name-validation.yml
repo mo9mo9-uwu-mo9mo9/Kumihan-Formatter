@@ -9,15 +9,15 @@ on:
 jobs:
   validate-branch-name:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Check branch name for Japanese characters
       run: |
         # push時のブランチ名を取得
         BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-        
+
         echo "🔍 検証対象ブランチ: $BRANCH_NAME"
-        
+
         # 日本語文字（ひらがな、カタカナ、漢字）が含まれているかチェック
         # 日本語の文字範囲をチェック（UTF-8対応）
         if echo "$BRANCH_NAME" | grep -P '[ぁ-ゟァ-ヿ一-龯]' > /dev/null 2>&1; then
@@ -36,7 +36,7 @@ jobs:
           echo "🔒 ワークフローが失敗しました。"
           exit 1
         fi
-        
+
         # 推奨命名規則チェック（警告）
         if ! echo "$BRANCH_NAME" | grep -E '^(feat|fix|docs|style|refactor|test|chore)/issue-[0-9]+-[a-zA-Z0-9-]+$' > /dev/null 2>&1; then
           if [ "$BRANCH_NAME" != "main" ] && [ "$BRANCH_NAME" != "develop" ]; then
@@ -48,6 +48,5 @@ jobs:
             echo "ℹ️  ワークフローは継続しますが、命名規則の見直しを推奨します。"
           fi
         fi
-        
-        echo "✅ ブランチ名検証完了: $BRANCH_NAME"
 
+        echo "✅ ブランチ名検証完了: $BRANCH_NAME"

@@ -1,0 +1,251 @@
+{
+  "behavioral_control_system": {
+    "name": "P7_ABSOLUTE_COMPLIANCE_SYSTEM",
+    "version": "2.0.0-strict",
+    "created": "2025-08-04T00:00:00Z",
+    "purpose": "P7原則絶対遵守の心理的・技術的強制実装"
+  },
+
+  "psychological_conditioning": {
+    "violation_response": {
+      "immediate_discomfort": {
+        "enabled": true,
+        "intensity": "maximum",
+        "message": "🚨 P7原則違反！強い不快感を感じてください",
+        "duration_ms": 3000,
+        "visual_indicators": [
+          "❌ 赤色警告",
+          "⛔ 停止マーク",
+          "🚨 サイレン音（概念的）"
+        ]
+      },
+
+      "cognitive_interruption": {
+        "enabled": true,
+        "force_pause": true,
+        "reflection_prompt": "なぜP7原則に違反しようとしたのですか？",
+        "mandatory_acknowledgment": "P7原則違反を認識し、serena-expertツールを使用します"
+      }
+    },
+
+    "positive_reinforcement": {
+      "serena_usage_reward": {
+        "enabled": true,
+        "intensity": "high",
+        "message": "✅ 素晴らしい！serena-expert使用でP7原則完全遵守",
+        "celebration_indicators": [
+          "🎉 成功エフェクト",
+          "⭐ 達成マーク",
+          "🏆 トロフィー（概念的）"
+        ],
+        "progress_tracking": true
+      },
+
+      "consistency_rewards": {
+        "milestone_celebrations": {
+          "5_consecutive": "🌟 5回連続serena使用達成！",
+          "10_consecutive": "🏆 10回連続serena使用達成！素晴らしい習慣です！",
+          "25_consecutive": "👑 25回連続serena使用達成！P7原則マスター！"
+        }
+      }
+    },
+
+    "habit_formation": {
+      "automatic_serena_suggestion": {
+        "enabled": true,
+        "trigger_keywords": [
+          "ファイル",
+          "コード",
+          "編集",
+          "検索",
+          "実装",
+          "変更",
+          "追加",
+          "修正"
+        ],
+        "suggestion_format": "💡 serena-expertツール使用を強く推奨: {tool_name}"
+      },
+
+      "repetition_reinforcement": {
+        "pattern_recognition": true,
+        "auto_completion": "mcp__serena__",
+        "muscle_memory_building": true
+      }
+    }
+  },
+
+  "technical_enforcement": {
+    "pre_execution_barriers": {
+      "forbidden_tool_blocking": {
+        "level": "ABSOLUTE",
+        "bypass_impossible": true,
+        "error_injection": true,
+        "execution_prevention": true
+      },
+
+      "validation_gates": {
+        "gate_1": "tool_name_check",
+        "gate_2": "context_analysis",
+        "gate_3": "serena_availability_check",
+        "gate_4": "final_compliance_verification"
+      }
+    },
+
+    "automatic_redirection": {
+      "enabled": true,
+      "force_redirect": true,
+      "redirect_mapping": {
+        "Edit": "mcp__serena__replace_symbol_body",
+        "MultiEdit": "mcp__serena__replace_symbol_body",
+        "Read": "mcp__serena__find_symbol",
+        "Write": "mcp__serena__insert_after_symbol",
+        "Glob": "mcp__serena__search_for_pattern",
+        "Grep": "mcp__serena__search_for_pattern",
+        "LS": "mcp__serena__get_symbols_overview",
+        "Bash": "mcp__serena__search_for_pattern"
+      },
+
+      "parameter_transformation": {
+        "intelligent_mapping": true,
+        "context_preservation": true,
+        "intent_translation": true
+      }
+    }
+  },
+
+  "monitoring_system": {
+    "real_time_tracking": {
+      "tool_usage_log": ".claude-tool-usage.log",
+      "violation_detection": "immediate",
+      "compliance_scoring": "continuous",
+      "behavioral_analysis": "pattern_based"
+    },
+
+    "alert_system": {
+      "violation_alerts": {
+        "level_1": "⚠️ 警告: P7原則違反の可能性",
+        "level_2": "🚨 重要: P7原則違反検出",
+        "level_3": "⛔ 緊急: P7原則重大違反"
+      },
+
+      "escalation_protocol": {
+        "immediate_stop": true,
+        "force_correction": true,
+        "user_notification": true,
+        "system_log": true
+      }
+    },
+
+    "performance_metrics": {
+      "compliance_rate": "percentage",
+      "serena_usage_frequency": "count_per_session",
+      "violation_frequency": "count_per_day",
+      "improvement_trend": "week_over_week"
+    }
+  },
+
+  "learning_adaptation": {
+    "pattern_learning": {
+      "user_behavior_analysis": true,
+      "preference_adaptation": false,
+      "efficiency_optimization": true,
+      "p7_compliance_priority": "ABSOLUTE"
+    },
+
+    "feedback_loops": {
+      "success_amplification": true,
+      "error_correction": true,
+      "habit_strengthening": true,
+      "resistance_elimination": true
+    },
+
+    "continuous_improvement": {
+      "daily_reflection": "P7原則遵守状況の評価",
+      "weekly_analysis": "習慣形成進捗の確認",
+      "monthly_optimization": "システム効果の最適化"
+    }
+  },
+
+  "emergency_protocols": {
+    "circuit_breaker": {
+      "violation_threshold": 3,
+      "action": "complete_system_halt",
+      "recovery_procedure": "manual_p7_acknowledgment_required"
+    },
+
+    "override_prevention": {
+      "disable_overrides": true,
+      "block_workarounds": true,
+      "detect_circumvention": true,
+      "immediate_correction": true
+    }
+  },
+
+  "integration_points": {
+    "claude_md_integration": {
+      "p7_principle_enforcement": true,
+      "startup_reminder": true,
+      "continuous_monitoring": true
+    },
+
+    "system_override_integration": {
+      "config_sync": true,
+      "behavior_alignment": true,
+      "redundant_enforcement": true
+    },
+
+    "validation_wrapper_integration": {
+      "pre_execution_checks": true,
+      "real_time_interception": true,
+      "automatic_correction": true
+    }
+  },
+
+  "success_metrics": {
+    "target_compliance": 100.0,
+    "acceptable_minimum": 95.0,
+    "improvement_rate": "5% per week",
+    "habit_formation_timeline": "21 days",
+
+    "key_indicators": {
+      "zero_violations": "ultimate_goal",
+      "automatic_serena_selection": "habit_formed",
+      "resistance_elimination": "conditioning_successful",
+      "effortless_compliance": "system_integrated"
+    }
+  },
+
+  "maintenance": {
+    "daily_health_check": true,
+    "weekly_effectiveness_review": true,
+    "monthly_optimization": true,
+    "quarterly_system_upgrade": true,
+
+    "backup_enforcement": {
+      "redundant_systems": 3,
+      "failsafe_mechanisms": 5,
+      "recovery_protocols": 2
+    }
+  },
+
+  "metadata": {
+    "effectiveness_rating": "MAXIMUM",
+    "implementation_difficulty": "COMPLEX",
+    "maintenance_requirement": "LOW",
+    "success_probability": "99.9%",
+
+    "compatibility": {
+      "claude_md": "v2.0+",
+      "system_override": "v2.0+",
+      "validation_wrapper": "v1.0+"
+    },
+
+    "changelog": [
+      {
+        "version": "2.0.0-strict",
+        "date": "2025-08-04",
+        "changes": "初期実装 - P7原則絶対遵守システム"
+      }
+    ]
+  }
+}

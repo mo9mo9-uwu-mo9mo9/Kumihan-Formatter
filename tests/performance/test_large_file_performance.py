@@ -23,15 +23,15 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 class RealisticContentGenerator:
     """実用的な30万文字テストコンテンツ生成器"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.target_chars = 300000  # 30万文字
-    
+
     def generate_realistic_content(self) -> str:
         """実用的なKumihan記法30万文字コンテンツを生成"""
         self.logger.info(f"Generating realistic content: target {self.target_chars} characters")
-        
+
         # 実用的なコンテンツテンプレート
         content_blocks = [
             # 完全なブロック記法
@@ -64,7 +64,7 @@ def process_data(data):
 > 複数行にわたる引用も可能です。
 > システム設計の原則として覚えておきましょう。
 
-# リスト # 
+# リスト #
 - 項目1: 基本機能の実装
 - 項目2: テスト実装
 - 項目3: ドキュメント作成
@@ -72,13 +72,13 @@ def process_data(data):
 
 順序付きリスト:
 1. 要件定義フェーズ
-2. 設計フェーズ  
+2. 設計フェーズ
 3. 実装フェーズ
 4. テストフェーズ
 5. リリースフェーズ
 
 """,
-            
+
             """# 見出し2 # 技術仕様 第{section}章
 
 # ハイライト # ==重要な技術仕様==について説明します。
@@ -107,7 +107,7 @@ def process_data(data):
 - 可用性: 99.9%以上
 
 """,
-            
+
             """# 見出し3 # 運用手順 第{section}章
 
 # 情報 # ℹ️ 運用時の重要な情報をまとめています。
@@ -134,7 +134,7 @@ def process_data(data):
 # 折りたたみ # 詳細ログ情報
 障害調査時に確認すべきログファイル:
 - application.log
-- error.log  
+- error.log
 - access.log
 - system.log
 ##
@@ -143,8 +143,8 @@ def process_data(data):
 マニュアルに従って正確に作業を進めることが重要です。
 
 """,
-            
-            """# 中央寄せ # 
+
+            """# 中央寄せ #
 プロジェクト概要
 システム名: 大容量データ処理システム
 ##
@@ -164,7 +164,7 @@ def process_data(data):
 
 2. 前処理
    - データクレンジング
-   - 正規化処理  
+   - 正規化処理
    - バリデーション
 
 3. メイン処理
@@ -182,93 +182,93 @@ def process_data(data):
 
 """
         ]
-        
+
         # 目標文字数まで生成
         content_parts = []
         current_chars = 0
         section_num = 1
         block_index = 0
-        
+
         while current_chars < self.target_chars:
             # テンプレートを選択
             template = content_blocks[block_index % len(content_blocks)]
-            
+
             # セクション番号を設定
             content_block = template.format(section=section_num)
-            
+
             content_parts.append(content_block)
             current_chars += len(content_block)
-            
+
             section_num += 1
             block_index += 1
-            
+
             # 進捗表示
             if current_chars % 50000 == 0 and current_chars > 0:
                 self.logger.debug(f"Generated {current_chars // 1000}K characters...")
-        
+
         # 最終コンテンツ
         final_content = "\n".join(content_parts)
-        
+
         # 正確な文字数調整
         if len(final_content) > self.target_chars:
             final_content = final_content[:self.target_chars]
-        
+
         actual_chars = len(final_content)
         actual_bytes = len(final_content.encode('utf-8'))
         line_count = len(final_content.split('\n'))
-        
+
         self.logger.info(
             f"Realistic content generation completed: "
             f"{actual_chars} characters, {actual_bytes} bytes, {line_count} lines"
         )
-        
+
         return final_content
 
 
 class FairPerformanceBenchmark:
     """公正なパフォーマンスベンチマーク実行器"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.process = psutil.Process()
-    
+
     def measure_memory_usage(self) -> float:
         """現在のメモリ使用量を取得（MB）"""
         return self.process.memory_info().rss / 1024 / 1024
-    
+
     def benchmark_streaming_parser_optimized(self, content: str, runs: int = 5) -> Dict[str, Any]:
         """StreamingParser最適化ベンチマーク"""
         self.logger.info(f"Benchmarking Optimized StreamingParser: {runs} runs")
-        
+
         results = []
-        
+
         for run in range(runs):
             self.logger.info(f"StreamingParser run {run + 1}/{runs}")
-            
+
             # メモリ測定開始
             gc.collect()
             initial_memory = self.measure_memory_usage()
-            
+
             # パフォーマンス測定
             start_time = time.perf_counter()
-            
+
             # StreamingParserで解析（監視機能を最小化）
             parser = StreamingParser()
             nodes = []
-            
+
             # プログレスコールバックなしで実行
             for node in parser.parse_streaming_from_text(content):
                 nodes.append(node)
-            
+
             end_time = time.perf_counter()
-            
+
             # 最終メモリ測定
             final_memory = self.measure_memory_usage()
-            
+
             # 結果記録
             duration = end_time - start_time
             node_count = len(nodes)
-            
+
             run_result = {
                 'run': run + 1,
                 'duration_seconds': duration,
@@ -278,25 +278,25 @@ class FairPerformanceBenchmark:
                 'memory_growth_mb': final_memory - initial_memory,
                 'error_count': len(parser.get_errors()) if hasattr(parser, 'get_errors') else 0
             }
-            
+
             results.append(run_result)
-            
+
             # クリーンアップ
             del parser, nodes
             gc.collect()
-            
+
             self.logger.info(
                 f"Run {run + 1}: {duration:.3f}s, {node_count} nodes, "
                 f"{run_result['characters_per_second']:,.0f} chars/sec"
             )
-        
+
         # 統計計算（最初の実行を除外してウォームアップ効果を除去）
         warm_results = results[1:] if len(results) > 1 else results
-        
+
         durations = [r['duration_seconds'] for r in warm_results]
         char_rates = [r['characters_per_second'] for r in warm_results]
         node_counts = [r['node_count'] for r in warm_results]
-        
+
         summary = {
             'parser_type': 'StreamingParser',
             'runs': len(warm_results),
@@ -309,37 +309,37 @@ class FairPerformanceBenchmark:
             'total_errors': sum(r['error_count'] for r in results),
             'detailed_results': results
         }
-        
+
         return summary
-    
+
     def benchmark_traditional_parser(self, content: str, runs: int = 5) -> Dict[str, Any]:
         """従来Parser公正ベンチマーク"""
         self.logger.info(f"Benchmarking Traditional Parser: {runs} runs")
-        
+
         results = []
-        
+
         for run in range(runs):
             self.logger.info(f"Traditional Parser run {run + 1}/{runs}")
-            
+
             # メモリ測定開始
             gc.collect()
             initial_memory = self.measure_memory_usage()
-            
+
             # パフォーマンス測定
             start_time = time.perf_counter()
-            
+
             # 従来Parserで解析
             nodes = parse(content)
-            
+
             end_time = time.perf_counter()
-            
+
             # 最終メモリ測定
             final_memory = self.measure_memory_usage()
-            
+
             # 結果記録
             duration = end_time - start_time
             node_count = len(nodes) if nodes else 0
-            
+
             run_result = {
                 'run': run + 1,
                 'duration_seconds': duration,
@@ -349,25 +349,25 @@ class FairPerformanceBenchmark:
                 'memory_growth_mb': final_memory - initial_memory,
                 'error_count': 0
             }
-            
+
             results.append(run_result)
-            
+
             # クリーンアップ
             del nodes
             gc.collect()
-            
+
             self.logger.info(
                 f"Run {run + 1}: {duration:.3f}s, {node_count} nodes, "
                 f"{run_result['characters_per_second']:,.0f} chars/sec"
             )
-        
+
         # 統計計算（最初の実行を除外してウォームアップ効果を除去）
         warm_results = results[1:] if len(results) > 1 else results
-        
+
         durations = [r['duration_seconds'] for r in warm_results]
         char_rates = [r['characters_per_second'] for r in warm_results]
         node_counts = [r['node_count'] for r in warm_results]
-        
+
         summary = {
             'parser_type': 'TraditionalParser',
             'runs': len(warm_results),
@@ -380,34 +380,34 @@ class FairPerformanceBenchmark:
             'total_errors': 0,
             'detailed_results': results
         }
-        
+
         return summary
-    
+
     def simulate_large_file_scenario(self, content: str) -> Dict[str, Any]:
         """大容量ファイルシナリオのシミュレーション"""
         self.logger.info("Simulating large file processing scenario")
-        
+
         # 複数ファイル同時処理のシミュレーション
         file_sizes = [len(content) // 4, len(content) // 2, len(content)]  # 異なるサイズ
         scenario_results = {}
-        
+
         for i, size in enumerate(file_sizes):
             test_content = content[:size]
             scenario_name = f"{size // 1000}K_file"
-            
+
             self.logger.info(f"Testing scenario: {scenario_name}")
-            
+
             # StreamingParserテスト
             start_time = time.perf_counter()
             parser = StreamingParser()
             streaming_nodes = list(parser.parse_streaming_from_text(test_content))
             streaming_duration = time.perf_counter() - start_time
-            
+
             # 従来Parserテスト
             start_time = time.perf_counter()
             traditional_nodes = parse(test_content)
             traditional_duration = time.perf_counter() - start_time
-            
+
             scenario_results[scenario_name] = {
                 'content_size': size,
                 'streaming_duration': streaming_duration,
@@ -416,11 +416,11 @@ class FairPerformanceBenchmark:
                 'traditional_nodes': len(traditional_nodes) if traditional_nodes else 0,
                 'speedup_ratio': traditional_duration / streaming_duration if streaming_duration > 0 else 0
             }
-            
+
             # クリーンアップ
             del parser, streaming_nodes, traditional_nodes
             gc.collect()
-        
+
         return scenario_results
 
 
@@ -428,42 +428,42 @@ def main():
     """改良版30万文字パフォーマンステスト実行"""
     print("🚀 Issue #694 - 30万文字処理パフォーマンステスト（改良版）")
     print("=" * 65)
-    
+
     logger = get_logger(__name__)
-    
+
     try:
         # 1. 実用的テストコンテンツ生成
         print("📝 Step 1: 実用的30万文字テストコンテンツ生成")
         generator = RealisticContentGenerator()
         test_content = generator.generate_realistic_content()
-        
+
         print(f"✅ 生成完了:")
         print(f"   文字数: {len(test_content):,} 文字")
         print(f"   バイト数: {len(test_content.encode('utf-8')):,} バイト")
         print(f"   行数: {len(test_content.split(chr(10))):,} 行")
         print()
-        
+
         # 2. 公正なベンチマーク実行
         print("⚡ Step 2: 公正なパフォーマンス比較")
         benchmark = FairPerformanceBenchmark()
-        
+
         # StreamingParserテスト
         print("\n🔄 StreamingParser 最適化ベンチマーク実行中...")
         streaming_results = benchmark.benchmark_streaming_parser_optimized(test_content, runs=5)
-        
-        # 従来Parserテスト  
+
+        # 従来Parserテスト
         print("\n🔄 Traditional Parser ベンチマーク実行中...")
         traditional_results = benchmark.benchmark_traditional_parser(test_content, runs=5)
-        
+
         # シナリオテスト
         print("\n🔄 大容量ファイルシナリオテスト実行中...")
         scenario_results = benchmark.simulate_large_file_scenario(test_content)
-        
+
         # 3. 結果分析・レポート出力
         print("\n" + "=" * 65)
         print("🏆 30万文字処理パフォーマンステスト結果（改良版）")
         print("=" * 65)
-        
+
         print(f"\n📈 StreamingParser 性能:")
         print(f"  平均処理時間: {streaming_results['avg_duration']:.3f}秒")
         print(f"  最高速度: {streaming_results['min_duration']:.3f}秒")
@@ -472,7 +472,7 @@ def main():
         print(f"  平均ノード数: {streaming_results['avg_node_count']:.0f}")
         print(f"  平均メモリ増加: {streaming_results['avg_memory_growth_mb']:.1f}MB")
         print(f"  エラー数: {streaming_results['total_errors']}")
-        
+
         print(f"\n📊 Traditional Parser 性能:")
         print(f"  平均処理時間: {traditional_results['avg_duration']:.3f}秒")
         print(f"  最高速度: {traditional_results['min_duration']:.3f}秒")
@@ -480,32 +480,32 @@ def main():
         print(f"  処理速度: {traditional_results['avg_chars_per_second']:,.0f} 文字/秒")
         print(f"  平均ノード数: {traditional_results['avg_node_count']:.0f}")
         print(f"  平均メモリ増加: {traditional_results['avg_memory_growth_mb']:.1f}MB")
-        
+
         # 比較分析
         speedup = traditional_results['avg_duration'] / streaming_results['avg_duration']
         throughput_ratio = streaming_results['avg_chars_per_second'] / traditional_results['avg_chars_per_second']
         memory_efficiency = traditional_results['avg_memory_growth_mb'] / streaming_results['avg_memory_growth_mb'] if streaming_results['avg_memory_growth_mb'] > 0 else 1.0
-        
+
         print(f"\n🔍 比較分析結果:")
         print(f"  処理速度比較: {speedup:.2f}倍 {'高速化' if speedup > 1 else '低下'}")
         print(f"  スループット比: {throughput_ratio:.2f}倍")
         print(f"  メモリ効率比: {memory_efficiency:.2f}倍 {'効率的' if memory_efficiency > 1 else '非効率'}")
-        
+
         # Issue #694要求仕様照合
         lines_count = len(test_content.split('\n'))
         time_per_1000_lines = (streaming_results['avg_duration'] / lines_count) * 1000
         target_time = 10.0  # 1000行10秒以内
-        
+
         print(f"\n🎯 Issue #694 要求仕様照合:")
         print(f"  総行数: {lines_count:,} 行")
         print(f"  1000行処理時間: {time_per_1000_lines:.3f}秒")
         print(f"  目標時間: {target_time}秒以内")
         print(f"  要求達成: {'✅ 達成' if time_per_1000_lines <= target_time else '❌ 未達成'}")
-        
+
         if time_per_1000_lines <= target_time:
             performance_factor = target_time / time_per_1000_lines
             print(f"  性能優位性: {performance_factor:.0f}倍高速")
-        
+
         # シナリオ結果
         print(f"\n📋 大容量ファイルシナリオテスト結果:")
         for scenario, result in scenario_results.items():
@@ -513,32 +513,32 @@ def main():
             print(f"    StreamingParser: {result['streaming_duration']:.3f}秒")
             print(f"    Traditional Parser: {result['traditional_duration']:.3f}秒")
             print(f"    速度比: {result['speedup_ratio']:.2f}倍")
-        
+
         # 最終評価
         requirements_met = (
             time_per_1000_lines <= target_time and
             streaming_results['total_errors'] == 0 and
             streaming_results['avg_memory_growth_mb'] < 100  # 100MB以下
         )
-        
+
         print(f"\n🏅 総合評価: {'🌟 完全成功' if requirements_met else '⚠️ 部分成功'}")
-        
+
         if requirements_met:
             print("✅ Issue #694 大容量ファイル処理パフォーマンス最適化要件を満たしています。")
             print("✅ StreamingParserは実用レベルの性能を実現しています。")
         else:
             print("⚠️ 一部要件で改善の余地があります。")
-        
+
         # 実用性評価
         practical_performance = streaming_results['avg_chars_per_second'] > 100000  # 10万文字/秒以上
         practical_memory = streaming_results['avg_memory_growth_mb'] < 50  # 50MB以下
-        
+
         print(f"\n💡 実用性評価:")
         print(f"  処理速度: {'✅ 実用的' if practical_performance else '⚠️ 要改善'}")
         print(f"  メモリ使用: {'✅ 効率的' if practical_memory else '⚠️ 要改善'}")
-        
+
         return 0 if requirements_met else 1
-        
+
     except Exception as e:
         logger.error(f"Performance test failed: {e}")
         import traceback

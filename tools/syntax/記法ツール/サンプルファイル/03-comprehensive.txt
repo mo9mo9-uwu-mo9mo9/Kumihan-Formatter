@@ -338,7 +338,7 @@ Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed 
 
 このサンプルファイルでは、Kumihan-Formatterの以下の機能を確認できました：
 
-- 基本的な段落処理  
+- 基本的な段落処理
 - リスト機能
 - 各種ブロック記法（太字、斜体、枠線、ハイライト）
 - 見出しレベル（1-5）

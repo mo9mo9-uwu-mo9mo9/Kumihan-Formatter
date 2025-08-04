@@ -76,7 +76,7 @@ Content-Type: application/json
 
 #見出し4# 出力形式オプション
 - #コード# `html`##: HTML形式（推奨）
-- #コード# `markdown`##: Markdown形式  
+- #コード# `markdown`##: Markdown形式
 - #コード# `pdf`##: PDF形式（プレミアム機能）
 - #コード# `epub`##: EPUB形式（プレミアム機能）
 
@@ -156,7 +156,7 @@ POST /convert/batch
       "output_format": "html"
     },
     {
-      "name": "document2.txt", 
+      "name": "document2.txt",
       "content": "#太字# 重要な情報##",
       "output_format": "pdf"
     }
@@ -280,7 +280,7 @@ async function convertText() {
         includeCss: true
       }
     });
-    
+
     console.log('変換結果:', result.data.converted_content);
     console.log('メタデータ:', result.data.metadata);
   } catch (error) {
