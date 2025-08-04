@@ -209,9 +209,9 @@ def register_commands() -> None:
 
     # lint コマンドを登録（Issue #778対応）
     try:
-        from .commands.lint import create_lint_command
+        from .commands.lint import lint_command
 
-        cli.add_command(create_lint_command(), name="lint")
+        cli.add_command(lint_command, name="lint")
         logger.debug("lint command registered successfully")
     except ImportError as e:
         import warnings

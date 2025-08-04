@@ -57,7 +57,7 @@ class Flake8AutoFixer:
 
         return 100  # デフォルト値
 
-    def get_flake8_errors(self, file_path: str) -> List[Dict[str, str]]:
+    def get_flake8_errors(self, file_path: str) -> List[Dict[str, Any]]:
         """指定ファイルのflake8エラー一覧を取得"""
         try:
             result = subprocess.run(
@@ -205,7 +205,7 @@ class Flake8AutoFixer:
                     part2 = line[split_pos:]
 
                     # 文字列連結の形式で返す
-                    if quote_char in part1 and quote_char in part2:
+                    if quote_char and quote_char in part1 and quote_char in part2:
                         return (
                             f"{part1}{quote_char} \\\n"
                             f"{base_indent}    {quote_char}{part2.lstrip()}"
@@ -387,9 +387,9 @@ class Flake8AutoFixer:
 
         return content
 
-    def analyze_error_dependencies(self, errors: List[Dict[str, str]]) -> Dict[str, List[str]]:
+    def analyze_error_dependencies(self, errors: List[Dict[str, Any]]) -> Dict[str, List[str]]:
         """エラー間の依存関係を分析"""
-        dependencies = {}
+        dependencies: Dict[str, List[str]] = {}
 
         for error in errors:
             error_code = error["code"]
@@ -407,13 +407,13 @@ class Flake8AutoFixer:
             elif error_code == "E302":
                 # 近くにF401がある場合、F401を先に修正
                 for other_error in errors:
-                    if abs(other_error["line"] - line_num) <= 2 and other_error["code"] == "F401":
+                    if abs(int(other_error["line"]) - int(line_num)) <= 2 and other_error["code"] == "F401":
                         dependencies[error_code] = dependencies.get(error_code, [])
                         dependencies[error_code].append("F401")
 
         return dependencies
 
-    def get_optimized_fix_order(self, errors: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    def get_optimized_fix_order(self, errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """最適な修正順序を計算"""
         # 依存関係に基づいて修正順序を決定
         priority_order = ["F401", "E704", "E501", "E226", "E302"]
@@ -424,7 +424,7 @@ class Flake8AutoFixer:
                 if error["code"] == priority_code:
                     sorted_errors.append(error)
 
-        # 優先順位リストにないエラーを最後に追加
+        # 残りのエラーを追加
         for error in errors:
             if error not in sorted_errors:
                 sorted_errors.append(error)
@@ -534,7 +534,7 @@ class Flake8AutoFixer:
 
     def update_quality_metrics(
         self, errors_detected: int, errors_fixed: int, processing_time: float
-    ):
+    ) -> None:
         """Phase 3.3: Quality monitoring metrics update"""
         self.quality_metrics["files_processed"] += 1
         self.quality_metrics["errors_detected"] += errors_detected
@@ -699,7 +699,7 @@ class Flake8AutoFixer:
 
         return names
 
-    def fix_file(self, file_path: str, dry_run: bool = False) -> Dict[str, int]:
+    def fix_file(self, file_path: str, dry_run: bool = False) -> Dict[str, Any]:
         """ファイルのflake8エラーを自動修正（Phase 3.3品質監視対応）"""
         import time
 
@@ -742,13 +742,13 @@ class Flake8AutoFixer:
                 error_code = error["code"]
 
                 if error_code == "E501":
-                    content = self.fix_e501_line_too_long(content, error["line"])
+                    content = self.fix_e501_line_too_long(content, int(error["line"]))
                 elif error_code == "E226":
-                    content = self.fix_e226_missing_whitespace(content, error["line"], error["col"])
+                    content = self.fix_e226_missing_whitespace(content, int(error["line"]), int(error["col"]))
                 elif error_code == "F401":
-                    content = self.fix_f401_unused_import(content, error["line"])
+                    content = self.fix_f401_unused_import(content, int(error["line"]))
                 elif error_code in ["E704", "E702"]:
-                    content = self.fix_e704_multiple_statements(content, error["line"])
+                    content = self.fix_e704_multiple_statements(content, int(error["line"]))
 
             # 修正内容を保存（dry_runでない場合）
             if not dry_run and content != original_content:
