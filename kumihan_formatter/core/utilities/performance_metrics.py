@@ -1272,6 +1272,470 @@ class MemoryOptimizer:
             "memory_operations": self._memory_stats,
         }
 
+    def detect_memory_leaks(self, threshold_mb: float = 10.0, sample_interval: int = 5) -> Dict[str, Any]:
+        """
+        高度なメモリリーク検出機構
+        
+        Args:
+            threshold_mb: メモリ増加の検出閾値（MB）
+            sample_interval: サンプル間隔（秒）
+            
+        Returns:
+            Dict[str, Any]: リーク検出結果
+        """
+        import time
+        import psutil
+        import gc
+        import os
+        from typing import List, Tuple
+        
+        process = psutil.Process(os.getpid())
+        samples: List[Tuple[float, float]] = []  # (timestamp, memory_mb)
+        
+        # 初期メモリ使用量記録
+        initial_memory = process.memory_info().rss / 1024 / 1024
+        samples.append((time.time(), initial_memory))
+        
+        self.logger.info(f"Memory leak detection started. Initial memory: {initial_memory:.2f} MB")
+        
+        # 複数回サンプリング
+        for i in range(sample_interval):
+            time.sleep(1)
+            current_memory = process.memory_info().rss / 1024 / 1024
+            samples.append((time.time(), current_memory))
+        
+        # リーク分析
+        memory_growth = samples[-1][1] - samples[0][1]
+        growth_rate = memory_growth / (samples[-1][0] - samples[0][0])  # MB/秒
+        
+        # ガベージコレクション実行後のメモリ確認
+        gc.collect()
+        time.sleep(0.5)
+        post_gc_memory = process.memory_info().rss / 1024 / 1024
+        gc_effect = samples[-1][1] - post_gc_memory
+        
+        # リーク判定
+        is_leak_detected = (
+            memory_growth > threshold_mb and 
+            gc_effect < memory_growth * 0.5  # GCで半分以上回収されない場合
+        )
+        
+        leak_info = {
+            "leak_detected": is_leak_detected,
+            "memory_growth_mb": memory_growth,
+            "growth_rate_mb_per_sec": growth_rate,
+            "gc_effect_mb": gc_effect,
+            "initial_memory_mb": initial_memory,
+            "final_memory_mb": samples[-1][1],
+            "post_gc_memory_mb": post_gc_memory,
+            "samples": samples,
+            "recommendation": self._generate_leak_recommendation(is_leak_detected, memory_growth, gc_effect)
+        }
+        
+        if is_leak_detected:
+            self.logger.warning(f"Memory leak detected! Growth: {memory_growth:.2f} MB, Rate: {growth_rate:.4f} MB/s")
+        else:
+            self.logger.info(f"No significant memory leak detected. Growth: {memory_growth:.2f} MB")
+            
+        return leak_info
+    
+    def proactive_gc_strategy(self, memory_threshold_mb: float = 100.0, enable_generational: bool = True) -> Dict[str, Any]:
+        """
+        プロアクティブなガベージコレクション戦略
+        
+        Args:
+            memory_threshold_mb: GC実行メモリ閾値（MB）
+            enable_generational: 世代別GC最適化有効フラグ
+            
+        Returns:
+            Dict[str, Any]: GC実行結果
+        """
+        import gc
+        import psutil
+        import os
+        import time
+        
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss / 1024 / 1024
+        
+        self.logger.info(f"Proactive GC strategy triggered. Current memory: {initial_memory:.2f} MB")
+        
+        results = {
+            "initial_memory_mb": initial_memory,
+            "gc_executed": False,
+            "collections_performed": [],
+            "memory_freed_mb": 0.0,
+            "execution_time_ms": 0.0
+        }
+        
+        start_time = time.time()
+        
+        # メモリ閾値チェック
+        if initial_memory >= memory_threshold_mb:
+            self.logger.info(f"Memory threshold ({memory_threshold_mb} MB) exceeded. Executing proactive GC...")
+            
+            if enable_generational:
+                # 世代別最適化GC実行
+                for generation in range(3):  # Python GCの3世代
+                    collected = gc.collect(generation)
+                    results["collections_performed"].append({
+                        "generation": generation,
+                        "objects_collected": collected
+                    })
+                    self.logger.debug(f"Generation {generation} GC: {collected} objects collected")
+            else:
+                # 標準GC実行
+                collected = gc.collect()
+                results["collections_performed"].append({
+                    "generation": "all",
+                    "objects_collected": collected
+                })
+            
+            # GC後メモリ確認
+            time.sleep(0.1)  # GC完了を待機
+            post_gc_memory = process.memory_info().rss / 1024 / 1024
+            results["memory_freed_mb"] = initial_memory - post_gc_memory
+            results["final_memory_mb"] = post_gc_memory
+            results["gc_executed"] = True
+            
+            self.logger.info(f"Proactive GC completed. Memory freed: {results['memory_freed_mb']:.2f} MB")
+        else:
+            self.logger.debug(f"Memory usage ({initial_memory:.2f} MB) below threshold. GC not needed.")
+        
+        results["execution_time_ms"] = (time.time() - start_time) * 1000
+        return results
+    
+    def create_advanced_resource_pool(self, pool_name: str, factory_func: Callable, 
+                                    max_size: int = 100, cleanup_func: Optional[Callable] = None,
+                                    auto_cleanup_interval: int = 300) -> None:
+        """
+        高度なリソースプール管理システム
+        
+        Args:
+            pool_name: プール名
+            factory_func: オブジェクト生成関数
+            max_size: プール最大サイズ
+            cleanup_func: クリーンアップ関数
+            auto_cleanup_interval: 自動クリーンアップ間隔（秒）
+        """
+        import threading
+        import time
+        from collections import deque
+        
+        pool_info = {
+            "pool": deque(maxlen=max_size),
+            "factory": factory_func,
+            "cleanup": cleanup_func,
+            "max_size": max_size,
+            "created_count": 0,
+            "reused_count": 0,
+            "cleanup_count": 0,
+            "last_cleanup": time.time(),
+            "auto_cleanup_interval": auto_cleanup_interval,
+            "lock": threading.RLock()  # リエントラントロック
+        }
+        
+        self._object_pools[pool_name] = pool_info
+        
+        # 自動クリーンアップタイマー設定
+        def auto_cleanup():
+            while pool_name in self._object_pools:
+                time.sleep(auto_cleanup_interval)
+                self._cleanup_resource_pool(pool_name)
+        
+        cleanup_thread = threading.Thread(target=auto_cleanup, daemon=True)
+        cleanup_thread.start()
+        
+        self.logger.info(f"Advanced resource pool '{pool_name}' created with auto-cleanup every {auto_cleanup_interval}s")
+    
+    def _cleanup_resource_pool(self, pool_name: str) -> int:
+        """リソースプールのクリーンアップ実行"""
+        if pool_name not in self._object_pools:
+            return 0
+            
+        pool_info = self._object_pools[pool_name]
+        
+        with pool_info["lock"]:
+            cleanup_count = 0
+            cleanup_func = pool_info["cleanup"]
+            
+            if cleanup_func:
+                # プール内の全オブジェクトをクリーンアップ
+                temp_objects = []
+                while pool_info["pool"]:
+                    obj = pool_info["pool"].popleft()
+                    try:
+                        cleanup_func(obj)
+                        temp_objects.append(obj)
+                        cleanup_count += 1
+                    except Exception as e:
+                        self.logger.warning(f"Cleanup failed for object in pool '{pool_name}': {e}")
+                
+                # クリーンアップされたオブジェクトを戻す
+                for obj in temp_objects:
+                    pool_info["pool"].append(obj)
+            
+            pool_info["cleanup_count"] += cleanup_count
+            pool_info["last_cleanup"] = time.time()
+            
+            if cleanup_count > 0:
+                self.logger.info(f"Resource pool '{pool_name}' cleanup: {cleanup_count} objects processed")
+            
+            return cleanup_count
+    
+    def generate_memory_report(self, include_detailed_stats: bool = True) -> str:
+        """
+        メモリ使用量の詳細レポート生成（可視化機能）
+        
+        Args:
+            include_detailed_stats: 詳細統計情報を含むか
+            
+        Returns:
+            str: HTMLフォーマットのメモリレポート
+        """
+        import psutil
+        import os
+        import time
+        from datetime import datetime
+        
+        process = psutil.Process(os.getpid())
+        memory_info = process.memory_info()
+        
+        # 基本情報収集
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        memory_mb = memory_info.rss / 1024 / 1024
+        virtual_mb = memory_info.vms / 1024 / 1024
+        
+        # システム情報
+        system_memory = psutil.virtual_memory()
+        system_total_gb = system_memory.total / 1024 / 1024 / 1024
+        system_available_gb = system_memory.available / 1024 / 1024 / 1024
+        system_usage_percent = system_memory.percent
+        
+        # HTML レポート生成
+        html_report = f'''
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kumihan-Formatter メモリレポート</title>
+    <style>
+        body {{ 
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5; 
+        }}
+        .container {{ 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }}
+        .header {{ 
+            text-align: center; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 10px; 
+        }}
+        .stats-grid {{ 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin: 20px 0; 
+        }}
+        .stat-card {{ 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #3498db; 
+        }}
+        .stat-title {{ 
+            font-weight: bold; 
+            color: #2c3e50; 
+            margin-bottom: 8px; 
+        }}
+        .stat-value {{ 
+            font-size: 1.2em; 
+            color: #27ae60; 
+        }}
+        .memory-bar {{ 
+            width: 100%; 
+            height: 20px; 
+            background-color: #ecf0f1; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin: 10px 0; 
+        }}
+        .memory-fill {{ 
+            height: 100%; 
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c); 
+            transition: width 0.3s ease; 
+        }}
+        .pool-table {{ 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0; 
+        }}
+        .pool-table th, .pool-table td {{ 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left; 
+        }}
+        .pool-table th {{ 
+            background-color: #3498db; 
+            color: white; 
+        }}
+        .warning {{ 
+            background-color: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            color: #856404; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+        }}
+        .timestamp {{ 
+            text-align: right; 
+            color: #7f8c8d; 
+            font-size: 0.9em; 
+            margin-top: 20px; 
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Kumihan-Formatter メモリレポート</h1>
+            <p>Issue #772 - メモリ・リソース管理強化システム</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">プロセスメモリ使用量</div>
+                <div class="stat-value">{memory_mb:.2f} MB</div>
+                <div class="memory-bar">
+                    <div class="memory-fill" style="width: {min(memory_mb/100*10, 100)}%;"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">仮想メモリ使用量</div>
+                <div class="stat-value">{virtual_mb:.2f} MB</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">システムメモリ使用率</div>
+                <div class="stat-value">{system_usage_percent:.1f}%</div>
+                <div class="memory-bar">
+                    <div class="memory-fill" style="width: {system_usage_percent}%;"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">システム利用可能メモリ</div>
+                <div class="stat-value">{system_available_gb:.1f} GB / {system_total_gb:.1f} GB</div>
+            </div>
+        </div>
+        '''
+        
+        # オブジェクトプール統計
+        if self._object_pools and include_detailed_stats:
+            html_report += '''
+        <h2>🏊 オブジェクトプール統計</h2>
+        <table class="pool-table">
+            <thead>
+                <tr>
+                    <th>プール名</th>
+                    <th>現在サイズ</th>
+                    <th>最大サイズ</th>
+                    <th>作成数</th>
+                    <th>再利用数</th>
+                    <th>効率率</th>
+                    <th>最終クリーンアップ</th>
+                </tr>
+            </thead>
+            <tbody>
+            '''
+            
+            for name, pool_info in self._object_pools.items():
+                current_size = len(pool_info["pool"])
+                max_size = pool_info["max_size"]
+                created = pool_info["created_count"]
+                reused = pool_info["reused_count"]
+                total = created + reused
+                efficiency = (reused / total * 100) if total > 0 else 0
+                last_cleanup = time.strftime("%H:%M:%S", time.localtime(pool_info.get("last_cleanup", 0)))
+                
+                html_report += f'''
+                <tr>
+                    <td>{name}</td>
+                    <td>{current_size}</td>
+                    <td>{max_size}</td>
+                    <td>{created}</td>
+                    <td>{reused}</td>
+                    <td>{efficiency:.1f}%</td>
+                    <td>{last_cleanup}</td>
+                </tr>
+                '''
+            
+            html_report += '</tbody></table>'
+        
+        # メモリ統計情報
+        if include_detailed_stats:
+            html_report += f'''
+        <h2>📊 詳細メモリ統計</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">アロケーション数</div>
+                <div class="stat-value">{self._memory_stats["allocations"]:,}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">ディアロケーション数</div>
+                <div class="stat-value">{self._memory_stats["deallocations"]:,}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">プールヒット数</div>
+                <div class="stat-value">{self._memory_stats["pool_hits"]:,}</div>
+            </div>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ 注意:</strong> メモリ使用量が100MB以上の場合は、プロアクティブなガベージコレクションの実行を検討してください。
+        </div>
+        '''
+        
+        html_report += f'''
+        <div class="timestamp">
+            レポート生成時刻: {current_time}
+        </div>
+    </div>
+</body>
+</html>
+        '''
+        
+        self.logger.info(f"Memory report generated. Current usage: {memory_mb:.2f} MB")
+        return html_report.strip()
+    
+    def _generate_leak_recommendation(self, is_leak: bool, growth_mb: float, gc_effect_mb: float) -> str:
+        """メモリリーク検出結果に基づく推奨アクション生成"""
+        if not is_leak:
+            return "正常なメモリ使用パターンです。定期的な監視を継続してください。"
+        
+        recommendations = []
+        
+        if gc_effect_mb < growth_mb * 0.3:
+            recommendations.append("ガベージコレクションの効果が低いため、強い参照の解除を確認してください。")
+        
+        if growth_mb > 50:
+            recommendations.append("大幅なメモリ増加が検出されました。大容量データの処理方法を見直してください。")
+        
+        if not recommendations:
+            recommendations.append("メモリリークが検出されました。オブジェクトのライフサイクルを確認してください。")
+        
+        return " ".join(recommendations)
+
 
 class ProgressiveOutputSystem:
     """
