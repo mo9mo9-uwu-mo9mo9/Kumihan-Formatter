@@ -205,12 +205,20 @@ class UnifiedErrorHandler:
             if "not found" in error_message:
                 suggestions.extend([
                     "ファイルパスが正しいことを確認してください",
-                    "ファイルが存在し、読み取り可能であることを確認してください"
+                    "ファイルが存在し、読み取り可能であることを確認してください",
+                    "相対パスではなく絶対パスを試してみてください"
                 ])
             elif "permission" in error_message:
                 suggestions.extend([
                     "ファイルの読み取り権限を確認してください",
-                    "管理者権限で実行してみてください"
+                    "管理者権限で実行してみてください",
+                    "ファイルが他のプロセスで使用されていないか確認してください"
+                ])
+            else:
+                # 一般的なファイルシステムエラー
+                suggestions.extend([
+                    "ディスク容量を確認してください",
+                    "ファイルパスに無効な文字が含まれていないか確認してください"
                 ])
                 
         elif category == ErrorCategory.SYNTAX:
@@ -234,7 +242,10 @@ class UnifiedErrorHandler:
             
         # 一般的な提案を追加
         if not suggestions:
-            suggestions.append("エラーの詳細については、ログファイルを確認してください")
+            suggestions.extend([
+                "エラーの詳細については、ログファイルを確認してください",
+                "問題が解決しない場合は、開発者にお問い合わせください"
+            ])
             
         return suggestions
     
