@@ -9,7 +9,7 @@ import logging
 import re
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import click
 
@@ -442,7 +442,7 @@ class Flake8AutoFixer:
 
         return sorted_errors
 
-    def sync_with_flake8_config(self, config_path: str) -> Dict[str, any]:
+    def sync_with_flake8_config(self, config_path: str) -> Dict[str, Any]:
         """flake8設定ファイルとの同期"""
         config_settings = {
             "max_line_length": 100,
@@ -493,7 +493,7 @@ class Flake8AutoFixer:
         return config_settings
 
     def should_fix_error(
-        self, error_code: str, config_settings: Dict[str, any]
+        self, error_code: str, config_settings: Dict[str, Any]
     ) -> bool:
         """設定に基づいてエラーを修正すべきかチェック"""
         # ignoreリストにある場合はスキップ
@@ -516,7 +516,7 @@ class Flake8AutoFixer:
 
     def generate_fix_report(
         self, fixes_applied: Dict[str, int], file_path: str
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """修正レポートを生成"""
         report = {
             "file": file_path,
@@ -574,7 +574,7 @@ class Flake8AutoFixer:
                 * 100
             )
 
-    def get_quality_report(self) -> Dict[str, any]:
+    def get_quality_report(self) -> Dict[str, Any]:
         """Phase 3.3: Generate quality monitoring report"""
         return {
             "quality_metrics": self.quality_metrics.copy(),
@@ -603,7 +603,7 @@ class Flake8AutoFixer:
         }
 
     def generate_html_report(
-        self, reports: List[Dict[str, any]], output_path: str
+        self, reports: List[Dict[str, Any]], output_path: str
     ) -> None:
         """HTML形式の修正レポートを生成"""
         html_template = """<!DOCTYPE html>
@@ -695,7 +695,7 @@ class Flake8AutoFixer:
         except Exception as e:
             self.logger.error(f"Failed to generate HTML report: {e}")
 
-    def _generate_fixes_html(self, details: List[Dict[str, any]]) -> str:
+    def _generate_fixes_html(self, details: List[Dict[str, Any]]) -> str:
         """修正詳細のHTML生成"""
         if not details:
             return "<p>No fixes applied.</p>"
