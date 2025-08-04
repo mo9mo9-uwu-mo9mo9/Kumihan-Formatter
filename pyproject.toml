@@ -133,7 +133,16 @@ markers = [
     "notation: Tests for notation system",
     "error_handling: Error handling tests",
     "phase1: Phase 1 implementation tests",
-    "benchmark: Benchmark performance tests"
+    "parser: Parser functionality tests",
+    "cli: CLI functionality tests",
+    "renderer: Renderer functionality tests",
+    "benchmark: Benchmark performance tests",
+    "commands: Command functionality tests",
+    "keyword: Keyword parsing tests",
+    "validator: Validation functionality tests",
+    "convert: Convert processing tests",
+    "utilities: Utility functionality tests",
+    "progress: Progress tracking tests"
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",
