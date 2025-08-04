@@ -10,10 +10,10 @@ from pathlib import Path
 
 def convert_inline_to_block_notation(content: str) -> str:
     """単一行記法をブロック記法に変換"""
-    
+
     # 全角マーカーを半角に統一
     content = content.replace('＃', '#')
-    
+
     # パターン1: # キーワード # 内容 → # キーワード #\n内容\n##
     content = re.sub(
         r'^(.*)# ([^#]+) # ([^#\n].*)$',
@@ -21,7 +21,7 @@ def convert_inline_to_block_notation(content: str) -> str:
         content,
         flags=re.MULTILINE
     )
-    
+
     # パターン2: # キーワード color=色 # 内容 → # キーワード color=色 #\n内容\n##
     content = re.sub(
         r'^(.*)# ([^#]+) color=([^#\s]+) # ([^#\n].*)$',
@@ -29,7 +29,7 @@ def convert_inline_to_block_notation(content: str) -> str:
         content,
         flags=re.MULTILINE
     )
-    
+
     # パターン3: リスト項目内の単一行記法 - # キーワード # 内容
     content = re.sub(
         r'^(\s*-\s*)#([^#]+)# ([^#\n].*)$',
@@ -37,7 +37,7 @@ def convert_inline_to_block_notation(content: str) -> str:
         content,
         flags=re.MULTILINE
     )
-    
+
     # パターン4: 単独の # キーワード # 行 → # キーワード #\n\n##
     content = re.sub(
         r'^(\s*)# ([^#\n]+) #\s*$',
@@ -45,7 +45,7 @@ def convert_inline_to_block_notation(content: str) -> str:
         content,
         flags=re.MULTILINE
     )
-    
+
     # パターン5: 行頭の #キーワード# 内容 → #キーワード#\n内容\n##
     content = re.sub(
         r'^#([^#]+)# ([^#\n].*)$',
@@ -53,7 +53,7 @@ def convert_inline_to_block_notation(content: str) -> str:
         content,
         flags=re.MULTILINE
     )
-    
+
     return content
 
 def main():
@@ -61,14 +61,14 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: python fix_performance_samples.py <file_path>")
         sys.exit(1)
-    
+
     file_path = Path(sys.argv[1])
     if not file_path.exists():
         print(f"File not found: {file_path}")
         sys.exit(1)
-    
+
     print(f"Processing: {file_path}")
-    
+
     # ファイル読み込み
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -76,10 +76,10 @@ def main():
     except Exception as e:
         print(f"Error reading file: {e}")
         sys.exit(1)
-    
+
     # 変換実行
     converted_content = convert_inline_to_block_notation(original_content)
-    
+
     # 変更があった場合のみ書き込み
     if converted_content != original_content:
         try:

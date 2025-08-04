@@ -28,28 +28,28 @@ check_process_count() {
 # メイン監視ループ
 main() {
     log "Serena MCP Server監視開始"
-    
+
     # 初期状態レポート
     log "=== 初期状態 ==="
     python3 "$OPTIMIZATION_SCRIPT" --report-only 2>&1 | tee -a "$LOG_FILE"
-    
+
     local initial_processes
     initial_processes=$(check_process_count)
     log "初期プロセス数: $initial_processes"
-    
+
     # 重複プロセスチェック
     if [ "$initial_processes" -gt 2 ]; then
         log "重複プロセス検出 ($initial_processes プロセス). 最適化実行中..."
-        
+
         # 最適化実行
         python3 "$OPTIMIZATION_SCRIPT" \
             --output "$LOG_DIR/optimization_result_$(date +%Y%m%d_%H%M%S).json" \
             2>&1 | tee -a "$LOG_FILE"
-        
+
         local final_processes
         final_processes=$(check_process_count)
         log "最適化後プロセス数: $final_processes"
-        
+
         if [ "$final_processes" -lt "$initial_processes" ]; then
             log "最適化成功: $(($initial_processes - $final_processes))プロセス削減"
         else
@@ -58,12 +58,12 @@ main() {
     else
         log "プロセス数正常 ($initial_processes プロセス)"
     fi
-    
+
     # キャッシュ最適化（週1回実行）
     local last_cache_cleanup_file="$LOG_DIR/.last_cache_cleanup"
     local current_day
     current_day=$(date +%j)  # 年始からの日数
-    
+
     if [ ! -f "$last_cache_cleanup_file" ] || [ "$(cat "$last_cache_cleanup_file")" != "$current_day" ]; then
         # 7日に1回キャッシュクリーンアップ
         local days_since_last_cleanup=7
@@ -72,14 +72,14 @@ main() {
             last_cleanup_day=$(cat "$last_cache_cleanup_file")
             days_since_last_cleanup=$(($current_day - $last_cleanup_day))
         fi
-        
+
         if [ "$days_since_last_cleanup" -ge 7 ]; then
             log "週次キャッシュクリーンアップ実行"
             python3 "$OPTIMIZATION_SCRIPT" --no-kill --cache-days 7 2>&1 | tee -a "$LOG_FILE"
             echo "$current_day" > "$last_cache_cleanup_file"
         fi
     fi
-    
+
     log "監視完了"
 }
 

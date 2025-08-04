@@ -32,7 +32,7 @@ from .config_adapters import (
 __all__ = [
     "UnifiedConfigManager",
     "KumihanConfig",
-    "ParallelConfig", 
+    "ParallelConfig",
     "LoggingConfig",
     "ErrorConfig",
     "RenderingConfig",
@@ -41,6 +41,6 @@ __all__ = [
     "ConfigFormat",
     "ConfigValidator",
     "ParallelProcessingConfigAdapter",
-    "ErrorConfigManagerAdapter", 
+    "ErrorConfigManagerAdapter",
     "BaseConfigAdapter",
 ]

@@ -160,7 +160,7 @@
         body {
             padding: 0;
         }
-        
+
         .layout-wrapper {
             display: grid;
             grid-template-columns: 280px 1fr;
@@ -169,7 +169,7 @@
             gap: 20px;
             padding: 20px;
         }
-        
+
         .toc-sidebar {
             position: sticky;
             top: 20px;
@@ -182,11 +182,11 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             border-radius: 10px;
         }
-        
+
         .toc-sidebar.collapsed .toc-content {
             display: none;
         }
-        
+
         .toc-toggle {
             display: block;
             width: 100%;
@@ -202,11 +202,11 @@
             margin-bottom: 15px;
             transition: background-color 0.3s;
         }
-        
+
         .toc-toggle:hover {
             background-color: rgba(255,255,255,0.3);
         }
-        
+
         .toc-content h3 {
             margin-top: 0;
             margin-bottom: 15px;
@@ -215,23 +215,23 @@
             padding-bottom: 8px;
             color: white;
         }
-        
+
         .toc-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .toc-list ul {
             list-style: none;
             padding-left: 20px;
             margin: 5px 0;
         }
-        
+
         .toc-list li {
             margin: 5px 0;
         }
-        
+
         .toc-list a {
             color: rgba(255,255,255,0.9);
             text-decoration: none;
@@ -241,18 +241,18 @@
             transition: all 0.3s;
             font-size: 14px;
         }
-        
+
         .toc-list a:hover {
             background-color: rgba(255,255,255,0.2);
             color: white;
         }
-        
+
         .toc-list a.active {
             background-color: rgba(255,255,255,0.3);
             color: white;
             font-weight: bold;
         }
-        
+
         /* スムーススクロール */
         html {
             scroll-behavior: smooth;
@@ -289,7 +289,7 @@
             .layout-wrapper {
                 display: block;
             }
-            
+
             .toc-sidebar {
                 position: relative;
                 margin-bottom: 20px;
@@ -329,7 +329,7 @@
             .toc-sidebar {
                 display: none;
             }
-            
+
             .layout-wrapper {
                 display: block;
             }
@@ -346,32 +346,32 @@
             // トグルボタンの機能
             const tocToggle = document.querySelector('.toc-toggle');
             const tocSidebar = document.querySelector('.toc-sidebar');
-            
+
             // localStorage から状態を復元
             const tocState = localStorage.getItem('docs-toc-collapsed');
             if (tocState === 'true') {
                 tocSidebar.classList.add('collapsed');
                 tocToggle.textContent = '▶';
             }
-            
+
             tocToggle.addEventListener('click', function() {
                 tocSidebar.classList.toggle('collapsed');
                 const isCollapsed = tocSidebar.classList.contains('collapsed');
-                
+
                 // 状態を保存
                 localStorage.setItem('docs-toc-collapsed', isCollapsed);
-                
+
                 // ボタンテキストを更新
                 tocToggle.textContent = isCollapsed ? '▶' : '目次';
             });
-            
+
             // 現在位置のハイライト
             const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
             const tocLinks = document.querySelectorAll('.toc-list a');
-            
+
             function updateActiveLink() {
                 let currentHeading = null;
-                
+
                 // 現在表示されている最上部の見出しを見つける
                 for (const heading of headings) {
                     const rect = heading.getBoundingClientRect();
@@ -381,7 +381,7 @@
                         break;
                     }
                 }
-                
+
                 // アクティブリンクを更新
                 tocLinks.forEach(link => {
                     link.classList.remove('active');
@@ -390,14 +390,14 @@
                     }
                 });
             }
-            
+
             // スクロールイベントでアクティブリンクを更新
             let scrollTimer;
             window.addEventListener('scroll', function() {
                 clearTimeout(scrollTimer);
                 scrollTimer = setTimeout(updateActiveLink, 50);
             });
-            
+
             // 初期状態を設定
             updateActiveLink();
         });
@@ -415,16 +415,16 @@
                 {{ toc_html | safe }}
             </nav>
         </aside>
-        
+
         <!-- メインコンテンツ -->
         <main class="container">
             <header class="doc-header">
                 <h1>{{ title }}</h1>
                 <p class="doc-subtitle">Kumihan-Formatter Documentation</p>
             </header>
-            
+
             {{ body_content | safe }}
-            
+
             <footer class="doc-footer">
                 <p class="logo">Kumihan-Formatter</p>
                 <p>美しい組版を、誰でも簡単に。</p>
@@ -437,9 +437,9 @@
             <h1>{{ title }}</h1>
             <p class="doc-subtitle">Kumihan-Formatter Documentation</p>
         </header>
-        
+
         {{ body_content | safe }}
-        
+
         <footer class="doc-footer">
             <p class="logo">Kumihan-Formatter</p>
             <p>美しい組版を、誰でも簡単に。</p>

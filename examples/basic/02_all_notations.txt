@@ -123,7 +123,7 @@ function allNotationsTest() {
         "折りたたみ", "ネタバレ", "画像", "中央寄せ",
         "注意", "情報", "コードブロック"
     ];
-    
+
     console.log("全記法テスト完了:", notations.length);
     return "SUCCESS";
 }
@@ -228,7 +228,7 @@ allNotationsTest();
 #見出し2# 大文字・小文字色名テスト##
 
 #ハイライト color=red# 小文字red##
-#ハイライト color=blue# 小文字blue##  
+#ハイライト color=blue# 小文字blue##
 #ハイライト color=yellow# 小文字yellow##
 #ハイライト color=green# 小文字green##
 
@@ -236,7 +236,7 @@ allNotationsTest();
 
 このサンプルファイルでは：
 - 装飾系キーワード：8種類
-- 構造系キーワード：6種類  
+- 構造系キーワード：6種類
 - 機能系キーワード：4種類
 - レイアウト系キーワード：3種類
 - 複合記法

@@ -17,7 +17,7 @@
         body {
             padding: 0;
         }
-        
+
         .layout-wrapper {
             display: grid;
             grid-template-columns: minmax(300px, 25%) 1fr;
@@ -27,12 +27,12 @@
             padding: 10px;
             min-height: 100vh;
         }
-        
+
         /* 右サイドバーが存在する場合の3カラムレイアウト */
         .layout-wrapper.has-right-sidebar {
             grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
         }
-        
+
         .toc-sidebar {
             position: sticky;
             top: 10px;
@@ -45,16 +45,16 @@
             border-radius: 5px;
             margin: 0;
         }
-        
+
         .toc-sidebar.collapsed .toc-content {
             display: none;
         }
-        
+
         .toc-sidebar.collapsed {
             width: auto;
             min-width: 50px;
         }
-        
+
         .toc-toggle {
             display: block;
             width: 100%;
@@ -67,11 +67,11 @@
             text-align: center;
             margin-bottom: 15px;
         }
-        
+
         .toc-toggle:hover {
             background-color: #e0e0e0;
         }
-        
+
         .toc-content h3 {
             margin-top: 0;
             margin-bottom: 15px;
@@ -79,23 +79,23 @@
             border-bottom: 2px solid #333;
             padding-bottom: 5px;
         }
-        
+
         .toc-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .toc-list ul {
             list-style: none;
             padding-left: 20px;
             margin: 5px 0;
         }
-        
+
         .toc-list li {
             margin: 5px 0;
         }
-        
+
         .toc-list a {
             color: #333;
             text-decoration: none;
@@ -104,16 +104,16 @@
             border-radius: 3px;
             transition: background-color 0.2s;
         }
-        
+
         .toc-list a:hover {
             background-color: #f0f0f0;
         }
-        
+
         .toc-list a.active {
             background-color: #e8e8e8;
             font-weight: bold;
         }
-        
+
         /* 右サイドバー（注釈・補足情報用） */
         .right-sidebar {
             position: sticky;
@@ -128,12 +128,12 @@
             margin: 0;
             display: none; /* デフォルトは非表示 */
         }
-        
+
         /* 右サイドバーが有効な場合に表示 */
         .layout-wrapper.has-right-sidebar .right-sidebar {
             display: block;
         }
-        
+
         .right-sidebar h3 {
             margin-top: 0;
             margin-bottom: 15px;
@@ -141,7 +141,7 @@
             border-bottom: 2px solid #333;
             padding-bottom: 5px;
         }
-        
+
         .right-sidebar .annotation {
             margin-bottom: 15px;
             padding: 10px;
@@ -150,7 +150,7 @@
             border-radius: 4px;
             font-size: 14px;
         }
-        
+
         .right-sidebar .note {
             margin-bottom: 15px;
             padding: 10px;
@@ -159,12 +159,12 @@
             border-radius: 4px;
             font-size: 14px;
         }
-        
+
         /* スムーススクロール */
         html {
             scroll-behavior: smooth;
         }
-        
+
         /* レスポンシブ対応（大画面） */
         @media (min-width: 2000px) {
             .layout-wrapper {
@@ -172,12 +172,12 @@
                 gap: 30px;
                 padding: 15px;
             }
-            
+
             .layout-wrapper.has-right-sidebar {
                 grid-template-columns: minmax(300px, 25%) 1fr minmax(300px, 25%);
             }
         }
-        
+
         /* レスポンシブ対応（中画面） */
         @media (max-width: 1200px) {
             .layout-wrapper {
@@ -185,12 +185,12 @@
                 gap: 15px;
                 padding: 10px;
             }
-            
+
             .layout-wrapper.has-right-sidebar {
                 grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
             }
         }
-        
+
         /* レスポンシブ対応（タブレット） */
         @media (max-width: 900px) {
             .layout-wrapper,
@@ -198,25 +198,25 @@
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
+
             .toc-sidebar {
                 position: relative;
                 max-height: none;
                 order: -1;
             }
-            
+
             .right-sidebar {
                 order: 1;
             }
         }
-        
+
         /* 印刷時はサイドバーを非表示 */
         @media print {
             .toc-sidebar,
             .right-sidebar {
                 display: none;
             }
-            
+
             .layout-wrapper,
             .layout-wrapper.has-right-sidebar {
                 display: block;
@@ -230,32 +230,32 @@
             // トグルボタンの機能
             const tocToggle = document.querySelector('.toc-toggle');
             const tocSidebar = document.querySelector('.toc-sidebar');
-            
+
             // localStorage から状態を復元
             const tocState = localStorage.getItem('toc-collapsed');
             if (tocState === 'true') {
                 tocSidebar.classList.add('collapsed');
                 tocToggle.textContent = '▶';
             }
-            
+
             tocToggle.addEventListener('click', function() {
                 tocSidebar.classList.toggle('collapsed');
                 const isCollapsed = tocSidebar.classList.contains('collapsed');
-                
+
                 // 状態を保存
                 localStorage.setItem('toc-collapsed', isCollapsed);
-                
+
                 // ボタンテキストを更新
                 tocToggle.textContent = isCollapsed ? '▶' : '目次';
             });
-            
+
             // 現在位置のハイライト
             const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
             const tocLinks = document.querySelectorAll('.toc-list a');
-            
+
             function updateActiveLink() {
                 let currentHeading = null;
-                
+
                 // 現在表示されている最上部の見出しを見つける
                 for (const heading of headings) {
                     const rect = heading.getBoundingClientRect();
@@ -265,7 +265,7 @@
                         break;
                     }
                 }
-                
+
                 // アクティブリンクを更新
                 tocLinks.forEach(link => {
                     link.classList.remove('active');
@@ -274,14 +274,14 @@
                     }
                 });
             }
-            
+
             // スクロールイベントでアクティブリンクを更新
             let scrollTimer;
             window.addEventListener('scroll', function() {
                 clearTimeout(scrollTimer);
                 scrollTimer = setTimeout(updateActiveLink, 50);
             });
-            
+
             // 初期状態を設定
             updateActiveLink();
         });
@@ -299,7 +299,7 @@
                 {{ toc_html | safe }}
             </nav>
         </aside>
-        
+
         <!-- メインコンテンツ -->
         <main class="container">
             {% if navigation_html %}
@@ -307,7 +307,7 @@
             {% endif %}
             {{ body_content | safe }}
         </main>
-        
+
         <!-- 右サイドバー（注釈・補足情報） -->
         {% if has_right_sidebar %}
         <aside class="right-sidebar">

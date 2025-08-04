@@ -13,7 +13,7 @@ sys.path.insert(0, str(project_root))
 
 def generate_sample_html():
     """最適化機能のデモ用HTML生成"""
-    
+
     # サンプルKumihan記法テキスト
     sample_content = """# 見出し1 # Kumihan-Formatter パフォーマンス最適化デモ
 
@@ -62,7 +62,7 @@ processor.process_chunks_parallel_optimized(chunks, func)
 - CPU効率最大化
 - 順序保証
 
-# 折りたたみ title="技術詳細" # 
+# 折りたたみ title="技術詳細" #
 実装されたクラスと機能：
 
 **パーサー最適化:**
@@ -145,27 +145,27 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             padding: 20px;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }}
-        
+
         .container {{
             background: white;
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }}
-        
+
         h1, h2, h3 {{
             color: #2c3e50;
             border-left: 4px solid #3498db;
             padding-left: 16px;
             margin-top: 30px;
         }}
-        
+
         h1 {{
             font-size: 2.2em;
             color: #e74c3c;
             border-left-color: #e74c3c;
         }}
-        
+
         .highlight {{
             background: #fff3cd;
             padding: 12px 16px;
@@ -173,7 +173,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             border-radius: 4px;
             margin: 16px 0;
         }}
-        
+
         .box {{
             border: 2px solid #17a2b8;
             padding: 16px;
@@ -181,7 +181,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             background: #d1ecf1;
             margin: 16px 0;
         }}
-        
+
         .center {{
             text-align: center;
             font-size: 1.3em;
@@ -191,7 +191,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             color: white;
             border-radius: 8px;
         }}
-        
+
         .info {{
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -199,7 +199,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             border-radius: 6px;
             margin: 16px 0;
         }}
-        
+
         .warning {{
             background: #f8d7da;
             border: 1px solid #f5c6cb;
@@ -207,7 +207,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             border-radius: 6px;
             margin: 16px 0;
         }}
-        
+
         pre, code {{
             background: #2d3748;
             color: #e2e8f0;
@@ -216,37 +216,37 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             font-family: 'Courier New', monospace;
             overflow-x: auto;
         }}
-        
+
         pre {{
             padding: 16px;
             margin: 16px 0;
         }}
-        
+
         ul, ol {{
             padding-left: 24px;
         }}
-        
+
         li {{
             margin: 8px 0;
         }}
-        
+
         strong {{
             color: #e74c3c;
             font-weight: 700;
         }}
-        
+
         em {{
             color: #8e44ad;
             font-style: italic;
         }}
-        
+
         .performance-stats {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin: 30px 0;
         }}
-        
+
         .stat-card {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -254,38 +254,38 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
             border-radius: 8px;
             text-align: center;
         }}
-        
+
         .stat-number {{
             font-size: 2.5em;
             font-weight: bold;
             display: block;
         }}
-        
+
         .stat-label {{
             font-size: 1.1em;
             margin-top: 8px;
         }}
-        
+
         details {{
             border: 1px solid #dee2e6;
             border-radius: 6px;
             padding: 16px;
             margin: 16px 0;
         }}
-        
+
         summary {{
             font-weight: bold;
             cursor: pointer;
             color: #495057;
         }}
-        
+
         hr {{
             border: none;
             height: 2px;
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             margin: 30px 0;
         }}
-        
+
         footer {{
             text-align: center;
             margin-top: 40px;
@@ -299,11 +299,11 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
 <body>
     <div class="container">
         <h1>🚀 Kumihan-Formatter パフォーマンス最適化デモ</h1>
-        
+
         <p>このドキュメントは、<strong>Issue #727</strong>で実装されたパフォーマンス最適化機能のデモンストレーションです。</p>
-        
+
         <h2>🎯 主要な改善点</h2>
-        
+
         <div class="performance-stats">
             <div class="stat-card">
                 <span class="stat-number">600x</span>
@@ -322,31 +322,31 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
                 <div class="stat-label">並列化効果</div>
             </div>
         </div>
-        
+
         <h3><strong>メモリ効率化：</strong></h3>
         <ul>
             <li>ストリーミング処理により、メモリ使用量を <strong>89.8%削減</strong></li>
             <li>ファイルサイズに依存しない一定メモリ使用</li>
             <li>大容量ファイル（200K行）への対応</li>
         </ul>
-        
+
         <h3><em>処理速度向上：</em></h3>
         <ol>
             <li>計算複雑度の改善：O(n²) → O(n)</li>
             <li>並列処理：8コアで <strong>8倍高速化</strong></li>
             <li>HTMLレンダリング：GC負荷 <strong>2倍軽減</strong></li>
         </ol>
-        
+
         <div class="box">
             <h3>パフォーマンス目標達成状況</h3>
             <p>✅ 10K行ファイル：60秒 → 0.1秒（<strong>600倍高速化</strong>）<br>
             ✅ メモリ使用量：66%削減目標を大幅に超える89.8%削減達成<br>
             ✅ 処理可能ファイルサイズ：10K行 → 200K行（<strong>20倍拡張</strong>）</p>
         </div>
-        
+
         <div class="highlight">
             <h3>実装された最適化技術</h3>
-            
+
             <h4>ストリーミング処理</h4>
             <pre><code>StreamingParser.parse_streaming_from_file(file_path)</code></pre>
             <ul>
@@ -354,7 +354,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
                 <li>プログレス表示機能</li>
                 <li>キャンセル対応</li>
             </ul>
-            
+
             <h4>最適化パーサー</h4>
             <pre><code>parser.parse_optimized(text)</code></pre>
             <ul>
@@ -362,7 +362,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
                 <li>パターンキャッシュ</li>
                 <li>O(n)アルゴリズム</li>
             </ul>
-            
+
             <h4>並列処理システム</h4>
             <pre><code>processor.process_chunks_parallel_optimized(chunks, func)</code></pre>
             <ul>
@@ -371,29 +371,29 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
                 <li>順序保証</li>
             </ul>
         </div>
-        
+
         <details>
             <summary><strong>技術詳細</strong></summary>
             <p>実装されたクラスと機能：</p>
-            
+
             <p><strong>パーサー最適化:</strong></p>
             <ul>
                 <li><code>Parser.parse_optimized()</code> - O(n)最適化版</li>
                 <li><code>StreamingParser</code> - メモリ効率化版</li>
             </ul>
-            
+
             <p><strong>レンダラー最適化:</strong></p>
             <ul>
                 <li><code>HTMLRenderer.render_nodes_optimized()</code> - GC負荷軽減版</li>
                 <li>StringBuilder パターン適用</li>
             </ul>
-            
+
             <p><strong>並列処理:</strong></p>
             <ul>
                 <li><code>ParallelChunkProcessor</code> - 並列チャンク処理</li>
                 <li>適応的チャンクサイズ調整</li>
             </ul>
-            
+
             <p><strong>監視システム:</strong></p>
             <ul>
                 <li><code>PerformanceMonitor</code> - リアルタイム監視</li>
@@ -401,17 +401,17 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版
                 <li><code>ProgressiveOutputSystem</code> - プログレッシブ出力</li>
             </ul>
         </details>
-        
+
         <h2>🚀 ユーザー体験向上効果</h2>
-        
+
         <div class="center">🚀 <strong>処理速度: 600倍高速化</strong></div>
         <div class="center">🧠 <strong>メモリ効率: 89.8%削減</strong></div>
         <div class="center">📊 <strong>リアルタイム表示: 30倍改善</strong></div>
-        
+
         <hr>
-        
+
         <h2>使用方法</h2>
-        
+
         <h3>基本的な使用</h3>
         <pre><code>from kumihan_formatter.parser import Parser, StreamingParser
 
@@ -423,18 +423,18 @@ nodes = parser.parse_optimized(text)
 streaming_parser = StreamingParser()
 for node in streaming_parser.parse_streaming_from_file(file_path):
     process_node(node)</code></pre>
-        
+
         <h3>HTML生成</h3>
         <pre><code>from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
 
 renderer = HTMLRenderer()
 html = renderer.render_nodes_optimized(nodes)  # 最適化版</code></pre>
-        
+
         <div class="warning">
             <h3>⚠️ 重要な注意事項</h3>
             <p>この最適化により、従来の処理では困難だった大容量CoC6thシナリオファイルの高速処理が可能になりました。</p>
         </div>
-        
+
         <div class="info">
             <h3>ℹ️ 技術仕様</h3>
             <ul>
@@ -444,9 +444,9 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版</code></pre>
                 <li><strong>並列度</strong>: CPUコア数に応じて自動調整</li>
             </ul>
         </div>
-        
+
         <hr>
-        
+
         <footer>
             <p><em>✨ Generated by Kumihan-Formatter Performance Optimization Demo</em><br>
             <em>Issue #727 - 大容量ファイル処理とタイムアウト問題 対応完了</em></p>
@@ -460,19 +460,19 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版</code></pre>
 def main():
     """HTMLサンプル生成メイン"""
     print("📄 HTML出力サンプル生成中...")
-    
+
     # HTML生成
     html_content = generate_sample_html()
-    
+
     # ファイル保存
     output_path = Path("sample_output.html")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
-    
+
     print(f"✅ HTMLサンプルを生成しました: {output_path.absolute()}")
     print("\n🌐 ブラウザで確認するには:")
     print(f"open {output_path.absolute()}")
-    
+
     # HTMLの一部を表示
     print("\n📋 生成されたHTMLの一部:")
     print("=" * 50)
@@ -481,7 +481,7 @@ def main():
         print(f"{i+1:2d}: {line}")
     if len(lines) > 30:
         print(f"... ({len(lines)} 行中 30行を表示)")
-    
+
     return 0
 
 if __name__ == "__main__":

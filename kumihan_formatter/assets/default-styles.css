@@ -118,12 +118,12 @@ pre code {
         padding: 10px 12px;
         margin: 6px 0;
     }
-    
+
     pre {
         padding: 12px;
         font-size: 0.85em;
     }
-    
+
     blockquote {
         padding: 10px 12px;
         margin: 12px 0;
@@ -136,27 +136,27 @@ pre code {
         background-color: rgba(255, 243, 205, 0.1);
         color: #ffc107;
     }
-    
+
     .alert.info {
         background-color: rgba(209, 236, 241, 0.1);
         color: #17a2b8;
     }
-    
+
     code {
         background-color: #374151;
         color: #f59e0b;
     }
-    
+
     blockquote {
         background-color: #374151;
         color: #d1d5db;
         border-left-color: #9ca3af;
     }
-    
+
     u {
         text-decoration-color: #3b82f6;
     }
-    
+
     del {
         text-decoration-color: #ef4444;
     }

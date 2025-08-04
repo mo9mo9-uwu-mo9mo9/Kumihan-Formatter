@@ -28,7 +28,7 @@ def temp_dir() -> Generator[Path, None, None]:
 def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
     """Create sample text files for testing."""
     files = {}
-    
+
     # Basic notation test file
     basic_file = temp_dir / "basic_notation.txt"
     basic_file.write_text("""#見出し1
@@ -43,7 +43,7 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 
 通常のテキストが続きます。""", encoding="utf-8")
     files["basic"] = basic_file
-    
+
     # Complex notation test file
     complex_file = temp_dir / "complex_notation.txt"
     complex_file.write_text("""#見出し1
@@ -62,7 +62,7 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 - 項目3
 #""", encoding="utf-8")
     files["complex"] = complex_file
-    
+
     # Error test file (invalid syntax)
     error_file = temp_dir / "error_syntax.txt"
     error_file.write_text("""#見出し1
@@ -73,7 +73,7 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 未完了の記法
 # Missing end marker""", encoding="utf-8")
     files["error"] = error_file
-    
+
     return files
 
 
@@ -93,12 +93,12 @@ def large_text_content() -> str:
 
 さらに詳細なテキストが続きます。
 """
-    
+
     # Generate 1000 sections for performance testing
     content_parts = []
     for i in range(1000):
         content_parts.append(base_text.format(num=i))
-    
+
     return "\n\n".join(content_parts)
 
 
@@ -120,9 +120,9 @@ def setup_test_environment():
     # Set test-specific environment variables
     os.environ["KUMIHAN_TEST_MODE"] = "true"
     os.environ["KUMIHAN_LOG_LEVEL"] = "DEBUG"
-    
+
     yield
-    
+
     # Clean up test environment
     os.environ.pop("KUMIHAN_TEST_MODE", None)
     os.environ.pop("KUMIHAN_LOG_LEVEL", None)

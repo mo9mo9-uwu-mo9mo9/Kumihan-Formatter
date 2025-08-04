@@ -11,7 +11,7 @@
         {% include "partials/collapsible.css" %}
 
         /* GitHub風トグル機能専用スタイル */
-        
+
         /* メインコンテナ */
         .main-container {
             max-width: 1200px;
@@ -21,7 +21,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
         /* フローティングトグルボタン */
         .floating-toggle {
             position: fixed;
@@ -36,14 +36,14 @@
             flex-direction: column;
             gap: 4px;
         }
-        
+
         .toggle-group {
             display: flex;
             background: #f6f8fa;
             border-radius: 6px;
             padding: 2px;
         }
-        
+
         .floating-btn {
             background: transparent;
             border: none;
@@ -56,19 +56,19 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        
+
         .floating-btn:hover {
             color: #24292f;
             background: rgba(0,0,0,0.05);
         }
-        
+
         .floating-btn.active {
             background: white;
             color: #24292f;
             font-weight: 600;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        
+
         .file-label {
             font-size: 10px;
             color: #656d76;
@@ -80,33 +80,33 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
+
         /* コンテンツ表示エリア */
         .content-display {
             position: relative;
             min-height: 400px;
         }
-        
+
         /* プレビューコンテンツ */
         .preview-content {
             padding: 20px;
             display: block;
         }
-        
+
         .preview-content.hidden {
             display: none;
         }
-        
+
         /* ソースコンテンツ */
         .source-content {
             display: none;
             padding: 0;
         }
-        
+
         .source-content.active {
             display: block !important;
         }
-        
+
         .source-content pre {
             margin: 0;
             padding: 20px;
@@ -119,29 +119,29 @@
             overflow-x: auto;
             white-space: pre-wrap;
         }
-        
+
         .source-content code {
             background: transparent;
             padding: 0;
             font-size: inherit;
             color: inherit;
         }
-        
+
         /* シンタックスハイライト */
         .source-content .keyword {
             color: #d73a49;
             font-weight: bold;
         }
-        
+
         .source-content .marker {
             color: #005cc5;
             font-weight: bold;
         }
-        
+
         .source-content .content-text {
             color: #24292e;
         }
-        
+
         .source-content .comment {
             color: #6a737d;
             font-style: italic;
@@ -158,7 +158,7 @@
             padding: 10px;
             min-height: 100vh;
         }
-        
+
         .toc-sidebar {
             position: sticky;
             top: 10px;
@@ -171,16 +171,16 @@
             border-radius: 5px;
             margin: 0;
         }
-        
+
         .toc-sidebar.collapsed .toc-content {
             display: none;
         }
-        
+
         .toc-sidebar.collapsed {
             width: auto;
             min-width: 50px;
         }
-        
+
         .toc-toggle {
             display: block;
             width: 100%;
@@ -193,11 +193,11 @@
             text-align: center;
             margin-bottom: 15px;
         }
-        
+
         .toc-toggle:hover {
             background-color: #e0e0e0;
         }
-        
+
         .toc-content h3 {
             margin-top: 0;
             margin-bottom: 15px;
@@ -205,23 +205,23 @@
             border-bottom: 2px solid #333;
             padding-bottom: 5px;
         }
-        
+
         .toc-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .toc-list ul {
             list-style: none;
             padding-left: 20px;
             margin: 5px 0;
         }
-        
+
         .toc-list li {
             margin: 5px 0;
         }
-        
+
         .toc-list a {
             color: #333;
             text-decoration: none;
@@ -230,82 +230,82 @@
             border-radius: 3px;
             transition: background-color 0.2s;
         }
-        
+
         .toc-list a:hover {
             background-color: #f0f0f0;
         }
-        
+
         .toc-list a.active {
             background-color: #e8e8e8;
             font-weight: bold;
         }
-        
+
         /* スムーススクロール */
         html {
             scroll-behavior: smooth;
         }
-        
+
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             body {
                 padding: 0;
             }
-            
+
             /* 目次有効時のモバイルレイアウト */
             .layout-wrapper {
                 grid-template-columns: 1fr;
                 gap: 10px;
                 padding: 10px;
             }
-            
+
             .toc-sidebar {
                 position: relative;
                 max-height: none;
                 order: -1;
             }
-            
+
             .main-container {
                 border-radius: 4px;
             }
-            
+
             .floating-toggle {
                 top: 10px;
                 right: 10px;
                 padding: 6px;
             }
-            
+
             .floating-btn {
                 padding: 6px 8px;
                 font-size: 10px;
             }
-            
+
             .toggle-group {
                 flex-direction: column;
                 gap: 2px;
             }
-            
+
             .file-label {
                 font-size: 9px;
                 max-width: 100px;
             }
-            
+
             .preview-content,
             .source-content pre {
                 padding: 15px;
                 font-size: 12px;
             }
         }
-        
+
         /* 印刷時はサイドバーを非表示 */
         @media print {
             .toc-sidebar {
                 display: none;
             }
-            
+
             .layout-wrapper {
                 display: block;
             }
-            
+
             .floating-toggle {
                 display: none;
             }
@@ -338,7 +338,7 @@
             h2 {
                 font-size: 1.3em;
             }
-            
+
             .source-content,
             .result-content {
                 padding: 15px;
@@ -372,7 +372,7 @@
                 {{ toc_html | safe }}
             </nav>
         </aside>
-        
+
         <!-- メインコンテンツ -->
         <main class="main-container">
             <!-- コンテンツ表示エリア -->
@@ -381,12 +381,12 @@
                 <div class="preview-content" id="preview-content">
                     {{ body_content | safe }}
                 </div>
-                
+
                 <!-- ソース表示 -->
                 <div class="source-content" id="source-content">
                     <pre><code>{{ source_text | e }}</code></pre>
                 </div>
-                
+
             </div>
         </main>
     </div>
@@ -399,105 +399,105 @@
             <div class="preview-content" id="preview-content">
                 {{ body_content | safe }}
             </div>
-            
+
             <!-- ソース表示 -->
             <div class="source-content" id="source-content">
                 <pre><code>{{ source_text | e }}</code></pre>
             </div>
-            
+
         </div>
     </div>
     {% endif %}
-    
+
     <script>
         // GitHub風タブ切り替え機能
         function showPreview() {
             // 全てのコンテンツを隠す
             hideAllContent();
-            
+
             // プレビューを表示
             document.getElementById('preview-content').classList.remove('hidden');
-            
+
             // ボタン状態をリセット
             resetButtonStates();
             document.getElementById('preview-btn').classList.add('active');
         }
-        
+
         function showSource() {
             // 全てのコンテンツを隠す
             hideAllContent();
-            
+
             // ソースを表示
             document.getElementById('source-content').classList.add('active');
-            
+
             // ボタン状態をリセット
             resetButtonStates();
             document.getElementById('source-btn').classList.add('active');
         }
-        
-        
+
+
         // ヘルパー関数：全てのコンテンツを隠す
         function hideAllContent() {
             document.getElementById('preview-content').classList.add('hidden');
             document.getElementById('source-content').classList.remove('active');
         }
-        
+
         // ヘルパー関数：全てのボタン状態をリセット
         function resetButtonStates() {
             document.getElementById('preview-btn').classList.remove('active');
             document.getElementById('source-btn').classList.remove('active');
         }
-        
+
         // シンタックスハイライト（シンプル版）
         function applySyntaxHighlighting() {
             const sourceContent = document.querySelector('#source-content code');
             if (!sourceContent) return;
-            
+
             let text = sourceContent.textContent;
-            
+
             // ブロックマーカーのハイライト（新記法対応）
             text = text.replace(/^#(.*)#$/gm, '<span style="color: #005cc5; font-weight: bold;">#$1#</span>');
-            
-            // リスト項目のハイライト  
+
+            // リスト項目のハイライト
             text = text.replace(/^- (.*)$/gm, '<span style="color: #005cc5; font-weight: bold;">-</span> $1');
-            
+
             sourceContent.innerHTML = text;
         }
-        
-        
-        
+
+
+
         // 目次機能（TOC）
         function setupTOC() {
             const tocToggle = document.querySelector('.toc-toggle');
             const tocSidebar = document.querySelector('.toc-sidebar');
-            
+
             if (!tocToggle || !tocSidebar) return;
-            
+
             // localStorage から状態を復元
             const tocState = localStorage.getItem('toc-collapsed');
             if (tocState === 'true') {
                 tocSidebar.classList.add('collapsed');
                 tocToggle.textContent = '▶';
             }
-            
+
             tocToggle.addEventListener('click', function() {
                 tocSidebar.classList.toggle('collapsed');
                 const isCollapsed = tocSidebar.classList.contains('collapsed');
-                
+
                 // 状態を保存
                 localStorage.setItem('toc-collapsed', isCollapsed);
-                
+
                 // ボタンテキストを更新
                 tocToggle.textContent = isCollapsed ? '▶' : '目次';
             });
-            
+
             // 現在位置のハイライト
             const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
             const tocLinks = document.querySelectorAll('.toc-list a');
-            
+
             function updateActiveLink() {
                 let currentHeading = null;
-                
+
                 // 現在表示されている最上部の見出しを見つける
                 for (const heading of headings) {
                     const rect = heading.getBoundingClientRect();
@@ -507,7 +507,7 @@
                         break;
                     }
                 }
-                
+
                 // アクティブリンクを更新
                 tocLinks.forEach(link => {
                     link.classList.remove('active');
@@ -516,18 +516,18 @@
                     }
                 });
             }
-            
+
             // スクロールイベントでアクティブリンクを更新
             let scrollTimer;
             window.addEventListener('scroll', function() {
                 clearTimeout(scrollTimer);
                 scrollTimer = setTimeout(updateActiveLink, 50);
             });
-            
+
             // 初期状態を設定
             updateActiveLink();
         }
-        
+
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
             // 初期状態: プレビューを表示

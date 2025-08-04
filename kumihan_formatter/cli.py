@@ -297,12 +297,12 @@ def main() -> None:
 
         # 統一エラーハンドリングで処理
         result = handle_error_unified(
-            e, 
+            e,
             context={"operation": "CLI実行", "args": sys.argv},
             operation="main_cli",
             component_name="CLI"
         )
-        
+
         # ユーザー向けメッセージ表示
         console_ui = get_console_ui()
         console_message = ErrorMessageBuilder.build_console_message(

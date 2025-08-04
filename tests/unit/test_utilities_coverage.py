@@ -613,10 +613,10 @@ class TestTextProcessorCoverage:
         text = """#見出し1#
         タイトル
         ##
-        
+
         これは段落です。
         複数行に渡ります。
-        
+
         #太字#重要#太字#な情報です。"""
 
         stats = self.text_processor.get_text_statistics(text)

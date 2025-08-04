@@ -45,14 +45,14 @@ class TestHTMLFormatterCoverage:
     def test_html_formatter_initialization(self):
         """Test HTML formatter initialization."""
         assert self.formatter is not None
-        
+
         # Just verify the object exists and is properly initialized
         # The specific methods available may vary by implementation
         assert isinstance(self.formatter, HTMLFormatter)
-        
+
         # Check that it has some callable attributes (implementation may vary)
-        callable_attrs = [attr for attr in dir(self.formatter) 
-                         if callable(getattr(self.formatter, attr)) 
+        callable_attrs = [attr for attr in dir(self.formatter)
+                         if callable(getattr(self.formatter, attr))
                          and not attr.startswith('_')]
         assert len(callable_attrs) > 0
 

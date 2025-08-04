@@ -60,7 +60,7 @@ API仕様書の例
 📡 REST API エンドポイント
 
 GET /api/users - ユーザー一覧取得
-POST /api/users - 新規ユーザー作成  
+POST /api/users - 新規ユーザー作成
 PUT /api/users/{id} - ユーザー情報更新
 DELETE /api/users/{id} - ユーザー削除
 ##
@@ -147,7 +147,7 @@ APIキーが無効または期限切れの場合に発生します。
    - 成功：古い血痕を発見
    - 失敗：特に異常なし
 
-2. #太字# 図書室##  
+2. #太字# 図書室##
    - 技能：図書館
    - 成功：#コード# 「異次元物理学入門」##を発見
    - 失敗：古い本ばかりでよくわからない
@@ -206,7 +206,7 @@ kumihan convert sample.txt
 1. #コード# ModuleNotFoundError##
    → #ハイライト color=#fff3cd# 仮想環境が正しく設定されていない##
 
-2. #コード# Permission denied##  
+2. #コード# Permission denied##
    → #ハイライト color=#ffe6e6# 管理者権限で実行してください##
 
 3. #コード# UnicodeDecodeError##
@@ -228,7 +228,7 @@ kumihan convert sample.txt
 💡 このサンプルファイルには以下の要素が含まれています：
 - 段落内での複数記法の混在
 - 複合キーワードの活用
-- API仕様書風の技術文書  
+- API仕様書風の技術文書
 - TRPGシナリオの実例
 - システム要件とトラブルシューティング
 - 中央寄せによる装飾的な締めくくり

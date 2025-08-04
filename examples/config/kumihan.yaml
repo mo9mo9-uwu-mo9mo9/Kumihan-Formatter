@@ -13,21 +13,21 @@ parallel:
   # 並列処理を開始するしきい値
   parallel_threshold_lines: 15000     # 行数ベース
   parallel_threshold_size: 20971520   # ファイルサイズベース (20MB)
-  
+
   # チャンク分割設定
   min_chunk_size: 100
   max_chunk_size: 3000
   target_chunks_per_core: 3
-  
+
   # メモリ監視設定
   memory_warning_threshold_mb: 200
   memory_critical_threshold_mb: 350
   memory_check_interval: 15
-  
+
   # タイムアウト設定
   processing_timeout_seconds: 600     # 10分
   chunk_timeout_seconds: 60          # 1分
-  
+
   # パフォーマンス設定
   enable_progress_callbacks: true
   progress_update_interval: 200
@@ -38,33 +38,33 @@ parallel:
 logging:
   log_level: "DEBUG"                  # DEBUG | INFO | WARNING | ERROR | CRITICAL
   log_dir: "~/.kumihan/logs"
-  
+
   # 開発ログ設定
   dev_log_enabled: true
   dev_log_json: false
-  
+
   # ローテーション設定
   log_rotation_when: "midnight"
   log_rotation_interval: 1
   log_backup_count: 60                # 2ヶ月分保存
-  
+
   # パフォーマンスログ
   performance_logging_enabled: true
 
 # エラー処理設定
 error:
   default_level: "normal"             # strict | normal | lenient | ignore
-  
+
   # エラー表示設定
   graceful_errors: true               # HTML埋め込みエラー情報
   continue_on_error: true             # エラー時処理継続
   show_suggestions: true              # 修正提案表示
   show_statistics: true               # エラー統計表示
-  
+
   # エラー制限設定
   error_display_limit: 20
   max_error_context_lines: 5
-  
+
   # カテゴリ別設定
   category_settings:
     syntax:
@@ -86,13 +86,13 @@ rendering:
   text_color: "#212529"
   line_height: "1.75"
   font_family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif"
-  
+
   # テーマ設定
   theme_name: "開発者テーマ"
   custom_css:
     ".code-block": "background-color: #f1f3f4; padding: 1rem; border-radius: 0.5rem;"
     ".highlight": "background-color: #fff3cd; padding: 0.25rem;"
-  
+
   # レンダリング機能
   include_source: true                # ソース表示機能有効
   enable_syntax_highlighting: true
@@ -102,13 +102,13 @@ ui:
   # プレビュー設定
   auto_preview: true
   preview_browser: null               # システムデフォルトブラウザを使用
-  
+
   # プログレス表示設定
   progress_level: "verbose"           # silent | minimal | detailed | verbose
   progress_style: "bar"               # bar | spinner | percentage
   show_progress_tooltip: true
   enable_cancellation: true
-  
+
   # ファイル監視設定
   watch_enabled: true
   watch_interval: 0.5                 # 500ms間隔でチェック
