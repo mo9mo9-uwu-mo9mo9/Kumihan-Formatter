@@ -15,6 +15,7 @@ from rich.progress import Progress
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
+from ...core.error_handling import UnifiedErrorHandler, handle_error_unified
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -28,10 +29,12 @@ class ConvertProcessor:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.file_ops = FileOperations(ui=get_console_ui())
-        self.logger.debug("ConvertProcessor initialized")
+        # Issue #770: 統一エラーハンドリング初期化
+        self.error_handler = UnifiedErrorHandler(component_name="convert")
+        self.logger.debug("ConvertProcessor initialized with unified error handling")
 
     def validate_files(self, input_file: str, output_file: str) -> None:
-        """ファイルバリデーション
+        """ファイルバリデーション (Issue #770: 統一エラーハンドリング適用)
 
         Args:
             input_file: 入力ファイルパス
@@ -41,19 +44,34 @@ class ConvertProcessor:
             FileNotFoundError: 入力ファイルが存在しない場合
             ValueError: ファイルパスが無効な場合
         """
-        input_path = Path(input_file)
+        try:
+            input_path = Path(input_file)
 
-        if not input_path.exists():
-            raise FileNotFoundError(f"Input file not found: {input_file}")
+            if not input_path.exists():
+                raise FileNotFoundError(f"Input file not found: {input_file}")
 
-        if not input_path.is_file():
-            raise ValueError(f"Input path is not a file: {input_file}")
+            if not input_path.is_file():
+                raise ValueError(f"Input path is not a file: {input_file}")
 
-        # 出力ディレクトリの存在確認（必要に応じて作成）
-        output_path = Path(output_file)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+            # 出力ディレクトリの存在確認（必要に応じて作成）
+            output_path = Path(output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.logger.debug(f"File validation passed: {input_file} -> {output_file}")
+            self.logger.debug(f"File validation passed: {input_file} -> {output_file}")
+            
+        except Exception as e:
+            # Issue #770: 統一エラーハンドリング
+            result = self.error_handler.handle_error(
+                e, 
+                context={
+                    "input_file": input_file,
+                    "output_file": output_file,
+                    "operation": "file_validation"
+                },
+                operation="validate_files"
+            )
+            # バリデーションエラーは基本的に継続不可
+            raise result.kumihan_error
 
     def convert_file(  # type: ignore
         self,
