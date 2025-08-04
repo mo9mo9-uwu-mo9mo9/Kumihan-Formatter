@@ -9,7 +9,9 @@
 ### 含まれる機能
 
 - ✅ **AI運用7原則**を含むCLAUDE.md
-- ✅ **Serena統合システム**（セマンティックコード編集）
+- ✅ **Serena-Expert強制システム**（MCP絶対優先・従来ツール禁止）
+- ✅ **3層防御システム**（監視・警告・強制停止）
+- ✅ **セマンティック編集優先**（シンボル単位操作）
 - ✅ **高度なPermissions設定**（170+項目）
 - ✅ **6つのMCPサーバー**（context7, gemini-cli, serena, memory, deepview, sequential-thinking）
 - ✅ **Issue管理自動化**（ラベル付与ルール）
@@ -17,9 +19,14 @@
 - ✅ **日本語レビューシステム**
 - ✅ **SubAgent自動選択**
 - ✅ **CLAUDE.md管理システム**
-- ✅ **Hooks設定**（オプション）
+- ✅ **Pre-commit Hook設定**（オプション）
+- ✅ **.claude-config.yml自動生成**（新機能）
 
 ## 🚀 クイックスタート
+
+### 🚨 重要：Serena-Expert強制システム
+
+このキットで生成されるプロジェクトでは、**すべての開発タスクでSerena-Expert（MCPツール）の使用が絶対必須**です。従来ツール（Edit、MultiEdit、Read等）の使用は**完全に禁止**されています。
 
 ### 1. 基本セットアップ
 
@@ -53,8 +60,9 @@ python claude-setup-kit/setup.py \\
 python claude-setup-kit/setup.py \\
   --project-name "MyProject" \\
   --project-path "/path/to/project" \\
-  --config my-custom-config.yaml \\
-  --with-hooks
+  --config my-custom-config.yaml \
+  --with-hooks \
+  --with-serena-config
 ```
 
 ## 📁 ファイル構成
@@ -68,6 +76,7 @@ claude-setup-kit/
     ├── CLAUDE.md.template                # CLAUDE.mdテンプレート
     ├── settings.local.json.template      # Claude設定テンプレート
     ├── claude_md_config.yaml.template    # CLAUDE.md管理設定
+    ├── claude_config.yml.template        # Serena-Expert強制設定
     ├── claude_desktop_config.json.template # MCP設定（参考）
     └── hooks.json.template               # Hooks設定テンプレート
 ```
@@ -105,8 +114,18 @@ components:
 | `--language` | プログラミング言語 | `Python` |
 | `--no-mcp` | MCP設定をスキップ | False |
 | `--with-hooks` | Hooks設定を含める | False |
+| `--with-serena-config` | Serena-Expert強制設定を含める | True |
+| `--no-serena-enforcement` | Serena強制を無効化（非推奨） | False |
 
 ## 🔧 セットアップ後の作業
+
+### 🚨 重要：Serena-Expert強制システム確認
+
+セットアップ完了後、必ず以下を確認してください：
+
+1. **`.claude-config.yml`** - Serena-Expert強制設定が有効
+2. **CLAUDE.md** - P7原則（MCP絶対優先）が記載済み  
+3. **従来ツール使用禁止** - Edit、MultiEdit、Read等の使用は完全禁止
 
 ### 1. MCPサーバーの手動セットアップ
 
@@ -139,10 +158,23 @@ claude
 ```
 
 Claude Code起動後、以下を確認：
-- ✅ AI運用7原則が表示される
-- ✅ Serena MCP が接続される
-- ✅ `/serena` コマンドが使用可能
-- ✅ SubAgent が自動選択される
+- ✅ **AI運用7原則が逐語的表示される**
+- ✅ **Serena MCP が接続される**
+- ✅ **Serena-Expert強制システムが有効**
+- ✅ **従来ツール使用時に警告・停止が発生**
+- ✅ **SubAgent が自動選択される**
+
+### 🔍 Serena-Expert強制システム動作テスト
+
+```bash
+# 正常な使用パターン（推奨）
+mcp__serena__find_symbol
+mcp__serena__replace_symbol_body
+
+# 禁止パターン（自動検出・停止）
+Edit  # → 即座に停止・警告
+Read  # → 即座に停止・警告
+```
 
 ## 📋 対応言語・フレームワーク
 

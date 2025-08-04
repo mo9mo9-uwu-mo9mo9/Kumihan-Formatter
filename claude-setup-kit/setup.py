@@ -150,15 +150,19 @@ class ClaudeSetupKit:
         if options.get("create_md_config", True):
             self._create_md_config(project_path, config)
             
-        # 4. MCPサーバー設定（グローバル）
+        # 4. Serena-Expert強制設定の作成（デフォルト有効）
+        if options.get("create_serena_config", True):
+            self._create_serena_config(project_path, config)
+            
+        # 5. MCPサーバー設定（グローバル）
         if options.get("setup_mcp", True):
             self._setup_mcp_servers(config)
             
-        # 5. Hooks設定の作成（オプション）
+        # 6. Hooks設定の作成（オプション）
         if options.get("create_hooks", False):
             self._create_hooks(claude_dir, config)
             
-        # 6. SubAgentの設定
+        # 7. SubAgentの設定
         if options.get("setup_subagent", True):
             self._setup_subagent(project_path, config)
             
@@ -256,6 +260,24 @@ class ClaudeSetupKit:
         
         print(f"  ✓ {output_path}")
         print(f"  ✓ {hooks_dir}")
+
+    
+    def _create_serena_config(self, project_path: Path, config: Dict[str, Any]):
+        """Serena-Expert強制設定を作成"""
+        print("🚨 Serena-Expert強制設定作成中...")
+        template_path = self.templates_dir / "claude_config.yml.template"
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+            
+        content = self.substitute_template(template_content, config)
+        
+        output_path = project_path / ".claude-config.yml"
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+            
+        print(f"  ✓ {output_path}")
+        print("  🚨 Serena-Expert強制システム有効化完了")
     
     def _setup_subagent(self, project_path: Path, config: Dict[str, Any]):
         """SubAgent設定を作成"""
@@ -303,6 +325,8 @@ def main():
     parser.add_argument("--no-mcp", action="store_true", help="MCP設定をスキップ")
     parser.add_argument("--no-hooks", action="store_true", help="Hooks設定をスキップ") 
     parser.add_argument("--with-hooks", action="store_true", help="Hooks設定を含める")
+    parser.add_argument("--with-serena-config", action="store_true", default=True, help="Serena-Expert強制設定を含める")
+    parser.add_argument("--no-serena-enforcement", action="store_true", help="Serena強制を無効化（非推奨）")
     
     args = parser.parse_args()
     
@@ -321,11 +345,17 @@ def main():
     config["project"]["path"] = os.path.abspath(args.project_path)
     config["project"]["language"] = args.language
     
+    # Serena強制無効化の警告
+    if args.no_serena_enforcement:
+        print("⚠️  警告: Serena-Expert強制システムを無効化します（非推奨）")
+        print("⚠️  この設定は開発効率を大幅に低下させる可能性があります")
+    
     # セットアップオプション
     options = {
         "create_claude_md": True,
         "create_claude_settings": True,
         "create_md_config": True,
+        "create_serena_config": not args.no_serena_enforcement,
         "setup_mcp": not args.no_mcp,
         "create_hooks": args.with_hooks,
         "setup_subagent": True

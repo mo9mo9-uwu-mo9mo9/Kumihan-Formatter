@@ -574,7 +574,7 @@ error_test_cases = [
 ### 10.1 記法バージョン
 - **Current**: α-dev (ブロック記法統一・単一行記法完全廃止)
 - **Previous**: v2.2.0-alpha (混在禁止・新キーワード対応)
-- **Legacy**: v2.0.0-alpha, v1.0.0-alpha (全て廃止済み)
+- **Legacy**: v2.0.0-alpha, v1.0.0-alpha (全て廃止済み) (全て廃止済み)
 - **Target**: α-dev-stable (正式リリース時)
 
 ### 10.2 後方互換性

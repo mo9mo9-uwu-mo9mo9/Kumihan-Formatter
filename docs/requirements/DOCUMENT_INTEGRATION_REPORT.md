@@ -33,9 +33,9 @@ docs/requirements/
 - ✅ `USER_STORIES.md`との整合性: MVP機能がユーザーストーリーに対応
 - ✅ `ACCEPTANCE_CRITERIA.md`との整合性: 受け入れ条件を継承
 
-### 3.2 仕様関連ドキュメント（`docs/specifications/`）
+### 3.2 仕様関連ドキュメント（`docs/specs/`）
 ```
-docs/specifications/
+docs/specs/
 ├── FUNCTIONAL_SPEC.md           # 機能仕様書（参照済み）
 ├── NOTATION_SPEC.md             # 記法仕様書（参照済み）
 └── ERROR_MESSAGES_SPEC.md       # エラーメッセージ仕様

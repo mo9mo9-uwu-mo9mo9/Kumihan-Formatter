@@ -17,7 +17,7 @@ Kumihan-Formatter/
     ├── DEVELOPMENT_GUIDE.md     # 開発ガイド（統合版）
     ├── USER_GUIDE.md            # ユーザーガイド（統合版）
     ├── DEPLOYMENT.md            # 配布・運用ガイド（統合版）
-    └── specifications/          # 詳細仕様書
+    └── specs/          # 詳細仕様書
         ├── NOTATION_SPEC.md     # 記法仕様詳細
         ├── FUNCTIONAL_SPEC.md   # 機能仕様
         └── ERROR_MESSAGES_SPEC.md # エラーメッセージ仕様

@@ -1,4 +1,4 @@
-#見出し1# Kumihan-Formatter API リファレンス v2.2.0-alpha
+#見出し1# Kumihan-Formatter API リファレンス α-dev
 #目次#
 #見出し1#
 概要とクイックスタート
@@ -6,7 +6,7 @@
 #枠線+ハイライト color=色コードe1f5fe #
 📡 **Kumihan-Formatter REST API**
 
-- **バージョン**: v2.2.0-alpha
+- **バージョン**: α-dev
 - **ベースURL**: `https://api.kumihan-formatter.example.com/v2`
 - **認証方式**: API Key認証
 - **レスポンス形式**: JSON
@@ -385,7 +385,7 @@ convertText();
 - PDF/EPUB出力対応
 #見出し1#
 変更履歴とマイグレーション
-#見出し2# v2.2.0-alpha の変更点
+#見出し2# α-dev の変更点
 #ネタバレ#
 📝 **主要な変更点**
 
@@ -425,7 +425,7 @@ convertText();
 - エラーハンドリングの見直し
 - パフォーマンステストの実施
 #中央寄せ#
-✨ **API リファレンス v2.2.0-alpha 完**
+✨ **API リファレンス α-dev 完**
 
 詳細な情報は公式ドキュメントをご覧ください
 https://docs.kumihan-formatter.example.com
@@ -434,6 +434,6 @@ https://docs.kumihan-formatter.example.com
 #情報#
 💡 **ドキュメント情報**
 - 最終更新: 2025-01-01
-- 対象バージョン: v2.2.0-alpha
+- 対象バージョン: α-dev
 - 作成者: Kumihan-Formatter開発チーム
 - フィードバック: api-feedback@kumihan-formatter.example.com
