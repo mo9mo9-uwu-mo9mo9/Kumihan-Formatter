@@ -1,0 +1,78 @@
+# Claude Code セットアップキット設定ファイル
+# プロジェクト固有の設定をここでカスタマイズできます
+
+project:
+  name: "MyProject"
+  status: "開発中"
+  phase: "Development"
+  path: "/path/to/project"
+  language: "Python"
+  version: "3.12"
+  release_version: "未定"
+
+tools:
+  formatter: "black"
+  linter: "flake8"
+  type_checker: "mypy"
+  test_runner: "pytest"
+  test_command: "python -m pytest tests/ -v"
+
+components:
+  example: "コンポーネント:パーサー"
+  list:
+    - "コンポーネント:パーサー"
+    - "コンポーネント:レンダラー"
+    - "コンポーネント:CLI"
+    - "コンポーネント:コア"
+
+review:
+  automation_status: "無効化完了"
+  manual_process: "Claude Codeとの対話セッション内で実施"
+  request_process: "PR作成後、Claude Codeセッションで「変更内容をレビュー」と依頼"
+  merge_policy: "手動のみ"
+  ci_cd_requirements: "CI必須通過"
+
+logging:
+  import: "from myproject.utilities.logger import get_logger"
+
+documentation:
+  links:
+    - "- [アーキテクチャ](docs/architecture.md) - システム設計"
+    - "- [ユーザーガイド](docs/user-guide.md) - 利用者向けガイド"
+  project_specific: |
+    # プロジェクト固有の設定
+
+    追加設定をここに記述してください。
+
+mcp_servers:
+  - "context7"
+  - "gemini-cli"
+  - "memory"
+  - "deepview"
+  - "sequential-thinking"
+
+# 言語別の設定例
+language_configs:
+  Python:
+    formatter: "black"
+    linter: "flake8"
+    type_checker: "mypy"
+    test_runner: "pytest"
+    
+  JavaScript:
+    formatter: "prettier"
+    linter: "eslint"
+    type_checker: "typescript"
+    test_runner: "jest"
+    
+  Go:
+    formatter: "gofmt"
+    linter: "golangci-lint"
+    type_checker: "go"
+    test_runner: "go test"
+    
+  Rust:
+    formatter: "rustfmt"
+    linter: "clippy"
+    type_checker: "rustc"
+    test_runner: "cargo test"

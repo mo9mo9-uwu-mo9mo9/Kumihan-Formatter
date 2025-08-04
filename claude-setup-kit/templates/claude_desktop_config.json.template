@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "memory-bank-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@alioshr/memory-bank-mcp",
+        "--config",
+        "{\"memoryBankRoot\":\"{{PROJECT_PATH}}\"}"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "{{PROJECT_PATH}}/memory.json"
+      }
+    }
+  }
+}
