@@ -289,16 +289,26 @@ def main() -> None:
         # Let Click handle its own exceptions (including help)
         raise
     except Exception as e:
-        # Handle other exceptions with friendly error handler
+        # Issue #770: 統一エラーハンドリング適用
         logger.error(f"Unhandled exception in CLI: {e}", exc_info=True)
-        from .core.error_handling import ErrorHandler as FriendlyErrorHandler
+        from .core.error_handling import handle_error_unified
+        from .core.error_handling.log_formatter import ErrorMessageBuilder
         from .ui.console_ui import get_console_ui
 
-        friendly_error_handler = FriendlyErrorHandler(console_ui=get_console_ui())
-        error = friendly_error_handler.handle_exception(
-            e, context={"operation": "CLI実行", "args": sys.argv}
+        # 統一エラーハンドリングで処理
+        result = handle_error_unified(
+            e, 
+            context={"operation": "CLI実行", "args": sys.argv},
+            operation="main_cli",
+            component_name="CLI"
         )
-        friendly_error_handler.display_error(error, verbose=True)
+        
+        # ユーザー向けメッセージ表示
+        console_ui = get_console_ui()
+        console_message = ErrorMessageBuilder.build_console_message(
+            result.kumihan_error, colored=True
+        )
+        console_ui.error(console_message)
         sys.exit(1)
 
 
