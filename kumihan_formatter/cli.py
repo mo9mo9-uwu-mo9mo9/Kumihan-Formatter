@@ -215,6 +215,7 @@ def register_commands() -> None:
         logger.debug("lint command registered successfully")
     except ImportError as e:
         import warnings
+
         warnings.warn(f"lint コマンドが読み込めませんでした: {e}")
         logger.error(f"Failed to load lint command: {e}")
 
