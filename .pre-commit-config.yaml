@@ -15,6 +15,14 @@ repos:
         files: '\.py$'
         pass_filenames: false
         
+      - id: kumihan-lint-fix
+        name: Kumihan Auto-fix flake8 errors
+        entry: python -m kumihan_formatter.cli lint --fix --dry-run
+        language: system
+        files: '\.py$'
+        pass_filenames: true
+        description: "Automatically fix common flake8 errors (E501, E226, F401, E704, E702)"
+        
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

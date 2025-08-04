@@ -207,6 +207,18 @@ def register_commands() -> None:
         cli.add_command(create_convert_command(), name="convert")
         logger.debug("Legacy convert command registered")
 
+    # lint コマンドを登録（Issue #778対応）
+    try:
+        from .commands.lint import lint_command
+
+        cli.add_command(lint_command, name="lint")
+        logger.debug("lint command registered successfully")
+    except ImportError as e:
+        import warnings
+
+        warnings.warn(f"lint コマンドが読み込めませんでした: {e}")
+        logger.error(f"Failed to load lint command: {e}")
+
     # 他のコマンドを個別に登録（失敗してもconvertは動作する）
     try:
         from .commands.check_syntax import create_check_syntax_command

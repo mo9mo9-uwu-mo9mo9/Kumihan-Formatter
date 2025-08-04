@@ -60,6 +60,13 @@ class ProcessingStats:
         """処理速度（アイテム/秒）"""
         duration = self.duration_seconds
         return self.items_processed / duration if duration > 0 else 0
+    
+    @property
+    def completion_rate(self) -> float:
+        """完了率（%）"""
+        if self.total_items == 0:
+            return 0.0
+        return (self.items_processed / self.total_items) * 100
 
 
 class PerformanceMonitor:
@@ -333,7 +340,8 @@ class PerformanceMonitor:
             "🔍 パフォーマンス分析レポート",
             "=" * 50,
             f"処理時間: {summary['duration_seconds']:.2f}秒",
-            f"処理項目: {summary['items_processed']:,} / {summary['total_items']:,} ({summary['completion_rate']:.1f}%)",
+            f"処理項目: {summary['items_processed']:,} / "
+            f"{summary['total_items']:,} ({summary['completion_rate']:.1f}%)",
             f"処理速度: {summary['items_per_second']:,.0f} items/秒",
             f"エラー: {summary['errors_count']}, 警告: {summary['warnings_count']}",
             "",
