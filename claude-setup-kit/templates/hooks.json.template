@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "user-prompt-submit": {
+      "command": "echo 'Processing: {{PROJECT_NAME}} - {{TIMESTAMP}}'",
+      "description": "ユーザープロンプト送信時のログ"
+    },
+    "ai-7-principles-check": {
+      "command": "{{HOOK_COMMAND_PREFIX}} check-7principles.sh",
+      "description": "AI運用7原則の表示確認・違反チェック"
+    },
+    "claude-md-validation": {
+      "command": "{{HOOK_COMMAND_PREFIX}} validate-claude-md.sh",
+      "description": "CLAUDE.mdの7原則整合性チェック"
+    },
+    "session-start-principles": {
+      "command": "echo '🚨 AI運用7原則チェック: セッション開始時に7原則が表示されることを確認してください'",
+      "description": "セッション開始時の7原則表示リマインダー"
+    },
+    "before-tool-call": {
+      "command": "{{HOOK_COMMAND_PREFIX}} pre-tool-check.sh",
+      "description": "ツール実行前のチェック"
+    },
+    "after-tool-call": {
+      "command": "{{HOOK_COMMAND_PREFIX}} post-tool-cleanup.sh",
+      "description": "ツール実行後のクリーンアップ"
+    },
+    "project-analysis": {
+      "command": "{{HOOK_COMMAND_PREFIX}} analyze-project.sh",
+      "description": "プロジェクト解析フック"
+    }
+  },
+  "settings": {
+    "enable_hooks": true,
+    "timeout_seconds": 30,
+    "log_hook_output": true,
+    "hook_script_dir": ".claude/hooks"
+  }
+}
