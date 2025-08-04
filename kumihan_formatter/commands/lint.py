@@ -19,10 +19,11 @@ from kumihan_formatter.core.utilities.logger import get_logger
 class Flake8AutoFixer:
     """flake8エラー自動修正エンジン"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: Optional[str] = None, error_types: Optional[List[str]] = None):
         self.logger = get_logger(__name__)
         self.config_path = config_path or ".flake8"
         self.max_line_length = self._get_max_line_length()
+        self.error_types = error_types  # 修正対象のエラータイプリスト
         self.fixes_applied = {
             "E501": 0,
             "E226": 0,
@@ -760,6 +761,14 @@ class Flake8AutoFixer:
                 if self.should_fix_error(error["code"], config_settings)
             ]
 
+            # --typeオプションによるエラータイプフィルタリング
+            if self.error_types:
+                filtered_errors = [
+                    error
+                    for error in filtered_errors
+                    if error["code"] in self.error_types
+                ]
+
             # 最適な修正順序で並び替え
             optimized_errors = self.get_optimized_fix_order(filtered_errors)
 
@@ -824,6 +833,9 @@ class Flake8AutoFixer:
 @click.option(
     "--quality-monitoring", is_flag=True, help="Phase 3.3: 品質監視機能を有効にする"
 )
+@click.option(
+    "--type", "-t", help="修正するエラータイプを指定（カンマ区切り） 例: E501,E226,F401"
+)
 def lint_command(
     files: Tuple[str, ...],
     fix: bool,
@@ -833,6 +845,7 @@ def lint_command(
     report: Optional[str],
     advanced: bool,
     quality_monitoring: bool,
+    type: Optional[str],
 ) -> None:
     """コードの品質チェックと自動修正
 
@@ -868,7 +881,13 @@ def lint_command(
         return
 
     # 自動修正実行
-    fixer = Flake8AutoFixer(config)
+    # --typeオプションの解析
+    error_types = None
+    if type:
+        error_types = [t.strip() for t in type.split(",")]
+        click.echo(f"Fixing only specified error types: {', '.join(error_types)}")
+    
+    fixer = Flake8AutoFixer(config, error_types)
     total_fixes = {"E501": 0, "E226": 0, "F401": 0, "E704": 0, "E702": 0, "total": 0}
     reports = []
 
