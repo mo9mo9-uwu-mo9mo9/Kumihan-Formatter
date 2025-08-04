@@ -51,6 +51,23 @@ mcp_servers:
   - "deepview"
   - "sequential-thinking"
 
+# Serena-Expert強制システム設定
+serena_enforcement:
+  enabled: true
+  level: "strict"
+  monitoring: true
+  auto_correction: true
+  
+# 禁止ツール（従来ツール）
+forbidden_legacy_tools:
+  - "Edit"
+  - "MultiEdit"
+  - "Read"
+  - "Write"
+  - "Bash"
+  - "Glob"
+  - "Grep"
+
 # 言語別の設定例
 language_configs:
   Python:

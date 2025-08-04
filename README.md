@@ -147,7 +147,7 @@ Kumihan-Formatter/
 │   └── debug/             # デバッグ用テストファイル
 ├── docs/                   # ドキュメント
 │   ├── reports/           # テストレポート
-│   └── specifications/    # 詳細仕様書
+│   └── specs/    # 詳細仕様書
 ├── scripts/               # ユーティリティスクリプト
 ├── samples/               # サンプルファイル
 ├── output/                # 出力ファイル（gitignore対象）

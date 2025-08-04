@@ -371,7 +371,7 @@
 💡 **クレジット**
 - 作成：Kumihan-Formatter サンプル制作チーム
 - システム：Call of Cthulhu 6th Edition（Chaosium Inc.）
-- 記法：Kumihan記法 v2.2.0-alpha対応
+- 記法：Kumihan記法 α-dev対応
 
 このシナリオはKumihan記法の実践例として作成されました。
 実際のTRPGセッションでもご活用いただけます。

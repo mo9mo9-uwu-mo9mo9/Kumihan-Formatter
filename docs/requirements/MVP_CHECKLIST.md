@@ -63,7 +63,7 @@
 
 ### 📚 参考ドキュメントとの整合性
 - [x] `docs/requirements/REQUIREMENTS.md` → 確認済み、整合性あり
-- [x] `docs/specifications/FUNCTIONAL_SPEC.md` → 確認済み、整合性あり  
+- [x] `docs/specs/FUNCTIONAL_SPEC.md` → 確認済み、整合性あり  
 - [x] `docs/requirements/USER_STORIES.md` → 確認済み、整合性あり
 
 ### 📈 影響範囲

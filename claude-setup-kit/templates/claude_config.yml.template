@@ -1,0 +1,81 @@
+# Claude Code設定ファイル - {{PROJECT_NAME}}専用
+# Serena-Expert強制使用システム設定
+
+project_name: "{{PROJECT_NAME}}"
+project_type: "{{LANGUAGE}}_project"
+
+# 🚨 SERENA-EXPERT絶対必須設定
+mandatory_tools:
+  # 開発関連タスクでserena-expert絶対必須
+  development_tasks: "serena-expert"
+  code_implementation: "serena-expert"
+  component_creation: "serena-expert"
+  file_editing: "serena-expert"
+  symbol_manipulation: "serena-expert"
+  code_analysis: "serena-expert"
+  refactoring: "serena-expert"
+  testing: "serena-expert"
+
+# 強制レベル設定
+enforcement:
+  level: "strict"          # strict: 違反時即座停止
+  monitoring: true         # 使用履歴監視有効
+  auto_correction: true    # 自動是正機能有効
+  violation_action: "stop" # 違反時の動作: stop(停止), warn(警告), redirect(リダイレクト)
+
+# 禁止ツール（従来ツール使用禁止）
+forbidden_tools:
+  - "Edit"
+  - "MultiEdit" 
+  - "Read"
+  - "Write"
+  - "Bash"
+  - "Glob"
+  - "Grep"
+
+# 例外許可（緊急時のみ）
+exceptions:
+  emergency_only: true
+  requires_explicit_permission: true
+  log_all_exceptions: true
+
+# Serena設定
+serena:
+  priority_tools:
+    - "mcp__serena__find_symbol"
+    - "mcp__serena__replace_symbol_body"
+    - "mcp__serena__insert_after_symbol"
+    - "mcp__serena__search_for_pattern"
+    - "mcp__serena__get_symbols_overview"
+  
+  required_checks:
+    - onboarding_performed
+    - memory_usage
+    - symbol_analysis
+
+# 監視・ログ設定
+monitoring:
+  enabled: true
+  log_file: ".claude-usage.log"
+  track_violations: true
+  generate_reports: true
+  
+# 品質保証
+quality_assurance:
+  code_style: "{{FORMATTER}}"
+  type_checking: "{{TYPE_CHECKER}}_strict"
+  import_sorting: "isort"
+  encoding: "utf-8"
+
+# プロジェクト固有設定
+project_specific:
+  language: "{{LANGUAGE}}"
+  version: "{{VERSION}}"
+  test_runner: "{{TEST_RUNNER}}"
+  formatter: "{{FORMATTER}}"
+  linter: "{{LINTER}}"
+
+# 更新履歴
+version: "1.0.0"
+last_updated: "{{TIMESTAMP}}"
+created_by: "Claude Code Setup Kit - Serena-Expert System"

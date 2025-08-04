@@ -1,6 +1,6 @@
 # Kumihan-Formatter サンプルファイル集
 
-> **バージョン**: v2.2.0-alpha対応
+> **バージョン**: α-dev対応
 > **作成日**: 2025-01-01
 > **目的**: 包括的テスト・学習用サンプル
 
@@ -240,6 +240,6 @@ kumihan convert samples/special/31_error_patterns.txt -o output/ --strict
 ---
 
 **最終更新**: 2025-01-01  
-**対応バージョン**: Kumihan-Formatter v2.2.0-alpha  
+**対応バージョン**: Kumihan-Formatter α-dev  
 **サンプルファイル数**: 20ファイル  
 **総記法カバレッジ**: 100%（21/21種類）
