@@ -56,6 +56,9 @@ class HTMLRenderer:
 
     def __init__(self) -> None:
         """Initialize HTML renderer with specialized renderers"""
+        from ...core.utilities.logger import get_logger
+
+        self.logger = get_logger(__name__)
         self.element_renderer = ElementRenderer()
         self.compound_renderer = CompoundElementRenderer()
         self.formatter = HTMLFormatter()
@@ -70,6 +73,25 @@ class HTMLRenderer:
         # Issue #700: graceful error handling support
         self.graceful_errors: list[Any] = []
         self.embed_errors_in_html = False
+
+        # Footnote integration support
+        self.footnotes_data = None
+
+    def set_footnote_data(self, footnotes_data: dict) -> None:
+        """
+        脚注データを設定（Rendererからの統合用）
+
+        Args:
+            footnotes_data: 脚注データ辞書 {footnotes, clean_text, manager}
+        """
+        try:
+            self.footnotes_data = footnotes_data
+            self.logger.debug(
+                f"Set footnote data: {len(footnotes_data.get('footnotes', []))} footnotes"
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to set footnote data: {e}")
+            self.footnotes_data = None
 
     def render_nodes(self, nodes: list[Node]) -> str:
         """
@@ -92,7 +114,32 @@ class HTMLRenderer:
             if html:
                 html_parts.append(html)
 
-        return "\n".join(html_parts)
+        # Generate main content HTML
+        main_html = "\n".join(html_parts)
+
+        # Process footnote placeholders if footnote data is available
+        if self.footnotes_data:
+            try:
+                footnotes = self.footnotes_data.get("footnotes", [])
+
+                if footnotes:
+                    # Replace footnote placeholders with actual HTML links
+                    import re
+
+                    for footnote in footnotes:
+                        placeholder = f"[FOOTNOTE_REF_{footnote['number']}]"
+                        footnote_link = f'<sup><a href="#footnote-{footnote["number"]}" id="footnote-ref-{footnote["number"]}">[{footnote["number"]}]</a></sup>'
+                        main_html = main_html.replace(placeholder, footnote_link)
+
+                    self.logger.debug(
+                        f"Replaced {len(footnotes)} footnote placeholders with HTML links"
+                    )
+
+            except Exception as e:
+                self.logger.warning(f"Failed to process footnote placeholders: {e}")
+                # Continue with original HTML if footnote processing fails
+
+        return main_html
 
     def render_nodes_optimized(self, nodes: list[Node]) -> str:
         """

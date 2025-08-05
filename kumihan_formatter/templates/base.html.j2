@@ -306,6 +306,13 @@
             {{ navigation_html | safe }}
             {% endif %}
             {{ body_content | safe }}
+
+            {% if has_footnotes %}
+            <!-- 脚注セクション -->
+            <section class="footnotes-section">
+                {{ footnotes_html | safe }}
+            </section>
+            {% endif %}
         </main>
 
         <!-- 右サイドバー（注釈・補足情報） -->
@@ -322,6 +329,13 @@
         {{ navigation_html | safe }}
         {% endif %}
         {{ body_content | safe }}
+
+        {% if has_footnotes %}
+        <!-- 脚注セクション -->
+        <section class="footnotes-section">
+            {{ footnotes_html | safe }}
+        </section>
+        {% endif %}
     </div>
     {% endif %}
 </body>

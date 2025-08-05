@@ -4,10 +4,8 @@ Issue #770対応: graceful error handlingの全面展開
 エラーが発生してもユーザー体験を損なわない処理を提供
 """
 
-import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from ..common.error_base import KumihanError

@@ -103,7 +103,8 @@ class PerformanceMonitor:
         self.alert_callbacks: List[Callable[[str, Dict], None]] = []
 
         self.logger.info(
-            f"PerformanceMonitor initialized: interval={monitoring_interval}s, history={history_size}"
+            f"PerformanceMonitor initialized: interval={monitoring_interval}s, "
+            f"history={history_size}"
         )
 
     def start_monitoring(self, total_items: int, initial_stage: str = "開始"):
@@ -127,7 +128,8 @@ class PerformanceMonitor:
             self._monitor_thread.start()
 
             self.logger.info(
-                f"Performance monitoring started: {total_items} items, stage: {initial_stage}"
+                f"Performance monitoring started: {total_items} items, "
+                f"stage: {initial_stage}"
             )
 
     def stop_monitoring(self):

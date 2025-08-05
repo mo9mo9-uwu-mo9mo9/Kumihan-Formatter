@@ -6,8 +6,7 @@ Issue #770対応: ログフォーマット・レベルの統一化
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from ..common.error_base import KumihanError
 from ..common.error_types import ErrorSeverity

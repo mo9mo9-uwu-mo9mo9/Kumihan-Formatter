@@ -4,10 +4,9 @@ Issue #770対応: 分散したエラー処理を統一し、
 一貫性のあるエラーハンドリングとログ出力を提供
 """
 
-import traceback
 from dataclasses import dataclass
 from logging import Logger
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from ..common.error_base import KumihanError
 from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
@@ -156,7 +155,6 @@ class UnifiedErrorHandler:
         Returns:
             tuple: (severity, category)
         """
-        error_type = type(error).__name__
         error_message = str(error).lower()
 
         # ファイルシステムエラー

@@ -24,6 +24,82 @@ body {
     height: fit-content;
 }
 
+/* 脚注セクション */
+.footnotes-section {
+    margin-top: 3em;
+    padding-top: 2em;
+    border-top: 2px solid #ddd;
+}
+
+.footnotes {
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.footnotes h3 {
+    font-size: 1.2em;
+    margin-bottom: 1em;
+    color: #555;
+}
+
+.footnotes ol {
+    padding-left: 1.5em;
+    counter-reset: footnote-counter;
+}
+
+.footnotes li {
+    margin-bottom: 0.8em;
+    padding-left: 0.5em;
+    position: relative;
+}
+
+.footnotes li:target {
+    background-color: #fff3cd;
+    padding: 0.5em;
+    border-radius: 4px;
+    animation: footnote-highlight 2s ease-out;
+}
+
+@keyframes footnote-highlight {
+    0% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+
+.footnote-backref {
+    font-size: 0.8em;
+    margin-left: 0.5em;
+    text-decoration: none;
+    color: #666;
+    border: 1px solid #ccc;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background-color: #f8f8f8;
+    transition: all 0.2s;
+}
+
+.footnote-backref:hover {
+    background-color: #e8e8e8;
+    border-color: #999;
+    color: #333;
+}
+
+/* 脚注参照リンク（本文中） */
+.footnote-ref {
+    font-size: 0.8em;
+    vertical-align: super;
+    text-decoration: none;
+    color: #0066cc;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+
+.footnote-ref:hover {
+    background-color: #e6f3ff;
+    text-decoration: underline;
+}
+
 /* 段落 */
 p {
     margin-bottom: 1.5em;

@@ -141,11 +141,11 @@ class MarkerParser:
         # 脚注記法を本文から除去（後ろから処理して位置がずれないようにする）
         clean_text = text
         for footnote in reversed(footnotes):
-            # 脚注記法を脚注番号リンクに置換
-            footnote_link = f'<sup><a href="#footnote-{footnote["number"]}" id="footnote-ref-{footnote["number"]}">[{footnote["number"]}]</a></sup>'
+            # 脚注記法をプレースホルダーに置換（HTMLエスケープを避けるため）
+            footnote_placeholder = f"[FOOTNOTE_REF_{footnote['number']}]"
             clean_text = (
                 clean_text[: footnote["start_pos"]]
-                + footnote_link
+                + footnote_placeholder
                 + clean_text[footnote["end_pos"] :]
             )
 
