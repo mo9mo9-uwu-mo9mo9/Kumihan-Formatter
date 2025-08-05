@@ -8,9 +8,10 @@
 """
 
 import pytest
-from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
-from kumihan_formatter.core.syntax.syntax_rules import SyntaxRules
+
 from kumihan_formatter.core.syntax.syntax_errors import ErrorSeverity
+from kumihan_formatter.core.syntax.syntax_rules import SyntaxRules
+from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
 
 @pytest.mark.unit

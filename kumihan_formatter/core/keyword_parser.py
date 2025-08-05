@@ -316,7 +316,8 @@ class KeywordParser:
 
         # 最適化: 正規表現キャッシュを活用
         from .utilities.performance_metrics import RegexOptimizer
-        regex_optimizer = getattr(self, '_regex_optimizer', None)
+
+        regex_optimizer = getattr(self, "_regex_optimizer", None)
         if regex_optimizer is None:
             self._regex_optimizer = RegexOptimizer()
             regex_optimizer = self._regex_optimizer
@@ -327,9 +328,10 @@ class KeywordParser:
 
         # 最適化: SIMD処理（大容量コンテンツの場合）
         if len(content) > 10000:  # 10KB以上の場合
-            simd_optimizer = getattr(self, '_simd_optimizer', None)
+            simd_optimizer = getattr(self, "_simd_optimizer", None)
             if simd_optimizer is None:
                 from .utilities.performance_metrics import SIMDOptimizer
+
                 self._simd_optimizer = SIMDOptimizer()
                 simd_optimizer = self._simd_optimizer
 
@@ -345,7 +347,9 @@ class KeywordParser:
         parts = []
         last_end = 0
 
-        for match in regex_optimizer.get_compiled_pattern(r"#\s*([^#]+?)\s*#([^#]+?)##").finditer(content):
+        for match in regex_optimizer.get_compiled_pattern(
+            r"#\s*([^#]+?)\s*#([^#]+?)##"
+        ).finditer(content):
             # Add text before the match
             if match.start() > last_end:
                 text_before = content[last_end : match.start()]
@@ -387,7 +391,9 @@ class KeywordParser:
             if (
                 nesting_level == 0
                 and text_content
-                and regex_optimizer.optimized_search(r"#\s*([^#]+?)\s*#([^#]+?)##", text_content)
+                and regex_optimizer.optimized_search(
+                    r"#\s*([^#]+?)\s*#([^#]+?)##", text_content
+                )
             ):
                 text_content = self._process_inline_keywords(
                     text_content, nesting_level + 1
@@ -430,28 +436,33 @@ class KeywordParser:
             else:
                 return parts
 
-    def _process_inline_keywords_simd(self, content: str, nesting_level: int = 0) -> Any:
+    def _process_inline_keywords_simd(
+        self, content: str, nesting_level: int = 0
+    ) -> Any:
         """SIMD最適化版インライン記法処理（大容量テキスト用）"""
 
         # SIMD最適化バージョン（簡略化実装）
         simd_optimizer = self._simd_optimizer
 
         # 大容量テキストを効率的に分割
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         # 並列処理関数
         def process_line_optimized(line: str) -> str:
-            if not line or '#' not in line:
+            if not line or "#" not in line:
                 return line
             return self._process_inline_keywords(line, nesting_level)
 
         # SIMDベクトル化処理
         processed_lines = simd_optimizer.vectorized_line_processing(
-            lines,
-            [process_line_optimized]
+            lines, [process_line_optimized]
         )
 
-        return '\n'.join(processed_lines) if isinstance(processed_lines, list) else processed_lines
+        return (
+            "\n".join(processed_lines)
+            if isinstance(processed_lines, list)
+            else processed_lines
+        )
 
     def _create_ruby_node(self, content: str) -> Any:
         """

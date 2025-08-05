@@ -4,12 +4,13 @@ Utilities modules comprehensive test coverage.
 Tests utility functionality to achieve 80% coverage goal.
 """
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
-import shutil
 import logging
+import shutil
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import available modules
 try:

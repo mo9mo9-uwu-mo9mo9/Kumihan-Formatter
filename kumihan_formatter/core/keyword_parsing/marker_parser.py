@@ -63,6 +63,203 @@ class MarkerParser:
         # リストアイテムパターン
         self._list_item_pattern = re.compile(r"^\d+\.\s")  # ブロック終了マーカー
 
+    def parse_footnotes(self, text: str) -> list[dict[str, Any]]:
+        """
+        テキストから脚注記法 ((content)) を抽出して解析
+
+        Args:
+            text: 解析対象のテキスト
+
+        Returns:
+            list[dict]: 脚注情報のリスト。各辞書は以下のキーを含む:
+                - 'content': 脚注の内容
+                - 'start_pos': 脚注の開始位置
+                - 'end_pos': 脚注の終了位置
+                - 'number': 脚注番号（自動採番）
+        """
+        footnotes = []
+
+        # 入力検証
+        if not text or not isinstance(text, str):
+            self.logger.warning(
+                "Invalid input for footnote parsing: text must be a non-empty string"
+            )
+            return footnotes
+
+        try:
+            # ネストした括弧に対応した脚注パターン
+            footnote_pattern = re.compile(r"\(\(([^)]*?(?:\([^)]*\)[^)]*?)*)\)\)")
+            footnote_number = 1
+
+            for match in footnote_pattern.finditer(text):
+                try:
+                    content = match.group(1).strip()
+
+                    # セキュリティチェック: 危険なコンテンツの検出
+                    if self._contains_malicious_content(content):
+                        self.logger.warning(
+                            f"Potentially malicious content detected in footnote: {content[:50]}..."
+                        )
+                        content = self._sanitize_footnote_content(content)
+
+                    footnote_info = {
+                        "content": content,
+                        "start_pos": match.start(),
+                        "end_pos": match.end(),
+                        "number": footnote_number,
+                    }
+                    footnotes.append(footnote_info)
+                    footnote_number += 1
+
+                except Exception as e:
+                    self.logger.error(
+                        f"Error processing footnote at position {match.start()}: {e}"
+                    )
+                    continue
+
+        except re.error as e:
+            self.logger.error(f"Regex error in footnote parsing: {e}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error in footnote parsing: {e}")
+
+        return footnotes
+
+    def extract_footnotes_from_text(
+        self, text: str
+    ) -> tuple[str, list[dict[str, Any]]]:
+        """
+        テキストから脚注を抽出し、本文からは脚注記法を除去
+
+        Args:
+            text: 処理対象のテキスト
+
+        Returns:
+            tuple: (脚注記法を除去した本文, 脚注情報リスト)
+        """
+        footnotes = self.parse_footnotes(text)
+
+        # 脚注記法を本文から除去（後ろから処理して位置がずれないようにする）
+        clean_text = text
+        for footnote in reversed(footnotes):
+            # 脚注記法を脚注番号リンクに置換
+            footnote_link = f'<sup><a href="#footnote-{footnote["number"]}" id="footnote-ref-{footnote["number"]}">[{footnote["number"]}]</a></sup>'
+            clean_text = (
+                clean_text[: footnote["start_pos"]]
+                + footnote_link
+                + clean_text[footnote["end_pos"] :]
+            )
+
+        return clean_text, footnotes
+
+    def _contains_malicious_content(self, content: str) -> bool:
+        """
+        脚注内容に悪意のあるコンテンツが含まれているかチェック
+
+        Args:
+            content: チェック対象のコンテンツ
+
+        Returns:
+            bool: 悪意のあるコンテンツが検出された場合True
+        """
+        if not content:
+            return False
+
+        dangerous_patterns = [
+            r"<script[^>]*>",
+            r"javascript:",
+            r"data:text/html",
+            r"vbscript:",
+            r"on\w+\s*=",
+            r"<iframe[^>]*>",
+            r"<object[^>]*>",
+            r"<embed[^>]*>",
+        ]
+
+        content_lower = content.lower()
+        for pattern in dangerous_patterns:
+            if re.search(pattern, content_lower, re.IGNORECASE):
+                return True
+
+        return False
+
+    def _sanitize_footnote_content(self, content: str) -> str:
+        """
+        脚注内容のサニタイゼーション
+
+        Args:
+            content: サニタイズ対象のコンテンツ
+
+        Returns:
+            str: サニタイズされたコンテンツ
+        """
+        if not content:
+            return ""
+
+        # HTMLタグの除去
+        content = re.sub(r"<[^>]+>", "", content)
+
+        # JavaScriptプロトコルの除去
+        content = re.sub(r"javascript:", "", content, flags=re.IGNORECASE)
+        content = re.sub(r"vbscript:", "", content, flags=re.IGNORECASE)
+        content = re.sub(r"data:", "", content, flags=re.IGNORECASE)
+
+        # イベントハンドラーの除去
+        content = re.sub(
+            r'on\w+\s*=\s*["\'][^"\']*["\']', "", content, flags=re.IGNORECASE
+        )
+
+        # 制御文字の除去
+        content = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", content)
+
+        # 長すぎる内容の切り詰め（最大1000文字）
+        if len(content) > 1000:
+            content = content[:1000] + "..."
+
+        return content.strip()
+
+    def _validate_footnote_structure(self, footnotes: list[dict]) -> list[str]:
+        """
+        脚注構造の妥当性検証
+
+        Args:
+            footnotes: 検証対象の脚注リスト
+
+        Returns:
+            list[str]: 検出されたエラーメッセージのリスト
+        """
+        errors = []
+
+        if not footnotes:
+            return errors
+
+        # 脚注数の制限チェック（最大100個）
+        if len(footnotes) > 100:
+            errors.append(f"脚注数が制限を超えています（{len(footnotes)}/100）")
+
+        # 脚注内容の検証
+        for i, footnote in enumerate(footnotes, 1):
+            if not isinstance(footnote, dict):
+                errors.append(f"脚注{i}: 無効な形式です")
+                continue
+
+            content = footnote.get("content", "")
+            if not content.strip():
+                errors.append(f"脚注{i}: 内容が空です")
+
+            if len(content) > 1000:
+                errors.append(f"脚注{i}: 内容が長すぎます（{len(content)}/1000文字）")
+
+            # 位置情報の検証
+            start_pos = footnote.get("start_pos")
+            end_pos = footnote.get("end_pos")
+
+            if start_pos is None or end_pos is None:
+                errors.append(f"脚注{i}: 位置情報が不正です")
+            elif start_pos >= end_pos:
+                errors.append(f"脚注{i}: 位置情報が矛盾しています")
+
+        return errors
+
     def parse(self, text: str) -> ParseResult | None:
         """
         テキストを解析してマーカー情報を抽出（新記法のみ対応）
@@ -76,6 +273,18 @@ class MarkerParser:
         text = text.strip()
         if not text:
             return None
+
+        # 脚注記法の事前処理
+        footnotes = self.parse_footnotes(text)
+        if footnotes:
+            # 脚注が見つかった場合は、脚注情報をattributesに格納
+            return ParseResult(
+                markers=["footnote"],
+                content=text,
+                keywords=["footnote"],
+                attributes={"footnotes": footnotes},
+                errors=[],
+            )
 
         # テキストから#記法#パターンを抽出
         import re

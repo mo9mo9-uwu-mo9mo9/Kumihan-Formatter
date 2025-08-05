@@ -4,12 +4,16 @@ Test cases for compound notation patterns.
 Tests complex combinations of notations including nesting, overlapping, and mixed formats.
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
+
+from kumihan_formatter.core.keyword_parsing.definitions import (
+    NESTING_ORDER,
+    KeywordDefinitions,
+)
 from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
-from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions, NESTING_ORDER
 
 
 @pytest.mark.unit

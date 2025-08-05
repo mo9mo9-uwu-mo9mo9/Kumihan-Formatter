@@ -4,12 +4,13 @@ Parser core comprehensive coverage tests.
 Focused on lightweight tests to achieve 70% coverage without CI timeouts.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.parser import Parser
+import pytest
+
 from kumihan_formatter.core.ast_nodes.node import Node
+from kumihan_formatter.parser import Parser
 
 
 @pytest.mark.unit

@@ -4,14 +4,15 @@
 ProgressManagerとProgressContextManagerの動作を検証
 """
 
-import pytest
 import time
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from kumihan_formatter.core.utilities.progress_manager import (
-    ProgressManager,
     ProgressContextManager,
+    ProgressManager,
     ProgressState,
 )
 

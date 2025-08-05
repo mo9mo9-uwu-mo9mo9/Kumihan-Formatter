@@ -300,7 +300,7 @@ def main() -> None:
             e,
             context={"operation": "CLI実行", "args": sys.argv},
             operation="main_cli",
-            component_name="CLI"
+            component_name="CLI",
         )
 
         # ユーザー向けメッセージ表示

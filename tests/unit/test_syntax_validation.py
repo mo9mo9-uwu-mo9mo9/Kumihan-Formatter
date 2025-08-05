@@ -4,12 +4,21 @@ Test cases for syntax validation system.
 Tests comprehensive syntax validation including error detection and reporting.
 """
 
-import pytest
 from pathlib import Path
 
-from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator, UserFriendlyError, ErrorCatalog
-from kumihan_formatter.core.syntax.syntax_errors import SyntaxError, ErrorSeverity, ErrorTypes
+import pytest
+
+from kumihan_formatter.core.syntax.syntax_errors import (
+    ErrorSeverity,
+    ErrorTypes,
+    SyntaxError,
+)
 from kumihan_formatter.core.syntax.syntax_rules import SyntaxRules
+from kumihan_formatter.core.syntax.syntax_validator import (
+    ErrorCatalog,
+    KumihanSyntaxValidator,
+    UserFriendlyError,
+)
 from kumihan_formatter.core.syntax.syntax_validator_utils import SyntaxValidatorUtils
 
 

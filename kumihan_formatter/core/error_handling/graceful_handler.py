@@ -5,19 +5,20 @@ Issue #770対応: graceful error handlingの全面展開
 """
 
 import traceback
-from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 from ..common.error_base import KumihanError
-from ..common.error_types import ErrorSeverity, ErrorCategory
+from ..common.error_types import ErrorCategory, ErrorSeverity
 from ..utilities.logger import get_logger
 
 
 @dataclass
 class GracefulErrorRecord:
     """Graceful handling用エラー記録"""
+
     error: KumihanError
     timestamp: datetime
     context: Dict[str, Any]
@@ -30,6 +31,7 @@ class GracefulErrorRecord:
 @dataclass
 class GracefulHandlingResult:
     """Graceful handling処理結果"""
+
     success: bool
     should_continue: bool
     recovered_data: Optional[Any] = None
@@ -51,7 +53,7 @@ class GracefulErrorHandler:
         self,
         max_errors: int = 100,
         auto_recovery: bool = True,
-        embed_errors_in_output: bool = True
+        embed_errors_in_output: bool = True,
     ):
         """初期化
 
@@ -81,7 +83,7 @@ class GracefulErrorHandler:
         self,
         error: KumihanError,
         context: Optional[Dict[str, Any]] = None,
-        attempt_recovery: bool = True
+        attempt_recovery: bool = True,
     ) -> GracefulHandlingResult:
         """Graceful error handling メイン処理
 
@@ -95,9 +97,7 @@ class GracefulErrorHandler:
         """
         # エラー記録作成
         error_record = GracefulErrorRecord(
-            error=error,
-            timestamp=datetime.now(),
-            context=context or {}
+            error=error, timestamp=datetime.now(), context=context or {}
         )
 
         # エラー統計更新
@@ -126,15 +126,13 @@ class GracefulErrorHandler:
             should_continue=should_continue,
             recovered_data=recovery_result.get("data") if recovery_result else None,
             user_message=self._generate_user_message(error, error_record),
-            error_record=error_record
+            error_record=error_record,
         )
 
         return result
 
     def _attempt_recovery(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[Dict[str, Any]]:
         """エラー復旧試行
 
@@ -165,9 +163,7 @@ class GracefulErrorHandler:
         return None
 
     def _recover_syntax_error(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[Dict[str, Any]]:
         """構文エラー復旧戦略
 
@@ -199,9 +195,7 @@ class GracefulErrorHandler:
         return None
 
     def _fix_incomplete_marker(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[str]:
         """不完全マーカー修正
 
@@ -220,9 +214,7 @@ class GracefulErrorHandler:
         return None
 
     def _fix_unmatched_marker(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[str]:
         """不一致マーカー修正
 
@@ -242,9 +234,7 @@ class GracefulErrorHandler:
         return None
 
     def _fix_invalid_nesting(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[str]:
         """無効なネスト修正
 
@@ -260,9 +250,7 @@ class GracefulErrorHandler:
         return None
 
     def _recover_file_error(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[Dict[str, Any]]:
         """ファイルエラー復旧戦略
 
@@ -276,14 +264,16 @@ class GracefulErrorHandler:
         # ファイル関連エラーの復旧
         if "not found" in error.message.lower():
             # ファイルが見つからない場合の代替処理
-            return {"data": "", "method": "empty_fallback", "message": "空のコンテンツで継続"}
+            return {
+                "data": "",
+                "method": "empty_fallback",
+                "message": "空のコンテンツで継続",
+            }
 
         return None
 
     def _recover_validation_error(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[Dict[str, Any]]:
         """バリデーションエラー復旧戦略
 
@@ -296,12 +286,14 @@ class GracefulErrorHandler:
         """
         # バリデーションエラーの復旧
         # デフォルト値使用など
-        return {"data": None, "method": "default_value", "message": "デフォルト値で継続"}
+        return {
+            "data": None,
+            "method": "default_value",
+            "message": "デフォルト値で継続",
+        }
 
     def _should_continue_processing(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> bool:
         """処理継続可否判定
 
@@ -319,7 +311,9 @@ class GracefulErrorHandler:
         # 同じタイプのエラーが大量発生している場合は停止
         error_type = f"{error.category.value}:{error.severity.value}"
         if self.error_counts[error_type] > 50:
-            self.logger.warning(f"Too many {error_type} errors, stopping graceful handling")
+            self.logger.warning(
+                f"Too many {error_type} errors, stopping graceful handling"
+            )
             return False
 
         # 復旧成功時は継続
@@ -342,9 +336,7 @@ class GracefulErrorHandler:
         self.error_records.append(error_record)
 
     def _generate_user_message(
-        self,
-        error: KumihanError,
-        error_record: GracefulErrorRecord
+        self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> str:
         """ユーザー向けメッセージ生成
 
@@ -379,10 +371,10 @@ class GracefulErrorHandler:
                     "message": r.error.message,
                     "category": r.error.category.value,
                     "timestamp": r.timestamp.isoformat(),
-                    "recovered": r.recovery_successful
+                    "recovered": r.recovery_successful,
                 }
                 for r in self.error_records[-5:]  # 最新5件
-            ]
+            ],
         }
 
     def generate_error_report_html(self) -> str:
@@ -398,7 +390,7 @@ class GracefulErrorHandler:
 
         html_parts = [
             '<div class="graceful-error-report">',
-            '<h3>🔧 処理中に発生した問題</h3>',
+            "<h3>🔧 処理中に発生した問題</h3>",
             f'<p>合計 {summary["total_errors"]} 件の問題が発生しましたが、可能な限り処理を継続しました。</p>',
         ]
 
@@ -409,7 +401,7 @@ class GracefulErrorHandler:
 
         # 最近のエラー詳細
         if summary["recent_errors"]:
-            html_parts.append('<h4>最近の問題:</h4>')
+            html_parts.append("<h4>最近の問題:</h4>")
             html_parts.append('<ul class="error-list">')
 
             for error_info in summary["recent_errors"]:
@@ -419,11 +411,11 @@ class GracefulErrorHandler:
                     f'<small>({error_info["category"]})</small></li>'
                 )
 
-            html_parts.append('</ul>')
+            html_parts.append("</ul>")
 
-        html_parts.append('</div>')
+        html_parts.append("</div>")
 
-        return '\n'.join(html_parts)
+        return "\n".join(html_parts)
 
     def clear_records(self) -> None:
         """エラー記録クリア"""
@@ -433,6 +425,7 @@ class GracefulErrorHandler:
 
 # グローバルインスタンス
 _global_graceful_handler: Optional[GracefulErrorHandler] = None
+
 
 def get_global_graceful_handler() -> GracefulErrorHandler:
     """グローバルGraceful Error Handler取得
@@ -447,8 +440,7 @@ def get_global_graceful_handler() -> GracefulErrorHandler:
 
 
 def handle_gracefully(
-    error: KumihanError,
-    context: Optional[Dict[str, Any]] = None
+    error: KumihanError, context: Optional[Dict[str, Any]] = None
 ) -> GracefulHandlingResult:
     """便利関数: Graceful error handling
 

@@ -231,6 +231,310 @@ class HTMLFormatter:
 
         return updated_attributes
 
+    def generate_footnotes_html(self, footnotes: list[dict]) -> str:
+        """
+        脚注リストからHTML形式の脚注セクションを生成
+
+        Args:
+            footnotes: 脚注情報のリスト
+
+        Returns:
+            str: 脚注セクションHTML
+        """
+        if not footnotes:
+            return ""
+
+        footnotes_html = ['<div class="footnotes">', "<ol>"]
+
+        for footnote in footnotes:
+            footnote_number = footnote.get("number", 1)
+            footnote_content = footnote.get("content", "")
+
+            # HTMLエスケープ処理
+            escaped_content = self._escape_html_content(footnote_content)
+
+            # 戻りリンクを含む脚注項目
+            footnote_item = (
+                f'<li id="footnote-{footnote_number}">'
+                f"{escaped_content} "
+                f'<a href="#footnote-ref-{footnote_number}" class="footnote-backref">↩</a>'
+                f"</li>"
+            )
+            footnotes_html.append(footnote_item)
+
+        footnotes_html.extend(["</ol>", "</div>"])
+        return "\n".join(footnotes_html)
+
+    def process_footnote_links(self, text: str, footnotes: list[dict]) -> str:
+        """
+        テキスト内の脚注記法を適切なHTMLリンクに変換
+
+        Args:
+            text: 処理対象のテキスト
+            footnotes: 脚注情報のリスト
+
+        Returns:
+            str: 脚注リンクが埋め込まれたHTML
+        """
+        if not footnotes:
+            return text
+
+        processed_text = text
+        footnote_pattern = re.compile(r"\(\(([^)]+)\)\)")
+
+        # 脚注記法を番号リンクに置換（後ろから処理）
+        for i, footnote in enumerate(reversed(footnotes), 1):
+            footnote_number = len(footnotes) - i + 1
+            replacement = (
+                f'<sup><a href="#footnote-{footnote_number}" '
+                f'id="footnote-ref-{footnote_number}" class="footnote-ref">'
+                f"[{footnote_number}]</a></sup>"
+            )
+
+            # 最後から順に置換（インデックスのずれを防ぐ）
+            matches = list(footnote_pattern.finditer(processed_text))
+            if matches and len(matches) >= footnote_number:
+                match = matches[footnote_number - 1]
+                processed_text = (
+                    processed_text[: match.start()]
+                    + replacement
+                    + processed_text[match.end() :]
+                )
+
+        return processed_text
+
+    def _escape_html_content(self, content: str) -> str:
+        """
+        HTMLコンテンツのエスケープ処理
+
+        Args:
+            content: エスケープ対象のコンテンツ
+
+        Returns:
+            str: エスケープ済みコンテンツ
+        """
+        import html
+
+        return html.escape(content, quote=True)
+
+
+class FootnoteManager:
+    """
+    脚注番号管理および処理を行うクラス
+
+    複数ファイル間での脚注番号管理と、HTML出力の統一的な処理を提供
+    """
+
+    def __init__(self):
+        self.footnote_counter = 0
+        self.footnotes_storage = []
+        self.footnote_references = {}
+
+    def register_footnotes(self, footnotes: list[dict]) -> list[dict]:
+        """
+        脚注を登録し、グローバル番号を割り当て
+
+        Args:
+            footnotes: 脚注情報のリスト
+
+        Returns:
+            list[dict]: 番号が割り当てられた脚注リスト
+        """
+        processed_footnotes = []
+
+        for footnote in footnotes:
+            self.footnote_counter += 1
+            processed_footnote = footnote.copy()
+            processed_footnote["global_number"] = self.footnote_counter
+            processed_footnotes.append(processed_footnote)
+            self.footnotes_storage.append(processed_footnote)
+
+        return processed_footnotes
+
+    def get_all_footnotes(self) -> list[dict]:
+        """
+        登録されたすべての脚注を取得
+
+        Returns:
+            list[dict]: 全脚注情報
+        """
+        return self.footnotes_storage.copy()
+
+    def reset_counter(self):
+        """
+        脚注カウンターをリセット（新しいドキュメント開始時に使用）
+        """
+        self.footnote_counter = 0
+        self.footnotes_storage.clear()
+        self.footnote_references.clear()
+
+    def generate_footnote_html(self, footnotes: list[dict]) -> str:
+        """
+        脚注のHTML生成
+
+        Args:
+            footnotes: 脚注情報のリスト
+
+        Returns:
+            str: 脚注セクションHTML
+        """
+        if not footnotes:
+            return ""
+
+        html_parts = ['<div class="footnotes">', "<ol>"]
+
+        for footnote in footnotes:
+            number = footnote.get("global_number", footnote.get("number", 1))
+            content = footnote.get("content", "")
+
+            # セキュアなHTMLエスケープ
+            import html
+
+            escaped_content = html.escape(content, quote=True)
+
+            footnote_html = (
+                f'<li id="footnote-{number}">'
+                f"{escaped_content} "
+                f'<a href="#footnote-ref-{number}" class="footnote-backref" '
+                f'aria-label="戻る">↩</a>'
+                f"</li>"
+            )
+            html_parts.append(footnote_html)
+
+        html_parts.extend(["</ol>", "</div>"])
+        return "\n".join(html_parts)
+
+    def validate_footnote_data(self, footnotes: list[dict]) -> tuple[bool, list[str]]:
+        """
+        脚注データの妥当性検証
+
+        Args:
+            footnotes: 検証対象の脚注リスト
+
+        Returns:
+            tuple: (検証結果, エラーメッセージリスト)
+        """
+        errors = []
+
+        if not isinstance(footnotes, list):
+            errors.append("脚注データはリスト形式である必要があります")
+            return False, errors
+
+        for i, footnote in enumerate(footnotes, 1):
+            if not isinstance(footnote, dict):
+                errors.append(f"脚注{i}: 辞書形式である必要があります")
+                continue
+
+            # 必須フィールドの確認
+            required_fields = ["content"]
+            for field in required_fields:
+                if field not in footnote:
+                    errors.append(f"脚注{i}: 必須フィールド'{field}'が不足しています")
+
+            # コンテンツの検証
+            content = footnote.get("content", "")
+            if not isinstance(content, str):
+                errors.append(f"脚注{i}: コンテンツは文字列である必要があります")
+            elif len(content.strip()) == 0:
+                errors.append(f"脚注{i}: コンテンツが空です")
+            elif len(content) > 2000:
+                errors.append(
+                    f"脚注{i}: コンテンツが長すぎます（{len(content)}/2000文字）"
+                )
+
+            # 番号の検証
+            number = footnote.get("number")
+            if number is not None and (not isinstance(number, int) or number < 1):
+                errors.append(f"脚注{i}: 番号は1以上の整数である必要があります")
+
+        return len(errors) == 0, errors
+
+    def safe_generate_footnote_html(
+        self, footnotes: list[dict]
+    ) -> tuple[str, list[str]]:
+        """
+        安全な脚注HTML生成（エラーハンドリング付き）
+
+        Args:
+            footnotes: 脚注情報のリスト
+
+        Returns:
+            tuple: (生成されたHTML, エラーメッセージリスト)
+        """
+        errors = []
+
+        try:
+            # データ検証
+            is_valid, validation_errors = self.validate_footnote_data(footnotes)
+            if not is_valid:
+                errors.extend(validation_errors)
+                return "", errors
+
+            # 空の場合の処理
+            if not footnotes:
+                return "", errors
+
+            html_parts = ['<div class="footnotes" role="doc-endnotes">', "<ol>"]
+
+            for footnote in footnotes:
+                try:
+                    number = footnote.get("global_number", footnote.get("number", 1))
+                    content = footnote.get("content", "")
+
+                    # セキュアなHTMLエスケープ
+                    import html
+
+                    escaped_content = html.escape(content, quote=True)
+
+                    # XSS攻撃の追加防御
+                    escaped_content = self._additional_xss_protection(escaped_content)
+
+                    footnote_html = (
+                        f'<li id="footnote-{number}" role="doc-endnote">'
+                        f"{escaped_content} "
+                        f'<a href="#footnote-ref-{number}" class="footnote-backref" '
+                        f'role="doc-backlink" aria-label="本文に戻る">↩</a>'
+                        f"</li>"
+                    )
+                    html_parts.append(footnote_html)
+
+                except Exception as e:
+                    errors.append(f"脚注{number}の処理中にエラー: {str(e)}")
+                    continue
+
+            html_parts.extend(["</ol>", "</div>"])
+            return "\n".join(html_parts), errors
+
+        except Exception as e:
+            errors.append(f"脚注HTML生成中の予期しないエラー: {str(e)}")
+            return "", errors
+
+    def _additional_xss_protection(self, content: str) -> str:
+        """
+        追加のXSS保護処理
+
+        Args:
+            content: 保護対象のコンテンツ
+
+        Returns:
+            str: 保護されたコンテンツ
+        """
+        # すでにエスケープされた内容に対する追加保護
+        dangerous_patterns = [
+            (r"&lt;script", "&amp;lt;script"),
+            (r"&lt;iframe", "&amp;lt;iframe"),
+            (r"&lt;object", "&amp;lt;object"),
+            (r"&lt;embed", "&amp;lt;embed"),
+            (r"javascript:", "blocked:"),
+            (r"vbscript:", "blocked:"),
+            (r"data:", "blocked:"),
+        ]
+
+        for pattern, replacement in dangerous_patterns:
+            content = re.sub(pattern, replacement, content, flags=re.IGNORECASE)
+
+        return content
+
     def process_color_attribute(self, color: str) -> str:
         """
         Process and validate color attribute values (Issue #665 Phase 4)

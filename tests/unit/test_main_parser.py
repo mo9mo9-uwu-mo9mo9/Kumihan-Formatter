@@ -4,8 +4,9 @@ Test cases for main parser functionality.
 Tests cover core parsing features and Parser class integration.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from kumihan_formatter.parser import Parser
 

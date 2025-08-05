@@ -8,13 +8,15 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
-from ..common.error_types import ErrorSeverity, ErrorCategory
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from ..common.error_types import ErrorCategory, ErrorSeverity
 
 
 class ConfigFormat(str, Enum):
     """サポートする設定ファイル形式"""
+
     YAML = "yaml"
     JSON = "json"
     TOML = "toml"
@@ -22,6 +24,7 @@ class ConfigFormat(str, Enum):
 
 class LogLevel(str, Enum):
     """ログレベル"""
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"
@@ -31,6 +34,7 @@ class LogLevel(str, Enum):
 
 class ErrorHandlingLevel(str, Enum):
     """エラー処理レベル"""
+
     STRICT = "strict"
     NORMAL = "normal"
     LENIENT = "lenient"
@@ -42,21 +46,22 @@ class ParallelConfig(BaseModel):
 
     ParallelProcessingConfigの統一版
     """
+
     # 並列処理しきい値
     parallel_threshold_lines: int = Field(
-        default=10000,
-        ge=1000,
-        description="並列処理を開始する行数のしきい値"
+        default=10000, ge=1000, description="並列処理を開始する行数のしきい値"
     )
     parallel_threshold_size: int = Field(
         default=10 * 1024 * 1024,  # 10MB
         ge=1024 * 1024,  # 1MB
-        description="並列処理を開始するファイルサイズのしきい値(bytes)"
+        description="並列処理を開始するファイルサイズのしきい値(bytes)",
     )
 
     # チャンク設定
     min_chunk_size: int = Field(default=50, ge=10, description="最小チャンクサイズ")
-    max_chunk_size: int = Field(default=2000, le=10000, description="最大チャンクサイズ")
+    max_chunk_size: int = Field(
+        default=2000, le=10000, description="最大チャンクサイズ"
+    )
     target_chunks_per_core: int = Field(
         default=2, ge=1, le=10, description="CPUコアあたりのチャンク数"
     )
@@ -87,27 +92,33 @@ class ParallelConfig(BaseModel):
     progress_update_interval: int = Field(
         default=100, ge=10, description="プログレス更新間隔(行数)"
     )
-    enable_memory_monitoring: bool = Field(
-        default=True, description="メモリ監視有効"
-    )
-    enable_gc_optimization: bool = Field(
-        default=True, description="GC最適化有効"
-    )
+    enable_memory_monitoring: bool = Field(default=True, description="メモリ監視有効")
+    enable_gc_optimization: bool = Field(default=True, description="GC最適化有効")
 
-    @field_validator('max_chunk_size')
+    @field_validator("max_chunk_size")
     @classmethod
     def validate_chunk_sizes(cls, v, info):
         """チャンクサイズの整合性チェック"""
-        if hasattr(info, 'data') and 'min_chunk_size' in info.data and v <= info.data['min_chunk_size']:
-            raise ValueError('max_chunk_size must be greater than min_chunk_size')
+        if (
+            hasattr(info, "data")
+            and "min_chunk_size" in info.data
+            and v <= info.data["min_chunk_size"]
+        ):
+            raise ValueError("max_chunk_size must be greater than min_chunk_size")
         return v
 
-    @field_validator('memory_critical_threshold_mb')
+    @field_validator("memory_critical_threshold_mb")
     @classmethod
     def validate_memory_thresholds(cls, v, info):
         """メモリしきい値の整合性チェック"""
-        if hasattr(info, 'data') and 'memory_warning_threshold_mb' in info.data and v <= info.data['memory_warning_threshold_mb']:
-            raise ValueError('memory_critical_threshold_mb must be greater than memory_warning_threshold_mb')
+        if (
+            hasattr(info, "data")
+            and "memory_warning_threshold_mb" in info.data
+            and v <= info.data["memory_warning_threshold_mb"]
+        ):
+            raise ValueError(
+                "memory_critical_threshold_mb must be greater than memory_warning_threshold_mb"
+            )
         return v
 
     model_config = ConfigDict(env_prefix="KUMIHAN_PARALLEL_")
@@ -118,10 +129,11 @@ class LoggingConfig(BaseModel):
 
     KumihanLoggerの統一版
     """
+
     log_level: LogLevel = Field(default=LogLevel.INFO, description="ログレベル")
     log_dir: Path = Field(
         default_factory=lambda: Path.home() / ".kumihan" / "logs",
-        description="ログディレクトリ"
+        description="ログディレクトリ",
     )
 
     # 開発ログ設定
@@ -129,9 +141,15 @@ class LoggingConfig(BaseModel):
     dev_log_json: bool = Field(default=False, description="開発ログJSON形式")
 
     # ファイルローテーション設定
-    log_rotation_when: str = Field(default="midnight", description="ログローテーション頻度")
-    log_rotation_interval: int = Field(default=1, ge=1, description="ローテーション間隔")
-    log_backup_count: int = Field(default=30, ge=1, description="バックアップファイル数")
+    log_rotation_when: str = Field(
+        default="midnight", description="ログローテーション頻度"
+    )
+    log_rotation_interval: int = Field(
+        default=1, ge=1, description="ローテーション間隔"
+    )
+    log_backup_count: int = Field(
+        default=30, ge=1, description="バックアップファイル数"
+    )
 
     # パフォーマンスログ設定
     performance_logging_enabled: bool = Field(
@@ -146,28 +164,19 @@ class ErrorConfig(BaseModel):
 
     ErrorConfigManagerの統一版
     """
+
     default_level: ErrorHandlingLevel = Field(
         default=ErrorHandlingLevel.NORMAL, description="デフォルトエラー処理レベル"
     )
 
     # エラー表示設定
-    graceful_errors: bool = Field(
-        default=False, description="エラー情報HTML埋め込み"
-    )
-    continue_on_error: bool = Field(
-        default=False, description="エラー時処理継続"
-    )
-    show_suggestions: bool = Field(
-        default=True, description="エラー修正提案表示"
-    )
-    show_statistics: bool = Field(
-        default=True, description="エラー統計表示"
-    )
+    graceful_errors: bool = Field(default=False, description="エラー情報HTML埋め込み")
+    continue_on_error: bool = Field(default=False, description="エラー時処理継続")
+    show_suggestions: bool = Field(default=True, description="エラー修正提案表示")
+    show_statistics: bool = Field(default=True, description="エラー統計表示")
 
     # エラー制限設定
-    error_display_limit: int = Field(
-        default=10, ge=1, description="表示エラー数制限"
-    )
+    error_display_limit: int = Field(default=10, ge=1, description="表示エラー数制限")
     max_error_context_lines: int = Field(
         default=3, ge=0, description="エラーコンテキスト行数"
     )
@@ -185,6 +194,7 @@ class RenderingConfig(BaseModel):
 
     BaseConfigのCSS設定等を統合
     """
+
     # CSS設定
     max_width: str = Field(default="800px", description="最大幅")
     background_color: str = Field(default="#f9f9f9", description="背景色")
@@ -193,14 +203,12 @@ class RenderingConfig(BaseModel):
     line_height: str = Field(default="1.8", description="行の高さ")
     font_family: str = Field(
         default="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
-        description="フォントファミリー"
+        description="フォントファミリー",
     )
 
     # テーマ設定
     theme_name: str = Field(default="デフォルト", description="テーマ名")
-    custom_css: Dict[str, str] = Field(
-        default_factory=dict, description="カスタムCSS"
-    )
+    custom_css: Dict[str, str] = Field(default_factory=dict, description="カスタムCSS")
 
     # レンダリング設定
     include_source: bool = Field(default=False, description="ソース表示機能")
@@ -216,27 +224,28 @@ class UIConfig(BaseModel):
 
     GUI・CLI関連設定の統合
     """
+
     # プレビュー設定
     auto_preview: bool = Field(default=True, description="自動プレビュー")
-    preview_browser: Optional[str] = Field(default=None, description="プレビューブラウザ")
+    preview_browser: Optional[str] = Field(
+        default=None, description="プレビューブラウザ"
+    )
 
     # プログレス表示設定
     progress_level: str = Field(
         default="detailed",
         pattern="^(silent|minimal|detailed|verbose)$",
-        description="プログレス表示レベル"
+        description="プログレス表示レベル",
     )
     progress_style: str = Field(
         default="bar",
         pattern="^(bar|spinner|percentage)$",
-        description="プログレス表示スタイル"
+        description="プログレス表示スタイル",
     )
     show_progress_tooltip: bool = Field(
         default=True, description="プログレスツールチップ表示"
     )
-    enable_cancellation: bool = Field(
-        default=True, description="キャンセル機能有効"
-    )
+    enable_cancellation: bool = Field(default=True, description="キャンセル機能有効")
 
     # ファイル監視設定
     watch_enabled: bool = Field(default=False, description="ファイル監視有効")
@@ -250,6 +259,7 @@ class KumihanConfig(BaseModel):
 
     全設定の最上位コンテナ
     """
+
     # サブ設定群
     parallel: ParallelConfig = Field(default_factory=ParallelConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
@@ -259,23 +269,25 @@ class KumihanConfig(BaseModel):
 
     # メタ設定
     config_version: str = Field(default="1.0", description="設定バージョン")
-    config_file_path: Optional[Path] = Field(default=None, description="設定ファイルパス")
+    config_file_path: Optional[Path] = Field(
+        default=None, description="設定ファイルパス"
+    )
     last_updated: Optional[str] = Field(default=None, description="最終更新日時")
 
     # 環境情報
     environment: str = Field(default="production", description="実行環境")
     debug_mode: bool = Field(default=False, description="デバッグモード")
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def validate_config_consistency(cls, values):
         """設定間の整合性チェック"""
         # ログレベルとデバッグモードの整合性
-        if values.get('debug_mode') and values.get('logging'):
-            logging_dict = values['logging']
+        if values.get("debug_mode") and values.get("logging"):
+            logging_dict = values["logging"]
             if isinstance(logging_dict, dict):
-                if logging_dict.get('log_level') not in ['DEBUG', 'INFO']:
-                    logging_dict['log_level'] = 'DEBUG'
+                if logging_dict.get("log_level") not in ["DEBUG", "INFO"]:
+                    logging_dict["log_level"] = "DEBUG"
 
         return values
 
@@ -301,5 +313,5 @@ class KumihanConfig(BaseModel):
         validate_assignment=True,
         extra="forbid",
         env_nested_delimiter="__",
-        case_sensitive=False
+        case_sensitive=False,
     )

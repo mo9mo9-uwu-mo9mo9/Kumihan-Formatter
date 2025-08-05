@@ -4,16 +4,17 @@ Integration test cases for end-to-end workflows.
 Tests complete processing pipelines including file I/O, parsing, validation, and rendering.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
-import subprocess
 import json
+import subprocess
+import tempfile
+from pathlib import Path
+
+import pytest
 
 from kumihan_formatter.core.file_operations import FileOperations
 from kumihan_formatter.core.parsing_coordinator import ParsingCoordinator
-from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
+from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
 
 @pytest.mark.integration
@@ -448,8 +449,8 @@ class TestStressIntegration:
 
     def test_concurrent_processing_simulation(self, sample_text_files, temp_dir):
         """Simulate concurrent processing scenarios."""
-        import threading
         import queue
+        import threading
 
         input_file = sample_text_files["basic"]
         results_queue = queue.Queue()

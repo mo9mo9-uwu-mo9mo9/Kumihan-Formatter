@@ -4,11 +4,12 @@ Keyword Registry and Parser comprehensive test coverage.
 Tests keyword parsing functionality to achieve 80% coverage goal.
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.keyword_parsing.keyword_registry import KeywordRegistry
+import pytest
+
 from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+from kumihan_formatter.core.keyword_parsing.keyword_registry import KeywordRegistry
 from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
 

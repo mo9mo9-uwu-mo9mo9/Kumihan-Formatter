@@ -4,13 +4,14 @@ Test cases for CLI basic functionality.
 Tests cover command-line interface and basic operations.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from kumihan_formatter.cli import main, cli
+import pytest
+
+from kumihan_formatter.cli import cli, main
 
 
 @pytest.mark.unit

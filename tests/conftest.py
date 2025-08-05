@@ -2,11 +2,12 @@
 Test configuration and fixtures for Kumihan-Formatter test suite.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
-from typing import Dict, Any, Generator
+from typing import Any, Dict, Generator
+
+import pytest
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -31,7 +32,8 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 
     # Basic notation test file
     basic_file = temp_dir / "basic_notation.txt"
-    basic_file.write_text("""#見出し1
+    basic_file.write_text(
+        """#見出し1
 メインタイトル
 ##
 
@@ -41,12 +43,15 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 重要な情報
 ##
 
-通常のテキストが続きます。""", encoding="utf-8")
+通常のテキストが続きます。""",
+        encoding="utf-8",
+    )
     files["basic"] = basic_file
 
     # Complex notation test file
     complex_file = temp_dir / "complex_notation.txt"
-    complex_file.write_text("""#見出し1
+    complex_file.write_text(
+        """#見出し1
 複合記法テスト
 ##
 
@@ -60,18 +65,23 @@ def sample_text_files(temp_dir: Path) -> Dict[str, Path]:
 - 項目1
 - 項目2
 - 項目3
-#""", encoding="utf-8")
+#""",
+        encoding="utf-8",
+    )
     files["complex"] = complex_file
 
     # Error test file (invalid syntax)
     error_file = temp_dir / "error_syntax.txt"
-    error_file.write_text("""#見出し1
+    error_file.write_text(
+        """#見出し1
 エラーテスト
 # # Missing closing marker
 
 #太字
 未完了の記法
-# Missing end marker""", encoding="utf-8")
+# Missing end marker""",
+        encoding="utf-8",
+    )
     files["error"] = error_file
 
     return files
@@ -110,7 +120,7 @@ def config_data() -> Dict[str, Any]:
         "output_format": "html",
         "template": "base.html.j2",
         "strict_validation": True,
-        "performance_monitoring": False
+        "performance_monitoring": False,
     }
 
 

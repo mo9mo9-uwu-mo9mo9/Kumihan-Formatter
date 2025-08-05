@@ -12,10 +12,10 @@ from typing import Any
 
 from rich.progress import Progress
 
+from ...core.error_handling import UnifiedErrorHandler, handle_error_unified
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-from ...core.error_handling import UnifiedErrorHandler, handle_error_unified
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -66,9 +66,9 @@ class ConvertProcessor:
                 context={
                     "input_file": input_file,
                     "output_file": output_file,
-                    "operation": "file_validation"
+                    "operation": "file_validation",
                 },
-                operation="validate_files"
+                operation="validate_files",
             )
             # バリデーションエラーは基本的に継続不可
             raise result.kumihan_error

@@ -12,23 +12,26 @@ from typing import Any, Dict, List, Optional, Union
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
 
 try:
     import tomli
+
     HAS_TOML = True
 except ImportError:
     HAS_TOML = False
 
-from ..utilities.logger import get_logger
 from ..error_handling import handle_error_unified
+from ..utilities.logger import get_logger
 from .config_models import ConfigFormat, KumihanConfig
 
 
 class ConfigLoadError(Exception):
     """設定読み込みエラー"""
+
     pass
 
 
@@ -81,10 +84,12 @@ class ConfigLoader:
         file_format = self._detect_format(config_file)
 
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 if file_format == ConfigFormat.YAML:
                     if not HAS_YAML:
-                        raise ConfigLoadError("YAML設定ファイルの読み込みにはPyYAMLが必要です")
+                        raise ConfigLoadError(
+                            "YAML設定ファイルの読み込みにはPyYAMLが必要です"
+                        )
                     config_data = yaml.safe_load(f)
 
                 elif file_format == ConfigFormat.JSON:
@@ -92,19 +97,25 @@ class ConfigLoader:
 
                 elif file_format == ConfigFormat.TOML:
                     if not HAS_TOML:
-                        raise ConfigLoadError("TOML設定ファイルの読み込みにはtomliが必要です")
+                        raise ConfigLoadError(
+                            "TOML設定ファイルの読み込みにはtomliが必要です"
+                        )
                     # TOMLはバイナリモードで読む必要がある
                     f.close()
-                    with open(config_file, 'rb') as fb:
+                    with open(config_file, "rb") as fb:
                         config_data = tomli.load(fb)
 
                 else:
-                    raise ConfigLoadError(f"未サポートの設定ファイル形式: {file_format}")
+                    raise ConfigLoadError(
+                        f"未サポートの設定ファイル形式: {file_format}"
+                    )
 
             if not isinstance(config_data, dict):
                 raise ConfigLoadError("設定ファイルは辞書形式である必要があります")
 
-            self.logger.info(f"設定ファイル読み込み成功: {config_path} ({file_format.value})")
+            self.logger.info(
+                f"設定ファイル読み込み成功: {config_path} ({file_format.value})"
+            )
             return config_data
 
         except (yaml.YAMLError, json.JSONDecodeError, Exception) as e:
@@ -118,10 +129,10 @@ class ConfigLoader:
                     context={
                         "config_path": str(config_path),
                         "file_format": file_format.value,
-                        "operation": "config_file_loading"
+                        "operation": "config_file_loading",
                     },
                     operation="load_config_file",
-                    component_name="ConfigLoader"
+                    component_name="ConfigLoader",
                 )
                 raise ConfigLoadError(error_msg) from e
             except Exception:
@@ -141,15 +152,15 @@ class ConfigLoader:
         """
         suffix = config_file.suffix.lower()
 
-        if suffix in ['.yaml', '.yml']:
+        if suffix in [".yaml", ".yml"]:
             if not HAS_YAML:
                 raise ConfigLoadError("YAML形式はサポートされていません (PyYAMLが必要)")
             return ConfigFormat.YAML
 
-        elif suffix == '.json':
+        elif suffix == ".json":
             return ConfigFormat.JSON
 
-        elif suffix == '.toml':
+        elif suffix == ".toml":
             if not HAS_TOML:
                 raise ConfigLoadError("TOML形式はサポートされていません (tomliが必要)")
             return ConfigFormat.TOML
@@ -171,12 +182,14 @@ class ConfigLoader:
         for key, value in os.environ.items():
             if key.startswith(prefix):
                 # プレフィックスを除去
-                config_key = key[len(prefix):].lower()
+                config_key = key[len(prefix) :].lower()
 
                 # ネストした設定対応 (例: KUMIHAN_PARALLEL__THRESHOLD_LINES)
-                if '__' in config_key:
-                    keys = config_key.split('__')
-                    self._set_nested_value(config_data, keys, self._convert_env_value(value))
+                if "__" in config_key:
+                    keys = config_key.split("__")
+                    self._set_nested_value(
+                        config_data, keys, self._convert_env_value(value)
+                    )
                 else:
                     config_data[config_key] = self._convert_env_value(value)
 
@@ -185,7 +198,9 @@ class ConfigLoader:
 
         return config_data
 
-    def _set_nested_value(self, data: Dict[str, Any], keys: List[str], value: Any) -> None:
+    def _set_nested_value(
+        self, data: Dict[str, Any], keys: List[str], value: Any
+    ) -> None:
         """ネストした辞書に値を設定
 
         Args:
@@ -210,15 +225,15 @@ class ConfigLoader:
             Union[str, int, float, bool]: 変換された値
         """
         # ブール値の変換
-        if value.lower() in ('true', '1', 'yes', 'on'):
+        if value.lower() in ("true", "1", "yes", "on"):
             return True
-        elif value.lower() in ('false', '0', 'no', 'off'):
+        elif value.lower() in ("false", "0", "no", "off"):
             return False
 
         # 数値の変換
         try:
             # 整数の場合
-            if '.' not in value:
+            if "." not in value:
                 return int(value)
             # 浮動小数点数の場合
             else:
@@ -227,9 +242,11 @@ class ConfigLoader:
             # 文字列のまま返す
             return value
 
-    def find_config_file(self,
-                        search_paths: Optional[List[Union[str, Path]]] = None,
-                        filename_patterns: Optional[List[str]] = None) -> Optional[Path]:
+    def find_config_file(
+        self,
+        search_paths: Optional[List[Union[str, Path]]] = None,
+        filename_patterns: Optional[List[str]] = None,
+    ) -> Optional[Path]:
         """設定ファイルを検索
 
         Args:
@@ -242,19 +259,23 @@ class ConfigLoader:
         if search_paths is None:
             search_paths = [
                 Path.cwd(),  # カレントディレクトリ
-                Path.home() / '.kumihan',  # ユーザーホーム/.kumihan
-                Path.home() / '.config' / 'kumihan',  # XDG Config
-                Path('/etc/kumihan') if sys.platform != 'win32' else Path(),  # システム設定
+                Path.home() / ".kumihan",  # ユーザーホーム/.kumihan
+                Path.home() / ".config" / "kumihan",  # XDG Config
+                (
+                    Path("/etc/kumihan") if sys.platform != "win32" else Path()
+                ),  # システム設定
             ]
 
         if filename_patterns is None:
             filename_patterns = [
-                'kumihan.yaml', 'kumihan.yml',
-                'kumihan.json',
-                'kumihan.toml',
-                '.kumihan.yaml', '.kumihan.yml',
-                '.kumihan.json',
-                '.kumihan.toml'
+                "kumihan.yaml",
+                "kumihan.yml",
+                "kumihan.json",
+                "kumihan.toml",
+                ".kumihan.yaml",
+                ".kumihan.yml",
+                ".kumihan.json",
+                ".kumihan.toml",
             ]
 
         for search_path in search_paths:
@@ -290,7 +311,9 @@ class ConfigLoader:
 
         return merged
 
-    def _deep_merge(self, base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
+    def _deep_merge(
+        self, base: Dict[str, Any], update: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """辞書の深いマージ
 
         Args:
@@ -303,19 +326,23 @@ class ConfigLoader:
         result = base.copy()
 
         for key, value in update.items():
-            if (key in result and
-                isinstance(result[key], dict) and
-                isinstance(value, dict)):
+            if (
+                key in result
+                and isinstance(result[key], dict)
+                and isinstance(value, dict)
+            ):
                 result[key] = self._deep_merge(result[key], value)
             else:
                 result[key] = value
 
         return result
 
-    def save_config(self,
-                   config: KumihanConfig,
-                   config_path: Union[str, Path],
-                   format: Optional[ConfigFormat] = None) -> None:
+    def save_config(
+        self,
+        config: KumihanConfig,
+        config_path: Union[str, Path],
+        format: Optional[ConfigFormat] = None,
+    ) -> None:
         """設定をファイルに保存
 
         Args:
@@ -337,17 +364,21 @@ class ConfigLoader:
         try:
             config_data = config.dict()
 
-            with open(config_file, 'w', encoding='utf-8') as f:
+            with open(config_file, "w", encoding="utf-8") as f:
                 if format == ConfigFormat.YAML:
                     if not HAS_YAML:
                         raise ConfigLoadError("YAML保存にはPyYAMLが必要です")
-                    yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
+                    yaml.dump(
+                        config_data, f, default_flow_style=False, allow_unicode=True
+                    )
 
                 elif format == ConfigFormat.JSON:
                     json.dump(config_data, f, indent=2, ensure_ascii=False)
 
                 elif format == ConfigFormat.TOML:
-                    raise ConfigLoadError("TOML形式での保存は現在サポートされていません")
+                    raise ConfigLoadError(
+                        "TOML形式での保存は現在サポートされていません"
+                    )
 
                 else:
                     raise ConfigLoadError(f"未サポートの保存形式: {format}")
