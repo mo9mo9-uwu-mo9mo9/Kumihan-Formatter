@@ -5,9 +5,9 @@ Pydanticの検証機能を拡張し、Kumihan特有の検証ルールを実装
 """
 
 import re
-import socket
+# import socket  # removed - unused import (F401)
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional  # Tuple, Union removed - unused imports (F401)
 
 from pydantic import ValidationError
 

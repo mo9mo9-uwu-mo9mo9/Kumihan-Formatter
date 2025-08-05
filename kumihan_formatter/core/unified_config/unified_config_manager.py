@@ -6,9 +6,9 @@ Issue #771対応: 分散した設定管理を統合し、
 統一設定管理の中核クラス
 """
 
-import os
+# import os  # removed - unused import (F401)
 import threading
-import time
+# import time  # removed - unused import (F401)
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -25,7 +25,7 @@ from .config_models import (
     RenderingConfig,
     UIConfig,
 )
-from .config_validator import ConfigValidator, ValidationResult
+from .config_validator import ConfigValidator  # ValidationResult removed - unused import (F401)
 
 
 class UnifiedConfigManager:
@@ -238,7 +238,7 @@ class UnifiedConfigManager:
             new_config = self._create_and_validate_config(config_data)
 
             # 設定の更新
-            old_config = self._config
+            # old_config = self._config  # removed - unused variable (F841)
             self._config = new_config
 
             # ファイル監視情報の更新

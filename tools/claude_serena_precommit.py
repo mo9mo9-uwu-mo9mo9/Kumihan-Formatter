@@ -12,7 +12,7 @@ import json
 import re
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
+from typing import List, Dict  # Optional removed - unused import (F401)
 
 
 class SerenaPrecommitChecker:
@@ -130,8 +130,8 @@ class SerenaPrecommitChecker:
         print("🔧 開発関連ファイルの変更を検出")
 
         # 3. 最近のコミットメッセージチェック
-        recent_commits = self.get_recent_commits(24)
-        is_dev_commit = self.is_development_commit(recent_commits)
+        # recent_commits = self.get_recent_commits(24)  # removed - unused variable (F841)
+        # is_dev_commit = self.is_development_commit(recent_commits)  # removed - unused variable (F841)
 
         # 4. 最近の違反記録チェック
         recent_violations = self.check_recent_violations(24)
@@ -154,7 +154,7 @@ class SerenaPrecommitChecker:
         if not self.usage_log.exists():
             return False
 
-        cutoff_time = datetime.now() - timedelta(hours=24)
+        # cutoff_time = datetime.now() - timedelta(hours=24)  # removed - unused variable (F841)
 
         try:
             with open(self.usage_log, 'r', encoding='utf-8') as f:
