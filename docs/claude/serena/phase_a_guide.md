@@ -4,7 +4,7 @@
 
 ### 1. 段階的情報取得フロー
 - **Stage 1**: ultra_overview (3K tokens) - 超高速概要把握
-- **Stage 2**: quick_search (8K tokens) - 高速ターゲット検索  
+- **Stage 2**: quick_search (8K tokens) - 高速ターゲット検索
 - **Stage 3**: focused_edit (60K tokens) - 集中的編集実行
 
 ### 2. セマンティック編集中心アプローチ
