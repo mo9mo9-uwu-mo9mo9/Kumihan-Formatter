@@ -92,5 +92,13 @@ def image_node(filename: str, alt_text: str | None = None) -> Node:
 
 
 def toc_marker() -> Node:
-    """Create a table of contents marker node"""
-    return NodeBuilder("toc").content("").build()
+    """Create a table of contents marker node - DEPRECATED in Issue #799
+
+    目次記法は完全廃止されました。
+    目次は見出しが2個以上存在する場合に自動生成されます。
+
+    Returns:
+        Node: 廃止予定のTOCマーカーノード
+    """
+    # Issue #799: 目次記法完全廃止 - この関数は使用されません
+    return NodeBuilder("toc").content("<!-- TOC Auto-Generated -->").build()

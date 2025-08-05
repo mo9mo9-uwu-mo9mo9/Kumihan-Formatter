@@ -10,7 +10,7 @@ import re
 from functools import lru_cache
 from typing import Any
 
-from ..ast_nodes import Node, error_node, paragraph, toc_marker
+from ..ast_nodes import Node, error_node, paragraph
 from ..keyword_parser import KeywordParser
 from ..utilities.logger import get_logger
 
@@ -418,11 +418,6 @@ class BlockParser:
         content_lines = lines[start_index + 1 : end_index]
         content = "\n".join(content_lines).strip()
         self.logger.debug(f"Block content: {len(content)} characters")
-
-        # 特殊キーワードの処理
-        if "目次" in keywords:
-            self.logger.info("Found TOC marker in new format")
-            return toc_marker(), end_index + 1
 
         # 新リスト記法の処理
         if "リスト" in keywords:
