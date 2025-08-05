@@ -127,7 +127,6 @@ def validate_keyword_combinations(keywords: list[str]) -> tuple[bool, list[str]]
         "イタリック",
         "枠線",
         "ハイライト",
-        "目次",
         "画像",
     }
 
@@ -140,10 +139,6 @@ def validate_keyword_combinations(keywords: list[str]) -> tuple[bool, list[str]]
     heading_keywords = [kw for kw in keywords if kw.startswith("見出し")]
     if len(heading_keywords) > 1:
         errors.append(f"複数の見出しレベル指定: {', '.join(heading_keywords)}")
-
-    # 矛盾する組み合わせをチェック
-    if "目次" in keywords and len(keywords) > 1:
-        errors.append("目次キーワードは他のキーワードと組み合わせできません")
 
     return len(errors) == 0, errors
 
@@ -169,7 +164,6 @@ def get_keyword_suggestions(invalid_keyword: str) -> list[str]:
         "イタリック",
         "枠線",
         "ハイライト",
-        "目次",
         "画像",
     ]
 
@@ -204,4 +198,4 @@ def get_keyword_suggestions(invalid_keyword: str) -> list[str]:
             if similarity > 0.4:  # 40%以上の類似度
                 suggestions.append(valid_keyword)
 
-    return suggestions[:3]  # 最大3つまで
+    return suggestions[:3]  # 最多3つまで  # 最大3つまで

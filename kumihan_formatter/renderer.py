@@ -85,11 +85,9 @@ class Renderer:
         # Use processed source text (footnotes already removed for display)
         processed_source_text = source_text
 
-        # Filter out TOC markers for body content
-        body_ast = [
-            node for node in ast if not (isinstance(node, Node) and node.type == "toc")
-        ]
-        self.logger.debug(f"Filtered {len(ast) - len(body_ast)} TOC markers")
+        # Use all nodes for body content (no more TOC marker filtering)
+        body_ast = ast
+        self.logger.debug(f"Using all {len(body_ast)} nodes for body content")
 
         # Generate body HTML
         body_content = self.html_renderer.render_nodes(body_ast)
@@ -97,9 +95,7 @@ class Renderer:
 
         # Generate table of contents
         toc_data = self.toc_generator.generate_toc(ast)
-        should_show_toc = toc_data["has_toc"] or any(
-            isinstance(node, Node) and node.type == "toc" for node in ast
-        )
+        should_show_toc = toc_data["has_toc"]
 
         # Select template
         template_name = self.template_manager.select_template_name(

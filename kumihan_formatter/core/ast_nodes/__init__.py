@@ -20,7 +20,6 @@ from .factories import (
     ordered_list,
     paragraph,
     strong,
-    toc_marker,
     unordered_list,
 )
 
@@ -53,7 +52,6 @@ __all__ = [
     "details",
     "error_node",
     "image_node",
-    "toc_marker",
     # Utility functions
     "flatten_text_nodes",
     "count_nodes_by_type",
