@@ -339,7 +339,7 @@ class KeywordParser:
             if simd_optimizer._numpy_available:
                 try:
                     return self._process_inline_keywords_simd(content, nesting_level)
-                except Exception as e:
+                except Exception:
                     # SIMD処理失敗時は通常処理にフォールバック
                     pass
 

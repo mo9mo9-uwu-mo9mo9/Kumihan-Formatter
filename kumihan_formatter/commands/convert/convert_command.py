@@ -140,7 +140,8 @@ class ConvertCommand:
                     if should_continue:
                         # エラーがあるが処理を継続
                         self.logger.warning(
-                            f"Syntax errors found but continuing (level={error_level}): {len(errors)} errors"
+                            f"Syntax errors found but continuing (level={error_level}): "
+                            f"{len(errors)} errors"
                         )
                         get_console_ui().warning(
                             f"記法エラーが検出されましたが、処理を継続します (レベル: {error_level})。"
@@ -169,7 +170,8 @@ class ConvertCommand:
                     else:
                         # エラーレベルに基づき処理を中止
                         self.logger.error(
-                            f"Syntax errors found, stopping (level={error_level}): {len(errors)} errors"
+                            f"Syntax errors found, stopping (level={error_level}): "
+                            f"{len(errors)} errors"
                         )
                         get_console_ui().error(
                             f"記法エラーが検出されました。変換を中止します (レベル: {error_level})。"

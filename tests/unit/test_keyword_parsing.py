@@ -378,9 +378,9 @@ class TestFootnoteParser:
 
         assert len(footnotes) == 1
         assert footnotes[0]['content'] == "脚注内容"
-        # リンクが適切に挿入されているかチェック
-        assert '<sup><a href="#footnote-1"' in clean_text
-        assert '[1]</a></sup>' in clean_text
+        # プレースホルダーが適切に挿入されているかチェック（パーサー層の責務）
+        assert '[FOOTNOTE_REF_1]' in clean_text
+        assert clean_text == "本文[FOOTNOTE_REF_1]続き"
 
     def test_empty_footnote_content(self):
         """空の脚注内容のテスト"""

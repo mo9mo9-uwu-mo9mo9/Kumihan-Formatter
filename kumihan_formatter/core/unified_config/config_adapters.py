@@ -11,8 +11,8 @@ from typing import Any, Dict, Optional, Union
 from ..utilities.logger import get_logger
 from .config_models import (
     ErrorConfig,
-    KumihanConfig,
-    LoggingConfig,
+    # KumihanConfig,  # removed - unused import (F401)
+    # LoggingConfig,  # removed - unused import (F401)
     ParallelConfig,
     RenderingConfig,
 )

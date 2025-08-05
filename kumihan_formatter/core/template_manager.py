@@ -150,7 +150,9 @@ class TemplateManager:
                 template_name
             )  # テンプレート取得（構文チェック用）
             # Access source through loader
-            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
+            source, _, _ = template.environment.loader.get_source(
+                template.environment, template_name
+            )  # type: ignore
             template.environment.parse(source)
             return True, None
         except Exception as e:
@@ -255,7 +257,9 @@ class TemplateValidator:
         try:
             template = self.template_manager.get_template(template_name)
             # Get the template source code via the environment loader
-            source, _, _ = template.environment.loader.get_source(template.environment, template_name)  # type: ignore
+            source, _, _ = template.environment.loader.get_source(
+                template.environment, template_name
+            )  # type: ignore
 
             missing_vars = []
             for var in required_vars:

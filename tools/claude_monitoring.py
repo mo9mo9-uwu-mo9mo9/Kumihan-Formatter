@@ -12,7 +12,7 @@ import json
 import logging
 import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple  # List removed - unused import (F401)
 from dataclasses import dataclass, asdict
 import yaml
 

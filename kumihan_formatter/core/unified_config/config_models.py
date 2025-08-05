@@ -4,14 +4,14 @@ Issue #771対応: Pydanticベースの型安全な設定モデル群
 既存の分散設定クラスを統合し、一元的な設定管理を実現
 """
 
-import os
+# import os  # removed - unused import (F401)
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional  # List, Union removed - unused imports (F401)
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from ..common.error_types import ErrorCategory, ErrorSeverity
+# from ..common.error_types import ErrorCategory, ErrorSeverity  # removed - unused imports (F401)
 
 
 class ConfigFormat(str, Enum):

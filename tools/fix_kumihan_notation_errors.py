@@ -14,7 +14,7 @@ import re
 import sys
 import glob
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple  # List removed - unused import (F401)
 
 def fix_hexadecimal_color_codes(content: str) -> Tuple[str, int]:
     """16進数カラーコード問題を修正"""
