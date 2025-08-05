@@ -4,11 +4,12 @@ Test cases for basic Kumihan notation system.
 Tests cover inline and block format notation parsing and validation.
 """
 
-import pytest
 from pathlib import Path
 
-from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+import pytest
+
 from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
 

@@ -4,11 +4,12 @@ Convert Processor comprehensive test coverage.
 Tests convert processing functionality to achieve 80% coverage goal.
 """
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
 import shutil
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import only existing modules - others will be tested as mock implementations
 try:

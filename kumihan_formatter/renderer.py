@@ -61,6 +61,7 @@ class Renderer:
         source_text: str | None = None,
         source_filename: str | None = None,
         navigation_html: str | None = None,
+        original_source_text: str | None = None,
     ) -> str:
         """
         Render AST to HTML
@@ -70,15 +71,20 @@ class Renderer:
             config: Optional configuration
             template: Optional template name
             title: Page title
-            source_text: Source text for toggle feature
+            source_text: Source text for toggle feature (footnotes already removed)
             source_filename: Source filename for toggle feature
             navigation_html: Navigation HTML
+            original_source_text: Original source text with footnotes for footnote processing
 
         Returns:
             str: Complete HTML document
         """
         start_time = time.time()
         self.logger.info(f"Starting render of {len(ast)} AST nodes")
+
+        # Use processed source text (footnotes already removed for display)
+        processed_source_text = source_text
+
         # Filter out TOC markers for body content
         body_ast = [
             node for node in ast if not (isinstance(node, Node) and node.type == "toc")
@@ -97,7 +103,7 @@ class Renderer:
 
         # Select template
         template_name = self.template_manager.select_template_name(
-            source_text=source_text, template=template
+            source_text=processed_source_text, template=template
         )
 
         # Build rendering context
@@ -111,9 +117,36 @@ class Renderer:
             .css_vars(simple_config.get_css_variables())
         )
 
-        # Add source toggle if needed
-        if source_text and source_filename:
-            context.source_toggle(source_text, source_filename)
+        # Check if footnote data was set in HTML renderer
+        footnotes_html = None
+        has_footnotes = False
+
+        if (
+            hasattr(self.html_renderer, "footnotes_data")
+            and self.html_renderer.footnotes_data
+        ):
+            try:
+                footnotes_data = self.html_renderer.footnotes_data
+                footnote_html = footnotes_data["manager"].generate_footnote_html(
+                    footnotes_data["footnotes"]
+                )
+                if footnote_html:
+                    footnotes_html = footnote_html
+                    has_footnotes = True
+                    self.logger.debug(
+                        f"Added footnotes HTML to context: {len(footnote_html)} characters"
+                    )
+
+            except Exception as e:
+                self.logger.warning(f"Failed to generate footnote HTML: {e}")
+
+        # Add footnotes to context
+        context.custom("footnotes_html", footnotes_html)
+        context.custom("has_footnotes", has_footnotes)
+
+        # Add source toggle if needed (use processed text)
+        if processed_source_text and source_filename:
+            context.source_toggle(processed_source_text, source_filename)
 
         # Add navigation if provided
         if navigation_html:

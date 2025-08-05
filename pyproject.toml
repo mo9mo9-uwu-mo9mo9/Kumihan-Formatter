@@ -142,7 +142,8 @@ markers = [
     "validator: Validation functionality tests",
     "convert: Convert processing tests",
     "utilities: Utility functionality tests",
-    "progress: Progress tracking tests"
+    "progress: Progress tracking tests",
+    "footnote: Footnote notation tests"
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

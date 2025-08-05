@@ -4,12 +4,13 @@ CLI comprehensive coverage tests.
 Focused on improving CLI coverage from 38% to 85% without timeouts.
 """
 
+import shutil
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
 from click.testing import CliRunner
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
-import tempfile
-import shutil
 
 from kumihan_formatter.cli import cli, main
 from kumihan_formatter.core.ast_nodes.node import Node

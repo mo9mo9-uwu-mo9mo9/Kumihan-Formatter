@@ -4,17 +4,18 @@ Performance test cases for Kumihan-Formatter.
 Tests processing speed, memory usage, and scalability with large datasets.
 """
 
-import pytest
-import time
-import psutil
 import os
+import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
-from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
-from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
+import psutil
+import pytest
+
 from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
+from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
 
 class PerformanceMonitor:

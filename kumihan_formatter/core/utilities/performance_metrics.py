@@ -11,7 +11,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Iterator, AsyncIterator
+from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional
 
 import psutil
 
@@ -103,7 +103,8 @@ class PerformanceMonitor:
         self.alert_callbacks: List[Callable[[str, Dict], None]] = []
 
         self.logger.info(
-            f"PerformanceMonitor initialized: interval={monitoring_interval}s, history={history_size}"
+            f"PerformanceMonitor initialized: interval={monitoring_interval}s, "
+            f"history={history_size}"
         )
 
     def start_monitoring(self, total_items: int, initial_stage: str = "開始"):
@@ -114,16 +115,21 @@ class PerformanceMonitor:
                 return
 
             # 統計情報初期化
-            self.stats = ProcessingStats(start_time=time.time(), total_items=total_items)
+            self.stats = ProcessingStats(
+                start_time=time.time(), total_items=total_items
+            )
             self.stats.processing_phases.append(initial_stage)
 
             # 監視開始
             self._monitoring = True
-            self._monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+            self._monitor_thread = threading.Thread(
+                target=self._monitoring_loop, daemon=True
+            )
             self._monitor_thread.start()
 
             self.logger.info(
-                f"Performance monitoring started: {total_items} items, stage: {initial_stage}"
+                f"Performance monitoring started: {total_items} items, "
+                f"stage: {initial_stage}"
             )
 
     def stop_monitoring(self):
@@ -189,7 +195,9 @@ class PerformanceMonitor:
 
             # 現在のステージ
             current_stage = (
-                self.stats.processing_phases[-1] if self.stats.processing_phases else "unknown"
+                self.stats.processing_phases[-1]
+                if self.stats.processing_phases
+                else "unknown"
             )
 
             return PerformanceSnapshot(
@@ -281,7 +289,9 @@ class PerformanceMonitor:
             )
 
         # 低処理速度アラート
-        if snapshot.processing_rate > 0 and snapshot.processing_rate < 100:  # 100 items/sec未満
+        if (
+            snapshot.processing_rate > 0 and snapshot.processing_rate < 100
+        ):  # 100 items/sec未満
             alerts.append(
                 {
                     "type": "low_processing_rate",
@@ -315,7 +325,9 @@ class PerformanceMonitor:
                 "peak_memory_mb": self.stats.peak_memory_mb,
                 "avg_cpu_percent": self.stats.avg_cpu_percent,
                 "processing_phases": self.stats.processing_phases,
-                "current_memory_mb": (recent_snapshots[-1].memory_mb if recent_snapshots else 0),
+                "current_memory_mb": (
+                    recent_snapshots[-1].memory_mb if recent_snapshots else 0
+                ),
                 "current_cpu_percent": (
                     recent_snapshots[-1].cpu_percent if recent_snapshots else 0
                 ),
@@ -359,18 +371,26 @@ class PerformanceMonitor:
             snapshots_list = list(self.snapshots)
 
             # メモリ使用量傾向
-            memory_trend = self._calculate_trend([s.memory_mb for s in snapshots_list[-10:]])
+            memory_trend = self._calculate_trend(
+                [s.memory_mb for s in snapshots_list[-10:]]
+            )
             memory_status = (
-                "増加" if memory_trend > 0.5 else "安定" if memory_trend > -0.5 else "減少"
+                "増加"
+                if memory_trend > 0.5
+                else "安定" if memory_trend > -0.5 else "減少"
             )
             report_lines.append(f"  メモリ使用量: {memory_status}")
 
             # 処理速度傾向
-            rates = [s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0]
+            rates = [
+                s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0
+            ]
             if rates:
                 rate_trend = self._calculate_trend(rates)
                 rate_status = (
-                    "向上" if rate_trend > 0.5 else "安定" if rate_trend > -0.5 else "低下"
+                    "向上"
+                    if rate_trend > 0.5
+                    else "安定" if rate_trend > -0.5 else "低下"
                 )
                 report_lines.append(f"  処理速度: {rate_status}")
 
@@ -440,12 +460,15 @@ class SIMDOptimizer:
             self.np = np
             self.logger.info("SIMD optimizer initialized with NumPy acceleration")
         else:
-            self.logger.warning("NumPy not available, falling back to standard processing")
+            self.logger.warning(
+                "NumPy not available, falling back to standard processing"
+            )
 
     def _check_numpy_availability(self) -> bool:
         """NumPy利用可能性をチェック"""
         try:
             import numpy as np  # noqa: F401
+
             return True
         except ImportError:
             return False
@@ -469,7 +492,9 @@ class SIMDOptimizer:
         if not lines:
             return []
 
-        self.logger.debug(f"SIMD processing {len(lines)} lines with {len(pattern_funcs)} functions")
+        self.logger.debug(
+            f"SIMD processing {len(lines)} lines with {len(pattern_funcs)} functions"
+        )
 
         try:
             # NumPy配列に変換（文字列処理の高速化）
@@ -484,7 +509,9 @@ class SIMDOptimizer:
             # リストに戻す
             result = np_lines.tolist()
 
-            self.logger.debug(f"SIMD processing completed: {len(result)} lines processed")
+            self.logger.debug(
+                f"SIMD processing completed: {len(result)} lines processed"
+            )
             return result
 
         except Exception as e:
@@ -500,7 +527,9 @@ class SIMDOptimizer:
             result = [func(line) for line in result]
         return result
 
-    def optimized_regex_operations(self, text: str, patterns: List[tuple[str, str]]) -> str:
+    def optimized_regex_operations(
+        self, text: str, patterns: List[tuple[str, str]]
+    ) -> str:
         """
         最適化された正規表現処理
 
@@ -526,7 +555,10 @@ class SIMDOptimizer:
         return result
 
     def parallel_chunk_simd_processing(
-        self, chunks: List[Any], processing_func: Callable, max_workers: Optional[int] = None
+        self,
+        chunks: List[Any],
+        processing_func: Callable,
+        max_workers: Optional[int] = None,
     ) -> List[Any]:
         """
         並列チャンク処理とSIMD最適化の組み合わせ
@@ -555,7 +587,9 @@ class SIMDOptimizer:
                 results.append(processing_func(chunk))
         else:
             # 並列処理 + SIMD最適化
-            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
                 future_to_chunk = {
                     executor.submit(processing_func, chunk): chunk for chunk in chunks
                 }
@@ -649,7 +683,9 @@ class AsyncIOOptimizer:
         self._aiofiles_available = self._check_aiofiles_availability()
 
         if self._aiofiles_available:
-            self.logger.info(f"AsyncIO optimizer initialized with buffer size: {buffer_size}")
+            self.logger.info(
+                f"AsyncIO optimizer initialized with buffer size: {buffer_size}"
+            )
         else:
             self.logger.warning("aiofiles not available, using synchronous I/O")
 
@@ -657,6 +693,7 @@ class AsyncIOOptimizer:
         """aiofiles利用可能性をチェック"""
         try:
             import aiofiles  # noqa: F401
+
             return True
         except ImportError:
             return False
@@ -814,7 +851,9 @@ class RegexOptimizer:
         # 最適化された事前コンパイル済みパターン
         self._precompiled_patterns = self._initialize_precompiled_patterns()
 
-        self.logger.info(f"RegexOptimizer initialized with cache limit: {cache_size_limit}")
+        self.logger.info(
+            f"RegexOptimizer initialized with cache limit: {cache_size_limit}"
+        )
 
     def _initialize_precompiled_patterns(self) -> Dict[str, Any]:
         """よく使用される正規表現パターンを事前コンパイル"""
@@ -879,7 +918,9 @@ class RegexOptimizer:
             return compiled_pattern
 
         except re.error as e:
-            self.logger.error(f"Regex compilation failed for pattern '{pattern_str}': {e}")
+            self.logger.error(
+                f"Regex compilation failed for pattern '{pattern_str}': {e}"
+            )
             # フォールバック：文字列マッチング
             return None
 
@@ -898,7 +939,9 @@ class RegexOptimizer:
             del self._usage_counter[least_used_key]
 
         self._compile_stats["evictions"] += 1
-        self.logger.debug(f"Evicted regex pattern from cache: {least_used_key[0][:50]}...")
+        self.logger.debug(
+            f"Evicted regex pattern from cache: {least_used_key[0][:50]}..."
+        )
 
     def optimized_search(self, pattern_str: str, text: str, flags: int = 0) -> Any:
         """
@@ -925,7 +968,9 @@ class RegexOptimizer:
         # フォールバック：単純文字列検索
         return pattern_str in text
 
-    def optimized_findall(self, pattern_str: str, text: str, flags: int = 0) -> List[str]:
+    def optimized_findall(
+        self, pattern_str: str, text: str, flags: int = 0
+    ) -> List[str]:
         """
         最適化された正規表現全体検索
 
@@ -998,7 +1043,11 @@ class RegexOptimizer:
     def get_cache_stats(self) -> Dict[str, Any]:
         """キャッシュ統計を取得"""
         total_requests = self._compile_stats["hits"] + self._compile_stats["misses"]
-        hit_rate = (self._compile_stats["hits"] / total_requests * 100) if total_requests > 0 else 0
+        hit_rate = (
+            (self._compile_stats["hits"] / total_requests * 100)
+            if total_requests > 0
+            else 0
+        )
 
         return {
             "cache_size": len(self._pattern_cache),
@@ -1056,9 +1105,13 @@ class MemoryOptimizer:
         )
         gc.set_threshold(*new_thresholds)
 
-        self.logger.info(f"GC thresholds adjusted: {original_thresholds} -> {new_thresholds}")
+        self.logger.info(
+            f"GC thresholds adjusted: {original_thresholds} -> {new_thresholds}"
+        )
 
-    def create_object_pool(self, pool_name: str, factory_func: Callable, max_size: int = 100):
+    def create_object_pool(
+        self, pool_name: str, factory_func: Callable, max_size: int = 100
+    ):
         """
         オブジェクトプール作成
 
@@ -1140,7 +1193,9 @@ class MemoryOptimizer:
                 import mmap
 
                 with open(file_path, "r", encoding="utf-8") as f:
-                    with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmapped_file:
+                    with mmap.mmap(
+                        f.fileno(), 0, access=mmap.ACCESS_READ
+                    ) as mmapped_file:
                         for i in range(0, len(mmapped_file), chunk_size):
                             chunk = mmapped_file[i : i + chunk_size].decode(
                                 "utf-8", errors="ignore"
@@ -1195,7 +1250,10 @@ class MemoryOptimizer:
             return data
 
     def batch_process_with_memory_limit(
-        self, data_generator: Iterator[Any], processing_func: Callable, memory_limit_mb: int = 100
+        self,
+        data_generator: Iterator[Any],
+        processing_func: Callable,
+        memory_limit_mb: int = 100,
     ) -> Iterator[Any]:
         """
         メモリ制限付きバッチ処理
@@ -1243,8 +1301,9 @@ class MemoryOptimizer:
 
     def get_memory_stats(self) -> Dict[str, Any]:
         """メモリ使用統計を取得"""
-        import psutil
         import os
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
@@ -1272,7 +1331,9 @@ class MemoryOptimizer:
             "memory_operations": self._memory_stats,
         }
 
-    def detect_memory_leaks(self, threshold_mb: float = 10.0, sample_interval: int = 5) -> Dict[str, Any]:
+    def detect_memory_leaks(
+        self, threshold_mb: float = 10.0, sample_interval: int = 5
+    ) -> Dict[str, Any]:
         """
         高度なメモリリーク検出機構
 
@@ -1283,11 +1344,12 @@ class MemoryOptimizer:
         Returns:
             Dict[str, Any]: リーク検出結果
         """
-        import time
-        import psutil
         import gc
         import os
+        import time
         from typing import List, Tuple
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         samples: List[Tuple[float, float]] = []  # (timestamp, memory_mb)
@@ -1296,7 +1358,9 @@ class MemoryOptimizer:
         initial_memory = process.memory_info().rss / 1024 / 1024
         samples.append((time.time(), initial_memory))
 
-        self.logger.info(f"Memory leak detection started. Initial memory: {initial_memory:.2f} MB")
+        self.logger.info(
+            f"Memory leak detection started. Initial memory: {initial_memory:.2f} MB"
+        )
 
         # 複数回サンプリング
         for i in range(sample_interval):
@@ -1316,8 +1380,8 @@ class MemoryOptimizer:
 
         # リーク判定
         is_leak_detected = (
-            memory_growth > threshold_mb and
-            gc_effect < memory_growth * 0.5  # GCで半分以上回収されない場合
+            memory_growth > threshold_mb
+            and gc_effect < memory_growth * 0.5  # GCで半分以上回収されない場合
         )
 
         leak_info = {
@@ -1329,17 +1393,25 @@ class MemoryOptimizer:
             "final_memory_mb": samples[-1][1],
             "post_gc_memory_mb": post_gc_memory,
             "samples": samples,
-            "recommendation": self._generate_leak_recommendation(is_leak_detected, memory_growth, gc_effect)
+            "recommendation": self._generate_leak_recommendation(
+                is_leak_detected, memory_growth, gc_effect
+            ),
         }
 
         if is_leak_detected:
-            self.logger.warning(f"Memory leak detected! Growth: {memory_growth:.2f} MB, Rate: {growth_rate:.4f} MB/s")
+            self.logger.warning(
+                f"Memory leak detected! Growth: {memory_growth:.2f} MB, Rate: {growth_rate:.4f} MB/s"
+            )
         else:
-            self.logger.info(f"No significant memory leak detected. Growth: {memory_growth:.2f} MB")
+            self.logger.info(
+                f"No significant memory leak detected. Growth: {memory_growth:.2f} MB"
+            )
 
         return leak_info
 
-    def proactive_gc_strategy(self, memory_threshold_mb: float = 100.0, enable_generational: bool = True) -> Dict[str, Any]:
+    def proactive_gc_strategy(
+        self, memory_threshold_mb: float = 100.0, enable_generational: bool = True
+    ) -> Dict[str, Any]:
         """
         プロアクティブなガベージコレクション戦略
 
@@ -1351,45 +1423,50 @@ class MemoryOptimizer:
             Dict[str, Any]: GC実行結果
         """
         import gc
-        import psutil
         import os
         import time
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss / 1024 / 1024
 
-        self.logger.info(f"Proactive GC strategy triggered. Current memory: {initial_memory:.2f} MB")
+        self.logger.info(
+            f"Proactive GC strategy triggered. Current memory: {initial_memory:.2f} MB"
+        )
 
         results = {
             "initial_memory_mb": initial_memory,
             "gc_executed": False,
             "collections_performed": [],
             "memory_freed_mb": 0.0,
-            "execution_time_ms": 0.0
+            "execution_time_ms": 0.0,
         }
 
         start_time = time.time()
 
         # メモリ閾値チェック
         if initial_memory >= memory_threshold_mb:
-            self.logger.info(f"Memory threshold ({memory_threshold_mb} MB) exceeded. Executing proactive GC...")
+            self.logger.info(
+                f"Memory threshold ({memory_threshold_mb} MB) exceeded. Executing proactive GC..."
+            )
 
             if enable_generational:
                 # 世代別最適化GC実行
                 for generation in range(3):  # Python GCの3世代
                     collected = gc.collect(generation)
-                    results["collections_performed"].append({
-                        "generation": generation,
-                        "objects_collected": collected
-                    })
-                    self.logger.debug(f"Generation {generation} GC: {collected} objects collected")
+                    results["collections_performed"].append(
+                        {"generation": generation, "objects_collected": collected}
+                    )
+                    self.logger.debug(
+                        f"Generation {generation} GC: {collected} objects collected"
+                    )
             else:
                 # 標準GC実行
                 collected = gc.collect()
-                results["collections_performed"].append({
-                    "generation": "all",
-                    "objects_collected": collected
-                })
+                results["collections_performed"].append(
+                    {"generation": "all", "objects_collected": collected}
+                )
 
             # GC後メモリ確認
             time.sleep(0.1)  # GC完了を待機
@@ -1398,16 +1475,25 @@ class MemoryOptimizer:
             results["final_memory_mb"] = post_gc_memory
             results["gc_executed"] = True
 
-            self.logger.info(f"Proactive GC completed. Memory freed: {results['memory_freed_mb']:.2f} MB")
+            self.logger.info(
+                f"Proactive GC completed. Memory freed: {results['memory_freed_mb']:.2f} MB"
+            )
         else:
-            self.logger.debug(f"Memory usage ({initial_memory:.2f} MB) below threshold. GC not needed.")
+            self.logger.debug(
+                f"Memory usage ({initial_memory:.2f} MB) below threshold. GC not needed."
+            )
 
         results["execution_time_ms"] = (time.time() - start_time) * 1000
         return results
 
-    def create_advanced_resource_pool(self, pool_name: str, factory_func: Callable,
-                                    max_size: int = 100, cleanup_func: Optional[Callable] = None,
-                                    auto_cleanup_interval: int = 300) -> None:
+    def create_advanced_resource_pool(
+        self,
+        pool_name: str,
+        factory_func: Callable,
+        max_size: int = 100,
+        cleanup_func: Optional[Callable] = None,
+        auto_cleanup_interval: int = 300,
+    ) -> None:
         """
         高度なリソースプール管理システム
 
@@ -1432,7 +1518,7 @@ class MemoryOptimizer:
             "cleanup_count": 0,
             "last_cleanup": time.time(),
             "auto_cleanup_interval": auto_cleanup_interval,
-            "lock": threading.RLock()  # リエントラントロック
+            "lock": threading.RLock(),  # リエントラントロック
         }
 
         self._object_pools[pool_name] = pool_info
@@ -1446,7 +1532,9 @@ class MemoryOptimizer:
         cleanup_thread = threading.Thread(target=auto_cleanup, daemon=True)
         cleanup_thread.start()
 
-        self.logger.info(f"Advanced resource pool '{pool_name}' created with auto-cleanup every {auto_cleanup_interval}s")
+        self.logger.info(
+            f"Advanced resource pool '{pool_name}' created with auto-cleanup every {auto_cleanup_interval}s"
+        )
 
     def _cleanup_resource_pool(self, pool_name: str) -> int:
         """リソースプールのクリーンアップ実行"""
@@ -1469,7 +1557,9 @@ class MemoryOptimizer:
                         temp_objects.append(obj)
                         cleanup_count += 1
                     except Exception as e:
-                        self.logger.warning(f"Cleanup failed for object in pool '{pool_name}': {e}")
+                        self.logger.warning(
+                            f"Cleanup failed for object in pool '{pool_name}': {e}"
+                        )
 
                 # クリーンアップされたオブジェクトを戻す
                 for obj in temp_objects:
@@ -1479,7 +1569,9 @@ class MemoryOptimizer:
             pool_info["last_cleanup"] = time.time()
 
             if cleanup_count > 0:
-                self.logger.info(f"Resource pool '{pool_name}' cleanup: {cleanup_count} objects processed")
+                self.logger.info(
+                    f"Resource pool '{pool_name}' cleanup: {cleanup_count} objects processed"
+                )
 
             return cleanup_count
 
@@ -1493,10 +1585,11 @@ class MemoryOptimizer:
         Returns:
             str: HTMLフォーマットのメモリレポート
         """
-        import psutil
         import os
         import time
         from datetime import datetime
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
@@ -1513,7 +1606,7 @@ class MemoryOptimizer:
         system_usage_percent = system_memory.percent
 
         # HTML レポート生成
-        html_report = f'''
+        html_report = f"""
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1638,11 +1731,11 @@ class MemoryOptimizer:
                 <div class="stat-value">{system_available_gb:.1f} GB / {system_total_gb:.1f} GB</div>
             </div>
         </div>
-        '''
+        """
 
         # オブジェクトプール統計
         if self._object_pools and include_detailed_stats:
-            html_report += '''
+            html_report += """
         <h2>🏊 オブジェクトプール統計</h2>
         <table class="pool-table">
             <thead>
@@ -1657,7 +1750,7 @@ class MemoryOptimizer:
                 </tr>
             </thead>
             <tbody>
-            '''
+            """
 
             for name, pool_info in self._object_pools.items():
                 current_size = len(pool_info["pool"])
@@ -1666,9 +1759,11 @@ class MemoryOptimizer:
                 reused = pool_info["reused_count"]
                 total = created + reused
                 efficiency = (reused / total * 100) if total > 0 else 0
-                last_cleanup = time.strftime("%H:%M:%S", time.localtime(pool_info.get("last_cleanup", 0)))
+                last_cleanup = time.strftime(
+                    "%H:%M:%S", time.localtime(pool_info.get("last_cleanup", 0))
+                )
 
-                html_report += f'''
+                html_report += f"""
                 <tr>
                     <td>{name}</td>
                     <td>{current_size}</td>
@@ -1678,13 +1773,13 @@ class MemoryOptimizer:
                     <td>{efficiency:.1f}%</td>
                     <td>{last_cleanup}</td>
                 </tr>
-                '''
+                """
 
-            html_report += '</tbody></table>'
+            html_report += "</tbody></table>"
 
         # メモリ統計情報
         if include_detailed_stats:
-            html_report += f'''
+            html_report += f"""
         <h2>📊 詳細メモリ統計</h2>
         <div class="stats-grid">
             <div class="stat-card">
@@ -1704,21 +1799,23 @@ class MemoryOptimizer:
         <div class="warning">
             <strong>⚠️ 注意:</strong> メモリ使用量が100MB以上の場合は、プロアクティブなガベージコレクションの実行を検討してください。
         </div>
-        '''
+        """
 
-        html_report += f'''
+        html_report += f"""
         <div class="timestamp">
             レポート生成時刻: {current_time}
         </div>
     </div>
 </body>
 </html>
-        '''
+        """
 
         self.logger.info(f"Memory report generated. Current usage: {memory_mb:.2f} MB")
         return html_report.strip()
 
-    def _generate_leak_recommendation(self, is_leak: bool, growth_mb: float, gc_effect_mb: float) -> str:
+    def _generate_leak_recommendation(
+        self, is_leak: bool, growth_mb: float, gc_effect_mb: float
+    ) -> str:
         """メモリリーク検出結果に基づく推奨アクション生成"""
         if not is_leak:
             return "正常なメモリ使用パターンです。定期的な監視を継続してください。"
@@ -1726,13 +1823,19 @@ class MemoryOptimizer:
         recommendations = []
 
         if gc_effect_mb < growth_mb * 0.3:
-            recommendations.append("ガベージコレクションの効果が低いため、強い参照の解除を確認してください。")
+            recommendations.append(
+                "ガベージコレクションの効果が低いため、強い参照の解除を確認してください。"
+            )
 
         if growth_mb > 50:
-            recommendations.append("大幅なメモリ増加が検出されました。大容量データの処理方法を見直してください。")
+            recommendations.append(
+                "大幅なメモリ増加が検出されました。大容量データの処理方法を見直してください。"
+            )
 
         if not recommendations:
-            recommendations.append("メモリリークが検出されました。オブジェクトのライフサイクルを確認してください。")
+            recommendations.append(
+                "メモリリークが検出されました。オブジェクトのライフサイクルを確認してください。"
+            )
 
         return " ".join(recommendations)
 
@@ -1766,16 +1869,22 @@ class ProgressiveOutputSystem:
         # ストリーム出力ファイル
         self.output_stream = None
 
-        self.logger.info(f"Progressive output system initialized: buffer_size={buffer_size}")
+        self.logger.info(
+            f"Progressive output system initialized: buffer_size={buffer_size}"
+        )
 
-    def initialize_output_stream(self, template_content: str = "", css_content: str = ""):
+    def initialize_output_stream(
+        self, template_content: str = "", css_content: str = ""
+    ):
         """出力ストリームの初期化"""
 
         if not self.output_path:
             return  # ファイル出力無効
 
         try:
-            self.output_stream = open(self.output_path, "w", encoding="utf-8", buffering=1)
+            self.output_stream = open(
+                self.output_path, "w", encoding="utf-8", buffering=1
+            )
 
             # HTMLヘッダーの準備
             self.css_content = css_content
@@ -1807,7 +1916,9 @@ class ProgressiveOutputSystem:
 
         # プログレス表示
         if self.total_nodes_processed % 100 == 0:
-            self.logger.info(f"Progressive output: {self.total_nodes_processed} nodes processed")
+            self.logger.info(
+                f"Progressive output: {self.total_nodes_processed} nodes processed"
+            )
 
     def flush_buffer(self):
         """バッファの強制出力"""
@@ -2016,7 +2127,9 @@ class PerformanceBenchmark:
         for test_case in test_cases:
             self.logger.info(f"📊 Testing {test_case['description']}...")
 
-            test_results = self._run_single_benchmark(test_case["name"], test_case["lines"])
+            test_results = self._run_single_benchmark(
+                test_case["name"], test_case["lines"]
+            )
 
             benchmark_results["tests"][test_case["name"]] = test_results
 
@@ -2026,7 +2139,9 @@ class PerformanceBenchmark:
         )
 
         # サマリー生成
-        benchmark_results["summary"] = self._generate_benchmark_summary(benchmark_results)
+        benchmark_results["summary"] = self._generate_benchmark_summary(
+            benchmark_results
+        )
 
         self.logger.info("✅ Comprehensive benchmark completed")
         return benchmark_results
@@ -2053,7 +2168,9 @@ class PerformanceBenchmark:
 
         # Traditional Parser テスト
         try:
-            results["traditional_parser"] = self._benchmark_traditional_parser(test_text)
+            results["traditional_parser"] = self._benchmark_traditional_parser(
+                test_text
+            )
         except Exception as e:
             self.logger.error(f"Traditional parser test failed: {e}")
             results["traditional_parser"] = {"error": str(e)}
@@ -2193,7 +2310,9 @@ class PerformanceBenchmark:
             pattern = patterns[i % len(patterns)]
             if "項目" in pattern or "リスト" in pattern:
                 lines.append(
-                    pattern.replace("項目", f"項目{i+1}").replace("リスト", f"リスト{i+1}")
+                    pattern.replace("項目", f"項目{i+1}").replace(
+                        "リスト", f"リスト{i+1}"
+                    )
                 )
             else:
                 lines.append(f"{pattern} (行 {i+1})")
@@ -2212,7 +2331,9 @@ class PerformanceBenchmark:
         optimized = results.get("optimized_parser", {})
         streaming = results.get("streaming_parser", {})
 
-        if traditional.get("parse_time_seconds") and optimized.get("parse_time_seconds"):
+        if traditional.get("parse_time_seconds") and optimized.get(
+            "parse_time_seconds"
+        ):
             improvement["optimized_vs_traditional_speed"] = (
                 traditional["parse_time_seconds"] / optimized["parse_time_seconds"]
             )
@@ -2222,7 +2343,9 @@ class PerformanceBenchmark:
                 traditional["memory_used_mb"] / optimized["memory_used_mb"]
             )
 
-        if traditional.get("parse_time_seconds") and streaming.get("parse_time_seconds"):
+        if traditional.get("parse_time_seconds") and streaming.get(
+            "parse_time_seconds"
+        ):
             improvement["streaming_vs_traditional_speed"] = (
                 traditional["parse_time_seconds"] / streaming["parse_time_seconds"]
             )
@@ -2258,14 +2381,20 @@ class PerformanceBenchmark:
 
         # メモリ使用量66%削減目標
         if large_test:
-            traditional_memory = large_test.get("traditional_parser", {}).get("memory_used_mb", 0)
-            optimized_memory = large_test.get("optimized_parser", {}).get("memory_used_mb", 0)
+            traditional_memory = large_test.get("traditional_parser", {}).get(
+                "memory_used_mb", 0
+            )
+            optimized_memory = large_test.get("optimized_parser", {}).get(
+                "memory_used_mb", 0
+            )
 
             if traditional_memory > 0:
                 memory_reduction = (
                     (traditional_memory - optimized_memory) / traditional_memory * 100
                 )
-                assessment["goals"]["memory_reduction_66_percent"] = memory_reduction >= 66.0
+                assessment["goals"]["memory_reduction_66_percent"] = (
+                    memory_reduction >= 66.0
+                )
                 assessment["details"]["memory_reduction_percent"] = memory_reduction
 
         return assessment
@@ -2409,4 +2538,6 @@ class PerformanceContext:
         if hasattr(self.monitor, "update_progress"):
             # 簡易的な進捗更新
             pass
+
+
 # Testing serena-expert enforcement

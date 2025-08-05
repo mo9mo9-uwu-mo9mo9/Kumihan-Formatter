@@ -12,10 +12,10 @@ from typing import Any
 
 from rich.progress import Progress
 
+from ...core.error_handling import UnifiedErrorHandler
 from ...core.file_io_handler import FileIOHandler
 from ...core.file_ops import FileOperations
 from ...core.utilities.logger import get_logger
-from ...core.error_handling import UnifiedErrorHandler, handle_error_unified
 from ...renderer import render
 from ...ui.console_ui import get_console_ui
 
@@ -66,9 +66,9 @@ class ConvertProcessor:
                 context={
                     "input_file": input_file,
                     "output_file": output_file,
-                    "operation": "file_validation"
+                    "operation": "file_validation",
                 },
-                operation="validate_files"
+                operation="validate_files",
             )
             # バリデーションエラーは基本的に継続不可
             raise result.kumihan_error
@@ -114,9 +114,9 @@ class ConvertProcessor:
         )
 
         # 推定処理ステップ数を計算
-        text = FileIOHandler.read_text_file(input_path)
+        original_text = FileIOHandler.read_text_file(input_path)
         estimated_steps = self._estimate_processing_steps(
-            text, show_test_cases, include_source
+            original_text, show_test_cases, include_source
         )
 
         # プログレスコンテキストマネージャで全体処理を管理
@@ -138,7 +138,53 @@ class ConvertProcessor:
                 self.logger.info("Conversion cancelled during file reading")
                 raise KeyboardInterrupt("ユーザーによりキャンセルされました")
 
-            self.logger.debug(f"File read successfully: {len(text)} characters")
+            self.logger.debug(
+                f"File read successfully: {len(original_text)} characters"
+            )
+            current_step += 1
+
+            # ステップ1.5: 脚注前処理（AST生成前に実行）
+            progress.update(current_step, "前処理", "脚注記法を前処理中...")
+            text = original_text  # パース用テキスト
+            footnotes_data = None
+
+            try:
+                from ...core.keyword_parsing.definitions import KeywordDefinitions
+                from ...core.keyword_parsing.marker_parser import MarkerParser
+                from ...core.rendering.html_formatter import FootnoteManager
+
+                # MarkerParserには最小限のKeywordDefinitionsを渡す
+                keyword_definitions = KeywordDefinitions()
+                marker_parser = MarkerParser(keyword_definitions)
+                footnote_manager = FootnoteManager()
+
+                self.logger.debug("Pre-processing footnotes before AST generation")
+                clean_text, footnotes = marker_parser.extract_footnotes_from_text(
+                    original_text
+                )
+
+                if footnotes:
+                    self.logger.info(
+                        f"Pre-processed {len(footnotes)} footnotes for clean AST generation"
+                    )
+                    # Register footnotes with manager
+                    processed_footnotes = footnote_manager.register_footnotes(footnotes)
+                    footnotes_data = {
+                        "footnotes": processed_footnotes,
+                        "clean_text": clean_text,
+                        "manager": footnote_manager,
+                        "original_text": original_text,
+                    }
+                    # パース用には脚注除去済みテキストを使用
+                    text = clean_text
+                else:
+                    self.logger.debug("No footnotes found in source text")
+
+            except Exception as e:
+                self.logger.warning(f"Failed to pre-process footnotes: {e}")
+                # 脚注処理に失敗した場合は元のテキストをそのまま使用
+                footnotes_data = None
+
             current_step += 1
 
             # ステップ2: テストケース表示（オプション）
@@ -151,14 +197,14 @@ class ConvertProcessor:
                 self._show_test_cases(text)
                 current_step += 1
 
-            # ステップ3: パース処理
+            # ステップ3: パース処理（脚注除去済みテキストを使用）
             progress.update(current_step, "解析", "テキスト構造を解析中...")
             if progress.is_cancelled():
                 raise KeyboardInterrupt("ユーザーによりキャンセルされました")
 
             self.logger.info("Starting parse phase")
             ast, parser = self._parse_with_enhanced_progress(
-                text,
+                text,  # 脚注除去済みテキストを使用
                 config_obj,
                 input_path,
                 progress,
@@ -189,7 +235,11 @@ class ConvertProcessor:
             # ソース表示用の引数を準備
             source_args = {}
             if include_source:
+                # ソース表示には脚注除去済みテキストを使用
                 source_args = {"source_text": text, "source_filename": input_path.name}
+                # 脚注データがある場合は元のテキストも渡す
+                if footnotes_data:
+                    source_args["original_source_text"] = original_text
                 self.logger.debug("Source display enabled")
                 current_step += 1
                 progress.update(current_step, "変換", "ソース表示を準備中...")
@@ -201,6 +251,10 @@ class ConvertProcessor:
                 self.logger.info(
                     f"Retrieved {len(parser_errors)} graceful errors from parser"
                 )
+
+            # 脚注データをレンダラーに渡す
+            if footnotes_data:
+                source_args["footnotes_data"] = footnotes_data
 
             html = self._render_with_enhanced_progress(
                 ast,
@@ -380,6 +434,16 @@ class ConvertProcessor:
                     self.logger.info(
                         f"Set {len(parser_errors)} graceful errors for HTML embedding"
                     )
+
+            # 脚注データがある場合はHTMLレンダラーに設定
+            footnotes_data = source_args.pop("footnotes_data", None)
+            if footnotes_data:
+                try:
+                    if hasattr(renderer.html_renderer, "set_footnote_data"):
+                        renderer.html_renderer.set_footnote_data(footnotes_data)
+                        self.logger.debug("Set footnote data in HTML renderer")
+                except Exception as e:
+                    self.logger.warning(f"Failed to set footnote data in renderer: {e}")
 
             html = renderer.render(ast, template=template, title=title, **source_args)
 

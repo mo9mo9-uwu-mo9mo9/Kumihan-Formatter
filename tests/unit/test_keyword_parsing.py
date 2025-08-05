@@ -4,19 +4,20 @@ Test cases for keyword parsing system.
 Tests the keyword parsing engine including definitions, validation, and marker processing.
 """
 
-import pytest
 from pathlib import Path
 
-from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
+import pytest
+
 from kumihan_formatter.core.keyword_parsing.definitions import (
-    KeywordDefinitions,
     DEFAULT_BLOCK_KEYWORDS,
     NESTING_ORDER,
+    KeywordDefinitions,
 )
 from kumihan_formatter.core.keyword_parsing.marker_parser import (
     MarkerParser,
     ParseResult,
 )
+from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
 
 
 @pytest.mark.unit
@@ -331,3 +332,150 @@ class TestMarkerParser:
             result = self.parser.parse(text)
             # Should handle edge cases without crashing
             assert result is not None or result is None
+
+
+@pytest.mark.unit
+@pytest.mark.footnote
+class TestFootnoteParser:
+    """脚注記法のパーサーテスト"""
+
+    def setup_method(self):
+        """テストセットアップ"""
+        from kumihan_formatter.core.keyword_parsing.definitions import (
+            KeywordDefinitions,
+        )
+        from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+
+        definitions = KeywordDefinitions()
+        self.parser = MarkerParser(definitions)
+
+    def test_parse_single_footnote(self):
+        """単一脚注の解析テスト"""
+        text = "これは本文です((脚注の内容))。"
+        footnotes = self.parser.parse_footnotes(text)
+
+        assert len(footnotes) == 1
+        assert footnotes[0]['content'] == "脚注の内容"
+        assert footnotes[0]['number'] == 1
+        assert footnotes[0]['start_pos'] == 7
+        assert footnotes[0]['end_pos'] == 16
+
+    def test_parse_multiple_footnotes(self):
+        """複数脚注の解析テスト"""
+        text = "最初の脚注((注釈1))と二番目の脚注((注釈2))です。"
+        footnotes = self.parser.parse_footnotes(text)
+
+        assert len(footnotes) == 2
+        assert footnotes[0]['content'] == "注釈1"
+        assert footnotes[0]['number'] == 1
+        assert footnotes[1]['content'] == "注釈2"
+        assert footnotes[1]['number'] == 2
+
+    def test_extract_footnotes_from_text(self):
+        """脚注抽出とテキスト変換のテスト"""
+        text = "本文((脚注内容))続き"
+        clean_text, footnotes = self.parser.extract_footnotes_from_text(text)
+
+        assert len(footnotes) == 1
+        assert footnotes[0]['content'] == "脚注内容"
+        # リンクが適切に挿入されているかチェック
+        assert '<sup><a href="#footnote-1"' in clean_text
+        assert '[1]</a></sup>' in clean_text
+
+    def test_empty_footnote_content(self):
+        """空の脚注内容のテスト"""
+        text = "本文(())です"
+        footnotes = self.parser.parse_footnotes(text)
+
+        assert len(footnotes) == 1
+        assert footnotes[0]['content'] == ""
+
+    def test_no_footnotes(self):
+        """脚注なしテキストのテスト"""
+        text = "普通の本文です"
+        footnotes = self.parser.parse_footnotes(text)
+
+        assert len(footnotes) == 0
+
+    def test_nested_parentheses(self):
+        """ネストした括弧のテスト"""
+        text = "本文((内容(括弧付き)注釈))です"
+        footnotes = self.parser.parse_footnotes(text)
+
+        assert len(footnotes) == 1
+        assert footnotes[0]['content'] == "内容(括弧付き)注釈"
+
+
+@pytest.mark.unit
+@pytest.mark.footnote
+class TestHTMLFootnoteFormatter:
+    """HTML脚注フォーマッターのテスト"""
+
+    def setup_method(self):
+        """テストセットアップ"""
+        from kumihan_formatter.core.rendering.html_formatter import (
+            FootnoteManager,
+            HTMLFormatter,
+        )
+
+        self.formatter = HTMLFormatter()
+        self.footnote_manager = FootnoteManager()
+
+    def test_generate_footnotes_html(self):
+        """脚注HTML生成テスト"""
+        footnotes = [
+            {'content': '第一脚注', 'number': 1},
+            {'content': '第二脚注', 'number': 2}
+        ]
+
+        html = self.formatter.generate_footnotes_html(footnotes)
+
+        assert '<div class="footnotes">' in html
+        assert '<ol>' in html
+        assert '<li id="footnote-1">第一脚注' in html
+        assert '<li id="footnote-2">第二脚注' in html
+        assert 'class="footnote-backref">↩</a>' in html
+
+    def test_process_footnote_links(self):
+        """脚注リンク処理テスト"""
+        text = "本文((脚注内容))です"
+        footnotes = [{'content': '脚注内容', 'number': 1}]
+
+        result = self.formatter.process_footnote_links(text, footnotes)
+
+        assert '<sup><a href="#footnote-1"' in result
+        assert 'id="footnote-ref-1"' in result
+        assert '[1]</a></sup>' in result
+
+    def test_footnote_manager_registration(self):
+        """脚注マネージャー登録テスト"""
+        footnotes = [
+            {'content': '脚注1'},
+            {'content': '脚注2'}
+        ]
+
+        processed = self.footnote_manager.register_footnotes(footnotes)
+
+        assert len(processed) == 2
+        assert processed[0]['global_number'] == 1
+        assert processed[1]['global_number'] == 2
+
+    def test_footnote_manager_reset(self):
+        """脚注マネージャーリセットテスト"""
+        footnotes = [{'content': '脚注1'}]
+        self.footnote_manager.register_footnotes(footnotes)
+
+        self.footnote_manager.reset_counter()
+
+        assert len(self.footnote_manager.get_all_footnotes()) == 0
+        assert self.footnote_manager.footnote_counter == 0
+
+    def test_html_escaping(self):
+        """HTMLエスケープテスト"""
+        footnotes = [{'content': '<script>alert("test")</script>', 'number': 1}]
+
+        html = self.formatter.generate_footnotes_html(footnotes)
+
+        assert '&lt;script&gt;' in html
+        assert '&quot;test&quot;' in html
+        assert '<script>' not in html

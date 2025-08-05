@@ -12,22 +12,22 @@ Issue #771対応: 分散した設定クラスを統合し、
 - 既存設定クラスとの互換性
 """
 
-from .unified_config_manager import UnifiedConfigManager
-from .config_models import (
-    KumihanConfig,
-    ParallelConfig,
-    LoggingConfig,
-    ErrorConfig,
-    RenderingConfig,
-    UIConfig
-)
-from .config_loader import ConfigLoader, ConfigFormat
-from .config_validator import ConfigValidator
 from .config_adapters import (
-    ParallelProcessingConfigAdapter,
+    BaseConfigAdapter,
     ErrorConfigManagerAdapter,
-    BaseConfigAdapter
+    ParallelProcessingConfigAdapter,
 )
+from .config_loader import ConfigFormat, ConfigLoader
+from .config_models import (
+    ErrorConfig,
+    KumihanConfig,
+    LoggingConfig,
+    ParallelConfig,
+    RenderingConfig,
+    UIConfig,
+)
+from .config_validator import ConfigValidator
+from .unified_config_manager import UnifiedConfigManager
 
 __all__ = [
     "UnifiedConfigManager",

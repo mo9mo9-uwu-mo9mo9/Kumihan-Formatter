@@ -5,20 +5,21 @@ Issue #694検証 - 実用的な大容量ファイル処理性能の実証
 """
 
 import gc
+import statistics
+import sys
+import threading
 import time
 import tracemalloc
-import threading
 from pathlib import Path
-import sys
+from typing import Any, Dict, List
+
 import psutil
-import statistics
-from typing import List, Dict, Any
 
 # プロジェクトのパスを追加
 sys.path.insert(0, str(Path(__file__).parent))
 
-from kumihan_formatter.parser import StreamingParser, parse
 from kumihan_formatter.core.utilities.logger import get_logger
+from kumihan_formatter.parser import StreamingParser, parse
 
 
 class RealisticContentGenerator:

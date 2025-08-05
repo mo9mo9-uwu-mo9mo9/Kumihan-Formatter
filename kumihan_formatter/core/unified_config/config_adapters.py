@@ -5,11 +5,17 @@ Issue #771対応: 既存設定クラスとの互換性を保つアダプター�
 """
 
 import warnings
-from typing import Any, Dict, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, Optional, Union
 
 from ..utilities.logger import get_logger
-from .config_models import KumihanConfig, ParallelConfig, LoggingConfig, ErrorConfig, RenderingConfig
+from .config_models import (
+    ErrorConfig,
+    KumihanConfig,
+    LoggingConfig,
+    ParallelConfig,
+    RenderingConfig,
+)
 from .unified_config_manager import get_unified_config_manager
 
 
@@ -34,7 +40,7 @@ class ParallelProcessingConfigAdapter:
             "ParallelProcessingConfigは統一設定システムに統合されました。"
             "新しいコードではUnifiedConfigManager.get_parallel_config()を使用してください。",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
     @property
@@ -94,8 +100,7 @@ class ParallelProcessingConfigAdapter:
         Returns:
             bool: 並列処理使用可否
         """
-        return (line_count >= self.threshold_lines or
-                file_size >= self.threshold_size)
+        return line_count >= self.threshold_lines or file_size >= self.threshold_size
 
     def calculate_chunk_count(self, line_count: int) -> int:
         """チャンク数計算 (旧API互換)
@@ -107,6 +112,7 @@ class ParallelProcessingConfigAdapter:
             int: 推奨チャンク数
         """
         import multiprocessing
+
         cpu_count = multiprocessing.cpu_count()
 
         # 基本チャンク数
@@ -128,8 +134,7 @@ class ParallelProcessingConfigAdapter:
             int: チャンクサイズ
         """
         calculated_size = max(1, line_count // chunk_count)
-        return max(self.min_chunk_size,
-                  min(self.max_chunk_size, calculated_size))
+        return max(self.min_chunk_size, min(self.max_chunk_size, calculated_size))
 
     def to_dict(self) -> Dict[str, Any]:
         """設定を辞書形式で返す (旧API互換)"""
@@ -157,12 +162,14 @@ class ErrorConfigManagerAdapter:
             "ErrorConfigManagerは統一設定システムに統合されました。"
             "新しいコードではUnifiedConfigManager.get_error_config()を使用してください。",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
         # 指定されたconfig_fileは無視（統一設定で管理）
         if config_file:
-            self.logger.info(f"設定ファイル'{config_file}'は統一設定システムで管理されます")
+            self.logger.info(
+                f"設定ファイル'{config_file}'は統一設定システムで管理されます"
+            )
 
     @property
     def config(self) -> ErrorConfig:
@@ -287,7 +294,7 @@ class BaseConfigAdapter:
             "BaseConfigは統一設定システムに統合されました。"
             "新しいコードではUnifiedConfigManager.get_rendering_config()を使用してください。",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
     @property
@@ -358,7 +365,7 @@ class BaseConfigAdapter:
             f"background-color: {self.background_color};",
             f"color: {self.text_color};",
             f"line-height: {self.line_height};",
-            f"font-family: {self.font_family};"
+            f"font-family: {self.font_family};",
         ]
 
         # カスタムCSSの追加
@@ -395,7 +402,10 @@ class BaseConfigAdapter:
 
 # 互換性ヘルパー関数群
 
-def create_parallel_processing_config(*args, **kwargs) -> ParallelProcessingConfigAdapter:
+
+def create_parallel_processing_config(
+    *args, **kwargs
+) -> ParallelProcessingConfigAdapter:
     """ParallelProcessingConfig作成ヘルパー (旧API互換)
 
     Returns:
@@ -404,7 +414,9 @@ def create_parallel_processing_config(*args, **kwargs) -> ParallelProcessingConf
     return ParallelProcessingConfigAdapter()
 
 
-def create_error_config_manager(config_file: Optional[Union[str, Path]] = None) -> ErrorConfigManagerAdapter:
+def create_error_config_manager(
+    config_file: Optional[Union[str, Path]] = None,
+) -> ErrorConfigManagerAdapter:
     """ErrorConfigManager作成ヘルパー (旧API互換)
 
     Args:
@@ -426,6 +438,7 @@ def create_base_config() -> BaseConfigAdapter:
 
 
 # 移行支援関数
+
 
 def migrate_config_usage(old_config_type: str) -> str:
     """設定クラス移行ガイダンス
@@ -463,7 +476,7 @@ def migrate_config_usage(old_config_type: str) -> str:
             "from kumihan_formatter.core.unified_config import get_unified_config_manager\n"
             "manager = get_unified_config_manager()\n"
             "width = manager.get_rendering_config().max_width"
-        )
+        ),
     }
 
     return migration_guides.get(old_config_type, "該当する移行ガイドが見つかりません")

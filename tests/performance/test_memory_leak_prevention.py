@@ -5,19 +5,20 @@ Issue #694対応 - 長時間処理・反復処理でのメモリ安定性確認
 """
 
 import gc
+import sys
+import threading
 import time
 import tracemalloc
 from pathlib import Path
-import sys
+
 import psutil
-import threading
 
 # プロジェクトのパスを追加
 sys.path.insert(0, str(Path(__file__).parent))
 
-from kumihan_formatter.parser import Parser, parse_with_error_config
-from kumihan_formatter.core.utilities.performance_metrics import PerformanceMonitor
 from kumihan_formatter.core.utilities.logger import get_logger
+from kumihan_formatter.core.utilities.performance_metrics import PerformanceMonitor
+from kumihan_formatter.parser import Parser, parse_with_error_config
 
 
 class MemoryLeakDetector:

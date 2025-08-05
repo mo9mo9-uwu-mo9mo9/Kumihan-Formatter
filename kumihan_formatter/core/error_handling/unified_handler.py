@@ -4,13 +4,12 @@ Issue #770対応: 分散したエラー処理を統一し、
 一貫性のあるエラーハンドリングとログ出力を提供
 """
 
-import traceback
-from typing import Any, Dict, Optional, Union
 from dataclasses import dataclass
 from logging import Logger
+from typing import Any, Dict, Optional
 
 from ..common.error_base import KumihanError
-from ..common.error_types import ErrorSeverity, ErrorCategory, ErrorContext
+from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
 from ..error_analysis.error_config import ErrorConfigManager
 from ..utilities.logger import get_logger
 
@@ -18,6 +17,7 @@ from ..utilities.logger import get_logger
 @dataclass
 class ErrorHandleResult:
     """エラー処理結果"""
+
     should_continue: bool
     user_message: str
     logged: bool
@@ -40,7 +40,7 @@ class UnifiedErrorHandler:
         self,
         config_manager: Optional[ErrorConfigManager] = None,
         logger: Optional[Logger] = None,
-        component_name: str = "unknown"
+        component_name: str = "unknown",
     ):
         """初期化
 
@@ -60,7 +60,7 @@ class UnifiedErrorHandler:
         self,
         error: Exception,
         context: Optional[Dict[str, Any]] = None,
-        operation: str = "unknown_operation"
+        operation: str = "unknown_operation",
     ) -> ErrorHandleResult:
         """統一エラー処理メイン処理
 
@@ -101,14 +101,11 @@ class UnifiedErrorHandler:
             logged=True,
             graceful_handled=graceful_handled,
             original_error=error,
-            kumihan_error=kumihan_error
+            kumihan_error=kumihan_error,
         )
 
     def _convert_to_kumihan_error(
-        self,
-        error: Exception,
-        context: Optional[Dict[str, Any]],
-        operation: str
+        self, error: Exception, context: Optional[Dict[str, Any]], operation: str
     ) -> KumihanError:
         """例外をKumihanErrorに変換
 
@@ -146,7 +143,7 @@ class UnifiedErrorHandler:
             category=category,
             context=error_context,
             suggestions=suggestions,
-            original_error=error
+            original_error=error,
         )
 
     def _classify_error(self, error: Exception) -> tuple[ErrorSeverity, ErrorCategory]:
@@ -158,7 +155,6 @@ class UnifiedErrorHandler:
         Returns:
             tuple: (severity, category)
         """
-        error_type = type(error).__name__
         error_message = str(error).lower()
 
         # ファイルシステムエラー
@@ -185,9 +181,7 @@ class UnifiedErrorHandler:
         return ErrorSeverity.ERROR, ErrorCategory.UNKNOWN
 
     def _generate_suggestions(
-        self,
-        error: Exception,
-        category: ErrorCategory
+        self, error: Exception, category: ErrorCategory
     ) -> list[str]:
         """エラーカテゴリに基づく提案生成
 
@@ -203,56 +197,68 @@ class UnifiedErrorHandler:
 
         if category == ErrorCategory.FILE_SYSTEM:
             if "not found" in error_message:
-                suggestions.extend([
-                    "ファイルパスが正しいことを確認してください",
-                    "ファイルが存在し、読み取り可能であることを確認してください",
-                    "相対パスではなく絶対パスを試してみてください"
-                ])
+                suggestions.extend(
+                    [
+                        "ファイルパスが正しいことを確認してください",
+                        "ファイルが存在し、読み取り可能であることを確認してください",
+                        "相対パスではなく絶対パスを試してみてください",
+                    ]
+                )
             elif "permission" in error_message:
-                suggestions.extend([
-                    "ファイルの読み取り権限を確認してください",
-                    "管理者権限で実行してみてください",
-                    "ファイルが他のプロセスで使用されていないか確認してください"
-                ])
+                suggestions.extend(
+                    [
+                        "ファイルの読み取り権限を確認してください",
+                        "管理者権限で実行してみてください",
+                        "ファイルが他のプロセスで使用されていないか確認してください",
+                    ]
+                )
             else:
                 # 一般的なファイルシステムエラー
-                suggestions.extend([
-                    "ディスク容量を確認してください",
-                    "ファイルパスに無効な文字が含まれていないか確認してください"
-                ])
+                suggestions.extend(
+                    [
+                        "ディスク容量を確認してください",
+                        "ファイルパスに無効な文字が含まれていないか確認してください",
+                    ]
+                )
 
         elif category == ErrorCategory.SYNTAX:
-            suggestions.extend([
-                "記法の構文を確認してください",
-                "マーカーが正しく閉じられているか確認してください",
-                "特殊文字が正しくエスケープされているか確認してください"
-            ])
+            suggestions.extend(
+                [
+                    "記法の構文を確認してください",
+                    "マーカーが正しく閉じられているか確認してください",
+                    "特殊文字が正しくエスケープされているか確認してください",
+                ]
+            )
 
         elif category == ErrorCategory.VALIDATION:
-            suggestions.extend([
-                "入力値の形式を確認してください",
-                "設定ファイルの内容を確認してください"
-            ])
+            suggestions.extend(
+                [
+                    "入力値の形式を確認してください",
+                    "設定ファイルの内容を確認してください",
+                ]
+            )
 
         elif category == ErrorCategory.SYSTEM:
-            suggestions.extend([
-                "システムリソースを確認してください",
-                "大きなファイルの場合、分割処理を検討してください"
-            ])
+            suggestions.extend(
+                [
+                    "システムリソースを確認してください",
+                    "大きなファイルの場合、分割処理を検討してください",
+                ]
+            )
 
         # 一般的な提案を追加
         if not suggestions:
-            suggestions.extend([
-                "エラーの詳細については、ログファイルを確認してください",
-                "問題が解決しない場合は、開発者にお問い合わせください"
-            ])
+            suggestions.extend(
+                [
+                    "エラーの詳細については、ログファイルを確認してください",
+                    "問題が解決しない場合は、開発者にお問い合わせください",
+                ]
+            )
 
         return suggestions
 
     def _should_continue_processing(
-        self,
-        error: KumihanError,
-        occurrence_count: int
+        self, error: KumihanError, occurrence_count: int
     ) -> bool:
         """処理を継続すべきかを判定
 
@@ -290,9 +296,7 @@ class UnifiedErrorHandler:
             log_func = self.logger.info
 
         # 統一フォーマットメッセージ構築
-        message_parts = [
-            f"[{self.component_name.upper()}] {error.message}"
-        ]
+        message_parts = [f"[{self.component_name.upper()}] {error.message}"]
 
         if error.context and str(error.context) != "No context":
             message_parts.append(f"Context: {error.context}")
@@ -366,6 +370,7 @@ class UnifiedErrorHandler:
 # 便利関数: グローバルハンドラー取得
 _global_handler: Optional[UnifiedErrorHandler] = None
 
+
 def get_global_error_handler() -> UnifiedErrorHandler:
     """グローバル統一エラーハンドラー取得
 
@@ -382,7 +387,7 @@ def handle_error_unified(
     error: Exception,
     context: Optional[Dict[str, Any]] = None,
     operation: str = "unknown_operation",
-    component_name: str = "unknown"
+    component_name: str = "unknown",
 ) -> ErrorHandleResult:
     """便利関数: 統一エラー処理
 

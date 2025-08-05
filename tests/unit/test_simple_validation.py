@@ -4,8 +4,9 @@ Simplified test cases to verify test infrastructure works.
 Basic functionality tests to ensure the test suite operates correctly.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
@@ -111,7 +112,9 @@ class TestBasicInfrastructure:
 
     def test_imports_work(self):
         """Test that basic imports work."""
-        from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+        from kumihan_formatter.core.keyword_parsing.definitions import (
+            KeywordDefinitions,
+        )
         from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 
         # Test basic instantiation
@@ -127,7 +130,9 @@ class TestBasicInfrastructure:
 
     def test_basic_method_availability(self):
         """Test that basic methods are available on key classes."""
-        from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+        from kumihan_formatter.core.keyword_parsing.definitions import (
+            KeywordDefinitions,
+        )
         from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
 
         definitions = KeywordDefinitions()

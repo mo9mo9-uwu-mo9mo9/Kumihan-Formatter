@@ -7,16 +7,24 @@ Issue #771対応: 分散した設定管理を統合し、
 """
 
 import os
-import time
 import threading
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable
+import time
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..utilities.logger import get_logger
 from ..error_handling import handle_error_unified
-from .config_models import KumihanConfig, ParallelConfig, LoggingConfig, ErrorConfig, RenderingConfig, UIConfig, ConfigFormat
+from ..utilities.logger import get_logger
 from .config_loader import ConfigLoader, ConfigLoadError
+from .config_models import (
+    ConfigFormat,
+    ErrorConfig,
+    KumihanConfig,
+    LoggingConfig,
+    ParallelConfig,
+    RenderingConfig,
+    UIConfig,
+)
 from .config_validator import ConfigValidator, ValidationResult
 
 
@@ -30,10 +38,12 @@ class UnifiedConfigManager:
     - 既存設定クラスとの互換性
     """
 
-    def __init__(self,
-                 config_file: Optional[Union[str, Path]] = None,
-                 auto_reload: bool = False,
-                 validation_enabled: bool = True):
+    def __init__(
+        self,
+        config_file: Optional[Union[str, Path]] = None,
+        auto_reload: bool = False,
+        validation_enabled: bool = True,
+    ):
         """統一設定マネージャー初期化
 
         Args:
@@ -77,7 +87,9 @@ class UnifiedConfigManager:
             if config_file:
                 self._config_file_path = Path(config_file)
                 if not self._config_file_path.exists():
-                    self.logger.warning(f"指定された設定ファイルが見つかりません: {config_file}")
+                    self.logger.warning(
+                        f"指定された設定ファイルが見つかりません: {config_file}"
+                    )
                     self._config_file_path = None
             else:
                 self._config_file_path = self.loader.find_config_file()
@@ -112,7 +124,7 @@ class UnifiedConfigManager:
                     e,
                     context={"config_file": str(config_file) if config_file else None},
                     operation="config_initialization",
-                    component_name="UnifiedConfigManager"
+                    component_name="UnifiedConfigManager",
                 )
             except Exception:
                 pass  # エラーハンドリング自体のエラーは無視
@@ -159,7 +171,9 @@ class UnifiedConfigManager:
         """
         if self.validator:
             # 設定検証実行
-            validation_result = self.validator.validate_config(config_data, auto_fix=True)
+            validation_result = self.validator.validate_config(
+                config_data, auto_fix=True
+            )
 
             if validation_result.errors:
                 self.logger.error("設定検証エラー:")
@@ -247,18 +261,26 @@ class UnifiedConfigManager:
             try:
                 handle_error_unified(
                     e,
-                    context={"config_file": str(self._config_file_path) if self._config_file_path else None},
+                    context={
+                        "config_file": (
+                            str(self._config_file_path)
+                            if self._config_file_path
+                            else None
+                        )
+                    },
                     operation="config_reload",
-                    component_name="UnifiedConfigManager"
+                    component_name="UnifiedConfigManager",
                 )
             except Exception:
                 pass
 
             return False
 
-    def save_config(self,
-                   config_path: Optional[Union[str, Path]] = None,
-                   format: Optional[ConfigFormat] = None) -> bool:
+    def save_config(
+        self,
+        config_path: Optional[Union[str, Path]] = None,
+        format: Optional[ConfigFormat] = None,
+    ) -> bool:
         """設定をファイルに保存
 
         Args:
@@ -277,7 +299,9 @@ class UnifiedConfigManager:
 
             if save_path is None:
                 save_path = Path.home() / ".kumihan" / "kumihan.yaml"
-                self.logger.info(f"保存先が指定されていないため、デフォルトパスを使用: {save_path}")
+                self.logger.info(
+                    f"保存先が指定されていないため、デフォルトパスを使用: {save_path}"
+                )
 
             self.loader.save_config(self._config, save_path, format)
 
@@ -322,9 +346,7 @@ class UnifiedConfigManager:
 
         self._shutdown_event.clear()
         self._reload_thread = threading.Thread(
-            target=self._auto_reload_worker,
-            name="ConfigAutoReload",
-            daemon=True
+            target=self._auto_reload_worker, name="ConfigAutoReload", daemon=True
         )
         self._reload_thread.start()
 
@@ -413,7 +435,7 @@ _config_lock = threading.Lock()
 def get_unified_config_manager(
     config_file: Optional[Union[str, Path]] = None,
     auto_reload: bool = False,
-    force_reload: bool = False
+    force_reload: bool = False,
 ) -> UnifiedConfigManager:
     """グローバル統一設定マネージャーを取得
 
@@ -430,8 +452,7 @@ def get_unified_config_manager(
     with _config_lock:
         if _global_config_manager is None or force_reload:
             _global_config_manager = UnifiedConfigManager(
-                config_file=config_file,
-                auto_reload=auto_reload
+                config_file=config_file, auto_reload=auto_reload
             )
 
         return _global_config_manager

@@ -3,12 +3,19 @@ Test Phase2 advanced error handling features
 Issue #700対応 - 高度なエラー表示機能のテスト
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
+
 from kumihan_formatter.core.common.error_base import GracefulSyntaxError
-from kumihan_formatter.core.error_analysis.correction_engine import CorrectionEngine, CorrectionRule
-from kumihan_formatter.core.error_analysis.statistics_generator import StatisticsGenerator, ErrorStatistics
+from kumihan_formatter.core.error_analysis.correction_engine import (
+    CorrectionEngine,
+    CorrectionRule,
+)
+from kumihan_formatter.core.error_analysis.statistics_generator import (
+    ErrorStatistics,
+    StatisticsGenerator,
+)
 
 
 class TestGracefulSyntaxErrorPhase2:
@@ -351,8 +358,8 @@ class TestPhase2Integration:
 
     def test_html_renderer_integration(self):
         """HTMLレンダラーとの統合テスト"""
-        from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
         from kumihan_formatter.core.ast_nodes import Node
+        from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
 
         renderer = HTMLRenderer()
 
@@ -412,7 +419,9 @@ def sample_errors():
 def test_complete_phase2_workflow(sample_errors):
     """Phase2の完全なワークフローテスト"""
     from kumihan_formatter.core.error_analysis.correction_engine import CorrectionEngine
-    from kumihan_formatter.core.error_analysis.statistics_generator import StatisticsGenerator
+    from kumihan_formatter.core.error_analysis.statistics_generator import (
+        StatisticsGenerator,
+    )
 
     # 1. エラーを修正提案エンジンで拡張
     engine = CorrectionEngine()

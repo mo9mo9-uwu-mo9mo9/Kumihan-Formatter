@@ -4,10 +4,11 @@ Basic End-to-End test cases for Kumihan-Formatter.
 Tests cover complete workflows from input to output.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+
+import pytest
 from click.testing import CliRunner
 
 from kumihan_formatter.cli import cli

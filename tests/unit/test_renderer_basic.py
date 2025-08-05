@@ -4,10 +4,12 @@ Test cases for renderer basic functionality.
 Tests cover HTML and Markdown rendering capabilities.
 """
 
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
 from kumihan_formatter.core.ast_nodes.node import Node
+
 # Note: HTMLRenderer import may need adjustment based on actual module structure
 
 

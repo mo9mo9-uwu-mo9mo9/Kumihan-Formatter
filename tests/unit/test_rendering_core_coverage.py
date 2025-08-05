@@ -4,9 +4,10 @@ Rendering core coverage tests.
 Lightweight tests for existing rendering modules to improve coverage.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import only existing modules
 from kumihan_formatter.core.ast_nodes.node import Node
@@ -468,9 +469,9 @@ class TestRenderingUtilities:
         """Test content processing utilities."""
         try:
             from kumihan_formatter.core.rendering.content_processor import (
-                process_content,
                 clean_content,
                 normalize_whitespace,
+                process_content,
             )
 
             test_content = "  Test content  \n\n"

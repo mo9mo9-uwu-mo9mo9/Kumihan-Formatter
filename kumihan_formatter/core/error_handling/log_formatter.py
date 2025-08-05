@@ -5,9 +5,8 @@ Issue #770対応: ログフォーマット・レベルの統一化
 """
 
 import logging
-from typing import Dict, Any, Optional
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Dict, Optional
 
 from ..common.error_base import KumihanError
 from ..common.error_types import ErrorSeverity
@@ -16,6 +15,7 @@ from ..common.error_types import ErrorSeverity
 @dataclass
 class ErrorHandleResult:
     """エラー処理結果（unified_handlerと共通利用）"""
+
     should_continue: bool
     user_message: str
     logged: bool
@@ -38,7 +38,7 @@ class UnifiedLogFormatter(logging.Formatter):
         self,
         fmt: Optional[str] = None,
         datefmt: Optional[str] = None,
-        component_name: str = "KUMIHAN"
+        component_name: str = "KUMIHAN",
     ):
         """初期化
 
@@ -67,20 +67,18 @@ class UnifiedLogFormatter(logging.Formatter):
             str: フォーマット済みログメッセージ
         """
         # コンポーネント名を設定
-        if not hasattr(record, 'component'):
+        if not hasattr(record, "component"):
             record.component = self.component_name
 
         # KumihanError の場合は専用フォーマット
-        if hasattr(record, 'kumihan_error'):
+        if hasattr(record, "kumihan_error"):
             return self._format_kumihan_error(record, record.kumihan_error)
 
         # 標準フォーマット
         return super().format(record)
 
     def _format_kumihan_error(
-        self,
-        record: logging.LogRecord,
-        error: KumihanError
+        self, record: logging.LogRecord, error: KumihanError
     ) -> str:
         """KumihanError専用フォーマット
 
@@ -95,7 +93,7 @@ class UnifiedLogFormatter(logging.Formatter):
         parts = [
             f"[{record.levelname}]",
             f"[{getattr(record, 'component', self.component_name)}]",
-            error.message
+            error.message,
         ]
 
         # コンテキスト情報
@@ -131,10 +129,7 @@ class ComponentLoggerFactory:
 
     @classmethod
     def get_logger(
-        cls,
-        name: str,
-        component_name: Optional[str] = None,
-        level: int = logging.INFO
+        cls, name: str, component_name: Optional[str] = None, level: int = logging.INFO
     ) -> logging.Logger:
         """コンポーネント別ロガー取得
 
@@ -181,9 +176,9 @@ class ComponentLoggerFactory:
             str: コンポーネント名
         """
         # kumihan_formatter.core.parser.xxx → PARSER
-        parts = name.split('.')
+        parts = name.split(".")
 
-        if len(parts) >= 3 and parts[1] == 'core':
+        if len(parts) >= 3 and parts[1] == "core":
             component = parts[2]
         elif len(parts) >= 2:
             component = parts[1]
@@ -192,17 +187,17 @@ class ComponentLoggerFactory:
 
         # 特殊ケース対応
         component_mapping = {
-            'parsing': 'PARSER',
-            'rendering': 'RENDERER',
-            'parser': 'PARSER',
-            'renderer': 'RENDERER',
-            'keyword_parsing': 'PARSER',
-            'block_parser': 'PARSER',
-            'utilities': 'UTILS',
-            'error_handling': 'ERROR',
-            'commands': 'CLI',
-            'convert': 'CONVERT',
-            'lint': 'LINT'
+            "parsing": "PARSER",
+            "rendering": "RENDERER",
+            "parser": "PARSER",
+            "renderer": "RENDERER",
+            "keyword_parsing": "PARSER",
+            "block_parser": "PARSER",
+            "utilities": "UTILS",
+            "error_handling": "ERROR",
+            "commands": "CLI",
+            "convert": "CONVERT",
+            "lint": "LINT",
         }
 
         return component_mapping.get(component.lower(), component.upper())
@@ -235,7 +230,7 @@ class ErrorMessageBuilder:
         error: KumihanError,
         show_suggestions: bool = True,
         show_context: bool = True,
-        max_suggestions: int = 3
+        max_suggestions: int = 3,
     ) -> str:
         """ユーザー向けメッセージ構築
 
@@ -255,7 +250,7 @@ class ErrorMessageBuilder:
             ErrorSeverity.CRITICAL: "🔴",
             ErrorSeverity.ERROR: "❌",
             ErrorSeverity.WARNING: "⚠️",
-            ErrorSeverity.INFO: "ℹ️"
+            ErrorSeverity.INFO: "ℹ️",
         }.get(error.severity, "")
 
         parts.append(f"{severity_icon} {error.message}")
@@ -279,10 +274,7 @@ class ErrorMessageBuilder:
         return "\n".join(parts)
 
     @staticmethod
-    def build_console_message(
-        error: KumihanError,
-        colored: bool = True
-    ) -> str:
+    def build_console_message(error: KumihanError, colored: bool = True) -> str:
         """コンソール表示用メッセージ構築
 
         Args:
@@ -298,9 +290,9 @@ class ErrorMessageBuilder:
         # ANSIカラーコード
         colors = {
             ErrorSeverity.CRITICAL: "\033[91m",  # 赤
-            ErrorSeverity.ERROR: "\033[91m",     # 赤
-            ErrorSeverity.WARNING: "\033[93m",   # 黄
-            ErrorSeverity.INFO: "\033[94m"       # 青
+            ErrorSeverity.ERROR: "\033[91m",  # 赤
+            ErrorSeverity.WARNING: "\033[93m",  # 黄
+            ErrorSeverity.INFO: "\033[94m",  # 青
         }
         reset = "\033[0m"
 
@@ -324,8 +316,7 @@ class ErrorMessageBuilder:
 
 # 便利関数
 def get_component_logger(
-    name: str,
-    component_name: Optional[str] = None
+    name: str, component_name: Optional[str] = None
 ) -> logging.Logger:
     """コンポーネント用ロガー取得（便利関数）
 
@@ -340,9 +331,7 @@ def get_component_logger(
 
 
 def log_kumihan_error(
-    logger: logging.Logger,
-    error: KumihanError,
-    level: Optional[int] = None
+    logger: logging.Logger, error: KumihanError, level: Optional[int] = None
 ) -> None:
     """KumihanError専用ログ出力
 
@@ -356,9 +345,9 @@ def log_kumihan_error(
             ErrorSeverity.CRITICAL: logging.CRITICAL,
             ErrorSeverity.ERROR: logging.ERROR,
             ErrorSeverity.WARNING: logging.WARNING,
-            ErrorSeverity.INFO: logging.INFO
+            ErrorSeverity.INFO: logging.INFO,
         }
         level = level_mapping.get(error.severity, logging.ERROR)
 
     # KumihanError情報を追加してログ出力
-    logger.log(level, error.message, extra={'kumihan_error': error})
+    logger.log(level, error.message, extra={"kumihan_error": error})

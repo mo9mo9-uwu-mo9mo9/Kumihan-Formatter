@@ -4,11 +4,13 @@ Issue #700: Graceful Error Handling機能のテスト
 Phase 1: 基本的なエラー継続処理とHTML埋め込み機能のテスト
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from kumihan_formatter.core.common.error_base import GracefulSyntaxError
-from kumihan_formatter.parser import Parser
 from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
+from kumihan_formatter.parser import Parser
 
 
 class TestGracefulSyntaxError:

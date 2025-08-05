@@ -4,10 +4,11 @@ Renderer modules comprehensive test coverage.
 Tests rendering functionality to achieve 80% coverage goal.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import only existing modules
 from kumihan_formatter.core.ast_nodes.node import Node
