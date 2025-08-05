@@ -125,6 +125,7 @@ class ConfigLoader:
             # 統一エラーハンドリングで処理
             try:
                 # result = handle_error_unified(  # removed - unused variable (F841)
+                handle_error_unified(
                     e,
                     context={
                         "config_path": str(config_path),

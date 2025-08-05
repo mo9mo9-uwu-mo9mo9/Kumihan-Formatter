@@ -29,6 +29,7 @@ DEFAULT_BLOCK_KEYWORDS = {
     "コードブロック": {"tag": "pre", "class": "code-block"},
     "テスト": {"tag": "div", "class": "test"},
     "ルビ": {"tag": "ruby", "content_parser": "ruby"},
+    "脚注": {"tag": "span", "class": "footnote", "special_handler": "footnote"},
 }
 
 # キーワードネスト順序 (外側から内側へ)
@@ -49,6 +50,7 @@ NESTING_ORDER = [
     "em",  # イタリック
     "code",  # コード
     "ruby",  # ルビ
+    "span",  # 脚注
 ]
 
 

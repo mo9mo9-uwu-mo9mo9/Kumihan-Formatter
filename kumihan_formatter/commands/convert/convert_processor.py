@@ -143,48 +143,16 @@ class ConvertProcessor:
             )
             current_step += 1
 
-            # ステップ1.5: 脚注前処理（AST生成前に実行）
-            progress.update(current_step, "前処理", "脚注記法を前処理中...")
-            text = original_text  # パース用テキスト
-            footnotes_data = None
-
-            try:
-                from ...core.keyword_parsing.definitions import KeywordDefinitions
-                from ...core.keyword_parsing.marker_parser import MarkerParser
-                from ...core.rendering.html_formatter import FootnoteManager
-
-                # MarkerParserには最小限のKeywordDefinitionsを渡す
-                keyword_definitions = KeywordDefinitions()
-                marker_parser = MarkerParser(keyword_definitions)
-                footnote_manager = FootnoteManager()
-
-                self.logger.debug("Pre-processing footnotes before AST generation")
-                clean_text, footnotes = marker_parser.extract_footnotes_from_text(
-                    original_text
-                )
-
-                if footnotes:
-                    self.logger.info(
-                        f"Pre-processed {len(footnotes)} footnotes for clean AST generation"
-                    )
-                    # Register footnotes with manager
-                    processed_footnotes = footnote_manager.register_footnotes(footnotes)
-                    footnotes_data = {
-                        "footnotes": processed_footnotes,
-                        "clean_text": clean_text,
-                        "manager": footnote_manager,
-                        "original_text": original_text,
-                    }
-                    # パース用には脚注除去済みテキストを使用
-                    text = clean_text
-                else:
-                    self.logger.debug("No footnotes found in source text")
-
-            except Exception as e:
-                self.logger.warning(f"Failed to pre-process footnotes: {e}")
-                # 脚注処理に失敗した場合は元のテキストをそのまま使用
-                footnotes_data = None
-
+            # 【廃止】ステップ1.5: 脚注前処理
+            # 新記法 # 脚注 #内容## はKeywordDefinitionsで自動処理されるため事前処理不要
+            progress.update(
+                current_step, "前処理", "新記法対応済み - 脚注処理をスキップ..."
+            )
+            text = original_text  # パース用テキスト（脚注前処理は不要）
+            footnotes_data = None  # 新記法では不要
+            self.logger.debug(
+                "New block format footnotes will be handled by keyword system"
+            )
             current_step += 1
 
             # ステップ2: テストケース表示（オプション）

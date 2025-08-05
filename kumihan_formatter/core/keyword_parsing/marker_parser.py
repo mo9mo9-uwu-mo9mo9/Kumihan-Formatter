@@ -65,91 +65,41 @@ class MarkerParser:
 
     def parse_footnotes(self, text: str) -> list[dict[str, Any]]:
         """
-        テキストから脚注記法 ((content)) を抽出して解析
+        【廃止】旧記法脚注パーサー - 新記法ブロック形式に完全移行済み
+
+        この機能は # 脚注 #内容## の新記法ブロック形式に完全移行されました。
+        旧記法 # 脚注 #content## の処理は廃止され、KeywordDefinitionsの脚注キーワードで処理されます。
 
         Args:
-            text: 解析対象のテキスト
+            text: 解析対象のテキスト（使用されません）
 
         Returns:
-            list[dict]: 脚注情報のリスト。各辞書は以下のキーを含む:
-                - 'content': 脚注の内容
-                - 'start_pos': 脚注の開始位置
-                - 'end_pos': 脚注の終了位置
-                - 'number': 脚注番号（自動採番）
+            list[dict]: 空のリスト（旧機能は廃止）
         """
-        footnotes = []
-
-        # 入力検証
-        if not text or not isinstance(text, str):
-            self.logger.warning(
-                "Invalid input for footnote parsing: text must be a non-empty string"
-            )
-            return footnotes
-
-        try:
-            # ネストした括弧に対応した脚注パターン
-            footnote_pattern = re.compile(r"\(\(([^)]*?(?:\([^)]*\)[^)]*?)*)\)\)")
-            footnote_number = 1
-
-            for match in footnote_pattern.finditer(text):
-                try:
-                    content = match.group(1).strip()
-
-                    # セキュリティチェック: 危険なコンテンツの検出
-                    if self._contains_malicious_content(content):
-                        self.logger.warning(
-                            f"Potentially malicious content detected in footnote: {content[:50]}..."
-                        )
-                        content = self._sanitize_footnote_content(content)
-
-                    footnote_info = {
-                        "content": content,
-                        "start_pos": match.start(),
-                        "end_pos": match.end(),
-                        "number": footnote_number,
-                    }
-                    footnotes.append(footnote_info)
-                    footnote_number += 1
-
-                except Exception as e:
-                    self.logger.error(
-                        f"Error processing footnote at position {match.start()}: {e}"
-                    )
-                    continue
-
-        except re.error as e:
-            self.logger.error(f"Regex error in footnote parsing: {e}")
-        except Exception as e:
-            self.logger.error(f"Unexpected error in footnote parsing: {e}")
-
-        return footnotes
+        self.logger.warning(
+            "parse_footnotes() is deprecated. Use new block format '# 脚注 #内容##' instead."
+        )
+        return []
 
     def extract_footnotes_from_text(
         self, text: str
     ) -> tuple[str, list[dict[str, Any]]]:
         """
-        テキストから脚注を抽出し、本文からは脚注記法を除去
+        【廃止】旧記法脚注抽出機能 - 新記法ブロック形式に完全移行済み
+
+        この機能は # 脚注 #内容## の新記法ブロック形式に完全移行されました。
+        旧記法 # 脚注 #content## の処理は廃止され、KeywordDefinitionsの脚注キーワードで処理されます。
 
         Args:
             text: 処理対象のテキスト
 
         Returns:
-            tuple: (脚注記法を除去した本文, 脚注情報リスト)
+            tuple: (元のテキスト, 空のリスト)（旧機能は廃止）
         """
-        footnotes = self.parse_footnotes(text)
-
-        # 脚注記法を本文から除去（後ろから処理して位置がずれないようにする）
-        clean_text = text
-        for footnote in reversed(footnotes):
-            # 脚注記法をプレースホルダーに置換（HTMLエスケープを避けるため）
-            footnote_placeholder = f"[FOOTNOTE_REF_{footnote['number']}]"
-            clean_text = (
-                clean_text[: footnote["start_pos"]]
-                + footnote_placeholder
-                + clean_text[footnote["end_pos"] :]
-            )
-
-        return clean_text, footnotes
+        self.logger.warning(
+            "extract_footnotes_from_text() is deprecated. Use new block format '# 脚注 #内容##' instead."
+        )
+        return text, []
 
     def _contains_malicious_content(self, content: str) -> bool:
         """
@@ -274,17 +224,8 @@ class MarkerParser:
         if not text:
             return None
 
-        # 脚注記法の事前処理
-        footnotes = self.parse_footnotes(text)
-        if footnotes:
-            # 脚注が見つかった場合は、脚注情報をattributesに格納
-            return ParseResult(
-                markers=["footnote"],
-                content=text,
-                keywords=["footnote"],
-                attributes={"footnotes": footnotes},
-                errors=[],
-            )
+        # 【廃止】旧記法の脚注処理は削除済み
+        # 新記法 # 脚注 #内容## はKeywordDefinitionsで処理される
 
         # テキストから#記法#パターンを抽出
         import re

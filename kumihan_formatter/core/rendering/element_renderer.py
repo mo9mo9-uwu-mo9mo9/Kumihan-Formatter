@@ -324,6 +324,29 @@ class ElementRenderer:
         """汎用要素をレンダリング"""
         element_type = node.type
 
+        # 新記法のキーワードに special_handler が指定されている場合の処理
+        keyword = node.get_attribute("keyword")
+        if keyword:
+            # KeywordDefinitionsからspecial_handlerを確認
+            from kumihan_formatter.core.keyword_parsing.definitions import (
+                KeywordDefinitions,
+            )
+
+            keyword_defs = KeywordDefinitions()
+            keyword_info = keyword_defs.get_keyword_info(keyword)
+
+            if keyword_info and keyword_info.get("special_handler"):
+                # special_handlerが指定されている場合、HTMLFormatterで処理
+                content = (
+                    node.get_content()
+                    if hasattr(node, "get_content")
+                    else str(node.content)
+                )
+                attributes = node.attributes if hasattr(node, "attributes") else {}
+                return self.formatter.handle_special_element(
+                    keyword, content, attributes
+                )
+
         # 要素タイプ別の分岐
         element_handlers = {
             "paragraph": self.render_paragraph,

@@ -109,6 +109,16 @@ class HTMLRenderer:
 
         html_parts = []
 
+        # FootnoteManagerのインスタンスを初期化（脚注の全体管理用）
+        footnote_manager = None
+        if hasattr(self.formatter, "_footnote_manager"):
+            footnote_manager = self.formatter._footnote_manager
+        else:
+            from kumihan_formatter.core.rendering.html_formatter import FootnoteManager
+
+            footnote_manager = FootnoteManager()
+            self.formatter._footnote_manager = footnote_manager
+
         for node in nodes:
             html = self.render_node(node)
             if html:
@@ -142,6 +152,16 @@ class HTMLRenderer:
             except Exception as e:
                 self.logger.warning(f"Failed to process footnote placeholders: {e}")
                 # Continue with original HTML if footnote processing fails
+
+        # 新記法脚注システム：文書末尾に脚注セクションを追加
+        if footnote_manager and footnote_manager.get_all_footnotes():
+            footnotes_html = footnote_manager.safe_generate_footnote_html(
+                footnote_manager.get_all_footnotes()
+            )
+            if footnotes_html[0]:  # エラーがない場合
+                main_html += "\n" + footnotes_html[0]
+            elif footnotes_html[1]:  # エラーがある場合はログ出力
+                self.logger.warning(f"Footnote generation errors: {footnotes_html[1]}")
 
         return main_html
 
@@ -351,14 +371,16 @@ class HTMLRenderer:
             else ""
         )
 
-        return f"""<div class="kumihan-error-marker {error.html_class}" """ \
-               f"""data-line="{error.line_number}">
+        return (
+            f"""<div class="kumihan-error-marker {error.html_class}" """
+            f"""data-line="{error.line_number}">
     <div class="error-indicator">
         <span class="error-icon">{error_icon}</span>
         <span class="error-message">{safe_message}</span>
         {suggestion_html}
     </div>
 </div>"""
+        )
 
     def get_rendering_metrics(self) -> dict:
         """レンダリングメトリクスを取得"""
@@ -381,6 +403,29 @@ class HTMLRenderer:
         """
         if not isinstance(node, Node):
             return escape(str(node))  # type: ignore
+
+        # 新記法のキーワードに special_handler が指定されている場合の処理
+        keyword = node.get_attribute("keyword")
+        if keyword:
+            # KeywordDefinitionsからspecial_handlerを確認
+            from kumihan_formatter.core.keyword_parsing.definitions import (
+                KeywordDefinitions,
+            )
+
+            keyword_defs = KeywordDefinitions()
+            keyword_info = keyword_defs.get_keyword_info(keyword)
+
+            if keyword_info and keyword_info.get("special_handler"):
+                # special_handlerが指定されている場合、HTMLFormatterで処理
+                content = (
+                    node.get_content()
+                    if hasattr(node, "get_content")
+                    else str(node.content)
+                )
+                attributes = node.attributes if hasattr(node, "attributes") else {}
+                return self.formatter.handle_special_element(
+                    keyword, content, attributes
+                )
 
         # Route to specific rendering method
         renderer_method = getattr(self, f"_render_{node.type}", self._render_generic)

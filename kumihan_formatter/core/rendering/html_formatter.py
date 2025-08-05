@@ -54,6 +54,72 @@ class HTMLFormatter:
         # Color processing support
         self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "hsla", "named"]
 
+    def handle_special_element(
+        self, keyword: str, content: str, attributes: dict = None
+    ) -> str:
+        """
+        特殊キーワード（special_handler指定）の処理
+
+        Args:
+            keyword: キーワード名
+            content: コンテンツ
+            attributes: 属性辞書
+
+        Returns:
+            str: 処理済みHTML
+        """
+        if attributes is None:
+            attributes = {}
+
+        # footnoteキーワードの処理
+        if keyword == "脚注":
+            return self._handle_footnote(content, attributes)
+
+        # 未知のspecial_handlerキーワードの場合はデフォルト処理
+        return f'<span class="{self.generate_css_class(keyword)}">{content}</span>'
+
+    def _handle_footnote(self, content: str, attributes: dict) -> str:
+        """
+        脚注キーワードの処理
+
+        Args:
+            content: 脚注内容
+            attributes: 属性辞書
+
+        Returns:
+            str: 脚注プレースホルダーHTML
+        """
+        # FootnoteManagerの共有インスタンスを取得または作成
+        if not hasattr(self, "_footnote_manager"):
+            self._footnote_manager = FootnoteManager()
+
+        footnote_manager = self._footnote_manager
+
+        # 脚注データを作成
+        footnote_data = {
+            "content": content,
+            "number": None,  # FootnoteManagerが自動採番
+        }
+
+        # 脚注を登録
+        processed_footnotes = footnote_manager.register_footnotes([footnote_data])
+
+        if processed_footnotes:
+            footnote = processed_footnotes[0]
+            footnote_number = footnote.get("global_number", 1)
+
+            # 本文中に挿入する脚注リンクプレースホルダーを生成
+            placeholder = (
+                f'<sup><a href="#footnote-{footnote_number}" '
+                f'id="footnote-ref-{footnote_number}" class="footnote-ref">'
+                f"[{footnote_number}]</a></sup>"
+            )
+
+            return placeholder
+
+        # エラー時のフォールバック
+        return f'<span class="footnote-error">[脚注エラー: {content}]</span>'
+
     def format_html(self, html: str, preserve_inline: bool = True) -> str:
         """
         Format HTML with proper indentation
