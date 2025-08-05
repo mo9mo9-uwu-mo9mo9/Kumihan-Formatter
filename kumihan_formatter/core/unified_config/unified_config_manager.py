@@ -26,9 +26,9 @@ from .config_models import (
     RenderingConfig,
     UIConfig,
 )
-from .config_validator import (
+from .config_validator import (  # ValidationResult removed - unused import (F401)
     ConfigValidator,
-)  # ValidationResult removed - unused import (F401)
+)
 
 
 class UnifiedConfigManager:

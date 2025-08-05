@@ -336,74 +336,9 @@ class TestMarkerParser:
 
 @pytest.mark.unit
 @pytest.mark.footnote
-class TestFootnoteParser:
-    """脚注記法のパーサーテスト"""
-
-    def setup_method(self):
-        """テストセットアップ"""
-        from kumihan_formatter.core.keyword_parsing.definitions import (
-            KeywordDefinitions,
-        )
-        from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
-
-        definitions = KeywordDefinitions()
-        self.parser = MarkerParser(definitions)
-
-    def test_parse_single_footnote(self):
-        """単一脚注の解析テスト"""
-        text = "これは本文です((脚注の内容))。"
-        footnotes = self.parser.parse_footnotes(text)
-
-        assert len(footnotes) == 1
-        assert footnotes[0]['content'] == "脚注の内容"
-        assert footnotes[0]['number'] == 1
-        assert footnotes[0]['start_pos'] == 7
-        assert footnotes[0]['end_pos'] == 16
-
-    def test_parse_multiple_footnotes(self):
-        """複数脚注の解析テスト"""
-        text = "最初の脚注((注釈1))と二番目の脚注((注釈2))です。"
-        footnotes = self.parser.parse_footnotes(text)
-
-        assert len(footnotes) == 2
-        assert footnotes[0]['content'] == "注釈1"
-        assert footnotes[0]['number'] == 1
-        assert footnotes[1]['content'] == "注釈2"
-        assert footnotes[1]['number'] == 2
-
-    def test_extract_footnotes_from_text(self):
-        """脚注抽出とテキスト変換のテスト"""
-        text = "本文((脚注内容))続き"
-        clean_text, footnotes = self.parser.extract_footnotes_from_text(text)
-
-        assert len(footnotes) == 1
-        assert footnotes[0]['content'] == "脚注内容"
-        # プレースホルダーが適切に挿入されているかチェック（パーサー層の責務）
-        assert '[FOOTNOTE_REF_1]' in clean_text
-        assert clean_text == "本文[FOOTNOTE_REF_1]続き"
-
-    def test_empty_footnote_content(self):
-        """空の脚注内容のテスト"""
-        text = "本文(())です"
-        footnotes = self.parser.parse_footnotes(text)
-
-        assert len(footnotes) == 1
-        assert footnotes[0]['content'] == ""
-
-    def test_no_footnotes(self):
-        """脚注なしテキストのテスト"""
-        text = "普通の本文です"
-        footnotes = self.parser.parse_footnotes(text)
-
-        assert len(footnotes) == 0
-
-    def test_nested_parentheses(self):
-        """ネストした括弧のテスト"""
-        text = "本文((内容(括弧付き)注釈))です"
-        footnotes = self.parser.parse_footnotes(text)
-
-        assert len(footnotes) == 1
-        assert footnotes[0]['content'] == "内容(括弧付き)注釈"
+# 【廃止】TestFootnoteParser - 旧記法((内容))対応クラス
+# 新記法 # 脚注 #内容## はKeywordDefinitionsで処理されるため削除
+# 新記法のテストは test_footnote_keyword.py で実装済み
 
 
 @pytest.mark.unit
