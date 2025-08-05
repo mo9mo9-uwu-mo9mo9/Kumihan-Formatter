@@ -8,6 +8,7 @@ Issue #771対応: 分散した設定管理を統合し、
 
 # import os  # removed - unused import (F401)
 import threading
+
 # import time  # removed - unused import (F401)
 from datetime import datetime
 from pathlib import Path
@@ -25,7 +26,9 @@ from .config_models import (
     RenderingConfig,
     UIConfig,
 )
-from .config_validator import ConfigValidator  # ValidationResult removed - unused import (F401)
+from .config_validator import (  # ValidationResult removed - unused import (F401)
+    ConfigValidator,
+)
 
 
 class UnifiedConfigManager:

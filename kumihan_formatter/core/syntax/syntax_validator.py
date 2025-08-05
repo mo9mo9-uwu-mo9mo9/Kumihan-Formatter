@@ -372,7 +372,7 @@ class KumihanSyntaxValidator:
                 ErrorTypes.INVALID_SYNTAX,
                 "無効な括弧パターンが検出されました",
                 line,
-                "脚注記法は (()) を使用してください",
+                "脚注記法は # 脚注 #内容## を使用してください",
             )
 
     def _is_inline_notation(self, line: str) -> bool:
