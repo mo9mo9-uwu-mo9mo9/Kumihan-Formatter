@@ -75,3 +75,53 @@ process_integration:
   documentation_split:
     max_main_size_kb: 8
     external_docs_dir: "docs/claude_instructions"
+
+# 🚀 MCP効率化設定（Issue804 AI最適化統合）
+mcp_efficiency:
+  # AI最適化システム連携設定
+  ai_integration:
+    enabled: true
+    phase_b4_system: true        # Phase B.4システム使用
+    prediction_engine: true      # 予測エンジン有効
+    adaptive_control: true       # 適応制御有効
+
+  # serenaツール効率化
+  serena_optimization:
+    # 動的パラメータ調整
+    dynamic_parameters:
+      max_answer_chars:
+        base: 200000             # ベース値
+        ai_adjustment: true      # AI自動調整
+        context_scaling: true    # コンテキスト規模連動
+        min_value: 50000         # 最小値
+        max_value: 500000        # 最大値
+
+      context_lines_before:
+        base: 3
+        max_adjustment: 10       # 最大調整値
+
+      context_lines_after:
+        base: 3
+        max_adjustment: 10
+
+    # 最適化戦略
+    optimization_strategies:
+      token_reduction_mode: "aggressive"  # conservative, balanced, aggressive
+      cache_predictions: true             # 予測結果キャッシュ
+      batch_operations: true              # バッチ処理
+      smart_filtering: true               # スマートフィルタリング
+
+  # 効果測定・監視
+  monitoring:
+    enabled: true
+    real_time_metrics: true      # リアルタイム測定
+    performance_tracking: true   # 性能追跡
+    efficiency_alerts: true      # 効率性アラート
+    target_reduction: 68.8       # 目標削減率（%）
+
+  # 自動最適化機能
+  auto_optimization:
+    enabled: true
+    trigger_threshold: 60.0      # 最適化トリガー閾値（削減率%）
+    adjustment_frequency: "adaptive"  # fixed, adaptive, continuous
+    learning_enabled: true       # 学習機能有効

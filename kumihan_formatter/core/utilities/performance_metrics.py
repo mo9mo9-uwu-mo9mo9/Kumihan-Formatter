@@ -8,9 +8,10 @@ import os
 import sys
 import threading
 import time
-from collections import deque
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
+from statistics import mean, stdev
 from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional
 
 import psutil
@@ -1120,7 +1121,7 @@ class MemoryOptimizer:
             factory_func: オブジェクト生成関数
             max_size: プール最大サイズ
         """
-        from collections import deque
+        from collections import defaultdict, deque
 
         self._object_pools[pool_name] = {
             "pool": deque(maxlen=max_size),
@@ -1506,7 +1507,7 @@ class MemoryOptimizer:
         """
         import threading
         import time
-        from collections import deque
+        from collections import defaultdict, deque
 
         pool_info = {
             "pool": deque(maxlen=max_size),
@@ -2538,6 +2539,928 @@ class PerformanceContext:
         if hasattr(self.monitor, "update_progress"):
             # 簡易的な進捗更新
             pass
+
+
+# Phase B.1拡張: Token効率分析・パターン検出システム
+# ======================================================
+
+
+@dataclass
+class TokenEfficiencyMetrics:
+    """Token効率性メトリクス"""
+
+    tokens_per_second: float
+    tokens_per_mb_memory: float
+    efficiency_score: float  # 0-1 (1が最高効率)
+    trend_direction: str  # "improving", "stable", "degrading"
+    baseline_comparison: float  # ベースラインとの比較（%）
+    pattern_efficiency: Dict[str, float] = field(default_factory=dict)
+
+
+@dataclass
+class InefficiencyPattern:
+    """非効率パターン情報"""
+
+    pattern_type: str
+    description: str
+    severity: str  # "low", "medium", "high", "critical"
+    frequency: int
+    impact_score: float
+    detected_at: float
+    recommendation: str
+
+
+class TokenEfficiencyAnalyzer:
+    """
+    Token効率性分析システム
+
+    機能:
+    - リアルタイムToken効率監視
+    - 効率性スコアリング
+    - 効率性傾向分析
+    - ベースライン比較
+    """
+
+    def __init__(self, monitoring_window_size: int = 100):
+        self.logger = get_logger(__name__)
+        self.monitoring_window_size = monitoring_window_size
+
+        # 効率性データ履歴
+        self.efficiency_history: deque[TokenEfficiencyMetrics] = deque(
+            maxlen=monitoring_window_size
+        )
+        self.baseline_efficiency: Optional[float] = None
+
+        # パターン別効率性追跡
+        self.pattern_efficiencies: Dict[str, List[float]] = defaultdict(list)
+
+        # 効率性閾値設定
+        self.efficiency_thresholds = {
+            "excellent": 0.9,
+            "good": 0.7,
+            "acceptable": 0.5,
+            "poor": 0.3,
+        }
+
+        self.logger.info("TokenEfficiencyAnalyzer initialized")
+
+    def analyze_efficiency(
+        self,
+        tokens_used: int,
+        processing_time: float,
+        memory_mb: float,
+        operation_pattern: str = "default",
+    ) -> TokenEfficiencyMetrics:
+        """Token効率性を分析"""
+
+        # 基本効率性メトリクス計算
+        tokens_per_second = tokens_used / processing_time if processing_time > 0 else 0
+        tokens_per_mb_memory = tokens_used / memory_mb if memory_mb > 0 else 0
+
+        # 効率性スコア計算（0-1正規化）
+        efficiency_score = self._calculate_efficiency_score(
+            tokens_per_second, tokens_per_mb_memory, tokens_used
+        )
+
+        # 傾向分析
+        trend_direction = self._analyze_trend()
+
+        # ベースライン比較
+        baseline_comparison = self._compare_to_baseline(efficiency_score)
+
+        # パターン別効率性更新
+        self.pattern_efficiencies[operation_pattern].append(efficiency_score)
+        pattern_efficiency = {
+            pattern: mean(scores[-10:]) if scores else 0.0
+            for pattern, scores in self.pattern_efficiencies.items()
+        }
+
+        metrics = TokenEfficiencyMetrics(
+            tokens_per_second=tokens_per_second,
+            tokens_per_mb_memory=tokens_per_mb_memory,
+            efficiency_score=efficiency_score,
+            trend_direction=trend_direction,
+            baseline_comparison=baseline_comparison,
+            pattern_efficiency=pattern_efficiency,
+        )
+
+        # 履歴に追加
+        self.efficiency_history.append(metrics)
+
+        # ベースライン設定（初回）
+        if self.baseline_efficiency is None:
+            self.baseline_efficiency = efficiency_score
+
+        self.logger.debug(
+            f"Efficiency analysis: score={efficiency_score:.3f}, trend={trend_direction}"
+        )
+        return metrics
+
+    def _calculate_efficiency_score(
+        self, tokens_per_second: float, tokens_per_mb_memory: float, total_tokens: int
+    ) -> float:
+        """効率性スコアを計算"""
+        # 正規化ファクター（実際の運用データに基づいて調整）
+        time_efficiency = min(tokens_per_second / 1000, 1.0)  # 1000 tokens/sec が最大
+        memory_efficiency = min(
+            tokens_per_mb_memory / 10000, 1.0
+        )  # 10000 tokens/MB が最大
+
+        # Token使用量効率性（少ないほど良い）
+        token_efficiency = max(0, 1.0 - (total_tokens / 50000))  # 50000トークンを基準
+
+        # 重み付き平均
+        weights = [0.4, 0.4, 0.2]  # 時間効率性、メモリ効率性、Token効率性
+        score = (
+            time_efficiency * weights[0]
+            + memory_efficiency * weights[1]
+            + token_efficiency * weights[2]
+        )
+
+        return max(0.0, min(1.0, score))
+
+    def _analyze_trend(self) -> str:
+        """効率性傾向を分析"""
+        if len(self.efficiency_history) < 5:
+            return "stable"
+
+        recent_scores = [m.efficiency_score for m in list(self.efficiency_history)[-5:]]
+        older_scores = (
+            [m.efficiency_score for m in list(self.efficiency_history)[-10:-5]]
+            if len(self.efficiency_history) >= 10
+            else recent_scores
+        )
+
+        if not older_scores:
+            return "stable"
+
+        recent_avg = mean(recent_scores)
+        older_avg = mean(older_scores)
+
+        diff = recent_avg - older_avg
+
+        if diff > 0.05:
+            return "improving"
+        elif diff < -0.05:
+            return "degrading"
+        else:
+            return "stable"
+
+    def _compare_to_baseline(self, current_score: float) -> float:
+        """ベースラインとの比較"""
+        if self.baseline_efficiency is None:
+            return 0.0
+
+        return (
+            (current_score - self.baseline_efficiency) / self.baseline_efficiency
+        ) * 100
+
+    def get_efficiency_summary(self) -> Dict[str, Any]:
+        """効率性概要を取得"""
+        if not self.efficiency_history:
+            return {"status": "no_data"}
+
+        recent_metrics = list(self.efficiency_history)[-10:]
+
+        avg_efficiency = mean([m.efficiency_score for m in recent_metrics])
+        avg_tokens_per_sec = mean([m.tokens_per_second for m in recent_metrics])
+        avg_tokens_per_mb = mean([m.tokens_per_mb_memory for m in recent_metrics])
+
+        # 効率性評価
+        if avg_efficiency >= self.efficiency_thresholds["excellent"]:
+            efficiency_rating = "excellent"
+        elif avg_efficiency >= self.efficiency_thresholds["good"]:
+            efficiency_rating = "good"
+        elif avg_efficiency >= self.efficiency_thresholds["acceptable"]:
+            efficiency_rating = "acceptable"
+        else:
+            efficiency_rating = "poor"
+
+        return {
+            "avg_efficiency_score": avg_efficiency,
+            "efficiency_rating": efficiency_rating,
+            "avg_tokens_per_second": avg_tokens_per_sec,
+            "avg_tokens_per_mb_memory": avg_tokens_per_mb,
+            "trend_direction": (
+                recent_metrics[-1].trend_direction if recent_metrics else "stable"
+            ),
+            "baseline_comparison": (
+                recent_metrics[-1].baseline_comparison if recent_metrics else 0.0
+            ),
+            "pattern_efficiencies": (
+                recent_metrics[-1].pattern_efficiency if recent_metrics else {}
+            ),
+            "sample_count": len(self.efficiency_history),
+        }
+
+    def predict_efficiency(
+        self, operation_pattern: str, estimated_tokens: int
+    ) -> Dict[str, Any]:
+        """効率性予測システム - Phase B.2簡易版"""
+        if operation_pattern not in self.pattern_efficiencies:
+            return {
+                "predicted_efficiency": 0.5,  # デフォルト予測
+                "confidence": 0.0,
+                "recommendation": "insufficient_data",
+            }
+
+        pattern_scores = self.pattern_efficiencies[operation_pattern]
+        if len(pattern_scores) < 3:
+            return {
+                "predicted_efficiency": mean(pattern_scores) if pattern_scores else 0.5,
+                "confidence": 0.3,
+                "recommendation": "limited_data",
+            }
+
+        # 基本予測（移動平均ベース）
+        recent_scores = pattern_scores[-5:]
+        predicted_base = mean(recent_scores)
+
+        # トークン量による調整
+        token_adjustment = self._calculate_token_impact(estimated_tokens)
+        predicted_efficiency = max(0.0, min(1.0, predicted_base + token_adjustment))
+
+        # 信頼度計算（データ量とばらつきに基づく）
+        confidence = min(len(pattern_scores) / 10, 0.9)  # 最大90%
+        if len(recent_scores) > 1:
+            variance = sum(
+                (score - predicted_base) ** 2 for score in recent_scores
+            ) / len(recent_scores)
+            confidence *= max(0.2, 1.0 - variance)  # 分散が大きいと信頼度低下
+
+        # 推奨アクション
+        recommendation = self._generate_efficiency_recommendation(
+            predicted_efficiency, confidence, estimated_tokens
+        )
+
+        return {
+            "predicted_efficiency": predicted_efficiency,
+            "confidence": confidence,
+            "recommendation": recommendation,
+            "pattern_sample_size": len(pattern_scores),
+            "estimated_tokens": estimated_tokens,
+        }
+
+    def _calculate_token_impact(self, estimated_tokens: int) -> float:
+        """トークン量による効率性影響計算"""
+        # トークン量が多いほど効率性が低下する傾向を反映
+        if estimated_tokens < 5000:
+            return 0.05  # 小規模は効率性向上
+        elif estimated_tokens < 20000:
+            return 0.0  # 標準規模は影響なし
+        elif estimated_tokens < 50000:
+            return -0.05  # 大規模は効率性低下
+        else:
+            return -0.1  # 超大規模は大幅低下
+
+    def _generate_efficiency_recommendation(
+        self, predicted_efficiency: float, confidence: float, estimated_tokens: int
+    ) -> str:
+        """効率性に基づく推奨アクション生成"""
+        if confidence < 0.3:
+            return "gather_more_data"
+
+        if predicted_efficiency >= 0.8:
+            return "optimal_settings"
+        elif predicted_efficiency >= 0.6:
+            if estimated_tokens > 30000:
+                return "consider_max_answer_chars_reduction"
+            else:
+                return "maintain_current_settings"
+        elif predicted_efficiency >= 0.4:
+            return "enable_adaptive_optimization"
+        else:
+            return "apply_aggressive_optimization"
+
+    def learn_from_feedback(
+        self,
+        operation_pattern: str,
+        actual_efficiency: float,
+        predicted_efficiency: float,
+    ) -> Dict[str, Any]:
+        """フィードバック学習 - Phase B.2簡易版"""
+        prediction_error = abs(actual_efficiency - predicted_efficiency)
+
+        # 学習調整
+        learning_rate = 0.1  # 簡易固定学習率
+        adjustment_factor = learning_rate * prediction_error
+
+        # パターン効率性履歴の調整（直近データにより重みを置く）
+        if operation_pattern in self.pattern_efficiencies:
+            recent_scores = self.pattern_efficiencies[operation_pattern][-3:]
+            adjusted_scores = [
+                score
+                + (
+                    adjustment_factor
+                    if actual_efficiency > predicted_efficiency
+                    else -adjustment_factor
+                )
+                for score in recent_scores
+            ]
+
+            # 履歴更新
+            self.pattern_efficiencies[operation_pattern].extend(adjusted_scores)
+
+            # 履歴サイズ制限
+            if len(self.pattern_efficiencies[operation_pattern]) > 50:
+                self.pattern_efficiencies[operation_pattern] = (
+                    self.pattern_efficiencies[operation_pattern][-30:]
+                )
+
+        return {
+            "pattern": operation_pattern,
+            "prediction_error": prediction_error,
+            "adjustment_applied": adjustment_factor,
+            "learning_status": "updated" if prediction_error > 0.1 else "stable",
+        }
+
+    def get_pattern_insights(self) -> Dict[str, Any]:
+        """パターン分析洞察 - Phase B.2版"""
+        insights = {
+            "total_patterns": len(self.pattern_efficiencies),
+            "pattern_rankings": {},
+            "optimization_targets": [],
+            "efficiency_trends": {},
+        }
+
+        # パターン別効率性ランキング
+        pattern_scores = {}
+        for pattern, scores in self.pattern_efficiencies.items():
+            if len(scores) >= 3:
+                avg_score = mean(scores[-10:])  # 直近10回の平均
+                pattern_scores[pattern] = avg_score
+
+        # ランキング作成
+        sorted_patterns = sorted(
+            pattern_scores.items(), key=lambda x: x[1], reverse=True
+        )
+        insights["pattern_rankings"] = dict(sorted_patterns[:10])  # トップ10
+
+        # 最適化対象の特定
+        for pattern, score in pattern_scores.items():
+            if score < 0.6:  # 低効率パターン
+                insights["optimization_targets"].append(
+                    {
+                        "pattern": pattern,
+                        "current_efficiency": score,
+                        "sample_size": len(self.pattern_efficiencies[pattern]),
+                        "improvement_potential": 0.8 - score,  # 目標効率性0.8との差
+                    }
+                )
+
+        # 効率性トレンド分析
+        for pattern, scores in self.pattern_efficiencies.items():
+            if len(scores) >= 6:
+                recent_avg = mean(scores[-3:])
+                older_avg = mean(scores[-6:-3])
+                trend = (
+                    "improving"
+                    if recent_avg > older_avg + 0.05
+                    else "declining" if recent_avg < older_avg - 0.05 else "stable"
+                )
+
+                insights["efficiency_trends"][pattern] = {
+                    "trend": trend,
+                    "recent_score": recent_avg,
+                    "change": recent_avg - older_avg,
+                }
+
+        self.logger.info(
+            f"Pattern insights generated: {len(insights['pattern_rankings'])} patterns ranked"
+        )
+        return insights
+
+    def auto_suggest_optimizations(
+        self, current_config: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """自動最適化提案 - Phase B.2版"""
+        suggestions = []
+
+        # パターン洞察に基づく提案
+        insights = self.get_pattern_insights()
+
+        for target in insights["optimization_targets"]:
+            pattern = target["pattern"]
+            current_efficiency = target["current_efficiency"]
+
+            if "large" in pattern or "huge" in pattern:
+                suggestions.append(
+                    {
+                        "type": "max_answer_chars_adjustment",
+                        "pattern": pattern,
+                        "current_efficiency": current_efficiency,
+                        "suggested_value": 20000,  # 大規模パターン用削減
+                        "expected_improvement": 0.1,
+                        "confidence": 0.7,
+                    }
+                )
+
+            if current_efficiency < 0.4:  # 極低効率
+                suggestions.append(
+                    {
+                        "type": "aggressive_optimization",
+                        "pattern": pattern,
+                        "current_efficiency": current_efficiency,
+                        "suggested_actions": [
+                            "enable_progressive_output",
+                            "increase_monitoring_frequency",
+                            "activate_memory_optimization",
+                        ],
+                        "expected_improvement": 0.15,
+                        "confidence": 0.6,
+                    }
+                )
+
+        # トレンドベース提案
+        for pattern, trend_data in insights["efficiency_trends"].items():
+            if trend_data["trend"] == "declining" and trend_data["change"] < -0.1:
+                suggestions.append(
+                    {
+                        "type": "trend_correction",
+                        "pattern": pattern,
+                        "trend": "declining",
+                        "suggested_action": "pattern_specific_tuning",
+                        "expected_improvement": abs(trend_data["change"]),
+                        "confidence": 0.5,
+                    }
+                )
+
+        # 重複削除と優先度ソート
+        unique_suggestions = []
+        seen_patterns = set()
+
+        for suggestion in sorted(
+            suggestions, key=lambda x: x.get("expected_improvement", 0), reverse=True
+        ):
+            if suggestion["pattern"] not in seen_patterns:
+                unique_suggestions.append(suggestion)
+                seen_patterns.add(suggestion["pattern"])
+
+        self.logger.info(
+            f"Generated {len(unique_suggestions)} optimization suggestions"
+        )
+        return unique_suggestions[:5]  # トップ5提案
+
+
+class PatternDetector:
+    """
+    非効率パターン検出システム
+
+    機能:
+    - リアルタイム非効率パターン検出
+    - パターン頻度分析
+    - 影響度評価
+    - 改善提案生成
+    """
+
+    def __init__(self, detection_window: int = 50):
+        self.logger = get_logger(__name__)
+        self.detection_window = detection_window
+
+        # 検出パターン履歴
+        self.detected_patterns: deque[InefficiencyPattern] = deque(maxlen=1000)
+        self.pattern_frequencies: Dict[str, int] = defaultdict(int)
+
+        # 検出ルール定義
+        self.detection_rules = self._initialize_detection_rules()
+
+        self.logger.info("PatternDetector initialized")
+
+    def _initialize_detection_rules(self) -> Dict[str, Callable]:
+        """検出ルールを初期化"""
+        return {
+            "high_token_usage": self._detect_high_token_usage,
+            "memory_inefficiency": self._detect_memory_inefficiency,
+            "slow_processing": self._detect_slow_processing,
+            "repetitive_operations": self._detect_repetitive_operations,
+            "inefficient_context_switching": self._detect_context_switching,
+        }
+
+    def detect_patterns(
+        self, metrics: TokenEfficiencyMetrics, operation_context: Dict[str, Any]
+    ) -> List[InefficiencyPattern]:
+        """非効率パターンを検出"""
+        detected = []
+
+        for pattern_type, detection_func in self.detection_rules.items():
+            pattern = detection_func(metrics, operation_context)
+            if pattern:
+                detected.append(pattern)
+                self._record_pattern(pattern)
+
+        if detected:
+            self.logger.info(f"Detected {len(detected)} inefficiency patterns")
+
+        return detected
+
+    def _detect_high_token_usage(
+        self, metrics: TokenEfficiencyMetrics, context: Dict[str, Any]
+    ) -> Optional[InefficiencyPattern]:
+        """高Token使用量パターン検出"""
+        tokens_used = context.get("tokens_used", 0)
+        content_size = context.get("content_size", 1)
+
+        # トークン効率性閾値
+        tokens_per_char = tokens_used / content_size if content_size > 0 else 0
+
+        if tokens_per_char > 2.0:  # 1文字あたり2トークン以上
+            return InefficiencyPattern(
+                pattern_type="high_token_usage",
+                description=f"異常に高いToken使用量: {tokens_per_char:.2f} tokens/char",
+                severity="high",
+                frequency=self.pattern_frequencies["high_token_usage"] + 1,
+                impact_score=min((tokens_per_char - 2.0) * 0.5, 1.0),
+                detected_at=time.time(),
+                recommendation="max_answer_chars削減、コンテンツ分割、またはプロンプト最適化を検討",
+            )
+
+        return None
+
+    def _detect_memory_inefficiency(
+        self, metrics: TokenEfficiencyMetrics, context: Dict[str, Any]
+    ) -> Optional[InefficiencyPattern]:
+        """メモリ非効率パターン検出"""
+        if metrics.tokens_per_mb_memory < 1000:  # 1MBあたり1000トークン未満
+            return InefficiencyPattern(
+                pattern_type="memory_inefficiency",
+                description=f"メモリ効率性低下: {metrics.tokens_per_mb_memory:.0f} tokens/MB",
+                severity="medium",
+                frequency=self.pattern_frequencies["memory_inefficiency"] + 1,
+                impact_score=max(0, (1000 - metrics.tokens_per_mb_memory) / 1000),
+                detected_at=time.time(),
+                recommendation="メモリキャッシュ最適化、不要オブジェクト解放を実施",
+            )
+
+        return None
+
+    def _detect_slow_processing(
+        self, metrics: TokenEfficiencyMetrics, context: Dict[str, Any]
+    ) -> Optional[InefficiencyPattern]:
+        """処理速度低下パターン検出"""
+        if metrics.tokens_per_second < 100:  # 100 tokens/sec未満
+            return InefficiencyPattern(
+                pattern_type="slow_processing",
+                description=f"処理速度低下: {metrics.tokens_per_second:.1f} tokens/sec",
+                severity="medium",
+                frequency=self.pattern_frequencies["slow_processing"] + 1,
+                impact_score=max(0, (100 - metrics.tokens_per_second) / 100),
+                detected_at=time.time(),
+                recommendation="並列処理活用、アルゴリズム最適化を検討",
+            )
+
+        return None
+
+    def _detect_repetitive_operations(
+        self, metrics: TokenEfficiencyMetrics, context: Dict[str, Any]
+    ) -> Optional[InefficiencyPattern]:
+        """反復処理パターン検出"""
+        operation_type = context.get("operation_type", "")
+
+        # 同一パターンの連続実行チェック
+        recent_patterns = [p.pattern_type for p in list(self.detected_patterns)[-10:]]
+        if recent_patterns.count(operation_type) >= 5:
+            return InefficiencyPattern(
+                pattern_type="repetitive_operations",
+                description=f"反復操作検出: {operation_type} が連続{recent_patterns.count(operation_type)}回",
+                severity="low",
+                frequency=self.pattern_frequencies["repetitive_operations"] + 1,
+                impact_score=min(recent_patterns.count(operation_type) / 10, 0.5),
+                detected_at=time.time(),
+                recommendation="バッチ処理、キャッシュ活用で反復処理を最適化",
+            )
+
+        return None
+
+    def _detect_context_switching(
+        self, metrics: TokenEfficiencyMetrics, context: Dict[str, Any]
+    ) -> Optional[InefficiencyPattern]:
+        """コンテキスト切り替えパターン検出"""
+        # パターン効率性の変動をチェック
+        pattern_efficiencies = metrics.pattern_efficiency
+
+        if len(pattern_efficiencies) > 2:
+            efficiency_values = list(pattern_efficiencies.values())
+            if (
+                max(efficiency_values) - min(efficiency_values) > 0.3
+            ):  # 効率性の差が30%以上
+                return InefficiencyPattern(
+                    pattern_type="inefficient_context_switching",
+                    description="コンテキスト切り替えによる効率性低下",
+                    severity="medium",
+                    frequency=self.pattern_frequencies["inefficient_context_switching"]
+                    + 1,
+                    impact_score=(max(efficiency_values) - min(efficiency_values)),
+                    detected_at=time.time(),
+                    recommendation="コンテキスト固定、設定プリセット活用を検討",
+                )
+
+        return None
+
+    def _record_pattern(self, pattern: InefficiencyPattern):
+        """パターンを記録"""
+        self.detected_patterns.append(pattern)
+        self.pattern_frequencies[pattern.pattern_type] += 1
+
+    def get_pattern_summary(self) -> Dict[str, Any]:
+        """パターン検出概要を取得"""
+        recent_patterns = list(self.detected_patterns)[-20:]
+
+        # 重要度別分類
+        severity_counts = defaultdict(int)
+        for pattern in recent_patterns:
+            severity_counts[pattern.severity] += 1
+
+        # 頻出パターン特定
+        pattern_type_counts = defaultdict(int)
+        for pattern in recent_patterns:
+            pattern_type_counts[pattern.pattern_type] += 1
+
+        most_common_pattern = (
+            max(pattern_type_counts, key=pattern_type_counts.get)
+            if pattern_type_counts
+            else None
+        )
+
+        return {
+            "total_patterns_detected": len(self.detected_patterns),
+            "recent_patterns_count": len(recent_patterns),
+            "severity_distribution": dict(severity_counts),
+            "pattern_frequencies": dict(self.pattern_frequencies),
+            "most_common_pattern": most_common_pattern,
+            "most_common_frequency": (
+                pattern_type_counts.get(most_common_pattern, 0)
+                if most_common_pattern
+                else 0
+            ),
+        }
+
+    async def analyze_efficiency_patterns(self, context) -> float:
+        """効率性パターンの分析（Phase B.3統合用）"""
+        try:
+            # 基本効率性スコア計算
+            base_score = 0.8
+
+            # コンテキストに基づく調整
+            if hasattr(context, "task_type"):
+                if context.task_type in ["integration_test", "code_editing"]:
+                    base_score *= 1.1  # 統合テスト・コード編集で効率向上
+                elif context.task_type == "periodic_measurement":
+                    base_score *= 0.9  # 定期測定では控えめ
+
+            # 複雑性レベルに基づく調整
+            if hasattr(context, "complexity_level"):
+                if context.complexity_level == "high":
+                    base_score *= 0.8
+                elif context.complexity_level == "low":
+                    base_score *= 1.2
+
+            # 検出されたパターンに基づく調整
+            pattern_count = len(self.detected_patterns)
+            if pattern_count > 5:
+                base_score *= 0.7  # パターンが多いと効率低下
+            elif pattern_count < 2:
+                base_score *= 1.1  # パターンが少ないと効率向上
+
+            # 0-1の範囲に正規化
+            efficiency_score = min(1.0, max(0.0, base_score))
+
+            self.logger.info(f"効率性パターン分析完了: スコア{efficiency_score:.2f}")
+            return efficiency_score
+
+        except Exception as e:
+            self.logger.error(f"効率性パターン分析エラー: {e}")
+            return 0.5  # デフォルトスコア
+
+
+class AlertSystem:
+    """
+    Phase B.1 高度アラートシステム
+
+    機能:
+    - 効率性ベースアラート
+    - パターンベースアラート
+    - 予測的アラート
+    - カスタムアラートルール
+    """
+
+    def __init__(self):
+        self.logger = get_logger(__name__)
+
+        # アラート履歴
+        self.alert_history: deque[Dict[str, Any]] = deque(maxlen=500)
+
+        # アラートコールバック
+        self.alert_callbacks: List[Callable[[Dict[str, Any]], None]] = []
+
+        # アラート設定
+        self.alert_config = {
+            "efficiency_threshold": 0.3,
+            "pattern_frequency_threshold": 5,
+            "critical_impact_threshold": 0.8,
+            "prediction_confidence_threshold": 0.7,
+        }
+
+        self.logger.info("AlertSystem initialized")
+
+    def check_efficiency_alerts(
+        self, metrics: TokenEfficiencyMetrics
+    ) -> List[Dict[str, Any]]:
+        """効率性ベースアラートをチェック"""
+        alerts = []
+
+        # 低効率性アラート
+        if metrics.efficiency_score < self.alert_config["efficiency_threshold"]:
+            alert = {
+                "type": "low_efficiency",
+                "severity": "high",
+                "message": f"効率性が閾値を下回りました: {metrics.efficiency_score:.3f}",
+                "details": {
+                    "efficiency_score": metrics.efficiency_score,
+                    "threshold": self.alert_config["efficiency_threshold"],
+                    "trend": metrics.trend_direction,
+                },
+                "recommendations": [
+                    "設定パラメータの見直し",
+                    "処理アルゴリズムの最適化",
+                    "リソース使用量の削減",
+                ],
+                "timestamp": time.time(),
+            }
+            alerts.append(alert)
+
+        # 効率性悪化傾向アラート
+        if metrics.trend_direction == "degrading" and metrics.baseline_comparison < -20:
+            alert = {
+                "type": "efficiency_degradation",
+                "severity": "medium",
+                "message": f"効率性が継続的に悪化: ベースライン比{metrics.baseline_comparison:.1f}%",
+                "details": {
+                    "baseline_comparison": metrics.baseline_comparison,
+                    "trend": metrics.trend_direction,
+                },
+                "recommendations": [
+                    "システムリソース状況確認",
+                    "設定値の初期化検討",
+                    "最適化アルゴリズムの再実行",
+                ],
+                "timestamp": time.time(),
+            }
+            alerts.append(alert)
+
+        return alerts
+
+    def check_pattern_alerts(
+        self, patterns: List[InefficiencyPattern]
+    ) -> List[Dict[str, Any]]:
+        """パターンベースアラートをチェック"""
+        alerts = []
+
+        for pattern in patterns:
+            # 高頻度パターンアラート
+            if pattern.frequency >= self.alert_config["pattern_frequency_threshold"]:
+                alert = {
+                    "type": "high_frequency_pattern",
+                    "severity": pattern.severity,
+                    "message": f"非効率パターンが高頻度で発生: {pattern.pattern_type}",
+                    "details": {
+                        "pattern_type": pattern.pattern_type,
+                        "frequency": pattern.frequency,
+                        "description": pattern.description,
+                        "impact_score": pattern.impact_score,
+                    },
+                    "recommendations": [pattern.recommendation],
+                    "timestamp": time.time(),
+                }
+                alerts.append(alert)
+
+            # 高影響度パターンアラート
+            if pattern.impact_score >= self.alert_config["critical_impact_threshold"]:
+                alert = {
+                    "type": "high_impact_pattern",
+                    "severity": "critical",
+                    "message": f"高影響度の非効率パターンを検出: {pattern.pattern_type}",
+                    "details": {
+                        "pattern_type": pattern.pattern_type,
+                        "impact_score": pattern.impact_score,
+                        "description": pattern.description,
+                    },
+                    "recommendations": [pattern.recommendation, "即座の対応が必要です"],
+                    "timestamp": time.time(),
+                }
+                alerts.append(alert)
+
+        return alerts
+
+    def generate_predictive_alert(
+        self,
+        efficiency_history: List[TokenEfficiencyMetrics],
+        pattern_history: List[InefficiencyPattern],
+    ) -> Optional[Dict[str, Any]]:
+        """予測的アラートを生成"""
+        if len(efficiency_history) < 10:
+            return None
+
+        # 効率性トレンド予測
+        recent_scores = [m.efficiency_score for m in efficiency_history[-10:]]
+        trend_slope = self._calculate_trend_slope(recent_scores)
+
+        # 将来の効率性予測
+        predicted_efficiency = recent_scores[-1] + (trend_slope * 5)  # 5ステップ先予測
+
+        # 予測信頼度計算
+        confidence = self._calculate_prediction_confidence(recent_scores)
+
+        if (
+            predicted_efficiency < self.alert_config["efficiency_threshold"]
+            and confidence >= self.alert_config["prediction_confidence_threshold"]
+        ):
+
+            return {
+                "type": "predictive_efficiency_drop",
+                "severity": "warning",
+                "message": f"効率性低下が予測されます: {predicted_efficiency:.3f} (信頼度: {confidence:.2f})",
+                "details": {
+                    "current_efficiency": recent_scores[-1],
+                    "predicted_efficiency": predicted_efficiency,
+                    "confidence": confidence,
+                    "trend_slope": trend_slope,
+                },
+                "recommendations": [
+                    "予防的最適化の実行",
+                    "設定パラメータの事前調整",
+                    "リソース使用量の監視強化",
+                ],
+                "timestamp": time.time(),
+            }
+
+        return None
+
+    def _calculate_trend_slope(self, values: List[float]) -> float:
+        """トレンド傾きを計算"""
+        if len(values) < 2:
+            return 0.0
+
+        n = len(values)
+        x_avg = (n - 1) / 2
+        y_avg = sum(values) / n
+
+        numerator = sum((i - x_avg) * (values[i] - y_avg) for i in range(n))
+        denominator = sum((i - x_avg) ** 2 for i in range(n))
+
+        return numerator / denominator if denominator != 0 else 0.0
+
+    def _calculate_prediction_confidence(self, values: List[float]) -> float:
+        """予測信頼度を計算"""
+        if len(values) < 3:
+            return 0.0
+
+        # 変動係数の逆数を信頼度とする
+        try:
+            std_dev = stdev(values)
+            mean_val = mean(values)
+            cv = std_dev / mean_val if mean_val != 0 else float("inf")
+            confidence = max(0, min(1, 1 / (1 + cv)))
+            return confidence
+        except (ValueError, ZeroDivisionError, TypeError) as e:
+            # 統計計算エラー（値不足、ゼロ除算、型エラー等）
+            return 0.0
+
+    def add_alert_callback(self, callback: Callable[[Dict[str, Any]], None]):
+        """アラートコールバックを追加"""
+        self.alert_callbacks.append(callback)
+
+    def trigger_alert(self, alert: Dict[str, Any]):
+        """アラートを発火"""
+        self.alert_history.append(alert)
+
+        # コールバック実行
+        for callback in self.alert_callbacks:
+            try:
+                callback(alert)
+            except Exception as e:
+                self.logger.error(f"Error in alert callback: {e}")
+
+        self.logger.warning(f"Alert triggered: {alert['type']} - {alert['message']}")
+
+    def get_alert_summary(self) -> Dict[str, Any]:
+        """アラート概要を取得"""
+        recent_alerts = list(self.alert_history)[-20:]
+
+        # 重要度別分類
+        severity_counts = defaultdict(int)
+        type_counts = defaultdict(int)
+
+        for alert in recent_alerts:
+            severity_counts[alert["severity"]] += 1
+            type_counts[alert["type"]] += 1
+
+        return {
+            "total_alerts": len(self.alert_history),
+            "recent_alerts_count": len(recent_alerts),
+            "severity_distribution": dict(severity_counts),
+            "alert_type_distribution": dict(type_counts),
+            "most_recent_alert": recent_alerts[-1] if recent_alerts else None,
+        }
 
 
 # Testing serena-expert enforcement
