@@ -5,7 +5,6 @@ Phase B.4-Alpha実装: AIコアエンジン基本実装・2.0%削減達成
 技術基盤: scikit-learn基盤機械学習システム・Phase B統合
 """
 
-import logging
 import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor

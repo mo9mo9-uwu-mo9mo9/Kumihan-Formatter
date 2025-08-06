@@ -8,30 +8,21 @@ Phase B.4-Beta自律制御システム実装
 - 自動復旧機能・安定性確保・1.0-1.5%削減効果
 """
 
-import asyncio
-import json
-import pickle
 import threading
 import time
 import warnings
-from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import deque
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
-from sklearn.metrics import mean_squared_error, r2_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
 from .learning_system import LearningSystem
-from .prediction_engine import EnsemblePredictionModel, PredictionEngine
+from .prediction_engine import PredictionEngine
 
 warnings.filterwarnings("ignore")
 

@@ -8,26 +8,21 @@ Phase B.4-Beta継続学習システム実装
 - データ品質管理・学習効率最適化
 """
 
-import json
-import pickle
 import time
 import warnings
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import TimeSeriesSplit, cross_val_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
-from .prediction_engine import EnsemblePredictionModel, PredictionEngine
+from .basic_ml_system import TrainingData
+from .prediction_engine import EnsemblePredictionModel
 
 warnings.filterwarnings("ignore")
 

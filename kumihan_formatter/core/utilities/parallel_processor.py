@@ -46,7 +46,8 @@ class ParallelChunkProcessor:
         self._results_lock = threading.Lock()
 
         self.logger.info(
-            f"ParallelChunkProcessor initialized: {self.max_workers} workers, chunk_size={chunk_size}"
+            f"ParallelChunkProcessor initialized: {self.max_workers} workers, "
+            f"chunk_size={chunk_size}"
         )
 
     def process_chunks_parallel(
@@ -592,7 +593,8 @@ class ParallelStreamingParser:
 
                 except Exception as e:
                     self.logger.warning(
-                        f"Error processing line {chunk.start_line + current} in chunk {chunk.chunk_id}: {e}"
+                        f"Error processing line {chunk.start_line + current} "
+                        f"in chunk {chunk.chunk_id}: {e}"
                     )
                     current += 1  # エラー時は次の行へ
 

@@ -575,7 +575,10 @@ class AdaptiveSettingsManager:
                             new_value=new_max_chars,
                             context=f"ai_file_size_optimization_{context.operation_type}",
                             timestamp=time.time(),
-                            reason=f"File size optimization with {optimized_stats['effectiveness_score']:.1%} effectiveness",
+                            reason=(
+                                f"File size optimization with "
+                                f"{optimized_stats['effectiveness_score']:.1%} effectiveness"
+                            ),
                             expected_benefit=0.18,  # FileSizeLimitOptimizer目標削減率
                         )
                         adjustments.append(adjustment)
@@ -609,7 +612,7 @@ class AdaptiveSettingsManager:
                 new_value=new_limit,
                 context=f"ai_concurrent_optimization_{context.operation_type}",
                 timestamp=time.time(),
-                reason=f"Concurrent control adjustment based on performance metrics",
+                reason="Concurrent control adjustment based on performance metrics",
                 expected_benefit=0.12,  # 並列制御による効率改善
             )
             adjustments.append(adjustment)
@@ -999,15 +1002,51 @@ class AdaptiveSettingsManager:
 
     def _analyze_ab_test(self, parameter: str) -> ABTestResult:
         """A/Bテスト結果を分析（統計的検定強化版）"""
-        # test_config変数を削除（未使用のため）
         results = self.test_results[parameter]
 
-        # 値別グループ化
+        # 値別グループ化と最適値特定
+        value_groups = self._group_results_by_value(results)
+        best_value, best_mean, best_metrics = self._find_best_value(value_groups)
+
+        # ベースライン取得
+        baseline_metrics = self._get_baseline_metrics(value_groups, parameter)
+
+        # 統計分析実行
+        stats_result = self._perform_statistical_analysis(
+            best_metrics, baseline_metrics, best_mean, parameter
+        )
+
+        # 信頼度計算
+        confidence = self._calculate_confidence(
+            stats_result.get("statistical_significance", False),
+            stats_result.get("effect_size"),
+        )
+
+        return ABTestResult(
+            parameter=parameter,
+            winning_value=best_value,
+            confidence=confidence,
+            improvement=stats_result.get("improvement", 0.0),
+            sample_count=len(results),
+            statistical_significance=stats_result.get(
+                "statistical_significance", False
+            ),
+            statistical_test=stats_result.get("statistical_test"),
+            confidence_interval=stats_result.get("confidence_interval"),
+            effect_size=stats_result.get("effect_size"),
+            required_sample_size=stats_result.get("required_sample_size"),
+            statistical_power=stats_result.get("statistical_power"),
+        )
+
+    def _group_results_by_value(self, results: list) -> dict:
+        """結果を値別にグループ化"""
         value_groups = defaultdict(list)
         for result in results:
             value_groups[str(result["value"])].append(result["metric"])
+        return value_groups
 
-        # 最適値を特定
+    def _find_best_value(self, value_groups: dict) -> tuple:
+        """最適値を特定"""
         best_value = None
         best_mean = float("-inf")
         best_metrics = []
@@ -1020,118 +1059,164 @@ class AdaptiveSettingsManager:
                     best_value = eval(value_str) if value_str.isdigit() else value_str
                     best_metrics = metrics
 
-        # ベースライン取得
-        baseline_metrics = value_groups.get(
-            str(self.performance_baselines[parameter]), []
-        )
+        return best_value, best_mean, best_metrics
 
-        statistical_significance = False
-        improvement = 0.0
-        statistical_test = None
-        confidence_interval = None
-        effect_size = None
-        required_sample_size = None
-        statistical_power = None
+    def _get_baseline_metrics(self, value_groups: dict, parameter: str) -> list:
+        """ベースラインメトリクスを取得"""
+        return value_groups.get(str(self.performance_baselines[parameter]), [])
 
-        if len(baseline_metrics) >= 3 and len(best_metrics) >= 3:
-            baseline_mean = mean(baseline_metrics)
-            best_mean_actual = mean(best_metrics)
+    def _perform_statistical_analysis(
+        self,
+        best_metrics: list,
+        baseline_metrics: list,
+        best_mean: float,
+        parameter: str,
+    ) -> dict:
+        """統計分析を実行"""
+        if len(baseline_metrics) < 3 or len(best_metrics) < 3:
+            return {}
 
-            improvement = (
-                (best_mean_actual - baseline_mean) / baseline_mean * 100
-                if baseline_mean > 0
-                else 0
+        baseline_mean = mean(baseline_metrics)
+        improvement = self._calculate_improvement(best_mean, baseline_mean)
+
+        try:
+            # 統計的検定実行
+            statistical_test = self.statistical_engine.perform_statistical_test(
+                best_metrics, baseline_metrics, test_type="t_test", alpha=0.05
             )
 
-            # 本格的統計検定実行
-            try:
-                # t検定実行
-                statistical_test = self.statistical_engine.perform_statistical_test(
-                    best_metrics, baseline_metrics, test_type="t_test", alpha=0.05
-                )
+            # 統計結果の処理
+            stats_result = self._process_statistical_results(
+                statistical_test,
+                improvement,
+                baseline_mean,
+                len(baseline_metrics),
+                len(best_metrics),
+                parameter,
+            )
+            stats_result["improvement"] = improvement
 
-                statistical_significance = statistical_test.significant
+            return stats_result
 
-                # 効果サイズ
-                effect_size = statistical_test.effect_size
+        except Exception as e:
+            self.logger.warning(f"Statistical analysis failed: {e}")
+            return {"improvement": improvement}
 
-                # 信頼区間（改善率の95%信頼区間）
-                if statistical_test.confidence_interval:
-                    ci_lower, ci_upper = statistical_test.confidence_interval
-                    # 改善率の信頼区間に変換
-                    if baseline_mean > 0:
-                        improvement_ci_lower = (ci_lower / baseline_mean) * 100
-                        improvement_ci_upper = (ci_upper / baseline_mean) * 100
-                        confidence_interval = (
-                            improvement_ci_lower,
-                            improvement_ci_upper,
-                        )
-                    else:
-                        confidence_interval = statistical_test.confidence_interval
-
-                # 必要サンプルサイズ（次回テスト用）
-                if effect_size and effect_size > 0:
-                    required_sample_size = (
-                        self.statistical_engine.calculate_required_sample_size(
-                            effect_size, power=0.8, alpha=0.05
-                        )
-                    )
-
-                # 統計的検出力推定（簡易版）
-                current_n = min(len(baseline_metrics), len(best_metrics))
-                if effect_size and effect_size > 0 and current_n >= 3:
-                    # Cohen (1988) に基づく近似
-                    if current_n >= required_sample_size:
-                        statistical_power = 0.8
-                    else:
-                        statistical_power = min(
-                            0.8, current_n / required_sample_size * 0.8
-                        )
-
-                # 詳細ログ出力
-                self.logger.info(
-                    f"Statistical test results for {parameter}:\n"
-                    f"  - Test type: {statistical_test.test_type}\n"
-                    f"  - Statistic: {statistical_test.statistic:.4f}\n"
-                    f"  - P-value: {statistical_test.p_value:.4f}\n"
-                    f"  - Significant: {statistical_test.significant}\n"
-                    f"  - Effect size (Cohen's d): {effect_size:.4f}\n"
-                    f"  - Improvement: {improvement:.2f}%\n"
-                    f"  - Confidence interval: {confidence_interval}\n"
-                    f"  - Required sample size: {required_sample_size}\n"
-                    f"  - Estimated power: {statistical_power:.2f}"
-                )
-
-            except Exception as e:
-                self.logger.warning(f"Statistical analysis failed: {e}")
-                # フォールバック処理継続
-
-        # 信頼度計算
-        if statistical_significance and effect_size:
-            if effect_size >= 0.8:  # 大きな効果
-                confidence = 0.95
-            elif effect_size >= 0.5:  # 中程度の効果
-                confidence = 0.90
-            elif effect_size >= 0.2:  # 小さな効果
-                confidence = 0.80
-            else:
-                confidence = 0.60
-        else:
-            confidence = 0.50
-
-        return ABTestResult(
-            parameter=parameter,
-            winning_value=best_value,
-            confidence=confidence,
-            improvement=improvement,
-            sample_count=len(results),
-            statistical_significance=statistical_significance,
-            statistical_test=statistical_test,
-            confidence_interval=confidence_interval,
-            effect_size=effect_size,
-            required_sample_size=required_sample_size,
-            statistical_power=statistical_power,
+    def _calculate_improvement(self, best_mean: float, baseline_mean: float) -> float:
+        """改善率を計算"""
+        return (
+            (best_mean - baseline_mean) / baseline_mean * 100
+            if baseline_mean > 0
+            else 0
         )
+
+    def _process_statistical_results(
+        self,
+        statistical_test,
+        improvement: float,
+        baseline_mean: float,
+        baseline_n: int,
+        best_n: int,
+        parameter: str,
+    ) -> dict:
+        """統計結果を処理"""
+        result = {
+            "statistical_significance": statistical_test.significant,
+            "statistical_test": statistical_test,
+            "effect_size": statistical_test.effect_size,
+        }
+
+        # 信頼区間の計算
+        if statistical_test.confidence_interval:
+            result["confidence_interval"] = self._calculate_confidence_interval(
+                statistical_test.confidence_interval, baseline_mean
+            )
+
+        # 必要サンプルサイズの計算
+        if statistical_test.effect_size and statistical_test.effect_size > 0:
+            result["required_sample_size"] = (
+                self.statistical_engine.calculate_required_sample_size(
+                    statistical_test.effect_size, power=0.8, alpha=0.05
+                )
+            )
+
+            # 統計的検出力の推定
+            result["statistical_power"] = self._estimate_statistical_power(
+                statistical_test.effect_size,
+                min(baseline_n, best_n),
+                result["required_sample_size"],
+            )
+
+        # ログ出力
+        self._log_statistical_results(
+            parameter,
+            statistical_test,
+            improvement,
+            result.get("confidence_interval"),
+            result.get("required_sample_size"),
+            result.get("statistical_power"),
+        )
+
+        return result
+
+    def _calculate_confidence_interval(
+        self, ci_tuple: tuple, baseline_mean: float
+    ) -> tuple:
+        """信頼区間を計算"""
+        if baseline_mean > 0:
+            ci_lower, ci_upper = ci_tuple
+            improvement_ci_lower = (ci_lower / baseline_mean) * 100
+            improvement_ci_upper = (ci_upper / baseline_mean) * 100
+            return (improvement_ci_lower, improvement_ci_upper)
+        return ci_tuple
+
+    def _estimate_statistical_power(
+        self, effect_size: float, current_n: int, required_sample_size: int
+    ) -> float:
+        """統計的検出力を推定"""
+        if current_n >= required_sample_size:
+            return 0.8
+        else:
+            return min(0.8, current_n / required_sample_size * 0.8)
+
+    def _log_statistical_results(
+        self,
+        parameter: str,
+        statistical_test,
+        improvement: float,
+        confidence_interval,
+        required_sample_size,
+        statistical_power,
+    ):
+        """統計結果をログ出力"""
+        self.logger.info(
+            f"Statistical test results for {parameter}:\n"
+            f"  - Test type: {statistical_test.test_type}\n"
+            f"  - Statistic: {statistical_test.statistic:.4f}\n"
+            f"  - P-value: {statistical_test.p_value:.4f}\n"
+            f"  - Significant: {statistical_test.significant}\n"
+            f"  - Effect size (Cohen's d): {statistical_test.effect_size:.4f}\n"
+            f"  - Improvement: {improvement:.2f}%\n"
+            f"  - Confidence interval: {confidence_interval}\n"
+            f"  - Required sample size: {required_sample_size}\n"
+            f"  - Estimated power: {statistical_power:.2f}"
+        )
+
+    def _calculate_confidence(
+        self, statistical_significance: bool, effect_size: float
+    ) -> float:
+        """信頼度を計算"""
+        if not statistical_significance or not effect_size:
+            return 0.50
+
+        if effect_size >= 0.8:  # 大きな効果
+            return 0.95
+        elif effect_size >= 0.5:  # 中程度の効果
+            return 0.90
+        elif effect_size >= 0.2:  # 小さな効果
+            return 0.80
+        else:
+            return 0.60
 
     def _apply_ab_test_result(self, result: ABTestResult):
         """A/Bテスト結果を適用"""
@@ -1603,7 +1688,8 @@ class FileSizeLimitOptimizer:
 
             if adjusted:
                 self.logger.info(
-                    f"Dynamic size limits adjusted based on context complexity: {context.complexity_score}"
+                    f"Dynamic size limits adjusted based on context complexity: "
+                    f"{context.complexity_score}"
                 )
 
             return adjusted
@@ -1720,14 +1806,20 @@ class ConcurrentToolCallLimiter:
             )
             if current_category_calls >= category_limit:
                 self.call_statistics["queued_calls"] += 1
-                reason = f"Category limit exceeded: {tool_category} ({current_category_calls}/{category_limit})"
+                reason = (
+                    f"Category limit exceeded: {tool_category} "
+                    f"({current_category_calls}/{category_limit})"
+                )
                 self.logger.debug(f"Tool call queued: {call_id} - {reason}")
                 return False, reason
 
             # 全体制限チェック
             if len(self._active_calls) >= self.max_concurrent_calls:
                 self.call_statistics["queued_calls"] += 1
-                reason = f"Global limit exceeded: {len(self._active_calls)}/{self.max_concurrent_calls}"
+                reason = (
+                    f"Global limit exceeded: "
+                    f"{len(self._active_calls)}/{self.max_concurrent_calls}"
+                )
                 self.logger.debug(f"Tool call queued: {call_id} - {reason}")
                 return False, reason
 

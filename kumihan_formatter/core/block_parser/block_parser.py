@@ -274,10 +274,22 @@ class BlockParser:
         if not keywords or not content:
             return None, start_index + 1
 
-        # 最初のキーワードを使用してノードを作成
+        # Unused imports removed for lint compliance
+
         primary_keyword = keywords[0]
 
-        # ファクトリ関数をインポート
+        # ノード作成
+        node = self._create_node_for_keyword(primary_keyword, content)
+
+        # 属性適用
+        if attributes:
+            node = self._apply_attributes_to_node(node, attributes)
+
+        self.logger.debug(f"Inline format parsed: {primary_keyword} -> {content}")
+        return paragraph(node), start_index + 1
+
+    def _create_node_for_keyword(self, keyword: str, content: str):
+        """キーワードに基づいてノードを作成"""
         from kumihan_formatter.core.ast_nodes import NodeBuilder
         from kumihan_formatter.core.ast_nodes.factories import (
             emphasis,
@@ -286,43 +298,38 @@ class BlockParser:
             strong,
         )
 
-        # キーワードに基づいてノードタイプを決定
-        if primary_keyword in ["太字", "bold"]:
-            node = strong(content)
-        elif primary_keyword in ["イタリック", "italic", "斜体"]:
-            node = emphasis(content)
-        elif primary_keyword in ["見出し1", "h1"]:
-            node = heading(1, content)
-        elif primary_keyword in ["見出し2", "h2"]:
-            node = heading(2, content)
-        elif primary_keyword in ["見出し3", "h3"]:
-            node = heading(3, content)
-        elif primary_keyword in ["見出し4", "h4"]:
-            node = heading(4, content)
-        elif primary_keyword in ["見出し5", "h5"]:
-            node = heading(5, content)
-        elif primary_keyword in ["ハイライト", "highlight", "mark"]:
-            node = highlight(content)
-        elif primary_keyword in ["下線", "underline"]:
-            node = NodeBuilder("u").content(content).build()
-        elif primary_keyword in ["コード", "code"]:
-            node = NodeBuilder("code").content(content).build()
-        else:
-            # 未知のキーワードの場合、そのまま表示
-            node = NodeBuilder("span").content(f"{primary_keyword}: {content}").build()
+        # キーワードマッピング
+        keyword_mapping = {
+            ("太字", "bold"): lambda: strong(content),
+            ("イタリック", "italic", "斜体"): lambda: emphasis(content),
+            ("見出し1", "h1"): lambda: heading(1, content),
+            ("見出し2", "h2"): lambda: heading(2, content),
+            ("見出し3", "h3"): lambda: heading(3, content),
+            ("見出し4", "h4"): lambda: heading(4, content),
+            ("見出し5", "h5"): lambda: heading(5, content),
+            ("ハイライト", "highlight", "mark"): lambda: highlight(content),
+            ("下線", "underline"): lambda: NodeBuilder("u").content(content).build(),
+            ("コード", "code"): lambda: NodeBuilder("code").content(content).build(),
+        }
 
-        # 属性があれば適用
-        if attributes:
-            for key, value in attributes.items():
-                if key == "color":
-                    if hasattr(node, "attributes"):
-                        node.attributes = node.attributes or {}
-                        node.attributes["style"] = f"color: {value};"
-                    else:
-                        setattr(node, "attributes", {"style": f"color: {value};"})
+        # マッピングから適切なノード作成関数を検索
+        for keywords_tuple, factory_func in keyword_mapping.items():
+            if keyword in keywords_tuple:
+                return factory_func()
 
-        self.logger.debug(f"Inline format parsed: {primary_keyword} -> {content}")
-        return paragraph(node), start_index + 1
+        # 未知のキーワードの場合、そのまま表示
+        return NodeBuilder("span").content(f"{keyword}: {content}").build()
+
+    def _apply_attributes_to_node(self, node, attributes: dict):
+        """ノードに属性を適用"""
+        for key, value in attributes.items():
+            if key == "color":
+                if hasattr(node, "attributes"):
+                    node.attributes = node.attributes or {}
+                    node.attributes["style"] = f"color: {value};"
+                else:
+                    setattr(node, "attributes", {"style": f"color: {value};"})
+        return node
 
     def _parse_new_format_block(
         self,

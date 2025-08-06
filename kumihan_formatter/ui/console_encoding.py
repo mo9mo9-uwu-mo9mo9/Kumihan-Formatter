@@ -51,9 +51,23 @@ class ConsoleEncodingSetup:
     @staticmethod
     def _setup_windows_encoding(locale: Any) -> None:
         """Setup encoding for Windows"""
-        # Try multiple methods to ensure UTF-8 support
+        # 複数の方法を試してUTF-8サポートを確実にする
 
-        # Method 1: reconfigure (Python 3.7+)
+        # Method 1: reconfigure（Python 3.7以降）
+        ConsoleEncodingSetup._try_reconfigure_streams()
+
+        # Method 2: ストリームをラップ
+        ConsoleEncodingSetup._try_wrap_streams()
+
+        # Method 3: Windowsコンソールコードページ
+        ConsoleEncodingSetup._try_set_console_codepage()
+
+        # ロケール設定
+        ConsoleEncodingSetup._try_set_locale(locale)
+
+    @staticmethod
+    def _try_reconfigure_streams():
+        """ストリームの再設定を試行"""
         if hasattr(sys.stdout, "reconfigure"):
             try:
                 if hasattr(sys.stdout, "reconfigure"):
@@ -61,10 +75,12 @@ class ConsoleEncodingSetup:
                 if hasattr(sys.stderr, "reconfigure"):
                     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
             except Exception:
-                # Fallback to method 2
+                # フォールバック処理継続
                 pass
 
-        # Method 2: Wrap streams
+    @staticmethod
+    def _try_wrap_streams():
+        """ストリームのラップを試行"""
         if sys.stdout and sys.stdout.encoding != "utf-8":
             try:
                 sys.stdout = io.TextIOWrapper(
@@ -82,24 +98,28 @@ class ConsoleEncodingSetup:
             except Exception:
                 pass
 
-        # Method 3: Windows console code page
+    @staticmethod
+    def _try_set_console_codepage():
+        """Windowsコンソールコードページの設定を試行"""
         try:
             import ctypes
 
             if hasattr(ctypes, "windll"):
                 kernel32 = ctypes.windll.kernel32
-            # Set console code page to UTF-8
-            kernel32.SetConsoleCP(65001)
-            kernel32.SetConsoleOutputCP(65001)
+                # UTF-8用コンソールコードページ設定
+                kernel32.SetConsoleCP(65001)
+                kernel32.SetConsoleOutputCP(65001)
         except Exception:
             pass
 
-        # Set locale
+    @staticmethod
+    def _try_set_locale(locale):
+        """ロケール設定を試行"""
         try:
             locale.setlocale(locale.LC_ALL, "")
         except Exception:
             try:
-                # Fallback to specific UTF-8 locale
+                # UTF-8ロケールにフォールバック
                 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
             except Exception:
                 pass

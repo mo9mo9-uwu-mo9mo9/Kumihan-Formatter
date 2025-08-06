@@ -137,7 +137,12 @@ class Parser:
     - AST構造の構築統括
     """
 
-    def __init__(self, config=None, graceful_errors: bool = False, parallel_config: ParallelProcessingConfig = None) -> None:  # type: ignore
+    def __init__(
+        self,
+        config=None,
+        graceful_errors: bool = False,
+        parallel_config: ParallelProcessingConfig = None,
+    ) -> None:  # type: ignore
         """Initialize parser with fixed markers
 
         Args:
@@ -700,8 +705,8 @@ class Parser:
 
             elapsed_total = time.time() - start_time
             self.logger.info(
-                f"Parallel streaming parse completed: {processed_nodes} nodes in {elapsed_total:.2f}s "
-                f"({total_lines / elapsed_total:.0f} lines/sec, "
+                f"Parallel streaming parse completed: {processed_nodes} nodes "
+                f"in {elapsed_total:.2f}s ({total_lines / elapsed_total:.0f} lines/sec, "
                 f"improvement: {((23.41 - elapsed_total) / 23.41 * 100):.1f}%)"
             )
 
@@ -1148,120 +1153,156 @@ class Parser:
         Yields:
             Node: 解析されたASTノード（リアルタイム出力）
         """
-        import time
-
         self.logger.info(f"Starting true streaming parse from file: {file_path}")
 
-        # ファイル存在チェック
+        # 前処理と初期化
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        # ファイル情報取得
-        file_size = file_path.stat().st_size
-        self.logger.info(f"File size: {file_size:,} bytes")
-
-        # 真のストリーミング処理状態
-        self._cancelled = False
-        processed_nodes = 0
-        current_line_num = 0
-        start_time = time.time()
-
-        # 推定行数（効率的サンプリング）
-        estimated_lines = self._estimate_total_lines_fast(file_path)
-
-        # メモリ監視初期化
-        memory_monitor = self._init_memory_monitor()
+        stream_context = self._initialize_streaming_context(
+            file_path, progress_callback
+        )
 
         try:
-            # 行バッファ（真のストリーミングのための小さなバッファ）
-            line_buffer = []
-            buffer_threshold = 50  # 小さなバッファサイズでメモリ効率最大化
+            # メインストリーミング処理
+            yield from self._execute_streaming_parse(stream_context)
 
-            # ファイルを行単位でストリーミング読み込み
-            with open(file_path, "r", encoding="utf-8", buffering=8192) as file:
-                for line_content in file:
-                    # キャンセルチェック
-                    if self._cancelled:
-                        self.logger.info("True streaming parse cancelled")
-                        break
-
-                    current_line_num += 1
-                    line_buffer.append(line_content.rstrip("\n\r"))
-
-                    # 小バッファが満杯になったら処理
-                    if len(line_buffer) >= buffer_threshold:
-                        # リアルタイム解析処理
-                        for node in self._process_streaming_buffer(
-                            line_buffer, current_line_num - len(line_buffer)
-                        ):
-                            if node:
-                                yield node
-                                processed_nodes += 1
-
-                        # メモリ効率のためのバッファクリア
-                        line_buffer.clear()
-
-                        # プログレス更新（リアルタイム）
-                        if progress_callback and current_line_num % 100 == 0:
-                            progress_info = self._calculate_streaming_progress(
-                                current_line_num,
-                                estimated_lines,
-                                start_time,
-                                memory_monitor,
-                                processed_nodes,
-                            )
-                            progress_callback(progress_info)
-
-                        # リアルタイムガベージコレクション
-                        if processed_nodes % 500 == 0:
-                            import gc
-
-                            gc.collect()
-
-                            # メモリ使用量チェック
-                            current_memory = memory_monitor.get_current_memory_mb()
-                            if current_memory > 200:  # 200MB閾値
-                                self.logger.warning(
-                                    f"High memory usage in streaming: {current_memory:.1f}MB"
-                                )
-
-                # 残りバッファの処理
-                if line_buffer:
-                    for node in self._process_streaming_buffer(
-                        line_buffer, current_line_num - len(line_buffer)
-                    ):
-                        if node:
-                            yield node
-                            processed_nodes += 1
-
-            # 最終プログレス更新
-            if progress_callback and not self._cancelled:
-                final_progress = self._calculate_streaming_progress(
-                    current_line_num,
-                    current_line_num,
-                    start_time,
-                    memory_monitor,
-                    processed_nodes,
-                    completed=True,
-                )
-                progress_callback(final_progress)
-
-            elapsed_total = time.time() - start_time
-            final_memory = memory_monitor.get_current_memory_mb()
-
-            self.logger.info(
-                f"True streaming parse completed: {processed_nodes} nodes from "
-                f"{current_line_num} lines in {elapsed_total:.2f}s "
-                f"({current_line_num / elapsed_total:.0f} lines/sec, "
-                f"memory: {final_memory:.1f}MB)"
-            )
+            # 最終処理
+            self._finalize_streaming_parse(stream_context)
 
         except Exception as e:
             self.logger.error(f"True streaming parse failed: {e}")
             raise
         finally:
             # クリーンアップ
-            self._cancelled = False
+            self._cleanup_streaming_resources()
+
+    def _initialize_streaming_context(self, file_path: Path, progress_callback) -> dict:
+        """ストリーミング処理コンテキストの初期化"""
+        import time
+
+        file_size = file_path.stat().st_size
+        self.logger.info(f"File size: {file_size:,} bytes")
+
+        # 真のストリーミング処理状態
+        self._cancelled = False
+
+        context = {
+            "file_path": file_path,
+            "file_size": file_size,
+            "progress_callback": progress_callback,
+            "processed_nodes": 0,
+            "current_line_num": 0,
+            "start_time": time.time(),
+            "estimated_lines": self._estimate_total_lines_fast(file_path),
+            "memory_monitor": self._init_memory_monitor(),
+            "line_buffer": [],
+            "buffer_threshold": 50,  # 小さなバッファサイズでメモリ効率最大化
+        }
+
+        return context
+
+    def _execute_streaming_parse(self, context: dict) -> Iterator[Node]:
+        """メインストリーミング解析処理"""
+        with open(context["file_path"], "r", encoding="utf-8", buffering=8192) as file:
+            for line_content in file:
+                # キャンセルチェック
+                if self._cancelled:
+                    self.logger.info("True streaming parse cancelled")
+                    break
+
+                context["current_line_num"] += 1
+                context["line_buffer"].append(line_content.rstrip("\n\r"))
+
+                # バッファ処理
+                if len(context["line_buffer"]) >= context["buffer_threshold"]:
+                    yield from self._process_buffer_chunk(context)
+
+                # プログレス更新とメンテナンス
+                if context["current_line_num"] % 100 == 0:
+                    self._update_streaming_progress(context)
+
+                if context["processed_nodes"] % 500 == 0:
+                    self._perform_streaming_maintenance(context)
+
+            # 残りバッファの処理
+            if context["line_buffer"]:
+                yield from self._process_final_buffer(context)
+
+    def _process_buffer_chunk(self, context: dict) -> Iterator[Node]:
+        """バッファチャンクの処理"""
+        # リアルタイム解析処理
+        start_line = context["current_line_num"] - len(context["line_buffer"])
+        for node in self._process_streaming_buffer(context["line_buffer"], start_line):
+            if node:
+                yield node
+                context["processed_nodes"] += 1
+
+        # メモリ効率のためのバッファクリア
+        context["line_buffer"].clear()
+
+    def _process_final_buffer(self, context: dict) -> Iterator[Node]:
+        """最終バッファの処理"""
+        start_line = context["current_line_num"] - len(context["line_buffer"])
+        for node in self._process_streaming_buffer(context["line_buffer"], start_line):
+            if node:
+                yield node
+                context["processed_nodes"] += 1
+
+    def _update_streaming_progress(self, context: dict):
+        """ストリーミングプログレス更新"""
+        if context["progress_callback"]:
+            progress_info = self._calculate_streaming_progress(
+                context["current_line_num"],
+                context["estimated_lines"],
+                context["start_time"],
+                context["memory_monitor"],
+                context["processed_nodes"],
+            )
+            context["progress_callback"](progress_info)
+
+    def _perform_streaming_maintenance(self, context: dict):
+        """ストリーミングメンテナンス処理"""
+        import gc
+
+        gc.collect()
+
+        # メモリ使用量チェック
+        current_memory = context["memory_monitor"].get_current_memory_mb()
+        if current_memory > 200:  # 200MB閾値
+            self.logger.warning(
+                f"High memory usage in streaming: {current_memory:.1f}MB"
+            )
+
+    def _finalize_streaming_parse(self, context: dict):
+        """ストリーミング解析の最終処理"""
+        import time
+
+        # 最終プログレス更新
+        if context["progress_callback"] and not self._cancelled:
+            final_progress = self._calculate_streaming_progress(
+                context["current_line_num"],
+                context["current_line_num"],
+                context["start_time"],
+                context["memory_monitor"],
+                context["processed_nodes"],
+                completed=True,
+            )
+            context["progress_callback"](final_progress)
+
+        elapsed_total = time.time() - context["start_time"]
+        final_memory = context["memory_monitor"].get_current_memory_mb()
+
+        self.logger.info(
+            f"True streaming parse completed: {context['processed_nodes']} nodes from "
+            f"{context['current_line_num']} lines in {elapsed_total:.2f}s "
+            f"({context['current_line_num'] / elapsed_total:.0f} lines/sec, "
+            f"memory: {final_memory:.1f}MB)"
+        )
+
+    def _cleanup_streaming_resources(self):
+        """ストリーミングリソースのクリーンアップ"""
+        self._cancelled = False
 
     def parse_hybrid_optimized(
         self, input_source, progress_callback: Optional[Callable[[dict], None]] = None
@@ -1656,7 +1697,8 @@ class Parser:
         self.logger.debug(
             f"Parallel processing decision: size={text_size/1024/1024:.1f}MB "
             f"({size_condition}), lines={line_count} ({lines_condition}), "
-            f"cpu={cpu_count} ({cpu_condition}) → {'PARALLEL' if should_parallelize else 'SEQUENTIAL'}"
+            f"cpu={cpu_count} ({cpu_condition}) → "
+            f"{'PARALLEL' if should_parallelize else 'SEQUENTIAL'}"
         )
 
         return should_parallelize
@@ -2175,91 +2217,148 @@ class StreamingParser:
     ) -> Iterator[Node]:
         """最適化されたファイルストリーミング処理"""
 
-        line_buffer = []
-        buffer_line_start = 0
-        total_processed = 0
-        self._start_time = time.time()
+        # 処理コンテキストの初期化
+        stream_ctx = self._init_stream_processing_context(file_path, progress_callback)
 
-        # ファイルを効率的に読み込み（バッファサイズ最適化）
-        with open(file_path, "r", encoding="utf-8", buffering=self.BUFFER_SIZE) as file:
-            for line_num, line in enumerate(file, 1):
-                # タイムアウトチェック
-                if self._check_timeout():
+        try:
+            # メインストリーミング処理
+            with open(
+                file_path, "r", encoding="utf-8", buffering=self.BUFFER_SIZE
+            ) as file:
+                yield from self._execute_optimized_streaming(file, stream_ctx)
+
+            # 残りバッファの処理
+            yield from self._process_remaining_buffer(stream_ctx)
+
+            # 最終処理
+            self._finalize_optimized_streaming(stream_ctx)
+
+        except Exception as e:
+            self.logger.error(f"Optimized streaming failed: {e}")
+            raise
+
+    def _init_stream_processing_context(
+        self, file_path: Path, progress_callback
+    ) -> dict:
+        """ストリーミング処理コンテキストの初期化"""
+        return {
+            "file_path": file_path,
+            "progress_callback": progress_callback,
+            "line_buffer": [],
+            "buffer_line_start": 0,
+            "total_processed": 0,
+            "start_time": time.time(),
+        }
+
+    def _execute_optimized_streaming(self, file, stream_ctx: dict) -> Iterator[Node]:
+        """最適化されたストリーミング実行"""
+        for line_num, line in enumerate(file, 1):
+            # タイムアウトとキャンセルチェック
+            if self._should_stop_processing():
+                break
+
+            stream_ctx["line_buffer"].append(line.rstrip("\n\r"))
+
+            # チャンクサイズに達した場合の処理
+            if len(stream_ctx["line_buffer"]) >= self.CHUNK_SIZE:
+                yield from self._process_chunk_and_update(stream_ctx, line_num)
+
+    def _should_stop_processing(self) -> bool:
+        """処理を停止すべきかの判定"""
+        if self._check_timeout():
+            self.logger.warning(f"Processing timeout after {self.timeout_seconds}s")
+            self.add_error(
+                f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds"
+            )
+            return True
+
+        if self._cancelled:
+            self.logger.info("Parse cancelled by user")
+            return True
+
+        return False
+
+    def _process_chunk_and_update(
+        self, stream_ctx: dict, line_num: int
+    ) -> Iterator[Node]:
+        """チャンク処理と更新"""
+        # チャンクを高速処理
+        processed_count = 0
+        for node in self._process_line_buffer_optimized(
+            stream_ctx["line_buffer"], stream_ctx["buffer_line_start"]
+        ):
+            if node:
+                yield node
+                processed_count += 1
+
+        # バッファクリアと状態更新
+        self._update_stream_context(stream_ctx, line_num, processed_count)
+
+        # プログレス更新
+        self._update_streaming_progress_optimized(stream_ctx, line_num)
+
+        # メモリ監視
+        self._monitor_memory_usage()
+
+    def _update_stream_context(
+        self, stream_ctx: dict, line_num: int, processed_count: int
+    ):
+        """ストリームコンテキストの更新"""
+        stream_ctx["line_buffer"].clear()
+        stream_ctx["buffer_line_start"] = line_num
+        stream_ctx["total_processed"] += processed_count
+
+    def _update_streaming_progress_optimized(self, stream_ctx: dict, line_num: int):
+        """最適化されたプログレス更新"""
+        if (
+            stream_ctx["progress_callback"]
+            and line_num % self.PROGRESS_UPDATE_INTERVAL == 0
+        ):
+            progress_info = self._calculate_progress_optimized(line_num)
+            stream_ctx["progress_callback"](progress_info)
+
+        # パフォーマンス監視更新
+        self.performance_monitor.update_progress(
+            stream_ctx["total_processed"], f"行 {line_num} 処理中"
+        )
+
+    def _monitor_memory_usage(self):
+        """メモリ使用量の監視"""
+        try:
+            if hasattr(self.performance_monitor, "get_current_snapshot"):
+                snapshot = self.performance_monitor.get_current_snapshot()
+                if (
+                    snapshot
+                    and hasattr(snapshot, "memory_mb")
+                    and snapshot.memory_mb > self.MEMORY_THRESHOLD_MB
+                ):
                     self.logger.warning(
-                        f"Processing timeout after {self.timeout_seconds}s"
+                        f"High memory usage detected: {snapshot.memory_mb:.1f}MB"
                     )
-                    self.add_error(
-                        f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds"
-                    )
-                    break
+        except Exception as e:
+            self.logger.debug(f"Memory monitoring error: {e}")
 
-                # キャンセルチェック
-                if self._cancelled:
-                    self.logger.info("Parse cancelled by user")
-                    break
-
-                line_buffer.append(line.rstrip("\n\r"))
-
-                # チャンクサイズに達した場合の処理
-                if len(line_buffer) >= self.CHUNK_SIZE:
-                    # チャンクを高速処理
-                    processed_count = 0
-                    for node in self._process_line_buffer_optimized(
-                        line_buffer, buffer_line_start
-                    ):
-                        if node:
-                            yield node
-                            processed_count += 1
-
-                    # メモリ効率化：バッファクリア
-                    line_buffer.clear()
-                    buffer_line_start = line_num
-                    total_processed += processed_count
-
-                    # プログレス更新
-                    if (
-                        progress_callback
-                        and line_num % self.PROGRESS_UPDATE_INTERVAL == 0
-                    ):
-                        progress_info = self._calculate_progress_optimized(line_num)
-                        progress_callback(progress_info)
-
-                    # パフォーマンス監視更新
-                    self.performance_monitor.update_progress(
-                        total_processed, f"行 {line_num} 処理中"
-                    )
-
-                    # メモリ使用量チェック（安全性強化）
-                    try:
-                        if hasattr(self.performance_monitor, "get_current_snapshot"):
-                            snapshot = self.performance_monitor.get_current_snapshot()
-                            if (
-                                snapshot
-                                and hasattr(snapshot, "memory_mb")
-                                and snapshot.memory_mb > self.MEMORY_THRESHOLD_MB
-                            ):
-                                self.logger.warning(
-                                    f"High memory usage detected: {snapshot.memory_mb:.1f}MB"
-                                )
-                    except Exception as e:
-                        self.logger.debug(f"Memory monitoring error: {e}")
-
-        # 残りのバッファを処理
-        if line_buffer:
+    def _process_remaining_buffer(self, stream_ctx: dict) -> Iterator[Node]:
+        """残りバッファの処理"""
+        if stream_ctx["line_buffer"]:
             for node in self._process_line_buffer_optimized(
-                line_buffer, buffer_line_start
+                stream_ctx["line_buffer"], stream_ctx["buffer_line_start"]
             ):
                 if node:
                     yield node
-                    total_processed += 1
+                    stream_ctx["total_processed"] += 1
 
+    def _finalize_optimized_streaming(self, stream_ctx: dict):
+        """最適化されたストリーミングの最終処理"""
         # 最終プログレス更新
-        if progress_callback:
-            final_progress = self._calculate_progress_optimized(total_processed)
-            progress_callback(final_progress)
+        if stream_ctx["progress_callback"]:
+            final_progress = self._calculate_progress_optimized(
+                stream_ctx["total_processed"]
+            )
+            stream_ctx["progress_callback"](final_progress)
 
         self.logger.info(
-            f"Optimized streaming completed: {total_processed} nodes processed"
+            f"Optimized streaming completed: {stream_ctx['total_processed']} nodes processed"
         )
 
     def _process_line_buffer_optimized(

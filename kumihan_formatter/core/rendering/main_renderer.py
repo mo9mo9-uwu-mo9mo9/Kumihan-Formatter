@@ -658,10 +658,9 @@ class HTMLRenderer:
                 <div class="error-content">
                     {safe_content}
                     {f'<div class="error-context-highlighted">{highlighted_context}</div>' if highlighted_context != error.context else ''}
-                    {(
-                        f'<div class="correction-suggestions">'
-                        f'<h4>修正提案:</h4>{correction_suggestions_html}</div>'
-                    ) if correction_suggestions_html else ''}
+                    {(f'<div class="correction-suggestions">'
+                      f'<h4>修正提案:</h4>{correction_suggestions_html}</div>')
+                     if correction_suggestions_html else ''}
                 </div>
             </div>
 """

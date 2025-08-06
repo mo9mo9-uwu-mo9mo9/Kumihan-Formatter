@@ -110,7 +110,10 @@ class SyntaxErrorRecoveryStrategy(ErrorRecoveryStrategy):
                 return RecoveryResult(
                     success=True,
                     recovered_content=fixed_line,
-                    recovery_message=f"Fixed incomplete marker: '{line.strip()}' -> '{fixed_line.strip()}'",
+                    recovery_message=(
+                        f"Fixed incomplete marker: '{line.strip()}' -> "
+                        f"'{fixed_line.strip()}'"
+                    ),
                     warnings=["Marker syntax was automatically corrected"],
                 )
 
@@ -171,7 +174,10 @@ class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
             return RecoveryResult(
                 success=True,
                 skip_to_line=end_marker_line + 1,
-                recovery_message=f"Recovered from block structure error by skipping to line {end_marker_line + 1}",
+                recovery_message=(
+                    f"Recovered from block structure error by skipping to line "
+                    f"{end_marker_line + 1}"
+                ),
                 warnings=[
                     f"Block content from lines {line_num + 1}-{end_marker_line} may be incomplete"
                 ],
@@ -355,7 +361,8 @@ class AdvancedErrorRecoverySystem:
     ) -> RecoveryResult:
         """エラーから回復を試行"""
         self.logger.info(
-            f"Attempting recovery for {error_context.error_type.value} error at line {error_context.line_number + 1}"
+            f"Attempting recovery for {error_context.error_type.value} error "
+            f"at line {error_context.line_number + 1}"
         )
 
         # 適切な戦略を選択
@@ -496,7 +503,10 @@ def with_error_recovery(recovery_system: AdvancedErrorRecoverySystem):
                 # 回復を試行（コンテキストに応じて）
                 recovery_result = RecoveryResult(
                     success=True,
-                    recovery_message=f"Function {func.__name__} recovered from {error_context.error_type.value}",
+                    recovery_message=(
+                        f"Function {func.__name__} recovered from "
+                        f"{error_context.error_type.value}"
+                    ),
                     warnings=[f"Error in {func.__name__} was handled gracefully"],
                 )
 
