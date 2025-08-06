@@ -76,6 +76,6 @@ project_specific:
   linter: "{{LINTER}}"
 
 # 更新履歴
-version: "1.0.0"
+version: "2.0.0"
 last_updated: "{{TIMESTAMP}}"
 created_by: "Claude Code Setup Kit - Serena-Expert System"

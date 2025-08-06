@@ -1,15 +1,10 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
-!scripts/build/
 develop-eggs/
 dist/
 downloads/
@@ -21,8 +16,6 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -30,102 +23,28 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-# *.spec excluded - we need our packaging specs
+*.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
+# Unit tests / coverage reports
 htmlcov/
 .tox/
-.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
-coverage.json
-coverage*.xml
 *.cover
-*.py,cover
 .hypothesis/
 .pytest_cache/
-coverage.svg
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
+# Virtual environments
 .env
 .venv
-.venv*/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
 
 # IDE
 .vscode/
@@ -136,96 +55,86 @@ dmypy.json
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Project specific
-output/
-*.html
-!templates/*.html
+# 大容量テストファイル
+*k_test_file.*
+*mb_test_file.*
+*gb_test_file.*
+large_test_*
+huge_test_*
+massive_test_*
+benchmark_test_*
 
-# Moved test debug files
-tests/debug/
+# レポートファイル
+*_report_*.json
+*_report_*.md
+*_report_*.txt
+*_report_*.html
+*_報告書_*.md
+*_Final_Report.*
+Issue_*_Complete_*.md
+behavioral_control_*.json
+p7_compliance_*.json
+token-usage-report.*
 
-# Claude Code settings (重要: 削除禁止)
-.claude/
-# Claude specific - Discord設定ファイルを除外
-.claude/discord_config.json
+# 一時実行ファイル
+temp_*
+tmp_*
+test_temp_*
+temp_test_*
+.temp/
+.tmp/
+test_output_*
+performance_test_*
+benchmark_output_*
+debug_output_*
 
-# Test output directories
-*-output/
-dist_test/
-dist_syntax_cheatsheet/
-test-block-*/
-expanded_test*/
-final-test/
-debug_output/
+# プロファイリングファイル
+*.prof
+*.cprof
+.profile/
+profiling_*
+memory_profile_*
 
-# Temporary development files
-kumihan_sample/
-test_issue_*/
-test_docs_html/
-final_test_docs/
-
-# Generated documentation (temporary)
-docs_html/
-*_html/
-
-# Claude Code使用状況追跡ファイル（個人用・非公開）
-uploads/
-usage_tracking*.json
-
-# Kumihan-Formatter cache files
-.kumihan_cache/
-
-# E2Eテスト結果（GitHub Actions一時ファイル）
-e2e_test_results/
-e2e_test_results_previous/
-
-# Temporary directories
-.tmp.driveupload/
-toggle-test/
-
-# Application logs
+# ログファイル
+*.log
 logs/
+.logs/
+debug.log
+error.log
+test.log
 
-# Development logs (Issue#446)
-/tmp/kumihan_formatter/
+# キャッシュファイル
+.cache/
+.performance_cache/
+.quality_data/
+.benchmarks/
+cache_*
+*.cache
 
-# Temporary files
-*.tmp
+# バックアップファイル
+*.bak
+*.backup
+*~
+.backup/
+backup_*
 
-# pytest cache files (Issue #640)
-*.pkl
+# 生成されたファイル
+generated_*
+auto_generated_*
+*.generated.*
+output_*
+result_*
 
-# TDD-First開発システム (Issue #640)
-.tdd_session.json
-.tdd_logs/
-scripts/tdd_templates/
+# tmp/配下強制ルール違反ログ
+tmp_rule_violations.log
 
-# TDD生成ファイル（日本語ファイル名対応）
-**/test_*tdd*.py
-**/commands/*tdd*.py
-
-# Serena (AI assistant tool)
-.serena/
-
-# MCP (Model Context Protocol) configuration files
-.mcp.json
-mcp-*.json
-
-# Temporary test files directory
-tmp/
-
-# Performance test output and debug files
-test_*.py
-*_debug.py
-*_debug*.py
-issue_*_performance_report.md
-samples_backup_before_*_fix/
-scripts/performance_*_test.py
-scripts/ultra_*_processor.py
-scripts/issue_*_test.py
-test_*_inline.py
-test_*_paragraph.py
-test_*_regex*.py
-test_*_table*.py
+# tmpディレクトリ（中身は除外、ディレクトリ自体は保持）
+tmp/*
+!tmp/README.md

@@ -285,6 +285,8 @@ class CLAUDEmdDashboard:
 
     def _generate_size_trend_chart(self):
         """サイズ推移チャート生成"""
+        from pathlib import Path
+
         if not self.history_file.exists():
             return
 
@@ -296,6 +298,14 @@ class CLAUDEmdDashboard:
 
         if len(history) < 2:
             return
+
+        # tmp/配下に出力ディレクトリを確保
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+
+        # output_dirをtmp/配下に設定
+        self.output_dir = tmp_dir / "dashboard_output"
+        self.output_dir.mkdir(exist_ok=True)
 
         # データ準備
         dates = [datetime.fromisoformat(entry["timestamp"]) for entry in history]
@@ -336,9 +346,19 @@ class CLAUDEmdDashboard:
 
     def _generate_section_distribution_chart(self):
         """セクション分布チャート生成"""
+        from pathlib import Path
+
         section_analysis = self._analyze_sections()
         if "error" in section_analysis:
             return
+
+        # tmp/配下に出力ディレクトリを確保
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+
+        # output_dirをtmp/配下に設定
+        self.output_dir = tmp_dir / "dashboard_output"
+        self.output_dir.mkdir(exist_ok=True)
 
         # セクションレベル分布
         level_data = section_analysis["by_level"]
@@ -372,9 +392,19 @@ class CLAUDEmdDashboard:
 
     def _generate_quality_overview_chart(self):
         """品質概要チャート生成"""
+        from pathlib import Path
+
         quality_metrics = self._calculate_quality_metrics()
         if "error" in quality_metrics:
             return
+
+        # tmp/配下に出力ディレクトリを確保
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+
+        # output_dirをtmp/配下に設定
+        self.output_dir = tmp_dir / "dashboard_output"
+        self.output_dir.mkdir(exist_ok=True)
 
         # レーダーチャート
         categories = ['重複排除', '情報密度', '構造品質', 'メンテナンス性']
@@ -404,6 +434,16 @@ class CLAUDEmdDashboard:
 
     def _generate_html_dashboard(self, dashboard_data: Dict):
         """HTMLダッシュボード生成"""
+        from pathlib import Path
+
+        # tmp/配下に出力ディレクトリを確保
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+
+        # output_dirをtmp/配下に設定
+        self.output_dir = tmp_dir / "dashboard_output"
+        self.output_dir.mkdir(exist_ok=True)
+
         html_content = f"""
 <!DOCTYPE html>
 <html lang="ja">

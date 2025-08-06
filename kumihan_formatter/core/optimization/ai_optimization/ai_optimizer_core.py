@@ -449,6 +449,7 @@ class AIOptimizerCore:
 
         except Exception as e:
             self.logger.warning(f"Cache update failed: {e}")
+
     def _apply_ai_optimizations(
         self, context: OptimizationContext, prediction: PredictionResult
     ) -> Dict[str, Any]:

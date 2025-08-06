@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>32_unicode_special</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    background-color: #ffeb3b;  /* デフォルトの黄色背景 */
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}
+
+/* 引用ブロック */
+blockquote, .kumihan-blockquote {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid #007acc;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    font-style: italic;
+    color: #495057;
+}
+
+/* 引用ブロック内の段落 */
+blockquote p, .kumihan-blockquote p {
+    margin: 0.5em 0;
+    text-align: left;
+}
+
+blockquote p:last-child, .kumihan-blockquote p:last-child {
+    margin-bottom: 0;
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    .kumihan-nav {
+        display: none;
+    }
+
+    body {
+        background-color: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    h1, h2 {
+        page-break-after: avoid;
+    }
+
+    p, ul {
+        page-break-inside: avoid;
+    }
+}/* ナビゲーション用スタイル */
+.kumihan-nav {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-prev, .nav-next, .nav-index {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.nav-prev:hover, .nav-next:hover, .nav-index:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.nav-index {
+    background-color: #28a745;
+}
+
+.nav-index:hover {
+    background-color: #1e7e34;
+}
+
+.nav-disabled {
+    background-color: #6c757d;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .page-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-prev, .nav-next, .nav-index {
+        width: 100%;
+        text-align: center;
+    }
+}
+        /* TOCレイアウト用スタイル */
+        body {
+            padding: 0;
+        }
+
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* 右サイドバーが存在する場合の3カラムレイアウト */
+        .layout-wrapper.has-right-sidebar {
+            grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* 右サイドバー（注釈・補足情報用） */
+        .right-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+            display: none; /* デフォルトは非表示 */
+        }
+
+        /* 右サイドバーが有効な場合に表示 */
+        .layout-wrapper.has-right-sidebar .right-sidebar {
+            display: block;
+        }
+
+        .right-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .right-sidebar .annotation {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .right-sidebar .note {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応（大画面） */
+        @media (min-width: 2000px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(500px, 35%) 1fr;
+                gap: 30px;
+                padding: 15px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(300px, 25%) 1fr minmax(300px, 25%);
+            }
+        }
+
+        /* レスポンシブ対応（中画面） */
+        @media (max-width: 1200px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(300px, 25%) 1fr;
+                gap: 15px;
+                padding: 10px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
+            }
+        }
+
+        /* レスポンシブ対応（タブレット） */
+        @media (max-width: 900px) {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .right-sidebar {
+                order: 1;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                display: block;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // トグルボタンの機能
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        });
+    </script>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-2">
+<a href="#heading-1">ひらがな・カタカナ・漢字</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-2">多言語テスト</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-3">ラテン文字系</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-4">キリル文字・ギリシャ文字</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-5">アラビア文字・ヘブライ文字</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-6">アジア言語</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-7">簡体字・繁体字</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-8">インド系文字</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-9">数学・科学記号</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-10">基本演算・関係記号</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-11">絵文字・装飾文字</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-12">顔・感情表現</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-13">特殊Unicode範囲</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-14">ダイアクリティカルマーク</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-15">CJK互換漢字・拡張</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-16">音楽・その他記号</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-17">私用領域・異体字</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-18">パフォーマンステスト用</a>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="container">
+            <h2 id="heading-1" role="heading" class="kumihan-h2">ひらがな・カタカナ・漢字</h2>
+<div class="kumihan-div box">📮 **日本語組版記号**<br>- 句読点：、。<br>- 感嘆符：！？<br>- 括弧類：（）［］｛｝「」『』【】〈〉《》<br>- 中点：・<br>- 長音：ー<br>- 波ダッシュ：〜<br>- 三点リーダー：…</div>
+<h1 id="heading-2" role="heading" class="kumihan-h1">多言語テスト</h1>
+<h2 id="heading-3" role="heading" class="kumihan-h2">ラテン文字系</h2>
+<blockquote class="kumihan-blockquote">**Nordic Languages:**<br>- Svenska: Åsa äter äpplen på ön.  <br>- Norsk: Åse spiser epler på øya.<br>- Dansk: Åse spiser æbler på øen.<br>- Suomi: Äiti syö omena saarella.<br><br>**Eastern European:**<br>- Polski: Żółć gęś jaźń<br>- Čeština: Příliš žluťoučký kůň úpěl ďábelské ódy<br>- Magyar: Árvíztűrő tükörfúrógép</blockquote>
+<h1 id="heading-4" role="heading" class="kumihan-h1">キリル文字・ギリシャ文字</h1>
+<h1 id="heading-5" role="heading" class="kumihan-h1">アラビア文字・ヘブライ文字</h1>
+<h1 id="heading-6" role="heading" class="kumihan-h1">アジア言語</h1>
+<h2 id="heading-7" role="heading" class="kumihan-h2">簡体字・繁体字</h2>
+<h1 id="heading-8" role="heading" class="kumihan-h1">インド系文字</h1>
+<h1 id="heading-9" role="heading" class="kumihan-h1">数学・科学記号</h1>
+<h2 id="heading-10" role="heading" class="kumihan-h2">基本演算・関係記号</h2>
+<h1 id="heading-11" role="heading" class="kumihan-h1">絵文字・装飾文字</h1>
+<h2 id="heading-12" role="heading" class="kumihan-h2">顔・感情表現</h2>
+<h1 id="heading-13" role="heading" class="kumihan-h1">特殊Unicode範囲</h1>
+<h2 id="heading-14" role="heading" class="kumihan-h2">ダイアクリティカルマーク</h2>
+<h1 id="heading-15" role="heading" class="kumihan-h1">CJK互換漢字・拡張</h1>
+<h1 id="heading-16" role="heading" class="kumihan-h1">音楽・その他記号</h1>
+<h1 id="heading-17" role="heading" class="kumihan-h1">私用領域・異体字</h1>
+<h1 id="heading-18" role="heading" class="kumihan-h1">パフォーマンステスト用</h1>
+<pre class="code-block">パフォーマンステスト用大量文字列：<br>🌍🌎🌏🌐🗺🧭🏔⛰🌋🗻🏕🏖🏜🏝🏞🏟🏛🏗🧱🪨🪵🛖🏘🏚🏠🏡🏢🏣🏤🏥🏦🏧🏨🏩🏪🏫🏬🏭🏯🏰💒🗼🗽⛪🕌🛕🕍⛩🕋⛲⛺🌁🌃🏙🌄🌅🌆🌇🌉♨️🎠🎡🎢💈🎪🚂🚃🚄🚅🚆🚇🚈🚉🚊🚝🚞🚋🚌🚍🚎🚐🚑🚒🚓🚔🚕🚖🚗🚘🚙🛻🚚🚛🚜🏎🏍🛵🦽🦼🛴🚲🛶⛵🚤🛥🛳⛴🚢✈️🛩🛫🛬🪂💺🚁🚟🚠🚡🛰🚀🛸🛎🧳⌛⏳⌚⏰⏱⏲🕰🕛🕧🕐🕜🕑🕝🕒🕞🕓🕟🕔🕠🕕🕡🕖🕢🕗🕣🕘🕤🕙🕥🕚🕦🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌡☀️🌝🌞🪐⭐🌟🌠🌌☁️⛅⛈🌤🌥🌦🌧⛆🌩🌨❄️☃️⛄🌬💨💧💦☔☂️🌊🌈🌂☀️🔥💥❄️💨💦💧⛆☔⛈🌪🌈☂️🌊❄️☃️⛄💧💦🔥💥</pre>
+<div class="kumihan-div">🌐 **Unicode特殊文字対応テスト完了**</div>
+<p class="kumihan-p">---</p>
+<div class="kumihan-div info">💡 **Unicode対応テスト内容**<br><br>### テスト対象<br>- **基本多言語面（BMP）**: U+0000-U+FFFF<br>- **追加多言語面**: U+10000-U+1FFFF（サロゲートペア）<br>- **特殊用途文字**: 制御文字、結合文字、方向制御文字<br>- **地域別文字**: アジア、欧州、中東、アフリカ言語<br>- **記号類**: 数学、音楽、通貨、矢印、装飾文字<br>- **絵文字**: 基本絵文字から複合絵文字まで<br><br>### 確認項目<br>- 正しい文字表示<br>- 文字コード変換の精度<br>- RTL（右から左）テキストの処理<br>- 結合文字・合成文字の処理<br>- サロゲートペアの正しい処理<br>- ゼロ幅文字の適切な扱い<br>- 異体字セレクタの対応<br><br>このテストにより、Kumihan-Formatterの国際化対応と<br>Unicode処理能力を包括的に検証できます。</div>
+<div class="kumihan-div warning">⚠️ **表示に関する注意**<br>一部の文字は表示環境（フォント、OS）により<br>正しく表示されない場合があります。<br>これはテストファイルの問題ではなく、<br>表示環境の制限によるものです。</div>
+        </main>
+
+        <!-- 右サイドバー（注釈・補足情報） -->
+    </div>
+</body>
+</html>

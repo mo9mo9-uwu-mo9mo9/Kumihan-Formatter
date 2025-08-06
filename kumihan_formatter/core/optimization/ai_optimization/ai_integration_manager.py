@@ -5,14 +5,12 @@ Phase B.4-Alpha実装: Phase B統合基盤・66.8%削減維持・AI協調最適�
 統合対象: AdaptiveSettingsManager, TokenEfficiencyAnalyzer, PhaseBIntegrator
 """
 
+import logging
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from kumihan_formatter.core.optimization.adaptive_settings import (
