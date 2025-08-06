@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sample_03_coc_scenario</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    .kumihan-nav {
+        display: none;
+    }
+
+    body {
+        background-color: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    h1, h2 {
+        page-break-after: avoid;
+    }
+
+    p, ul {
+        page-break-inside: avoid;
+    }
+}/* ナビゲーション用スタイル */
+.kumihan-nav {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-prev, .nav-next, .nav-index {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.nav-prev:hover, .nav-next:hover, .nav-index:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.nav-index {
+    background-color: #28a745;
+}
+
+.nav-index:hover {
+    background-color: #1e7e34;
+}
+
+.nav-disabled {
+    background-color: #6c757d;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .page-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-prev, .nav-next, .nav-index {
+        width: 100%;
+        text-align: center;
+    }
+}
+        /* TOCレイアウト用スタイル */
+        body {
+            padding: 0;
+        }
+
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* 右サイドバーが存在する場合の3カラムレイアウト */
+        .layout-wrapper.has-right-sidebar {
+            grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* 右サイドバー（注釈・補足情報用） */
+        .right-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+            display: none; /* デフォルトは非表示 */
+        }
+
+        /* 右サイドバーが有効な場合に表示 */
+        .layout-wrapper.has-right-sidebar .right-sidebar {
+            display: block;
+        }
+
+        .right-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .right-sidebar .annotation {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .right-sidebar .note {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応（大画面） */
+        @media (min-width: 2000px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(500px, 35%) 1fr;
+                gap: 30px;
+                padding: 15px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(300px, 25%) 1fr minmax(300px, 25%);
+            }
+        }
+
+        /* レスポンシブ対応（中画面） */
+        @media (max-width: 1200px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(300px, 25%) 1fr;
+                gap: 15px;
+                padding: 10px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
+            }
+        }
+
+        /* レスポンシブ対応（タブレット） */
+        @media (max-width: 900px) {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .right-sidebar {
+                order: 1;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                display: block;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // トグルボタンの機能
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        });
+    </script>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-1">
+<a href="#heading-1">クトゥルフ神話TRPG シナリオ「古い館の秘密」</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-2">シナリオ概要</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-3">導入</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-4">探索場所</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-5">ウィンスロップ邸外観</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-6">1階：エントランスホール</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-7">2階：主寝室</a>
+<ul>
+<li class="toc-level-4">
+<a href="#heading-8">エドワードの日記</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-3">
+<a href="#heading-9">地下室：禁断の書庫</a>
+<ul>
+<li class="toc-level-4">
+<a href="#heading-10">発見できるもの</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-11">NPCデータ</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-12">エドワード・ウィンスロップの亡霊</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-13">クライマックス</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-14">報酬とクリア条件</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-15">成功時の報酬</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-16">失敗時のペナルティ</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-17">キーパー用メモ</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-18">演出のポイント</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-19">追加の演出案</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-20">ハンドアウト</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="container">
+            <h1 id="heading-1" role="heading" class="kumihan-h1">クトゥルフ神話TRPG シナリオ「古い館の秘密」</h1>
+<span class="kumihan-span highlight">本シナリオはCall of Cthulhu 6th Editionに対応しています</span>
+<h2 id="heading-2" role="heading" class="kumihan-h2">シナリオ概要</h2>
+<div class="kumihan-div bordered">**シナリオタイプ**: クローズド・探索<br>**推奨人数**: 3-4人<br>**推定時間**: 4-6時間<br>**舞台**: 1920年代、アーカム郊外の古い館</div>
+<h3 id="heading-3" role="heading" class="kumihan-h3">導入</h3>
+<p class="kumihan-p">探索者たちは古い友人から一通の手紙を受け取る。手紙の主は故エドワード・ウィンスロップ氏の遺産整理を依頼されている弁護士で、探索者たちにウィンスロップ邸の調査を依頼したいという内容だった。</p>
+<blockquote class="kumihan-blockquote">「親愛なる諸君へ<br><br>故エドワード・ウィンスロップ氏の遺産整理に際し、同氏の所有していた館の調査をお願いしたく、筆を取った次第です。館は長らく無人であり、地元の人々は近づくことを避けています。<br><br>報酬として一人あたり200ドルをお支払いいたします。詳細については同封の地図をご参照ください。<br><br>                               弁護士 ジョナサン・クレイ」</blockquote>
+<h2 id="heading-4" role="heading" class="kumihan-h2">探索場所</h2>
+<h3 id="heading-5" role="heading" class="kumihan-h3">ウィンスロップ邸外観</h3>
+<strong class="kumihan-strong">最初の印象</strong>
+<p class="kumihan-p">19世紀末に建てられた3階建ての大きな館。長年の風雨にさらされ、外壁には蔦が這い、屋根瓦の一部が落ちている。正門の鉄柵は錆び付いているが、まだ開閉は可能だ。</p>
+<div class="kumihan-div warning">**知覚ロール（目標値：60）**<br>- 成功：2階の窓の一つに人影のようなものが見える<br>- 失敗：特に異常は感じない</div>
+<h3 id="heading-6" role="heading" class="kumihan-h3">1階：エントランスホール</h3>
+<span class="kumihan-span highlight">【部屋の説明】</span>
+<p class="kumihan-p">広いエントランスホールには大理石の階段が上階へと続いている。シャンデリアには埃が積もり、床には落ち葉が舞い込んでいる。</p>
+<strong class="kumihan-strong">調査可能なポイント：</strong>
+<ul class="kumihan-ul"><li class="kumihan-li">**暖炉**：古い灰の中から燃え残った紙片</li><li class="kumihan-li">**階段下の扉**：地下室への入り口（鍵がかかっている）</li><li class="kumihan-li">**肖像画**：エドワード・ウィンスロップの肖像</li></ul>
+<pre>【暖炉の紙片】<br>図書館使用ロール（目標値：70）<br>成功：ラテン語の祈祷文の一部<br>　　　&quot;...Ia! Ia! Cthulhu fhtagn...&quot;<br>失敗：判読不明な古い文字</pre>
+<h3 id="heading-7" role="heading" class="kumihan-h3">2階：主寝室</h3>
+<div class="kumihan-div bordered">**部屋の状況**<br><br>4つ柱のベッドが部屋の中央に置かれている。窓際には古い机があり、その上に日記帳が開かれたまま残されている。<br><br>**SAN値チェック（0/1d3）必要**</div>
+<h4 id="heading-8" role="heading" class="kumihan-h4">エドワードの日記</h4>
+<em class="kumihan-em">以下は日記の最後の数ページから抜粋：</em>
+<blockquote class="kumihan-blockquote">「3月15日<br>また、あの夢を見た。海の底から響く呼び声...R&#x27;lyehの街が浮上する幻影...もう眠ることができない。」<br><br>「3月20日<br>地下室で見つけた古い書物を読み続けている。『ネクロノミコン』に記された儀式...これは危険すぎる知識だ。」<br><br>「3月25日<br>彼らが来る。星が正しい位置に並んだとき、偉大なるクトゥルフが目覚める。私は門を開いてしまった...許してくれ...」</blockquote>
+<h3 id="heading-9" role="heading" class="kumihan-h3">地下室：禁断の書庫</h3>
+<details class="kumihan-details spoiler" role="region"><summary>詳細</summary>**地下室の真実**<br><br>地下室は秘密の書庫になっている。中央には石の祭壇があり、周囲には神話的な書物が並んでいる。祭壇の上には『ネクロノミコン』の写本が開かれている。<br><br>**SAN値チェック（1d6/1d10）必要**</details>
+<h4 id="heading-10" role="heading" class="kumihan-h4">発見できるもの</h4>
+<span class="kumihan-span highlight">**神話的書物リスト**</span>
+<ul class="kumihan-ul"><li class="kumihan-li">『ネクロノミコン』（アブドゥル・アルハザード著）</li><li class="kumihan-li">『無名祭祀書』</li><li class="kumihan-li">『黄衣の王』（戯曲）</li><li class="kumihan-li">『ポナペ教本』</li></ul>
+<strong class="kumihan-strong">各書物の調査：</strong>
+<strong class="kumihan-strong">『ネクロノミコン』</strong>
+<ul class="kumihan-ul"><li class="kumihan-li">**神話技能**: +5%</li><li class="kumihan-li">**SAN値ロス**: 1d10</li><li class="kumihan-li">**習得呪文**: 「クトゥルフの召喚」</li></ul>
+<h2 id="heading-11" role="heading" class="kumihan-h2">NPCデータ</h2>
+<h3 id="heading-12" role="heading" class="kumihan-h3">エドワード・ウィンスロップの亡霊</h3>
+<div class="kumihan-div bordered">**STR**: -    **CON**: -    **POW**: 65<br>**DEX**: 40   **APP**: 5    **SIZ**: 60<br>**INT**: 75   **EDU**: 80   **SAN**: 0<br><br>**技能**: 神話学90%, 図書館使用85%, オカルト75%<br><br>**攻撃**: 精神的恐怖（SAN値チェック 1d6/1d10）<br><br>**備考**: 真実を知った者のみに姿を現し、警告を与える</div>
+<h2 id="heading-13" role="heading" class="kumihan-h2">クライマックス</h2>
+<strong class="kumihan-strong">儀式の阻止</strong>
+<p class="kumihan-p">探索者たちが地下室で『ネクロノミコン』を発見すると、本は自動的に開き始める。文字が光り、空間に歪みが生じる。</p>
+<div class="kumihan-div warning">**緊急事態！**<br>- 儀式を阻止するには【オカルト】ロール（目標値：30）<br>- 失敗すると次元の門が開き始める<br>- 3ラウンド以内に阻止できなければ...</div>
+<details role="region" class="kumihan-details"><summary>詳細</summary>**最悪の結末**<br><br>門が完全に開くと、R&#x27;lyehから这い出してきた怪物たちが現実世界に侵入する。探索者たちは永続的なSAN値ロス（2d10）を受け、シナリオは破滅的な結末を迎える。</details>
+<h2 id="heading-14" role="heading" class="kumihan-h2">報酬とクリア条件</h2>
+<h3 id="heading-15" role="heading" class="kumihan-h3">成功時の報酬</h3>
+<ul class="kumihan-ul"><li class="kumihan-li">**経験値**: 1d10+5</li><li class="kumihan-li">**SAN値回復**: 1d6（儀式阻止成功時のみ）</li><li class="kumihan-li">**技能向上**: 図書館使用+1d4, オカルト+1d3</li></ul>
+<h3 id="heading-16" role="heading" class="kumihan-h3">失敗時のペナルティ</h3>
+<span class="kumihan-span highlight">**重大な結果**<br>- 永続的SAN値ロス: 2d10<br>- 不定の狂気の発症可能性<br>- 今後の神話的遭遇で追加SAN値ロス</span>
+<h2 id="heading-17" role="heading" class="kumihan-h2">キーパー用メモ</h2>
+<h3 id="heading-18" role="heading" class="kumihan-h3">演出のポイント</h3>
+<ol class="kumihan-ol"><li class="kumihan-li">**雰囲気作り**: 古い館の不気味さを強調</li><li class="kumihan-li">**情報の小出し**: 真実は段階的に明かす</li><li class="kumihan-li">**プレイヤーの選択**: 調査方法はプレイヤーに委ねる</li><li class="kumihan-li">**緊張感**: クライマックスでは時間制限を設ける</li></ol>
+<h3 id="heading-19" role="heading" class="kumihan-h3">追加の演出案</h3>
+<div class="kumihan-div">「風が館を揺らし、どこからか軋む音が響いてくる...」</div>
+<div class="kumihan-div info">**キーパーへのヒント**<br>- プレイヤーが迷ったら、ウィンスロップの亡霊にヒントを与えさせる<br>- 調査が行き詰まったら、新しい手がかりを配置する<br>- 恐怖演出は適度に抑え、楽しさを重視する</div>
+<h2 id="heading-20" role="heading" class="kumihan-h2">ハンドアウト</h2>
+<div class="kumihan-div bordered">**探索者全員へ**<br><br>あなたたちは弁護士ジョナサン・クレイから依頼を受け、故エドワード・ウィンスロップ氏の館を調査することになった。報酬は一人200ドル。館は長らく無人で、地元の人々は近づくことを避けているという。<br><br>**調査の目的**: 館の状況確認と遺品の整理<br>**期限**: 特になし<br>**注意事項**: 何か異常があれば即座に報告すること</div>
+<strong class="kumihan-strong">シナリオの所要時間: 約4-6時間</strong>
+<p class="kumihan-p">このシナリオは探索者たちの行動によって展開が変わります。柔軟に対応し、プレイヤー全員が楽しめるよう心がけてください。</p>
+        </main>
+
+        <!-- 右サイドバー（注釈・補足情報） -->
+    </div>
+</body>
+</html>

@@ -25,6 +25,9 @@ help:
 	@echo "  make clean         - 一時ファイル削除"
 	@echo "  make claude-check  - CLAUDE.md管理・検証"
 	@echo "  make pre-commit    - pre-commitフック実行"
+	@echo "  make check-tmp-rule - tmp/配下強制ルール違反チェック"
+	@echo "  make enforce-tmp-rule - tmp/配下強制ルール適用（対話的）"
+	@echo "  make enforce-tmp-rule-auto - tmp/配下強制ルール適用（自動）"
 	@echo ""
 
 # 基本コマンド実装
@@ -109,3 +112,73 @@ pre-commit:
 	print('🔍 Lint Check:', '✅ PASSED' if result2.returncode == 0 else '❌ FAILED'); \
 	sys.exit(max(result.returncode, result2.returncode))"
 	@echo "✅ pre-commitフック完了"
+
+# 拡張ファイル整理システム
+deep-clean:
+	@echo "🧹 完全クリーンアップ実行中..."
+	$(PYTHON) scripts/cleanup.py --auto
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -delete
+	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	rm -rf htmlcov/
+	rm -rf .coverage
+	rm -rf .pytest_cache/
+	rm -rf .tox/
+	rm -rf build/
+	rm -rf dist/
+	rm -rf .cache/
+	rm -rf .performance_cache/
+	rm -rf .quality_data/
+	rm -rf .benchmarks/
+	@echo "✅ 完全クリーンアップ完了"
+
+organize:
+	@echo "📁 ファイル整理実行中..."
+	$(PYTHON) scripts/file-organizer.py --interactive
+	@echo "✅ ファイル整理完了"
+
+organize-auto:
+	@echo "🤖 自動ファイル整理実行中..."
+	$(PYTHON) scripts/file-organizer.py --organize
+	@echo "✅ 自動ファイル整理完了"
+
+scan-files:
+	@echo "🔍 ファイルスキャン実行中..."
+	$(PYTHON) scripts/file-organizer.py --scan
+	@echo "✅ ファイルスキャン完了"
+
+find-duplicates:
+	@echo "🔍 重複ファイル検出実行中..."
+	$(PYTHON) scripts/file-organizer.py --duplicates
+	@echo "✅ 重複ファイル検出完了"
+
+cleanup-preview:
+	@echo "👀 クリーンアップ対象プレビュー中..."
+	$(PYTHON) scripts/cleanup.py --dry-run
+	@echo "✅ プレビュー完了"
+
+cleanup-interactive:
+	@echo "💬 対話的クリーンアップ実行中..."
+	$(PYTHON) scripts/cleanup.py --interactive
+	@echo "✅ 対話的クリーンアップ完了"
+
+# tmp/配下強制ルール関連タスク
+check-tmp-rule:
+	@echo "🔍 tmp/配下強制ルール違反チェック中..."
+	$(PYTHON) scripts/cleanup.py --check-tmp-rule
+	@echo "✅ tmp/配下強制ルールチェック完了"
+
+enforce-tmp-rule:
+	@echo "🔧 tmp/配下強制ルール適用中..."
+	$(PYTHON) scripts/cleanup.py --enforce-tmp-rule
+	@echo "✅ tmp/配下強制ルール適用完了"
+
+enforce-tmp-rule-auto:
+	@echo "🤖 tmp/配下強制ルール自動適用中..."
+	$(PYTHON) scripts/cleanup.py --enforce-tmp-rule-auto
+	@echo "✅ tmp/配下強制ルール自動適用完了"
+
+tmp-organizer:
+	@echo "📁 tmp/配下強制ルール（file-organizer版）適用中..."
+	$(PYTHON) scripts/file-organizer.py --enforce-tmp-rule
+	@echo "✅ tmp/配下強制ルール（file-organizer版）適用完了"

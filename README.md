@@ -62,7 +62,8 @@ feature-branch                    # Issue番号なし
 **システム的制約**:
 - 日本語ブランチ名は **Git hooks・GitHub Actions で自動検出・拒否**
 - **初回セットアップ時は必ず** `./scripts/install-hooks.sh` を実行
-- 詳細は [CLAUDE.md](./CLAUDE.md) を参照
+- **一時ファイル出力は `tmp/` 配下必須** - プロジェクトルート直下への出力は禁止
+- 詳細は [CLAUDE.md](./CLAUDE.md) と [コーディング規約](./docs/dev/coding-standards.md) を参照
 
 ### 🚀 初回セットアップガイド
 

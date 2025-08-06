@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20_trpg_scenario</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    background-color: #ffeb3b;  /* デフォルトの黄色背景 */
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}
+
+/* 引用ブロック */
+blockquote, .kumihan-blockquote {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid #007acc;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    font-style: italic;
+    color: #495057;
+}
+
+/* 引用ブロック内の段落 */
+blockquote p, .kumihan-blockquote p {
+    margin: 0.5em 0;
+    text-align: left;
+}
+
+blockquote p:last-child, .kumihan-blockquote p:last-child {
+    margin-bottom: 0;
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    .kumihan-nav {
+        display: none;
+    }
+
+    body {
+        background-color: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    h1, h2 {
+        page-break-after: avoid;
+    }
+
+    p, ul {
+        page-break-inside: avoid;
+    }
+}/* ナビゲーション用スタイル */
+.kumihan-nav {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-prev, .nav-next, .nav-index {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.nav-prev:hover, .nav-next:hover, .nav-index:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.nav-index {
+    background-color: #28a745;
+}
+
+.nav-index:hover {
+    background-color: #1e7e34;
+}
+
+.nav-disabled {
+    background-color: #6c757d;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .page-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-prev, .nav-next, .nav-index {
+        width: 100%;
+        text-align: center;
+    }
+}
+        /* TOCレイアウト用スタイル */
+        body {
+            padding: 0;
+        }
+
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* 右サイドバーが存在する場合の3カラムレイアウト */
+        .layout-wrapper.has-right-sidebar {
+            grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* 右サイドバー（注釈・補足情報用） */
+        .right-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+            display: none; /* デフォルトは非表示 */
+        }
+
+        /* 右サイドバーが有効な場合に表示 */
+        .layout-wrapper.has-right-sidebar .right-sidebar {
+            display: block;
+        }
+
+        .right-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .right-sidebar .annotation {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .right-sidebar .note {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応（大画面） */
+        @media (min-width: 2000px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(500px, 35%) 1fr;
+                gap: 30px;
+                padding: 15px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(300px, 25%) 1fr minmax(300px, 25%);
+            }
+        }
+
+        /* レスポンシブ対応（中画面） */
+        @media (max-width: 1200px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(300px, 25%) 1fr;
+                gap: 15px;
+                padding: 10px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
+            }
+        }
+
+        /* レスポンシブ対応（タブレット） */
+        @media (max-width: 900px) {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .right-sidebar {
+                order: 1;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                display: block;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // トグルボタンの機能
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        });
+    </script>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-1">
+<a href="#heading-1">第1章：古書店「クロニクル」</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-2">店内の観察</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-3">サラ・ホワイトへの聞き込み</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-4">第2章：手がかりを追え</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-5">ミスカトニック大学図書館</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-6">ビリングス邸</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-7">第3章：真相と対決</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-8">古書店地下の隠し部屋</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-9">プレイヤー配布用資料</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="container">
+
+<div class="kumihan-error-summary" id="error-summary">
+    <h3>🔍 記法エラーレポート</h3>
+    <div class="error-stats">
+        <span class="error-count">❌ エラー: 24件</span>
+        <span class="warning-count">⚠️ 警告: 0件</span>
+        <span class="total-count">📊 合計: 24件</span>
+    </div>
+    <div class="error-statistics-report">
+<h3>エラー統計レポート</h3>
+<p class="timestamp">生成日時: 2025-08-02T11:32:37.186092</p>
+<div class="stats-overview">
+<div class="stat-item"><span class="stat-label">総エラー数:</span> <span class="stat-value">24</span></div>
+<div class="stat-item"><span class="stat-label">修正提案数:</span> <span class="stat-value">24</span></div>
+</div>
+<div class="severity-chart">
+<h4>重要度別分布</h4>
+
+                <div class="severity-bar">
+                    <span class="severity-label">エラー:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 100.0%; background-color: #ff4444;"></div>
+                        <span class="bar-value">24 (100.0%)</span>
+                    </div>
+                </div>
+
+</div>
+<div class="pattern-analysis">
+<h4>最も多いエラーパターン</h4>
+
+            <div class="pattern-item">
+                <div class="pattern-header">
+                    <span class="pattern-rank">#1</span>
+                    <span class="pattern-name">一般的な構文エラー</span>
+                    <span class="pattern-stats">24件 (100.0%)</span>
+                </div>
+                <div class="pattern-example">例: リスト解析エラー: 'ListParserCore' object has no attribute 'parse_ordered_list'</div>
+            </div>
+
+</div>
+<div class="line-range-chart">
+<h4>エラー発生行の分布</h4>
+
+                <div class="range-bar">
+                    <span class="range-label">行 11-50:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 8.333333333333332%; background-color: #6699cc;"></div>
+                        <span class="bar-value">2件 (8.3%)</span>
+                    </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="49">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="50">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="51">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="52">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="range-bar">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="53">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="range-label">行 51-100:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 29.166666666666668%; background-color: #6699cc;"></div>
+                        <span class="bar-value">7件 (29.2%)</span>
+                    </div>
+                </div>
+
+
+                <div class="range-bar">
+                    <span class="range-label">行 100+:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 62.5%; background-color: #6699cc;"></div>
+                        <span class="bar-value">15件 (62.5%)</span>
+                    </div>
+                </div>
+
+</div>
+</div>
+    <details class="error-details">
+        <summary>詳細を表示</summary>
+        <div class="error-list">
+
+            <div class="error-item kumihan-error-error" data-line="49">
+                <div class="error-header">
+                    <span class="error-number">#1</span>
+                    <span class="error-title">記法エラー (行 49)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **所在地**: ボストン市内、大学街の一角</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **所在地**: ボストン市内、大学街の一角</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="87">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="88">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            <div class="error-item kumihan-error-error" data-line="50">
+                <div class="error-header">
+                    <span class="error-number">#2</span>
+                    <span class="error-title">記法エラー (行 50)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="95">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **営業時間**: 10:00-19:00（日曜定休）</code><br><em>提案: リスト記法を確認してください</em>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="96">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **営業時間**: 10:00-19:00（日曜定休）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="51">
+                <div class="error-header">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="103">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-number">#3</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="104">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-title">記法エラー (行 51)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **店主**: エドワード・マレン（67歳）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **店主**: エドワード・マレン（67歳）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="52">
+                <div class="error-header">
+                    <span class="error-number">#4</span>
+                    <span class="error-title">記法エラー (行 52)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **従業員**: サラ・ホワイト（24歳、アルバイト学生）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **従業員**: サラ・ホワイト（24歳、アルバイト学生）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="53">
+                <div class="error-header">
+                    <span class="error-number">#5</span>
+                    <span class="error-title">記法エラー (行 53)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **特徴**: 稀覯本・古地図・手稿類を専門とする</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **特徴**: 稀覯本・古地図・手稿類を専門とする</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="87">
+                <div class="error-header">
+                    <span class="error-number">#6</span>
+                    <span class="error-title">記法エラー (行 87)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 成功：マレン氏は本当に困惑している</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 成功：マレン氏は本当に困惑している</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="88">
+                <div class="error-header">
+                    <span class="error-number">#7</span>
+                    <span class="error-title">記法エラー (行 88)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 大成功：何か#イタリック# 超自然的な現象#イタリック#を疑っている</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 大成功：何か#イタリック# 超自然的な現象#イタリック#を疑っている</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="95">
+                <div class="error-header">
+                    <span class="error-number">#8</span>
+                    <span class="error-title">記法エラー (行 95)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 成功：書棚に不自然な#下線# 空白#下線#がある</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 成功：書棚に不自然な#下線# 空白#下線#がある</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="96">
+                <div class="error-header">
+                    <span class="error-number">#9</span>
+                    <span class="error-title">記法エラー (行 96)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 大成功：床に#ハイライト color=#e6ffe6# 奇妙な粉末#ハイライト color=#e6ffe6#の痕跡</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 大成功：床に#ハイライト color=#e6ffe6# 奇妙な粉末#ハイライト color=#e6ffe6#の痕跡</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="103">
+                <div class="error-header">
+                    <span class="error-number">#10</span>
+                    <span class="error-title">記法エラー (行 103)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 成功：最近、#コード# 変な客#コード#が来ていたと証言</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 成功：最近、#コード# 変な客#コード#が来ていたと証言</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="104">
+                <div class="error-header">
+                    <span class="error-number">#11</span>
+                    <span class="error-title">記法エラー (行 104)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 大成功：その客は#イタリック# 古い言語で何かを呟いていた#イタリック#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 大成功：その客は#イタリック# 古い言語で何かを呟いていた#イタリック#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="223">
+                <div class="error-header">
+                    <span class="error-number">#12</span>
+                    <span class="error-title">記法エラー (行 223)</span>
+                    <span class="error-severity">ERROR</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="223">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="224">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="error-content">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="225">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **マレン**: 狂気に陥った店主（HP:8, 回避:25）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **マレン**: 狂気に陥った店主（HP:8, 回避:25）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="228">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="229">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="230">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="231">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            <div class="error-item kumihan-error-error" data-line="224">
+                <div class="error-header">
+                    <span class="error-number">#13</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="234">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-title">記法エラー (行 224)</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="235">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-severity">ERROR</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="236">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **召喚されかけの存在**: 不完全な化身（HP:15, 装甲:2）</code><br><em>提案: リスト記法を確認してください</em>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="239">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **召喚されかけの存在**: 不完全な化身（HP:15, 装甲:2）</mark></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="240">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="241">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="225">
+                <div class="error-header">
+                    <span class="error-number">#14</span>
+                    <span class="error-title">記法エラー (行 225)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **ダゴン**: 小型の従者×2（HP:6, 回避:40）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **ダゴン**: 小型の従者×2（HP:6, 回避:40）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="228">
+                <div class="error-header">
+                    <span class="error-number">#15</span>
+                    <span class="error-title">記法エラー (行 228)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>1. **直接戦闘**：武器での攻撃</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>1. **直接戦闘**：武器での攻撃</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="229">
+                <div class="error-header">
+                    <span class="error-number">#16</span>
+                    <span class="error-title">記法エラー (行 229)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>2. **儀式妨害**：#太字# オカルト#太字#判定で儀式を中断</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>2. **儀式妨害**：#太字# オカルト#太字#判定で儀式を中断</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="230">
+                <div class="error-header">
+                    <span class="error-number">#17</span>
+                    <span class="error-title">記法エラー (行 230)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>3. **説得**：#太字# 心理学#太字#でマレンを正気に戻す試み</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>3. **説得**：#太字# 心理学#太字#でマレンを正気に戻す試み</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="231">
+                <div class="error-header">
+                    <span class="error-number">#18</span>
+                    <span class="error-title">記法エラー (行 231)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>4. **魔術対抗**：クトゥルフ神話技能での対抗</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>4. **魔術対抗**：クトゥルフ神話技能での対抗</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="234">
+                <div class="error-header">
+                    <span class="error-number">#19</span>
+                    <span class="error-title">記法エラー (行 234)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- マレンの無力化</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- マレンの無力化</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="235">
+                <div class="error-header">
+                    <span class="error-number">#20</span>
+                    <span class="error-title">記法エラー (行 235)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 三冊の書物の回収または破壊</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 三冊の書物の回収または破壊</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="236">
+                <div class="error-header">
+                    <span class="error-number">#21</span>
+                    <span class="error-title">記法エラー (行 236)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 召喚の阻止</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 召喚の阻止</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="239">
+                <div class="error-header">
+                    <span class="error-number">#22</span>
+                    <span class="error-title">記法エラー (行 239)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 化身の完全召喚→#ハイライト color=red# SAN値-1d10#ハイライト color=red#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 化身の完全召喚→#ハイライト color=red# SAN値-1d10#ハイライト color=red#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="240">
+                <div class="error-header">
+                    <span class="error-number">#23</span>
+                    <span class="error-title">記法エラー (行 240)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- ボストン市街への被害拡大</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- ボストン市街への被害拡大</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="241">
+                <div class="error-header">
+                    <span class="error-number">#24</span>
+                    <span class="error-title">記法エラー (行 241)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 探索者の#下線# 逃走#下線#または#下線# 全滅#下線#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 探索者の#下線# 逃走#下線#または#下線# 全滅#下線#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+        </div>
+    </details>
+</div>
+
+<div class="kumihan-div box">📋 **シナリオ詳細**<br><br>- **タイトル**: 消えた書物の謎<br>- **システム**: Call of Cthulhu 6th Edition<br>- **プレイ人数**: 3-4人（推奨）<br>- **プレイ時間**: 4-6時間<br>- **推奨技能**: 図書館、心理学、目星、聞き耳<br>- **難易度**: 初心者〜中級者向け</div>
+<div class="kumihan-div warning">⚠️ **GMへの重要な注意事項**<br>このシナリオには<strong class="kumihan-strong"></strong> 一部ショッキングな描写<strong class="kumihan-strong"></strong>が含まれます。<br>セッション前に参加者の同意を得てください。</div>
+<blockquote class="kumihan-blockquote">1925年、ボストン。<br>古書店を営む<strong class="kumihan-strong"></strong> エドワード・マレン氏<strong class="kumihan-strong"></strong>から、<br>探索者たちに<em class="kumihan-em"></em> 奇妙な依頼<em class="kumihan-em"></em>が舞い込む。<br><br>「店の<div class="kumihan-div highlight">color=</div>ffe6e6# 貴重な古書が次々と消失#ハイライト color=#ffe6e6#している。<br>警察は<u class="kumihan-u"></u> 内部の犯行<u class="kumihan-u"></u>を疑っているが、<br>私にはそれ以外の<code></code> 何か<code></code>が関わっているように思えてならない...」</blockquote>
+<h1 id="heading-1" role="heading" class="kumihan-h1">第1章：古書店「クロニクル」</h1>
+<p class="kumihan-p">🏪 **古書店「クロニクル」**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **所在地**: ボストン市内、大学街の一角', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **営業時間**: 10:00-19:00（日曜定休）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **店主**: エドワード・マレン（67歳）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **従業員**: サラ・ホワイト（24歳、アルバイト学生）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **特徴**: 稀覯本・古地図・手稿類を専門とする', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<details role="region" class="kumihan-details"><summary>詳細</summary>📚 **消失した書物一覧**<br><br>1. <strong class="kumihan-strong"></strong> 『ネクロノミコン』<strong class="kumihan-strong"></strong>（15世紀写本）<br>   - 消失日：3日前<br>   - 最後の目撃：店主が夜間整理中に確認<br><br>2. <strong class="kumihan-strong"></strong> 『黄衣の王』戯曲集<strong class="kumihan-strong"></strong>（初版本）<br>   - 消失日：2日前  <br>   - 状況：朝の開店時に発見<br><br>3. <strong class="kumihan-strong"></strong> 『ドーロの秘密』<strong class="kumihan-strong"></strong>（羊皮紙写本）<br>   - 消失日：昨日<br>   - 特記：金庫に保管していたにも関わらず消失<br><br>#注意#<br>これらの書物には共通点があります：<br>すべて<div class="kumihan-div highlight">color=yellow</div> オカルト関連<div class="kumihan-div highlight">color=yellow</div>の稀覯本であること。</details>
+<div class="kumihan-div info">💡 **探索者が最初に得られる情報**<br><br><strong class="kumihan-strong"></strong><br>エドワード・マレンからの証言</div>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 成功：マレン氏は本当に困惑している', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 大成功：何か#イタリック# 超自然的な現象#イタリック#を疑っている', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<h3 id="heading-2" role="heading" class="kumihan-h3">店内の観察</h3>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 成功：書棚に不自然な#下線# 空白#下線#がある', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 大成功：床に#ハイライト color=#e6ffe6# 奇妙な粉末#ハイライト color=#e6ffe6#の痕跡', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<h3 id="heading-3" role="heading" class="kumihan-h3">サラ・ホワイトへの聞き込み</h3>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 成功：最近、#コード# 変な客#コード#が来ていたと証言', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 大成功：その客は#イタリック# 古い言語で何かを呟いていた#イタリック#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<h1 id="heading-4" role="heading" class="kumihan-h1">第2章：手がかりを追え</h1>
+<details class="kumihan-details spoiler" role="region"><summary>詳細</summary>🎭 **GM専用情報 - 重要NPC詳細**<br><br>### プロフェッサー・ヘンリー・アーミテイジ<br>- **正体**: ミスカトニック大学図書館司書<br>- **役割**: 情報提供者（善良）<br>- **知識**: 消失した書物の危険性を理解している<br>- **秘密**: 実は#太字# 秘密結社「銀の薄明会」#太字#のメンバー<br><br>### リチャード・ビリングス<br>- **正体**: 神話の知識を持つコレクター  <br>- **役割**: 黒幕候補（実は無関係）<br>- **特徴**: 怪しい行動で探索者を混乱させる<br>- **真実**: ただの#イタリック# 熱心な収集家#イタリック#<br><br>### ???（真の黒幕）<br>- **正体**: #取り消し線# ████████#取り消し線#<br>- **目的**: 三冊の書物で#ハイライト color=#ff6666# 召喚儀式<div class="kumihan-div highlight">color=</div>ff6666#を行う<br>- **脅威度**: 高（SAN値減少注意）</details>
+<h2 id="heading-5" role="heading" class="kumihan-h2">ミスカトニック大学図書館</h2>
+<div class="kumihan-div box">📚 **調査可能な情報**<br><br><strong class="kumihan-strong"></strong> 図書館<strong class="kumihan-strong"></strong>判定：<br>- 成功：消失した書物について基本情報を得る<br>- 大成功：過去に似たような<u class="kumihan-u"></u> 盗難事件<u class="kumihan-u"></u>があったことを発見<br><br><strong class="kumihan-strong"></strong> オカルト<strong class="kumihan-strong"></strong>判定：<br>- 成功：三冊の書物の<div class="kumihan-div highlight">color=orange</div> 組み合わせ<div class="kumihan-div highlight">color=orange</div>が危険であることを理解<br>- 大成功：具体的な<code></code> 召喚儀式<code></code>の可能性を推測<br><br><strong class="kumihan-strong"></strong> 英語<strong class="kumihan-strong"></strong>判定：<br>- 成功：古い新聞記事で類似事件を発見<br>- 大成功：事件の<em class="kumihan-em"></em> パターン<em class="kumihan-em"></em>を読み解く</div>
+<h2 id="heading-6" role="heading" class="kumihan-h2">ビリングス邸</h2>
+<div class="kumihan-div warning">⚠️ **危険な場所**<br>この邸宅には<strong class="kumihan-strong"></strong> 魔術的防御<strong class="kumihan-strong"></strong>が施されています。<br>無謀な侵入は<div class="kumihan-div highlight">color=</div>ffcccc# SAN値チェック#ハイライト color=#ffcccc#の対象となります。</div>
+<details role="region" class="kumihan-details"><summary>詳細</summary>🏚️ **ビリングス邸の詳細**<br><br>### 外観<br>- 19世紀建築のビクトリア様式<br>- 庭は荒れ放題、#イタリック# 不気味な雰囲気#イタリック#<br>- 窓には厚いカーテン<br><br>### 内部構造<br>1. **1階**：応接間、書斎、厨房<br>2. **2階**：寝室、書庫<br>3. **地下**：#ネタバレ# 儀式の間（真の黒幕が使用）#ネタバレ#<br><br>### 調査結果<br>#太字# 目星#太字#：奇妙な#下線# シンボル#下線#を発見<br>#太字# オカルト#太字#：シンボルの意味を理解→#ハイライト color=yellow# SAN値-1#ハイライト color=yellow#<br>#太字# 聞き耳#太字#：地下から#コード# 詠唱の声#コード#</details>
+<h1 id="heading-7" role="heading" class="kumihan-h1">第3章：真相と対決</h1>
+<details class="kumihan-details spoiler" role="region"><summary>詳細</summary>🔍 **事件の真相**<br><br>### 黒幕の正体<br>実は#太字# 店主エドワード・マレン#太字#こそが黒幕でした。<br><br>### 動機<br>- 妻の病気を治すため、#ハイライト color=#ffeecc# 禁断の知識<div class="kumihan-div highlight">color=</div>ffeecc#に手を出した<br>- 三冊の書物を使った#下線# 治癒の儀式#下線#を計画<br>- しかし儀式は実際には#取り消し線# 治癒ではなく#取り消し線#<div class="kumihan-div highlight">color=red</div> 邪悪な存在の召喚<div class="kumihan-div highlight">color=red</div><br><br>### 儀式の進行状況<br>- **第一段階**：『ネクロノミコン』で基盤を作成 ✅完了<br>- **第二段階**：『黄衣の王』で呼び声を発する ✅完了  <br>- **第三段階**：『ドーロの秘密』で扉を開く ⚠️進行中<br><br>#注意#<br>儀式が完了すると、#太字# ハスターの化身#太字#が召喚されます！<br>探索者は#ハイライト color=#ff9999# 今夜中<div class="kumihan-div highlight">color=</div>ff9999#に阻止しなければなりません。</details>
+<h2 id="heading-8" role="heading" class="kumihan-h2">古書店地下の隠し部屋</h2>
+<p class="kumihan-p">⚡ **戦闘情報**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **マレン**: 狂気に陥った店主（HP:8, 回避:25）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **召喚されかけの存在**: 不完全な化身（HP:15, 装甲:2）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **ダゴン**: 小型の従者×2（HP:6, 回避:40）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '1. **直接戦闘**：武器での攻撃', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '2. **儀式妨害**：#太字# オカルト#太字#判定で儀式を中断', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '3. **説得**：#太字# 心理学#太字#でマレンを正気に戻す試み', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '4. **魔術対抗**：クトゥルフ神話技能での対抗', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- マレンの無力化', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 三冊の書物の回収または破壊', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 召喚の阻止', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 化身の完全召喚→#ハイライト color=red# SAN値-1d10#ハイライト color=red#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- ボストン市街への被害拡大', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 探索者の#下線# 逃走#下線#または#下線# 全滅#下線#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<div class="kumihan-div">✨ **エンディング分岐** ✨</div>
+<div class="kumihan-div info">🎉 **ハッピーエンド**<br><br>- マレンを説得に成功<br>- 書物を安全に回収<br>- 奥さんは自然治癒の兆し<br>- 探索者は英雄として讃えられる<br><br>**報酬**：<br>- SAN値回復：+1d4<br>- 技能向上：図書館 +5、オカルト +3<br>- 金銭報酬：$500</div>
+<div class="kumihan-div info">😊 **ノーマルエンド**<br><br>- 召喚は阻止したが犠牲も<br>- マレンは精神病院送り<br>- 書物は大学が管理<br>- 事件は表沙汰にならず<br><br>**報酬**：<br>- SAN値回復：+1d2  <br>- 技能向上：任意の技能 +3<br>- 金銭報酬：$200</div>
+<div class="kumihan-div warning">😱 **バッドエンド**<br><br>- 化身の召喚完了<br>- ボストンに<div class="kumihan-div highlight">color=red</div> 恐怖の夜<div class="kumihan-div highlight">color=red</div><br>- 探索者は逃走を余儀なくされる<br>- 新聞は<em class="kumihan-em"></em> 原因不明のガス爆発<em class="kumihan-em"></em>と報道<br><br>**ペナルティ**：<br>- SAN値減少：-1d6<br>- 社会的地位の低下<br>- トラウマ：「古書店恐怖症」獲得</div>
+<h2 id="heading-9" role="heading" class="kumihan-h2">プレイヤー配布用資料</h2>
+<pre class="code-block">【ハンドアウト①：マレンからの手紙】<br><br>親愛なる友人へ<br><br>貴方にお願いがあります。<br>私の店で奇妙な事件が続いています。<br>貴重な書物が、まるで消えるように無くなってしまうのです。<br><br>警察は内部犯行を疑っていますが、<br>私には何か別の原因があるように思えてなりません。<br>どうか調査にご協力ください。<br><br>報酬は十分にお支払いいたします。<br><br>                     エドワード・マレン<br>                     古書店「クロニクル」店主</pre>
+<pre class="code-block">【ハンドアウト②：新聞記事の切り抜き】<br><br>ボストン・グローブ紙　1925年10月15日<br><br>『古書店で連続盗難事件』<br><br>市内の古書店「クロニクル」で貴重書の盗難が相次いでいる。<br>被害額は推定$2,000以上。警察は内部関係者による<br>犯行の可能性が高いとして捜査を進めている。<br><br>同店のマレン店主は「防犯に気をつけていたのに...」と<br>困惑を隠せない様子。近隣住民からは「最近、夜中に<br>変な光が見える」との証言も寄せられている。</pre>
+<div class="kumihan-div box">👨‍🏫 **セッション運営のコツ**<br><br>### 導入部の進め方<br>- マレンは最初は#太字# 被害者らしく#太字#振る舞わせる<br>- 探索者の疑念は#イタリック# 段階的に#イタリック#高めていく<br>- 証拠は小出しにして推理を楽しませる<br><br>### 中盤の演出<br>- #ハイライト color=yellow# 時間制限#ハイライト color=yellow#を意識させる演出<br>- NPCは#下線# 嘘と真実を織り交ぜて#下線#話させる  <br>- 調査場所では#コード# 段階的な情報開示#コード#を心がける<br><br>### 終盤の盛り上げ<br>- 真相判明時の#太字# ドラマチックな演出#太字#<br>- 戦闘では選択肢を多く提示<br>- エンディングは探索者の行動を#ハイライト color=lightblue# 適切に評価#ハイライト color=lightblue#<br><br>### セッション後<br>- プレイヤーの感想を聞く<br>- 次回セッションへの#イタリック# 布石#イタリック#があれば仕込む</div>
+<div class="kumihan-div">📜 **シナリオ「消えた書物の謎」完**<br><br>素晴らしい冒険をお楽しみください！</div>
+<p class="kumihan-p">---</p>
+<div class="kumihan-div info">💡 **クレジット**<br>- 作成：Kumihan-Formatter サンプル制作チーム<br>- システム：Call of Cthulhu 6th Edition（Chaosium Inc.）<br>- 記法：Kumihan記法 v2.2.0-alpha対応<br><br>このシナリオはKumihan記法の実践例として作成されました。<br>実際のTRPGセッションでもご活用いただけます。</div>
+        </main>
+
+        <!-- 右サイドバー（注釈・補足情報） -->
+    </div>
+</body>
+</html>

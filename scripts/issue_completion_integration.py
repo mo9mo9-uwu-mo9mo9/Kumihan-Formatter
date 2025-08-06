@@ -240,6 +240,7 @@ class IssueCompletionIntegrator:
 def main():
     """CLI エントリーポイント"""
     import argparse
+    from pathlib import Path
 
     parser = argparse.ArgumentParser(description="Issue Completion Integration")
     parser.add_argument("command", choices=["process-issue", "release-integration"])
@@ -282,11 +283,17 @@ def main():
                 print(f"   - {action}")
 
         if args.output:
-            with open(args.output, 'w', encoding='utf-8') as f:
-                json.dump(result if 'result' in locals() else {}, f, indent=2, ensure_ascii=False)
+            # tmp/配下にファイル出力
+            tmp_dir = Path("tmp")
+            tmp_dir.mkdir(exist_ok=True)
+            output_path = tmp_dir / Path(args.output).name
+
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+            print(f"📄 結果を {output_path} に保存しました")
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        print(f"❌ エラーが発生しました: {e}", file=sys.stderr)
         sys.exit(1)
 
 

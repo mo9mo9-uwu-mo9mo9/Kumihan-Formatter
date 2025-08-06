@@ -1,0 +1,116 @@
+エラーレポート: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+==================================================
+
+検出されたエラー数: 16
+
+エラー 1:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 2:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 3:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 4:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 5:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 6:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 7:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 8:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 9:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 10:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 11:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 12:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 13:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 14:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 15:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt
+
+エラー 16:
+  重要度: warning
+  カテゴリ: syntax
+  タイトル: 記法エラー
+  メッセージ: 未完了のマーカー: 終了マーカー # が見つかりません
+  ファイル: /Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/basic/02_all_notations.txt

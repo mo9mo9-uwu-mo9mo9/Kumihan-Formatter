@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21_technical_manual</title>
+    <style>
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif";
+    line-height: 1.8;
+    color: #333;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    height: fit-content;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+/* 見出し */
+h1, h2, h3, h4, h5 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 3px solid #333;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+/* リスト */
+ul, ol {
+    margin-bottom: 1.5em;
+    padding-left: 2em;
+    list-style-position: outside;  /* マーカーを外側に配置 */
+    line-height: 1.8;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;  /* ブロック要素の位置調整用 */
+    line-height: 1.8;
+}
+
+/* リスト項目内の改行を適切に処理 */
+li br {
+    line-height: 1.9;
+}
+
+/* ネストしたリスト */
+li ul, li ol {
+    margin: 0.6em 0;
+    padding-left: 1.5em;
+}
+
+/* リスト項目内のスタイル要素 */
+li strong, li em {
+    line-height: inherit;
+}
+
+/* インライン要素 */
+strong {
+    font-weight: bold;
+    color: #000;
+}
+
+em {
+    font-style: italic;
+}
+
+/* マーカー位置調整 */
+ul {
+    list-style-type: disc;
+    list-style-position: outside;
+}
+
+ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
+/* ブロック要素を含むリスト項目の特別処理 */
+li {
+    position: relative;
+    overflow: visible;  /* マーカーが見切れないように */
+}/* 枠線 */
+.box {
+    border: 2px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* 枠線内の段落は左揃え */
+.box p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* 枠線内のリストも左揃え */
+.box ul, .box ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* 枠線内のコードブロックは中央寄せ */
+.box .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 枠線内のコードブロック内の段落 */
+.box .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* ハイライト */
+.highlight {
+    background-color: #ffeb3b;  /* デフォルトの黄色背景 */
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+/* ハイライト内の段落は左揃え */
+.highlight p {
+    text-align: left;
+    margin: 0.5em 0;
+}
+
+/* ハイライト内のリストも左揃え */
+.highlight ul, .highlight ol {
+    text-align: left;
+    margin: 0;
+}
+
+/* ハイライト内のコードブロックは中央寄せ */
+.highlight .code-block {
+    align-self: center;
+    margin: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ハイライト内のコードブロック内の段落 */
+.highlight .code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* コードブロック */
+.code-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-left: 4px solid #007acc;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+}
+
+/* コードブロック内の段落 */
+.code-block p {
+    margin: 0;
+    text-align: left;
+}
+
+/* インラインコード */
+.inline-code {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+/* ネストしたブロック要素の調整 */
+.box .highlight {
+    margin: 0.5em 0;  /* 枠線内のハイライトは上下マージンを削減 */
+}
+
+.highlight .box {
+    margin: 0.5em 0;  /* ハイライト内の枠線は上下マージンを削減 */
+}
+
+.box .code-block {
+    margin: 0.5em 0;  /* 枠線内のコードブロックは上下マージンを削減 */
+}
+
+/* さらに深いネスト（3層以上）の調整 */
+.box .highlight .box,
+.highlight .box .highlight {
+    margin: 0.3em 0;  /* より深い階層では更にマージンを削減 */
+}
+
+/* リスト項目内のブロック要素のスタイリング調整 */
+li .box {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+li .highlight {
+    margin: 0.5em -1.5em 0.5em -1.5em;  /* 上下マージンとマーカー位置調整 */
+    padding-left: 1.5em;  /* 内容をマーカー分インデント */
+    padding-right: 1em;   /* 右側のパディング */
+}
+
+/* リスト項目内の見出しの調整 */
+li h1, li h2, li h3, li h4, li h5 {
+    margin: 0.3em 0;  /* マージンを大幅に削減 */
+    padding: 0;
+}
+
+/* リスト項目内の見出しの境界線を調整 */
+li h1 {
+    border-bottom: 2px solid #333;  /* 境界線を薄く */
+    padding-bottom: 0.2em;
+}
+
+li h2 {
+    border-bottom: 1px solid #666;  /* 境界線を薄く */
+    padding-bottom: 0.1em;
+}
+
+/* リスト項目内のstrong、emの調整 */
+li strong, li em {
+    display: inline;  /* インライン表示を明示 */
+}
+
+/* 引用ブロック */
+blockquote, .kumihan-blockquote {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid #007acc;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    font-style: italic;
+    color: #495057;
+}
+
+/* 引用ブロック内の段落 */
+blockquote p, .kumihan-blockquote p {
+    margin: 0.5em 0;
+    text-align: left;
+}
+
+blockquote p:last-child, .kumihan-blockquote p:last-child {
+    margin-bottom: 0;
+}/* カスタムマーカー用スタイル */
+.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 4px solid #f39c12;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.important {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.note {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.bold-custom {
+    font-weight: 900;
+    color: #2c3e50;
+}
+
+/* ダークテーマでのカスタムマーカー調整 */
+/* 折りたたみブロック（details要素）のスタイル */
+details {
+    margin: 1em 1.5em;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+details:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-color: #9a9a9a;
+}
+
+details[open] {
+    border-color: #007acc;
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+details summary {
+    padding: 0.8em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #f6f8fa;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 2.5em;
+    padding-right: 1.5em;
+    list-style: none;
+    color: #24292f;
+    font-size: 1em;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Webkit browsers */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background-color: #e7f3ff;
+    border-bottom: 1px solid #007acc;
+    color: #0969da;
+}
+
+details summary:hover {
+    background-color: #e7f3ff;
+}
+
+details[open] summary:hover {
+    background-color: #dbeafe;
+}
+
+/* 展開アイコン - 控えめなデザイン */
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    color: #656d76;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+details[open] summary::before {
+    transform: translateY(-50%) rotate(90deg);
+    color: #0969da;
+}
+
+/* 折りたたみコンテンツ */
+details > *:not(summary) {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 詳細コンテンツのラッパー（新しいHTML構造に対応） */
+details .details-content {
+    padding: 1em;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details > p {
+    margin-bottom: 1em;
+}
+
+details > p:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内の改行を適切に表示 */
+details br {
+    display: block;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* 折りたたみブロック内のリスト要素 */
+details ul, details ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    line-height: 1.7;
+}
+
+details li {
+    margin-bottom: 0.5em;
+    line-height: 1.7;
+}
+
+details ul:first-child,
+details ol:first-child {
+    margin-top: 0;
+}
+
+details ul:last-child,
+details ol:last-child {
+    margin-bottom: 0;
+}
+
+/* 折りたたみブロック内のハイライト・枠線は最小高さを小さく */
+details .highlight,
+details .box {
+    min-height: auto;
+    padding: 0.8em;
+}
+
+/* 折りたたみブロック内の段落のマージンを調整 */
+details .highlight p,
+details .box p {
+    margin-bottom: 0.5em;
+}
+
+details .highlight p:last-child,
+details .box p:last-child {
+    margin-bottom: 0;
+}
+
+/* ネタバレブロック専用スタイル */
+details.spoiler {
+    border-color: #d73a49;
+    background-color: #ffffff;
+}
+
+details.spoiler:hover {
+    border-color: #b31d28;
+}
+
+details.spoiler[open] {
+    border-color: #d73a49;
+}
+
+details.spoiler summary {
+    background-color: #fff5f5;
+    color: #d73a49;
+    border-bottom: 1px solid #fdbdbd;
+}
+
+details.spoiler summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler[open] summary {
+    background-color: #fff1f1;
+    border-bottom: 1px solid #d73a49;
+}
+
+details.spoiler[open] summary:hover {
+    background-color: #fef2f2;
+}
+
+details.spoiler summary::after {
+    content: '⚠️';
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+}
+
+details.spoiler summary::before {
+    color: #d73a49;
+}
+
+details.spoiler[open] summary::before {
+    color: #d73a49;
+}
+
+/* ダークテーマでの折りたたみブロック調整 */
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    .kumihan-nav {
+        display: none;
+    }
+
+    body {
+        background-color: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    h1, h2 {
+        page-break-after: avoid;
+    }
+
+    p, ul {
+        page-break-inside: avoid;
+    }
+}/* ナビゲーション用スタイル */
+.kumihan-nav {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-prev, .nav-next, .nav-index {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.nav-prev:hover, .nav-next:hover, .nav-index:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.nav-index {
+    background-color: #28a745;
+}
+
+.nav-index:hover {
+    background-color: #1e7e34;
+}
+
+.nav-disabled {
+    background-color: #6c757d;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .page-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-prev, .nav-next, .nav-index {
+        width: 100%;
+        text-align: center;
+    }
+}
+        /* TOCレイアウト用スタイル */
+        body {
+            padding: 0;
+        }
+
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: minmax(300px, 25%) 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* 右サイドバーが存在する場合の3カラムレイアウト */
+        .layout-wrapper.has-right-sidebar {
+            grid-template-columns: minmax(300px, 25%) 1fr minmax(250px, 20%);
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+        }
+
+        .toc-sidebar.collapsed .toc-content {
+            display: none;
+        }
+
+        .toc-sidebar.collapsed {
+            width: auto;
+            min-width: 50px;
+        }
+
+        .toc-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .toc-toggle:hover {
+            background-color: #e0e0e0;
+        }
+
+        .toc-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-list a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toc-list a.active {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        /* 右サイドバー（注釈・補足情報用） */
+        .right-sidebar {
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin: 0;
+            display: none; /* デフォルトは非表示 */
+        }
+
+        /* 右サイドバーが有効な場合に表示 */
+        .layout-wrapper.has-right-sidebar .right-sidebar {
+            display: block;
+        }
+
+        .right-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .right-sidebar .annotation {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .right-sidebar .note {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* レスポンシブ対応（大画面） */
+        @media (min-width: 2000px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(500px, 35%) 1fr;
+                gap: 30px;
+                padding: 15px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(300px, 25%) 1fr minmax(300px, 25%);
+            }
+        }
+
+        /* レスポンシブ対応（中画面） */
+        @media (max-width: 1200px) {
+            .layout-wrapper {
+                grid-template-columns: minmax(300px, 25%) 1fr;
+                gap: 15px;
+                padding: 10px;
+            }
+
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: minmax(250px, 22%) 1fr minmax(200px, 18%);
+            }
+        }
+
+        /* レスポンシブ対応（タブレット） */
+        @media (max-width: 900px) {
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                max-height: none;
+                order: -1;
+            }
+
+            .right-sidebar {
+                order: 1;
+            }
+        }
+
+        /* 印刷時はサイドバーを非表示 */
+        @media print {
+            .toc-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+
+            .layout-wrapper,
+            .layout-wrapper.has-right-sidebar {
+                display: block;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // トグルボタンの機能
+            const tocToggle = document.querySelector('.toc-toggle');
+            const tocSidebar = document.querySelector('.toc-sidebar');
+
+            // localStorage から状態を復元
+            const tocState = localStorage.getItem('toc-collapsed');
+            if (tocState === 'true') {
+                tocSidebar.classList.add('collapsed');
+                tocToggle.textContent = '▶';
+            }
+
+            tocToggle.addEventListener('click', function() {
+                tocSidebar.classList.toggle('collapsed');
+                const isCollapsed = tocSidebar.classList.contains('collapsed');
+
+                // 状態を保存
+                localStorage.setItem('toc-collapsed', isCollapsed);
+
+                // ボタンテキストを更新
+                tocToggle.textContent = isCollapsed ? '▶' : '目次';
+            });
+
+            // 現在位置のハイライト
+            const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            function updateActiveLink() {
+                let currentHeading = null;
+
+                // 現在表示されている最上部の見出しを見つける
+                for (const heading of headings) {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        currentHeading = heading;
+                    } else {
+                        break;
+                    }
+                }
+
+                // アクティブリンクを更新
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentHeading && link.getAttribute('href') === '#' + currentHeading.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // スクロールイベントでアクティブリンクを更新
+            let scrollTimer;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(updateActiveLink, 50);
+            });
+
+            // 初期状態を設定
+            updateActiveLink();
+        });
+    </script>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- 左サイドバー（目次） -->
+        <aside class="toc-sidebar left">
+            <button class="toc-toggle">目次</button>
+            <nav class="toc-content">
+                <h3>目次</h3>
+                <div class="toc">
+<h2>目次</h2>
+<ul class="toc-list">
+<li class="toc-level-2">
+<a href="#heading-1">API Keyの取得</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-2">認証ヘッダー</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-3">エンドポイント仕様</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-4">POST /convert</a>
+<ul>
+<li class="toc-level-3">
+<a href="#heading-5">成功レスポンス（200 OK）</a>
+</li>
+<li class="toc-level-3">
+<a href="#heading-6">エラーレスポンス例</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-2">
+<a href="#heading-7">POST /convert/batch</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-8">POST /validate</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-9">SDKとコード例</a>
+<ul>
+<li class="toc-level-2">
+<a href="#heading-10">インストール</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-11">基本的な使用例</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-12">インストール</a>
+</li>
+<li class="toc-level-2">
+<a href="#heading-13">使用例</a>
+</li>
+</ul>
+</li>
+<li class="toc-level-1">
+<a href="#heading-14">エラーコード一覧</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-15">ベストプラクティス</a>
+</li>
+<li class="toc-level-1">
+<a href="#heading-16">変更履歴とマイグレーション</a>
+</li>
+</ul>
+</div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="container">
+
+<div class="kumihan-error-summary" id="error-summary">
+    <h3>🔍 記法エラーレポート</h3>
+    <div class="error-stats">
+        <span class="error-count">❌ エラー: 37件</span>
+        <span class="warning-count">⚠️ 警告: 0件</span>
+        <span class="total-count">📊 合計: 37件</span>
+    </div>
+    <div class="error-statistics-report">
+<h3>エラー統計レポート</h3>
+<p class="timestamp">生成日時: 2025-08-02T11:32:37.473493</p>
+<div class="stats-overview">
+<div class="stat-item"><span class="stat-label">総エラー数:</span> <span class="stat-value">37</span></div>
+<div class="stat-item"><span class="stat-label">修正提案数:</span> <span class="stat-value">37</span></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="14">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+</div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="15">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+<div class="severity-chart">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="16">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+<h4>重要度別分布</h4>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="17">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="18">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="severity-bar">
+                    <span class="severity-label">エラー:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 100.0%; background-color: #ff4444;"></div>
+                        <span class="bar-value">37 (100.0%)</span>
+                    </div>
+                </div>
+
+</div>
+<div class="pattern-analysis">
+<h4>最も多いエラーパターン</h4>
+
+            <div class="pattern-item">
+                <div class="pattern-header">
+                    <span class="pattern-rank">#1</span>
+                    <span class="pattern-name">一般的な構文エラー</span>
+                    <span class="pattern-stats">37件 (100.0%)</span>
+                </div>
+                <div class="pattern-example">例: リスト解析エラー: 'ListParserCore' object has no attribute 'parse_ordered_list'</div>
+            </div>
+
+</div>
+<div class="line-range-chart">
+<h4>エラー発生行の分布</h4>
+
+                <div class="range-bar">
+                    <span class="range-label">行 11-50:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 13.513513513513514%; background-color: #6699cc;"></div>
+                        <span class="bar-value">5件 (13.5%)</span>
+                    </div>
+                </div>
+
+
+                <div class="range-bar">
+                    <span class="range-label">行 51-100:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 5.405405405405405%; background-color: #6699cc;"></div>
+                        <span class="bar-value">2件 (5.4%)</span>
+                    </div>
+                </div>
+
+
+                <div class="range-bar">
+                    <span class="range-label">行 100+:</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 81.08108108108108%; background-color: #6699cc;"></div>
+                        <span class="bar-value">30件 (81.1%)</span>
+                    </div>
+                </div>
+
+</div>
+</div>
+    <details class="error-details">
+        <summary>詳細を表示</summary>
+        <div class="error-list">
+
+            <div class="error-item kumihan-error-error" data-line="14">
+                <div class="error-header">
+                    <span class="error-number">#1</span>
+                    <span class="error-title">記法エラー (行 14)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **バージョン**: v2.2.0-alpha</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **バージョン**: v2.2.0-alpha</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="15">
+                <div class="error-header">
+                    <span class="error-number">#2</span>
+                    <span class="error-title">記法エラー (行 15)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **ベースURL**: `https://api.kumihan-formatter.example.com/v2`</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **ベースURL**: `https://api.kumihan-formatter.example.com/v2`</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="98">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="99">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="16">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="102">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="error-header">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="103">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-number">#3</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="104">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-title">記法エラー (行 16)</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="105">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="108">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **認証方式**: API Key認証</code><br><em>提案: リスト記法を確認してください</em>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="109">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **認証方式**: API Key認証</mark></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="110">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="111">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="112">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="17">
+                <div class="error-header">
+                    <span class="error-number">#4</span>
+                    <span class="error-title">記法エラー (行 17)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **レスポンス形式**: JSON</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **レスポンス形式**: JSON</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="18">
+                <div class="error-header">
+                    <span class="error-number">#5</span>
+                    <span class="error-title">記法エラー (行 18)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- **レート制限**: 1000リクエスト/時間</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- **レート制限**: 1000リクエスト/時間</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="98">
+                <div class="error-header">
+                    <span class="error-number">#6</span>
+                    <span class="error-title">記法エラー (行 98)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# `input`#太字# (string): 変換するKumihanテキスト</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# `input`#太字# (string): 変換するKumihanテキスト</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="99">
+                <div class="error-header">
+                    <span class="error-number">#7</span>
+                    <span class="error-title">記法エラー (行 99)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# `output_format`#太字# (string): 出力形式</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# `output_format`#太字# (string): 出力形式</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="102">
+                <div class="error-header">
+                    <span class="error-number">#8</span>
+                    <span class="error-title">記法エラー (行 102)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #コード# `html`#コード#: HTML形式（推奨）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #コード# `html`#コード#: HTML形式（推奨）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="103">
+                <div class="error-header">
+                    <span class="error-number">#9</span>
+                    <span class="error-title">記法エラー (行 103)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #コード# `markdown`#コード#: Markdown形式</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #コード# `markdown`#コード#: Markdown形式</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="104">
+                <div class="error-header">
+                    <span class="error-number">#10</span>
+                    <span class="error-title">記法エラー (行 104)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #コード# `pdf`#コード#: PDF形式（プレミアム機能）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #コード# `pdf`#コード#: PDF形式（プレミアム機能）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="105">
+                <div class="error-header">
+                    <span class="error-number">#11</span>
+                    <span class="error-title">記法エラー (行 105)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #コード# `epub`#コード#: EPUB形式（プレミアム機能）</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #コード# `epub`#コード#: EPUB形式（プレミアム機能）</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="108">
+                <div class="error-header">
+                    <span class="error-number">#12</span>
+                    <span class="error-title">記法エラー (行 108)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# `options.theme`#太字# (string): テーマ名</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# `options.theme`#太字# (string): テーマ名</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="109">
+                <div class="error-header">
+                    <span class="error-number">#13</span>
+                    <span class="error-title">記法エラー (行 109)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- デフォルト: #ハイライト color=yellow# &quot;default&quot;#ハイライト color=yellow#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- デフォルト: #ハイライト color=yellow# &quot;default&quot;#ハイライト col</mark>or=yellow#</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="110">
+                <div class="error-header">
+                    <span class="error-number">#14</span>
+                    <span class="error-title">記法エラー (行 110)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 選択肢: &quot;default&quot;, &quot;dark&quot;, &quot;minimal&quot;, &quot;academic&quot;</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 選択肢: &quot;default&quot;, &quot;dark&quot;, &</mark>quot;minimal&quot;, &quot;academic&quot;</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="111">
+                <div class="error-header">
+                    <span class="error-number">#15</span>
+                    <span class="error-title">記法エラー (行 111)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# `options.include_css`#太字# (boolean): CSS埋め込み</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# `options.include_css`#太字# (boolean): CSS埋め込み</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="112">
+                <div class="error-header">
+                    <span class="error-number">#16</span>
+                    <span class="error-title">記法エラー (行 112)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# `options.minify`#太字# (boolean): 出力の最小化</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# `options.minify`#太字# (boolean): 出力の最小化</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="382">
+                <div class="error-header">
+                    <span class="error-number">#17</span>
+                    <span class="error-title">記法エラー (行 382)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 400 Bad Request#太字#: リクエスト形式エラー</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 400 Bad Request#太字#: リクエスト形式エラー</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="383">
+                <div class="error-header">
+                    <span class="error-number">#18</span>
+                    <span class="error-title">記法エラー (行 383)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 401 Unauthorized#太字#: 認証エラー</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 401 Unauthorized#太字#: 認証エラー</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="384">
+                <div class="error-header">
+                    <span class="error-number">#19</span>
+                    <span class="error-title">記法エラー (行 384)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 403 Forbidden#太字#: 権限不足</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 403 Forbidden#太字#: 権限不足</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="385">
+                <div class="error-header">
+                    <span class="error-number">#20</span>
+                    <span class="error-title">記法エラー (行 385)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 404 Not Found#太字#: エンドポイント未存在</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 404 Not Found#太字#: エンドポイント未存在</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="386">
+                <div class="error-header">
+                    <span class="error-number">#21</span>
+                    <span class="error-title">記法エラー (行 386)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 413 Payload Too Large#太字#: ファイルサイズ超過</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 413 Payload Too Large#太字#: ファイルサイズ超過</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="387">
+                <div class="error-header">
+                    <span class="error-number">#22</span>
+                    <span class="error-title">記法エラー (行 387)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 429 Too Many Requests#太字#: レート制限</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 429 Too Many Requests#太字#: レート制限</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="390">
+                <div class="error-header">
+                    <span class="error-number">#23</span>
+                    <span class="error-title">記法エラー (行 390)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 500 Internal Server Error#太字#: サーバー内部エラー</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 500 Internal Server Error#太字#: サーバー内部エラー</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="391">
+                <div class="error-header">
+                    <span class="error-number">#24</span>
+                    <span class="error-title">記法エラー (行 391)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 502 Bad Gateway#太字#: アップストリームエラー</code><br><em>提案: リスト記法を確認してください</em>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="382">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 502 Bad Gateway#太字#: アップストリームエラー</mark></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="383">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="384">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="385">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="386">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="387">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            <div class="error-item kumihan-error-error" data-line="392">
+                <div class="error-header">
+                    <span class="error-number">#25</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="390">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-title">記法エラー (行 392)</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="391">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-severity">ERROR</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="392">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- #太字# 503 Service Unavailable#太字#: サービス一時停止</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- #太字# 503 Service Unavailable#太字#: サービス一時停止</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="513">
+                <div class="error-header">
+                    <span class="error-number">#26</span>
+                    <span class="error-title">記法エラー (行 513)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>1. #太字# ;;;記法の置換#太字#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>1. #太字# ;;;記法の置換#太字#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="514">
+                <div class="error-header">
+                    <span class="error-number">#27</span>
+                    <span class="error-title">記法エラー (行 514)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 置換前: `;;;太字;;; 内容 ;;;`</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 置換前: `;;;太字;;; 内容 ;;;`</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="515">
+                <div class="error-header">
+                    <span class="error-number">#28</span>
+                    <span class="error-title">記法エラー (行 515)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 置換後: `#太字# 内容##`</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 置換後: `#太字# 内容##`</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="517">
+                <div class="error-header">
+                    <span class="error-number">#29</span>
+                    <span class="error-title">記法エラー (行 517)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>2. #太字# alt属性の削除#太字#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>2. #太字# alt属性の削除#太字#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="518">
+                <div class="error-header">
+                    <span class="error-number">#30</span>
+                    <span class="error-title">記法エラー (行 518)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 削除: `#画像 alt=説明# image.jpg`</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 削除: `#画像 alt=説明# image.jpg`</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="519">
+                <div class="error-header">
+                    <span class="error-number">#31</span>
+                    <span class="error-title">記法エラー (行 519)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 変更後: `#画像# image.jpg`</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 変更後: `#画像# image.jpg`</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="521">
+                <div class="error-header">
+                    <span class="error-number">#32</span>
+                    <span class="error-title">記法エラー (行 521)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>3. #太字# APIキーの更新#太字#</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>3. #太字# APIキーの更新#太字#</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="522">
+                <div class="error-header">
+                    <span class="error-number">#33</span>
+                    <span class="error-title">記法エラー (行 522)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 新しい形式のAPIキーを取得</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 新しい形式のAPIキーを取得</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="523">
+                <div class="error-header">
+                    <span class="error-number">#34</span>
+                    <span class="error-title">記法エラー (行 523)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- レート制限値の確認</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- レート制限値の確認</mark></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="513">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="514">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="515">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="517">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            <div class="error-item kumihan-error-error" data-line="526">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="518">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="error-header">
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="519">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-number">#35</span>
+                    <span class="error-title">記法エラー (行 526)</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="521">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <span class="error-severity">ERROR</span>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="522">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="523">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- 新しいSDKバージョンへの更新</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- 新しいSDKバージョンへの更新</mark></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="526">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="527">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+                </div>
+
+<div class="kumihan-error-marker kumihan-error-error" data-line="528">
+    <div class="error-indicator">
+        <span class="error-icon">❌</span>
+        <span class="error-message">リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</span>
+        <div class="error-suggestion">💡 リスト記法を確認してください</div>
+    </div>
+</div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="527">
+                <div class="error-header">
+                    <span class="error-number">#36</span>
+                    <span class="error-title">記法エラー (行 527)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- エラーハンドリングの見直し</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- エラーハンドリングの見直し</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+            <div class="error-item kumihan-error-error" data-line="528">
+                <div class="error-header">
+                    <span class="error-number">#37</span>
+                    <span class="error-title">記法エラー (行 528)</span>
+                    <span class="error-severity">ERROR</span>
+                </div>
+                <div class="error-content">
+                    <strong>リスト解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;</strong><br><code>- パフォーマンステストの実施</code><br><em>提案: リスト記法を確認してください</em>
+                    <div class="error-context-highlighted"><mark class='error-highlight'>- パフォーマンステストの実施</mark></div>
+                    <div class="correction-suggestions"><h4>修正提案:</h4><ul class='correction-suggestions'><li>半角文字と全角文字の混在を統一してください</li></ul></div>
+                </div>
+            </div>
+
+        </div>
+    </details>
+</div>
+
+<p class="kumihan-p">📡 **Kumihan-Formatter REST API**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **バージョン**: v2.2.0-alpha', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **ベースURL**: `https://api.kumihan-formatter.example.com/v2`', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **認証方式**: API Key認証', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **レスポンス形式**: JSON', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- **レート制限**: 1000リクエスト/時間', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<div class="kumihan-div warning">⚠️ **重要な注意事項**<br>このAPIは<strong class="kumihan-strong"></strong> アルファ版<strong class="kumihan-strong"></strong>です。<br>本番環境での使用は<div class="kumihan-div highlight">color=</div>ffe6e6# 推奨されません#ハイライト color=#ffe6e6#。<br>仕様は予告なく変更される可能性があります。</div>
+<h2 id="heading-1" role="heading" class="kumihan-h2">API Keyの取得</h2>
+<p class="kumihan-p">APIを使用するためには、まず<strong class="kumihan-strong"></strong> API Key<strong class="kumihan-strong"></strong>を取得する必要があります。</p>
+<pre class="code-block">curl -X POST https://api.kumihan-formatter.example.com/v2/auth/register \<br>  -H &quot;Content-Type: application/json&quot; \<br>  -d &#x27;{<br>    &quot;email&quot;: &quot;user@example.com&quot;,<br>    &quot;password&quot;: &quot;secure_password&quot;<br>  }&#x27;</pre>
+<h2 id="heading-2" role="heading" class="kumihan-h2">認証ヘッダー</h2>
+<p class="kumihan-p">すべてのAPIリクエストには、以下のヘッダーを含める必要があります：</p>
+<div class="kumihan-div box">**必須ヘッダー**:<br>- <code></code> Authorization: Bearer YOUR_API_KEY<code></code><br>- <code></code> Content-Type: application/json<code></code><br><br>**オプションヘッダー**:<br>- <code></code> X-Client-Version: 2.2.0<code></code><br>- <code></code> X-Request-ID: unique-request-id<code></code></div>
+<h1 id="heading-3" role="heading" class="kumihan-h1">エンドポイント仕様</h1>
+<h2 id="heading-4" role="heading" class="kumihan-h2">POST /convert</h2>
+<p class="kumihan-p">Kumihanテキストを指定形式に変換します。</p>
+<pre class="code-block">POST /v2/convert<br>Host: api.kumihan-formatter.example.com<br>Authorization: Bearer YOUR_API_KEY<br>Content-Type: application/json<br><br>{<br>  &quot;input&quot;: &quot;<strong class="kumihan-strong"></strong> テスト文書<strong class="kumihan-strong"></strong>&quot;,<br>  &quot;output_format&quot;: &quot;html&quot;,<br>  &quot;options&quot;: {<br>    &quot;theme&quot;: &quot;default&quot;,<br>    &quot;include_css&quot;: true,<br>    &quot;minify&quot;: false<br>  }<br>}</pre>
+<p class="kumihan-p">📋 **リクエストパラメータ**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# `input`#太字# (string): 変換するKumihanテキスト', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# `output_format`#太字# (string): 出力形式', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #コード# `html`#コード#: HTML形式（推奨）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #コード# `markdown`#コード#: Markdown形式', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #コード# `pdf`#コード#: PDF形式（プレミアム機能）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #コード# `epub`#コード#: EPUB形式（プレミアム機能）', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# `options.theme`#太字# (string): テーマ名', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- デフォルト: #ハイライト color=yellow# "default"#ハイライト color=yellow#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 選択肢: "default", "dark", "minimal", "academic"', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# `options.include_css`#太字# (boolean): CSS埋め込み', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# `options.minify`#太字# (boolean): 出力の最小化', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<h3 id="heading-5" role="heading" class="kumihan-h3">成功レスポンス（200 OK）</h3>
+<pre class="code-block">{<br>  &quot;status&quot;: &quot;success&quot;,<br>  &quot;data&quot;: {<br>    &quot;converted_content&quot;: &quot;&lt;strong&gt;テスト文書&lt;/strong&gt;&quot;,<br>    &quot;metadata&quot;: {<br>      &quot;input_size&quot;: 156,<br>      &quot;output_size&quot;: 892,<br>      &quot;conversion_time_ms&quot;: 45,<br>      &quot;notation_count&quot;: {<br>        &quot;太字&quot;: 1,<br>        &quot;イタリック&quot;: 0,<br>        &quot;ハイライト&quot;: 0<br>      }<br>    },<br>    &quot;warnings&quot;: []<br>  },<br>  &quot;request_id&quot;: &quot;req_abc123def456&quot;<br>}</pre>
+<h3 id="heading-6" role="heading" class="kumihan-h3">エラーレスポンス例</h3>
+<div class="kumihan-div warning">❌ **400 Bad Request**<br>#コードブロック#<br>{<br>  &quot;status&quot;: &quot;error&quot;,<br>  &quot;error&quot;: {<br>    &quot;code&quot;: &quot;INVALID_NOTATION&quot;,<br>    &quot;message&quot;: &quot;不正な記法が検出されました&quot;,<br>    &quot;details&quot;: {<br>      &quot;line&quot;: 5,<br>      &quot;column&quot;: 12,<br>      &quot;invalid_syntax&quot;: &quot;#太字 未完了の記法&quot;<br>    }<br>  },<br>  &quot;request_id&quot;: &quot;req_error123&quot;<br>}</div>
+<div class="kumihan-div warning">❌ **401 Unauthorized**<br>#コードブロック#<br>{<br>  &quot;status&quot;: &quot;error&quot;,<br>  &quot;error&quot;: {<br>    &quot;code&quot;: &quot;INVALID_API_KEY&quot;,<br>    &quot;message&quot;: &quot;APIキーが無効です&quot;<br>  }<br>}</div>
+<h2 id="heading-7" role="heading" class="kumihan-h2">POST /convert/batch</h2>
+<p class="kumihan-p">複数のファイルを一括で変換処理します。</p>
+<div class="kumihan-div info">💡 **バッチ処理の利点**<br>- 複数ファイルの効率的な処理<br>- 非同期処理によるパフォーマンス向上<br>- 進捗状況の追跡機能</div>
+<pre class="code-block">{<br>  &quot;files&quot;: [<br>    {<br>      &quot;name&quot;: &quot;document1.txt&quot;,<br>      &quot;content&quot;: &quot;#見出し1# 第1章##&quot;,<br>      &quot;output_format&quot;: &quot;html&quot;<br>    },<br>    {<br>      &quot;name&quot;: &quot;document2.txt&quot;, <br>      &quot;content&quot;: &quot;#太字# 重要な情報#太字#&quot;,<br>      &quot;output_format&quot;: &quot;pdf&quot;<br>    }<br>  ],<br>  &quot;options&quot;: {<br>    &quot;theme&quot;: &quot;academic&quot;,<br>    &quot;notify_completion&quot;: true,<br>    &quot;webhook_url&quot;: &quot;https://yourapp.com/webhook&quot;<br>  }<br>}</pre>
+<pre class="code-block">{<br>  &quot;status&quot;: &quot;accepted&quot;,<br>  &quot;data&quot;: {<br>    &quot;batch_id&quot;: &quot;batch_789xyz&quot;,<br>    &quot;total_files&quot;: 2,<br>    &quot;estimated_completion&quot;: &quot;2025-01-01T15:30:00Z&quot;<br>  }<br>}</pre>
+<h2 id="heading-8" role="heading" class="kumihan-h2">POST /validate</h2>
+<p class="kumihan-p">Kumihanテキストの記法を検証し、エラーや警告を返します。</p>
+<div class="kumihan-div box">🔍 **検証項目**<br>- 記法の構文チェック<br>- マーカーの整合性確認<br>- 色指定の妥当性検証<br>- 複合記法の組み合わせチェック<br>- パフォーマンス影響の評価</div>
+<pre class="code-block">{<br>  &quot;input&quot;: &quot;<strong class="kumihan-strong"></strong> テスト<strong class="kumihan-strong"></strong><div class="kumihan-div highlight">color=invalidcolor</div> エラー例<div class="kumihan-div highlight"></div>&quot;,<br>  &quot;strict_mode&quot;: true,<br>  &quot;check_performance&quot;: true<br>}</pre>
+<pre class="code-block">{<br>  &quot;status&quot;: &quot;success&quot;,<br>  &quot;data&quot;: {<br>    &quot;is_valid&quot;: false,<br>    &quot;errors&quot;: [<br>      {<br>        &quot;type&quot;: &quot;INVALID_COLOR&quot;,<br>        &quot;line&quot;: 1,<br>        &quot;column&quot;: 45,<br>        &quot;message&quot;: &quot;無効な色指定: &#x27;invalidcolor&#x27;&quot;,<br>        &quot;suggestion&quot;: &quot;red, blue, green または #ff0000 形式を使用してください&quot;<br>      }<br>    ],<br>    &quot;warnings&quot;: [<br>      {<br>        &quot;type&quot;: &quot;PERFORMANCE&quot;,<br>        &quot;message&quot;: &quot;大量の装飾が検出されました。処理時間が長くなる可能性があります&quot;<br>      }<br>    ],<br>    &quot;statistics&quot;: {<br>      &quot;total_notations&quot;: 3,<br>      &quot;complexity_score&quot;: 2.5,<br>      &quot;estimated_render_time_ms&quot;: 120<br>    }<br>  }<br>}</pre>
+<h1 id="heading-9" role="heading" class="kumihan-h1">SDKとコード例</h1>
+<h2 id="heading-10" role="heading" class="kumihan-h2">インストール</h2>
+<pre class="code-block">pip install kumihan-formatter-sdk</pre>
+<h2 id="heading-11" role="heading" class="kumihan-h2">基本的な使用例</h2>
+<pre class="code-block">from kumihan_formatter_sdk import KumihanClient<br><br># クライアント初期化<br>client = KumihanClient(api_key=&quot;your_api_key&quot;)<br><br># テキスト変換<br>result = client.convert(<br>    input_text=&quot;<strong class="kumihan-strong"></strong> Hello World<strong class="kumihan-strong"></strong>&quot;,<br>    output_format=&quot;html&quot;,<br>    theme=&quot;default&quot;<br>)<br><br>print(result.converted_content)<br># 出力: &lt;strong&gt;Hello World&lt;/strong&gt;<br><br># バッチ処理<br>batch_job = client.convert_batch([<br>    {&quot;name&quot;: &quot;doc1.txt&quot;, &quot;content&quot;: &quot;#見出し1# タイトル##&quot;},<br>    {&quot;name&quot;: &quot;doc2.txt&quot;, &quot;content&quot;: &quot;#枠線# 重要な情報##&quot;}<br>])<br><br>print(f&quot;バッチID: {batch_job.batch_id}&quot;)</pre>
+<h2 id="heading-12" role="heading" class="kumihan-h2">インストール</h2>
+<pre class="code-block">npm install @kumihan/formatter-sdk</pre>
+<h2 id="heading-13" role="heading" class="kumihan-h2">使用例</h2>
+<pre class="code-block">import { KumihanClient } from &#x27;@kumihan/formatter-sdk&#x27;;<br><br>const client = new KumihanClient({<br>  apiKey: &#x27;your_api_key&#x27;,<br>  baseUrl: &#x27;https://api.kumihan-formatter.example.com/v2&#x27;<br>});<br><br>async function convertText() {<br>  try {<br>    const result = await client.convert({<br>      input: &#x27;<div class="kumihan-div highlight">color=yellow</div> JavaScript Example<div class="kumihan-div highlight"></div>&#x27;,<br>      outputFormat: &#x27;html&#x27;,<br>      options: {<br>        theme: &#x27;dark&#x27;,<br>        includeCss: true<br>      }<br>    });<br>    <br>    console.log(&#x27;変換結果:&#x27;, result.data.converted_content);<br>    console.log(&#x27;メタデータ:&#x27;, result.data.metadata);<br>  } catch (error) {<br>    console.error(&#x27;変換エラー:&#x27;, error.message);<br>  }<br>}<br><br>convertText();</pre>
+<h1 id="heading-14" role="heading" class="kumihan-h1">エラーコード一覧</h1>
+<p class="kumihan-p">⚠️ **HTTPステータスコード**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 400 Bad Request#太字#: リクエスト形式エラー', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 401 Unauthorized#太字#: 認証エラー', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 403 Forbidden#太字#: 権限不足', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 404 Not Found#太字#: エンドポイント未存在', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 413 Payload Too Large#太字#: ファイルサイズ超過', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 429 Too Many Requests#太字#: レート制限', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 500 Internal Server Error#太字#: サーバー内部エラー', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 502 Bad Gateway#太字#: アップストリームエラー', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- #太字# 503 Service Unavailable#太字#: サービス一時停止', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<details role="region" class="kumihan-details"><summary>詳細</summary>🔍 **詳細エラーコード**<br><br>### 記法関連エラー<br>- #コード# INVALID_NOTATION#コード#: 不正な記法構文<br>- #コード# INCOMPLETE_MARKER#コード#: 未完了のマーカー<br>- #コード# MIXED_MARKER_TYPE#コード#: 半角・全角マーカー混在<br>- #コード# INVALID_COLOR#コード#: 無効な色指定<br>- #コード# UNSUPPORTED_COMBINATION#コード#: 未サポートの記法組み合わせ<br><br>### 処理関連エラー<br>- #コード# PROCESSING_TIMEOUT#コード#: 処理タイムアウト<br>- #コード# MEMORY_LIMIT_EXCEEDED#コード#: メモリ制限超過<br>- #コード# INVALID_OUTPUT_FORMAT#コード#: 未サポートの出力形式<br><br>### 認証・権限エラー<br>- #コード# INVALID_API_KEY#コード#: APIキー無効<br>- #コード# API_KEY_EXPIRED#コード#: APIキー期限切れ<br>- #コード# INSUFFICIENT_QUOTA#コード#: クォータ不足<br>- #コード# PREMIUM_FEATURE_REQUIRED#コード#: プレミアム機能が必要</details>
+<h1 id="heading-15" role="heading" class="kumihan-h1">ベストプラクティス</h1>
+<div class="kumihan-div info">💡 **推奨事項**<br><br>### リクエスト最適化<br>- ファイルサイズは#太字# 1MB以下#太字#に制限<br>- バッチ処理では#ハイライト color=lightblue# 並列処理数を調整#ハイライト color=lightblue#<br>- 不要なオプションは指定しない<br><br>### キャッシュ活用<br>- 同一テキストの再変換を避ける<br>- #コード# ETag#コード#ヘッダーによるキャッシュ制御<br>- CDN経由での配信を推奨<br><br>### エラーハンドリング<br>- 指数バックオフによるリトライ実装<br>- ログ記録とモニタリング<br>- ユーザーフレンドリーなエラーメッセージ</div>
+<div class="kumihan-div warning">🔒 **セキュリティ考慮事項**<br><br>### APIキー管理<br>- APIキーは#太字# 環境変数#太字#で管理<br>- 定期的なローテーション実施<br>- 最小権限の原則を適用<br><br>### 入力検証<br>- ユーザー入力の#ハイライト color=#ffe6e6# サニタイズ<div class="kumihan-div highlight">color=</div>ffe6e6#<br>- ファイルサイズ制限の実装<br>- 悪意のあるコンテンツのフィルタリング<br><br>### 通信セキュリティ<br>- HTTPS通信の強制<br>- 証明書の検証<br>- Request ID による追跡</div>
+<div class="kumihan-div box">📊 **制限値**<br><br>### 無料プラン<br>- API呼び出し: #太字# 1,000回/時間#太字#<br>- ファイルサイズ: 最大1MB<br>- バッチ処理: 5ファイル/回<br>- 同時接続: 3接続<br><br>### プレミアムプラン<br>- API呼び出し: #太字# 10,000回/時間#太字#<br>- ファイルサイズ: 最大10MB<br>- バッチ処理: 50ファイル/回<br>- 同時接続: 20接続<br>- PDF/EPUB出力対応</div>
+<h1 id="heading-16" role="heading" class="kumihan-h1">変更履歴とマイグレーション</h1>
+<details class="kumihan-details spoiler" role="region"><summary>詳細</summary>📝 **主要な変更点**<br><br>### 新機能<br>- #太字# ルビ記法#太字#のサポート追加<br>- バッチ処理APIの性能向上（30%高速化）<br>- 新しいテーマ「academic」の追加<br><br>### 破壊的変更<br>- ;;;記法の完全廃止（Phase 1完了）<br>- alt属性の削除<br>- デフォルトテーマの変更<br><br>### 修正<br>- 複合記法の処理精度向上<br>- メモリリーク問題の解決<br>- エラーメッセージの日本語化</details>
+<p class="kumihan-p">⚠️ **v2.1から v2.2への移行**</p>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '1. #太字# ;;;記法の置換#太字#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 置換前: `;;;太字;;; 内容 ;;;`', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 置換後: `#太字# 内容##`', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '2. #太字# alt属性の削除#太字#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 削除: `#画像 alt=説明# image.jpg`', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 変更後: `#画像# image.jpg`', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '3. #太字# APIキーの更新#太字#', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 新しい形式のAPIキーを取得', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- レート制限値の確認', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- 新しいSDKバージョンへの更新', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- エラーハンドリングの見直し', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<span style="background-color:#ffe6e6; color:#d32f2f; padding:2px 4px; border-radius:3px;">[ERROR (Line {'original_line': '- パフォーマンステストの実施', 'error_type': 'parse_error'}): ❌ 解析エラー: &#x27;ListParserCore&#x27; object has no attribute &#x27;parse_ordered_list&#x27;]</span>
+<div class="kumihan-div">✨ **API リファレンス v2.2.0-alpha 完**<br><br>詳細な情報は公式ドキュメントをご覧ください<br>https://docs.kumihan-formatter.example.com</div>
+<p class="kumihan-p">---</p>
+<div class="kumihan-div info">💡 **ドキュメント情報**<br>- 最終更新: 2025-01-01<br>- 対象バージョン: v2.2.0-alpha<br>- 作成者: Kumihan-Formatter開発チーム<br>- フィードバック: api-feedback@kumihan-formatter.example.com</div>
+        </main>
+
+        <!-- 右サイドバー（注釈・補足情報） -->
+    </div>
+</body>
+</html>

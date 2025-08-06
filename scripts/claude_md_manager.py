@@ -304,6 +304,7 @@ class CLAUDEmdManager:
 def main():
     """CLI エントリーポイント"""
     import argparse
+    from pathlib import Path
 
     parser = argparse.ArgumentParser(description="CLAUDE.md Management System")
     parser.add_argument("command", choices=["check", "analyze", "optimize", "dashboard"])
@@ -342,29 +343,58 @@ def main():
             result = {"metrics": asdict(metrics), "issues": [asdict(i) for i in issues]}
 
             if args.output:
-                with open(args.output, 'w', encoding='utf-8') as f:
+                # tmp/配下にファイル出力
+                tmp_dir = Path("tmp")
+                tmp_dir.mkdir(exist_ok=True)
+                output_path = tmp_dir / Path(args.output).name
+
+                with open(output_path, 'w', encoding='utf-8') as f:
                     json.dump(result, f, indent=2, ensure_ascii=False)
+                print(f"📄 分析結果を {output_path} に保存しました")
             else:
                 print(json.dumps(result, indent=2, ensure_ascii=False))
 
         elif args.command == "optimize":
             suggestions = manager.optimize(auto_fix=args.auto_fix)
 
-            print("💡 Optimization Suggestions:")
+            print("💡 最適化提案:")
             for suggestion in suggestions:
-                print(f"   {suggestion}")
-
-        elif args.command == "dashboard":
-            dashboard = manager.generate_dashboard()
+                print(f"   - {suggestion}")
 
             if args.output:
-                with open(args.output, 'w', encoding='utf-8') as f:
-                    json.dump(dashboard, f, indent=2, ensure_ascii=False)
-            else:
-                print(json.dumps(dashboard, indent=2, ensure_ascii=False))
+                # tmp/配下にファイル出力
+                tmp_dir = Path("tmp")
+                tmp_dir.mkdir(exist_ok=True)
+                output_path = tmp_dir / Path(args.output).name
 
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump({"suggestions": suggestions}, f, indent=2, ensure_ascii=False)
+                print(f"📄 最適化結果を {output_path} に保存しました")
+
+        elif args.command == "dashboard":
+            dashboard_data = manager.generate_dashboard()
+
+            print("📊 ダッシュボード生成完了:")
+            print(f"   Status: {dashboard_data['status']}")
+            print(f"   Issues: Critical={dashboard_data['issues']['critical']}, "
+                  f"Warning={dashboard_data['issues']['warning']}, "
+                  f"Info={dashboard_data['issues']['info']}")
+
+            if args.output:
+                # tmp/配下にファイル出力
+                tmp_dir = Path("tmp")
+                tmp_dir.mkdir(exist_ok=True)
+                output_path = tmp_dir / Path(args.output).name
+
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(dashboard_data, f, indent=2, ensure_ascii=False)
+                print(f"📄 ダッシュボードデータを {output_path} に保存しました")
+
+    except FileNotFoundError:
+        print(f"❌ {args.claude_md} が見つかりません", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        print(f"❌ エラーが発生しました: {e}", file=sys.stderr)
         sys.exit(1)
 
 

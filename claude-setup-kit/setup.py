@@ -73,7 +73,7 @@ class ClaudeSetupKit:
                 "ci_cd_requirements": "新CI必須通過"
             },
             "logging": {
-                "import": "from myproject.utilities.logger import get_logger"
+                "import": "from {{PROJECT_NAME}}.core.utilities.logger import get_logger"
             },
             "documentation": {
                 "links": [

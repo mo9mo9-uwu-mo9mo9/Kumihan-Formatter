@@ -411,23 +411,31 @@ class PerformanceMonitor:
 
         return numerator / denominator if denominator != 0 else 0.0
 
-    def save_metrics_to_file(self, file_path: Path):
-        """メトリクスをファイルに保存"""
+    def save_metrics_to_file(self, file_path: str = None):
+        """パフォーマンスメトリクスをファイルに保存"""
+        from dataclasses import asdict
+        from datetime import datetime
+        from pathlib import Path
+
+        # tmp/配下にファイルを作成
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+
+        if not file_path:
+            file_path = (
+                tmp_dir
+                / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
+        else:
+            # 既存パスがあってもtmp/配下に移動
+            file_path = tmp_dir / Path(file_path).name
+
         try:
             metrics_data = {
+                "timestamp": datetime.now().isoformat(),
+                "snapshots": [asdict(snapshot) for snapshot in self.snapshots],
+                "stats": asdict(self.stats),
                 "summary": self.get_performance_summary(),
-                "snapshots": [
-                    {
-                        "timestamp": s.timestamp,
-                        "cpu_percent": s.cpu_percent,
-                        "memory_mb": s.memory_mb,
-                        "memory_percent": s.memory_percent,
-                        "processing_rate": s.processing_rate,
-                        "items_processed": s.items_processed,
-                        "stage": s.stage,
-                    }
-                    for s in self.snapshots
-                ],
             }
 
             with open(file_path, "w", encoding="utf-8") as f:
@@ -1852,27 +1860,32 @@ class ProgressiveOutputSystem:
     - 大容量ファイル処理の可視性改善
     """
 
-    def __init__(self, output_path: Optional[Path] = None, buffer_size: int = 1000):
-        self.logger = get_logger(__name__)
-        self.output_path = output_path
-        self.buffer_size = buffer_size
+    def __init__(self, output_path: str = None, buffer_size: int = 50):
+        """プログレッシブ出力システムの初期化"""
+        from pathlib import Path
 
-        # 出力管理
+        self.logger = get_logger(__name__)
+        self.buffer_size = buffer_size
         self.html_buffer = []
         self.total_nodes_processed = 0
-        self.current_section = "header"
+        self.current_section = ""
 
-        # テンプレート部分
-        self.html_header = ""
-        self.html_footer = ""
-        self.css_content = ""
+        # tmp/配下にファイル出力
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
 
-        # ストリーム出力ファイル
+        if not output_path:
+            from datetime import datetime
+
+            self.output_path = (
+                tmp_dir
+                / f"progressive_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+            )
+        else:
+            # 既存パスがあってもtmp/配下に移動
+            self.output_path = tmp_dir / Path(output_path).name
+
         self.output_stream = None
-
-        self.logger.info(
-            f"Progressive output system initialized: buffer_size={buffer_size}"
-        )
 
     def initialize_output_stream(
         self, template_content: str = "", css_content: str = ""
