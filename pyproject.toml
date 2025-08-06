@@ -117,8 +117,11 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
-# 正規表現問題回避のため一時的に無効化
-# exclude = ["dist", "build", "*.egg-info"]
+exclude = [
+    "dist/.*",
+    "build/.*", 
+    ".*\\.egg-info/.*"
+]
 
 # pytest設定
 [tool.pytest.ini_options]
