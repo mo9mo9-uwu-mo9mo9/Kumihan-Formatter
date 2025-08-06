@@ -232,7 +232,11 @@ class Flake8AutoFixer:
                     second_part = parts[1].lstrip()
 
                     if len(first_part) < self.max_line_length:
-                        return f"{first_part}{op.rstrip()}\n{' ' * (indent + 4)}{second_part}"
+                        return (
+                            f"{first_part}{op.rstrip()} \
+"
+                            f"{' ' * (indent + 4)}{second_part}"
+                        )
 
         return line
 
@@ -618,7 +622,10 @@ class Flake8AutoFixer:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flake8 Auto-Fix Report</title>
     <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }}
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+        }}
         .header {{ background: #2c3e50; color: white; padding: 20px; border-radius: 5px; }}
         .summary {{ background: #ecf0f1; padding: 15px; margin: 20px 0; border-radius: 5px; }}
         .file-report {{ border: 1px solid #ddd; margin: 15px 0; border-radius: 5px; }}

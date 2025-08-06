@@ -857,7 +857,9 @@ class PhaseBIntegrator:
                         if effect_result.total_rate >= 66.8
                         else f"未達成({effect_result.total_rate:.1f}%)"
                     ),
-                    "final_goal_progress": f"{max(0, 70.0 - effect_result.total_rate):.1f}%追加で最小目標達成",
+                    "final_goal_progress": (
+                        f"{max(0, 70.0 - effect_result.total_rate):.1f}%追加で最小目標達成"
+                    ),
                 },
                 "comprehensive_report": comprehensive_report,
             }
@@ -903,7 +905,9 @@ class PhaseBIntegrator:
                 break
             except Exception as e:
                 self.logger.error(f"効果測定ループエラー: {e}")
-                await asyncio.sleep(10)  # エラー時は短い間隔で再試行  # エラー時は短い間隔で再試行  # エラー時は短い間隔で再試行
+                await asyncio.sleep(
+                    10
+                )  # エラー時は短い間隔で再試行  # エラー時は短い間隔で再試行  # エラー時は短い間隔で再試行
 
     async def _validation_loop(self) -> None:
         """安定性検証定期実行ループ"""
@@ -995,56 +999,73 @@ class PhaseBIntegrator:
 
     def is_operational(self) -> bool:
         """システム動作状態チェック
-        
+
         Returns:
             bool: システムが正常に動作している場合True
         """
         try:
             # 基本システム状態チェック
-            if not hasattr(self, 'is_running'):
+            if not hasattr(self, "is_running"):
                 return False
-                
+
             # コアコンポーネントの存在確認
-            if not all([
-                hasattr(self, 'effect_measurement') and self.effect_measurement is not None,
-                hasattr(self, 'stability_validator') and self.stability_validator is not None,
-                hasattr(self, 'report_generator') and self.report_generator is not None,
-                hasattr(self, 'logger') and self.logger is not None
-            ]):
+            if not all(
+                [
+                    hasattr(self, "effect_measurement")
+                    and self.effect_measurement is not None,
+                    hasattr(self, "stability_validator")
+                    and self.stability_validator is not None,
+                    hasattr(self, "report_generator")
+                    and self.report_generator is not None,
+                    hasattr(self, "logger") and self.logger is not None,
+                ]
+            ):
                 return False
-            
+
             # ThreadPoolExecutorの状態確認
-            if hasattr(self, 'executor') and self.executor is not None and self.executor._shutdown:
+            if (
+                hasattr(self, "executor")
+                and self.executor is not None
+                and self.executor._shutdown
+            ):
                 return False
-                
+
             # 統合システムが動作中かチェック
             if self.is_running:
                 # アクティブなタスクの存在確認
-                if hasattr(self, 'integration_tasks'):
-                    active_tasks = [t for t in self.integration_tasks if t and not t.done()]
+                if hasattr(self, "integration_tasks"):
+                    active_tasks = [
+                        t for t in self.integration_tasks if t and not t.done()
+                    ]
                     if not active_tasks:
-                        self.logger.warning("統合システム動作中だがアクティブタスクなし")
+                        self.logger.warning(
+                            "統合システム動作中だがアクティブタスクなし"
+                        )
                         return False
-            
+
             # Phase B最適化システムの状態確認（オプショナル）
-            has_phase_b_optimizers = all([
-                hasattr(self, 'phase_b1_optimizer'),
-                hasattr(self, 'phase_b2_optimizer'),
-                hasattr(self, 'adaptive_settings')
-            ])
-            
+            has_phase_b_optimizers = all(
+                [
+                    hasattr(self, "phase_b1_optimizer"),
+                    hasattr(self, "phase_b2_optimizer"),
+                    hasattr(self, "adaptive_settings"),
+                ]
+            )
+
             if has_phase_b_optimizers:
                 # Phase B最適化システムが初期化されている場合の追加チェック
-                if (self.phase_b1_optimizer is None and 
-                    self.phase_b2_optimizer is None and 
-                    self.adaptive_settings is None):
+                if (
+                    self.phase_b1_optimizer is None
+                    and self.phase_b2_optimizer is None
+                    and self.adaptive_settings is None
+                ):
                     self.logger.info("Phase B最適化システム無効だが基本機能は動作可能")
                     return True
-            
+
             return True
-            
+
         except Exception as e:
-            if hasattr(self, 'logger') and self.logger is not None:
+            if hasattr(self, "logger") and self.logger is not None:
                 self.logger.error(f"システム状態チェックエラー: {e}")
             return False
 

@@ -94,9 +94,11 @@ class ConfigLoader:
                     env_config["font_family"] = value
                 elif config_key == "max_file_size_mb":
                     try:
-                        env_config.setdefault("validation", {})["max_file_size_mb"] = (  # type: ignore
-                            int(value)
-                        )
+                        env_config.setdefault("validation", {})[
+                            "max_file_size_mb"
+                        ] = int(
+                            value
+                        )  # type: ignore
                     except ValueError:
                         logging.warning(f"Invalid value for {key}: {value}")
                 elif config_key == "strict_mode":

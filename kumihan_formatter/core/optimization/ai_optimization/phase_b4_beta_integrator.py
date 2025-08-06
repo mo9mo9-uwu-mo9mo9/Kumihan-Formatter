@@ -15,28 +15,30 @@ import threading
 import time
 import warnings
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
-
-warnings.filterwarnings("ignore")
-
-import scipy.stats as stats
-
-# 統計・分析ツール
-from sklearn.metrics import mean_squared_error, r2_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
+from .autonomous_controller import AutonomousController
+from .basic_ml_system import BasicMLSystem
+from .learning_system import LearningSystem
+from .prediction_engine import PredictionEngine
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+import pandas as pd
+import scipy.stats as stats
+from sklearn.metrics import mean_squared_error, r2_score
 from .autonomous_controller import AutonomousController, SystemMetrics, SystemState
 from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
-from .learning_system import LearningSystem
 from .prediction_engine import EnsemblePredictionModel, PredictionEngine
+
+warnings.filterwarnings("ignore")
 
 
 class IntegrationMode(Enum):
@@ -206,7 +208,8 @@ class AlphaBetaCoordinator:
             self._record_coordination_result(final_result)
 
             self.logger.debug(
-                f"Coordination completed in {coordination_time:.3f}s with mode {self.coordination_mode.value}"
+                f"Coordination completed in {coordination_time:.3f}s "
+                f"with mode {self.coordination_mode.value}"
             )
             return final_result
 
@@ -536,28 +539,6 @@ class AlphaBetaCoordinator:
                 return {"triggered": False, "reason": "learning_system_not_available"}
 
             # Alpha結果から学習データ構築（簡略化）
-            training_features = np.array(
-                [
-                    [
-                        context_data.get("content_size", 0),
-                        context_data.get("complexity_score", 0.0),
-                        alpha_result.get("contribution", 0.0),
-                    ]
-                ]
-            )
-
-            training_labels = np.array([alpha_result.get("confidence", 0.0)])
-
-            training_data = TrainingData(
-                features=training_features,
-                labels=training_labels,
-                feature_names=[
-                    "content_size",
-                    "complexity_score",
-                    "alpha_contribution",
-                ],
-            )
-
             # 学習システム実行（モック）
             learning_result = {
                 "triggered": True,
@@ -829,13 +810,15 @@ class PerformanceMonitor:
                 # 異常検出
                 if deletion_rate < self.alpha_baseline * 0.95:  # 5%以上の劣化
                     self.logger.warning(
-                        f"Deletion rate degradation detected: {deletion_rate:.2f}% < {self.alpha_baseline * 0.95:.2f}%"
+                        f"Deletion rate degradation detected: {deletion_rate:.2f}% < "
+                        f"{self.alpha_baseline * 0.95:.2f}%"
                     )
 
                 # 目標達成チェック
                 if deletion_rate >= self.target_deletion_rate:
                     self.logger.info(
-                        f"Target deletion rate achieved: {deletion_rate:.2f}% >= {self.target_deletion_rate:.2f}%"
+                        f"Target deletion rate achieved: {deletion_rate:.2f}% >= "
+                        f"{self.target_deletion_rate:.2f}%"
                     )
 
                 time.sleep(self.monitoring_interval)
