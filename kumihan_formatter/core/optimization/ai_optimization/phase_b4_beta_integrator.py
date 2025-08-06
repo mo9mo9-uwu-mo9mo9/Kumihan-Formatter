@@ -8,6 +8,9 @@ Alpha基盤+Beta拡張統合・相乗効果最大化
 - 72-73%削減目標達成・システム安定性維持
 """
 
+import asyncio
+import json
+import pickle
 import threading
 import time
 import warnings
@@ -24,6 +27,16 @@ from .autonomous_controller import AutonomousController
 from .basic_ml_system import BasicMLSystem
 from .learning_system import LearningSystem
 from .prediction_engine import PredictionEngine
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+import pandas as pd
+import scipy.stats as stats
+from sklearn.metrics import mean_squared_error, r2_score
+from .autonomous_controller import AutonomousController, SystemMetrics, SystemState
+from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
+from .prediction_engine import EnsemblePredictionModel, PredictionEngine
 
 warnings.filterwarnings("ignore")
 

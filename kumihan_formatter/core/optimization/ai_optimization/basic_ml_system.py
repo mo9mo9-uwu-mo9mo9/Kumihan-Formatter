@@ -5,6 +5,8 @@ Basic ML System - 基本機械学習システム（Phase B.4-Alpha）
 予測システム基盤・学習データ管理・特徴量エンジニアリング・モデル訓練推論
 """
 
+import json
+import logging
 import pickle
 import time
 from abc import ABC, abstractmethod
@@ -17,6 +19,20 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
+import sklearn.utils
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score,
+)
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger

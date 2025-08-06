@@ -10,6 +10,10 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
+from typing import Any, Dict, List, Optional, Tuple
 
 from kumihan_formatter.core.optimization.adaptive_settings import (
     AdaptiveSettingsManager,
