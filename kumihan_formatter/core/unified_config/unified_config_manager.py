@@ -22,6 +22,7 @@ from .config_models import (
     ErrorConfig,
     KumihanConfig,
     LoggingConfig,
+    LogLevel,
     ParallelConfig,
     RenderingConfig,
     UIConfig,
@@ -199,10 +200,67 @@ class UnifiedConfigManager:
 
         # 検証なしまたは検証失敗時は基本作成
         try:
-            return KumihanConfig(**config_data)
+            # 無効なフィールド（extra="forbid"対応）を除去して再試行
+            cleaned_config_data = self._clean_config_data(config_data)
+            return KumihanConfig(**cleaned_config_data)
         except Exception as e:
             self.logger.error(f"設定作成エラー: {e}")
-            return KumihanConfig()  # デフォルト設定
+            # 最後の手段：有効なフィールドのみでデフォルト設定作成
+            return self._create_fallback_config(config_data)
+
+    def _clean_config_data(self, config_data: Dict[str, Any]) -> Dict[str, Any]:
+        """無効なフィールドを除去した設定データを作成"""
+        # KumihanConfigで有効なフィールドのリスト
+        valid_fields = {
+            "parallel",
+            "logging",
+            "error",
+            "rendering",
+            "ui",
+            "config_version",
+            "config_file_path",
+            "last_updated",
+            "environment",
+            "debug_mode",
+        }
+
+        cleaned_data = {}
+        for key, value in config_data.items():
+            if key in valid_fields:
+                cleaned_data[key] = value
+            else:
+                self.logger.warning(f"無効なフィールドをスキップ: {key}")
+
+        return cleaned_data
+
+    def _create_fallback_config(self, config_data: Dict[str, Any]) -> KumihanConfig:
+        """フォールバック設定を作成（有効な値のみを適用）"""
+        config = KumihanConfig()  # デフォルト設定で開始
+
+        # 有効な設定のみを適用
+        try:
+            if "debug_mode" in config_data:
+                config.debug_mode = config_data["debug_mode"]
+            if "environment" in config_data:
+                config.environment = config_data["environment"]
+            if "parallel" in config_data:
+                for key, value in config_data["parallel"].items():
+                    if hasattr(config.parallel, key):
+                        setattr(config.parallel, key, value)
+            if "logging" in config_data:
+                for key, value in config_data["logging"].items():
+                    if hasattr(config.logging, key):
+                        if key == "log_level":
+                            # 文字列をLogLevelに変換
+                            config.logging.log_level = (
+                                LogLevel(value) if isinstance(value, str) else value
+                            )
+                        else:
+                            setattr(config.logging, key, value)
+        except Exception as e:
+            self.logger.warning(f"フォールバック設定作成中の警告: {e}")
+
+        return config  # デフォルト設定
 
     def get_config(self) -> KumihanConfig:
         """現在の統一設定を取得
