@@ -16,12 +16,67 @@ Phase B.1: 動的設定調整機能
 期待効果: 3-5%追加削減
 """
 
+import math
 import threading
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from statistics import mean, stdev
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+# scipyインポート（フォールバック機能付き）
+try:
+    import numpy as np
+    from scipy import stats
+
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+
+    # フォールバック用の簡易統計クラス
+    class SimpleStats:
+        @staticmethod
+        def ttest_ind(a, b, equal_var=True):
+            """簡易t検定（scipyフォールバック）"""
+            if not a or not b:
+                return type("Result", (), {"statistic": 0, "pvalue": 1.0})
+
+            mean_a, mean_b = mean(a), mean(b)
+            try:
+                std_a, std_b = stdev(a), stdev(b)
+                pooled_std = math.sqrt((std_a**2 + std_b**2) / 2)
+                if pooled_std == 0:
+                    return type("Result", (), {"statistic": 0, "pvalue": 1.0})
+                t_stat = abs(mean_a - mean_b) / pooled_std
+                p_value = 0.01 if t_stat > 2.58 else (0.05 if t_stat > 1.96 else 1.0)
+                return type("Result", (), {"statistic": t_stat, "pvalue": p_value})
+            except (ValueError, ZeroDivisionError):
+                return type("Result", (), {"statistic": 0, "pvalue": 1.0})
+
+    stats = SimpleStats()
+
+    # numpy代替（フォールバック）
+    class SimpleNumpy:
+        @staticmethod
+        def array(data):
+            return data
+
+        @staticmethod
+        def std(data):
+            try:
+                return stdev(data) if len(data) > 1 else 0
+            except ValueError:
+                return 0
+
+        @staticmethod
+        def mean(data):
+            return mean(data) if data else 0
+
+        @staticmethod
+        def sqrt(x):
+            return math.sqrt(x) if x >= 0 else 0
+
+    np = SimpleNumpy()
 
 from kumihan_formatter.core.config.config_manager import EnhancedConfig
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -49,18 +104,20 @@ class WorkContext:
     complexity_score: float
     user_pattern: str = "default"
     timestamp: float = field(default_factory=time.time)
-    
+
     # Phase B統合システム用の追加属性（型安全性確保）
     task_type: Optional[str] = None  # "integration_test", "periodic_measurement"等
     complexity_level: Optional[str] = None  # "simple", "medium", "complex"
     cache_hit_rate: Optional[float] = None  # キャッシュヒット率 (0.0-1.0)
     adjustment_effectiveness: Optional[float] = None  # 調整効果度 (0.0-1.0)
-    monitoring_optimization_score: Optional[float] = None  # モニタリング最適化スコア (0.0-1.0)
+    monitoring_optimization_score: Optional[float] = (
+        None  # モニタリング最適化スコア (0.0-1.0)
+    )
 
 
 @dataclass
 class ABTestConfig:
-    """A/Bテスト設定"""
+    """A/Bテスト設定（統計的検定強化版）"""
 
     parameter: str
     test_values: List[Any]
@@ -68,10 +125,32 @@ class ABTestConfig:
     confidence_threshold: float = 0.95
     metric: str = "token_efficiency"
 
+    # 統計的検定設定
+    alpha: float = 0.05  # 有意水準
+    power: float = 0.8  # 統計的検出力
+    minimum_effect_size: float = 0.2  # 検出したい最小効果サイズ
+    test_type: str = "t_test"  # "t_test", "mann_whitney"
+
+    # 事前サンプルサイズ計算
+    calculate_sample_size: bool = True
+
+
+@dataclass
+class StatisticalTestResult:
+    """統計的検定結果"""
+
+    test_type: str  # "t_test", "chi_square", "mann_whitney"
+    statistic: float
+    p_value: float
+    significant: bool
+    confidence_interval: Optional[Tuple[float, float]] = None
+    effect_size: Optional[float] = None  # Cohen's d
+    power: Optional[float] = None  # 統計的検出力
+
 
 @dataclass
 class ABTestResult:
-    """A/Bテスト結果"""
+    """A/Bテスト結果（統計的検定強化版）"""
 
     parameter: str
     winning_value: Any
@@ -79,6 +158,262 @@ class ABTestResult:
     improvement: float
     sample_count: int
     statistical_significance: bool
+
+    # 統計的検定強化項目
+    statistical_test: Optional[StatisticalTestResult] = None
+    confidence_interval: Optional[Tuple[float, float]] = None
+    effect_size: Optional[float] = None  # Cohen's d
+    required_sample_size: Optional[int] = None
+    statistical_power: Optional[float] = None
+
+
+class StatisticalTestingEngine:
+    """
+    統計的検定エンジン
+
+    機能:
+    - scipy.statsを使用した本格的統計検定
+    - 信頼区間計算
+    - 効果サイズ（Cohen's d）計算
+    - サンプルサイズ計算
+    - フォールバック機能（scipy未インストール時）
+    """
+
+    def __init__(self):
+        self.logger = get_logger(__name__)
+        self.scipy_available = SCIPY_AVAILABLE
+
+        if not self.scipy_available:
+            self.logger.warning(
+                "scipy not available - using fallback statistical functions"
+            )
+
+    def calculate_cohens_d(self, group1: List[float], group2: List[float]) -> float:
+        """
+        Cohen's d（効果サイズ）を計算
+
+        Args:
+            group1: グループ1のデータ
+            group2: グループ2のデータ
+
+        Returns:
+            効果サイズ（Cohen's d）
+        """
+        if not group1 or not group2:
+            return 0.0
+
+        try:
+            if self.scipy_available:
+                mean1, mean2 = np.mean(group1), np.mean(group2)
+                std1, std2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
+                n1, n2 = len(group1), len(group2)
+
+                # プールされた標準偏差
+                pooled_std = math.sqrt(
+                    ((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2)
+                )
+
+                if pooled_std == 0:
+                    return 0.0
+
+                cohens_d = (mean1 - mean2) / pooled_std
+                return abs(cohens_d)
+            else:
+                # フォールバック実装
+                mean1, mean2 = mean(group1), mean(group2)
+                std1 = stdev(group1) if len(group1) > 1 else 0
+                std2 = stdev(group2) if len(group2) > 1 else 0
+
+                pooled_std = math.sqrt((std1**2 + std2**2) / 2)
+                if pooled_std == 0:
+                    return 0.0
+
+                return abs((mean1 - mean2) / pooled_std)
+
+        except (ValueError, ZeroDivisionError) as e:
+            self.logger.warning(
+                f"Statistical calculation failed in calculate_cohens_d: {e}"
+            )
+            return 0.0
+
+    def calculate_confidence_interval(
+        self, data: List[float], confidence_level: float = 0.95
+    ) -> Tuple[float, float]:
+        """
+        信頼区間を計算
+
+        Args:
+            data: データ
+            confidence_level: 信頼水準（デフォルト: 0.95）
+
+        Returns:
+            信頼区間のタプル（下限, 上限）
+        """
+        if not data or len(data) < 2:
+            return (0.0, 0.0)
+
+        try:
+            if self.scipy_available:
+                data_array = np.array(data)
+                sample_mean = np.mean(data_array)
+                sample_std = np.std(data_array, ddof=1)
+                n = len(data_array)
+
+                # t分布の臨界値
+                alpha = 1 - confidence_level
+                t_critical = stats.t.ppf(1 - alpha / 2, df=n - 1)
+
+                margin_error = t_critical * (sample_std / math.sqrt(n))
+
+                return (sample_mean - margin_error, sample_mean + margin_error)
+            else:
+                # フォールバック実装（正規分布近似）
+                sample_mean = mean(data)
+                sample_std = stdev(data)
+                n = len(data)
+
+                # 95%信頼区間の場合のz値
+                z_critical = 1.96 if confidence_level == 0.95 else 2.58
+                margin_error = z_critical * (sample_std / math.sqrt(n))
+
+                return (sample_mean - margin_error, sample_mean + margin_error)
+
+        except (ValueError, ZeroDivisionError):
+            return (0.0, 0.0)
+
+    def calculate_required_sample_size(
+        self, effect_size: float, power: float = 0.8, alpha: float = 0.05
+    ) -> int:
+        """
+        必要サンプルサイズを計算
+
+        Args:
+            effect_size: 期待効果サイズ
+            power: 統計的検出力（デフォルト: 0.8）
+            alpha: 有意水準（デフォルト: 0.05）
+
+        Returns:
+            各グループに必要なサンプル数
+        """
+        if effect_size <= 0:
+            return 100  # デフォルト値
+
+        try:
+            if self.scipy_available:
+                # 二標本t検定のサンプルサイズ計算
+                z_alpha = stats.norm.ppf(1 - alpha / 2)
+                z_beta = stats.norm.ppf(power)
+
+                n = 2 * ((z_alpha + z_beta) / effect_size) ** 2
+                return max(3, int(math.ceil(n)))  # 最小3サンプル
+            else:
+                # フォールバック実装（簡易計算）
+                # Cohen (1988) の経験則に基づく近似
+                if effect_size >= 0.8:  # 大きな効果
+                    return max(3, int(20 / (effect_size**2)))
+                elif effect_size >= 0.5:  # 中程度の効果
+                    return max(3, int(30 / (effect_size**2)))
+                else:  # 小さな効果
+                    return max(3, int(50 / (effect_size**2)))
+
+        except (ValueError, ZeroDivisionError):
+            return 10  # デフォルト値
+
+    def perform_statistical_test(
+        self,
+        group1: List[float],
+        group2: List[float],
+        test_type: str = "t_test",
+        alpha: float = 0.05,
+    ) -> StatisticalTestResult:
+        """
+        統計的検定を実行
+
+        Args:
+            group1: グループ1のデータ
+            group2: グループ2のデータ
+            test_type: 検定タイプ（"t_test", "mann_whitney"）
+            alpha: 有意水準
+
+        Returns:
+            統計的検定結果
+        """
+        if not group1 or not group2:
+            return StatisticalTestResult(
+                test_type=test_type, statistic=0.0, p_value=1.0, significant=False
+            )
+
+        try:
+            if test_type == "t_test":
+                if self.scipy_available:
+                    # Welchのt検定（等分散を仮定しない）
+                    statistic, p_value = stats.ttest_ind(
+                        group1, group2, equal_var=False
+                    )
+                else:
+                    # フォールバック
+                    result = stats.ttest_ind(group1, group2)
+                    statistic, p_value = result.statistic, result.pvalue
+
+            elif test_type == "mann_whitney":
+                if self.scipy_available:
+                    # Mann-Whitney U検定（ノンパラメトリック）
+                    statistic, p_value = stats.mannwhitneyu(
+                        group1, group2, alternative="two-sided"
+                    )
+                else:
+                    # フォールバックとしてt検定を使用
+                    result = stats.ttest_ind(group1, group2)
+                    statistic, p_value = result.statistic, result.pvalue
+            else:
+                # デフォルトはt検定
+                result = stats.ttest_ind(group1, group2)
+                statistic, p_value = result.statistic, result.pvalue
+
+            # 効果サイズ計算
+            effect_size = self.calculate_cohens_d(group1, group2)
+
+            # 信頼区間計算（差の信頼区間）
+            if self.scipy_available:
+                diff_data = [
+                    g1 - g2
+                    for g1, g2 in zip(group1, group2)
+                    if len(group1) == len(group2)
+                ]
+                if not diff_data:
+                    # サンプルサイズが異なる場合の近似
+                    mean_diff = np.mean(group1) - np.mean(group2)
+                    std_err = math.sqrt(
+                        np.var(group1) / len(group1) + np.var(group2) / len(group2)
+                    )
+                    t_critical = stats.t.ppf(
+                        1 - alpha / 2, df=len(group1) + len(group2) - 2
+                    )
+                    margin = t_critical * std_err
+                    confidence_interval = (mean_diff - margin, mean_diff + margin)
+                else:
+                    confidence_interval = self.calculate_confidence_interval(
+                        diff_data, 1 - alpha
+                    )
+            else:
+                confidence_interval = None
+
+            return StatisticalTestResult(
+                test_type=test_type,
+                statistic=float(statistic) if not math.isnan(statistic) else 0.0,
+                p_value=float(p_value) if not math.isnan(p_value) else 1.0,
+                significant=(
+                    float(p_value) < alpha if not math.isnan(p_value) else False
+                ),
+                confidence_interval=confidence_interval,
+                effect_size=effect_size,
+            )
+
+        except Exception as e:
+            self.logger.warning(f"Statistical test failed: {e}")
+            return StatisticalTestResult(
+                test_type=test_type, statistic=0.0, p_value=1.0, significant=False
+            )
 
 
 class AdaptiveSettingsManager:
@@ -96,6 +431,9 @@ class AdaptiveSettingsManager:
         self.logger = get_logger(__name__)
         self.config = config
 
+        # 統計的検定エンジン
+        self.statistical_engine = StatisticalTestingEngine()
+
         # 調整履歴管理
         self.adjustment_history: deque[ConfigAdjustment] = deque(maxlen=1000)
         self.context_patterns: Dict[str, Dict[str, Any]] = {}
@@ -111,10 +449,18 @@ class AdaptiveSettingsManager:
         # 設定調整ルール
         self.adjustment_rules = self._initialize_adjustment_rules()
 
+        # Issue #804: AI駆動型最適化システム統合
+        self.file_size_optimizer = FileSizeLimitOptimizer(config)
+        self.concurrent_limiter = ConcurrentToolCallLimiter(config)
+        self.token_analyzer = TokenUsageAnalyzer(config)
+
         # スレッドセーフティ
         self._lock = threading.Lock()
 
-        self.logger.info("AdaptiveSettingsManager initialized")
+        self.logger.info(
+            f"AdaptiveSettingsManager initialized with AI optimization systems "
+            f"(scipy: {SCIPY_AVAILABLE})"
+        )
 
     def _initialize_adjustment_rules(self) -> Dict[str, Callable]:
         """設定調整ルールを初期化"""
@@ -126,12 +472,19 @@ class AdaptiveSettingsManager:
         }
 
     def adjust_for_context(self, context: WorkContext) -> List[ConfigAdjustment]:
-        """コンテキストに応じた設定調整"""
+        """コンテキストに応じた設定調整（Issue #804 AI最適化統合版）"""
         with self._lock:
             adjustments = []
 
+            # Issue #804: AI駆動型最適化システム統合処理
+            ai_optimizations_applied = self._apply_ai_optimizations(context)
+            adjustments.extend(ai_optimizations_applied)
+
             # コンテキストパターン学習
-            pattern_key = f"{context.operation_type}_{self._classify_content_size(context.content_size)}"
+            pattern_key = (
+                f"{context.operation_type}_"
+                f"{self._classify_content_size(context.content_size)}"
+            )
 
             if pattern_key not in self.context_patterns:
                 self.context_patterns[pattern_key] = {
@@ -160,9 +513,283 @@ class AdaptiveSettingsManager:
                     self._apply_adjustment(adjustment)
 
             self.logger.info(
-                f"Applied {len(adjustments)} adjustments for context: {context.operation_type}"
+                f"Applied {len(adjustments)} total adjustments (including AI optimizations) "
+                f"for context: {context.operation_type}"
             )
             return adjustments
+
+    def _apply_ai_optimizations(self, context: WorkContext) -> List[ConfigAdjustment]:
+        """
+        AI駆動型最適化システムを適用 - Issue #804 中核実装
+
+        Args:
+            context: 作業コンテキスト
+
+        Returns:
+            適用された最適化調整のリスト
+        """
+        ai_adjustments = []
+
+        # 1. ファイルサイズ制限最適化
+        file_size_adjustments = self._apply_file_size_optimizations(context)
+        ai_adjustments.extend(file_size_adjustments)
+
+        # 2. 並列制御最適化
+        concurrent_adjustments = self._apply_concurrent_optimizations(context)
+        ai_adjustments.extend(concurrent_adjustments)
+
+        # 3. Token使用量最適化
+        token_adjustments = self._apply_token_optimizations(context)
+        ai_adjustments.extend(token_adjustments)
+
+        # 統合効果レポート
+        if ai_adjustments:
+            total_expected_benefit = sum(adj.expected_benefit for adj in ai_adjustments)
+            self.logger.info(
+                f"AI optimizations applied: {len(ai_adjustments)} adjustments, "
+                f"expected total benefit: {total_expected_benefit:.1%}"
+            )
+
+        return ai_adjustments
+
+    def _apply_file_size_optimizations(
+        self, context: WorkContext
+    ) -> List[ConfigAdjustment]:
+        """ファイルサイズ制限最適化を適用"""
+        adjustments = []
+
+        # 動的サイズ制限調整
+        if self.file_size_optimizer.adjust_limits_dynamically(context):
+            # サイズ制限が調整された場合、関連する設定も更新
+            current_max_chars = self.config.get("serena.max_answer_chars", 25000)
+            optimized_stats = self.file_size_optimizer.get_optimization_statistics()
+
+            # 統計に基づく最適化
+            if optimized_stats["effectiveness_score"] > 0.7:  # 高効果の場合
+                if context.content_size > 50000:
+                    new_max_chars = min(current_max_chars, 35000)
+                    if new_max_chars != current_max_chars:
+                        adjustment = ConfigAdjustment(
+                            key="serena.max_answer_chars",
+                            old_value=current_max_chars,
+                            new_value=new_max_chars,
+                            context=f"ai_file_size_optimization_{context.operation_type}",
+                            timestamp=time.time(),
+                            reason=f"File size optimization with {optimized_stats['effectiveness_score']:.1%} effectiveness",
+                            expected_benefit=0.18,  # FileSizeLimitOptimizer目標削減率
+                        )
+                        adjustments.append(adjustment)
+
+        return adjustments
+
+    def _apply_concurrent_optimizations(
+        self, context: WorkContext
+    ) -> List[ConfigAdjustment]:
+        """並列処理制限最適化を適用"""
+        adjustments = []
+
+        # リアルタイム性能指標を取得（簡易版）
+        concurrency_stats = self.concurrent_limiter.get_concurrency_statistics()
+        performance_metrics = {
+            "average_response_time": 5.0,  # 実装時に実際の指標に置換
+            "resource_usage_percent": 60,  # 実装時に実際の指標に置換
+        }
+
+        # 性能指標に基づく調整
+        old_limit = concurrency_stats["max_concurrent_calls"]
+        self.concurrent_limiter.adjust_limits_based_on_performance(performance_metrics)
+        new_stats = self.concurrent_limiter.get_concurrency_statistics()
+        new_limit = new_stats["max_concurrent_calls"]
+
+        if old_limit != new_limit:
+            # 並列制御設定の調整を記録
+            adjustment = ConfigAdjustment(
+                key="optimization.max_concurrent_tools",
+                old_value=old_limit,
+                new_value=new_limit,
+                context=f"ai_concurrent_optimization_{context.operation_type}",
+                timestamp=time.time(),
+                reason=f"Concurrent control adjustment based on performance metrics",
+                expected_benefit=0.12,  # 並列制御による効率改善
+            )
+            adjustments.append(adjustment)
+
+            # 設定の実際の更新
+            self.config.set(
+                "optimization.max_concurrent_tools", new_limit, "ai_optimizer"
+            )
+
+        return adjustments
+
+    def _apply_token_optimizations(
+        self, context: WorkContext
+    ) -> List[ConfigAdjustment]:
+        """Token使用量最適化を適用"""
+        adjustments = []
+
+        # コンテキストに基づくToken使用量の記録と分析
+        estimated_input_tokens = int(context.content_size * 0.25)  # 概算
+        estimated_output_tokens = int(
+            context.complexity_score * 2000
+        )  # 複雑性ベース概算
+
+        # Token使用量を記録
+        analysis_result = self.token_analyzer.record_token_usage(
+            operation_type=context.operation_type,
+            input_tokens=estimated_input_tokens,
+            output_tokens=estimated_output_tokens,
+            context=context,
+        )
+
+        # 最適化提案があるかチェック
+        if "optimization_suggestions" in analysis_result:
+            for suggestion in analysis_result["optimization_suggestions"]:
+                if (
+                    suggestion["priority"] == "high"
+                    and suggestion.get("estimated_total_reduction", 0) > 0.15
+                ):
+                    # 高優先度で15%以上の削減期待値がある場合に適用
+                    for action in suggestion["actions"]:
+                        if action["action"] == "apply_file_size_limits":
+                            # max_answer_charsをより厳格に設定
+                            current_chars = self.config.get(
+                                "serena.max_answer_chars", 25000
+                            )
+                            optimized_chars = int(
+                                current_chars * (1 - action["expected_reduction"])
+                            )
+
+                            if optimized_chars < current_chars:
+                                adjustment = ConfigAdjustment(
+                                    key="serena.max_answer_chars",
+                                    old_value=current_chars,
+                                    new_value=optimized_chars,
+                                    context=f"ai_token_optimization_{context.operation_type}",
+                                    timestamp=time.time(),
+                                    reason=f"Token usage optimization: {suggestion['title']}",
+                                    expected_benefit=action["expected_reduction"],
+                                )
+                                adjustments.append(adjustment)
+
+        # 効率性スコアが低い場合の追加最適化
+        efficiency_score = analysis_result.get("efficiency_score", 1.0)
+        if efficiency_score < 0.6:
+            # 低効率の場合、より保守的な設定を適用
+            current_recursion = self.config.get("performance.max_recursion_depth", 50)
+            if current_recursion > 30:
+                optimized_recursion = max(30, int(current_recursion * 0.8))
+                adjustment = ConfigAdjustment(
+                    key="performance.max_recursion_depth",
+                    old_value=current_recursion,
+                    new_value=optimized_recursion,
+                    context=f"ai_efficiency_optimization_{context.operation_type}",
+                    timestamp=time.time(),
+                    reason=f"Low efficiency optimization (score: {efficiency_score:.2f})",
+                    expected_benefit=0.08,
+                )
+                adjustments.append(adjustment)
+
+        return adjustments
+
+    def get_ai_optimization_summary(self) -> Dict[str, Any]:
+        """AI最適化システムの総合サマリーを取得 - Issue #804"""
+        return {
+            "file_size_optimization": self.file_size_optimizer.get_optimization_statistics(),
+            "concurrent_control": self.concurrent_limiter.get_concurrency_statistics(),
+            "token_analysis": self.token_analyzer.get_usage_analytics(),
+            "integration_status": {
+                "total_ai_adjustments": len(
+                    [adj for adj in self.adjustment_history if "ai_" in adj.context]
+                ),
+                "expected_total_benefit": sum(
+                    adj.expected_benefit
+                    for adj in self.adjustment_history
+                    if "ai_" in adj.context
+                ),
+                "last_optimization": max(
+                    (
+                        adj.timestamp
+                        for adj in self.adjustment_history
+                        if "ai_" in adj.context
+                    ),
+                    default=0,
+                ),
+            },
+            "system_health": {
+                "file_optimizer_active": hasattr(self, "file_size_optimizer"),
+                "concurrent_limiter_active": hasattr(self, "concurrent_limiter"),
+                "token_analyzer_active": hasattr(self, "token_analyzer"),
+                "integration_complete": all(
+                    [
+                        hasattr(self, "file_size_optimizer"),
+                        hasattr(self, "concurrent_limiter"),
+                        hasattr(self, "token_analyzer"),
+                    ]
+                ),
+            },
+        }
+
+    def optimize_for_file_operation(
+        self, file_path: str, requested_size: int
+    ) -> Tuple[int, Dict[str, Any]]:
+        """
+        ファイル操作専用最適化 - Issue #804 外部API
+
+        Args:
+            file_path: ファイルパス
+            requested_size: 要求サイズ
+
+        Returns:
+            最適化サイズと詳細情報
+        """
+        return self.file_size_optimizer.optimize_read_size(file_path, requested_size)
+
+    def acquire_tool_permission(
+        self, tool_name: str, context: Optional[WorkContext] = None
+    ) -> Tuple[bool, str]:
+        """
+        ツール実行許可取得 - Issue #804 外部API
+
+        Args:
+            tool_name: ツール名
+            context: 実行コンテキスト
+
+        Returns:
+            許可フラグと許可ID/理由
+        """
+        return self.concurrent_limiter.acquire_call_permission(tool_name, context)
+
+    def release_tool_permission(self, call_id: str):
+        """
+        ツール実行許可解放 - Issue #804 外部API
+
+        Args:
+            call_id: 許可ID
+        """
+        self.concurrent_limiter.release_call_permission(call_id)
+
+    def analyze_token_usage(
+        self,
+        operation_type: str,
+        input_tokens: int,
+        output_tokens: int,
+        context: Optional[WorkContext] = None,
+    ) -> Dict[str, Any]:
+        """
+        Token使用量分析 - Issue #804 外部API
+
+        Args:
+            operation_type: 操作種別
+            input_tokens: 入力Token数
+            output_tokens: 出力Token数
+            context: 実行コンテキスト
+
+        Returns:
+            分析結果
+        """
+        return self.token_analyzer.record_token_usage(
+            operation_type, input_tokens, output_tokens, context
+        )
 
     def _classify_content_size(self, size: int) -> str:
         """コンテンツサイズを分類"""
@@ -302,13 +929,34 @@ class AdaptiveSettingsManager:
         )
 
     def start_ab_test(self, test_config: ABTestConfig) -> bool:
-        """A/Bテストを開始"""
+        """A/Bテストを開始（統計的検定強化版）"""
         with self._lock:
             if test_config.parameter in self.active_tests:
                 self.logger.warning(
                     f"A/B test already running for {test_config.parameter}"
                 )
                 return False
+
+            # 事前サンプルサイズ計算
+            if test_config.calculate_sample_size:
+                required_n = self.statistical_engine.calculate_required_sample_size(
+                    test_config.minimum_effect_size,
+                    test_config.power,
+                    test_config.alpha,
+                )
+
+                # 設定されたサンプルサイズが不足している場合は警告
+                if test_config.sample_size < required_n:
+                    self.logger.warning(
+                        f"Configured sample size ({test_config.sample_size}) is less than "
+                        f"required ({required_n}) for effect size "
+                        f"{test_config.minimum_effect_size:.3f}. Test may be underpowered."
+                    )
+                else:
+                    self.logger.info(
+                        f"Sample size ({test_config.sample_size}) is adequate for "
+                        f"detecting effect size {test_config.minimum_effect_size:.3f}"
+                    )
 
             self.active_tests[test_config.parameter] = test_config
             self.test_results[test_config.parameter] = []
@@ -318,7 +966,13 @@ class AdaptiveSettingsManager:
             self.performance_baselines[test_config.parameter] = current_value
 
             self.logger.info(
-                f"Started A/B test for {test_config.parameter} with values: {test_config.test_values}"
+                f"Started A/B test for {test_config.parameter}:\n"
+                f"  - Test values: {test_config.test_values}\n"
+                f"  - Sample size: {test_config.sample_size}\n"
+                f"  - Test type: {test_config.test_type}\n"
+                f"  - Alpha: {test_config.alpha}\n"
+                f"  - Power: {test_config.power}\n"
+                f"  - Min effect size: {test_config.minimum_effect_size}"
             )
             return True
 
@@ -344,8 +998,8 @@ class AdaptiveSettingsManager:
                     del self.active_tests[parameter]
 
     def _analyze_ab_test(self, parameter: str) -> ABTestResult:
-        """A/Bテスト結果を分析"""
-        test_config = self.active_tests[parameter]
+        """A/Bテスト結果を分析（統計的検定強化版）"""
+        # test_config変数を削除（未使用のため）
         results = self.test_results[parameter]
 
         # 値別グループ化
@@ -356,6 +1010,7 @@ class AdaptiveSettingsManager:
         # 最適値を特定
         best_value = None
         best_mean = float("-inf")
+        best_metrics = []
 
         for value_str, metrics in value_groups.items():
             if len(metrics) >= 3:  # 最小サンプル数
@@ -363,15 +1018,20 @@ class AdaptiveSettingsManager:
                 if mean_metric > best_mean:
                     best_mean = mean_metric
                     best_value = eval(value_str) if value_str.isdigit() else value_str
+                    best_metrics = metrics
 
-        # 統計的有意性評価（簡易版）
+        # ベースライン取得
         baseline_metrics = value_groups.get(
             str(self.performance_baselines[parameter]), []
         )
-        best_metrics = value_groups.get(str(best_value), [])
 
         statistical_significance = False
         improvement = 0.0
+        statistical_test = None
+        confidence_interval = None
+        effect_size = None
+        required_sample_size = None
+        statistical_power = None
 
         if len(baseline_metrics) >= 3 and len(best_metrics) >= 3:
             baseline_mean = mean(baseline_metrics)
@@ -383,26 +1043,94 @@ class AdaptiveSettingsManager:
                 else 0
             )
 
-            # 簡易t検定（正規分布仮定）
+            # 本格的統計検定実行
             try:
-                baseline_std = stdev(baseline_metrics)
-                best_std = stdev(best_metrics)
-                pooled_std = ((baseline_std**2 + best_std**2) / 2) ** 0.5
+                # t検定実行
+                statistical_test = self.statistical_engine.perform_statistical_test(
+                    best_metrics, baseline_metrics, test_type="t_test", alpha=0.05
+                )
 
-                if pooled_std > 0:
-                    t_stat = abs(best_mean_actual - baseline_mean) / pooled_std
-                    statistical_significance = t_stat > 2.0  # 簡易閾値
-            except (ValueError, ZeroDivisionError) as e:
-                # 統計計算エラー（標準偏差計算不可、ゼロ除算等）を無視
-                pass
+                statistical_significance = statistical_test.significant
+
+                # 効果サイズ
+                effect_size = statistical_test.effect_size
+
+                # 信頼区間（改善率の95%信頼区間）
+                if statistical_test.confidence_interval:
+                    ci_lower, ci_upper = statistical_test.confidence_interval
+                    # 改善率の信頼区間に変換
+                    if baseline_mean > 0:
+                        improvement_ci_lower = (ci_lower / baseline_mean) * 100
+                        improvement_ci_upper = (ci_upper / baseline_mean) * 100
+                        confidence_interval = (
+                            improvement_ci_lower,
+                            improvement_ci_upper,
+                        )
+                    else:
+                        confidence_interval = statistical_test.confidence_interval
+
+                # 必要サンプルサイズ（次回テスト用）
+                if effect_size and effect_size > 0:
+                    required_sample_size = (
+                        self.statistical_engine.calculate_required_sample_size(
+                            effect_size, power=0.8, alpha=0.05
+                        )
+                    )
+
+                # 統計的検出力推定（簡易版）
+                current_n = min(len(baseline_metrics), len(best_metrics))
+                if effect_size and effect_size > 0 and current_n >= 3:
+                    # Cohen (1988) に基づく近似
+                    if current_n >= required_sample_size:
+                        statistical_power = 0.8
+                    else:
+                        statistical_power = min(
+                            0.8, current_n / required_sample_size * 0.8
+                        )
+
+                # 詳細ログ出力
+                self.logger.info(
+                    f"Statistical test results for {parameter}:\n"
+                    f"  - Test type: {statistical_test.test_type}\n"
+                    f"  - Statistic: {statistical_test.statistic:.4f}\n"
+                    f"  - P-value: {statistical_test.p_value:.4f}\n"
+                    f"  - Significant: {statistical_test.significant}\n"
+                    f"  - Effect size (Cohen's d): {effect_size:.4f}\n"
+                    f"  - Improvement: {improvement:.2f}%\n"
+                    f"  - Confidence interval: {confidence_interval}\n"
+                    f"  - Required sample size: {required_sample_size}\n"
+                    f"  - Estimated power: {statistical_power:.2f}"
+                )
+
+            except Exception as e:
+                self.logger.warning(f"Statistical analysis failed: {e}")
+                # フォールバック処理継続
+
+        # 信頼度計算
+        if statistical_significance and effect_size:
+            if effect_size >= 0.8:  # 大きな効果
+                confidence = 0.95
+            elif effect_size >= 0.5:  # 中程度の効果
+                confidence = 0.90
+            elif effect_size >= 0.2:  # 小さな効果
+                confidence = 0.80
+            else:
+                confidence = 0.60
+        else:
+            confidence = 0.50
 
         return ABTestResult(
             parameter=parameter,
             winning_value=best_value,
-            confidence=0.95 if statistical_significance else 0.5,
+            confidence=confidence,
             improvement=improvement,
             sample_count=len(results),
             statistical_significance=statistical_significance,
+            statistical_test=statistical_test,
+            confidence_interval=confidence_interval,
+            effect_size=effect_size,
+            required_sample_size=required_sample_size,
+            statistical_power=statistical_power,
         )
 
     def _apply_ab_test_result(self, result: ABTestResult):
@@ -491,7 +1219,8 @@ class AdaptiveSettingsManager:
                             )
 
             self.logger.info(
-                f"Pattern learning completed: {len(learning_summary['efficiency_insights'])} patterns analyzed"
+                f"Pattern learning completed: "
+                f"{len(learning_summary['efficiency_insights'])} patterns analyzed"
             )
             return learning_summary
 
@@ -602,7 +1331,10 @@ class AdaptiveSettingsManager:
                             new_value=int(recommendation["optimized_suggested"]),
                             context=f"learned_optimization_{opportunity['pattern']}",
                             timestamp=time.time(),
-                            reason=f"Pattern learning: {recommendation['expected_improvement']:.1%} improvement expected",
+                            reason=(
+                                f"Pattern learning: {recommendation['expected_improvement']:.1%} "
+                                f"improvement expected"
+                            ),
                             expected_benefit=recommendation["expected_improvement"],
                         )
 
@@ -631,6 +1363,1008 @@ class AdaptiveSettingsManager:
                     ]
                 ),
             }
+
+    def get_statistical_test_capabilities(self) -> Dict[str, Any]:
+        """統計的検定機能の状態取得"""
+        return {
+            "scipy_available": SCIPY_AVAILABLE,
+            "supported_tests": (
+                ["t_test", "mann_whitney"] if SCIPY_AVAILABLE else ["t_test_fallback"]
+            ),
+            "statistical_features": {
+                "confidence_intervals": True,
+                "effect_size": True,
+                "sample_size_calculation": True,
+                "power_analysis": SCIPY_AVAILABLE,
+                "multiple_test_types": SCIPY_AVAILABLE,
+            },
+            "fallback_mode": not SCIPY_AVAILABLE,
+        }
+
+    def run_advanced_ab_test(
+        self,
+        parameter: str,
+        test_values: List[Any],
+        minimum_effect_size: float = 0.2,
+        power: float = 0.8,
+        alpha: float = 0.05,
+        test_type: str = "t_test",
+    ) -> bool:
+        """
+        統計的検定強化版A/Bテスト実行
+
+        Args:
+            parameter: テストパラメータ
+            test_values: テスト値のリスト
+            minimum_effect_size: 検出したい最小効果サイズ
+            power: 統計的検出力
+            alpha: 有意水準
+            test_type: 検定タイプ
+
+        Returns:
+            テスト開始成功/失敗
+        """
+        # 適切なサンプルサイズを計算
+        required_sample_size = self.statistical_engine.calculate_required_sample_size(
+            minimum_effect_size, power, alpha
+        )
+
+        # 強化版A/Bテスト設定
+        test_config = ABTestConfig(
+            parameter=parameter,
+            test_values=test_values,
+            sample_size=required_sample_size,
+            confidence_threshold=1 - alpha,
+            alpha=alpha,
+            power=power,
+            minimum_effect_size=minimum_effect_size,
+            test_type=test_type,
+            calculate_sample_size=True,
+        )
+
+        return self.start_ab_test(test_config)
+
+
+class FileSizeLimitOptimizer:
+    """
+    ファイルサイズ制限最適化システム - Issue #804 最高優先度実装
+
+    機能:
+    - 大きなファイル読み取り制限による token 削減（目標: 15-25% 削減）
+    - 動的サイズしきい値調整
+    - ファイル種別別制限設定
+    - パフォーマンス監視統合
+    """
+
+    def __init__(self, config: EnhancedConfig):
+        self.logger = get_logger(__name__)
+        self.config = config
+
+        # ファイルサイズ制限設定
+        self.size_limits = {
+            "default": 50000,  # デフォルト制限
+            "code": 100000,  # コードファイル
+            "text": 75000,  # テキストファイル
+            "config": 25000,  # 設定ファイル
+            "documentation": 150000,  # ドキュメント
+        }
+
+        # 統計情報
+        self.read_statistics = {
+            "total_reads": 0,
+            "size_limited_reads": 0,
+            "tokens_saved": 0,
+            "average_reduction": 0.0,
+        }
+
+        # 動的調整履歴
+        self.adjustment_history = deque(maxlen=100)
+        self._lock = threading.Lock()
+
+        self.logger.info("FileSizeLimitOptimizer initialized with dynamic thresholds")
+
+    def optimize_read_size(
+        self, file_path: str, requested_size: int
+    ) -> Tuple[int, Dict[str, Any]]:
+        """
+        ファイル読み取りサイズを最適化
+
+        Args:
+            file_path: ファイルパス
+            requested_size: 要求されたサイズ
+
+        Returns:
+            最適化されたサイズと統計情報
+        """
+        with self._lock:
+            file_type = self._classify_file_type(file_path)
+            current_limit = self.size_limits.get(file_type, self.size_limits["default"])
+
+            # 最適化実行
+            if requested_size > current_limit:
+                optimized_size = current_limit
+                reduction_rate = (requested_size - optimized_size) / requested_size
+
+                # 統計更新
+                self.read_statistics["total_reads"] += 1
+                self.read_statistics["size_limited_reads"] += 1
+                self.read_statistics["tokens_saved"] += int(
+                    reduction_rate * requested_size * 0.25
+                )  # トークン推定
+                self._update_reduction_average(reduction_rate)
+
+                optimization_info = {
+                    "optimized": True,
+                    "original_size": requested_size,
+                    "optimized_size": optimized_size,
+                    "reduction_rate": reduction_rate,
+                    "file_type": file_type,
+                    "tokens_saved_estimate": int(
+                        reduction_rate * requested_size * 0.25
+                    ),
+                }
+
+                self.logger.debug(
+                    f"File size optimized: {file_path} "
+                    f"{requested_size} -> {optimized_size} "
+                    f"({reduction_rate:.1%} reduction)"
+                )
+            else:
+                optimized_size = requested_size
+                optimization_info = {
+                    "optimized": False,
+                    "original_size": requested_size,
+                    "optimized_size": optimized_size,
+                    "reduction_rate": 0.0,
+                    "file_type": file_type,
+                    "tokens_saved_estimate": 0,
+                }
+                self.read_statistics["total_reads"] += 1
+
+            return optimized_size, optimization_info
+
+    def _classify_file_type(self, file_path: str) -> str:
+        """ファイルタイプを分類"""
+        path_lower = file_path.lower()
+
+        if any(
+            ext in path_lower
+            for ext in [".py", ".js", ".ts", ".java", ".cpp", ".c", ".rs"]
+        ):
+            return "code"
+        elif any(
+            ext in path_lower for ext in [".json", ".yaml", ".yml", ".toml", ".cfg"]
+        ):
+            return "config"
+        elif any(ext in path_lower for ext in [".md", ".rst", ".txt", ".doc"]):
+            return "documentation"
+        elif any(ext in path_lower for ext in [".txt", ".log"]):
+            return "text"
+        else:
+            return "default"
+
+    def _update_reduction_average(self, new_reduction: float):
+        """平均削減率を更新"""
+        current_avg = self.read_statistics["average_reduction"]
+        limited_reads = self.read_statistics["size_limited_reads"]
+
+        # 加重平均で更新
+        self.read_statistics["average_reduction"] = (
+            current_avg * (limited_reads - 1) + new_reduction
+        ) / limited_reads
+
+    def adjust_limits_dynamically(self, context: WorkContext) -> bool:
+        """コンテキストに応じた動的制限調整"""
+        with self._lock:
+            adjusted = False
+
+            # 高複雑性コンテンツの場合は制限を緩和
+            if context.complexity_score > 0.8:
+                for file_type in self.size_limits:
+                    old_limit = self.size_limits[file_type]
+                    new_limit = int(old_limit * 1.2)  # 20%増加
+
+                    if new_limit != old_limit:
+                        self.size_limits[file_type] = new_limit
+                        adjusted = True
+
+                        self.adjustment_history.append(
+                            {
+                                "timestamp": time.time(),
+                                "file_type": file_type,
+                                "old_limit": old_limit,
+                                "new_limit": new_limit,
+                                "reason": "high_complexity_adjustment",
+                                "context_complexity": context.complexity_score,
+                            }
+                        )
+
+            # 小規模コンテンツの場合は制限を厳格化
+            elif context.content_size < 10000 and context.complexity_score < 0.4:
+                for file_type in self.size_limits:
+                    old_limit = self.size_limits[file_type]
+                    new_limit = max(int(old_limit * 0.8), 15000)  # 20%削減、最小15K
+
+                    if new_limit != old_limit:
+                        self.size_limits[file_type] = new_limit
+                        adjusted = True
+
+                        self.adjustment_history.append(
+                            {
+                                "timestamp": time.time(),
+                                "file_type": file_type,
+                                "old_limit": old_limit,
+                                "new_limit": new_limit,
+                                "reason": "low_complexity_optimization",
+                                "context_size": context.content_size,
+                                "context_complexity": context.complexity_score,
+                            }
+                        )
+
+            if adjusted:
+                self.logger.info(
+                    f"Dynamic size limits adjusted based on context complexity: {context.complexity_score}"
+                )
+
+            return adjusted
+
+    def get_optimization_statistics(self) -> Dict[str, Any]:
+        """最適化統計情報を取得"""
+        with self._lock:
+            total_reads = self.read_statistics["total_reads"]
+            limited_reads = self.read_statistics["size_limited_reads"]
+
+            return {
+                "total_file_reads": total_reads,
+                "size_limited_reads": limited_reads,
+                "optimization_rate": (
+                    limited_reads / total_reads if total_reads > 0 else 0.0
+                ),
+                "average_reduction_rate": self.read_statistics["average_reduction"],
+                "estimated_tokens_saved": self.read_statistics["tokens_saved"],
+                "current_limits": self.size_limits.copy(),
+                "recent_adjustments": list(self.adjustment_history)[-5:],
+                "effectiveness_score": self._calculate_effectiveness_score(),
+            }
+
+    def _calculate_effectiveness_score(self) -> float:
+        """最適化効果スコアを計算"""
+        total_reads = self.read_statistics["total_reads"]
+        if total_reads == 0:
+            return 0.0
+
+        optimization_rate = self.read_statistics["size_limited_reads"] / total_reads
+        avg_reduction = self.read_statistics["average_reduction"]
+
+        # 効果スコア = 最適化頻度 × 平均削減率 × 品質調整
+        effectiveness = optimization_rate * avg_reduction * 0.85  # 品質維持調整
+
+        return min(1.0, effectiveness)
+
+
+class ConcurrentToolCallLimiter:
+    """
+    並列ツール呼び出し制限システム - Issue #804 実装
+
+    機能:
+    - 同時実行ツール呼び出し数制限
+    - リソース使用量監視
+    - 適応的制限調整
+    - デッドロック防止機能
+    """
+
+    def __init__(self, config: EnhancedConfig):
+        self.logger = get_logger(__name__)
+        self.config = config
+
+        # 並列制限設定
+        self.max_concurrent_calls = self.config.get(
+            "optimization.max_concurrent_tools", 3
+        )
+        self.current_active_calls = 0
+        self.call_queue = deque()
+
+        # ツール別制限
+        self.tool_limits = {
+            "file_operations": 2,  # ファイル操作系
+            "search_operations": 4,  # 検索系
+            "analysis_operations": 2,  # 分析系
+            "default": 3,
+        }
+
+        # 統計情報
+        self.call_statistics = {
+            "total_calls": 0,
+            "queued_calls": 0,
+            "concurrent_peaks": 0,
+            "average_wait_time": 0.0,
+            "resource_savings": 0,
+        }
+
+        # 並行制御
+        self._semaphore = threading.Semaphore(self.max_concurrent_calls)
+        self._lock = threading.Lock()
+        self._active_calls = {}
+
+        self.logger.info(
+            f"ConcurrentToolCallLimiter initialized (max: {self.max_concurrent_calls})"
+        )
+
+    def acquire_call_permission(
+        self, tool_name: str, context: Optional[WorkContext] = None
+    ) -> Tuple[bool, str]:
+        """
+        ツール呼び出し許可を取得
+
+        Args:
+            tool_name: ツール名
+            context: 作業コンテキスト
+
+        Returns:
+            (許可フラグ, 許可ID/理由)
+        """
+        with self._lock:
+            call_id = f"{tool_name}_{int(time.time() * 1000)}_{threading.get_ident()}"
+
+            # ツール種別分類
+            tool_category = self._classify_tool(tool_name)
+            current_category_calls = sum(
+                1
+                for call_info in self._active_calls.values()
+                if call_info["category"] == tool_category
+            )
+
+            # カテゴリ別制限チェック
+            category_limit = self.tool_limits.get(
+                tool_category, self.tool_limits["default"]
+            )
+            if current_category_calls >= category_limit:
+                self.call_statistics["queued_calls"] += 1
+                reason = f"Category limit exceeded: {tool_category} ({current_category_calls}/{category_limit})"
+                self.logger.debug(f"Tool call queued: {call_id} - {reason}")
+                return False, reason
+
+            # 全体制限チェック
+            if len(self._active_calls) >= self.max_concurrent_calls:
+                self.call_statistics["queued_calls"] += 1
+                reason = f"Global limit exceeded: {len(self._active_calls)}/{self.max_concurrent_calls}"
+                self.logger.debug(f"Tool call queued: {call_id} - {reason}")
+                return False, reason
+
+            # リソース使用量チェック
+            if context and self._should_throttle_for_resources(context):
+                self.call_statistics["queued_calls"] += 1
+                reason = "Resource throttling active"
+                return False, reason
+
+            # 許可
+            self._active_calls[call_id] = {
+                "tool_name": tool_name,
+                "category": tool_category,
+                "start_time": time.time(),
+                "context_size": context.content_size if context else 0,
+            }
+
+            self.call_statistics["total_calls"] += 1
+            self.call_statistics["concurrent_peaks"] = max(
+                self.call_statistics["concurrent_peaks"], len(self._active_calls)
+            )
+
+            self.logger.debug(
+                f"Tool call permitted: {call_id} ({len(self._active_calls)} active)"
+            )
+            return True, call_id
+
+    def release_call_permission(self, call_id: str):
+        """ツール呼び出し許可を解放"""
+        with self._lock:
+            if call_id not in self._active_calls:
+                return
+
+            call_info = self._active_calls.pop(call_id)
+            duration = time.time() - call_info["start_time"]
+
+            # 統計更新
+            self._update_wait_time_statistics(duration)
+
+            # リソース節約効果計算
+            saved_resources = self._calculate_resource_savings(call_info, duration)
+            self.call_statistics["resource_savings"] += saved_resources
+
+            self.logger.debug(
+                f"Tool call completed: {call_id} "
+                f"({duration:.2f}s, {saved_resources} resources saved)"
+            )
+
+    def _classify_tool(self, tool_name: str) -> str:
+        """ツールをカテゴリ分類"""
+        tool_lower = tool_name.lower()
+
+        if any(keyword in tool_lower for keyword in ["read", "write", "edit", "file"]):
+            return "file_operations"
+        elif any(
+            keyword in tool_lower for keyword in ["search", "grep", "find", "glob"]
+        ):
+            return "search_operations"
+        elif any(keyword in tool_lower for keyword in ["analyze", "check", "validate"]):
+            return "analysis_operations"
+        else:
+            return "default"
+
+    def _should_throttle_for_resources(self, context: WorkContext) -> bool:
+        """リソース使用量に基づくスロットリング判定"""
+        # 大きなコンテンツまたは高複雑性の場合はスロットリング
+        if context.content_size > 100000 or context.complexity_score > 0.9:
+            current_resource_usage = sum(
+                call_info.get("context_size", 0)
+                for call_info in self._active_calls.values()
+            )
+
+            # 現在の総リソース使用量が閾値を超える場合
+            if current_resource_usage > 500000:  # 500KB相当
+                return True
+
+        return False
+
+    def _update_wait_time_statistics(self, duration: float):
+        """待機時間統計を更新"""
+        current_avg = self.call_statistics["average_wait_time"]
+        total_calls = self.call_statistics["total_calls"]
+
+        # 加重平均で更新
+        self.call_statistics["average_wait_time"] = (
+            current_avg * (total_calls - 1) + duration
+        ) / total_calls
+
+    def _calculate_resource_savings(self, call_info: Dict, duration: float) -> int:
+        """リソース節約効果を計算"""
+        # 基本節約効果（制限により他の呼び出しがブロックされた場合の効果）
+        base_savings = 1
+
+        # コンテンツサイズに基づく追加節約
+        if call_info.get("context_size", 0) > 50000:
+            base_savings += 2
+
+        # 長時間実行に基づる追加節約
+        if duration > 5.0:
+            base_savings += 1
+
+        return base_savings
+
+    def adjust_limits_based_on_performance(self, performance_metrics: Dict[str, Any]):
+        """パフォーマンス指標に基づく制限調整"""
+        with self._lock:
+            avg_response_time = performance_metrics.get("average_response_time", 0)
+            resource_usage = performance_metrics.get("resource_usage_percent", 0)
+
+            old_limit = self.max_concurrent_calls
+
+            # 応答時間が遅い場合は制限を厳格化
+            if avg_response_time > 10.0:  # 10秒以上
+                self.max_concurrent_calls = max(1, self.max_concurrent_calls - 1)
+
+            # リソース使用量が高い場合も制限を厳格化
+            elif resource_usage > 80:
+                self.max_concurrent_calls = max(2, self.max_concurrent_calls - 1)
+
+            # パフォーマンスが良好な場合は制限を緩和
+            elif avg_response_time < 3.0 and resource_usage < 50:
+                self.max_concurrent_calls = min(6, self.max_concurrent_calls + 1)
+
+            if old_limit != self.max_concurrent_calls:
+                # セマフォアも更新
+                self._semaphore = threading.Semaphore(self.max_concurrent_calls)
+
+                self.logger.info(
+                    f"Concurrent call limit adjusted: {old_limit} -> {self.max_concurrent_calls} "
+                    f"(response_time: {avg_response_time:.1f}s, resource_usage: {resource_usage}%)"
+                )
+
+    def get_concurrency_statistics(self) -> Dict[str, Any]:
+        """並列制御統計情報を取得"""
+        with self._lock:
+            return {
+                "max_concurrent_calls": self.max_concurrent_calls,
+                "current_active_calls": len(self._active_calls),
+                "tool_limits": self.tool_limits.copy(),
+                "total_calls_processed": self.call_statistics["total_calls"],
+                "queued_calls_count": self.call_statistics["queued_calls"],
+                "peak_concurrent_usage": self.call_statistics["concurrent_peaks"],
+                "average_call_duration": self.call_statistics["average_wait_time"],
+                "resource_savings_score": self.call_statistics["resource_savings"],
+                "active_calls_detail": [
+                    {
+                        "tool": call_info["tool_name"],
+                        "category": call_info["category"],
+                        "duration": time.time() - call_info["start_time"],
+                        "context_size": call_info["context_size"],
+                    }
+                    for call_info in self._active_calls.values()
+                ],
+                "efficiency_score": self._calculate_concurrency_efficiency(),
+            }
+
+    def _calculate_concurrency_efficiency(self) -> float:
+        """並列処理効率スコアを計算"""
+        total_calls = self.call_statistics["total_calls"]
+        if total_calls == 0:
+            return 1.0
+
+        queued_ratio = self.call_statistics["queued_calls"] / total_calls
+        resource_efficiency = self.call_statistics["resource_savings"] / total_calls
+
+        # 効率スコア = (1 - キュー比率) + リソース効率
+        efficiency = (1 - queued_ratio) * 0.7 + min(resource_efficiency, 0.3)
+
+        return max(0.0, min(1.0, efficiency))
+
+
+class TokenUsageAnalyzer:
+    """
+    Token使用量分析システム - Issue #804 実装
+
+    機能:
+    - リアルタイムToken使用量監視
+    - 使用パターン分析と予測
+    - 使用量最適化提案
+    - コスト効率性分析
+    """
+
+    def __init__(self, config: EnhancedConfig):
+        self.logger = get_logger(__name__)
+        self.config = config
+
+        # Token使用量追跡
+        self.usage_history = deque(maxlen=1000)
+        self.current_session_usage = {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "operations_count": 0,
+            "start_time": time.time(),
+        }
+
+        # 使用パターン分析
+        self.usage_patterns = {
+            "hourly_patterns": defaultdict(list),
+            "operation_patterns": defaultdict(list),
+            "efficiency_patterns": defaultdict(list),
+        }
+
+        # 最適化提案履歴
+        self.optimization_suggestions = deque(maxlen=50)
+
+        # 制御
+        self._lock = threading.Lock()
+
+        self.logger.info("TokenUsageAnalyzer initialized for real-time monitoring")
+
+    def record_token_usage(
+        self,
+        operation_type: str,
+        input_tokens: int,
+        output_tokens: int,
+        context: Optional[WorkContext] = None,
+    ) -> Dict[str, Any]:
+        """
+        Token使用量を記録し分析
+
+        Args:
+            operation_type: 操作種別
+            input_tokens: 入力トークン数
+            output_tokens: 出力トークン数
+            context: 作業コンテキスト
+
+        Returns:
+            使用量分析結果
+        """
+        with self._lock:
+            total_tokens = input_tokens + output_tokens
+            timestamp = time.time()
+
+            # 使用量記録
+            usage_record = {
+                "timestamp": timestamp,
+                "operation_type": operation_type,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": total_tokens,
+                "context_size": context.content_size if context else 0,
+                "complexity_score": context.complexity_score if context else 0.0,
+            }
+
+            self.usage_history.append(usage_record)
+
+            # セッション統計更新
+            self.current_session_usage["input_tokens"] += input_tokens
+            self.current_session_usage["output_tokens"] += output_tokens
+            self.current_session_usage["total_tokens"] += total_tokens
+            self.current_session_usage["operations_count"] += 1
+
+            # パターン分析更新
+            self._update_usage_patterns(usage_record)
+
+            # 分析結果生成
+            analysis_result = {
+                "recorded_usage": usage_record,
+                "session_cumulative": self.current_session_usage.copy(),
+                "efficiency_score": self._calculate_operation_efficiency(usage_record),
+                "optimization_opportunities": self._identify_optimization_opportunities(
+                    usage_record
+                ),
+            }
+
+            # 最適化提案生成（条件付き）
+            if total_tokens > self._get_optimization_threshold():
+                suggestions = self._generate_optimization_suggestions(
+                    usage_record, analysis_result
+                )
+                if suggestions:
+                    analysis_result["optimization_suggestions"] = suggestions
+                    self.optimization_suggestions.extend(suggestions)
+
+            return analysis_result
+
+    def _update_usage_patterns(self, usage_record: Dict[str, Any]):
+        """使用パターンを更新"""
+        hour = time.strftime("%H", time.localtime(usage_record["timestamp"]))
+        operation_type = usage_record["operation_type"]
+
+        # 時間別パターン
+        self.usage_patterns["hourly_patterns"][hour].append(
+            usage_record["total_tokens"]
+        )
+
+        # 操作別パターン
+        self.usage_patterns["operation_patterns"][operation_type].append(
+            {
+                "tokens": usage_record["total_tokens"],
+                "efficiency": usage_record["total_tokens"]
+                / max(usage_record["context_size"], 1),
+            }
+        )
+
+        # 効率パターン（複雑性対トークン比）
+        if usage_record["complexity_score"] > 0:
+            efficiency_ratio = (
+                usage_record["total_tokens"] / usage_record["complexity_score"]
+            )
+            complexity_class = (
+                "high" if usage_record["complexity_score"] > 0.7 else "low"
+            )
+            self.usage_patterns["efficiency_patterns"][complexity_class].append(
+                efficiency_ratio
+            )
+
+    def _calculate_operation_efficiency(self, usage_record: Dict[str, Any]) -> float:
+        """操作効率スコアを計算"""
+        base_efficiency = 1.0
+        total_tokens = usage_record["total_tokens"]
+        context_size = usage_record["context_size"]
+        complexity = usage_record["complexity_score"]
+
+        # コンテンツサイズ対トークン効率
+        if context_size > 0:
+            token_ratio = total_tokens / context_size
+            if token_ratio < 0.1:  # 非常に効率的
+                base_efficiency += 0.3
+            elif token_ratio < 0.3:  # 効率的
+                base_efficiency += 0.1
+            elif token_ratio > 0.8:  # 非効率
+                base_efficiency -= 0.2
+
+        # 複雑性対効率
+        if complexity > 0:
+            complexity_efficiency = 1.0 - (total_tokens / (complexity * 10000))
+            base_efficiency += complexity_efficiency * 0.2
+
+        return max(0.0, min(1.0, base_efficiency))
+
+    def _identify_optimization_opportunities(
+        self, usage_record: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """最適化機会を特定"""
+        opportunities = []
+
+        # 高トークン使用量の場合
+        if usage_record["total_tokens"] > 5000:
+            opportunities.append(
+                {
+                    "type": "high_token_usage",
+                    "severity": "medium",
+                    "description": f"高トークン使用量検出: {usage_record['total_tokens']} tokens",
+                    "suggested_actions": [
+                        "ファイルサイズ制限の適用",
+                        "コンテンツの分割処理",
+                        "不要な詳細情報の除去",
+                    ],
+                }
+            )
+
+        # 効率性の問題
+        efficiency = self._calculate_operation_efficiency(usage_record)
+        if efficiency < 0.6:
+            opportunities.append(
+                {
+                    "type": "low_efficiency",
+                    "severity": "high",
+                    "description": f"低効率操作検出: 効率スコア {efficiency:.2f}",
+                    "suggested_actions": [
+                        "操作アプローチの見直し",
+                        "コンテキスト情報の最適化",
+                        "処理順序の改善",
+                    ],
+                }
+            )
+
+        # 不均衡な入出力比率
+        if usage_record["output_tokens"] > usage_record["input_tokens"] * 3:
+            opportunities.append(
+                {
+                    "type": "output_heavy",
+                    "severity": "low",
+                    "description": "出力過多パターン検出",
+                    "suggested_actions": [
+                        "出力内容の簡潔化",
+                        "要約手法の適用",
+                        "テンプレート使用の検討",
+                    ],
+                }
+            )
+
+        return opportunities
+
+    def _generate_optimization_suggestions(
+        self, usage_record: Dict[str, Any], analysis_result: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """最適化提案を生成"""
+        suggestions = []
+        total_tokens = usage_record["total_tokens"]
+
+        # 具体的な最適化提案
+        if total_tokens > 8000:
+            suggestions.append(
+                {
+                    "type": "immediate_action",
+                    "priority": "high",
+                    "title": "大量Token使用の緊急最適化",
+                    "description": f"{total_tokens} tokens使用により効率性低下",
+                    "actions": [
+                        {
+                            "action": "apply_file_size_limits",
+                            "expected_reduction": 0.25,
+                        },
+                        {
+                            "action": "enable_content_filtering",
+                            "expected_reduction": 0.15,
+                        },
+                        {"action": "use_summary_mode", "expected_reduction": 0.35},
+                    ],
+                    "estimated_total_reduction": 0.55,
+                }
+            )
+
+        # パターン基づく提案
+        operation_type = usage_record["operation_type"]
+        if operation_type in self.usage_patterns["operation_patterns"]:
+            pattern_data = self.usage_patterns["operation_patterns"][operation_type]
+            if len(pattern_data) >= 3:
+                avg_tokens = sum(p["tokens"] for p in pattern_data) / len(pattern_data)
+                if total_tokens > avg_tokens * 1.5:
+                    suggestions.append(
+                        {
+                            "type": "pattern_based",
+                            "priority": "medium",
+                            "title": f"{operation_type}操作の効率化",
+                            "description": f"平均比 {total_tokens/avg_tokens:.1f}倍の使用量",
+                            "actions": [
+                                {
+                                    "action": "optimize_operation_flow",
+                                    "expected_reduction": 0.20,
+                                },
+                                {"action": "apply_caching", "expected_reduction": 0.10},
+                            ],
+                            "estimated_total_reduction": 0.30,
+                        }
+                    )
+
+        return suggestions
+
+    def _get_optimization_threshold(self) -> int:
+        """最適化提案を開始するトークン数閾値を取得"""
+        # 基本閾値
+        base_threshold = 3000
+
+        # 最近のセッション平均に基づく動的調整
+        if len(self.usage_history) >= 10:
+            recent_avg = (
+                sum(record["total_tokens"] for record in list(self.usage_history)[-10:])
+                / 10
+            )
+            base_threshold = max(base_threshold, int(recent_avg * 1.5))
+
+        return base_threshold
+
+    def get_usage_analytics(self) -> Dict[str, Any]:
+        """使用量分析結果を取得"""
+        with self._lock:
+            if not self.usage_history:
+                return {"status": "no_data"}
+
+            # 基本統計
+            total_operations = len(self.usage_history)
+            total_tokens_all = sum(
+                record["total_tokens"] for record in self.usage_history
+            )
+            avg_tokens_per_operation = total_tokens_all / total_operations
+
+            # 効率性分析
+            efficiency_scores = [
+                self._calculate_operation_efficiency(record)
+                for record in self.usage_history
+            ]
+            avg_efficiency = sum(efficiency_scores) / len(efficiency_scores)
+
+            # トレンド分析
+            recent_records = (
+                list(self.usage_history)[-20:]
+                if len(self.usage_history) >= 20
+                else list(self.usage_history)
+            )
+            older_records = (
+                list(self.usage_history)[:-20] if len(self.usage_history) > 20 else []
+            )
+
+            trend_direction = "stable"
+            if older_records:
+                recent_avg = sum(r["total_tokens"] for r in recent_records) / len(
+                    recent_records
+                )
+                older_avg = sum(r["total_tokens"] for r in older_records) / len(
+                    older_records
+                )
+
+                if recent_avg > older_avg * 1.1:
+                    trend_direction = "increasing"
+                elif recent_avg < older_avg * 0.9:
+                    trend_direction = "decreasing"
+
+            # 操作別効率性
+            operation_efficiency = {}
+            for op_type, pattern_data in self.usage_patterns[
+                "operation_patterns"
+            ].items():
+                if len(pattern_data) >= 3:
+                    avg_efficiency_op = sum(
+                        p["efficiency"] for p in pattern_data
+                    ) / len(pattern_data)
+                    operation_efficiency[op_type] = avg_efficiency_op
+
+            return {
+                "session_summary": self.current_session_usage,
+                "historical_analytics": {
+                    "total_operations": total_operations,
+                    "total_tokens_consumed": total_tokens_all,
+                    "average_tokens_per_operation": avg_tokens_per_operation,
+                    "overall_efficiency_score": avg_efficiency,
+                    "usage_trend": trend_direction,
+                },
+                "pattern_insights": {
+                    "operation_efficiency": operation_efficiency,
+                    "peak_usage_hours": self._get_peak_usage_hours(),
+                    "efficiency_by_complexity": self._get_complexity_efficiency_analysis(),
+                },
+                "optimization_status": {
+                    "active_suggestions_count": len(self.optimization_suggestions),
+                    "recent_optimizations": list(self.optimization_suggestions)[-5:],
+                    "potential_savings": self._calculate_potential_savings(),
+                },
+                "recommendations": self._generate_usage_recommendations(),
+            }
+
+    def _get_peak_usage_hours(self) -> List[str]:
+        """ピーク使用時間を取得"""
+        hourly_averages = {}
+        for hour, tokens_list in self.usage_patterns["hourly_patterns"].items():
+            if tokens_list:
+                hourly_averages[hour] = sum(tokens_list) / len(tokens_list)
+
+        # 上位3時間を返す
+        sorted_hours = sorted(hourly_averages.items(), key=lambda x: x[1], reverse=True)
+        return [hour for hour, _ in sorted_hours[:3]]
+
+    def _get_complexity_efficiency_analysis(self) -> Dict[str, float]:
+        """複雑性別効率分析"""
+        analysis = {}
+        for complexity_class, ratios in self.usage_patterns[
+            "efficiency_patterns"
+        ].items():
+            if ratios:
+                analysis[complexity_class] = sum(ratios) / len(ratios)
+        return analysis
+
+    def _calculate_potential_savings(self) -> Dict[str, Any]:
+        """潜在的節約効果を計算"""
+        if not self.optimization_suggestions:
+            return {"total_potential_reduction": 0.0, "estimated_token_savings": 0}
+
+        # 最近の提案から節約効果を推定
+        recent_suggestions = list(self.optimization_suggestions)[-10:]
+        total_reduction = 0.0
+
+        for suggestion in recent_suggestions:
+            if "estimated_total_reduction" in suggestion:
+                total_reduction += suggestion["estimated_total_reduction"]
+
+        avg_reduction = (
+            total_reduction / len(recent_suggestions) if recent_suggestions else 0.0
+        )
+        recent_token_usage = (
+            sum(record["total_tokens"] for record in list(self.usage_history)[-20:])
+            if len(self.usage_history) >= 20
+            else 0
+        )
+
+        estimated_savings = int(recent_token_usage * avg_reduction)
+
+        return {
+            "average_potential_reduction": avg_reduction,
+            "estimated_token_savings": estimated_savings,
+            "basis_operations": len(recent_suggestions),
+        }
+
+    def _generate_usage_recommendations(self) -> List[Dict[str, Any]]:
+        """使用量に基づく推奨事項を生成"""
+        recommendations = []
+
+        # セッション使用量に基づく推奨
+        session_tokens = self.current_session_usage["total_tokens"]
+        if session_tokens > 50000:
+            recommendations.append(
+                {
+                    "category": "session_optimization",
+                    "priority": "high",
+                    "title": "セッション使用量最適化",
+                    "description": f"現在セッションで {session_tokens} tokens使用",
+                    "action": "セッション分割またはコンテンツ最適化を検討",
+                }
+            )
+
+        # 効率性に基づく推奨
+        if len(self.usage_history) >= 10:
+            recent_efficiency = [
+                self._calculate_operation_efficiency(record)
+                for record in list(self.usage_history)[-10:]
+            ]
+            avg_recent_efficiency = sum(recent_efficiency) / len(recent_efficiency)
+
+            if avg_recent_efficiency < 0.7:
+                recommendations.append(
+                    {
+                        "category": "efficiency_improvement",
+                        "priority": "medium",
+                        "title": "操作効率性改善",
+                        "description": f"最近の効率スコア: {avg_recent_efficiency:.2f}",
+                        "action": "ファイルサイズ制限や並列制御の適用を推奨",
+                    }
+                )
+
+        # パターンに基づく推奨
+        for op_type, pattern_data in self.usage_patterns["operation_patterns"].items():
+            if len(pattern_data) >= 5:
+                avg_tokens = sum(p["tokens"] for p in pattern_data) / len(pattern_data)
+                if avg_tokens > 4000:
+                    recommendations.append(
+                        {
+                            "category": "operation_specific",
+                            "priority": "low",
+                            "title": f"{op_type}操作最適化",
+                            "description": f"平均 {avg_tokens:.0f} tokens使用",
+                            "action": f"{op_type}操作のアプローチ見直しを推奨",
+                        }
+                    )
+
+        return recommendations
 
 
 class ContextAwareOptimizer:
@@ -1097,7 +2831,10 @@ class PhaseB2Optimizer:
                         new_value=new_value,
                         context=f"phase_b2_auto_{proposal['pattern']}",
                         timestamp=time.time(),
-                        reason=f"Phase B.2 auto-optimization: {proposal['expected_improvement']:.1%} expected",
+                        reason=(
+                            f"Phase B.2 auto-optimization: "
+                            f"{proposal['expected_improvement']:.1%} expected"
+                        ),
                         expected_benefit=proposal["expected_improvement"],
                     )
 

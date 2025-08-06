@@ -5,13 +5,11 @@ Phase B.4-Alpha実装: Phase B統合基盤・66.8%削減維持・AI協調最適�
 統合対象: AdaptiveSettingsManager, TokenEfficiencyAnalyzer, PhaseBIntegrator
 """
 
-import logging
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from kumihan_formatter.core.optimization.adaptive_settings import (
     AdaptiveSettingsManager,
@@ -223,7 +221,8 @@ class AIIntegrationManager:
                         self.integration_metrics["successful_integrations"] += 1
 
                         self.logger.info(
-                            f"Phase B integration completed successfully in {time.time() - integration_start:.3f}s"
+                            f"Phase B integration completed successfully in "
+                            f"{time.time() - integration_start:.3f}s"
                         )
                         return True
 
@@ -429,7 +428,8 @@ class AIIntegrationManager:
                 self._update_coordination_metrics(final_result)
 
                 self.logger.info(
-                    f"Coordinated optimization completed: {final_result.total_improvement:.2f}% efficiency"
+                    f"Coordinated optimization completed: "
+                    f"{final_result.total_improvement:.2f}% efficiency"
                 )
                 return final_result
 

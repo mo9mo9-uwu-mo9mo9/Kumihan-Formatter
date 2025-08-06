@@ -6,7 +6,7 @@ Issue #319対応 - config_manager.py から分離
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from ..utilities.logger import get_logger
 from .config_loader import ConfigLoader
@@ -109,7 +109,7 @@ class EnhancedConfig:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.config = {}  # type: ignore
-        self.config_sources: dict[str, str] = {}  # 各設定値の出典を追跡
+        self.config_sources: Dict[str, str] = {}  # 各設定値の出典を追跡
         self.validator = ConfigValidator()
         self.loader = ConfigLoader(self.validator)
         self._load_defaults()
@@ -153,7 +153,7 @@ class EnhancedConfig:
         self.logger.debug("No configuration found in environment variables")
         return False
 
-    def _merge_config(self, user_config: dict[str, Any], source: str):  # type: ignore
+    def _merge_config(self, user_config: Dict[str, Any], source: str):  # type: ignore
         """設定をマージ"""
         self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
@@ -217,3 +217,7 @@ class EnhancedConfig:
     def get_config_source(self, key: str) -> str:
         """設定値のソースを取得"""
         return self.config_sources.get(key, "unknown")
+
+    def get_all(self) -> Dict[str, Any]:
+        """全設定を辞書として取得（adaptive_settings.py互換性のため）"""
+        return self.to_dict()

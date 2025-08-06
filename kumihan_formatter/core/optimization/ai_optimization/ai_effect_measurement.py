@@ -414,8 +414,7 @@ class AIEffectMeasurement:
             )  # 予測精度ベース信頼度
 
             # 統計的有意性（複数測定値必要）
-            ai_measurements = [current_ai_effect]
-            baseline_measurements = [0.0]
+            # ai_measurements, baseline_measurements変数を削除（未使用のため）
             statistical_significance = current_ai_effect > 0.1  # 0.1%以上で有意
 
             # 測定結果構築
@@ -915,7 +914,8 @@ class AIEffectMeasurement:
 
             report_generation_time = time.time() - report_start
             self.logger.info(
-                f"Comprehensive report generated in {report_generation_time:.3f}s - Success: {success_criteria_met}"
+                f"Comprehensive report generated in {report_generation_time:.3f}s "
+                f"- Success: {success_criteria_met}"
             )
 
             return report

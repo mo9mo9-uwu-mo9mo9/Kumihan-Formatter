@@ -8,17 +8,21 @@ Phase B.4-Beta継続学習システム実装
 - データ品質管理・学習効率最適化
 """
 
-import json
-import pickle
 import time
 import warnings
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
+import scipy.stats as stats
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import cross_val_score
+
+from kumihan_formatter.core.utilities.logger import get_logger
+
+from .basic_ml_system import TrainingData
+from .prediction_engine import EnsemblePredictionModel
 
 warnings.filterwarnings("ignore")
 
@@ -29,18 +33,6 @@ try:
     OPTUNA_AVAILABLE = True
 except ImportError:
     OPTUNA_AVAILABLE = False
-
-import scipy.stats as stats
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
-# 統計・評価ツール
-from sklearn.model_selection import TimeSeriesSplit, cross_val_score
-from sklearn.preprocessing import StandardScaler
-
-from kumihan_formatter.core.utilities.logger import get_logger
-
-from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
-from .prediction_engine import EnsemblePredictionModel, PredictionEngine
 
 
 class DataQualityManager:
@@ -745,7 +737,8 @@ class OnlineLearningEngine:
                 self.learning_history = self.learning_history[-50:]
 
             self.logger.info(
-                f"Incremental learning completed: {learning_record['models_updated']} models updated"
+                f"Incremental learning completed: "
+                f"{learning_record['models_updated']} models updated"
             )
 
             return {
@@ -937,8 +930,11 @@ class LearningSystem:
             self.config.get("online_learning", {})
         )
 
-        # 学習監視
+        # 【メモリリーク対策】学習監視
         self.learning_metrics: Dict[str, Any] = {}
+        self._learning_metrics_max_size = self.config.get(
+            "learning_metrics_max_size", 100
+        )
         self.quality_monitoring_enabled = self.config.get("quality_monitoring", True)
 
         # 自動調整
@@ -1024,7 +1020,8 @@ class LearningSystem:
             self._update_learning_metrics(final_result)
 
             self.logger.info(
-                f"Incremental training completed: {final_result['models_updated']} models updated in {training_time:.2f}s"
+                f"Incremental training completed: "
+                f"{final_result['models_updated']} models updated in {training_time:.2f}s"
             )
             return final_result
 
@@ -1491,7 +1488,7 @@ class LearningSystem:
         return recommendations
 
     def _update_learning_metrics(self, learning_result: Dict[str, Any]):
-        """学習メトリクス更新"""
+        """【メモリリーク対策】学習メトリクス更新"""
         try:
             # 各モデルの最新性能を記録
             learning_results = learning_result.get("learning_result", {}).get(
@@ -1523,6 +1520,16 @@ class LearningSystem:
                         }
                     )
 
+            # 【メモリリーク対策】学習メトリクスサイズ制限
+            if len(self.learning_metrics) > self._learning_metrics_max_size:
+                # 最も古いメトリクスを削除
+                oldest_model = min(
+                    self.learning_metrics.keys(),
+                    key=lambda k: self.learning_metrics[k].get("last_update", 0),
+                )
+                del self.learning_metrics[oldest_model]
+                self.logger.debug(f"Learning metrics evicted for model: {oldest_model}")
+
         except Exception as e:
             self.logger.warning(f"Learning metrics update failed: {e}")
 
@@ -1540,7 +1547,9 @@ class LearningSystem:
                 "hyperparameter_optimizer": {
                     "optimization_history": {
                         name: len(history)
-                        for name, history in self.hyperparameter_optimizer.optimization_history.items()
+                        for name, history in (
+                            self.hyperparameter_optimizer.optimization_history.items()
+                        )
                     },
                     "optuna_available": OPTUNA_AVAILABLE,
                 },

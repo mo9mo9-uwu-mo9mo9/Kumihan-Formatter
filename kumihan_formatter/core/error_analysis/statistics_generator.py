@@ -196,7 +196,8 @@ class StatisticsGenerator:
                 <div class="severity-bar">
                     <span class="severity-label">{label}:</span>
                     <div class="bar-container">
-                        <div class="bar-fill" style="width: {percentage}%; background-color: {color};"></div>
+                        <div class="bar-fill" style="width: {percentage}%; "
+                             "background-color: {color};"></div>
                         <span class="bar-value">{count} ({percentage:.1f}%)</span>
                     </div>
                 </div>
@@ -268,7 +269,8 @@ class StatisticsGenerator:
                 <div class="range-bar">
                     <span class="range-label">行 {range_name}:</span>
                     <div class="bar-container">
-                        <div class="bar-fill" style="width: {percentage}%; background-color: #6699cc;"></div>
+                        <div class="bar-fill" style="width: {percentage}%; "
+                             "background-color: #6699cc;"></div>
                         <span class="bar-value">{count}件 ({percentage:.1f}%)</span>
                     </div>
                 </div>

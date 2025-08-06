@@ -87,7 +87,8 @@ class MarkdownRenderer:
     <title>{title} - Kumihan-Formatter</title>
     <style>
         body {{
-            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro', 'Yu Gothic', 'メイリオ', Meiryo, sans-serif;
+            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro',
+                         'Yu Gothic', 'メイリオ', Meiryo, sans-serif;
             line-height: 1.6;
             max-width: 800px;
             margin: 0 auto;

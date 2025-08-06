@@ -140,8 +140,8 @@ class ConvertCommand:
                     if should_continue:
                         # エラーがあるが処理を継続
                         self.logger.warning(
-                            f"Syntax errors found but continuing (level={error_level}): "
-                            f"{len(errors)} errors"
+                            f"Syntax errors found but continuing "
+                            f"(level={error_level}): {len(errors)} errors"
                         )
                         get_console_ui().warning(
                             f"記法エラーが検出されましたが、処理を継続します (レベル: {error_level})。"
@@ -187,7 +187,8 @@ class ConvertCommand:
                         self.logger.info("Error report saved")
 
                         get_console_ui().dim(
-                            "--error-level lenient または --continue-on-error でエラーがあっても処理を継続できます"
+                            "--error-level lenient または --continue-on-error で"
+                            "エラーがあっても処理を継続できます"
                         )
                         sys.exit(1)
 

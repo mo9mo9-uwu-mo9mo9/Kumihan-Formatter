@@ -97,7 +97,8 @@ class MarkerParser:
             tuple: (元のテキスト, 空のリスト)（旧機能は廃止）
         """
         self.logger.warning(
-            "extract_footnotes_from_text() is deprecated. Use new block format '# 脚注 #内容##' instead."
+            "extract_footnotes_from_text() is deprecated. "
+            "Use new block format '# 脚注 #内容##' instead."
         )
         return text, []
 

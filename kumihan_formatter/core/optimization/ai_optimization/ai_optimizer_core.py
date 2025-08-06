@@ -5,22 +5,14 @@ Phase B.4-Alpha実装: AIコアエンジン基本実装・2.0%削減達成
 技術基盤: scikit-learn基盤機械学習システム・Phase B統合
 """
 
-import logging
 import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
-
-# scikit-learn基盤機械学習
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, r2_score
-from sklearn.model_selection import train_test_split
 
 from kumihan_formatter.core.optimization.adaptive_settings import (
     AdaptiveSettingsManager,
@@ -29,6 +21,8 @@ from kumihan_formatter.core.optimization.phase_b_integrator import PhaseBIntegra
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
+
+# scikit-learn基盤機械学習は関数内でimportに変更（重複定義問題解決）
 
 
 @dataclass
@@ -76,6 +70,8 @@ class AIOptimizerCore:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """AI システム初期化"""
+        from collections import OrderedDict
+
         self.logger = get_logger(__name__)
         self.config = config or {}
 
@@ -86,10 +82,20 @@ class AIOptimizerCore:
         # AI/ML基盤システム
         self.ml_models: Dict[str, Any] = {}
         self.efficiency_analyzer = None
-        self.prediction_cache: Dict[str, PredictionResult] = {}
+
+        # 【メモリリーク対策】LRUキャッシュ実装
+        self._prediction_cache_max_size = self.config.get(
+            "prediction_cache_max_size", 500
+        )
+        self.prediction_cache: OrderedDict[str, PredictionResult] = OrderedDict()
+
+        # 【メモリリーク対策】履歴サイズ制限
+        self._optimization_history_max_size = self.config.get(
+            "optimization_history_max_size", 200
+        )
+        self.optimization_history: List[OptimizationResult] = []
 
         # パフォーマンス追跡
-        self.optimization_history: List[OptimizationResult] = []
         self.performance_metrics: Dict[str, float] = {
             "total_optimizations": 0,
             "success_rate": 0.0,
@@ -123,23 +129,38 @@ class AIOptimizerCore:
 
     def _initialize_ml_models(self) -> None:
         """機械学習モデル初期化（scikit-learn基盤）"""
-        # Token効率性予測モデル（軽量・高速）
-        self.ml_models["efficiency_predictor"] = RandomForestRegressor(
-            n_estimators=50,  # 軽量設定
-            max_depth=10,
-            random_state=42,
-            n_jobs=-1,  # 並列処理
-        )
+        try:
+            from sklearn.ensemble import RandomForestRegressor
+            from sklearn.linear_model import LinearRegression
 
-        # 基本線形予測モデル（フォールバック用）
-        self.ml_models["linear_predictor"] = LinearRegression()
+            # Token効率性予測モデル（軽量・高速）
+            self.ml_models["efficiency_predictor"] = RandomForestRegressor(
+                n_estimators=50,  # 軽量設定
+                max_depth=10,
+                random_state=42,
+                n_jobs=-1,  # 並列処理
+            )
 
-        # 設定最適化予測モデル
-        self.ml_models["settings_optimizer"] = RandomForestRegressor(
-            n_estimators=30, max_depth=8, random_state=42
-        )
+            # 基本線形予測モデル（フォールバック用）
+            self.ml_models["linear_predictor"] = LinearRegression()
 
-        self.logger.info("ML models initialized: RandomForest, LinearRegression")
+            # 設定最適化予測モデル
+            self.ml_models["settings_optimizer"] = RandomForestRegressor(
+                n_estimators=30, max_depth=8, random_state=42
+            )
+
+            self.logger.info("ML models initialized: RandomForest, LinearRegression")
+
+        except ImportError as e:
+            self.logger.error(f"Required ML libraries not available: {e}")
+            # フォールバック：基本的な予測システム
+            self.ml_models = {"fallback_predictor": None}
+            raise RuntimeError(
+                f"ML models initialization failed due to missing dependencies: {e}"
+            )
+        except Exception as e:
+            self.logger.error(f"ML models initialization failed: {e}")
+            raise
 
     def _verify_phase_b_integration(self) -> None:
         """Phase B統合確認"""
@@ -256,6 +277,8 @@ class AIOptimizerCore:
             cache_key = self._generate_cache_key(context)
             if cache_key in self.prediction_cache:
                 cached_result = self.prediction_cache[cache_key]
+                # 【LRUキャッシュ】最近使用したアイテムを末尾に移動
+                self.prediction_cache.move_to_end(cache_key)
                 self.logger.debug(f"Using cached prediction: {cache_key}")
                 return cached_result
 
@@ -297,8 +320,8 @@ class AIOptimizerCore:
                 processing_time=time.time() - prediction_start,
             )
 
-            # キャッシュ保存（高速化）
-            self.prediction_cache[cache_key] = result
+            # 【LRUキャッシュ】サイズ制限付きキャッシュ保存
+            self._update_prediction_cache(cache_key, result)
 
             self.logger.info(
                 f"AI prediction completed in {result.processing_time:.3f}s"
@@ -382,7 +405,7 @@ class AIOptimizerCore:
     def _calculate_confidence(self, features: np.ndarray, prediction: float) -> float:
         """予測信頼度計算"""
         # 簡易信頼度計算
-        feature_variance = np.var(features)
+        # feature_variance変数を削除（未使用のため）
         base_confidence = 0.7  # 基本信頼度
 
         # 予測値の妥当性チェック
@@ -402,6 +425,29 @@ class AIOptimizerCore:
             str(len(context.recent_operations)),
         ]
         return "_".join(key_components)
+
+    def _update_prediction_cache(
+        self, cache_key: str, result: PredictionResult
+    ) -> None:
+        """【メモリリーク対策】LRUキャッシュ更新"""
+        try:
+            # キャッシュサイズ制限チェック
+            if len(self.prediction_cache) >= self._prediction_cache_max_size:
+                # 最も古いアイテムを削除（FIFO + LRU）
+                oldest_key = next(iter(self.prediction_cache))
+                del self.prediction_cache[oldest_key]
+                self.logger.debug(f"Cache evicted oldest entry: {oldest_key}")
+
+            # 新しい結果を追加
+            self.prediction_cache[cache_key] = result
+
+            self.logger.debug(
+                f"Cache updated: {len(self.prediction_cache)}/"
+                f"{self._prediction_cache_max_size} entries"
+            )
+
+        except Exception as e:
+            self.logger.warning(f"Cache update failed: {e}")
 
     def _apply_ai_optimizations(
         self, context: OptimizationContext, prediction: PredictionResult
@@ -527,8 +573,11 @@ class AIOptimizerCore:
     def _update_learning_data(
         self, context: OptimizationContext, result: OptimizationResult
     ) -> None:
-        """学習データ更新"""
+        """【メモリリーク対策】学習データ更新"""
         try:
+            # 【メモリリーク対策】学習データ上限設定
+            max_learning_data = self.config.get("max_learning_data", 500)
+
             # 基本学習データ記録
             learning_record = {
                 "context": context,
@@ -538,26 +587,36 @@ class AIOptimizerCore:
                 "efficiency_gain": result.efficiency_gain,
             }
 
-            # 学習データ蓄積（簡易実装）
+            # 学習データ蓄積
             if not hasattr(self, "learning_data"):
                 self.learning_data = []
 
             self.learning_data.append(learning_record)
 
-            # データサイズ制限
-            if len(self.learning_data) > 1000:
-                self.learning_data = self.learning_data[-800:]  # 最新800件保持
+            # 【改善】より積極的なサイズ制限
+            if len(self.learning_data) > max_learning_data:
+                # 最新データの50%を保持（古いデータを積極的に削除）
+                keep_size = max_learning_data // 2
+                self.learning_data = self.learning_data[-keep_size:]
+                self.logger.debug(f"Learning data trimmed to {keep_size} records")
 
             self.logger.debug(
-                f"Learning data updated: {len(self.learning_data)} records"
+                f"Learning data updated: {len(self.learning_data)}/{max_learning_data} records"
             )
 
         except Exception as e:
             self.logger.warning(f"Learning data update failed: {e}")
 
     def _record_optimization_success(self, result: OptimizationResult) -> None:
-        """最適化成功記録"""
+        """【メモリリーク対策】最適化成功記録"""
         self.optimization_history.append(result)
+
+        # 【メモリリーク対策】履歴サイズ制限
+        if len(self.optimization_history) > self._optimization_history_max_size:
+            # 最新データの70%を保持
+            keep_size = int(self._optimization_history_max_size * 0.7)
+            self.optimization_history = self.optimization_history[-keep_size:]
+            self.logger.debug(f"Optimization history trimmed to {keep_size} records")
 
         # 統計更新
         self.performance_metrics["total_optimizations"] += 1
@@ -609,7 +668,7 @@ class AIOptimizerCore:
                 return analysis_result
 
             # 基本パターン分析
-            operation_types = [op.get("type", "unknown") for op in operation_history]
+            # operation_types変数を削除（未使用のため）
             efficiency_scores = [op.get("efficiency", 0.0) for op in operation_history]
 
             # 効率性トレンド分析
@@ -643,7 +702,8 @@ class AIOptimizerCore:
             ]
 
             self.logger.info(
-                f"Efficiency pattern analysis completed: {len(operation_history)} operations analyzed"
+                f"Efficiency pattern analysis completed: "
+                f"{len(operation_history)} operations analyzed"
             )
             return analysis_result
 

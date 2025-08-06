@@ -5,35 +5,24 @@ Basic ML System - 基本機械学習システム（Phase B.4-Alpha）
 予測システム基盤・学習データ管理・特徴量エンジニアリング・モデル訓練推論
 """
 
-import json
-import logging
 import pickle
 import time
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+
+# scikit-learn基盤は関数内でimportに変更（未使用import削除）
+# TYPE_CHECKING用import
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import pandas as pd
-import sklearn.utils
-
-# scikit-learn基盤
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    mean_absolute_error,
-    r2_score,
-)
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
+
+if TYPE_CHECKING:
+    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 
 @dataclass
@@ -116,8 +105,10 @@ class BaseMLModel(ABC):
 class TokenEfficiencyPredictor(BaseMLModel):
     """Token効率性予測モデル"""
 
-    def create_model(self) -> RandomForestRegressor:
+    def create_model(self) -> "RandomForestRegressor":
         """RandomForest回帰モデル作成"""
+        from sklearn.ensemble import RandomForestRegressor
+
         return RandomForestRegressor(
             n_estimators=self.config.get("n_estimators", 50),
             max_depth=self.config.get("max_depth", 10),
@@ -128,6 +119,9 @@ class TokenEfficiencyPredictor(BaseMLModel):
     def train(self, data: TrainingData) -> bool:
         """Token効率性予測モデル訓練"""
         try:
+            from sklearn.model_selection import cross_val_score
+            from sklearn.preprocessing import StandardScaler
+
             training_start = time.time()
 
             # モデル・スケーラー初期化
@@ -159,7 +153,8 @@ class TokenEfficiencyPredictor(BaseMLModel):
             self.is_trained = True
 
             self.logger.info(
-                f"Token efficiency predictor trained: R²={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
+                f"Token efficiency predictor trained: "
+                f"R²={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
             )
             return True
 
@@ -222,8 +217,10 @@ class TokenEfficiencyPredictor(BaseMLModel):
 class UsagePatternClassifier(BaseMLModel):
     """使用パターン分類モデル"""
 
-    def create_model(self) -> RandomForestClassifier:
+    def create_model(self) -> "RandomForestClassifier":
         """RandomForest分類モデル作成"""
+        from sklearn.ensemble import RandomForestClassifier
+
         return RandomForestClassifier(
             n_estimators=self.config.get("n_estimators", 30),
             max_depth=self.config.get("max_depth", 8),
@@ -234,6 +231,9 @@ class UsagePatternClassifier(BaseMLModel):
     def train(self, data: TrainingData) -> bool:
         """使用パターン分類モデル訓練"""
         try:
+            from sklearn.model_selection import cross_val_score
+            from sklearn.preprocessing import LabelEncoder, StandardScaler
+
             training_start = time.time()
 
             # モデル・スケーラー・エンコーダー初期化
@@ -270,7 +270,8 @@ class UsagePatternClassifier(BaseMLModel):
             self.is_trained = True
 
             self.logger.info(
-                f"Usage pattern classifier trained: Accuracy={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
+                f"Usage pattern classifier trained: "
+                f"Accuracy={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
             )
             return True
 
@@ -326,8 +327,10 @@ class UsagePatternClassifier(BaseMLModel):
 class OptimizationRecommender(BaseMLModel):
     """最適化推奨システム"""
 
-    def create_model(self) -> RandomForestClassifier:
+    def create_model(self) -> "RandomForestClassifier":
         """最適化推奨分類モデル作成"""
+        from sklearn.ensemble import RandomForestClassifier
+
         return RandomForestClassifier(
             n_estimators=self.config.get("n_estimators", 40),
             max_depth=self.config.get("max_depth", 12),
@@ -338,6 +341,9 @@ class OptimizationRecommender(BaseMLModel):
     def train(self, data: TrainingData) -> bool:
         """最適化推奨モデル訓練"""
         try:
+            from sklearn.model_selection import cross_val_score
+            from sklearn.preprocessing import LabelEncoder, StandardScaler
+
             training_start = time.time()
 
             # モデル・前処理器初期化
@@ -372,7 +378,8 @@ class OptimizationRecommender(BaseMLModel):
             self.is_trained = True
 
             self.logger.info(
-                f"Optimization recommender trained: Accuracy={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
+                f"Optimization recommender trained: "
+                f"Accuracy={cv_scores.mean():.3f}±{cv_scores.std():.3f}"
             )
             return True
 
@@ -646,6 +653,8 @@ class BasicMLSystem:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """MLシステム初期化"""
+        from collections import OrderedDict
+
         self.logger = get_logger(__name__)
         self.config = config or {}
 
@@ -655,18 +664,22 @@ class BasicMLSystem:
         # 特徴量エンジニアリング
         self.feature_extractor = FeatureEngineering()
 
-        # 学習データ管理
+        # 【メモリリーク対策】学習データ管理
         self.training_data_store: Dict[str, List[TrainingData]] = {}
+        self._training_data_max_size = self.config.get("training_data_max_size", 50)
 
         # MLパイプライン
         self.ml_pipeline = None
 
-        # 性能追跡
+        # 【メモリリーク対策】性能追跡
         self.performance_history: Dict[str, List[ModelPerformance]] = {}
+        self._performance_history_max_size = self.config.get(
+            "performance_history_max_size", 100
+        )
 
-        # 予測キャッシュ（高速化）
-        self.prediction_cache: Dict[str, PredictionResponse] = {}
-        self.cache_max_size = self.config.get("cache_max_size", 1000)
+        # 【メモリリーク対策】予測キャッシュ（LRU実装）
+        self.prediction_cache: OrderedDict[str, PredictionResponse] = OrderedDict()
+        self.cache_max_size = self.config.get("cache_max_size", 500)
 
         # 初期化処理
         self._initialize_ml_system()
@@ -805,7 +818,8 @@ class BasicMLSystem:
             success_rate = success_count / total_models if total_models > 0 else 0.0
 
             self.logger.info(
-                f"Model training completed: {success_count}/{total_models} models successful ({success_rate*100:.1f}%)"
+                f"Model training completed: {success_count}/{total_models} models "
+                f"successful ({success_rate*100:.1f}%)"
             )
             return training_results
 
@@ -814,31 +828,55 @@ class BasicMLSystem:
             return {model_name: False for model_name in self.models.keys()}
 
     def _train_single_model(self, model_name: str, data: TrainingData) -> bool:
-        """単一モデル訓練"""
+        """【メモリリーク対策・例外処理強化】単一モデル訓練"""
         try:
+            from sklearn.exceptions import NotFittedError
+
             if model_name not in self.models:
                 self.logger.error(f"Unknown model: {model_name}")
                 return False
 
             model = self.models[model_name]
 
-            # データ検証
+            # 【型安全性】データ検証強化
+            if not hasattr(data, "features") or not hasattr(data, "labels"):
+                self.logger.error(f"Invalid training data structure for {model_name}")
+                return False
+
             if data.features.shape[0] == 0:
                 self.logger.warning(f"No training data for model {model_name}")
                 return False
 
-            # モデル訓練実行
-            training_success = model.train(data)
+            # 【scikit-learn例外処理】モデル訓練実行
+            try:
+                training_success = model.train(data)
+            except NotFittedError as e:
+                self.logger.error(
+                    f"Model not properly initialized for {model_name}: {e}"
+                )
+                return False
+            except ValueError as e:
+                self.logger.error(
+                    f"Training data validation error for {model_name}: {e}"
+                )
+                return False
 
             if training_success:
-                # 訓練データ保存
+                # 【メモリリーク対策】訓練データ保存
                 self.training_data_store[model_name].append(data)
 
-                # データサイズ制限
-                if len(self.training_data_store[model_name]) > 100:
+                # より積極的なデータサイズ制限
+                if (
+                    len(self.training_data_store[model_name])
+                    > self._training_data_max_size
+                ):
+                    keep_size = self._training_data_max_size // 2
                     self.training_data_store[model_name] = self.training_data_store[
                         model_name
-                    ][-50:]
+                    ][-keep_size:]
+                    self.logger.debug(
+                        f"Training data for {model_name} trimmed to {keep_size} records"
+                    )
 
                 self.logger.info(f"Model {model_name} training successful")
                 return True
@@ -846,6 +884,9 @@ class BasicMLSystem:
                 self.logger.error(f"Model {model_name} training failed")
                 return False
 
+        except ImportError:
+            self.logger.warning("sklearn not available, training may be limited")
+            return False
         except Exception as e:
             self.logger.error(f"Single model training error for {model_name}: {e}")
             return False
@@ -1072,13 +1113,14 @@ class BasicMLSystem:
             return "fallback_key"
 
     def _update_prediction_cache(self, cache_key: str, result: Dict[str, Any]) -> None:
-        """予測キャッシュ更新"""
+        """【メモリリーク対策】LRU予測キャッシュ更新"""
         try:
-            # キャッシュサイズ制限
+            # 【LRUキャッシュ】サイズ制限
             if len(self.prediction_cache) >= self.cache_max_size:
-                # 古いエントリを削除（FIFO）
+                # 最も古いエントリを削除（FIFO + LRU）
                 oldest_key = next(iter(self.prediction_cache))
                 del self.prediction_cache[oldest_key]
+                self.logger.debug(f"Cache evicted oldest entry: {oldest_key}")
 
             # 簡易化された結果をキャッシュ
             cached_result = {
@@ -1091,6 +1133,10 @@ class BasicMLSystem:
             }
 
             self.prediction_cache[cache_key] = cached_result
+
+            self.logger.debug(
+                f"Cache updated: {len(self.prediction_cache)}/{self.cache_max_size} entries"
+            )
 
         except Exception as e:
             self.logger.warning(f"Cache update failed: {e}")

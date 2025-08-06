@@ -99,7 +99,8 @@ class ConvertProcessor:
         # 未実装機能の警告
         if progress_style != "bar":
             self.logger.warning(
-                f"Progress style '{progress_style}' is not implemented yet. Using default 'bar' style."
+                f"Progress style '{progress_style}' is not implemented yet. "
+                f"Using default 'bar' style."
             )
 
         # プログレスレベルをenumに変換
@@ -310,7 +311,8 @@ class ConvertProcessor:
 
         if size_mb > 5.0 or line_count > 10000:  # 大容量ファイル
             self.logger.info(
-                f"Large file detected ({size_mb:.1f}MB, {line_count} lines), using streaming parse"
+                f"Large file detected ({size_mb:.1f}MB, {line_count} lines), "
+                "using streaming parse"
             )
 
             # ストリーミング解析用プログレスコールバック
@@ -474,7 +476,8 @@ class ConvertProcessor:
     ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
         self.logger.info(
-            f"Using streaming parser for large file: {size_mb:.1f}MB, {line_count} lines"
+            f"Using streaming parser for large file: {size_mb:.1f}MB, "
+            f"{line_count} lines"
         )
 
         # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
@@ -517,7 +520,8 @@ class ConvertProcessor:
                 # 詳細情報をログ出力
                 if current % 100 == 0:  # 100行ごとに詳細ログ
                     self.logger.debug(
-                        f"Progress: {current}/{total} lines ({percent:.1f}%), ETA: {eta}s"
+                        f"Progress: {current}/{total} lines ({percent:.1f}%), "
+                        f"ETA: {eta}s"
                     )
 
             try:

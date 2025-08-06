@@ -8,35 +8,23 @@ Phase B.4-Beta自律制御システム実装
 - 自動復旧機能・安定性確保・1.0-1.5%削減効果
 """
 
-import asyncio
-import json
-import pickle
 import threading
 import time
 import warnings
-from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import deque
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
-
-warnings.filterwarnings("ignore")
-
 import scipy.stats as stats
-
-# 統計・監視ツール
-from sklearn.metrics import mean_squared_error, r2_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
 from .learning_system import LearningSystem
-from .prediction_engine import EnsemblePredictionModel, PredictionEngine
+from .prediction_engine import PredictionEngine
+
+warnings.filterwarnings("ignore")
 
 
 class SystemState(Enum):
@@ -442,7 +430,11 @@ class SystemMonitor:
                                     timestamp=current_metrics.timestamp,
                                     anomaly_type=anomaly_type,
                                     severity=severity,
-                                    description=f"Statistical anomaly in {metric_name}: {current_value:.3f} (z-score: {z_score:.2f})",
+                                    description=(
+                                        f"Statistical anomaly in {metric_name}: "
+                                        f"{current_value:.3f} "
+                                        f"(z-score: {z_score:.2f})"
+                                    ),
                                     affected_components=[metric_name],
                                     metrics={
                                         metric_name: current_value,
@@ -482,7 +474,10 @@ class SystemMonitor:
                             timestamp=current_metrics.timestamp,
                             anomaly_type=AnomalyType.PREDICTION_ACCURACY_DROP,
                             severity="medium",
-                            description=f"Declining accuracy trend: slope={slope:.4f}, r={r_value:.3f}",
+                            description=(
+                                f"Declining accuracy trend: slope={slope:.4f}, "
+                                f"r={r_value:.3f}"
+                            ),
                             affected_components=["prediction", "trend"],
                             metrics={"slope": slope, "r_value": r_value},
                         )
@@ -501,7 +496,10 @@ class SystemMonitor:
                             timestamp=current_metrics.timestamp,
                             anomaly_type=AnomalyType.RESPONSE_TIME_INCREASE,
                             severity="medium",
-                            description=f"Increasing response time trend: slope={slope:.4f}, r={r_value:.3f}",
+                            description=(
+                                f"Increasing response time trend: slope={slope:.4f}, "
+                                f"r={r_value:.3f}"
+                            ),
                             affected_components=["response", "trend"],
                             metrics={"slope": slope, "r_value": r_value},
                         )
@@ -745,7 +743,8 @@ class AutoRecoveryEngine:
                 self.recovery_history.append(recovery_record)
 
                 self.logger.info(
-                    f"Recovery completed: {len(recovery_results)} actions executed in {recovery_time:.2f}s"
+                    f"Recovery completed: {len(recovery_results)} actions executed in "
+                    f"{recovery_time:.2f}s"
                 )
 
                 return {
