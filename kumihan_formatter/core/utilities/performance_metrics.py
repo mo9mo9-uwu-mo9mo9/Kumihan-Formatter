@@ -284,7 +284,10 @@ class PerformanceMonitor:
                 {
                     "type": "high_memory",
                     "severity": "warning",
-                    "message": f"高メモリ使用率: {snapshot.memory_percent:.1f}% ({snapshot.memory_mb:.1f}MB)",
+                    "message": (
+                        f"高メモリ使用率: {snapshot.memory_percent:.1f}% "
+                        f"({snapshot.memory_mb:.1f}MB)"
+                    ),
                     "value": snapshot.memory_percent,
                 }
             )
@@ -1129,7 +1132,7 @@ class MemoryOptimizer:
             factory_func: オブジェクト生成関数
             max_size: プール最大サイズ
         """
-        from collections import defaultdict, deque
+        from collections import deque
 
         self._object_pools[pool_name] = {
             "pool": deque(maxlen=max_size),
@@ -1409,7 +1412,8 @@ class MemoryOptimizer:
 
         if is_leak_detected:
             self.logger.warning(
-                f"Memory leak detected! Growth: {memory_growth:.2f} MB, Rate: {growth_rate:.4f} MB/s"
+                f"Memory leak detected! Growth: {memory_growth:.2f} MB, "
+                f"Rate: {growth_rate:.4f} MB/s"
             )
         else:
             self.logger.info(
@@ -1515,7 +1519,7 @@ class MemoryOptimizer:
         """
         import threading
         import time
-        from collections import defaultdict, deque
+        from collections import deque
 
         pool_info = {
             "pool": deque(maxlen=max_size),
@@ -1542,7 +1546,8 @@ class MemoryOptimizer:
         cleanup_thread.start()
 
         self.logger.info(
-            f"Advanced resource pool '{pool_name}' created with auto-cleanup every {auto_cleanup_interval}s"
+            f"Advanced resource pool '{pool_name}' created with auto-cleanup "
+            f"every {auto_cleanup_interval}s"
         )
 
     def _cleanup_resource_pool(self, pool_name: str) -> int:
@@ -1737,7 +1742,9 @@ class MemoryOptimizer:
 
             <div class="stat-card">
                 <div class="stat-title">システム利用可能メモリ</div>
-                <div class="stat-value">{system_available_gb:.1f} GB / {system_total_gb:.1f} GB</div>
+                <div class="stat-value">
+                    {system_available_gb:.1f} GB / {system_total_gb:.1f} GB
+                </div>
             </div>
         </div>
         """
@@ -2065,7 +2072,10 @@ document.querySelectorAll('.kumihan-processing').forEach(el => {{
 
         progress_percent = (current / total * 100) if total > 0 else 0
 
-        progress_style = f"width: {progress_percent:.1f}%; background: linear-gradient(90deg, #4CAF50, #2196F3);"
+        progress_style = (
+            f"width: {progress_percent:.1f}%; "
+            f"background: linear-gradient(90deg, #4CAF50, #2196F3);"
+        )
         progress_text = f"{stage} - {current}/{total} ({progress_percent:.1f}%)"
 
         return f"""
@@ -2453,7 +2463,10 @@ class PerformanceBenchmark:
         report_lines = [
             "🔬 Kumihan-Formatter パフォーマンスベンチマークレポート",
             "=" * 60,
-            f"実行日時: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(results['metadata']['timestamp']))}",
+            "実行日時: "
+            + time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(results["metadata"]["timestamp"])
+            ),
             f"プラットフォーム: {results['metadata']['platform']}",
             f"CPUコア数: {results['metadata']['cpu_count']}",
             "",
@@ -2464,12 +2477,16 @@ class PerformanceBenchmark:
             info = test_data["test_info"]
             report_lines.extend(
                 [
-                    f"\n🔍 {info['name'].upper()} ({info['line_count']:,}行, {info['text_size_mb']:.1f}MB):",
-                    f"  従来パーサー: {test_data['traditional_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"\n🔍 {info['name'].upper()} "
+                    f"({info['line_count']:,}行, {info['text_size_mb']:.1f}MB):",
+                    f"  従来パーサー: "
+                    f"{test_data['traditional_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
                     f"{test_data['traditional_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
-                    f"  最適化パーサー: {test_data['optimized_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"  最適化パーサー: "
+                    f"{test_data['optimized_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
                     f"{test_data['optimized_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
-                    f"  ストリーミング: {test_data['streaming_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
+                    f"  ストリーミング: "
+                    f"{test_data['streaming_parser'].get('parse_time_seconds', 'N/A'):.2f}s, "
                     f"{test_data['streaming_parser'].get('memory_used_mb', 'N/A'):.1f}MB",
                 ]
             )
@@ -3434,7 +3451,7 @@ class AlertSystem:
             cv = std_dev / mean_val if mean_val != 0 else float("inf")
             confidence = max(0, min(1, 1 / (1 + cv)))
             return confidence
-        except (ValueError, ZeroDivisionError, TypeError) as e:
+        except (ValueError, ZeroDivisionError, TypeError):
             # 統計計算エラー（値不足、ゼロ除算、型エラー等）
             return 0.0
 

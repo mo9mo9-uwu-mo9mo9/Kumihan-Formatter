@@ -8,30 +8,22 @@ Alpha基盤+Beta拡張統合・相乗効果最大化
 - 72-73%削減目標達成・システム安定性維持
 """
 
-import asyncio
-import json
-import pickle
 import threading
 import time
 import warnings
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
-import scipy.stats as stats
-from sklearn.metrics import mean_squared_error, r2_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from .autonomous_controller import AutonomousController, SystemMetrics, SystemState
-from .basic_ml_system import BasicMLSystem, PredictionResponse, TrainingData
+from .autonomous_controller import AutonomousController
+from .basic_ml_system import BasicMLSystem
 from .learning_system import LearningSystem
-from .prediction_engine import EnsemblePredictionModel, PredictionEngine
+from .prediction_engine import PredictionEngine
 
 warnings.filterwarnings("ignore")
 

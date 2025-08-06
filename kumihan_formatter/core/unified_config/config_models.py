@@ -284,16 +284,21 @@ class KumihanConfig(BaseModel):
         """設定間の整合性チェック"""
         # ログレベルとデバッグモードの整合性
         if values.get("debug_mode") and values.get("logging"):
-            logging_dict = values["logging"]
-            if isinstance(logging_dict, dict):
-                if logging_dict.get("log_level") not in ["DEBUG", "INFO"]:
-                    logging_dict["log_level"] = "DEBUG"
+            logging_data = values["logging"]
+            # LoggingConfigインスタンスの場合
+            if hasattr(logging_data, "log_level"):
+                if logging_data.log_level not in [LogLevel.DEBUG, LogLevel.INFO]:
+                    logging_data.log_level = LogLevel.DEBUG
+            # 辞書の場合
+            elif isinstance(logging_data, dict):
+                if logging_data.get("log_level") not in ["DEBUG", "INFO"]:
+                    logging_data["log_level"] = "DEBUG"
 
         return values
 
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式で設定を出力"""
-        return self.dict()
+        return self.model_dump(mode="json")
 
     def get_env_vars(self) -> Dict[str, str]:
         """現在の設定から環境変数を生成"""

@@ -92,10 +92,12 @@ class SecureErrorHandler:
         # デフォルト設定
         return {
             "sensitive_patterns": {
-                "file_paths": r"(?i)(?:c:|d:|/home|/usr|/var|/etc|/root|\\users\\|\\windows\\)",
-                "credentials": r"(?i)(?:password|passwd|pwd|token|key|secret|auth|credential)[\s=:\"']*[^\s\"']{8,}",
+                "file_paths": (
+                    r"(?i)(?:c:|d:|/home|/usr|/var|/etc|/root|\users\|\windows\)"
+                ),
+                "credentials": r"(?i)(?:password|token|key|secret)[\s=:\"']*[^\s\"']{8,}",
                 "ip_addresses": r"\b(?:\d{1,3}\.){3}\d{1,3}\b",
-                "database_info": r"(?i)(?:database|db|sql|mysql|postgres|mongodb)[\s=:\"']*[^\s\"']+",
+                "database_info": r"(?i)(?:database|db|sql)[\s=:\"']*[^\s\"']+",
                 "urls": r"https?://[^\s\"']+",
                 "email_addresses": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
                 "version_info": r"(?i)version[\s=:\"']*[\d.]+",

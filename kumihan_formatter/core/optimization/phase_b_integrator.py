@@ -26,15 +26,11 @@ from typing import Any, Dict, List, Optional
 
 from ..utilities.logger import get_logger
 from ..utilities.performance_metrics import (
-    AlertSystem,
     PatternDetector,
-    PerformanceSnapshot,
     TokenEfficiencyAnalyzer,
-    TokenEfficiencyMetrics,
 )
 from .adaptive_settings import (
     AdaptiveSettingsManager,
-    ConfigAdjustment,
     PhaseB1Optimizer,
     PhaseB2Optimizer,
     WorkContext,

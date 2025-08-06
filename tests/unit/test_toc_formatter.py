@@ -23,8 +23,9 @@ class TestTOCFormatter:
         entry = Mock(spec=TOCEntry)
         entry.title = title
         entry.level = level
-        entry.id = id_
+        entry.heading_id = id_
         entry.children = children or []
+        entry.get_text_content = Mock(return_value=title)
         return entry
 
     def test_format_html_empty_entries(self):

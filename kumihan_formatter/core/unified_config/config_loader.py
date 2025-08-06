@@ -363,7 +363,7 @@ class ConfigLoader:
         config_file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            config_data = config.dict()
+            config_data = config.model_dump(mode="json")
 
             with open(config_file, "w", encoding="utf-8") as f:
                 if format == ConfigFormat.YAML:

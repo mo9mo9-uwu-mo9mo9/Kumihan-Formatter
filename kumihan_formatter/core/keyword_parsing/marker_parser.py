@@ -52,7 +52,7 @@ class MarkerParser:
         self._inline_pattern_1 = re.compile(r"^[#＃]\s*([^#＃]+)\s*[#＃]\s+(.+)$")
         self._inline_pattern_2 = re.compile(r"^[#＃]\s*([^#＃]+)\s+([^#＃]+)\s*[#＃]$")
         self._inline_pattern_3 = re.compile(
-            r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃]{2}$"
+            r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃][#＃]$"
         )
 
         # ブロック記法パターン

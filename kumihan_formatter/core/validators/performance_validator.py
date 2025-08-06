@@ -96,7 +96,10 @@ class PerformanceValidator:
                 ValidationIssue(
                     level="warning",
                     category="performance",
-                    message=f"Large text size may impact memory usage ({text_size / 1024 / 1024:.1f}MB)",
+                    message=(
+                        f"Large text size may impact memory usage "
+                        f"({text_size / 1024 / 1024:.1f}MB)"
+                    ),
                     suggestion="Consider processing in chunks",
                     code="HIGH_MEMORY_USAGE",
                 )
@@ -142,7 +145,10 @@ class PerformanceValidator:
                         ValidationIssue(
                             level="warning",
                             category="performance",
-                            message=f"Large content block at position {i + 1} ({content_size} characters)",
+                            message=(
+                                f"Large content block at position {i + 1} "
+                                f"({content_size} characters)"
+                            ),
                             suggestion="Consider breaking up large blocks",
                             code="LARGE_CONTENT_BLOCK",
                         )

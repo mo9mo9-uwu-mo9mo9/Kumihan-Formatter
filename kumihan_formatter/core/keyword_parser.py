@@ -310,24 +310,71 @@ class KeywordParser:
             nesting_level: 現在のネストレベル（0=トップレベル、1=1レベルネスト）
         """
 
-        # 空文字列チェック（高速化）
+        # 早期リターン: 空文字列チェック（高速化）
         if not content or not content.strip():
             return content
 
-        # 最適化: 正規表現キャッシュを活用
-        from .utilities.performance_metrics import RegexOptimizer
+        # 早期リターン: ネストレベル制限チェック
+        if nesting_level >= 1:
+            return self._process_nested_keywords(content, nesting_level)
 
-        regex_optimizer = getattr(self, "_regex_optimizer", None)
-        if regex_optimizer is None:
-            self._regex_optimizer = RegexOptimizer()
-            regex_optimizer = self._regex_optimizer
+        # 正規表現最適化の初期化
+        regex_optimizer = self._initialize_regex_optimizer()
 
         # 事前チェック: インライン記法が含まれていない場合は早期リターン
         if not regex_optimizer.optimized_search(r"#\s*([^#]+?)\s*#([^#]+?)##", content):
             return content
 
-        # 最適化: SIMD処理（大容量コンテンツの場合）
-        if len(content) > 10000:  # 10KB以上の場合
+        # SIMD処理の判定と実行
+        if self._should_use_simd_processing(content):
+            simd_result = self._try_simd_processing(content, nesting_level)
+            if simd_result is not None:
+                return simd_result
+
+        # メインのキーワード処理
+        return self._process_keyword_matches(content, regex_optimizer, nesting_level)
+
+    def _process_nested_keywords(self, content: str, nesting_level: int) -> str:
+        """ネストレベル制限処理"""
+        # 1レベルを超えるネストは禁止、そのまま返す
+        pattern = r"#\s*([^#]+?)\s*#([^#]+?)##"
+        regex_optimizer = self._initialize_regex_optimizer()
+
+        result_parts = []
+        last_end = 0
+
+        for match in regex_optimizer.get_compiled_pattern(pattern).finditer(content):
+            # Add text before the match
+            if match.start() > last_end:
+                result_parts.append(content[last_end : match.start()])
+
+            # ネストレベル超過の場合は元のマッチをそのまま追加
+            result_parts.append(match.group(0))
+            last_end = match.end()
+
+        # Add remaining text
+        if last_end < len(content):
+            result_parts.append(content[last_end:])
+
+        return "".join(result_parts)
+
+    def _initialize_regex_optimizer(self):
+        """正規表現オプティマイザーの初期化"""
+        regex_optimizer = getattr(self, "_regex_optimizer", None)
+        if regex_optimizer is None:
+            from .utilities.performance_metrics import RegexOptimizer
+
+            self._regex_optimizer = RegexOptimizer()
+            regex_optimizer = self._regex_optimizer
+        return regex_optimizer
+
+    def _should_use_simd_processing(self, content: str) -> bool:
+        """SIMD処理を使用すべきかの判定"""
+        return len(content) > 10000  # 10KB以上の場合
+
+    def _try_simd_processing(self, content: str, nesting_level: int):
+        """SIMD処理の試行"""
+        try:
             simd_optimizer = getattr(self, "_simd_optimizer", None)
             if simd_optimizer is None:
                 from .utilities.performance_metrics import SIMDOptimizer
@@ -337,94 +384,123 @@ class KeywordParser:
 
             # 大容量テキストをSIMD処理
             if simd_optimizer._numpy_available:
-                try:
-                    return self._process_inline_keywords_simd(content, nesting_level)
-                except Exception:
-                    # SIMD処理失敗時は通常処理にフォールバック
-                    pass
+                return self._process_inline_keywords_simd(content, nesting_level)
+        except Exception:
+            # SIMD処理失敗時はNoneを返してフォールバック
+            pass
+        return None
 
-        # Process inline notations
+    def _process_keyword_matches(
+        self, content: str, regex_optimizer, nesting_level: int
+    ):
+        """キーワードマッチの処理"""
         parts = []
         last_end = 0
+        pattern = r"#\s*([^#]+?)\s*#([^#]+?)##"
 
-        for match in regex_optimizer.get_compiled_pattern(
-            r"#\s*([^#]+?)\s*#([^#]+?)##"
-        ).finditer(content):
-            # Add text before the match
+        for match in regex_optimizer.get_compiled_pattern(pattern).finditer(content):
+            # テキスト前部分を追加
             if match.start() > last_end:
                 text_before = content[last_end : match.start()]
                 if text_before.strip():
                     parts.append(text_before)
 
+            # キーワード処理
             full_keyword = match.group(1).strip()
             text_content = match.group(2).strip()
 
-            # ネストレベルチェック（最大1レベルまで）
-            if nesting_level >= 1:
-                # 1レベルを超えるネストは禁止、そのまま返す
-                parts.append(match.group(0))
-                last_end = match.end()
-                continue
-
-            # ルビ記法の特殊処理
-            if full_keyword.startswith("ルビ "):
-                # ルビ記法の場合は、"ルビ "を除去した残りがコンテンツ
-                ruby_content = full_keyword[3:].strip()  # "ルビ "を除去
-                if ruby_content:
-                    ruby_node = self._create_ruby_node(ruby_content)
-                    # ルビ解析が失敗した場合（文字列が返ってきた）は元のマーカー付きテキストを使用
-                    if isinstance(ruby_node, str):
-                        parts.append(match.group(0))  # 元のマーカー付きテキスト
-                    else:
-                        parts.append(ruby_node)
-                else:
-                    parts.append(match.group(0))  # 解析失敗時は元のまま
-                last_end = match.end()
-                continue
-
-            # 通常のキーワードの場合は、スペースで分割
-            keyword_parts = full_keyword.split(" ", 1)
-            keyword = keyword_parts[0]
-            # text_contentは既にmatch.group(2)から取得済み
-
-            # テキストコンテンツ内でのネストした記法を再帰処理
-            if (
-                nesting_level == 0
-                and text_content
-                and regex_optimizer.optimized_search(
-                    r"#\s*([^#]+?)\s*#([^#]+?)##", text_content
-                )
-            ):
-                text_content = self._process_inline_keywords(
-                    text_content, nesting_level + 1
-                )
-
-            # ノード作成（改善されたキーワードマッピング使用）
-            base_keyword = keyword.split(" ")[0]  # 色属性を除いた基本キーワード
-
-            if base_keyword in self._inline_keyword_mapping:
-                node = self._create_styled_inline_node(
-                    self._inline_keyword_mapping[base_keyword], text_content, keyword
-                )
-                parts.append(node)
-            elif keyword == "見出し3":
-                # For h3 in list items, use strong styling instead
-                parts.append(NodeBuilder("strong").content(text_content).build())
-            else:
-                # Unknown keyword - return original text with markers
-                parts.append(match.group(0))
+            processed_result = self._process_single_keyword_match(
+                full_keyword,
+                text_content,
+                match.group(0),
+                regex_optimizer,
+                nesting_level,
+            )
+            parts.append(processed_result)
 
             last_end = match.end()
 
-        # Add remaining text after last match
+        # 残りのテキストを追加
         if last_end < len(content):
             remaining = content[last_end:]
             if remaining.strip():
                 parts.append(remaining)
 
-        # Return normalized result - 修正: 配列の場合の適切な処理
+        return self._normalize_result_parts(parts, content)
+
+    def _process_single_keyword_match(
+        self,
+        full_keyword: str,
+        text_content: str,
+        original_match: str,
+        regex_optimizer,
+        nesting_level: int,
+    ):
+        """単一キーワードマッチの処理"""
+        # ルビ記法の特殊処理
+        if full_keyword.startswith("ルビ "):
+            return self._process_ruby_keyword(full_keyword, original_match)
+
+        # 通常のキーワード処理
+        return self._process_normal_keyword(
+            full_keyword, text_content, original_match, regex_optimizer, nesting_level
+        )
+
+    def _process_ruby_keyword(self, full_keyword: str, original_match: str):
+        """ルビ記法キーワードの処理"""
+        ruby_content = full_keyword[3:].strip()  # "ルビ "を除去
+        if ruby_content:
+            ruby_node = self._create_ruby_node(ruby_content)
+            # ルビ解析が失敗した場合（文字列が返ってきた）は元のマーカー付きテキストを使用
+            if isinstance(ruby_node, str):
+                return original_match
+            else:
+                return ruby_node
+        else:
+            return original_match
+
+    def _process_normal_keyword(
+        self,
+        full_keyword: str,
+        text_content: str,
+        original_match: str,
+        regex_optimizer,
+        nesting_level: int,
+    ):
+        """通常キーワードの処理"""
+        keyword_parts = full_keyword.split(" ", 1)
+        keyword = keyword_parts[0]
+
+        # テキストコンテンツ内でのネストした記法を再帰処理
+        if (
+            nesting_level == 0
+            and text_content
+            and regex_optimizer.optimized_search(
+                r"#\s*([^#]+?)\s*#([^#]+?)##", text_content
+            )
+        ):
+            text_content = self._process_inline_keywords(
+                text_content, nesting_level + 1
+            )
+
+        # ノード作成（改善されたキーワードマッピング使用）
+        base_keyword = keyword.split(" ")[0]  # 色属性を除いた基本キーワード
+
+        if base_keyword in self._inline_keyword_mapping:
+            return self._create_styled_inline_node(
+                self._inline_keyword_mapping[base_keyword], text_content, keyword
+            )
+        elif keyword == "見出し3":
+            # For h3 in list items, use strong styling instead
+            return NodeBuilder("strong").content(text_content).build()
+        else:
+            # Unknown keyword - return original text with markers
+            return original_match
+
+    def _normalize_result_parts(self, parts: list, original_content: str):
+        """結果パーツの正規化"""
         if len(parts) == 0:
-            return content  # 何も処理されなかった場合は元のコンテンツを返す
+            return original_content  # 何も処理されなかった場合は元のコンテンツを返す
         elif len(parts) == 1:
             return parts[0]  # 単一要素の場合はそのまま返す
         else:
