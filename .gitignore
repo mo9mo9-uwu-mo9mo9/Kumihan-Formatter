@@ -138,3 +138,24 @@ tmp_rule_violations.log
 # tmpディレクトリ（中身は除外、ディレクトリ自体は保持）
 tmp/*
 !tmp/README.md
+.local/
+serena-local/
+
+# Serena関係（外部ツール）
+scripts/serena_test_util.py
+scripts/serena-*
+scripts/setup-local-serena.sh
+scripts/setup-serena-stability.sh
+scripts/serena-health-check.sh
+scripts/serena-auto-recovery.sh
+scripts/serena-deep-clean.sh
+
+# Claude Code personal settings
+.claude/settings.local.json*
+.claude/*.log
+.claude/serena-stats.json
+.claude/hooks.json
+.mcp.json*
+
+# Serena関係（全体除外）
+.serena/
