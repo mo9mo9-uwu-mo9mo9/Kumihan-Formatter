@@ -11,7 +11,7 @@ repos:
         pass_filenames: false
         always_run: true
         fail_fast: true
-        description: "CLAUDE.md P7原則違反検出 - serena-expert必須使用チェック"
+        description: "CLAUDE.md 規則遵守原則違反検出 - serena-expert必須使用チェック"
       - id: claude-md-check
         name: CLAUDE.md Size & Structure Check
         entry: make claude-check

@@ -1,7 +1,7 @@
 """Conversion operations controller for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: 変換処理制御の分離
-Issue #476 Phase2対応 - gui_controller.py分割（2/3）
+Issue #476対応 - gui_controller.py分割（2/3）
 """
 
 import threading

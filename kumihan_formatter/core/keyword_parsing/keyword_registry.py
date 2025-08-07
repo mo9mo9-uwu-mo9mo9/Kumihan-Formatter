@@ -47,12 +47,12 @@ class KeywordRegistry:
         )  # 言語 -> {表示名: keyword_id}
 
         # Phase 2キーワードの登録
-        self._register_phase2_keywords()
+        self._register_advanced_keywords()
 
-    def _register_phase2_keywords(self) -> None:
-        """Phase 2キーワードを登録"""
+    def _register_advanced_keywords(self) -> None:
+        """高度なキーワードを登録"""
 
-        # Phase 2.1: 基本装飾キーワード
+        # 高度な基本装飾キーワード
         self.register_keyword(
             KeywordDefinition(
                 keyword_id="underline",
@@ -99,7 +99,7 @@ class KeywordRegistry:
             )
         )
 
-        # Phase 2.2: レイアウトキーワード
+        # 高度なレイアウトキーワード
         self.register_keyword(
             KeywordDefinition(
                 keyword_id="center_align",

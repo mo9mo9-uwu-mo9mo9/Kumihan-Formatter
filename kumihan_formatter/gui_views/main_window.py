@@ -1,7 +1,7 @@
 """Main window for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: メインウィンドウ管理の分離
-Issue #476 Phase2対応 - gui_views.py分割（1/4）
+Issue #476対応 - gui_views.py分割（1/4）
 """
 
 from tkinter import Tk, ttk

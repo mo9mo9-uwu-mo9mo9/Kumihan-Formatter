@@ -1,7 +1,7 @@
 """GUI Controllers for Kumihan-Formatter
 
 Single Responsibility Principle適用: GUI Controller層の機能分離と統合
-Issue #476 Phase2対応 - gui_controller.py分割完了
+Issue #476対応 - gui_controller.py分割完了
 
 分割結果:
 - main_controller.py: メインコントローラー統合管理

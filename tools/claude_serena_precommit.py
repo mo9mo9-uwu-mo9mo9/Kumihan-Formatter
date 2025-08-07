@@ -171,7 +171,7 @@ class SerenaPrecommitChecker:
     def _display_violation_error(self, violations: List[Dict]):
         """違反エラー表示"""
         print("\n" + "="*80)
-        print("🚨 CLAUDE.md P7原則違反検出 - コミット阻止 🚨")
+        print("🚨 CLAUDE.md 規則遵守原則違反検出 - コミット阻止 🚨")
         print("="*80)
         print(f"検出された違反数: {len(violations)}")
 
@@ -186,7 +186,7 @@ class SerenaPrecommitChecker:
         print("【対処方法】")
         print("1. 開発作業では必ずserena-expertツール (mcp__serena__*) を使用")
         print("2. 従来ツール (Edit, Read, Write等) の使用を中止")
-        print("3. CLAUDE.md P7原則を再確認")
+        print("3. CLAUDE.md 規則遵守原則を再確認")
         print("4. 違反を解決してから再度コミット")
         print("="*80)
 
@@ -194,7 +194,7 @@ class SerenaPrecommitChecker:
         """Serena使用推奨警告"""
         print("\n" + "⚠️ "*20)
         print("⚠️  開発作業でのserena-expert使用を推奨")
-        print("⚠️  CLAUDE.md P7原則: serena-expert絶対必須")
+        print("⚠️  CLAUDE.md 規則遵守原則: serena-expert絶対必須")
         print("⚠️ "*20)
 
 

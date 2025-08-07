@@ -245,7 +245,7 @@
     }
 }
 
-/* Phase2: 高度なエラー表示機能 */
+/* 高度なエラー表示機能 */
 
 /* エラーハイライト */
 .error-highlight {
@@ -330,7 +330,7 @@
     transition: width 0.3s ease;
 }
 
-/* Phase2ダークモード対応 */
+/* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
     .error-highlight {
         background-color: #4a0a0a;

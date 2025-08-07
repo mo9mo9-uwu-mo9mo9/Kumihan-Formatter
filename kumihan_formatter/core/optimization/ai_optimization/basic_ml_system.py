@@ -442,7 +442,7 @@ class FeatureEngineering:
         }
 
     def extract_features(
-        self, phase_b_data: Dict[str, Any], feature_types: List[str] = None
+        self, optimization_data: Dict[str, Any], feature_types: List[str] = None
     ) -> Tuple[np.ndarray, List[str]]:
         """Phase B運用データ特徴量抽出"""
         if feature_types is None:
@@ -455,7 +455,7 @@ class FeatureEngineering:
             for feature_type in feature_types:
                 if feature_type in self.feature_extractors:
                     features, feature_names = self.feature_extractors[feature_type](
-                        phase_b_data
+                        optimization_data
                     )
                     all_features.extend(features)
                     all_feature_names.extend(
@@ -501,9 +501,9 @@ class FeatureEngineering:
         feature_names.append("complexity_score")
 
         # Phase B効率性
-        phase_b_efficiency = data.get("phase_b_efficiency", 66.8)
-        features.append(float(phase_b_efficiency))
-        feature_names.append("phase_b_efficiency")
+        optimization_efficiency = data.get("optimization_efficiency", 66.8)
+        features.append(float(optimization_efficiency))
+        feature_names.append("optimization_efficiency")
 
         # 設定数
         settings_count = len(data.get("current_settings", {}))
@@ -758,13 +758,13 @@ class BasicMLSystem:
             raise
 
     def extract_features(
-        self, phase_b_data: Dict[str, Any]
+        self, optimization_data: Dict[str, Any]
     ) -> Tuple[np.ndarray, List[str]]:
         """Phase B運用データ特徴量抽出"""
         try:
             # Phase B運用統計データ活用・AI学習用特徴量生成
             features, feature_names = self.feature_extractor.extract_features(
-                phase_b_data, feature_types=["basic", "statistical", "temporal"]
+                optimization_data, feature_types=["basic", "statistical", "temporal"]
             )
 
             self.logger.debug(

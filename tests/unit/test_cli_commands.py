@@ -131,7 +131,7 @@ class TestCLICommandsCoverage:
 @pytest.mark.commands
 class TestConvertCommandCoverage:
     """ConvertCommand class coverage tests."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
@@ -149,12 +149,12 @@ class TestConvertCommandCoverage:
     def test_convert_command_execute_basic(self):
         """Test ConvertCommand execute method basic functionality."""
         cmd = ConvertCommand()
-        
+
         # Test with temporary file
         with tempfile.NamedTemporaryFile(suffix='.kumihan', mode='w', delete=False, encoding='utf-8') as tf:
             tf.write("#test#\ncontent\n##")
             tf.flush()
-            
+
             try:
                 # Execute command should not crash
                 result = cmd.execute(
@@ -182,7 +182,7 @@ class TestConvertCommandCoverage:
 @pytest.mark.commands
 class TestCheckSyntaxCommandCoverage:
     """CheckSyntaxCommand coverage tests."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
@@ -200,12 +200,12 @@ class TestCheckSyntaxCommandCoverage:
     def test_check_syntax_execute_basic(self):
         """Test CheckSyntaxCommand execute method basic functionality."""
         cmd = CheckSyntaxCommand()
-        
+
         # Test with temporary file
         with tempfile.NamedTemporaryFile(suffix='.kumihan', mode='w', delete=False, encoding='utf-8') as tf:
             tf.write("#test#\ncontent\n##")
             tf.flush()
-            
+
             try:
                 # Execute command should not crash
                 result = cmd.execute(
@@ -220,5 +220,3 @@ class TestCheckSyntaxCommandCoverage:
                 assert hasattr(cmd, 'execute')
             finally:
                 Path(tf.name).unlink(missing_ok=True)
-
-

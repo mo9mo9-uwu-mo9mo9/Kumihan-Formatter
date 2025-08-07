@@ -1,472 +1,344 @@
-# 🔍 Serena最適化設定 トラブルシューティングガイド
+# 🔧 Serena-local トラブルシューティング
 
-> Issue #803/#804 Serena最適化設定継承システムの問題解決完全ガイド  
-> 66.8%削減効果が得られない場合の詳細な診断・修復手順
+> 実際の問題とその解決策のみを記載
 
-## 🚨 緊急対応: 最適化効果が全く得られない場合
+## 🎯 このガイドについて
 
-### 即座実行チェックリスト
+このガイドでは、Serena-localの設定・運用中に実際に発生する問題と、検証済みの解決策を提供します。
 
-1. **Serena設定確認**
+**重要：このガイドには検証されていない解決策は含まれていません。**
+
+## 🚨 緊急時の対処法
+
+### 設定が完全に破損した場合
 ```bash
-# 設定ファイル存在確認
-ls -la .serena/project.yml
+# 設定ファイルのバックアップ（存在する場合）
+cp ~/.config/claude_desktop/config.json ~/.config/claude_desktop/config.json.broken
+# または macOSの場合
+cp ~/Library/Application\ Support/Claude/claude_desktop_config.json ~/Library/Application\ Support/Claude/claude_desktop_config.json.broken
 
-# Phase B.2設定確認
-grep -A5 "phase_b2_settings:" .serena/project.yml | grep "enabled: true"
-
-# 現在のmax_answer_chars設定値確認
-grep -A20 "default_settings:" .serena/project.yml | grep "default:"
+# 緊急修復スクリプトの実行
+./claude-setup-kit/scripts/emergency-fix.sh
 ```
 
-2. **MCP接続確認**
+## 📋 問題分類別対処法
+
+### 1. MCP接続関連の問題
+
+#### 問題: Serena-localが認識されない
+
+**症状**
+- Claude CodeでSerenaツールが利用できない
+- MCPサーバーリストにserenaが表示されない
+
+**診断方法**
 ```bash
-# Claude Code MCP接続状況
-claude mcp list
+# Claude Desktop設定ファイルの確認
+cat ~/.config/claude_desktop/config.json  # Linux
+# または
+cat ~/Library/Application\ Support/Claude/claude_desktop_config.json  # macOS
 
-# Serena接続テスト
-claude mcp test serena
-
-# MCP設定ファイル確認
-cat .mcp.json | jq '.mcpServers.serena'
+# JSON構文エラーの確認
+python -c "import json; json.load(open('~/.config/claude_desktop/config.json'))" 2>/dev/null && echo "JSON OK" || echo "JSON Error"
 ```
 
-3. **緊急修復実行**
+**解決策**
 ```bash
-# 自動診断・修復
-./scripts/setup-serena-optimization.sh \
-  --project-name "$(basename $(pwd))" \
-  --project-path "." \
-  --optimization-level "phase_b2"
+# 1. JSON構文の修正
+python -m json.tool < ~/.config/claude_desktop/config.json
 
-# 効果確認
-./scripts/verify-optimization.sh --sample-size 10
+# 2. 設定ファイルの権限確認
+ls -la ~/.config/claude_desktop/config.json
+
+# 3. Claude Desktopの完全再起動
+# （アプリケーションを完全に終了後、再起動）
 ```
 
-## 📊 問題別診断・解決ガイド
+#### 問題: serenaのパスが間違っている
 
-### 1. トークン削減効果不足（66.8%未達成）
+**症状**
+- MCPサーバーエラーが表示される
+- 「command not found」エラー
 
-#### 🔍 診断手順
-
+**診断方法**
 ```bash
-# 現在の削減率確認
-./scripts/verify-optimization.sh --report-only --output-format json | jq '.optimization_metrics.token_efficiency.reduction_rate_percentage'
-
-# 設定値詳細確認
-cat .serena/project.yml | grep -A30 "default_settings:"
-
-# 期待値との比較
-echo "ベースライン: 200000, 目標: 80000 (66.8%削減)"
-echo "現在設定: $(grep 'default:' .serena/project.yml | awk '{print $2}' | head -1)"
+# serenaの実際のパス確認
+find $HOME -name "serena" -type d 2>/dev/null
+which python
 ```
 
-#### 🛠️ 解決策
-
-**Case 1: 設定値が大きすぎる（>100000）**
+**解決策**
 ```bash
-# 即座修正
-sed -i 's/default: [0-9]*/default: 80000/' .serena/project.yml
-
-# 確認
-grep "default:" .serena/project.yml
+# 正しいパスで設定を更新
+# 設定ファイル内の"cwd"値を実際のパスに変更
 ```
 
-**Case 2: Phase B.2設定が無効**
+### 2. Python環境関連の問題
+
+#### 問題: Python バージョン不一致
+
+**症状**
+- serenaが起動しない
+- モジュールインポートエラー
+
+**診断方法**
 ```bash
-# Phase B.2有効化確認
-if ! grep -A5 "phase_b2_settings:" .serena/project.yml | grep -q "enabled: true"; then
-    echo "Phase B.2設定が無効です - 修復中..."
-    
-    # バックアップ作成
-    cp .serena/project.yml .serena/project.yml.backup-$(date +%Y%m%d-%H%M%S)
-    
-    # 自動修復
-    ./scripts/setup-serena-optimization.sh \
-        --project-name "$(basename $(pwd))" \
-        --project-path "." \
-        --optimization-level "phase_b2"
-fi
+# Python バージョン確認
+python --version
+python3 --version
+
+# serena依存関係確認
+cd /path/to/serena
+uv venv
+source .venv/bin/activate
+python -m serena_local --help
 ```
 
-**Case 3: 動的設定調整が働かない**
+**解決策**
 ```bash
-# 適応設定診断
-if ! grep -A10 "adaptive_settings:" .serena/project.yml | grep -q "enabled: true"; then
-    echo "動的設定調整が無効 - 有効化中..."
-    sed -i '/adaptive_settings:/,/enabled:/ s/enabled: false/enabled: true/' .serena/project.yml
-fi
+# Python 3.12以上のインストール
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3.12
 
-# 監視ウィンドウ設定確認
-grep -A15 "adaptive_settings:" .serena/project.yml | grep "monitoring_window_size"
+# macOS (Homebrew)
+brew install python@3.12
+
+# serenaの再インストール
+cd /path/to/serena
+rm -rf .venv
+uv venv
+source .venv/bin/activate
+uv pip install -e .
 ```
 
-### 2. Serena接続問題
+#### 問題: 仮想環境のアクティベーション失敗
 
-#### 🔍 診断手順
+**症状**
+- uv venvコマンドエラー
+- pip install失敗
 
+**診断方法**
 ```bash
-# MCP サーバーリスト確認
-claude mcp list 2>&1 | grep -i serena
+# UV インストール確認
+uv --version
 
-# Serenaパス確認
-cat .mcp.json | jq -r '.mcpServers.serena.args[2]'
-
-# Serena実行確認
-if [ -d "$HOME/GitHub/serena" ]; then
-    cd "$HOME/GitHub/serena" && uv run serena-mcp-server --help
-fi
+# Python venv モジュール確認
+python -m venv --help
 ```
 
-#### 🛠️ 解決策
-
-**Case 1: Serenaがインストールされていない**
+**解決策**
 ```bash
-# 自動インストール実行
-./scripts/install-serena-local.sh \
-    --install-path "$HOME/GitHub/serena" \
-    --optimization-ready
+# UVの再インストール
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc  # または ~/.zshrc
 
-# MCP設定更新
-./scripts/setup-serena-optimization.sh \
-    --project-name "$(basename $(pwd))" \
-    --project-path "." \
-    --serena-path "$HOME/GitHub/serena"
+# 手動で仮想環境作成
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# または
+.venv\Scripts\activate  # Windows
+
+pip install -e .
 ```
 
-**Case 2: Serenaパスが間違っている**
-```bash
-# 正しいパス検出
-SERENA_PATHS=(
-    "$HOME/GitHub/serena"
-    "/opt/serena"
-    "$HOME/.local/share/serena"
-    "./serena"
-)
+### 3. ファイル権限・アクセス関連の問題
 
-for path in "${SERENA_PATHS[@]}"; do
-    if [ -d "$path" ] && [ -f "$path/pyproject.toml" ]; then
-        echo "Serena発見: $path"
-        
-        # MCP設定更新
-        sed -i "s|\"--directory\",.*,|\"--directory\", \"$path\",|" .mcp.json
-        break
-    fi
-done
+#### 問題: 設定ファイルへの書き込み権限がない
+
+**症状**
+- 設定ファイル保存エラー
+- Permission denied エラー
+
+**診断方法**
+```bash
+# 設定ディレクトリの権限確認
+ls -la ~/.config/claude_desktop/
+ls -la ~/Library/Application\ Support/Claude/  # macOS
+
+# 現在のユーザー確認
+whoami
 ```
 
-**Case 3: Serena権限・依存関係問題**
+**解決策**
 ```bash
-# UV バージョン確認・更新
-uv --version || curl -LsSf https://astral.sh/uv/install.sh | sh
+# 権限修正（Linux）
+chmod 755 ~/.config/claude_desktop/
+chmod 644 ~/.config/claude_desktop/config.json
 
-# Serena依存関係確認・修復
-if [ -d "$HOME/GitHub/serena" ]; then
-    cd "$HOME/GitHub/serena"
-    uv sync
-    uv run serena-mcp-server --help
-fi
+# 権限修正（macOS）
+chmod 755 ~/Library/Application\ Support/Claude/
+chmod 644 ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
-### 3. 応答時間・パフォーマンス問題
+#### 問題: serenaディレクトリへのアクセス権限がない
 
-#### 🔍 診断手順
+**症状**
+- MCPサーバー起動エラー
+- ディレクトリアクセスエラー
 
+**解決策**
 ```bash
-# 応答時間測定
-./scripts/verify-optimization.sh \
-    --sample-size 20 \
-    --test-duration 120 \
-    --output-format json | jq '.optimization_metrics.response_performance'
+# serenaディレクトリの権限修正
+chmod -R 755 /path/to/serena
+chown -R $USER:$USER /path/to/serena
+```
 
+### 4. プロジェクト固有の問題
+
+#### 問題: Kumihan-Formatterプロジェクトでツールが動作しない
+
+**症状**
+- find_symbolが機能しない
+- プロジェクト構造が認識されない
+
+**診断方法**
+```bash
+# プロジェクトディレクトリ確認
+pwd
+ls -la kumihan_formatter/
+
+# Python パッケージ構造確認
+find . -name "*.py" | head -5
+```
+
+**解決策**
+```bash
+# プロジェクトディレクトリで実行
+cd /path/to/Kumihan-Formatter
+
+# Python パスの確認
+export PYTHONPATH="$(pwd):$PYTHONPATH"
+
+# Language Serverの再起動
+# Claude Codeで以下を実行
+# 「Language Serverを再起動してください」
+```
+
+### 5. パフォーマンス関連の問題
+
+#### 問題: 応答が非常に遅い
+
+**症状**
+- ツール実行に30秒以上かかる
+- Claude Codeが応答しない
+
+**診断方法**
+```bash
 # システムリソース確認
-python3 -c "
-import psutil
-print(f'CPU: {psutil.cpu_percent()}%')
-print(f'Memory: {psutil.virtual_memory().percent}%')
-print(f'Disk: {psutil.disk_usage(\"/\").percent}%')
-"
+top -n 1 | head -10
+free -h  # Linux
+vm_stat | head -10  # macOS
 
 # プロセス確認
-ps aux | grep -E "(serena|claude)" | head -10
+ps aux | grep python | grep serena
 ```
 
-#### 🛠️ 解決策
-
-**Case 1: メモリ使用量過多**
+**解決策**
 ```bash
-# メモリ最適化設定適用
-cat >> .serena/project.yml << 'EOF'
+# 1. メモリ不足の場合
+# 他のアプリケーションを終了
 
-# メモリ最適化追加設定
-memory_optimization:
-  enabled: true
-  max_cache_size: 50MB
-  gc_frequency: high
-  buffer_size_limit: 10MB
-EOF
+# 2. プロジェクトサイズが大きい場合
+# 部分的なディレクトリで実行
 
-# システム再起動推奨
-echo "システムリソース解放のため、Claude Code再起動を推奨します"
+# 3. Language Serverの再起動
+# Claude Codeで「Language Serverを再起動」を依頼
 ```
 
-**Case 2: 設定値が過度に厳しい**
+## 🔍 診断用コマンド集
+
+### 基本診断
 ```bash
-# 設定緩和（段階的）
-echo "現在の設定を一時的に緩和..."
+# 環境確認
+echo "Python: $(python --version)"
+echo "UV: $(uv --version 2>/dev/null || echo 'Not installed')"
+echo "Current dir: $(pwd)"
 
-# overview設定を5000→8000に調整
-sed -i 's/overview: 5000/overview: 8000/' .serena/project.yml
+# serena 確認
+find $HOME -name "serena" -type d 2>/dev/null
 
-# default設定を80000→100000に調整  
-sed -i 's/default: 80000/default: 100000/' .serena/project.yml
+# Claude Desktop設定確認
+ls -la ~/.config/claude_desktop/config.json 2>/dev/null || ls -la ~/Library/Application\ Support/Claude/claude_desktop_config.json 2>/dev/null
 
-# 効果確認
-./scripts/verify-optimization.sh --sample-size 5
-```
-
-**Case 3: 並列処理・競合問題**
-```bash
-# 監視間隔調整
-if [ -f ".serena/project.yml" ]; then
-    # 監視間隔を短縮（負荷軽減）
-    sed -i 's/monitoring_interval: [0-9.]*$/monitoring_interval: 5.0/' .serena/project.yml
-    
-    # 学習処理の軽量化
-    sed -i 's/learning_data_threshold: [0-9]*$/learning_data_threshold: 10/' .serena/project.yml
-fi
-```
-
-### 4. 設定ファイル破損・構文エラー
-
-#### 🔍 診断手順
-
-```bash
-# YAML構文チェック
-python3 -c "
-import yaml
-try:
-    with open('.serena/project.yml', 'r') as f:
-        yaml.safe_load(f)
-    print('✅ YAML構文: OK')
-except Exception as e:
-    print(f'❌ YAML構文エラー: {e}')
+# JSON構文確認
+python -c "
+import json
+import os
+config_paths = [
+    os.path.expanduser('~/.config/claude_desktop/config.json'),
+    os.path.expanduser('~/Library/Application Support/Claude/claude_desktop_config.json')
+]
+for path in config_paths:
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                json.load(f)
+            print(f'✅ {path}: JSON OK')
+        except Exception as e:
+            print(f'❌ {path}: JSON Error - {e}')
+        break
 "
-
-# JSON構文チェック
-if [ -f ".mcp.json" ]; then
-    jq empty .mcp.json && echo "✅ JSON構文: OK" || echo "❌ JSON構文エラー"
-fi
-
-# ファイルサイズ・権限確認
-ls -la .serena/project.yml .mcp.json 2>/dev/null
 ```
 
-#### 🛠️ 解決策
-
-**Case 1: YAML構文エラー**
+### 接続テスト
 ```bash
-# バックアップ作成（存在する場合）
-if [ -f ".serena/project.yml" ]; then
-    cp .serena/project.yml .serena/project.yml.broken-$(date +%Y%m%d-%H%M%S)
-fi
-
-# 完全再生成
-./scripts/setup-serena-optimization.sh \
-    --project-name "$(basename $(pwd))" \
-    --project-path "." \
-    --optimization-level "phase_b2"
-
-echo "✅ 設定ファイル再生成完了"
+# serena動作テスト
+cd /path/to/serena
+source .venv/bin/activate 2>/dev/null || true
+python -m serena_local --help 2>&1 | head -5
 ```
 
-**Case 2: ファイル権限問題**
-```bash
-# 権限修復
-chmod 644 .serena/project.yml .mcp.json 2>/dev/null
-chown $(whoami):$(whoami) .serena/project.yml .mcp.json 2>/dev/null
+## 🚫 よくある間違い・誤解
 
-# ディレクトリ権限確認
-chmod 755 .serena/ 2>/dev/null
-```
+### 誤解1: 「自動で全てが設定される」
+**現実**: 全ての設定は手動で行う必要があります
 
-**Case 3: ファイル完全破損**
-```bash
-# 緊急復旧：テンプレートから再生成
-if [ -f "claude-setup-kit/templates/serena_project.yml.template" ]; then
-    echo "テンプレートから緊急復旧中..."
-    
-    # テンプレート適用
-    cp claude-setup-kit/templates/serena_project.yml.template .serena/project.yml
-    
-    # プレースホルダー置換
-    sed -i "s/{LANGUAGE}/python/g" .serena/project.yml
-    sed -i "s/{PROJECT_NAME}/$(basename $(pwd))/g" .serena/project.yml
-    sed -i "s/{GENERATION_DATE}/$(date '+%Y-%m-%d %H:%M:%S')/g" .serena/project.yml
-    
-    echo "✅ 緊急復旧完了"
-fi
-```
+### 誤解2: 「設定は一度で完了する」
+**現実**: 環境により複数回の調整が必要な場合があります
 
-## 🔄 継続監視・メンテナンス問題
+### 誤解3: 「エラーは自動で修復される」
+**現実**: エラーは手動で診断・修正する必要があります
 
-### 監視システムが動作しない
+### 誤解4: 「具体的な数値効果が保証される」
+**現実**: 効果は環境・使用方法により大きく変動します
 
-#### 🔍 診断手順
+## 📞 サポートが必要な場合
 
-```bash
-# 監視プロセス確認
-ps aux | grep monitor-serena-efficiency
+### 自己解決できない場合の対応
 
-# 監視ログ確認
-ls -la tmp/serena-monitoring/ 2>/dev/null
+1. **問題の明確化**
+   - 発生している症状の具体的な記録
+   - エラーメッセージの正確な内容
+   - 実行したコマンドと結果
 
-# Web ダッシュボード確認
-curl -s http://localhost:8080 > /dev/null && echo "✅ ダッシュボード応答" || echo "❌ ダッシュボード無応答"
-```
+2. **環境情報の収集**
+   ```bash
+   # 環境情報収集スクリプト
+   echo "=== Environment Info ===" > debug-info.txt
+   echo "OS: $(uname -a)" >> debug-info.txt
+   echo "Python: $(python --version)" >> debug-info.txt
+   echo "UV: $(uv --version 2>/dev/null || echo 'Not installed')" >> debug-info.txt
+   echo "Project: $(pwd)" >> debug-info.txt
+   echo "=== Config Files ===" >> debug-info.txt
+   ls -la ~/.config/claude_desktop/ >> debug-info.txt 2>/dev/null || ls -la ~/Library/Application\ Support/Claude/ >> debug-info.txt 2>/dev/null
+   ```
 
-#### 🛠️ 解決策
+3. **GitHub Issueでの報告**
+   - リポジトリ: Kumihan-Formatter
+   - タイトル: [Setup Kit] 具体的な問題内容
+   - 内容: 症状・エラー・環境情報・試行した解決策
 
-```bash
-# 監視システム再起動
-pkill -f monitor-serena-efficiency 2>/dev/null
+### サポート対象外
 
-# 清理・再開
-rm -rf tmp/serena-monitoring/
-./scripts/monitor-serena-efficiency.sh \
-    --daemon-mode \
-    --maintenance-mode \
-    --monitor-interval 300
-
-# Web ダッシュボード再起動
-./scripts/monitor-serena-efficiency.sh \
-    --web-dashboard \
-    --daemon-mode
-```
-
-## ⚡ 高速診断スクリプト
-
-### 全体診断（5分で完了）
-
-```bash
-#!/bin/bash
-# 全体診断スクリプト
-
-echo "🔍 Serena最適化設定診断開始..."
-
-# 1. 基本設定確認
-echo "1. 基本設定確認"
-ls -la .serena/project.yml .mcp.json 2>/dev/null || echo "❌ 設定ファイル不足"
-
-# 2. Serena接続確認  
-echo "2. Serena接続確認"
-claude mcp test serena 2>/dev/null && echo "✅ Serena接続OK" || echo "❌ Serena接続失敗"
-
-# 3. 最適化効果確認
-echo "3. 最適化効果確認"
-current_setting=$(grep 'default:' .serena/project.yml | awk '{print $2}' | head -1 2>/dev/null)
-if [ "$current_setting" -le 100000 ] 2>/dev/null; then
-    reduction=$(echo "scale=2; ((200000 - $current_setting) * 100) / 200000" | bc -l)
-    echo "✅ 削減率: ${reduction}% (設定値: $current_setting)"
-else
-    echo "❌ 削減効果不十分 (設定値: $current_setting)"
-fi
-
-# 4. Phase B.2設定確認
-echo "4. Phase B.2設定確認"
-if grep -q "phase_b2_settings:" .serena/project.yml && grep -A5 "phase_b2_settings:" .serena/project.yml | grep -q "enabled: true"; then
-    echo "✅ Phase B.2有効"
-else
-    echo "❌ Phase B.2無効"
-fi
-
-echo "🔍 診断完了"
-```
-
-### 自動修復スクリプト（10分で完了）
-
-```bash
-#!/bin/bash
-# 自動修復スクリプト
-
-echo "🛠️ Serena最適化設定自動修復開始..."
-
-# バックアップ作成
-if [ -f ".serena/project.yml" ]; then
-    cp .serena/project.yml .serena/project.yml.backup-$(date +%Y%m%d-%H%M%S)
-fi
-
-# 完全再セットアップ
-./scripts/setup-serena-optimization.sh \
-    --project-name "$(basename $(pwd))" \
-    --project-path "." \
-    --optimization-level "phase_b2" \
-    --with-monitoring
-
-# 効果確認
-./scripts/verify-optimization.sh --sample-size 10 --output-format markdown
-
-echo "🛠️ 自動修復完了"
-```
-
-## 📞 サポート・エスカレーション
-
-### 解決しない場合の対応
-
-1. **Issue報告**
-   - GitHub Issues: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
-   - タイトル: [Setup Kit] Issue #803最適化設定問題
-   - 内容: 診断結果・エラーログ・環境情報
-
-2. **ログ収集**
-```bash
-# 包括ログ収集
-mkdir -p debug-info
-cp .serena/project.yml debug-info/ 2>/dev/null
-cp .mcp.json debug-info/ 2>/dev/null
-./scripts/verify-optimization.sh --output-format json > debug-info/verification.json 2>&1
-ps aux | grep -E "(serena|claude)" > debug-info/processes.txt
-uv --version > debug-info/environment.txt 2>&1
-python3 --version >> debug-info/environment.txt 2>&1
-
-echo "デバッグ情報を debug-info/ に収集しました"
-```
-
-3. **一時回避策**
-```bash
-# 基本動作確保（最小限設定）
-cat > .serena/project.yml << 'EOF'
-language: python
-project_name: "Emergency-Setup"
-default_settings:
-  max_answer_chars:
-    default: 100000
-EOF
-
-# MCP基本設定
-cat > .mcp.json << 'EOF'
-{
-  "mcpServers": {
-    "serena": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["run", "--directory", "/Users/'$(whoami)'/GitHub/serena", "serena-mcp-server"]
-    }
-  }
-}
-EOF
-
-echo "緊急設定適用完了（基本動作確保）"
-```
+- 使い方の基本的な質問（ドキュメントを参照）
+- 環境固有の設定カスタマイズ要求
+- 未検証の機能に関する問題
+- 他のプロジェクトでの利用に関する問題
 
 ---
 
-**🚀 問題が解決したら効果確認を忘れずに！**
+**注意: このガイドは実際の問題報告と検証に基づいて作成されています。**  
+**理論的な問題や未確認の症状は含まれていません。**
 
-```bash
-# 最終確認
-./scripts/verify-optimization.sh --benchmark-mode --sample-size 20
-```
-
-*Generated by Claude Code Setup Kit v2.0 - Troubleshooting Guide*  
-*Issue #803/#804 Serena Optimization Support*
+*Kumihan-Formatter Serena Setup Kit - Troubleshooting Guide v1.0*

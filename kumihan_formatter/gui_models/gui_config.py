@@ -1,7 +1,7 @@
 """GUI configuration management for Kumihan-Formatter
 
 Single Responsibility Principle適用: GUI設定管理の分離
-Issue #476 Phase2対応 - config_model.py分割（関数数過多解消）
+Issue #476対応 - config_model.py分割（関数数過多解消）
 """
 
 from pathlib import Path

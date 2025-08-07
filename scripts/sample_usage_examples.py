@@ -219,7 +219,7 @@ def sample_progressive_output():
 
     usage_code = """
 # プログレッシブ出力システムの使用例
-from kumihan_formatter.core.utilities.performance_metrics import ProgressiveOutputSystem
+from kumihan_formatter.core.performance import ProgressiveOutputSystem
 from pathlib import Path
 
 # プログレッシブ出力システム初期化
@@ -270,7 +270,7 @@ def sample_performance_monitoring():
 
     usage_code = """
 # パフォーマンス監視システムの使用例
-from kumihan_formatter.core.utilities.performance_metrics import PerformanceMonitor
+from kumihan_formatter.core.performance import PerformanceMonitor
 
 # パフォーマンス監視初期化
 monitor = PerformanceMonitor(monitoring_interval=0.5, history_size=1000)
@@ -325,7 +325,7 @@ def sample_benchmark_usage():
 
     usage_code = """
 # ベンチマークシステムの使用例
-from kumihan_formatter.core.utilities.performance_metrics import PerformanceBenchmark
+from kumihan_formatter.core.performance import PerformanceBenchmark
 
 # ベンチマーク実行
 benchmark = PerformanceBenchmark()

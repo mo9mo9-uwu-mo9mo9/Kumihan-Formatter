@@ -1,7 +1,7 @@
 """Dialog windows for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: ダイアログウィンドウ管理の分離
-Issue #476 Phase2対応 - gui_views.py分割（4/4）
+Issue #476対応 - gui_views.py分割（4/4）
 """
 
 from tkinter import BOTH, LEFT, RIGHT, VERTICAL, WORD, Frame, Text, Toplevel, Y, ttk

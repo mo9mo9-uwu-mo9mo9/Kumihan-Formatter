@@ -2,7 +2,7 @@
 AI Integration Manager - Phase B + AI統合管理システム
 
 Phase B.4-Alpha実装: Phase B統合基盤・66.8%削減維持・AI協調最適化
-統合対象: AdaptiveSettingsManager, TokenEfficiencyAnalyzer, PhaseBIntegrator
+統合対象: AdaptiveSettingsManager, TokenEfficiencyAnalyzer, OptimizationIntegrator
 """
 
 import threading
@@ -11,10 +11,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from kumihan_formatter.core.optimization.adaptive_settings import (
-    AdaptiveSettingsManager,
-)
-from kumihan_formatter.core.optimization.phase_b_integrator import PhaseBIntegrator
+from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
+from kumihan_formatter.core.optimization.settings.manager import AdaptiveSettingsManager
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -133,10 +131,10 @@ class AIIntegrationManager:
     def _initialize_phase_b_systems(self) -> None:
         """Phase B基盤システム初期化"""
         try:
-            # PhaseBIntegrator初期化
-            self.phase_b_integrator = PhaseBIntegrator()
+            # OptimizationIntegrator初期化
+            self.phase_b_integrator = OptimizationIntegrator()
             if not self.phase_b_integrator.is_operational():
-                raise RuntimeError("PhaseBIntegrator initialization failed")
+                raise RuntimeError("OptimizationIntegrator initialization failed")
 
             # AdaptiveSettingsManager初期化
             self.adaptive_settings = AdaptiveSettingsManager()
@@ -239,7 +237,7 @@ class AIIntegrationManager:
     def _check_phase_b_health(self) -> bool:
         """Phase B健全性チェック"""
         try:
-            # PhaseBIntegrator健全性
+            # OptimizationIntegrator健全性
             if not self.phase_b_integrator.is_operational():
                 return False
 
@@ -264,7 +262,7 @@ class AIIntegrationManager:
             # AdaptiveSettingsManager統合
             adaptive_integration = self._integrate_adaptive_settings()
 
-            # PhaseBIntegrator統合制御
+            # OptimizationIntegrator統合制御
             integrator_sync = self._synchronize_phase_b_integrator()
 
             # データフロー統合
@@ -308,7 +306,7 @@ class AIIntegrationManager:
             return False
 
     def _synchronize_phase_b_integrator(self) -> bool:
-        """PhaseBIntegrator統合制御"""
+        """OptimizationIntegrator統合制御"""
         try:
             # 統合制御設定
             sync_config = {
@@ -322,14 +320,14 @@ class AIIntegrationManager:
             sync_result = self.phase_b_integrator.configure_ai_integration(sync_config)
 
             if sync_result.get("success", False):
-                self.logger.info("PhaseBIntegrator synchronization completed")
+                self.logger.info("OptimizationIntegrator synchronization completed")
                 return True
             else:
-                self.logger.error("PhaseBIntegrator synchronization failed")
+                self.logger.error("OptimizationIntegrator synchronization failed")
                 return False
 
         except Exception as e:
-            self.logger.error(f"PhaseBIntegrator synchronization error: {e}")
+            self.logger.error(f"OptimizationIntegrator synchronization error: {e}")
             return False
 
     def _setup_integrated_dataflow(self) -> bool:
@@ -859,9 +857,9 @@ class AIIntegrationManager:
     def _recover_phase_b_systems(self) -> bool:
         """Phase Bシステム復旧"""
         try:
-            # PhaseBIntegrator復旧
+            # OptimizationIntegrator復旧
             if not self.phase_b_integrator.is_operational():
-                self.phase_b_integrator = PhaseBIntegrator()
+                self.phase_b_integrator = OptimizationIntegrator()
 
             # AdaptiveSettingsManager復旧
             if not self.adaptive_settings.is_initialized():

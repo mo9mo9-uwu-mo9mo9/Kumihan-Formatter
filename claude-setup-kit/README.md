@@ -1,231 +1,149 @@
-# Claude Code セットアップキット v2.0
+# 🔧 Claude Code - Serena統合支援ツール
 
-> 🚀 **Issue #803/#804 Serena最適化設定継承対応版**  
-> 📊 **66.8%トークン削減効果を新規環境で完全再現**  
-> Kumihan-FormatterのAI最適化Claude Code設定（serena-expert統合）を他プロジェクトに一発展開するツール
+> Kumihan-Formatter開発者向けのSerena統合設定支援ツールキット
 
-## 🌟 新機能: Serena最適化設定継承システム
+## 📋 概要
 
-### 📈 Issue #803/#804完全継承
-- **66.8%トークン削減効果**: Phase B.2完全実装版を新規環境で再現
-- **動的設定調整**: コンテキスト別最適化・パターン学習システム
-- **AI/ML基盤準備**: Phase B.4 AI駆動型最適化への移行準備完了
-- **リアルタイム監視**: 効果測定・劣化検出・自動メンテナンス
+このツールキットは、Kumihan-Formatterプロジェクトの開発者がSerena-localを利用したAI最適化開発環境を構築するための支援ツールです。
 
-### 🔧 強化されたセットアップ機能
+**重要：このツールキットは手動設定支援のみを提供します。自動実行やワンクリック設定機能はありません。**
 
-#### 1. Serena最適化自動セットアップ
+## 🎯 目的
+
+- **Kumihan-Formatter開発効率向上**: serena-localによるシンボリック編集の活用
+- **MCP設定支援**: Model Context Protocol設定の手動手順ガイド
+- **開発環境統一**: チーム開発での設定統一化支援
+- **トラブルシューティング**: 実際の問題解決策提供
+
+## ⚠️ 前提条件
+
+### 必須要件
+- **Claude Desktop**: 最新版インストール済み
+- **Python**: 3.12以上
+- **Node.js**: 18以上
+- **UV**: パッケージマネージャー
+- **Git**: バージョン管理
+
+### 推奨知識
+- MCP（Model Context Protocol）の基本理解
+- JSON設定ファイルの編集経験
+- コマンドライン操作の基本知識
+
+## 📁 ツールキット構成
+
+```
+claude-setup-kit/
+├── README.md                    # このファイル
+├── INSTALLATION_GUIDE.md        # serena-local設定手順
+├── TROUBLESHOOTING.md          # トラブルシューティング
+├── BEGINNER_GUIDE.md           # 初心者向けガイド
+├── scripts/
+│   ├── install-serena-local.sh # serena-localインストール
+│   └── emergency-fix.sh        # 緊急修復スクリプト
+└── templates/
+    └── claude_desktop_config.json.template
+```
+
+## 🚀 基本的な使い方
+
+### 1. インストールガイドの確認
 ```bash
-# 66.8%削減効果の完全再現
-./scripts/setup-serena-optimization.sh \
-  --project-name "MyProject" \
-  --project-path "/path/to/project" \
-  --language "python" \
-  --optimization-level "phase_b2"
+cat claude-setup-kit/INSTALLATION_GUIDE.md
 ```
 
-#### 2. ローカルSerena自動インストール
+### 2. 手動設定実行
+serena-localの設定は手動で行います：
 ```bash
-# Serena基盤の完全自動化セットアップ
-./scripts/install-serena-local.sh \
-  --install-path "$HOME/GitHub/serena" \
-  --optimization-ready
+# インストールスクリプトの実行
+./claude-setup-kit/scripts/install-serena-local.sh
+
+# 設定ファイルの手動編集が必要
+# 詳細はINSTALLATION_GUIDE.mdを参照
 ```
 
-#### 3. 最適化効果検証・測定
+### 3. 動作確認
 ```bash
-# 66.8%削減効果の確認・検証
-./scripts/verify-optimization.sh \
-  --benchmark-mode \
-  --sample-size 50
+# Claude Desktopを再起動
+# Kumihan-Formatterプロジェクトで動作確認
 ```
 
-#### 4. リアルタイム監視・メンテナンス
+## 📊 期待される効果
+
+### Serena-local使用時の利点
+- **シンボリック編集**: `find_symbol`、`replace_symbol_body`等の精密編集
+- **トークン効率化**: 必要な部分のみの編集によるトークン節約
+- **コード品質向上**: 構文解析に基づく正確な編集
+- **開発速度向上**: ピンポイント編集による高速化
+
+**注意：具体的な数値効果は環境や使用方法により変動します。**
+
+## 🛠️ Kumihan-Formatterとの関係
+
+### なぜSerenaが必要か
+1. **大規模コードベース**: Kumihan-Formatterは複雑なパーサー・レンダラー構造
+2. **精密編集要求**: ブロック記法処理の正確な実装が必要
+3. **テスト品質**: 包括的テストスイートのメンテナンス
+4. **チーム開発**: 一貫した開発環境の維持
+
+### 活用場面
+- パーサー機能の拡張・修正
+- レンダラーの出力形式調整
+- CLI機能の追加・改善
+- テストケースの追加・修正
+
+## 🔧 トラブルシューティング
+
+一般的な問題と解決策については以下を参照：
 ```bash
-# 継続的な効果監視・自動メンテナンス
-./scripts/monitor-serena-efficiency.sh \
-  --daemon-mode \
-  --maintenance-mode \
-  --web-dashboard
+cat claude-setup-kit/TROUBLESHOOTING.md
 ```
 
-## 📊 期待される効果（Issue #803検証済み）
-
-| メトリクス | 改善率 | 具体的効果 |
-|-----------|--------|-----------|
-| **トークン削減** | **66.8%** | 200,000→80,000 tokens |
-| **応答時間** | **40-60%高速化** | 平均応答時間大幅短縮 |
-| **メモリ効率** | **30-50%削減** | システムリソース最適化 |
-| **精度維持** | **95%以上** | 品質劣化なし |
-
-### 🔍 Serena-Expert強制システム動作テスト
-
+### 緊急時の対処
 ```bash
-# 正常な使用パターン（推奨）
-mcp__serena__find_symbol
-mcp__serena__replace_symbol_body
-
-# 禁止パターン（自動検出・停止）
-Edit  # → 即座に停止・警告
-Read  # → 即座に停止・警告
+# 設定リセット（手動バックアップ推奨）
+./claude-setup-kit/scripts/emergency-fix.sh
 ```
 
-## 📋 対応言語・フレームワーク
+## 📚 段階的導入
 
-| 言語 | フォーマッター | リンター | 型チェッカー | テストランナー |
-|------|------------|---------|-------------|-------------|
-| **Python** | black | flake8 | mypy | pytest |
-| **JavaScript/TypeScript** | prettier | eslint | typescript | jest |
-| **Go** | gofmt | golangci-lint | go | go test |
-| **Rust** | rustfmt | clippy | rustc | cargo test |
+### 初心者の方
+1. [初心者ガイド](BEGINNER_GUIDE.md)から開始
+2. 基本設定のみ適用
+3. 慣れてから高度な機能を追加
 
-### 追加言語サポート
+### 経験者の方
+1. [インストールガイド](INSTALLATION_GUIDE.md)で一括設定
+2. カスタマイズ設定の適用
+3. チーム設定の共有
 
-`project_config.yaml`の`language_configs`セクションに追加：
+## ⚡ 制限事項
 
-```yaml
-language_configs:
-  Java:
-    formatter: "google-java-format"
-    linter: "checkstyle"
-    type_checker: "javac"
-    test_runner: "junit"
-```
+### できないこと
+- **自動設定**: 全設定は手動実行が必要
+- **自然言語コマンド**: 「Serenaセットアップして」等は動作しません
+- **ワンクリック設定**: 段階的な手動設定が必要
+- **保証された効果**: 具体的な削減効果の保証はありません
 
-## 🎛️ 高度な機能
+### 注意点
+- Claude Desktop再起動が必要な場合があります
+- 設定ファイルの手動編集が必要です
+- バックアップは各自で実施してください
 
-### SubAgent自動選択
+## 📞 サポート
 
-セットアップ後、以下が自動で利用可能：
+### 問題報告
+- **GitHub Issues**: Kumihan-Formatterプロジェクト
+- **対象**: 実際の設定問題・エラー報告のみ
+- **非対象**: 使い方の質問・要望
 
-```bash
-# 自動でSerena Expertが選択される
-/serena "新しい機能を実装したい"
-/serena "コードをリファクタリングしたい"  
-/serena "バグを修正したい"
-```
-
-### 権限管理システム
-
-170+項目の詳細な権限設定：
-- Git操作（add, commit, push, pull, merge, rebase等）
-- テスト実行（pytest, make test等）
-- コード品質（lint, format, type check等）
-- プロジェクト固有コマンド
-- MCP操作（serena, context7等）
-
-### Issue管理自動化
-
-```bash
-# ラベル付与が自動化される
-gh issue create --title "バグ修正" --body "内容" --label "バグ,優先度:高,難易度:普通,コンポーネント:API"
-```
-
-## 🔍 トラブルシューティング
-
-### よくある問題
-
-**Q: MCPサーバーが接続されない**
-```bash
-# MCP接続状況確認
-claude mcp list
-
-# 個別サーバー確認
-claude mcp test serena
-```
-
-**Q: CLAUDE.mdが読み込まれない**
-```bash
-# ファイル存在確認
-ls -la CLAUDE.md
-
-# 権限確認
-chmod 644 CLAUDE.md
-```
-
-**Q: SubAgentが自動選択されない**
-```bash
-# SubAgent設定確認
-cat .claude/subagents.json
-
-# セッション再起動
-exit  # Claude Codeを終了
-claude  # 再起動
-```
-
-### デバッグモード
-
-```bash
-# 詳細ログ付きでセットアップ
-python claude-setup-kit/setup.py \\
-  --project-name "DebugProject" \\
-  --project-path "/tmp/debug" \\
-  --verbose
-```
-
-## 📊 使用例
-
-### 実際のプロジェクト例
-
-```bash
-# React + TypeScriptプロジェクト
-python claude-setup-kit/setup.py \\
-  --project-name "MyReactApp" \\
-  --project-path "/Users/dev/my-react-app" \\
-  --language "JavaScript" \\
-  --config react-config.yaml
-
-# FastAPIプロジェクト  
-python claude-setup-kit/setup.py \\
-  --project-name "MyFastAPI" \\
-  --project-path "/Users/dev/my-fastapi" \\
-  --language "Python" \\
-  --config fastapi-config.yaml
-
-# マイクロサービス
-python claude-setup-kit/setup.py \\
-  --project-name "UserService" \\
-  --project-path "/Users/dev/microservices/user-service" \\
-  --language "Go" \\
-  --with-hooks
-```
-
-## 🔄 更新・メンテナンス
-
-### キットの更新
-
-```bash
-# 最新版をKumihan-Formatterから取得
-cd /path/to/Kumihan-Formatter
-cp -r claude-setup-kit /path/to/new-location
-```
-
-### 設定の更新
-
-```bash
-# 既存プロジェクトの設定更新
-python claude-setup-kit/setup.py \\
-  --project-name "ExistingProject" \\
-  --project-path "/path/to/existing" \\
-  --update-only
-```
-
-## 🤝 コントリビューション
-
-新しい言語サポートやテンプレート改善の提案を歓迎します：
-
-1. `templates/` に新しいテンプレート追加
-2. `project_config.yaml` に言語設定追加  
-3. `setup.py` に処理ロジック追加
-4. 動作テスト実施
-5. PR作成
-
-## 📜 ライセンス
-
-Kumihan-Formatterプロジェクトと同じライセンスに従います。
+### 貢献
+- **プルリクエスト歓迎**: 実際に動作する改善のみ
+- **ドキュメント改善**: 正確性向上の提案
+- **テスト報告**: 実際の動作環境での検証結果
 
 ---
 
-**🎉 高度なClaude Code環境を他プロジェクトでも活用しましょう！**
+**実用的で正確な情報のみを提供しています。**  
+**誇大な宣伝や虚偽の機能説明はありません。**
 
-*Generated by Claude Code Setup Kit v2.0 - Powered by Kumihan-Formatter*
+*Kumihan-Formatter Claude Setup Kit - 実用版*

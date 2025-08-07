@@ -1,7 +1,7 @@
 """Integrated GUI controller for Kumihan-Formatter
 
 Single Responsibility Principle適用: 統合GUIコントローラーの分離
-Issue #476 Phase2対応 - gui_controller.py分割（統合）
+Issue #476対応 - gui_controller.py分割（統合）
 """
 
 from typing import Any

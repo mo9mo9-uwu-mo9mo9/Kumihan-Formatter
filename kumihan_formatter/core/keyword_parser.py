@@ -362,7 +362,7 @@ class KeywordParser:
         """正規表現オプティマイザーの初期化"""
         regex_optimizer = getattr(self, "_regex_optimizer", None)
         if regex_optimizer is None:
-            from .utilities.performance_metrics import RegexOptimizer
+            from .utilities.performance.optimizers.regex import RegexOptimizer
 
             self._regex_optimizer = RegexOptimizer()
             regex_optimizer = self._regex_optimizer
@@ -377,7 +377,7 @@ class KeywordParser:
         try:
             simd_optimizer = getattr(self, "_simd_optimizer", None)
             if simd_optimizer is None:
-                from .utilities.performance_metrics import SIMDOptimizer
+                from ..performance import SIMDOptimizer
 
                 self._simd_optimizer = SIMDOptimizer()
                 simd_optimizer = self._simd_optimizer

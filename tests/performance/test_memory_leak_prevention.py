@@ -17,7 +17,7 @@ import psutil
 sys.path.insert(0, str(Path(__file__).parent))
 
 from kumihan_formatter.core.utilities.logger import get_logger
-from kumihan_formatter.core.utilities.performance_metrics import PerformanceMonitor
+from kumihan_formatter.core.performance import PerformanceMonitor
 from kumihan_formatter.parser import Parser, parse_with_error_config
 
 

@@ -10,7 +10,7 @@ Phase A基盤（58%削減）上に追加3-5%削減を実現する
 - AdaptiveSettingsManager: 動的設定調整
 - ContextAwareOptimizer: コンテキスト認識最適化
 - RealTimeConfigAdjuster: リアルタイム調整
-- PhaseB1Optimizer: 統合最適化システム
+- IntegratedSettingsOptimizer: 統合最適化システム
 
 技術基盤:
 - 既存EnhancedConfig拡張活用
@@ -18,36 +18,39 @@ Phase A基盤（58%削減）上に追加3-5%削減を実現する
 - 学習型調整アルゴリズム
 """
 
-from .adaptive_settings import (
+# Phase B.3統合システムインポート
+from .phase_b import (
+    EffectMeasurementResult,
+    EffectMeasurementSystem,
+    OptimizationIntegrator,
+    PhaseBIntegrationConfig,
+    PhaseBReport,
+    PhaseBReportGenerator,
+    StabilityValidationResult,
+    StabilityValidator,
+)
+from .settings import (
     ABTestConfig,
     ABTestResult,
     AdaptiveSettingsManager,
     ConfigAdjustment,
     ContextAwareOptimizer,
-    PhaseB1Optimizer,
+    IntegratedSettingsOptimizer,
     RealTimeConfigAdjuster,
     WorkContext,
-)
-
-# Phase B.3統合システムインポート
-from .phase_b_integrator import (
-    EffectMeasurementSystem,
-    PhaseBIntegrator,
-    PhaseBReportGenerator,
-    StabilityValidator,
 )
 
 __all__ = [
     "AdaptiveSettingsManager",
     "ContextAwareOptimizer",
     "RealTimeConfigAdjuster",
-    "PhaseB1Optimizer",
+    "IntegratedSettingsOptimizer",
     "ConfigAdjustment",
     "WorkContext",
     "ABTestConfig",
     "ABTestResult",
     # Phase B.3統合検証・効果測定システム
-    "PhaseBIntegrator",
+    "OptimizationIntegrator",
     "EffectMeasurementSystem",
     "StabilityValidator",
     "PhaseBReportGenerator",

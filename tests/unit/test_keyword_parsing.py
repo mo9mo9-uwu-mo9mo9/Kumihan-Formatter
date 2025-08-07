@@ -94,26 +94,26 @@ class TestKeywordDefinitions:
             assert normalized == expected
 
     @pytest.mark.skip(reason="CI timeout issue - keyword definition mismatch, needs specification alignment")
-    def test_phase2_keywords_implementation(self):
-        """Test Phase 2 new keywords are properly implemented."""
-        # Phase 2.1: Basic decoration keywords
-        phase2_1_keywords = {
+    def test_advanced_keywords_implementation(self):
+        """Test advanced new keywords are properly implemented."""
+        # Advanced Basic decoration keywords
+        advanced_basic_keywords = {
             "取り消し線": {"tag": "del"},
             "コード": {"tag": "code"},
             "引用": {"tag": "blockquote"},
         }
 
-        # Phase 2.2: Layout keywords
-        phase2_2_keywords = {
+        # Advanced Layout keywords
+        advanced_layout_keywords = {
             "中央寄せ": {"tag": "div", "style": "text-align: center"},
             "注意": {"tag": "div", "class": "alert warning"},
             "情報": {"tag": "div", "class": "alert info"},
             "コードブロック": {"tag": "pre"},
         }
 
-        all_new_keywords = {**phase2_1_keywords, **phase2_2_keywords}
+        all_advanced_keywords = {**advanced_basic_keywords, **advanced_layout_keywords}
 
-        for keyword, expected_def in all_new_keywords.items():
+        for keyword, expected_def in all_advanced_keywords.items():
             # Test keyword exists
             assert self.definitions.is_valid_keyword(
                 keyword

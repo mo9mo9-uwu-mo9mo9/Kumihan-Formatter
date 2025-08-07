@@ -1,7 +1,7 @@
 """File operations controller for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: ファイル操作制御の分離
-Issue #476 Phase2対応 - gui_controller.py分割（1/3）
+Issue #476対応 - gui_controller.py分割（1/3）
 """
 
 import platform

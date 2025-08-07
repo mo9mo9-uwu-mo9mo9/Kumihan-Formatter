@@ -65,7 +65,7 @@ class FileCleanup:
                 "*_Final_Report.*",
                 "Issue_*_Complete_*.md",
                 "behavioral_control_*.json",
-                "p7_compliance_*.json",
+                "rule_compliance_*.json",
                 "token-usage-report.*",
 
                 # 一時実行ファイル

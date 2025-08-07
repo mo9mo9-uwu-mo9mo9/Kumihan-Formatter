@@ -157,7 +157,7 @@ class GracefulSyntaxError:
     suggestion: str = ""  # 修正提案
     file_path: str = ""
 
-    # Phase2: 高度なエラー表示機能
+    # 高度なエラー表示機能
     highlight_start: int = 0  # ハイライト開始位置
     highlight_end: int = 0  # ハイライト終了位置
     correction_suggestions: list[str] = None  # 具体的な修正提案リスト
@@ -210,7 +210,7 @@ class GracefulSyntaxError:
             "file_path": self.file_path,
             "html_class": self.html_class,
             "display_title": self.display_title,
-            # Phase2: 拡張フィールド
+            # 拡張フィールド
             "highlight_start": self.highlight_start,
             "highlight_end": self.highlight_end,
             "correction_suggestions": self.correction_suggestions,
@@ -218,7 +218,7 @@ class GracefulSyntaxError:
             "html_content": self.html_content,
         }
 
-    # Phase2: 高度なエラー表示機能メソッド
+    # 高度なエラー表示機能メソッド
     def get_highlighted_context(self) -> str:
         """ハイライト付きコンテキストを返す"""
         if not self.context or self.highlight_start == self.highlight_end:
