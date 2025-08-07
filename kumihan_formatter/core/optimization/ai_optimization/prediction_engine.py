@@ -53,7 +53,7 @@ class AdvancedFeatureEngineering:
         self.feature_encoders = {}
 
     def extract_advanced_features(
-        self, phase_b_data: Dict[str, Any]
+        self, optimization_data: Dict[str, Any]
     ) -> Tuple[np.ndarray, List[str]]:
         """高度特徴量抽出・エンジニアリング"""
         try:
@@ -61,27 +61,29 @@ class AdvancedFeatureEngineering:
             feature_names = []
 
             # 基本統計特徴量
-            basic_features, basic_names = self._extract_basic_features(phase_b_data)
+            basic_features, basic_names = self._extract_basic_features(
+                optimization_data
+            )
             features.extend(basic_features)
             feature_names.extend(basic_names)
 
             # 時系列特徴量
             temporal_features, temporal_names = self._extract_temporal_features(
-                phase_b_data
+                optimization_data
             )
             features.extend(temporal_features)
             feature_names.extend(temporal_names)
 
             # 相互作用特徴量
             interaction_features, interaction_names = (
-                self._extract_interaction_features(phase_b_data)
+                self._extract_interaction_features(optimization_data)
             )
             features.extend(interaction_features)
             feature_names.extend(interaction_names)
 
             # 高次統計特徴量
             statistical_features, statistical_names = (
-                self._extract_statistical_features(phase_b_data)
+                self._extract_statistical_features(optimization_data)
             )
             features.extend(statistical_features)
             feature_names.extend(statistical_names)
@@ -798,13 +800,13 @@ class PredictionEngine:
             )
 
             # Phase B設定協調調整
-            phase_b_optimizations = self._coordinate_with_phase_b(
+            optimization_results = self._coordinate_with_optimization(
                 context_data, optimization_effects
             )
 
             # 事前設定調整実行
             preoptimized_settings = self._generate_preoptimized_settings(
-                context_data, optimization_effects, phase_b_optimizations
+                context_data, optimization_effects, optimization_results
             )
 
             processing_time = time.time() - optimization_start
@@ -819,7 +821,7 @@ class PredictionEngine:
                 "next_operations_basis": next_operations.get(
                     "predicted_operations", []
                 ),
-                "phase_b_coordination": phase_b_optimizations,
+                "optimization_coordination": optimization_results,
             }
 
         except Exception as e:
@@ -976,15 +978,15 @@ class PredictionEngine:
             self.logger.error(f"Optimization effects prediction failed: {e}")
             return {"total_improvement": 0.0, "confidence": 0.0}
 
-    def _coordinate_with_phase_b(
+    def _coordinate_with_optimization(
         self, context_data: Dict[str, Any], optimization_effects: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Phase B設定協調調整"""
+        """最適化設定協調調整"""
         try:
             # Alpha基盤の設定取得
             alpha_status = self.basic_ml_system.get_system_status()
 
-            # Phase B協調最適化
+            # 最適化協調調整
             coordination_result = {
                 "alpha_system_active": "error" not in alpha_status,
                 "coordination_mode": (
@@ -1010,14 +1012,14 @@ class PredictionEngine:
             return coordination_result
 
         except Exception as e:
-            self.logger.error(f"Phase B coordination failed: {e}")
+            self.logger.error(f"Optimization coordination failed: {e}")
             return {"coordination_mode": "fallback", "expected_synergy": 0.0}
 
     def _generate_preoptimized_settings(
         self,
         context_data: Dict[str, Any],
         optimization_effects: Dict[str, Any],
-        phase_b_coordination: Dict[str, Any],
+        optimization_coordination: Dict[str, Any],
     ) -> Dict[str, Any]:
         """事前最適化設定生成"""
         try:
@@ -1042,14 +1044,14 @@ class PredictionEngine:
                     }
                 )
 
-            # Phase B協調による調整
-            if phase_b_coordination.get("coordination_mode") == "enhanced":
+            # 最適化協調による調整
+            if optimization_coordination.get("coordination_mode") == "enhanced":
                 base_settings.update(
                     {
                         "alpha_integration_enabled": True,
                         "alpha_weight_factor": 0.3,
                         "synergy_multiplier": 1.0
-                        + phase_b_coordination.get("expected_synergy", 0.0),
+                        + optimization_coordination.get("expected_synergy", 0.0),
                     }
                 )
 
@@ -1155,7 +1157,7 @@ class PredictionEngine:
             "confidence": 0.0,
             "processing_time": 0.001,
             "next_operations_basis": ["basic_optimization"],
-            "phase_b_coordination": {"coordination_mode": "fallback"},
+            "optimization_coordination": {"coordination_mode": "fallback"},
             "fallback": True,
         }
 

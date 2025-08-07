@@ -1,7 +1,7 @@
 """State and logging models for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: 状態・ログ管理モデルの分離
-Issue #476 Phase2対応 - gui_models.py分割（3/3）
+Issue #476対応 - gui_models.py分割（3/3）
 Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強化
 """
 

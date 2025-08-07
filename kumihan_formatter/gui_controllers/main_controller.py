@@ -1,7 +1,7 @@
 """Main controller for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: メインコントローラー統合管理の分離
-Issue #476 Phase2対応 - gui_controller.py分割（3/3）
+Issue #476対応 - gui_controller.py分割（3/3）
 """
 
 from tkinter import messagebox

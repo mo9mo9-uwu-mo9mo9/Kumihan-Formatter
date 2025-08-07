@@ -1,10 +1,10 @@
 # Claude System Behavior Override Configuration
-# P7原則絶対遵守システム - 技術的強制実装
+# 規則遵守原則絶対遵守システム - 技術的強制実装
 # Created: 2025-08-04 | Version: 2.0.0-strict
 
 # 🚨 CRITICAL: システムレベル行動制御設定
 system_override:
-  name: "P7_SERENA_ABSOLUTE_ENFORCEMENT"
+  name: "RULE_COMPLIANCE_SERENA_ABSOLUTE_ENFORCEMENT"
   priority: "CRITICAL_HIGHEST"
   bypass_allowed: false
   emergency_override: false
@@ -14,7 +14,7 @@ pre_execution_validation:
   enabled: true
   mode: "STRICT_BLOCK"  # STRICT_BLOCK | WARN_CONTINUE | LOG_ONLY
 
-  # P7違反ツール絶対検出リスト
+  # 規則違反ツール絶対検出リスト
   forbidden_tools_strict:
     # ファイル操作系（serena必須）
     - "Edit"
@@ -72,14 +72,14 @@ violation_response:
   # 第一段階：予防的警告
   pre_violation_warning:
     enabled: true
-    message: "🚨 P7原則違反検出！serena-expertツール使用が絶対必須です"
+    message: "🚨 規則遵守原則違反検出！serena-expertツール使用が絶対必須です"
     block_execution: true
     suggest_alternative: true
 
   # 第二段階：強制停止
   violation_detected:
     action: "IMMEDIATE_STOP"
-    message: "⛔ P7原則違反により作業を強制停止します。serena-expertツールに切り替えてください"
+    message: "⛔ 規則遵守原則違反により作業を強制停止します。serena-expertツールに切り替えてください"
     log_violation: true
     require_acknowledgment: true
 
@@ -95,13 +95,13 @@ behavioral_conditioning:
   # 正しい行動の強化
   positive_reinforcement:
     serena_usage_praise: true
-    success_feedback: "✅ serena-expert使用：P7原則完全遵守"
+    success_feedback: "✅ serena-expert使用：規則遵守原則完全遵守"
     progress_tracking: true
 
   # 違反行動の抑制
   negative_conditioning:
     violation_discomfort: true
-    immediate_feedback: "❌ 従来ツール使用：P7原則違反"
+    immediate_feedback: "❌ 従来ツール使用：規則遵守原則違反"
     habit_interruption: true
 
   # 習慣形成支援
@@ -217,23 +217,23 @@ maintenance:
 metadata:
   version: "2.0.0-strict"
   created_date: "2025-08-04"
-  created_by: "Claude Code P7 Enforcement System"
-  purpose: "P7原則絶対遵守の技術的強制実装"
+  created_by: "Claude Code Rule Compliance Enforcement System"
+  purpose: "規則遵守原則絶対遵守の技術的強制実装"
   compatibility: "CLAUDE.md v2.0+ required"
 
   # 更新履歴
   changelog:
-    - "2.0.0-strict: 初期実装 - P7原則技術的強制システム"
+    - "2.0.0-strict: 初期実装 - 規則遵守原則技術的強制システム"
 
   # 依存関係
   dependencies:
-    - "CLAUDE.md P7原則"
+    - "CLAUDE.md 規則遵守原則"
     - ".claude-config.yml"
     - "serena-expert MCP tools"
 
 # 🏁 起動時メッセージ
 startup_message: |
-  🚨 P7原則絶対遵守システム起動
+  🚨 規則遵守原則絶対遵守システム起動
   serena-expertツール強制使用モード有効
   従来ツール使用は即座に検出・是正されます
 

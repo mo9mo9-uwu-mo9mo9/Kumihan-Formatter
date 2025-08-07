@@ -28,7 +28,7 @@ except ImportError:
     ConvertCommand = None
 
 try:
-    from kumihan_formatter.core.utilities.performance_metrics import PerformanceMetrics
+    from kumihan_formatter.core.performance import PerformanceMonitor as PerformanceMetrics
 except ImportError:
     PerformanceMetrics = None
 

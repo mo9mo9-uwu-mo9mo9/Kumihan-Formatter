@@ -15,7 +15,7 @@ from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidato
 
 
 @pytest.mark.unit
-@pytest.mark.phase1
+@pytest.mark.core
 class TestMarkerMixingRules:
     """半角・全角マーカー混在禁止ルールのテスト"""
 
@@ -93,7 +93,7 @@ class TestMarkerMixingRules:
 
 
 @pytest.mark.unit
-@pytest.mark.phase1
+@pytest.mark.core
 class TestColorCaseMixingRules:
     """color属性大文字小文字混在禁止ルールのテスト"""
 
@@ -194,7 +194,7 @@ class TestColorCaseMixingRules:
 
 
 @pytest.mark.unit
-@pytest.mark.phase1
+@pytest.mark.core
 class TestMixingRulesComprehensive:
     """混在禁止ルール全体の包括的テスト"""
 

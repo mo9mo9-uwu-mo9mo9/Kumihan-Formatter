@@ -3,7 +3,7 @@
 Claude Code Serena-Expert監視システム
 Kumihan-Formatter専用
 
-CLAUDE.md P7原則違反を検出・防止するためのツール使用監視システム
+CLAUDE.md 規則遵守原則違反を検出・防止するためのツール使用監視システム
 """
 
 import os
@@ -133,7 +133,7 @@ class SerenaMonitoringSystem:
                 tool_used=tool_name,
                 expected_tool='serena-expert (mcp__serena__*)',
                 severity=severity,
-                message=f"🚨 P7原則違反: 開発タスクでserena-expert以外のツール使用を検出",
+                message=f"🚨 規則遵守原則違反: 開発タスクでserena-expert以外のツール使用を検出",
                 auto_corrected=False
             )
 
@@ -183,7 +183,7 @@ class SerenaMonitoringSystem:
     def _handle_strict_violation(self, violation: ViolationAlert):
         """厳格違反処理"""
         print("\n" + "="*80)
-        print("🚨 CLAUDE.md P7原則違反検出 - 強制停止 🚨")
+        print("🚨 CLAUDE.md 規則遵守原則違反検出 - 強制停止 🚨")
         print("="*80)
         print(f"違反ツール: {violation.tool_used}")
         print(f"期待ツール: {violation.expected_tool}")
@@ -191,7 +191,7 @@ class SerenaMonitoringSystem:
         print("\n【対処方法】:")
         print("1. 現在の作業を中止")
         print("2. serena-expertツール (mcp__serena__*) に切り替え")
-        print("3. CLAUDE.md P7原則を再確認")
+        print("3. CLAUDE.md 規則遵守原則を再確認")
         print("="*80)
 
         # 自動是正が有効な場合の提案

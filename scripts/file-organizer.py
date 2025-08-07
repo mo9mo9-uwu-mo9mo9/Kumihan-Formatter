@@ -397,7 +397,7 @@ class FileOrganizer:
             "generated_*", "auto_generated_*", "*.generated.*",
             "cache_*", "*.cache", "profiling_*", "memory_profile_*",
             "*.prof", "*.cprof", "*_report_*.json", "*_report_*.txt",
-            "*_report_*.html", "behavioral_control_*.json", "p7_compliance_*.json"
+            "*_report_*.html", "behavioral_control_*.json", "rule_compliance_*.json"
         ]
 
         # プロジェクトルート直下の一時ファイルを検出

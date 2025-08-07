@@ -182,7 +182,7 @@ class HTMLRenderer:
             str: Generated HTML (optimized)
         """
         # パフォーマンス監視開始
-        from ..utilities.performance_metrics import monitor_performance
+        from ..performance import monitor_performance
 
         with monitor_performance("optimized_html_rendering") as perf_monitor:
             # Issue #700: graceful errors対応
@@ -612,7 +612,7 @@ class HTMLRenderer:
         warning_count = sum(1 for e in self.graceful_errors if e.severity == "warning")
         total_count = len(self.graceful_errors)
 
-        # Phase2: エラー統計レポート生成
+        # エラー統計レポート生成
         from ..error_analysis.statistics_generator import StatisticsGenerator
 
         stats_generator = StatisticsGenerator()
@@ -644,7 +644,7 @@ class HTMLRenderer:
                 error.html_content
             )  # html_contentプロパティ内で既にエスケープ済み
 
-            # Phase2: ハイライト付きコンテキストと修正提案を追加
+            # ハイライト付きコンテキストと修正提案を追加
             highlighted_context = error.get_highlighted_context()
             correction_suggestions_html = error.get_correction_suggestions_html()
 

@@ -119,7 +119,7 @@ warn_unreachable = true
 strict_equality = true
 exclude = [
     "dist/.*",
-    "build/.*", 
+    "build/.*",
     ".*\\.egg-info/.*"
 ]
 
@@ -144,7 +144,7 @@ markers = [
     "slow: Slow running tests",
     "notation: Tests for notation system",
     "error_handling: Error handling tests",
-    "phase1: Phase 1 implementation tests",
+    "core: Core functionality tests",
     "parser: Parser functionality tests",
     "cli: CLI functionality tests",
     "renderer: Renderer functionality tests",
@@ -155,7 +155,8 @@ markers = [
     "convert: Convert processing tests",
     "utilities: Utility functionality tests",
     "progress: Progress tracking tests",
-    "footnote: Footnote notation tests"
+    "footnote: Footnote notation tests",
+    "e2e: End-to-end tests"
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Claude Tool Validation Wrapper
-P7原則リアルタイム検証・自動是正システム
+規則遵守原則リアルタイム検証・自動是正システム
 
 Created: 2025-08-04
-Purpose: Claude's tool execution を wrapper して P7 原則違反を防止
+Purpose: Claude's tool execution を wrapper して 規則遵守原則違反を防止
 Status: Production Ready
 """
 
@@ -95,7 +95,7 @@ class ToolInterceptor:
             self.violation_count += 1
             alternative = self.replacement_mapping.get(tool_name)
 
-            violation_msg = f"🚨 P7原則違反検出！'{tool_name}'の使用は禁止されています"
+            violation_msg = f"🚨 規則遵守原則違反検出！'{tool_name}'の使用は禁止されています"
 
             if alternative:
                 suggestion_msg = f"代替ツール: '{alternative}' を使用してください"
@@ -114,7 +114,7 @@ class ToolInterceptor:
     def _log_serena_usage(self, tool_name: str):
         """serena使用ログ"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        success_msg = f"✅ [{timestamp}] serena使用: {tool_name} - P7原則遵守"
+        success_msg = f"✅ [{timestamp}] serena使用: {tool_name} - 規則遵守原則遵守"
         logger.info(success_msg)
 
         # 使用パターン分析
@@ -146,7 +146,7 @@ class ToolInterceptor:
             "compliance_status": (
                 "EXCELLENT" if self.violation_count == 0 else "NEEDS_IMPROVEMENT"
             ),
-            "p7_adherence_score": max(0, 100 - (self.violation_count * 10)),
+            "rule_adherence_score": max(0, 100 - (self.violation_count * 10)),
             "recommendations": self._generate_session_recommendations(),
         }
 
@@ -158,12 +158,12 @@ class ToolInterceptor:
         recommendations = []
 
         if self.violation_count == 0:
-            recommendations.append("素晴らしい！P7原則を完全に遵守しました")
+            recommendations.append("素晴らしい！規則遵守原則を完全に遵守しました")
         elif self.violation_count <= 2:
-            recommendations.append("良好です。小さな改善でP7原則完全遵守を達成できます")
+            recommendations.append("良好です。小さな改善で規則遵守原則完全遵守を達成できます")
         else:
             recommendations.append(
-                "P7原則の理解を深め、serena-expertツールの習慣化を図ってください"
+                "規則遵守原則の理解を深め、serena-expertツールの習慣化を図ってください"
             )
 
         recommendations.append("継続的にserena-expertツールを使用してください")
@@ -172,8 +172,8 @@ class ToolInterceptor:
         return recommendations
 
 
-class P7ValidationDecorator:
-    """P7検証デコレーター"""
+class RuleComplianceValidationDecorator:
+    """規則遵守検証デコレーター"""
 
     def __init__(self):
         self.interceptor = ToolInterceptor()
@@ -191,7 +191,7 @@ class P7ValidationDecorator:
 
                 if not should_proceed:
                     # 違反検出時の処理
-                    violation_error = f"❌ P7原則違反により実行停止\n{message}"
+                    violation_error = f"❌ 規則遵守原則違反により実行停止\n{message}"
                     logger.error(violation_error)
 
                     # 自動是正試行
@@ -222,7 +222,7 @@ class P7ValidationDecorator:
 
 
 # グローバルインスタンス
-_validator = P7ValidationDecorator()
+_validator = RuleComplianceValidationDecorator()
 
 
 # デコレーター関数群
@@ -264,7 +264,7 @@ def pre_execution_check(tool_name: str, context: str = "") -> bool:
 
 def main():
     """メイン実行・テスト用"""
-    print("🧪 P7検証システムテスト")
+    print("🧪 規則遵守検証システムテスト")
 
     # テストケース
     test_tools = ["Edit", "Read", "mcp__serena__find_symbol", "Bash", "Write"]
@@ -282,7 +282,7 @@ def main():
     summary = interceptor.generate_session_summary()
     print(f"\n📊 セッション要約:")
     print(f"   違反数: {summary['violations_detected']}")
-    print(f"   スコア: {summary['p7_adherence_score']}")
+    print(f"   スコア: {summary['rule_adherence_score']}")
     print(f"   状態: {summary['compliance_status']}")
 
 

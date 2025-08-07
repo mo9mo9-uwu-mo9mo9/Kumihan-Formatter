@@ -14,7 +14,7 @@ from typing import Any, Dict, List
 import pytest
 
 from kumihan_formatter.core.utilities.logger import get_logger
-from kumihan_formatter.core.utilities.performance_metrics import MemoryOptimizer
+from kumihan_formatter.core.performance import MemoryOptimizer
 
 
 class ResourceManagementTest:

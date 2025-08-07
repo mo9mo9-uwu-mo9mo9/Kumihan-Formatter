@@ -14,10 +14,8 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from kumihan_formatter.core.optimization.adaptive_settings import (
-    AdaptiveSettingsManager,
-)
-from kumihan_formatter.core.optimization.phase_b_integrator import PhaseBIntegrator
+from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
+from kumihan_formatter.core.optimization.settings.manager import AdaptiveSettingsManager
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -34,7 +32,7 @@ class OptimizationContext:
     complexity_score: float
     recent_operations: List[str]
     current_settings: Dict[str, Any]
-    phase_b_metrics: Dict[str, float]
+    optimization_metrics: Dict[str, float]
 
 
 @dataclass
@@ -76,7 +74,7 @@ class AIOptimizerCore:
         self.config = config or {}
 
         # Phase B統合基盤
-        self.phase_b_integrator = PhaseBIntegrator()
+        self.phase_b_integrator = OptimizationIntegrator()
         self.adaptive_settings = AdaptiveSettingsManager()
 
         # AI/ML基盤システム

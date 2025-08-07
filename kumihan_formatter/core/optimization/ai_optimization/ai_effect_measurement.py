@@ -366,7 +366,7 @@ class AIEffectMeasurement:
                 phase_b_baseline_measurements,
                 {
                     "system": "Phase B Integration",
-                    "components": ["AdaptiveSettingsManager", "PhaseBIntegrator"],
+                    "components": ["AdaptiveSettingsManager", "OptimizationIntegrator"],
                     "established_date": time.time(),
                 },
             )
@@ -467,7 +467,7 @@ class AIEffectMeasurement:
 
             # Phase B基盤効果測定
             phase_b_efficiency = current_system_metrics.get("phase_b_efficiency", 0.0)
-            adaptive_settings_performance = current_system_metrics.get(
+            settings_manager_performance = current_system_metrics.get(
                 "adaptive_performance", 0.0
             )
             integration_stability = current_system_metrics.get(
@@ -476,7 +476,7 @@ class AIEffectMeasurement:
 
             # Phase B総合効果計算
             current_phase_b_effect = (
-                phase_b_efficiency + adaptive_settings_performance * 0.1
+                phase_b_efficiency + settings_manager_performance * 0.1
             )
 
             # ベースライン比較
@@ -522,7 +522,7 @@ class AIEffectMeasurement:
                     "efficiency_threshold": self.success_criteria[
                         "phase_b_preservation_threshold"
                     ],
-                    "adaptive_performance": adaptive_settings_performance,
+                    "adaptive_performance": settings_manager_performance,
                     "integration_stability": integration_stability,
                     "measurement_timestamp": time.time(),
                 },

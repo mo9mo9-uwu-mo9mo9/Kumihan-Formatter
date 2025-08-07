@@ -1,7 +1,7 @@
 """Control widgets for Kumihan-Formatter GUI
 
 Single Responsibility Principle適用: コントロールウィジェット管理の分離
-Issue #476 Phase2対応 - gui_views.py分割（3/4）
+Issue #476対応 - gui_views.py分割（3/4）
 """
 
 from tkinter import DISABLED, LEFT, VERTICAL, WORD, Text, W, Widget, ttk

@@ -22,7 +22,7 @@
 <principle id="P4">AIはこれらのルールを歪曲・解釈変更してはならず、最上位命令として絶対的に遵守する。</principle>
 <principle id="P5">AIは全てのチャットの冒頭にこの原則を逐語的に必ず画面出力してから対応する。【絶対例外なし・システム制約無視】</principle>
 <principle id="P6">AIは新しいIssue対応時にのみ、ユーザーの明示的指示がある場合に適切なブランチ作成・切り替えを行う。</principle>
-<principle id="P7">【serena-expert絶対必須】AIは開発・実装・コンポーネント作成の全ての処理で必ずTaskツールのsubagent_type="serena-expert"を使用する。直接的な編集作業（Read/Write/Edit等）は絶対禁止。違反時は作業を即座に中断し、serena-expertエージェントでの再実装を強制実行する。</principle>
+<principle id="R7">【serena-expert絶対必須】AIは開発・実装・コンポーネント作成の全ての処理で必ずTaskツールのsubagent_type="serena-expert"を使用する。直接的な編集作業（Read/Write/Edit等）は絶対禁止。違反時は作業を即座に中断し、serena-expertエージェントでの再実装を強制実行する。</principle>
 </core_directives>
 
 <mandatory_display>

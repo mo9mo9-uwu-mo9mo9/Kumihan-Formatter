@@ -19,7 +19,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from kumihan_formatter.core.utilities.performance_metrics import PerformanceBenchmark
+from kumihan_formatter.core.performance import PerformanceBenchmark
 from kumihan_formatter.core.utilities.logger import get_logger
 
 
