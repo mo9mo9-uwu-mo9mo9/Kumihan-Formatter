@@ -2,11 +2,20 @@
 # Issue #686 対応設定ファイル
 
 limits:
-  # サイズ制限
+  # 段階制限システム（緩和版）
+  warning:
+    lines: 250
+    bytes: 12288  # 12KB
+  caution:
+    lines: 300
+    bytes: 15360  # 15KB
+  critical:
+    lines: 400
+    bytes: 20480  # 20KB
+
+  # 旧制限（参考値・推奨）
   recommended_lines: 150
   recommended_bytes: 8192  # 8KB
-  warning_lines: 200
-  warning_bytes: 10240    # 10KB
 
   # 構造制限
   max_section_lines: 20

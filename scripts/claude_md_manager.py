@@ -49,10 +49,22 @@ class CLAUDEmdManager:
         """設定読み込み"""
         default_config = {
             "limits": {
+                # 段階制限システム（緩和版）
+                "warning": {
+                    "lines": 250,
+                    "bytes": 12288  # 12KB
+                },
+                "caution": {
+                    "lines": 300,
+                    "bytes": 15360  # 15KB
+                },
+                "critical": {
+                    "lines": 400,
+                    "bytes": 20480  # 20KB
+                },
+                # 旧制限（参考値・推奨）
                 "recommended_lines": 150,
-                "recommended_bytes": 8192,
-                "warning_lines": 200,
-                "warning_bytes": 10240,
+                "recommended_bytes": 8192,  # 8KB
                 "max_section_lines": 20,
                 "max_nesting_depth": 3
             },
@@ -162,7 +174,7 @@ class CLAUDEmdManager:
         return metrics, issues
 
     def optimize(self, auto_fix: bool = False) -> List[str]:
-        """Phase 2: 自動最適化提案・実行"""
+        """Phase 2: 自動最適化提案・実行（段階制限対応）"""
         metrics, issues = self.analyze()
         suggestions = []
 
@@ -178,13 +190,32 @@ class CLAUDEmdManager:
         if metrics.outdated_markers > 0:
             suggestions.append(f"🕐 {metrics.outdated_markers}個の古いマーカー更新を推奨")
 
-        # サイズ制限提案
+        # 段階制限チェック
         limits = self.config["limits"]
-        if metrics.lines > limits["warning_lines"]:
-            suggestions.append(f"📏 行数制限超過 ({metrics.lines}/{limits['warning_lines']}) - 内容削減推奨")
 
-        if metrics.bytes > limits["warning_bytes"]:
-            suggestions.append(f"💾 サイズ制限超過 ({metrics.bytes}/{limits['warning_bytes']}) - 圧縮推奨")
+        # クリティカル制限
+        if metrics.lines > limits["critical"]["lines"]:
+            suggestions.append(f"🚨 行数クリティカル制限超過 ({metrics.lines}/{limits['critical']['lines']}) - 即座に内容削減が必要")
+        elif metrics.bytes > limits["critical"]["bytes"]:
+            suggestions.append(f"🚨 サイズクリティカル制限超過 ({metrics.bytes}B/{limits['critical']['bytes']}B) - 即座に圧縮が必要")
+
+        # 注意制限
+        elif metrics.lines > limits["caution"]["lines"]:
+            suggestions.append(f"⚠️ 行数注意制限超過 ({metrics.lines}/{limits['caution']['lines']}) - 内容削減を検討")
+        elif metrics.bytes > limits["caution"]["bytes"]:
+            suggestions.append(f"⚠️ サイズ注意制限超過 ({metrics.bytes}B/{limits['caution']['bytes']}B) - 圧縮を検討")
+
+        # 警告制限
+        elif metrics.lines > limits["warning"]["lines"]:
+            suggestions.append(f"💡 行数警告制限超過 ({metrics.lines}/{limits['warning']['lines']}) - 見直しを推奨")
+        elif metrics.bytes > limits["warning"]["bytes"]:
+            suggestions.append(f"💡 サイズ警告制限超過 ({metrics.bytes}B/{limits['warning']['bytes']}B) - 最適化を推奨")
+
+        # 推奨制限（情報提供）
+        elif metrics.lines > limits["recommended_lines"]:
+            suggestions.append(f"📝 推奨行数超過 ({metrics.lines}/{limits['recommended_lines']}) - 品質維持のため短縮を検討")
+        elif metrics.bytes > limits["recommended_bytes"]:
+            suggestions.append(f"📦 推奨サイズ超過 ({metrics.bytes}B/{limits['recommended_bytes']}B) - より簡潔な記述を検討")
 
         # 自動修正実行
         if auto_fix and self.config["optimization"]["auto_fix"]:
@@ -247,22 +278,38 @@ class CLAUDEmdManager:
         return dashboard
 
     def _get_overall_status(self, metrics: CLAUDEmdMetrics, issues: List[StructureIssue]) -> str:
-        """総合ステータス判定"""
+        """総合ステータス判定（段階制限システム対応）"""
         limits = self.config["limits"]
 
+        # クリティカル問題チェック
         critical_issues = [i for i in issues if i.severity == "critical"]
         if critical_issues:
             return "🚨 CRITICAL"
 
-        if (metrics.lines > limits["warning_lines"] or
-            metrics.bytes > limits["warning_bytes"]):
+        # クリティカル制限チェック
+        if (metrics.lines > limits["critical"]["lines"] or
+            metrics.bytes > limits["critical"]["bytes"]):
             return "🚨 CRITICAL"
 
-        warning_issues = [i for i in issues if i.severity == "warning"]
-        if (warning_issues or
-            metrics.lines > limits["recommended_lines"] or
-            metrics.bytes > limits["recommended_bytes"]):
+        # 注意制限チェック
+        if (metrics.lines > limits["caution"]["lines"] or
+            metrics.bytes > limits["caution"]["bytes"]):
+            return "⚠️ CAUTION"
+
+        # 警告制限チェック
+        if (metrics.lines > limits["warning"]["lines"] or
+            metrics.bytes > limits["warning"]["bytes"]):
             return "⚠️ WARNING"
+
+        # 警告問題チェック
+        warning_issues = [i for i in issues if i.severity == "warning"]
+        if warning_issues:
+            return "⚠️ WARNING"
+
+        # 推奨制限チェック（情報レベル）
+        if (metrics.lines > limits["recommended_lines"] or
+            metrics.bytes > limits["recommended_bytes"]):
+            return "💡 INFO"
 
         return "✅ GOOD"
 
@@ -394,7 +441,10 @@ def main():
         print(f"❌ {args.claude_md} が見つかりません", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
+        import traceback
         print(f"❌ エラーが発生しました: {e}", file=sys.stderr)
+        print("詳細:", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 
