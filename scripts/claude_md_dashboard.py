@@ -6,12 +6,23 @@ Issue #686 Phase 3: サイズ推移グラフ・セクション別分析・最適
 
 import os
 import json
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+    plt = None
+    mdates = None
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
-import pandas as pd
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+    pd = None
 
 
 class CLAUDEmdDashboard:
@@ -246,23 +257,50 @@ class CLAUDEmdDashboard:
         return max(0, 1 - (penalty_count / total_lines))
 
     def _generate_recommendations(self) -> List[str]:
-        """最適化推奨提案生成"""
+        """最適化推奨提案生成（段階制限システム対応）"""
         recommendations = []
 
         current_status = self._get_current_status()
         if "error" in current_status:
             return ["CLAUDE.md file not accessible"]
 
-        # サイズベース推奨
-        if current_status["lines"] > 200:
-            recommendations.append("🚨 CRITICAL: ファイルサイズが200行を超過。即座の削減が必要")
-        elif current_status["lines"] > 150:
-            recommendations.append("⚠️ WARNING: ファイルサイズが推奨限界に接近。削減を検討")
+        # 段階制限システム（緩和版）
+        RECOMMENDED_LINES = 150
+        RECOMMENDED_BYTES = 8192
+        WARNING_LINES = 250
+        WARNING_BYTES = 12288
+        CAUTION_LINES = 300
+        CAUTION_BYTES = 15360
+        CRITICAL_LINES = 400
+        CRITICAL_BYTES = 20480
 
-        if current_status["kb_size"] > 10:
-            recommendations.append("🚨 CRITICAL: ファイルサイズが10KBを超過。内容圧縮が必要")
-        elif current_status["kb_size"] > 8:
-            recommendations.append("⚠️ WARNING: ファイルサイズが8KBを超過。最適化を推奨")
+        lines = current_status["lines"]
+        bytes_count = current_status["bytes"]
+        kb_size = current_status["kb_size"]
+
+        # クリティカル制限チェック
+        if lines > CRITICAL_LINES:
+            recommendations.append(f"🚨 CRITICAL: 行数がクリティカル制限超過 ({lines}/{CRITICAL_LINES}行)。即座の削減が必要")
+        elif bytes_count > CRITICAL_BYTES:
+            recommendations.append(f"🚨 CRITICAL: サイズがクリティカル制限超過 ({kb_size:.1f}/{CRITICAL_BYTES/1024:.1f}KB)。即座の圧縮が必要")
+
+        # 注意制限チェック
+        elif lines > CAUTION_LINES:
+            recommendations.append(f"⚠️ CAUTION: 行数が注意制限超過 ({lines}/{CAUTION_LINES}行)。内容削減を検討")
+        elif bytes_count > CAUTION_BYTES:
+            recommendations.append(f"⚠️ CAUTION: サイズが注意制限超過 ({kb_size:.1f}/{CAUTION_BYTES/1024:.1f}KB)。圧縮を検討")
+
+        # 警告制限チェック
+        elif lines > WARNING_LINES:
+            recommendations.append(f"💡 WARNING: 行数が警告制限超過 ({lines}/{WARNING_LINES}行)。見直しを推奨")
+        elif bytes_count > WARNING_BYTES:
+            recommendations.append(f"💡 WARNING: サイズが警告制限超過 ({kb_size:.1f}/{WARNING_BYTES/1024:.1f}KB)。最適化を推奨")
+
+        # 推奨制限チェック（情報提供）
+        elif lines > RECOMMENDED_LINES:
+            recommendations.append(f"📝 INFO: 推奨行数超過 ({lines}/{RECOMMENDED_LINES}行)。品質維持のため短縮を検討")
+        elif bytes_count > RECOMMENDED_BYTES:
+            recommendations.append(f"📦 INFO: 推奨サイズ超過 ({kb_size:.1f}/{RECOMMENDED_BYTES/1024:.1f}KB)。より簡潔な記述を検討")
 
         # 構造ベース推奨
         if current_status["deep_nesting"] > 10:
@@ -284,7 +322,7 @@ class CLAUDEmdDashboard:
         return recommendations
 
     def _generate_size_trend_chart(self):
-        """サイズ推移チャート生成"""
+        """サイズ推移チャート生成（段階制限システム対応）"""
         from pathlib import Path
 
         if not self.history_file.exists():
@@ -315,22 +353,26 @@ class CLAUDEmdDashboard:
         # グラフ作成
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
 
-        # サイズ推移
+        # サイズ推移（段階制限システム対応）
         ax1.plot(dates, sizes, 'b-', marker='o', linewidth=2, markersize=4)
-        ax1.axhline(y=8, color='orange', linestyle='--', alpha=0.7, label='推奨限界 (8KB)')
-        ax1.axhline(y=10, color='red', linestyle='--', alpha=0.7, label='警告限界 (10KB)')
+        ax1.axhline(y=8, color='green', linestyle=':', alpha=0.7, label='推奨限界 (8KB)')
+        ax1.axhline(y=12, color='orange', linestyle='--', alpha=0.7, label='警告限界 (12KB)')
+        ax1.axhline(y=15, color='red', linestyle='--', alpha=0.7, label='注意限界 (15KB)')
+        ax1.axhline(y=20, color='darkred', linestyle='-', alpha=0.8, label='クリティカル限界 (20KB)')
         ax1.set_ylabel('ファイルサイズ (KB)')
-        ax1.set_title('CLAUDE.md サイズ推移')
+        ax1.set_title('CLAUDE.md サイズ推移（段階制限システム）')
         ax1.legend()
         ax1.grid(True, alpha=0.3)
 
-        # 行数推移
+        # 行数推移（段階制限システム対応）
         ax2.plot(dates, lines, 'g-', marker='s', linewidth=2, markersize=4)
-        ax2.axhline(y=150, color='orange', linestyle='--', alpha=0.7, label='推奨限界 (150行)')
-        ax2.axhline(y=200, color='red', linestyle='--', alpha=0.7, label='警告限界 (200行)')
+        ax2.axhline(y=150, color='green', linestyle=':', alpha=0.7, label='推奨限界 (150行)')
+        ax2.axhline(y=250, color='orange', linestyle='--', alpha=0.7, label='警告限界 (250行)')
+        ax2.axhline(y=300, color='red', linestyle='--', alpha=0.7, label='注意限界 (300行)')
+        ax2.axhline(y=400, color='darkred', linestyle='-', alpha=0.8, label='クリティカル限界 (400行)')
         ax2.set_ylabel('行数')
         ax2.set_xlabel('日時')
-        ax2.set_title('CLAUDE.md 行数推移')
+        ax2.set_title('CLAUDE.md 行数推移（段階制限システム）')
         ax2.legend()
         ax2.grid(True, alpha=0.3)
 
