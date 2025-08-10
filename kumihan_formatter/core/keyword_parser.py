@@ -9,7 +9,7 @@ including compound keywords and error suggestions.
 - keyword_parsing/validator.py: キーワード検証
 """
 
-from typing import Any
+from typing import Any, Union
 
 from .ast_nodes import Node, NodeBuilder, emphasis, error_node, highlight, strong
 from .keyword_parsing import KeywordDefinitions, KeywordValidator, MarkerParser
@@ -107,15 +107,11 @@ class KeywordParser:
         """後方互換性のため分割されたコンポーネントに委譲"""
         return self.validator.validate_keywords(keywords)
 
-    def _get_keyword_suggestions(
-        self, invalid_keyword: str, max_suggestions: int = 3
-    ) -> list[str]:
+    def _get_keyword_suggestions(self, invalid_keyword: str, max_suggestions: int = 3) -> list[str]:
         """後方互換性のため分割されたコンポーネントに委譲"""
         return self.validator.get_keyword_suggestions(invalid_keyword, max_suggestions)
 
-    def create_single_block(
-        self, keyword: str, content: str, attributes: dict[str, Any]
-    ) -> Node:
+    def create_single_block(self, keyword: str, content: str, attributes: dict[str, Any]) -> Node:
         """Create a single block node from keyword"""
         if keyword not in self.BLOCK_KEYWORDS:
             return error_node(f"不明なキーワード: {keyword}")
@@ -272,11 +268,7 @@ class KeywordParser:
                 current_node = node
             else:
                 # Find the content and replace it with the new node
-                if (
-                    current_node
-                    and hasattr(current_node, "content")
-                    and current_node.content
-                ):
+                if current_node and hasattr(current_node, "content") and current_node.content:
                     current_node.content = [node]
                 current_node = node
 
@@ -296,7 +288,7 @@ class KeywordParser:
         else:
             return [processed_content]
 
-    def _process_inline_keywords(self, content: str, nesting_level: int = 0) -> Any:
+    def _process_inline_keywords(self, content: str, nesting_level: int = 0) -> str | list[Any]:
         """Process inline keywords within content (# keyword content # format)
 
         仕様:
@@ -358,11 +350,11 @@ class KeywordParser:
 
         return "".join(result_parts)
 
-    def _initialize_regex_optimizer(self):
+    def _initialize_regex_optimizer(self) -> Any:
         """正規表現オプティマイザーの初期化"""
         regex_optimizer = getattr(self, "_regex_optimizer", None)
         if regex_optimizer is None:
-            from .utilities.performance.optimizers.regex import RegexOptimizer
+            from .performance.optimizers.regex import RegexOptimizer
 
             self._regex_optimizer = RegexOptimizer()
             regex_optimizer = self._regex_optimizer
@@ -372,12 +364,12 @@ class KeywordParser:
         """SIMD処理を使用すべきかの判定"""
         return len(content) > 10000  # 10KB以上の場合
 
-    def _try_simd_processing(self, content: str, nesting_level: int):
+    def _try_simd_processing(self, content: str, nesting_level: int) -> Any:
         """SIMD処理の試行"""
         try:
             simd_optimizer = getattr(self, "_simd_optimizer", None)
             if simd_optimizer is None:
-                from ..performance import SIMDOptimizer
+                from .performance.optimizers.simd import SIMDOptimizer
 
                 self._simd_optimizer = SIMDOptimizer()
                 simd_optimizer = self._simd_optimizer
@@ -391,8 +383,8 @@ class KeywordParser:
         return None
 
     def _process_keyword_matches(
-        self, content: str, regex_optimizer, nesting_level: int
-    ):
+        self, content: str, regex_optimizer: Any, nesting_level: int
+    ) -> str | list[Any]:
         """キーワードマッチの処理"""
         parts = []
         last_end = 0
@@ -433,9 +425,9 @@ class KeywordParser:
         full_keyword: str,
         text_content: str,
         original_match: str,
-        regex_optimizer,
+        regex_optimizer: Any,
         nesting_level: int,
-    ):
+    ) -> Union[str, Any]:
         """単一キーワードマッチの処理"""
         # ルビ記法の特殊処理
         if full_keyword.startswith("ルビ "):
@@ -446,7 +438,7 @@ class KeywordParser:
             full_keyword, text_content, original_match, regex_optimizer, nesting_level
         )
 
-    def _process_ruby_keyword(self, full_keyword: str, original_match: str):
+    def _process_ruby_keyword(self, full_keyword: str, original_match: str) -> Any:
         """ルビ記法キーワードの処理"""
         ruby_content = full_keyword[3:].strip()  # "ルビ "を除去
         if ruby_content:
@@ -464,9 +456,9 @@ class KeywordParser:
         full_keyword: str,
         text_content: str,
         original_match: str,
-        regex_optimizer,
+        regex_optimizer: Any,
         nesting_level: int,
-    ):
+    ) -> Any:
         """通常キーワードの処理"""
         keyword_parts = full_keyword.split(" ", 1)
         keyword = keyword_parts[0]
@@ -475,13 +467,9 @@ class KeywordParser:
         if (
             nesting_level == 0
             and text_content
-            and regex_optimizer.optimized_search(
-                r"#\s*([^#]+?)\s*#([^#]+?)##", text_content
-            )
+            and regex_optimizer.optimized_search(r"#\s*([^#]+?)\s*#([^#]+?)##", text_content)
         ):
-            text_content = self._process_inline_keywords(
-                text_content, nesting_level + 1
-            )
+            text_content = self._process_inline_keywords(text_content, nesting_level + 1)
 
         # ノード作成（改善されたキーワードマッピング使用）
         base_keyword = keyword.split(" ")[0]  # 色属性を除いた基本キーワード
@@ -497,7 +485,7 @@ class KeywordParser:
             # Unknown keyword - return original text with markers
             return original_match
 
-    def _normalize_result_parts(self, parts: list, original_content: str):
+    def _normalize_result_parts(self, parts: list[Any], original_content: str) -> Union[str, list[Any]]:
         """結果パーツの正規化"""
         if len(parts) == 0:
             return original_content  # 何も処理されなかった場合は元のコンテンツを返す
@@ -512,9 +500,7 @@ class KeywordParser:
             else:
                 return parts
 
-    def _process_inline_keywords_simd(
-        self, content: str, nesting_level: int = 0
-    ) -> Any:
+    def _process_inline_keywords_simd(self, content: str, nesting_level: int = 0) -> Any:
         """SIMD最適化版インライン記法処理（大容量テキスト用）"""
 
         # SIMD最適化バージョン（簡略化実装）
@@ -530,15 +516,9 @@ class KeywordParser:
             return self._process_inline_keywords(line, nesting_level)
 
         # SIMDベクトル化処理
-        processed_lines = simd_optimizer.vectorized_line_processing(
-            lines, [process_line_optimized]
-        )
+        processed_lines = simd_optimizer.vectorized_line_processing(lines, [process_line_optimized])
 
-        return (
-            "\n".join(processed_lines)
-            if isinstance(processed_lines, list)
-            else processed_lines
-        )
+        return "\n".join(processed_lines) if isinstance(processed_lines, list) else processed_lines
 
     def _create_ruby_node(self, content: str) -> Any:
         """
@@ -585,8 +565,8 @@ class KeywordParser:
         return sorted(keywords, key=get_nesting_index)
 
     def _create_styled_inline_node(
-        self, node_factory, text_content: str, keyword: str
-    ) -> Any:
+        self, node_factory: Any, text_content: str, keyword: str
+    ) -> Node:
         """色属性付きインライン記法ノード作成のヘルパーメソッド
 
         Args:

@@ -77,9 +77,7 @@ class UnifiedLogFormatter(logging.Formatter):
         # 標準フォーマット
         return super().format(record)
 
-    def _format_kumihan_error(
-        self, record: logging.LogRecord, error: KumihanError
-    ) -> str:
+    def _format_kumihan_error(self, record: logging.LogRecord, error: KumihanError) -> str:
         """KumihanError専用フォーマット
 
         Args:
@@ -213,9 +211,7 @@ class ComponentLoggerFactory:
             UnifiedLogFormatter: フォーマッター
         """
         if component_name not in cls._formatters:
-            cls._formatters[component_name] = UnifiedLogFormatter(
-                component_name=component_name
-            )
+            cls._formatters[component_name] = UnifiedLogFormatter(component_name=component_name)
         return cls._formatters[component_name]
 
 
@@ -315,9 +311,7 @@ class ErrorMessageBuilder:
 
 
 # 便利関数
-def get_component_logger(
-    name: str, component_name: Optional[str] = None
-) -> logging.Logger:
+def get_component_logger(name: str, component_name: Optional[str] = None) -> logging.Logger:
     """コンポーネント用ロガー取得（便利関数）
 
     Args:

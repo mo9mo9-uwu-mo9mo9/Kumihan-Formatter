@@ -171,9 +171,7 @@ class SpecialBlockParser:
             return False
 
         # Remove common numeric formatting
-        cleaned = (
-            value.replace(",", "").replace(".", "").replace("-", "").replace("+", "")
-        )
+        cleaned = value.replace(",", "").replace(".", "").replace("-", "").replace("+", "")
 
         # Check for pure digits or float patterns
         try:

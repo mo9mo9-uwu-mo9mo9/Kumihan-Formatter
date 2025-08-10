@@ -142,7 +142,7 @@ class Parser:
         config=None,
         graceful_errors: bool = False,
         parallel_config: ParallelProcessingConfig = None,
-) -> None:
+    ) -> None:
         """Initialize parser with specialized handlers
 
         Args:
@@ -162,15 +162,11 @@ class Parser:
         self.graceful_syntax_errors: list["GracefulSyntaxError"] = []
 
         # Issue #759: 並列処理設定の外部化対応
-        self.parallel_config = (
-            parallel_config or ParallelProcessingConfig.from_environment()
-        )
+        self.parallel_config = parallel_config or ParallelProcessingConfig.from_environment()
 
         # 設定値検証
         if not self.parallel_config.validate():
-            self.logger.warning(
-                "Invalid parallel processing configuration, using defaults"
-            )
+            self.logger.warning("Invalid parallel processing configuration, using defaults")
             self.parallel_config = ParallelProcessingConfig()
 
         # 修正提案エンジン
@@ -178,9 +174,7 @@ class Parser:
             from .core.error_analysis.correction_engine import CorrectionEngine
 
             self.correction_engine = CorrectionEngine()
-            self.logger.info(
-                "Correction engine initialized for graceful error handling"
-            )
+            self.logger.info("Correction engine initialized for graceful error handling")
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
@@ -245,28 +239,20 @@ class Parser:
 
             if node:
                 nodes.append(node)
-                self.logger.debug(
-                    f"Parsed node type: {node.type} at line {self.current}"
-                )
+                self.logger.debug(f"Parsed node type: {node.type} at line {self.current}")
 
             # 無限ループ防止: currentが進んでいない場合
             if self.current == previous_current:
-                self.logger.warning(
-                    f"Parser stuck at line {self.current}, forcing advance"
-                )
+                self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
                 self.current += 1
 
             iteration_count += 1
 
         if iteration_count >= max_iterations:
-            self.logger.error(
-                f"Parser hit maximum iteration limit ({max_iterations}), stopping"
-            )
+            self.logger.error(f"Parser hit maximum iteration limit ({max_iterations}), stopping")
             self.add_error(f"Parser exceeded maximum iterations at line {self.current}")
 
-        self.logger.info(
-            f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors"
-        )
+        self.logger.info(f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors")
         return nodes
 
     def parse_optimized(self, text: str) -> list[Node]:
@@ -305,9 +291,7 @@ class Parser:
 
                 # 進捗チェック（最適化）
                 if self.current == previous_current:
-                    self.logger.warning(
-                        f"Parser stuck at line {self.current}, forcing advance"
-                    )
+                    self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
                     self.current += 1
 
             self.logger.info(
@@ -350,8 +334,7 @@ class Parser:
             chunk_size = self.parallel_handler.calculate_optimal_chunk_size(total_lines)
 
             self.logger.info(
-                f"Streaming configuration: {total_lines} lines, "
-                f"chunk_size={chunk_size}"
+                f"Streaming configuration: {total_lines} lines, " f"chunk_size={chunk_size}"
             )
 
             # チャンク単位での処理
@@ -395,12 +378,10 @@ class Parser:
                                 yield node
                                 processed_nodes += 1
                             else:
-                                break
+                                break  # type: ignore[unreachable]
 
                     except Exception as e:
-                        self.logger.warning(
-                            f"Error parsing chunk {current_line}-{chunk_end}: {e}"
-                        )
+                        self.logger.warning(f"Error parsing chunk {current_line}-{chunk_end}: {e}")
 
                 current_line = chunk_end
 
@@ -441,10 +422,7 @@ class Parser:
         self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
     ) -> Iterator[Node]:
         """並列ストリーミング処理（ハンドラー委譲）"""
-        yield from self.parallel_handler.parse_parallel_streaming(
-            text, progress_callback
-        )
-
+        yield from self.parallel_handler.parse_parallel_streaming(text, progress_callback)
 
     def cancel_parsing(self) -> None:
         """ストリーミング解析の安全なキャンセル"""
@@ -458,9 +436,7 @@ class Parser:
             "current_position": self.current,
             "errors_count": len(self.errors),
             "graceful_errors_count": (
-                len(self.graceful_syntax_errors)
-                if hasattr(self, "graceful_syntax_errors")
-                else 0
+                len(self.graceful_syntax_errors) if hasattr(self, "graceful_syntax_errors") else 0
             ),
             "heading_count": getattr(self.block_parser, "heading_counter", 0),
         }
@@ -469,13 +445,9 @@ class Parser:
         """並列処理メトリクスを取得（ハンドラー委譲）"""
         return self.parallel_handler.get_parallel_processing_metrics()
 
-    def log_performance_summary(
-        self, processing_time: float, total_lines: int, total_nodes: int
-    ):
+    def log_performance_summary(self, processing_time: float, total_lines: int, total_nodes: int):
         """パフォーマンスサマリーをログ出力（ハンドラー委譲）"""
-        self.parallel_handler.log_performance_summary(
-            processing_time, total_lines, total_nodes
-        )
+        self.parallel_handler.log_performance_summary(processing_time, total_lines, total_nodes)
 
     def _parse_line(self) -> Node | None:
         """Parse a single line or block starting from current position"""
@@ -509,9 +481,7 @@ class Parser:
         # Parse block markers first
         if self.block_parser.is_opening_marker(line):
             self.logger.debug(f"Found block marker at line {self.current}")
-            node, next_index = self.block_parser.parse_block_marker(
-                self.lines, self.current
-            )
+            node, next_index = self.block_parser.parse_block_marker(self.lines, self.current)
             self.current = next_index
             return node
 
@@ -528,9 +498,7 @@ class Parser:
             return node
 
         # Parse paragraph（ブロックハンドラー委譲）
-        node, next_index = self.block_handler.parse_paragraph_fast(
-            self.lines, self.current
-        )
+        node, next_index = self.block_handler.parse_paragraph_fast(self.lines, self.current)
         self.current = next_index
         return node
 
@@ -543,9 +511,7 @@ class Parser:
             # Parse block markers first
             if self.block_parser.is_opening_marker(line):
                 self.logger.debug(f"Found block marker at line {self.current}")
-                node, next_index = self.block_parser.parse_block_marker(
-                    self.lines, self.current
-                )
+                node, next_index = self.block_parser.parse_block_marker(self.lines, self.current)
                 self.current = next_index
                 return node
 
@@ -578,9 +544,7 @@ class Parser:
 
         try:
             # Parse paragraph
-            node, next_index = self.block_parser.parse_paragraph(
-                self.lines, self.current
-            )
+            node, next_index = self.block_parser.parse_paragraph(self.lines, self.current)
             self.current = next_index
             return node
 
@@ -638,9 +602,7 @@ class Parser:
 
         # 修正提案エンジンで拡張
         if hasattr(self, "correction_engine"):
-            graceful_error = self.correction_engine.enhance_error_with_suggestions(
-                graceful_error
-            )
+            graceful_error = self.correction_engine.enhance_error_with_suggestions(graceful_error)
             self.logger.info(
                 f"Enhanced error with {len(graceful_error.correction_suggestions)} suggestions"
             )
@@ -651,9 +613,7 @@ class Parser:
     def _create_error_node(self, line: str, error_message: str) -> Node:
         """エラー発生箇所にエラー情報を含むノードを作成"""
         error_content = f"❌ 解析エラー: {error_message}"
-        return error_node(
-            error_content, {"original_line": line, "error_type": "parse_error"}
-        )
+        return error_node(error_content, {"original_line": line, "error_type": "parse_error"})
 
     def get_graceful_errors(self) -> list["GracefulSyntaxError"]:
         """Issue #700: graceful error handlingで収集したエラーを取得"""
@@ -701,7 +661,6 @@ def parse(text: str, config=None) -> list[Node]:
     return parser.parse(text)
 
 
-
 def parse_with_error_config(
     text: str, config: Any = None, use_streaming: bool | None = None
 ) -> list[Node]:
@@ -730,3 +689,6 @@ def parse_with_error_config(
         # 既存の非ストリーミング処理
         parser = Parser(config=config)
         return parser.parse(text)
+
+
+KumihanParser = Parser

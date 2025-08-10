@@ -16,6 +16,7 @@ from .config_adapters import (
     BaseConfigAdapter,
     ErrorConfigManagerAdapter,
     ParallelProcessingConfigAdapter,
+    EnhancedConfigAdapter,
 )
 from .config_loader import ConfigFormat, ConfigLoader
 from .config_models import (
@@ -43,4 +44,5 @@ __all__ = [
     "ParallelProcessingConfigAdapter",
     "ErrorConfigManagerAdapter",
     "BaseConfigAdapter",
+    "EnhancedConfigAdapter",
 ]

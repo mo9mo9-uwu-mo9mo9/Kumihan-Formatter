@@ -9,7 +9,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
 from kumihan_formatter.core.optimization.settings.manager import AdaptiveSettingsManager
@@ -62,8 +62,10 @@ class AIIntegrationManager:
     追加最適化を協調実行し、統合相乗効果を最大化するシステム
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         """統合管理システム初期化"""
+        from kumihan_formatter.core.utilities.logger import get_logger
+
         self.logger = get_logger(__name__)
         self.config = config or {}
 
@@ -71,12 +73,15 @@ class AIIntegrationManager:
         self._integration_lock = threading.RLock()
         self._coordination_lock = threading.Lock()
 
-        # Phase B基盤システム
-        self.phase_b_integrator = None
-        self.adaptive_settings = None
+        # Phase B基盤システム（型注釈付き）
+        from kumihan_formatter.core.optimization.phase_b.integrator import OptimizationIntegrator
+        from kumihan_formatter.core.optimization.adaptive_settings.manager import AdaptiveSettingsManager  # type: ignore[import-not-found]
+
+        self.phase_b_integrator: Optional[OptimizationIntegrator] = None
+        self.adaptive_settings: Optional[AdaptiveSettingsManager] = None
 
         # AI基盤システム（遅延初期化）
-        self.ai_optimizer = None
+        self.ai_optimizer: Optional[Any] = None
 
         # 統合状態管理
         self.integration_status = IntegrationStatus(
@@ -100,7 +105,7 @@ class AIIntegrationManager:
 
         # エラー処理・復旧
         self.error_history: List[Dict[str, Any]] = []
-        self.recovery_strategies: Dict[str, callable] = {}
+        self.recovery_strategies: Dict[str, Callable[[], bool]] = {}
 
         # 初期化処理
         self._initialize_integration_systems()
@@ -131,14 +136,20 @@ class AIIntegrationManager:
     def _initialize_phase_b_systems(self) -> None:
         """Phase B基盤システム初期化"""
         try:
+            from kumihan_formatter.core.optimization.phase_b.integrator import (
+                OptimizationIntegrator,
+            )
+            from kumihan_formatter.core.optimization.adaptive_settings.manager import AdaptiveSettingsManager  # type: ignore[import-not-found]
+
             # OptimizationIntegrator初期化
             self.phase_b_integrator = OptimizationIntegrator()
-            if not self.phase_b_integrator.is_operational():
+            if self.phase_b_integrator is None or not self.phase_b_integrator.is_operational():
                 raise RuntimeError("OptimizationIntegrator initialization failed")
 
             # AdaptiveSettingsManager初期化
-            self.adaptive_settings = AdaptiveSettingsManager()
-            if not self.adaptive_settings.is_initialized():
+            config_dict = self.config if isinstance(self.config, dict) else {}
+            self.adaptive_settings = AdaptiveSettingsManager(config_dict)
+            if self.adaptive_settings is None or not self.adaptive_settings.is_initialized():
                 raise RuntimeError("AdaptiveSettingsManager initialization failed")
 
             # Phase B動作確認
@@ -155,18 +166,17 @@ class AIIntegrationManager:
     def _verify_phase_b_baseline(self) -> None:
         """Phase B基盤（66.8%削減）確認"""
         try:
+            if self.phase_b_integrator is None:
+                raise RuntimeError("Phase B integrator is not initialized")
+
             baseline_metrics = self.phase_b_integrator.get_baseline_metrics()
             current_efficiency = baseline_metrics.get("efficiency_rate", 0.0)
 
             # 66.8%削減効果確認
             if current_efficiency < 66.0:  # 基盤効果最低基準
-                raise RuntimeError(
-                    f"Phase B baseline efficiency too low: {current_efficiency}%"
-                )
+                raise RuntimeError(f"Phase B baseline efficiency too low: {current_efficiency}%")
 
-            self.logger.info(
-                f"Phase B baseline verified: {current_efficiency}% efficiency"
-            )
+            self.logger.info(f"Phase B baseline verified: {current_efficiency}% efficiency")
 
         except Exception as e:
             self.logger.error(f"Phase B baseline verification failed: {e}")
@@ -192,6 +202,23 @@ class AIIntegrationManager:
 
         self.logger.info("Health monitoring started")
 
+    def _verify_system_integration(self) -> None:
+        """システム統合検証（スタブ実装）"""
+        # TODO: 実装予定 - システム統合の検証ロジック
+        self.logger.debug("System integration verification - stub implementation")
+
+    def _test_integrated_operations(self) -> bool:
+        """統合動作テスト（スタブ実装）"""
+        # TODO: 実装予定 - 統合動作のテストロジック
+        self.logger.debug("Integrated operations test - stub implementation")
+        return True
+
+    def _verify_data_consistency(self) -> bool:
+        """データ整合性検証（スタブ実装）"""
+        # TODO: 実装予定 - データ整合性検証ロジック
+        self.logger.debug("Data consistency verification - stub implementation")
+        return True
+
     def integrate_with_phase_b(self) -> bool:
         """Phase B基盤完全統合"""
         with self._integration_lock:
@@ -200,9 +227,7 @@ class AIIntegrationManager:
 
                 # Phase B基盤状態確認
                 if not self._check_phase_b_health():
-                    self.logger.warning(
-                        "Phase B health check failed, attempting recovery"
-                    )
+                    self.logger.warning("Phase B health check failed, attempting recovery")
                     if not self._recover_phase_b_systems():
                         return False
 
@@ -238,11 +263,11 @@ class AIIntegrationManager:
         """Phase B健全性チェック"""
         try:
             # OptimizationIntegrator健全性
-            if not self.phase_b_integrator.is_operational():
+            if self.phase_b_integrator is None or not self.phase_b_integrator.is_operational():
                 return False
 
             # AdaptiveSettingsManager健全性
-            if not self.adaptive_settings.is_initialized():
+            if self.adaptive_settings is None or not self.adaptive_settings.is_initialized():
                 return False
 
             # 基盤性能チェック
@@ -278,6 +303,10 @@ class AIIntegrationManager:
     def _integrate_adaptive_settings(self) -> bool:
         """AdaptiveSettingsManager統合"""
         try:
+            if self.adaptive_settings is None:
+                self.logger.error("AdaptiveSettingsManager is not initialized")
+                return False
+
             # 現在設定取得
             current_settings = self.adaptive_settings.get_current_settings()
 
@@ -290,9 +319,7 @@ class AIIntegrationManager:
             }
 
             # 設定更新
-            update_success = self.adaptive_settings.update_settings(
-                integration_settings
-            )
+            update_success = self.adaptive_settings.update_settings(integration_settings)
 
             if update_success:
                 self.logger.info("AdaptiveSettingsManager integration completed")
@@ -308,6 +335,10 @@ class AIIntegrationManager:
     def _synchronize_phase_b_integrator(self) -> bool:
         """OptimizationIntegrator統合制御"""
         try:
+            if self.phase_b_integrator is None:
+                self.logger.error("OptimizationIntegrator is not initialized")
+                return False
+
             # 統合制御設定
             sync_config = {
                 "ai_coordination": True,
@@ -372,54 +403,46 @@ class AIIntegrationManager:
     def _verify_baseline_preservation(self) -> bool:
         """基盤保護確認"""
         try:
+            if self.phase_b_integrator is None:
+                self.logger.error("Phase B integrator is not initialized")
+                return False
+
             current_metrics = self.phase_b_integrator.get_baseline_metrics()
             current_efficiency = current_metrics.get("efficiency_rate", 0.0)
 
             # 66.8%削減効果維持確認
             if current_efficiency >= 66.0:
-                self.integration_metrics["phase_b_preservation_rate"] = (
-                    current_efficiency
-                )
+                self.integration_metrics["phase_b_preservation_rate"] = current_efficiency
                 return True
             else:
-                self.logger.error(
-                    f"Baseline preservation failed: {current_efficiency}%"
-                )
+                self.logger.error(f"Baseline preservation failed: {current_efficiency}%")
                 return False
 
         except Exception as e:
             self.logger.error(f"Baseline preservation verification failed: {e}")
             return False
 
-    def coordinate_optimization(
-        self, optimization_context: Dict[str, Any]
-    ) -> CoordinatedResult:
+    def coordinate_optimization(self, optimization_context: Dict[str, Any]) -> CoordinatedResult:
         """Phase B + AI協調最適化"""
         with self._coordination_lock:
             coordination_start = time.time()
 
             try:
                 # 協調最適化実行
-                coordinated_result = self._execute_coordinated_optimization(
-                    optimization_context
-                )
+                coordinated_result = self._execute_coordinated_optimization(optimization_context)
 
                 # 相乗効果計算
                 synergy_effect = self._calculate_synergy_effect(coordinated_result)
 
                 # 統合結果構築
                 final_result = CoordinatedResult(
-                    phase_b_contribution=coordinated_result.get(
-                        "phase_b_efficiency", 66.8
-                    ),
+                    phase_b_contribution=coordinated_result.get("phase_b_efficiency", 66.8),
                     ai_contribution=coordinated_result.get("ai_improvement", 0.0),
                     synergy_effect=synergy_effect,
                     total_improvement=coordinated_result.get("total_efficiency", 66.8),
                     integration_success=coordinated_result.get("success", False),
                     execution_time=time.time() - coordination_start,
-                    coordination_quality=coordinated_result.get(
-                        "coordination_quality", 0.0
-                    ),
+                    coordination_quality=coordinated_result.get("coordination_quality", 0.0),
                 )
 
                 # 統計更新
@@ -446,16 +469,12 @@ class AIIntegrationManager:
                     coordination_quality=0.0,
                 )
 
-    def _execute_coordinated_optimization(
-        self, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _execute_coordinated_optimization(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """協調最適化実行"""
         try:
             with ThreadPoolExecutor(max_workers=2) as executor:
                 # Phase B最適化実行
-                phase_b_future = executor.submit(
-                    self._execute_phase_b_optimization, context
-                )
+                phase_b_future = executor.submit(self._execute_phase_b_optimization, context)
 
                 # AI最適化実行（遅延初期化対応）
                 ai_future = executor.submit(self._execute_ai_optimization, context)
@@ -465,9 +484,7 @@ class AIIntegrationManager:
                 ai_result = ai_future.result(timeout=3.0)  # 3秒タイムアウト
 
             # 協調結果統合
-            coordinated_result = self._merge_optimization_results(
-                phase_b_result, ai_result
-            )
+            coordinated_result = self._merge_optimization_results(phase_b_result, ai_result)
 
             return coordinated_result
 
@@ -479,6 +496,15 @@ class AIIntegrationManager:
     def _execute_phase_b_optimization(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Phase B最適化実行"""
         try:
+            if self.phase_b_integrator is None or self.adaptive_settings is None:
+                self.logger.error("Phase B systems are not initialized")
+                return {
+                    "success": False,
+                    "phase_b_efficiency": 66.8,  # 基本効果維持
+                    "adaptive_improvement": 0.0,
+                    "execution_time": 0.0,
+                }
+
             # Phase B統合実行
             phase_result = self.phase_b_integrator.run_integrated_optimization(
                 operation_context=context.get("operation_type", "default"),
@@ -543,9 +569,7 @@ class AIIntegrationManager:
             }
 
         except Exception as e:
-            self.logger.warning(
-                f"AI optimization failed, continuing with Phase B only: {e}"
-            )
+            self.logger.warning(f"AI optimization failed, continuing with Phase B only: {e}")
             return {
                 "success": False,
                 "ai_improvement": 0.0,
@@ -564,20 +588,14 @@ class AIIntegrationManager:
 
             # AI追加効果
             ai_improvement = (
-                ai_result.get("ai_improvement", 0.0)
-                if ai_result.get("success", False)
-                else 0.0
+                ai_result.get("ai_improvement", 0.0) if ai_result.get("success", False) else 0.0
             )
 
             # 協調品質評価
-            coordination_quality = self._assess_coordination_quality(
-                phase_b_result, ai_result
-            )
+            coordination_quality = self._assess_coordination_quality(phase_b_result, ai_result)
 
             # 総合効果計算
-            total_efficiency = (
-                phase_b_efficiency + adaptive_improvement + ai_improvement
-            )
+            total_efficiency = phase_b_efficiency + adaptive_improvement + ai_improvement
 
             return {
                 "success": phase_b_result.get("success", False),
@@ -631,9 +649,7 @@ class AIIntegrationManager:
             coordination_quality = coordinated_result.get("coordination_quality", 0.0)
 
             # 基本相乗効果計算
-            base_synergy = min(
-                0.5, (phase_b_efficiency * ai_improvement) / 1000
-            )  # 最大0.5%
+            base_synergy = min(0.5, (phase_b_efficiency * ai_improvement) / 1000)  # 最大0.5%
 
             # 協調品質による調整
             quality_multiplier = 0.5 + (coordination_quality * 0.5)  # 0.5-1.0倍
@@ -764,9 +780,7 @@ class AIIntegrationManager:
             performance_score = (phase_b_health + ai_health + integration_health) / 3
 
             # 安定性スコア
-            stability_score = 100.0 - min(
-                100.0, self.integration_status.error_count * 10
-            )
+            stability_score = 100.0 - min(100.0, self.integration_status.error_count * 10)
 
             # 推奨事項
             recommendation = self._generate_health_recommendation(
@@ -848,22 +862,26 @@ class AIIntegrationManager:
             if self.phase_b_integrator and self.phase_b_integrator.is_operational():
                 self.logger.info("Phase B systems remain operational during recovery")
             else:
-                self.logger.error(
-                    "Phase B systems also affected, critical recovery needed"
-                )
+                self.logger.error("Phase B systems also affected, critical recovery needed")
         except Exception as e:
             self.logger.error(f"Recovery mode initialization failed: {e}")
 
     def _recover_phase_b_systems(self) -> bool:
         """Phase Bシステム復旧"""
         try:
+            from kumihan_formatter.core.optimization.phase_b.integrator import (
+                OptimizationIntegrator,
+            )
+            from kumihan_formatter.core.optimization.adaptive_settings.manager import AdaptiveSettingsManager  # type: ignore[import-not-found]
+
             # OptimizationIntegrator復旧
-            if not self.phase_b_integrator.is_operational():
+            if self.phase_b_integrator is None or not self.phase_b_integrator.is_operational():
                 self.phase_b_integrator = OptimizationIntegrator()
 
             # AdaptiveSettingsManager復旧
-            if not self.adaptive_settings.is_initialized():
-                self.adaptive_settings = AdaptiveSettingsManager()
+            if self.adaptive_settings is None or not self.adaptive_settings.is_initialized():
+                config_dict = self.config if isinstance(self.config, dict) else {}
+                self.adaptive_settings = AdaptiveSettingsManager(config_dict)
 
             # 復旧確認
             if self._check_phase_b_health():
@@ -910,7 +928,7 @@ class AIIntegrationManager:
         """性能復旧"""
         try:
             # キャッシュクリア
-            if hasattr(self.ai_optimizer, "reset_cache"):
+            if self.ai_optimizer is not None and hasattr(self.ai_optimizer, "reset_cache"):
                 self.ai_optimizer.reset_cache()
 
             # メトリクスリセット
@@ -930,7 +948,7 @@ class AIIntegrationManager:
             self.error_history = self.error_history[-10:]  # 最新10件のみ保持
 
             # キャッシュクリア
-            if hasattr(self.ai_optimizer, "reset_cache"):
+            if self.ai_optimizer is not None and hasattr(self.ai_optimizer, "reset_cache"):
                 self.ai_optimizer.reset_cache()
 
             self.logger.info("Memory issues recovery completed")

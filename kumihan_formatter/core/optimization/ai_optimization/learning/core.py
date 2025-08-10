@@ -9,12 +9,16 @@ Phase B.4-Beta継続学習システム実装 - コア機能
 import time
 import warnings
 from collections import defaultdict, deque
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 import numpy as np
-import scipy.stats as stats
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import cross_val_score
+
+if TYPE_CHECKING:
+    import scipy.stats as stats
+    from sklearn.metrics import mean_squared_error  # type: ignore
+    from sklearn.model_selection import cross_val_score  # type: ignore
+    import lightgbm as lgb
+    import xgboost as xgb
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -23,6 +27,11 @@ from ..basic_ml_system import TrainingData
 warnings.filterwarnings("ignore")
 
 # ハイパーパラメータ最適化
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from optuna import Trial, create_study
+
 try:
     from optuna import Trial, create_study
 
@@ -88,9 +97,7 @@ class DataQualityManager:
                 }
             )
 
-            self.logger.debug(
-                f"Data quality validation completed: score={quality_score:.3f}"
-            )
+            self.logger.debug(f"Data quality validation completed: score={quality_score:.3f}")
             return validation_result
 
         except Exception as e:
@@ -106,16 +113,11 @@ class DataQualityManager:
             return {
                 "sample_count": len(features),
                 "feature_count": features.shape[1] if len(features.shape) > 1 else 1,
-                "feature_means": (
-                    np.mean(features, axis=0).tolist() if len(features) > 0 else []
-                ),
-                "feature_stds": (
-                    np.std(features, axis=0).tolist() if len(features) > 0 else []
-                ),
+                "feature_means": (np.mean(features, axis=0).tolist() if len(features) > 0 else []),
+                "feature_stds": (np.std(features, axis=0).tolist() if len(features) > 0 else []),
                 "label_mean": float(np.mean(labels)) if len(labels) > 0 else 0.0,
                 "label_std": float(np.std(labels)) if len(labels) > 0 else 0.0,
-                "missing_values": int(np.sum(np.isnan(features)))
-                + int(np.sum(np.isnan(labels))),
+                "missing_values": int(np.sum(np.isnan(features))) + int(np.sum(np.isnan(labels))),
             }
 
         except Exception as e:
@@ -144,15 +146,11 @@ class DataQualityManager:
 
             # 総合異常値
             total_outliers = len(feature_outliers) + int(np.sum(label_outliers))
-            outlier_ratio = (
-                total_outliers / max(1, len(features)) if len(features) > 0 else 0.0
-            )
+            outlier_ratio = total_outliers / max(1, len(features)) if len(features) > 0 else 0.0
 
             return {
                 "feature_outlier_count": (
-                    int(np.sum(feature_outliers > 0))
-                    if len(feature_outliers) > 0
-                    else 0
+                    int(np.sum(feature_outliers > 0)) if len(feature_outliers) > 0 else 0
                 ),
                 "label_outlier_count": (
                     int(np.sum(label_outliers)) if len(label_outliers) > 0 else 0
@@ -161,9 +159,7 @@ class DataQualityManager:
                 "outlier_ratio": outlier_ratio,
                 "outlier_threshold": self.outlier_threshold,
                 "quality_impact": (
-                    "high"
-                    if outlier_ratio > 0.1
-                    else "medium" if outlier_ratio > 0.05 else "low"
+                    "high" if outlier_ratio > 0.1 else "medium" if outlier_ratio > 0.05 else "low"
                 ),
             }
 
@@ -260,9 +256,7 @@ class DataQualityManager:
                         "label_min": float(np.min(labels)),
                         "label_max": float(np.max(labels)),
                         "label_range": float(np.max(labels) - np.min(labels)),
-                        "label_iqr": float(
-                            np.percentile(labels, 75) - np.percentile(labels, 25)
-                        ),
+                        "label_iqr": float(np.percentile(labels, 75) - np.percentile(labels, 25)),
                         "label_median": float(np.median(labels)),
                     }
                 )
@@ -270,16 +264,12 @@ class DataQualityManager:
                 # 正規性検定
                 if len(labels) >= 8:  # shapiro-wilk最小サンプル
                     try:
-                        shapiro_stat, shapiro_p = stats.shapiro(
-                            labels[:5000]
-                        )  # サンプル制限
+                        shapiro_stat, shapiro_p = stats.shapiro(labels[:5000])  # サンプル制限
                         distribution_analysis.update(
                             {
                                 "shapiro_statistic": float(shapiro_stat),
                                 "shapiro_p_value": float(shapiro_p),
-                                "normality": (
-                                    "normal" if shapiro_p > 0.05 else "non_normal"
-                                ),
+                                "normality": ("normal" if shapiro_p > 0.05 else "non_normal"),
                             }
                         )
                     except Exception:
@@ -292,9 +282,7 @@ class DataQualityManager:
                     {
                         "feature_range_mean": float(np.mean(feature_ranges)),
                         "feature_range_std": float(np.std(feature_ranges)),
-                        "zero_variance_features": int(
-                            np.sum(np.var(features, axis=0) == 0)
-                        ),
+                        "zero_variance_features": int(np.sum(np.var(features, axis=0) == 0)),
                     }
                 )
 
@@ -349,16 +337,12 @@ class DataQualityManager:
         try:
             # 品質スコアベース推奨
             if quality_score < 0.6:
-                recommendations.append(
-                    "データ品質が低いため、データクリーニングを実施してください"
-                )
+                recommendations.append("データ品質が低いため、データクリーニングを実施してください")
 
             # 異常値対処
             outlier_ratio = outlier_detection.get("outlier_ratio", 0.0)
             if outlier_ratio > 0.1:
-                recommendations.append(
-                    "異常値が多く検出されました。外れ値除去を検討してください"
-                )
+                recommendations.append("異常値が多く検出されました。外れ値除去を検討してください")
 
             # バイアス対処
             bias_level = bias_analysis.get("bias_level", "low")
@@ -381,235 +365,3 @@ class DataQualityManager:
             recommendations.append("品質分析でエラーが発生しました")
 
         return recommendations
-
-
-class HyperparameterOptimizer:
-    """ハイパーパラメータ自動最適化システム"""
-
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = get_logger(__name__)
-        self.config = config
-
-        # 最適化履歴
-        self.optimization_history: Dict[str, List[Dict]] = defaultdict(list)
-
-        # 最適化設定
-        self.n_trials = config.get("n_trials", 50)
-        self.timeout = config.get("timeout", 300)  # 5分
-
-    def optimize_model_hyperparameters(
-        self,
-        model_name: str,
-        model_type: str,
-        training_data: TrainingData,
-        validation_data: Optional[TrainingData] = None,
-    ) -> Dict[str, Any]:
-        """モデルハイパーパラメータ最適化"""
-        try:
-            optimization_start = time.time()
-
-            if not OPTUNA_AVAILABLE:
-                self.logger.warning(
-                    "Optuna not available, using default hyperparameters"
-                )
-                return self._get_default_hyperparameters(model_type)
-
-            # 最適化問題定義
-            def objective(trial: Trial) -> float:
-                return self._objective_function(
-                    trial, model_type, training_data, validation_data
-                )
-
-            # 最適化実行
-            study = create_study(direction="minimize")
-            study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout)
-
-            # 最適パラメータ取得
-            best_params = study.best_params
-            best_value = study.best_value
-
-            # 結果構築
-            optimization_result = {
-                "model_name": model_name,
-                "model_type": model_type,
-                "best_parameters": best_params,
-                "best_score": best_value,
-                "n_trials": len(study.trials),
-                "optimization_time": time.time() - optimization_start,
-                "improvement_over_default": self._calculate_improvement(
-                    model_type, best_value
-                ),
-            }
-
-            # 履歴保存
-            self.optimization_history[model_name].append(
-                {
-                    "timestamp": time.time(),
-                    "best_score": best_value,
-                    "parameters": best_params.copy(),
-                }
-            )
-
-            self.logger.info(
-                f"Hyperparameter optimization completed for {model_name}: score={best_value:.4f}"
-            )
-            return optimization_result
-
-        except Exception as e:
-            self.logger.error(
-                f"Hyperparameter optimization failed for {model_name}: {e}"
-            )
-            return self._get_default_hyperparameters(model_type)
-
-    def _objective_function(
-        self,
-        trial: Trial,
-        model_type: str,
-        training_data: TrainingData,
-        validation_data: Optional[TrainingData],
-    ) -> float:
-        """最適化目的関数"""
-        try:
-            # モデル作成
-            model = self._create_model_with_trial_params(trial, model_type)
-
-            # データ準備
-            X_train = training_data.features
-            y_train = (
-                training_data.labels.flatten()
-                if training_data.labels.ndim > 1
-                else training_data.labels
-            )
-
-            if validation_data is not None:
-                X_val = validation_data.features
-                y_val = (
-                    validation_data.labels.flatten()
-                    if validation_data.labels.ndim > 1
-                    else validation_data.labels
-                )
-
-                # 訓練・評価
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_val)
-                score = mean_squared_error(y_val, y_pred)
-            else:
-                # 交差検証
-                cv_scores = cross_val_score(
-                    model,
-                    X_train,
-                    y_train,
-                    cv=min(5, len(X_train) // 10),
-                    scoring="neg_mean_squared_error",
-                )
-                score = -np.mean(cv_scores)
-
-            return score
-
-        except Exception as e:
-            self.logger.warning(f"Objective function evaluation failed: {e}")
-            return float("inf")
-
-    def _create_model_with_trial_params(self, trial: Trial, model_type: str):
-        """試行パラメータでモデル作成"""
-        try:
-            if model_type == "lightgbm":
-                try:
-                    import lightgbm as lgb
-
-                    return lgb.LGBMRegressor(
-                        n_estimators=trial.suggest_int("n_estimators", 50, 200),
-                        learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3),
-                        max_depth=trial.suggest_int("max_depth", 3, 10),
-                        subsample=trial.suggest_float("subsample", 0.6, 1.0),
-                        colsample_bytree=trial.suggest_float(
-                            "colsample_bytree", 0.6, 1.0
-                        ),
-                        random_state=42,
-                        verbose=-1,
-                    )
-                except ImportError:
-                    pass
-
-            elif model_type == "xgboost":
-                try:
-                    import xgboost as xgb
-
-                    return xgb.XGBRegressor(
-                        n_estimators=trial.suggest_int("n_estimators", 50, 200),
-                        learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3),
-                        max_depth=trial.suggest_int("max_depth", 3, 10),
-                        subsample=trial.suggest_float("subsample", 0.6, 1.0),
-                        colsample_bytree=trial.suggest_float(
-                            "colsample_bytree", 0.6, 1.0
-                        ),
-                        random_state=42,
-                        verbosity=0,
-                    )
-                except ImportError:
-                    pass
-
-            # フォールバック: GradientBoosting
-            from sklearn.ensemble import GradientBoostingRegressor
-
-            return GradientBoostingRegressor(
-                n_estimators=trial.suggest_int("n_estimators", 50, 200),
-                learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3),
-                max_depth=trial.suggest_int("max_depth", 3, 10),
-                subsample=trial.suggest_float("subsample", 0.6, 1.0),
-                random_state=42,
-            )
-
-        except Exception as e:
-            self.logger.error(f"Model creation with trial params failed: {e}")
-            # 基本モデル返却
-            from sklearn.ensemble import RandomForestRegressor
-
-            return RandomForestRegressor(random_state=42)
-
-    def _get_default_hyperparameters(self, model_type: str) -> Dict[str, Any]:
-        """デフォルトハイパーパラメータ"""
-        defaults = {
-            "lightgbm": {
-                "n_estimators": 100,
-                "learning_rate": 0.1,
-                "max_depth": 6,
-                "subsample": 0.8,
-                "colsample_bytree": 0.8,
-            },
-            "xgboost": {
-                "n_estimators": 100,
-                "learning_rate": 0.1,
-                "max_depth": 6,
-                "subsample": 0.8,
-                "colsample_bytree": 0.8,
-            },
-            "gradientboosting": {
-                "n_estimators": 100,
-                "learning_rate": 0.1,
-                "max_depth": 6,
-                "subsample": 0.8,
-            },
-        }
-
-        return {
-            "best_parameters": defaults.get(model_type, {}),
-            "best_score": 0.0,
-            "optimization_time": 0.0,
-            "fallback": True,
-        }
-
-    def _calculate_improvement(self, model_type: str, best_score: float) -> float:
-        """デフォルトからの改善率計算"""
-        try:
-            # 履歴ベースラインとの比較
-            model_history = self.optimization_history.get(model_type, [])
-            if len(model_history) > 1:
-                baseline_score = model_history[-2]["best_score"]
-                if baseline_score > 0:
-                    return (baseline_score - best_score) / baseline_score
-
-            return 0.0
-
-        except Exception:
-            return 0.0

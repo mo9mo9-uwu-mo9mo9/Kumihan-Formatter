@@ -32,18 +32,14 @@ class FileOperationsCore:
             self.logger.debug("No image nodes found in AST")
             return
 
-        self.logger.info(
-            f"Copying {len(image_nodes)} images from {input_path} to {output_path}"
-        )
+        self.logger.info(f"Copying {len(image_nodes)} images from {input_path} to {output_path}")
 
         source_images_dir = self._get_source_images_dir(input_path)
         if not source_images_dir:
             return
 
         dest_images_dir = self._create_dest_images_dir(output_path)
-        copy_results = self._copy_all_images(
-            image_nodes, source_images_dir, dest_images_dir
-        )
+        copy_results = self._copy_all_images(image_nodes, source_images_dir, dest_images_dir)
         self._report_copy_results(copy_results)
 
     def _get_source_images_dir(self, input_path: Path) -> Path | None:
@@ -68,16 +64,12 @@ class FileOperationsCore:
                 f"Permission denied creating images directory: {dest_images_dir} - {e}"
             )
             if self.ui:
-                self.ui.error(
-                    f"画像ディレクトリの作成に失敗しました: {dest_images_dir}"
-                )
+                self.ui.permission_error(f"画像ディレクトリの作成に失敗しました: {dest_images_dir}")
             raise
         except OSError as e:
-            self.logger.error(
-                f"OS error creating images directory: {dest_images_dir} - {e}"
-            )
+            self.logger.error(f"OS error creating images directory: {dest_images_dir} - {e}")
             if self.ui:
-                self.ui.error(
+                self.ui.unexpected_error(
                     f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}"
                 )
             raise
@@ -155,9 +147,7 @@ class FileOperationsCore:
                 self.ui.files_missing(missing_files)
 
         if duplicate_files:
-            self.logger.warning(
-                f"Found {len(duplicate_files)} duplicate image filenames"
-            )
+            self.logger.warning(f"Found {len(duplicate_files)} duplicate image filenames")
             if self.ui:
                 self.ui.duplicate_files(duplicate_files)
 
@@ -193,9 +183,7 @@ class FileOperationsCore:
         for item in source_path.rglob("*"):
             if item.is_file():
                 # Exclusion check
-                if FilePathUtilities.should_exclude(
-                    item, exclude_patterns, source_path
-                ):
+                if FilePathUtilities.should_exclude(item, exclude_patterns, source_path):
                     excluded_count += 1
                     continue
 
@@ -244,9 +232,7 @@ class FileOperationsCore:
         size_info = FilePathUtilities.get_file_size_info(path)
 
         if size_info["size_mb"] > max_size_mb:
-            self.logger.warning(
-                f"Large file detected: {path} ({size_info['size_mb']:.1f}MB)"
-            )
+            self.logger.warning(f"Large file detected: {path} ({size_info['size_mb']:.1f}MB)")
             if self.ui:
                 self.ui.warning(
                     f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",

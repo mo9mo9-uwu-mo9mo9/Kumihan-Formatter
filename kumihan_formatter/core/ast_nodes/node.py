@@ -158,11 +158,7 @@ class Node:
         if not isinstance(self.content, list):
             return []
 
-        return [
-            item
-            for item in self.content
-            if isinstance(item, Node) and item.type == node_type
-        ]
+        return [item for item in self.content if isinstance(item, Node) and item.type == node_type]
 
     def walk(self) -> Any:
         """Generator that yields this node and all its descendants"""

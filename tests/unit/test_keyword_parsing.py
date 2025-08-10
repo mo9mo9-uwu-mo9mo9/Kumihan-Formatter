@@ -93,7 +93,9 @@ class TestKeywordDefinitions:
             normalized = self.definitions.normalize_keyword(input_keyword)
             assert normalized == expected
 
-    @pytest.mark.skip(reason="CI timeout issue - keyword definition mismatch, needs specification alignment")
+    @pytest.mark.skip(
+        reason="CI timeout issue - keyword definition mismatch, needs specification alignment"
+    )
     def test_advanced_keywords_implementation(self):
         """Test advanced new keywords are properly implemented."""
         # Advanced Basic decoration keywords
@@ -121,9 +123,7 @@ class TestKeywordDefinitions:
 
             # Test keyword definition
             keyword_info = self.definitions.get_keyword_info(keyword)
-            assert (
-                keyword_info is not None
-            ), f"キーワード '{keyword}' の定義が見つかりません"
+            assert keyword_info is not None, f"キーワード '{keyword}' の定義が見つかりません"
             assert (
                 keyword_info["tag"] == expected_def["tag"]
             ), f"キーワード '{keyword}' のタグが期待値と異なります"
@@ -141,9 +141,7 @@ class TestKeywordDefinitions:
         new_tags = ["del", "code", "blockquote", "pre"]
 
         for tag in new_tags:
-            assert (
-                tag in nesting_order
-            ), f"新しいタグ '{tag}' がネスト順序に含まれていません"
+            assert tag in nesting_order, f"新しいタグ '{tag}' がネスト順序に含まれていません"
 
     def test_compound_keywords_compatibility(self):
         """Test that new keywords work in compound scenarios."""
@@ -161,9 +159,7 @@ class TestKeywordDefinitions:
         for keyword in test_keywords:
             tag = self.definitions.get_tag_for_keyword(keyword)
             assert tag is not None, f"キーワード '{keyword}' のタグが取得できません"
-            assert isinstance(
-                tag, str
-            ), f"キーワード '{keyword}' のタグが文字列ではありません"
+            assert isinstance(tag, str), f"キーワード '{keyword}' のタグが文字列ではありません"
 
 
 @pytest.mark.unit
@@ -285,11 +281,7 @@ class TestMarkerParser:
         text = "前置き#太字 中身#後置き"
         result = self.parser.parse(text)
 
-        if (
-            hasattr(result, "position")
-            or hasattr(result, "start")
-            or hasattr(result, "end")
-        ):
+        if hasattr(result, "position") or hasattr(result, "start") or hasattr(result, "end"):
             # Position tracking is implemented
             assert result is not None
         else:
@@ -358,15 +350,12 @@ class TestHTMLFootnoteFormatter:
 
     def test_generate_footnotes_html(self):
         """脚注HTML生成テスト"""
-        footnotes = [
-            {'content': '第一脚注', 'number': 1},
-            {'content': '第二脚注', 'number': 2}
-        ]
+        footnotes = [{"content": "第一脚注", "number": 1}, {"content": "第二脚注", "number": 2}]
 
         html = self.formatter.generate_footnotes_html(footnotes)
 
         assert '<div class="footnotes">' in html
-        assert '<ol>' in html
+        assert "<ol>" in html
         assert '<li id="footnote-1">第一脚注' in html
         assert '<li id="footnote-2">第二脚注' in html
         assert 'class="footnote-backref">↩</a>' in html
@@ -374,30 +363,27 @@ class TestHTMLFootnoteFormatter:
     def test_process_footnote_links(self):
         """脚注リンク処理テスト"""
         text = "本文((脚注内容))です"
-        footnotes = [{'content': '脚注内容', 'number': 1}]
+        footnotes = [{"content": "脚注内容", "number": 1}]
 
         result = self.formatter.process_footnote_links(text, footnotes)
 
         assert '<sup><a href="#footnote-1"' in result
         assert 'id="footnote-ref-1"' in result
-        assert '[1]</a></sup>' in result
+        assert "[1]</a></sup>" in result
 
     def test_footnote_manager_registration(self):
         """脚注マネージャー登録テスト"""
-        footnotes = [
-            {'content': '脚注1'},
-            {'content': '脚注2'}
-        ]
+        footnotes = [{"content": "脚注1"}, {"content": "脚注2"}]
 
         processed = self.footnote_manager.register_footnotes(footnotes)
 
         assert len(processed) == 2
-        assert processed[0]['global_number'] == 1
-        assert processed[1]['global_number'] == 2
+        assert processed[0]["global_number"] == 1
+        assert processed[1]["global_number"] == 2
 
     def test_footnote_manager_reset(self):
         """脚注マネージャーリセットテスト"""
-        footnotes = [{'content': '脚注1'}]
+        footnotes = [{"content": "脚注1"}]
         self.footnote_manager.register_footnotes(footnotes)
 
         self.footnote_manager.reset_counter()
@@ -407,10 +393,10 @@ class TestHTMLFootnoteFormatter:
 
     def test_html_escaping(self):
         """HTMLエスケープテスト"""
-        footnotes = [{'content': '<script>alert("test")</script>', 'number': 1}]
+        footnotes = [{"content": '<script>alert("test")</script>', "number": 1}]
 
         html = self.formatter.generate_footnotes_html(footnotes)
 
-        assert '&lt;script&gt;' in html
-        assert '&quot;test&quot;' in html
-        assert '<script>' not in html
+        assert "&lt;script&gt;" in html
+        assert "&quot;test&quot;" in html
+        assert "<script>" not in html

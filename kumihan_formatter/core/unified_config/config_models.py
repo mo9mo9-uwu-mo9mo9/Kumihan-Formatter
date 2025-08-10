@@ -59,9 +59,7 @@ class ParallelConfig(BaseModel):
 
     # チャンク設定
     min_chunk_size: int = Field(default=50, ge=10, description="最小チャンクサイズ")
-    max_chunk_size: int = Field(
-        default=2000, le=10000, description="最大チャンクサイズ"
-    )
+    max_chunk_size: int = Field(default=2000, le=10000, description="最大チャンクサイズ")
     target_chunks_per_core: int = Field(
         default=2, ge=1, le=10, description="CPUコアあたりのチャンク数"
     )
@@ -78,17 +76,11 @@ class ParallelConfig(BaseModel):
     )
 
     # タイムアウト設定
-    processing_timeout_seconds: int = Field(
-        default=300, ge=10, description="処理タイムアウト(秒)"
-    )
-    chunk_timeout_seconds: int = Field(
-        default=30, ge=5, description="チャンクタイムアウト(秒)"
-    )
+    processing_timeout_seconds: int = Field(default=300, ge=10, description="処理タイムアウト(秒)")
+    chunk_timeout_seconds: int = Field(default=30, ge=5, description="チャンクタイムアウト(秒)")
 
     # パフォーマンス設定
-    enable_progress_callbacks: bool = Field(
-        default=True, description="プログレスコールバック有効"
-    )
+    enable_progress_callbacks: bool = Field(default=True, description="プログレスコールバック有効")
     progress_update_interval: int = Field(
         default=100, ge=10, description="プログレス更新間隔(行数)"
     )
@@ -121,7 +113,7 @@ class ParallelConfig(BaseModel):
             )
         return v
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_PARALLEL_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_PARALLEL_")  # type: ignore[typeddict-unknown-key]
 
 
 class LoggingConfig(BaseModel):
@@ -141,22 +133,14 @@ class LoggingConfig(BaseModel):
     dev_log_json: bool = Field(default=False, description="開発ログJSON形式")
 
     # ファイルローテーション設定
-    log_rotation_when: str = Field(
-        default="midnight", description="ログローテーション頻度"
-    )
-    log_rotation_interval: int = Field(
-        default=1, ge=1, description="ローテーション間隔"
-    )
-    log_backup_count: int = Field(
-        default=30, ge=1, description="バックアップファイル数"
-    )
+    log_rotation_when: str = Field(default="midnight", description="ログローテーション頻度")
+    log_rotation_interval: int = Field(default=1, ge=1, description="ローテーション間隔")
+    log_backup_count: int = Field(default=30, ge=1, description="バックアップファイル数")
 
     # パフォーマンスログ設定
-    performance_logging_enabled: bool = Field(
-        default=True, description="パフォーマンスログ有効"
-    )
+    performance_logging_enabled: bool = Field(default=True, description="パフォーマンスログ有効")
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")  # type: ignore[typeddict-unknown-key]
 
 
 class ErrorConfig(BaseModel):
@@ -177,16 +161,14 @@ class ErrorConfig(BaseModel):
 
     # エラー制限設定
     error_display_limit: int = Field(default=10, ge=1, description="表示エラー数制限")
-    max_error_context_lines: int = Field(
-        default=3, ge=0, description="エラーコンテキスト行数"
-    )
+    max_error_context_lines: int = Field(default=3, ge=0, description="エラーコンテキスト行数")
 
     # カテゴリ別設定
     category_settings: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict, description="カテゴリ別エラー設定"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")  # type: ignore[typeddict-unknown-key]
 
 
 class RenderingConfig(BaseModel):
@@ -212,11 +194,9 @@ class RenderingConfig(BaseModel):
 
     # レンダリング設定
     include_source: bool = Field(default=False, description="ソース表示機能")
-    enable_syntax_highlighting: bool = Field(
-        default=True, description="構文ハイライト有効"
-    )
+    enable_syntax_highlighting: bool = Field(default=True, description="構文ハイライト有効")
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")  # type: ignore[typeddict-unknown-key]
 
 
 class UIConfig(BaseModel):
@@ -227,9 +207,7 @@ class UIConfig(BaseModel):
 
     # プレビュー設定
     auto_preview: bool = Field(default=True, description="自動プレビュー")
-    preview_browser: Optional[str] = Field(
-        default=None, description="プレビューブラウザ"
-    )
+    preview_browser: Optional[str] = Field(default=None, description="プレビューブラウザ")
 
     # プログレス表示設定
     progress_level: str = Field(
@@ -242,16 +220,14 @@ class UIConfig(BaseModel):
         pattern="^(bar|spinner|percentage)$",
         description="プログレス表示スタイル",
     )
-    show_progress_tooltip: bool = Field(
-        default=True, description="プログレスツールチップ表示"
-    )
+    show_progress_tooltip: bool = Field(default=True, description="プログレスツールチップ表示")
     enable_cancellation: bool = Field(default=True, description="キャンセル機能有効")
 
     # ファイル監視設定
     watch_enabled: bool = Field(default=False, description="ファイル監視有効")
     watch_interval: float = Field(default=1.0, ge=0.1, description="監視間隔(秒)")
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_UI_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_UI_")  # type: ignore[typeddict-unknown-key]
 
 
 class KumihanConfig(BaseModel):
@@ -269,9 +245,7 @@ class KumihanConfig(BaseModel):
 
     # メタ設定
     config_version: str = Field(default="1.0", description="設定バージョン")
-    config_file_path: Optional[Path] = Field(
-        default=None, description="設定ファイルパス"
-    )
+    config_file_path: Optional[Path] = Field(default=None, description="設定ファイルパス")
     last_updated: Optional[str] = Field(default=None, description="最終更新日時")
 
     # 環境情報
@@ -314,7 +288,7 @@ class KumihanConfig(BaseModel):
 
         return env_vars
 
-    model_config = ConfigDict(
+    model_config = ConfigDict(  # type: ignore[typeddict-unknown-key]
         validate_assignment=True,
         extra="forbid",
         env_nested_delimiter="__",

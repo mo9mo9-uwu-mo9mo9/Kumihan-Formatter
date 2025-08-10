@@ -16,9 +16,7 @@ class SyntaxReporter:
     """Handles formatting and reporting of syntax validation results"""
 
     @staticmethod
-    def check_files(
-        file_paths: list[Path], verbose: bool = False
-    ) -> dict[str, list[SyntaxError]]:
+    def check_files(file_paths: list[Path], verbose: bool = False) -> dict[str, list[SyntaxError]]:
         """Check multiple files for syntax errors"""
         validator = KumihanSyntaxValidator()
         results = {}
@@ -65,12 +63,8 @@ class SyntaxReporter:
             ]:
                 if severity in by_severity:
                     for error in by_severity[severity]:
-                        icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[
-                            severity.value
-                        ]
-                        report.append(
-                            f"  {icon} Line {error.line_number}: {error.message}"
-                        )
+                        icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[severity.value]
+                        report.append(f"  {icon} Line {error.line_number}: {error.message}")
 
                         if error.context:
                             report.append(f"     Context: {error.context}")
@@ -139,19 +133,15 @@ class SyntaxReporter:
             )
 
 
-def main():  # type: ignore
+def main():
     """CLI entry point for syntax checker"""
     import argparse
 
     parser = argparse.ArgumentParser(description="Kumihan記法 構文チェッカー")
     parser.add_argument("files", nargs="+", type=Path, help="チェックするファイルパス")
     parser.add_argument("-v", "--verbose", action="store_true", help="詳細な出力")
-    parser.add_argument(
-        "--no-suggestions", action="store_true", help="修正提案を表示しない"
-    )
-    parser.add_argument(
-        "--format", choices=["text", "json"], default="text", help="出力形式"
-    )
+    parser.add_argument("--no-suggestions", action="store_true", help="修正提案を表示しない")
+    parser.add_argument("--format", choices=["text", "json"], default="text", help="出力形式")
 
     args = parser.parse_args()
 
@@ -171,4 +161,4 @@ def main():  # type: ignore
 
 
 if __name__ == "__main__":
-    main()  # type: ignore
+    main()

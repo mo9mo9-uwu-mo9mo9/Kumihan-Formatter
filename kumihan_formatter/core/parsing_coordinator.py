@@ -46,9 +46,7 @@ class ParsingCoordinator:
         # 現在は基本実装のため未使用だが、パフォーマンス改善時に活用予定
         self._result_cache: Dict[str, Any] = {}
 
-    def parse_document(
-        self, content: Union[List[str], str]
-    ) -> Optional[Dict[str, Any]]:
+    def parse_document(self, content: Union[List[str], str]) -> Optional[Dict[str, Any]]:
         """
         文書を解析し、最適なパーサーで処理する
 

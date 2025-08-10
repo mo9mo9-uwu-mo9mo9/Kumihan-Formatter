@@ -163,11 +163,11 @@ class SyntaxRules:
         return sorted(cls.VALID_KEYWORDS)
 
     @staticmethod
-    def get_all_rules() -> dict[str, list[str]]:
+    def get_all_rules() -> dict[str, set[str]]:
         """すべての構文ルールを辞書形式で返す（テスト互換性のため）
 
         Returns:
-            dict: ルールカテゴリ別のキーワードリスト
+            dict: ルールカテゴリ別のキーワードセット
         """
         return {
             "valid_keywords": SyntaxRules.VALID_KEYWORDS,
@@ -235,9 +235,7 @@ class SyntaxRules:
         has_full_width = bool(re.search(r"[＃]", text))
 
         if has_half_width and has_full_width:
-            violations.append(
-                "半角マーカー（#）と全角マーカー（＃）の混在は禁止されています"
-            )
+            violations.append("半角マーカー（#）と全角マーカー（＃）の混在は禁止されています")
 
         return violations
 
@@ -261,9 +259,7 @@ class SyntaxRules:
             # 大文字小文字が混在していないかチェック
             lowercase_colors = [c for c in color_patterns if c.islower()]
             uppercase_colors = [c for c in color_patterns if c.isupper()]
-            mixed_case_colors = [
-                c for c in color_patterns if not c.islower() and not c.isupper()
-            ]
+            mixed_case_colors = [c for c in color_patterns if not c.islower() and not c.isupper()]
 
             # 複数のカテゴリに色名が存在する場合のみ違反
             categories_with_colors = 0
@@ -275,9 +271,7 @@ class SyntaxRules:
                 categories_with_colors += 1
 
             if categories_with_colors > 1:
-                violations.append(
-                    "color属性で大文字・小文字・混在表記の混用は禁止されています"
-                )
+                violations.append("color属性で大文字・小文字・混在表記の混用は禁止されています")
 
         return violations
 

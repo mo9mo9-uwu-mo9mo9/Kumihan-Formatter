@@ -23,7 +23,7 @@ class TestMainParser:
     def test_parser_initialization(self):
         """Test that parser initializes correctly."""
         assert self.parser is not None
-        assert hasattr(self.parser, 'logger')
+        assert hasattr(self.parser, "logger")
 
     def test_basic_text_parsing(self):
         """Test basic text parsing functionality."""
@@ -35,7 +35,7 @@ class TestMainParser:
 
         # Should return Node objects
         for result in results:
-            assert hasattr(result, 'type')
+            assert hasattr(result, "type")
 
     def test_empty_text_parsing(self):
         """Test parsing empty text."""
@@ -56,7 +56,7 @@ class TestMainParser:
         assert len(results) > 0
 
         # Should recognize block notation
-        found_bold = any('太字' in str(result) for result in results)
+        found_bold = any("太字" in str(result) for result in results)
         assert found_bold, "Block notation should be recognized"
 
     @pytest.mark.skip(reason="CI timeout issue - parser performance optimization needed")
@@ -83,7 +83,7 @@ class TestMainParser:
         assert len(results) > 0
 
         # Should recognize heading notation
-        found_heading = any('見出し' in str(result) for result in results)
+        found_heading = any("見出し" in str(result) for result in results)
         assert found_heading, "Heading notation should be recognized"
 
 
@@ -107,8 +107,8 @@ class TestParserIntegration:
         statistics = self.parser.get_statistics()
 
         assert isinstance(statistics, dict)
-        assert 'total_lines' in statistics
-        assert 'errors_count' in statistics
+        assert "total_lines" in statistics
+        assert "errors_count" in statistics
         # 実際に解析結果があることを確認
         assert len(nodes) >= 0
 

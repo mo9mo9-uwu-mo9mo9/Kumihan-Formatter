@@ -72,9 +72,7 @@ class TOCFormatter:
                 counters[level] += 1
 
             # Reset counters for deeper levels
-            levels_to_reset = [
-                level_key for level_key in counters.keys() if level_key > level
-            ]
+            levels_to_reset = [level_key for level_key in counters.keys() if level_key > level]
             for level_key in levels_to_reset:
                 del counters[level_key]
 
@@ -169,9 +167,7 @@ class TOCFormatter:
                 counters[level] += 1
 
             # Reset counters for deeper levels
-            levels_to_reset = [
-                level_key for level_key in counters.keys() if level_key > level
-            ]
+            levels_to_reset = [level_key for level_key in counters.keys() if level_key > level]
             for level_key in levels_to_reset:
                 del counters[level_key]
 

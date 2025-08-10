@@ -52,9 +52,7 @@ class StringSimilarity:
         matches = []
 
         for candidate in candidates:
-            similarity = StringSimilarity.similarity_ratio(
-                target.lower(), candidate.lower()
-            )
+            similarity = StringSimilarity.similarity_ratio(target.lower(), candidate.lower())
             if similarity >= min_similarity:
                 matches.append((candidate, similarity))
 

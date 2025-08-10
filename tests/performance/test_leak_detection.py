@@ -113,7 +113,7 @@ class MemoryLeakDetectionTest:
             "leak_tests": [],
             "detection_accuracy": 0.0,
             "false_positives": 0,
-            "false_negatives": 0
+            "false_negatives": 0,
         }
 
         for leak_type in leak_types:
@@ -124,8 +124,7 @@ class MemoryLeakDetectionTest:
 
             # ベースライン測定（リークなし）
             baseline_result = self.memory_optimizer.detect_memory_leaks(
-                threshold_mb=2.0,
-                sample_interval=2
+                threshold_mb=2.0, sample_interval=2
             )
 
             leak_test_result = {
@@ -134,7 +133,7 @@ class MemoryLeakDetectionTest:
                 "leak_created": False,
                 "leak_detected_after_creation": False,
                 "detection_time_ms": 0.0,
-                "cleanup_effective": False
+                "cleanup_effective": False,
             }
 
             # 意図的リーク作成
@@ -147,8 +146,7 @@ class MemoryLeakDetectionTest:
                 # リーク検出実行
                 detection_start = time.time()
                 leak_result = self.memory_optimizer.detect_memory_leaks(
-                    threshold_mb=3.0,
-                    sample_interval=3
+                    threshold_mb=3.0, sample_interval=3
                 )
                 leak_test_result["detection_time_ms"] = (time.time() - detection_start) * 1000
 
@@ -156,8 +154,10 @@ class MemoryLeakDetectionTest:
                 leak_test_result["memory_growth_mb"] = leak_result["memory_growth_mb"]
                 leak_test_result["gc_effect_mb"] = leak_result.get("gc_effect_mb", 0)
 
-                self.logger.info(f"{leak_type} leak: Created={leak_test_result['leak_created']}, "
-                               f"Detected={leak_test_result['leak_detected_after_creation']}")
+                self.logger.info(
+                    f"{leak_type} leak: Created={leak_test_result['leak_created']}, "
+                    f"Detected={leak_test_result['leak_detected_after_creation']}"
+                )
 
             except Exception as e:
                 self.logger.error(f"Error during {leak_type} leak test: {e}")
@@ -194,9 +194,11 @@ class MemoryLeakDetectionTest:
 
         for test in results["leak_tests"]:
             # 正しい検出: リーク作成後に検出され、ベースラインでは検出されない
-            if (test["leak_created"] and
-                test["leak_detected_after_creation"] and
-                not test["baseline_leak_detected"]):
+            if (
+                test["leak_created"]
+                and test["leak_detected_after_creation"]
+                and not test["baseline_leak_detected"]
+            ):
                 correct_detections += 1
 
             # 偽陽性: ベースラインでリーク検出
@@ -204,16 +206,19 @@ class MemoryLeakDetectionTest:
                 results["false_positives"] += 1
 
             # 偽陰性: リーク作成後に検出されない
-            if (test["leak_created"] and
-                not test["leak_detected_after_creation"]):
+            if test["leak_created"] and not test["leak_detected_after_creation"]:
                 results["false_negatives"] += 1
 
-        results["detection_accuracy"] = (correct_detections / total_tests * 100) if total_tests > 0 else 0
+        results["detection_accuracy"] = (
+            (correct_detections / total_tests * 100) if total_tests > 0 else 0
+        )
 
         self.logger.info(f"Leak detection accuracy: {results['detection_accuracy']:.1f}%")
         return results
 
-    def test_leak_detection_sensitivity(self, threshold_levels: List[float] = None) -> Dict[str, Any]:
+    def test_leak_detection_sensitivity(
+        self, threshold_levels: List[float] = None
+    ) -> Dict[str, Any]:
         """
         メモリリーク検出感度テスト
 
@@ -226,13 +231,15 @@ class MemoryLeakDetectionTest:
         if threshold_levels is None:
             threshold_levels = [1.0, 2.5, 5.0, 10.0, 20.0]
 
-        self.logger.info(f"Starting leak detection sensitivity test with thresholds: {threshold_levels}")
+        self.logger.info(
+            f"Starting leak detection sensitivity test with thresholds: {threshold_levels}"
+        )
 
         results = {
             "test_name": "leak_detection_sensitivity",
             "threshold_tests": [],
             "optimal_threshold_mb": 0.0,
-            "sensitivity_curve": []
+            "sensitivity_curve": [],
         }
 
         # 段階的にメモリリークを作成
@@ -249,21 +256,26 @@ class MemoryLeakDetectionTest:
 
                 for threshold in threshold_levels:
                     detection_result = self.memory_optimizer.detect_memory_leaks(
-                        threshold_mb=threshold,
-                        sample_interval=2
+                        threshold_mb=threshold, sample_interval=2
                     )
 
-                    threshold_results.append({
-                        "threshold_mb": threshold,
-                        "leak_detected": detection_result["leak_detected"],
-                        "memory_growth_mb": detection_result["memory_growth_mb"],
-                        "detection_confidence": self._calculate_detection_confidence(detection_result)
-                    })
+                    threshold_results.append(
+                        {
+                            "threshold_mb": threshold,
+                            "leak_detected": detection_result["leak_detected"],
+                            "memory_growth_mb": detection_result["memory_growth_mb"],
+                            "detection_confidence": self._calculate_detection_confidence(
+                                detection_result
+                            ),
+                        }
+                    )
 
                 sensitivity_point = {
                     "leak_size_mb": leak_size,
                     "threshold_results": threshold_results,
-                    "min_detection_threshold": self._find_min_detection_threshold(threshold_results)
+                    "min_detection_threshold": self._find_min_detection_threshold(
+                        threshold_results
+                    ),
                 }
 
                 results["sensitivity_curve"].append(sensitivity_point)
@@ -275,12 +287,16 @@ class MemoryLeakDetectionTest:
                 time.sleep(0.5)
 
         # 最適閾値計算
-        results["optimal_threshold_mb"] = self._calculate_optimal_threshold(results["sensitivity_curve"])
+        results["optimal_threshold_mb"] = self._calculate_optimal_threshold(
+            results["sensitivity_curve"]
+        )
 
         self.logger.info(f"Optimal detection threshold: {results['optimal_threshold_mb']:.1f} MB")
         return results
 
-    def test_leak_detection_under_load(self, concurrent_threads: int = 4, duration_minutes: int = 5) -> Dict[str, Any]:
+    def test_leak_detection_under_load(
+        self, concurrent_threads: int = 4, duration_minutes: int = 5
+    ) -> Dict[str, Any]:
         """
         負荷下でのメモリリーク検出テスト
 
@@ -291,7 +307,9 @@ class MemoryLeakDetectionTest:
         Returns:
             Dict[str, Any]: テスト結果
         """
-        self.logger.info(f"Starting leak detection under load test: {concurrent_threads} threads, {duration_minutes} min")
+        self.logger.info(
+            f"Starting leak detection under load test: {concurrent_threads} threads, {duration_minutes} min"
+        )
 
         results = {
             "test_name": "leak_detection_under_load",
@@ -300,7 +318,7 @@ class MemoryLeakDetectionTest:
             "detection_attempts": 0,
             "successful_detections": 0,
             "detection_times_ms": [],
-            "load_impact_factor": 0.0
+            "load_impact_factor": 0.0,
         }
 
         test_active = threading.Event()
@@ -335,19 +353,20 @@ class MemoryLeakDetectionTest:
                     start_time = time.time()
 
                     leak_result = self.memory_optimizer.detect_memory_leaks(
-                        threshold_mb=5.0,
-                        sample_interval=2
+                        threshold_mb=5.0, sample_interval=2
                     )
 
                     detection_time = (time.time() - start_time) * 1000
 
                     with detection_lock:
-                        detection_results.append({
-                            "timestamp": time.time(),
-                            "detection_time_ms": detection_time,
-                            "leak_detected": leak_result["leak_detected"],
-                            "memory_growth_mb": leak_result["memory_growth_mb"]
-                        })
+                        detection_results.append(
+                            {
+                                "timestamp": time.time(),
+                                "detection_time_ms": detection_time,
+                                "leak_detected": leak_result["leak_detected"],
+                                "memory_growth_mb": leak_result["memory_growth_mb"],
+                            }
+                        )
 
                     time.sleep(2)  # 2秒間隔で検出実行
 
@@ -381,12 +400,16 @@ class MemoryLeakDetectionTest:
         results["detection_times_ms"] = [r["detection_time_ms"] for r in detection_results]
 
         if results["detection_times_ms"]:
-            avg_detection_time = sum(results["detection_times_ms"]) / len(results["detection_times_ms"])
+            avg_detection_time = sum(results["detection_times_ms"]) / len(
+                results["detection_times_ms"]
+            )
             # ベースライン検出時間と比較（負荷なしでの検出時間）
             baseline_time = 100  # 仮定値（ms）
             results["load_impact_factor"] = avg_detection_time / baseline_time
 
-        self.logger.info(f"Load test completed. Detection rate: {results['successful_detections']}/{results['detection_attempts']}")
+        self.logger.info(
+            f"Load test completed. Detection rate: {results['successful_detections']}/{results['detection_attempts']}"
+        )
         return results
 
     def _calculate_detection_confidence(self, detection_result: Dict[str, Any]) -> float:
@@ -406,7 +429,7 @@ class MemoryLeakDetectionTest:
         for result in sorted(threshold_results, key=lambda x: x["threshold_mb"]):
             if result["leak_detected"]:
                 return result["threshold_mb"]
-        return float('inf')
+        return float("inf")
 
     def _calculate_optimal_threshold(self, sensitivity_curve: List[Dict[str, Any]]) -> float:
         """最適閾値計算"""
@@ -417,7 +440,7 @@ class MemoryLeakDetectionTest:
         min_thresholds = []
         for point in sensitivity_curve:
             min_threshold = point["min_detection_threshold"]
-            if min_threshold != float('inf'):
+            if min_threshold != float("inf"):
                 min_thresholds.append(min_threshold)
 
         return sum(min_thresholds) / len(min_thresholds) if min_thresholds else 5.0
@@ -454,8 +477,7 @@ class TestMemoryLeakDetection:
     def test_load_detection_basic(self):
         """基本的な負荷下検出テスト"""
         result = self.test_suite.test_leak_detection_under_load(
-            concurrent_threads=2,
-            duration_minutes=1
+            concurrent_threads=2, duration_minutes=1
         )
 
         # 検証条件

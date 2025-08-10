@@ -62,9 +62,7 @@ class ConsoleUI:
     def error(self, message: str, details: Optional[str] = None) -> None:
         self.messaging.error(message, details)
 
-    def file_error(
-        self, file_path: str, error_type: str = "ファイルが見つかりません"
-    ) -> None:
+    def file_error(self, file_path: str, error_type: str = "ファイルが見つかりません") -> None:
         self.messaging.file_error(file_path, error_type)
 
     def encoding_error(self, file_path: str) -> None:
@@ -118,9 +116,7 @@ class ConsoleUI:
     def statistics(self, stats: dict[str, Any]) -> None:
         self.messaging.statistics(stats)
 
-    def test_statistics(
-        self, stats: dict[str, Any], double_click_mode: bool = False
-    ) -> None:
+    def test_statistics(self, stats: dict[str, Any], double_click_mode: bool = False) -> None:
         self.messaging.test_statistics(stats, double_click_mode)
 
     # From ConsoleOperations
@@ -156,17 +152,13 @@ class ConsoleUI:
     ) -> None:
         self.operations.sample_complete(output_path, txt_name, html_name, image_count)
 
-    def test_cases_detected(
-        self, count: int, cases: list[tuple[int, str, str]]
-    ) -> None:
+    def test_cases_detected(self, count: int, cases: list[tuple[int, str, str]]) -> None:
         self.operations.test_cases_detected(count, cases)
 
     def test_file_generation(self, double_click_mode: bool = False) -> None:
         self.operations.test_file_generation(double_click_mode)
 
-    def test_file_complete(
-        self, output_file: str, double_click_mode: bool = False
-    ) -> None:
+    def test_file_complete(self, output_file: str, double_click_mode: bool = False) -> None:
         self.operations.test_file_complete(output_file, double_click_mode)
 
     def test_conversion_start(self, double_click_mode: bool = False) -> None:
@@ -175,9 +167,7 @@ class ConsoleUI:
     def test_conversion_complete(
         self, test_output_file: str, output_file: str, double_click_mode: bool = False
     ) -> None:
-        self.operations.test_conversion_complete(
-            test_output_file, output_file, double_click_mode
-        )
+        self.operations.test_conversion_complete(test_output_file, output_file, double_click_mode)
 
     def test_conversion_error(self, error: str) -> None:
         self.operations.test_conversion_error(error)

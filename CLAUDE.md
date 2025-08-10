@@ -42,6 +42,12 @@
 - **エラー対応**: 一時的エラーは1回再試行、永続的エラーはIssue作成
 - **詳細**: [AI最適化ガイド](docs/claude/serena/phase_a_guide.md)
 
+### 🌐 外部AI委託時の制約緩和
+- **制約適用範囲**: R7原則・serena-expert必須使用はClaude Code専用
+- **外部委託時**: 汎用ツール（read_file, write_file, replace等）使用許可
+- **委託計画作成**: 外部AI向けには制約なしの実行可能計画を作成
+- **品質保証**: 外部AI作業完了後、Claude Codeで品質確認・最終調整実施
+
 # 基本設定
 
 - **Python**: 3.12以上, Black, isort, mypy strict

@@ -133,9 +133,7 @@ class StatisticalTestingEngine:
         self.scipy_available = SCIPY_AVAILABLE
 
         if not self.scipy_available:
-            self.logger.warning(
-                "scipy not available, using fallback statistical methods"
-            )
+            self.logger.warning("scipy not available, using fallback statistical methods")
 
     def calculate_cohens_d(self, group1: List[float], group2: List[float]) -> float:
         """効果量Cohen's dを計算"""
@@ -155,9 +153,7 @@ class StatisticalTestingEngine:
                 var1 = np.var(group1, ddof=1) if n1 > 1 else 0
                 var2 = np.var(group2, ddof=1) if n2 > 1 else 0
 
-                pooled_std = math.sqrt(
-                    ((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2)
-                )
+                pooled_std = math.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2))
 
                 if pooled_std == 0:
                     return 0.0
@@ -268,16 +264,12 @@ class StatisticalTestingEngine:
 
                 # 信頼区間計算（差の信頼区間）
                 diff = np.mean(group1) - np.mean(group2)
-                se_diff = math.sqrt(
-                    np.var(group1) / len(group1) + np.var(group2) / len(group2)
-                )
+                se_diff = math.sqrt(np.var(group1) / len(group1) + np.var(group2) / len(group2))
                 ci_lower = diff - 1.96 * se_diff
                 ci_upper = diff + 1.96 * se_diff
 
                 # 検出力計算（事後）
-                power = self._estimate_power(
-                    len(group1), len(group2), effect_size, alpha
-                )
+                power = self._estimate_power(len(group1), len(group2), effect_size, alpha)
 
                 return StatisticalTestResult(
                     test_type=test_type,
@@ -291,9 +283,7 @@ class StatisticalTestingEngine:
 
             elif test_type == "mann_whitney" and self.scipy_available:
                 # Mann-Whitney U検定
-                statistic, p_value = stats.mannwhitneyu(
-                    group1, group2, alternative="two-sided"
-                )
+                statistic, p_value = stats.mannwhitneyu(group1, group2, alternative="two-sided")
 
                 return StatisticalTestResult(
                     test_type=test_type,
@@ -322,9 +312,7 @@ class StatisticalTestingEngine:
                 test_type=test_type, statistic=0.0, p_value=1.0, significant=False
             )
 
-    def _estimate_power(
-        self, n1: int, n2: int, effect_size: float, alpha: float
-    ) -> float:
+    def _estimate_power(self, n1: int, n2: int, effect_size: float, alpha: float) -> float:
         """検出力を推定（事後分析）"""
         try:
             if effect_size == 0:

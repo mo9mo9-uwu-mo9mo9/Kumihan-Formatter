@@ -61,7 +61,10 @@ class TestConfigModels:
             ParallelConfig(min_chunk_size=100, max_chunk_size=50)
 
         # メモリしきい値の整合性チェック
-        with pytest.raises(ValueError, match="memory_critical_threshold_mb must be greater than memory_warning_threshold_mb"):
+        with pytest.raises(
+            ValueError,
+            match="memory_critical_threshold_mb must be greater than memory_warning_threshold_mb",
+        ):
             ParallelConfig(memory_warning_threshold_mb=200, memory_critical_threshold_mb=150)
 
     def test_logging_config_defaults(self):
@@ -128,10 +131,7 @@ class TestConfigModels:
     def test_kumihan_config_validation(self):
         """統一設定の検証テスト"""
         # デバッグモードとログレベルの自動調整
-        config = KumihanConfig(
-            debug_mode=True,
-            logging=LoggingConfig(log_level=LogLevel.ERROR)
-        )
+        config = KumihanConfig(debug_mode=True, logging=LoggingConfig(log_level=LogLevel.ERROR))
 
         # デバッグモード時は自動的にログレベルがDEBUGに調整される
         assert config.logging.log_level == LogLevel.DEBUG
@@ -148,90 +148,81 @@ class TestConfigLoader:
     def teardown_method(self):
         """テストクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_yaml_config_loading(self):
         """YAML設定ファイル読み込みテスト"""
         yaml_content = {
-            'parallel': {
-                'parallel_threshold_lines': 10000,  # 実装デフォルト値に合わせて修正
-                'max_chunk_size': 1000
+            "parallel": {
+                "parallel_threshold_lines": 10000,  # 実装デフォルト値に合わせて修正
+                "max_chunk_size": 1000,
             },
-            'logging': {
-                'log_level': 'DEBUG'
-            }
+            "logging": {"log_level": "DEBUG"},
         }
 
         config_file = self.temp_dir / "test.yaml"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(yaml_content, f)
 
         loaded_config = self.loader.load_from_file(config_file)
 
-        assert loaded_config['parallel']['parallel_threshold_lines'] == 10000
-        assert loaded_config['parallel']['max_chunk_size'] == 1000
-        assert loaded_config['logging']['log_level'] == 'DEBUG'
+        assert loaded_config["parallel"]["parallel_threshold_lines"] == 10000
+        assert loaded_config["parallel"]["max_chunk_size"] == 1000
+        assert loaded_config["logging"]["log_level"] == "DEBUG"
 
     def test_json_config_loading(self):
         """JSON設定ファイル読み込みテスト"""
         json_content = {
-            'error': {
-                'graceful_errors': True,
-                'error_display_limit': 20
-            },
-            'ui': {
-                'auto_preview': False
-            }
+            "error": {"graceful_errors": True, "error_display_limit": 20},
+            "ui": {"auto_preview": False},
         }
 
         config_file = self.temp_dir / "test.json"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(json_content, f)
 
         loaded_config = self.loader.load_from_file(config_file)
 
-        assert loaded_config['error']['graceful_errors'] is True
-        assert loaded_config['error']['error_display_limit'] == 20
-        assert loaded_config['ui']['auto_preview'] is False
+        assert loaded_config["error"]["graceful_errors"] is True
+        assert loaded_config["error"]["error_display_limit"] == 20
+        assert loaded_config["ui"]["auto_preview"] is False
 
     def test_environment_variable_loading(self):
         """環境変数読み込みテスト"""
-        with patch.dict(os.environ, {
-            'KUMIHAN_PARALLEL__THRESHOLD_LINES': '8000',
-            'KUMIHAN_LOGGING__LOG_LEVEL': 'WARNING',
-            'KUMIHAN_ERROR__GRACEFUL_ERRORS': 'true',
-            'KUMIHAN_DEBUG_MODE': 'yes'
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "KUMIHAN_PARALLEL__THRESHOLD_LINES": "8000",
+                "KUMIHAN_LOGGING__LOG_LEVEL": "WARNING",
+                "KUMIHAN_ERROR__GRACEFUL_ERRORS": "true",
+                "KUMIHAN_DEBUG_MODE": "yes",
+            },
+        ):
             env_config = self.loader.load_from_environment()
 
-            assert env_config['parallel']['threshold_lines'] == 8000
-            assert env_config['logging']['log_level'] == 'WARNING'
-            assert env_config['error']['graceful_errors'] is True
-            assert env_config['debug_mode'] is True
+            assert env_config["parallel"]["threshold_lines"] == 8000
+            assert env_config["logging"]["log_level"] == "WARNING"
+            assert env_config["error"]["graceful_errors"] is True
+            assert env_config["debug_mode"] is True
 
     def test_config_merging(self):
         """設定マージテスト"""
-        base_config = {
-            'parallel': {'threshold_lines': 1000},
-            'logging': {'log_level': 'INFO'}
-        }
+        base_config = {"parallel": {"threshold_lines": 1000}, "logging": {"log_level": "INFO"}}
 
-        override_config = {
-            'parallel': {'max_chunk_size': 500},
-            'error': {'graceful_errors': True}
-        }
+        override_config = {"parallel": {"max_chunk_size": 500}, "error": {"graceful_errors": True}}
 
         merged = self.loader.merge_configs(base_config, override_config)
 
         # ベース設定の保持
-        assert merged['logging']['log_level'] == 'INFO'
+        assert merged["logging"]["log_level"] == "INFO"
 
         # オーバーライド設定の適用
-        assert merged['error']['graceful_errors'] is True
+        assert merged["error"]["graceful_errors"] is True
 
         # ネストしたマージ
-        assert merged['parallel']['threshold_lines'] == 1000
-        assert merged['parallel']['max_chunk_size'] == 500
+        assert merged["parallel"]["threshold_lines"] == 1000
+        assert merged["parallel"]["max_chunk_size"] == 500
 
     def test_config_file_detection(self):
         """設定ファイル検出テスト"""
@@ -239,7 +230,7 @@ class TestConfigLoader:
         yaml_file = self.temp_dir / "kumihan.yaml"
         yaml_file.write_text("parallel:\n  threshold_lines: 2000")
 
-        with patch('pathlib.Path.cwd', return_value=self.temp_dir):
+        with patch("pathlib.Path.cwd", return_value=self.temp_dir):
             found_file = self.loader.find_config_file()
             assert found_file == yaml_file
 
@@ -263,14 +254,12 @@ class TestConfigValidator:
     def test_valid_config_validation(self):
         """正常な設定の検証テスト"""
         valid_config = {
-            'parallel': {
-                'parallel_threshold_lines': 10000,  # 実装デフォルト値に合わせて修正
-                'max_chunk_size': 1500,
-                'min_chunk_size': 100
+            "parallel": {
+                "parallel_threshold_lines": 10000,  # 実装デフォルト値に合わせて修正
+                "max_chunk_size": 1500,
+                "min_chunk_size": 100,
             },
-            'logging': {
-                'log_level': 'INFO'
-            }
+            "logging": {"log_level": "INFO"},
         }
 
         result = self.validator.validate_config(valid_config)
@@ -282,10 +271,10 @@ class TestConfigValidator:
     def test_invalid_config_validation(self):
         """不正な設定の検証テスト"""
         invalid_config = {
-            'parallel': {
-                'parallel_threshold_lines': -1000,  # 負の値
-                'max_chunk_size': 50,
-                'min_chunk_size': 100  # max < min
+            "parallel": {
+                "parallel_threshold_lines": -1000,  # 負の値
+                "max_chunk_size": 50,
+                "min_chunk_size": 100,  # max < min
             }
         }
 
@@ -297,9 +286,9 @@ class TestConfigValidator:
     def test_auto_fix_functionality(self):
         """自動修正機能テスト"""
         config_with_issues = {
-            'parallel': {
-                'memory_warning_threshold_mb': 200,
-                'memory_critical_threshold_mb': 150  # critical < warning
+            "parallel": {
+                "memory_warning_threshold_mb": 200,
+                "memory_critical_threshold_mb": 150,  # critical < warning
             }
         }
 
@@ -307,8 +296,10 @@ class TestConfigValidator:
 
         if result.fixed_config:
             # 自動修正により critical > warning になっているはず
-            assert (result.fixed_config.parallel.memory_critical_threshold_mb >
-                   result.fixed_config.parallel.memory_warning_threshold_mb)
+            assert (
+                result.fixed_config.parallel.memory_critical_threshold_mb
+                > result.fixed_config.parallel.memory_warning_threshold_mb
+            )
 
     def test_css_value_validation(self):
         """CSS値検証テスト"""
@@ -346,6 +337,7 @@ class TestUnifiedConfigManager:
     def teardown_method(self):
         """テストクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_manager_initialization(self):
@@ -361,12 +353,12 @@ class TestUnifiedConfigManager:
         """設定ファイル読み込みテスト"""
         # テスト設定ファイル作成 - 正しい構造で作成
         test_config = {
-            'parallel': {'parallel_threshold_lines': 10000},
-            'logging': {'log_level': 'DEBUG'},
-            'debug_mode': True
+            "parallel": {"parallel_threshold_lines": 10000},
+            "logging": {"log_level": "DEBUG"},
+            "debug_mode": True,
         }
 
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             yaml.dump(test_config, f)
 
         manager = UnifiedConfigManager(config_file=self.config_file)
@@ -379,8 +371,8 @@ class TestUnifiedConfigManager:
     def test_config_reload(self):
         """設定再読み込みテスト"""
         # 初期設定ファイル作成 - 実装デフォルト値の10000を使用
-        initial_config = {'parallel': {'parallel_threshold_lines': 10000}}
-        with open(self.config_file, 'w') as f:
+        initial_config = {"parallel": {"parallel_threshold_lines": 10000}}
+        with open(self.config_file, "w") as f:
             yaml.dump(initial_config, f)
 
         manager = UnifiedConfigManager(config_file=self.config_file)
@@ -388,8 +380,8 @@ class TestUnifiedConfigManager:
         assert initial_threshold == 10000
 
         # 設定ファイル更新
-        updated_config = {'parallel': {'parallel_threshold_lines': 7000}}
-        with open(self.config_file, 'w') as f:
+        updated_config = {"parallel": {"parallel_threshold_lines": 7000}}
+        with open(self.config_file, "w") as f:
             yaml.dump(updated_config, f)
 
         # 強制再読み込み
@@ -409,16 +401,16 @@ class TestUnifiedConfigManager:
         assert save_path.exists()
 
         # 保存された設定の確認
-        with open(save_path, 'r', encoding='utf-8') as f:
+        with open(save_path, "r", encoding="utf-8") as f:
             saved_data = yaml.safe_load(f)
 
-        assert 'parallel' in saved_data
-        assert 'logging' in saved_data
-        assert 'error' in saved_data
+        assert "parallel" in saved_data
+        assert "logging" in saved_data
+        assert "error" in saved_data
 
         # Enum値が文字列として正しく保存されているか確認
-        assert saved_data['logging']['log_level'] == 'INFO'
-        assert saved_data['error']['default_level'] == 'normal'
+        assert saved_data["logging"]["log_level"] == "INFO"
+        assert saved_data["error"]["default_level"] == "normal"
 
     def test_compatibility_methods(self):
         """互換性メソッドテスト"""
@@ -448,6 +440,7 @@ class TestConfigAdapters:
         """テストセットアップ"""
         # 警告を無視（テスト中の互換性警告のため）
         import warnings
+
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_parallel_processing_config_adapter(self):
@@ -461,7 +454,7 @@ class TestConfigAdapters:
         assert adapter.max_chunk_size > adapter.min_chunk_size
 
         # 旧API互換メソッドのテスト
-        should_parallel = adapter.should_use_parallel_processing(20000, 20*1024*1024)
+        should_parallel = adapter.should_use_parallel_processing(20000, 20 * 1024 * 1024)
         assert should_parallel is True
 
         chunk_count = adapter.calculate_chunk_count(10000)
@@ -474,7 +467,7 @@ class TestConfigAdapters:
         # 辞書形式出力テスト
         config_dict = adapter.to_dict()
         assert isinstance(config_dict, dict)
-        assert 'parallel_threshold_lines' in config_dict
+        assert "parallel_threshold_lines" in config_dict
 
     def test_error_config_manager_adapter(self):
         """エラー設定マネージャーアダプターテスト"""
@@ -499,7 +492,7 @@ class TestConfigAdapters:
         # 辞書形式出力テスト
         config_dict = adapter.to_dict()
         assert isinstance(config_dict, dict)
-        assert 'graceful_errors' in config_dict
+        assert "graceful_errors" in config_dict
 
     def test_base_config_adapter(self):
         """ベース設定アダプターテスト"""
@@ -524,7 +517,7 @@ class TestConfigAdapters:
         # 辞書形式出力テスト
         config_dict = adapter.to_dict()
         assert isinstance(config_dict, dict)
-        assert 'max_width' in config_dict
+        assert "max_width" in config_dict
 
 
 class TestIntegration:
@@ -538,33 +531,27 @@ class TestIntegration:
         try:
             # 統合設定ファイル作成 - 正しい構造で作成
             full_config = {
-                'parallel': {
-                    'parallel_threshold_lines': 10000,
-                    'max_chunk_size': 3000,
-                    'memory_warning_threshold_mb': 200
+                "parallel": {
+                    "parallel_threshold_lines": 10000,
+                    "max_chunk_size": 3000,
+                    "memory_warning_threshold_mb": 200,
                 },
-                'logging': {
-                    'log_level': 'DEBUG',
-                    'dev_log_enabled': True
+                "logging": {"log_level": "DEBUG", "dev_log_enabled": True},
+                "error": {
+                    "graceful_errors": True,
+                    "continue_on_error": True,
+                    "error_display_limit": 15,
                 },
-                'error': {
-                    'graceful_errors': True,
-                    'continue_on_error': True,
-                    'error_display_limit': 15
+                "rendering": {
+                    "max_width": "1000px",
+                    "background_color": "#ffffff",
+                    "include_source": True,
                 },
-                'rendering': {
-                    'max_width': '1000px',
-                    'background_color': '#ffffff',
-                    'include_source': True
-                },
-                'ui': {
-                    'auto_preview': False,
-                    'progress_level': 'verbose'
-                },
-                'debug_mode': True
+                "ui": {"auto_preview": False, "progress_level": "verbose"},
+                "debug_mode": True,
             }
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 yaml.dump(full_config, f)
 
             # 統一設定マネージャーでの読み込み
@@ -575,7 +562,7 @@ class TestIntegration:
             assert config.parallel.parallel_threshold_lines == 10000
             assert config.logging.log_level == LogLevel.DEBUG
             assert config.error.graceful_errors is True
-            assert config.rendering.max_width == '1000px'
+            assert config.rendering.max_width == "1000px"
             assert config.ui.auto_preview is False
             assert config.debug_mode is True
 
@@ -589,10 +576,11 @@ class TestIntegration:
 
             # BaseConfigAdapterは直接managerから設定を取得
             base_config = manager.get_config()
-            assert base_config.rendering.max_width == '1000px'
+            assert base_config.rendering.max_width == "1000px"
 
         finally:
             import shutil
+
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     @pytest.mark.skip(reason="環境変数オーバーライドテストは複雑な依存関係により一時的にスキップ")
@@ -604,33 +592,38 @@ class TestIntegration:
         try:
             # ベース設定ファイル
             base_config = {
-                'parallel': {'parallel_threshold_lines': 10000},  # 実装デフォルト値に合わせて修正
-                'logging': {'log_level': 'INFO'}
+                "parallel": {"parallel_threshold_lines": 10000},  # 実装デフォルト値に合わせて修正
+                "logging": {"log_level": "INFO"},
             }
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 yaml.dump(base_config, f)
 
             # 環境変数でオーバーライド（既存フィールドのみ使用）
-            with patch.dict(os.environ, {
-                'KUMIHAN_PARALLEL__PARALLEL_THRESHOLD_LINES': '12000',
-                'KUMIHAN_LOGGING__LOG_LEVEL': 'WARNING',
-                'KUMIHAN_ENVIRONMENT': 'development'
-            }):
+            with patch.dict(
+                os.environ,
+                {
+                    "KUMIHAN_PARALLEL__PARALLEL_THRESHOLD_LINES": "12000",
+                    "KUMIHAN_LOGGING__LOG_LEVEL": "WARNING",
+                    "KUMIHAN_ENVIRONMENT": "development",
+                },
+            ):
                 # グローバル状態をリセットして新しい設定で初期化
                 from kumihan_formatter.core.unified_config.unified_config_manager import (
                     get_unified_config_manager,
                 )
+
                 manager = get_unified_config_manager(config_file=config_file, force_reload=True)
                 config = manager.get_config()
 
                 # 環境変数による設定の確認
                 assert config.parallel.parallel_threshold_lines == 12000
                 assert config.logging.log_level == LogLevel.WARNING
-                assert config.environment == 'development'
+                assert config.environment == "development"
 
         finally:
             import shutil
+
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 

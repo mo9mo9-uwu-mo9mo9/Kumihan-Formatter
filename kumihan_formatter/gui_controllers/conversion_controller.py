@@ -12,15 +12,10 @@ if TYPE_CHECKING:
     pass  # ..gui_models.AppState removed as unused
     # ..gui_views.MainView removed as unused
 
-# デバッグロガーのインポート
-try:
-    from ..core.debug_logger import (
-        log_gui_event,
-    )
-except ImportError:
-    # Fallbacksを定義
-    def log_gui_event(*args: Any, **kwargs: Any) -> None:
-        pass
+
+# デバッグロガーのインポート（代替実装）
+def log_gui_event(*args: Any, **kwargs: Any) -> None:
+    pass
 
 
 # 分離したスレッド処理のインポート
@@ -83,15 +78,11 @@ class ConversionController:
             if self.app_state is None:
                 # テスト環境用のロジック
                 input_file = (
-                    self.model.input_file_var.get()
-                    if hasattr(self.model, "input_file_var")
-                    else ""
+                    self.model.input_file_var.get() if hasattr(self.model, "input_file_var") else ""
                 )
                 if not input_file:
                     if hasattr(self.view, "show_error_message"):
-                        self.view.show_error_message(
-                            "エラー", "入力ファイルを選択してください。"
-                        )
+                        self.view.show_error_message("エラー", "入力ファイルを選択してください。")
                     return
 
                 # テスト環境では実際の変換は行わず、成功をシミュレート
@@ -129,9 +120,7 @@ class ConversionController:
 
             # 初期化エラーチェック
             if self.threads is None:
-                log_gui_event(
-                    "error", "サンプル生成処理ハンドラーが初期化されていません"
-                )
+                log_gui_event("error", "サンプル生成処理ハンドラーが初期化されていません")
                 return
 
             # テスト環境での互換性チェック

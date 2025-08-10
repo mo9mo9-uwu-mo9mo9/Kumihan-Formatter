@@ -96,13 +96,13 @@ class MemoryLeakDetector:
         min_memory = min(self.memory_history)
 
         return {
-            'initial_mb': self.initial_memory,
-            'current_mb': current_memory,
-            'peak_mb': peak_memory,
-            'min_mb': min_memory,
-            'growth_mb': current_memory - self.initial_memory,
-            'peak_growth_mb': peak_memory - self.initial_memory,
-            'samples_count': len(self.memory_history)
+            "initial_mb": self.initial_memory,
+            "current_mb": current_memory,
+            "peak_mb": peak_memory,
+            "min_mb": min_memory,
+            "growth_mb": current_memory - self.initial_memory,
+            "peak_growth_mb": peak_memory - self.initial_memory,
+            "samples_count": len(self.memory_history),
         }
 
 
@@ -117,7 +117,7 @@ def generate_test_content(size_kb: int = 100) -> str:
         "通常のパラグラフ。長いテキスト内容がここに記述されます。",
         "# ハイライト # 注目すべき内容",
         "1. 順序付きリスト項目",
-        ""
+        "",
     ]
 
     # 目標サイズまでコンテンツを生成
@@ -129,7 +129,7 @@ def generate_test_content(size_kb: int = 100) -> str:
         line_template = sample_lines[line_counter % len(sample_lines)]
         line = line_template.replace("テスト", f"テスト{line_counter}")
         content_lines.append(line)
-        current_size += len(line.encode('utf-8'))
+        current_size += len(line.encode("utf-8"))
         line_counter += 1
 
     return "\n".join(content_lines)
@@ -162,12 +162,14 @@ def test_repeated_parsing():
         # メモリ使用量記録
         memory_mb = detector.record_memory_usage(f"iteration_{i+1}")
 
-        results.append({
-            'iteration': i + 1,
-            'memory_mb': memory_mb,
-            'nodes_count': len(nodes),
-            'duration_seconds': end_time - start_time
-        })
+        results.append(
+            {
+                "iteration": i + 1,
+                "memory_mb": memory_mb,
+                "nodes_count": len(nodes),
+                "duration_seconds": end_time - start_time,
+            }
+        )
 
         # ガベージコレクション実行
         del parser, nodes
@@ -354,6 +356,7 @@ def main():
     except Exception as e:
         print(f"\n💥 テスト実行エラー: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

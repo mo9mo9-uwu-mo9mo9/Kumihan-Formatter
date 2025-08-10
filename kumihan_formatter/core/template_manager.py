@@ -150,9 +150,12 @@ class TemplateManager:
                 template_name
             )  # テンプレート取得（構文チェック用）
             # Access source through loader
-            source, _, _ = template.environment.loader.get_source(
-                template.environment, template_name
-            )  # type: ignore
+            if template.environment.loader is not None:
+                source, _, _ = template.environment.loader.get_source(
+                    template.environment, template_name
+                )
+            else:
+                raise Exception("Template loader is not available")
             template.environment.parse(source)
             return True, None
         except Exception as e:
@@ -257,9 +260,12 @@ class TemplateValidator:
         try:
             template = self.template_manager.get_template(template_name)
             # Get the template source code via the environment loader
+            if template.environment.loader is None:
+                return False, required_vars
+
             source, _, _ = template.environment.loader.get_source(
                 template.environment, template_name
-            )  # type: ignore
+            )
 
             missing_vars = []
             for var in required_vars:

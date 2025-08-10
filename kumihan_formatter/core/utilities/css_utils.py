@@ -76,8 +76,7 @@ def validate_css_availability(css_content: str) -> dict[str, bool]:
         else:
             # 必要なクラスがすべて含まれているかチェック
             all_classes_available = all(
-                f".{cls}" in css_content or f".{cls} " in css_content
-                for cls in required_classes
+                f".{cls}" in css_content or f".{cls} " in css_content for cls in required_classes
             )
             availability[keyword] = all_classes_available
 

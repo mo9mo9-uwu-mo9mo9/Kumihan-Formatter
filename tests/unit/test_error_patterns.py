@@ -41,7 +41,9 @@ class TestSyntaxErrors:
             assert len(errors) > 0, f"Failed to detect unclosed marker in: {text}"
 
             # Check error severity
-            severe_errors = [e for e in errors if hasattr(e, 'severity') and e.severity == ErrorSeverity.ERROR]
+            severe_errors = [
+                e for e in errors if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
+            ]
             assert len(severe_errors) > 0, f"Unclosed marker should be severe error: {text}"
 
     def test_unopened_marker_error(self):
@@ -193,7 +195,7 @@ class TestProcessingErrors:
         test_content = "#太字 日本語テスト内容#"
 
         # Test different encodings
-        encodings = ['utf-8', 'shift_jis', 'euc-jp']
+        encodings = ["utf-8", "shift_jis", "euc-jp"]
 
         for encoding in encodings:
             try:

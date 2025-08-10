@@ -18,7 +18,7 @@ Phase B.4-Beta継続学習システム・統合インターフェース
     quality_result = quality_manager.validate_training_data(training_data)
 """
 
-from .adaptive import DataQualityManager
+from .core import DataQualityManager
 from .pattern_engine import (
     OPTUNA_AVAILABLE,
     HyperparameterOptimizer,

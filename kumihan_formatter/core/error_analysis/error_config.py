@@ -5,12 +5,15 @@ Issue #700対応 - 設定可能なエラー処理レベル
 柔軟なエラー処理設定とカスタマイズ機能
 """
 
+from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
+from types import ModuleType
 
+from ..common.error_types import ErrorSeverity
 from ..utilities.logger import get_logger
 
 # Optional dependencies for config file support
@@ -20,7 +23,7 @@ try:
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
-    yaml = None
+    yaml: Optional[ModuleType] = None  # type: ignore
 
 try:
     import toml
@@ -28,7 +31,7 @@ try:
     HAS_TOML = True
 except ImportError:
     HAS_TOML = False
-    toml = None
+    toml: Optional[ModuleType] = None  # type: ignore
 
 
 class ErrorHandlingLevel(Enum):
@@ -48,6 +51,9 @@ class ErrorHandlingStrategy(Enum):
     SKIP = "skip"  # 該当箇所をスキップ
     RECOVER = "recover"  # 自動回復を試行
     CUSTOM = "custom"  # カスタムハンドラー使用
+
+
+# ErrorSeverity moved to core.common.error_types for unification
 
 
 @dataclass
@@ -160,17 +166,13 @@ class ErrorConfigManager:
         try:
             if config_file.suffix in [".toml"]:
                 if not HAS_TOML:
-                    self.logger.warning(
-                        f"TOML support not available. Skipping {config_file}"
-                    )
+                    self.logger.warning(f"TOML support not available. Skipping {config_file}")
                     return
                 with open(config_file, "r", encoding="utf-8") as f:
                     data = toml.load(f)
             else:  # YAML
                 if not HAS_YAML:
-                    self.logger.warning(
-                        f"YAML support not available. Skipping {config_file}"
-                    )
+                    self.logger.warning(f"YAML support not available. Skipping {config_file}")
                     return
                 with open(config_file, "r", encoding="utf-8") as f:
                     data = yaml.safe_load(f)
@@ -180,9 +182,7 @@ class ErrorConfigManager:
 
             # 基本設定を適用
             if "default_level" in error_config:
-                self.config.default_level = ErrorHandlingLevel(
-                    error_config["default_level"]
-                )
+                self.config.default_level = ErrorHandlingLevel(error_config["default_level"])
 
             if "graceful_errors" in error_config:
                 self.config.graceful_errors = error_config["graceful_errors"]
@@ -212,12 +212,8 @@ class ErrorConfigManager:
             for error_type, type_config in type_configs.items():
                 self.config.error_type_configs[error_type] = ErrorTypeConfig(
                     error_type=error_type,
-                    handling_level=ErrorHandlingLevel(
-                        type_config.get("level", "normal")
-                    ),
-                    strategy=ErrorHandlingStrategy(
-                        type_config.get("strategy", "continue")
-                    ),
+                    handling_level=ErrorHandlingLevel(type_config.get("level", "normal")),
+                    strategy=ErrorHandlingStrategy(type_config.get("strategy", "continue")),
                     max_occurrences=type_config.get("max_occurrences", -1),
                     custom_handler=type_config.get("custom_handler"),
                 )
@@ -264,7 +260,7 @@ class ErrorConfigManager:
             except ValueError:
                 self.logger.warning(f"Invalid error limit in env: {limit_str}")
 
-    def apply_cli_options(self, **kwargs) -> None:
+    def apply_cli_options(self, **kwargs: Any) -> None:
         """CLIオプションを適用（最高優先度）"""
         if "error_level" in kwargs:
             self.config.default_level = ErrorHandlingLevel(kwargs["error_level"])
@@ -296,9 +292,7 @@ class ErrorConfigManager:
         else:
             return ErrorHandlingStrategy.CONTINUE
 
-    def should_continue_on_error(
-        self, error_type: str, occurrence_count: int = 1
-    ) -> bool:
+    def should_continue_on_error(self, error_type: str, occurrence_count: int = 1) -> bool:
         """エラー発生時に処理を継続すべきかを判定"""
         # グローバル設定チェック
         if self.config.default_level == ErrorHandlingLevel.STRICT:
@@ -312,10 +306,7 @@ class ErrorConfigManager:
             type_config = self.config.error_type_configs[error_type]
 
             # 発生回数制限チェック
-            if (
-                type_config.max_occurrences > 0
-                and occurrence_count > type_config.max_occurrences
-            ):
+            if type_config.max_occurrences > 0 and occurrence_count > type_config.max_occurrences:
                 return False
 
             # レベルチェック
@@ -375,17 +366,13 @@ class ErrorConfigManager:
 
         if output_path.suffix == ".toml":
             if not HAS_TOML:
-                self.logger.error(
-                    "TOML support not available. Cannot save config template."
-                )
+                self.logger.error("TOML support not available. Cannot save config template.")
                 raise ImportError("toml module not available")
             with open(output_path, "w", encoding="utf-8") as f:
                 toml.dump(template, f)
         else:  # YAML
             if not HAS_YAML:
-                self.logger.error(
-                    "YAML support not available. Cannot save config template."
-                )
+                self.logger.error("YAML support not available. Cannot save config template.")
                 raise ImportError("yaml module not available")
             with open(output_path, "w", encoding="utf-8") as f:
                 yaml.dump(template, f, default_flow_style=False, allow_unicode=True)

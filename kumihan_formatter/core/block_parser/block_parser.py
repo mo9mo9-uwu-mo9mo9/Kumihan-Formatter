@@ -74,9 +74,7 @@ class BlockParser:
         self._lines_cache = lines.copy()  # 安全なコピーを作成
 
         # Issue #755対応: 前処理行数制限を環境変数で設定可能に（デフォルト500,000行）
-        max_preprocess_lines = int(
-            os.environ.get("KUMIHAN_MAX_PREPROCESS_LINES", "500000")
-        )
+        max_preprocess_lines = int(os.environ.get("KUMIHAN_MAX_PREPROCESS_LINES", "500000"))
 
         # ブロック終了マーカーの位置を事前計算（O(n)で一回のみ）
         try:
@@ -199,9 +197,7 @@ class BlockParser:
             ValueError: start_indexが範囲外の場合
         """
         if start_index < 0 or start_index >= len(lines):
-            raise ValueError(
-                f"start_index {start_index} is out of range [0, {len(lines)})"
-            )
+            raise ValueError(f"start_index {start_index} is out of range [0, {len(lines)})")
 
         self.logger.debug(f"Parsing new format marker at line {start_index + 1}")
 
@@ -213,16 +209,10 @@ class BlockParser:
         self.logger.debug(f"Opening line: {opening_line}")
 
         # 新記法のマーカーパース
-        parse_result = self.keyword_parser.marker_parser.parse_new_marker_format(
-            opening_line
-        )
+        parse_result = self.keyword_parser.marker_parser.parse_new_marker_format(opening_line)
         if parse_result is None:
             # Issue #700: graceful error handling対応 - 不正な記法をgraceful errorとして記録
-            if (
-                hasattr(self, "parser_ref")
-                and self.parser_ref
-                and self.parser_ref.graceful_errors
-            ):
+            if hasattr(self, "parser_ref") and self.parser_ref and self.parser_ref.graceful_errors:
                 self.parser_ref._record_graceful_error(
                     start_index + 1,  # 1-based line number
                     1,  # column
@@ -241,20 +231,14 @@ class BlockParser:
             return error_node("; ".join(parse_errors), start_index + 1), start_index + 1
 
         # α-dev: インライン内容の確認 - 単一行記法使用時はエラー
-        inline_content = self.keyword_parser.marker_parser.extract_inline_content(
-            opening_line
-        )
+        inline_content = self.keyword_parser.marker_parser.extract_inline_content(opening_line)
 
         if inline_content:
             # Issue #751対応: インライン記法をサポート
-            return self._parse_inline_format(
-                keywords, attributes, inline_content, start_index
-            )
+            return self._parse_inline_format(keywords, attributes, inline_content, start_index)
         else:
             # ブロック記法: # キーワード # \n 内容 \n ##
-            return self._parse_new_format_block(
-                lines, start_index, keywords, attributes
-            )
+            return self._parse_new_format_block(lines, start_index, keywords, attributes)
 
     def _parse_inline_format(
         self, keywords: list[str], attributes: dict, content: str, start_index: int
@@ -374,16 +358,10 @@ class BlockParser:
             self.logger.error(f"Block end marker not found for line {start_index + 1}")
 
             # Graceful error handling対応
-            if (
-                hasattr(self, "parser_ref")
-                and self.parser_ref
-                and self.parser_ref.graceful_errors
-            ):
+            if hasattr(self, "parser_ref") and self.parser_ref and self.parser_ref.graceful_errors:
                 # Issue #713新機能: より詳細なエラー情報とサジェスチョン
                 opening_line = lines[start_index].strip()
-                suggested_fix = self._generate_block_fix_suggestions(
-                    opening_line, keywords
-                )
+                suggested_fix = self._generate_block_fix_suggestions(opening_line, keywords)
 
                 self.parser_ref._record_graceful_error(
                     start_index + 1,  # 1-based line number
@@ -399,9 +377,7 @@ class BlockParser:
                 # ファイル終端まで検索して、可能な限りコンテンツを回復
                 recovered_content = self._attempt_content_recovery(lines, start_index)
                 if recovered_content:
-                    self.logger.info(
-                        f"Recovered {len(recovered_content)} lines of content"
-                    )
+                    self.logger.info(f"Recovered {len(recovered_content)} lines of content")
                     # 回復したコンテンツでノードを作成
                     if len(keywords) == 1:
                         node = self.keyword_parser.create_single_block(
@@ -415,9 +391,7 @@ class BlockParser:
 
             # 従来のエラーノード作成
             return (
-                error_node(
-                    "ブロックの終了マーカー ## が見つかりません", start_index + 1
-                ),
+                error_node("ブロックの終了マーカー ## が見つかりません", start_index + 1),
                 start_index + 1,
             )
 
@@ -434,14 +408,10 @@ class BlockParser:
         # ブロックノードを作成
         if len(keywords) == 1:
             self.logger.debug(f"Creating single block with keyword: {keywords[0]}")
-            node = self.keyword_parser.create_single_block(
-                keywords[0], content, attributes
-            )
+            node = self.keyword_parser.create_single_block(keywords[0], content, attributes)
         else:
             self.logger.debug(f"Creating compound block with keywords: {keywords}")
-            node = self.keyword_parser.create_compound_block(
-                keywords, content, attributes
-            )
+            node = self.keyword_parser.create_compound_block(keywords, content, attributes)
 
         # 見出しIDの追加
         if any(keyword.startswith("見出し") for keyword in keywords):
@@ -450,14 +420,10 @@ class BlockParser:
                 node.add_attribute("id", f"heading-{self.heading_counter}")
             self.logger.debug(f"Added heading ID: heading-{self.heading_counter}")
 
-        self.logger.debug(
-            f"New format block parsed successfully, next index: {end_index + 1}"
-        )
+        self.logger.debug(f"New format block parsed successfully, next index: {end_index + 1}")
         return node, end_index + 1
 
-    def _generate_block_fix_suggestions(
-        self, opening_line: str, keywords: list[str]
-    ) -> str:
+    def _generate_block_fix_suggestions(self, opening_line: str, keywords: list[str]) -> str:
         """
         Issue #713新機能: ブロックマーカーエラーに対する修正提案を生成
 
@@ -483,9 +449,7 @@ class BlockParser:
 
         # よくある間違いの指摘
         if "color=" in opening_line:
-            suggestions.append(
-                "color属性がある場合も、必ず ## で終了する必要があります"
-            )
+            suggestions.append("color属性がある場合も、必ず ## で終了する必要があります")
 
         return " | ".join(suggestions)
 
@@ -506,9 +470,7 @@ class BlockParser:
         recovery_lines = []
         max_recovery_lines = 50  # 回復する最大行数（無制限な回復を防止）
 
-        for i in range(
-            start_index + 1, min(len(lines), start_index + 1 + max_recovery_lines)
-        ):
+        for i in range(start_index + 1, min(len(lines), start_index + 1 + max_recovery_lines)):
             line = lines[i].strip()
 
             # 明らかに新しいブロックが始まっている場合は停止
@@ -553,9 +515,7 @@ class BlockParser:
         self.logger.debug(f"List block parsed, next index: {next_index}")
         return list_node, next_index
 
-    def parse_block_marker(
-        self, lines: list[str], start_index: int
-    ) -> tuple[Node | None, int]:
+    def parse_block_marker(self, lines: list[str], start_index: int) -> tuple[Node | None, int]:
         """
         Parse a block marker starting from the given index (new format only)
 
@@ -601,9 +561,7 @@ class BlockParser:
         image_extensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"]
         return any(inline_content.lower().endswith(ext) for ext in image_extensions)
 
-    def parse_paragraph(
-        self, lines: list[str], start_index: int
-    ) -> tuple[Node | None, int]:
+    def parse_paragraph(self, lines: list[str], start_index: int) -> tuple[Node | None, int]:
         """
         Parse a paragraph starting from the given index（最適化版）
 
@@ -618,9 +576,7 @@ class BlockParser:
             ValueError: start_indexが範囲外の場合
         """
         if start_index < 0 or start_index >= len(lines):
-            raise ValueError(
-                f"start_index {start_index} is out of range [0, {len(lines)})"
-            )
+            raise ValueError(f"start_index {start_index} is out of range [0, {len(lines)})")
 
         self.logger.debug(f"Parsing paragraph at line {start_index + 1}")
 
@@ -684,9 +640,9 @@ class BlockParser:
         """
         line = line.strip()
         # Issue #755対応: キャッシュで高速化
-        return self._is_marker_cache(
+        return self._is_marker_cache(line) or self.keyword_parser.marker_parser.is_block_end_marker(
             line
-        ) or self.keyword_parser.marker_parser.is_block_end_marker(line)
+        )
 
     def is_opening_marker(self, line: str) -> bool:
         """Check if a line is an opening block marker (new format only)
@@ -727,9 +683,7 @@ class BlockParser:
             index += 1
         return index
 
-    def find_next_significant_line(
-        self, lines: list[str], start_index: int
-    ) -> int | None:
+    def find_next_significant_line(self, lines: list[str], start_index: int) -> int | None:
         """Find the next line that contains significant content
 
         Args:

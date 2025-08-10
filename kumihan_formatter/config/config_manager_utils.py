@@ -34,9 +34,7 @@ def create_config_instance(
     return config_class()
 
 
-def merge_config_data(
-    config: BaseConfig | ExtendedConfig, other_config: dict[str, Any]
-) -> None:
+def merge_config_data(config: BaseConfig | ExtendedConfig, other_config: dict[str, Any]) -> None:
     """他の設定をマージ
 
     Args:

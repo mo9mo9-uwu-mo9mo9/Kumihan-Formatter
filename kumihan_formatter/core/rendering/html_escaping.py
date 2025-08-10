@@ -56,7 +56,7 @@ def render_attributes_with_enhancements(
     tag: str,
     attributes: dict[str, Any] | None,
     content: str = "",
-    formatter=None,
+    formatter: Any = None,
 ) -> str:
     """
     Render HTML attributes with accessibility and semantic enhancements

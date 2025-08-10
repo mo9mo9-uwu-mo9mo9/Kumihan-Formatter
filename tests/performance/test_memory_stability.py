@@ -35,7 +35,9 @@ class LongRunningMemoryTest:
         Returns:
             Dict[str, Any]: テスト結果
         """
-        self.logger.info(f"Starting continuous memory stability test for {duration_minutes} minutes")
+        self.logger.info(
+            f"Starting continuous memory stability test for {duration_minutes} minutes"
+        )
 
         start_time = time.time()
         end_time = start_time + (duration_minutes * 60)
@@ -49,7 +51,7 @@ class LongRunningMemoryTest:
             "max_memory_mb": 0.0,
             "avg_memory_mb": 0.0,
             "memory_growth_mb": 0.0,
-            "stability_score": 0.0
+            "stability_score": 0.0,
         }
 
         sample_interval = 30  # 30秒間隔でサンプリング
@@ -65,7 +67,7 @@ class LongRunningMemoryTest:
                     "timestamp": current_time,
                     "elapsed_minutes": (current_time - start_time) / 60,
                     "memory_mb": memory_stats["process_memory_mb"],
-                    "virtual_memory_mb": memory_stats["virtual_memory_mb"]
+                    "virtual_memory_mb": memory_stats["virtual_memory_mb"],
                 }
                 results["samples"].append(sample)
 
@@ -75,27 +77,30 @@ class LongRunningMemoryTest:
 
                 # メモリリーク検出実行
                 leak_info = self.memory_optimizer.detect_memory_leaks(
-                    threshold_mb=5.0,
-                    sample_interval=3
+                    threshold_mb=5.0, sample_interval=3
                 )
                 if leak_info["leak_detected"]:
-                    results["leak_detections"].append({
-                        "timestamp": current_time,
-                        "elapsed_minutes": sample["elapsed_minutes"],
-                        "leak_info": leak_info
-                    })
-                    self.logger.warning(f"Memory leak detected at {sample['elapsed_minutes']:.1f} minutes")
+                    results["leak_detections"].append(
+                        {
+                            "timestamp": current_time,
+                            "elapsed_minutes": sample["elapsed_minutes"],
+                            "leak_info": leak_info,
+                        }
+                    )
+                    self.logger.warning(
+                        f"Memory leak detected at {sample['elapsed_minutes']:.1f} minutes"
+                    )
 
                 # プロアクティブGC実行
-                gc_result = self.memory_optimizer.proactive_gc_strategy(
-                    memory_threshold_mb=80.0
-                )
+                gc_result = self.memory_optimizer.proactive_gc_strategy(memory_threshold_mb=80.0)
                 if gc_result["gc_executed"]:
-                    results["gc_runs"].append({
-                        "timestamp": current_time,
-                        "elapsed_minutes": sample["elapsed_minutes"],
-                        "gc_result": gc_result
-                    })
+                    results["gc_runs"].append(
+                        {
+                            "timestamp": current_time,
+                            "elapsed_minutes": sample["elapsed_minutes"],
+                            "gc_result": gc_result,
+                        }
+                    )
 
                 last_sample_time = current_time
 
@@ -106,16 +111,24 @@ class LongRunningMemoryTest:
         if results["samples"]:
             memory_values = [s["memory_mb"] for s in results["samples"]]
             results["avg_memory_mb"] = sum(memory_values) / len(memory_values)
-            results["memory_growth_mb"] = results["samples"][-1]["memory_mb"] - results["samples"][0]["memory_mb"]
+            results["memory_growth_mb"] = (
+                results["samples"][-1]["memory_mb"] - results["samples"][0]["memory_mb"]
+            )
 
             # 安定性スコア計算（メモリ使用量の変動が少ないほど高スコア）
             if len(memory_values) > 1:
-                memory_variance = sum((x - results["avg_memory_mb"]) ** 2 for x in memory_values) / len(memory_values)
-                results["stability_score"] = max(0, 100 - (memory_variance / results["avg_memory_mb"] * 100))
+                memory_variance = sum(
+                    (x - results["avg_memory_mb"]) ** 2 for x in memory_values
+                ) / len(memory_values)
+                results["stability_score"] = max(
+                    0, 100 - (memory_variance / results["avg_memory_mb"] * 100)
+                )
             else:
                 results["stability_score"] = 100
 
-        self.logger.info(f"Continuous memory test completed. Stability score: {results['stability_score']:.1f}")
+        self.logger.info(
+            f"Continuous memory test completed. Stability score: {results['stability_score']:.1f}"
+        )
         return results
 
     def test_cyclic_processing_stability(self, cycles: int = 1000) -> Dict[str, Any]:
@@ -136,7 +149,7 @@ class LongRunningMemoryTest:
             "cycle_results": [],
             "memory_leak_detected": False,
             "max_memory_growth_mb": 0.0,
-            "avg_cycle_time_ms": 0.0
+            "avg_cycle_time_ms": 0.0,
         }
 
         initial_memory = self.memory_optimizer.get_memory_stats()["process_memory_mb"]
@@ -148,7 +161,7 @@ class LongRunningMemoryTest:
             factory_func=lambda: {"data": "x" * 1000, "counter": 0},
             max_size=50,
             cleanup_func=lambda obj: obj.clear(),
-            auto_cleanup_interval=60
+            auto_cleanup_interval=60,
         )
 
         for cycle in range(cycles):
@@ -177,7 +190,7 @@ class LongRunningMemoryTest:
                     "cycle": cycle,
                     "memory_mb": current_memory,
                     "memory_growth_mb": memory_growth,
-                    "cycle_time_ms": cycle_time
+                    "cycle_time_ms": cycle_time,
                 }
                 results["cycle_results"].append(cycle_result)
 
@@ -191,15 +204,21 @@ class LongRunningMemoryTest:
                         results["memory_leak_detected"] = True
                         self.logger.warning(f"Memory leak detected at cycle {cycle}")
 
-                self.logger.debug(f"Cycle {cycle}: Memory {current_memory:.2f} MB (+{memory_growth:.2f} MB)")
+                self.logger.debug(
+                    f"Cycle {cycle}: Memory {current_memory:.2f} MB (+{memory_growth:.2f} MB)"
+                )
 
         # 平均サイクル時間計算
         results["avg_cycle_time_ms"] = sum(cycle_times) / len(cycle_times) if cycle_times else 0
 
-        self.logger.info(f"Cyclic processing test completed. Max memory growth: {results['max_memory_growth_mb']:.2f} MB")
+        self.logger.info(
+            f"Cyclic processing test completed. Max memory growth: {results['max_memory_growth_mb']:.2f} MB"
+        )
         return results
 
-    def test_concurrent_memory_access(self, thread_count: int = 4, duration_minutes: int = 10) -> Dict[str, Any]:
+    def test_concurrent_memory_access(
+        self, thread_count: int = 4, duration_minutes: int = 10
+    ) -> Dict[str, Any]:
         """
         並行メモリアクセス安定性テスト
 
@@ -210,7 +229,9 @@ class LongRunningMemoryTest:
         Returns:
             Dict[str, Any]: テスト結果
         """
-        self.logger.info(f"Starting concurrent memory access test with {thread_count} threads for {duration_minutes} minutes")
+        self.logger.info(
+            f"Starting concurrent memory access test with {thread_count} threads for {duration_minutes} minutes"
+        )
 
         results = {
             "test_name": "concurrent_memory_access",
@@ -218,7 +239,7 @@ class LongRunningMemoryTest:
             "duration_minutes": duration_minutes,
             "thread_results": [],
             "memory_samples": [],
-            "errors": []
+            "errors": [],
         }
 
         # 共有リソースプール作成
@@ -229,7 +250,7 @@ class LongRunningMemoryTest:
                 factory_func=lambda: {"thread_data": "x" * 500, "operations": 0},
                 max_size=20,
                 cleanup_func=lambda obj: obj.clear(),
-                auto_cleanup_interval=120
+                auto_cleanup_interval=120,
             )
 
         test_active = threading.Event()
@@ -256,16 +277,11 @@ class LongRunningMemoryTest:
 
                 except Exception as e:
                     errors += 1
-                    results["errors"].append({
-                        "thread_id": thread_id,
-                        "error": str(e),
-                        "timestamp": time.time()
-                    })
+                    results["errors"].append(
+                        {"thread_id": thread_id, "error": str(e), "timestamp": time.time()}
+                    )
 
-            thread_results[thread_id] = {
-                "operations": operations,
-                "errors": errors
-            }
+            thread_results[thread_id] = {"operations": operations, "errors": errors}
 
         # スレッド開始
         threads = []
@@ -278,15 +294,18 @@ class LongRunningMemoryTest:
 
         # メモリ監視
         monitoring_active = True
+
         def memory_monitor():
             while monitoring_active and test_active.is_set():
                 memory_stats = self.memory_optimizer.get_memory_stats()
-                results["memory_samples"].append({
-                    "timestamp": time.time(),
-                    "elapsed_minutes": (time.time() - start_time) / 60,
-                    "memory_mb": memory_stats["process_memory_mb"],
-                    "pool_stats": memory_stats["object_pools"]
-                })
+                results["memory_samples"].append(
+                    {
+                        "timestamp": time.time(),
+                        "elapsed_minutes": (time.time() - start_time) / 60,
+                        "memory_mb": memory_stats["process_memory_mb"],
+                        "pool_stats": memory_stats["object_pools"],
+                    }
+                )
                 time.sleep(5)  # 5秒間隔でサンプリング
 
         monitor_thread = threading.Thread(target=memory_monitor)
@@ -310,7 +329,9 @@ class LongRunningMemoryTest:
         total_operations = sum(r["operations"] for r in thread_results.values())
         total_errors = sum(r["errors"] for r in thread_results.values())
 
-        self.logger.info(f"Concurrent test completed. Operations: {total_operations}, Errors: {total_errors}")
+        self.logger.info(
+            f"Concurrent test completed. Operations: {total_operations}, Errors: {total_errors}"
+        )
 
         return results
 
@@ -320,7 +341,7 @@ class LongRunningMemoryTest:
 
         report_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        html_report = f'''
+        html_report = f"""
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -344,7 +365,7 @@ class LongRunningMemoryTest:
         <p>Issue #772 - メモリ・リソース管理強化システム</p>
         <p>生成日時: {report_time}</p>
     </div>
-    '''
+    """
 
         for test_result in test_results:
             test_name = test_result.get("test_name", "Unknown Test")
@@ -354,8 +375,14 @@ class LongRunningMemoryTest:
                 status_class = "pass" if test_result.get("stability_score", 0) > 70 else "warning"
                 status_text = f"安定性スコア: {test_result.get('stability_score', 0):.1f}"
             elif test_name == "cyclic_processing_stability":
-                status_class = "pass" if not test_result.get("memory_leak_detected", False) else "fail"
-                status_text = "メモリリーク検出なし" if not test_result.get("memory_leak_detected", False) else "メモリリーク検出"
+                status_class = (
+                    "pass" if not test_result.get("memory_leak_detected", False) else "fail"
+                )
+                status_text = (
+                    "メモリリーク検出なし"
+                    if not test_result.get("memory_leak_detected", False)
+                    else "メモリリーク検出"
+                )
             elif test_name == "concurrent_memory_access":
                 error_count = len(test_result.get("errors", []))
                 status_class = "pass" if error_count == 0 else "warning"
@@ -364,42 +391,42 @@ class LongRunningMemoryTest:
                 status_class = "pass"
                 status_text = "完了"
 
-            html_report += f'''
+            html_report += f"""
     <div class="test-section {status_class}">
         <h2>📋 {test_name}</h2>
         <p><strong>ステータス:</strong> {status_text}</p>
-        '''
+        """
 
             # テスト固有の詳細情報
             if test_name == "continuous_memory_stability":
-                html_report += f'''
+                html_report += f"""
         <p><strong>実行時間:</strong> {test_result.get('duration_minutes', 0)} 分</p>
         <p><strong>最大メモリ使用量:</strong> {test_result.get('max_memory_mb', 0):.2f} MB</p>
         <p><strong>平均メモリ使用量:</strong> {test_result.get('avg_memory_mb', 0):.2f} MB</p>
         <p><strong>メモリ増加量:</strong> {test_result.get('memory_growth_mb', 0):.2f} MB</p>
         <p><strong>リーク検出回数:</strong> {len(test_result.get('leak_detections', []))}</p>
-        '''
+        """
 
             elif test_name == "cyclic_processing_stability":
-                html_report += f'''
+                html_report += f"""
         <p><strong>実行サイクル数:</strong> {test_result.get('cycles', 0):,}</p>
         <p><strong>最大メモリ増加:</strong> {test_result.get('max_memory_growth_mb', 0):.2f} MB</p>
         <p><strong>平均サイクル時間:</strong> {test_result.get('avg_cycle_time_ms', 0):.2f} ms</p>
-        '''
+        """
 
             elif test_name == "concurrent_memory_access":
-                html_report += f'''
+                html_report += f"""
         <p><strong>並行スレッド数:</strong> {test_result.get('thread_count', 0)}</p>
         <p><strong>実行時間:</strong> {test_result.get('duration_minutes', 0)} 分</p>
         <p><strong>総操作数:</strong> {sum(r.get('operations', 0) for r in test_result.get('thread_results', {}).values()):,}</p>
-        '''
+        """
 
-            html_report += '</div>'
+            html_report += "</div>"
 
-        html_report += '''
+        html_report += """
 </body>
 </html>
-        '''
+        """
 
         return html_report.strip()
 
@@ -431,7 +458,9 @@ def run_comprehensive_memory_tests(quick_mode: bool = False) -> Dict[str, Any]:
     results.append(result2)
 
     # 並行メモリアクセステスト
-    result3 = test_suite.test_concurrent_memory_access(thread_count=4, duration_minutes=thread_duration)
+    result3 = test_suite.test_concurrent_memory_access(
+        thread_count=4, duration_minutes=thread_duration
+    )
     results.append(result3)
 
     # レポート生成
@@ -443,8 +472,8 @@ def run_comprehensive_memory_tests(quick_mode: bool = False) -> Dict[str, Any]:
         "summary": {
             "total_tests": len(results),
             "completed_tests": len([r for r in results if r]),
-            "quick_mode": quick_mode
-        }
+            "quick_mode": quick_mode,
+        },
     }
 
 
@@ -457,6 +486,7 @@ if __name__ == "__main__":
 
     # 結果保存
     import tempfile
+
     report_path = tempfile.mktemp(suffix=".html")
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(comprehensive_results["report_html"])

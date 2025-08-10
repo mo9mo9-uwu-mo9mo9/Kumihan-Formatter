@@ -27,9 +27,7 @@ class MarkdownProcessor:
             code_content = match.group(1)
             # HTMLエスケープ
             code_content = (
-                code_content.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
+                code_content.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             )
             return f"<pre><code>{code_content}</code></pre>"
 

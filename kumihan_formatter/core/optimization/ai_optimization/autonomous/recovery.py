@@ -41,9 +41,7 @@ class AutoRecoveryEngine:
         self.recovery_actions = self._define_recovery_actions()
 
         # 復旧履歴
-        self.recovery_history: deque = deque(
-            maxlen=config.get("recovery_history_size", 500)
-        )
+        self.recovery_history: deque = deque(maxlen=config.get("recovery_history_size", 500))
 
         # 復旧制御
         self.recovery_in_progress = False
@@ -218,15 +216,11 @@ class AutoRecoveryEngine:
                     recovery_results.append(anomaly_recovery)
 
                     # Critical異常の場合は即座に対応
-                    if anomaly.severity == "critical" and anomaly_recovery.get(
-                        "success", False
-                    ):
+                    if anomaly.severity == "critical" and anomaly_recovery.get("success", False):
                         break
 
                 # 復旧効果評価
-                recovery_effectiveness = self._evaluate_recovery_effectiveness(
-                    recovery_results
-                )
+                recovery_effectiveness = self._evaluate_recovery_effectiveness(recovery_results)
 
                 recovery_time = time.time() - recovery_start
                 self.last_recovery_time = time.time()
@@ -295,9 +289,7 @@ class AutoRecoveryEngine:
                         "success": True,
                         "action_executed": action.action_type,
                         "execution_time": action_result.get("execution_time", 0.0),
-                        "recovery_effectiveness": action_result.get(
-                            "effectiveness", 0.0
-                        ),
+                        "recovery_effectiveness": action_result.get("effectiveness", 0.0),
                     }
 
             # 全アクション失敗
@@ -309,9 +301,7 @@ class AutoRecoveryEngine:
             }
 
         except Exception as e:
-            self.logger.error(
-                f"Anomaly recovery failed for {anomaly.anomaly_type.value}: {e}"
-            )
+            self.logger.error(f"Anomaly recovery failed for {anomaly.anomaly_type.value}: {e}")
             return {
                 "anomaly_type": anomaly.anomaly_type.value,
                 "success": False,
@@ -368,9 +358,7 @@ class AutoRecoveryEngine:
             }
 
         except Exception as e:
-            self.logger.error(
-                f"Recovery action execution failed: {action.action_type} - {e}"
-            )
+            self.logger.error(f"Recovery action execution failed: {action.action_type} - {e}")
             return {
                 "success": False,
                 "execution_time": time.time() - action_start,
@@ -403,9 +391,7 @@ class AutoRecoveryEngine:
         """ガベージコレクション強制実行"""
         try:
             collected = gc.collect()
-            self.logger.info(
-                f"Garbage collection completed: {collected} objects collected"
-            )
+            self.logger.info(f"Garbage collection completed: {collected} objects collected")
             return True
         except Exception as e:
             self.logger.error(f"Garbage collection failed: {e}")
@@ -506,9 +492,7 @@ class AutoRecoveryEngine:
     ) -> Dict[str, Any]:
         """復旧効果評価"""
         try:
-            successful_recoveries = [
-                r for r in recovery_results if r.get("success", False)
-            ]
+            successful_recoveries = [r for r in recovery_results if r.get("success", False)]
             total_recoveries = len(recovery_results)
 
             if total_recoveries == 0:
@@ -521,9 +505,7 @@ class AutoRecoveryEngine:
                 effectiveness_values = [
                     r.get("recovery_effectiveness", 0.0) for r in successful_recoveries
                 ]
-                avg_effectiveness = sum(effectiveness_values) / len(
-                    effectiveness_values
-                )
+                avg_effectiveness = sum(effectiveness_values) / len(effectiveness_values)
             else:
                 avg_effectiveness = 0.0
 

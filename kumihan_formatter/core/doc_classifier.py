@@ -70,9 +70,7 @@ class DocumentClassifier:
         for file_path in directory.rglob("*"):
             if file_path.is_file():
                 # 除外パターンチェック
-                if self._should_exclude_by_patterns(
-                    file_path, directory, exclude_patterns
-                ):
+                if self._should_exclude_by_patterns(file_path, directory, exclude_patterns):
                     continue
                 doc_type = self.classify_file(file_path, directory)
                 result[doc_type].append(file_path)
@@ -111,17 +109,13 @@ class DocumentClassifier:
         strategies = get_conversion_strategies()
         return strategies.get(doc_type, ("exclude", ""))
 
-    def generate_document_summary(
-        self, classified_files: dict[DocumentType, list[Path]]
-    ) -> str:
+    def generate_document_summary(self, classified_files: dict[DocumentType, list[Path]]) -> str:
         """分類結果のサマリーを生成"""
         summary_lines = ["📚 文書分類結果", "=" * 40, ""]
         type_names = get_type_display_names()
         for doc_type, files in classified_files.items():
             if files:
-                summary_lines.append(
-                    f"{type_names.get(doc_type, str(doc_type))} ({len(files)}件)"
-                )
+                summary_lines.append(f"{type_names.get(doc_type, str(doc_type))} ({len(files)}件)")
                 for file_path in sorted(files)[:5]:  # 最初の5件のみ表示
                     summary_lines.append(f"  - {file_path}")
                 if len(files) > 5:

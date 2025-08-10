@@ -97,7 +97,7 @@ class KeywordDefinitions:
         """
         return self.BLOCK_KEYWORDS.get(keyword)
 
-    def add_custom_keyword(self, keyword: str, definition: dict[str, Any]) -> None:
+    def add_custom_keyword(self, keyword: str, definition: Any) -> None:
         """カスタムキーワードを追加
 
         Args:
@@ -200,7 +200,9 @@ class KeywordDefinitions:
             list[str]: 言語コードのリスト
         """
         registry = self.get_keyword_registry()
-        return registry.get_supported_languages()
+        # 明示的に list[str] として型を指定
+        languages: list[str] = registry.get_supported_languages()
+        return languages
 
     def is_css_dependent(self, keyword: str) -> bool:
         """キーワードがCSS依存かどうかを判定
@@ -232,7 +234,9 @@ class KeywordDefinitions:
         keyword_def = registry.get_keyword_by_display_name(keyword)
 
         if keyword_def and keyword_def.css_requirements:
-            return keyword_def.css_requirements[:]
+            # 明示的に list[str] として型を指定
+            css_reqs: list[str] = keyword_def.css_requirements[:]
+            return css_reqs
 
         return []
 
@@ -256,9 +260,7 @@ class KeywordDefinitions:
         # 無効な文字チェック
         invalid_chars = set(keyword) & {"<", ">", '"', "'", "&", "#", "+", "＋"}
         if invalid_chars:
-            return (
-                f"キーワード名に無効な文字が含まれています: {', '.join(invalid_chars)}"
-            )
+            return f"キーワード名に無効な文字が含まれています: {', '.join(invalid_chars)}"
 
         # 予約語チェック
         reserved_words = ["javascript", "data", "vbscript", "html", "css"]
@@ -271,7 +273,7 @@ class KeywordDefinitions:
 
         return None
 
-    def _validate_keyword_definition(self, definition: dict[str, Any]) -> str | None:
+    def _validate_keyword_definition(self, definition: Any) -> str | None:
         """
         キーワード定義の妥当性を検証
 
@@ -297,18 +299,16 @@ class KeywordDefinitions:
             "div",
             "span",
             "p",
-            "strong",
-            "em",
-            "u",
-            "del",
             "h1",
             "h2",
             "h3",
             "h4",
             "h5",
             "h6",
-            "details",
-            "summary",
+            "strong",
+            "em",
+            "u",
+            "s",
             "code",
             "pre",
             "blockquote",
@@ -319,14 +319,17 @@ class KeywordDefinitions:
             "tr",
             "td",
             "th",
-            "thead",
-            "tbody",
-            "img",
-            "a",
-            "ruby",
+            "details",
+            "summary",
+            "mark",
+            "small",
+            "sub",
+            "sup",
+            "del",
+            "ins",
         }
 
-        if tag.lower() not in valid_tags:
+        if tag not in valid_tags:
             return f"無効なHTMLタグです: '{tag}'"
 
         return None

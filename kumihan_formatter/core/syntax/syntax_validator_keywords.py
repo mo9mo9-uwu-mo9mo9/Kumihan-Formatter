@@ -28,14 +28,10 @@ class KeywordBlockValidator:
 
         # Check each keyword
         for keyword in keywords:
-            KeywordBlockValidator._validate_single_keyword(
-                errors, line_num, keyword, line
-            )
+            KeywordBlockValidator._validate_single_keyword(errors, line_num, keyword, line)
 
         # Check keyword combination validity
-        KeywordBlockValidator._validate_keyword_combination(
-            errors, line_num, keywords, line
-        )
+        KeywordBlockValidator._validate_keyword_combination(errors, line_num, keywords, line)
 
     @staticmethod
     def _validate_single_keyword(

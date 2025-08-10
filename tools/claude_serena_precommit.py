@@ -10,10 +10,11 @@ import os
 import sys
 import json
 import re
+import os
+import argparse
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Dict  # Optional removed - unused import (F401)
-
+from typing import List, Dict, Any
 
 class SerenaPrecommitChecker:
     """Serena-Expert使用履歴チェック（Pre-commit）"""
@@ -56,9 +57,9 @@ class SerenaPrecommitChecker:
                 return True
         return False
 
-    def check_recent_violations(self, hours: int = 24) -> List[Dict]:
+    def check_recent_violations(self, hours: int = 24) -> List[Dict[str, Any]]:
         """最近の違反記録をチェック"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
 
         if not self.violation_log.exists():
             return violations
@@ -168,14 +169,14 @@ class SerenaPrecommitChecker:
 
         return False
 
-    def _display_violation_error(self, violations: List[Dict]):
+    def _display_violation_error(self, violations: List[Dict[str, Any]]) -> None:
         """違反エラー表示"""
         print("\n" + "="*80)
         print("🚨 CLAUDE.md 規則遵守原則違反検出 - コミット阻止 🚨")
         print("="*80)
         print(f"検出された違反数: {len(violations)}")
 
-        for i, violation in enumerate(violations[:3], 1):  # 最新3件まで表示
+        for i, violation in enumerate(violations[:3], 1):  # 最大3件まで表示
             print(f"\n【違反 {i}】")
             print(f"時刻: {violation.get('timestamp', 'N/A')}")
             print(f"使用ツール: {violation.get('tool_used', 'N/A')}")

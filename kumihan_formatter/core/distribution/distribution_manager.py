@@ -78,9 +78,7 @@ class DistributionManager:
             stats.update(conversion_stats)
 
         # メインプログラムファイルの処理
-        program_stats = self.processor.copy_program_files(
-            classified_files, source_dir, output_dir
-        )
+        program_stats = self.processor.copy_program_files(classified_files, source_dir, output_dir)
         stats["copied_as_is"] += program_stats["copied_as_is"]
 
         # インデックスファイルの作成
@@ -122,15 +120,11 @@ class DistributionManager:
             tech_dir = self.structure.get_target_directory(output_dir, "technical")
 
             for file_path in classified_files[DocumentType.DEVELOPER]:
-                if self.processor._copy_file_as_is(
-                    file_path, file_path.parent, dev_dir
-                ):
+                if self.processor._copy_file_as_is(file_path, file_path.parent, dev_dir):
                     stats["copied_as_is"] += 1
 
             for file_path in classified_files[DocumentType.TECHNICAL]:
-                if self.processor._copy_file_as_is(
-                    file_path, file_path.parent, tech_dir
-                ):
+                if self.processor._copy_file_as_is(file_path, file_path.parent, tech_dir):
                     stats["copied_as_is"] += 1
 
         return stats
@@ -153,9 +147,7 @@ class DistributionManager:
             if self.ui:
                 self.ui.warning(f"インデックス作成失敗: {e}")
 
-    def _generate_index_html(
-        self, classified_files: dict[DocumentType, list[Path]]
-    ) -> str:
+    def _generate_index_html(self, classified_files: dict[DocumentType, list[Path]]) -> str:
         """インデックスHTMLを生成（簡略版）"""
         from datetime import datetime
 

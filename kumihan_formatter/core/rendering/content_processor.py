@@ -71,9 +71,6 @@ class ContentProcessor:
         if depth > self.MAX_DEPTH:
             return "[ERROR: Maximum recursion depth reached]"
 
-        if not isinstance(node, Node):
-            return escape(str(node))
-
         # Route to specific rendering method on main renderer
         renderer_method = getattr(
             self.main_renderer, f"_render_{node.type}", self._render_generic_with_depth

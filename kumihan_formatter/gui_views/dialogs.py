@@ -79,9 +79,7 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
 
         # ヘルプテキスト
         help_text_widget = Text(text_frame, wrap=WORD, padx=10, pady=10)
-        help_scrollbar = ttk.Scrollbar(
-            text_frame, orient=VERTICAL, command=help_text_widget.yview
-        )
+        help_scrollbar = ttk.Scrollbar(text_frame, orient=VERTICAL, command=help_text_widget.yview)
         help_text_widget.configure(yscrollcommand=help_scrollbar.set)
 
         help_text_widget.pack(side=LEFT, fill=BOTH, expand=True)
@@ -91,6 +89,4 @@ GitHub: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
         help_text_widget.config(state="disabled")
 
         # 閉じるボタン
-        ttk.Button(self.window, text="閉じる", command=self.window.destroy).pack(
-            pady=10
-        )
+        ttk.Button(self.window, text="閉じる", command=self.window.destroy).pack(pady=10)

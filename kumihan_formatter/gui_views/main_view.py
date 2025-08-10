@@ -60,16 +60,10 @@ class MainView:
     def _layout_components(self) -> None:
         """UIコンポーネントのレイアウト"""
         self.header_frame.grid(row=0, column=0, columnspan=3, pady=(0, 20))
-        self.file_selection_frame.grid(
-            row=1, column=0, columnspan=3, sticky="WE", pady=(0, 10)
-        )
-        self.options_frame.grid(
-            row=2, column=0, columnspan=3, sticky="WE", pady=(0, 10)
-        )
+        self.file_selection_frame.grid(row=1, column=0, columnspan=3, sticky="WE", pady=(0, 10))
+        self.options_frame.grid(row=2, column=0, columnspan=3, sticky="WE", pady=(0, 10))
         self.action_button_frame.grid(row=3, column=0, columnspan=3, pady=20)
-        self.progress_frame.grid(
-            row=4, column=0, columnspan=3, sticky="WE", pady=(0, 10)
-        )
+        self.progress_frame.grid(row=4, column=0, columnspan=3, sticky="WE", pady=(0, 10))
         self.log_frame.grid(row=5, column=0, columnspan=3, sticky="WENS", pady=(0, 10))
 
     def set_ui_enabled(self, enabled: bool) -> None:
@@ -78,9 +72,7 @@ class MainView:
 
         def update_widget_state(widget: Widget) -> None:
             try:
-                if isinstance(
-                    widget, (ttk.Button, ttk.Entry, ttk.Combobox, ttk.Checkbutton)
-                ):
+                if isinstance(widget, (ttk.Button, ttk.Entry, ttk.Combobox, ttk.Checkbutton)):
                     widget.configure(state=state)
             except Exception:
                 pass

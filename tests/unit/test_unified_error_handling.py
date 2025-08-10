@@ -43,10 +43,7 @@ class TestUnifiedErrorHandler:
     def test_handle_generic_error(self):
         """一般的なエラー処理テスト"""
         error = ValueError("Test error")
-        context = {
-            "file_path": "test.py",
-            "line_number": 42
-        }
+        context = {"file_path": "test.py", "line_number": 42}
 
         result = self.handler.handle_error(error, context, "test_operation")
 
@@ -81,11 +78,7 @@ class TestUnifiedErrorHandler:
     def test_error_statistics(self):
         """エラー統計テスト"""
         # 複数エラー処理
-        errors = [
-            ValueError("Error 1"),
-            ValueError("Error 2"),
-            FileNotFoundError("Error 3")
-        ]
+        errors = [ValueError("Error 1"), ValueError("Error 2"), FileNotFoundError("Error 3")]
 
         for error in errors:
             self.handler.handle_error(error)
@@ -118,8 +111,13 @@ class TestUnifiedLogFormatter:
     def test_basic_formatting(self):
         """基本フォーマッティングテスト"""
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="", lineno=0,
-            msg="Test message", args=(), exc_info=None
+            name="test",
+            level=logging.ERROR,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
         )
 
         formatted = self.formatter.format(record)
@@ -129,23 +127,18 @@ class TestUnifiedLogFormatter:
 
     def test_kumihan_error_formatting(self):
         """KumihanError専用フォーマッティングテスト"""
-        context = ErrorContext(
-            file_path=Path("test.txt"),
-            line_number=42,
-            operation="test_op"
-        )
+        context = ErrorContext(file_path=Path("test.txt"), line_number=42, operation="test_op")
 
         kumihan_error = KumihanError(
             message="Test error message",
             severity=ErrorSeverity.ERROR,
             category=ErrorCategory.SYNTAX,
             context=context,
-            suggestions=["Fix syntax", "Check brackets"]
+            suggestions=["Fix syntax", "Check brackets"],
         )
 
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="", lineno=0,
-            msg="", args=(), exc_info=None
+            name="test", level=logging.ERROR, pathname="", lineno=0, msg="", args=(), exc_info=None
         )
         record.kumihan_error = kumihan_error
 
@@ -169,7 +162,7 @@ class TestGracefulErrorHandler:
         error = KumihanError(
             message="Test graceful error",
             severity=ErrorSeverity.WARNING,
-            category=ErrorCategory.SYNTAX
+            category=ErrorCategory.SYNTAX,
         )
 
         result = self.handler.handle_gracefully(error)
@@ -186,7 +179,7 @@ class TestGracefulErrorHandler:
             message="incomplete marker",
             severity=ErrorSeverity.WARNING,
             category=ErrorCategory.SYNTAX,
-            context=context
+            context=context,
         )
 
         # 不完全マーカーのケース
@@ -195,11 +188,12 @@ class TestGracefulErrorHandler:
             message="incomplete marker",
             severity=ErrorSeverity.WARNING,
             category=ErrorCategory.SYNTAX,
-            context=context_incomplete
+            context=context_incomplete,
         )
 
-        recovery_result = self.handler._recover_syntax_error(error_incomplete,
-                                                           self.handler.error_records[0] if self.handler.error_records else None)
+        recovery_result = self.handler._recover_syntax_error(
+            error_incomplete, self.handler.error_records[0] if self.handler.error_records else None
+        )
 
         # 復旧結果は実装に依存するため、Noneでないことを確認
         # (実際の修正ロジックは複雑で、簡単なケースのみ対応)
@@ -223,11 +217,7 @@ class TestGracefulErrorHandler:
 
     def test_html_report_generation(self):
         """HTMLレポート生成テスト"""
-        error = KumihanError(
-            "Test error for HTML",
-            ErrorSeverity.WARNING,
-            ErrorCategory.SYNTAX
-        )
+        error = KumihanError("Test error for HTML", ErrorSeverity.WARNING, ErrorCategory.SYNTAX)
 
         self.handler.handle_gracefully(error)
         html_report = self.handler.generate_error_report_html()
@@ -245,9 +235,7 @@ class TestConvenienceFunctions:
         error = ValueError("Test unified handling")
         context = {"test_key": "test_value"}
 
-        result = handle_error_unified(
-            error, context, "test_operation", "test_component"
-        )
+        result = handle_error_unified(error, context, "test_operation", "test_component")
 
         assert isinstance(result, ErrorHandleResult)
         assert result.original_error == error
@@ -255,11 +243,7 @@ class TestConvenienceFunctions:
 
     def test_handle_gracefully_function(self):
         """Graceful handling便利関数テスト"""
-        error = KumihanError(
-            "Test graceful function",
-            ErrorSeverity.INFO,
-            ErrorCategory.UNKNOWN
-        )
+        error = KumihanError("Test graceful function", ErrorSeverity.INFO, ErrorCategory.UNKNOWN)
 
         result = handle_gracefully(error)
 
@@ -276,10 +260,7 @@ class TestIntegration:
         unified_handler = UnifiedErrorHandler(component_name="integration_test")
 
         error = FileNotFoundError("Integration test file not found")
-        context = {
-            "file_path": "integration_test.txt",
-            "operation": "integration_test"
-        }
+        context = {"file_path": "integration_test.txt", "operation": "integration_test"}
 
         unified_result = unified_handler.handle_error(error, context, "integration_test")
 
@@ -298,7 +279,7 @@ class TestIntegration:
         summary = graceful_handler.get_error_summary()
         assert summary["total_errors"] == 1
 
-    @patch('kumihan_formatter.core.error_handling.log_formatter.logging.getLogger')
+    @patch("kumihan_formatter.core.error_handling.log_formatter.logging.getLogger")
     def test_component_logger_integration(self, mock_get_logger):
         """コンポーネントロガー統合テスト"""
         from kumihan_formatter.core.error_handling.log_formatter import (

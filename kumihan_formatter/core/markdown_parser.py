@@ -58,15 +58,11 @@ class MarkdownParser:
                         heading_text = match.group(1).strip()
                         # ID生成（リンク用）
                         heading_id = self._generate_heading_id(heading_text)
-                        return (
-                            f'<h{h_level} id="{heading_id}">{heading_text}</h{h_level}>'
-                        )
+                        return f'<h{h_level} id="{heading_id}">{heading_text}</h{h_level}>'
 
                     return replace_heading
 
-                text = self.patterns[pattern_name].sub(
-                    make_heading_replacer(level), text
-                )
+                text = self.patterns[pattern_name].sub(make_heading_replacer(level), text)
         return text
 
     def _generate_heading_id(self, heading_text: str) -> str:

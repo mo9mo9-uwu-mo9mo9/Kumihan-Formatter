@@ -114,21 +114,16 @@ class PerformanceMonitor:
                 return
 
             # 統計情報初期化
-            self.stats = ProcessingStats(
-                start_time=time.time(), total_items=total_items
-            )
+            self.stats = ProcessingStats(start_time=time.time(), total_items=total_items)
             self.stats.processing_phases.append(initial_stage)
 
             # 監視開始
             self._monitoring = True
-            self._monitor_thread = threading.Thread(
-                target=self._monitoring_loop, daemon=True
-            )
+            self._monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
             self._monitor_thread.start()
 
             self.logger.info(
-                f"Performance monitoring started: {total_items} items, "
-                f"stage: {initial_stage}"
+                f"Performance monitoring started: {total_items} items, " f"stage: {initial_stage}"
             )
 
     def stop_monitoring(self):
@@ -182,21 +177,23 @@ class PerformanceMonitor:
             processing_rate = self.stats.items_per_second
 
             # ディスクI/O（可能な場合）
-            try:
-                io_counters = self.process.io_counters()
-                disk_io_read_mb = io_counters.read_bytes / 1024 / 1024
-                disk_io_write_mb = io_counters.write_bytes / 1024 / 1024
-            except (AttributeError, psutil.AccessDenied):
-                disk_io_read_mb = disk_io_write_mb = 0.0
+            disk_io_read_mb = 0.0
+            disk_io_write_mb = 0.0
+            if hasattr(self.process, "io_counters"):
+                try:
+                    io_counters = self.process.io_counters()
+                    disk_io_read_mb = io_counters.read_bytes / 1024 / 1024
+                    disk_io_write_mb = io_counters.write_bytes / 1024 / 1024
+                except psutil.AccessDenied:
+                    # AccessDenied is a specific psutil error, keep handling it
+                    pass
 
             # スレッド数
             thread_count = self.process.num_threads()
 
             # 現在のステージ
             current_stage = (
-                self.stats.processing_phases[-1]
-                if self.stats.processing_phases
-                else "unknown"
+                self.stats.processing_phases[-1] if self.stats.processing_phases else "unknown"
             )
 
             return PerformanceSnapshot(
@@ -291,9 +288,7 @@ class PerformanceMonitor:
             )
 
         # 低処理速度アラート
-        if (
-            snapshot.processing_rate > 0 and snapshot.processing_rate < 100
-        ):  # 100 items/sec未満
+        if snapshot.processing_rate > 0 and snapshot.processing_rate < 100:  # 100 items/sec未満
             alerts.append(
                 {
                     "type": "low_processing_rate",
@@ -307,7 +302,7 @@ class PerformanceMonitor:
         for alert in alerts:
             for callback in self.alert_callbacks:
                 try:
-                    callback(alert["type"], alert)
+                    callback(str(alert["type"]), alert)
                 except Exception as e:
                     self.logger.error(f"Error in alert callback: {e}")
 
@@ -327,9 +322,7 @@ class PerformanceMonitor:
                 "peak_memory_mb": self.stats.peak_memory_mb,
                 "avg_cpu_percent": self.stats.avg_cpu_percent,
                 "processing_phases": self.stats.processing_phases,
-                "current_memory_mb": (
-                    recent_snapshots[-1].memory_mb if recent_snapshots else 0
-                ),
+                "current_memory_mb": (recent_snapshots[-1].memory_mb if recent_snapshots else 0),
                 "current_cpu_percent": (
                     recent_snapshots[-1].cpu_percent if recent_snapshots else 0
                 ),
@@ -373,26 +366,18 @@ class PerformanceMonitor:
             snapshots_list = list(self.snapshots)
 
             # メモリ使用量傾向
-            memory_trend = self._calculate_trend(
-                [s.memory_mb for s in snapshots_list[-10:]]
-            )
+            memory_trend = self._calculate_trend([s.memory_mb for s in snapshots_list[-10:]])
             memory_status = (
-                "増加"
-                if memory_trend > 0.5
-                else "安定" if memory_trend > -0.5 else "減少"
+                "増加" if memory_trend > 0.5 else "安定" if memory_trend > -0.5 else "減少"
             )
             report_lines.append(f"  メモリ使用量: {memory_status}")
 
             # 処理速度傾向
-            rates = [
-                s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0
-            ]
+            rates = [s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0]
             if rates:
                 rate_trend = self._calculate_trend(rates)
                 rate_status = (
-                    "向上"
-                    if rate_trend > 0.5
-                    else "安定" if rate_trend > -0.5 else "低下"
+                    "向上" if rate_trend > 0.5 else "安定" if rate_trend > -0.5 else "低下"
                 )
                 report_lines.append(f"  処理速度: {rate_status}")
 
@@ -412,20 +397,19 @@ class PerformanceMonitor:
 
         return numerator / denominator if denominator != 0 else 0.0
 
-    def save_metrics_to_file(self, file_path: str = None):
+    def save_metrics_to_file(self, file_path: Optional[str] = None):
         """パフォーマンスメトリクスをファイルに保存"""
         # tmp/配下にファイルを作成
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
 
         if not file_path:
-            file_path = (
-                tmp_dir
-                / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            actual_path = (
+                tmp_dir / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             )
         else:
             # 既存パスがあってもtmp/配下に移動
-            file_path = tmp_dir / Path(file_path).name
+            actual_path = tmp_dir / Path(file_path).name
 
         try:
             metrics_data = {
@@ -435,10 +419,10 @@ class PerformanceMonitor:
                 "summary": self.get_performance_summary(),
             }
 
-            with open(file_path, "w", encoding="utf-8") as f:
+            with open(actual_path, "w", encoding="utf-8") as f:
                 json.dump(metrics_data, f, indent=2, ensure_ascii=False)
 
-            self.logger.info(f"Performance metrics saved to {file_path}")
+            self.logger.info(f"Performance metrics saved to {actual_path}")
 
         except Exception as e:
             self.logger.error(f"Failed to save metrics to file: {e}")
@@ -447,9 +431,7 @@ class PerformanceMonitor:
 class PerformanceContext:
     """パフォーマンス監視コンテキストマネージャー"""
 
-    def __init__(
-        self, monitor: PerformanceMonitor, total_items: int, stage: str = "処理"
-    ):
+    def __init__(self, monitor: PerformanceMonitor, total_items: int, stage: str = "処理"):
         self.monitor = monitor
         self.total_items = total_items
         self.stage = stage

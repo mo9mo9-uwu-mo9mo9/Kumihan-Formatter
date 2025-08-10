@@ -152,9 +152,7 @@ class ElementRenderer:
             attributes["alt"] = self.formatter._generate_alt_text(filename)
 
         # Use enhanced attribute rendering with accessibility features
-        attr_str = render_attributes_with_enhancements(
-            "img", attributes, filename, self.formatter
-        )
+        attr_str = render_attributes_with_enhancements("img", attributes, filename, self.formatter)
 
         return f"<img {attr_str} />"
 
@@ -223,9 +221,7 @@ class ElementRenderer:
             attributes["id"] = f"heading-{self.heading_counter}"
 
         # Phase 4: Enhanced accessibility and CSS class handling
-        attr_str = render_attributes_with_enhancements(
-            tag, attributes, content, self.formatter
-        )
+        attr_str = render_attributes_with_enhancements(tag, attributes, content, self.formatter)
 
         return f"<{tag} {attr_str}>{content}</{tag}>"
 
@@ -297,7 +293,11 @@ class ElementRenderer:
         content = self._render_content(node.content, 0)
 
         # 他の属性を処理（summaryを除く）
-        attributes = {k: v for k, v in node.attributes.items() if k != "summary"}
+        # node.attributesがNoneでないことを確認
+        if node.attributes is not None:
+            attributes = {k: v for k, v in node.attributes.items() if k != "summary"}
+        else:
+            attributes = {}
 
         # Phase 4: Enhanced accessibility and CSS class handling
         attr_str = render_attributes_with_enhancements(
@@ -337,15 +337,9 @@ class ElementRenderer:
 
             if keyword_info and keyword_info.get("special_handler"):
                 # special_handlerが指定されている場合、HTMLFormatterで処理
-                content = (
-                    node.get_content()
-                    if hasattr(node, "get_content")
-                    else str(node.content)
-                )
+                content = node.get_content() if hasattr(node, "get_content") else str(node.content)
                 attributes = node.attributes if hasattr(node, "attributes") else {}
-                return self.formatter.handle_special_element(
-                    keyword, content, attributes
-                )
+                return self.formatter.handle_special_element(keyword, content, attributes)
 
         # 要素タイプ別の分岐
         element_handlers = {
@@ -389,9 +383,7 @@ class ElementRenderer:
     def _render_unknown_element(self, node: Node) -> str:
         """未知の要素タイプをレンダリング（Phase 4: 統一機能適用）"""
         content = self._render_content(node.content, 0)
-        return create_simple_tag(
-            node.type, content, node.attributes, formatter=self.formatter
-        )
+        return create_simple_tag(node.type, content, node.attributes, formatter=self.formatter)
 
     # === ヘルパーメソッド ===
 
@@ -426,9 +418,7 @@ class ElementRenderer:
             for item in content:
                 if isinstance(item, Node):
                     if self._main_renderer:
-                        parts.append(
-                            self._main_renderer._render_node_with_depth(item, depth + 1)
-                        )
+                        parts.append(self._main_renderer._render_node_with_depth(item, depth + 1))
                     else:
                         parts.append(f"{{NODE:{item.type}}}")
                 elif isinstance(item, str):

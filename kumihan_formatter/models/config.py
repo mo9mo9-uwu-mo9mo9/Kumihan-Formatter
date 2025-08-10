@@ -14,20 +14,12 @@ class FormatterConfig(BaseModel):
     """
 
     # 基本設定
-    input_encoding: str = Field(
-        default="utf-8", description="入力ファイルの文字エンコーディング"
-    )
-    output_encoding: str = Field(
-        default="utf-8", description="出力ファイルの文字エンコーディング"
-    )
+    input_encoding: str = Field(default="utf-8", description="入力ファイルの文字エンコーディング")
+    output_encoding: str = Field(default="utf-8", description="出力ファイルの文字エンコーディング")
 
     # テンプレート設定
-    template_dir: str | None = Field(
-        default=None, description="テンプレートディレクトリのパス"
-    )
-    template_name: str | None = Field(
-        default=None, description="使用するテンプレート名"
-    )
+    template_dir: str | None = Field(default=None, description="テンプレートディレクトリのパス")
+    template_name: str | None = Field(default=None, description="使用するテンプレート名")
 
     # 変換設定
     strict_mode: bool = Field(default=False, description="厳密モードで実行")
@@ -47,8 +39,7 @@ class FormatterConfig(BaseModel):
             "text_color": "#333",
             "line_height": "1.8",
             "font_family": (
-                "Hiragino Kaku Gothic ProN, Hiragino Sans, "
-                "Yu Gothic, Meiryo, sans-serif"
+                "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
             ),
         },
         description="CSS変数の辞書",
@@ -81,8 +72,7 @@ class SimpleFormatterConfig(BaseModel):
             "text_color": "#333",
             "line_height": "1.8",
             "font_family": (
-                "Hiragino Kaku Gothic ProN, Hiragino Sans, "
-                "Yu Gothic, Meiryo, sans-serif"
+                "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
             ),
         },
         description="CSS変数の辞書",

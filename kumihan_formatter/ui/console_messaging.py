@@ -57,13 +57,9 @@ class ConsoleMessaging:
         if details:
             self.console.print(f"[dim]   {details}[/dim]")
 
-    def file_error(
-        self, file_path: str, error_type: str = "ファイルが見つかりません"
-    ) -> None:
+    def file_error(self, file_path: str, error_type: str = "ファイルが見つかりません") -> None:
         """Display file error"""
-        self.console.print(
-            f"[red][エラー] ファイルエラー:[/red] {error_type}: {file_path}"
-        )
+        self.console.print(f"[red][エラー] ファイルエラー:[/red] {error_type}: {file_path}")
 
     def encoding_error(self, file_path: str) -> None:
         """Display encoding error"""
@@ -74,9 +70,7 @@ class ConsoleMessaging:
 
     def permission_error(self, error: str) -> None:
         """Display permission error"""
-        self.console.print(
-            f"[red][エラー] 権限エラー:[/red] ファイルにアクセスできません: {error}"
-        )
+        self.console.print(f"[red][エラー] 権限エラー:[/red] ファイルにアクセスできません: {error}")
 
     def unexpected_error(self, error: str) -> None:
         """Display unexpected error"""
@@ -100,19 +94,14 @@ class ConsoleMessaging:
                 "（想定されたエラーです）[/yellow]"
             )
             self.console.print(
-                "[yellow]   これらのエラーは、"
-                "記法の学習用にわざと含まれています[/yellow]"
+                "[yellow]   これらのエラーは、" "記法の学習用にわざと含まれています[/yellow]"
             )
-            self.console.print(
-                "[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]"
-            )
+            self.console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
         else:
             self.console.print(
                 f"[yellow][警告]  警告: {error_count}個のエラーが検出されました[/yellow]"
             )
-            self.console.print(
-                "[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]"
-            )
+            self.console.print("[yellow]   HTMLファイルでエラー箇所を確認してください[/yellow]")
 
     # Information messages
     def info(self, message: str, details: Optional[str] = None) -> None:
@@ -143,18 +132,12 @@ class ConsoleMessaging:
     # Experimental features
     def experimental_feature(self, feature_name: str) -> None:
         """Display experimental feature warning"""
-        self.console.print(
-            f"[yellow][実験] 実験的機能を有効化:[/yellow] {feature_name}"
-        )
-        self.console.print(
-            "[dim]   この機能は実験的で、予期しない動作をする可能性があります[/dim]"
-        )
+        self.console.print(f"[yellow][実験] 実験的機能を有効化:[/yellow] {feature_name}")
+        self.console.print("[dim]   この機能は実験的で、予期しない動作をする可能性があります[/dim]")
 
     def no_preview_files(self) -> None:
         """Display no preview files message"""
-        self.console.print(
-            "[dim][情報] プレビュー用HTMLファイルが見つかりませんでした[/dim]"
-        )
+        self.console.print("[dim][情報] プレビュー用HTMLファイルが見つかりませんでした[/dim]")
 
     # Large file processing
     def large_file_detected(self, size_mb: float, estimated_time: str) -> None:
@@ -179,51 +162,27 @@ class ConsoleMessaging:
     def statistics(self, stats: dict[str, Any]) -> None:
         """Display statistics"""
         if "total_nodes" in stats:
-            self.console.print(
-                f"[dim]   - 処理したブロック数: {stats['total_nodes']}[/dim]"
-            )
+            self.console.print(f"[dim]   - 処理したブロック数: {stats['total_nodes']}[/dim]")
         if "file_size" in stats:
-            self.console.print(
-                f"[dim]   - ファイルサイズ: {stats['file_size']} 文字[/dim]"
-            )
+            self.console.print(f"[dim]   - ファイルサイズ: {stats['file_size']} 文字[/dim]")
 
         # Enhanced stats for large files
         if "input_size_mb" in stats and stats["input_size_mb"] > 1:
-            self.console.print(
-                f"[dim]   - 入力サイズ: {stats['input_size_mb']:.1f}MB[/dim]"
-            )
+            self.console.print(f"[dim]   - 入力サイズ: {stats['input_size_mb']:.1f}MB[/dim]")
         if "output_size_mb" in stats and stats["output_size_mb"] > 1:
-            self.console.print(
-                f"[dim]   - 出力サイズ: {stats['output_size_mb']:.1f}MB[/dim]"
-            )
+            self.console.print(f"[dim]   - 出力サイズ: {stats['output_size_mb']:.1f}MB[/dim]")
 
-    def test_statistics(
-        self, stats: dict[str, Any], double_click_mode: bool = False
-    ) -> None:
+    def test_statistics(self, stats: dict[str, Any], double_click_mode: bool = False) -> None:
         """Display test generation statistics"""
         if double_click_mode:
-            self.console.print(
-                f"[dim]   [統計] 生成パターン数: {stats['total_patterns']}[/dim]"
-            )
+            self.console.print(f"[dim]   [統計] 生成パターン数: {stats['total_patterns']}[/dim]")
             self.console.print(
                 f"[dim]   [キーワード]  単一キーワード数: {stats['single_keywords']}[/dim]"
             )
-            self.console.print(
-                f"[dim]   [生成] ハイライト色数: {stats['highlight_colors']}[/dim]"
-            )
-            self.console.print(
-                f"[dim]    最大組み合わせ数: {stats['max_combinations']}[/dim]"
-            )
+            self.console.print(f"[dim]   [生成] ハイライト色数: {stats['highlight_colors']}[/dim]")
+            self.console.print(f"[dim]    最大組み合わせ数: {stats['max_combinations']}[/dim]")
         else:
-            self.console.print(
-                f"[dim]   - 生成パターン数: {stats['total_patterns']}[/dim]"
-            )
-            self.console.print(
-                f"[dim]   - 単一キーワード数: {stats['single_keywords']}[/dim]"
-            )
-            self.console.print(
-                f"[dim]   - ハイライト色数: {stats['highlight_colors']}[/dim]"
-            )
-            self.console.print(
-                f"[dim]   - 最大組み合わせ数: {stats['max_combinations']}[/dim]"
-            )
+            self.console.print(f"[dim]   - 生成パターン数: {stats['total_patterns']}[/dim]")
+            self.console.print(f"[dim]   - 単一キーワード数: {stats['single_keywords']}[/dim]")
+            self.console.print(f"[dim]   - ハイライト色数: {stats['highlight_colors']}[/dim]")
+            self.console.print(f"[dim]   - 最大組み合わせ数: {stats['max_combinations']}[/dim]")

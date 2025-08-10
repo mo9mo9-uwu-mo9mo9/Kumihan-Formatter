@@ -17,9 +17,7 @@ class NestedListParser:
     def __init__(self, list_parser: ListParserCore):
         self.list_parser = list_parser
 
-    def parse_nested_lists(
-        self, lines: List[str], start_index: int
-    ) -> Tuple[Optional[Node], int]:
+    def parse_nested_lists(self, lines: List[str], start_index: int) -> Tuple[Optional[Node], int]:
         """
         Parse nested list structures
 
@@ -47,9 +45,7 @@ class NestedListParser:
         """Calculate indentation level of a line"""
         return len(line) - len(line.lstrip())
 
-    def _group_by_indent_level(
-        self, lines: List[str]
-    ) -> Dict[int, List[Tuple[int, str]]]:
+    def _group_by_indent_level(self, lines: List[str]) -> Dict[int, List[Tuple[int, str]]]:
         """Group list items by their indentation level"""
         groups: Dict[int, List[Tuple[int, str]]] = {}
         for i, line in enumerate(lines):

@@ -44,9 +44,7 @@ class ConsoleUIFactory:
         ConsoleEncodingSetup.setup_encoding()
 
 
-def get_console_ui_components() -> (
-    Tuple[ConsoleMessaging, ConsoleOperations, ConsoleInteraction]
-):
+def get_console_ui_components() -> Tuple[ConsoleMessaging, ConsoleOperations, ConsoleInteraction]:
     """Get all console UI components with shared console instance"""
     factory = ConsoleUIFactory()
     factory.setup_encoding()

@@ -132,7 +132,7 @@ class HTMLRenderer:
             try:
                 footnotes = self.footnotes_data.get("footnotes", [])
 
-                if footnotes:
+                if footnotes:  # type: ignore[unreachable]
                     # Replace footnote placeholders with actual HTML links
                     # import re removed - unused import (F401)
 
@@ -154,9 +154,9 @@ class HTMLRenderer:
                 # Continue with original HTML if footnote processing fails
 
         # 新記法脚注システム：文書末尾に脚注セクションを追加
-        if footnote_manager and footnote_manager.get_all_footnotes():
-            footnotes_html = footnote_manager.safe_generate_footnote_html(
-                footnote_manager.get_all_footnotes()
+        if footnote_manager and footnote_manager.get_footnotes():
+            footnotes_html = footnote_manager.generate_footnotes_html(
+                footnote_manager.get_footnotes()
             )
             if footnotes_html[0]:  # エラーがない場合
                 main_html += "\n" + footnotes_html[0]
@@ -214,11 +214,6 @@ class HTMLRenderer:
         Returns:
             str: Generated HTML for the node (optimized)
         """
-        if not isinstance(node, Node):
-            from .html_escaping import escape_html
-
-            return escape_html(str(node))
-
         # 最適化: メソッド動的検索を避けるため事前キャッシュ
         renderer_method = self._get_cached_renderer_method(node.type)
         return renderer_method(node)
@@ -257,9 +252,7 @@ class HTMLRenderer:
             html_parts.insert(0, error_summary_html)
 
             # 効率的なエラーマーカー埋め込み
-            html_with_markers = self._embed_error_markers_optimized(
-                "\n".join(html_parts)
-            )
+            html_with_markers = self._embed_error_markers_optimized("\n".join(html_parts))
             return html_with_markers
 
         return "\n".join(html_parts)
@@ -366,9 +359,7 @@ class HTMLRenderer:
 
         # f-string最適化
         suggestion_html = (
-            f'<div class="error-suggestion">💡 {safe_suggestion}</div>'
-            if safe_suggestion
-            else ""
+            f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ""
         )
 
         return (
@@ -417,15 +408,9 @@ class HTMLRenderer:
 
             if keyword_info and keyword_info.get("special_handler"):
                 # special_handlerが指定されている場合、HTMLFormatterで処理
-                content = (
-                    node.get_content()
-                    if hasattr(node, "get_content")
-                    else str(node.content)
-                )
+                content = node.get_content() if hasattr(node, "get_content") else str(node.content)
                 attributes = node.attributes if hasattr(node, "attributes") else {}
-                return self.formatter.handle_special_element(
-                    keyword, content, attributes
-                )
+                return self.formatter.handle_special_element(keyword, content, attributes)
 
         # Route to specific rendering method
         renderer_method = getattr(self, f"_render_{node.type}", self._render_generic)
@@ -543,9 +528,7 @@ class HTMLRenderer:
 
         return render_attributes(attributes)
 
-    def collect_headings(
-        self, nodes: list[Node], depth: int = 0
-    ) -> List[dict[str, Any]]:
+    def collect_headings(self, nodes: list[Node], depth: int = 0) -> List[dict[str, Any]]:
         """
         Collect all headings from nodes for TOC generation
 
@@ -574,9 +557,7 @@ class HTMLRenderer:
         self.element_renderer.heading_counter = value
         self.heading_collector.heading_counter = value
 
-    def set_graceful_errors(
-        self, errors: list[Any], embed_in_html: bool = True
-    ) -> None:
+    def set_graceful_errors(self, errors: list[Any], embed_in_html: bool = True) -> None:
         """Issue #700: graceful error handlingのエラー情報を設定"""
 
         self.graceful_errors = errors
@@ -640,9 +621,7 @@ class HTMLRenderer:
             # XSS対策: エラー情報のエスケープ処理
             safe_title = escape_html(error.display_title)
             safe_severity = escape_html(error.severity.upper())
-            safe_content = (
-                error.html_content
-            )  # html_contentプロパティ内で既にエスケープ済み
+            safe_content = error.html_content  # html_contentプロパティ内で既にエスケープ済み
 
             # ハイライト付きコンテキストと修正提案を追加
             highlighted_context = error.get_highlighted_context()
@@ -695,9 +674,7 @@ class HTMLRenderer:
 
                 # XSS対策: エラー情報のエスケープ処理
                 safe_message = escape_html(error.message)
-                safe_suggestion = (
-                    escape_html(error.suggestion) if error.suggestion else ""
-                )
+                safe_suggestion = escape_html(error.suggestion) if error.suggestion else ""
                 error_icon = "❌" if error.severity == "error" else "⚠️"
 
                 error_marker = f"""

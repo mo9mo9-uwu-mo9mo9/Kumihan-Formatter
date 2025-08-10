@@ -121,9 +121,7 @@ class SimpleMarkdownConverter:
         return self.renderer._create_full_html(title, content, source_filename)
 
 
-def convert_markdown_file(
-    input_file: Path, output_file: Path, title: Optional[str] = None
-) -> bool:
+def convert_markdown_file(input_file: Path, output_file: Path, title: Optional[str] = None) -> bool:
     """Markdownファイルを変換してHTMLファイルを作成
 
     Args:

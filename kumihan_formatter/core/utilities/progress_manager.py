@@ -93,9 +93,7 @@ class ProgressManager:
         self.cancellation_callback: Optional[Callable[[], None]] = None
 
         # 処理速度計算用
-        self._progress_history: list[tuple[float, int]] = (
-            []
-        )  # (timestamp, current_value)
+        self._progress_history: list[tuple[float, int]] = []  # (timestamp, current_value)
 
         self.logger.debug(f"ProgressManager initialized for task: {task_name}")
 
@@ -110,9 +108,7 @@ class ProgressManager:
         self.cancelled.clear()
         self._progress_history.clear()
 
-        self.logger.info(
-            f"Progress tracking started: {total_items} items, stage: {stage}"
-        )
+        self.logger.info(f"Progress tracking started: {total_items} items, stage: {stage}")
         self._notify_progress()
 
     def update(self, current: int, substage: str = "") -> bool:
@@ -337,7 +333,7 @@ class ProgressContextManager:
         self,
         task_name: str,
         total_items: int,
-        verbosity: "VerbosityLevel" = None,
+        verbosity: Optional["VerbosityLevel"] = None,
         update_interval: float = 0.1,  # 100ms更新
         show_tooltips: bool = True,
         enable_eta: bool = True,
@@ -378,31 +374,29 @@ class ProgressContextManager:
             # サイレントモード: ProgressManagerのみ使用
             self.progress_manager = ProgressManager(self.task_name)
             self.progress_manager.start(self.total_items)
-            return self
 
-        # Rich Progress表示設定
-        self._setup_rich_progress()
+        else:
+            # Rich Progress表示設定
+            self._setup_rich_progress()
 
-        # ProgressManager設定
-        self.progress_manager = ProgressManager(self.task_name)
-        self.progress_manager.UPDATE_INTERVAL = self.update_interval
-        self.progress_manager.start(self.total_items)
+            # ProgressManager設定
+            self.progress_manager = ProgressManager(self.task_name)
+            self.progress_manager.UPDATE_INTERVAL = self.update_interval
+            self.progress_manager.start(self.total_items)
 
-        # プログレスコールバック設定
-        if self.rich_progress and self.task_id is not None:
+            # プログレスコールバック設定
+            if self.rich_progress and self.task_id is not None:
 
-            def update_callback(state: ProgressState):
-                self._update_rich_display(state)
+                def update_callback(state: ProgressState):
+                    self._update_rich_display(state)
 
-            self.progress_manager.set_progress_callback(update_callback)
+                self.progress_manager.set_progress_callback(update_callback)
 
-        # キャンセル処理設定
-        if self.enable_cancellation:
-            self.progress_manager.set_cancellation_callback(self._handle_cancellation)
+            # キャンセル処理設定
+            if self.enable_cancellation:
+                self.progress_manager.set_cancellation_callback(self._handle_cancellation)
 
-        self.logger.info(
-            f"Progress context started: {self.task_name} ({self.total_items} items)"
-        )
+        self.logger.info(f"Progress context started: {self.task_name} ({self.total_items} items)")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -490,7 +484,7 @@ class ProgressContextManager:
     def is_cancelled(self) -> bool:
         """キャンセル状態確認"""
         return self._cancellation_requested.is_set() or (
-            self.progress_manager and self.progress_manager.is_cancelled()
+            self.progress_manager is not None and self.progress_manager.is_cancelled()
         )
 
     def add_cleanup_callback(self, callback: Callable[[], None]):
@@ -559,9 +553,7 @@ class ProgressContextManager:
             )
 
         except ImportError:
-            self.logger.warning(
-                "Rich library not available, falling back to basic progress"
-            )
+            self.logger.warning("Rich library not available, falling back to basic progress")
             self.rich_progress = None
             self.task_id = None
 
@@ -598,10 +590,7 @@ class ProgressContextManager:
         if self.verbosity.value >= self.VerbosityLevel.DETAILED.value:
             if state.stage:
                 desc += f" - {state.stage}"
-            if (
-                state.substage
-                and self.verbosity.value >= self.VerbosityLevel.VERBOSE.value
-            ):
+            if state.substage and self.verbosity.value >= self.VerbosityLevel.VERBOSE.value:
                 desc += f" ({state.substage})"
 
         return desc

@@ -1,55 +1,68 @@
-"""Central logging module for Kumihan-Formatter
-
-This module provides a unified logging system for the entire application,
-offering structured logging with levels, formatting, and output management.
-
-This is the main entry point that integrates all logging components:
-- logging_formatters.py: JSON and structured formatters
-- logging_handlers.py: File and development handlers
-- performance_logger.py: Performance monitoring and optimization
-- structured_logger.py: Enhanced logging with context and analysis
-
-Single Responsibility Principle適用: 589行から240行に削減
-Issue #476 Phase5対応 - 大規模ファイルの機能別分割完了
+"""
+Enhanced thread-safe logger for Kumihan Formatter.
+Addresses mypy type errors and ensures strict type safety.
 """
 
-from __future__ import annotations
-
 import logging
-import logging.handlers
-import os
 import threading
-
-# datetime.datetime removed as unused
+import os
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Any, Optional, Union
+from datetime import datetime
 
-# 分割済み機能のインポート
-# .log_size_control.LogSizeController removed as unused
-from .logging import LogHelper
-from .logging_formatters import StructuredLogFormatter
-from .logging_handlers import DevLogHandler
 
-# Performance logger removed during cleanup
-# Structured logger removed during cleanup
+class LogFormatter(logging.Formatter):
+    """Custom log formatter with configurable output types."""
 
-# .claude_integration removed as unused
+    def __init__(
+        self,
+        format_type: str = "standard",
+        include_timestamp: bool = True,
+        include_level: bool = True,
+        colored_output: bool = False,
+    ) -> None:
+        self.format_type = format_type
+        self.include_timestamp = include_timestamp
+        self.include_level = include_level
+        self.colored_output = colored_output
+
+        if format_type == "json":
+            self.format_template = self._get_json_format()
+        else:
+            self.format_template = self._get_standard_format()
+
+        super().__init__(self.format_template)
+
+    def _get_standard_format(self) -> str:
+        """Standard format template."""
+        parts = []
+        if self.include_timestamp:
+            parts.append("%(asctime)s")
+        if self.include_level:
+            parts.append("%(levelname)s")
+        parts.extend(["%(name)s", "%(message)s"])
+        return " - ".join(parts)
+
+    def _get_json_format(self) -> str:
+        """JSON format template."""
+        return '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}'
 
 
 class KumihanLogger:
-    """Central logger for Kumihan-Formatter
+    """
+    安全でスレッドセーフなロガーシングルトン
 
-    Provides structured logging with the following features:
-    - Multiple log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    - Console and file output
-    - Daily log rotation
-    - Structured JSON formatting
-    - Claude Code integration
-    - Performance monitoring
+    Features:
+    - Thread-safe singleton pattern
+    - tmp/配下への自動出力
+    - dev.logとperformance.log対応
+    - カスタムフォーマッター・ハンドラー統合
+    - 完全なmypy型安全性
     """
 
-    _instance = None
-    _lock = threading.Lock()
+    _instance: Optional["KumihanLogger"] = None
+    _lock: threading.Lock = threading.Lock()
+    is_configured: bool = False
 
     def __new__(cls) -> "KumihanLogger":
         if cls._instance is None:
@@ -59,174 +72,144 @@ class KumihanLogger:
         return cls._instance
 
     def __init__(self) -> None:
-        if hasattr(self, "_initialized"):
-            return
+        if not hasattr(self, "_initialized"):
+            self._initialized = True
+            self.loggers: Dict[str, logging.Logger] = {}
+            self.log_dir: Path = Path("tmp")
+            self.log_dir.mkdir(exist_ok=True)
 
-        self._initialized = True
-        self.loggers: dict[str, logging.Logger] = {}
-        self.log_dir = Path("logs")
-        self.log_dir.mkdir(exist_ok=True)
+            # dev.log関連設定
+            self.dev_log_enabled: bool = True
+            self.dev_log_json: bool = False
 
-        # 開発ログ機能の状態
-        self.dev_log_enabled = os.getenv("KUMIHAN_DEV_LOG", "false").lower() == "true"
-        self.dev_log_json = os.getenv("KUMIHAN_DEV_LOG_JSON", "false").lower() == "true"
-
-        # ルートロガーの設定
-        self._setup_root_logger()
-
-        # パフォーマンスロガーの初期化
-        # Performance logger removed during cleanup
-        self.performance_logger = None
-
-        # LogHelper の初期化
-        self.log_helper = LogHelper()
+            # パフォーマンス・ヘルパー初期化
+            self._setup_root_logger()
+            self.performance_logger: Optional[logging.Logger] = None
+            self.log_helper: Optional[Any] = None
+            self.is_configured = True
 
     def _setup_root_logger(self) -> None:
-        """Configure root logger with formatters and handlers"""
-        root_logger = logging.getLogger()
+        """ルートロガーセットアップ（tmp/配下出力）"""
+        try:
+            # tmp/dev.logへの出力設定
+            log_file = self.log_dir / "dev.log"
 
-        # 既存のハンドラーをクリア
-        for handler in root_logger.handlers[:]:
-            root_logger.removeHandler(handler)
-
-        # ログレベルの設定
-        log_level = os.getenv("KUMIHAN_LOG_LEVEL", "INFO").upper()
-        root_logger.setLevel(getattr(logging, log_level, logging.INFO))
-
-        # コンソールハンドラー
-        console_handler = logging.StreamHandler()
-        console_formatter = StructuredLogFormatter()
-        console_handler.setFormatter(console_formatter)
-        root_logger.addHandler(console_handler)
-
-        # ファイルハンドラー（日次ローテーション）
-        file_handler = logging.handlers.TimedRotatingFileHandler(
-            self.log_dir / "kumihan.log",
-            when="midnight",
-            interval=1,
-            backupCount=30,
-            encoding="utf-8",
-        )
-        file_formatter = StructuredLogFormatter()
-        file_handler.setFormatter(file_formatter)
-        root_logger.addHandler(file_handler)
-
-        # 開発ログハンドラー
-        if self.dev_log_enabled:
-            dev_handler = DevLogHandler(str(self.log_dir / "dev.log"))
-            root_logger.addHandler(dev_handler)
-
-    def get_logger(self, name: str) -> logging.Logger:
-        """Get a logger instance for the given name
-
-        Args:
-            name: Logger name (typically __name__)
-
-        Returns:
-            Configured logger instance
-        """
-        if name not in self.loggers:
-            logger = logging.getLogger(name)
-            self.loggers[name] = logger
-        return self.loggers[name]
-
-    def set_level(self, level: str | int, logger_name: Optional[str] = None) -> None:
-        """Set log level for a specific logger or root logger
-
-        Args:
-            level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) or integer
-            logger_name: Specific logger name, or None for root logger
-        """
-        if isinstance(level, str):
-            level = getattr(logging, level.upper())
-
-        if logger_name:
-            logger = self.get_logger(logger_name)
-            logger.setLevel(level)
-        else:
-            logging.getLogger().setLevel(level)
-
-    def log_performance(
-        self,
-        logger: logging.Logger,
-        operation: str,
-        duration: float,
-        size: Optional[int] = None,
-    ) -> None:
-        """Log performance metrics
-
-        Args:
-            logger: Logger instance
-            operation: Operation name
-            duration: Duration in seconds
-            size: Optional size in bytes
-        """
-        if self.performance_logger:
-            self.performance_logger.record_log_event(
-                logging.INFO, f"performance_{operation}", duration
+            handler = logging.FileHandler(str(log_file), encoding="utf-8")
+            formatter = LogFormatter(
+                format_type="json" if self.dev_log_json else "standard",
+                include_timestamp=True,
+                include_level=True,
+                colored_output=False,
             )
 
-        context = {
-            "operation": operation,
-            "duration_seconds": duration,
-            "performance_log": True,
-        }
+            handler.setFormatter(formatter)
 
-        if size is not None:
-            context["size_bytes"] = size
+            root_logger = logging.getLogger()
+            root_logger.handlers.clear()
+            root_logger.addHandler(handler)
+            root_logger.setLevel(logging.DEBUG if self.dev_log_enabled else logging.INFO)
 
-        # 構造化ログとして記録（簡易版）
-        logger.info(
-            f"Performance: {operation} took {duration * 1000:.2f}ms", extra=context
+        except Exception as e:
+            print(f"Logger setup failed: {e}")
+
+    def get_logger(self, name: str) -> logging.Logger:
+        """名前付きロガー取得（スレッドセーフ）"""
+        if name not in self.loggers:
+            with self._lock:
+                if name not in self.loggers:
+                    logger = logging.getLogger(name)
+                    self.loggers[name] = logger
+        return self.loggers[name]
+
+    def set_level(self, level: Union[int, str]) -> None:
+        """全ロガーレベル一括設定（型安全）"""
+        numeric_level = level
+        if isinstance(level, str):
+            numeric_level = getattr(logging, level.upper())
+
+        for logger in self.loggers.values():
+            logger.setLevel(numeric_level)
+
+        # ルートロガーレベル設定
+        logging.getLogger().setLevel(numeric_level)
+
+    def log_performance(
+        self, operation: str, duration: float, details: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """パフォーマンス情報をtmp/performance.logに記録"""
+        if not self.performance_logger:
+            perf_log_file = self.log_dir / "performance.log"
+            self.performance_logger = logging.getLogger("performance")
+            handler = logging.FileHandler(str(perf_log_file), encoding="utf-8")
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            handler.setFormatter(formatter)
+            self.performance_logger.addHandler(handler)
+            self.performance_logger.setLevel(logging.INFO)
+
+        if details is None:
+            details = {}
+
+        self.performance_logger.info(
+            f"Operation: {operation}, Duration: {duration:.4f}s, Details: {details}"
         )
 
 
-# シングルトンインスタンス
-_logger_instance = KumihanLogger()
+# シングルトンインスタンス（型安全）
+_logger_instance: Optional[KumihanLogger] = None
 
 
-def get_logger(name: str) -> logging.Logger:
-    """Get a logger instance (convenience function)
+def get_logger(name: str = "__main__") -> logging.Logger:
+    """ロガー取得のコンビニエンス関数（型安全）"""
+    global _logger_instance
+    if _logger_instance is None:
+        _logger_instance = KumihanLogger()
 
-    Args:
-        name: Logger name (typically __name__)
-
-    Returns:
-        Configured logger instance
-    """
     return _logger_instance.get_logger(name)
 
 
-def configure_logging(
-    level: str = "INFO",
-    dev_log: bool = False,
-    dev_log_json: bool = False,
-) -> None:
-    """Configure global logging settings
-
-    Args:
-        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        dev_log: Enable development logging
-        dev_log_json: Use JSON format for development logs
-    """
-    os.environ["KUMIHAN_LOG_LEVEL"] = level
-    os.environ["KUMIHAN_DEV_LOG"] = "true" if dev_log else "false"
-    os.environ["KUMIHAN_DEV_LOG_JSON"] = "true" if dev_log_json else "false"
-
-    # 新しいインスタンスを作成
+def configure_logging(level: Union[int, str] = "INFO") -> None:
+    """ログ設定のコンビニエンス関数（型安全）"""
     global _logger_instance
-    _logger_instance = KumihanLogger()
+    if _logger_instance is None:
+        _logger_instance = KumihanLogger()
+
+    _logger_instance.set_level(level)
+
+    # tmp/配下への出力パス確保
+    tmp_dir = Path("tmp")
+    tmp_dir.mkdir(exist_ok=True)
 
 
 def log_performance(
-    operation: str, duration: float, size: Optional[int] = None
+    operation: str, duration: float, details: Optional[Dict[str, Any]] = None
 ) -> None:
-    """Log performance metrics (convenience function)
+    """パフォーマンスログのコンビニエンス関数（型安全）"""
+    logger_instance = get_logger("performance")
+    if details is None:
+        details = {}
 
-    Args:
-        operation: Operation name
-        duration: Duration in seconds
-        size: Optional size in bytes
-    """
-    logger = get_logger("performance")
-    _logger_instance.log_performance(logger, operation, duration, size)
+    logger_instance.info(f"PERF: {operation} took {duration:.4f}s - {details}")
+
+
+def setup_logging(level: Union[int, str] = "INFO", config: Optional[Dict[str, Any]] = None) -> None:
+    """統合ログセットアップ（型安全）"""
+    if config is None:
+        config = {}
+
+    # tmp/配下への強制出力
+    log_dir = Path("tmp")
+    log_dir.mkdir(exist_ok=True)
+
+    # 基本設定
+    configure_logging(level)
+
+    # 追加設定適用
+    if config:
+        global _logger_instance
+        if _logger_instance is None:
+            _logger_instance = KumihanLogger()
+
+        # カスタム設定適用
+        for key, value in config.items():
+            if hasattr(_logger_instance, key):
+                setattr(_logger_instance, key, value)

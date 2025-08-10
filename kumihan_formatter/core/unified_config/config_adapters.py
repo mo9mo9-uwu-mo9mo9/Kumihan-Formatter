@@ -165,9 +165,7 @@ class ErrorConfigManagerAdapter:
 
         # 指定されたconfig_fileは無視（統一設定で管理）
         if config_file:
-            self.logger.info(
-                f"設定ファイル'{config_file}'は統一設定システムで管理されます"
-            )
+            self.logger.info(f"設定ファイル'{config_file}'は統一設定システムで管理されます")
 
     @property
     def config(self) -> ErrorConfig:
@@ -273,6 +271,46 @@ class ErrorConfigManagerAdapter:
     def to_dict(self) -> Dict[str, Any]:
         """設定を辞書形式で返す (旧API互換)"""
         return self.config.dict()
+
+
+class EnhancedConfigAdapter:
+    """EnhancedConfig互換アダプター
+
+    既存のEnhancedConfigクラスの代替として機能
+    統一設定システムから設定を取得し、旧API形式で提供
+    """
+
+    def __init__(self, config_manager: Optional[Any] = None):
+        """アダプター初期化"""
+        self.logger = get_logger(__name__)
+        self._config_manager = config_manager or get_unified_config_manager()
+
+        # 互換性警告の表示
+        warnings.warn(
+            "EnhancedConfigは統一設定システムに統合されました。"
+            "新しいコードではUnifiedConfigManagerを使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    def get_config(self) -> Dict[str, Any]:
+        """統一設定から全設定を取得"""
+        config = self._config_manager.get_config()
+        return config.dict() if hasattr(config, 'dict') else config.__dict__
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """設定値取得（旧API互換）"""
+        config = self._config_manager.get_config()
+        return getattr(config, key, default)
+
+    def set(self, key: str, value: Any) -> None:
+        """設定値設定（旧API互換）"""
+        # 統一設定システムではread-onlyのため警告
+        warnings.warn(
+            "設定の動的変更は統一設定システムでは非推奨です。",
+            UserWarning,
+            stacklevel=2,
+        )
 
 
 class BaseConfigAdapter:
@@ -401,9 +439,7 @@ class BaseConfigAdapter:
 # 互換性ヘルパー関数群
 
 
-def create_parallel_processing_config(
-    *args, **kwargs
-) -> ParallelProcessingConfigAdapter:
+def create_parallel_processing_config(*args, **kwargs) -> ParallelProcessingConfigAdapter:
     """ParallelProcessingConfig作成ヘルパー (旧API互換)
 
     Returns:

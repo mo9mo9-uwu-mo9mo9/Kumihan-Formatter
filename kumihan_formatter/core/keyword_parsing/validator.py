@@ -85,9 +85,7 @@ class KeywordValidator:
 
         return valid_keywords, error_messages
 
-    def get_keyword_suggestions(
-        self, invalid_keyword: str, max_suggestions: int = 3
-    ) -> list[str]:
+    def get_keyword_suggestions(self, invalid_keyword: str, max_suggestions: int = 3) -> list[str]:
         """
         無効なキーワードに対する修正候補を取得
 
@@ -173,9 +171,7 @@ class KeywordValidator:
 
         return warnings
 
-    def validate_keyword_combination(
-        self, keywords: list[str]
-    ) -> tuple[bool, list[str]]:
+    def validate_keyword_combination(self, keywords: list[str]) -> tuple[bool, list[str]]:
         """
         キーワード組み合わせの妥当性を包括的に検証
 
@@ -197,18 +193,12 @@ class KeywordValidator:
         # 見出しレベルの重複チェック
         heading_keywords = [k for k in valid_keywords if k.startswith("見出し")]
         if len(heading_keywords) > 1:
-            errors.append(
-                f"複数の見出しレベルは使用できません: {', '.join(heading_keywords)}"
-            )
+            errors.append(f"複数の見出しレベルは使用できません: {', '.join(heading_keywords)}")
 
         # details型（折りたたみ・ネタバレ）の重複チェック
-        details_keywords = [
-            k for k in valid_keywords if k in ["折りたたみ", "ネタバレ"]
-        ]
+        details_keywords = [k for k in valid_keywords if k in ["折りたたみ", "ネタバレ"]]
         if len(details_keywords) > 1:
-            errors.append(
-                f"複数のdetails型は使用できません: {', '.join(details_keywords)}"
-            )
+            errors.append(f"複数のdetails型は使用できません: {', '.join(details_keywords)}")
 
         # 論理的に矛盾する組み合わせのチェック
         # 見出しとdetailsの組み合わせは推奨しない（警告レベル）
@@ -279,9 +269,7 @@ class KeywordValidator:
             return True, None
 
         # RGB/RGBA形式 (rgb(r,g,b), rgba(r,g,b,a))
-        rgb_pattern = re.compile(
-            r"^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[0-9.]+)?\s*\)$"
-        )
+        rgb_pattern = re.compile(r"^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[0-9.]+)?\s*\)$")
         if rgb_pattern.match(color_value):
             return True, None
 
@@ -305,16 +293,14 @@ class KeywordValidator:
         # color属性の検証
         if "color" in attributes:
             is_valid, error_msg = self.validate_color_value(attributes["color"])
-            if not is_valid:
+            if not is_valid and error_msg is not None:
                 errors.append(error_msg)
 
         # alt属性の検証（画像用）
         if "alt" in attributes:
             alt_value = attributes["alt"]
             if len(alt_value) > 100:
-                errors.append(
-                    f"alt属性が長すぎます（100文字以内）: '{alt_value[:20]}...'"
-                )
+                errors.append(f"alt属性が長すぎます（100文字以内）: '{alt_value[:20]}...'")
 
             # HTML特殊文字の検証
             if any(char in alt_value for char in ["<", ">", '"', "'"]):

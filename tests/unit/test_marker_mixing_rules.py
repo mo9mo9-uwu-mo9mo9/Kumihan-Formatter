@@ -142,9 +142,9 @@ class TestColorCaseMixingRules:
         invalid_texts = [
             "#太字 color=red テキスト# と #下線 color=BLUE 内容#",  # 小文字 + 大文字
             "#太字 color=RED テキスト# と #下線 color=green 内容#",  # 大文字 + 小文字
-            "#太字 color=Red テキスト# と #下線 color=blue 内容#",   # 混在 + 小文字
-            "#太字 color=red テキスト# と #下線 color=Blue 内容#",   # 小文字 + 混在
-            "#太字 color=RED テキスト# と #下線 color=Blue 内容#",   # 大文字 + 混在
+            "#太字 color=Red テキスト# と #下線 color=blue 内容#",  # 混在 + 小文字
+            "#太字 color=red テキスト# と #下線 color=Blue 内容#",  # 小文字 + 混在
+            "#太字 color=RED テキスト# と #下線 color=Blue 内容#",  # 大文字 + 混在
         ]
 
         for text in invalid_texts:
@@ -209,7 +209,9 @@ class TestMixingRulesComprehensive:
         errors = self.validator.validate_text(complex_text)
 
         # マーカー混在とcolor混在の両方が検出されることを確認
-        marker_errors = [e for e in errors if "マーカー" in str(e.message) and "混在" in str(e.message)]
+        marker_errors = [
+            e for e in errors if "マーカー" in str(e.message) and "混在" in str(e.message)
+        ]
         color_errors = [e for e in errors if "color属性" in str(e.message)]
 
         assert len(marker_errors) > 0, "マーカー混在エラーが検出されませんでした"
@@ -251,6 +253,7 @@ class TestMixingRulesComprehensive:
 
         # パフォーマンステスト（タイムアウトしないことを確認）
         import time
+
         start_time = time.time()
 
         errors = self.validator.validate_text(large_text)

@@ -126,17 +126,13 @@ class TokenEfficiencyAnalyzer:
         """効率性スコアを計算"""
         # 正規化ファクター（実際の運用データに基づいて調整）
         time_efficiency = min(tokens_per_second / 1000, 1.0)  # 1000 tokens/sec が最大
-        memory_efficiency = min(
-            tokens_per_mb_memory / 10000, 1.0
-        )  # 10000 tokens/MB が最大
+        memory_efficiency = min(tokens_per_mb_memory / 10000, 1.0)  # 10000 tokens/MB が最大
 
         # Token使用量効率性（少ないほど良い）
         token_efficiency = max(0, 1.0 - (total_tokens / 50000))  # 50000トークンを基準
 
         # 重み付き統合スコア
-        weighted_score = (
-            time_efficiency * 0.4 + memory_efficiency * 0.3 + token_efficiency * 0.3
-        )
+        weighted_score = time_efficiency * 0.4 + memory_efficiency * 0.3 + token_efficiency * 0.3
 
         return min(max(weighted_score, 0.0), 1.0)
 
@@ -151,8 +147,7 @@ class TokenEfficiencyAnalyzer:
 
         # 簡易トレンド分析
         trend_sum = sum(
-            recent_scores[i] - recent_scores[i - 1]
-            for i in range(1, len(recent_scores))
+            recent_scores[i] - recent_scores[i - 1] for i in range(1, len(recent_scores))
         )
 
         if trend_sum > 0.05:
@@ -191,8 +186,7 @@ class TokenEfficiencyAnalyzer:
             "efficiency_level": efficiency_level,
             "average_score": mean(recent_scores),
             "trend": self._analyze_trend(),
-            "baseline_comparison_percent": self._compare_to_baseline(current_score)
-            * 100,
+            "baseline_comparison_percent": self._compare_to_baseline(current_score) * 100,
             "pattern_efficiencies": {
                 pattern: mean(scores[-5:]) if scores else 0.0
                 for pattern, scores in self.pattern_efficiencies.items()
@@ -255,53 +249,56 @@ class PatternDetector:
         patterns = []
 
         # 高Token使用量パターン検出
-        if tokens_used > self.detection_rules["high_token_usage"]["threshold"]:
+        high_token_threshold = self.detection_rules["high_token_usage"]["threshold"]
+        if isinstance(high_token_threshold, int) and tokens_used > high_token_threshold:
             pattern = InefficiencyPattern(
                 pattern_name="high_token_usage",
                 frequency=1,
                 impact_score=min(tokens_used / 50000, 1.0),
-                suggested_optimization=self.detection_rules["high_token_usage"][
-                    "optimization"
-                ],
+                suggested_optimization=str(
+                    self.detection_rules["high_token_usage"]["optimization"]
+                ),
                 affected_operations=[operation_name],
             )
             patterns.append(pattern)
 
         # 低速処理パターン検出
-        if processing_time > self.detection_rules["slow_processing"]["threshold"]:
+        slow_processing_threshold = self.detection_rules["slow_processing"]["threshold"]
+        if (
+            isinstance(slow_processing_threshold, (int, float))
+            and processing_time > slow_processing_threshold
+        ):
             pattern = InefficiencyPattern(
                 pattern_name="slow_processing",
                 frequency=1,
                 impact_score=min(processing_time / 60, 1.0),
-                suggested_optimization=self.detection_rules["slow_processing"][
-                    "optimization"
-                ],
+                suggested_optimization=str(self.detection_rules["slow_processing"]["optimization"]),
                 affected_operations=[operation_name],
             )
             patterns.append(pattern)
 
         # 高メモリ使用パターン検出
-        if memory_mb > self.detection_rules["high_memory_usage"]["threshold"]:
+        memory_threshold = self.detection_rules["high_memory_usage"]["threshold"]
+        if isinstance(memory_threshold, (int, float)) and memory_mb > memory_threshold:
             pattern = InefficiencyPattern(
                 pattern_name="high_memory_usage",
                 frequency=1,
                 impact_score=min(memory_mb / 1000, 1.0),
-                suggested_optimization=self.detection_rules["high_memory_usage"][
-                    "optimization"
-                ],
+                suggested_optimization=str(
+                    self.detection_rules["high_memory_usage"]["optimization"]
+                ),
                 affected_operations=[operation_name],
             )
             patterns.append(pattern)
 
         # 頻繁GCパターン検出
-        if gc_count > self.detection_rules["frequent_gc"]["threshold"]:
+        gc_threshold = self.detection_rules["frequent_gc"]["threshold"]
+        if isinstance(gc_threshold, int) and gc_count > gc_threshold:
             pattern = InefficiencyPattern(
                 pattern_name="frequent_gc",
                 frequency=gc_count,
                 impact_score=min(gc_count / 50, 1.0),
-                suggested_optimization=self.detection_rules["frequent_gc"][
-                    "optimization"
-                ],
+                suggested_optimization=str(self.detection_rules["frequent_gc"]["optimization"]),
                 affected_operations=[operation_name],
             )
             patterns.append(pattern)
@@ -333,9 +330,7 @@ class PatternDetector:
                 existing_pattern.impact_score, new_pattern.impact_score
             )
             existing_pattern.affected_operations.extend(new_pattern.affected_operations)
-            existing_pattern.affected_operations = list(
-                set(existing_pattern.affected_operations)
-            )
+            existing_pattern.affected_operations = list(set(existing_pattern.affected_operations))
         else:
             # 新しいパターンを追加
             self.detected_patterns.append(new_pattern)
@@ -346,9 +341,7 @@ class PatternDetector:
             return {"total_patterns": 0, "patterns": []}
 
         # パターンを影響度でソート
-        sorted_patterns = sorted(
-            self.detected_patterns, key=lambda x: x.impact_score, reverse=True
-        )
+        sorted_patterns = sorted(self.detected_patterns, key=lambda x: x.impact_score, reverse=True)
 
         pattern_summary = []
         for pattern in sorted_patterns[:10]:  # 上位10パターン
@@ -375,15 +368,11 @@ class PatternDetector:
         recommendations = []
 
         # 高影響度パターンから推奨事項を生成
-        high_impact_patterns = [
-            p for p in self.detected_patterns if p.impact_score > 0.5
-        ]
+        high_impact_patterns = [p for p in self.detected_patterns if p.impact_score > 0.5]
 
         if high_impact_patterns:
             recommendations.append("🚨 高優先度の最適化項目:")
-            for pattern in sorted(
-                high_impact_patterns, key=lambda x: x.impact_score, reverse=True
-            ):
+            for pattern in sorted(high_impact_patterns, key=lambda x: x.impact_score, reverse=True):
                 recommendations.append(
                     f"  - {pattern.suggested_optimization} "
                     f"(影響度: {pattern.impact_score:.2f}, 頻度: {pattern.frequency})"
@@ -394,12 +383,9 @@ class PatternDetector:
 
         if frequent_patterns:
             recommendations.append("\n🔄 頻出パターンの最適化:")
-            for pattern in sorted(
-                frequent_patterns, key=lambda x: x.frequency, reverse=True
-            ):
+            for pattern in sorted(frequent_patterns, key=lambda x: x.frequency, reverse=True):
                 recommendations.append(
-                    f"  - {pattern.suggested_optimization} "
-                    f"(頻度: {pattern.frequency}回)"
+                    f"  - {pattern.suggested_optimization} " f"(頻度: {pattern.frequency}回)"
                 )
 
         if not recommendations:

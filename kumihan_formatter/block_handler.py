@@ -5,7 +5,7 @@ monolithic parser.py. Handles block markers, paragraphs, and optimized
 block processing.
 """
 
-from typing import Optional
+from typing import Any, Optional
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -22,7 +22,7 @@ class BlockHandler:
     - 最適化された行解析
     """
 
-    def __init__(self, parser_instance):
+    def __init__(self, parser_instance: Any) -> None:
         """
         Args:
             parser_instance: メインParserインスタンス（依存注入）
@@ -30,23 +30,17 @@ class BlockHandler:
         self.parser = parser_instance
         self.logger = get_logger(__name__)
 
-    def parse_block_marker_fast(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_block_marker_fast(self, lines: list[str], current: int) -> tuple[Optional[Node], int]:
         """高速ブロックマーカー解析"""
         node, next_index = self.parser.block_parser.parse_block_marker(lines, current)
         return node, next_index
 
-    def parse_paragraph_fast(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_paragraph_fast(self, lines: list[str], current: int) -> tuple[Optional[Node], int]:
         """高速パラグラフ解析"""
         node, next_index = self.parser.block_parser.parse_paragraph(lines, current)
         return node, next_index
 
-    def parse_line_fallback(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_line_fallback(self, lines: list[str], current: int) -> tuple[Optional[Node], int]:
         """フォールバック処理（従来ロジック）"""
         if current >= len(lines):
             return None, current + 1
@@ -54,9 +48,7 @@ class BlockHandler:
         line = lines[current].strip()
 
         if self.parser.block_parser.is_opening_marker(line):
-            node, next_index = self.parser.block_parser.parse_block_marker(
-                lines, current
-            )
+            node, next_index = self.parser.block_parser.parse_block_marker(lines, current)
             return node, next_index
 
         return None, current + 1
@@ -64,8 +56,8 @@ class BlockHandler:
     def parse_line_optimized(
         self,
         line_types: dict[int, str],
-        pattern_cache: dict,
-        line_type_cache: dict,
+        pattern_cache: dict[str, Any],
+        line_type_cache: dict[str, Any],
         current: int,
     ) -> Optional[Node]:
         """
@@ -99,7 +91,7 @@ class BlockHandler:
             self.parser.lines, self.parser.current
         )
         self.parser.current = next_index
-        return node
+        return node  # type: ignore[no-any-return]
 
     def _parse_paragraph_fast_internal(self) -> Optional[Node]:
         """内部用高速パラグラフ解析"""
@@ -107,7 +99,7 @@ class BlockHandler:
             self.parser.lines, self.parser.current
         )
         self.parser.current = next_index
-        return node
+        return node  # type: ignore[no-any-return]
 
     def _parse_line_fallback_internal(self) -> Optional[Node]:
         """内部用フォールバック処理"""
@@ -118,7 +110,7 @@ class BlockHandler:
                 self.parser.lines, self.parser.current
             )
             self.parser.current = next_index
-            return node
+            return node  # type: ignore[no-any-return]
 
         self.parser.current += 1
         return None
@@ -138,9 +130,9 @@ class BlockHandler:
                 line_types[i] = "empty"
             elif self.parser.block_parser.is_opening_marker(stripped):
                 line_types[i] = "block_marker"
-            elif stripped.startswith(
-                "#"
-            ) and not self.parser.block_parser.is_opening_marker(stripped):
+            elif stripped.startswith("#") and not self.parser.block_parser.is_opening_marker(
+                stripped
+            ):
                 line_types[i] = "comment"
             elif self.parser.list_parser.is_list_line(stripped):
                 line_types[i] = "list"

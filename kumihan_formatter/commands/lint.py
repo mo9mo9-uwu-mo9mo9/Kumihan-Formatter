@@ -19,9 +19,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 class Flake8AutoFixer:
     """flake8エラー自動修正エンジン"""
 
-    def __init__(
-        self, config_path: Optional[str] = None, error_types: Optional[List[str]] = None
-    ):
+    def __init__(self, config_path: Optional[str] = None, error_types: Optional[List[str]] = None):
         self.logger = get_logger(__name__)
         self.config_path = config_path or ".flake8"
         self.max_line_length = self._get_max_line_length()
@@ -284,9 +282,7 @@ class Flake8AutoFixer:
 
         return content
 
-    def _is_import_unused(
-        self, content: str, import_names: List[str], line_num: int
-    ) -> bool:
+    def _is_import_unused(self, content: str, import_names: List[str], line_num: int) -> bool:
         """インポートが未使用かどうかを判定"""
         # AST解析を試行
         if self._check_usage_with_ast(content, import_names, line_num):
@@ -295,9 +291,7 @@ class Flake8AutoFixer:
         # フォールバック: 文字列チェック
         return self._check_usage_with_fallback(content, import_names)
 
-    def _check_usage_with_ast(
-        self, content: str, import_names: List[str], line_num: int
-    ) -> bool:
+    def _check_usage_with_ast(self, content: str, import_names: List[str], line_num: int) -> bool:
         """ASTを使用した使用状況チェック"""
         try:
             import ast
@@ -397,9 +391,7 @@ class Flake8AutoFixer:
 
         return content
 
-    def analyze_error_dependencies(
-        self, errors: List[Dict[str, Any]]
-    ) -> Dict[str, List[str]]:
+    def analyze_error_dependencies(self, errors: List[Dict[str, Any]]) -> Dict[str, List[str]]:
         """エラー間の依存関係を分析"""
         dependencies: Dict[str, List[str]] = {}
 
@@ -411,10 +403,7 @@ class Flake8AutoFixer:
             if error_code == "E501":
                 # 同じ行にE704がある場合、E704を先に修正
                 for other_error in errors:
-                    if (
-                        other_error["line"] == line_num
-                        and other_error["code"] == "E704"
-                    ):
+                    if other_error["line"] == line_num and other_error["code"] == "E704":
                         dependencies[error_code] = dependencies.get(error_code, [])
                         dependencies[error_code].append("E704")
 
@@ -431,9 +420,7 @@ class Flake8AutoFixer:
 
         return dependencies
 
-    def get_optimized_fix_order(
-        self, errors: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def get_optimized_fix_order(self, errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """最適な修正順序を計算"""
         # 依存関係に基づいて修正順序を決定
         priority_order = ["F401", "E704", "E501", "E226", "E302"]
@@ -473,17 +460,13 @@ class Flake8AutoFixer:
                 # ignoreパターンの取得
                 ignore_match = re.search(r"ignore\s*=\s*([^\n]+)", content)
                 if ignore_match:
-                    ignore_codes = [
-                        code.strip() for code in ignore_match.group(1).split(",")
-                    ]
+                    ignore_codes = [code.strip() for code in ignore_match.group(1).split(",")]
                     config_settings["ignore_codes"] = ignore_codes
 
                 # selectパターンの取得
                 select_match = re.search(r"select\s*=\s*([^\n]+)", content)
                 if select_match:
-                    select_codes = [
-                        code.strip() for code in select_match.group(1).split(",")
-                    ]
+                    select_codes = [code.strip() for code in select_match.group(1).split(",")]
                     config_settings["select_codes"] = select_codes
 
                 # excludeパターンの取得
@@ -501,9 +484,7 @@ class Flake8AutoFixer:
 
         return config_settings
 
-    def should_fix_error(
-        self, error_code: str, config_settings: Dict[str, Any]
-    ) -> bool:
+    def should_fix_error(self, error_code: str, config_settings: Dict[str, Any]) -> bool:
         """設定に基づいてエラーを修正すべきかチェック"""
         # ignoreリストにある場合はスキップ
         ignore_codes = config_settings.get("ignore_codes", [])
@@ -523,9 +504,7 @@ class Flake8AutoFixer:
         self.logger.debug(f"Will fix {error_code}")
         return True
 
-    def generate_fix_report(
-        self, fixes_applied: Dict[str, int], file_path: str
-    ) -> Dict[str, Any]:
+    def generate_fix_report(self, fixes_applied: Dict[str, int], file_path: str) -> Dict[str, Any]:
         """修正レポートを生成"""
         report = {
             "file": file_path,
@@ -572,15 +551,12 @@ class Flake8AutoFixer:
         # Calculate derived metrics
         if self.quality_metrics["files_processed"] > 0:
             self.quality_metrics["average_errors_per_file"] = (
-                self.quality_metrics["errors_detected"]
-                / self.quality_metrics["files_processed"]
+                self.quality_metrics["errors_detected"] / self.quality_metrics["files_processed"]
             )
 
         if self.quality_metrics["errors_detected"] > 0:
             self.quality_metrics["fix_success_rate"] = (
-                self.quality_metrics["errors_fixed"]
-                / self.quality_metrics["errors_detected"]
-                * 100
+                self.quality_metrics["errors_fixed"] / self.quality_metrics["errors_detected"] * 100
             )
 
     def get_quality_report(self) -> Dict[str, Any]:
@@ -605,15 +581,11 @@ class Flake8AutoFixer:
                 "total_files": self.quality_metrics["files_processed"],
                 "total_errors": self.quality_metrics["errors_detected"],
                 "total_fixes": self.quality_metrics["errors_fixed"],
-                "overall_success_rate": round(
-                    self.quality_metrics["fix_success_rate"], 2
-                ),
+                "overall_success_rate": round(self.quality_metrics["fix_success_rate"], 2),
             },
         }
 
-    def generate_html_report(
-        self, reports: List[Dict[str, Any]], output_path: str
-    ) -> None:
+    def generate_html_report(self, reports: List[Dict[str, Any]], output_path: str) -> None:
         """HTML形式の修正レポートを生成"""
         html_template = """<!DOCTYPE html>
 <html lang="ja">
@@ -672,9 +644,7 @@ class Flake8AutoFixer:
         total_files = len(reports)
         total_fixes = sum(report.get("total_fixes", 0) for report in reports)
         success_files = sum(1 for report in reports if report.get("success", False))
-        success_rate = round(
-            (success_files / total_files * 100) if total_files > 0 else 0
-        )
+        success_rate = round((success_files / total_files * 100) if total_files > 0 else 0)
 
         file_reports_html = ""
         for report in reports:
@@ -692,9 +662,7 @@ class Flake8AutoFixer:
             file_reports_html += file_html
 
         html_content = html_template.format(
-            timestamp=__import__("datetime")
-            .datetime.now()
-            .strftime("%Y-%m-%d %H:%M:%S"),
+            timestamp=__import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             total_files=total_files,
             total_fixes=total_fixes,
             success_rate=success_rate,
@@ -767,17 +735,13 @@ class Flake8AutoFixer:
 
             # 設定に基づいてフィルタリング
             filtered_errors = [
-                error
-                for error in errors
-                if self.should_fix_error(error["code"], config_settings)
+                error for error in errors if self.should_fix_error(error["code"], config_settings)
             ]
 
             # --typeオプションによるエラータイプフィルタリング
             if self.error_types:
                 filtered_errors = [
-                    error
-                    for error in filtered_errors
-                    if error["code"] in self.error_types
+                    error for error in filtered_errors if error["code"] in self.error_types
                 ]
 
             # 最適な修正順序で並び替え
@@ -796,9 +760,7 @@ class Flake8AutoFixer:
                 elif error_code == "F401":
                     content = self.fix_f401_unused_import(content, int(error["line"]))
                 elif error_code in ["E704", "E702"]:
-                    content = self.fix_e704_multiple_statements(
-                        content, int(error["line"])
-                    )
+                    content = self.fix_e704_multiple_statements(content, int(error["line"]))
 
             # 修正内容を保存（dry_runでない場合）
             if not dry_run and content != original_content:
@@ -808,8 +770,7 @@ class Flake8AutoFixer:
             # Phase 3.3: Quality monitoring update
             processing_time = time.time() - start_time
             total_fixes = sum(
-                self.fixes_applied.get(code, 0)
-                for code in ["E501", "E226", "F401", "E704", "E702"]
+                self.fixes_applied.get(code, 0) for code in ["E501", "E226", "F401", "E704", "E702"]
             )
             self.update_quality_metrics(total_errors, total_fixes, processing_time)
 
@@ -843,9 +804,7 @@ def _get_target_files(files: Tuple[str, ...]) -> Tuple[str, ...]:
     """対象ファイルを取得"""
     if not files:
         # デフォルト対象：Pythonファイル
-        files = tuple(
-            str(p) for p in Path(".").rglob("*.py") if not str(p).startswith(".")
-        )
+        files = tuple(str(p) for p in Path(".").rglob("*.py") if not str(p).startswith("."))
     return files
 
 
@@ -878,9 +837,7 @@ def _display_phase_info(advanced: bool, quality_monitoring: bool) -> None:
     """Phase機能の情報を表示"""
     if advanced:
         click.echo("🚀 Advanced mode enabled (Phase 3.2)")
-        click.echo(
-            "Features: E704 (multiple statements), error dependency analysis, HTML reports"
-        )
+        click.echo("Features: E704 (multiple statements), error dependency analysis, HTML reports")
 
     if quality_monitoring:
         click.echo("📊 Quality monitoring enabled (Phase 3.3)")
@@ -907,8 +864,7 @@ def _process_files(
                     for code in ["E501", "E226", "F401", "E704", "E702"]:
                         total_fixes[code] += fixes.get(code, 0)
                     total_fixes["total"] += sum(
-                        fixes.get(code, 0)
-                        for code in ["E501", "E226", "F401", "E704", "E702"]
+                        fixes.get(code, 0) for code in ["E501", "E226", "F401", "E704", "E702"]
                     )
 
                     # レポート用データ収集
@@ -947,9 +903,7 @@ def _display_results(
         success_rate = round((total_fixes["total"] / len(py_files) * 100))
         click.echo("📈 Processing statistics:")
         click.echo(f"  Files processed: {len(py_files)}")
-        click.echo(
-            f"  Average fixes per file: {round(total_fixes['total'] / len(py_files), 1)}"
-        )
+        click.echo(f"  Average fixes per file: {round(total_fixes['total'] / len(py_files), 1)}")
         click.echo(f"  Success rate: {success_rate}%")
 
 
@@ -970,12 +924,8 @@ def _display_quality_report(fixer: "Flake8AutoFixer") -> None:
     click.echo(
         f"  Avg Processing Time: {performance['avg_processing_time_per_file']:.3f}s per file"
     )
-    click.echo(
-        f"  Error Detection Rate: {performance['errors_per_second']:.1f} errors/sec"
-    )
-    click.echo(
-        f"  Fix Application Rate: {performance['fixes_per_second']:.1f} fixes/sec"
-    )
+    click.echo(f"  Error Detection Rate: {performance['errors_per_second']:.1f} errors/sec")
+    click.echo(f"  Fix Application Rate: {performance['fixes_per_second']:.1f} fixes/sec")
 
     metrics = quality_report["quality_metrics"]
     click.echo("\nQuality Metrics:")
@@ -986,21 +936,13 @@ def _display_quality_report(fixer: "Flake8AutoFixer") -> None:
 @click.command()
 @click.argument("files", nargs=-1, type=click.Path(exists=True))
 @click.option("--fix", is_flag=True, help="自動修正を実行する")
-@click.option(
-    "--dry-run", is_flag=True, help="修正内容を表示のみ（実際には変更しない）"
-)
+@click.option("--dry-run", is_flag=True, help="修正内容を表示のみ（実際には変更しない）")
 @click.option("--config", "-c", help="flake8設定ファイルのパス")
 @click.option("--verbose", "-v", is_flag=True, help="詳細ログを表示")
 @click.option("--report", "-r", help="HTML修正レポートの出力先ファイル")
-@click.option(
-    "--advanced", is_flag=True, help="Phase 3.2: 高度修正機能を有効にする（E704対応）"
-)
-@click.option(
-    "--quality-monitoring", is_flag=True, help="Phase 3.3: 品質監視機能を有効にする"
-)
-@click.option(
-    "--type", "-t", help="修正するエラータイプを指定（カンマ区切り） 例: E501,E226,F401"
-)
+@click.option("--advanced", is_flag=True, help="Phase 3.2: 高度修正機能を有効にする（E704対応）")
+@click.option("--quality-monitoring", is_flag=True, help="Phase 3.3: 品質監視機能を有効にする")
+@click.option("--type", "-t", help="修正するエラータイプを指定（カンマ区切り） 例: E501,E226,F401")
 def lint_command(
     files: Tuple[str, ...],
     fix: bool,

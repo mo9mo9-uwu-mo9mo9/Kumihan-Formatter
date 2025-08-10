@@ -78,7 +78,7 @@ class UnifiedConfigManager:
 
         # ホットリロード開始
         if self._auto_reload and self._config_file_path:
-            self._start_auto_reload()
+            self._start_auto_reload()  # type: ignore[unreachable]
 
     def _load_initial_config(self, config_file: Optional[Union[str, Path]]) -> None:
         """初期設定読み込み
@@ -91,9 +91,7 @@ class UnifiedConfigManager:
             if config_file:
                 self._config_file_path = Path(config_file)
                 if not self._config_file_path.exists():
-                    self.logger.warning(
-                        f"指定された設定ファイルが見つかりません: {config_file}"
-                    )
+                    self.logger.warning(f"指定された設定ファイルが見つかりません: {config_file}")
                     self._config_file_path = None
             else:
                 self._config_file_path = self.loader.find_config_file()
@@ -175,9 +173,7 @@ class UnifiedConfigManager:
         """
         if self.validator:
             # 設定検証実行
-            validation_result = self.validator.validate_config(
-                config_data, auto_fix=True
-            )
+            validation_result = self.validator.validate_config(config_data, auto_fix=True)
 
             if validation_result.errors:
                 self.logger.error("設定検証エラー:")
@@ -324,9 +320,7 @@ class UnifiedConfigManager:
                     e,
                     context={
                         "config_file": (
-                            str(self._config_file_path)
-                            if self._config_file_path
-                            else None
+                            str(self._config_file_path) if self._config_file_path else None
                         )
                     },
                     operation="config_reload",
@@ -360,9 +354,7 @@ class UnifiedConfigManager:
 
             if save_path is None:
                 save_path = Path.home() / ".kumihan" / "kumihan.yaml"
-                self.logger.info(
-                    f"保存先が指定されていないため、デフォルトパスを使用: {save_path}"
-                )
+                self.logger.info(f"保存先が指定されていないため、デフォルトパスを使用: {save_path}")
 
             self.loader.save_config(self._config, save_path, format)
 

@@ -32,13 +32,9 @@ class FileManager:
             if not input_file:
                 raise ValueError("入力ファイルが指定されていません")
             if not isinstance(input_file, str):
-                raise TypeError(
-                    f"入力ファイルは文字列である必要があります: {type(input_file)}"
-                )
+                raise TypeError(f"入力ファイルは文字列である必要があります: {type(input_file)}")
             if not isinstance(output_dir, str):
-                raise TypeError(
-                    f"出力ディレクトリは文字列である必要があります: {type(output_dir)}"
-                )
+                raise TypeError(f"出力ディレクトリは文字列である必要があります: {type(output_dir)}")
 
             input_path = Path(input_file)
 
@@ -133,8 +129,6 @@ class FileManager:
     def get_sample_output_path(self, output_dir: str = "kumihan_sample") -> Path:
         """サンプル生成用の出力パスを取得（エラーハンドリング強化）"""
         try:
-            if not isinstance(output_dir, str):
-                output_dir = str(output_dir)
             return Path(output_dir)
         except Exception as e:
             self.logger.warning(f"サンプル出力パス生成エラー: {e}")

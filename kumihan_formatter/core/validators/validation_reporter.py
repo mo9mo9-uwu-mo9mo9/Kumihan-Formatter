@@ -14,9 +14,7 @@ class ValidationReporter:
     def __init__(self) -> None:
         pass
 
-    def generate_report(
-        self, issues: list[ValidationIssue], format_type: str = "text"
-    ) -> str:
+    def generate_report(self, issues: list[ValidationIssue], format_type: str = "text") -> str:
         """
         Generate validation report
 
@@ -46,9 +44,7 @@ class ValidationReporter:
         warnings = [i for i in issues if i.is_warning()]
         info = [i for i in issues if i.is_info()]
 
-        lines.append(
-            f"Summary: {len(errors)} errors, {len(warnings)} warnings, {len(info)} info"
-        )
+        lines.append(f"Summary: {len(errors)} errors, {len(warnings)} warnings, {len(info)} info")
         lines.append("")
 
         for level, items, icon in [
@@ -93,9 +89,7 @@ class ValidationReporter:
     def _generate_html_report(self, issues: list[ValidationIssue]) -> str:
         """Generate HTML format report"""
         if not issues:
-            return (
-                "<div class='validation-success'>✅ No validation issues found.</div>"
-            )
+            return "<div class='validation-success'>✅ No validation issues found.</div>"
 
         html_parts = [
             '<div class="validation-report">',
@@ -130,9 +124,7 @@ class ValidationReporter:
                         )
                     html_parts.append(f'<span class="message">{issue.message}</span>')
                     if issue.suggestion:
-                        html_parts.append(
-                            f' <span class="suggestion">({issue.suggestion})</span>'
-                        )
+                        html_parts.append(f' <span class="suggestion">({issue.suggestion})</span>')
                     html_parts.append("</li>")
                 html_parts.append("</ul>")
                 html_parts.append("</div>")
@@ -150,9 +142,7 @@ class ValidationReporter:
         if not issues:
             print("✅ No validation issues found.")
         else:
-            print(
-                f"Validation complete: {errors} errors, {warnings} warnings, {info} info"
-            )
+            print(f"Validation complete: {errors} errors, {warnings} warnings, {info} info")
 
             if errors > 0:
                 print("❌ Errors must be fixed before proceeding.")

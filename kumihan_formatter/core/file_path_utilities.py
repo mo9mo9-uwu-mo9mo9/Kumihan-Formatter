@@ -62,10 +62,7 @@ class FilePathUtilities:
                 dir_pattern = pattern.rstrip("/")
 
                 # Complete path matching
-                if (
-                    relative_str.startswith(dir_pattern + "/")
-                    or relative_str == dir_pattern
-                ):
+                if relative_str.startswith(dir_pattern + "/") or relative_str == dir_pattern:
                     return True
 
                 # Partial matching (directory name)

@@ -84,9 +84,7 @@ class BlockValidator:
 
                 # Check for invalid nested marker content
                 if not self._is_valid_nested_marker(marker_content):
-                    issues.append(
-                        f"行 {i + 1}: 入れ子構造で無効なマーカー: {marker_content}"
-                    )
+                    issues.append(f"行 {i + 1}: 入れ子構造で無効なマーカー: {marker_content}")
 
                 # Check nesting depth (limit to reasonable depth)
                 if len(nesting_stack) > 10:
@@ -110,7 +108,7 @@ class BlockValidator:
 
     def validate_content_structure(self, content: str) -> list[str]:
         """Validate content within blocks"""
-        issues = []
+        issues: list[str] = []
 
         # ;;;記法チェックは削除されました（Phase 1完了）
         # 新記法のチェックが必要な場合はここに追加します

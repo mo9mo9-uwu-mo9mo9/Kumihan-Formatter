@@ -44,9 +44,7 @@ class CheckSyntaxCommand:
                 get_console_ui().error("チェックするファイルが見つかりません")
                 sys.exit(1)
 
-            get_console_ui().info(
-                "構文チェック", f"{len(file_paths)} ファイルをチェック中..."
-            )
+            get_console_ui().info("構文チェック", f"{len(file_paths)} ファイルをチェック中...")
 
             # Run syntax check
             results = check_files(file_paths, verbose=False)
@@ -65,11 +63,6 @@ class CheckSyntaxCommand:
                         for errors in results.values()
                         for error in errors
                         if error.severity == ErrorSeverity.ERROR
-                    )
-                else:
-                    # If results is a list of errors
-                    error_count = sum(
-                        1 for error in results if error.severity == ErrorSeverity.ERROR
                     )
 
                 return {
@@ -95,37 +88,29 @@ class CheckSyntaxCommand:
                 if path.suffix == ".txt":
                     file_paths.append(path)
                 else:
-                    get_console_ui().warning(
-                        f"スキップ: {pattern} (txtファイルではありません)"
-                    )
+                    get_console_ui().warning(f"スキップ: {pattern} (txtファイルではありません)")
             elif path.is_dir():
                 if recursive:
                     # Find all .txt files recursively
                     txt_files = list(path.rglob("*.txt"))
                     file_paths.extend(txt_files)
-                    get_console_ui().info(
-                        "検索", f"{path} から {len(txt_files)} ファイルを発見"
-                    )
+                    get_console_ui().info("検索", f"{path} から {len(txt_files)} ファイルを発見")
                 else:
                     # Find .txt files in directory (non-recursive)
                     txt_files = list(path.glob("*.txt"))
                     file_paths.extend(txt_files)
-                    get_console_ui().info(
-                        "検索", f"{path} から {len(txt_files)} ファイルを発見"
-                    )
+                    get_console_ui().info("検索", f"{path} から {len(txt_files)} ファイルを発見")
             else:
                 get_console_ui().warning(f"ファイルが見つかりません: {pattern}")
 
         return file_paths
 
-    def _output_text(self, results, show_suggestions: bool) -> None:  # type: ignore
+    def _output_text(self, results, show_suggestions: bool) -> None:
         """Output results in text format"""
         report = format_error_report(results, show_suggestions)
 
         if not results:
-            get_console_ui().success(
-                "構文チェック完了", "記法エラーは見つかりませんでした"
-            )
+            get_console_ui().success("構文チェック完了", "記法エラーは見つかりませんでした")
         else:
             total_errors = sum(len(errors) for errors in results.values())
             error_count = sum(
@@ -149,7 +134,7 @@ class CheckSyntaxCommand:
             print()
             print(report)
 
-    def _output_json(self, results) -> None:  # type: ignore
+    def _output_json(self, results) -> None:
         """Output results in JSON format"""
         import json
 
@@ -185,7 +170,7 @@ def create_check_syntax_command() -> click.Command:
         default="text",
         help="出力形式",
     )
-    def check_syntax(files, recursive, no_suggestions, output_format):  # type: ignore
+    def check_syntax(files, recursive, no_suggestions, output_format):
         """Kumihan記法の構文をチェックします"""
 
         command = CheckSyntaxCommand()

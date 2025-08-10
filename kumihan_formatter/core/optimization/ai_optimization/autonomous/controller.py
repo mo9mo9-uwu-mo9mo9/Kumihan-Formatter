@@ -66,9 +66,7 @@ class AutonomousController:
         self.autonomous_mode = self.config.get("autonomous_mode", True)
 
         # 制御履歴
-        self.control_history: deque = deque(
-            maxlen=self.config.get("control_history_size", 1000)
-        )
+        self.control_history: deque = deque(maxlen=self.config.get("control_history_size", 1000))
 
         # 自律制御スレッド
         self.control_active = False
@@ -156,14 +154,10 @@ class AutonomousController:
                 return {"monitoring_success": False, "reason": "no_metrics_available"}
 
             # 最近の異常取得
-            recent_anomalies = self.system_monitor.get_recent_anomalies(
-                hours=0.5
-            )  # 30分以内
+            recent_anomalies = self.system_monitor.get_recent_anomalies(hours=0.5)  # 30分以内
 
             # システム状態評価
-            system_state = self._evaluate_system_state(
-                current_metrics, recent_anomalies
-            )
+            system_state = self._evaluate_system_state(current_metrics, recent_anomalies)
 
             # 効率性評価
             efficiency_assessment = self._assess_efficiency(current_metrics)
@@ -191,9 +185,7 @@ class AutonomousController:
             self.logger.error(f"System efficiency monitoring failed: {e}")
             return {"monitoring_success": False, "error": str(e)}
 
-    def execute_autonomous_actions(
-        self, anomalies: List[AnomalyEvent]
-    ) -> Dict[str, Any]:
+    def execute_autonomous_actions(self, anomalies: List[AnomalyEvent]) -> Dict[str, Any]:
         """自律的最適化行動実行（効率低下自動検出・最適化行動自動実行・1-2%削減効果実現）"""
         try:
             action_start = time.time()
@@ -202,9 +194,7 @@ class AutonomousController:
                 return {"actions_executed": False, "reason": "autonomous_mode_disabled"}
 
             # 高優先度異常フィルタリング
-            critical_anomalies = [
-                a for a in anomalies if a.severity in ["critical", "high"]
-            ]
+            critical_anomalies = [a for a in anomalies if a.severity in ["critical", "high"]]
 
             if not critical_anomalies:
                 return {"actions_executed": False, "reason": "no_critical_anomalies"}
@@ -252,19 +242,13 @@ class AutonomousController:
                 return {"validation_success": False, "reason": "no_post_action_metrics"}
 
             # 効果測定
-            effect_measurement = self._measure_action_effects(
-                action_result, post_action_metrics
-            )
+            effect_measurement = self._measure_action_effects(action_result, post_action_metrics)
 
             # 統計的有意性検証
-            statistical_validation = self._validate_statistical_significance(
-                effect_measurement
-            )
+            statistical_validation = self._validate_statistical_significance(effect_measurement)
 
             # 負の影響検出
-            negative_impact_detection = self._detect_negative_impacts(
-                effect_measurement
-            )
+            negative_impact_detection = self._detect_negative_impacts(effect_measurement)
 
             # 自動ロールバック判定
             rollback_needed = self._assess_rollback_necessity(
@@ -322,12 +306,8 @@ class AutonomousController:
         try:
             # 効率性スコア計算
             prediction_score = min(1.0, metrics.prediction_accuracy / 0.9)  # 90%を基準
-            response_score = min(
-                1.0, 0.1 / max(0.01, metrics.response_time)
-            )  # 100ms以内が理想
-            error_score = min(
-                1.0, (0.01 / max(0.001, metrics.error_rate))
-            )  # 1%以下が理想
+            response_score = min(1.0, 0.1 / max(0.01, metrics.response_time))  # 100ms以内が理想
+            error_score = min(1.0, (0.01 / max(0.001, metrics.error_rate)))  # 1%以下が理想
             cache_score = metrics.cache_hit_rate  # そのまま使用
 
             # 総合効率性スコア
@@ -404,24 +384,20 @@ class AutonomousController:
         """Phase B協調自律調整"""
         try:
             # Phase B基盤との協調制御
-            coordination_effectiveness = recovery_result.get(
-                "recovery_effectiveness", {}
-            ).get("effectiveness_score", 0.0)
+            coordination_effectiveness = recovery_result.get("recovery_effectiveness", {}).get(
+                "effectiveness_score", 0.0
+            )
 
             coordination_actions = []
             if coordination_effectiveness > 0.7:
-                coordination_actions.extend(
-                    ["enhance_alpha_integration", "optimize_base_settings"]
-                )
+                coordination_actions.extend(["enhance_alpha_integration", "optimize_base_settings"])
             elif coordination_effectiveness > 0.4:
                 coordination_actions.append("maintain_alpha_baseline")
             else:
                 coordination_actions.append("fallback_to_alpha_only")
 
             return {
-                "coordination_mode": (
-                    "enhanced" if coordination_effectiveness > 0.7 else "basic"
-                ),
+                "coordination_mode": ("enhanced" if coordination_effectiveness > 0.7 else "basic"),
                 "coordination_actions": coordination_actions,
                 "coordination_effectiveness": coordination_effectiveness,
                 "alpha_system_status": "operational",  # 簡略化
@@ -437,19 +413,15 @@ class AutonomousController:
         """最適化効果測定"""
         try:
             # 復旧効果
-            recovery_effectiveness = recovery_result.get(
-                "recovery_effectiveness", {}
-            ).get("effectiveness_score", 0.0)
+            recovery_effectiveness = recovery_result.get("recovery_effectiveness", {}).get(
+                "effectiveness_score", 0.0
+            )
 
             # 協調効果
-            coordination_effectiveness = phase_b_coordination.get(
-                "coordination_effectiveness", 0.0
-            )
+            coordination_effectiveness = phase_b_coordination.get("coordination_effectiveness", 0.0)
 
             # 総合効果計算
-            total_effectiveness = (
-                recovery_effectiveness * 0.7 + coordination_effectiveness * 0.3
-            )
+            total_effectiveness = recovery_effectiveness * 0.7 + coordination_effectiveness * 0.3
 
             # 削減効果推定（1-2%範囲）
             estimated_deletion_improvement = min(2.0, total_effectiveness * 1.5)
@@ -485,20 +457,14 @@ class AutonomousController:
             if not recent_metrics:
                 return {"measurement_available": False}
 
-            pre_metrics = (
-                recent_metrics[-2] if len(recent_metrics) >= 2 else recent_metrics[-1]
-            )
+            pre_metrics = recent_metrics[-2] if len(recent_metrics) >= 2 else recent_metrics[-1]
 
             # 各指標の変化測定
-            accuracy_change = (
-                post_metrics.prediction_accuracy - pre_metrics.prediction_accuracy
-            )
+            accuracy_change = post_metrics.prediction_accuracy - pre_metrics.prediction_accuracy
             response_time_change = (
                 pre_metrics.response_time - post_metrics.response_time
             )  # 改善は負の変化
-            error_rate_change = (
-                pre_metrics.error_rate - post_metrics.error_rate
-            )  # 改善は負の変化
+            error_rate_change = pre_metrics.error_rate - post_metrics.error_rate  # 改善は負の変化
 
             return {
                 "measurement_available": True,
@@ -506,9 +472,7 @@ class AutonomousController:
                 "response_time_change": response_time_change,
                 "error_rate_change": error_rate_change,
                 "overall_improvement": (
-                    accuracy_change * 0.5
-                    + response_time_change * 0.3
-                    + error_rate_change * 0.2
+                    accuracy_change * 0.5 + response_time_change * 0.3 + error_rate_change * 0.2
                 ),
             }
 
@@ -530,9 +494,7 @@ class AutonomousController:
             significance_threshold = 0.05  # 5%改善を有意とする
             is_significant = abs(overall_improvement) > significance_threshold
 
-            confidence_level = (
-                min(0.99, abs(overall_improvement) * 10) if is_significant else 0.1
-            )
+            confidence_level = min(0.99, abs(overall_improvement) * 10) if is_significant else 0.1
 
             return {
                 "validation_available": True,
@@ -546,9 +508,7 @@ class AutonomousController:
             self.logger.error(f"Statistical significance validation failed: {e}")
             return {"validation_available": False, "error": str(e)}
 
-    def _detect_negative_impacts(
-        self, effect_measurement: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _detect_negative_impacts(self, effect_measurement: Dict[str, Any]) -> Dict[str, Any]:
         """負の影響検出"""
         try:
             if not effect_measurement.get("measurement_available", False):
@@ -600,9 +560,7 @@ class AutonomousController:
 
             # 負の影響チェック
             if negative_impact_detection.get("has_negative_impacts", False):
-                impact_severity = negative_impact_detection.get(
-                    "impact_severity", "none"
-                )
+                impact_severity = negative_impact_detection.get("impact_severity", "none")
                 if impact_severity in ["high", "medium"]:
                     rollback_needed = True
                     rollback_reasons.append(f"negative_impacts_{impact_severity}")
@@ -610,9 +568,7 @@ class AutonomousController:
             # 統計的有意性チェック
             if statistical_validation.get("validation_available", False):
                 if not statistical_validation.get("is_significant", False):
-                    improvement = statistical_validation.get(
-                        "improvement_magnitude", 0.0
-                    )
+                    improvement = statistical_validation.get("improvement_magnitude", 0.0)
                     if improvement < -0.02:  # 2%以上の悪化
                         rollback_needed = True
                         rollback_reasons.append("statistically_significant_degradation")
@@ -678,9 +634,7 @@ class AutonomousController:
             recent_anomalies = self.system_monitor.get_recent_anomalies(hours=1.0)
 
             return {
-                "controller_status": (
-                    "operational" if self.control_active else "stopped"
-                ),
+                "controller_status": ("operational" if self.control_active else "stopped"),
                 "current_state": self.current_state.value,
                 "autonomous_mode": self.autonomous_mode,
                 "monitoring": {

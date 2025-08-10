@@ -180,9 +180,7 @@ class UnifiedErrorHandler:
         # その他
         return ErrorSeverity.ERROR, ErrorCategory.UNKNOWN
 
-    def _generate_suggestions(
-        self, error: Exception, category: ErrorCategory
-    ) -> list[str]:
+    def _generate_suggestions(self, error: Exception, category: ErrorCategory) -> list[str]:
         """エラーカテゴリに基づく提案生成
 
         Args:
@@ -257,9 +255,7 @@ class UnifiedErrorHandler:
 
         return suggestions
 
-    def _should_continue_processing(
-        self, error: KumihanError, occurrence_count: int
-    ) -> bool:
+    def _should_continue_processing(self, error: KumihanError, occurrence_count: int) -> bool:
         """処理を継続すべきかを判定
 
         Args:
@@ -274,9 +270,7 @@ class UnifiedErrorHandler:
             return False
 
         # 設定管理による判定
-        return self.config.should_continue_on_error(
-            error.category.value, occurrence_count
-        )
+        return self.config.should_continue_on_error(error.category.value, occurrence_count)
 
     def _log_error(self, error: KumihanError, operation: str) -> None:
         """統一フォーマットでエラーログ出力

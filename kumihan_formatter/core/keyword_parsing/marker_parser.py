@@ -51,9 +51,7 @@ class MarkerParser:
         # インライン記法パターン
         self._inline_pattern_1 = re.compile(r"^[#＃]\s*([^#＃]+)\s*[#＃]\s+(.+)$")
         self._inline_pattern_2 = re.compile(r"^[#＃]\s*([^#＃]+)\s+([^#＃]+)\s*[#＃]$")
-        self._inline_pattern_3 = re.compile(
-            r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃][#＃]$"
-        )
+        self._inline_pattern_3 = re.compile(r"^[#＃]\s+([^#＃]+)\s+[#＃]([^#＃]+)[#＃][#＃]$")
 
         # ブロック記法パターン
         self._basic_pattern = re.compile(r"^[#＃]\s*[^#＃]+\s*[#＃]$")
@@ -81,9 +79,7 @@ class MarkerParser:
         )
         return []
 
-    def extract_footnotes_from_text(
-        self, text: str
-    ) -> tuple[str, list[dict[str, Any]]]:
+    def extract_footnotes_from_text(self, text: str) -> tuple[str, list[dict[str, Any]]]:
         """
         【廃止】旧記法脚注抽出機能 - 新記法ブロック形式に完全移行済み
 
@@ -155,9 +151,7 @@ class MarkerParser:
         content = re.sub(r"data:", "", content, flags=re.IGNORECASE)
 
         # イベントハンドラーの除去
-        content = re.sub(
-            r'on\w+\s*=\s*["\'][^"\']*["\']', "", content, flags=re.IGNORECASE
-        )
+        content = re.sub(r'on\w+\s*=\s*["\'][^"\']*["\']', "", content, flags=re.IGNORECASE)
 
         # 制御文字の除去
         content = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", content)
@@ -168,7 +162,7 @@ class MarkerParser:
 
         return content.strip()
 
-    def _validate_footnote_structure(self, footnotes: list[dict]) -> list[str]:
+    def _validate_footnote_structure(self, footnotes: list[Any]) -> list[str]:
         """
         脚注構造の妥当性検証
 
@@ -178,7 +172,7 @@ class MarkerParser:
         Returns:
             list[str]: 検出されたエラーメッセージのリスト
         """
-        errors = []
+        errors: list[str] = []
 
         if not footnotes:
             return errors
@@ -204,10 +198,11 @@ class MarkerParser:
             start_pos = footnote.get("start_pos")
             end_pos = footnote.get("end_pos")
 
-            if start_pos is None or end_pos is None:
-                errors.append(f"脚注{i}: 位置情報が不正です")
-            elif start_pos >= end_pos:
-                errors.append(f"脚注{i}: 位置情報が矛盾しています")
+            if start_pos is not None and end_pos is not None:
+                if not isinstance(start_pos, int) or not isinstance(end_pos, int):
+                    errors.append(f"脚注{i}: 位置情報が無効です")
+                elif start_pos >= end_pos:
+                    errors.append(f"脚注{i}: 位置情報が不正です")
 
         return errors
 
@@ -276,9 +271,7 @@ class MarkerParser:
                                 _, attrs, _ = self.parse_marker_keywords(full_content)
                                 all_attributes.update(attrs)
                                 # color属性を除いたキーワードを抽出
-                                keyword = self._COLOR_ATTRIBUTE_PATTERN.sub(
-                                    "", keyword
-                                ).strip()
+                                keyword = self._COLOR_ATTRIBUTE_PATTERN.sub("", keyword).strip()
 
                             all_keywords.append(keyword)
                             if content:
@@ -322,9 +315,7 @@ class MarkerParser:
 
         return None
 
-    def _find_matching_marker(
-        self, text: str, start_pos: int, start_marker: str
-    ) -> int:
+    def _find_matching_marker(self, text: str, start_pos: int, start_marker: str) -> int:
         """
         開始マーカーに対応する終了マーカーを見つける（Issue #713 エンドマーカー検出ロジック改善版）
 
@@ -474,9 +465,7 @@ class MarkerParser:
 
         return False
 
-    def _is_valid_marker_pair(
-        self, text: str, start: int, end: int, marker: str
-    ) -> bool:
+    def _is_valid_marker_pair(self, text: str, start: int, end: int, marker: str) -> bool:
         """
         マーカーペアが有効かどうかを判定
 
@@ -735,9 +724,7 @@ class MarkerParser:
         keywords, attributes, errors = self.parse_marker_keywords(keyword_part)
 
         # 新記法固有の検証
-        additional_errors = self._validate_new_format_syntax(
-            start_marker, end_marker, keyword_part
-        )
+        additional_errors = self._validate_new_format_syntax(start_marker, end_marker, keyword_part)
         errors.extend(additional_errors)
 
         return keywords, attributes, errors
@@ -760,15 +747,11 @@ class MarkerParser:
 
         # 空のキーワード部分チェック
         if not keyword_part.strip():
-            errors.append(
-                "キーワードが指定されていません。例: # 太字 # または # 見出し1 #"
-            )
+            errors.append("キーワードが指定されていません。例: # 太字 # または # 見出し1 #")
 
         # キーワード長さチェック（追加）
         if len(keyword_part.strip()) > 50:
-            errors.append(
-                f"キーワードが長すぎます（50文字以内）: '{keyword_part[:20]}...'"
-            )
+            errors.append(f"キーワードが長すぎます（50文字以内）: '{keyword_part[:20]}...'")
 
         # 不正文字チェック（追加）
         invalid_chars = set(keyword_part) & {"<", ">", '"', "'", "&"}
@@ -777,9 +760,7 @@ class MarkerParser:
 
         # Markdownとの競合チェック
         if keyword_part.strip().isdigit():
-            errors.append(
-                f"数字のみのキーワード '{keyword_part}' はMarkdown見出しと競合します"
-            )
+            errors.append(f"数字のみのキーワード '{keyword_part}' はMarkdown見出しと競合します")
 
         # 予約語チェック
         reserved_words = ["#", "##", "###", "javascript:", "data:", "vbscript:"]
@@ -791,9 +772,7 @@ class MarkerParser:
             parts = self._KEYWORD_SPLIT_PATTERN.split(keyword_part)
             empty_parts = [i for i, part in enumerate(parts) if not part.strip()]
             if empty_parts:
-                errors.append(
-                    f"複合キーワードに空の部分があります（位置: {empty_parts}）"
-                )
+                errors.append(f"複合キーワードに空の部分があります（位置: {empty_parts}）")
 
         return errors
 

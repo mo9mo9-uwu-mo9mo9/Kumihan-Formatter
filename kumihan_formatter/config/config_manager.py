@@ -38,9 +38,7 @@ class ConfigManager:
         """
         self.config_type = config_type
         self.env_prefix = env_prefix
-        self._config: BaseConfig | ExtendedConfig = create_config_instance(
-            config_type, config_path
-        )
+        self._config: BaseConfig | ExtendedConfig = create_config_instance(config_type, config_path)
         self._env_handler = ConfigEnvironmentHandler(env_prefix)
 
         # 環境変数から設定を読み込み
@@ -159,9 +157,7 @@ def create_config_manager(
     Returns:
         ConfigManager: 設定管理インスタンス
     """
-    return ConfigManager(
-        config_type=config_type, config_path=config_path, env_prefix=env_prefix
-    )
+    return ConfigManager(config_type=config_type, config_path=config_path, env_prefix=env_prefix)
 
 
 def load_config(config_path: str | None = None) -> ConfigManager:

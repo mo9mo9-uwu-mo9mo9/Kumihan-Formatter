@@ -20,18 +20,20 @@ class RegexOptimizer:
     """
 
     def __init__(self, cache_size_limit: int = 1000):
+        import re
+        from typing import Dict, Any, List
+        from kumihan_formatter.core.utilities.logger import get_logger
+
         self.logger = get_logger(__name__)
         self.cache_size_limit = cache_size_limit
-        self._pattern_cache = {}
-        self._usage_counter = {}
+        self._pattern_cache: Dict[tuple[str, int], re.Pattern[str]] = {}
+        self._usage_counter: Dict[tuple[str, int], int] = {}
         self._compile_stats = {"hits": 0, "misses": 0, "evictions": 0}
 
         # 最適化された事前コンパイル済みパターン
         self._precompiled_patterns = self._initialize_precompiled_patterns()
 
-        self.logger.info(
-            f"RegexOptimizer initialized with cache limit: {cache_size_limit}"
-        )
+        self.logger.info(f"RegexOptimizer initialized with cache limit: {cache_size_limit}")
 
     def _initialize_precompiled_patterns(self) -> Dict[str, Any]:
         """よく使用される正規表現パターンを事前コンパイル"""
@@ -96,9 +98,7 @@ class RegexOptimizer:
             return compiled_pattern
 
         except re.error as e:
-            self.logger.error(
-                f"Regex compilation failed for pattern '{pattern_str}': {e}"
-            )
+            self.logger.error(f"Regex compilation failed for pattern '{pattern_str}': {e}")
             # フォールバック：文字列マッチング
             return None
 
@@ -108,7 +108,7 @@ class RegexOptimizer:
             return
 
         # 最小使用回数のパターンを見つける
-        least_used_key = min(self._usage_counter, key=self._usage_counter.get)
+        least_used_key = min(self._usage_counter, key=lambda k: self._usage_counter[k])
 
         # キャッシュから削除
         if least_used_key in self._pattern_cache:
@@ -117,9 +117,7 @@ class RegexOptimizer:
             del self._usage_counter[least_used_key]
 
         self._compile_stats["evictions"] += 1
-        self.logger.debug(
-            f"Evicted regex pattern from cache: {least_used_key[0][:50]}..."
-        )
+        self.logger.debug(f"Evicted regex pattern from cache: {least_used_key[0][:50]}...")
 
     def optimized_search(self, pattern_str: str, text: str, flags: int = 0) -> Any:
         """
@@ -146,24 +144,19 @@ class RegexOptimizer:
         # フォールバック：単純文字列検索
         return pattern_str in text
 
-    def optimized_findall(
-        self, pattern_str: str, text: str, flags: int = 0
-    ) -> List[str]:
-        """
-        最適化された正規表現全体検索
-
-        Args:
-            pattern_str: 検索パターン
-            text: 検索対象テキスト
-            flags: 正規表現フラグ
-
-        Returns:
-            List[str]: マッチした文字列のリスト
-        """
-        compiled_pattern = self.get_compiled_pattern(pattern_str, flags)
-        if compiled_pattern:
-            return compiled_pattern.findall(text)
-        return []
+    def optimized_findall(self, pattern: str, text: str, flags: int = 0) -> list[str]:
+        """最適化されたfindall操作"""
+        try:
+            compiled_pattern = self.get_compiled_pattern(pattern, flags)
+            if compiled_pattern:
+                result = compiled_pattern.findall(text)
+                # Anyではなく明確にlist[str]を返す
+                return list(result) if result is not None else []
+            else:
+                return []
+        except Exception as e:
+            self.logger.error(f"Regex findall operation failed: {e}")
+            return []
 
     def optimized_substitute(
         self, pattern_str: str, replacement: str, text: str, flags: int = 0
@@ -178,14 +171,19 @@ class RegexOptimizer:
             flags: 正規表現フラグ
 
         Returns:
-            str: 置換後テキスト
+            置換後のテキスト
         """
-        compiled_pattern = self.get_compiled_pattern(pattern_str, flags)
-        if compiled_pattern:
-            return compiled_pattern.sub(replacement, text)
-
-        # フォールバック：単純文字列置換
-        return text.replace(pattern_str, replacement)
+        try:
+            compiled_pattern = self.get_compiled_pattern(pattern_str, flags)
+            if compiled_pattern:
+                result = compiled_pattern.sub(replacement, text)
+                # Anyではなく明確にstrを返す
+                return str(result) if result is not None else text
+            else:
+                return text
+        except Exception as e:
+            self.logger.error(f"Regex substitution failed: {e}")
+            return text
 
     def batch_process_with_patterns(
         self, texts: List[str], patterns_and_replacements: List[tuple[str, str]]
@@ -221,11 +219,7 @@ class RegexOptimizer:
     def get_cache_stats(self) -> Dict[str, Any]:
         """キャッシュ統計を取得"""
         total_requests = self._compile_stats["hits"] + self._compile_stats["misses"]
-        hit_rate = (
-            (self._compile_stats["hits"] / total_requests * 100)
-            if total_requests > 0
-            else 0
-        )
+        hit_rate = (self._compile_stats["hits"] / total_requests * 100) if total_requests > 0 else 0
 
         return {
             "cache_size": len(self._pattern_cache),

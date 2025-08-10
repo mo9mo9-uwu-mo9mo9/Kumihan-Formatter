@@ -42,7 +42,7 @@ class ViolationAlert:
 class SerenaMonitoringSystem:
     """Serena-Expert強制使用監視システム"""
 
-    def __init__(self, project_root: str = None):
+    def __init__(self, project_root: Optional[str] = None):
         self.project_root = Path(project_root or os.getcwd())
         self.config_file = self.project_root / ".claude-config.yml"
         self.log_file = self.project_root / ".claude-usage.log"
@@ -93,7 +93,8 @@ class SerenaMonitoringSystem:
 
         try:
             with open(self.config_file, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f)
+                result = yaml.safe_load(f)
+                return result if result is not None else {}
         except Exception as e:
             self.logger.error(f"設定ファイル読み込みエラー: {e}")
             return self._default_config()

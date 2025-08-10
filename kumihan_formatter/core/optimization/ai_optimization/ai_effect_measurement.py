@@ -88,7 +88,7 @@ class BaselineMeasurement:
         self,
         metric_name: str,
         measurements: List[float],
-        metadata: Dict[str, Any] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> float:
         """ベースライン確立"""
         try:
@@ -96,9 +96,7 @@ class BaselineMeasurement:
                 raise ValueError("No measurements provided for baseline")
 
             # 統計的ベースライン計算
-            baseline_value = statistics.median(
-                measurements
-            )  # 中央値使用（異常値に頑健）
+            baseline_value = statistics.median(measurements)  # 中央値使用（異常値に頑健）
 
             # ベースライン記録
             self.baselines[metric_name] = baseline_value
@@ -106,9 +104,7 @@ class BaselineMeasurement:
                 "sample_count": len(measurements),
                 "mean": statistics.mean(measurements),
                 "median": baseline_value,
-                "std_dev": (
-                    statistics.stdev(measurements) if len(measurements) > 1 else 0.0
-                ),
+                "std_dev": (statistics.stdev(measurements) if len(measurements) > 1 else 0.0),
                 "min_value": min(measurements),
                 "max_value": max(measurements),
                 "established_at": time.time(),
@@ -125,9 +121,7 @@ class BaselineMeasurement:
                 }
             )
 
-            self.logger.info(
-                f"Baseline established for {metric_name}: {baseline_value:.3f}"
-            )
+            self.logger.info(f"Baseline established for {metric_name}: {baseline_value:.3f}")
             return baseline_value
 
         except Exception as e:
@@ -173,9 +167,7 @@ class StatisticalAnalyzer:
     def __init__(self):
         self.logger = get_logger(__name__ + ".StatisticalAnalyzer")
 
-    def calculate_improvement(
-        self, baseline: float, current: float
-    ) -> Tuple[float, float]:
+    def calculate_improvement(self, baseline: float, current: float) -> Tuple[float, float]:
         """改善効果計算"""
         try:
             if baseline == 0.0:
@@ -222,8 +214,7 @@ class StatisticalAnalyzer:
                 return baseline_mean != current_mean, 0.5
 
             t_statistic = abs(current_mean - baseline_mean) / (
-                pooled_std
-                * np.sqrt(1 / len(baseline_samples) + 1 / len(current_samples))
+                pooled_std * np.sqrt(1 / len(baseline_samples) + 1 / len(current_samples))
             )
 
             # 自由度
@@ -236,9 +227,7 @@ class StatisticalAnalyzer:
                 critical_value = 1.96  # 標準正規分布近似
 
             is_significant = t_statistic > critical_value
-            p_value = max(
-                0.001, min(0.999, 1.0 - (t_statistic / (critical_value * 2)))
-            )  # 近似p値
+            p_value = max(0.001, min(0.999, 1.0 - (t_statistic / (critical_value * 2))))  # 近似p値
 
             return is_significant, p_value
 
@@ -383,18 +372,14 @@ class AIEffectMeasurement:
         except Exception as e:
             self.logger.error(f"Phase B baseline establishment failed: {e}")
 
-    def measure_ai_contribution(
-        self, current_ai_metrics: Dict[str, float]
-    ) -> MeasurementResult:
+    def measure_ai_contribution(self, current_ai_metrics: Dict[str, float]) -> MeasurementResult:
         """AI専用削減効果測定（Phase B基盤効果分離）"""
         try:
             measurement_start = time.time()
 
             # AI効果抽出
             ai_efficiency_gain = current_ai_metrics.get("ai_efficiency_gain", 0.0)
-            ai_optimization_impact = current_ai_metrics.get(
-                "optimization_improvement", 0.0
-            )
+            ai_optimization_impact = current_ai_metrics.get("optimization_improvement", 0.0)
             ai_prediction_accuracy = current_ai_metrics.get("prediction_accuracy", 0.0)
 
             # AI貢献度計算（Phase B基盤から分離）
@@ -402,16 +387,12 @@ class AIEffectMeasurement:
             current_ai_effect = ai_efficiency_gain + ai_optimization_impact
 
             # 改善効果計算
-            improvement, improvement_percentage = (
-                self.statistical_analyzer.calculate_improvement(
-                    ai_baseline, current_ai_effect
-                )
+            improvement, improvement_percentage = self.statistical_analyzer.calculate_improvement(
+                ai_baseline, current_ai_effect
             )
 
             # 信頼度評価
-            confidence_level = min(
-                1.0, ai_prediction_accuracy * 0.8 + 0.2
-            )  # 予測精度ベース信頼度
+            confidence_level = min(1.0, ai_prediction_accuracy * 0.8 + 0.2)  # 予測精度ベース信頼度
 
             # 統計的有意性（複数測定値必要）
             # ai_measurements, baseline_measurements変数を削除（未使用のため）
@@ -438,9 +419,7 @@ class AIEffectMeasurement:
             # 継続測定データ更新
             self._update_continuous_measurement("ai_contribution", current_ai_effect)
 
-            self.logger.info(
-                f"AI contribution measured: {current_ai_effect:.3f}% (target: 2.0%)"
-            )
+            self.logger.info(f"AI contribution measured: {current_ai_effect:.3f}% (target: 2.0%)")
             return ai_measurement
 
         except Exception as e:
@@ -467,34 +446,23 @@ class AIEffectMeasurement:
 
             # Phase B基盤効果測定
             phase_b_efficiency = current_system_metrics.get("phase_b_efficiency", 0.0)
-            settings_manager_performance = current_system_metrics.get(
-                "adaptive_performance", 0.0
-            )
-            integration_stability = current_system_metrics.get(
-                "integration_stability", 0.0
-            )
+            settings_manager_performance = current_system_metrics.get("adaptive_performance", 0.0)
+            integration_stability = current_system_metrics.get("integration_stability", 0.0)
 
             # Phase B総合効果計算
-            current_phase_b_effect = (
-                phase_b_efficiency + settings_manager_performance * 0.1
-            )
+            current_phase_b_effect = phase_b_efficiency + settings_manager_performance * 0.1
 
             # ベースライン比較
-            phase_b_baseline = (
-                self.baseline_measurement.get_baseline("phase_b_efficiency") or 66.8
-            )
+            phase_b_baseline = self.baseline_measurement.get_baseline("phase_b_efficiency") or 66.8
 
             # 保護状況評価
-            improvement, improvement_percentage = (
-                self.statistical_analyzer.calculate_improvement(
-                    phase_b_baseline, current_phase_b_effect
-                )
+            improvement, improvement_percentage = self.statistical_analyzer.calculate_improvement(
+                phase_b_baseline, current_phase_b_effect
             )
 
             # 保護成功判定
             preservation_success = (
-                current_phase_b_effect
-                >= self.success_criteria["phase_b_preservation_threshold"]
+                current_phase_b_effect >= self.success_criteria["phase_b_preservation_threshold"]
             )
 
             # 信頼度計算
@@ -519,9 +487,7 @@ class AIEffectMeasurement:
                 statistical_significance=statistical_significance,
                 metadata={
                     "preservation_success": preservation_success,
-                    "efficiency_threshold": self.success_criteria[
-                        "phase_b_preservation_threshold"
-                    ],
+                    "efficiency_threshold": self.success_criteria["phase_b_preservation_threshold"],
                     "adaptive_performance": settings_manager_performance,
                     "integration_stability": integration_stability,
                     "measurement_timestamp": time.time(),
@@ -529,9 +495,7 @@ class AIEffectMeasurement:
             )
 
             # 継続測定データ更新
-            self._update_continuous_measurement(
-                "phase_b_efficiency", current_phase_b_effect
-            )
+            self._update_continuous_measurement("phase_b_efficiency", current_phase_b_effect)
 
             status = "PRESERVED" if preservation_success else "AT_RISK"
             self.logger.info(
@@ -555,9 +519,7 @@ class AIEffectMeasurement:
                 metadata={"error": str(e), "fallback_mode": True},
             )
 
-    def measure_integrated_effects(
-        self, system_metrics: Dict[str, float]
-    ) -> MeasurementResult:
+    def measure_integrated_effects(self, system_metrics: Dict[str, float]) -> MeasurementResult:
         """統合効果測定（Phase B + AI統合効果・相乗効果測定・総合68.8%削減確認）"""
         try:
             measurement_start = time.time()
@@ -568,26 +530,19 @@ class AIEffectMeasurement:
             synergy_effect = system_metrics.get("synergy_effect", 0.0)
 
             # 総合効果計算
-            total_integrated_effect = (
-                phase_b_contribution + ai_contribution + synergy_effect
-            )
+            total_integrated_effect = phase_b_contribution + ai_contribution + synergy_effect
 
             # ベースライン比較
-            total_baseline = (
-                self.baseline_measurement.get_baseline("total_efficiency") or 66.8
-            )
+            total_baseline = self.baseline_measurement.get_baseline("total_efficiency") or 66.8
 
             # 統合改善効果
-            improvement, improvement_percentage = (
-                self.statistical_analyzer.calculate_improvement(
-                    total_baseline, total_integrated_effect
-                )
+            improvement, improvement_percentage = self.statistical_analyzer.calculate_improvement(
+                total_baseline, total_integrated_effect
             )
 
             # 目標達成評価
             target_achievement = (
-                total_integrated_effect
-                >= self.success_criteria["total_efficiency_target"]
+                total_integrated_effect >= self.success_criteria["total_efficiency_target"]
             )
 
             # 相乗効果評価
@@ -599,14 +554,10 @@ class AIEffectMeasurement:
             integration_quality = self._assess_integration_quality(system_metrics)
 
             # 信頼度計算
-            confidence_level = integration_quality * 0.7 + (
-                0.3 if target_achievement else 0.0
-            )
+            confidence_level = integration_quality * 0.7 + (0.3 if target_achievement else 0.0)
 
             # 統計的有意性
-            statistical_significance = (
-                target_achievement and improvement > 1.0
-            )  # 1%以上改善
+            statistical_significance = target_achievement and improvement > 1.0  # 1%以上改善
 
             # 測定結果構築
             integrated_measurement = MeasurementResult(
@@ -625,17 +576,13 @@ class AIEffectMeasurement:
                     "synergy_effectiveness": synergy_effectiveness,
                     "target_achievement": target_achievement,
                     "integration_quality": integration_quality,
-                    "target_efficiency": self.success_criteria[
-                        "total_efficiency_target"
-                    ],
+                    "target_efficiency": self.success_criteria["total_efficiency_target"],
                     "measurement_timestamp": time.time(),
                 },
             )
 
             # 継続測定データ更新
-            self._update_continuous_measurement(
-                "total_efficiency", total_integrated_effect
-            )
+            self._update_continuous_measurement("total_efficiency", total_integrated_effect)
 
             status = "TARGET_ACHIEVED" if target_achievement else "IN_PROGRESS"
             self.logger.info(
@@ -684,9 +631,7 @@ class AIEffectMeasurement:
             self.logger.warning(f"Integration quality assessment failed: {e}")
             return 0.5
 
-    def monitor_quality_metrics(
-        self, current_metrics: Dict[str, float]
-    ) -> QualityMetrics:
+    def monitor_quality_metrics(self, current_metrics: Dict[str, float]) -> QualityMetrics:
         """品質監視（安定性・性能監視）"""
         try:
             # 品質指標抽出・計算
@@ -711,9 +656,7 @@ class AIEffectMeasurement:
             # 品質評価
             overall_quality = self._calculate_overall_quality(quality_metrics)
 
-            self.logger.info(
-                f"Quality metrics monitored: Overall quality {overall_quality:.3f}"
-            )
+            self.logger.info(f"Quality metrics monitored: Overall quality {overall_quality:.3f}")
             return quality_metrics
 
         except Exception as e:
@@ -738,8 +681,7 @@ class AIEffectMeasurement:
                 quality_metrics.accuracy * 0.2,
                 quality_metrics.precision * 0.15,
                 quality_metrics.recall * 0.15,
-                min(1.0, 1.0 - quality_metrics.response_time / 1000.0)
-                * 0.15,  # 1秒基準
+                min(1.0, 1.0 - quality_metrics.response_time / 1000.0) * 0.15,  # 1秒基準
                 min(1.0, quality_metrics.throughput / 100.0) * 0.1,  # 100ops/sec基準
                 (1.0 - quality_metrics.error_rate) * 0.15,
                 quality_metrics.availability * 0.05,
@@ -753,9 +695,7 @@ class AIEffectMeasurement:
             self.logger.warning(f"Overall quality calculation failed: {e}")
             return 0.0
 
-    def assess_system_stability(
-        self, stability_metrics: Dict[str, float]
-    ) -> StabilityAssessment:
+    def assess_system_stability(self, stability_metrics: Dict[str, float]) -> StabilityAssessment:
         """システム安定性評価"""
         try:
             # 安定性指標計算
@@ -769,8 +709,7 @@ class AIEffectMeasurement:
                 uptime_percentage / 100.0 * 0.4,  # 稼働率重み40%
                 max(0.0, 1.0 - error_frequency) * 0.3,  # エラー頻度重み30%
                 max(0.0, 1.0 - performance_variance) * 0.2,  # 性能安定性重み20%
-                max(0.0, 1.0 - min(1.0, recovery_time / 60.0))
-                * 0.1,  # 復旧時間重み10%（60秒基準）
+                max(0.0, 1.0 - min(1.0, recovery_time / 60.0)) * 0.1,  # 復旧時間重み10%（60秒基準）
             ]
 
             resilience_score = sum(resilience_components)
@@ -826,8 +765,7 @@ class AIEffectMeasurement:
 
             # 最近の回復力スコア抽出
             recent_scores = [
-                assessment.resilience_score
-                for assessment in self.stability_assessments[-10:]
+                assessment.resilience_score for assessment in self.stability_assessments[-10:]
             ]
 
             # トレンド検出
@@ -840,9 +778,7 @@ class AIEffectMeasurement:
             self.logger.warning(f"Stability trend analysis failed: {e}")
             return "unknown"
 
-    def generate_comprehensive_report(
-        self, system_metrics: Dict[str, float]
-    ) -> EffectReport:
+    def generate_comprehensive_report(self, system_metrics: Dict[str, float]) -> EffectReport:
         """包括的効果レポート生成"""
         try:
             report_start = time.time()
@@ -850,15 +786,9 @@ class AIEffectMeasurement:
             # 各効果測定実行
             with ThreadPoolExecutor(max_workers=3) as executor:
                 # 並列測定実行
-                ai_future = executor.submit(
-                    self.measure_ai_contribution, system_metrics
-                )
-                phase_b_future = executor.submit(
-                    self.validate_phase_b_preservation, system_metrics
-                )
-                integrated_future = executor.submit(
-                    self.measure_integrated_effects, system_metrics
-                )
+                ai_future = executor.submit(self.measure_ai_contribution, system_metrics)
+                phase_b_future = executor.submit(self.validate_phase_b_preservation, system_metrics)
+                integrated_future = executor.submit(self.measure_integrated_effects, system_metrics)
 
                 # 測定結果取得
                 ai_effect = ai_future.result(timeout=10.0)
@@ -946,15 +876,13 @@ class AIEffectMeasurement:
 
             # AI貢献度確認
             ai_target_met = (
-                ai_effect.current_value
-                >= self.success_criteria["ai_contribution_target"]
+                ai_effect.current_value >= self.success_criteria["ai_contribution_target"]
             )
             criteria_checks.append(ai_target_met)
 
             # 総合効率確認
             total_target_met = (
-                integrated_effect.current_value
-                >= self.success_criteria["total_efficiency_target"]
+                integrated_effect.current_value >= self.success_criteria["total_efficiency_target"]
             )
             criteria_checks.append(total_target_met)
 
@@ -975,9 +903,7 @@ class AIEffectMeasurement:
             success_rate = sum(criteria_checks) / len(criteria_checks)
             success_criteria_met = success_rate >= 0.8
 
-            self.logger.info(
-                f"Success criteria evaluation: {success_rate*100:.1f}% criteria met"
-            )
+            self.logger.info(f"Success criteria evaluation: {success_rate*100:.1f}% criteria met")
             return success_criteria_met
 
         except Exception as e:
@@ -997,40 +923,24 @@ class AIEffectMeasurement:
 
         try:
             # AI効果ベース推奨
-            if (
-                ai_effect.current_value
-                < self.success_criteria["ai_contribution_target"]
-            ):
+            if ai_effect.current_value < self.success_criteria["ai_contribution_target"]:
                 recommendations.append(
                     "Enhance AI optimization algorithms for better efficiency gains"
                 )
-                recommendations.append(
-                    "Increase ML model training data for improved predictions"
-                )
+                recommendations.append("Increase ML model training data for improved predictions")
 
             # Phase B保護ベース推奨
             if (
                 phase_b_effect.current_value
                 < self.success_criteria["phase_b_preservation_threshold"]
             ):
-                recommendations.append(
-                    "CRITICAL: Restore Phase B baseline efficiency immediately"
-                )
-                recommendations.append(
-                    "Review Phase B integration settings for stability"
-                )
+                recommendations.append("CRITICAL: Restore Phase B baseline efficiency immediately")
+                recommendations.append("Review Phase B integration settings for stability")
 
             # 統合効果ベース推奨
-            if (
-                integrated_effect.current_value
-                < self.success_criteria["total_efficiency_target"]
-            ):
-                recommendations.append(
-                    "Optimize system integration for better synergy effects"
-                )
-                recommendations.append(
-                    "Review coordination between Phase B and AI systems"
-                )
+            if integrated_effect.current_value < self.success_criteria["total_efficiency_target"]:
+                recommendations.append("Optimize system integration for better synergy effects")
+                recommendations.append("Review coordination between Phase B and AI systems")
 
             # 品質ベース推奨
             overall_quality = self._calculate_overall_quality(quality_metrics)
@@ -1117,14 +1027,12 @@ class AIEffectMeasurement:
 
             # データサイズ制限（最新1000件）
             if len(self.continuous_measurements[metric_name]) > 1000:
-                self.continuous_measurements[metric_name] = (
-                    self.continuous_measurements[metric_name][-500:]
-                )
+                self.continuous_measurements[metric_name] = self.continuous_measurements[
+                    metric_name
+                ][-500:]
 
         except Exception as e:
-            self.logger.warning(
-                f"Continuous measurement update failed for {metric_name}: {e}"
-            )
+            self.logger.warning(f"Continuous measurement update failed for {metric_name}: {e}")
 
     def get_measurement_summary(self) -> Dict[str, Any]:
         """測定サマリー取得"""
@@ -1149,9 +1057,7 @@ class AIEffectMeasurement:
                 },
                 "success_criteria": self.success_criteria,
                 "system_status": (
-                    "operational"
-                    if latest_report.success_criteria_met
-                    else "needs_attention"
+                    "operational" if latest_report.success_criteria_met else "needs_attention"
                 ),
             }
 

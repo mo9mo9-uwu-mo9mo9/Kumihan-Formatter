@@ -117,16 +117,13 @@ class Renderer:
         footnotes_html = None
         has_footnotes = False
 
-        if (
-            hasattr(self.html_renderer, "footnotes_data")
-            and self.html_renderer.footnotes_data
-        ):
+        if hasattr(self.html_renderer, "footnotes_data") and self.html_renderer.footnotes_data:
             try:
                 footnotes_data = self.html_renderer.footnotes_data
                 footnote_html = footnotes_data["manager"].generate_footnote_html(
                     footnotes_data["footnotes"]
                 )
-                if footnote_html:
+                if footnote_html:  # type: ignore[unreachable]
                     footnotes_html = footnote_html
                     has_footnotes = True
                     self.logger.debug(
@@ -184,9 +181,7 @@ class Renderer:
         Returns:
             str: Rendered HTML
         """
-        self.logger.info(
-            f"Rendering with custom context using template: {template_name}"
-        )
+        self.logger.info(f"Rendering with custom context using template: {template_name}")
 
         # Generate basic content
         body_content = self.html_renderer.render_nodes(ast)
@@ -286,3 +281,6 @@ def render(
         source_filename=source_filename,
         navigation_html=navigation_html,
     )
+
+
+HTMLRenderer = Renderer

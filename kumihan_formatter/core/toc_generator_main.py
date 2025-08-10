@@ -133,14 +133,12 @@ class TOCGenerator:
         - メモリ使用量制限
         - エラーハンドリング強化
         """
-        headings = []
-        visited_nodes = set()  # 循環参照検出用
+        headings: list[dict[str, Any]] = []
+        visited_nodes: set[Any] = set()  # 循環参照検出用
         max_depth = self.MAX_RECURSION_DEPTH
 
         try:
-            self._collect_headings_recursive(
-                nodes, headings, visited_nodes, max_depth, 0
-            )
+            self._collect_headings_recursive(nodes, headings, visited_nodes, max_depth, 0)
             self.logger.info(f"Collected {len(headings)} headings successfully")
             return headings
 
@@ -152,7 +150,7 @@ class TOCGenerator:
         self,
         node_list: list[Node],
         headings: list[dict[str, Any]],
-        visited_nodes: set,
+        visited_nodes: set[Any],
         max_depth: int,
         depth: int = 0,
     ) -> None:
@@ -173,15 +171,10 @@ class TOCGenerator:
                 return
 
             try:
-                if not isinstance(node, Node):
-                    continue
-
                 # 循環参照検出
                 node_id = id(node)
                 if node_id in visited_nodes:
-                    self.logger.warning(
-                        f"Circular reference detected for node {node_id}"
-                    )
+                    self.logger.warning(f"Circular reference detected for node {node_id}")
                     continue
                 visited_nodes.add(node_id)
 
@@ -189,9 +182,7 @@ class TOCGenerator:
                     self._process_heading_node(node, headings)
 
                 # Issue #799: Improved nested node processing
-                self._process_nested_content(
-                    node, headings, visited_nodes, max_depth, depth
-                )
+                self._process_nested_content(node, headings, visited_nodes, max_depth, depth)
 
                 # ノード処理完了後、visited_nodesから除去
                 visited_nodes.discard(node_id)
@@ -208,9 +199,7 @@ class TOCGenerator:
 
         # メモリ制限の最終チェック
         if len(headings) >= self.MAX_HEADINGS:
-            self.logger.warning(
-                "Maximum heading count reached, skipping remaining headings"
-            )
+            self.logger.warning("Maximum heading count reached, skipping remaining headings")
             return
 
         # タイトル長制限チェック
@@ -239,7 +228,7 @@ class TOCGenerator:
         self,
         node: Node,
         headings: list[dict[str, Any]],
-        visited_nodes: set,
+        visited_nodes: set[Any],
         max_depth: int,
         depth: int,
     ) -> None:
@@ -301,9 +290,7 @@ class TOCGenerator:
                     )
                     continue
 
-            self.logger.info(
-                f"Built TOC structure with {len(entries)} top-level entries"
-            )
+            self.logger.info(f"Built TOC structure with {len(entries)} top-level entries")
             return entries
 
         except Exception as e:
@@ -394,8 +381,7 @@ class TOCGenerator:
             headings = self._collect_headings(nodes)
             result = len(headings) >= 2
             self.logger.info(
-                f"TOC generation decision: {result} "
-                f"(found {len(headings)} headings)"
+                f"TOC generation decision: {result} " f"(found {len(headings)} headings)"
             )
             return result
         except Exception as e:
@@ -437,9 +423,7 @@ class TOCGenerator:
                 analyze_entry(entry)
 
             stats["levels_used"] = sorted(list(stats["levels_used"]))  # type: ignore
-            self.logger.info(
-                f"TOC statistics generated: {stats['total_entries']} entries"
-            )
+            self.logger.info(f"TOC statistics generated: {stats['total_entries']} entries")
             return stats
 
         except Exception as e:

@@ -82,9 +82,7 @@ class ConfigValidator:
             if spec.get("required", False) and key not in config:
                 errors.append(f"Required section '{key}' is missing")
             elif key in config:
-                section_errors, section_warnings = self._validate_section(
-                    key, config[key], spec
-                )
+                section_errors, section_warnings = self._validate_section(key, config[key], spec)
                 errors.extend(section_errors)
                 warnings.extend(section_warnings)
 
@@ -94,9 +92,7 @@ class ConfigValidator:
         for key in unknown_keys:
             warnings.append(f"Unknown configuration key: '{key}'")
 
-        return ValidationResult(
-            is_valid=len(errors) == 0, errors=errors, warnings=warnings
-        )
+        return ValidationResult(is_valid=len(errors) == 0, errors=errors, warnings=warnings)
 
     def _validate_section(
         self, section_name: str, section_data: Any, spec: dict[str, Any]
@@ -108,9 +104,7 @@ class ConfigValidator:
         # 型検証
         expected_type = spec.get("type")
         if expected_type and not isinstance(section_data, expected_type):
-            errors.append(
-                f"Section '{section_name}' must be of type {expected_type.__name__}"
-            )
+            errors.append(f"Section '{section_name}' must be of type {expected_type.__name__}")
             return errors, warnings
 
         # dict型のスキーマ検証
@@ -140,8 +134,6 @@ class ConfigValidator:
         if "required_keys" in spec and isinstance(section_data, dict):
             for required_key in spec["required_keys"]:
                 if required_key not in section_data:
-                    errors.append(
-                        f"Required key '{required_key}' missing in {section_name}"
-                    )
+                    errors.append(f"Required key '{required_key}' missing in {section_name}")
 
         return errors, warnings

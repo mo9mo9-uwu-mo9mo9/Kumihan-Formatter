@@ -33,13 +33,10 @@ def setup_encoding() -> None:
             import warnings
 
             warnings.warn(
-                "Python 3.7 or earlier detected. Please set "
-                "PYTHONIOENCODING=utf-8 externally.",
+                "Python 3.7 or earlier detected. Please set " "PYTHONIOENCODING=utf-8 externally.",
                 UserWarning,
             )
-            logger.warning(
-                "Python 3.7 or earlier detected, manual encoding setup may be required"
-            )
+            logger.warning("Python 3.7 or earlier detected, manual encoding setup may be required")
 
 
 @click.group()
@@ -73,25 +70,17 @@ def register_commands() -> None:
             default="./dist",
             help="出力ディレクトリ (デフォルト: ./dist)",
         )
-        @click.option(
-            "--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ"
-        )
-        @click.option(
-            "--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換"
-        )
+        @click.option("--no-preview", is_flag=True, help="変換後のブラウザプレビューをスキップ")
+        @click.option("--watch", "-w", is_flag=True, help="ファイル変更を監視して自動変換")
         @click.option("--config", "-c", help="設定ファイルのパス")
         @click.option("--show-test-cases", is_flag=True, help="テストケースを表示")
         @click.option("--template", help="使用するテンプレート名")
         @click.option("--include-source", is_flag=True, help="ソース表示機能を含める")
-        @click.option(
-            "--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ"
-        )
+        @click.option("--no-syntax-check", is_flag=True, help="変換前の構文チェックをスキップ")
         @click.option(
             "--progress-level",
             "-p",  # 短縮オプション追加
-            type=click.Choice(
-                ["silent", "minimal", "detailed", "verbose"], case_sensitive=False
-            ),
+            type=click.Choice(["silent", "minimal", "detailed", "verbose"], case_sensitive=False),
             default="detailed",
             envvar="KUMIHAN_PROGRESS_LEVEL",  # 環境変数サポート
             help="プログレス表示の詳細レベル (silent/minimal/detailed/verbose)",
@@ -135,9 +124,7 @@ def register_commands() -> None:
         )
         @click.option(
             "--error-level",
-            type=click.Choice(
-                ["strict", "normal", "lenient", "ignore"], case_sensitive=False
-            ),
+            type=click.Choice(["strict", "normal", "lenient", "ignore"], case_sensitive=False),
             default="normal",
             envvar="KUMIHAN_ERROR_LEVEL",
             help="Phase3: エラー処理レベル設定（strict/normal/lenient/ignore）",
@@ -268,9 +255,7 @@ def main() -> None:
 
             if Path(first_arg).exists() or first_arg.endswith(".txt"):
                 # Insert 'convert' command
-                logger.debug(
-                    f"Auto-routing file argument '{first_arg}' to convert command"
-                )
+                logger.debug(f"Auto-routing file argument '{first_arg}' to convert command")
                 sys.argv.insert(1, "convert")
 
     # Execute CLI with minimal error handling to preserve Click's help behavior
@@ -312,7 +297,7 @@ def main() -> None:
         sys.exit(1)
 
 
-def interactive_repl():
+def interactive_repl() -> None:
     """対話型変換REPL - ダブルクリック実行用"""
     import os
     import sys
@@ -323,8 +308,7 @@ def interactive_repl():
     sys.path.insert(0, str(project_root))
 
     try:
-        from kumihan_formatter.core.parser.kumihan_parser import KumihanParser
-        from kumihan_formatter.core.renderer.html_renderer import HTMLRenderer
+        from kumihan_formatter.parser import KumihanParser
         from kumihan_formatter.core.utilities.logger import get_logger
     except ImportError as e:
         print(f"❌ インポートエラー: {e}")
@@ -344,10 +328,10 @@ def interactive_repl():
     print("💡 'clear' で画面クリア")
     print("-" * 50)
 
-    parser = KumihanParser()
-    renderer = HTMLRenderer()
+    # parser = KumihanParser() # No longer needed
+    # renderer = HTMLRenderer() # No longer needed
 
-    history = []
+    history: list[tuple[str, str]] = []
 
     while True:
         try:
@@ -381,11 +365,15 @@ def interactive_repl():
 
             # Kumihan記法の変換実行
             try:
+                # Import here to avoid circular dependencies and for lazy loading
+                from kumihan_formatter.parser import parse_with_error_config
+                from kumihan_formatter.renderer import render
+
                 # パース処理
-                result = parser.parse_text(user_input)
+                result = parse_with_error_config(user_input)  # Use the top-level function
 
                 # HTML生成
-                html_content = renderer.render(result)
+                html_content = render(result)  # Use the top-level function
 
                 # 結果表示
                 print("\n✅ 変換成功:")

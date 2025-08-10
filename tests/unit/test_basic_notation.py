@@ -27,11 +27,7 @@ class TestBasicNotation:
     def test_inline_notation_deprecated_error(self):
         """Test that inline notation parsing works correctly in current implementation."""
         # 純粋なインライン記法のテスト（文中に埋め込まれたものではなく）
-        pure_inline_texts = [
-            "#太字 コンテンツ#",
-            "#見出し1 タイトル#",
-            "#下線 強調テキスト#"
-        ]
+        pure_inline_texts = ["#太字 コンテンツ#", "#見出し1 タイトル#", "#下線 強調テキスト#"]
 
         for text in pure_inline_texts:
             # 純粋なインライン記法は現在正常に動作することをテスト
@@ -42,7 +38,9 @@ class TestBasicNotation:
             assert is_new_format, f"インライン記法 '{text}' は現在サポートされているべきです"
             # インライン記法の場合、コンテンツが抽出される
             if inline_content:
-                assert len(inline_content) > 0, f"インライン記法からコンテンツが抽出されるべきです: '{text}'"
+                assert (
+                    len(inline_content) > 0
+                ), f"インライン記法からコンテンツが抽出されるべきです: '{text}'"
 
     def test_block_notation_basic_v3(self):
         """Test basic block notation parsing in v3.0.0."""
@@ -169,14 +167,17 @@ class TestDecorationNotation:
         self.parser = MarkerParser(self.keyword_definitions)
         self.validator = KumihanSyntaxValidator()
 
-    @pytest.mark.parametrize("decoration,content", [
-        ("太字", "重要な情報"),
-        ("下線", "強調テキスト"),
-        ("斜体", "イタリック文字"),
-        ("見出し1", "メインタイトル"),
-        ("見出し2", "サブタイトル"),
-        ("リスト", "項目内容"),
-    ])
+    @pytest.mark.parametrize(
+        "decoration,content",
+        [
+            ("太字", "重要な情報"),
+            ("下線", "強調テキスト"),
+            ("斜体", "イタリック文字"),
+            ("見出し1", "メインタイトル"),
+            ("見出し2", "サブタイトル"),
+            ("リスト", "項目内容"),
+        ],
+    )
     def test_specific_decorations(self, decoration, content):
         """Test specific decoration types."""
         text = f"#{decoration} {content}#"

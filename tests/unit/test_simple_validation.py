@@ -139,12 +139,12 @@ class TestBasicInfrastructure:
         parser = MarkerParser(definitions)
 
         # Test method availability (don't call them, just check they exist)
-        assert hasattr(parser, 'parse_marker_keywords')
-        assert hasattr(parser, 'normalize_marker_syntax')
-        assert hasattr(parser, 'is_new_marker_format')
+        assert hasattr(parser, "parse_marker_keywords")
+        assert hasattr(parser, "normalize_marker_syntax")
+        assert hasattr(parser, "is_new_marker_format")
 
-        assert hasattr(definitions, 'get_all_keywords')
-        if hasattr(definitions, 'is_valid_keyword'):
+        assert hasattr(definitions, "get_all_keywords")
+        if hasattr(definitions, "is_valid_keyword"):
             assert callable(definitions.is_valid_keyword)
 
 
@@ -156,6 +156,7 @@ class TestBasicCLI:
         """Test that the main module can be imported."""
         try:
             import kumihan_formatter
+
             assert kumihan_formatter is not None
         except ImportError as e:
             pytest.fail(f"Failed to import main module: {e}")
@@ -164,6 +165,7 @@ class TestBasicCLI:
         """Test that CLI module exists."""
         try:
             from kumihan_formatter import cli
+
             assert cli is not None
         except ImportError:
             pytest.skip("CLI module not available")
@@ -172,6 +174,7 @@ class TestBasicCLI:
         """Test that main function exists."""
         try:
             from kumihan_formatter.cli import main
+
             assert callable(main)
         except ImportError:
             pytest.skip("CLI main function not available")

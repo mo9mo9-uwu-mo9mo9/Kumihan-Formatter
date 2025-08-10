@@ -4,7 +4,10 @@ This module contains inline notation parsing logic extracted from the monolithic
 Handles list processing and other inline elements.
 """
 
-from typing import Optional
+from typing import Any, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .parser import Parser
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -20,7 +23,7 @@ class InlineHandler:
     - 高速リスト解析
     """
 
-    def __init__(self, parser_instance):
+    def __init__(self, parser_instance: "Parser") -> None:
         """
         Args:
             parser_instance: メインParserインスタンス（依存注入）
@@ -28,9 +31,7 @@ class InlineHandler:
         self.parser = parser_instance
         self.logger = get_logger(__name__)
 
-    def parse_list_fast(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_list_fast(self, lines: list[str], current: int) -> tuple[Optional[Node], int]:
         """高速リスト解析"""
         if current >= len(lines):
             return None, current + 1
@@ -38,14 +39,10 @@ class InlineHandler:
         line = lines[current].strip()
         list_type = self.parser.list_parser.is_list_line(line)
 
-        if list_type == "ul":
-            node, next_index = self.parser.list_parser.parse_unordered_list(
-                lines, current
-            )
+        if list_type == "unordered":
+            node, next_index = self.parser.list_parser.parse_unordered_list(lines, current)
         else:
-            node, next_index = self.parser.list_parser.parse_ordered_list(
-                lines, current
-            )
+            node, next_index = self.parser.list_parser.parse_ordered_list(lines, current)
 
         return node, next_index
 
@@ -54,7 +51,7 @@ class InlineHandler:
         line = self.parser.lines[self.parser.current].strip()
         list_type = self.parser.list_parser.is_list_line(line)
 
-        if list_type == "ul":
+        if list_type == "unordered":
             node, next_index = self.parser.list_parser.parse_unordered_list(
                 self.parser.lines, self.parser.current
             )
@@ -70,15 +67,11 @@ class InlineHandler:
         """リスト行判定の委譲メソッド"""
         return self.parser.list_parser.is_list_line(line)
 
-    def parse_unordered_list(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_unordered_list(self, lines: list[str], current: int) -> tuple[Node, int]:
         """順序なしリスト解析の委譲メソッド"""
         return self.parser.list_parser.parse_unordered_list(lines, current)
 
-    def parse_ordered_list(
-        self, lines: list[str], current: int
-    ) -> tuple[Optional[Node], int]:
+    def parse_ordered_list(self, lines: list[str], current: int) -> tuple[Node, int]:
         """順序付きリスト解析の委譲メソッド"""
         return self.parser.list_parser.parse_ordered_list(lines, current)
 
@@ -91,11 +84,11 @@ class InlineHandler:
             list_type = self.parser.list_parser.is_list_line(line)
             if list_type:
                 self.logger.debug(f"Found {list_type} list at line {current}")
-                if list_type == "ul":
+                if list_type == "unordered":
                     node, next_index = self.parser.list_parser.parse_unordered_list(
                         self.parser.lines, current
                     )
-                else:  # 'ol'
+                else:  # 'ordered'
                     node, next_index = self.parser.list_parser.parse_ordered_list(
                         self.parser.lines, current
                     )

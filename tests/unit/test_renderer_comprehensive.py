@@ -91,9 +91,7 @@ class TestHTMLRendererCoverage:
     def test_render_heading_nodes(self):
         """Test rendering heading nodes."""
         for level in range(1, 6):
-            heading_node = Node(
-                type="element", tag=f"h{level}", content=f"Heading {level}"
-            )
+            heading_node = Node(type="element", tag=f"h{level}", content=f"Heading {level}")
             result = self.renderer.render_node(heading_node)
 
             assert result is not None
@@ -167,9 +165,7 @@ class TestHTMLRendererCoverage:
 
     def test_render_special_characters(self):
         """Test rendering with special HTML characters."""
-        special_node = Node(
-            type="text", content='<script>alert("test")</script> & "quotes"'
-        )
+        special_node = Node(type="text", content='<script>alert("test")</script> & "quotes"')
         result = self.renderer.render_node(special_node)
 
         # Should escape HTML entities

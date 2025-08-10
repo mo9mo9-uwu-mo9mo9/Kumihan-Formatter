@@ -28,6 +28,7 @@ class TrainingData:
 
     features: np.ndarray
     targets: np.ndarray
+    labels: np.ndarray
     feature_names: List[str]
     target_name: str
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -79,8 +80,9 @@ class BaseMLModel(ABC):
         self.model = None
         self.scaler = None
         self.is_trained = False
-        self.feature_names = []
-        self.performance_metrics = {}
+        self.feature_names: list[str] = []
+        self.performance_metrics: dict[str, float] = {}
+        self.label_encoder = None  # For classification models
         self.logger = get_logger(f"{__name__}.{name}")
 
     @abstractmethod
@@ -125,6 +127,9 @@ class TokenEfficiencyPredictor(BaseMLModel):
             self.model = self.create_model()
             self.scaler = StandardScaler()
 
+            # Type assertion for mypy
+            assert self.model is not None, "Model creation failed"
+
             # 特徴量正規化
             X_scaled = self.scaler.fit_transform(data.features)
 
@@ -132,9 +137,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
             self.model.fit(X_scaled, data.targets)
 
             # 性能評価
-            cv_scores = cross_val_score(
-                self.model, X_scaled, data.targets, cv=5, scoring="r2"
-            )
+            cv_scores = cross_val_score(self.model, X_scaled, data.targets, cv=5, scoring="r2")
 
             # 性能記録
             training_time = time.time() - training_start
@@ -162,9 +165,10 @@ class TokenEfficiencyPredictor(BaseMLModel):
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """Token効率性予測"""
         if not self.is_trained:
-            return PredictionResponse(
-                prediction=0.0, confidence=0.0, processing_time=0.0
-            )
+            return PredictionResponse(prediction=0.0, confidence=0.0, processing_time=0.0)
+
+        assert self.model is not None, "Model not trained properly"
+        assert self.scaler is not None, "Scaler not initialized properly"
 
         try:
             prediction_start = time.time()
@@ -181,9 +185,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
                 tree_predictions = [
                     tree.predict(features_scaled)[0] for tree in self.model.estimators_
                 ]
-                confidence = 1.0 - (
-                    np.std(tree_predictions) / max(np.mean(tree_predictions), 0.1)
-                )
+                confidence = 1.0 - (np.std(tree_predictions) / max(np.mean(tree_predictions), 0.1))
                 confidence = max(0.0, min(1.0, confidence))
             else:
                 confidence = 0.8  # デフォルト信頼度
@@ -191,9 +193,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
             # 特徴量重要度
             feature_importance = None
             if hasattr(self.model, "feature_importances_") and self.feature_names:
-                feature_importance = dict(
-                    zip(self.feature_names, self.model.feature_importances_)
-                )
+                feature_importance = dict(zip(self.feature_names, self.model.feature_importances_))
 
             processing_time = time.time() - prediction_start
 
@@ -206,9 +206,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
 
         except Exception as e:
             self.logger.error(f"Token efficiency prediction failed: {e}")
-            return PredictionResponse(
-                prediction=0.0, confidence=0.0, processing_time=0.0
-            )
+            return PredictionResponse(prediction=0.0, confidence=0.0, processing_time=0.0)
 
 
 class UsagePatternClassifier(BaseMLModel):
@@ -236,6 +234,10 @@ class UsagePatternClassifier(BaseMLModel):
             # モデル・スケーラー・エンコーダー初期化
             self.model = self.create_model()
             self.scaler = StandardScaler()
+
+            # Type assertion for mypy
+            assert self.model is not None, "Model creation failed"
+
             self.label_encoder = LabelEncoder()
 
             # 特徴量正規化
@@ -248,9 +250,7 @@ class UsagePatternClassifier(BaseMLModel):
             self.model.fit(X_scaled, y_encoded)
 
             # 性能評価
-            cv_scores = cross_val_score(
-                self.model, X_scaled, y_encoded, cv=5, scoring="accuracy"
-            )
+            cv_scores = cross_val_score(self.model, X_scaled, y_encoded, cv=5, scoring="accuracy")
 
             # 性能記録
             training_time = time.time() - training_start
@@ -279,9 +279,11 @@ class UsagePatternClassifier(BaseMLModel):
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """使用パターン分類予測"""
         if not self.is_trained:
-            return PredictionResponse(
-                prediction="unknown", confidence=0.0, processing_time=0.0
-            )
+            return PredictionResponse(prediction="unknown", confidence=0.0, processing_time=0.0)
+
+        assert self.model is not None, "Model not trained properly"
+        assert self.scaler is not None, "Scaler not initialized properly"
+        assert self.label_encoder is not None, "Label encoder not initialized properly"
 
         try:
             prediction_start = time.time()
@@ -300,9 +302,7 @@ class UsagePatternClassifier(BaseMLModel):
             # 特徴量重要度
             feature_importance = None
             if hasattr(self.model, "feature_importances_") and self.feature_names:
-                feature_importance = dict(
-                    zip(self.feature_names, self.model.feature_importances_)
-                )
+                feature_importance = dict(zip(self.feature_names, self.model.feature_importances_))
 
             processing_time = time.time() - prediction_start
 
@@ -316,9 +316,7 @@ class UsagePatternClassifier(BaseMLModel):
 
         except Exception as e:
             self.logger.error(f"Usage pattern prediction failed: {e}")
-            return PredictionResponse(
-                prediction="unknown", confidence=0.0, processing_time=0.0
-            )
+            return PredictionResponse(prediction="unknown", confidence=0.0, processing_time=0.0)
 
 
 class OptimizationRecommender(BaseMLModel):
@@ -346,6 +344,10 @@ class OptimizationRecommender(BaseMLModel):
             # モデル・前処理器初期化
             self.model = self.create_model()
             self.scaler = StandardScaler()
+
+            # Type assertion for mypy
+            assert self.model is not None, "Model creation failed"
+
             self.label_encoder = LabelEncoder()
 
             # データ前処理
@@ -356,9 +358,7 @@ class OptimizationRecommender(BaseMLModel):
             self.model.fit(X_scaled, y_encoded)
 
             # 性能評価
-            cv_scores = cross_val_score(
-                self.model, X_scaled, y_encoded, cv=5, scoring="accuracy"
-            )
+            cv_scores = cross_val_score(self.model, X_scaled, y_encoded, cv=5, scoring="accuracy")
 
             # 性能記録
             training_time = time.time() - training_start
@@ -391,6 +391,10 @@ class OptimizationRecommender(BaseMLModel):
                 prediction="basic_optimization", confidence=0.0, processing_time=0.0
             )
 
+        assert self.model is not None, "Model not trained properly"
+        assert self.scaler is not None, "Scaler not initialized properly"
+        assert self.label_encoder is not None, "Label encoder not initialized properly"
+
         try:
             prediction_start = time.time()
 
@@ -408,9 +412,7 @@ class OptimizationRecommender(BaseMLModel):
             # 特徴量重要度
             feature_importance = None
             if hasattr(self.model, "feature_importances_") and self.feature_names:
-                feature_importance = dict(
-                    zip(self.feature_names, self.model.feature_importances_)
-                )
+                feature_importance = dict(zip(self.feature_names, self.model.feature_importances_))
 
             processing_time = time.time() - prediction_start
 
@@ -442,7 +444,9 @@ class FeatureEngineering:
         }
 
     def extract_features(
-        self, optimization_data: Dict[str, Any], feature_types: List[str] = None
+        self,
+        optimization_data: Dict[str, Any],
+        feature_types: Optional[List[str]] = None,
     ) -> Tuple[np.ndarray, List[str]]:
         """Phase B運用データ特徴量抽出"""
         if feature_types is None:
@@ -458,15 +462,11 @@ class FeatureEngineering:
                         optimization_data
                     )
                     all_features.extend(features)
-                    all_feature_names.extend(
-                        [f"{feature_type}_{name}" for name in feature_names]
-                    )
+                    all_feature_names.extend([f"{feature_type}_{name}" for name in feature_names])
 
             feature_array = np.array(all_features).reshape(1, -1)
 
-            self.logger.debug(
-                f"Extracted {len(all_features)} features from Phase B data"
-            )
+            self.logger.debug(f"Extracted {len(all_features)} features from Phase B data")
             return feature_array, all_feature_names
 
         except Exception as e:
@@ -478,16 +478,14 @@ class FeatureEngineering:
                 "fallback_feature_3",
             ]
 
-    def _extract_basic_features(
-        self, data: Dict[str, Any]
-    ) -> Tuple[List[float], List[str]]:
+    def _extract_basic_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
         """基本特徴量抽出"""
         features = []
         feature_names = []
 
         # 操作特徴量
         operation_type = data.get("operation_type", "unknown")
-        features.append(hash(operation_type) % 1000)
+        features.append(float(hash(operation_type) % 1000))
         feature_names.append("operation_type_hash")
 
         # コンテンツサイズ
@@ -512,9 +510,7 @@ class FeatureEngineering:
 
         return features, feature_names
 
-    def _extract_statistical_features(
-        self, data: Dict[str, Any]
-    ) -> Tuple[List[float], List[str]]:
+    def _extract_statistical_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
         """統計特徴量抽出"""
         features = []
         feature_names = []
@@ -528,9 +524,7 @@ class FeatureEngineering:
 
             # 操作多様性
             unique_operations = len(set(recent_operations))
-            diversity = (
-                unique_operations / len(recent_operations) if recent_operations else 0
-            )
+            diversity = unique_operations / len(recent_operations) if recent_operations else 0
             features.append(diversity)
             feature_names.append("operation_diversity")
 
@@ -569,15 +563,11 @@ class FeatureEngineering:
                 feature_names.append("efficiency_trend")
         else:
             features.extend([0.0, 0.0, 0.0])
-            feature_names.extend(
-                ["efficiency_mean", "efficiency_std", "efficiency_trend"]
-            )
+            feature_names.extend(["efficiency_mean", "efficiency_std", "efficiency_trend"])
 
         return features, feature_names
 
-    def _extract_temporal_features(
-        self, data: Dict[str, Any]
-    ) -> Tuple[List[float], List[str]]:
+    def _extract_temporal_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
         """時系列特徴量抽出"""
         features = []
         feature_names = []
@@ -610,9 +600,7 @@ class FeatureEngineering:
 
         return features, feature_names
 
-    def _extract_contextual_features(
-        self, data: Dict[str, Any]
-    ) -> Tuple[List[float], List[str]]:
+    def _extract_contextual_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
         """コンテキスト特徴量抽出"""
         features = []
         feature_names = []
@@ -666,16 +654,14 @@ class BasicMLSystem:
         self._training_data_max_size = self.config.get("training_data_max_size", 50)
 
         # MLパイプライン
-        self.ml_pipeline = None
+        self.ml_pipeline: Optional[Dict[str, Any]] = None
 
         # 【メモリリーク対策】性能追跡
         self.performance_history: Dict[str, List[ModelPerformance]] = {}
-        self._performance_history_max_size = self.config.get(
-            "performance_history_max_size", 100
-        )
+        self._performance_history_max_size = self.config.get("performance_history_max_size", 100)
 
         # 【メモリリーク対策】予測キャッシュ（LRU実装）
-        self.prediction_cache: OrderedDict[str, PredictionResponse] = OrderedDict()
+        self.prediction_cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
         self.cache_max_size = self.config.get("cache_max_size", 500)
 
         # 初期化処理
@@ -757,9 +743,7 @@ class BasicMLSystem:
             self.logger.error(f"Data store initialization failed: {e}")
             raise
 
-    def extract_features(
-        self, optimization_data: Dict[str, Any]
-    ) -> Tuple[np.ndarray, List[str]]:
+    def extract_features(self, optimization_data: Dict[str, Any]) -> Tuple[np.ndarray, List[str]]:
         """Phase B運用データ特徴量抽出"""
         try:
             # Phase B運用統計データ活用・AI学習用特徴量生成
@@ -767,9 +751,7 @@ class BasicMLSystem:
                 optimization_data, feature_types=["basic", "statistical", "temporal"]
             )
 
-            self.logger.debug(
-                f"Extracted {len(feature_names)} features for ML processing"
-            )
+            self.logger.debug(f"Extracted {len(feature_names)} features for ML processing")
             return features, feature_names
 
         except Exception as e:
@@ -781,9 +763,7 @@ class BasicMLSystem:
                 "fallback_3",
             ]
 
-    def train_basic_models(
-        self, training_data: Dict[str, TrainingData]
-    ) -> Dict[str, bool]:
+    def train_basic_models(self, training_data: Dict[str, TrainingData]) -> Dict[str, bool]:
         """基本予測モデル訓練（85%以上精度目標）"""
         training_results = {}
 
@@ -794,9 +774,7 @@ class BasicMLSystem:
 
                 for model_name, data in training_data.items():
                     if model_name in self.models:
-                        future = executor.submit(
-                            self._train_single_model, model_name, data
-                        )
+                        future = executor.submit(self._train_single_model, model_name, data)
                         training_futures[model_name] = future
 
                 # 訓練結果取得
@@ -848,14 +826,10 @@ class BasicMLSystem:
             try:
                 training_success = model.train(data)
             except NotFittedError as e:
-                self.logger.error(
-                    f"Model not properly initialized for {model_name}: {e}"
-                )
+                self.logger.error(f"Model not properly initialized for {model_name}: {e}")
                 return False
             except ValueError as e:
-                self.logger.error(
-                    f"Training data validation error for {model_name}: {e}"
-                )
+                self.logger.error(f"Training data validation error for {model_name}: {e}")
                 return False
 
             if training_success:
@@ -863,14 +837,11 @@ class BasicMLSystem:
                 self.training_data_store[model_name].append(data)
 
                 # より積極的なデータサイズ制限
-                if (
-                    len(self.training_data_store[model_name])
-                    > self._training_data_max_size
-                ):
+                if len(self.training_data_store[model_name]) > self._training_data_max_size:
                     keep_size = self._training_data_max_size // 2
-                    self.training_data_store[model_name] = self.training_data_store[
-                        model_name
-                    ][-keep_size:]
+                    self.training_data_store[model_name] = self.training_data_store[model_name][
+                        -keep_size:
+                    ]
                     self.logger.debug(
                         f"Training data for {model_name} trimmed to {keep_size} records"
                     )
@@ -888,9 +859,7 @@ class BasicMLSystem:
             self.logger.error(f"Single model training error for {model_name}: {e}")
             return False
 
-    def predict_optimization_opportunities(
-        self, context_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def predict_optimization_opportunities(self, context_data: Dict[str, Any]) -> Dict[str, Any]:
         """最適化機会AI予測（リアルタイム予測・Phase B設定協調調整・2.0%削減効果実現）"""
         try:
             prediction_start = time.time()
@@ -900,9 +869,7 @@ class BasicMLSystem:
             if cache_key in self.prediction_cache:
                 cached_result = self.prediction_cache[cache_key]
                 self.logger.debug(f"Using cached prediction: {cache_key}")
-                return self._format_optimization_prediction(
-                    cached_result, from_cache=True
-                )
+                return self._format_optimization_prediction(cached_result, from_cache=True)
 
             # 特徴量抽出
             features, feature_names = self.extract_features(context_data)
@@ -920,9 +887,7 @@ class BasicMLSystem:
                 # 予測結果取得
                 for model_name, future in prediction_futures.items():
                     try:
-                        predictions[model_name] = future.result(
-                            timeout=2.0
-                        )  # 2秒タイムアウト
+                        predictions[model_name] = future.result(timeout=2.0)  # 2秒タイムアウト
                     except Exception as e:
                         self.logger.warning(f"Prediction failed for {model_name}: {e}")
                         predictions[model_name] = PredictionResponse(
@@ -940,9 +905,7 @@ class BasicMLSystem:
             # 結果構築
             final_result = {
                 "optimization_opportunities": optimization_opportunities,
-                "predictions": {
-                    name: pred.__dict__ for name, pred in predictions.items()
-                },
+                "predictions": {name: pred.__dict__ for name, pred in predictions.items()},
                 "integrated_confidence": integrated_result.get("confidence", 0.0),
                 "expected_improvement": integrated_result.get("improvement", 0.0),
                 "processing_time": time.time() - prediction_start,
@@ -976,12 +939,8 @@ class BasicMLSystem:
         try:
             # 効率性予測統合
             efficiency_pred = predictions.get("efficiency_predictor")
-            predicted_efficiency = (
-                efficiency_pred.prediction if efficiency_pred else 0.0
-            )
-            efficiency_confidence = (
-                efficiency_pred.confidence if efficiency_pred else 0.0
-            )
+            predicted_efficiency = efficiency_pred.prediction if efficiency_pred else 0.0
+            efficiency_confidence = efficiency_pred.confidence if efficiency_pred else 0.0
 
             # パターン分析統合
             pattern_pred = predictions.get("pattern_classifier")
@@ -993,9 +952,7 @@ class BasicMLSystem:
             recommended_optimization = (
                 optimization_pred.prediction if optimization_pred else "basic"
             )
-            optimization_confidence = (
-                optimization_pred.confidence if optimization_pred else 0.0
-            )
+            optimization_confidence = optimization_pred.confidence if optimization_pred else 0.0
 
             # 統合信頼度計算
             confidences = [
@@ -1014,9 +971,7 @@ class BasicMLSystem:
                 0.0, predicted_efficiency - context.get("current_efficiency", 66.8)
             )
             confidence_adjustment = integrated_confidence * 0.5  # 信頼度による調整
-            expected_improvement = min(
-                2.0, base_improvement + confidence_adjustment
-            )  # 最大2.0%
+            expected_improvement = min(2.0, base_improvement + confidence_adjustment)  # 最大2.0%
 
             return {
                 "predicted_efficiency": predicted_efficiency,
@@ -1066,9 +1021,7 @@ class BasicMLSystem:
                 opportunities.append("content_size_optimization")
 
             # 推奨最適化ベース機会特定
-            recommended_optimization = integrated_result.get(
-                "recommended_optimization", "basic"
-            )
+            recommended_optimization = integrated_result.get("recommended_optimization", "basic")
             if recommended_optimization != "basic":
                 opportunities.append(f"{recommended_optimization}_optimization")
 
@@ -1086,9 +1039,7 @@ class BasicMLSystem:
                 opportunities.append("basic_optimization")
 
             # 重複除去・優先度順
-            unique_opportunities = list(
-                dict.fromkeys(opportunities)
-            )  # 順序保持重複除去
+            unique_opportunities = list(dict.fromkeys(opportunities))  # 順序保持重複除去
 
             return unique_opportunities[:5]  # 最大5つの機会
 
@@ -1121,9 +1072,7 @@ class BasicMLSystem:
 
             # 簡易化された結果をキャッシュ
             cached_result = {
-                "optimization_opportunities": result.get(
-                    "optimization_opportunities", []
-                ),
+                "optimization_opportunities": result.get("optimization_opportunities", []),
                 "expected_improvement": result.get("expected_improvement", 0.0),
                 "integrated_confidence": result.get("integrated_confidence", 0.0),
                 "cached_at": time.time(),
@@ -1143,9 +1092,7 @@ class BasicMLSystem:
     ) -> Dict[str, Any]:
         """最適化予測結果フォーマット"""
         return {
-            "optimization_opportunities": cached_result.get(
-                "optimization_opportunities", []
-            ),
+            "optimization_opportunities": cached_result.get("optimization_opportunities", []),
             "expected_improvement": cached_result.get("expected_improvement", 0.0),
             "integrated_confidence": cached_result.get("integrated_confidence", 0.0),
             "processing_time": 0.001 if from_cache else 0.0,  # キャッシュは高速
@@ -1189,9 +1136,7 @@ class BasicMLSystem:
             return model.predict(features)
 
         except Exception as e:
-            self.logger.error(
-                f"Model prediction execution failed for {model_name}: {e}"
-            )
+            self.logger.error(f"Model prediction execution failed for {model_name}: {e}")
             return PredictionResponse(prediction=0.0, confidence=0.0)
 
     def _postprocess_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
@@ -1218,7 +1163,7 @@ class BasicMLSystem:
             self.logger.warning(f"Result postprocessing failed: {e}")
             return results
 
-    def get_model_performance(self, model_name: str = None) -> Dict[str, Any]:
+    def get_model_performance(self, model_name: Optional[str] = None) -> Dict[str, Any]:
         """モデル性能取得"""
         try:
             if model_name:
@@ -1303,7 +1248,7 @@ class BasicMLSystem:
                     model.is_trained = True
 
                     # ラベルエンコーダー復元（分類モデル用）
-                    if "label_encoder" in model_data:
+                    if "label_encoder" in model_data and hasattr(model, "label_encoder"):
                         model.label_encoder = model_data["label_encoder"]
 
                     loaded_count += 1
@@ -1323,18 +1268,14 @@ class BasicMLSystem:
     def get_system_status(self) -> Dict[str, Any]:
         """システム状態取得"""
         try:
-            trained_models = sum(
-                1 for model in self.models.values() if model.is_trained
-            )
+            trained_models = sum(1 for model in self.models.values() if model.is_trained)
             total_models = len(self.models)
 
             return {
                 "models": {
                     "total": total_models,
                     "trained": trained_models,
-                    "training_rate": (
-                        trained_models / total_models if total_models > 0 else 0.0
-                    ),
+                    "training_rate": (trained_models / total_models if total_models > 0 else 0.0),
                 },
                 "cache": {
                     "size": len(self.prediction_cache),

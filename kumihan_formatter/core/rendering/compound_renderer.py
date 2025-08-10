@@ -47,9 +47,7 @@ class CompoundElementRenderer:
 
         return current_html
 
-    def _wrap_with_keyword(
-        self, content: str, keyword: str, attributes: dict[str, Any]
-    ) -> str:
+    def _wrap_with_keyword(self, content: str, keyword: str, attributes: dict[str, Any]) -> str:
         """
         Wrap content with HTML for a specific keyword
 

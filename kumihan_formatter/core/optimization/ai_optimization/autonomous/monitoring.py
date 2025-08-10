@@ -94,12 +94,8 @@ class SystemMonitor:
         self.config = config
 
         # 監視データ
-        self.metrics_history: deque = deque(
-            maxlen=config.get("metrics_history_size", 10000)
-        )
-        self.anomaly_history: deque = deque(
-            maxlen=config.get("anomaly_history_size", 1000)
-        )
+        self.metrics_history: deque = deque(maxlen=config.get("metrics_history_size", 10000))
+        self.anomaly_history: deque = deque(maxlen=config.get("anomaly_history_size", 1000))
 
         # 異常検出閾値
         self.thresholds = {
@@ -113,9 +109,7 @@ class SystemMonitor:
 
         # 統計的異常検出
         self.statistical_window = config.get("statistical_window", 100)
-        self.anomaly_sensitivity = config.get(
-            "anomaly_sensitivity", 2.0
-        )  # 標準偏差倍数
+        self.anomaly_sensitivity = config.get("anomaly_sensitivity", 2.0)  # 標準偏差倍数
 
         # 監視状態
         self.monitoring_active = False
@@ -126,9 +120,7 @@ class SystemMonitor:
         try:
             if not self.monitoring_active:
                 self.monitoring_active = True
-                self.monitoring_thread = threading.Thread(
-                    target=self._monitoring_loop, daemon=True
-                )
+                self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
                 self.monitoring_thread.start()
                 self.logger.info("System monitoring started")
 
@@ -240,14 +232,10 @@ class SystemMonitor:
         """予測精度測定"""
         try:
             # 最近の予測精度履歴から計算（簡略化）
-            recent_metrics = (
-                list(self.metrics_history)[-10:] if self.metrics_history else []
-            )
+            recent_metrics = list(self.metrics_history)[-10:] if self.metrics_history else []
             if recent_metrics:
                 accuracies = [
-                    m.prediction_accuracy
-                    for m in recent_metrics
-                    if m.prediction_accuracy > 0
+                    m.prediction_accuracy for m in recent_metrics if m.prediction_accuracy > 0
                 ]
                 if NUMPY_AVAILABLE and accuracies:
                     return np.mean(accuracies)
@@ -263,13 +251,9 @@ class SystemMonitor:
         """エラー率測定"""
         try:
             # 最近のエラー率履歴から計算（簡略化）
-            recent_metrics = (
-                list(self.metrics_history)[-20:] if self.metrics_history else []
-            )
+            recent_metrics = list(self.metrics_history)[-20:] if self.metrics_history else []
             if recent_metrics:
-                error_rates = [
-                    m.error_rate for m in recent_metrics if m.error_rate >= 0
-                ]
+                error_rates = [m.error_rate for m in recent_metrics if m.error_rate >= 0]
                 if NUMPY_AVAILABLE and error_rates:
                     return np.mean(error_rates)
                 elif error_rates:
@@ -403,9 +387,7 @@ class SystemMonitor:
 
         return anomalies
 
-    def _detect_statistical_anomalies(
-        self, current_metrics: SystemMetrics
-    ) -> List[AnomalyEvent]:
+    def _detect_statistical_anomalies(self, current_metrics: SystemMetrics) -> List[AnomalyEvent]:
         """統計的異常検出"""
         anomalies = []
 
@@ -435,9 +417,9 @@ class SystemMonitor:
                         std_val = np.std(historical_values)
                     else:
                         mean_val = sum(historical_values) / len(historical_values)
-                        variance = sum(
-                            (x - mean_val) ** 2 for x in historical_values
-                        ) / len(historical_values)
+                        variance = sum((x - mean_val) ** 2 for x in historical_values) / len(
+                            historical_values
+                        )
                         std_val = variance**0.5
 
                     if std_val > 0:
@@ -445,9 +427,7 @@ class SystemMonitor:
 
                         if z_score > self.anomaly_sensitivity:
                             severity = (
-                                "critical"
-                                if z_score > 4
-                                else "high" if z_score > 3 else "medium"
+                                "critical" if z_score > 4 else "high" if z_score > 3 else "medium"
                             )
 
                             anomalies.append(
@@ -473,9 +453,7 @@ class SystemMonitor:
 
         return anomalies
 
-    def _detect_trend_anomalies(
-        self, current_metrics: SystemMetrics
-    ) -> List[AnomalyEvent]:
+    def _detect_trend_anomalies(self, current_metrics: SystemMetrics) -> List[AnomalyEvent]:
         """トレンド異常検出"""
         anomalies = []
 
@@ -504,8 +482,7 @@ class SystemMonitor:
                             anomaly_type=AnomalyType.PREDICTION_ACCURACY_DROP,
                             severity="medium",
                             description=(
-                                f"Declining accuracy trend: slope={slope:.4f}, "
-                                f"r={r_value:.3f}"
+                                f"Declining accuracy trend: slope={slope:.4f}, " f"r={r_value:.3f}"
                             ),
                             affected_components=["prediction", "trend"],
                             metrics={"slope": slope, "r_value": r_value},
@@ -550,10 +527,6 @@ class SystemMonitor:
         """最近の異常取得"""
         try:
             cutoff_time = time.time() - (hours * 3600)
-            return [
-                anomaly
-                for anomaly in self.anomaly_history
-                if anomaly.timestamp >= cutoff_time
-            ]
+            return [anomaly for anomaly in self.anomaly_history if anomaly.timestamp >= cutoff_time]
         except Exception:
             return []

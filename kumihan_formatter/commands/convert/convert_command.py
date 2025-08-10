@@ -81,9 +81,7 @@ class ConvertCommand:
         Returns:
             None: プログラム終了時のみ
         """
-        self.logger.info(
-            f"Starting conversion: input_file='{input_file}', output='{output}'"
-        )
+        self.logger.info(f"Starting conversion: input_file='{input_file}', output='{output}'")
         self.logger.debug(
             f"Options: no_preview={no_preview}, watch={watch}, "
             f"syntax_check={syntax_check}, continue_on_error={continue_on_error}, "
@@ -106,9 +104,7 @@ class ConvertCommand:
 
             # 変換前の構文チェック
             if syntax_check:
-                self._perform_syntax_check(
-                    input_path, error_config_manager, error_level, output
-                )
+                self._perform_syntax_check(input_path, error_config_manager, error_level, output)
 
             # ファイル変換実行
             output_file = self._execute_conversion(
@@ -224,22 +220,16 @@ class ConvertCommand:
     ):
         """構文エラーの処理"""
         errors = error_report.get("errors", [])
-        should_continue = error_config_manager.should_continue_on_error(
-            "syntax_error", len(errors)
-        )
+        should_continue = error_config_manager.should_continue_on_error("syntax_error", len(errors))
 
         if should_continue:
-            self._handle_continuable_syntax_errors(
-                errors, error_config_manager, error_level
-            )
+            self._handle_continuable_syntax_errors(errors, error_config_manager, error_level)
         else:
             self._handle_blocking_syntax_errors(
                 errors, error_level, input_path, output, error_report
             )
 
-    def _handle_continuable_syntax_errors(
-        self, errors, error_config_manager, error_level: str
-    ):
+    def _handle_continuable_syntax_errors(self, errors, error_config_manager, error_level: str):
         """継続可能な構文エラーの処理"""
         self.logger.warning(
             f"Syntax errors found but continuing (level={error_level}): {len(errors)} errors"
@@ -284,9 +274,7 @@ class ConvertCommand:
         get_console_ui().info("\\n=== 検出されたエラー ===")
         for error in errors:
             severity = error_config_manager.get_error_severity("syntax_error")
-            icon = (
-                "❌" if severity == "error" else "⚠️" if severity == "warning" else "ℹ️"
-            )
+            icon = "❌" if severity == "error" else "⚠️" if severity == "warning" else "ℹ️"
             print(f"  {icon} {error.get('message', 'Unknown error')}")
 
     def _handle_syntax_warnings(self, error_report):
@@ -380,18 +368,14 @@ class ConvertCommand:
         print(f"エラー: ファイルが見つかりません - {input_file or 'Unknown'}")
         sys.exit(1)
 
-    def _handle_encoding_error(
-        self, e: UnicodeDecodeError, input_file: str | None
-    ) -> None:
+    def _handle_encoding_error(self, e: UnicodeDecodeError, input_file: str | None) -> None:
         """文字エンコーディングエラーの処理"""
         # Basic error handling - friendly error handler removed
         self.logger.error(f"Encoding error: {e}")
         print(f"エラー: 文字エンコーディングエラー - {input_file or 'Unknown'}")
         sys.exit(1)
 
-    def _handle_permission_error(
-        self, e: PermissionError, input_file: str | None
-    ) -> None:
+    def _handle_permission_error(self, e: PermissionError, input_file: str | None) -> None:
         """ファイル権限エラーの処理"""
         # Basic error handling - friendly error handler removed
         self.logger.error(f"Permission error: {e}")

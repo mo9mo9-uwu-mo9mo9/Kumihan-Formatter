@@ -139,21 +139,15 @@ class ConvertProcessor:
                 self.logger.info("Conversion cancelled during file reading")
                 raise KeyboardInterrupt("ユーザーによりキャンセルされました")
 
-            self.logger.debug(
-                f"File read successfully: {len(original_text)} characters"
-            )
+            self.logger.debug(f"File read successfully: {len(original_text)} characters")
             current_step += 1
 
             # 【廃止】ステップ1.5: 脚注前処理
             # 新記法 # 脚注 #内容## はKeywordDefinitionsで自動処理されるため事前処理不要
-            progress.update(
-                current_step, "前処理", "新記法対応済み - 脚注処理をスキップ..."
-            )
+            progress.update(current_step, "前処理", "新記法対応済み - 脚注処理をスキップ...")
             text = original_text  # パース用テキスト（脚注前処理は不要）
             footnotes_data = None  # 新記法では不要
-            self.logger.debug(
-                "New block format footnotes will be handled by keyword system"
-            )
+            self.logger.debug("New block format footnotes will be handled by keyword system")
             current_step += 1
 
             # ステップ2: テストケース表示（オプション）
@@ -164,7 +158,7 @@ class ConvertProcessor:
 
                 self.logger.debug("Showing test cases")
                 self._show_test_cases(text)
-                current_step += 1
+                current_step += 1  # type: ignore[unreachable]
 
             # ステップ3: パース処理（脚注除去済みテキストを使用）
             progress.update(current_step, "解析", "テキスト構造を解析中...")
@@ -207,22 +201,20 @@ class ConvertProcessor:
                 # ソース表示には脚注除去済みテキストを使用
                 source_args = {"source_text": text, "source_filename": input_path.name}
                 # 脚注データがある場合は元のテキストも渡す
-                if footnotes_data:
+                if footnotes_data:  # type: ignore[unreachable]
                     source_args["original_source_text"] = original_text
                 self.logger.debug("Source display enabled")
-                current_step += 1
+                current_step += 1  # type: ignore[unreachable]
                 progress.update(current_step, "変換", "ソース表示を準備中...")
 
             # Issue #700: パーサーからgraceful errorsを取得
             parser_errors = []
             if graceful_errors and parser and hasattr(parser, "get_graceful_errors"):
                 parser_errors = parser.get_graceful_errors()
-                self.logger.info(
-                    f"Retrieved {len(parser_errors)} graceful errors from parser"
-                )
+                self.logger.info(f"Retrieved {len(parser_errors)} graceful errors from parser")
 
             # 脚注データをレンダラーに渡す
-            if footnotes_data:
+            if footnotes_data:  # type: ignore[unreachable]
                 source_args["footnotes_data"] = footnotes_data
 
             html = self._render_with_enhanced_progress(
@@ -326,17 +318,13 @@ class ConvertProcessor:
                 percent = progress_info["progress_percent"]
 
                 # プログレスマネージャーに反映
-                estimated_current = int(
-                    (current / total) * progress_manager.total_items * 0.4
-                )
+                estimated_current = int((current / total) * progress_manager.total_items * 0.4)
                 progress_manager.update(
                     estimated_current, "解析", f"行 {current}/{total} ({percent:.1f}%)"
                 )
 
             # ストリーミング解析実行
-            nodes = list(
-                parser.parse_streaming_from_text(text, enhanced_progress_callback)
-            )
+            nodes = list(parser.parse_streaming_from_text(text, enhanced_progress_callback))
             # Issue #700: パーサーオブジェクトも返す
             return (nodes, parser)
         else:
@@ -373,12 +361,8 @@ class ConvertProcessor:
                 raise KeyboardInterrupt("レンダリングがキャンセルされました")
 
             if processed_nodes % max(1, node_count // 20) == 0:  # 5%刻みで更新
-                percent = (
-                    (processed_nodes / node_count) * 100 if node_count > 0 else 100
-                )
-                base_progress = int(
-                    progress_manager.total_items * 0.6
-                )  # 60%位置から開始
+                percent = (processed_nodes / node_count) * 100 if node_count > 0 else 100
+                base_progress = int(progress_manager.total_items * 0.6)  # 60%位置から開始
                 current_progress = base_progress + int(
                     (percent / 100) * progress_manager.total_items * 0.3
                 )
@@ -401,13 +385,11 @@ class ConvertProcessor:
                 html_renderer = renderer.html_renderer
                 if hasattr(html_renderer, "set_graceful_errors"):
                     html_renderer.set_graceful_errors(parser_errors, embed_in_html=True)
-                    self.logger.info(
-                        f"Set {len(parser_errors)} graceful errors for HTML embedding"
-                    )
+                    self.logger.info(f"Set {len(parser_errors)} graceful errors for HTML embedding")
 
             # 脚注データがある場合はHTMLレンダラーに設定
             footnotes_data = source_args.pop("footnotes_data", None)
-            if footnotes_data:
+            if footnotes_data:  # type: ignore[unreachable]
                 try:
                     if hasattr(renderer.html_renderer, "set_footnote_data"):
                         renderer.html_renderer.set_footnote_data(footnotes_data)
@@ -476,8 +458,7 @@ class ConvertProcessor:
     ) -> Any:
         """ストリーミングパーサーを使用した解析（リアルタイムプログレス）"""
         self.logger.info(
-            f"Using streaming parser for large file: {size_mb:.1f}MB, "
-            f"{line_count} lines"
+            f"Using streaming parser for large file: {size_mb:.1f}MB, " f"{line_count} lines"
         )
 
         # Phase3: エラー設定管理対応（StreamingParserは将来拡張予定）
@@ -520,8 +501,7 @@ class ConvertProcessor:
                 # 詳細情報をログ出力
                 if current % 100 == 0:  # 100行ごとに詳細ログ
                     self.logger.debug(
-                        f"Progress: {current}/{total} lines ({percent:.1f}%), "
-                        f"ETA: {eta}s"
+                        f"Progress: {current}/{total} lines ({percent:.1f}%), " f"ETA: {eta}s"
                     )
 
             try:
@@ -538,15 +518,11 @@ class ConvertProcessor:
                 progress.update(task, completed=100)
 
                 elapsed = time.time() - start_time
-                self.logger.info(
-                    f"Streaming parse completed: {len(nodes)} nodes in {elapsed:.2f}s"
-                )
+                self.logger.info(f"Streaming parse completed: {len(nodes)} nodes in {elapsed:.2f}s")
 
                 # パフォーマンスサマリー取得
                 if hasattr(parser, "performance_monitor"):
-                    performance_summary = (
-                        parser.performance_monitor.get_performance_summary()
-                    )
+                    performance_summary = parser.performance_monitor.get_performance_summary()
                     self.logger.info(
                         f"Performance Summary: "
                         f"{performance_summary['items_per_second']:.0f} items/sec, "
@@ -569,9 +545,7 @@ class ConvertProcessor:
 
         return nodes
 
-    def _parse_with_traditional_progress(
-        self, text: str, config: Any, size_mb: float
-    ) -> Any:
+    def _parse_with_traditional_progress(self, text: str, config: Any, size_mb: float) -> Any:
         """従来のパーサーを使用した解析（既存の動作を維持）"""
         from ...parser import parse
 

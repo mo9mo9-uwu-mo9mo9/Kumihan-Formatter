@@ -103,9 +103,7 @@ class GracefulErrorHandler:
         self.error_counts[error_type] = self.error_counts.get(error_type, 0) + 1
 
         # ログ記録
-        self.logger.warning(
-            f"Graceful handling: {error.category.value} error - {error.message}"
-        )
+        self.logger.warning(f"Graceful handling: {error.category.value} error - {error.message}")
 
         # 復旧試行
         recovery_result = None
@@ -152,7 +150,9 @@ class GracefulErrorHandler:
                 if recovery_result:
                     error_record.recovery_successful = True
                     self.logger.info(f"Recovery successful for {error.category.value}")
-                    return recovery_result
+                    return (
+                        recovery_result if isinstance(recovery_result, dict) else {"success": True}
+                    )
 
         except Exception as recovery_error:
             self.logger.error(f"Recovery failed: {recovery_error}")
@@ -309,9 +309,7 @@ class GracefulErrorHandler:
         # 同じタイプのエラーが大量発生している場合は停止
         error_type = f"{error.category.value}:{error.severity.value}"
         if self.error_counts[error_type] > 50:
-            self.logger.warning(
-                f"Too many {error_type} errors, stopping graceful handling"
-            )
+            self.logger.warning(f"Too many {error_type} errors, stopping graceful handling")
             return False
 
         # 復旧成功時は継続
@@ -333,9 +331,7 @@ class GracefulErrorHandler:
 
         self.error_records.append(error_record)
 
-    def _generate_user_message(
-        self, error: KumihanError, error_record: GracefulErrorRecord
-    ) -> str:
+    def _generate_user_message(self, error: KumihanError, error_record: GracefulErrorRecord) -> str:
         """ユーザー向けメッセージ生成
 
         Args:
@@ -393,9 +389,7 @@ class GracefulErrorHandler:
         ]
 
         if summary["recovered_errors"] > 0:
-            html_parts.append(
-                f'<p>✅ {summary["recovered_errors"]} 件は自動修正されました。</p>'
-            )
+            html_parts.append(f'<p>✅ {summary["recovered_errors"]} 件は自動修正されました。</p>')
 
         # 最近のエラー詳細
         if summary["recent_errors"]:

@@ -58,6 +58,4 @@ class NodeBuilder:
 
     def build(self) -> Node:
         """Build the node"""
-        return Node(
-            type=self._type, content=self._content, attributes=self._attributes.copy()
-        )
+        return Node(type=self._type, content=self._content, attributes=self._attributes.copy())

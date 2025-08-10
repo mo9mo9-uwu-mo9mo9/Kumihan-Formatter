@@ -37,10 +37,10 @@ class PerformanceMonitor:
         end_memory = self.process.memory_info().rss
 
         return {
-            'duration': end_time - self.start_time,
-            'memory_delta': end_memory - self.start_memory,
-            'memory_peak': self.process.memory_info().rss,
-            'cpu_percent': self.process.cpu_percent(),
+            "duration": end_time - self.start_time,
+            "memory_delta": end_memory - self.start_memory,
+            "memory_peak": self.process.memory_info().rss,
+            "cpu_percent": self.process.cpu_percent(),
         }
 
 
@@ -80,7 +80,7 @@ class TestParsingPerformance:
         for i in range(size_factor):
             sections.append(base_content.format(num=i))
 
-        return '\n'.join(sections)
+        return "\n".join(sections)
 
     @pytest.mark.benchmark(group="parsing_small")
     def test_small_content_parsing(self, benchmark):
@@ -138,19 +138,21 @@ class TestParsingPerformance:
             result = self.parser.parse(content)
             metrics = self.monitor.stop()
 
-            memory_usage.append({
-                'size_factor': factor,
-                'content_length': len(content),
-                'memory_delta': metrics['memory_delta'],
-                'duration': metrics['duration']
-            })
+            memory_usage.append(
+                {
+                    "size_factor": factor,
+                    "content_length": len(content),
+                    "memory_delta": metrics["memory_delta"],
+                    "duration": metrics["duration"],
+                }
+            )
 
             assert result is not None
 
         # Verify memory usage doesn't grow exponentially
         for i in range(1, len(memory_usage)):
-            ratio = memory_usage[i]['memory_delta'] / max(memory_usage[i-1]['memory_delta'], 1)
-            size_ratio = memory_usage[i]['size_factor'] / memory_usage[i-1]['size_factor']
+            ratio = memory_usage[i]["memory_delta"] / max(memory_usage[i - 1]["memory_delta"], 1)
+            size_ratio = memory_usage[i]["size_factor"] / memory_usage[i - 1]["size_factor"]
 
             # Memory growth should be roughly linear with content size
             assert ratio < size_ratio * 2, f"Memory usage growing too fast: {ratio} vs {size_ratio}"
@@ -172,23 +174,23 @@ class TestParsingPerformance:
                 result = self.parser.parse(content)
                 end_time = time.perf_counter()
 
-                total_time += (end_time - start_time)
+                total_time += end_time - start_time
                 assert result is not None
 
             avg_time = total_time / iterations
-            timing_results.append({
-                'size_factor': factor,
-                'content_length': len(content),
-                'avg_time': avg_time
-            })
+            timing_results.append(
+                {"size_factor": factor, "content_length": len(content), "avg_time": avg_time}
+            )
 
         # Verify time complexity is reasonable (should be roughly linear)
         for i in range(1, len(timing_results)):
-            time_ratio = timing_results[i]['avg_time'] / timing_results[i-1]['avg_time']
-            size_ratio = timing_results[i]['size_factor'] / timing_results[i-1]['size_factor']
+            time_ratio = timing_results[i]["avg_time"] / timing_results[i - 1]["avg_time"]
+            size_ratio = timing_results[i]["size_factor"] / timing_results[i - 1]["size_factor"]
 
             # Time should scale roughly linearly
-            assert time_ratio < size_ratio * 2, f"Time complexity too high: {time_ratio} vs {size_ratio}"
+            assert (
+                time_ratio < size_ratio * 2
+            ), f"Time complexity too high: {time_ratio} vs {size_ratio}"
 
 
 @pytest.mark.performance
@@ -277,10 +279,10 @@ class TestValidationPerformance:
         assert isinstance(results, (list, dict))
 
         # Should complete within reasonable time (adjust threshold as needed)
-        assert metrics['duration'] < 30.0, f"Batch validation too slow: {metrics['duration']}s"
+        assert metrics["duration"] < 30.0, f"Batch validation too slow: {metrics['duration']}s"
 
         # Memory usage should be reasonable
-        assert metrics['memory_delta'] < 100 * 1024 * 1024, "Memory usage too high"  # 100MB limit
+        assert metrics["memory_delta"] < 100 * 1024 * 1024, "Memory usage too high"  # 100MB limit
 
     def test_concurrent_validation_simulation(self, temp_dir):
         """Simulate concurrent validation scenarios."""
@@ -319,8 +321,10 @@ class TestValidationPerformance:
             assert isinstance(result, list)
 
         # Performance should be reasonable
-        avg_time_per_validation = metrics['duration'] / validation_count
-        assert avg_time_per_validation < 1.0, f"Average validation time too slow: {avg_time_per_validation}s"
+        avg_time_per_validation = metrics["duration"] / validation_count
+        assert (
+            avg_time_per_validation < 1.0
+        ), f"Average validation time too slow: {avg_time_per_validation}s"
 
 
 @pytest.mark.performance
@@ -378,7 +382,9 @@ class TestMemoryEfficiency:
         memory_increase_mb = memory_increase / (1024 * 1024)
 
         # Memory increase should be minimal (less than 50MB for 1000 operations)
-        assert memory_increase_mb < 50, f"Potential memory leak detected: {memory_increase_mb}MB increase"
+        assert (
+            memory_increase_mb < 50
+        ), f"Potential memory leak detected: {memory_increase_mb}MB increase"
 
     def test_large_object_cleanup(self):
         """Test cleanup of large objects."""
@@ -406,7 +412,9 @@ class TestMemoryEfficiency:
         memory_delta_mb = memory_delta / (1024 * 1024)
 
         # Memory should be mostly freed (allow some overhead)
-        assert memory_delta_mb < 20, f"Large object not properly cleaned up: {memory_delta_mb}MB retained"
+        assert (
+            memory_delta_mb < 20
+        ), f"Large object not properly cleaned up: {memory_delta_mb}MB retained"
 
 
 @pytest.mark.performance

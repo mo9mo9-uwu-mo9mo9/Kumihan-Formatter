@@ -18,9 +18,7 @@ class HeadingCollector:
         """Initialize heading collector"""
         self.heading_counter = 0
 
-    def collect_headings(
-        self, nodes: list[Node], depth: int = 0
-    ) -> List[dict[str, Any]]:
+    def collect_headings(self, nodes: list[Node], depth: int = 0) -> List[dict[str, Any]]:
         """
         Collect all headings from nodes for TOC generation
 

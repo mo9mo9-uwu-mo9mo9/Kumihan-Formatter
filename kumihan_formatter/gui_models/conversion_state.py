@@ -79,9 +79,7 @@ class ConversionState:
                 if not isinstance(value, (int, float)):
                     raise ValueError(f"進捗値は数値である必要があります: {type(value)}")
                 if not 0 <= value <= 100:
-                    raise ValueError(
-                        f"進捗値は0-100の範囲である必要があります: {value}"
-                    )
+                    raise ValueError(f"進捗値は0-100の範囲である必要があります: {value}")
 
                 self.progress_var.set(value)
 
@@ -102,8 +100,6 @@ class ConversionState:
         """ステータスメッセージを設定（Thread-Safe）"""
         try:
             with self._lock:
-                if not isinstance(message, str):
-                    message = str(message)
                 self.status_var.set(message)
 
                 # コールバック実行
@@ -122,15 +118,11 @@ class ConversionState:
                 if not isinstance(value, (int, float)):
                     raise ValueError(f"進捗値は数値である必要があります: {type(value)}")
                 if not 0 <= value <= 100:
-                    raise ValueError(
-                        f"進捗値は0-100の範囲である必要があります: {value}"
-                    )
+                    raise ValueError(f"進捗値は0-100の範囲である必要があります: {value}")
 
                 self.progress_var.set(value)
 
                 if status:
-                    if not isinstance(status, str):
-                        status = str(status)
                     self.status_var.set(status)
 
                 # コールバック実行

@@ -32,9 +32,7 @@ class SIMDOptimizer:
             self.np = np
             self.logger.info("SIMD optimizer initialized with NumPy acceleration")
         else:
-            self.logger.warning(
-                "NumPy not available, falling back to standard processing"
-            )
+            self.logger.warning("NumPy not available, falling back to standard processing")
 
     def _check_numpy_availability(self) -> bool:
         """NumPy利用可能性をチェック"""
@@ -64,9 +62,7 @@ class SIMDOptimizer:
         if not lines:
             return []
 
-        self.logger.debug(
-            f"SIMD processing {len(lines)} lines with {len(pattern_funcs)} functions"
-        )
+        self.logger.debug(f"SIMD processing {len(lines)} lines with {len(pattern_funcs)} functions")
 
         try:
             # NumPy配列に変換（文字列処理の高速化）
@@ -81,9 +77,7 @@ class SIMDOptimizer:
             # リストに戻す
             result = np_lines.tolist()
 
-            self.logger.debug(
-                f"SIMD processing completed: {len(result)} lines processed"
-            )
+            self.logger.debug(f"SIMD processing completed: {len(result)} lines processed")
             return result
 
         except Exception as e:
@@ -99,9 +93,7 @@ class SIMDOptimizer:
             result = [func(line) for line in result]
         return result
 
-    def optimized_regex_operations(
-        self, text: str, patterns: List[tuple[str, str]]
-    ) -> str:
+    def optimized_regex_operations(self, text: str, patterns: List[tuple[str, str]]) -> str:
         """
         最適化された正規表現処理
 
@@ -156,9 +148,7 @@ class SIMDOptimizer:
                 results.append(processing_func(chunk))
         else:
             # 並列処理 + SIMD最適化
-            with concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers
-            ) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 future_to_chunk = {
                     executor.submit(processing_func, chunk): chunk for chunk in chunks
                 }

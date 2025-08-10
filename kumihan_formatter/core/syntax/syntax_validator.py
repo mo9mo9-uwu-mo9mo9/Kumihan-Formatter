@@ -6,7 +6,8 @@ including block validation, keyword validation, and line-by-line checking.
 
 from pathlib import Path
 
-from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
+from .syntax_errors import ErrorTypes, SyntaxError, ErrorSeverity
+from ..error_analysis.error_config import ErrorHandlingLevel
 
 # from .syntax_rules import SyntaxRules  # 下部で再定義されているため削除
 
@@ -82,9 +83,7 @@ class KumihanSyntaxValidator:
             if error.error_type == ErrorTypes.ENCODING:
                 friendly_error = ErrorCatalog.create_encoding_error(self.current_file)
             elif error.error_type == ErrorTypes.FILE_NOT_FOUND:
-                friendly_error = ErrorCatalog.create_file_not_found_error(
-                    self.current_file
-                )
+                friendly_error = ErrorCatalog.create_file_not_found_error(self.current_file)
             elif error.error_type in [
                 ErrorTypes.INVALID_KEYWORD,
                 ErrorTypes.UNKNOWN_KEYWORD,
@@ -120,7 +119,7 @@ class KumihanSyntaxValidator:
             self._add_error(
                 1,
                 1,
-                ErrorSeverity.ERROR,
+                ErrorHandlingLevel.STRICT,
                 ErrorTypes.ENCODING,
                 "ファイルのエンコーディングが UTF-8 ではありません",
                 str(file_path),
@@ -130,7 +129,7 @@ class KumihanSyntaxValidator:
             self._add_error(
                 1,
                 1,
-                ErrorSeverity.ERROR,
+                ErrorHandlingLevel.STRICT,
                 ErrorTypes.FILE_NOT_FOUND,
                 "ファイルが見つかりません",
                 str(file_path),
@@ -151,23 +150,30 @@ class KumihanSyntaxValidator:
         Returns:
             list[SyntaxError]: 全ファイルからの検証エラーリスト
         """
+        from pathlib import Path
+
         all_errors = []
 
         for file_path in file_paths:
             try:
-                errors = self.validate_file(file_path)
+                # str型をPath型に変換
+                path_obj = Path(file_path)
+                errors = self.validate_file(path_obj)
                 all_errors.extend(errors)
             except Exception as e:
                 # ファイル読み取りエラーなどの場合
                 from kumihan_formatter.core.syntax.syntax_errors import SyntaxError
+                from kumihan_formatter.core.error_analysis.error_config import (
+                    ErrorSeverity,
+                )
 
                 error = SyntaxError(
-                    file=file_path,
-                    line=0,
+                    line_number=0,
                     column=0,
                     error_type="FileError",
                     message=f"ファイル読み取りエラー: {str(e)}",
-                    severity="error",
+                    severity=ErrorSeverity.ERROR,
+                    context=file_path,  # context引数を追加
                 )
                 all_errors.append(error)
 
@@ -195,7 +201,7 @@ class KumihanSyntaxValidator:
                     self._add_error(
                         line_num,
                         1,
-                        ErrorSeverity.ERROR,
+                        ErrorHandlingLevel.STRICT,
                         ErrorTypes.UNMATCHED_BLOCK_END,
                         "ブロック開始マーカーなしに # が見つかりました",
                         line,
@@ -207,7 +213,7 @@ class KumihanSyntaxValidator:
                     self._add_error(
                         new_block_start_line,
                         1,
-                        ErrorSeverity.ERROR,
+                        ErrorHandlingLevel.STRICT,
                         ErrorTypes.UNCLOSED_BLOCK,
                         "ブロックが # で閉じられていません",
                         (
@@ -235,14 +241,10 @@ class KumihanSyntaxValidator:
             self._add_error(
                 new_block_start_line,
                 1,
-                ErrorSeverity.ERROR,
+                ErrorHandlingLevel.STRICT,
                 ErrorTypes.UNCLOSED_BLOCK,
                 "ブロックが # で閉じられていません",
-                (
-                    lines[new_block_start_line - 1]
-                    if new_block_start_line <= len(lines)
-                    else ""
-                ),
+                (lines[new_block_start_line - 1] if new_block_start_line <= len(lines) else ""),
                 "ブロックの最後に # を追加してください",
             )
 
@@ -277,7 +279,7 @@ class KumihanSyntaxValidator:
                     self._add_error(
                         line_num,
                         1,
-                        ErrorSeverity.ERROR,
+                        ErrorHandlingLevel.STRICT,
                         ErrorTypes.UNCLOSED_BLOCK,
                         "未完了のマーカー: 終了マーカー # が見つかりません",
                         line,
@@ -294,7 +296,7 @@ class KumihanSyntaxValidator:
             self._add_error(
                 line_num,
                 1,
-                ErrorSeverity.ERROR,
+                ErrorHandlingLevel.STRICT,
                 ErrorTypes.SYNTAX_ERROR,
                 violation,
                 line,
@@ -307,7 +309,7 @@ class KumihanSyntaxValidator:
             self._add_error(
                 line_num,
                 1,
-                ErrorSeverity.ERROR,
+                ErrorHandlingLevel.STRICT,
                 ErrorTypes.SYNTAX_ERROR,
                 violation,
                 line,
@@ -326,7 +328,7 @@ class KumihanSyntaxValidator:
         self._add_error(
             line_num,
             1,
-            ErrorSeverity.ERROR,
+            ErrorHandlingLevel.STRICT,
             ErrorTypes.INVALID_SYNTAX,
             "ブロック内で新しいブロックが開始されています",
             line,
@@ -337,17 +339,29 @@ class KumihanSyntaxValidator:
         self,
         line_number: int,
         column: int,
-        severity: ErrorSeverity,
+        severity: ErrorHandlingLevel,
         error_type: ErrorTypes | str,
         message: str,
         context: str,
         suggestion: str = "",
     ) -> None:
         """エラーをエラーリストに追加"""
+        from kumihan_formatter.core.syntax.syntax_errors import ErrorSeverity
+
+        # Convert ErrorHandlingLevel to ErrorSeverity
+        if severity == ErrorHandlingLevel.STRICT:
+            converted_severity = ErrorSeverity.ERROR
+        elif severity == ErrorHandlingLevel.LENIENT:
+            converted_severity = ErrorSeverity.WARNING
+        elif severity == ErrorHandlingLevel.IGNORE:
+            converted_severity = ErrorSeverity.INFO
+        else:  # NORMAL
+            converted_severity = ErrorSeverity.ERROR
+
         error = SyntaxError(
             line_number=line_number,
             column=column,
-            severity=severity,
+            severity=converted_severity,
             error_type=getattr(error_type, "value", str(error_type)),
             message=message,
             context=context,
@@ -368,7 +382,7 @@ class KumihanSyntaxValidator:
             self._add_error(
                 line_num,
                 1,
-                ErrorSeverity.WARNING,
+                ErrorHandlingLevel.LENIENT,
                 ErrorTypes.INVALID_SYNTAX,
                 "無効な括弧パターンが検出されました",
                 line,

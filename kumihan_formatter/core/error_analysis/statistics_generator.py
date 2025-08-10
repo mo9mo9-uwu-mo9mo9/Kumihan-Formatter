@@ -63,12 +63,12 @@ class StatisticsGenerator:
         total_errors = len(errors)
 
         # 重要度別集計
-        severity_counts = {}
+        severity_counts: Dict[str, int] = {}
         for error in errors:
             severity_counts[error.severity] = severity_counts.get(error.severity, 0) + 1
 
         # パターン別集計
-        pattern_counts = {}
+        pattern_counts: Dict[str, int] = {}
         for error in errors:
             pattern = error.classify_error_pattern()
             pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
@@ -87,9 +87,7 @@ class StatisticsGenerator:
                 line_range_counts["100+"] += 1
 
         # 最も多いエラーパターンTOP5
-        most_common = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[
-            :5
-        ]
+        most_common = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[:5]
         most_common_errors = [
             {
                 "pattern": pattern,
@@ -102,7 +100,8 @@ class StatisticsGenerator:
 
         # 提案生成数
         suggestions_generated = sum(
-            len(error.correction_suggestions) for error in errors
+            len(error.correction_suggestions) if error.correction_suggestions else 0
+            for error in errors
         )
 
         statistics = ErrorStatistics(
@@ -119,9 +118,7 @@ class StatisticsGenerator:
         self.logger.info(f"Generated statistics for {total_errors} errors")
         return statistics
 
-    def _get_example_message(
-        self, errors: List[GracefulSyntaxError], pattern: str
-    ) -> str:
+    def _get_example_message(self, errors: List[GracefulSyntaxError], pattern: str) -> str:
         """特定パターンの例示メッセージを取得"""
         for error in errors:
             if error.classify_error_pattern() == pattern:
@@ -207,9 +204,7 @@ class StatisticsGenerator:
         chart_html.append("</div>")
         return "\n".join(chart_html)
 
-    def _generate_pattern_analysis(
-        self, most_common_errors: List[Dict[str, Any]]
-    ) -> str:
+    def _generate_pattern_analysis(self, most_common_errors: List[Dict[str, Any]]) -> str:
         """パターン分析HTML生成"""
         if not most_common_errors:
             return ""
@@ -280,9 +275,7 @@ class StatisticsGenerator:
         html_parts.append("</div>")
         return "\n".join(html_parts)
 
-    def save_statistics_json(
-        self, statistics: ErrorStatistics, output_path: Path
-    ) -> None:
+    def save_statistics_json(self, statistics: ErrorStatistics, output_path: Path) -> None:
         """統計情報をJSONファイルに保存"""
         try:
             stats_data = {

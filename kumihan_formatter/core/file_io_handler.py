@@ -42,9 +42,7 @@ class FileIOHandler:
 
         except OSError as e:
             # Handle disk full, network errors, etc.
-            logger.warning(
-                f"OS error writing file: {path} - {e}, trying UTF-8 with BOM"
-            )
+            logger.warning(f"OS error writing file: {path} - {e}, trying UTF-8 with BOM")
             # Try UTF-8 with BOM as fallback for OS errors
             if encoding.lower() == "utf-8":
                 try:
@@ -54,14 +52,10 @@ class FileIOHandler:
                     logger.error(
                         f"Failed to write file {path} after OS error fallback: {fallback_error}"
                     )
-                    raise OSError(
-                        f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
-                    )
+                    raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
             else:
                 logger.error(f"OS error writing file: {path} - {e}")
-                raise OSError(
-                    f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
-                )
+                raise OSError(f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}")
 
         except UnicodeEncodeError:
             # Fallback with error replacement
@@ -74,9 +68,7 @@ class FileIOHandler:
                 if encoding.lower() == "utf-8":
                     try:
                         logger.debug(f"Trying UTF-8 with BOM for {path}")
-                        with open(
-                            path, "w", encoding="utf-8-sig", errors="replace"
-                        ) as f:
+                        with open(path, "w", encoding="utf-8-sig", errors="replace") as f:
                             f.write(content)
                     except Exception:
                         logger.error(
@@ -124,9 +116,7 @@ class FileIOHandler:
         try:
             # Use encoding detector for efficiency
             detected_encoding, is_confident = EncodingDetector.detect(path)
-            logger.debug(
-                f"Detected encoding: {detected_encoding} (confident: {is_confident})"
-            )
+            logger.debug(f"Detected encoding: {detected_encoding} (confident: {is_confident})")
 
             # Try detected encoding first if confident
             content = FileIOHandler._try_detected_encoding(

@@ -29,7 +29,7 @@ class TestAdvancedErrorHandling:
             error_type="test",
             severity="error",
             message="Test error",
-            context="# incomplete marker"
+            context="# incomplete marker",
         )
 
         error.set_highlight_range(2, 10)
@@ -49,7 +49,7 @@ class TestAdvancedErrorHandling:
             error_type="test",
             severity="error",
             message="Test error",
-            context="# incomplete"
+            context="# incomplete",
         )
 
         error.add_correction_suggestion("マーカーを完成させてください")
@@ -69,7 +69,7 @@ class TestAdvancedErrorHandling:
             ("incomplete marker found", "incomplete_marker"),
             ("invalid syntax detected", "invalid_syntax"),
             ("missing element in block", "missing_element"),
-            ("unknown error type", "general_syntax")
+            ("unknown error type", "general_syntax"),
         ]
 
         for message, expected_pattern in test_cases:
@@ -79,7 +79,7 @@ class TestAdvancedErrorHandling:
                 error_type="test",
                 severity="error",
                 message=message,
-                context=""
+                context="",
             )
 
             pattern = error.classify_error_pattern()
@@ -94,7 +94,7 @@ class TestAdvancedErrorHandling:
             error_type="test",
             severity="error",
             message="Test error",
-            context="# incomplete marker"
+            context="# incomplete marker",
         )
 
         error.set_highlight_range(2, 12)  # "incomplete"部分
@@ -117,7 +117,7 @@ class TestAdvancedErrorHandling:
             error_type="test",
             severity="error",
             message="Test error",
-            context=""
+            context="",
         )
 
         error.add_correction_suggestion("提案1")
@@ -150,7 +150,7 @@ class TestCorrectionEngine:
             error_type="marker_error",
             severity="error",
             message="incomplete marker found",
-            context="# keyword"
+            context="# keyword",
         )
 
         suggestions = engine.generate_suggestions(error)
@@ -168,7 +168,7 @@ class TestCorrectionEngine:
             error_type="marker_error",
             severity="error",
             message="test error",
-            context="# keyword"
+            context="# keyword",
         )
 
         suggestions = engine.generate_suggestions(error)
@@ -212,7 +212,7 @@ class TestCorrectionEngine:
             error_type="marker_error",
             severity="error",
             message="incomplete marker",
-            context="# keyword"
+            context="# keyword",
         )
 
         enhanced_error = engine.enhance_error_with_suggestions(error)
@@ -231,17 +231,29 @@ class TestStatisticsGenerator:
 
         errors = [
             GracefulSyntaxError(
-                line_number=1, column=1, error_type="marker", severity="error",
-                message="marker mismatch", context=""
+                line_number=1,
+                column=1,
+                error_type="marker",
+                severity="error",
+                message="marker mismatch",
+                context="",
             ),
             GracefulSyntaxError(
-                line_number=2, column=1, error_type="syntax", severity="warning",
-                message="invalid syntax", context=""
+                line_number=2,
+                column=1,
+                error_type="syntax",
+                severity="warning",
+                message="invalid syntax",
+                context="",
             ),
             GracefulSyntaxError(
-                line_number=3, column=1, error_type="marker", severity="error",
-                message="incomplete marker", context=""
-            )
+                line_number=3,
+                column=1,
+                error_type="marker",
+                severity="error",
+                message="incomplete marker",
+                context="",
+            ),
         ]
 
         statistics = generator.generate_statistics(errors)
@@ -266,10 +278,10 @@ class TestStatisticsGenerator:
         generator = StatisticsGenerator()
 
         errors = [
-            GracefulSyntaxError(5, 1, "test", "error", "test", ""),      # 1-10
-            GracefulSyntaxError(25, 1, "test", "error", "test", ""),     # 11-50
-            GracefulSyntaxError(75, 1, "test", "error", "test", ""),     # 51-100
-            GracefulSyntaxError(150, 1, "test", "error", "test", ""),    # 100+
+            GracefulSyntaxError(5, 1, "test", "error", "test", ""),  # 1-10
+            GracefulSyntaxError(25, 1, "test", "error", "test", ""),  # 11-50
+            GracefulSyntaxError(75, 1, "test", "error", "test", ""),  # 51-100
+            GracefulSyntaxError(150, 1, "test", "error", "test", ""),  # 100+
         ]
 
         statistics = generator.generate_statistics(errors)
@@ -285,7 +297,7 @@ class TestStatisticsGenerator:
 
         errors = [
             GracefulSyntaxError(1, 1, "marker", "error", "marker mismatch", ""),
-            GracefulSyntaxError(2, 1, "syntax", "warning", "invalid syntax", "")
+            GracefulSyntaxError(2, 1, "syntax", "warning", "invalid syntax", ""),
         ]
 
         statistics = generator.generate_statistics(errors)
@@ -311,7 +323,7 @@ class TestStatisticsGenerator:
 
         errors = [
             GracefulSyntaxError(1, 1, "marker", "error", "marker mismatch", ""),
-            GracefulSyntaxError(2, 1, "syntax", "warning", "invalid syntax", "")
+            GracefulSyntaxError(2, 1, "syntax", "warning", "invalid syntax", ""),
         ]
         # 修正提案を追加
         errors[0].correction_suggestions = ["提案1", "提案2"]
@@ -336,10 +348,10 @@ class TestErrorHandlingIntegration:
         parser = Parser(graceful_errors=True)
 
         # correction_engineが初期化されていることを確認
-        assert hasattr(parser, 'correction_engine')
+        assert hasattr(parser, "correction_engine")
         assert parser.correction_engine is not None
 
-    @patch('kumihan_formatter.core.error_analysis.correction_engine.CorrectionEngine')
+    @patch("kumihan_formatter.core.error_analysis.correction_engine.CorrectionEngine")
     def test_parser_error_enhancement(self, mock_correction_engine):
         """パーサーでのエラー拡張機能テスト"""
         from kumihan_formatter.parser import Parser
@@ -370,7 +382,7 @@ class TestErrorHandlingIntegration:
             error_type="test",
             severity="error",
             message="Test error",
-            context="# incomplete"
+            context="# incomplete",
         )
         error.add_correction_suggestion("修正提案1")
         error.set_highlight_range(2, 10)
@@ -397,7 +409,7 @@ def sample_errors():
         error_type="marker_error",
         severity="error",
         message="marker mismatch detected",
-        context="# keyword"
+        context="# keyword",
     )
     error1.add_correction_suggestion("マーカーを統一してください")
     error1.set_highlight_range(0, 1)
@@ -408,7 +420,7 @@ def sample_errors():
         error_type="syntax_error",
         severity="warning",
         message="invalid syntax found",
-        context="invalid text"
+        context="invalid text",
     )
     error2.add_correction_suggestion("構文を確認してください")
 

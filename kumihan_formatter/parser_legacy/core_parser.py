@@ -63,15 +63,11 @@ class Parser:
         self.graceful_syntax_errors: list["GracefulSyntaxError"] = []
 
         # Issue #759: 並列処理設定の外部化対応
-        self.parallel_config = (
-            parallel_config or ParallelProcessingConfig.from_environment()
-        )
+        self.parallel_config = parallel_config or ParallelProcessingConfig.from_environment()
 
         # 設定値検証
         if not self.parallel_config.validate():
-            self.logger.warning(
-                "Invalid parallel processing configuration, using defaults"
-            )
+            self.logger.warning("Invalid parallel processing configuration, using defaults")
             self.parallel_config = ParallelProcessingConfig()
 
         # 修正提案エンジン
@@ -79,9 +75,7 @@ class Parser:
             from ..core.error_analysis.correction_engine import CorrectionEngine
 
             self.correction_engine = CorrectionEngine()
-            self.logger.info(
-                "Correction engine initialized for graceful error handling"
-            )
+            self.logger.info("Correction engine initialized for graceful error handling")
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
@@ -136,28 +130,20 @@ class Parser:
 
             if node:
                 nodes.append(node)
-                self.logger.debug(
-                    f"Parsed node type: {node.type} at line {self.current}"
-                )
+                self.logger.debug(f"Parsed node type: {node.type} at line {self.current}")
 
             # 無限ループ防止: currentが進んでいない場合
             if self.current == previous_current:
-                self.logger.warning(
-                    f"Parser stuck at line {self.current}, forcing advance"
-                )
+                self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
                 self.current += 1
 
             iteration_count += 1
 
         if iteration_count >= max_iterations:
-            self.logger.error(
-                f"Parser hit maximum iteration limit ({max_iterations}), stopping"
-            )
+            self.logger.error(f"Parser hit maximum iteration limit ({max_iterations}), stopping")
             self.add_error(f"Parser exceeded maximum iterations at line {self.current}")
 
-        self.logger.info(
-            f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors"
-        )
+        self.logger.info(f"Parse complete: {len(nodes)} nodes created, {len(self.errors)} errors")
         return nodes
 
     def parse_optimized(self, text: str) -> list[Node]:
@@ -200,9 +186,7 @@ class Parser:
                 previous_current = self.current
 
                 # 最適化されたライン解析
-                node = self._parse_line_optimized(
-                    line_types, pattern_cache, line_type_cache
-                )
+                node = self._parse_line_optimized(line_types, pattern_cache, line_type_cache)
 
                 if node:
                     nodes.append(node)
@@ -211,9 +195,7 @@ class Parser:
 
                 # 進捗チェック（最適化）
                 if self.current == previous_current:
-                    self.logger.warning(
-                        f"Parser stuck at line {self.current}, forcing advance"
-                    )
+                    self.logger.warning(f"Parser stuck at line {self.current}, forcing advance")
                     self.current += 1
 
             self.logger.info(
@@ -251,9 +233,7 @@ class Parser:
                 line_types[i] = "empty"
             elif self.block_parser.is_opening_marker(stripped):
                 line_types[i] = "block_marker"
-            elif stripped.startswith("#") and not self.block_parser.is_opening_marker(
-                stripped
-            ):
+            elif stripped.startswith("#") and not self.block_parser.is_opening_marker(stripped):
                 line_types[i] = "comment"
             elif self.list_parser.is_list_line(stripped):
                 line_types[i] = "list"
@@ -294,9 +274,7 @@ class Parser:
 
     def _parse_block_marker_fast(self) -> Optional[Node]:
         """高速ブロックマーカー解析"""
-        node, next_index = self.block_parser.parse_block_marker(
-            self.lines, self.current
-        )
+        node, next_index = self.block_parser.parse_block_marker(self.lines, self.current)
         self.current = next_index
         return node
 
@@ -306,13 +284,9 @@ class Parser:
         list_type = self.list_parser.is_list_line(line)
 
         if list_type == "ul":
-            node, next_index = self.list_parser.parse_unordered_list(
-                self.lines, self.current
-            )
+            node, next_index = self.list_parser.parse_unordered_list(self.lines, self.current)
         else:
-            node, next_index = self.list_parser.parse_ordered_list(
-                self.lines, self.current
-            )
+            node, next_index = self.list_parser.parse_ordered_list(self.lines, self.current)
 
         self.current = next_index
         return node
@@ -360,16 +334,12 @@ class Parser:
 
         # Check for block markers first
         if self.block_parser.is_opening_marker(stripped):
-            node, next_index = self.block_parser.parse_block_marker(
-                self.lines, self.current
-            )
+            node, next_index = self.block_parser.parse_block_marker(self.lines, self.current)
             self.current = next_index
             return node
 
         # Skip comment lines (starting with # but not block markers)
-        if stripped.startswith("#") and not self.block_parser.is_opening_marker(
-            stripped
-        ):
+        if stripped.startswith("#") and not self.block_parser.is_opening_marker(stripped):
             self.current += 1
             return None
 
@@ -377,13 +347,9 @@ class Parser:
         if self.list_parser.is_list_line(stripped):
             list_type = self.list_parser.is_list_line(stripped)
             if list_type == "ul":
-                node, next_index = self.list_parser.parse_unordered_list(
-                    self.lines, self.current
-                )
+                node, next_index = self.list_parser.parse_unordered_list(self.lines, self.current)
             else:  # ol
-                node, next_index = self.list_parser.parse_ordered_list(
-                    self.lines, self.current
-                )
+                node, next_index = self.list_parser.parse_ordered_list(self.lines, self.current)
             self.current = next_index
             return node
 
@@ -404,9 +370,7 @@ class Parser:
         line = self.lines[self.current]
         stripped = line.strip()
 
-        self.logger.debug(
-            f"Parsing line {self.current} with graceful errors: '{line[:50]}...'"
-        )
+        self.logger.debug(f"Parsing line {self.current} with graceful errors: '{line[:50]}...'")
 
         try:
             # Skip empty lines
@@ -424,9 +388,7 @@ class Parser:
                     return node
                 except Exception as e:
                     # ブロック解析エラーをgracefulに処理
-                    error_message = (
-                        f"Block parsing error at line {self.current + 1}: {str(e)}"
-                    )
+                    error_message = f"Block parsing error at line {self.current + 1}: {str(e)}"
                     self.logger.warning(error_message)
                     self._record_graceful_error(
                         error_type="block_parsing_error",
@@ -440,9 +402,7 @@ class Parser:
                     return self._create_error_node(error_content, "block_error")
 
             # Skip comment lines (starting with # but not block markers)
-            if stripped.startswith("#") and not self.block_parser.is_opening_marker(
-                stripped
-            ):
+            if stripped.startswith("#") and not self.block_parser.is_opening_marker(stripped):
                 self.current += 1
                 return None
 
@@ -462,9 +422,7 @@ class Parser:
                     return node
                 except Exception as e:
                     # リスト解析エラーをgracefulに処理
-                    error_message = (
-                        f"List parsing error at line {self.current + 1}: {str(e)}"
-                    )
+                    error_message = f"List parsing error at line {self.current + 1}: {str(e)}"
                     self.logger.warning(error_message)
                     self._record_graceful_error(
                         error_type="list_parsing_error",
@@ -484,9 +442,7 @@ class Parser:
                 return Node("paragraph", content=content)
             except Exception as e:
                 # インライン解析エラーをgracefulに処理
-                error_message = (
-                    f"Inline parsing error at line {self.current + 1}: {str(e)}"
-                )
+                error_message = f"Inline parsing error at line {self.current + 1}: {str(e)}"
                 self.logger.warning(error_message)
                 self._record_graceful_error(
                     error_type="inline_parsing_error",
@@ -500,9 +456,7 @@ class Parser:
 
         except Exception as e:
             # 予期しないエラーの場合のfallback処理
-            error_message = (
-                f"Unexpected parsing error at line {self.current + 1}: {str(e)}"
-            )
+            error_message = f"Unexpected parsing error at line {self.current + 1}: {str(e)}"
             self.logger.error(error_message)
             self._record_graceful_error(
                 error_type="unexpected_error",
@@ -562,9 +516,7 @@ class Parser:
                         f"Generated {len(suggestions)} correction suggestions for {error_type}"
                     )
                 except Exception as e:
-                    self.logger.warning(
-                        f"Failed to generate correction suggestions: {str(e)}"
-                    )
+                    self.logger.warning(f"Failed to generate correction suggestions: {str(e)}")
 
         except ImportError:
             # GracefulSyntaxErrorが利用できない場合の fallback
@@ -631,9 +583,7 @@ class Parser:
             "current_position": self.current,
             "errors": len(self.errors),
             "graceful_errors": (
-                len(self.graceful_syntax_errors)
-                if hasattr(self, "graceful_syntax_errors")
-                else 0
+                len(self.graceful_syntax_errors) if hasattr(self, "graceful_syntax_errors") else 0
             ),
         }
 
@@ -645,13 +595,9 @@ def parse(text: str, graceful_errors: bool = False) -> list[Node]:
     return parser.parse(text)
 
 
-def parse_with_error_config(
-    text: str, error_config: dict = None
-) -> tuple[list[Node], list]:
+def parse_with_error_config(text: str, error_config: dict = None) -> tuple[list[Node], list]:
     """Parse text with error configuration"""
-    graceful_errors = (
-        error_config.get("graceful_errors", False) if error_config else False
-    )
+    graceful_errors = error_config.get("graceful_errors", False) if error_config else False
     parser = Parser(graceful_errors=graceful_errors)
     nodes = parser.parse(text)
     errors = parser.get_errors()

@@ -51,9 +51,7 @@ class ConvertValidator:
                 return False
 
             # 推定処理時間を表示
-            estimated_time = FilePathUtilities.estimate_processing_time(
-                size_info["size_mb"]
-            )
+            estimated_time = FilePathUtilities.estimate_processing_time(size_info["size_mb"])
             get_console_ui().hint(f"推定処理時間: {estimated_time}")
 
         return True
@@ -67,7 +65,7 @@ class ConvertValidator:
             results = check_files([input_path], verbose=False)
 
             # 辞書形式のエラーレポートに変換
-            error_report = {
+            error_report: dict[str, Any] = {
                 "source_file": str(input_path),
                 "errors": [],
                 "has_errors": False,
@@ -77,9 +75,7 @@ class ConvertValidator:
                 for file_path, errors in results.items():
                     for error in errors:
                         # 辞書形式のエラー情報に変換
-                        error_info = self._convert_to_error_info(
-                            error, file_path  # type: ignore
-                        )
+                        error_info = self._convert_to_error_info(error, file_path)
                         error_report["errors"].append(error_info)
                         error_report["has_errors"] = True
 
@@ -124,15 +120,11 @@ class ConvertValidator:
         try:
             output_path = Path(output_dir) / f"{input_path.stem}_errors.txt"
             self._save_error_report_to_file(error_report, output_path)
-            get_console_ui().info(
-                "エラーレポート", f"詳細レポートを保存しました: {output_path}"
-            )
+            get_console_ui().info("エラーレポート", f"詳細レポートを保存しました: {output_path}")
         except Exception as e:
             get_console_ui().warning("エラーレポートの保存に失敗しました", str(e))
 
-    def _save_error_report_to_file(
-        self, error_report: dict[str, Any], output_path: Path
-    ) -> None:
+    def _save_error_report_to_file(self, error_report: dict[str, Any], output_path: Path) -> None:
         """エラーレポートを実際にファイルに書き出し"""
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(f"エラーレポート: {error_report['source_file']}\n")

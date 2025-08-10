@@ -77,9 +77,7 @@ class DistributionProcessor:
             copied_count = len(py_files)
 
             if self.ui:
-                self.ui.info(
-                    f"メインプログラムをコピー: {copied_count}個のPythonファイル"
-                )
+                self.ui.info(f"メインプログラムをコピー: {copied_count}個のPythonファイル")
 
         return copied_count
 
@@ -100,15 +98,11 @@ class DistributionProcessor:
 
                 except Exception as e:
                     if self.ui:
-                        self.ui.warning(
-                            f"セットアップファイルコピー失敗: {filename} - {e}"
-                        )
+                        self.ui.warning(f"セットアップファイルコピー失敗: {filename} - {e}")
 
         return copied_count
 
-    def _copy_file_as_is(
-        self, file_path: Path, source_dir: Path, output_dir: Path
-    ) -> bool:
+    def _copy_file_as_is(self, file_path: Path, source_dir: Path, output_dir: Path) -> bool:
         """ファイルをそのままコピー
 
         Args:

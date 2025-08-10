@@ -22,9 +22,7 @@ class SampleCommand:
         self.file_ops = FileOperations(ui=get_console_ui())
         self.path_validator = PathValidator()
 
-    def execute(
-        self, output_dir: str = "kumihan_sample", use_source_toggle: bool = False
-    ) -> Path:
+    def execute(self, output_dir: str = "kumihan_sample", use_source_toggle: bool = False) -> Path:
         """
         Execute sample generation command
 
@@ -118,17 +116,13 @@ def create_sample_command():  # type: ignore
     """Create the sample generation click command"""
 
     @click.command()
-    @click.option(
-        "-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ"
-    )
+    @click.option("-o", "--output", default="kumihan_sample", help="サンプル出力ディレクトリ")
     @click.option(
         "--with-source-toggle",
         is_flag=True,
         help="記法と結果を切り替えるトグル機能付きで出力",
     )
-    @click.option(
-        "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
-    )
+    @click.option("--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）")
     def generate_sample(output, with_source_toggle, quiet):  # type: ignore
         """機能ショーケースサンプルを生成します"""
 

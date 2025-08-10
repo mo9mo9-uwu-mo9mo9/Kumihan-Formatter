@@ -13,31 +13,18 @@ current_dir = Path(__file__).parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
-# デバッグロガーのインポート
-try:
-    from .core.debug_logger import (
-        error,
-        info,
-        log_startup_info,
-    )
-except ImportError:
-    # Fallback for direct execution
-    try:
-        from kumihan_formatter.core.debug_logger import (
-            error,
-            info,
-            log_startup_info,
-        )
-    except ImportError:
-        # No-op fallbacks
-        def info(*args: Any, **kwargs: Any) -> None:
-            pass
 
-        def error(*args: Any, **kwargs: Any) -> None:
-            pass
+# デバッグロガーのインポート（代替実装）
+def info(*args: Any, **kwargs: Any) -> None:
+    pass
 
-        def log_startup_info() -> None:
-            pass
+
+def error(*args: Any, **kwargs: Any) -> None:
+    pass
+
+
+def log_startup_info() -> None:
+    pass
 
 
 # スタートアップ情報のログ
@@ -67,9 +54,7 @@ except ImportError as gui_error:
             f"必要なモジュールがインストールされているか確認してください。",
         )
     except Exception:
-        print(
-            f"GUIコンポーネントの読み込みに失敗しました: {gui_error}", file=sys.stderr
-        )
+        print(f"GUIコンポーネントの読み込みに失敗しました: {gui_error}", file=sys.stderr)
 
     sys.exit(1)
 

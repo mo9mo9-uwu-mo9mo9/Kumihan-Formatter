@@ -182,9 +182,7 @@ class EffectMeasurementSystem:
         monitoring_score = getattr(context, "monitoring_optimization_score", 0.4)
         return monitoring_score * 2.0  # Phase B.2の残り効果
 
-    def _calculate_confidence(
-        self, baseline: int, optimized: int, samples: int
-    ) -> float:
+    def _calculate_confidence(self, baseline: int, optimized: int, samples: int) -> float:
         """測定信頼度計算"""
         # サンプル数ベースの信頼度計算
         sample_confidence = min(1.0, samples / self.config.min_measurement_samples)
@@ -203,12 +201,8 @@ class EffectMeasurementSystem:
 
         avg_total = sum(r.total_rate for r in recent_results) / len(recent_results)
         avg_phase_a = sum(r.phase_a_rate for r in recent_results) / len(recent_results)
-        avg_phase_b1 = sum(r.phase_b1_rate for r in recent_results) / len(
-            recent_results
-        )
-        avg_phase_b2 = sum(r.phase_b2_rate for r in recent_results) / len(
-            recent_results
-        )
+        avg_phase_b1 = sum(r.phase_b1_rate for r in recent_results) / len(recent_results)
+        avg_phase_b2 = sum(r.phase_b2_rate for r in recent_results) / len(recent_results)
 
         achievement_rate = sum(1 for r in recent_results if r.target_achievement) / len(
             recent_results
@@ -225,8 +219,6 @@ class EffectMeasurementSystem:
             },
             "target_achievement_rate": achievement_rate,
             "goal_status": (
-                "achieved"
-                if avg_total >= self.config.target_reduction_rate
-                else "in_progress"
+                "achieved" if avg_total >= self.config.target_reduction_rate else "in_progress"
             ),
         }

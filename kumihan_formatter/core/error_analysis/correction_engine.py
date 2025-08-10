@@ -100,7 +100,7 @@ class CorrectionEngine:
 
     def generate_suggestions(self, error: GracefulSyntaxError) -> List[str]:
         """エラーに対する修正提案を生成"""
-        suggestions = []
+        suggestions: List[str] = []
 
         # ルールベースの提案生成
         rule_suggestions = self._apply_correction_rules(error)
@@ -121,12 +121,10 @@ class CorrectionEngine:
 
     def _apply_correction_rules(self, error: GracefulSyntaxError) -> List[str]:
         """ルールベースの修正提案を適用"""
-        suggestions = []
+        suggestions: List[str] = []
         message_lower = error.message.lower()
 
-        for rule in sorted(
-            self.correction_rules, key=lambda r: r.priority, reverse=True
-        ):
+        for rule in sorted(self.correction_rules, key=lambda r: r.priority, reverse=True):
             if re.search(rule.pattern, message_lower):
                 suggestions.extend(rule.suggestions)
                 error.error_pattern = rule.error_type  # エラーパターンを設定
@@ -136,7 +134,7 @@ class CorrectionEngine:
 
     def _generate_context_suggestions(self, error: GracefulSyntaxError) -> List[str]:
         """コンテキストに基づく修正提案を生成"""
-        suggestions = []
+        suggestions: List[str] = []
 
         if not error.context:
             return suggestions
@@ -148,9 +146,7 @@ class CorrectionEngine:
             # # キーワード の形式
             if " " in context:
                 keyword = context[1:].strip()
-                suggestions.append(
-                    f"「{context}」を「# {keyword} #」に修正してください"
-                )
+                suggestions.append(f"「{context}」を「# {keyword} #」に修正してください")
             else:
                 suggestions.append(f"「{context}」の後に「 #」を追加してください")
 
@@ -172,7 +168,7 @@ class CorrectionEngine:
 
     def _detect_common_mistakes(self, context: str) -> List[str]:
         """よくある間違いパターンを検出"""
-        suggestions = []
+        suggestions: List[str] = []
 
         # 全角スペースの使用
         if "\u3000" in context:  # 全角スペース
@@ -188,9 +184,7 @@ class CorrectionEngine:
 
         return suggestions
 
-    def enhance_error_with_suggestions(
-        self, error: GracefulSyntaxError
-    ) -> GracefulSyntaxError:
+    def enhance_error_with_suggestions(self, error: GracefulSyntaxError) -> GracefulSyntaxError:
         """エラーに修正提案を追加して拡張"""
         suggestions = self.generate_suggestions(error)
 
@@ -238,8 +232,8 @@ class CorrectionEngine:
             return {"total": 0, "patterns": {}, "severity_breakdown": {}}
 
         # パターン別集計
-        pattern_counts = {}
-        severity_counts = {}
+        pattern_counts: Dict[str, int] = {}
+        severity_counts: Dict[str, int] = {}
 
         for error in errors:
             # パターン分類
@@ -250,9 +244,7 @@ class CorrectionEngine:
             severity_counts[error.severity] = severity_counts.get(error.severity, 0) + 1
 
         # 最も多いパターンTOP3
-        top_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[
-            :3
-        ]
+        top_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[:3]
 
         return {
             "total": len(errors),
@@ -260,6 +252,7 @@ class CorrectionEngine:
             "severity_breakdown": severity_counts,
             "top_patterns": top_patterns,
             "suggestions_generated": sum(
-                len(error.correction_suggestions) for error in errors
+                len(error.correction_suggestions) if error.correction_suggestions else 0
+                for error in errors
             ),
         }

@@ -95,9 +95,7 @@ class Config:
             if result:
                 # 設定辞書を更新
                 self.config = self._manager.to_dict()
-                console.print(
-                    f"[green][完了] 設定ファイルを読み込みました:[/green] {config_path}"
-                )
+                console.print(f"[green][完了] 設定ファイルを読み込みました:[/green] {config_path}")
             else:
                 console.print(
                     f"[yellow][警告]  設定ファイルが見つかりません:[/yellow] {config_path}"
@@ -115,13 +113,9 @@ class Config:
 
         # ログ出力（互換性維持）
         if "themes" in user_config and isinstance(user_config["themes"], dict):
-            console.print(
-                f"[dim]   カスタムテーマ: {len(user_config['themes'])}個[/dim]"
-            )
+            console.print(f"[dim]   カスタムテーマ: {len(user_config['themes'])}個[/dim]")
         if "markers" in user_config and isinstance(user_config["markers"], dict):
-            console.print(
-                f"[dim]   カスタムマーカー: {len(user_config['markers'])}個[/dim]"
-            )
+            console.print(f"[dim]   カスタムマーカー: {len(user_config['markers'])}個[/dim]")
         if "theme" in user_config:
             theme_name = self._manager.get_theme_name()
             console.print(f"[dim]   テーマ: {theme_name}[/dim]")

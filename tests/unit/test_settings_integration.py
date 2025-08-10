@@ -121,7 +121,7 @@ class TestSettingsModuleIntegration:
         integrated_manager.concurrent_limiter.adjust_limits_based_on_performance.return_value = None
         integrated_manager.token_analyzer.record_token_usage.return_value = {
             "efficiency_score": 0.85,
-            "optimization_suggestions": []
+            "optimization_suggestions": [],
         }
 
         all_adjustments = []
@@ -145,9 +145,7 @@ class TestSettingsModuleIntegration:
         """A/Bテスト統合ワークフロー"""
         # A/Bテスト開始
         test_id = integrated_manager.start_ab_test(
-            "serena.max_answer_chars",
-            [20000, 25000, 30000],
-            sample_size=5
+            "serena.max_answer_chars", [20000, 25000, 30000], sample_size=5
         )
 
         assert test_id is not None
@@ -216,8 +214,7 @@ class TestSettingsModuleIntegration:
                 errors.append(e)
 
         # 複数スレッドでの並行実行
-        threads = [threading.Thread(target=optimization_worker, args=(i,))
-                  for i in range(10)]
+        threads = [threading.Thread(target=optimization_worker, args=(i,)) for i in range(10)]
 
         for thread in threads:
             thread.start()
@@ -244,13 +241,11 @@ class TestSettingsModuleIntegration:
                 "reduction_rate": 0.3,
                 "file_type": "code",
                 "tokens_saved_estimate": 3750,
-            }
+            },
         )
 
         # ファイル操作最適化実行
-        result = integrated_manager.optimize_for_file_operation(
-            "/test/path/file.py", "read"
-        )
+        result = integrated_manager.optimize_for_file_operation("/test/path/file.py", "read")
 
         assert result["original_file_size"] == 0  # ファイルが存在しないため
         assert "optimized_size" in result
@@ -264,14 +259,13 @@ class TestSettingsModuleIntegration:
         """ツール許可システム統合テスト"""
         # ツール許可取得の設定
         integrated_manager.concurrent_limiter.acquire_call_permission.return_value = (
-            True, "permission_123"
+            True,
+            "permission_123",
         )
         integrated_manager.concurrent_limiter.release_call_permission.return_value = None
 
         # ツール許可取得
-        granted, permission_id = integrated_manager.acquire_tool_permission(
-            "test_tool", 0.7
-        )
+        granted, permission_id = integrated_manager.acquire_tool_permission("test_tool", 0.7)
 
         assert granted is True
         assert permission_id == "permission_123"
@@ -302,13 +296,15 @@ class TestSettingsModuleIntegration:
             real_components_manager.token_analyzer = Mock()
 
             # デフォルトの戻り値を設定
-            real_components_manager.file_size_optimizer.adjust_limits_dynamically.return_value = False
+            real_components_manager.file_size_optimizer.adjust_limits_dynamically.return_value = (
+                False
+            )
             real_components_manager.concurrent_limiter.get_concurrency_statistics.return_value = {
                 "max_concurrent_calls": 5
             }
             real_components_manager.token_analyzer.record_token_usage.return_value = {
                 "efficiency_score": 0.8,
-                "optimization_suggestions": []
+                "optimization_suggestions": [],
             }
 
             all_results = []
@@ -319,11 +315,13 @@ class TestSettingsModuleIntegration:
                 adjustments = real_components_manager.adjust_for_context(context)
 
                 # 結果記録
-                all_results.append({
-                    "scenario": name,
-                    "adjustments_count": len(adjustments),
-                    "context": context,
-                })
+                all_results.append(
+                    {
+                        "scenario": name,
+                        "adjustments_count": len(adjustments),
+                        "context": context,
+                    }
+                )
 
         # 結果検証
         assert len(all_results) == len(scenarios)
@@ -401,11 +399,14 @@ class TestAnalyzersWithOptimizersIntegration:
         self, token_analyzer, complexity_analyzer, file_size_optimizer
     ):
         """分析器と最適化器の協調動作テスト"""
-        test_content = """
+        test_content = (
+            """
         # 太字 #重要な情報## * 複数行
         # イタリック #詳細説明## * にわたる
         # 見出し1 #メインタイトル## * 複雑な
-        """ * 100  # 大きなコンテンツ
+        """
+            * 100
+        )  # 大きなコンテンツ
 
         # Step 1: 複雑度分析
         complexity = complexity_analyzer.analyze(test_content)
@@ -444,9 +445,7 @@ class TestAnalyzersWithOptimizersIntegration:
         if optimization_info["optimized"]:
             assert optimized_size < original_size
 
-    def test_feedback_loop_integration(
-        self, token_analyzer, file_size_optimizer
-    ):
+    def test_feedback_loop_integration(self, token_analyzer, file_size_optimizer):
         """フィードバックループ統合テスト"""
         # 初期設定
         large_files = [
@@ -459,9 +458,7 @@ class TestAnalyzersWithOptimizersIntegration:
 
         for file_path, file_size in large_files:
             # ファイルサイズ最適化
-            optimized_size, opt_info = file_size_optimizer.optimize_read_size(
-                file_path, file_size
-            )
+            optimized_size, opt_info = file_size_optimizer.optimize_read_size(file_path, file_size)
 
             # Token使用量記録
             estimated_tokens = int(optimized_size * 0.25)
@@ -474,18 +471,19 @@ class TestAnalyzersWithOptimizersIntegration:
                 context,
             )
 
-            optimization_results.append({
-                "file_path": file_path,
-                "original_size": file_size,
-                "optimized_size": optimized_size,
-                "tokens_estimated": estimated_tokens,
-                "efficiency_score": token_result["efficiency_score"],
-            })
+            optimization_results.append(
+                {
+                    "file_path": file_path,
+                    "original_size": file_size,
+                    "optimized_size": optimized_size,
+                    "tokens_estimated": estimated_tokens,
+                    "efficiency_score": token_result["efficiency_score"],
+                }
+            )
 
         # フィードバック分析
         total_reduction = sum(
-            (r["original_size"] - r["optimized_size"])
-            for r in optimization_results
+            (r["original_size"] - r["optimized_size"]) for r in optimization_results
         )
         avg_efficiency = sum(r["efficiency_score"] for r in optimization_results) / len(
             optimization_results
@@ -532,9 +530,7 @@ class TestOptimizersAdvancedIntegration:
         ]
 
         for file_path, original_size, expected_type, expected_limit in test_cases:
-            optimized_size, opt_info = file_optimizer.optimize_read_size(
-                file_path, original_size
-            )
+            optimized_size, opt_info = file_optimizer.optimize_read_size(file_path, original_size)
 
             assert opt_info["file_type"] == expected_type
             if original_size > expected_limit:
@@ -576,8 +572,7 @@ class TestOptimizersAdvancedIntegration:
                 # アクティブコールの詳細確認
                 active_calls = stats["active_calls_detail"]
                 matching_call = next(
-                    (call for call in active_calls if call["tool"] == tool_name),
-                    None
+                    (call for call in active_calls if call["tool"] == tool_name), None
                 )
                 assert matching_call is not None
                 assert matching_call["category"] == expected_category
@@ -596,7 +591,7 @@ class TestOptimizersAdvancedIntegration:
         large_context = WorkContext(
             "resource_test",
             150000,  # 大きなコンテンツ
-            0.95,    # 高複雑性
+            0.95,  # 高複雑性
         )
 
         # 複数の大きなリクエストを送信
@@ -619,7 +614,7 @@ class TestOptimizersAdvancedIntegration:
         # 低パフォーマンス状況をシミュレート
         poor_performance = {
             "average_response_time": 15.0,  # 遅い
-            "resource_usage_percent": 85,   # 高使用率
+            "resource_usage_percent": 85,  # 高使用率
         }
 
         concurrent_limiter.adjust_limits_based_on_performance(poor_performance)
@@ -640,11 +635,7 @@ class TestOptimizersAdvancedIntegration:
     def test_optimizers_integration_workflow(self, file_optimizer, concurrent_limiter):
         """最適化システム統合ワークフロー"""
         # ステップ1: ファイルサイズ最適化
-        large_files = [
-            "large_code.py",
-            "huge_documentation.md",
-            "big_config.json"
-        ]
+        large_files = ["large_code.py", "huge_documentation.md", "big_config.json"]
 
         optimization_results = []
         for file_path in large_files:
@@ -656,9 +647,7 @@ class TestOptimizersAdvancedIntegration:
         for file_path, size, info in optimization_results:
             # ファイル処理のためのツール許可
             context = WorkContext("file_processing", size, 0.5)
-            granted, perm_id = concurrent_limiter.acquire_call_permission(
-                "file_processor", context
-            )
+            granted, perm_id = concurrent_limiter.acquire_call_permission("file_processor", context)
 
             if granted:
                 permissions.append(perm_id)
@@ -701,9 +690,7 @@ class TestABTestingIntegrationFlow:
         group_b = [0.5, 0.6, 0.45, 0.55, 0.58, 0.52]  # 低性能グループ
 
         # 統計テスト実行
-        test_result = statistical_engine.perform_statistical_test(
-            group_a, group_b, "t_test"
-        )
+        test_result = statistical_engine.perform_statistical_test(group_a, group_b, "t_test")
 
         assert test_result.test_type == "t_test"
         assert isinstance(test_result.p_value, float)
@@ -759,9 +746,7 @@ class TestABTestingIntegrationFlow:
     def test_simple_ab_test_integration(self, manager_with_ab):
         """シンプルA/Bテスト統合（Phase B.2用）"""
         # シンプルテスト実行
-        test_id = manager_with_ab.run_simple_ab_test(
-            "monitoring.interval", [15, 30, 45], 8
-        )
+        test_id = manager_with_ab.run_simple_ab_test("monitoring.interval", [15, 30, 45], 8)
 
         assert test_id is not None
         assert test_id in manager_with_ab.active_tests

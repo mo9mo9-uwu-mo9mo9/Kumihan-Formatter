@@ -187,9 +187,7 @@ class ValidationMixin:
             suggestion=f"Provide a value for {field}",
         )
 
-    def require_type(
-        self, field: str, expected_type: type, message: str | None = None
-    ) -> None:
+    def require_type(self, field: str, expected_type: type, message: str | None = None) -> None:
         """Add rule requiring specific type
 
         Args:
@@ -242,13 +240,9 @@ class ValidationMixin:
             raise ValueError("At least one of min_val or max_val must be provided")
 
         msg = message or f"{field} must be {range_desc}"
-        self.add_simple_rule(
-            field, validator, msg, suggestion=f"Adjust {field} to be {range_desc}"
-        )
+        self.add_simple_rule(field, validator, msg, suggestion=f"Adjust {field} to be {range_desc}")
 
-    def require_matches_pattern(
-        self, field: str, pattern: str, message: str | None = None
-    ) -> None:
+    def require_matches_pattern(self, field: str, pattern: str, message: str | None = None) -> None:
         """Add rule requiring value matches regex pattern
 
         Args:

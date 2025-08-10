@@ -17,31 +17,21 @@ class DataStructureHelper:
 
         for d in dicts:
             for key, value in d.items():
-                if (
-                    key in result
-                    and isinstance(result[key], dict)
-                    and isinstance(value, dict)
-                ):
-                    result[key] = DataStructureHelper.deep_merge_dicts(
-                        result[key], value
-                    )
+                if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                    result[key] = DataStructureHelper.deep_merge_dicts(result[key], value)
                 else:
                     result[key] = value
 
         return result
 
     @staticmethod
-    def flatten_dict(
-        d: dict[str, Any], parent_key: str = "", sep: str = "."
-    ) -> dict[str, Any]:
+    def flatten_dict(d: dict[str, Any], parent_key: str = "", sep: str = ".") -> dict[str, Any]:
         """Flatten nested dictionary"""
         items: List[tuple[str, Any]] = []
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
             if isinstance(v, dict):
-                items.extend(
-                    DataStructureHelper.flatten_dict(v, new_key, sep=sep).items()
-                )
+                items.extend(DataStructureHelper.flatten_dict(v, new_key, sep=sep).items())
             else:
                 items.append((new_key, v))
         return dict(items)
@@ -76,9 +66,7 @@ class DataStructureHelper:
             return default
 
     @staticmethod
-    def set_nested_value(
-        d: dict[str, Any], key_path: str, value: Any, sep: str = "."
-    ) -> None:
+    def set_nested_value(d: dict[str, Any], key_path: str, value: Any, sep: str = ".") -> None:
         """Set nested dictionary value using dot notation"""
         keys = key_path.split(sep)
         current = d

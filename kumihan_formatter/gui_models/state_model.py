@@ -38,11 +38,6 @@ class LogManager:
         try:
             import datetime
 
-            if not isinstance(message, str):
-                message = str(message)
-            if not isinstance(level, str):
-                level = "info"
-
             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             prefix = LogManager.LOG_LEVELS.get(level, "ℹ️")
             return f"[{timestamp}] {prefix} {message}"
@@ -186,9 +181,7 @@ class AppState:
                     self._record_error("入力ファイルが無効です")
                     return False, "入力ファイルを選択してください"
 
-                if not self.file_manager.validate_directory_writable(
-                    self.config.get_output_dir()
-                ):
+                if not self.file_manager.validate_directory_writable(self.config.get_output_dir()):
                     self._record_error("出力ディレクトリが無効です")
                     return False, "出力ディレクトリが無効です"
 

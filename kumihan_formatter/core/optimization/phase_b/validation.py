@@ -139,16 +139,10 @@ class StabilityValidator:
 
         recent_results = self.validation_history[-5:]  # 直近5件
 
-        avg_stability = sum(r.system_stability for r in recent_results) / len(
-            recent_results
-        )
-        avg_performance = sum(r.performance_impact for r in recent_results) / len(
-            recent_results
-        )
+        avg_stability = sum(r.system_stability for r in recent_results) / len(recent_results)
+        avg_performance = sum(r.performance_impact for r in recent_results) / len(recent_results)
         avg_error_rate = sum(r.error_rate for r in recent_results) / len(recent_results)
-        pass_rate = sum(1 for r in recent_results if r.validation_passed) / len(
-            recent_results
-        )
+        pass_rate = sum(1 for r in recent_results if r.validation_passed) / len(recent_results)
 
         return {
             "status": "active",
@@ -240,8 +234,7 @@ class PhaseBReportGenerator:
                 "target": f"{self.config.target_reduction_rate}%削減",
                 "achieved": f"{measurement.total_rate:.1f}%削減",
                 "status": "達成" if measurement.target_achievement else "未達成",
-                "achievement_rate": measurement.total_rate
-                / self.config.target_reduction_rate,
+                "achievement_rate": measurement.total_rate / self.config.target_reduction_rate,
             },
             "phase_breakdown": {
                 "phase_a_baseline": {
@@ -249,8 +242,7 @@ class PhaseBReportGenerator:
                     "achieved": f"{measurement.phase_a_rate:.1f}%",
                     "status": (
                         "維持"
-                        if measurement.phase_a_rate
-                        >= self.config.phase_a_baseline * 0.95
+                        if measurement.phase_a_rate >= self.config.phase_a_baseline * 0.95
                         else "要注意"
                     ),
                 },
@@ -259,8 +251,7 @@ class PhaseBReportGenerator:
                     "achieved": f"{measurement.phase_b1_rate:.1f}%",
                     "status": (
                         "達成"
-                        if measurement.phase_b1_rate
-                        >= self.config.phase_b1_target * 0.9
+                        if measurement.phase_b1_rate >= self.config.phase_b1_target * 0.9
                         else "未達成"
                     ),
                 },
@@ -269,8 +260,7 @@ class PhaseBReportGenerator:
                     "achieved": f"{measurement.phase_b2_rate:.1f}%",
                     "status": (
                         "達成"
-                        if measurement.phase_b2_rate
-                        >= self.config.phase_b2_target * 0.9
+                        if measurement.phase_b2_rate >= self.config.phase_b2_target * 0.9
                         else "未達成"
                     ),
                 },
@@ -359,9 +349,7 @@ class PhaseBReportGenerator:
             },
         }
 
-    def save_report_to_file(
-        self, report: PhaseBReport, filepath: Optional[Path] = None
-    ) -> Path:
+    def save_report_to_file(self, report: PhaseBReport, filepath: Optional[Path] = None) -> Path:
         """レポートをファイルに保存
 
         CLAUDE.md tmp/配下強制出力ルール準拠:

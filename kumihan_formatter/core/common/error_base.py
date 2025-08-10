@@ -94,9 +94,7 @@ class KumihanError(Exception):
         new_context = ErrorContext(
             file_path=context_updates.get("file_path", self.context.file_path),
             line_number=context_updates.get("line_number", self.context.line_number),
-            column_number=context_updates.get(
-                "column_number", self.context.column_number
-            ),
+            column_number=context_updates.get("column_number", self.context.column_number),
             operation=context_updates.get("operation", self.context.operation),
             user_input=context_updates.get("user_input", self.context.user_input),
             system_info=context_updates.get("system_info", self.context.system_info),
@@ -116,25 +114,17 @@ class KumihanError(Exception):
 class FileSystemError(KumihanError):
     """File system operation errors"""
 
-    def __init__(
-        self, message: str, file_path: str | None = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, message: str, file_path: str | None = None, **kwargs: Any) -> None:
         context = ErrorContext(file_path=file_path, operation="file_system")
-        super().__init__(
-            message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs
-        )
+        super().__init__(message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs)
 
 
 class SyntaxError(KumihanError):
     """Syntax parsing errors"""
 
-    def __init__(
-        self, message: str, line_number: int | None = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, message: str, line_number: int | None = None, **kwargs: Any) -> None:
         context = ErrorContext(line_number=line_number, operation="syntax_parsing")
-        super().__init__(
-            message, category=ErrorCategory.SYNTAX, context=context, **kwargs
-        )
+        super().__init__(message, category=ErrorCategory.SYNTAX, context=context, **kwargs)
 
 
 @dataclass
@@ -160,10 +150,10 @@ class GracefulSyntaxError:
     # 高度なエラー表示機能
     highlight_start: int = 0  # ハイライト開始位置
     highlight_end: int = 0  # ハイライト終了位置
-    correction_suggestions: list[str] = None  # 具体的な修正提案リスト
+    correction_suggestions: list[str] | None = None  # 具体的な修正提案リスト
     error_pattern: str = ""  # エラーパターン識別子（統計用）
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.correction_suggestions is None:
             self.correction_suggestions = []
 
@@ -254,6 +244,8 @@ class GracefulSyntaxError:
 
     def add_correction_suggestion(self, suggestion: str) -> None:
         """修正提案を追加"""
+        if self.correction_suggestions is None:
+            self.correction_suggestions = []
         if suggestion not in self.correction_suggestions:
             self.correction_suggestions.append(suggestion)
 

@@ -87,15 +87,11 @@ class ListParserCore:
             # トップレベル項目のみここで処理
             if indent_level == 0:
                 content = line.strip()
-                processed_content = self.keyword_parser._process_inline_keywords(
-                    content
-                )
+                processed_content = self.keyword_parser._process_inline_keywords(content)
                 item_node = list_item(processed_content)
 
                 # 次の行から子項目をチェック
-                child_items, consumed = self._parse_child_items(
-                    lines, current_index + 1, 1
-                )
+                child_items, consumed = self._parse_child_items(lines, current_index + 1, 1)
                 if child_items:
                     # 子項目がある場合はネストしたリストを追加
                     nested_list = unordered_list(child_items)
@@ -132,9 +128,7 @@ class ListParserCore:
 
         return None
 
-    def parse_unordered_list(
-        self, lines: list[str], start_index: int
-    ) -> tuple[Node, int]:
+    def parse_unordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """
         旧記法互換性のための順序なしリストパーサー
 
@@ -167,9 +161,7 @@ class ListParserCore:
         list_node = unordered_list(items)
         return list_node, current_index
 
-    def parse_ordered_list(
-        self, lines: list[str], start_index: int
-    ) -> tuple[Node, int]:
+    def parse_ordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
         """
         旧記法互換性のための順序ありリストパーサー
 
@@ -197,9 +189,7 @@ class ListParserCore:
             match = re.match(r"^\d+\.\s(.+)", line)
             if match:
                 content = match.group(1)
-                processed_content = self.keyword_parser._process_inline_keywords(
-                    content
-                )
+                processed_content = self.keyword_parser._process_inline_keywords(content)
                 item_node = list_item(processed_content)
                 items.append(item_node)
 
@@ -236,9 +226,7 @@ class ListParserCore:
             elif indent_level == target_level:
                 # 同じレベルの項目
                 content = line.strip()
-                processed_content = self.keyword_parser._process_inline_keywords(
-                    content
-                )
+                processed_content = self.keyword_parser._process_inline_keywords(content)
                 item_node = list_item(processed_content)
 
                 # さらに深い子項目をチェック
@@ -248,6 +236,8 @@ class ListParserCore:
                     )
                     if grand_child_items:
                         nested_list = unordered_list(grand_child_items)
+                        if item_node.children is None:
+                            item_node.children = []
                         item_node.children.append(nested_list)
                         current_index += grand_consumed
                         consumed_lines += grand_consumed

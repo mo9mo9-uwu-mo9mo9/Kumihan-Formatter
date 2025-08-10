@@ -19,7 +19,7 @@ from statistics import mean
 # WorkContextのインポート（循環インポート回避のため型ヒント用）
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from kumihan_formatter.core.config.config_manager import EnhancedConfig
+from kumihan_formatter.core.unified_config import EnhancedConfigAdapter as EnhancedConfig
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
@@ -123,9 +123,7 @@ class TokenUsageAnalyzer:
 
             # 最適化提案生成（条件付き）
             if total_tokens > self._get_optimization_threshold():
-                suggestions = self._generate_optimization_suggestions(
-                    usage_record, analysis_result
-                )
+                suggestions = self._generate_optimization_suggestions(usage_record, analysis_result)
                 if suggestions:
                     analysis_result["optimization_suggestions"] = suggestions
                     self.optimization_suggestions.extend(suggestions)
@@ -138,30 +136,21 @@ class TokenUsageAnalyzer:
         operation_type = usage_record["operation_type"]
 
         # 時間別パターン
-        self.usage_patterns["hourly_patterns"][hour].append(
-            usage_record["total_tokens"]
-        )
+        self.usage_patterns["hourly_patterns"][hour].append(usage_record["total_tokens"])
 
         # 操作別パターン
         self.usage_patterns["operation_patterns"][operation_type].append(
             {
                 "tokens": usage_record["total_tokens"],
-                "efficiency": usage_record["total_tokens"]
-                / max(usage_record["context_size"], 1),
+                "efficiency": usage_record["total_tokens"] / max(usage_record["context_size"], 1),
             }
         )
 
         # 効率パターン（複雑性対トークン比）
         if usage_record["complexity_score"] > 0:
-            efficiency_ratio = (
-                usage_record["total_tokens"] / usage_record["complexity_score"]
-            )
-            complexity_class = (
-                "high" if usage_record["complexity_score"] > 0.7 else "low"
-            )
-            self.usage_patterns["efficiency_patterns"][complexity_class].append(
-                efficiency_ratio
-            )
+            efficiency_ratio = usage_record["total_tokens"] / usage_record["complexity_score"]
+            complexity_class = "high" if usage_record["complexity_score"] > 0.7 else "low"
+            self.usage_patterns["efficiency_patterns"][complexity_class].append(efficiency_ratio)
 
     def _calculate_operation_efficiency(self, usage_record: Dict[str, Any]) -> float:
         """操作効率スコアを計算"""
@@ -305,8 +294,7 @@ class TokenUsageAnalyzer:
         # 最近のセッション平均に基づく動的調整
         if len(self.usage_history) >= 10:
             recent_avg = (
-                sum(record["total_tokens"] for record in list(self.usage_history)[-10:])
-                / 10
+                sum(record["total_tokens"] for record in list(self.usage_history)[-10:]) / 10
             )
             base_threshold = max(base_threshold, int(recent_avg * 1.5))
 
@@ -320,15 +308,12 @@ class TokenUsageAnalyzer:
 
             # 基本統計
             total_operations = len(self.usage_history)
-            total_tokens_all = sum(
-                record["total_tokens"] for record in self.usage_history
-            )
+            total_tokens_all = sum(record["total_tokens"] for record in self.usage_history)
             avg_tokens_per_operation = total_tokens_all / total_operations
 
             # 効率性分析
             efficiency_scores = [
-                self._calculate_operation_efficiency(record)
-                for record in self.usage_history
+                self._calculate_operation_efficiency(record) for record in self.usage_history
             ]
             avg_efficiency = sum(efficiency_scores) / len(efficiency_scores)
 
@@ -338,18 +323,12 @@ class TokenUsageAnalyzer:
                 if len(self.usage_history) >= 20
                 else list(self.usage_history)
             )
-            older_records = (
-                list(self.usage_history)[:-20] if len(self.usage_history) > 20 else []
-            )
+            older_records = list(self.usage_history)[:-20] if len(self.usage_history) > 20 else []
 
             trend_direction = "stable"
             if older_records:
-                recent_avg = sum(r["total_tokens"] for r in recent_records) / len(
-                    recent_records
-                )
-                older_avg = sum(r["total_tokens"] for r in older_records) / len(
-                    older_records
-                )
+                recent_avg = sum(r["total_tokens"] for r in recent_records) / len(recent_records)
+                older_avg = sum(r["total_tokens"] for r in older_records) / len(older_records)
 
                 if recent_avg > older_avg * 1.1:
                     trend_direction = "increasing"
@@ -358,13 +337,11 @@ class TokenUsageAnalyzer:
 
             # 操作別効率性
             operation_efficiency = {}
-            for op_type, pattern_data in self.usage_patterns[
-                "operation_patterns"
-            ].items():
+            for op_type, pattern_data in self.usage_patterns["operation_patterns"].items():
                 if len(pattern_data) >= 3:
-                    avg_efficiency_op = sum(
-                        p["efficiency"] for p in pattern_data
-                    ) / len(pattern_data)
+                    avg_efficiency_op = sum(p["efficiency"] for p in pattern_data) / len(
+                        pattern_data
+                    )
                     operation_efficiency[op_type] = avg_efficiency_op
 
             return {
@@ -403,9 +380,7 @@ class TokenUsageAnalyzer:
     def _get_complexity_efficiency_analysis(self) -> Dict[str, float]:
         """複雑性別効率分析"""
         analysis = {}
-        for complexity_class, ratios in self.usage_patterns[
-            "efficiency_patterns"
-        ].items():
+        for complexity_class, ratios in self.usage_patterns["efficiency_patterns"].items():
             if ratios:
                 analysis[complexity_class] = sum(ratios) / len(ratios)
         return analysis
@@ -423,9 +398,7 @@ class TokenUsageAnalyzer:
             if "estimated_total_reduction" in suggestion:
                 total_reduction += suggestion["estimated_total_reduction"]
 
-        avg_reduction = (
-            total_reduction / len(recent_suggestions) if recent_suggestions else 0.0
-        )
+        avg_reduction = total_reduction / len(recent_suggestions) if recent_suggestions else 0.0
         recent_token_usage = (
             sum(record["total_tokens"] for record in list(self.usage_history)[-20:])
             if len(self.usage_history) >= 20

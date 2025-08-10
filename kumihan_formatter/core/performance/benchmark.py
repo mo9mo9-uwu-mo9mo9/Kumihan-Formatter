@@ -61,7 +61,7 @@ class PerformanceBenchmark:
         category: str = "general",
         iterations: int = 5,
         warmup_iterations: int = 1,
-        **kwargs,
+        **kwargs: Any,
     ) -> Dict[str, Any]:
         """
         ベンチマーク実行
@@ -77,9 +77,7 @@ class PerformanceBenchmark:
         Returns:
             Dict[str, Any]: ベンチマーク結果
         """
-        self.logger.info(
-            f"Starting benchmark: {benchmark_name} ({iterations} iterations)"
-        )
+        self.logger.info(f"Starting benchmark: {benchmark_name} ({iterations} iterations)")
 
         # ウォームアップ実行
         for i in range(warmup_iterations):
@@ -319,9 +317,7 @@ class PerformanceBenchmark:
         """
         # フィルタリング
         if category:
-            filtered_results = [
-                r for r in self.benchmark_results if r.get("category") == category
-            ]
+            filtered_results = [r for r in self.benchmark_results if r.get("category") == category]
         else:
             filtered_results = self.benchmark_results
 
@@ -366,9 +362,7 @@ class PerformanceBenchmark:
             )
 
             status_class = (
-                "success"
-                if success_rate == 100
-                else "warning" if success_rate > 50 else "error"
+                "success" if success_rate == 100 else "warning" if success_rate > 50 else "error"
             )
 
             html_content += f"""
@@ -413,10 +407,7 @@ class PerformanceBenchmark:
         # tmp/配下に保存
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
-        report_path = (
-            tmp_dir
-            / f"benchmark_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
-        )
+        report_path = tmp_dir / f"benchmark_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
 
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
@@ -430,7 +421,7 @@ class PerformanceBenchmark:
             return {"total_benchmarks": 0}
 
         # カテゴリ別集計
-        category_counts = {}
+        category_counts: Dict[str, int] = {}
         total_iterations = 0
         total_successful = 0
 
@@ -440,9 +431,7 @@ class PerformanceBenchmark:
             total_iterations += result["iterations"]
             total_successful += result["successful_iterations"]
 
-        success_rate = (
-            (total_successful / total_iterations * 100) if total_iterations > 0 else 0
-        )
+        success_rate = (total_successful / total_iterations * 100) if total_iterations > 0 else 0
 
         return {
             "total_benchmarks": len(self.benchmark_results),
@@ -451,8 +440,6 @@ class PerformanceBenchmark:
             "successful_iterations": total_successful,
             "overall_success_rate_percent": success_rate,
             "latest_benchmark": (
-                self.benchmark_results[-1]["timestamp"]
-                if self.benchmark_results
-                else None
+                self.benchmark_results[-1]["timestamp"] if self.benchmark_results else None
             ),
         }
