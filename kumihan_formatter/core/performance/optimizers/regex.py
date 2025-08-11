@@ -95,7 +95,7 @@ class RegexOptimizer:
             raise
 
         # キャッシュサイズ制限チェック
-        if len(self._pattern_cache) >= self.cache_size:
+        if len(self._pattern_cache) >= self.cache_size_limit:
             self._evict_least_used_pattern()
 
         # キャッシュに保存

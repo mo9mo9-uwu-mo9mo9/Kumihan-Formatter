@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 from ..common.error_types import ErrorSeverity
 
+__all__ = ["ErrorSeverity", "SyntaxError", "ErrorTypes"]
+
 
 @dataclass
 class SyntaxError:

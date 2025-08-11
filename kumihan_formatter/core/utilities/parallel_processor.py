@@ -10,7 +10,7 @@ import threading
 # import time  # Removed: unused import (used locally in methods)
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, cast
 
 from .logger import get_logger
 
@@ -383,7 +383,7 @@ class ParallelChunkProcessor:
     ) -> List[ChunkInfo]:
         """行リストからチャンクを作成"""
         effective_chunk_size = chunk_size or self.chunk_size
-        chunks = []
+        chunks: list[ChunkInfo] = []
 
         for i in range(0, len(lines), effective_chunk_size):
             chunk_lines = lines[i : i + effective_chunk_size]
@@ -398,12 +398,26 @@ class ParallelChunkProcessor:
         self.logger.info(f"Created {len(chunks)} chunks from {len(lines)} lines")
         return chunks
 
+    def _get_cpu_count(self) -> int:
+        """
+        CPUコア数を取得
+
+        Returns:
+            int: CPUコア数
+        """
+        import os
+
+        try:
+            return os.cpu_count() or 4  # フォールバックとして 4
+        except Exception:
+            return 4
+
     def create_chunks_from_file(
         self, file_path: Path, chunk_size: Optional[int] = None
     ) -> List[ChunkInfo]:
         """ファイルからチャンクを作成（メモリ効率版）"""
         effective_chunk_size = chunk_size or self.chunk_size
-        chunks = []
+        chunks: list[ChunkInfo] = []
 
         with open(file_path, "r", encoding="utf-8") as file:
             current_chunk_lines = []
@@ -464,9 +478,9 @@ class ParallelStreamingParser:
         self._initialization_lock = threading.Lock()
 
         # グローバルリソース管理
-        self._active_threads = set()
+        self._active_threads: set[threading.Thread] = set()
         self._shutdown_requested = False
-        self._resource_cleanup_callbacks = []
+        self._resource_cleanup_callbacks: list[Callable[[], None]] = []
 
         self.logger.info(
             f"Thread-safe parallel streaming parser initialized with {max_workers} workers"
@@ -544,8 +558,9 @@ class ParallelStreamingParser:
         thread_id = threading.get_ident()
 
         # スレッドをアクティブセットに追加
+        current_thread = threading.current_thread()
         with self._initialization_lock:
-            self._active_threads.add(thread_id)
+            self._active_threads.add(current_thread)
 
         try:
             # スレッドローカルパーサーコンポーネントを取得
@@ -610,14 +625,14 @@ class ParallelStreamingParser:
         finally:
             # スレッドをアクティブセットから削除
             with self._initialization_lock:
-                self._active_threads.discard(thread_id)
+                self._active_threads.discard(current_thread)
 
     def _get_thread_local_parser_components(self) -> dict[str, Any]:
         """スレッドローカルなパーサーコンポーネントを取得"""
         with self._initialization_lock:
             # すでにスレッドローカルコンポーネントが存在するかチェック
             if hasattr(self._thread_local, "parser_components"):
-                return self._thread_local.parser_components
+                return cast(dict[str, Any], self._thread_local.parser_components)
 
             # 新しいコンポーネントを作成
             # TODO: クラス循環参照解決後に実装予定
@@ -632,9 +647,10 @@ class ParallelStreamingParser:
             self._thread_local.parser_components = components
 
             # アクティブスレッド追跡
-            thread_id = threading.current_thread().ident
+            current_thread = threading.current_thread()
+            thread_id = current_thread.ident
             if thread_id:
-                self._active_threads.add(thread_id)
+                self._active_threads.add(current_thread)
 
             self.logger.debug(f"Initialized parser components for thread {thread_id}")
             return components
@@ -644,7 +660,10 @@ class ParallelStreamingParser:
     ) -> tuple[Any, int]:
         """スレッド安全なブロック解析"""
         try:
-            return parser_components["block_parser"].parse_block_marker(lines, current)
+            return cast(
+                tuple[Any, int],
+                parser_components["block_parser"].parse_block_marker(lines, current),
+            )
         except Exception as e:
             self.logger.error(f"Error in block parsing: {e}")
             return None, current + 1
@@ -659,12 +678,16 @@ class ParallelStreamingParser:
         """スレッド安全なリスト解析"""
         try:
             if list_type == "ul":
-                return parser_components["list_parser"].parse_unordered_list(
-                    lines, current
+                return cast(
+                    tuple[Any, int],
+                    parser_components["list_parser"].parse_unordered_list(
+                        lines, current
+                    ),
                 )
             else:  # ol
-                return parser_components["list_parser"].parse_ordered_list(
-                    lines, current
+                return cast(
+                    tuple[Any, int],
+                    parser_components["list_parser"].parse_ordered_list(lines, current),
                 )
         except Exception as e:
             self.logger.error(f"Error in list parsing: {e}")
@@ -675,7 +698,10 @@ class ParallelStreamingParser:
     ) -> tuple[Any, int]:
         """スレッド安全なパラグラフ解析"""
         try:
-            return parser_components["block_parser"].parse_paragraph(lines, current)
+            return cast(
+                tuple[Any, int],
+                parser_components["block_parser"].parse_paragraph(lines, current),
+            )
         except Exception as e:
             self.logger.error(f"Error in paragraph parsing: {e}")
             return None, current + 1

@@ -10,8 +10,8 @@ from typing import Any, List
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
-from .core.template_manager import TemplateManager
 from .core.template_context import RenderContext
+from .core.template_manager import TemplateManager
 from .core.toc_generator import TOCGenerator
 from .core.utilities.logger import get_logger, log_performance
 from .simple_config import create_simple_config
@@ -127,7 +127,7 @@ class Renderer:
                 footnote_html = footnotes_data["manager"].generate_footnote_html(
                     footnotes_data["footnotes"]
                 )
-                if footnote_html:  # type: ignore[unreachable]
+                if footnote_html:
                     footnotes_html = footnote_html
                     has_footnotes = True
                     self.logger.debug(

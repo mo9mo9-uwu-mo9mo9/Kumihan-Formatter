@@ -128,6 +128,9 @@ class StatisticsGenerator:
             if error.classify_error_pattern() == pattern:
                 return error.message
 
+        # パターンが見つからない場合のデフォルト
+        return "例示エラーが見つかりません"
+
     def generate_html_report(self, statistics: ErrorStatistics) -> str:
         """HTML形式の統計レポートを生成"""
         if statistics.total_errors == 0:

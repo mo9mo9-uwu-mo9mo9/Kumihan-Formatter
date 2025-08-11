@@ -11,7 +11,7 @@ import time
 import warnings
 from collections import defaultdict, deque
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import numpy as np
 from sklearn.metrics import mean_squared_error
@@ -145,7 +145,7 @@ class HyperparameterOptimizer:
                 )
                 score = -np.mean(cv_scores)
 
-            return score
+            return cast(float, score)
         except Exception as e:
             self.logger.error(f"Objective function failed: {e}")
             return float("inf")  # 最悪のスコアを返す
@@ -247,7 +247,7 @@ class HyperparameterOptimizer:
             if len(model_history) > 1:
                 baseline_score = model_history[-2]["best_score"]
                 if baseline_score > 0:
-                    return (baseline_score - best_score) / baseline_score
+                    return cast(float, (baseline_score - best_score) / baseline_score)
 
             return 0.0
         except Exception as e:

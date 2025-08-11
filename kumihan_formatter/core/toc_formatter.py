@@ -32,13 +32,16 @@ class TOCFormatter:
     - CSSクラスの付与
     """
 
-    def __init__(self, css_classes: dict[str, str] | None = None) -> None:
-        """Initialize TOCFormatter with optional custom CSS classes"""
+    def __init__(
+        self, css_classes: dict[str, str] | None = None, title: str = "目次"
+    ) -> None:
+        """Initialize TOCFormatter with optional custom CSS classes and title"""
         self.css_classes = css_classes or {
             "container": "toc",
             "list": "toc-list",
             "item": "toc-level-{level}",
         }
+        self.title = title
 
     def format_simple_list(self, entries: list[TOCEntry]) -> str:
         """Format TOC as a simple flat list"""

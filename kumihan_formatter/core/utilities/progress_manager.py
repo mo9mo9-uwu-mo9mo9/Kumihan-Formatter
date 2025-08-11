@@ -33,6 +33,7 @@ class ProgressState:
         """進捗率を取得（0-100）"""
         if self.total == 0:
             return 100.0
+        return (self.current / self.total) * 100.0
 
     @property
     def elapsed_time(self) -> float:
@@ -44,6 +45,8 @@ class ProgressState:
         """推定残り時間（秒）"""
         if self.processing_rate <= 0 or self.current >= self.total:
             return 0
+        remaining = self.total - self.current
+        return int(remaining / self.processing_rate)
 
     @property
     def eta_formatted(self) -> str:
@@ -51,6 +54,17 @@ class ProgressState:
         eta = self.eta_seconds
         if eta <= 0:
             return "完了間近"
+
+        hours = eta // 3600
+        minutes = (eta % 3600) // 60
+        seconds = eta % 60
+
+        if hours > 0:
+            return f"{hours}時間{minutes}分"
+        elif minutes > 0:
+            return f"{minutes}分{seconds}秒"
+        else:
+            return f"{seconds}秒"
 
 
 class ProgressManager:
@@ -114,6 +128,14 @@ class ProgressManager:
         """
         if self.cancelled.is_set():
             return False
+
+        # 進捗更新処理
+        self.state.current = min(current, self.state.total)
+        if substage:
+            self.state.substage = substage
+
+        self._notify_progress()
+        return True
 
     def increment(self, amount: int = 1, substage: str = "") -> bool:
         """プログレスを増分更新"""
@@ -428,7 +450,7 @@ class ProgressContextManager:
 
         # 継続可能な場合の処理
         try:
-            if stage:
+            if stage and self.progress_manager:
                 self.progress_manager.set_stage(stage, substage)
                 self.stages_completed += 1
             return True
@@ -440,6 +462,7 @@ class ProgressContextManager:
         if self.progress_manager:
             current = self.progress_manager.state.current + amount
             return self.update(current, stage, substage)
+        return False
 
     def add_error(self, message: str = ""):
         """エラー追加"""

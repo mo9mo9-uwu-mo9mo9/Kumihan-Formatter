@@ -131,6 +131,7 @@ class KeywordDefinitions:
         if keyword in self.BLOCK_KEYWORDS:
             del self.BLOCK_KEYWORDS[keyword]
             return True
+        return False
 
     def get_nesting_order(self) -> list[str]:
         """ネスト順序を取得
@@ -190,6 +191,7 @@ class KeywordDefinitions:
             # レジストリから新しい言語のキーワード辞書を取得
             self.BLOCK_KEYWORDS = registry.convert_to_legacy_format(language)
             return True
+        return False
 
     def get_supported_languages(self) -> list[str]:
         """サポート対象言語一覧を取得
@@ -216,6 +218,7 @@ class KeywordDefinitions:
 
         if keyword_def and keyword_def.css_requirements:
             return len(keyword_def.css_requirements) > 0
+        return False
 
     def get_css_requirements(self, keyword: str) -> list[str]:
         """キーワードのCSS要件を取得
@@ -233,6 +236,7 @@ class KeywordDefinitions:
             # 明示的に list[str] として型を指定
             css_reqs: list[str] = keyword_def.css_requirements[:]
             return css_reqs
+        return []
 
     def _validate_keyword_name(self, keyword: str) -> str | None:
         """
@@ -246,6 +250,7 @@ class KeywordDefinitions:
         """
         if not keyword or not keyword.strip():
             return "キーワード名が空です"
+        return None
 
     def _validate_keyword_definition(self, definition: Any) -> str | None:
         """

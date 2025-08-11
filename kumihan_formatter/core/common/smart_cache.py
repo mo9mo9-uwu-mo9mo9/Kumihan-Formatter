@@ -107,6 +107,11 @@ class SmartCache(Generic[K, T]):
         if entry is None:
             return None
 
+        # Update access information
+        entry.access_count += 1
+        entry.last_accessed = datetime.now()
+        return entry.value
+
     def set(self, key: K, value: T) -> None:
         entry = CacheEntry(
             value=value, created_at=datetime.now(), last_accessed=datetime.now()

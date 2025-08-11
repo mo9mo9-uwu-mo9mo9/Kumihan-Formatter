@@ -39,7 +39,13 @@ class BaseParser:
             return False
 
         # Check for potentially malicious patterns
-        malicious_patterns = ["<script", "javascript:", "onload=", "onerror="]
+        # Check for potentially malicious patterns
+        malicious_patterns = [
+            "<script",
+            "javascript:",
+            "onload=",
+            "onerror=",
+        ]
         content_lower = content.lower()
 
         for pattern in malicious_patterns:

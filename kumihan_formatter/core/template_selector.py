@@ -30,6 +30,11 @@ class TemplateSelector:
         if template:
             return template
 
+        # Default template selection
+        if source_text or experimental:
+            return "source.html"
+        return "default.html"
+
     @staticmethod
     def get_available_templates(template_dir: Path) -> list[str]:
         """Get list of available template files
@@ -42,6 +47,8 @@ class TemplateSelector:
         """
         if not template_dir.exists():
             return []
+
+        return [f.name for f in template_dir.glob("*.html") if f.is_file()]
 
     @staticmethod
     def validate_template_exists(template_dir: Path, template_name: str) -> bool:

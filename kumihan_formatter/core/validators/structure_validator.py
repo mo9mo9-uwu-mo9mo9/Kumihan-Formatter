@@ -7,7 +7,7 @@ TOC structure, and document organization.
 from typing import Any
 
 from ..ast_nodes import Node, validate_ast
-from ..toc_generator import TOCValidator
+from ..toc_validator import TOCValidator
 from .validation_issue import ValidationIssue
 
 

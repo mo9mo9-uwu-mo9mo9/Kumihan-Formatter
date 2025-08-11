@@ -13,7 +13,16 @@ import warnings
 from collections import deque
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from types import ModuleType
+
+    np: Optional["ModuleType"] = None
+    stats: Optional["ModuleType"] = None
+else:
+    np = None
+    stats = None
 
 # Optional dependencies
 try:
@@ -25,7 +34,7 @@ except ImportError:
     np = None
 
 try:
-    import scipy.stats as stats
+    import scipy.stats as stats  # type: ignore
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -249,7 +258,7 @@ class SystemMonitor:
                     for m in recent_metrics
                     if m.prediction_accuracy > 0
                 ]
-                if NUMPY_AVAILABLE and accuracies:
+                if NUMPY_AVAILABLE and np is not None and accuracies:
                     return float(np.mean(accuracies))
             return 0.0
         except Exception:
@@ -266,7 +275,7 @@ class SystemMonitor:
                 error_rates = [
                     m.error_rate for m in recent_metrics if m.error_rate >= 0
                 ]
-                if NUMPY_AVAILABLE and error_rates:
+                if NUMPY_AVAILABLE and np is not None and error_rates:
                     return float(np.mean(error_rates))
             return 0.0
         except Exception:
@@ -277,7 +286,9 @@ class SystemMonitor:
         try:
             # スループット測定（簡略化）
             if NUMPY_AVAILABLE:
-                return 120.0 + np.random.normal(0, 10)  # 仮想的なスループット
+                return 120.0 + (
+                    np.random.normal(0, 10) if np is not None else 0.0
+                )  # 仮想的なスループット
             return 120.0
         except Exception:
             return 0.0
@@ -287,7 +298,9 @@ class SystemMonitor:
         try:
             # キャッシュヒット率測定（簡略化）
             if NUMPY_AVAILABLE:
-                return 0.75 + np.random.normal(0, 0.1)  # 仮想的なヒット率
+                return 0.75 + (
+                    np.random.normal(0, 0.1) if np is not None else 0.0
+                )  # 仮想的なヒット率
             return 0.75
         except Exception:
             return 0.0
@@ -393,7 +406,7 @@ class SystemMonitor:
         self, current_metrics: SystemMetrics
     ) -> List[AnomalyEvent]:
         """統計的異常検出"""
-        anomalies = []
+        anomalies: list[AnomalyEvent] = []
 
         try:
             if len(self.metrics_history) < self.statistical_window:
@@ -437,8 +450,12 @@ class SystemMonitor:
 
                 if len(historical_values) >= 10:  # 最小データ数
                     if NUMPY_AVAILABLE:
-                        mean_val = np.mean(historical_values)
-                        std_val = np.std(historical_values)
+                        mean_val = (
+                            np.mean(historical_values)
+                            if np is not None
+                            else sum(historical_values) / len(historical_values)
+                        )
+                        std_val = np.std(historical_values) if np is not None else 0.0
                     else:
                         mean_val = sum(historical_values) / len(historical_values)
                         variance = sum(
@@ -483,7 +500,7 @@ class SystemMonitor:
         self, current_metrics: SystemMetrics
     ) -> List[AnomalyEvent]:
         """トレンド異常検出"""
-        anomalies = []
+        anomalies: list[AnomalyEvent] = []
 
         try:
             if not SCIPY_AVAILABLE:
@@ -498,8 +515,11 @@ class SystemMonitor:
             # 予測精度の下降トレンド検出
             accuracy_values = [m.prediction_accuracy for m in recent_metrics]
             if len(accuracy_values) >= 10 and NUMPY_AVAILABLE:
-                x = np.arange(len(accuracy_values))
-                slope, _, r_value, _, _ = stats.linregress(x, accuracy_values)
+                if np is not None and stats is not None:
+                    x = np.arange(len(accuracy_values))
+                    slope, _, r_value, _, _ = stats.linregress(x, accuracy_values)
+                else:
+                    return False
 
                 # 負のトレンドかつ強い相関
                 if slope < -0.01 and r_value < -0.7:
@@ -520,8 +540,11 @@ class SystemMonitor:
             # 応答時間の上昇トレンド検出
             response_values = [m.response_time for m in recent_metrics]
             if len(response_values) >= 10 and NUMPY_AVAILABLE:
-                x = np.arange(len(response_values))
-                slope, _, r_value, _, _ = stats.linregress(x, response_values)
+                if np is not None and stats is not None:
+                    x = np.arange(len(response_values))
+                    slope, _, r_value, _, _ = stats.linregress(x, response_values)
+                else:
+                    return False
 
                 # 正のトレンドかつ強い相関
                 if slope > 0.01 and r_value > 0.7:

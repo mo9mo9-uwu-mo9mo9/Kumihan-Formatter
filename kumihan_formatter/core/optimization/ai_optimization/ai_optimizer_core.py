@@ -33,6 +33,7 @@ class OptimizationContext:
     recent_operations: List[str]
     current_settings: Dict[str, Any]
     optimization_metrics: Dict[str, float]
+    phase_b_metrics: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -75,11 +76,17 @@ class AIOptimizerCore:
 
         # Phase B統合基盤
         self.phase_b_integrator = OptimizationIntegrator()
-        self.adaptive_settings = AdaptiveSettingsManager()
+        from kumihan_formatter.core.config.config_manager import EnhancedConfig
+
+        enhanced_config = EnhancedConfig()
+        if isinstance(config, dict):
+            for key, value in config.items():
+                enhanced_config.set(key, value)
+        self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
 
         # AI/ML基盤システム
         self.ml_models: Dict[str, Any] = {}
-        self.efficiency_analyzer = None
+        self.efficiency_analyzer: dict[str, Any] | None = None
 
         # 【メモリリーク対策】LRUキャッシュ実装
         self._prediction_cache_max_size = self.config.get(
@@ -172,12 +179,13 @@ class AIOptimizerCore:
 
     def _initialize_efficiency_analyzer(self) -> None:
         """効率性分析システム初期化"""
-        self.efficiency_analyzer = {
-            "pattern_tracker": {},
-            "efficiency_history": [],
-            "optimization_opportunities": [],
-            "phase_b_baseline": self.phase_b_integrator.get_baseline_metrics(),
-        }
+        if not hasattr(self, "efficiency_analyzer") or self.efficiency_analyzer is None:
+            self.efficiency_analyzer = {
+                "pattern_tracker": {},
+                "efficiency_history": [],
+                "optimization_opportunities": [],
+                "phase_b_baseline": self.phase_b_integrator.get_baseline_metrics(),
+            }
 
         self.logger.info("Efficiency analyzer initialized")
 
@@ -301,10 +309,10 @@ class AIOptimizerCore:
             )
 
             # 期待改善効果計算
+            phase_b_metrics = context.phase_b_metrics or {}
             expected_improvement = max(
                 0.0,
-                predicted_efficiency
-                - context.phase_b_metrics.get("current_efficiency", 0.0),
+                predicted_efficiency - phase_b_metrics.get("current_efficiency", 0.0),
             )
 
             # 予測結果構築
@@ -345,8 +353,8 @@ class AIOptimizerCore:
             len(context.recent_operations),
             len(context.current_settings),
             # Phase B関連特徴量
-            context.phase_b_metrics.get("current_efficiency", 0.0),
-            context.phase_b_metrics.get("baseline_performance", 0.0),
+            (context.phase_b_metrics or {}).get("current_efficiency", 0.0),
+            (context.phase_b_metrics or {}).get("baseline_performance", 0.0),
             # 統計特徴量
             (
                 np.mean([hash(op) % 100 for op in context.recent_operations])
@@ -377,7 +385,7 @@ class AIOptimizerCore:
         """基本効率性推定（フォールバック）"""
         # 単純ヒューリスティック推定
         feature_sum = np.sum(features)
-        return min(5.0, max(0.1, feature_sum / 1000))  # 0.1-5.0%範囲
+        return float(min(5.0, max(0.1, feature_sum / 1000)))  # 0.1-5.0%範囲
 
     def _predict_optimization_suggestions(self, features: np.ndarray) -> List[str]:
         """最適化提案予測"""
@@ -447,7 +455,7 @@ class AIOptimizerCore:
     ) -> Dict[str, Any]:
         """AI最適化適用"""
         try:
-            optimization_result = {
+            optimization_result: dict[str, Any] = {
                 "applied_suggestions": [],
                 "efficiency_improvement": 0.0,
                 "confidence_level": prediction.confidence_score,
@@ -621,7 +629,7 @@ class AIOptimizerCore:
             improvements = [
                 r.efficiency_gain for r in self.optimization_history if r.success
             ]
-            self.performance_metrics["average_improvement"] = (
+            self.performance_metrics["average_improvement"] = float(
                 np.mean(improvements) if improvements else 0.0
             )
 
@@ -629,7 +637,7 @@ class AIOptimizerCore:
             ai_contributions = [
                 r.ai_contribution for r in self.optimization_history if r.success
             ]
-            self.performance_metrics["ai_contribution_rate"] = (
+            self.performance_metrics["ai_contribution_rate"] = float(
                 np.mean(ai_contributions) if ai_contributions else 0.0
             )
 
@@ -646,7 +654,7 @@ class AIOptimizerCore:
     ) -> Dict[str, Any]:
         """Token効率性パターンAI分析"""
         try:
-            analysis_result = {
+            analysis_result: dict[str, Any] = {
                 "pattern_insights": [],
                 "efficiency_trends": {},
                 "optimization_opportunities": [],

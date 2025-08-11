@@ -98,7 +98,8 @@ class ListParserCore:
                 if child_items:
                     # 子項目がある場合はネストしたリストを追加
                     nested_list = unordered_list(child_items)
-                    item_node.children.append(nested_list)
+                    if item_node.children is not None:
+                        item_node.children.append(nested_list)
                     current_index += consumed
 
                 items.append(item_node)
@@ -120,6 +121,18 @@ class ListParserCore:
         line = line.strip()
         if not line:
             return None
+
+        # 順序なしリストのチェック
+        if line.startswith(("- ", "• ", "* ", "+ ")):
+            return "unordered"
+
+        # 順序ありリストのチェック
+        import re
+
+        if re.match(r"^\d+\.\s", line):
+            return "ordered"
+
+        return None
 
     def parse_unordered_list(
         self, lines: list[str], start_index: int
@@ -265,11 +278,17 @@ class ListParserCore:
             if char == "\t":  # タブ文字検出
                 return -1  # エラー値
 
+        # スペース数でインデントレベルを計算
+        return len(line) - len(line.lstrip(" "))
+
     def _find_block_end(self, lines: list[str], start_index: int) -> int:
         """ブロック終了位置を検索"""
         for i in range(start_index, len(lines)):
             if lines[i].strip() in ["##", "＃＃"]:
                 return i + 1
+
+        # 終了マーカーが見つからない場合は末尾を返す
+        return len(lines)
 
     def is_list_block_start(self, line: str) -> bool:
         """
@@ -301,6 +320,8 @@ class ListParserCore:
         for line in lines:
             if self.is_list_block_start(line):
                 return True
+
+        return False
 
     def extract_list_items(self, content: str) -> list[str]:
         """

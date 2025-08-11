@@ -169,7 +169,7 @@ class PerformanceBenchmark:
         if not execution_times:
             return {}
 
-        stats = {
+        stats: Dict[str, Any] = {
             "mean": mean(execution_times),
             "median": median(execution_times),
             "min": min(execution_times),

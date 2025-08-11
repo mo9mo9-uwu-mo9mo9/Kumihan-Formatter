@@ -58,3 +58,5 @@ class FileSystemHelper:
 
         if recursive:
             return directory.rglob(pattern)
+        else:
+            return directory.glob(pattern)

@@ -243,7 +243,7 @@ class TOCGenerator:
             return []
 
         toc_entries = []
-        stack = []
+        stack: list[TOCEntry] = []
 
         for heading in headings:
             try:

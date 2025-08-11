@@ -28,6 +28,9 @@ dependencies = [
     "numpy>=1.24.0",
     "pandas>=2.0.0",
     "scipy>=1.11.0",
+    "aiofiles>=23.0",
+    "toml>=0.10",
+    "tomli>=1.2.0",
 ]
 
 [project.scripts]
@@ -43,6 +46,9 @@ dev = [
     "mypy>=1.0",
     "types-psutil",
     "types-PyYAML",
+    "types-aiofiles",
+    "types-toml",
+    "types-requests",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",

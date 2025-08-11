@@ -50,6 +50,8 @@ class ConvertValidator:
                 get_console_ui().info("処理を中断しました")
                 return False
 
+        return True
+
     def perform_syntax_check(self, input_path: Path) -> dict[str, Any]:
         """詳細な構文チェックを実行"""
         get_console_ui().info("記法チェック", f"{input_path.name} の記法を検証中...")

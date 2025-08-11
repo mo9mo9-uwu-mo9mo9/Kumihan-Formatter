@@ -136,7 +136,18 @@ class FileIOHandler:
                 return content
         except Exception as e:
             logger.error(f"Encoding detection failed: {e}")
-            return None
+            # Fallback to UTF-8 with error replacement
+            try:
+                with open(path, "r", encoding="utf-8", errors="replace") as f:
+                    return f.read()
+            except Exception as fallback_error:
+                logger.error(f"Fallback encoding failed: {fallback_error}")
+                raise OSError(
+                    f"ファイルの読み込みに失敗しました: {path}"
+                ) from fallback_error
+
+        # This should not be reached due to the exception handling above
+        raise OSError(f"予期しないエラー: ファイルの読み込みに失敗しました: {path}")
 
     @staticmethod
     def _try_detected_encoding(

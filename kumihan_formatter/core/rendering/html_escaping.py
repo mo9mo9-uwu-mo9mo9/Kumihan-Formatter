@@ -73,7 +73,7 @@ def render_attributes_with_enhancements(
     """
     # Always create attributes dict to ensure Phase 4 features are applied
     if not attributes:
-        attributes: dict[str, Any] = {}
+        attributes = {}
     else:
         attributes = attributes.copy()
 

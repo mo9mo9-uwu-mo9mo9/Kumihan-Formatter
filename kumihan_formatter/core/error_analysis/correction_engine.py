@@ -238,7 +238,7 @@ class CorrectionEngine:
             return {"total": 0, "patterns": {}, "severity_breakdown": {}}
 
         # エラーパターンの統計
-        pattern_counts = {}
+        pattern_counts: dict[str, int] = {}
         severity_counts = {"error": 0, "warning": 0, "info": 0}
 
         for error in errors:

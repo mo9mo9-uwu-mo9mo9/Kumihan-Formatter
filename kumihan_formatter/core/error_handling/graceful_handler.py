@@ -215,6 +215,9 @@ class GracefulErrorHandler:
             if content.count("#") % 2 == 1:  # 奇数個の#
                 return content + "#"
 
+        # 修正できない場合
+        return None
+
     def _fix_unmatched_marker(
         self, error: KumihanError, error_record: GracefulErrorRecord
     ) -> Optional[str]:
@@ -233,6 +236,9 @@ class GracefulErrorHandler:
             # 簡単なケース: 開きマーカーのみの場合
             if content.startswith("#") and not content.endswith("#"):
                 return content + "#"
+
+        # 修正できない場合
+        return None
 
     def _fix_invalid_nesting(
         self, error: KumihanError, error_record: GracefulErrorRecord
@@ -314,7 +320,7 @@ class GracefulErrorHandler:
             return True
 
         # 軽度エラーは継続
-        return error.severity in [ErrorSeverity.LOW, ErrorSeverity.WARNING]
+        return error.severity in [ErrorSeverity.INFO, ErrorSeverity.WARNING]
 
     def _store_error_record(self, error_record: GracefulErrorRecord) -> None:
         """エラー記録保存

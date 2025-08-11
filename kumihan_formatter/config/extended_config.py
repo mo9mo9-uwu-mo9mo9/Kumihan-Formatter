@@ -121,6 +121,7 @@ class ExtendedConfig(BaseConfig):
         if name in self._markers:
             del self._markers[name]
             return True
+        return False
 
     def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得
@@ -155,6 +156,7 @@ class ExtendedConfig(BaseConfig):
             self._current_theme = theme_id
             self._apply_theme()
             return True
+        return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得
@@ -172,6 +174,7 @@ class ExtendedConfig(BaseConfig):
         """
         if self._current_theme in self._themes:
             return self._themes[self._current_theme].get("name", "不明")  # type: ignore
+        return "不明"
 
     def validate(self) -> bool:
         """設定の妥当性をチェック
@@ -181,6 +184,7 @@ class ExtendedConfig(BaseConfig):
         """
         if not super().validate():
             return False
+        return True
 
     def merge_config(self, other_config: dict[str, Any]) -> None:
         """他の設定をマージ

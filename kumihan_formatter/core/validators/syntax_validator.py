@@ -7,7 +7,8 @@ and basic text structure.
 from typing import Any, Union
 
 from ..block_parser import BlockParser, BlockValidator
-from ..keyword_parser import KeywordParser, MarkerValidator
+from ..keyword_parser import KeywordParser
+from ..keyword_parsing.validator import KeywordValidator
 from ..list_parser import ListParser, ListValidator
 from .validation_issue import ValidationIssue
 
@@ -23,7 +24,10 @@ class SyntaxValidator:
         self.block_parser = BlockParser(self.keyword_parser)
 
         # Initialize specialized validators
-        self.marker_validator = MarkerValidator()
+        from ..keyword_parsing.definitions import KeywordDefinitions
+
+        definitions = KeywordDefinitions()
+        self.marker_validator = KeywordValidator(definitions)
         self.list_validator = ListValidator(self.list_parser)
         self.block_validator = BlockValidator(self.block_parser)
 

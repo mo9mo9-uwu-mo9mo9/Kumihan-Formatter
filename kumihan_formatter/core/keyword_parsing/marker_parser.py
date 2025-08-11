@@ -159,7 +159,7 @@ class MarkerParser:
                 keyword_part = block_match.group(1).strip()
                 keyword = keyword_part.split()[0] if keyword_part.split() else ""
                 return ParseResult(
-                    markers=[keyword] if keyword else [],
+                    markers=[(0, len(keyword), keyword)] if keyword else [],
                     content="",
                     keywords=[keyword] if keyword else [],
                     attributes={},
@@ -171,7 +171,7 @@ class MarkerParser:
         if all_keywords:
             combined_content = " ".join(all_content) if all_content else ""
             return ParseResult(
-                markers=all_keywords,
+                markers=[(i, len(kw), kw) for i, kw in enumerate(all_keywords)],
                 content=combined_content,
                 keywords=all_keywords,
                 attributes=all_attributes,

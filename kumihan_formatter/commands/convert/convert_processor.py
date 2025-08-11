@@ -73,7 +73,7 @@ class ConvertProcessor:
             # バリデーションエラーは基本的に継続不可
             raise result.kumihan_error
 
-    def convert_file(  # type: ignore
+    def convert_file(
         self,
         input_path: Path,
         output_dir: str,
@@ -150,7 +150,7 @@ class ConvertProcessor:
                 current_step, "前処理", "新記法対応済み - 脚注処理をスキップ..."
             )
             text = original_text  # パース用テキスト（脚注前処理は不要）
-            footnotes_data = None  # 新記法では不要
+            # footnotes_data = None  # 新記法では不要（未使用変数削除）
             self.logger.debug(
                 "New block format footnotes will be handled by keyword system"
             )
@@ -164,7 +164,7 @@ class ConvertProcessor:
 
                 self.logger.debug("Showing test cases")
                 self._show_test_cases(text)
-                current_step += 1  # type: ignore[unreachable]
+                current_step += 1
 
             # ステップ3: パース処理（脚注除去済みテキストを使用）
             progress.update(current_step, "解析", "テキスト構造を解析中...")
@@ -206,12 +206,7 @@ class ConvertProcessor:
             if include_source:
                 # ソース表示には脚注除去済みテキストを使用
                 source_args = {"source_text": text, "source_filename": input_path.name}
-                # 脚注データがある場合は元のテキストも渡す
-                if footnotes_data:  # type: ignore[unreachable]
-                    source_args["original_source_text"] = original_text
                 self.logger.debug("Source display enabled")
-                current_step += 1  # type: ignore[unreachable]
-                progress.update(current_step, "変換", "ソース表示を準備中...")
 
             # Issue #700: パーサーからgraceful errorsを取得
             parser_errors = []
@@ -221,9 +216,7 @@ class ConvertProcessor:
                     f"Retrieved {len(parser_errors)} graceful errors from parser"
                 )
 
-            # 脚注データをレンダラーに渡す
-            if footnotes_data:  # type: ignore[unreachable]
-                source_args["footnotes_data"] = footnotes_data
+            # 脚注データは新記法では不要
 
             html = self._render_with_enhanced_progress(
                 ast,
@@ -348,7 +341,7 @@ class ConvertProcessor:
         title: str,
         progress_manager,
         graceful_errors: bool = False,
-        parser_errors: list = None,
+        parser_errors: list | None = None,
         **source_args,
     ) -> str:
         """プログレス管理付きレンダリング処理（Issue #695対応）"""
@@ -429,6 +422,17 @@ class ConvertProcessor:
                 self.logger.info(f"Creating parent directory: {output_path.parent}")
                 output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
+
+        # デフォルト処理: ディレクトリ+ファイル名での出力
+        output_filename = input_path.stem + ".html"
+        final_output_path = output_path / output_filename
+
+        # 出力ディレクトリが存在しない場合は作成
+        if not output_path.exists():
+            self.logger.info(f"Creating output directory: {output_path}")
+            output_path.mkdir(parents=True, exist_ok=True)
+
+        return final_output_path
 
     def _parse_with_progress(
         self, text: str, config: Any, input_path: Path, error_config_manager: Any = None
@@ -591,7 +595,7 @@ class ConvertProcessor:
 
         return ast
 
-    def _render_with_progress(  # type: ignore
+    def _render_with_progress(
         self,
         ast: Any,
         config,

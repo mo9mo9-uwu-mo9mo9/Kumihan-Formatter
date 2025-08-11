@@ -28,6 +28,8 @@ from ..error_handling import handle_error_unified
 from ..utilities.logger import get_logger
 from .config_models import ConfigFormat, KumihanConfig
 
+__all__ = ["ConfigLoader", "ConfigLoadError", "ConfigFormat"]
+
 
 class ConfigLoadError(Exception):
     """設定読み込みエラー"""
@@ -283,6 +285,8 @@ class ConfigLoader:
                 if config_file.exists() and config_file.is_file():
                     self.logger.info(f"設定ファイル発見: {config_file}")
                     return config_file
+
+        return None
 
     def merge_configs(self, *configs: Dict[str, Any]) -> Dict[str, Any]:
         """複数の設定を優先順位に従ってマージ

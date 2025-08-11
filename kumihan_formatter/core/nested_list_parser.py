@@ -38,6 +38,9 @@ class NestedListParser:
         if list_type == "ul":
             return self.list_parser.parse_unordered_list(lines, start_index)
 
+        # デフォルトの場合
+        return None, start_index + 1
+
     def _calculate_indent_level(self, line: str) -> int:
         """Calculate indentation level of a line"""
         return len(line) - len(line.lstrip())

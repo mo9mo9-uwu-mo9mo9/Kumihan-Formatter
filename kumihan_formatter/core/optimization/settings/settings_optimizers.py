@@ -15,16 +15,29 @@ import time
 from collections import deque
 
 # 循環インポート回避のため型ヒント用
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from kumihan_formatter.core.unified_config import (
-    EnhancedConfigAdapter as EnhancedConfig,
-)
+from kumihan_formatter.core.config.config_manager import EnhancedConfig
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
     from .manager import AdaptiveSettingsManager, ConfigAdjustment
     from .optimizers import ContextAwareOptimizer, RealTimeConfigAdjuster
+
+
+def _convert_to_enhanced_config(config_input: Any) -> EnhancedConfig:
+    """EnhancedConfig変換ヘルパー"""
+    if isinstance(config_input, EnhancedConfig):
+        return config_input
+    elif isinstance(config_input, dict):
+        # dict から EnhancedConfig を作成
+        enhanced_config = EnhancedConfig()
+        for key, value in config_input.items():
+            enhanced_config.set(key, value)
+        return enhanced_config
+    else:
+        # フォールバック: 基本的なEnhancedConfig を作成
+        return EnhancedConfig()
 
 
 class IntegratedSettingsOptimizer:
@@ -42,9 +55,9 @@ class IntegratedSettingsOptimizer:
         self.config = config
 
         # 遅延インポートで循環参照回避
-        self.adaptive_manager = None
-        self.context_optimizer = None
-        self.realtime_adjuster = None
+        self.adaptive_manager: Optional["AdaptiveSettingsManager"] = None
+        self.context_optimizer: Optional[ContextAwareOptimizer] = None
+        self.realtime_adjuster: Optional[RealTimeConfigAdjuster] = None
 
         self.logger.info("IntegratedSettingsOptimizer initialized")
 
@@ -54,8 +67,8 @@ class IntegratedSettingsOptimizer:
             from .manager import AdaptiveSettingsManager
 
             self.adaptive_manager = AdaptiveSettingsManager(
-                self.config
-            )  # type: ignore[unreachable]
+                _convert_to_enhanced_config(self.config)
+            )
             self.context_optimizer = ContextAwareOptimizer()
             self.realtime_adjuster = RealTimeConfigAdjuster(self.adaptive_manager)
 
@@ -66,10 +79,22 @@ class IntegratedSettingsOptimizer:
         self._initialize_components()
 
         # コンテキスト検出
-        context = self.context_optimizer.detect_context(operation, content, user_id)
+        if self.context_optimizer is not None:
+            context = self.context_optimizer.detect_context(operation, content, user_id)
+        else:
+            # フォールバック: デフォルトコンテキスト
+            from .manager import WorkContext
+
+            context = WorkContext(
+                operation_type=operation,
+                content_size=len(content),
+                complexity_score=0.5,
+                user_pattern=user_id,
+            )
 
         # リアルタイム調整開始
-        self.realtime_adjuster.start_realtime_adjustment(context)
+        if self.realtime_adjuster is not None:
+            self.realtime_adjuster.start_realtime_adjustment(context)
 
         return {
             "context": {
@@ -78,7 +103,11 @@ class IntegratedSettingsOptimizer:
                 "complexity_score": context.complexity_score,
                 "user_pattern": context.user_pattern,
             },
-            "adjustments_applied": len(self.adaptive_manager.adjustment_history),
+            "adjustments_applied": (
+                len(self.adaptive_manager.adjustment_history)
+                if self.adaptive_manager is not None
+                else 0
+            ),
             "optimization_active": True,
         }
 
@@ -86,8 +115,16 @@ class IntegratedSettingsOptimizer:
         """最適化を完了し結果を返す"""
         self._initialize_components()
 
-        adjustment_results = self.realtime_adjuster.stop_realtime_adjustment()
-        summary = self.adaptive_manager.get_adjustment_summary()
+        adjustment_results = (
+            self.realtime_adjuster.stop_realtime_adjustment()
+            if self.realtime_adjuster is not None
+            else {}
+        )
+        summary = (
+            self.adaptive_manager.get_adjustment_summary()
+            if self.adaptive_manager is not None
+            else {}
+        )
 
         return {
             "adjustment_results": adjustment_results,
@@ -110,7 +147,9 @@ class LearningBasedOptimizer:
     """
 
     def __init__(
-        self, config: EnhancedConfig, adaptive_manager: "AdaptiveSettingsManager" = None
+        self,
+        config: EnhancedConfig,
+        adaptive_manager: Optional["AdaptiveSettingsManager"] = None,
     ):
         self.logger = get_logger(__name__)
         self.config = config
@@ -147,8 +186,8 @@ class LearningBasedOptimizer:
             from .manager import AdaptiveSettingsManager
 
             self.adaptive_manager = AdaptiveSettingsManager(
-                self.config
-            )  # type: ignore[unreachable]
+                _convert_to_enhanced_config(self.config)
+            )
 
     def integrate_efficiency_analyzer(self, analyzer):
         """TokenEfficiencyAnalyzerとの統合"""
@@ -162,14 +201,16 @@ class LearningBasedOptimizer:
 
         try:
             # 1. パターン学習実行
-            learning_summary = self.adaptive_manager.learn_usage_patterns()
+            learning_summary = (
+                self.adaptive_manager.learn_usage_patterns()
+                if self.adaptive_manager is not None
+                else {"patterns_discovered": 0}
+            )
 
             # 2. 効率性予測の取得（統合システム使用）
-            efficiency_insights = {}
+            efficiency_insights: dict[str, Any] = {}
             if self.efficiency_analyzer:
-                efficiency_insights = (
-                    self.efficiency_analyzer.get_pattern_insights()
-                )  # type: ignore[unreachable]
+                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -228,7 +269,7 @@ class LearningBasedOptimizer:
         self, learning_summary: Dict, efficiency_insights: Dict
     ) -> Dict[str, Any]:
         """学習データ統合分析"""
-        integrated = {
+        integrated: Dict[str, Any] = {
             "high_priority_patterns": [],
             "optimization_opportunities": [],
             "conflicting_insights": [],
@@ -253,6 +294,8 @@ class LearningBasedOptimizer:
             integrated_score = efficiency_score * 0.6 + analyzer_score * 0.4
             confidence = min(sample_count / 10, 0.9)
 
+            if "confidence_scores" not in integrated:
+                integrated["confidence_scores"] = {}
             integrated["confidence_scores"][pattern_key] = confidence
 
             if integrated_score < 0.6 and confidence > 0.5:
@@ -267,10 +310,10 @@ class LearningBasedOptimizer:
 
         # 最適化機会の統合
         adaptive_opportunities = learning_summary.get("optimization_opportunities", [])
-        analyzer_suggestions = []
+        analyzer_suggestions: list[dict[str, Any]] = []
         if self.efficiency_analyzer:
             # 効率アナライザーからの最適化提案取得
-            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(  # type: ignore[unreachable]
+            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
                 self.config.get_all()
             )
 
@@ -355,8 +398,9 @@ class LearningBasedOptimizer:
                         expected_benefit=proposal["expected_improvement"],
                     )
 
-                    self.adaptive_manager._apply_adjustment(adjustment)
-                    applied.append(adjustment)
+                    if self.adaptive_manager is not None:
+                        self.adaptive_manager._apply_adjustment(adjustment)
+                        applied.append(adjustment)
 
         return applied
 
@@ -376,8 +420,12 @@ class LearningBasedOptimizer:
                         int(current_value * 0.8),  # 20%削減
                     ]
 
-                    test_started = self.adaptive_manager.run_simple_ab_test(
-                        parameter, test_values, sample_size=8
+                    test_started = (
+                        self.adaptive_manager.run_simple_ab_test(
+                            parameter, test_values, sample_size=8
+                        )
+                        if self.adaptive_manager is not None
+                        else None
                     )
 
                     if test_started is not None:
@@ -404,12 +452,17 @@ class LearningBasedOptimizer:
     def get_learning_status(self) -> Dict[str, Any]:
         """学習型最適化ステータス取得"""
         self._initialize_adaptive_manager()
-        learning_status = self.adaptive_manager.get_learning_status()
+        learning_status = (
+            self.adaptive_manager.get_learning_status()
+            if self.adaptive_manager is not None
+            else {"learning_active": False}
+        )
 
         # 総合削減率計算（統合設定最適化 61.8% + 学習型最適化追加分）
         integrated_reduction = 0.618  # 統合設定最適化実績
+        total_improvement = self.learning_metrics.get("total_improvement", 0.0)
         learning_additional = min(
-            self.learning_metrics["total_improvement"], 0.1
+            total_improvement if total_improvement is not None else 0.0, 0.1
         )  # 最大10%
         total_reduction = integrated_reduction + learning_additional
 
@@ -421,12 +474,12 @@ class LearningBasedOptimizer:
                 "integrated_baseline": integrated_reduction,
                 "learning_target": 0.05,  # 5%目標
                 "learning_actual": learning_additional,
-                "remaining_to_target": max(0, 0.05 - learning_additional),
+                "remaining_to_target": max(0.0, 0.05 - learning_additional),
             },
             "learning_sessions_count": len(self.learning_sessions),
             "recent_learning_active": (
                 time.time() - self.learning_metrics["last_learning_session"] < 3600
-                if self.learning_metrics["last_learning_session"]
+                if self.learning_metrics.get("last_learning_session")
                 else False
             ),
         }

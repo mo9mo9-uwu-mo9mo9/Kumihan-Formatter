@@ -89,22 +89,24 @@ class SyntaxValidatorUtils:
         except UnicodeDecodeError:
             errors.append(
                 SyntaxError(
-                    1,
-                    1,
-                    ErrorSeverity.ERROR,
-                    ErrorTypes.ENCODING,
-                    "ファイルのエンコーディングエラー",
+                    line_number=1,
+                    column=1,
+                    severity=ErrorSeverity.ERROR,
+                    error_type=ErrorTypes.ENCODING,
+                    message="ファイルのエンコーディングエラー",
+                    context="",
                 )
             )
             return "", errors
         except Exception:
             errors.append(
                 SyntaxError(
-                    1,
-                    1,
-                    ErrorSeverity.ERROR,
-                    ErrorTypes.FILE_NOT_FOUND,
-                    "ファイル読み込みエラー",
+                    line_number=1,
+                    column=1,
+                    severity=ErrorSeverity.ERROR,
+                    error_type=ErrorTypes.FILE_NOT_FOUND,
+                    message="ファイル読み込みエラー",
+                    context="",
                 )
             )
             return "", errors
@@ -121,3 +123,5 @@ class SyntaxValidatorUtils:
         """
         if not text:
             return ""
+
+        return text

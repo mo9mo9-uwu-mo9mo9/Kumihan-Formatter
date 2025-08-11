@@ -97,12 +97,14 @@ class SyntaxRules:
         if "color=" in keyword:
             if " color=" in keyword:
                 return keyword.split(" color=")[0].strip()
+        return keyword.strip()
 
     @classmethod
     def extract_color_value(cls, keyword: str) -> str:
         """Extract color value from keyword with color attribute"""
         if " color=" in keyword:
             return keyword.split(" color=")[1].strip()
+        return ""
 
     @classmethod
     def extract_alt_value(cls, keyword: str) -> str:
@@ -143,6 +145,7 @@ class SyntaxRules:
 
         if len(headings) > 1:
             return headings
+        return []
 
     @classmethod
     def get_sorted_keywords(cls) -> list[str]:

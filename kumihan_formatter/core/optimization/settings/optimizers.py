@@ -62,7 +62,7 @@ class FileSizeLimitOptimizer:
         }
 
         # 動的調整履歴
-        self.adjustment_history = deque(maxlen=100)
+        self.adjustment_history: deque[dict[str, Any]] = deque(maxlen=100)
         self._lock = threading.Lock()
 
         self.logger.info("FileSizeLimitOptimizer initialized with dynamic thresholds")
@@ -341,7 +341,7 @@ class ConcurrentToolCallLimiter:
             "optimization.max_concurrent_tools", 3
         )
         self.current_active_calls = 0
-        self.call_queue = deque()
+        self.call_queue: deque[dict[str, Any]] = deque()
 
         # ツール別制限
         self.tool_limits = {
@@ -363,7 +363,7 @@ class ConcurrentToolCallLimiter:
         # 並行制御
         self._semaphore = threading.Semaphore(self.max_concurrent_calls)
         self._lock = threading.Lock()
-        self._active_calls = {}
+        self._active_calls: dict[str, dict[str, Any]] = {}
 
         self.logger.info(
             f"ConcurrentToolCallLimiter initialized (max: {self.max_concurrent_calls})"
@@ -592,7 +592,7 @@ class RealTimeConfigAdjuster:
     def __init__(self, adaptive_manager: "AdaptiveSettingsManager"):
         self.logger = get_logger(__name__)
         self.adaptive_manager = adaptive_manager
-        self.adjustment_monitor = {}
+        self.adjustment_monitor: dict[str, Any] = {}
         self._monitoring_active = False
 
     def start_realtime_adjustment(self, context: "WorkContext"):

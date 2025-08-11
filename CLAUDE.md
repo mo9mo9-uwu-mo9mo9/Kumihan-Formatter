@@ -43,6 +43,10 @@ git checkout -b feat/issue-123-description
 gh issue create --title "タイトル" --body "内容" \
   --label "バグ,優先度:高,難易度:普通,コンポーネント:パーサー"
 
+# ラベル管理
+# 必要なラベルが存在しない場合は自動作成を許可
+# 例: gh label create "新ラベル" --description "説明" --color "color"
+
 # PR作成
 gh pr create --title "タイトル" --body "詳細説明"
 ```

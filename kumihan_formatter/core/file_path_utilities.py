@@ -67,6 +67,9 @@ class FilePathUtilities:
                 ):
                     return True
 
+        # No patterns matched
+        return False
+
     @staticmethod
     def get_file_size_info(path: Path) -> Dict[str, Any]:
         """Get file size information"""
@@ -98,3 +101,9 @@ class FilePathUtilities:
         """
         if size_mb < 1:
             return "数秒"
+        elif size_mb < 5:
+            return "10-30秒"
+        elif size_mb < 20:
+            return "1-2分"
+        else:
+            return "2分以上"

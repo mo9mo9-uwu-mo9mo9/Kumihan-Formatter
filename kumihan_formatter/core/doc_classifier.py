@@ -8,6 +8,8 @@ from pathlib import Path
 from .classification_rules import build_classification_rules, get_conversion_strategies
 from .document_types import DocumentType, get_type_display_names
 
+__all__ = ["DocumentClassifier", "DocumentType"]
+
 
 class DocumentClassifier:
     """文書分類器
@@ -34,6 +36,9 @@ class DocumentClassifier:
                 for target_filename in rules["filenames"]:
                     if filename == target_filename.lower():
                         return doc_type
+
+        # デフォルト分類
+        return DocumentType.GENERAL
 
     def classify_directory(self, directory: Path) -> dict[DocumentType, list[Path]]:
         """ディレクトリ内のファイルを一括分類

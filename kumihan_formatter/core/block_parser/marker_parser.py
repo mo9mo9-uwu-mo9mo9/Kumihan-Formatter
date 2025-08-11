@@ -9,7 +9,7 @@ Handles:
 Created: 2025-08-10 (Error問題修正 - BlockParser分割)
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 
 from .base_parser import BaseBlockParser
 
@@ -97,6 +97,18 @@ class MarkerBlockParser(BaseBlockParser):
                 return self._parse_inline_format(
                     keywords, attributes, inline_content, start_index
                 )
+
+            # Default fallback for non-inline markers
+            from kumihan_formatter.core.ast_nodes import error_node
+
+            return (
+                error_node(
+                    "マーカー解析エラー",
+                    "ブロック形式のマーカー処理が未実装です",
+                    start_index,
+                ),
+                start_index + 1,
+            )
         except Exception as e:
             from kumihan_formatter.core.ast_nodes import error_node
 
@@ -126,6 +138,8 @@ class MarkerBlockParser(BaseBlockParser):
             parts = line.split("#")
             if len(parts) >= 3:
                 return parts[-2].strip()
+
+        return ""
 
     def _parse_inline_format(
         self,
@@ -199,7 +213,9 @@ class MarkerBlockParser(BaseBlockParser):
             )
 
             if factory_func:
-                return factory_func(content)
+                return cast("Node | None", factory_func(content))
+
+        return None
 
     def _apply_attributes_to_node(
         self, node: "Node", attributes: Dict[str, Any]

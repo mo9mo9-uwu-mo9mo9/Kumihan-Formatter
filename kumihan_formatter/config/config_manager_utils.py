@@ -31,6 +31,8 @@ def create_config_instance(
             # ファイル読み込みエラー時はデフォルト設定を使用
             pass
 
+    return config_class()
+
 
 def merge_config_data(
     config: BaseConfig | ExtendedConfig, other_config: dict[str, Any]

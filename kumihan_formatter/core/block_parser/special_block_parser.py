@@ -145,8 +145,16 @@ class SpecialBlockParser:
             if any(indicator in cell for indicator in header_indicators):
                 return True
 
+        return False
+
     def _is_numeric_value(self, value: str) -> bool:
         """Check if a value is purely numeric"""
         value = value.strip()
         if not value:
+            return False
+
+        try:
+            float(value)
+            return True
+        except ValueError:
             return False

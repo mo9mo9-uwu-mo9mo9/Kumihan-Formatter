@@ -24,6 +24,11 @@ def process_text_content(text: str) -> str:
     if not text:
         return ""
 
+    # Convert newlines to <br> tags
+    text = escape_html(text)
+    text = text.replace("\n", "<br>\n")
+    return text
+
 
 def process_block_content(text: str) -> str:
     """
@@ -38,6 +43,9 @@ def process_block_content(text: str) -> str:
     if not text:
         return ""
 
+    # Convert list markers to HTML
+    return _convert_list_markers(text)
+
 
 def process_collapsible_content(text: str) -> str:
     """
@@ -51,6 +59,9 @@ def process_collapsible_content(text: str) -> str:
     """
     if not text:
         return ""
+
+    # Process content with special handling for collapsible elements
+    return _convert_lists_to_html(text)
 
 
 def _convert_list_markers(text: str) -> str:
@@ -161,3 +172,6 @@ def _convert_list_markers_with_html(text: str) -> str:
     """
     if not text:
         return ""
+
+    # Use more comprehensive list conversion that preserves HTML
+    return _convert_lists_to_html(text)

@@ -5,7 +5,8 @@ and validation of generated HTML.
 """
 
 import re
-from typing import List
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 class HTMLFormatter:
@@ -47,6 +48,8 @@ class HTMLFormatter:
         """
         self.indent_size = indent_size
         self.semantic_mode = semantic_mode
+        # Initialize tag stack with proper type
+        self.tag_stack: List[str] = []
 
         # CSS class naming conventions (Issue #665 Phase 4)
         self.css_class_prefix = "kumihan"
@@ -55,7 +58,7 @@ class HTMLFormatter:
         self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "hsla", "named"]
 
     def handle_special_element(
-        self, keyword: str, content: str, attributes: dict = None
+        self, keyword: str, content: str, attributes: dict | None = None
     ) -> str:
         """
         特殊キーワード（special_handler指定）の処理
@@ -107,7 +110,9 @@ class HTMLFormatter:
 
         return placeholder
 
-    def generate_css_class(self, keyword: str, modifiers: List[str] = None) -> str:
+    def generate_css_class(
+        self, keyword: str, modifiers: List[str] | None = None
+    ) -> str:
         """
         CSS class名を生成（CSS-naming統一対応）
 
@@ -256,7 +261,7 @@ class HTMLFormatter:
             "grey",
         }
 
-    def format_html(self, html: str, options: dict = None) -> str:
+    def format_html(self, html: str, options: dict | None = None) -> str:
         """
         HTML文字列を整形
 
@@ -351,38 +356,29 @@ class HTMLFormatter:
         Returns:
             str: セマンティック改善済みHTML
         """
-        # セマンティックタグへの変換ルール
-        semantic_rules = [
-            # 見出しの適切なマークアップ
-            (
-                r'<div class="kumihan-h([1-6])">',
-                r"<h\1>",
-            ),
-            (
-                r"</div><!--/kumihan-h[1-6]-->",
-                lambda m: f"</h{m.group(1)}>",
-            ),
-            # 強調要素の改善
-            (
-                r'<span class="kumihan-bold">',
-                r"<strong>",
-            ),
-            (
-                r"</span><!--/kumihan-bold-->",
-                r"</strong>",
-            ),
-            (
-                r'<span class="kumihan-italic">',
-                r"<em>",
-            ),
-            (
-                r"</span><!--/kumihan-italic-->",
-                r"</em>",
-            ),
-        ]
 
         improved_html = html
-        for pattern, replacement in semantic_rules:
+
+        # 見出しタグの変換を先に実行（開始タグ）
+        improved_html = re.sub(
+            r'<div class="kumihan-h([1-6])">', r"<h\1>", improved_html
+        )
+
+        # 見出しタグの終了タグを個別に処理
+        for i in range(1, 7):
+            improved_html = re.sub(
+                f"</div><!--/kumihan-h{i}-->", f"</h{i}>", improved_html
+            )
+
+        # その他のセマンティック変換を実行
+        other_rules = [
+            (r'<span class="kumihan-bold">', r"<strong>"),
+            (r"</span><!--/kumihan-bold-->", r"</strong>"),
+            (r'<span class="kumihan-italic">', r"<em>"),
+            (r"</span><!--/kumihan-italic-->", r"</em>"),
+        ]
+
+        for pattern, replacement in other_rules:
             improved_html = re.sub(pattern, replacement, improved_html)
 
         return improved_html
@@ -415,14 +411,14 @@ class HTMLFormatter:
         Returns:
             dict: バリデーション結果
         """
-        validation_result = {
+        validation_result: Dict[str, Any] = {
             "valid": True,
             "errors": [],
             "warnings": [],
         }
 
         # 基本的なタグ閉じチェック
-        tag_stack = []
+        tag_stack: list[str] = []
         self_closing_tags = {
             "br",
             "hr",
@@ -470,6 +466,36 @@ class HTMLFormatter:
                 validation_result["valid"] = False
 
         return validation_result
+
+    def _generate_alt_text(self, filename: str) -> str:
+        """
+        画像ファイル名からalt属性用のテキストを生成
+
+        Args:
+            filename: 画像ファイル名
+
+        Returns:
+            str: alt属性用テキスト
+        """
+        if not filename:
+            return "Image"
+
+        # ファイル拡張子を除去
+        name = Path(filename).stem
+
+        # アンダースコアやハイフンをスペースに変換
+        alt_text = re.sub(r"[_-]", " ", name)
+
+        # 数字の後にアルファベットが来る場合にスペースを挿入
+        alt_text = re.sub(r"(\d)([a-zA-Z])", r"\1 \2", alt_text)
+
+        # 大文字小文字の境界にスペースを挿入
+        alt_text = re.sub(r"([a-z])([A-Z])", r"\1 \2", alt_text)
+
+        # 先頭を大文字にし、余分なスペースを削除
+        alt_text = " ".join(alt_text.split()).capitalize()
+
+        return alt_text if alt_text else "Image"
 
     def add_accessibility_attributes(self, html: str) -> str:
         """
@@ -520,7 +546,9 @@ class HTMLFormatter:
 
         return compressed.strip()
 
-    def create_document_structure(self, content: str, options: dict = None) -> str:
+    def create_document_structure(
+        self, content: str, options: dict | None = None
+    ) -> str:
         """
         完全なHTMLドキュメント構造の生成
 

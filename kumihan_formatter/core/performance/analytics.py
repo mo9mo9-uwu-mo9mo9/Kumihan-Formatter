@@ -145,7 +145,9 @@ class TokenEfficiencyAnalyzer:
         if len(self.efficiency_history) < 3:
             return "insufficient_data"
 
-        recent_scores = list(self.efficiency_history.values())[-3:]
+        recent_scores = [
+            metrics.efficiency_score for metrics in list(self.efficiency_history)
+        ][-3:]
         if recent_scores[-1] > recent_scores[0]:
             return "improving"
         elif recent_scores[-1] < recent_scores[0]:
@@ -164,7 +166,9 @@ class TokenEfficiencyAnalyzer:
         if not self.efficiency_history:
             return {"status": "no_data"}
 
-        recent_scores = list(self.efficiency_history.values())[-5:]
+        recent_scores = [
+            metrics.efficiency_score for metrics in list(self.efficiency_history)
+        ][-5:]
         current_score = recent_scores[-1]
 
         # 効率性レベルの判定

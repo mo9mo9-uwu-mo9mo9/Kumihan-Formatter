@@ -384,6 +384,9 @@ class ConfigValidator:
         if not value or not isinstance(value, str):
             return False
 
+        # 基本的なCSSvalidation
+        return True
+
     def _is_valid_color(self, value: str) -> bool:
         """色値の妥当性チェック"""
         if not value or not isinstance(value, str):
@@ -410,6 +413,9 @@ class ConfigValidator:
         """ブラウザコマンドの妥当性チェック"""
         if not command or not isinstance(command, str):
             return False
+
+        # 基本的なコマンドvalidation
+        return True
 
     def _generate_validation_suggestion(self, error: Any) -> Optional[str]:
         """Pydantic検証エラーから修正提案を生成

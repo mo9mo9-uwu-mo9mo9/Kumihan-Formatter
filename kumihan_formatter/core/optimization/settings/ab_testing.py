@@ -14,7 +14,7 @@ A/Bテスト関連クラスと統計テスト機能を提供します。
 import math
 from dataclasses import dataclass
 from statistics import mean, stdev
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -177,11 +177,14 @@ class StatisticalTestingEngine:
                 return None
 
             if hasattr(self, "stats") and hasattr(self, "np"):
-                return stats.t.interval(
-                    confidence_level,
-                    len(data) - 1,
-                    loc=np.mean(data),
-                    scale=stats.sem(data),
+                return cast(
+                    tuple[float, float],
+                    stats.t.interval(
+                        confidence_level,
+                        len(data) - 1,
+                        loc=np.mean(data),
+                        scale=stats.sem(data),
+                    ),
                 )
             else:
                 # フォールバック実装
@@ -258,7 +261,7 @@ class StatisticalTestingEngine:
                     statistic=float(statistic),
                     p_value=float(p_value),
                     significant=p_value < alpha,
-                    confidence_interval=(ci_lower, ci_upper),
+                    confidence_interval=(float(ci_lower), float(ci_upper)),
                     effect_size=effect_size,
                     power=power,
                 )

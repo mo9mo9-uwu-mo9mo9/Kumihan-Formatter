@@ -6,6 +6,7 @@ BaseConfig、ExtendedConfig、既存の設定クラスを統一的に管理す�
 
 from typing import Any
 
+from ..core.utilities.logger import get_logger
 from .base_config import BaseConfig
 from .config_manager_env import ConfigEnvironmentHandler
 from .config_manager_utils import (
@@ -42,6 +43,7 @@ class ConfigManager:
             config_type, config_path
         )
         self._env_handler = ConfigEnvironmentHandler(env_prefix)
+        self.logger = get_logger(__name__)
 
         # 環境変数から設定を読み込み
         self._env_handler.load_from_env(self._config)
@@ -75,6 +77,7 @@ class ConfigManager:
         """マーカー定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_markers"):
             return self._config.get_markers()  # type: ignore
+        return {}
 
     def add_marker(self, name: str, definition: dict[str, Any]) -> None:
         """マーカーを追加（ExtendedConfigのみ）"""
@@ -85,11 +88,13 @@ class ConfigManager:
         """マーカーを削除（ExtendedConfigのみ）"""
         if hasattr(self._config, "remove_marker"):
             return self._config.remove_marker(name)  # type: ignore
+        return False
 
     def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_themes"):
             return self._config.get_themes()  # type: ignore
+        return {}
 
     def add_theme(self, theme_id: str, theme_data: dict[str, Any]) -> None:
         """テーマを追加（ExtendedConfigのみ）"""
@@ -100,11 +105,13 @@ class ConfigManager:
         """テーマを設定（ExtendedConfigのみ）"""
         if hasattr(self._config, "set_theme"):
             return self._config.set_theme(theme_id)  # type: ignore
+        return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_current_theme"):
             return self._config.get_current_theme()  # type: ignore
+        return "default"
 
     def load_config(self, config_path: str) -> bool:
         """設定ファイルを読み込み（互換性用）

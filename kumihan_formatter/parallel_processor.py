@@ -8,7 +8,7 @@ Handles chunked processing, memory monitoring, and performance optimization.
 import gc
 import os
 import time
-from typing import Callable, Iterator, Optional
+from typing import Any, Callable, Iterator, Optional, cast
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -232,7 +232,7 @@ class ParallelProcessorHandler:
 
                     process = psutil.Process()
                     memory_info = process.memory_info()
-                    return memory_info.rss / 1024 / 1024  # MB
+                    return cast(float, memory_info.rss / 1024 / 1024)  # MB
                 except Exception:
                     return 0.0  # フォールバック
 
@@ -379,7 +379,7 @@ class ParallelProcessorHandler:
         """チャンク解析の最適化実装（Issue #757）"""
         try:
             # Issue #755対応: 最適化されたパーサーを使用
-            return self.parser.parse_optimized(chunk_text)
+            return cast(list[Node], self.parser.parse_optimized(chunk_text))
         except Exception as e:
             self.logger.error(f"Chunk parsing failed: {e}")
             return []
@@ -451,7 +451,9 @@ class ParallelProcessorHandler:
         try:
             # 並列プロセッサーから統計を取得
             if hasattr(self.parser.parallel_processor, "get_statistics"):
-                return self.parser.parallel_processor.get_statistics()
+                return cast(
+                    dict[Any, Any], self.parser.parallel_processor.get_statistics()
+                )
 
             return {
                 "available": True,

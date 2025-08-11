@@ -9,7 +9,7 @@ from logging import Logger
 from typing import Any, Dict, Optional
 
 from ..common.error_base import KumihanError
-from ..common.error_types import ErrorCategory, ErrorSeverity
+from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
 from ..error_analysis.error_config import ErrorConfigManager
 from ..utilities.logger import get_logger
 
@@ -121,6 +121,26 @@ class UnifiedErrorHandler:
         if isinstance(error, KumihanError):
             return error
 
+        # 新しいKumihanErrorを作成
+        severity, category = self._classify_error(error)
+        error_context = None
+        if context:
+            error_context = ErrorContext(
+                file_path=context.get("file_path"),
+                line_number=context.get("line_number"),
+                column_number=context.get("column_number"),
+                operation=context.get("operation"),
+                user_input=context.get("user_input"),
+                system_info=context.get("system_info", {}),
+            )
+        return KumihanError(
+            message=str(error),
+            severity=severity,
+            category=category,
+            context=error_context,
+            original_error=error,
+        )
+
     def _classify_error(self, error: Exception) -> tuple[ErrorSeverity, ErrorCategory]:
         """エラーを分類してseverityとcategoryを決定
 
@@ -133,6 +153,9 @@ class UnifiedErrorHandler:
         # ファイルシステムエラー
         if isinstance(error, (FileNotFoundError, PermissionError, OSError)):
             return ErrorSeverity.ERROR, ErrorCategory.FILE_SYSTEM
+
+        # デフォルト分類
+        return ErrorSeverity.WARNING, ErrorCategory.SYSTEM
 
     def _generate_suggestions(
         self, error: Exception, category: ErrorCategory
@@ -227,6 +250,9 @@ class UnifiedErrorHandler:
         if error.severity == ErrorSeverity.CRITICAL:
             return False
 
+        # デフォルトは継続
+        return True
+
     def _log_error(self, error: KumihanError, operation: str) -> None:
         """統一フォーマットでエラーログ出力
 
@@ -299,6 +325,8 @@ class UnifiedErrorHandler:
         """
         if self.config.config.show_suggestions and error.suggestions:
             return error.get_user_message()
+
+        return str(error.message)
 
     def get_error_statistics(self) -> Dict[str, int]:
         """エラー統計取得

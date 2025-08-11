@@ -42,7 +42,7 @@ class SyntaxReporter:
             return "✅ 記法エラーは見つかりませんでした。"
 
         # Group errors by severity
-        by_severity = {}
+        by_severity: dict[ErrorSeverity, list[SyntaxError]] = {}
         for file_errors in results.values():
             for error in file_errors:
                 if error.severity not in by_severity:

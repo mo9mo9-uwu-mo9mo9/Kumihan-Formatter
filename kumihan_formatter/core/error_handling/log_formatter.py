@@ -74,6 +74,9 @@ class UnifiedLogFormatter(logging.Formatter):
         if hasattr(record, "kumihan_error"):
             return self._format_kumihan_error(record, record.kumihan_error)
 
+        # 標準フォーマットを使用
+        return super().format(record)
+
     def _format_kumihan_error(
         self, record: logging.LogRecord, error: KumihanError
     ) -> str:
@@ -140,6 +143,30 @@ class ComponentLoggerFactory:
         """
         if name in cls._loggers:
             return cls._loggers[name]
+
+        # Create new logger
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+
+        # Determine component name
+        if component_name is None:
+            component_name = cls._extract_component_name(name)
+
+        # Set formatter
+        formatter = cls._get_formatter(component_name)
+
+        # Remove existing handlers
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+
+        # Add console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+        # Cache and return
+        cls._loggers[name] = logger
+        return logger
 
     @classmethod
     def _extract_component_name(cls, name: str) -> str:
@@ -263,10 +290,21 @@ class ErrorMessageBuilder:
         if not colored:
             return ErrorMessageBuilder.build_user_message(error)
 
-        colors = {"ERROR": "[31m", "WARNING": "[33m", "INFO": "[34m"}
+        colors = {
+            "error": "\033[31m",
+            "warning": "\033[33m",
+            "info": "\033[34m",
+            "critical": "\033[35m",
+        }
         reset = "\033[0m"
 
-        color = colors.get(error.severity, "")
+        # ErrorSeverityがEnumの場合、valueを使用
+        severity_value = (
+            error.severity.value
+            if hasattr(error.severity, "value")
+            else str(error.severity)
+        )
+        color = colors.get(severity_value, "")
 
         # 色付きメッセージ
         message = f"{color}{error.message}{reset}"

@@ -56,6 +56,8 @@ class FileOperationsCore:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
             return None
 
+        return source_images_dir
+
     def _create_dest_images_dir(self, output_path: Path) -> Path:
         """出力画像ディレクトリを作成"""
         dest_images_dir = output_path / "images"
@@ -221,6 +223,9 @@ class FileOperationsCore:
             if candidate.exists():
                 return candidate
 
+        # No preview file found
+        return None
+
     @staticmethod
     def ensure_directory(path: Path) -> None:
         """Ensure directory exists"""
@@ -252,3 +257,6 @@ class FileOperationsCore:
                 # 自動的に続行（バッチ処理対応）
                 self.ui.info("大規模ファイル処理を開始します")
             return True
+
+        # 小さなファイルは続行
+        return True

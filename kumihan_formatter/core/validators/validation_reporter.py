@@ -29,6 +29,10 @@ class ValidationReporter:
         """
         if format_type == "json":
             return self._generate_json_report(issues)
+        elif format_type == "html":
+            return self._generate_html_report(issues)
+        else:
+            return self._generate_text_report(issues)
 
     def _generate_text_report(self, issues: list[ValidationIssue]) -> str:
         """Generate text format report"""
@@ -53,7 +57,11 @@ class ValidationReporter:
         self, issues: list[ValidationIssue]
     ) -> dict[str, list[ValidationIssue]]:
         """Group issues by level"""
-        grouped = {"error": [], "warning": [], "info": []}
+        grouped: dict[str, list[ValidationIssue]] = {
+            "error": [],
+            "warning": [],
+            "info": [],
+        }
         for issue in issues:
             if issue.is_error():
                 grouped["error"].append(issue)

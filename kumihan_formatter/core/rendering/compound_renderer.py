@@ -64,6 +64,9 @@ class CompoundElementRenderer:
         if keyword == "太字":
             return f"<strong>{content}</strong>"
 
+        # Default: return content unchanged for unrecognized keywords
+        return content
+
     def _render_highlight(self, content: str, attributes: dict[str, Any]) -> str:
         """
         Render highlight element with optional color
@@ -133,3 +136,6 @@ class CompoundElementRenderer:
         unknown_keywords = [k for k in keywords if k not in known_keywords]
         if unknown_keywords:
             return False, f"Unknown keywords: {', '.join(unknown_keywords)}"
+
+        # All validations passed
+        return True, ""

@@ -44,7 +44,7 @@ class TokenUsageAnalyzer:
         self.config = config
 
         # Token使用量追跡
-        self.usage_history = deque(maxlen=1000)
+        self.usage_history: deque[dict[str, Any]] = deque(maxlen=1000)
         self.current_session_usage = {
             "input_tokens": 0,
             "output_tokens": 0,
@@ -54,14 +54,14 @@ class TokenUsageAnalyzer:
         }
 
         # 使用パターン分析
-        self.usage_patterns = {
+        self.usage_patterns: dict[str, Any] = {
             "hourly_patterns": defaultdict(list),
             "operation_patterns": defaultdict(list),
             "efficiency_patterns": defaultdict(list),
         }
 
         # 最適化提案履歴
-        self.optimization_suggestions = deque(maxlen=50)
+        self.optimization_suggestions: deque[dict[str, Any]] = deque(maxlen=50)
 
         # 制御
         self._lock = threading.Lock()

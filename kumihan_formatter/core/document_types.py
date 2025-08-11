@@ -14,6 +14,7 @@ class DocumentType(Enum):
     TECHNICAL = "technical"  # 技術文書（開発者ディレクトリ）
     EXCLUDE = "exclude"  # 配布から除外
     EXAMPLE = "example"  # サンプルファイル
+    GENERAL = "general"  # 一般文書（デフォルト）
 
 
 def get_type_display_names() -> dict[DocumentType, str]:
@@ -25,4 +26,5 @@ def get_type_display_names() -> dict[DocumentType, str]:
         DocumentType.TECHNICAL: "⚙️ 技術文書",
         DocumentType.EXAMPLE: "📝 サンプル・例",
         DocumentType.EXCLUDE: "🚫 除外対象",
+        DocumentType.GENERAL: "📄 一般文書",
     }

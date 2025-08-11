@@ -23,12 +23,6 @@ class ParseResult:
     errors: List[str] = field(default_factory=list)
 
     def __post_init__(self):
-        """Initialize empty lists/dicts if None."""
-        if self.markers is None:
-            self.markers = []
-        if self.keywords is None:
-            self.keywords = []
-        if self.attributes is None:
-            self.attributes = {}
-        if self.errors is None:
-            self.errors = []
+        """Initialize fields - dataclass fields with default_factory are never None."""
+        # All fields have default_factory, so no None checks needed
+        pass

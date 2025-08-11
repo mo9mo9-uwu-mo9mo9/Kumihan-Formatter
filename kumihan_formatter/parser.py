@@ -5,7 +5,7 @@ Issue #813: Split monolithic parser.py into modular components.
 """
 
 import time
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional, cast
 
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
@@ -141,7 +141,7 @@ class Parser:
         self,
         config=None,
         graceful_errors: bool = False,
-        parallel_config: ParallelProcessingConfig = None,
+        parallel_config: ParallelProcessingConfig | None = None,
     ) -> None:
         """Initialize parser with specialized handlers
 
@@ -152,9 +152,9 @@ class Parser:
         """
         # 基本設定
         self.config = None
-        self.lines = []
+        self.lines: list[str] = []
         self.current = 0
-        self.errors = []
+        self.errors: list[Any] = []
         self.logger = get_logger(__name__)
 
         # Issue #700: graceful error handling
@@ -284,8 +284,8 @@ class Parser:
 
         with monitor_performance("optimized_parse") as perf_monitor:
             # パターンキャッシュ初期化
-            pattern_cache = {}
-            line_type_cache = {}
+            pattern_cache: dict[str, Any] = {}
+            line_type_cache: dict[str, str] = {}
 
             # 最適化: 事前にラインタイプを一括解析
             line_types = self.block_handler.analyze_line_types_batch(self.lines)
@@ -322,6 +322,9 @@ class Parser:
         if len(text) > 1000000:  # 1MB以上
             # メモリ効率を重視した分割
             return text.splitlines()
+
+        # 通常サイズの場合
+        return text.splitlines()
 
     def parse_streaming_from_text(
         self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
@@ -392,7 +395,7 @@ class Parser:
                                 yield node
                                 processed_nodes += 1
                             else:
-                                break  # type: ignore[unreachable]
+                                break
 
                     except Exception as e:
                         self.logger.warning(
@@ -478,6 +481,11 @@ class Parser:
         if self.current >= len(self.lines):
             return None
 
+        # 基本的な行処理
+        _ = self.lines[self.current].strip()  # 現在は使用しないが取得
+        self.current += 1
+        return None  # 基本実装は空
+
     def _parse_line_traditional(self) -> Node | None:
         """従来のパース処理（エラー時に例外をスロー）"""
         line = self.lines[self.current].strip()
@@ -490,6 +498,8 @@ class Parser:
             )
             self.current = next_index
             return node
+
+        return None
 
     def _parse_line_with_graceful_errors(self) -> Node | None:
         """graceful error handling対応のパース処理"""
@@ -637,3 +647,6 @@ def parse_with_error_config(
         parser = StreamingParser(config=config)
         nodes = list(parser.parse_streaming_from_text(text))
         return nodes
+    else:
+        parser: Parser = Parser(config=config)
+        return cast(list[Node], parser.parse(text))

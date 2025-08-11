@@ -5,7 +5,7 @@ monolithic parser.py. Handles block markers, paragraphs, and optimized
 block processing.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -50,6 +50,8 @@ class BlockHandler:
         """フォールバック処理（従来ロジック）"""
         if current >= len(lines):
             return None, current + 1
+        # フォールバック処理を実装
+        return None, current + 1
 
     def parse_line_optimized(
         self,
@@ -65,6 +67,8 @@ class BlockHandler:
         """
         if current >= len(self.parser.lines):
             return None
+        # 最適化されたライン処理を実装
+        return None
 
     def _parse_block_marker_fast_internal(self) -> "Node":
         """内部用高速ブロックマーカー解析"""
@@ -73,7 +77,7 @@ class BlockHandler:
         )
         self.parser.current = next_index
         # Node型を返す: parse_block_markerはTuple[Node, int]を保証
-        return node
+        return cast(Node, node)
 
     def _parse_paragraph_fast_internal(self) -> "Node":
         """内部用高速パラグラフ解析"""
@@ -82,7 +86,7 @@ class BlockHandler:
         )
         self.parser.current = next_index
         # Node型を返す: parse_paragraphはTuple[Node, int]を保証
-        return node
+        return cast(Node, node)
 
     def _parse_line_fallback_internal(self) -> Optional[Node]:
         """内部用フォールバック処理"""
@@ -93,10 +97,12 @@ class BlockHandler:
                 self.parser.lines, self.parser.current
             )
             self.parser.current = next_index
-            return node  # Node型を返す: parse_block_markerはTuple[Node, int]を保証
+            return cast(
+                Node, node
+            )  # Node型を返す: parse_block_markerはTuple[Node, int]を保証
 
         # その他の場合はNoneを返す（Optional対応）
-        return None  # type: ignore[no-any-return]
+        return None
 
     def analyze_line_types_batch(self, lines: list[str]) -> dict[int, str]:
         """

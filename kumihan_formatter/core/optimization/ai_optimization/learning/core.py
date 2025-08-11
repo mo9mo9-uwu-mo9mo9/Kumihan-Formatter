@@ -9,7 +9,7 @@ Phase B.4-Beta継続学習システム実装 - コア機能
 import time
 import warnings
 from collections import deque
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, cast
 
 import numpy as np
 
@@ -30,8 +30,8 @@ try:
 except ImportError:
     OPTUNA_AVAILABLE = False
     # Fallback for type hints when optuna is not available
-    Trial = None  # type: ignore
-    create_study = None  # type: ignore
+    Trial = None
+    create_study = None
 
 
 class DataQualityManager:
@@ -241,7 +241,7 @@ class DataQualityManager:
             kurtosis = abs(bias_metrics.get("label_kurtosis", 0.0))
             score += min(1.0, kurtosis / 10.0) * 0.3
 
-            return min(1.0, score)
+            return cast(float, min(1.0, score))
         except Exception:
             return 0.0
 
@@ -283,7 +283,7 @@ class DataQualityManager:
                             }
                         )
                     except Exception:
-                        distribution_analysis["normality"] = "unknown"
+                        distribution_analysis["normality"] = "unknown"  # type: ignore[assignment]
 
             # 特徴量分布サマリー
             if len(features) > 0:
@@ -334,7 +334,7 @@ class DataQualityManager:
             if missing_values > 0:
                 score *= 0.9
 
-            return max(0.0, min(1.0, score))
+            return cast(float, max(0.0, min(1.0, score)))
         except Exception as e:
             self.logger.error(f"Quality score calculation failed: {e}")
             return 0.0
