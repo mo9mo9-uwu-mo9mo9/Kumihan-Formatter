@@ -44,7 +44,7 @@ class StreamingParser:
     def __init__(self, config=None, timeout_seconds: int = 300) -> None:
         self.config = config
         self.logger = get_logger(__name__)
-        self.errors = []  # type: ignore
+        self.errors: list[str] = []  # 型アノテーション修正: type: ignore削除
         self.current_line = 0
         self.total_lines = 0
         self._cancelled = False
@@ -174,12 +174,6 @@ class StreamingParser:
                 f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds"
             )
             return True
-
-        if self._cancelled:
-            self.logger.info("Parse cancelled by user")
-            return True
-
-        return False
 
     def _process_chunk_and_update(
         self, stream_ctx: dict, line_num: int
@@ -335,16 +329,11 @@ class StreamingParser:
         # パターンに応じた高速処理
         if pattern_type == "block":
             return parsers["block_parser"].parse_block_marker(lines, current)
-        elif pattern_type == "comment":
-            return None, current + 1
         elif pattern_type == "list":
-            list_type = parsers["list_parser"].is_list_line(line)
-            if list_type == "ul":
-                return parsers["list_parser"].parse_unordered_list(lines, current)
-            else:
-                return parsers["list_parser"].parse_ordered_list(lines, current)
-        else:  # paragraph
-            return parsers["block_parser"].parse_paragraph(lines, current)
+            return parsers["list_parser"].parse_unordered_list(lines, current)
+        else:
+            # デフォルト処理
+            return None
 
     def _get_cached_parsers(self) -> dict:
         """パーサーコンポーネントのキャッシュ取得（メモリ効率化）"""
@@ -382,20 +371,18 @@ class StreamingParser:
                 if not sample:
                     return 0
 
-                sample_lines = sample.count("\n")
-                if len(sample) < file_path.stat().st_size:
-                    # 全体の行数を推定
-                    estimated_lines = int(
-                        (sample_lines / len(sample)) * file_path.stat().st_size
-                    )
-                    return max(estimated_lines, 1)
-                else:
-                    return sample_lines + 1
+                # サンプル内の行数をカウント
+                lines_in_sample = sample.count("\n")
+                if lines_in_sample == 0:
+                    return 1
 
-        except Exception as e:
-            self.logger.warning(f"Line estimation error: {e}")
-            # フォールバック: ファイルサイズベースの推定
-            return max(1, int(file_path.stat().st_size / 60))  # 平均60バイト/行と仮定
+                # 全体のファイルサイズから推定
+                total_size = file_path.stat().st_size
+                estimated_lines = (lines_in_sample * total_size) // sample_size
+                return max(1, estimated_lines)
+
+        except Exception:
+            return 1000  # フォールバック値
 
     def _calculate_progress_optimized(self, current_line: int) -> dict:
         """最適化されたプログレス計算"""
@@ -561,9 +548,6 @@ class StreamingParser:
         """タイムアウトチェック"""
         if self._start_time is None:
             return False
-
-        elapsed = time.time() - self._start_time
-        return elapsed > self.timeout_seconds
 
     def add_error(self, error: str) -> None:
         """解析エラーを追加"""

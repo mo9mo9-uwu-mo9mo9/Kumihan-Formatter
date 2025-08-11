@@ -152,7 +152,11 @@ class GracefulErrorHandler:
                 if recovery_result:
                     error_record.recovery_successful = True
                     self.logger.info(f"Recovery successful for {error.category.value}")
-                    return recovery_result
+                    return (
+                        recovery_result
+                        if isinstance(recovery_result, dict)
+                        else {"success": True}
+                    )
 
         except Exception as recovery_error:
             self.logger.error(f"Recovery failed: {recovery_error}")
@@ -188,7 +192,8 @@ class GracefulErrorHandler:
                     if fixed_content:
                         return {"data": fixed_content, "method": pattern}
                 except Exception as e:
-                    self.logger.debug(f"Recovery pattern {pattern} failed: {e}")
+                    self.logger.warning(f"Recovery pattern failed for {pattern}: {e}")
+                    continue
 
         return None
 
@@ -209,7 +214,6 @@ class GracefulErrorHandler:
             content = error.context.user_input
             if content.count("#") % 2 == 1:  # 奇数個の#
                 return content + "#"
-        return None
 
     def _fix_unmatched_marker(
         self, error: KumihanError, error_record: GracefulErrorRecord
@@ -229,7 +233,6 @@ class GracefulErrorHandler:
             # 簡単なケース: 開きマーカーのみの場合
             if content.startswith("#") and not content.endswith("#"):
                 return content + "#"
-        return None
 
     def _fix_invalid_nesting(
         self, error: KumihanError, error_record: GracefulErrorRecord
@@ -306,20 +309,12 @@ class GracefulErrorHandler:
         if error.severity == ErrorSeverity.CRITICAL:
             return False
 
-        # 同じタイプのエラーが大量発生している場合は停止
-        error_type = f"{error.category.value}:{error.severity.value}"
-        if self.error_counts[error_type] > 50:
-            self.logger.warning(
-                f"Too many {error_type} errors, stopping graceful handling"
-            )
-            return False
-
         # 復旧成功時は継続
         if error_record.recovery_successful:
             return True
 
-        # 一般的なエラーは継続
-        return error.severity in [ErrorSeverity.WARNING, ErrorSeverity.INFO]
+        # 軽度エラーは継続
+        return error.severity in [ErrorSeverity.LOW, ErrorSeverity.WARNING]
 
     def _store_error_record(self, error_record: GracefulErrorRecord) -> None:
         """エラー記録保存
@@ -348,7 +343,7 @@ class GracefulErrorHandler:
         if error_record.recovery_successful:
             return f"⚠️ 問題が発生しましたが、自動修正により処理を続行しました: {error.message}"
         else:
-            return f"⚠️ 問題が発生しましたが、処理を続行します: {error.message}"
+            return f"❌ エラーが発生しました: {error.message}"
 
     def get_error_summary(self) -> Dict[str, Any]:
         """エラーサマリー取得
@@ -384,33 +379,22 @@ class GracefulErrorHandler:
         if not self.error_records:
             return ""
 
-        summary = self.get_error_summary()
+        html_parts = ['<div class="error-report">', "<h3>エラーレポート</h3>", "<ul>"]
 
-        html_parts = [
-            '<div class="graceful-error-report">',
-            "<h3>🔧 処理中に発生した問題</h3>",
-            f'<p>合計 {summary["total_errors"]} 件の問題が発生しましたが、可能な限り処理を継続しました。</p>',
-        ]
+        for record in self.error_records:
+            error_info = {
+                "message": record.error.message,
+                "category": record.error.category.value,
+                "recovered": record.recovery_successful,
+            }
 
-        if summary["recovered_errors"] > 0:
+            icon = "✅" if error_info["recovered"] else "⚠️"
             html_parts.append(
-                f'<p>✅ {summary["recovered_errors"]} 件は自動修正されました。</p>'
+                f'<li>{icon} {error_info["message"]} '
+                f'<small>({error_info["category"]})</small></li>'
             )
 
-        # 最近のエラー詳細
-        if summary["recent_errors"]:
-            html_parts.append("<h4>最近の問題:</h4>")
-            html_parts.append('<ul class="error-list">')
-
-            for error_info in summary["recent_errors"]:
-                icon = "✅" if error_info["recovered"] else "⚠️"
-                html_parts.append(
-                    f'<li>{icon} {error_info["message"]} '
-                    f'<small>({error_info["category"]})</small></li>'
-                )
-
-            html_parts.append("</ul>")
-
+        html_parts.append("</ul>")
         html_parts.append("</div>")
 
         return "\n".join(html_parts)

@@ -233,12 +233,8 @@ class ParallelProcessorHandler:
                     process = psutil.Process()
                     memory_info = process.memory_info()
                     return memory_info.rss / 1024 / 1024  # MB
-                except ImportError:
-                    self.logger.debug("psutil not available, using estimated memory")
-                    return 75.0  # 推定値
-                except Exception as e:
-                    self.logger.debug(f"Memory monitoring error: {e}")
-                    return 0.0
+                except Exception:
+                    return 0.0  # フォールバック
 
             def check_memory_status(self) -> dict:
                 """メモリ状況の包括的チェック"""
@@ -374,10 +370,8 @@ class ParallelProcessorHandler:
             return 100  # 小ファイル: 100行/チャンク
         elif total_lines <= 10000:
             return 500  # 中ファイル: 500行/チャンク
-        elif total_lines <= 100000:
-            return 1000  # 大ファイル: 1000行/チャンク
         else:
-            return 2000  # 超大ファイル: 2000行/チャンク
+            return 1000  # 大ファイル: 1000行/チャンク
 
     def parse_chunk_optimized(
         self, chunk_text: str, start_line: int, end_line: int
@@ -387,9 +381,7 @@ class ParallelProcessorHandler:
             # Issue #755対応: 最適化されたパーサーを使用
             return self.parser.parse_optimized(chunk_text)
         except Exception as e:
-            self.logger.warning(
-                f"Chunk parse failed (lines {start_line}-{end_line}): {e}"
-            )
+            self.logger.error(f"Chunk parsing failed: {e}")
             return []
 
     def get_parallel_processing_metrics(self) -> dict:
@@ -460,13 +452,13 @@ class ParallelProcessorHandler:
             # 並列プロセッサーから統計を取得
             if hasattr(self.parser.parallel_processor, "get_statistics"):
                 return self.parser.parallel_processor.get_statistics()
-            else:
-                return {
-                    "available": True,
-                    "status": "ready",
-                    "processed_chunks": 0,
-                    "total_processing_time": 0.0,
-                }
+
+            return {
+                "available": True,
+                "status": "ready",
+                "processed_chunks": 0,
+                "total_processing_time": 0.0,
+            }
         except Exception as e:
             self.logger.debug(f"Parallel statistics error: {e}")
             return {"error": str(e)}

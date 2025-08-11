@@ -160,10 +160,10 @@ class GracefulSyntaxError:
     # 高度なエラー表示機能
     highlight_start: int = 0  # ハイライト開始位置
     highlight_end: int = 0  # ハイライト終了位置
-    correction_suggestions: list[str] = None  # 具体的な修正提案リスト
+    correction_suggestions: list[str] | None = None  # 具体的な修正提案リスト
     error_pattern: str = ""  # エラーパターン識別子（統計用）
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.correction_suggestions is None:
             self.correction_suggestions = []
 
@@ -224,36 +224,15 @@ class GracefulSyntaxError:
         if not self.context or self.highlight_start == self.highlight_end:
             return self.context
 
-        # HTMLエスケープ
-        import html
-
-        safe_context = html.escape(self.context)
-
-        # ハイライト部分を囲む
-        if self.highlight_end > self.highlight_start >= 0:
-            before = safe_context[: self.highlight_start]
-            highlight = safe_context[self.highlight_start : self.highlight_end]
-            after = safe_context[self.highlight_end :]
-            return f"{before}<mark class='error-highlight'>{highlight}</mark>{after}"
-
-        return safe_context
-
     def get_correction_suggestions_html(self) -> str:
         """修正提案のHTML形式を返す"""
         if not self.correction_suggestions:
             return ""
 
-        import html
-
-        suggestions_html = "<ul class='correction-suggestions'>"
-        for suggestion in self.correction_suggestions:
-            safe_suggestion = html.escape(suggestion)
-            suggestions_html += f"<li>{safe_suggestion}</li>"
-        suggestions_html += "</ul>"
-        return suggestions_html
-
     def add_correction_suggestion(self, suggestion: str) -> None:
         """修正提案を追加"""
+        if self.correction_suggestions is None:
+            self.correction_suggestions = []
         if suggestion not in self.correction_suggestions:
             self.correction_suggestions.append(suggestion)
 
@@ -266,21 +245,6 @@ class GracefulSyntaxError:
         """エラーパターンを分類して統計用IDを返す"""
         if self.error_pattern:
             return self.error_pattern
-
-        # 基本的なパターン分類
-        message_lower = self.message.lower()
-        if "marker" in message_lower and "mismatch" in message_lower:
-            self.error_pattern = "marker_mismatch"
-        elif "incomplete" in message_lower and "marker" in message_lower:
-            self.error_pattern = "incomplete_marker"
-        elif "invalid" in message_lower and "syntax" in message_lower:
-            self.error_pattern = "invalid_syntax"
-        elif "missing" in message_lower:
-            self.error_pattern = "missing_element"
-        else:
-            self.error_pattern = "general_syntax"
-
-        return self.error_pattern
 
 
 class ValidationError(KumihanError):

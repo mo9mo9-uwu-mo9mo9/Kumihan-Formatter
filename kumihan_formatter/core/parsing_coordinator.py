@@ -67,15 +67,21 @@ class ParsingCoordinator:
 
             # 空の場合は基本結果を返す
             if not content_lines:
-                return {"parser_type": "empty", "content": [], "metadata": {}}
+                return {
+                    "parser_type": "empty",
+                    "content": [],
+                    "metadata": {
+                        "line_count": len(content_lines),
+                        "strategy": "coordinator_basic",
+                    },
+                }
 
-            # 内容解析と最適パーサー決定
+            # 最適なパーサーを決定
             optimal_parser = self._determine_optimal_parser(content_lines)
 
-            # 基本解析結果を生成
+            # 基本的な解析結果を返す（実装簡略化）
             result = {
                 "parser_type": optimal_parser,
-                "primary_parser": optimal_parser,
                 "content": content_lines,
                 "metadata": {
                     "line_count": len(content_lines),
@@ -85,9 +91,8 @@ class ParsingCoordinator:
 
             self.logger.debug(f"文書解析完了: {optimal_parser}パーサーを使用")
             return result
-
         except Exception as e:
-            self.logger.error(f"文書解析エラー: {e}")
+            self.logger.error(f"文書解析中にエラーが発生: {e}")
             return None
 
     def _determine_optimal_parser(self, content_lines: List[str]) -> str:
@@ -112,8 +117,6 @@ class ParsingCoordinator:
         # スコアが同じ場合は優先順位で決定
         if optimal_parser_info[1] == 0:
             return "coordinator"  # どの記法も検出されない場合
-
-        return optimal_parser_info[0]
 
     def _analyze_line_for_parser_scoring(
         self, line_content: str, parser_scores: Dict[str, int]

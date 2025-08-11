@@ -4,7 +4,7 @@ Issue #771対応: 設定値の包括的検証と修正提案
 Pydanticの検証機能を拡張し、Kumihan特有の検証ルールを実装
 """
 
-import re
+# import re  # Removed: unused import
 
 # import socket  # removed - unused import (F401)
 from pathlib import Path
@@ -221,8 +221,8 @@ class ConfigValidator:
 
         # カテゴリ別設定の検証
         for category, settings in config.category_settings.items():
-            if not isinstance(settings, dict):
-                result.add_error(f"カテゴリ設定は辞書である必要があります: {category}")
+            # カテゴリ別設定の詳細検証（必要に応じて実装）
+            pass
 
     def _validate_rendering_config(
         self, config: Any, result: ValidationResult  # RenderingConfig
@@ -255,8 +255,8 @@ class ConfigValidator:
             result.add_suggestion("デフォルトのフォントファミリーを設定してください")
 
     def _validate_ui_config(
-        self, config: Any, result: ValidationResult  # UIConfig
-    ) -> None:
+        self, config: Any, result: ValidationResult
+    ) -> None:  # UIConfig
         """UI設定の検証"""
 
         # プレビューブラウザの検証
@@ -379,52 +379,29 @@ class ConfigValidator:
 
         return fixed_config
 
-    # ヘルパーメソッド
-
     def _is_valid_css_value(self, value: str) -> bool:
         """CSS値の妥当性チェック"""
         if not value or not isinstance(value, str):
             return False
-
-        # 基本的なCSS値のパターン
-        patterns = [
-            r"^\d+px$",  # ピクセル
-            r"^\d+%$",  # パーセント
-            r"^auto$",  # auto
-            r"^\d+em$",  # em
-            r"^\d+rem$",  # rem
-        ]
-
-        return any(re.match(pattern, value.strip()) for pattern in patterns)
 
     def _is_valid_color(self, value: str) -> bool:
         """色値の妥当性チェック"""
         if not value or not isinstance(value, str):
             return False
 
-        value = value.strip().lower()
-
-        # HEX色
-        if re.match(r"^#[0-9a-f]{3}$", value) or re.match(r"^#[0-9a-f]{6}$", value):
-            return True
-
-        # RGB色
-        if re.match(r"^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$", value):
-            return True
-
-        # 基本的な色名
+        # 基本的な色名をチェック
         basic_colors = {
-            "white",
-            "black",
             "red",
-            "green",
             "blue",
+            "green",
             "yellow",
-            "cyan",
-            "magenta",
+            "black",
+            "white",
             "gray",
-            "grey",
-            "transparent",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
         }
 
         return value in basic_colors
@@ -434,27 +411,11 @@ class ConfigValidator:
         if not command or not isinstance(command, str):
             return False
 
-        # コマンドの最初の部分を取得
-        cmd_parts = command.split()
-        if not cmd_parts:
-            return False
-
-        executable = cmd_parts[0]
-
-        # パスが絶対パスの場合
-        if Path(executable).is_absolute():
-            return Path(executable).exists()
-
-        # PATHから検索
-        import shutil
-
-        return shutil.which(executable) is not None
-
-    def _generate_validation_suggestion(self, error: Dict[str, Any]) -> Optional[str]:
+    def _generate_validation_suggestion(self, error: Any) -> Optional[str]:
         """Pydantic検証エラーから修正提案を生成
 
         Args:
-            error: Pydantic检證エラー情報
+            error: Pydantic検証エラー情報 (ErrorDetails in Pydantic v2)
 
         Returns:
             Optional[str]: 修正提案

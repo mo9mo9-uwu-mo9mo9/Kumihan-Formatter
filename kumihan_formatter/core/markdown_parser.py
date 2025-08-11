@@ -62,13 +62,6 @@ class MarkdownParser:
                             f'<h{h_level} id="{heading_id}">{heading_text}</h{h_level}>'
                         )
 
-                    return replace_heading
-
-                text = self.patterns[pattern_name].sub(
-                    make_heading_replacer(level), text
-                )
-        return text
-
     def _generate_heading_id(self, heading_text: str) -> str:
         """見出しからIDを生成"""
         # 英数字以外を除去してIDを生成

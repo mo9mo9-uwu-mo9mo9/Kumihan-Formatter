@@ -118,26 +118,20 @@ class ConfigLoader:
             )
             return config_data
 
-        except (yaml.YAMLError, json.JSONDecodeError, Exception) as e:
-            error_msg = f"設定ファイル解析エラー: {config_path}: {e}"
-            self.logger.error(error_msg)
-
-            # 統一エラーハンドリングで処理
-            try:
-                # result = handle_error_unified(  # removed - unused variable (F841)
-                handle_error_unified(
-                    e,
-                    context={
-                        "config_path": str(config_path),
-                        "file_format": file_format.value,
-                        "operation": "config_file_loading",
-                    },
-                    operation="load_config_file",
-                    component_name="ConfigLoader",
-                )
-                raise ConfigLoadError(error_msg) from e
-            except Exception:
-                raise ConfigLoadError(error_msg) from e
+        except Exception as e:
+            # result = handle_error_unified(  # removed - unused variable (F841)
+            handle_error_unified(
+                e,
+                context={
+                    "config_path": str(config_path),
+                    "file_format": file_format.value,
+                    "operation": "config_file_loading",
+                },
+                operation="load_config_file",
+                component_name="ConfigLoader",
+            )
+            error_msg = f"設定ファイル読み込みエラー: {config_path}"
+            raise ConfigLoadError(error_msg) from e
 
     def _detect_format(self, config_file: Path) -> ConfigFormat:
         """ファイル拡張子から設定ファイル形式を判定
@@ -167,7 +161,7 @@ class ConfigLoader:
             return ConfigFormat.TOML
 
         else:
-            raise ConfigLoadError(f"未サポートの設定ファイル拡張子: {suffix}")
+            raise ConfigLoadError(f"サポートされていない設定ファイル形式: {suffix}")
 
     def load_from_environment(self, prefix: str = "KUMIHAN_") -> Dict[str, Any]:
         """環境変数から設定を読み込み
@@ -178,7 +172,7 @@ class ConfigLoader:
         Returns:
             Dict[str, Any]: 環境変数から読み込んだ設定
         """
-        config_data = {}
+        config_data: Dict[str, Any] = {}
 
         for key, value in os.environ.items():
             if key.startswith(prefix):
@@ -233,14 +227,12 @@ class ConfigLoader:
 
         # 数値の変換
         try:
-            # 整数の場合
-            if "." not in value:
-                return int(value)
-            # 浮動小数点数の場合
-            else:
+            if "." in value:
                 return float(value)
+            else:
+                return int(value)
         except ValueError:
-            # 文字列のまま返す
+            # 変換できない場合は文字列のまま返す
             return value
 
     def find_config_file(
@@ -292,9 +284,6 @@ class ConfigLoader:
                     self.logger.info(f"設定ファイル発見: {config_file}")
                     return config_file
 
-        self.logger.debug("設定ファイルが見つかりませんでした")
-        return None
-
     def merge_configs(self, *configs: Dict[str, Any]) -> Dict[str, Any]:
         """複数の設定を優先順位に従ってマージ
 
@@ -304,7 +293,7 @@ class ConfigLoader:
         Returns:
             Dict[str, Any]: マージされた設定
         """
-        merged = {}
+        merged: Dict[str, Any] = {}
 
         for config in configs:
             if config:

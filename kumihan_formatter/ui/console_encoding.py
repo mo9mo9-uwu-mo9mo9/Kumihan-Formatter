@@ -66,7 +66,7 @@ class ConsoleEncodingSetup:
         ConsoleEncodingSetup._try_set_locale(locale)
 
     @staticmethod
-    def _try_reconfigure_streams():
+    def _try_reconfigure_streams() -> None:
         """ストリームの再設定を試行"""
         if hasattr(sys.stdout, "reconfigure"):
             try:
@@ -79,7 +79,7 @@ class ConsoleEncodingSetup:
                 pass
 
     @staticmethod
-    def _try_wrap_streams():
+    def _try_wrap_streams() -> None:
         """ストリームのラップを試行"""
         if sys.stdout and sys.stdout.encoding != "utf-8":
             try:
@@ -99,7 +99,7 @@ class ConsoleEncodingSetup:
                 pass
 
     @staticmethod
-    def _try_set_console_codepage():
+    def _try_set_console_codepage() -> None:
         """Windowsコンソールコードページの設定を試行"""
         try:
             import ctypes
@@ -113,7 +113,7 @@ class ConsoleEncodingSetup:
             pass
 
     @staticmethod
-    def _try_set_locale(locale):
+    def _try_set_locale(locale: Any) -> None:
         """ロケール設定を試行"""
         try:
             locale.setlocale(locale.LC_ALL, "")

@@ -69,8 +69,6 @@ class DistributionStructure:
                     self.ui.error(f"必須ディレクトリが見つかりません: {dir_path}")
                 return False
 
-        return True
-
     def get_target_directory(self, output_dir: Path, doc_type: str) -> Path:
         """文書タイプに応じた出力ディレクトリを取得
 

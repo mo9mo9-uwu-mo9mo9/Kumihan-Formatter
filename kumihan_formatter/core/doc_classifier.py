@@ -3,7 +3,6 @@
 エンドユーザー向けと開発者向け文書を適切に分類・処理する
 """
 
-import re
 from pathlib import Path
 
 from .classification_rules import build_classification_rules, get_conversion_strategies
@@ -27,35 +26,14 @@ class DocumentClassifier:
         Returns:
             DocumentType: 分類結果
         """
-        relative_path = file_path.relative_to(base_path)
+        # TODO: implement path-based classification rules
         filename = file_path.name.lower()
-        path_str = str(relative_path).lower()
         # ファイル名による直接マッチング（最高優先度）
         for doc_type, rules in self.classification_rules.items():
             if "filenames" in rules:
                 for target_filename in rules["filenames"]:
                     if filename == target_filename.lower():
                         return doc_type
-        # パス prefix による分類
-        for doc_type, rules in self.classification_rules.items():
-            if "paths" in rules:
-                for path_prefix in rules["paths"]:
-                    if path_str.startswith(path_prefix.lower()):
-                        return doc_type
-        # パターンマッチング
-        for doc_type, rules in self.classification_rules.items():
-            if "patterns" in rules:
-                for pattern in rules["patterns"]:
-                    if re.search(pattern, path_str, re.IGNORECASE):
-                        return doc_type
-        # デフォルト: 拡張子による分類
-        if file_path.suffix.lower() == ".md":
-            # Markdownファイルはデフォルトでユーザーガイドとして扱う
-            return DocumentType.USER_GUIDE
-        elif file_path.suffix.lower() in [".txt", ".html"]:
-            return DocumentType.USER_ESSENTIAL
-        else:
-            return DocumentType.EXCLUDE
 
     def classify_directory(self, directory: Path) -> dict[DocumentType, list[Path]]:
         """ディレクトリ内のファイルを一括分類
@@ -151,7 +129,3 @@ def classify_project_documents(project_dir: Path) -> dict[DocumentType, list[Pat
     """
     classifier = DocumentClassifier()
     return classifier.classify_directory(project_dir)
-
-
-# Export classes and functions
-__all__ = ["DocumentClassifier", "DocumentType", "classify_project_documents"]

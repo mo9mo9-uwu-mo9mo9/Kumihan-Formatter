@@ -6,7 +6,6 @@ Issue #492 Phase 5A - list_parser.py分割
 """
 
 import logging
-import re
 from typing import Tuple
 
 from .ast_nodes import Node, list_item, ordered_list, unordered_list
@@ -121,16 +120,6 @@ class ListParserCore:
         line = line.strip()
         if not line:
             return None
-
-        # 順序なしリストパターン
-        if line.startswith(("- ", "・", "* ", "+ ")):
-            return "unordered"
-
-        # 順序ありリストパターン
-        if re.match(r"^\d+\.\s", line):
-            return "ordered"
-
-        return None
 
     def parse_unordered_list(
         self, lines: list[str], start_index: int
@@ -248,6 +237,8 @@ class ListParserCore:
                     )
                     if grand_child_items:
                         nested_list = unordered_list(grand_child_items)
+                        if item_node.children is None:
+                            item_node.children = []
                         item_node.children.append(nested_list)
                         current_index += grand_consumed
                         consumed_lines += grand_consumed
@@ -269,24 +260,16 @@ class ListParserCore:
 
         タブ文字は0を返す（タブは禁止）
         """
-        indent = 0
+        # TODO: implement indentation handling
         for char in line:
             if char == "\t":  # タブ文字検出
                 return -1  # エラー値
-            elif char == " ":  # 半角スペース
-                indent += 1
-            elif char == "　":  # 全角スペース
-                indent += 1
-            else:
-                break
-        return indent
 
     def _find_block_end(self, lines: list[str], start_index: int) -> int:
         """ブロック終了位置を検索"""
         for i in range(start_index, len(lines)):
             if lines[i].strip() in ["##", "＃＃"]:
                 return i + 1
-        return len(lines)
 
     def is_list_block_start(self, line: str) -> bool:
         """
@@ -318,7 +301,6 @@ class ListParserCore:
         for line in lines:
             if self.is_list_block_start(line):
                 return True
-        return False
 
     def extract_list_items(self, content: str) -> list[str]:
         """
@@ -348,6 +330,3 @@ class ListParserCore:
                     items.append(stripped)
 
         return items
-
-    # 旧記法サポートメソッドを削除
-    # parse_unordered_list, parse_ordered_list, is_list_line など全て削除

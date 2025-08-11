@@ -256,10 +256,8 @@ class AIOptimizerCore:
 
             self.logger.info(f"Phase B optimization completed: {result}")
             return result
-
         except Exception as e:
             self.logger.error(f"Phase B optimization failed: {e}")
-            # Phase B基盤エラー時は安全な基本値を返却
             return {
                 "phase_b_efficiency": 66.8,  # 基本削減効果維持
                 "adaptive_improvement": 0.0,
@@ -280,10 +278,10 @@ class AIOptimizerCore:
                 self.logger.debug(f"Using cached prediction: {cache_key}")
                 return cached_result
 
-            # 特徴量抽出（軽量処理）
+            # 特徴量抽出・予測実行
             features = self._extract_features(context)
 
-            # AI予測実行（並列処理）
+            # AI予測実行（並列処理で高速化）
             with ThreadPoolExecutor(max_workers=2) as executor:
                 # 効率性予測
                 efficiency_future = executor.submit(self._predict_efficiency, features)
@@ -325,10 +323,8 @@ class AIOptimizerCore:
                 f"AI prediction completed in {result.processing_time:.3f}s"
             )
             return result
-
         except Exception as e:
             self.logger.error(f"AI prediction failed: {e}")
-            # 予測失敗時は安全な基本値を返却
             return PredictionResult(
                 predicted_efficiency=0.0,
                 confidence_score=0.0,
@@ -373,10 +369,9 @@ class AIOptimizerCore:
 
             # 予測値正規化（0-100%範囲）
             return max(0.0, min(100.0, prediction))
-
         except Exception as e:
-            self.logger.warning(f"Efficiency prediction failed, using fallback: {e}")
-            return self._basic_efficiency_estimation(features)
+            self.logger.error(f"Efficiency prediction failed: {e}")
+            return 0.0
 
     def _basic_efficiency_estimation(self, features: np.ndarray) -> float:
         """基本効率性推定（フォールバック）"""
@@ -465,18 +460,17 @@ class AIOptimizerCore:
                 )
                 return optimization_result
 
-            # 最適化提案適用
+            # 最適化提案実行
             for suggestion in prediction.optimization_suggestions:
                 improvement = self._apply_single_optimization(suggestion, context)
-                if improvement > 0.0:
+                if improvement > 0:
                     optimization_result["applied_suggestions"].append(suggestion)
                     optimization_result["efficiency_improvement"] += improvement
 
             self.logger.info(f"AI optimizations applied: {optimization_result}")
             return optimization_result
-
         except Exception as e:
-            self.logger.error(f"AI optimization application failed: {e}")
+            self.logger.error(f"AI optimizations application failed: {e}")
             return {
                 "applied_suggestions": [],
                 "efficiency_improvement": 0.0,
@@ -493,9 +487,9 @@ class AIOptimizerCore:
         elif suggestion == "Complexity reduction":
             return 0.3  # 0.3%改善
         elif suggestion == "Operation pattern optimization":
-            return 0.7  # 0.7%改善
+            return 0.2  # 0.2%改善
         else:
-            return 0.2  # 基本改善
+            return 0.1  # 基本改善
 
     def _optimize_integrated_effects(
         self,
@@ -527,10 +521,8 @@ class AIOptimizerCore:
 
             self.logger.info(f"Integrated optimization: {integrated_result}")
             return integrated_result
-
         except Exception as e:
-            self.logger.error(f"Integration optimization failed: {e}")
-            # 統合失敗時はPhase B基盤効果のみ返却
+            self.logger.error(f"Integrated optimization failed: {e}")
             return {
                 "phase_b_contribution": 66.8,
                 "ai_contribution": 0.0,
@@ -664,11 +656,8 @@ class AIOptimizerCore:
             if not operation_history:
                 return analysis_result
 
-            # 基本パターン分析
-            # operation_types変数を削除（未使用のため）
-            efficiency_scores = [op.get("efficiency", 0.0) for op in operation_history]
-
             # 効率性トレンド分析
+            efficiency_scores = [op.get("efficiency", 0.0) for op in operation_history]
             if efficiency_scores:
                 analysis_result["efficiency_trends"] = {
                     "average_efficiency": np.mean(efficiency_scores),
@@ -703,7 +692,6 @@ class AIOptimizerCore:
                 f"{len(operation_history)} operations analyzed"
             )
             return analysis_result
-
         except Exception as e:
             self.logger.error(f"Efficiency pattern analysis failed: {e}")
             return {
@@ -748,7 +736,6 @@ class AIOptimizerCore:
 
             self.logger.info(f"Optimal settings predicted: {prediction_result}")
             return prediction_result
-
         except Exception as e:
             self.logger.error(f"Optimal settings prediction failed: {e}")
             return {
@@ -784,9 +771,8 @@ class AIOptimizerCore:
 
             self.logger.info(f"Models saved to {model_path}")
             return True
-
         except Exception as e:
-            self.logger.error(f"Model saving failed: {e}")
+            self.logger.error(f"Models saving failed: {e}")
             return False
 
     def load_models(self, model_path: Path) -> bool:
@@ -800,7 +786,6 @@ class AIOptimizerCore:
 
             self.logger.info(f"Models loaded from {model_path}")
             return True
-
         except Exception as e:
-            self.logger.error(f"Model loading failed: {e}")
+            self.logger.error(f"Models loading failed: {e}")
             return False

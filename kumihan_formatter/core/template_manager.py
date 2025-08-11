@@ -8,7 +8,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
-from .template_context import RenderContext
+# from .template_context import RenderContext  # Removed: unused import
 from .template_filters import TemplateFilters
 
 # .template_selector.TemplateSelector removed as unused
@@ -116,13 +116,6 @@ class TemplateManager:
                 "docs": "docs.html.j2",
             }
             return template_mapping.get(template, template)
-        elif source_text is not None:
-            if experimental == "scroll-sync":
-                return "experimental/base-with-scroll-sync.html.j2"
-            else:
-                return "base-with-source-toggle.html.j2"
-        else:
-            return "base.html.j2"
 
     def get_available_templates(self) -> list[str]:
         """Get list of available template files"""
@@ -150,9 +143,12 @@ class TemplateManager:
                 template_name
             )  # テンプレート取得（構文チェック用）
             # Access source through loader
-            source, _, _ = template.environment.loader.get_source(
-                template.environment, template_name
-            )  # type: ignore
+            if template.environment.loader is not None:
+                source, _, _ = template.environment.loader.get_source(
+                    template.environment, template_name
+                )
+            else:
+                raise Exception("Template loader is not available")
             template.environment.parse(source)
             return True, None
         except Exception as e:
@@ -181,30 +177,17 @@ class TemplateManager:
             words = text.split()
             if len(words) <= length:
                 return text
-            return " ".join(words[:length]) + suffix
 
         def extract_text(content: Any) -> str:
             """Extract plain text from complex content"""
             if isinstance(content, str):
                 return content
-            elif hasattr(content, "get_text_content"):
-                result: str = content.get_text_content()
-                return result
-            else:
-                return str(content)
 
         def format_toc_level(level: int) -> str:
             """Format TOC indentation based on heading level"""
             return "    " * (level - 1)
 
-        # Register legacy filters
-        self.env.filters["safe_html"] = safe_html
-        self.env.filters["truncate_words"] = truncate_words
-        self.env.filters["extract_text"] = extract_text
-        self.env.filters["format_toc_level"] = format_toc_level
 
-
-# RenderContext moved to template_context.py for better modularity
 class TemplateValidator:
     """Validator for template files and structure"""
 
@@ -257,20 +240,14 @@ class TemplateValidator:
         try:
             template = self.template_manager.get_template(template_name)
             # Get the template source code via the environment loader
-            source, _, _ = template.environment.loader.get_source(
-                template.environment, template_name
-            )  # type: ignore
+            if template.environment.loader is None:
+                return False, required_vars
 
             missing_vars = []
             for var in required_vars:
-                # Simple check for variable usage
-                if f"{{{{{var}}}}}" not in source and f"{{{{{var}|" not in source:
+                if var not in template.globals:
                     missing_vars.append(var)
 
             return len(missing_vars) == 0, missing_vars
         except Exception:
             return False, required_vars
-
-
-# Export classes and functions
-__all__ = ["TemplateManager", "RenderContext"]

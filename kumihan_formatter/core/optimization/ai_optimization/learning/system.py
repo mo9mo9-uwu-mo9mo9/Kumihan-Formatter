@@ -19,7 +19,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 from ..basic_ml_system import TrainingData
 from ..prediction_engine import EnsemblePredictionModel
-from .adaptive import DataQualityManager
+from .core import DataQualityManager
 from .pattern_engine import HyperparameterOptimizer, OnlineLearningEngine
 
 
@@ -141,10 +141,9 @@ class LearningSystem:
                 f"{final_result['models_updated']} models updated in {training_time:.2f}s"
             )
             return final_result
-
         except Exception as e:
             self.logger.error(f"Incremental training failed: {e}")
-            return {"training_success": False, "error": str(e), "training_time": 0.0}
+            return {"training_success": False, "error": str(e)}
 
     def evaluate_model_performance(
         self, models: Dict[str, EnsemblePredictionModel], validation_data: TrainingData
@@ -346,31 +345,22 @@ class LearningSystem:
             if not valid_results:
                 return {"integrated_r2": 0.0, "integrated_mse": float("inf")}
 
-            # 平均性能指標
-            avg_r2 = np.mean([result["r2_score"] for result in valid_results])
-            avg_mse = np.mean([result["mse"] for result in valid_results])
-            avg_mae = np.mean([result["mae"] for result in valid_results])
+            # 統合指標計算
+            r2_scores = [result.get("r2_score", 0.0) for result in valid_results]
+            mse_scores = [result.get("mse", float("inf")) for result in valid_results]
 
-            # 最高性能
-            best_r2 = max([result["r2_score"] for result in valid_results])
-            best_model = max(
-                evaluation_results.items(), key=lambda x: x[1].get("r2_score", 0.0)
-            )[0]
-
-            # 性能分散
-            r2_std = np.std([result["r2_score"] for result in valid_results])
+            integrated_r2 = sum(r2_scores) / len(r2_scores)
+            integrated_mse = sum(mse_scores) / len(mse_scores)
 
             return {
-                "integrated_r2": float(avg_r2),
-                "integrated_mse": float(avg_mse),
-                "integrated_mae": float(avg_mae),
-                "best_r2": float(best_r2),
-                "best_model": best_model,
-                "performance_consistency": float(
-                    1.0 - r2_std
-                ),  # 低い分散ほど一貫性が高い
-                "valid_models": len(valid_results),
-                "total_models": len(evaluation_results),
+                "integrated_r2": float(integrated_r2),
+                "integrated_mse": float(integrated_mse),
+                "models_count": len(valid_results),
+                "integration_quality": (
+                    "high"
+                    if integrated_r2 > 0.8
+                    else "medium" if integrated_r2 > 0.6 else "low"
+                ),
             }
 
         except Exception as e:
@@ -581,9 +571,8 @@ class LearningSystem:
                     application_results[model_name] = model_applications
 
             return application_results
-
         except Exception as e:
-            self.logger.error(f"Hyperparameter application failed: {e}")
+            self.logger.error(f"Optimized hyperparameters application failed: {e}")
             return {"error": str(e)}
 
     def _generate_overfitting_recommendations(

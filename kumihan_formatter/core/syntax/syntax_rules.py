@@ -77,14 +77,10 @@ class SyntaxRules:
         if not keyword_part:
             return []
 
-        # Split by + or ＋
-        keywords = re.split(r"[+＋]", keyword_part)
-
-        # Clean and validate
         result = []
+        keywords = keyword_part.replace("＋", "+").split("+")
         for kw in keywords:
-            kw = kw.strip()
-            if kw:
+            if kw.strip():
                 result.append(kw)
 
         return result
@@ -101,20 +97,12 @@ class SyntaxRules:
         if "color=" in keyword:
             if " color=" in keyword:
                 return keyword.split(" color=")[0].strip()
-            else:
-                return keyword.split("color=")[0].strip()
-        # alt属性は削除されました（Phase 1）
-        else:
-            return keyword
 
     @classmethod
     def extract_color_value(cls, keyword: str) -> str:
         """Extract color value from keyword with color attribute"""
         if " color=" in keyword:
             return keyword.split(" color=")[1].strip()
-        elif "color=" in keyword:
-            return keyword.split("color=")[1].strip()
-        return ""
 
     @classmethod
     def extract_alt_value(cls, keyword: str) -> str:
@@ -155,7 +143,6 @@ class SyntaxRules:
 
         if len(headings) > 1:
             return headings
-        return []
 
     @classmethod
     def get_sorted_keywords(cls) -> list[str]:
@@ -163,11 +150,11 @@ class SyntaxRules:
         return sorted(cls.VALID_KEYWORDS)
 
     @staticmethod
-    def get_all_rules() -> dict[str, list[str]]:
+    def get_all_rules() -> dict[str, set[str]]:
         """すべての構文ルールを辞書形式で返す（テスト互換性のため）
 
         Returns:
-            dict: ルールカテゴリ別のキーワードリスト
+            dict: ルールカテゴリ別のキーワードセット
         """
         return {
             "valid_keywords": SyntaxRules.VALID_KEYWORDS,

@@ -26,7 +26,7 @@ class TestGracefulSyntaxError:
             message="未完了のブロックマーカー",
             context="# 太字 内容が未完了",
             suggestion="マーカーの最後に # を追加してください",
-            file_path="test.txt"
+            file_path="test.txt",
         )
 
         assert error.line_number == 5
@@ -46,7 +46,7 @@ class TestGracefulSyntaxError:
             error_type="syntax_error",
             severity="warning",
             message="記法の警告",
-            context="問題のある行"
+            context="問題のある行",
         )
 
         assert error.html_class == "kumihan-error-warning"
@@ -63,15 +63,15 @@ class TestGracefulSyntaxError:
             severity="info",
             message="テストメッセージ",
             context="テストコンテキスト",
-            suggestion="テスト提案"
+            suggestion="テスト提案",
         )
 
         error_dict = error.to_dict()
 
-        assert error_dict['line_number'] == 1
-        assert error_dict['severity'] == "info"
-        assert error_dict['html_class'] == "kumihan-error-info"
-        assert 'html_content' in error_dict
+        assert error_dict["line_number"] == 1
+        assert error_dict["severity"] == "info"
+        assert error_dict["html_class"] == "kumihan-error-info"
+        assert "html_content" in error_dict
 
 
 class TestParserGracefulErrors:
@@ -83,8 +83,8 @@ class TestParserGracefulErrors:
 
         assert parser.graceful_errors is True
         assert parser.graceful_syntax_errors == []
-        assert hasattr(parser, '_record_graceful_error')
-        assert hasattr(parser, 'get_graceful_errors')
+        assert hasattr(parser, "_record_graceful_error")
+        assert hasattr(parser, "get_graceful_errors")
 
     def test_parser_traditional_mode(self):
         """従来モードでのParser動作"""
@@ -114,7 +114,7 @@ class TestParserGracefulErrors:
             severity="error",
             message="テストエラー",
             context="テスト行",
-            suggestion="テスト修正提案"
+            suggestion="テスト修正提案",
         )
 
         assert parser.has_graceful_errors()
@@ -133,10 +133,10 @@ class TestParserGracefulErrors:
 
         summary = parser.get_graceful_error_summary()
 
-        assert summary['total_errors'] == 3
-        assert summary['by_severity']['error'] == 2
-        assert summary['by_severity']['warning'] == 1
-        assert summary['has_critical_errors'] is True
+        assert summary["total_errors"] == 3
+        assert summary["by_severity"]["error"] == 2
+        assert summary["by_severity"]["warning"] == 1
+        assert summary["has_critical_errors"] is True
 
 
 class TestHTMLRendererGracefulErrors:
@@ -154,7 +154,7 @@ class TestHTMLRendererGracefulErrors:
                 error_type="test_error",
                 severity="error",
                 message="テストエラー",
-                context="テストコンテキスト"
+                context="テストコンテキスト",
             )
         ]
 
@@ -169,13 +169,21 @@ class TestHTMLRendererGracefulErrors:
 
         errors = [
             GracefulSyntaxError(
-                line_number=1, column=1, error_type="error1", severity="error",
-                message="エラーメッセージ1", context="コンテキスト1"
+                line_number=1,
+                column=1,
+                error_type="error1",
+                severity="error",
+                message="エラーメッセージ1",
+                context="コンテキスト1",
             ),
             GracefulSyntaxError(
-                line_number=2, column=1, error_type="warning1", severity="warning",
-                message="警告メッセージ1", context="コンテキスト2"
-            )
+                line_number=2,
+                column=1,
+                error_type="warning1",
+                severity="warning",
+                message="警告メッセージ1",
+                context="コンテキスト2",
+            ),
         ]
 
         renderer.set_graceful_errors(errors, embed_in_html=True)
@@ -249,7 +257,7 @@ class TestGracefulErrorsWithSampleText:
 
         # エラーサマリー確認
         summary = parser.get_graceful_error_summary()
-        assert summary['total_errors'] > 0
+        assert summary["total_errors"] > 0
 
 
 class TestSecurityGracefulErrors:
@@ -268,7 +276,7 @@ class TestSecurityGracefulErrors:
             severity="error",
             message=malicious_message,
             context=malicious_context,
-            suggestion=malicious_suggestion
+            suggestion=malicious_suggestion,
         )
 
         html_content = error.html_content
@@ -293,7 +301,7 @@ class TestSecurityGracefulErrors:
                 severity="error",
                 message="<script>alert('XSS in title')</script>",
                 context="<img src=x onerror=alert('context')>",
-                suggestion="<iframe src='javascript:alert(1)'></iframe>"
+                suggestion="<iframe src='javascript:alert(1)'></iframe>",
             )
         ]
 
@@ -318,7 +326,7 @@ class TestSecurityGracefulErrors:
                 severity="warning",
                 message="<svg onload=alert('XSS')>",
                 context="normal context",
-                suggestion="<marquee onstart=alert('XSS')>suggestion</marquee>"
+                suggestion="<marquee onstart=alert('XSS')>suggestion</marquee>",
             )
         ]
 
@@ -344,13 +352,13 @@ class TestLargeFileGracefulErrors:
         # 大量のエラーを生成
         for i in range(1000):
             parser._record_graceful_error(
-                line_number=i+1,
+                line_number=i + 1,
                 column=1,
                 error_type=f"test_error_{i}",
                 severity="warning" if i % 2 == 0 else "error",
                 message=f"テストエラー {i}",
                 context=f"コンテキスト {i}",
-                suggestion=f"提案 {i}"
+                suggestion=f"提案 {i}",
             )
 
         # メモリ使用量の確認（基本的な動作確認）
@@ -359,9 +367,9 @@ class TestLargeFileGracefulErrors:
 
         # サマリー生成が正常に動作することを確認
         summary = parser.get_graceful_error_summary()
-        assert summary['total_errors'] == 1000
-        assert summary['by_severity']['error'] == 500
-        assert summary['by_severity']['warning'] == 500
+        assert summary["total_errors"] == 1000
+        assert summary["by_severity"]["error"] == 500
+        assert summary["by_severity"]["warning"] == 500
 
 
 if __name__ == "__main__":

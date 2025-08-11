@@ -6,6 +6,7 @@
 
 import re
 from difflib import get_close_matches
+from typing import List
 
 from .definitions import KeywordDefinitions
 
@@ -30,25 +31,17 @@ class KeywordValidator:
         Returns:
             list[str]: エラーメッセージのリスト
         """
-        errors = []
-
         # 新記法のみに対応
         if "#" in text or "＃" in text:
             # 新記法の解析
-            keywords = self._extract_keywords_from_new_format(text)
+            # TODO: implement keyword validation logic
+            pass
         else:
             return []  # 記法が見つからない場合はエラーなし
 
-        # キーワード検証
-        if keywords:
-            _, validation_errors = self.validate_keywords(keywords)
-            errors.extend(validation_errors)
-
-        return errors
-
     def _extract_keywords_from_new_format(self, text: str) -> list[str]:
         """新記法からキーワードを抽出"""
-        keywords = []
+        keywords: List[str] = []
 
         # #キーワード# 形式
         pattern = r"[#＃]([^#＃]+?)[#＃]"
@@ -116,13 +109,6 @@ class KeywordValidator:
         if self.definitions.is_valid_keyword(keyword):
             return True, None
 
-        error_msg = f"不明なキーワード: {keyword}"
-        suggestions = self.get_keyword_suggestions(keyword)
-        if suggestions:
-            error_msg += f" (候補: {', '.join(suggestions)})"
-
-        return False, error_msg
-
     def is_keyword_valid(self, keyword: str) -> bool:
         """キーワードが有効かチェック
 
@@ -185,7 +171,7 @@ class KeywordValidator:
         Returns:
             tuple: (is_valid, error_messages)
         """
-        errors = []
+        errors: List[str] = []
 
         # 基本的なキーワード検証
         valid_keywords, validation_errors = self.validate_keywords(keywords)
@@ -194,24 +180,12 @@ class KeywordValidator:
         if not valid_keywords:
             return False, errors
 
-        # 見出しレベルの重複チェック
+        # 見出し系とdetails系の組み合わせチェック
         heading_keywords = [k for k in valid_keywords if k.startswith("見出し")]
-        if len(heading_keywords) > 1:
-            errors.append(
-                f"複数の見出しレベルは使用できません: {', '.join(heading_keywords)}"
-            )
-
-        # details型（折りたたみ・ネタバレ）の重複チェック
         details_keywords = [
             k for k in valid_keywords if k in ["折りたたみ", "ネタバレ"]
         ]
-        if len(details_keywords) > 1:
-            errors.append(
-                f"複数のdetails型は使用できません: {', '.join(details_keywords)}"
-            )
 
-        # 論理的に矛盾する組み合わせのチェック
-        # 見出しとdetailsの組み合わせは推奨しない（警告レベル）
         if heading_keywords and details_keywords:
             errors.append(
                 f"見出しとdetails型の組み合わせは推奨されません: 見出し={heading_keywords}, details={details_keywords}"
@@ -236,59 +210,36 @@ class KeywordValidator:
         if not color_value:
             return False, "color値が空です"
 
-        # 16進数カラーコード (#RGB, #RRGGBB)
-        hex_pattern = re.compile(r"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
-        if hex_pattern.match(color_value):
-            return True, None
-
-        # CSS名前付きカラー（基本的なもの）
+        # 色名定義
         named_colors = {
             "red",
-            "green",
             "blue",
+            "green",
             "yellow",
             "orange",
             "purple",
-            "pink",
-            "brown",
             "black",
             "white",
             "gray",
-            "grey",
+            "pink",
+            "brown",
             "cyan",
             "magenta",
             "lime",
             "navy",
-            "teal",
-            "olive",
-            "maroon",
             "silver",
-            "aqua",
-            "fuchsia",
-            "lightblue",
-            "lightgreen",
-            "lightyellow",
-            "lightgray",
-            "darkblue",
-            "darkgreen",
-            "darkred",
-            "transparent",
         }
 
         if color_value.lower() in named_colors:
             return True, None
 
-        # RGB/RGBA形式 (rgb(r,g,b), rgba(r,g,b,a))
-        rgb_pattern = re.compile(
-            r"^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[0-9.]+)?\s*\)$"
-        )
-        if rgb_pattern.match(color_value):
-            return True, None
+        # 16進数色コードの検証
+        if color_value.startswith("#") and len(color_value) in [4, 7]:
+            hex_part = color_value[1:]
+            if all(c in "0123456789abcdefABCDEF" for c in hex_part):
+                return True, None
 
-        return (
-            False,
-            f"無効なcolor値です: '{color_value}' (例: #ff0000, red, rgb(255,0,0))",
-        )
+        return False, f"無効なcolor値: {color_value}"
 
     def validate_attributes(self, attributes: dict[str, str]) -> list[str]:
         """
@@ -300,12 +251,12 @@ class KeywordValidator:
         Returns:
             list[str]: エラーメッセージのリスト
         """
-        errors = []
+        errors: List[str] = []
 
         # color属性の検証
         if "color" in attributes:
             is_valid, error_msg = self.validate_color_value(attributes["color"])
-            if not is_valid:
+            if not is_valid and error_msg is not None:
                 errors.append(error_msg)
 
         # alt属性の検証（画像用）

@@ -13,7 +13,7 @@ from .validation_issue import ValidationIssue
 class PerformanceValidator:
     """Validator for performance-related issues"""
 
-    def __init__(self, config: dict | None = None) -> None:  # type: ignore # type: ignore
+    def __init__(self, config: dict | None = None) -> None:
         """Initialize performance validator"""
         self.config = config
         self.max_file_size = 10 * 1024 * 1024  # 10MB

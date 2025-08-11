@@ -11,28 +11,23 @@ from .conversion_controller import ConversionController
 from .file_controller import FileController
 
 if TYPE_CHECKING:
-    from ..core.log_viewer import LogViewerWindow
+    from ..ui.log_viewer import LogViewerWindow
 
     # ..gui_models.AppState removed as unused
     # ..gui_views.MainView removed as unused
 
-# デバッグロガーのインポート
-try:
-    from ..core.debug_logger import (
-        error,
-        info,
-        log_gui_event,
-    )
-except ImportError:
-    # Fallbacksを定義
-    def error(*args: Any, **kwargs: Any) -> None:
-        pass
 
-    def info(*args: Any, **kwargs: Any) -> None:
-        pass
+# デバッグロガーのインポート（代替実装）
+def error(*args: Any, **kwargs: Any) -> None:
+    pass
 
-    def log_gui_event(*args: Any, **kwargs: Any) -> None:
-        pass
+
+def info(*args: Any, **kwargs: Any) -> None:
+    pass
+
+
+def log_gui_event(*args: Any, **kwargs: Any) -> None:
+    pass
 
 
 class MainController:
@@ -175,7 +170,7 @@ class MainController:
                     self.log_viewer.window.focus_force()
             else:
                 # 新しいログビューアーを開く
-                from ..core.log_viewer import LogViewerWindow
+                from ..ui.log_viewer import LogViewerWindow
 
                 if self.main_view and hasattr(self.main_view, "root"):
                     self.log_viewer = LogViewerWindow(self.main_view.root)

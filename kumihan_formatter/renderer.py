@@ -10,7 +10,8 @@ from typing import Any, List
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
-from .core.template_manager import RenderContext, TemplateManager
+from .core.template_manager import TemplateManager
+from .core.template_context import RenderContext
 from .core.toc_generator import TOCGenerator
 from .core.utilities.logger import get_logger, log_performance
 from .simple_config import create_simple_config
@@ -55,7 +56,7 @@ class Renderer:
     def render(
         self,
         ast: list[Node],
-        config: Any = None,
+        config: "Any | None" = None,  # BaseConfig | ConfigManager
         template: str | None = None,
         title: str | None = None,
         source_text: str | None = None,
@@ -68,7 +69,7 @@ class Renderer:
 
         Args:
             ast: List of AST nodes to render
-            config: Optional configuration
+            config: Optional configuration (BaseConfig or ConfigManager)
             template: Optional template name
             title: Page title
             source_text: Source text for toggle feature (footnotes already removed)
@@ -126,7 +127,7 @@ class Renderer:
                 footnote_html = footnotes_data["manager"].generate_footnote_html(
                     footnotes_data["footnotes"]
                 )
-                if footnote_html:
+                if footnote_html:  # type: ignore[unreachable]
                     footnotes_html = footnote_html
                     has_footnotes = True
                     self.logger.debug(
@@ -286,3 +287,6 @@ def render(
         source_filename=source_filename,
         navigation_html=navigation_html,
     )
+
+
+# HTMLRenderer = Renderer  # Removed: conflicts with imported HTMLRenderer

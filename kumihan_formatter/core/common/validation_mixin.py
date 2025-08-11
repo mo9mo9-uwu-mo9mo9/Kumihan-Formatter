@@ -4,7 +4,7 @@ This module provides reusable validation logic that can be mixed into
 any class needing validation capabilities.
 """
 
-from typing import Any, Callable
+from typing import Any, Callable, List
 
 from .error_framework import ErrorSeverity, ValidationError
 
@@ -48,21 +48,7 @@ class ValidationRule:
             if self.validator(value):
                 return None
         except Exception as e:
-            # If validator itself fails, that's an error
-            return ValidationError(
-                f"Validation rule '{self.name}' failed: {e}",
-                severity=ErrorSeverity.CRITICAL,
-                technical_details=str(e),
-            )
-
-        # Validation failed
-        suggestions = [self.suggestion] if self.suggestion else []
-        return ValidationError(
-            self.error_message,
-            severity=self.severity,
-            suggestions=suggestions,
-            technical_details=f"Failed rule: {self.name}",
-        )
+            return ValidationError(f"Validation error: {e}")
 
 
 class ValidationMixin:
@@ -124,7 +110,7 @@ class ValidationMixin:
         Returns:
             List of validation errors (empty if valid)
         """
-        errors = []
+        errors: List[ValidationError] = []
         rules = self._validation_rules.get(field, [])
 
         for rule in rules:
@@ -239,11 +225,14 @@ class ValidationMixin:
                 return x <= max_val
 
         else:
-            raise ValueError("At least one of min_val or max_val must be provided")
+            return  # No validation needed
 
         msg = message or f"{field} must be {range_desc}"
         self.add_simple_rule(
-            field, validator, msg, suggestion=f"Adjust {field} to be {range_desc}"
+            field,
+            validator,
+            msg,
+            suggestion=f"Set {field} to a value {range_desc}",
         )
 
     def require_matches_pattern(

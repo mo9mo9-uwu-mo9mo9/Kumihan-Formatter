@@ -56,8 +56,6 @@ class FileOperationsCore:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
             return None
 
-        return source_images_dir
-
     def _create_dest_images_dir(self, output_path: Path) -> Path:
         """出力画像ディレクトリを作成"""
         dest_images_dir = output_path / "images"
@@ -68,7 +66,7 @@ class FileOperationsCore:
                 f"Permission denied creating images directory: {dest_images_dir} - {e}"
             )
             if self.ui:
-                self.ui.error(
+                self.ui.permission_error(
                     f"画像ディレクトリの作成に失敗しました: {dest_images_dir}"
                 )
             raise
@@ -77,7 +75,7 @@ class FileOperationsCore:
                 f"OS error creating images directory: {dest_images_dir} - {e}"
             )
             if self.ui:
-                self.ui.error(
+                self.ui.unexpected_error(
                     f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}"
                 )
             raise
@@ -126,17 +124,16 @@ class FileOperationsCore:
             self.logger.warning(f"Image file not found: {filename}")
             return "missing"
 
-        if filename in copied_files:
-            if filename not in duplicate_files:
-                duplicate_files[filename] = 2
-            else:
-                duplicate_files[filename] += 1
+        # Check for duplicates
+        if filename not in duplicate_files:
+            duplicate_files[filename] = 1
+            # Copy the file
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            dest_file.write_bytes(source_file.read_bytes())
+            return "copied"
+        else:
+            duplicate_files[filename] += 1
             return "duplicate"
-
-        shutil.copy2(source_file, dest_file)
-        copied_files.append(filename)
-        self.logger.debug(f"Copied image: {filename}")
-        return "copied"
 
     def _report_copy_results(self, results: dict[str, Any]) -> None:
         """コピー結果を報告"""
@@ -223,7 +220,6 @@ class FileOperationsCore:
             candidate = directory / filename
             if candidate.exists():
                 return candidate
-        return None
 
     @staticmethod
     def ensure_directory(path: Path) -> None:
@@ -256,5 +252,3 @@ class FileOperationsCore:
                 # 自動的に続行（バッチ処理対応）
                 self.ui.info("大規模ファイル処理を開始します")
             return True
-
-        return True

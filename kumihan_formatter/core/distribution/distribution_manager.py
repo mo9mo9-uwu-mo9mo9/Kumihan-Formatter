@@ -163,23 +163,7 @@ class DistributionManager:
 
         # 基本的なHTMLテンプレート
         return f"""<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>Kumihan-Formatter ドキュメント</title>
-    <style>
-        body {{ font-family: 'Yu Gothic', sans-serif; margin: 20px; }}
-        h1 {{ color: #333; border-bottom: 2px solid #4a90e2; }}
-        .section {{ margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; }}
-    </style>
-</head>
-<body>
-    <h1>Kumihan-Formatter ドキュメント</h1>
 
-    <div class="section">
-        <h2>📋 最重要文書</h2>
-        <p>最初にお読みください（プレーンテキスト形式）</p>
-        <ul>
             <li><a href="essential/はじめに.txt">はじめに.txt</a></li>
             <li><a href="essential/インストール方法.txt">インストール方法.txt</a></li>
         </ul>

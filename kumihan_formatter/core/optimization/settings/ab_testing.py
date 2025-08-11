@@ -37,17 +37,19 @@ class SimpleStats:
         if not a or not b:
             return type("Result", (), {"statistic": 0, "pvalue": 1.0})
 
-        mean_a, mean_b = mean(a), mean(b)
-        try:
-            std_a, std_b = stdev(a), stdev(b)
-            pooled_std = math.sqrt((std_a**2 + std_b**2) / 2)
-            if pooled_std == 0:
-                return type("Result", (), {"statistic": 0, "pvalue": 1.0})
-            t_stat = abs(mean_a - mean_b) / pooled_std
-            p_value = 0.01 if t_stat > 2.58 else (0.05 if t_stat > 1.96 else 1.0)
-            return type("Result", (), {"statistic": t_stat, "pvalue": p_value})
-        except (ValueError, ZeroDivisionError):
+        mean_a = sum(a) / len(a)
+        mean_b = sum(b) / len(b)
+        var_a = sum((x - mean_a) ** 2 for x in a) / len(a)
+        var_b = sum((x - mean_b) ** 2 for x in b) / len(b)
+
+        pooled_std = ((var_a + var_b) / 2) ** 0.5
+        if pooled_std == 0:
             return type("Result", (), {"statistic": 0, "pvalue": 1.0})
+
+        t_stat = (mean_a - mean_b) / (pooled_std * (1 / len(a) + 1 / len(b)) ** 0.5)
+        p_value = 0.05 if abs(t_stat) > 2 else 0.5  # 簡易推定
+
+        return type("Result", (), {"statistic": t_stat, "pvalue": p_value})
 
 
 class SimpleNumpy:
@@ -61,7 +63,7 @@ class SimpleNumpy:
     def std(data):
         try:
             return stdev(data) if len(data) > 1 else 0
-        except ValueError:
+        except (ValueError, TypeError):
             return 0
 
     @staticmethod
@@ -143,44 +145,26 @@ class StatisticalTestingEngine:
             if not group1 or not group2:
                 return 0.0
 
-            if self.scipy_available:
-                # scipyを使用した高精度計算
-                mean1, mean2 = np.mean(group1), np.mean(group2)
-                n1, n2 = len(group1), len(group2)
+            mean1 = mean(group1)
+            mean2 = mean(group2)
 
-                if n1 == 1 and n2 == 1:
-                    return 0.0
+            if len(group1) == 1 and len(group2) == 1:
+                return 0.0
 
-                # プールされた標準偏差を計算
-                var1 = np.var(group1, ddof=1) if n1 > 1 else 0
-                var2 = np.var(group2, ddof=1) if n2 > 1 else 0
+            # プールされた標準偏差を計算
+            std1 = stdev(group1) if len(group1) > 1 else 0
+            std2 = stdev(group2) if len(group2) > 1 else 0
 
-                pooled_std = math.sqrt(
-                    ((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2)
-                )
+            pooled_std = math.sqrt(
+                ((len(group1) - 1) * std1**2 + (len(group2) - 1) * std2**2)
+                / (len(group1) + len(group2) - 2)
+            )
 
-                if pooled_std == 0:
-                    return 0.0
+            if pooled_std == 0:
+                return 0.0
 
-                cohens_d = (mean1 - mean2) / pooled_std
-                return abs(cohens_d)
-            else:
-                # フォールバック実装
-                mean1, mean2 = mean(group1), mean(group2)
-
-                try:
-                    std1 = stdev(group1) if len(group1) > 1 else 0
-                    std2 = stdev(group2) if len(group2) > 1 else 0
-                    pooled_std = math.sqrt((std1**2 + std2**2) / 2)
-
-                    if pooled_std == 0:
-                        return 0.0
-
-                    return abs((mean1 - mean2) / pooled_std)
-                except ValueError:
-                    return 0.0
-
-        except Exception as e:
+            return (mean1 - mean2) / pooled_std
+        except (ValueError, TypeError, ZeroDivisionError) as e:
             self.logger.error(f"Error calculating Cohen's d: {e}")
             return 0.0
 
@@ -192,15 +176,12 @@ class StatisticalTestingEngine:
             if not data or len(data) < 2:
                 return None
 
-            if self.scipy_available:
-                # scipyを使用した正確な計算
-                return tuple(
-                    stats.t.interval(
-                        confidence_level,
-                        len(data) - 1,
-                        loc=np.mean(data),
-                        scale=stats.sem(data),
-                    )
+            if hasattr(self, "stats") and hasattr(self, "np"):
+                return stats.t.interval(
+                    confidence_level,
+                    len(data) - 1,
+                    loc=np.mean(data),
+                    scale=stats.sem(data),
                 )
             else:
                 # フォールバック実装
@@ -210,9 +191,8 @@ class StatisticalTestingEngine:
                     sem = stdev(data) / math.sqrt(n)
                     h = sem * 1.96  # 95%信頼区間のためのt値近似
                     return (data_mean - h, data_mean + h)
-                except ValueError:
+                except (ValueError, TypeError):
                     return None
-
         except Exception as e:
             self.logger.error(f"Error calculating confidence interval: {e}")
             return None
@@ -234,16 +214,10 @@ class StatisticalTestingEngine:
                 return max(int(math.ceil(n)), 5)  # 最小5サンプル
             else:
                 # フォールバック実装（簡易計算）
-                if effect_size <= 0:
-                    return 50  # デフォルト
-
-                # 簡易計算式
-                n = 16 / (effect_size**2)  # 大まかな近似
-                return max(int(math.ceil(n)), 10)
-
+                return max(int(50 / max(effect_size, 0.1)), 5)  # デフォルト
         except Exception as e:
             self.logger.error(f"Error calculating sample size: {e}")
-            return 30  # フォールバック値
+            return 50  # デフォルト
 
     def perform_statistical_test(
         self,
@@ -330,18 +304,14 @@ class StatisticalTestingEngine:
             if effect_size == 0:
                 return alpha  # 帰無仮説が真の場合
 
-            # 簡易検出力計算
-            n_harmonic = 2 / (1 / n1 + 1 / n2)
-            ncp = effect_size * math.sqrt(n_harmonic / 2)
+            # 簡易検出力推定（厳密でない近似）
+            n_eff = min(n1, n2)
+            if n_eff < 3:
+                return 0.1  # 非常に小さいサンプル
 
-            # 正規近似による検出力計算
-            z_alpha = 1.96  # alpha=0.05の場合
-            power = (
-                1 - stats.norm.cdf(z_alpha - ncp) + stats.norm.cdf(-z_alpha - ncp)
-                if self.scipy_available
-                else 0.8
-            )
-
-            return max(0.0, min(1.0, power))
-        except Exception:
-            return 0.8  # デフォルト値
+            # 効果サイズとサンプルサイズに基づく簡易推定
+            power_estimate = min(0.95, max(0.1, effect_size * math.sqrt(n_eff) * 0.5))
+            return power_estimate
+        except Exception as e:
+            self.logger.error(f"Error estimating power: {e}")
+            return 0.5  # デフォルト

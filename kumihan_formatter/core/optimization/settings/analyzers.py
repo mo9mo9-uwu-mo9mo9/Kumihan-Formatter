@@ -19,7 +19,9 @@ from statistics import mean
 # WorkContextのインポート（循環インポート回避のため型ヒント用）
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from kumihan_formatter.core.config.config_manager import EnhancedConfig
+from kumihan_formatter.core.unified_config import (
+    EnhancedConfigAdapter as EnhancedConfig,
+)
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
@@ -318,37 +320,39 @@ class TokenUsageAnalyzer:
             if not self.usage_history:
                 return {"status": "no_data"}
 
-            # 基本統計
+            # 基本統計の計算
             total_operations = len(self.usage_history)
             total_tokens_all = sum(
                 record["total_tokens"] for record in self.usage_history
             )
-            avg_tokens_per_operation = total_tokens_all / total_operations
+            avg_tokens_per_operation = (
+                total_tokens_all / total_operations if total_operations > 0 else 0
+            )
 
-            # 効率性分析
+            # 効率性の計算
             efficiency_scores = [
-                self._calculate_operation_efficiency(record)
-                for record in self.usage_history
+                record.get("efficiency", 0.5) for record in self.usage_history
             ]
-            avg_efficiency = sum(efficiency_scores) / len(efficiency_scores)
+            avg_efficiency = (
+                sum(efficiency_scores) / len(efficiency_scores)
+                if efficiency_scores
+                else 0.5
+            )
 
             # トレンド分析
-            recent_records = (
-                list(self.usage_history)[-20:]
-                if len(self.usage_history) >= 20
-                else list(self.usage_history)
-            )
-            older_records = (
-                list(self.usage_history)[:-20] if len(self.usage_history) > 20 else []
-            )
-
             trend_direction = "stable"
-            if older_records:
-                recent_avg = sum(r["total_tokens"] for r in recent_records) / len(
-                    recent_records
-                )
-                older_avg = sum(r["total_tokens"] for r in older_records) / len(
-                    older_records
+            if len(self.usage_history) >= 20:
+                mid_point = len(self.usage_history) // 2
+                recent_avg = sum(
+                    record["total_tokens"]
+                    for record in list(self.usage_history)[mid_point:]
+                ) / (len(self.usage_history) - mid_point)
+                older_avg = (
+                    sum(
+                        record["total_tokens"]
+                        for record in list(self.usage_history)[:mid_point]
+                    )
+                    / mid_point
                 )
 
                 if recent_avg > older_avg * 1.1:
@@ -415,7 +419,7 @@ class TokenUsageAnalyzer:
         if not self.optimization_suggestions:
             return {"total_potential_reduction": 0.0, "estimated_token_savings": 0}
 
-        # 最近の提案から節約効果を推定
+        # 最近の提案を取得
         recent_suggestions = list(self.optimization_suggestions)[-10:]
         total_reduction = 0.0
 

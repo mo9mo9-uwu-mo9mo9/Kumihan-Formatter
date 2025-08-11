@@ -33,10 +33,6 @@ class MarkdownProcessor:
             )
             return f"<pre><code>{code_content}</code></pre>"
 
-        # ```code``` パターンを処理
-        pattern = re.compile(r"```\n?(.*?)\n?```", re.DOTALL)
-        return pattern.sub(replace_code_block, text)
-
     def _generate_heading_id(self, heading_text: str) -> str:
         """見出しからIDを生成"""
         # 英数字以外を除去してIDを生成

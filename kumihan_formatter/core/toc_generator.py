@@ -10,9 +10,11 @@ from __future__ import annotations
 import re
 
 from .ast_nodes import Node
-from .toc_formatter import TOCFormatter
+
+# Re-export for compatibility
 from .toc_generator_main import TOCGenerator
-from .toc_validator import TOCValidator
+
+__all__ = ["TOCGenerator"]
 
 
 class TOCEntry:
@@ -49,9 +51,3 @@ class TOCEntry:
         # Remove any HTML tags from title
         clean_title = re.sub(r"<[^>]+>", "", self.title)
         return clean_title.strip()
-
-
-# Main classes already imported at top
-
-# Re-export all classes to maintain the same public API
-__all__ = ["TOCEntry", "TOCGenerator", "TOCValidator", "TOCFormatter"]

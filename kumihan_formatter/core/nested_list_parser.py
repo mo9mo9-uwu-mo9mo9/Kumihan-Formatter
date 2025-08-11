@@ -37,11 +37,6 @@ class NestedListParser:
 
         if list_type == "ul":
             return self.list_parser.parse_unordered_list(lines, start_index)
-        elif list_type == "ol":
-            return self.list_parser.parse_ordered_list(lines, start_index)
-        else:
-            # Not a list
-            return None, start_index
 
     def _calculate_indent_level(self, line: str) -> int:
         """Calculate indentation level of a line"""

@@ -5,12 +5,16 @@ Issue #700対応 - 設定可能なエラー処理レベル
 柔軟なエラー処理設定とカスタマイズ機能
 """
 
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Dict, Optional
 
+# Unused import removed: from ..common.error_types import ErrorSeverity
 from ..utilities.logger import get_logger
 
 # Optional dependencies for config file support
@@ -20,7 +24,7 @@ try:
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
-    yaml = None
+    yaml: Optional[ModuleType] = None  # type: ignore
 
 try:
     import toml
@@ -28,7 +32,7 @@ try:
     HAS_TOML = True
 except ImportError:
     HAS_TOML = False
-    toml = None
+    toml: Optional[ModuleType] = None  # type: ignore
 
 
 class ErrorHandlingLevel(Enum):
@@ -48,6 +52,9 @@ class ErrorHandlingStrategy(Enum):
     SKIP = "skip"  # 該当箇所をスキップ
     RECOVER = "recover"  # 自動回復を試行
     CUSTOM = "custom"  # カスタムハンドラー使用
+
+
+# ErrorSeverity moved to core.common.error_types for unification
 
 
 @dataclass
@@ -145,15 +152,11 @@ class ErrorConfigManager:
                 return config_path
 
         # 親ディレクトリも検索
-        parent_dir = self.config_dir.parent
-        if parent_dir != self.config_dir:
-            for filename in self.CONFIG_FILES:
-                config_path = parent_dir / filename
-                if config_path.exists():
-                    self.logger.debug(f"Found config file in parent: {config_path}")
-                    return config_path
-
-        return None
+        for parent_dir in config_path.parents:
+            parent_config = parent_dir / config_path.name
+            if parent_config.exists():
+                self.logger.debug(f"Found config file in parent: {parent_config}")
+                return parent_config
 
     def _load_from_file(self, config_file: Path) -> None:
         """設定ファイルから読み込み"""
@@ -264,7 +267,7 @@ class ErrorConfigManager:
             except ValueError:
                 self.logger.warning(f"Invalid error limit in env: {limit_str}")
 
-    def apply_cli_options(self, **kwargs) -> None:
+    def apply_cli_options(self, **kwargs: Any) -> None:
         """CLIオプションを適用（最高優先度）"""
         if "error_level" in kwargs:
             self.config.default_level = ErrorHandlingLevel(kwargs["error_level"])
@@ -288,13 +291,8 @@ class ErrorConfigManager:
         if error_type in self.config.error_type_configs:
             return self.config.error_type_configs[error_type].strategy
 
-        # デフォルトレベルに基づく戦略
-        if self.config.default_level == ErrorHandlingLevel.STRICT:
-            return ErrorHandlingStrategy.STOP
-        elif self.config.default_level == ErrorHandlingLevel.IGNORE:
-            return ErrorHandlingStrategy.SKIP
-        else:
-            return ErrorHandlingStrategy.CONTINUE
+        # デフォルト戦略を返す
+        return ErrorHandlingStrategy.CONTINUE
 
     def should_continue_on_error(
         self, error_type: str, occurrence_count: int = 1
@@ -304,10 +302,7 @@ class ErrorConfigManager:
         if self.config.default_level == ErrorHandlingLevel.STRICT:
             return False
 
-        if self.config.default_level == ErrorHandlingLevel.IGNORE:
-            return True
-
-        # エラータイプ別設定チェック
+        # エラータイプ別設定をチェック
         if error_type in self.config.error_type_configs:
             type_config = self.config.error_type_configs[error_type]
 
@@ -318,23 +313,22 @@ class ErrorConfigManager:
             ):
                 return False
 
-            # レベルチェック
-            if type_config.handling_level == ErrorHandlingLevel.STRICT:
-                return False
+            # 戦略に基づく判定
+            return type_config.strategy not in [ErrorHandlingStrategy.STOP]
 
-        return self.config.continue_on_error or self.config.graceful_errors
+        # デフォルトの継続設定を返す
+        return self.config.continue_on_error
 
     def get_error_severity(self, error_type: str) -> str:
         """エラータイプに基づく重要度を取得"""
         if self.config.default_level == ErrorHandlingLevel.LENIENT:
             return "warning"
 
+        # エラータイプ別設定をチェック
         if error_type in self.config.error_type_configs:
             type_config = self.config.error_type_configs[error_type]
             if type_config.handling_level == ErrorHandlingLevel.LENIENT:
                 return "warning"
-            elif type_config.handling_level == ErrorHandlingLevel.IGNORE:
-                return "info"
 
         return "error"
 

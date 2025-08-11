@@ -113,11 +113,11 @@ class ConfigValidator:
             )
             return errors, warnings
 
-        # dict型のスキーマ検証
-        if expected_type == dict and "schema" in spec:
+        # スキーマが指定されている場合のネストした検証
+        if "schema" in spec and isinstance(section_data, dict):
             schema = spec["schema"]
 
-            # ワイルドカードスキーマの処理
+            # スキーマにワイルドカード指定がある場合
             if "*" in schema:
                 wildcard_spec = schema["*"]
                 for key, value in section_data.items():

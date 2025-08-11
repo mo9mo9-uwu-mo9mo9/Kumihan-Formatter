@@ -36,7 +36,7 @@ def load_default_css() -> str:
         with open(css_path, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        raise RuntimeError(f"CSSファイルの読み込みに失敗しました: {e}")
+        raise FileNotFoundError(f"CSSファイル読み込みエラー: {e}")
 
 
 def get_css_requirements() -> dict[str, list[str]]:

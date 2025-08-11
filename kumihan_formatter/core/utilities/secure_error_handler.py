@@ -24,8 +24,8 @@ from kumihan_formatter.core.utilities.logger import get_logger
 logger = get_logger(__name__)
 
 
-class ErrorSeverity(Enum):
-    """エラー重要度"""
+class SecureErrorSeverity(Enum):
+    """セキュアエラーハンドラー専用重要度"""
 
     CRITICAL = "critical"
     HIGH = "high"
@@ -49,7 +49,7 @@ class SanitizedError:
 
     user_message: str
     error_code: str
-    severity: ErrorSeverity
+    severity: SecureErrorSeverity
     timestamp: datetime
     trace_id: str
     internal_details: Optional[Dict[str, Any]] = None
@@ -85,63 +85,14 @@ class SecureErrorHandler:
         try:
             if self.config_path.exists():
                 with open(self.config_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    config_data: Dict[str, Any] = json.load(f)
+                    return config_data
+            return {}
         except Exception as e:
-            logger.warning(f"エラーサニタイズ設定読み込み失敗: {e}")
+            logger.warning(f"設定ファイル読み込みエラー: {e}")
+            return {}
 
-        # デフォルト設定
-        return {
-            "sensitive_patterns": {
-                "file_paths": (
-                    r"(?i)(?:c:|d:|/home|/usr|/var|/etc|/root|\users\|\windows\)"
-                ),
-                "credentials": r"(?i)(?:password|token|key|secret)[\s=:\"']*[^\s\"']{8,}",
-                "ip_addresses": r"\b(?:\d{1,3}\.){3}\d{1,3}\b",
-                "database_info": r"(?i)(?:database|db|sql)[\s=:\"']*[^\s\"']+",
-                "urls": r"https?://[^\s\"']+",
-                "email_addresses": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-                "version_info": r"(?i)version[\s=:\"']*[\d.]+",
-                "stack_traces": r"(?i)traceback|at\s+[^\s]+\.[^\s]+\(\w+\.py:\d+\)",
-            },
-            "sanitization_replacements": {
-                "file_paths": "[PATH_SANITIZED]",
-                "credentials": "[CREDENTIAL_SANITIZED]",
-                "ip_addresses": "[IP_SANITIZED]",
-                "database_info": "[DB_INFO_SANITIZED]",
-                "urls": "[URL_SANITIZED]",
-                "email_addresses": "[EMAIL_SANITIZED]",
-                "version_info": "[VERSION_SANITIZED]",
-                "stack_traces": "[STACK_TRACE_SANITIZED]",
-            },
-            "error_code_mapping": {
-                "FileNotFoundError": "ERR_FILE_ACCESS_001",
-                "PermissionError": "ERR_FILE_ACCESS_002",
-                "ValueError": "ERR_VALIDATION_001",
-                "TypeError": "ERR_TYPE_001",
-                "KeyError": "ERR_DATA_001",
-                "ImportError": "ERR_MODULE_001",
-                "ConnectionError": "ERR_NETWORK_001",
-                "TimeoutError": "ERR_NETWORK_002",
-            },
-            "user_message_templates": {
-                "ERR_FILE_ACCESS_001": "指定されたファイルまたはディレクトリにアクセスできません",
-                "ERR_FILE_ACCESS_002": "ファイルまたはディレクトリへのアクセス権限が不足しています",
-                "ERR_VALIDATION_001": "入力データの形式が正しくありません",
-                "ERR_TYPE_001": "データ型が期待される形式と異なります",
-                "ERR_DATA_001": "必要なデータが見つかりません",
-                "ERR_MODULE_001": "必要なモジュールが利用できません",
-                "ERR_NETWORK_001": "ネットワーク接続に問題があります",
-                "ERR_NETWORK_002": "処理がタイムアウトしました",
-                "ERR_GENERIC": "予期しないエラーが発生しました",
-            },
-            "exposure_control": {
-                "development": "internal",
-                "staging": "internal",
-                "production": "safe",
-            },
-        }
-
-    def _compile_sensitive_patterns(self) -> Dict[str, re.Pattern]:
+    def _compile_sensitive_patterns(self) -> Dict[str, re.Pattern[str]]:
         """機密情報パターンをコンパイル"""
         patterns = {}
         sensitive_patterns = self.config.get("sensitive_patterns", {})
@@ -163,26 +114,6 @@ class SecureErrorHandler:
 
         if not error_message:
             return ""
-
-        sanitized = error_message
-        replacements = self.config.get("sanitization_replacements", {})
-
-        # 機密情報パターンの置換
-        for pattern_name, pattern in self.sensitive_patterns.items():
-            replacement = replacements.get(
-                pattern_name, f"[{pattern_name.upper()}_SANITIZED]"
-            )
-            sanitized = pattern.sub(replacement, sanitized)
-
-        # 露出レベルに応じた追加制御
-        if exposure_level == ExposureRisk.SAFE:
-            # 最小限の情報のみ
-            sanitized = self._minimize_technical_details(sanitized)
-        elif exposure_level == ExposureRisk.INTERNAL:
-            # 内部向けは技術的詳細を一部保持
-            sanitized = self._filter_internal_safe_info(sanitized)
-
-        return sanitized.strip()
 
     def _minimize_technical_details(self, message: str) -> str:
         """技術的詳細を最小化"""
@@ -213,16 +144,8 @@ class SecureErrorHandler:
 
         # 設定済みマッピングを確認
         if exception_name in self.error_code_mapping:
-            return self.error_code_mapping[exception_name]
-
-        # 動的エラーコード生成
-        error_hash = (
-            hashlib.md5(f"{exception_name}_{str(exception)[:50]}".encode())
-            .hexdigest()[:8]
-            .upper()
-        )
-
-        return f"ERR_DYNAMIC_{error_hash}"
+            mapped_code: str = self.error_code_mapping[exception_name]
+            return mapped_code
 
     def generate_trace_id(self) -> str:
         """トレースID生成"""
@@ -238,7 +161,7 @@ class SecureErrorHandler:
         exception: Exception,
         context: Optional[Dict[str, Any]] = None,
         user_exposure: ExposureRisk = ExposureRisk.SAFE,
-        severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+        severity: SecureErrorSeverity = SecureErrorSeverity.MEDIUM,
     ) -> SanitizedError:
         """例外の安全な処理"""
 
@@ -253,7 +176,7 @@ class SecureErrorHandler:
         full_traceback = traceback.format_exc()
 
         # ユーザー向けメッセージ取得
-        user_message = self.user_message_templates.get(
+        user_message: str = self.user_message_templates.get(
             error_code,
             self.user_message_templates.get("ERR_GENERIC", "エラーが発生しました"),
         )
@@ -309,10 +232,10 @@ class SecureErrorHandler:
         self,
         error_code: str,
         trace_id: str,
-        severity: ErrorSeverity,
+        severity: SecureErrorSeverity,
         internal_details: Dict[str, Any],
         user_message: str,
-    ):
+    ) -> None:
         """エラーの内部ログ出力"""
 
         _ = {
@@ -322,24 +245,23 @@ class SecureErrorHandler:
             "user_message": user_message,
             "timestamp": datetime.now().isoformat(),
         }
-
         # 重要度に応じたログレベル
-        if severity == ErrorSeverity.CRITICAL:
+        if severity == SecureErrorSeverity.CRITICAL:
             logger.critical(
                 f"Critical Error [{trace_id}]: {error_code}",
                 extra={"details": internal_details},
             )
-        elif severity == ErrorSeverity.HIGH:
+        elif severity == SecureErrorSeverity.HIGH:
             logger.error(
                 f"High Severity Error [{trace_id}]: {error_code}",
                 extra={"details": internal_details},
             )
-        elif severity == ErrorSeverity.MEDIUM:
+        elif severity == SecureErrorSeverity.MEDIUM:
             logger.warning(
                 f"Medium Severity Error [{trace_id}]: {error_code}",
                 extra={"details": internal_details},
             )
-        elif severity == ErrorSeverity.LOW:
+        elif severity == SecureErrorSeverity.LOW:
             logger.info(
                 f"Low Severity Error [{trace_id}]: {error_code}",
                 extra={"details": internal_details},
@@ -358,7 +280,7 @@ class SecureErrorHandler:
     ) -> str:
         """ユーザーフレンドリーなエラーメッセージ作成"""
 
-        base_message = self.user_message_templates.get(
+        base_message: str = self.user_message_templates.get(
             error_code, "申し訳ございません。問題が発生しました。"
         )
 
@@ -391,12 +313,11 @@ def get_secure_error_handler() -> SecureErrorHandler:
     return _global_error_handler
 
 
-# 便利な関数群
 def safe_handle_exception(
     exception: Exception,
     context: Optional[Dict[str, Any]] = None,
     user_exposure: ExposureRisk = ExposureRisk.SAFE,
-    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+    severity: SecureErrorSeverity = SecureErrorSeverity.MEDIUM,
 ) -> SanitizedError:
     """例外の安全な処理（関数版）"""
     return get_secure_error_handler().handle_exception(

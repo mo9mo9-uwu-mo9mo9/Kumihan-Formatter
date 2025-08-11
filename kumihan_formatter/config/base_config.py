@@ -94,13 +94,6 @@ class BaseConfig:
         if not isinstance(self._config, dict):
             return False  # type: ignore
 
-        # CSS設定のチェック
-        if "css" in self._config:
-            if not isinstance(self._config["css"], dict):
-                return False
-
-        return True
-
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得
 
@@ -141,6 +134,5 @@ class BaseConfig:
                 raise ValueError("設定ファイルの形式が正しくありません")
 
             return cls(config_data)
-
-        except (yaml.YAMLError, json.JSONDecodeError) as e:
-            raise ValueError(f"設定ファイル解析エラー: {e}")
+        except Exception as e:
+            raise ValueError(f"設定ファイルの読み込みに失敗しました: {e}")

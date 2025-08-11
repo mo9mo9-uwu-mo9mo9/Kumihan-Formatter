@@ -336,15 +336,17 @@ class TestTokenUsageAnalyzer:
 
         # 履歴追加後の閾値変動
         for i in range(15):
-            analyzer.usage_history.append({
-                "timestamp": time.time(),
-                "operation_type": "test",
-                "input_tokens": 4000,
-                "output_tokens": 2000,
-                "total_tokens": 6000,
-                "context_size": 10000,
-                "complexity_score": 0.5,
-            })
+            analyzer.usage_history.append(
+                {
+                    "timestamp": time.time(),
+                    "operation_type": "test",
+                    "input_tokens": 4000,
+                    "output_tokens": 2000,
+                    "total_tokens": 6000,
+                    "context_size": 10000,
+                    "complexity_score": 0.5,
+                }
+            )
 
         updated_threshold = analyzer._get_optimization_threshold()
         assert updated_threshold > initial_threshold
@@ -403,22 +405,26 @@ class TestTokenUsageAnalyzer:
         assert savings_empty["estimated_token_savings"] == 0
 
         # 最適化提案追加
-        analyzer.optimization_suggestions.append({
-            "estimated_total_reduction": 0.25,
-            "type": "test_suggestion",
-        })
+        analyzer.optimization_suggestions.append(
+            {
+                "estimated_total_reduction": 0.25,
+                "type": "test_suggestion",
+            }
+        )
 
         # 使用履歴追加
         for i in range(25):
-            analyzer.usage_history.append({
-                "total_tokens": 2000,
-                "timestamp": time.time(),
-                "operation_type": "test",
-                "input_tokens": 1000,
-                "output_tokens": 1000,
-                "context_size": 5000,
-                "complexity_score": 0.5,
-            })
+            analyzer.usage_history.append(
+                {
+                    "total_tokens": 2000,
+                    "timestamp": time.time(),
+                    "operation_type": "test",
+                    "input_tokens": 1000,
+                    "output_tokens": 1000,
+                    "context_size": 5000,
+                    "complexity_score": 0.5,
+                }
+            )
 
         savings = analyzer._calculate_potential_savings()
         assert savings["average_potential_reduction"] > 0.0
@@ -431,23 +437,24 @@ class TestTokenUsageAnalyzer:
 
         # 履歴追加（低効率）
         for i in range(15):
-            analyzer.usage_history.append({
-                "timestamp": time.time(),
-                "operation_type": "test",
-                "input_tokens": 3000,
-                "output_tokens": 2000,
-                "total_tokens": 5000,
-                "context_size": 1000,  # 低効率になる
-                "complexity_score": 0.3,
-            })
+            analyzer.usage_history.append(
+                {
+                    "timestamp": time.time(),
+                    "operation_type": "test",
+                    "input_tokens": 3000,
+                    "output_tokens": 2000,
+                    "total_tokens": 5000,
+                    "context_size": 1000,  # 低効率になる
+                    "complexity_score": 0.3,
+                }
+            )
 
         recommendations = analyzer._generate_usage_recommendations()
         assert isinstance(recommendations, list)
 
         # セッション最適化推奨が含まれることを確認
         session_rec = next(
-            (rec for rec in recommendations
-             if rec["category"] == "session_optimization"), None
+            (rec for rec in recommendations if rec["category"] == "session_optimization"), None
         )
         assert session_rec is not None
         assert session_rec["priority"] == "high"
@@ -497,7 +504,7 @@ class TestTokenUsageAnalyzerErrorHandling:
         result = analyzer.record_token_usage(
             operation_type="test",
             input_tokens=-100,  # 負の値
-            output_tokens=-50,   # 負の値
+            output_tokens=-50,  # 負の値
             context=None,
         )
 
@@ -525,7 +532,7 @@ class TestTokenUsageAnalyzerErrorHandling:
         result_large = analyzer.record_token_usage(
             operation_type="test",
             input_tokens=1_000_000,  # 100万Token
-            output_tokens=500_000,   # 50万Token
+            output_tokens=500_000,  # 50万Token
             context=work_context,
         )
 
@@ -710,12 +717,14 @@ class TestAnalyzersIntegration:
                 context=context,
             )
 
-            analytics_results.append({
-                "scenario": name,
-                "complexity": complexity,
-                "efficiency": result["efficiency_score"],
-                "total_tokens": input_tokens + output_tokens,
-            })
+            analytics_results.append(
+                {
+                    "scenario": name,
+                    "complexity": complexity,
+                    "efficiency": result["efficiency_score"],
+                    "total_tokens": input_tokens + output_tokens,
+                }
+            )
 
         # 結果の妥当性確認
         assert len(analytics_results) == 3

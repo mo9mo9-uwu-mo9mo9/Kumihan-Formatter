@@ -13,7 +13,7 @@ from typing import Any
 from rich.console import Console
 
 # 新しい統合設定システムをインポート
-from .config import ConfigManager
+from .config.config_manager import ConfigManager
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class Config:
     def load_config(self, config_path: str) -> bool:
         """設定ファイルを読み込む（統合設定システムに委譲）"""
         try:
-            result = self._manager.load_config(config_path)
+            result: bool = self._manager.load_config(config_path)
             if result:
                 # 設定辞書を更新
                 self.config = self._manager.to_dict()
@@ -105,7 +105,7 @@ class Config:
                 console.print("[dim]   デフォルト設定を使用します[/dim]")
             return result
         except Exception as e:
-            console.print(f"[red][エラー] 設定ファイル読み込みエラー:[/red] {e}")
+            console.print(f"[red][エラー] 設定読み込み失敗:[/red] {e}")
             return False
 
     def _merge_config(self, user_config: dict[str, Any]):
@@ -132,19 +132,22 @@ class Config:
 
     def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得（統合設定システムに委譲）"""
-        return self._manager.get_markers()
+        markers: dict[str, dict[str, Any]] = self._manager.get_markers()
+        return markers
 
     def get_css_variables(self) -> dict[str, str]:
         """CSS変数を取得（統合設定システムに委譲）"""
-        return self._manager.get_css_variables()
+        variables: dict[str, str] = self._manager.get_css_variables()
+        return variables
 
     def get_theme_name(self) -> str:
         """現在のテーマ名を取得（統合設定システムに委譲）"""
-        return self._manager.get_theme_name()
+        theme_name: str = self._manager.get_theme_name()
+        return theme_name
 
     def validate_config(self) -> bool:
         """設定の妥当性をチェック（統合設定システムに委譲）"""
-        result = self._manager.validate()
+        result: bool = self._manager.validate()
         if not result:
             console.print("[red][エラー] 設定検証エラー[/red]")
         return result

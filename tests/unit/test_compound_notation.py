@@ -57,7 +57,9 @@ class TestNestedNotation:
             assert isinstance(errors, list)
 
             # Check for severe parsing errors
-            severe_errors = [e for e in errors if hasattr(e, 'severity') and str(e.severity).upper() == 'ERROR']
+            severe_errors = [
+                e for e in errors if hasattr(e, "severity") and str(e.severity).upper() == "ERROR"
+            ]
             # Nested structures should be parseable (implementation-dependent)
 
     def test_deep_nesting(self):
@@ -90,7 +92,7 @@ class TestNestedNotation:
 
     def test_nesting_order_validation(self):
         """Test nesting order validation if implemented."""
-        if not hasattr(self.definitions, 'validate_nesting_order'):
+        if not hasattr(self.definitions, "validate_nesting_order"):
             pytest.skip("Nesting order validation not implemented")
 
         # Test proper nesting order
@@ -307,7 +309,9 @@ class TestComplexNotationCombinations:
         assert isinstance(errors, list)
 
         # Check for any critical errors
-        critical_errors = [e for e in errors if hasattr(e, 'severity') and 'CRITICAL' in str(e.severity).upper()]
+        critical_errors = [
+            e for e in errors if hasattr(e, "severity") and "CRITICAL" in str(e.severity).upper()
+        ]
         assert len(critical_errors) == 0, "Document structure should not have critical errors"
 
     def test_table_like_structure(self):
@@ -380,21 +384,18 @@ print(f"結果: {result}")
     def test_large_compound_document(self, large_text_content):
         """Test processing of large document with compound notations."""
         # Use the large content fixture and add compound notations
-        sections = large_text_content.split('\n\n')
+        sections = large_text_content.split("\n\n")
         compound_sections = []
 
         for i, section in enumerate(sections[:100]):  # Limit for performance
             if i % 3 == 0:
                 # Add nested notation every third section
-                modified_section = section.replace(
-                    '重要な情報',
-                    '#太字 #下線 重要な情報##'
-                )
+                modified_section = section.replace("重要な情報", "#太字 #下線 重要な情報##")
                 compound_sections.append(modified_section)
             else:
                 compound_sections.append(section)
 
-        compound_content = '\n\n'.join(compound_sections)
+        compound_content = "\n\n".join(compound_sections)
 
         result = self.parser.parse(compound_content)
         errors = self.validator.validate_text(compound_content)

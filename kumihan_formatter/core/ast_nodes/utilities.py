@@ -54,15 +54,13 @@ def find_all_headings(nodes: list[Node]) -> list[Node]:
     return headings
 
 
-def validate_ast(nodes: list[Node]) -> list[str]:
+def validate_ast(nodes: list[Any]) -> list[str]:
     """Validate AST structure and return list of issues"""
     issues = []
 
     for i, node in enumerate(nodes):
         if not isinstance(node, Node):
-            issues.append(
-                f"Item {i} is not a Node instance: {type(node)}"
-            )  # type: ignore
+            issues.append(f"Item {i} is not a Node instance: {type(node)}")
             continue
 
         if not node.type:

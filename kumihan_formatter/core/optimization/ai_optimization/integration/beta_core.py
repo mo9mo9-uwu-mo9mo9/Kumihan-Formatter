@@ -197,9 +197,8 @@ class AlphaBetaCoordinator:
                 f"with mode {self.coordination_mode.value}"
             )
             return final_result
-
         except Exception as e:
-            self.logger.error(f"Coordination optimization failed: {e}")
+            self.logger.error(f"Coordinate optimization failed: {e}")
             return self._get_fallback_coordination_result(context_data)
 
     def _execute_alpha_optimization(
@@ -210,21 +209,10 @@ class AlphaBetaCoordinator:
             if not self.alpha_system:
                 return {"success": False, "reason": "alpha_system_not_available"}
 
-            # Alpha基盤の最適化機会予測
-            alpha_predictions = self.alpha_system.predict_optimization_opportunities(
-                context_data
-            )
+            # Alpha最適化実行（簡略化）
+            optimization_result = self.alpha_system.optimize()
 
-            # Alpha性能測定
-            alpha_performance = self.alpha_system.get_model_performance()
-
-            return {
-                "success": True,
-                "predictions": alpha_predictions,
-                "performance": alpha_performance,
-                "contribution": alpha_predictions.get("expected_improvement", 0.0),
-                "confidence": alpha_predictions.get("integrated_confidence", 0.0),
-            }
+            return {"success": True, "optimization_result": optimization_result}
 
         except Exception as e:
             self.logger.error(f"Alpha optimization execution failed: {e}")
@@ -523,16 +511,10 @@ class AlphaBetaCoordinator:
             if not self.learning_system:
                 return {"triggered": False, "reason": "learning_system_not_available"}
 
-            # Alpha結果から学習データ構築（簡略化）
-            # 学習システム実行（モック）
-            learning_result = {
-                "triggered": True,
-                "training_samples": 1,
-                "learning_effectiveness": {"effectiveness_score": 0.7},
-            }
+            # 学習システム実行（簡略化）
+            learning_result = self.learning_system.adapt_from_data(context_data)
 
             return learning_result
-
         except Exception as e:
             self.logger.error(f"Learning system trigger failed: {e}")
             return {"triggered": False, "error": str(e)}
@@ -568,8 +550,8 @@ class AlphaBetaCoordinator:
                 total_contribution += (efficiency_score - 0.8) * 0.2  # 80%以上で貢献
 
             return max(0.0, total_contribution)
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Beta contribution calculation failed: {e}")
             return 0.0
 
     def _calculate_synergy_multiplier(
@@ -597,8 +579,8 @@ class AlphaBetaCoordinator:
                 base_multiplier += 0.05
 
             return min(1.3, base_multiplier)  # 最大30%増幅
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Synergy multiplier calculation failed: {e}")
             return 1.0
 
     def _calculate_current_synergy_factor(self) -> float:
@@ -614,8 +596,8 @@ class AlphaBetaCoordinator:
             if recent_effects:
                 return np.mean(recent_effects)
             return 0.0
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Current synergy factor calculation failed: {e}")
             return 0.0
 
     def _calculate_integration_effectiveness(
@@ -629,11 +611,11 @@ class AlphaBetaCoordinator:
             if alpha_success and beta_success:
                 return 0.9  # 両方成功
             elif alpha_success or beta_success:
-                return 0.6  # 片方成功
+                return 0.7  # いずれか成功
             else:
-                return 0.2  # 両方失敗
-
-        except Exception:
+                return 0.3  # どちらも失敗
+        except Exception as e:
+            self.logger.error(f"Integration effectiveness calculation failed: {e}")
             return 0.0
 
     def _generate_integrated_recommendations(
@@ -671,9 +653,9 @@ class AlphaBetaCoordinator:
 
             # 重複除去
             return list(dict.fromkeys(recommendations))[:7]  # 最大7つ
-
-        except Exception:
-            return ["basic_optimization"]
+        except Exception as e:
+            self.logger.error(f"Integrated recommendations generation failed: {e}")
+            return []
 
     def _record_coordination_result(self, result: Dict[str, Any]):
         """協調結果記録"""

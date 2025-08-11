@@ -50,24 +50,16 @@ class ConvertValidator:
                 get_console_ui().info("処理を中断しました")
                 return False
 
-            # 推定処理時間を表示
-            estimated_time = FilePathUtilities.estimate_processing_time(
-                size_info["size_mb"]
-            )
-            get_console_ui().hint(f"推定処理時間: {estimated_time}")
-
-        return True
-
     def perform_syntax_check(self, input_path: Path) -> dict[str, Any]:
         """詳細な構文チェックを実行"""
         get_console_ui().info("記法チェック", f"{input_path.name} の記法を検証中...")
 
         try:
             # 構文チェック実行
-            results = check_files([input_path], verbose=False)
+            results = check_files([str(input_path)], verbose=False)
 
             # 辞書形式のエラーレポートに変換
-            error_report = {
+            error_report: dict[str, Any] = {
                 "source_file": str(input_path),
                 "errors": [],
                 "has_errors": False,
@@ -77,18 +69,18 @@ class ConvertValidator:
                 for file_path, errors in results.items():
                     for error in errors:
                         # 辞書形式のエラー情報に変換
-                        error_info = self._convert_to_error_info(
-                            error, file_path  # type: ignore
-                        )
+                        error_info = self._convert_to_error_info(error, file_path)
                         error_report["errors"].append(error_info)
                         error_report["has_errors"] = True
 
             return error_report
-
         except Exception as e:
-            get_console_ui().error("記法チェック中にエラーが発生しました", str(e))
-            # 空のレポートを返す
-            return {"source_file": str(input_path), "errors": [], "has_errors": False}
+            get_console_ui().error("構文チェック失敗", str(e))
+            return {
+                "source_file": str(input_path),
+                "errors": [{"type": "check_error", "message": str(e)}],
+                "has_errors": True,
+            }
 
     def _convert_to_error_info(self, error: Any, file_path: Path) -> dict[str, Any]:
         """エラーオブジェクトを辞書形式の情報に変換"""

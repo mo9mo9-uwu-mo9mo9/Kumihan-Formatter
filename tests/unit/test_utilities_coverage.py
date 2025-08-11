@@ -64,11 +64,14 @@ class TestLoggerCoverage:
 
     def test_get_logger_with_level(self):
         """Test logger creation with specific level."""
-        logger = get_logger("test_debug", level=logging.DEBUG)
+        logger = get_logger("test_debug")
+        # レベルを別途設定
+        logger.setLevel(logging.DEBUG)
 
         assert logger.level == logging.DEBUG
 
-        logger_info = get_logger("test_info", level=logging.INFO)
+        logger_info = get_logger("test_info")
+        logger_info.setLevel(logging.INFO)
         assert logger_info.level == logging.INFO
 
     def test_setup_logging_configuration(self):
@@ -94,7 +97,8 @@ class TestLoggerCoverage:
 
     def test_logger_message_levels(self):
         """Test different logging levels."""
-        logger = get_logger("test_levels", level=logging.DEBUG)
+        logger = get_logger("test_levels")
+        logger.setLevel(logging.DEBUG)
 
         # Capture log messages
         with patch("logging.StreamHandler") as mock_handler:
@@ -494,8 +498,7 @@ class TestErrorHandlerCoverage:
         # Should contain helpful suggestions
         suggestions_text = " ".join(result)
         assert any(
-            word in suggestions_text.lower()
-            for word in ["check", "verify", "ensure", "try"]
+            word in suggestions_text.lower() for word in ["check", "verify", "ensure", "try"]
         )
 
     def test_error_logging(self):

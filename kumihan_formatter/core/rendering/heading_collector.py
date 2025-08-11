@@ -37,24 +37,23 @@ class HeadingCollector:
             return headings
 
         for node in nodes:
-            if isinstance(node, Node):
-                if node.is_heading():
-                    level = node.get_heading_level()
-                    if level:
-                        heading_id = node.get_attribute("id")
-                        if not heading_id:
-                            self.heading_counter += 1
-                            heading_id = f"heading-{self.heading_counter}"
-                            node.add_attribute("id", heading_id)
+            if node.is_heading():
+                level = node.get_heading_level()
+                if level:
+                    heading_id = node.get_attribute("id")
+                    if not heading_id:
+                        self.heading_counter += 1
+                        heading_id = f"heading-{self.heading_counter}"
+                        node.add_attribute("id", heading_id)
 
-                        headings.append(
-                            {
-                                "level": level,
-                                "id": heading_id,
-                                "title": node.get_text_content(),
-                                "node": node,
-                            }
-                        )
+                    headings.append(
+                        {
+                            "level": level,
+                            "id": heading_id,
+                            "title": node.get_text_content(),
+                            "node": node,
+                        }
+                    )
 
                 # Recursively search in content with depth tracking
                 if isinstance(node.content, list):

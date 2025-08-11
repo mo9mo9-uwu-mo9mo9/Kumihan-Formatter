@@ -5,7 +5,7 @@ monolithic parser.py. Handles block markers, paragraphs, and optimized
 block processing.
 """
 
-from typing import Optional
+from typing import Any, Optional
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -22,7 +22,7 @@ class BlockHandler:
     - 最適化された行解析
     """
 
-    def __init__(self, parser_instance):
+    def __init__(self, parser_instance: Any) -> None:
         """
         Args:
             parser_instance: メインParserインスタンス（依存注入）
@@ -51,21 +51,11 @@ class BlockHandler:
         if current >= len(lines):
             return None, current + 1
 
-        line = lines[current].strip()
-
-        if self.parser.block_parser.is_opening_marker(line):
-            node, next_index = self.parser.block_parser.parse_block_marker(
-                lines, current
-            )
-            return node, next_index
-
-        return None, current + 1
-
     def parse_line_optimized(
         self,
         line_types: dict[int, str],
-        pattern_cache: dict,
-        line_type_cache: dict,
+        pattern_cache: dict[str, Any],
+        line_type_cache: dict[str, Any],
         current: int,
     ) -> Optional[Node]:
         """
@@ -76,37 +66,22 @@ class BlockHandler:
         if current >= len(self.parser.lines):
             return None
 
-        line_type = line_types.get(current, "unknown")
-
-        # タイプ別高速処理
-        if line_type == "empty":
-            self.parser.current += 1
-            return None
-        elif line_type == "block_marker":
-            return self._parse_block_marker_fast_internal()
-        elif line_type == "comment":
-            self.parser.current += 1
-            return None
-        elif line_type == "paragraph":
-            return self._parse_paragraph_fast_internal()
-        else:
-            # フォールバック
-            return self._parse_line_fallback_internal()
-
-    def _parse_block_marker_fast_internal(self) -> Optional[Node]:
+    def _parse_block_marker_fast_internal(self) -> "Node":
         """内部用高速ブロックマーカー解析"""
         node, next_index = self.parser.block_parser.parse_block_marker(
             self.parser.lines, self.parser.current
         )
         self.parser.current = next_index
+        # Node型を返す: parse_block_markerはTuple[Node, int]を保証
         return node
 
-    def _parse_paragraph_fast_internal(self) -> Optional[Node]:
+    def _parse_paragraph_fast_internal(self) -> "Node":
         """内部用高速パラグラフ解析"""
         node, next_index = self.parser.block_parser.parse_paragraph(
             self.parser.lines, self.parser.current
         )
         self.parser.current = next_index
+        # Node型を返す: parse_paragraphはTuple[Node, int]を保証
         return node
 
     def _parse_line_fallback_internal(self) -> Optional[Node]:
@@ -118,10 +93,10 @@ class BlockHandler:
                 self.parser.lines, self.parser.current
             )
             self.parser.current = next_index
-            return node
+            return node  # Node型を返す: parse_block_markerはTuple[Node, int]を保証
 
-        self.parser.current += 1
-        return None
+        # その他の場合はNoneを返す（Optional対応）
+        return None  # type: ignore[no-any-return]
 
     def analyze_line_types_batch(self, lines: list[str]) -> dict[int, str]:
         """

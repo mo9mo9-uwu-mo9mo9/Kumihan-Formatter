@@ -110,7 +110,7 @@ class BlockValidator:
 
     def validate_content_structure(self, content: str) -> list[str]:
         """Validate content within blocks"""
-        issues = []
+        issues: list[str] = []
 
         # ;;;記法チェックは削除されました（Phase 1完了）
         # 新記法のチェックが必要な場合はここに追加します

@@ -14,23 +14,18 @@ if TYPE_CHECKING:
     pass  # ..gui_models.AppState removed as unused
     # ..gui_views.MainView removed as unused
 
-# デバッグロガーのインポート
-try:
-    from ..core.debug_logger import (
-        debug,
-        info,
-        log_gui_event,
-    )
-except ImportError:
-    # Fallbacksを定義
-    def debug(*args: Any, **kwargs: Any) -> None:
-        pass
 
-    def info(*args: Any, **kwargs: Any) -> None:
-        pass
+# デバッグロガーのインポート（代替実装）
+def debug(*args: Any, **kwargs: Any) -> None:
+    pass
 
-    def log_gui_event(*args: Any, **kwargs: Any) -> None:
-        pass
+
+def info(*args: Any, **kwargs: Any) -> None:
+    pass
+
+
+def log_gui_event(*args: Any, **kwargs: Any) -> None:
+    pass
 
 
 class FileController:

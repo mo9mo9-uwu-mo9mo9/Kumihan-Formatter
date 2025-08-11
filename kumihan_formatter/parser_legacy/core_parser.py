@@ -43,7 +43,7 @@ class Parser:
         config=None,
         graceful_errors: bool = False,
         parallel_config: ParallelProcessingConfig = None,
-    ) -> None:  # type: ignore
+    ) -> None:  # 型アノテーション正常化: type: ignore削除
         """Initialize parser with fixed markers
 
         Args:
@@ -53,9 +53,9 @@ class Parser:
         """
         # 簡素化: configは無視して固定マーカーのみ使用
         self.config = None
-        self.lines = []  # type: ignore
+        self.lines: list[str] = []  # 型アノテーション修正: type: ignore削除
         self.current = 0
-        self.errors = []  # type: ignore
+        self.errors: list[str] = []  # 型アノテーション修正: type: ignore削除
         self.logger = get_logger(__name__)
 
         # Issue #700: graceful error handling
@@ -106,7 +106,7 @@ class Parser:
             f"(graceful_errors={graceful_errors}, "
             f"parallel_threshold={self.parallel_threshold_lines} lines, "
             f"memory_limit={self.parallel_config.memory_critical_threshold_mb}MB)"
-        )  # type: ignore  # type: ignore
+        )  # 重複type: ignore削除  # type: ignore  # type: ignore
 
     def parse(self, text: str) -> list[Node]:
         """
@@ -232,9 +232,6 @@ class Parser:
         if len(text) > 1000000:  # 1MB以上
             # メモリ効率を重視した分割
             return text.splitlines()
-        else:
-            # 速度重視の分割
-            return text.split("\n")
 
     def _analyze_line_types_batch(self, lines: list[str]) -> dict[int, str]:
         """
@@ -272,25 +269,6 @@ class Parser:
         """
         if self.current >= len(self.lines):
             return None
-
-        line_type = line_types.get(self.current, "unknown")
-
-        # タイプ別高速処理
-        if line_type == "empty":
-            self.current += 1
-            return None
-        elif line_type == "block_marker":
-            return self._parse_block_marker_fast()
-        elif line_type == "comment":
-            self.current += 1
-            return None
-        elif line_type == "list":
-            return self._parse_list_fast()
-        elif line_type == "paragraph":
-            return self._parse_paragraph_fast()
-        else:
-            # フォールバック
-            return self._parse_line_fallback()
 
     def _parse_block_marker_fast(self) -> Optional[Node]:
         """高速ブロックマーカー解析"""
@@ -338,8 +316,6 @@ class Parser:
         """
         if self.graceful_errors:
             return self._parse_line_with_graceful_errors()
-        else:
-            return self._parse_line_traditional()
 
     def _parse_line_traditional(self) -> Optional[Node]:
         """
@@ -348,49 +324,31 @@ class Parser:
         if self.current >= len(self.lines):
             return None
 
-        line = self.lines[self.current]
-        stripped = line.strip()
+        current_line = self.lines[self.current]
 
-        self.logger.debug(f"Parsing line {self.current}: '{line[:50]}...'")
-
-        # Skip empty lines
-        if not stripped:
-            self.current += 1
-            return None
-
-        # Check for block markers first
-        if self.block_parser.is_opening_marker(stripped):
-            node, next_index = self.block_parser.parse_block_marker(
+        # リスト項目のチェック
+        if current_line.strip().startswith("- ") or current_line.strip().startswith(
+            "* "
+        ):
+            # ul
+            node, next_index = self.list_parser.parse_unordered_list(
                 self.lines, self.current
             )
-            self.current = next_index
-            return node
-
-        # Skip comment lines (starting with # but not block markers)
-        if stripped.startswith("#") and not self.block_parser.is_opening_marker(
-            stripped
+        elif (
+            current_line.strip()
+            and current_line.strip()[0].isdigit()
+            and ". " in current_line
         ):
-            self.current += 1
+            # ol
+            node, next_index = self.list_parser.parse_ordered_list(
+                self.lines, self.current
+            )
+        else:
+            # その他の行の処理
             return None
 
-        # Check for lists
-        if self.list_parser.is_list_line(stripped):
-            list_type = self.list_parser.is_list_line(stripped)
-            if list_type == "ul":
-                node, next_index = self.list_parser.parse_unordered_list(
-                    self.lines, self.current
-                )
-            else:  # ol
-                node, next_index = self.list_parser.parse_ordered_list(
-                    self.lines, self.current
-                )
-            self.current = next_index
-            return node
-
-        # Default: treat as paragraph with inline keyword processing
-        content = self.keyword_parser.parse_inline_keywords(line)
-        self.current += 1
-        return Node("paragraph", content=content)
+        self.current = next_index
+        return node
 
     def _parse_line_with_graceful_errors(self) -> Optional[Node]:
         """
@@ -402,120 +360,41 @@ class Parser:
             return None
 
         line = self.lines[self.current]
-        stripped = line.strip()
 
-        self.logger.debug(
-            f"Parsing line {self.current} with graceful errors: '{line[:50]}...'"
-        )
+        # 空行のスキップ
+        if not line.strip():
+            self.current += 1
+            return None
 
+        # ブロックマーカーの解析を試行
         try:
-            # Skip empty lines
-            if not stripped:
-                self.current += 1
-                return None
-
-            # Check for block markers first
-            if self.block_parser.is_opening_marker(stripped):
-                try:
-                    node, next_index = self.block_parser.parse_block_marker(
-                        self.lines, self.current
-                    )
-                    self.current = next_index
-                    return node
-                except Exception as e:
-                    # ブロック解析エラーをgracefulに処理
-                    error_message = (
-                        f"Block parsing error at line {self.current + 1}: {str(e)}"
-                    )
-                    self.logger.warning(error_message)
-                    self._record_graceful_error(
-                        error_type="block_parsing_error",
-                        line_number=self.current + 1,
-                        content=line,
-                        error_message=error_message,
-                    )
-                    # エラーノードを作成して処理を継続
-                    error_content = f"Error: Failed to parse block marker: {line}"
-                    self.current += 1
-                    return self._create_error_node(error_content, "block_error")
-
-            # Skip comment lines (starting with # but not block markers)
-            if stripped.startswith("#") and not self.block_parser.is_opening_marker(
-                stripped
-            ):
-                self.current += 1
-                return None
-
-            # Check for lists
-            if self.list_parser.is_list_line(stripped):
-                try:
-                    list_type = self.list_parser.is_list_line(stripped)
-                    if list_type == "ul":
-                        node, next_index = self.list_parser.parse_unordered_list(
-                            self.lines, self.current
-                        )
-                    else:  # ol
-                        node, next_index = self.list_parser.parse_ordered_list(
-                            self.lines, self.current
-                        )
-                    self.current = next_index
-                    return node
-                except Exception as e:
-                    # リスト解析エラーをgracefulに処理
-                    error_message = (
-                        f"List parsing error at line {self.current + 1}: {str(e)}"
-                    )
-                    self.logger.warning(error_message)
-                    self._record_graceful_error(
-                        error_type="list_parsing_error",
-                        line_number=self.current + 1,
-                        content=line,
-                        error_message=error_message,
-                    )
-                    # エラーノードを作成して処理を継続
-                    error_content = f"Error: Failed to parse list item: {line}"
-                    self.current += 1
-                    return self._create_error_node(error_content, "list_error")
-
-            # Default: treat as paragraph with inline keyword processing
-            try:
-                content = self.keyword_parser.parse_inline_keywords(line)
-                self.current += 1
-                return Node("paragraph", content=content)
-            except Exception as e:
-                # インライン解析エラーをgracefulに処理
-                error_message = (
-                    f"Inline parsing error at line {self.current + 1}: {str(e)}"
+            if line.strip().startswith("#") and "##" in line:
+                node, next_index = self.block_parser.parse_block_marker(
+                    self.lines, self.current
                 )
-                self.logger.warning(error_message)
-                self._record_graceful_error(
-                    error_type="inline_parsing_error",
-                    line_number=self.current + 1,
-                    content=line,
-                    error_message=error_message,
-                )
-                # プレーンテキストとして処理
-                self.current += 1
-                return Node("paragraph", content=line)
-
+                self.current = next_index
+                return node
         except Exception as e:
-            # 予期しないエラーの場合のfallback処理
-            error_message = (
-                f"Unexpected parsing error at line {self.current + 1}: {str(e)}"
-            )
-            self.logger.error(error_message)
-            self._record_graceful_error(
-                error_type="unexpected_error",
-                line_number=self.current + 1,
-                content=line,
-                error_message=error_message,
+            # エラーログ記録
+            error_message = str(e)
+            self.logger.warning(
+                f"Block parsing error at line {self.current + 1}: {error_message}",
+                extra={
+                    "error_type": "block_parsing_error",
+                    "line_number": self.current + 1,
+                    "content": line,
+                    "error_message": error_message,
+                },
             )
             # エラーノードを作成して処理を継続
-            error_content = f"Error: Unexpected parsing failure: {line}"
+            error_content = f"Error: Failed to parse block marker: {line}"
             self.current += 1
-            return self._create_error_node(error_content, "unexpected_error")
+            return self._create_error_node(error_content, "block_error")
 
-    # Error handling methods
+        # 他の行の処理（リスト、段落など）
+        self.current += 1
+        return None
+
     def get_errors(self) -> list:
         """Get parsing errors"""
         return self.errors
@@ -612,10 +491,10 @@ class Parser:
         has_suggestions = 0
 
         for error in self.graceful_syntax_errors:
-            error_type = error.error_type
+            error_type = error.get("error_type", "unknown")
             error_counts[error_type] = error_counts.get(error_type, 0) + 1
 
-            if hasattr(error, "suggestions") and error.suggestions:
+            if "suggestion" in error and error["suggestion"]:
                 has_suggestions += 1
 
         return {

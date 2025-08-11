@@ -26,7 +26,8 @@ class TestLintCommand:
 
         # テスト用ファイル作成
         self.test_file = Path(self.temp_dir) / "test_file.py"
-        self.test_file.write_text("""# テスト用ファイル
+        self.test_file.write_text(
+            """# テスト用ファイル
 import os
 import sys
 import json  # 未使用import
@@ -35,7 +36,8 @@ def test_function():
     x=1+2  # E226: 演算子周辺の空白不足
     long_line = "This is a very long line that exceeds the maximum line length and should be split"  # E501
     return x
-""")
+"""
+        )
 
     def teardown_method(self):
         """テストのクリーンアップ"""
@@ -147,7 +149,7 @@ class TestFlake8AutoFixer:
         # 何らかの修正が適用されているかチェック
         if fixed_content != content:
             # 複数行に分割されているかチェック
-            assert fixed_content.count('\n') > content.count('\n')
+            assert fixed_content.count("\n") > content.count("\n")
 
     def test_fix_e226_missing_whitespace(self):
         """E226エラー修正テスト"""
@@ -171,7 +173,7 @@ print("hello")
 
         # ファイル内容が変更される場合があることを確認
         if fixed_content != content:
-            assert len(fixed_content.split('\n')) <= len(content.split('\n'))
+            assert len(fixed_content.split("\n")) <= len(content.split("\n"))
 
     def test_fix_file_with_nonexistent_file(self):
         """存在しないファイルの修正テスト"""
@@ -184,11 +186,13 @@ print("hello")
     def test_fix_file_with_valid_file(self):
         """正常ファイルの修正テスト"""
         test_file = Path(self.temp_dir) / "test.py"
-        test_file.write_text("""import json
+        test_file.write_text(
+            """import json
 def test():
     x=1+2
     return x
-""")
+"""
+        )
 
         result = self.fixer.fix_file(str(test_file), dry_run=True)
 
@@ -215,11 +219,13 @@ class TestLintIntegration:
         """エンドツーエンドの修正ワークフロー"""
         # 問題のあるPythonファイル作成
         problem_file = Path(self.temp_dir) / "problem.py"
-        problem_file.write_text("""def test():
+        problem_file.write_text(
+            """def test():
     x=1+2
     very_long_line_that_exceeds_the_maximum_line_length_and_should_be_split_somehow = True
     return x
-""")
+"""
+        )
 
         # dry-runで修正可能性確認
         result1 = self.runner.invoke(lint_command, [str(problem_file), "--fix", "--dry-run"])
@@ -239,10 +245,12 @@ class TestLintIntegration:
         files = []
         for i in range(3):
             test_file = Path(self.temp_dir) / f"test_{i}.py"
-            test_file.write_text(f"""def test_{i}():
+            test_file.write_text(
+                f"""def test_{i}():
     x=1+{i}
     return x
-""")
+"""
+            )
             files.append(str(test_file))
 
         # 複数ファイルを同時処理
@@ -255,13 +263,17 @@ class TestLintIntegration:
         """--typeオプションでの特定エラータイプ修正テスト"""
         # テスト用ファイル作成
         test_file = Path(self.temp_dir) / "test_type.py"
-        test_file.write_text("""import json  # 未使用import (F401)
+        test_file.write_text(
+            """import json  # 未使用import (F401)
 def test():
     x=1+2  # E226: 演算子周辺の空白不足
     return x
-""")
+"""
+        )
 
-        result = self.runner.invoke(lint_command, [str(test_file), "--fix", "--dry-run", "--type", "E226,F401"])
+        result = self.runner.invoke(
+            lint_command, [str(test_file), "--fix", "--dry-run", "--type", "E226,F401"]
+        )
 
         assert result.exit_code == 0
         assert "Fixing only specified error types: E226, F401" in result.output
@@ -271,12 +283,16 @@ def test():
         """不正な--typeオプション指定時のテスト"""
         # テスト用ファイル作成
         test_file = Path(self.temp_dir) / "test_invalid.py"
-        test_file.write_text("""def test():
+        test_file.write_text(
+            """def test():
     x=1+2
     return x
-""")
+"""
+        )
 
-        result = self.runner.invoke(lint_command, [str(test_file), "--fix", "--dry-run", "--type", "E999,X123"])
+        result = self.runner.invoke(
+            lint_command, [str(test_file), "--fix", "--dry-run", "--type", "E999,X123"]
+        )
 
         # 不正なエラータイプでもクラッシュしない
         assert result.exit_code == 0

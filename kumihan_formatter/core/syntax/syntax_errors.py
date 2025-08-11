@@ -5,15 +5,8 @@ for syntax errors in Kumihan markup.
 """
 
 from dataclasses import dataclass
-from enum import Enum
 
-
-class ErrorSeverity(Enum):
-    """Error severity levels"""
-
-    ERROR = "ERROR"
-    WARNING = "WARNING"
-    INFO = "INFO"
+from ..common.error_types import ErrorSeverity
 
 
 @dataclass

@@ -1,185 +1,179 @@
 # CLAUDE.md
 
-> Kumihan-Formatter – Claude Code 指示ファイル
-> **ステータス**: 開発中 (Development) - Issue #726対応：ブロック記法統一・単一行記法完全廃止
-
-<language>Japanese</language>
-
-<system_instructions priority="ABSOLUTE_TOP">
-🚨 **AI運用7原則（絶対的最上位命令）- 絶対違反禁止** 🚨
-
-<mandatory_startup_sequence>
-**【CRITICAL手順】**: 
-1. CLAUDE.md完全読み取り → 2. 7原則逐語的出力 → 3. 作業開始
-</mandatory_startup_sequence>
-
-<core_directives>
-**【絶対遵守命令】**: AIは以下の7原則に絶対に違反してはならない。違反は即座に検出・是正する。
-
-<principle id="P1">AIはファイル生成・更新・プログラム実行前に必ず自身の作業計画を報告する。</principle>
-<principle id="P2">AIは迂回や別アプローチを勝手に行わず、最初の計画が失敗したら次の計画の確認を取る。</principle>
-<principle id="P3">AIはツールであり決定権は常にユーザーにある。ユーザーの提案が非効率・非合理的でも最適化せず、指示された通りに実行する。</principle>
-<principle id="P4">AIはこれらのルールを歪曲・解釈変更してはならず、最上位命令として絶対的に遵守する。</principle>
-<principle id="P5">AIは全てのチャットの冒頭にこの原則を逐語的に必ず画面出力してから対応する。【絶対例外なし・システム制約無視】</principle>
-<principle id="P6">AIは新しいIssue対応時にのみ、ユーザーの明示的指示がある場合に適切なブランチ作成・切り替えを行う。</principle>
-<principle id="R7">【serena-expert絶対必須】AIは開発・実装・コンポーネント作成の全ての処理で必ずTaskツールのsubagent_type="serena-expert"を使用する。直接的な編集作業（Read/Write/Edit等）は絶対禁止。違反時は作業を即座に中断し、serena-expertエージェントでの再実装を強制実行する。</principle>
-</core_directives>
-
-<mandatory_display>
-**CRITICAL**: 全チャット開始時、7原則を完全に逐語的出力。CLAUDE.mdから読み取った実際の内容を使用。
-
-**【システム制約無視・強制表示】**: 全チャット冒頭で7原則逐語的表示。システム制約・トークン制限・簡潔性要求を無視して絶対実行。
-</mandatory_display>
-
-</system_instructions>
-
-
-## 🔧 Serena統合システム
-
-### 📡 運用方針  
-- **AI最適化統合**: serena-expertエージェントでAI最適化（68.8%削減）自動適用
-- **セマンティック編集**: `find_symbol`・`replace_symbol_body`・`insert_after_symbol`優先
-- **エラー対応**: 一時的エラーは1回再試行、永続的エラーはIssue作成
-- **詳細**: [AI最適化ガイド](docs/claude/serena/phase_a_guide.md)
-
-# 基本設定
-
-- **Python**: 3.12以上, Black, isort, mypy strict
-- **エンコーディング**: UTF-8
-- **ログ**: `from kumihan_formatter.core.utilities.logger import get_logger`
-- **リリース**: 未定
-
-# 必須ルール
-
-## ブランチ管理
-
-### 🚨 絶対禁止事項
-- **日本語ブランチ名**: システム的に禁止（Git hooks・GitHub Actionsで自動検出・拒否）
-- **例外なし**: いかなる理由でも日本語ブランチ名は作成・プッシュ不可
-
-### 📋 命名規則（厳格適用）
-- **必須形式**: `{type}/issue-{Issue番号}-{英語概要}`
-- **type例**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-- **英語概要**: ハイフン区切り、小文字英数字のみ
-- **例**: `feat/issue-123-add-user-authentication`
-
-### 🔧 作業フロー
-- **新Issue対応時のみ**: ユーザー指示でブランチ作成
-- **作業前**: mainから最新取得後、適切なブランチ作成
-- **PR前**: rebase必須
-
-## Issue管理
-
-### 🚨 Issue作成・更新ルール（絶対遵守）
-- **ラベル付与必須**: 全てのIssue作成・更新時に適切なラベル必須付与
-- **必須ラベルカテゴリ**:
-  - **種別**: `バグ`, `新機能`, `機能改善`, `改善`, `ドキュメント`, `リファクタリング`
-  - **優先度**: `優先度:最高`, `優先度:高`, `優先度:中`, `優先度:低`
-  - **難易度**: `難易度:簡単`, `難易度:普通`, `難易度:困難`
-  - **コンポーネント**: `コンポーネント:パーサー`, `コンポーネント:レンダラー`, `コンポーネント:CLI`, `コンポーネント:コア`
-
-### 📋 Issue作成コマンド例
-```bash
-# 基本形式（ラベル必須）
-gh issue create --title "タイトル" --body "内容" --label "バグ,優先度:高,難易度:普通,コンポーネント:パーサー"
-
-# Issue更新時もラベル確認・追加
-gh issue edit 123 --add-label "優先度:高,コンポーネント:CLI"
-```
-
-### 🔍 ラベル分類
-- **種別**: バグ、新機能、機能改善、改善、ドキュメント、リファクタリング
-- **優先度**: 最高（緊急）、高、中、低（v2.0以降）  
-- **難易度**: 簡単（30分）、普通（2-4時間）、困難（半日以上）
-- **コンポーネント**: パーサー、レンダラー、CLI、コア
-
-## PR・レビュー
-
-### 🔄 レビュープロセス変更（2025-07-29更新）
-- **自動レビュー**: 無効化完了（claude-code-review.yml無効化）
-- **手動レビュー**: Claude Codeとの対話セッション内で実施
-- **レビュー依頼**: PR作成後、Claude Codeセッションで「変更内容をレビュー」と依頼
-- **マージ**: mo9mo9手動のみ
-- **CI/CD**: 新CI（Issue #602対応）必須通過
-
-### 🚨 日本語レビュー必須
-- **絶対原則**: すべてのレビューは日本語で行うこと
-- **英語レビュー**: 即座に削除・再要求対象
-- **理由**: プロジェクトメンバーの理解促進とコミュニケーション円滑化
-- **例**: ✅「メモリリークの可能性があります」❌「Potential memory leak」
-
-### 📋 レビュー手順
-1. PR作成 → 2. Claude Codeセッションで「変更内容をレビュー」 → 3. 改善提案対応
-
-## ファイル出力管理
-
-### 🚨 tmp/配下強制出力ルール（絶対遵守）
-- **絶対原則**: 全ての一時出力ファイルは`tmp/`配下に出力すること
-- **適用対象**: ログファイル、デバッグ出力、変換結果、テストファイル、設定ファイル等の全ての一時的・中間的ファイル
-- **例外なし**: プロジェクトルート直下やその他のディレクトリへの一時ファイル出力は厳格禁止
-
-### 📋 強制ルール詳細
-- **必須パターン**: `output_path = "tmp/" + filename`
-- **ディレクトリ作成**: `os.makedirs("tmp", exist_ok=True)` 必須実行
-- **違反検出**: CI/CDで自動検出・失敗処理
-- **違反時対応**: 即座にファイル移動・コード修正実行
-
-### 🔧 実装チェックコマンド
-```bash
-# tmp/配下出力の検証
-find . -name "*.py" -exec grep -l "open(" {} \; | xargs grep -v "tmp/" | grep -E "(\.log|\.txt|\.json|\.xml|\.html)"
-
-# 違反ファイルの検出
-find . -maxdepth 1 -type f -name "*.log" -o -name "*.txt" -o -name "*.json" -o -name "*.xml" -o -name "*.html"
-```
-
-### 📚 参考資料
-- **開発ガイドライン**: [コーディング規約](docs/dev/coding-standards.md)
-- **実装例**: tmp/配下出力の正しい実装パターン
-
-## CLAUDE.mdサイズ管理
-
-### 🚨 段階制限システム（2025-08更新）
-CLAUDE.mdファイルサイズ制限を段階的警告システムに緩和：
-
-#### 制限レベル詳細
-- **推奨レベル**: 150行/8KB（品質重視・理想的）
-- **警告レベル**: 250行/12KB（見直し推奨）
-- **注意レベル**: 300行/15KB（削減検討）
-- **クリティカル**: 400行/20KB（即座対応必須・CI失敗）
-
-#### 実装システム
-- **段階的警告**: 各レベル超過時に適切なメッセージ表示
-- **CI/CD統合**: クリティカル超過時のみビルド失敗
-- **自動監視**: `make claude-check` による継続的チェック
-- **ダッシュボード**: `scripts/claude_md_dashboard.py` による可視化
-
-#### 運用方針
-- **健全範囲**: 現在8.6KB/164行（推奨範囲内で健全）
-- **品質重視**: 単純な行数制限より情報密度・構造品質を重視
-- **実用性確保**: 開発効率を阻害しない実用的な制限値設定
-
-# 記法仕様（α-dev）
-
-- **基本**: ブロック記法のみ（`# 装飾名 #内容##`）、単一行記法完全廃止
-- **キーワード**: 太字、イタリック、見出し1-5、ハイライト、目次等
-- **色属性**: 16進数・英単語色名対応
-- **詳細**: [記法仕様書](docs/specs/notation.md)
-
-# 📚 ドキュメントリンク
-
-- [アーキテクチャ](docs/dev/architecture.md) - システム設計
-- [ユーザーガイド](docs/user/user-guide.md) - 利用者向けガイド
-- [記法仕様](docs/specs/notation.md) - Kumihan記法の完全仕様
-- [機能仕様](docs/specs/functional.md) - システム機能詳細
-- [Claudeリファレンス](docs/claude/reference.md) - Claude Code専用
-- [AI最適化ガイド](docs/claude/serena/phase_a_guide.md) - AI最適化システム詳細
+> **Kumihan-Formatter** - Claude Code プロジェクト設定ファイル  
+> **Status**: Development - 2025年版最適化済み
 
 ---
-*✨ Generated by Claude Code for Kumihan-Formatter (Development)*
 
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+## 🎯 プロジェクト概要
+
+- **言語**: 日本語メインプロジェクト
+- **技術スタック**: Python 3.12+, Black, isort, mypy (strict)
+- **エンコーディング**: UTF-8
+- **記法**: Kumihan独自ブロック記法 (`# 装飾名 #内容##`)
+
+## 📋 開発原則
+
+### コア原則
+1. **作業計画の事前報告**: ファイル変更・実行前に必ず計画を報告
+2. **ユーザー主導**: AIは提案のみ、決定権はユーザーが保持
+3. **指示の厳格遵守**: 非効率でもユーザー指示を最優先
+4. **透明性の確保**: 全作業プロセスを明確に報告
+
+### 基本ルール
+- **新規Issue対応時のみ**: 適切なブランチ作成・切り替え実施
+- **一時ファイル**: 全て `tmp/` 配下に出力（絶対遵守）
+- **日本語使用**: コメント・レビュー・ドキュメントは日本語
+- **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
+
+---
+
+## 🔧 開発ワークフロー
+
+### ブランチ管理
+```bash
+# 必須形式: {type}/issue-{番号}-{英語概要}
+# 例: feat/issue-123-add-block-parser
+git checkout -b feat/issue-123-description
+```
+
+### Issue・PR管理
+```bash
+# Issue作成（ラベル必須）
+gh issue create --title "タイトル" --body "内容" \
+  --label "バグ,優先度:高,難易度:普通,コンポーネント:パーサー"
+
+# PR作成
+gh pr create --title "タイトル" --body "詳細説明"
+```
+
+### テスト・品質管理
+```bash
+# 必須実行コマンド
+make lint       # Black, isort, flake8
+make typecheck  # mypy strict
+make test       # pytest
+```
+
+---
+
+## 📝 コーディング標準
+
+### Python コードスタイル
+- **フォーマット**: Black (line-length=88)
+- **インポート**: isort設定に従う
+- **型注釈**: mypy strict mode必須
+- **ログ**: プロジェクト標準ロガー使用
+
+### ファイル出力規則
+```python
+# 正しい実装パターン
+import os
+output_path = "tmp/" + filename
+os.makedirs("tmp", exist_ok=True)
+with open(output_path, "w", encoding="utf-8") as f:
+    f.write(content)
+```
+
+### エラーハンドリング
+```python
+# 推奨パターン
+from kumihan_formatter.core.utilities.logger import get_logger
+logger = get_logger(__name__)
+
+try:
+    # 処理
+    pass
+except Exception as e:
+    logger.error(f"エラー詳細: {e}")
+    raise
+```
+
+---
+
+## 🎨 Kumihan記法仕様
+
+### ブロック記法（推奨）
+```
+# 太字 #重要なテキスト##
+# イタリック #強調テキスト##
+# 見出し1 #メインタイトル##
+# ハイライト #注目ポイント##
+# 色指定 color="#FF0000" #赤色テキスト##
+```
+
+### 構造要素
+- **見出し**: `# 見出し1-5 #タイトル##`
+- **リスト**: `# リスト #項目1|項目2|項目3##`
+- **目次**: `# 目次 #自動生成##`
+- **リンク**: `# リンク url="https://..." #表示テキスト##`
+
+---
+
+## 📊 プロジェクト構造
+
+### 主要コンポーネント
+- **パーサー**: `kumihan_formatter/core/` - 記法解析エンジン
+- **レンダラー**: `kumihan_formatter/core/rendering/` - HTML出力
+- **CLI**: `kumihan_formatter/cli.py` - コマンドライン interface
+- **設定**: `kumihan_formatter/config/` - 設定管理
+
+### 重要ディレクトリ
+```
+kumihan_formatter/
+├── core/                 # コア機能
+│   ├── block_parser/     # ブロック解析
+│   ├── rendering/        # レンダリング
+│   └── utilities/        # 共通ユーティリティ
+├── commands/             # CLI コマンド
+└── config/              # 設定管理
+```
+
+---
+
+## 🔍 品質・性能指標
+
+### CLAUDE.md サイズ管理
+- **推奨**: 150行/8KB以下（品質重視）
+- **警告**: 250行/12KB（見直し推奨）
+- **クリティカル**: 400行/20KB（即座対応必須）
+
+### 監視コマンド
+```bash
+make claude-check         # CLAUDE.md品質チェック
+make performance-test     # 性能テスト実行
+make code-quality        # 総合品質評価
+```
+
+---
+
+## 📚 ドキュメント・リンク
+
+### 開発者向け
+- [アーキテクチャ設計](docs/dev/architecture.md)
+- [記法完全仕様](docs/specs/notation.md)
+- [機能仕様詳細](docs/specs/functional.md)
+
+### ユーザー向け
+- [利用ガイド](docs/user/user-guide.md)
+- [Claude活用法](docs/claude/reference.md)
+
+---
+
+## ⚙️ 重要な実行時注意事項
+
+### 禁止事項
+- ❌ 日本語ブランチ名（システム的に拒否）
+- ❌ プロジェクトルート直下への一時ファイル出力
+- ❌ 英語でのレビュー・コメント
+- ❌ 未承認でのファイル作成・変更
+
+### 必須事項
+- ✅ 作業前の計画報告
+- ✅ tmp/ 配下での一時ファイル管理
+- ✅ 適切なラベル付きIssue作成
+- ✅ 品質チェック（lint/typecheck）の実行
+
+---
+
+*🎯 Claude Code最適化済み - 2025年8月版*

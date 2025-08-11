@@ -209,9 +209,7 @@ class TestProgressContextManager:
                 total_items=100,
                 verbosity=ProgressContextManager.VerbosityLevel.DETAILED,
             ) as progress:
-                assert (
-                    progress.verbosity == ProgressContextManager.VerbosityLevel.DETAILED
-                )
+                assert progress.verbosity == ProgressContextManager.VerbosityLevel.DETAILED
 
     def test_cancellation_handling(self):
         """キャンセル処理のテスト"""

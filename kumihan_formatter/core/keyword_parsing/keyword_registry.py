@@ -264,7 +264,7 @@ class KeywordRegistry:
             self._language_mappings[language][display_name] = definition.keyword_id
 
     def get_keyword_by_display_name(
-        self, display_name: str, language: str = None
+        self, display_name: str, language: Optional[str] = None
     ) -> Optional[KeywordDefinition]:
         """表示名からキーワード定義を取得
 
@@ -284,8 +284,6 @@ class KeywordRegistry:
         if keyword_id:
             return self.keywords.get(keyword_id)
 
-        return None
-
     def get_keyword_by_id(self, keyword_id: str) -> Optional[KeywordDefinition]:
         """IDからキーワード定義を取得
 
@@ -297,7 +295,7 @@ class KeywordRegistry:
         """
         return self.keywords.get(keyword_id)
 
-    def get_all_display_names(self, language: str = None) -> List[str]:
+    def get_all_display_names(self, language: Optional[str] = None) -> List[str]:
         """指定言語の全表示名を取得
 
         Args:
@@ -325,7 +323,7 @@ class KeywordRegistry:
         return [kw for kw in self.keywords.values() if kw.keyword_type == keyword_type]
 
     def convert_to_legacy_format(
-        self, language: str = None
+        self, language: Optional[str] = None
     ) -> Dict[str, Dict[str, Any]]:
         """従来形式の辞書に変換（後方互換性）
 
@@ -378,4 +376,3 @@ class KeywordRegistry:
         if language in self._language_mappings:
             self.default_language = language
             return True
-        return False

@@ -74,9 +74,6 @@ class UnifiedLogFormatter(logging.Formatter):
         if hasattr(record, "kumihan_error"):
             return self._format_kumihan_error(record, record.kumihan_error)
 
-        # 標準フォーマット
-        return super().format(record)
-
     def _format_kumihan_error(
         self, record: logging.LogRecord, error: KumihanError
     ) -> str:
@@ -143,27 +140,6 @@ class ComponentLoggerFactory:
         """
         if name in cls._loggers:
             return cls._loggers[name]
-
-        # コンポーネント名決定
-        if component_name is None:
-            component_name = cls._extract_component_name(name)
-
-        # ロガー作成
-        logger = logging.getLogger(name)
-        logger.setLevel(level)
-
-        # フォーマッター適用（まだない場合）
-        if not logger.handlers:
-            handler = logging.StreamHandler()
-
-            # 統一フォーマッター使用
-            formatter = cls._get_formatter(component_name)
-            handler.setFormatter(formatter)
-
-            logger.addHandler(handler)
-
-        cls._loggers[name] = logger
-        return logger
 
     @classmethod
     def _extract_component_name(cls, name: str) -> str:
@@ -287,13 +263,7 @@ class ErrorMessageBuilder:
         if not colored:
             return ErrorMessageBuilder.build_user_message(error)
 
-        # ANSIカラーコード
-        colors = {
-            ErrorSeverity.CRITICAL: "\033[91m",  # 赤
-            ErrorSeverity.ERROR: "\033[91m",  # 赤
-            ErrorSeverity.WARNING: "\033[93m",  # 黄
-            ErrorSeverity.INFO: "\033[94m",  # 青
-        }
+        colors = {"ERROR": "[31m", "WARNING": "[33m", "INFO": "[34m"}
         reset = "\033[0m"
 
         color = colors.get(error.severity, "")
@@ -314,7 +284,6 @@ class ErrorMessageBuilder:
         return message
 
 
-# 便利関数
 def get_component_logger(
     name: str, component_name: Optional[str] = None
 ) -> logging.Logger:

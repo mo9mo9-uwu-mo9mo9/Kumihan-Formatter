@@ -4,7 +4,7 @@ This module handles rendering of compound elements with multiple keywords
 and complex nesting logic.
 """
 
-from html import escape
+# from html import escape  # Removed: unused import
 from typing import Any
 
 from ..keyword_parsing.definitions import KeywordDefinitions
@@ -63,22 +63,6 @@ class CompoundElementRenderer:
         """
         if keyword == "太字":
             return f"<strong>{content}</strong>"
-        elif keyword == "イタリック":
-            return f"<em>{content}</em>"
-        elif keyword == "枠線":
-            return f'<div class="box">{content}</div>'
-        elif keyword == "ハイライト":
-            return self._render_highlight(content, attributes)
-        elif keyword.startswith("見出し"):
-            level = keyword[-1]
-            return f"<h{level}>{content}</h{level}>"
-        elif keyword == "折りたたみ":
-            return f"<details><summary>詳細を表示</summary>{content}</details>"
-        elif keyword == "ネタバレ":
-            return f'<details class="spoiler"><summary>ネタバレを表示</summary>{content}</details>'
-        else:
-            # Fallback for unknown keywords
-            return f'<span class="{escape(keyword)}">{content}</span>'
 
     def _render_highlight(self, content: str, attributes: dict[str, Any]) -> str:
         """
@@ -149,5 +133,3 @@ class CompoundElementRenderer:
         unknown_keywords = [k for k in keywords if k not in known_keywords]
         if unknown_keywords:
             return False, f"Unknown keywords: {', '.join(unknown_keywords)}"
-
-        return True, ""

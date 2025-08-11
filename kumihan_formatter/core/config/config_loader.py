@@ -25,7 +25,7 @@ class ConfigLoader:
     責任: ファイル読み込み・環境変数処理・設定マージ
     """
 
-    def __init__(self, validator) -> None:  # type: ignore
+    def __init__(self, validator) -> None:
         """
         Args:
             validator: ConfigValidator インスタンス
@@ -41,46 +41,38 @@ class ConfigLoader:
             return None
 
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                if config_path.suffix.lower() in [".yaml", ".yml"]:
-                    if not HAS_YAML:
-                        logging.error(
-                            "YAML support not available. Install PyYAML to use YAML config files."
-                        )
-                        return None
-                    user_config = yaml.safe_load(f)
-                elif config_path.suffix.lower() == ".json":
-                    user_config = json.load(f)
-                else:
-                    logging.error(f"Unsupported config format: {config_path.suffix}")
+            if config_path.suffix.lower() in [".yaml", ".yml"]:
+                if not HAS_YAML:
+                    logging.error(
+                        "YAML support not available. Install PyYAML to use YAML config files."
+                    )
                     return None
 
-            if not isinstance(user_config, dict):
-                logging.error("Configuration file must contain a dictionary")
+                with open(config_path, "r", encoding="utf-8") as file:
+                    config_data = yaml.safe_load(file)
+
+            elif config_path.suffix.lower() == ".json":
+                with open(config_path, "r", encoding="utf-8") as file:
+                    config_data = json.load(file)
+            else:
+                logging.error(f"Unsupported configuration file format: {config_path}")
                 return None
 
-            # 読み込み前の検証
-            validation_result = self.validator.validate(user_config)
-            if not validation_result.is_valid:
-                logging.error(
-                    f"Configuration validation failed: {validation_result.errors}"
-                )
+            # 設定の検証
+            if self.validator and not self.validator.validate(config_data):
+                logging.error(f"Configuration validation failed for: {config_path}")
                 return None
-
-            # 警告をログ出力
-            for warning in validation_result.warnings:
-                logging.warning(f"Configuration warning: {warning}")
 
             logging.info(f"Loaded configuration from: {config_path}")
-            return user_config
+            return config_data
 
         except Exception as e:
-            logging.error(f"Failed to load configuration from {config_path}: {e}")
+            logging.error(f"Error loading configuration from {config_path}: {e}")
             return None
 
     def load_from_environment(self) -> dict[str, Any]:
         """環境変数から設定を読み込み"""
-        env_config = {}
+        env_config: dict[str, Any] = {}
         prefix = "KUMIHAN_"
 
         for key, value in os.environ.items():
@@ -94,21 +86,25 @@ class ConfigLoader:
                     env_config["font_family"] = value
                 elif config_key == "max_file_size_mb":
                     try:
-                        env_config.setdefault("validation", {})[
-                            "max_file_size_mb"
-                        ] = int(
-                            value
-                        )  # type: ignore
+                        # validationキーが存在しない場合は辞書で初期化
+                        if "validation" not in env_config:
+                            env_config["validation"] = {}
+                        validation_config = env_config["validation"]
+                        if isinstance(validation_config, dict):
+                            validation_config["max_file_size_mb"] = int(value)
                     except ValueError:
                         logging.warning(f"Invalid value for {key}: {value}")
                 elif config_key == "strict_mode":
-                    env_config.setdefault("validation", {})[  # type: ignore # type: ignore
-                        "strict_mode"
-                    ] = value.lower() in (
-                        "true",
-                        "1",
-                        "yes",
-                    )
+                    # validationキーが存在しない場合は辞書で初期化
+                    if "validation" not in env_config:
+                        env_config["validation"] = {}
+                    validation_config = env_config["validation"]
+                    if isinstance(validation_config, dict):
+                        validation_config["strict_mode"] = value.lower() in (
+                            "true",
+                            "1",
+                            "yes",
+                        )
 
         if env_config:
             logging.info(f"Loaded environment configuration: {list(env_config.keys())}")
@@ -127,10 +123,6 @@ class ConfigLoader:
         """深いコピーユーティリティ"""
         if isinstance(obj, dict):
             return {k: self._deep_copy(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [self._deep_copy(item) for item in obj]
-        else:
-            return obj
 
     def _merge_dict(self, target: dict[str, Any], source: dict[str, Any]) -> None:
         """辞書を再帰的にマージ"""

@@ -38,9 +38,6 @@ class ConsoleUI:
         """Create console instance with safe settings"""
         return ConsoleUIFactory.create_console()
 
-    # Delegate all methods to appropriate components for backward compatibility
-
-    # From ConsoleMessaging
     def processing_start(self, message: str, file_path: Optional[str] = None) -> None:
         self.messaging.processing_start(message, file_path)
 
@@ -191,11 +188,6 @@ class ConsoleUI:
 
     def create_progress(self) -> Progress:
         return self.interaction.create_progress()
-
-
-# Global console UI instance - removed to avoid import-time side effects
-# Use get_console_ui() function instead
-_console_ui_instance: Optional[ConsoleUI] = None
 
 
 def get_console_ui() -> ConsoleUI:

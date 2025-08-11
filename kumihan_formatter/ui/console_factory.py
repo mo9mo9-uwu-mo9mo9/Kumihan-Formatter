@@ -35,8 +35,8 @@ class ConsoleUIFactory:
             else:
                 return Console(force_terminal=True)
         except Exception:
-            # Minimal console as fallback
-            return Console(legacy_windows=True)
+            # Fallback to basic console if configuration fails
+            return Console()
 
     @staticmethod
     def setup_encoding() -> None:

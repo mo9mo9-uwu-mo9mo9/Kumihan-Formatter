@@ -88,8 +88,18 @@ class StabilityValidator:
             return result
 
         except Exception as e:
-            self.logger.error(f"安定性検証エラー: {e}")
-            raise
+            self.logger.error(f"System stability validation failed: {e}")
+            # エラー時のデフォルト結果を返す
+            return StabilityValidationResult(
+                timestamp=datetime.now(),
+                system_stability=0.0,
+                performance_impact=999.0,
+                error_rate=1.0,
+                memory_usage=0.0,
+                processing_speed=0.0,
+                integration_health={},
+                validation_passed=False,
+            )
 
     async def _calculate_stability_score(self) -> float:
         """安定性スコア計算"""
@@ -137,23 +147,23 @@ class StabilityValidator:
         if not self.validation_history:
             return {"status": "no_validations", "message": "検証データがありません"}
 
-        recent_results = self.validation_history[-5:]  # 直近5件
-
-        avg_stability = sum(r.system_stability for r in recent_results) / len(
-            recent_results
+        # 直近10件の検証結果から統計計算
+        recent_validations = self.validation_history[-10:]
+        avg_stability = sum(v.system_stability for v in recent_validations) / len(
+            recent_validations
         )
-        avg_performance = sum(r.performance_impact for r in recent_results) / len(
-            recent_results
+        avg_performance = sum(v.performance_impact for v in recent_validations) / len(
+            recent_validations
         )
-        avg_error_rate = sum(r.error_rate for r in recent_results) / len(recent_results)
-        pass_rate = sum(1 for r in recent_results if r.validation_passed) / len(
-            recent_results
+        avg_error_rate = sum(v.error_rate for v in recent_validations) / len(
+            recent_validations
+        )
+        pass_rate = sum(1 for v in recent_validations if v.validation_passed) / len(
+            recent_validations
         )
 
         return {
-            "status": "active",
-            "total_validations": len(self.validation_history),
-            "recent_average": {
+            "metrics": {
                 "stability_score": avg_stability,
                 "performance_impact": avg_performance,
                 "error_rate": avg_error_rate,
@@ -205,8 +215,17 @@ class PhaseBReportGenerator:
             return report
 
         except Exception as e:
-            self.logger.error(f"レポート生成エラー: {e}")
-            raise
+            self.logger.error(f"Phase B comprehensive report generation failed: {e}")
+            # エラー時のデフォルトレポートを返す
+            return PhaseBReport(
+                generation_time=datetime.now(),
+                phase_b_summary={},
+                effect_measurement=effect_measurement,
+                stability_validation=stability_validation,
+                goal_achievement={},
+                recommendations=[],
+                phase_b4_roadmap={},
+            )
 
     async def _generate_phase_b_summary(self) -> Dict[str, Any]:
         """Phase B実装サマリー生成"""
@@ -419,5 +438,5 @@ class PhaseBReportGenerator:
             return filepath
 
         except Exception as e:
-            self.logger.error(f"レポート保存エラー: {e}")
+            self.logger.error(f"Report saving failed: {e}")
             raise

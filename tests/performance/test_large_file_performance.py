@@ -79,7 +79,6 @@ def process_data(data):
 5. リリースフェーズ
 
 """,
-
             """# 見出し2 # 技術仕様 第{section}章
 
 # ハイライト # ==重要な技術仕様==について説明します。
@@ -108,7 +107,6 @@ def process_data(data):
 - 可用性: 99.9%以上
 
 """,
-
             """# 見出し3 # 運用手順 第{section}章
 
 # 情報 # ℹ️ 運用時の重要な情報をまとめています。
@@ -144,7 +142,6 @@ def process_data(data):
 マニュアルに従って正確に作業を進めることが重要です。
 
 """,
-
             """# 中央寄せ #
 プロジェクト概要
 システム名: 大容量データ処理システム
@@ -181,7 +178,7 @@ def process_data(data):
 各段階で適切なエラーハンドリングを行い、
 処理の継続性を保証します。
 
-"""
+""",
         ]
 
         # 目標文字数まで生成
@@ -212,11 +209,11 @@ def process_data(data):
 
         # 正確な文字数調整
         if len(final_content) > self.target_chars:
-            final_content = final_content[:self.target_chars]
+            final_content = final_content[: self.target_chars]
 
         actual_chars = len(final_content)
-        actual_bytes = len(final_content.encode('utf-8'))
-        line_count = len(final_content.split('\n'))
+        actual_bytes = len(final_content.encode("utf-8"))
+        line_count = len(final_content.split("\n"))
 
         self.logger.info(
             f"Realistic content generation completed: "
@@ -271,13 +268,13 @@ class FairPerformanceBenchmark:
             node_count = len(nodes)
 
             run_result = {
-                'run': run + 1,
-                'duration_seconds': duration,
-                'node_count': node_count,
-                'characters_per_second': len(content) / duration if duration > 0 else 0,
-                'nodes_per_second': node_count / duration if duration > 0 else 0,
-                'memory_growth_mb': final_memory - initial_memory,
-                'error_count': len(parser.get_errors()) if hasattr(parser, 'get_errors') else 0
+                "run": run + 1,
+                "duration_seconds": duration,
+                "node_count": node_count,
+                "characters_per_second": len(content) / duration if duration > 0 else 0,
+                "nodes_per_second": node_count / duration if duration > 0 else 0,
+                "memory_growth_mb": final_memory - initial_memory,
+                "error_count": len(parser.get_errors()) if hasattr(parser, "get_errors") else 0,
             }
 
             results.append(run_result)
@@ -294,21 +291,21 @@ class FairPerformanceBenchmark:
         # 統計計算（最初の実行を除外してウォームアップ効果を除去）
         warm_results = results[1:] if len(results) > 1 else results
 
-        durations = [r['duration_seconds'] for r in warm_results]
-        char_rates = [r['characters_per_second'] for r in warm_results]
-        node_counts = [r['node_count'] for r in warm_results]
+        durations = [r["duration_seconds"] for r in warm_results]
+        char_rates = [r["characters_per_second"] for r in warm_results]
+        node_counts = [r["node_count"] for r in warm_results]
 
         summary = {
-            'parser_type': 'StreamingParser',
-            'runs': len(warm_results),
-            'avg_duration': statistics.mean(durations),
-            'min_duration': min(durations),
-            'median_duration': statistics.median(durations),
-            'avg_chars_per_second': statistics.mean(char_rates),
-            'avg_node_count': statistics.mean(node_counts),
-            'avg_memory_growth_mb': statistics.mean([r['memory_growth_mb'] for r in warm_results]),
-            'total_errors': sum(r['error_count'] for r in results),
-            'detailed_results': results
+            "parser_type": "StreamingParser",
+            "runs": len(warm_results),
+            "avg_duration": statistics.mean(durations),
+            "min_duration": min(durations),
+            "median_duration": statistics.median(durations),
+            "avg_chars_per_second": statistics.mean(char_rates),
+            "avg_node_count": statistics.mean(node_counts),
+            "avg_memory_growth_mb": statistics.mean([r["memory_growth_mb"] for r in warm_results]),
+            "total_errors": sum(r["error_count"] for r in results),
+            "detailed_results": results,
         }
 
         return summary
@@ -342,13 +339,13 @@ class FairPerformanceBenchmark:
             node_count = len(nodes) if nodes else 0
 
             run_result = {
-                'run': run + 1,
-                'duration_seconds': duration,
-                'node_count': node_count,
-                'characters_per_second': len(content) / duration if duration > 0 else 0,
-                'nodes_per_second': node_count / duration if duration > 0 else 0,
-                'memory_growth_mb': final_memory - initial_memory,
-                'error_count': 0
+                "run": run + 1,
+                "duration_seconds": duration,
+                "node_count": node_count,
+                "characters_per_second": len(content) / duration if duration > 0 else 0,
+                "nodes_per_second": node_count / duration if duration > 0 else 0,
+                "memory_growth_mb": final_memory - initial_memory,
+                "error_count": 0,
             }
 
             results.append(run_result)
@@ -365,21 +362,21 @@ class FairPerformanceBenchmark:
         # 統計計算（最初の実行を除外してウォームアップ効果を除去）
         warm_results = results[1:] if len(results) > 1 else results
 
-        durations = [r['duration_seconds'] for r in warm_results]
-        char_rates = [r['characters_per_second'] for r in warm_results]
-        node_counts = [r['node_count'] for r in warm_results]
+        durations = [r["duration_seconds"] for r in warm_results]
+        char_rates = [r["characters_per_second"] for r in warm_results]
+        node_counts = [r["node_count"] for r in warm_results]
 
         summary = {
-            'parser_type': 'TraditionalParser',
-            'runs': len(warm_results),
-            'avg_duration': statistics.mean(durations),
-            'min_duration': min(durations),
-            'median_duration': statistics.median(durations),
-            'avg_chars_per_second': statistics.mean(char_rates),
-            'avg_node_count': statistics.mean(node_counts),
-            'avg_memory_growth_mb': statistics.mean([r['memory_growth_mb'] for r in warm_results]),
-            'total_errors': 0,
-            'detailed_results': results
+            "parser_type": "TraditionalParser",
+            "runs": len(warm_results),
+            "avg_duration": statistics.mean(durations),
+            "min_duration": min(durations),
+            "median_duration": statistics.median(durations),
+            "avg_chars_per_second": statistics.mean(char_rates),
+            "avg_node_count": statistics.mean(node_counts),
+            "avg_memory_growth_mb": statistics.mean([r["memory_growth_mb"] for r in warm_results]),
+            "total_errors": 0,
+            "detailed_results": results,
         }
 
         return summary
@@ -410,12 +407,14 @@ class FairPerformanceBenchmark:
             traditional_duration = time.perf_counter() - start_time
 
             scenario_results[scenario_name] = {
-                'content_size': size,
-                'streaming_duration': streaming_duration,
-                'traditional_duration': traditional_duration,
-                'streaming_nodes': len(streaming_nodes),
-                'traditional_nodes': len(traditional_nodes) if traditional_nodes else 0,
-                'speedup_ratio': traditional_duration / streaming_duration if streaming_duration > 0 else 0
+                "content_size": size,
+                "streaming_duration": streaming_duration,
+                "traditional_duration": traditional_duration,
+                "streaming_nodes": len(streaming_nodes),
+                "traditional_nodes": len(traditional_nodes) if traditional_nodes else 0,
+                "speedup_ratio": (
+                    traditional_duration / streaming_duration if streaming_duration > 0 else 0
+                ),
             }
 
             # クリーンアップ
@@ -483,18 +482,26 @@ def main():
         print(f"  平均メモリ増加: {traditional_results['avg_memory_growth_mb']:.1f}MB")
 
         # 比較分析
-        speedup = traditional_results['avg_duration'] / streaming_results['avg_duration']
-        throughput_ratio = streaming_results['avg_chars_per_second'] / traditional_results['avg_chars_per_second']
-        memory_efficiency = traditional_results['avg_memory_growth_mb'] / streaming_results['avg_memory_growth_mb'] if streaming_results['avg_memory_growth_mb'] > 0 else 1.0
+        speedup = traditional_results["avg_duration"] / streaming_results["avg_duration"]
+        throughput_ratio = (
+            streaming_results["avg_chars_per_second"] / traditional_results["avg_chars_per_second"]
+        )
+        memory_efficiency = (
+            traditional_results["avg_memory_growth_mb"] / streaming_results["avg_memory_growth_mb"]
+            if streaming_results["avg_memory_growth_mb"] > 0
+            else 1.0
+        )
 
         print(f"\n🔍 比較分析結果:")
         print(f"  処理速度比較: {speedup:.2f}倍 {'高速化' if speedup > 1 else '低下'}")
         print(f"  スループット比: {throughput_ratio:.2f}倍")
-        print(f"  メモリ効率比: {memory_efficiency:.2f}倍 {'効率的' if memory_efficiency > 1 else '非効率'}")
+        print(
+            f"  メモリ効率比: {memory_efficiency:.2f}倍 {'効率的' if memory_efficiency > 1 else '非効率'}"
+        )
 
         # Issue #694要求仕様照合
-        lines_count = len(test_content.split('\n'))
-        time_per_1000_lines = (streaming_results['avg_duration'] / lines_count) * 1000
+        lines_count = len(test_content.split("\n"))
+        time_per_1000_lines = (streaming_results["avg_duration"] / lines_count) * 1000
         target_time = 10.0  # 1000行10秒以内
 
         print(f"\n🎯 Issue #694 要求仕様照合:")
@@ -517,9 +524,9 @@ def main():
 
         # 最終評価
         requirements_met = (
-            time_per_1000_lines <= target_time and
-            streaming_results['total_errors'] == 0 and
-            streaming_results['avg_memory_growth_mb'] < 100  # 100MB以下
+            time_per_1000_lines <= target_time
+            and streaming_results["total_errors"] == 0
+            and streaming_results["avg_memory_growth_mb"] < 100  # 100MB以下
         )
 
         print(f"\n🏅 総合評価: {'🌟 完全成功' if requirements_met else '⚠️ 部分成功'}")
@@ -531,8 +538,10 @@ def main():
             print("⚠️ 一部要件で改善の余地があります。")
 
         # 実用性評価
-        practical_performance = streaming_results['avg_chars_per_second'] > 100000  # 10万文字/秒以上
-        practical_memory = streaming_results['avg_memory_growth_mb'] < 50  # 50MB以下
+        practical_performance = (
+            streaming_results["avg_chars_per_second"] > 100000
+        )  # 10万文字/秒以上
+        practical_memory = streaming_results["avg_memory_growth_mb"] < 50  # 50MB以下
 
         print(f"\n💡 実用性評価:")
         print(f"  処理速度: {'✅ 実用的' if practical_performance else '⚠️ 要改善'}")
@@ -543,6 +552,7 @@ def main():
     except Exception as e:
         logger.error(f"Performance test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

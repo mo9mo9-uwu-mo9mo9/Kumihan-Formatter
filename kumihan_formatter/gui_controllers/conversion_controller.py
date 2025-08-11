@@ -8,23 +8,16 @@ import threading
 from tkinter import messagebox
 from typing import TYPE_CHECKING, Any
 
+from .conversion_threads import ConversionThreads
+
 if TYPE_CHECKING:
     pass  # ..gui_models.AppState removed as unused
     # ..gui_views.MainView removed as unused
 
-# デバッグロガーのインポート
-try:
-    from ..core.debug_logger import (
-        log_gui_event,
-    )
-except ImportError:
-    # Fallbacksを定義
-    def log_gui_event(*args: Any, **kwargs: Any) -> None:
-        pass
 
-
-# 分離したスレッド処理のインポート
-from .conversion_threads import ConversionThreads
+# デバッグロガーのインポート（代替実装）
+def log_gui_event(*args: Any, **kwargs: Any) -> None:
+    pass
 
 
 class ConversionController:

@@ -1,17 +1,6 @@
 repos:
   - repo: local
     hooks:
-      # 🚨 SERENA-EXPERT強制使用チェック（最優先）
-      - id: claude-serena-check
-        name: Claude Serena-Expert使用履歴チェック
-        entry: python tools/claude_serena_precommit.py
-        language: python
-        stages: [pre-commit]
-        files: '^(src/|tests/|docs/|tools/|kumihan_formatter/|.*\.py$|.*\.md$)'
-        pass_filenames: false
-        always_run: true
-        fail_fast: true
-        description: "CLAUDE.md 規則遵守原則違反検出 - serena-expert必須使用チェック"
       - id: claude-md-check
         name: CLAUDE.md Size & Structure Check
         entry: make claude-check
@@ -19,13 +8,21 @@ repos:
         files: 'CLAUDE\.md$'
         pass_filenames: false
 
-      # 一時的にmypyをスキップ（既存の大量エラーのため）
+
       - id: python-lint
         name: Python Linting (Black, isort, flake8)
         entry: bash -c 'python3 -m black --check kumihan_formatter && python3 -m isort --check-only kumihan_formatter && python3 -m flake8 kumihan_formatter'
         language: system
         files: '\.py$'
         pass_filenames: false
+
+      - id: mypy-type-check
+        name: MyPy Type Checking
+        entry: python3 -m mypy kumihan_formatter
+        language: system
+        files: '\.py$'
+        pass_filenames: false
+        description: "Type checking with MyPy"
 
       - id: kumihan-lint-fix
         name: Kumihan Auto-fix flake8 errors

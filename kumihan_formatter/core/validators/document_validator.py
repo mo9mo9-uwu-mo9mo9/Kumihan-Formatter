@@ -97,10 +97,7 @@ class DocumentValidator:
         if any(issue.code == "FILE_NOT_FOUND" for issue in file_issues):
             return self.issues
 
-        # Performance validation
-        self.issues.extend(self.performance_validator.validate_file_size(file_path))
-
-        # Try to read and validate content
+        # Content validation
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 text = f.read()

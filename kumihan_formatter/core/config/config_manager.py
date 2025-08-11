@@ -121,7 +121,7 @@ class EnhancedConfig:
         self._mark_source("default", self.config)
         self.logger.debug("Loaded default configuration")
 
-    def _mark_source(self, source: str, obj: Any, path: str = ""):  # type: ignore
+    def _mark_source(self, source: str, obj: Any, path: str = ""):
         """設定ソースをマーク（追跡用）"""
         if isinstance(obj, dict):
             for key, value in obj.items():
@@ -139,8 +139,6 @@ class EnhancedConfig:
             self._merge_config(user_config, str(config_path))
             self.logger.info(f"Successfully loaded configuration from {config_path}")
             return True
-        self.logger.warning(f"Failed to load configuration from {config_path}")
-        return False
 
     def load_from_environment(self) -> bool:
         """環境変数から設定を読み込み"""
@@ -150,10 +148,8 @@ class EnhancedConfig:
             self._merge_config(env_config, "environment")
             self.logger.info("Loaded configuration from environment variables")
             return True
-        self.logger.debug("No configuration found in environment variables")
-        return False
 
-    def _merge_config(self, user_config: Dict[str, Any], source: str):  # type: ignore
+    def _merge_config(self, user_config: Dict[str, Any], source: str):
         """設定をマージ"""
         self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
@@ -173,9 +169,7 @@ class EnhancedConfig:
                 )
                 return default
 
-        return current
-
-    def set(self, key: str, value: Any, source: str = "runtime"):  # type: ignore
+    def set(self, key: str, value: Any, source: str = "runtime"):
         """設定値を設定"""
         keys = key.split(".")
         current = self.config

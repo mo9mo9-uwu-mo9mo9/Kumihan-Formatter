@@ -46,7 +46,6 @@ class ParallelProcessingConfigAdapter:
         """統一設定から並列処理設定を取得"""
         return self._config_manager.get_parallel_config()
 
-    # 旧API互換プロパティ
     @property
     def threshold_lines(self) -> int:
         """並列処理しきい値行数 (旧API互換)"""
@@ -87,7 +86,6 @@ class ParallelProcessingConfigAdapter:
         """処理タイムアウト(秒)"""
         return self.config.processing_timeout_seconds
 
-    # 旧API互換メソッド
     def should_use_parallel_processing(self, line_count: int, file_size: int) -> bool:
         """並列処理が必要かチェック (旧API互換)
 
@@ -174,7 +172,6 @@ class ErrorConfigManagerAdapter:
         """統一設定からエラー処理設定を取得"""
         return self._config_manager.get_error_config()
 
-    # 旧API互換プロパティ
     @property
     def graceful_errors(self) -> bool:
         """グレースフルエラー有効"""
@@ -205,7 +202,6 @@ class ErrorConfigManagerAdapter:
         """エラーコンテキスト行数"""
         return self.config.max_error_context_lines
 
-    # 旧API互換メソッド
     def get_error_handling_level(self, category: str = "default") -> str:
         """エラー処理レベル取得 (旧API互換)
 
@@ -216,7 +212,8 @@ class ErrorConfigManagerAdapter:
             str: エラー処理レベル
         """
         category_settings = self.config.category_settings.get(category, {})
-        return category_settings.get("level", self.config.default_level.value)
+        level = category_settings.get("level", self.config.default_level.value)
+        return str(level)
 
     def should_continue_on_error(self, category: str = "default") -> bool:
         """エラー時継続判定 (旧API互換)
@@ -267,12 +264,55 @@ class ErrorConfigManagerAdapter:
         try:
             return self._config_manager.save_config()
         except Exception as e:
-            self.logger.error(f"設定保存エラー: {e}")
+            from ..utilities.logger import get_logger
+
+            logger = get_logger(__name__)
+            logger.error(f"設定保存エラー: {e}")
             return False
 
     def to_dict(self) -> Dict[str, Any]:
         """設定を辞書形式で返す (旧API互換)"""
         return self.config.dict()
+
+
+class EnhancedConfigAdapter:
+    """EnhancedConfig互換アダプター
+
+    既存のEnhancedConfigクラスの代替として機能
+    統一設定システムから設定を取得し、旧API形式で提供
+    """
+
+    def __init__(self, config_manager: Optional[Any] = None):
+        """アダプター初期化"""
+        self.logger = get_logger(__name__)
+        self._config_manager = config_manager or get_unified_config_manager()
+
+        # 互換性警告の表示
+        warnings.warn(
+            "EnhancedConfigは統一設定システムに統合されました。"
+            "新しいコードではUnifiedConfigManagerを使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    def get_config(self) -> Dict[str, Any]:
+        """統一設定から全設定を取得"""
+        config = self._config_manager.get_config()
+        return config.dict() if hasattr(config, "dict") else config.__dict__
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """設定値取得（旧API互換）"""
+        config = self._config_manager.get_config()
+        return getattr(config, key, default)
+
+    def set(self, key: str, value: Any) -> None:
+        """設定値設定（旧API互換）"""
+        # 統一設定システムではread-onlyのため警告
+        warnings.warn(
+            "設定の動的変更は統一設定システムでは非推奨です。",
+            UserWarning,
+            stacklevel=2,
+        )
 
 
 class BaseConfigAdapter:
@@ -300,7 +340,6 @@ class BaseConfigAdapter:
         """統一設定からレンダリング設定を取得"""
         return self._config_manager.get_rendering_config()
 
-    # 旧API互換プロパティ
     @property
     def max_width(self) -> str:
         """最大幅"""
@@ -351,7 +390,6 @@ class BaseConfigAdapter:
         """構文ハイライト有効"""
         return self.config.enable_syntax_highlighting
 
-    # 旧API互換メソッド
     def get_css_style(self) -> str:
         """CSS文字列生成 (旧API互換)
 
@@ -398,9 +436,6 @@ class BaseConfigAdapter:
         return self.config.dict()
 
 
-# 互換性ヘルパー関数群
-
-
 def create_parallel_processing_config(
     *args, **kwargs
 ) -> ParallelProcessingConfigAdapter:
@@ -433,9 +468,6 @@ def create_base_config() -> BaseConfigAdapter:
         BaseConfigAdapter: アダプターインスタンス
     """
     return BaseConfigAdapter()
-
-
-# 移行支援関数
 
 
 def migrate_config_usage(old_config_type: str) -> str:
@@ -503,6 +535,6 @@ def check_config_compatibility() -> Dict[str, bool]:
     except Exception as e:
         logger = get_logger(__name__)
         logger.error(f"設定互換性チェックエラー: {e}")
-        compatibility_status["error"] = str(e)
+        compatibility_status["error"] = True
 
     return compatibility_status

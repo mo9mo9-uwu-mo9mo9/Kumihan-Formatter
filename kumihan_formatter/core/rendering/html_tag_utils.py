@@ -14,7 +14,7 @@ def create_simple_tag(
     content: str = "",
     attributes: dict[str, Any] | None = None,
     self_closing: bool = False,
-    formatter=None,
+    formatter: Any = None,
 ) -> str:
     """
     Create a simple HTML tag with Phase 4 enhancements
@@ -43,8 +43,6 @@ def create_simple_tag(
 
     if self_closing:
         return f"<{tag}{attr_part} />"
-    else:
-        return f"<{tag}{attr_part}>{content}</{tag}>"
 
 
 def create_self_closing_tag(tag: str, attributes: dict[str, Any] | None = None) -> str:

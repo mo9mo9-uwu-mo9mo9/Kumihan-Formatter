@@ -73,8 +73,8 @@ class StructureValidator:
             )
             return issues
 
-        # Check document length
-        if len(lines) > 10000:
+        # Check for very long documents
+        if len(lines) > 1000:
             issues.append(
                 ValidationIssue(
                     level="warning",

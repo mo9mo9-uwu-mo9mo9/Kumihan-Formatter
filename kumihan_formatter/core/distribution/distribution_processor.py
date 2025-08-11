@@ -160,29 +160,14 @@ class DistributionProcessor:
 
 作成日時: {generation_time}
 
-処理統計:
-- 総ファイル数: {stats.get('total_files', 0)}
+ファイル処理統計:
 - HTML変換: {stats.get('converted_to_html', 0)}ファイル
 - TXT変換: {stats.get('converted_to_txt', 0)}ファイル
-- そのままコピー: {stats.get('copied_as_is', 0)}ファイル
-- 除外: {stats.get('excluded', 0)}ファイル
+- コピーファイル: {stats.get('copied_as_is', 0)}ファイル
+- 総ファイル数: {stats.get('total_files', 0)}ファイル
 
-ディレクトリ構成:
-- docs/essential/ : 最重要文書（プレーンテキスト）
-- docs/user/     : ユーザーガイド（HTML）
-- docs/developer/ : 開発者文書
-- docs/technical/ : 技術文書
-- examples/      : サンプルファイル
-- kumihan_formatter/ : メインプログラム
-
-使用方法:
-1. README.txt を最初にお読みください
-2. インストール方法.txt に従ってセットアップしてください
-3. 使い方ガイド.html で基本的な使用方法を確認してください
-
-サポート:
-- 公式サイト: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter
-- 問題報告: https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/issues
+このパッケージには、Kumihan-Formatterの実行に必要なすべてのファイルが含まれています。
+詳細な使用方法については、付属のドキュメントをご参照ください。
 """
 
     def report_statistics(self, stats: dict[str, int]) -> None:

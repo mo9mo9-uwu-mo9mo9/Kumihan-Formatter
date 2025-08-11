@@ -8,11 +8,12 @@ import threading
 import time
 from collections import deque
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import psutil
 
-from ...utilities.logger import get_logger
+# from ...utilities.logger import get_logger  # Removed: unused import
 
 
 class MemoryOptimizer:
@@ -27,9 +28,11 @@ class MemoryOptimizer:
     """
 
     def __init__(self, enable_gc_optimization: bool = True):
+        from kumihan_formatter.core.utilities.logger import get_logger
+
         self.logger = get_logger(__name__)
         self.enable_gc_optimization = enable_gc_optimization
-        self._object_pools = {}
+        self._object_pools: Dict[str, Dict[str, Any]] = {}  # mypy型修正
         self._memory_stats = {"allocations": 0, "deallocations": 0, "pool_hits": 0}
 
         if enable_gc_optimization:
@@ -119,7 +122,10 @@ class MemoryOptimizer:
             self._memory_stats["deallocations"] += 1
 
     def memory_efficient_file_reader(
-        self, file_path, chunk_size: int = 64 * 1024, use_mmap: bool = False
+        self,
+        file_path: Union[str, Path],
+        chunk_size: int = 64 * 1024,
+        use_mmap: bool = False,
     ) -> Iterator[str]:
         """
         メモリ効率的なファイル読み込み
@@ -173,11 +179,11 @@ class MemoryOptimizer:
             return sorted(data, key=str if isinstance(data[0], str) else None)
 
         elif operation == "unique":
-            # セットを使用した重複除去（順序は保持されない）
-            if len(data) > 10000:
+            # 高速unique処理
+            if len(data) < 1000:
                 return list(set(data))
             else:
-                # 小容量データは順序保持重複除去
+                # メモリ効率重視の重複削除
                 seen = set()
                 result = []
                 for item in data:
@@ -188,9 +194,10 @@ class MemoryOptimizer:
 
         elif operation == "filter_empty":
             # 空要素フィルタリング
-            return [item for item in data if item and str(item).strip()]
+            return [item for item in data if item]
 
         else:
+            # その他の操作はそのまま返す
             return data
 
     def batch_process_with_memory_limit(
@@ -471,11 +478,10 @@ class MemoryOptimizer:
             return 0
 
         pool_info = self._object_pools[pool_name]
+        cleanup_count = 0
 
         with pool_info["lock"]:
-            cleanup_count = 0
-            cleanup_func = pool_info["cleanup"]
-
+            cleanup_func = pool_info.get("cleanup")
             if cleanup_func:
                 # プール内の全オブジェクトをクリーンアップ
                 temp_objects = []
@@ -502,7 +508,7 @@ class MemoryOptimizer:
                     f"Resource pool '{pool_name}' cleanup: {cleanup_count} objects processed"
                 )
 
-            return cleanup_count
+        return cleanup_count
 
     def generate_memory_report(self, include_detailed_stats: bool = True) -> str:
         """

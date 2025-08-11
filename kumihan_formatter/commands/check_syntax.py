@@ -66,11 +66,6 @@ class CheckSyntaxCommand:
                         for error in errors
                         if error.severity == ErrorSeverity.ERROR
                     )
-                else:
-                    # If results is a list of errors
-                    error_count = sum(
-                        1 for error in results if error.severity == ErrorSeverity.ERROR
-                    )
 
                 return {
                     "success": error_count == 0,
@@ -79,10 +74,9 @@ class CheckSyntaxCommand:
                 }
             else:
                 return {"success": True, "error_count": 0, "results": {}}
-
         except Exception as e:
             get_console_ui().error(f"構文チェック中にエラーが発生しました: {e}")
-            return {"success": False, "error": str(e), "results": {}}
+            return {"success": False, "error_count": -1, "results": {}}
 
     def _collect_files(self, file_patterns: list[str], recursive: bool) -> list[Path]:
         """Collect files to check from patterns"""
@@ -118,7 +112,7 @@ class CheckSyntaxCommand:
 
         return file_paths
 
-    def _output_text(self, results, show_suggestions: bool) -> None:  # type: ignore
+    def _output_text(self, results, show_suggestions: bool) -> None:
         """Output results in text format"""
         report = format_error_report(results, show_suggestions)
 
@@ -149,7 +143,7 @@ class CheckSyntaxCommand:
             print()
             print(report)
 
-    def _output_json(self, results) -> None:  # type: ignore
+    def _output_json(self, results) -> None:
         """Output results in JSON format"""
         import json
 
@@ -185,7 +179,7 @@ def create_check_syntax_command() -> click.Command:
         default="text",
         help="出力形式",
     )
-    def check_syntax(files, recursive, no_suggestions, output_format):  # type: ignore
+    def check_syntax(files, recursive, no_suggestions, output_format):
         """Kumihan記法の構文をチェックします"""
 
         command = CheckSyntaxCommand()

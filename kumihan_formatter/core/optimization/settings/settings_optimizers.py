@@ -17,7 +17,9 @@ from collections import deque
 # 循環インポート回避のため型ヒント用
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from kumihan_formatter.core.config.config_manager import EnhancedConfig
+from kumihan_formatter.core.unified_config import (
+    EnhancedConfigAdapter as EnhancedConfig,
+)
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
@@ -51,7 +53,9 @@ class IntegratedSettingsOptimizer:
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
 
-            self.adaptive_manager = AdaptiveSettingsManager(self.config)
+            self.adaptive_manager = AdaptiveSettingsManager(
+                self.config
+            )  # type: ignore[unreachable]
             self.context_optimizer = ContextAwareOptimizer()
             self.realtime_adjuster = RealTimeConfigAdjuster(self.adaptive_manager)
 
@@ -142,7 +146,9 @@ class LearningBasedOptimizer:
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
 
-            self.adaptive_manager = AdaptiveSettingsManager(self.config)
+            self.adaptive_manager = AdaptiveSettingsManager(
+                self.config
+            )  # type: ignore[unreachable]
 
     def integrate_efficiency_analyzer(self, analyzer):
         """TokenEfficiencyAnalyzerとの統合"""
@@ -161,7 +167,9 @@ class LearningBasedOptimizer:
             # 2. 効率性予測の取得（統合システム使用）
             efficiency_insights = {}
             if self.efficiency_analyzer:
-                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()
+                efficiency_insights = (
+                    self.efficiency_analyzer.get_pattern_insights()
+                )  # type: ignore[unreachable]
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -207,6 +215,7 @@ class LearningBasedOptimizer:
             return cycle_result
 
         except Exception as e:
+            # エラー発生時の処理
             self.logger.error(f"Learning cycle failed: {e}")
             return {
                 "timestamp": cycle_start,
@@ -260,7 +269,8 @@ class LearningBasedOptimizer:
         adaptive_opportunities = learning_summary.get("optimization_opportunities", [])
         analyzer_suggestions = []
         if self.efficiency_analyzer:
-            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
+            # 効率アナライザーからの最適化提案取得
+            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(  # type: ignore[unreachable]
                 self.config.get_all()
             )
 

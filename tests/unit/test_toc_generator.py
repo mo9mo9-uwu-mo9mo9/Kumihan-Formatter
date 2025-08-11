@@ -29,7 +29,7 @@ class TestTOCGenerator:
         """Test TOC generation with nodes but no headings"""
         nodes = [
             NodeBuilder("paragraph").content("Some text").build(),
-            NodeBuilder("paragraph").content("More text").build()
+            NodeBuilder("paragraph").content("More text").build(),
         ]
 
         result = self.toc_generator.generate_toc(nodes)
@@ -55,7 +55,7 @@ class TestTOCGenerator:
             NodeBuilder("paragraph").content("Some content").build(),
             heading(2, "Section 1.1"),
             heading(2, "Section 1.2"),
-            heading(1, "Chapter 2")
+            heading(1, "Chapter 2"),
         ]
 
         result = self.toc_generator.generate_toc(nodes)
@@ -81,7 +81,7 @@ class TestTOCGenerator:
             heading(4, "Subsection 1.1.1"),
             heading(3, "Section 1.2"),
             heading(2, "Chapter 2"),
-            heading(1, "Part II")
+            heading(1, "Part II"),
         ]
 
         result = self.toc_generator.generate_toc(nodes)
@@ -117,18 +117,12 @@ class TestTOCGenerator:
         assert not self.toc_generator.should_generate_toc(nodes_single)
 
         # Multiple headings
-        nodes_multiple = [
-            heading(1, "Chapter 1"),
-            heading(1, "Chapter 2")
-        ]
+        nodes_multiple = [heading(1, "Chapter 1"), heading(1, "Chapter 2")]
         assert self.toc_generator.should_generate_toc(nodes_multiple)
 
     def test_html_generation_structure(self):
         """Test HTML generation structure and CSS classes"""
-        nodes = [
-            heading(1, "Main Title"),
-            heading(2, "Subtitle")
-        ]
+        nodes = [heading(1, "Main Title"), heading(2, "Subtitle")]
 
         result = self.toc_generator.generate_toc(nodes)
         html = result["html"]
@@ -140,15 +134,12 @@ class TestTOCGenerator:
         assert 'class="toc-level-2"' in html
         # Check for actual generated IDs instead of assumed format
         assert 'href="#' in html
-        assert 'Main Title' in html
-        assert 'Subtitle' in html
+        assert "Main Title" in html
+        assert "Subtitle" in html
 
     def test_heading_id_generation(self):
         """Test proper ID generation for headings"""
-        nodes = [
-            heading(1, "Special Characters: 日本語 & symbols!"),
-            heading(2, "Another Title")
-        ]
+        nodes = [heading(1, "Special Characters: 日本語 & symbols!"), heading(2, "Another Title")]
 
         result = self.toc_generator.generate_toc(nodes)
         entries = result["entries"]
@@ -169,7 +160,7 @@ class TestTOCGenerator:
             heading(1, "Chapter 1"),
             heading(2, "Section 1.1"),
             heading(2, "Section 1.2"),
-            heading(1, "Chapter 2")
+            heading(1, "Chapter 2"),
         ]
 
         result = self.toc_generator.generate_toc(nodes)
@@ -186,10 +177,7 @@ class TestTOCGenerator:
     def test_invalid_heading_levels(self):
         """Test handling of invalid or unusual heading levels"""
         # Test with just valid headings to avoid type comparison issues
-        nodes = [
-            heading(1, "Valid Heading"),
-            heading(2, "Another Valid Heading")
-        ]
+        nodes = [heading(1, "Valid Heading"), heading(2, "Another Valid Heading")]
 
         # Should handle gracefully without crashing
         result = self.toc_generator.generate_toc(nodes)
@@ -200,11 +188,7 @@ class TestTOCGenerator:
     def test_empty_heading_text(self):
         """Test handling of headings with empty text"""
         empty_heading = heading(1, "")
-        nodes = [
-            heading(1, "Valid Heading"),
-            empty_heading,
-            heading(2, "Another Heading")
-        ]
+        nodes = [heading(1, "Valid Heading"), empty_heading, heading(2, "Another Heading")]
 
         result = self.toc_generator.generate_toc(nodes)
 
@@ -219,7 +203,7 @@ class TestTOCGenerator:
             heading(1, "第1章：始まり"),
             heading(2, "1.1 概要 & 目的"),
             heading(2, "1.2 方法論 (詳細)"),
-            heading(1, "第2章：結論")
+            heading(1, "第2章：結論"),
         ]
 
         result = self.toc_generator.generate_toc(nodes)
@@ -286,10 +270,7 @@ class TestTOCGenerator:
         """Test handling of extremely long heading titles"""
         # Create heading with very long title
         long_title = "x" * 600  # Exceeds MAX_TITLE_LENGTH (500)
-        nodes = [
-            heading(1, long_title),
-            heading(2, "Normal title")
-        ]
+        nodes = [heading(1, long_title), heading(2, "Normal title")]
 
         result = self.toc_generator.generate_toc(nodes)
         assert result["has_toc"] is True
@@ -301,12 +282,14 @@ class TestTOCGenerator:
 
     def test_deep_recursion_limit(self):
         """Test recursion depth limiting"""
+
         # Create deeply nested structure
         def create_deep_nested_node(depth):
             if depth <= 0:
                 return heading(1, f"Deep Heading {depth}")
 
             import unittest.mock as mock
+
             node = mock.MagicMock()
             node.is_heading.return_value = True
             node.get_heading_level.return_value = 1
@@ -338,7 +321,9 @@ class TestTOCGenerator:
         # Should recover from exception and continue processing
         result = self.toc_generator.generate_toc(nodes)
         assert result is not None
-        assert result["has_toc"] is False or result["has_toc"] is True  # Either outcome is acceptable
+        assert (
+            result["has_toc"] is False or result["has_toc"] is True
+        )  # Either outcome is acceptable
         # Should have processed the valid node
         assert result["heading_count"] >= 0
 
@@ -357,8 +342,10 @@ class TestTOCGenerator:
         import unittest.mock as mock
 
         # Mock logger to capture log messages
-        with mock.patch.object(self.toc_generator.logger, 'info') as mock_info, \
-             mock.patch.object(self.toc_generator.logger, 'warning') as mock_warning:
+        with (
+            mock.patch.object(self.toc_generator.logger, "info") as mock_info,
+            mock.patch.object(self.toc_generator.logger, "warning") as mock_warning,
+        ):
 
             nodes = [heading(1, "Test Heading"), heading(2, "Another Heading")]
             result = self.toc_generator.generate_toc(nodes)
@@ -380,7 +367,7 @@ class TestTOCGenerator:
         error_entry.children = []
 
         # Make accessing level raise an exception during analysis
-        with mock.patch.object(error_entry, 'level', side_effect=Exception("Stats error")):
+        with mock.patch.object(error_entry, "level", side_effect=Exception("Stats error")):
             entries = [error_entry]
 
             # Should handle error gracefully

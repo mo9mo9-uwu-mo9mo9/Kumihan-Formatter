@@ -134,31 +134,9 @@ class FileIOHandler:
             )
             if content is not None:
                 return content
-
-            # Try specified encoding if different
-            content = FileIOHandler._try_specified_encoding(
-                path, encoding, detected_encoding, logger
-            )
-            if content is not None:
-                return content
-
-            # Try platform-specific fallbacks
-            content = FileIOHandler._try_platform_fallbacks(path, logger)
-            if content is not None:
-                return content
-
-            # Last resort: UTF-8 with error replacement
-            return FileIOHandler._read_with_error_replacement(path, logger)
-
-        except PermissionError as e:
-            logger.error(f"Permission denied reading file: {path} - {e}")
-            raise PermissionError(f"ファイル読み取り権限がありません: {path}")
-        except MemoryError as e:
-            logger.error(f"Memory error reading file: {path} - {e}")
-            raise MemoryError(f"ファイルが大きすぎてメモリに読み込めません: {path}")
-        except OSError as e:
-            logger.error(f"OS error reading file: {path} - {e}")
-            raise OSError(f"ファイル読み取り中にOSエラーが発生しました: {path} - {e}")
+        except Exception as e:
+            logger.error(f"Encoding detection failed: {e}")
+            return None
 
     @staticmethod
     def _try_detected_encoding(
@@ -173,8 +151,11 @@ class FileIOHandler:
             try:
                 with open(path, "r", encoding=detected_encoding) as f:
                     return f.read()
-            except UnicodeDecodeError:
-                logger.debug(f"Failed to decode with {detected_encoding}")
+            except Exception as e:
+                logger.warning(
+                    f"Failed to read with detected encoding {detected_encoding}: {e}"
+                )
+                return None
         return None
 
     @staticmethod
@@ -186,8 +167,11 @@ class FileIOHandler:
             try:
                 with open(path, "r", encoding=encoding) as f:
                     return f.read()
-            except UnicodeDecodeError:
-                logger.debug(f"Failed to decode with specified encoding: {encoding}")
+            except Exception as e:
+                logger.warning(
+                    f"Failed to read with specified encoding {encoding}: {e}"
+                )
+                return None
         return None
 
     @staticmethod
@@ -199,8 +183,9 @@ class FileIOHandler:
             try:
                 with open(path, "r", encoding=enc) as f:
                     return f.read()
-            except UnicodeDecodeError:
-                logger.debug(f"Failed to decode with {enc}")
+            except Exception as e:
+                logger.warning(f"Failed to read with platform encoding {enc}: {e}")
+                continue
         return None
 
     @staticmethod

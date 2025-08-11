@@ -27,11 +27,9 @@ def create_config_instance(
     if config_path and Path(config_path).exists():
         try:
             return config_class.from_file(config_path)
-        except (FileNotFoundError, ValueError):
-            # ファイル読み込みに失敗した場合はデフォルト設定を使用
+        except Exception:
+            # ファイル読み込みエラー時はデフォルト設定を使用
             pass
-
-    return config_class()
 
 
 def merge_config_data(

@@ -38,17 +38,12 @@ class LogManager:
         try:
             import datetime
 
-            if not isinstance(message, str):
-                message = str(message)
-            if not isinstance(level, str):
-                level = "info"
-
             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             prefix = LogManager.LOG_LEVELS.get(level, "ℹ️")
             return f"[{timestamp}] {prefix} {message}"
-        except Exception as e:
-            self.logger.error(f"ログメッセージフォーマットエラー: {e}")
-            return f"[ERROR] {message}"
+        except Exception:
+            # フォーマット失敗時はシンプルなメッセージを返す
+            return f"{message}"
 
     def add_message(self, message: str, level: str = "info") -> str:
         """ログメッセージを追加してフォーマットされたメッセージを返す（Thread-Safe）"""
@@ -74,8 +69,8 @@ class LogManager:
 
                 return formatted
         except Exception as e:
-            self.logger.error(f"ログメッセージ追加エラー: {e}")
-            return f"[ERROR] {message}"
+            self.logger.error(f"メッセージ追加エラー: {e}")
+            return f"{message}"
 
     def _get_timestamp(self) -> str:
         """現在のタイムスタンプを取得"""
@@ -84,7 +79,7 @@ class LogManager:
 
             return datetime.datetime.now().isoformat()
         except Exception:
-            return "unknown"
+            return ""
 
     def get_recent_messages(self, count: int = 50) -> List[str]:
         """最新のメッセージを取得（Thread-Safe）"""
@@ -92,7 +87,13 @@ class LogManager:
             with self._lock:
                 if count <= 0:
                     return []
-                return [msg["formatted"] for msg in self.messages[-count:]]
+
+                # 最新のメッセージを取得
+                recent_messages = self.messages[-count:] if self.messages else []
+                return [
+                    msg.get("formatted", msg.get("message", ""))
+                    for msg in recent_messages
+                ]
         except Exception as e:
             self.logger.error(f"最新メッセージ取得エラー: {e}")
             return []
@@ -171,8 +172,7 @@ class AppState:
         """デバッグモードの確認（エラーハンドリング強化）"""
         try:
             return os.environ.get("KUMIHAN_GUI_DEBUG", "false").lower() == "true"
-        except Exception as e:
-            self.logger.warning(f"デバッグモード確認エラー: {e}")
+        except Exception:
             return False
 
     def is_ready_for_conversion(self) -> tuple[bool, str]:
@@ -182,21 +182,15 @@ class AppState:
                 if self.conversion_state.is_processing:
                     return False, "処理中です"
 
-                if not self.config.validate_input_file():
-                    self._record_error("入力ファイルが無効です")
-                    return False, "入力ファイルを選択してください"
+                # 入力ファイルの確認
+                input_file = self.config.get_input_file()
+                if not input_file or not Path(input_file).exists():
+                    return False, "入力ファイルが指定されていないか、存在しません"
 
-                if not self.file_manager.validate_directory_writable(
-                    self.config.get_output_dir()
-                ):
-                    self._record_error("出力ディレクトリが無効です")
-                    return False, "出力ディレクトリが無効です"
-
-                return True, "変換可能"
+                return True, "変換準備完了"
         except Exception as e:
             self.logger.error(f"変換準備チェックエラー: {e}")
-            self._record_error(f"変換準備チェックエラー: {e}")
-            return False, "システムエラーが発生しました"
+            return False, f"チェックエラー: {e}"
 
     def get_output_file_path(self) -> Optional[Path]:
         """出力ファイルパスを取得（Thread-Safe）"""

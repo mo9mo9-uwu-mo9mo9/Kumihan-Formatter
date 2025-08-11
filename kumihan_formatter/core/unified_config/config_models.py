@@ -121,8 +121,6 @@ class ParallelConfig(BaseModel):
             )
         return v
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_PARALLEL_")
-
 
 class LoggingConfig(BaseModel):
     """ログ設定
@@ -156,7 +154,7 @@ class LoggingConfig(BaseModel):
         default=True, description="パフォーマンスログ有効"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")  # type: ignore[typeddict-unknown-key]
 
 
 class ErrorConfig(BaseModel):
@@ -186,7 +184,7 @@ class ErrorConfig(BaseModel):
         default_factory=dict, description="カテゴリ別エラー設定"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")  # type: ignore[typeddict-unknown-key]
 
 
 class RenderingConfig(BaseModel):
@@ -216,7 +214,7 @@ class RenderingConfig(BaseModel):
         default=True, description="構文ハイライト有効"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")  # type: ignore[typeddict-unknown-key]
 
 
 class UIConfig(BaseModel):
@@ -251,7 +249,7 @@ class UIConfig(BaseModel):
     watch_enabled: bool = Field(default=False, description="ファイル監視有効")
     watch_interval: float = Field(default=1.0, ge=0.1, description="監視間隔(秒)")
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_UI_")
+    model_config = ConfigDict(env_prefix="KUMIHAN_UI_")  # type: ignore[typeddict-unknown-key]
 
 
 class KumihanConfig(BaseModel):
@@ -313,10 +311,3 @@ class KumihanConfig(BaseModel):
                     env_vars[env_key] = str(value)
 
         return env_vars
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="forbid",
-        env_nested_delimiter="__",
-        case_sensitive=False,
-    )

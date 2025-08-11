@@ -26,7 +26,8 @@ class TestEndToEndBasic:
 
         # Create test input file
         self.test_file = Path(self.temp_dir) / "test.kumihan"
-        self.test_file.write_text("""#太字#
+        self.test_file.write_text(
+            """#太字#
 これは太字のテストです。
 ##
 
@@ -34,11 +35,14 @@ class TestEndToEndBasic:
 
 #見出し1#
 重要な見出し
-##""", encoding='utf-8')
+##""",
+            encoding="utf-8",
+        )
 
     def teardown_method(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_convert_basic_workflow(self):
@@ -46,11 +50,9 @@ class TestEndToEndBasic:
         output_dir = Path(self.temp_dir) / "output"
 
         # Run convert command
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(self.test_file),
-            '--output', str(output_dir)
-        ])
+        result = self.runner.invoke(
+            cli, ["convert", str(self.test_file), "--output", str(output_dir)]
+        )
 
         # Command should complete (success or graceful failure)
         assert result.exit_code in [0, 1, 2]
@@ -63,10 +65,7 @@ class TestEndToEndBasic:
     def test_check_syntax_workflow(self):
         """Test check-syntax workflow."""
         # Run check-syntax command
-        result = self.runner.invoke(cli, [
-            'check-syntax',
-            str(self.test_file)
-        ])
+        result = self.runner.invoke(cli, ["check-syntax", str(self.test_file)])
 
         # Command should complete
         assert result.exit_code in [0, 1, 2]
@@ -77,16 +76,16 @@ class TestEndToEndBasic:
     def test_help_commands_workflow(self):
         """Test help command workflows."""
         # Test main help
-        result = self.runner.invoke(cli, ['--help'])
+        result = self.runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        assert 'convert' in result.output.lower() or 'help' in result.output.lower()
+        assert "convert" in result.output.lower() or "help" in result.output.lower()
 
         # Test convert help
-        result = self.runner.invoke(cli, ['convert', '--help'])
+        result = self.runner.invoke(cli, ["convert", "--help"])
         assert result.exit_code == 0
 
         # Test check-syntax help
-        result = self.runner.invoke(cli, ['check-syntax', '--help'])
+        result = self.runner.invoke(cli, ["check-syntax", "--help"])
         assert result.exit_code == 0
 
     def test_invalid_file_handling(self):
@@ -94,10 +93,7 @@ class TestEndToEndBasic:
         non_existent_file = Path(self.temp_dir) / "nonexistent.kumihan"
 
         # Run convert with non-existent file
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(non_existent_file)
-        ])
+        result = self.runner.invoke(cli, ["convert", str(non_existent_file)])
 
         # Should handle gracefully
         assert result.exit_code in [0, 1, 2]
@@ -117,6 +113,7 @@ class TestEndToEndAdvanced:
     def teardown_method(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_multiple_files_workflow(self):
@@ -125,13 +122,16 @@ class TestEndToEndAdvanced:
         files = []
         for i in range(3):
             test_file = Path(self.temp_dir) / f"test{i}.kumihan"
-            test_file.write_text(f"""#見出し{i+1}#
+            test_file.write_text(
+                f"""#見出し{i+1}#
 テストファイル {i+1}
-##""", encoding='utf-8')
+##""",
+                encoding="utf-8",
+            )
             files.append(str(test_file))
 
         # Run convert with multiple files
-        result = self.runner.invoke(cli, ['convert'] + files)
+        result = self.runner.invoke(cli, ["convert"] + files)
 
         # Should handle multiple files
         assert result.exit_code in [0, 1, 2]
@@ -140,7 +140,8 @@ class TestEndToEndAdvanced:
     def test_complex_notation_workflow(self):
         """Test complex notation processing."""
         complex_file = Path(self.temp_dir) / "complex.kumihan"
-        complex_file.write_text("""#見出し1#
+        complex_file.write_text(
+            """#見出し1#
 メインタイトル
 ##
 
@@ -156,13 +157,12 @@ class TestEndToEndAdvanced:
 - 項目1
 - 項目2
 - 項目3
-##""", encoding='utf-8')
+##""",
+            encoding="utf-8",
+        )
 
         # Run convert with complex notation
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(complex_file)
-        ])
+        result = self.runner.invoke(cli, ["convert", str(complex_file)])
 
         # Should handle complex notation
         assert result.exit_code in [0, 1, 2]
@@ -171,24 +171,19 @@ class TestEndToEndAdvanced:
     def test_output_format_options(self):
         """Test different output format options."""
         test_file = Path(self.temp_dir) / "format_test.kumihan"
-        test_file.write_text("""#見出し1#
+        test_file.write_text(
+            """#見出し1#
 フォーマットテスト
-##""", encoding='utf-8')
+##""",
+            encoding="utf-8",
+        )
 
         # Test HTML format
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(test_file),
-            '--format', 'html'
-        ])
+        result = self.runner.invoke(cli, ["convert", str(test_file), "--format", "html"])
         assert result.exit_code in [0, 1, 2]
 
         # Test Markdown format
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(test_file),
-            '--format', 'markdown'
-        ])
+        result = self.runner.invoke(cli, ["convert", str(test_file), "--format", "markdown"])
         assert result.exit_code in [0, 1, 2]
 
 
@@ -206,6 +201,7 @@ class TestEndToEndPerformance:
     def teardown_method(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_large_file_workflow(self):
@@ -215,22 +211,21 @@ class TestEndToEndPerformance:
         # Generate large content
         content_lines = []
         for i in range(100):
-            content_lines.extend([
-                f"#見出し{i % 5 + 1}#",
-                f"セクション {i} のタイトル",
-                "##",
-                "",
-                "通常のテキスト " * 20,
-                ""
-            ])
+            content_lines.extend(
+                [
+                    f"#見出し{i % 5 + 1}#",
+                    f"セクション {i} のタイトル",
+                    "##",
+                    "",
+                    "通常のテキスト " * 20,
+                    "",
+                ]
+            )
 
-        large_file.write_text("\n".join(content_lines), encoding='utf-8')
+        large_file.write_text("\n".join(content_lines), encoding="utf-8")
 
         # Run convert with large file
-        result = self.runner.invoke(cli, [
-            'convert',
-            str(large_file)
-        ])
+        result = self.runner.invoke(cli, ["convert", str(large_file)])
 
         # Should handle large files
         assert result.exit_code in [0, 1, 2]
@@ -242,17 +237,20 @@ class TestEndToEndPerformance:
         files = []
         for i in range(5):
             test_file = Path(self.temp_dir) / f"concurrent{i}.kumihan"
-            test_file.write_text(f"""#見出し{i+1}#
+            test_file.write_text(
+                f"""#見出し{i+1}#
 並行処理テスト {i+1}
 ##
 
 #太字#
 テストコンテンツ {i+1}
-##""", encoding='utf-8')
+##""",
+                encoding="utf-8",
+            )
             files.append(str(test_file))
 
         # Run convert with multiple files
-        result = self.runner.invoke(cli, ['convert'] + files)
+        result = self.runner.invoke(cli, ["convert"] + files)
 
         # Should handle concurrent processing
         assert result.exit_code in [0, 1, 2]

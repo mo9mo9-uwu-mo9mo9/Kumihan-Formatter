@@ -41,8 +41,8 @@ class AsyncIOOptimizer:
         except ImportError:
             return False
 
-    async def async_read_file_chunked(
-        self, file_path: Path, chunk_size: int = 64 * 1024
+    async def async_read_chunks(
+        self, file_path: Path, chunk_size: int = 8192
     ) -> AsyncIterator[str]:
         """
         非同期チャンク読み込み

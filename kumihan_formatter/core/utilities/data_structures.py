@@ -73,7 +73,7 @@ class DataStructureHelper:
                 current = current[key]
             return current
         except (KeyError, TypeError):
-            return default
+            return None
 
     @staticmethod
     def set_nested_value(

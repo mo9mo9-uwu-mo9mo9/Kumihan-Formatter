@@ -98,762 +98,596 @@ class HTMLFormatter:
         # 脚注データを作成
         footnote_data = {
             "content": content,
-            "number": None,  # FootnoteManagerが自動採番
+            "attributes": attributes,
         }
 
-        # 脚注を登録
-        processed_footnotes = footnote_manager.register_footnotes([footnote_data])
+        # 脚注を登録し、プレースホルダーを取得
+        footnote_id = footnote_manager.add_footnote(footnote_data)
+        placeholder = footnote_manager.create_placeholder(footnote_id)
 
-        if processed_footnotes:
-            footnote = processed_footnotes[0]
-            footnote_number = footnote.get("global_number", 1)
+        return placeholder
 
-            # 本文中に挿入する脚注リンクプレースホルダーを生成
-            placeholder = (
-                f'<sup><a href="#footnote-{footnote_number}" '
-                f'id="footnote-ref-{footnote_number}" class="footnote-ref">'
-                f"[{footnote_number}]</a></sup>"
-            )
-
-            return placeholder
-
-        # エラー時のフォールバック
-        return f'<span class="footnote-error">[脚注エラー: {content}]</span>'
-
-    def format_html(self, html: str, preserve_inline: bool = True) -> str:
+    def generate_css_class(self, keyword: str, modifiers: List[str] = None) -> str:
         """
-        Format HTML with proper indentation
+        CSS class名を生成（CSS-naming統一対応）
 
         Args:
-            html: Raw HTML string
-            preserve_inline: Whether to preserve inline elements on same line
+            keyword: キーワード名
+            modifiers: モディファイアー（オプション）
 
         Returns:
-            str: Formatted HTML
+            str: 統一化されたCSSクラス名
         """
-        if not html.strip():
-            return html
+        if modifiers is None:
+            modifiers = []
 
-        # Split into tokens
-        tokens = self._tokenize_html(html)
+        # ベースクラス名の生成
+        base_class = f"{self.css_class_prefix}-{self._normalize_keyword(keyword)}"
 
-        # Format with indentation
-        formatted_lines = []
-        indent_level = 0
+        # モディファイアーがある場合は追加
+        if modifiers:
+            modifier_classes = [
+                f"{base_class}--{self._normalize_keyword(mod)}" for mod in modifiers
+            ]
+            return f"{base_class} " + " ".join(modifier_classes)
 
-        for token in tokens:
-            if self._is_closing_tag(token):
-                indent_level = max(0, indent_level - 1)
-
-            if token.strip():
-                indent = " " * (indent_level * self.indent_size)
-                formatted_lines.append(f"{indent}{token.strip()}")
-
-            if self._is_opening_tag(token) and not self._is_self_closing_tag(token):
-                if not preserve_inline or not self._is_inline_element(token):
-                    indent_level += 1
-
-        return "\n".join(formatted_lines)
-
-    def minify_html(self, html: str) -> str:
-        """
-        Minify HTML by removing unnecessary whitespace
-
-        Args:
-            html: HTML to minify
-
-        Returns:
-            str: Minified HTML
-        """
-        # Remove comments
-        html = re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)
-
-        # Remove extra whitespace
-        html = re.sub(r"\s+", " ", html)
-
-        # Remove whitespace around tags
-        html = re.sub(r">\s+<", "><", html)
-
-        return html.strip()
-
-    def validate_html_structure(self, html: str) -> list[str]:
-        """
-        Validate HTML structure and return list of issues
-
-        Args:
-            html: HTML to validate
-
-        Returns:
-            list[str]: List of validation issues
-        """
-        issues = []
-
-        # Check for unclosed tags
-        tags = self._extract_tags(html)
-        tag_stack: List[str] = []
-
-        for tag in tags:
-            if self._is_self_closing_tag(tag):
-                continue
-            elif self._is_closing_tag(tag):
-                tag_name = self._extract_tag_name(tag).lstrip("/")
-                if not tag_stack:
-                    issues.append(f"Closing tag without opening: {tag}")
-                elif tag_stack[-1] != tag_name:
-                    issues.append(
-                        f"Mismatched tags: expected {tag_stack[-1]}, got {tag_name}"
-                    )
-                else:
-                    tag_stack.pop()
-            else:
-                tag_name = self._extract_tag_name(tag)
-                tag_stack.append(tag_name)
-
-        # Check for unclosed tags
-        for tag in tag_stack:
-            issues.append(f"Unclosed tag: {tag}")
-
-        return issues
-
-    def extract_text_content(self, html: str) -> str:
-        """
-        Extract plain text content from HTML
-
-        Args:
-            html: HTML string
-
-        Returns:
-            str: Plain text content
-        """
-        # Remove HTML tags
-        text = re.sub(r"<[^>]+>", "", html)
-
-        # Replace HTML entities
-        text = text.replace("&lt;", "<")
-        text = text.replace("&gt;", ">")
-        text = text.replace("&amp;", "&")
-        text = text.replace("&quot;", '"')
-        text = text.replace("&#x27;", "'")
-
-        # Clean up whitespace
-        text = re.sub(r"\s+", " ", text)
-
-        return text.strip()
-
-    def generate_css_class(self, element_type: str, modifier: str = "") -> str:
-        """
-        Generate standardized CSS class name (Issue #665 Phase 4)
-
-        Args:
-            element_type: Type of element (e.g., 'heading', 'emphasis')
-            modifier: Optional modifier (e.g., 'level-1', 'highlight')
-
-        Returns:
-            str: Standardized CSS class name
-        """
-        base_class = f"{self.css_class_prefix}-{element_type}"
-        if modifier:
-            return f"{base_class}--{modifier}"
         return base_class
 
-    def add_accessibility_attributes(
-        self, tag: str, attributes: dict, content: str = ""
-    ) -> dict:
+    def _normalize_keyword(self, keyword: str) -> str:
         """
-        Add accessibility attributes to HTML elements (Issue #665 Phase 4)
+        キーワードをCSS class名として正規化
 
         Args:
-            tag: HTML tag name
-            attributes: Existing attributes dictionary
-            content: Element content for generating alt text
+            keyword: 正規化対象の文字列
 
         Returns:
-            dict: Updated attributes with accessibility enhancements
+            str: 正規化されたクラス名
         """
-        updated_attributes = attributes.copy()
+        # 日本語文字の翻訳・英語変換ロジック
+        translation_map = {
+            "太字": "bold",
+            "イタリック": "italic",
+            "下線": "underline",
+            "見出し1": "h1",
+            "見出し2": "h2",
+            "見出し3": "h3",
+            "見出し4": "h4",
+            "見出し5": "h5",
+            "見出し6": "h6",
+            "ハイライト": "highlight",
+            "目次": "toc",
+            "脚注": "footnote",
+        }
 
-        # Add ARIA attributes based on element type
-        if tag == "img" and "alt" not in updated_attributes:
-            # Generate alt text from content or filename
-            if content:
-                updated_attributes["alt"] = self._generate_alt_text(content)
-            else:
-                updated_attributes["alt"] = ""
+        normalized = translation_map.get(keyword, keyword)
+        # 英数字・ハイフンのみに制限
+        normalized = re.sub(r"[^a-zA-Z0-9\-]", "-", normalized).lower()
+        # 連続ハイフンを削除
+        normalized = re.sub(r"-+", "-", normalized).strip("-")
 
-        elif tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
-            # Add heading role for screen readers
-            if "role" not in updated_attributes:
-                updated_attributes["role"] = "heading"
+        return normalized
 
-        elif tag == "details":
-            # Add expandable region role
-            if "role" not in updated_attributes:
-                updated_attributes["role"] = "region"
-
-        elif tag == "code":
-            # Add code role
-            if "role" not in updated_attributes:
-                updated_attributes["role"] = "code"
-
-        return updated_attributes
-
-    def generate_footnotes_html(self, footnotes: list[dict]) -> str:
+    def process_color_attribute(self, color_value: str) -> str:
         """
-        脚注リストからHTML形式の脚注セクションを生成
+        カラー属性の処理・正規化
 
         Args:
-            footnotes: 脚注情報のリスト
+            color_value: カラー値（16進数、名前、RGB等）
 
         Returns:
-            str: 脚注セクションHTML
+            str: 正規化されたカラー値
         """
-        if not footnotes:
-            return ""
+        # 16進数カラーの処理
+        if color_value.startswith("#"):
+            return self._normalize_hex_color(color_value)
 
-        footnotes_html = ['<div class="footnotes">', "<ol>"]
+        # RGB/RGBA形式の処理
+        if color_value.startswith(("rgb(", "rgba(")):
+            return self._normalize_rgb_color(color_value)
 
-        for footnote in footnotes:
-            footnote_number = footnote.get("number", 1)
-            footnote_content = footnote.get("content", "")
+        # 色名の処理
+        if color_value in self._get_named_colors():
+            return color_value.lower()
 
-            # HTMLエスケープ処理
-            escaped_content = self._escape_html_content(footnote_content)
+        # 不正な色値の場合はデフォルトに
+        return "#000000"
 
-            # 戻りリンクを含む脚注項目
-            footnote_item = (
-                f'<li id="footnote-{footnote_number}">'
-                f"{escaped_content} "
-                f'<a href="#footnote-ref-{footnote_number}" class="footnote-backref">↩</a>'
-                f"</li>"
-            )
-            footnotes_html.append(footnote_item)
-
-        footnotes_html.extend(["</ol>", "</div>"])
-        return "\n".join(footnotes_html)
-
-    def process_footnote_links(self, text: str, footnotes: list[dict]) -> str:
+    def _normalize_hex_color(self, hex_color: str) -> str:
         """
-        テキスト内の脚注記法を適切なHTMLリンクに変換
+        16進数カラー値の正規化
 
         Args:
-            text: 処理対象のテキスト
-            footnotes: 脚注情報のリスト
+            hex_color: 16進数カラー値
 
         Returns:
-            str: 脚注リンクが埋め込まれたHTML
+            str: 正規化された16進数カラー値
         """
-        if not footnotes:
-            return text
+        # # を除去して正規化
+        color = hex_color.strip("#").upper()
 
-        processed_text = text
-        footnote_pattern = re.compile(r"\(\(([^)]+)\)\)")
+        # 3桁の場合は6桁に拡張
+        if len(color) == 3:
+            color = "".join([c + c for c in color])
 
-        # 脚注記法を番号リンクに置換（後ろから処理）
-        for i, footnote in enumerate(reversed(footnotes), 1):
-            footnote_number = len(footnotes) - i + 1
-            replacement = (
-                f'<sup><a href="#footnote-{footnote_number}" '
-                f'id="footnote-ref-{footnote_number}" class="footnote-ref">'
-                f"[{footnote_number}]</a></sup>"
-            )
+        # 6桁以外は無効として黒を返す
+        if len(color) != 6 or not re.match(r"^[0-9A-F]{6}$", color):
+            return "#000000"
 
-            # 最後から順に置換（インデックスのずれを防ぐ）
-            matches = list(footnote_pattern.finditer(processed_text))
-            if matches and len(matches) >= footnote_number:
-                match = matches[footnote_number - 1]
-                processed_text = (
-                    processed_text[: match.start()]
-                    + replacement
-                    + processed_text[match.end() :]
-                )
+        return f"#{color}"
 
-        return processed_text
-
-    def _escape_html_content(self, content: str) -> str:
+    def _normalize_rgb_color(self, rgb_color: str) -> str:
         """
-        HTMLコンテンツのエスケープ処理
+        RGB/RGBA カラー値の正規化
 
         Args:
-            content: エスケープ対象のコンテンツ
+            rgb_color: RGB/RGBAカラー値
 
         Returns:
-            str: エスケープ済みコンテンツ
+            str: 正規化されたRGBカラー値
         """
-        import html
+        # 基本的な検証のみ実装
+        if re.match(
+            r"^rgba?\s*\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(\s*,\s*[01]?\.?\d*)?\s*\)$",
+            rgb_color,
+        ):
+            return rgb_color
 
-        return html.escape(content, quote=True)
+        return "rgb(0,0,0)"
 
-
-class FootnoteManager:
-    """
-    脚注番号管理および処理を行うクラス
-
-    複数ファイル間での脚注番号管理と、HTML出力の統一的な処理を提供
-    """
-
-    def __init__(self):
-        self.footnote_counter = 0
-        self.footnotes_storage = []
-        self.footnote_references = {}
-
-    def register_footnotes(self, footnotes: list[dict]) -> list[dict]:
+    def _get_named_colors(self) -> set:
         """
-        脚注を登録し、グローバル番号を割り当て
-
-        Args:
-            footnotes: 脚注情報のリスト
+        サポートされている色名の一覧を取得
 
         Returns:
-            list[dict]: 番号が割り当てられた脚注リスト
+            set: サポートされている色名のセット
         """
-        processed_footnotes = []
-
-        for footnote in footnotes:
-            self.footnote_counter += 1
-            processed_footnote = footnote.copy()
-            processed_footnote["global_number"] = self.footnote_counter
-            processed_footnotes.append(processed_footnote)
-            self.footnotes_storage.append(processed_footnote)
-
-        return processed_footnotes
-
-    def get_all_footnotes(self) -> list[dict]:
-        """
-        登録されたすべての脚注を取得
-
-        Returns:
-            list[dict]: 全脚注情報
-        """
-        return self.footnotes_storage.copy()
-
-    def reset_counter(self):
-        """
-        脚注カウンターをリセット（新しいドキュメント開始時に使用）
-        """
-        self.footnote_counter = 0
-        self.footnotes_storage.clear()
-        self.footnote_references.clear()
-
-    def generate_footnote_html(self, footnotes: list[dict]) -> str:
-        """
-        脚注のHTML生成
-
-        Args:
-            footnotes: 脚注情報のリスト
-
-        Returns:
-            str: 脚注セクションHTML
-        """
-        if not footnotes:
-            return ""
-
-        html_parts = ['<div class="footnotes">', "<ol>"]
-
-        for footnote in footnotes:
-            number = footnote.get("global_number", footnote.get("number", 1))
-            content = footnote.get("content", "")
-
-            # セキュアなHTMLエスケープ
-            import html
-
-            escaped_content = html.escape(content, quote=True)
-
-            footnote_html = (
-                f'<li id="footnote-{number}">'
-                f"{escaped_content} "
-                f'<a href="#footnote-ref-{number}" class="footnote-backref" '
-                f'aria-label="戻る">↩</a>'
-                f"</li>"
-            )
-            html_parts.append(footnote_html)
-
-        html_parts.extend(["</ol>", "</div>"])
-        return "\n".join(html_parts)
-
-    def validate_footnote_data(self, footnotes: list[dict]) -> tuple[bool, list[str]]:
-        """
-        脚注データの妥当性検証
-
-        Args:
-            footnotes: 検証対象の脚注リスト
-
-        Returns:
-            tuple: (検証結果, エラーメッセージリスト)
-        """
-        errors = []
-
-        if not isinstance(footnotes, list):
-            errors.append("脚注データはリスト形式である必要があります")
-            return False, errors
-
-        for i, footnote in enumerate(footnotes, 1):
-            if not isinstance(footnote, dict):
-                errors.append(f"脚注{i}: 辞書形式である必要があります")
-                continue
-
-            # 必須フィールドの確認
-            required_fields = ["content"]
-            for field in required_fields:
-                if field not in footnote:
-                    errors.append(f"脚注{i}: 必須フィールド'{field}'が不足しています")
-
-            # コンテンツの検証
-            content = footnote.get("content", "")
-            if not isinstance(content, str):
-                errors.append(f"脚注{i}: コンテンツは文字列である必要があります")
-            elif len(content.strip()) == 0:
-                errors.append(f"脚注{i}: コンテンツが空です")
-            elif len(content) > 2000:
-                errors.append(
-                    f"脚注{i}: コンテンツが長すぎます（{len(content)}/2000文字）"
-                )
-
-            # 番号の検証
-            number = footnote.get("number")
-            if number is not None and (not isinstance(number, int) or number < 1):
-                errors.append(f"脚注{i}: 番号は1以上の整数である必要があります")
-
-        return len(errors) == 0, errors
-
-    def safe_generate_footnote_html(
-        self, footnotes: list[dict]
-    ) -> tuple[str, list[str]]:
-        """
-        安全な脚注HTML生成（エラーハンドリング付き）
-
-        Args:
-            footnotes: 脚注情報のリスト
-
-        Returns:
-            tuple: (生成されたHTML, エラーメッセージリスト)
-        """
-        errors = []
-
-        try:
-            # データ検証
-            is_valid, validation_errors = self.validate_footnote_data(footnotes)
-            if not is_valid:
-                errors.extend(validation_errors)
-                return "", errors
-
-            # 空の場合の処理
-            if not footnotes:
-                return "", errors
-
-            html_parts = ['<div class="footnotes" role="doc-endnotes">', "<ol>"]
-
-            for footnote in footnotes:
-                try:
-                    number = footnote.get("global_number", footnote.get("number", 1))
-                    content = footnote.get("content", "")
-
-                    # セキュアなHTMLエスケープ
-                    import html
-
-                    escaped_content = html.escape(content, quote=True)
-
-                    # XSS攻撃の追加防御
-                    escaped_content = self._additional_xss_protection(escaped_content)
-
-                    footnote_html = (
-                        f'<li id="footnote-{number}" role="doc-endnote">'
-                        f"{escaped_content} "
-                        f'<a href="#footnote-ref-{number}" class="footnote-backref" '
-                        f'role="doc-backlink" aria-label="本文に戻る">↩</a>'
-                        f"</li>"
-                    )
-                    html_parts.append(footnote_html)
-
-                except Exception as e:
-                    errors.append(f"脚注{number}の処理中にエラー: {str(e)}")
-                    continue
-
-            html_parts.extend(["</ol>", "</div>"])
-            return "\n".join(html_parts), errors
-
-        except Exception as e:
-            errors.append(f"脚注HTML生成中の予期しないエラー: {str(e)}")
-            return "", errors
-
-    def _additional_xss_protection(self, content: str) -> str:
-        """
-        追加のXSS保護処理
-
-        Args:
-            content: 保護対象のコンテンツ
-
-        Returns:
-            str: 保護されたコンテンツ
-        """
-        # すでにエスケープされた内容に対する追加保護
-        dangerous_patterns = [
-            (r"&lt;script", "&amp;lt;script"),
-            (r"&lt;iframe", "&amp;lt;iframe"),
-            (r"&lt;object", "&amp;lt;object"),
-            (r"&lt;embed", "&amp;lt;embed"),
-            (r"javascript:", "blocked:"),
-            (r"vbscript:", "blocked:"),
-            (r"data:", "blocked:"),
-        ]
-
-        for pattern, replacement in dangerous_patterns:
-            content = re.sub(pattern, replacement, content, flags=re.IGNORECASE)
-
-        return content
-
-    def process_color_attribute(self, color: str) -> str:
-        """
-        Process and validate color attribute values (Issue #665 Phase 4)
-
-        Args:
-            color: Color value in various formats
-
-        Returns:
-            str: Processed and validated color value
-        """
-        if not color:
-            return ""
-
-        color = color.strip()
-
-        # Hex color validation and normalization
-        if color.startswith("#"):
-            return self._process_hex_color(color)
-
-        # RGB/RGBA validation
-        elif color.startswith(("rgb(", "rgba(")):
-            return self._process_rgb_color(color)
-
-        # HSL/HSLA validation
-        elif color.startswith(("hsl(", "hsla(")):
-            return self._process_hsl_color(color)
-
-        # Named colors
-        elif self._is_named_color(color):
-            return color.lower()
-
-        # Invalid color - return empty string
-        return ""
-
-    def _generate_alt_text(self, content: str) -> str:
-        """Generate meaningful alt text from content"""
-        if not content:
-            return ""
-
-        # If it's a filename, extract meaningful part
-        if "." in content:
-            base_name = content.split(".")[0]
-            # Replace underscores and hyphens with spaces
-            return base_name.replace("_", " ").replace("-", " ").strip()
-
-        return content[:100]  # Limit alt text length
-
-    def _process_hex_color(self, color: str) -> str:
-        """Process hex color format"""
-        # Remove # and validate
-        hex_part = color[1:]
-
-        # Validate hex format (3 or 6 characters)
-        if len(hex_part) == 3:
-            # Expand short hex (e.g., #abc to #aabbcc)
-            return f"#{hex_part[0] * 2}{hex_part[1] * 2}{hex_part[2] * 2}"
-        elif len(hex_part) == 6:
-            # Validate all characters are hex
-            try:
-                int(hex_part, 16)
-                return color.lower()
-            except ValueError:
-                return ""
-
-        return ""
-
-    def _process_rgb_color(self, color: str) -> str:
-        """Process RGB/RGBA color format"""
-        import re
-
-        # Extract numbers from rgb() or rgba()
-        if color.startswith("rgb("):
-            pattern = r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)"
-            match = re.match(pattern, color)
-            if match:
-                r, g, b = map(int, match.groups())
-                if all(0 <= val <= 255 for val in [r, g, b]):
-                    return f"rgb({r}, {g}, {b})"
-
-        elif color.startswith("rgba("):
-            pattern = r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)"
-            match = re.match(pattern, color)
-            if match:
-                r, g, b, a = match.groups()
-                r, g, b = map(int, [r, g, b])
-                a = float(a)
-                if all(0 <= val <= 255 for val in [r, g, b]) and 0 <= a <= 1:
-                    return f"rgba({r}, {g}, {b}, {a})"
-
-        return ""
-
-    def _process_hsl_color(self, color: str) -> str:
-        """Process HSL/HSLA color format"""
-        import re
-
-        if color.startswith("hsl("):
-            pattern = r"hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)"
-            match = re.match(pattern, color)
-            if match:
-                h, s, light = map(int, match.groups())
-                if 0 <= h <= 360 and 0 <= s <= 100 and 0 <= light <= 100:
-                    return f"hsl({h}, {s}%, {light}%)"
-
-        elif color.startswith("hsla("):
-            pattern = r"hsla\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*,\s*([\d.]+)\s*\)"
-            match = re.match(pattern, color)
-            if match:
-                h, s, light, a = match.groups()
-                h, s, light = map(int, [h, s, light])
-                a = float(a)
-                if (
-                    0 <= h <= 360
-                    and 0 <= s <= 100
-                    and 0 <= light <= 100
-                    and 0 <= a <= 1
-                ):
-                    return f"hsla({h}, {s}%, {light}%, {a})"
-
-        return ""
-
-    def _is_named_color(self, color: str) -> bool:
-        """Check if color is a valid named color"""
-        named_colors = {
+        return {
             "black",
             "white",
             "red",
             "green",
             "blue",
             "yellow",
-            "cyan",
-            "magenta",
-            "gray",
-            "grey",
             "orange",
             "purple",
             "pink",
             "brown",
-            "navy",
-            "teal",
-            "lime",
-            "olive",
-            "maroon",
-            "aqua",
-            "fuchsia",
-            "silver",
-            "darkred",
-            "darkgreen",
-            "darkblue",
-            "lightred",
-            "lightgreen",
-            "lightblue",
-            "transparent",
+            "gray",
+            "grey",
         }
-        return color.lower() in named_colors
 
-    def _tokenize_html(self, html: str) -> list[str]:
+    def format_html(self, html: str, options: dict = None) -> str:
         """
-        Tokenize HTML into tags and text content
+        HTML文字列を整形
 
         Args:
-            html: HTML to tokenize
+            html: 整形対象のHTML文字列
+            options: 整形オプション
 
         Returns:
-            list[str]: List of tokens
+            str: 整形済みHTML文字列
         """
-        tokens = []
-        current_pos = 0
+        if options is None:
+            options = {}
 
-        # Find all tags
-        for match in re.finditer(r"<[^>]+>", html):
-            # Add text before tag
-            text_before = html[current_pos : match.start()].strip()
-            if text_before:
-                tokens.append(text_before)
+        # 基本的なPretty-print処理
+        formatted = self._apply_indentation(html)
 
-            # Add tag
-            tokens.append(match.group())
-            current_pos = match.end()
+        # セマンティックモードが有効な場合の処理
+        if self.semantic_mode:
+            formatted = self._apply_semantic_improvements(formatted)
 
-        # Add remaining text
-        remaining_text = html[current_pos:].strip()
-        if remaining_text:
-            tokens.append(remaining_text)
+        # 最終的な空白文字正規化
+        formatted = self._normalize_whitespace(formatted)
 
-        return tokens
+        return formatted
 
-    def _extract_tags(self, html: str) -> list[str]:
-        """Extract all HTML tags from string"""
-        return re.findall(r"<[^>]+>", html)
+    def _apply_indentation(self, html: str) -> str:
+        """
+        インデント処理を適用
 
-    def _extract_tag_name(self, tag: str) -> str:
-        """Extract tag name from tag string"""
-        match = re.match(r"</?([a-zA-Z0-9]+)", tag)
-        return match.group(1) if match else ""
+        Args:
+            html: HTML文字列
 
-    def _is_opening_tag(self, token: str) -> bool:
-        """Check if token is an opening HTML tag"""
-        return bool(re.match(r"<[a-zA-Z][^/>]*>$", token))
+        Returns:
+            str: インデント適用済みHTML
+        """
+        lines = html.split("\n")
+        formatted_lines = []
+        indent_level = 0
+        indent_str = " " * self.indent_size
 
-    def _is_closing_tag(self, token: str) -> bool:
-        """Check if token is a closing HTML tag"""
-        return bool(re.match(r"</[a-zA-Z][^>]*>$", token))
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
 
-    def _is_self_closing_tag(self, token: str) -> bool:
-        """Check if token is a self-closing HTML tag"""
-        return bool(re.match(r"<[^>]+/>$", token))
+            # 終了タグの場合はインデントレベルを下げる
+            if stripped.startswith("</"):
+                indent_level = max(0, indent_level - 1)
 
-    def _is_inline_element(self, token: str) -> bool:
-        """Check if token is an inline HTML element"""
-        inline_elements = {
-            "a",
-            "abbr",
-            "acronym",
-            "b",
-            "bdi",
-            "bdo",
-            "big",
+            # インデント適用
+            formatted_line = indent_str * indent_level + stripped
+            formatted_lines.append(formatted_line)
+
+            # 開始タグの場合はインデントレベルを上げる（自己完結タグは除く）
+            if (
+                stripped.startswith("<")
+                and not stripped.startswith("</")
+                and not stripped.endswith("/>")
+                and not self._is_inline_tag(stripped)
+            ):
+                indent_level += 1
+
+        return "\n".join(formatted_lines)
+
+    def _is_inline_tag(self, tag_line: str) -> bool:
+        """
+        インライン要素かどうかを判定
+
+        Args:
+            tag_line: タグを含む行
+
+        Returns:
+            bool: インライン要素の場合True
+        """
+        inline_tags = {"span", "a", "em", "strong", "code", "small", "sup", "sub"}
+
+        # タグ名を抽出
+        tag_match = re.match(r"<(\w+)", tag_line.strip())
+        if tag_match:
+            tag_name = tag_match.group(1).lower()
+            return tag_name in inline_tags
+
+        return False
+
+    def _apply_semantic_improvements(self, html: str) -> str:
+        """
+        セマンティックHTML改善の適用
+
+        Args:
+            html: HTML文字列
+
+        Returns:
+            str: セマンティック改善済みHTML
+        """
+        # セマンティックタグへの変換ルール
+        semantic_rules = [
+            # 見出しの適切なマークアップ
+            (
+                r'<div class="kumihan-h([1-6])">',
+                r"<h\1>",
+            ),
+            (
+                r"</div><!--/kumihan-h[1-6]-->",
+                lambda m: f"</h{m.group(1)}>",
+            ),
+            # 強調要素の改善
+            (
+                r'<span class="kumihan-bold">',
+                r"<strong>",
+            ),
+            (
+                r"</span><!--/kumihan-bold-->",
+                r"</strong>",
+            ),
+            (
+                r'<span class="kumihan-italic">',
+                r"<em>",
+            ),
+            (
+                r"</span><!--/kumihan-italic-->",
+                r"</em>",
+            ),
+        ]
+
+        improved_html = html
+        for pattern, replacement in semantic_rules:
+            improved_html = re.sub(pattern, replacement, improved_html)
+
+        return improved_html
+
+    def _normalize_whitespace(self, html: str) -> str:
+        """
+        空白文字の正規化
+
+        Args:
+            html: HTML文字列
+
+        Returns:
+            str: 正規化済みHTML
+        """
+        # 空行の削除
+        normalized = re.sub(r"\n\s*\n", "\n", html)
+
+        # 行末空白の削除
+        normalized = re.sub(r"[ \t]+$", "", normalized, flags=re.MULTILINE)
+
+        return normalized.strip()
+
+    def validate_html(self, html: str) -> dict:
+        """
+        HTML妥当性チェック
+
+        Args:
+            html: チェック対象のHTML文字列
+
+        Returns:
+            dict: バリデーション結果
+        """
+        validation_result = {
+            "valid": True,
+            "errors": [],
+            "warnings": [],
+        }
+
+        # 基本的なタグ閉じチェック
+        tag_stack = []
+        self_closing_tags = {
             "br",
-            "button",
-            "cite",
-            "code",
-            "dfn",
-            "em",
-            "i",
+            "hr",
             "img",
             "input",
-            "kbd",
-            "label",
-            "map",
-            "mark",
-            "meter",
-            "noscript",
-            "object",
-            "output",
-            "progress",
-            "q",
-            "ruby",
-            "s",
-            "samp",
-            "script",
-            "select",
-            "small",
-            "span",
-            "strong",
-            "sub",
-            "sup",
-            "textarea",
-            "time",
-            "tt",
-            "u",
-            "var",
+            "meta",
+            "link",
+            "area",
+            "base",
+            "col",
+            "embed",
+            "source",
+            "track",
             "wbr",
         }
 
-        tag_name = self._extract_tag_name(token)
-        return tag_name.lower() in inline_elements
+        # タグをすべて抽出
+        tag_pattern = r"<(/?)(\w+)[^>]*/?>"
+        for match in re.finditer(tag_pattern, html):
+            is_closing = bool(match.group(1))
+            tag_name = match.group(2).lower()
+
+            if is_closing:
+                # 閉じタグの処理
+                if not tag_stack:
+                    validation_result["errors"].append(
+                        f"Unexpected closing tag: </{tag_name}>"
+                    )
+                    validation_result["valid"] = False
+                elif tag_stack[-1] != tag_name:
+                    validation_result["errors"].append(
+                        f"Mismatched tag: expected </{tag_stack[-1]}>, found </{tag_name}>"
+                    )
+                    validation_result["valid"] = False
+                else:
+                    tag_stack.pop()
+            elif tag_name not in self_closing_tags:
+                # 開始タグの処理（自己完結タグ以外）
+                tag_stack.append(tag_name)
+
+        # 未閉じタグのチェック
+        if tag_stack:
+            for unclosed_tag in tag_stack:
+                validation_result["errors"].append(f"Unclosed tag: <{unclosed_tag}>")
+                validation_result["valid"] = False
+
+        return validation_result
+
+    def add_accessibility_attributes(self, html: str) -> str:
+        """
+        アクセシビリティ属性の追加
+
+        Args:
+            html: HTML文字列
+
+        Returns:
+            str: アクセシビリティ改善済みHTML
+        """
+        accessibility_rules = [
+            # 画像にalt属性が無い場合の警告・追加
+            (
+                r"<img(?![^>]*alt=)",
+                r'<img alt=""',
+            ),
+            # 見出しレベルのスキップチェック（警告のみ）
+            # リンクにtitle属性追加（外部リンクの場合）
+            (
+                r'<a href="http[s]?://[^"]+">([^<]+)</a>',
+                r'<a href="\1" title="\1 (外部サイト)">\1</a>',
+            ),
+        ]
+
+        improved_html = html
+        for pattern, replacement in accessibility_rules:
+            improved_html = re.sub(pattern, replacement, improved_html)
+
+        return improved_html
+
+    def compress_html(self, html: str) -> str:
+        """
+        HTML圧縮（改行・空白削除）
+
+        Args:
+            html: HTML文字列
+
+        Returns:
+            str: 圧縮済みHTML
+        """
+        # コメントの削除
+        compressed = re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)
+
+        # 不要な空白・改行の削除
+        compressed = re.sub(r"\s+", " ", compressed)
+        compressed = re.sub(r">\s+<", "><", compressed)
+
+        return compressed.strip()
+
+    def create_document_structure(self, content: str, options: dict = None) -> str:
+        """
+        完全なHTMLドキュメント構造の生成
+
+        Args:
+            content: ボディ部分のコンテンツ
+            options: ドキュメントオプション
+
+        Returns:
+            str: 完全なHTMLドキュメント
+        """
+        if options is None:
+            options = {}
+
+        title = options.get("title", "Kumihan-Formatter Generated Document")
+        lang = options.get("lang", "ja")
+        charset = options.get("charset", "UTF-8")
+        css_files = options.get("css_files", [])
+        js_files = options.get("js_files", [])
+
+        # CSS link要素の生成
+        css_links = "\n".join(
+            [f'  <link rel="stylesheet" href="{css}">' for css in css_files]
+        )
+
+        # JavaScript script要素の生成
+        js_scripts = "\n".join([f'  <script src="{js}"></script>' for js in js_files])
+
+        # HTMLテンプレート
+        template = f"""<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+  <meta charset="{charset}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="generator" content="Kumihan-Formatter">
+{css_links}
+</head>
+<body>
+{content}
+{js_scripts}
+</body>
+</html>"""
+
+        return template
+
+
+class FootnoteManager:
+    """
+    脚注管理クラス
+
+    責務:
+    - 脚注の登録・管理
+    - プレースホルダーの生成
+    - 脚注リストの出力
+    """
+
+    def __init__(self):
+        self.footnotes = {}  # footnote_id -> footnote_data
+        self.footnote_counter = 0
+
+    def add_footnote(self, footnote_data: dict) -> str:
+        """
+        脚注を追加
+
+        Args:
+            footnote_data: 脚注データ
+
+        Returns:
+            str: 脚注ID
+        """
+        self.footnote_counter += 1
+        footnote_id = f"footnote-{self.footnote_counter}"
+        self.footnotes[footnote_id] = footnote_data
+        return footnote_id
+
+    def create_placeholder(self, footnote_id: str) -> str:
+        """
+        脚注プレースホルダーの生成
+
+        Args:
+            footnote_id: 脚注ID
+
+        Returns:
+            str: プレースホルダーHTML
+        """
+        footnote_number = footnote_id.split("-")[-1]
+        return f'<sup><a href="#{footnote_id}" id="ref-{footnote_id}">{footnote_number}</a></sup>'
+
+    def generate_footnote_list(self) -> str:
+        """
+        脚注リストのHTML生成
+
+        Returns:
+            str: 脚注リストHTML
+        """
+        if not self.footnotes:
+            return ""
+
+        footnote_items = []
+        for footnote_id, footnote_data in self.footnotes.items():
+            # TODO: implement footnote numbering
+            content = footnote_data["content"]
+            footnote_item = (
+                f'<li id="{footnote_id}">'
+                f"{content} "
+                f'<a href="#ref-{footnote_id}">↩</a>'
+                f"</li>"
+            )
+            footnote_items.append(footnote_item)
+
+        footnote_list = (
+            '<div class="footnotes">\n'
+            "<h3>脚注</h3>\n"
+            "<ol>\n" + "\n".join(footnote_items) + "\n</ol>\n"
+            "</div>"
+        )
+
+        return footnote_list
+
+    def clear_footnotes(self):
+        """
+        脚注データのクリア
+        """
+        self.footnotes.clear()
+        self.footnote_counter = 0
+
+
+# Utility functions for backward compatibility
+def format_html(html: str, indent_size: int = 2) -> str:
+    """
+    HTML整形のユーティリティ関数
+
+    Args:
+        html: 整形対象のHTML
+        indent_size: インデントサイズ
+
+    Returns:
+        str: 整形済みHTML
+    """
+    formatter = HTMLFormatter(indent_size=indent_size)
+    return formatter.format_html(html)
+
+
+def validate_html_string(html: str) -> dict:
+    """
+    HTMLバリデーションのユーティリティ関数
+
+    Args:
+        html: バリデーション対象のHTML
+
+    Returns:
+        dict: バリデーション結果
+    """
+    formatter = HTMLFormatter()
+    return formatter.validate_html(html)
+
+
+def create_full_html_document(content: str, **options) -> str:
+    """
+    完全なHTMLドキュメント生成のユーティリティ関数
+
+    Args:
+        content: コンテンツ
+        **options: ドキュメントオプション
+
+    Returns:
+        str: 完全なHTMLドキュメント
+    """
+    formatter = HTMLFormatter()
+    return formatter.create_document_structure(content, options)

@@ -61,33 +61,27 @@ class SIMDOptimizer:
         if not self._numpy_available:
             return self._fallback_line_processing(lines, pattern_funcs)
 
-        if not lines:
-            return []
-
-        self.logger.debug(
-            f"SIMD processing {len(lines)} lines with {len(pattern_funcs)} functions"
-        )
-
         try:
-            # NumPy配列に変換（文字列処理の高速化）
+            # NumPy配列として処理
             np_lines = self.np.array(lines, dtype=object)
 
-            # ベクトル化された関数適用
+            # 各変換関数を順次適用
             for func in pattern_funcs:
                 # numpy.vectorizeでSIMD最適化を活用
                 vectorized_func = self.np.vectorize(func, otypes=[object])
                 np_lines = vectorized_func(np_lines)
 
             # リストに戻す
-            result = np_lines.tolist()
+            result: list[str] = np_lines.tolist()
 
             self.logger.debug(
                 f"SIMD processing completed: {len(result)} lines processed"
             )
             return result
-
         except Exception as e:
-            self.logger.error(f"SIMD processing failed, falling back: {e}")
+            self.logger.warning(
+                f"SIMD processing failed: {e}, falling back to standard processing"
+            )
             return self._fallback_line_processing(lines, pattern_funcs)
 
     def _fallback_line_processing(

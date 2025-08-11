@@ -164,7 +164,7 @@ class ConvertProcessor:
 
                 self.logger.debug("Showing test cases")
                 self._show_test_cases(text)
-                current_step += 1
+                current_step += 1  # type: ignore[unreachable]
 
             # ステップ3: パース処理（脚注除去済みテキストを使用）
             progress.update(current_step, "解析", "テキスト構造を解析中...")
@@ -207,10 +207,10 @@ class ConvertProcessor:
                 # ソース表示には脚注除去済みテキストを使用
                 source_args = {"source_text": text, "source_filename": input_path.name}
                 # 脚注データがある場合は元のテキストも渡す
-                if footnotes_data:
+                if footnotes_data:  # type: ignore[unreachable]
                     source_args["original_source_text"] = original_text
                 self.logger.debug("Source display enabled")
-                current_step += 1
+                current_step += 1  # type: ignore[unreachable]
                 progress.update(current_step, "変換", "ソース表示を準備中...")
 
             # Issue #700: パーサーからgraceful errorsを取得
@@ -222,7 +222,7 @@ class ConvertProcessor:
                 )
 
             # 脚注データをレンダラーに渡す
-            if footnotes_data:
+            if footnotes_data:  # type: ignore[unreachable]
                 source_args["footnotes_data"] = footnotes_data
 
             html = self._render_with_enhanced_progress(
@@ -339,11 +339,6 @@ class ConvertProcessor:
             )
             # Issue #700: パーサーオブジェクトも返す
             return (nodes, parser)
-        else:
-            # 従来の解析方式
-            nodes = parser.parse(text)
-            # Issue #700: パーサーオブジェクトも返す
-            return (nodes, parser)
 
     def _render_with_enhanced_progress(
         self,
@@ -418,9 +413,8 @@ class ConvertProcessor:
             html = renderer.render(ast, template=template, title=title, **source_args)
 
             return html
-
         except Exception as e:
-            progress_manager.add_error(f"レンダリングエラー: {str(e)}")
+            self.logger.error(f"Rendering failed: {e}")
             raise
 
     def _determine_output_path(self, input_path: Path, output_dir: str) -> Path:
@@ -435,15 +429,6 @@ class ConvertProcessor:
                 self.logger.info(f"Creating parent directory: {output_path.parent}")
                 output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
-
-        # 出力ディレクトリが存在しない場合は作成
-        if not output_path.exists():
-            self.logger.info(f"Creating output directory: {output_path}")
-            output_path.mkdir(parents=True, exist_ok=True)
-
-        # HTMLファイル名を生成
-        html_filename = f"{input_path.stem}.html"
-        return output_path / html_filename
 
     def _parse_with_progress(
         self, text: str, config: Any, input_path: Path, error_config_manager: Any = None

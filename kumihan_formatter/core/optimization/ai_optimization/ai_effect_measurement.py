@@ -13,10 +13,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
-
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
+
+# import numpy as np  # Removed: unused import
 
 
 @dataclass
@@ -88,7 +88,7 @@ class BaselineMeasurement:
         self,
         metric_name: str,
         measurements: List[float],
-        metadata: Dict[str, Any] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> float:
         """ベースライン確立"""
         try:
@@ -129,7 +129,6 @@ class BaselineMeasurement:
                 f"Baseline established for {metric_name}: {baseline_value:.3f}"
             )
             return baseline_value
-
         except Exception as e:
             self.logger.error(f"Baseline establishment failed for {metric_name}: {e}")
             return 0.0
@@ -148,20 +147,14 @@ class BaselineMeasurement:
             if not new_measurements:
                 return False
 
-            # 既存ベースラインと新測定値の統合
-            existing_metadata = self.measurement_metadata.get(metric_name, {})
-            existing_baseline = self.baselines.get(metric_name, 0.0)
-
-            # 統合ベースライン計算
-            new_baseline = self.establish_baseline(
-                metric_name, new_measurements, existing_metadata.get("metadata", {})
-            )
+            # 新しいベースライン確立
+            old_baseline = self.baselines.get(metric_name, 0.0)
+            new_baseline = self.establish_baseline(metric_name, new_measurements)
 
             self.logger.info(
-                f"Baseline updated for {metric_name}: {existing_baseline:.3f} -> {new_baseline:.3f}"
+                f"Baseline updated for {metric_name}: {old_baseline:.3f} -> {new_baseline:.3f}"
             )
             return True
-
         except Exception as e:
             self.logger.error(f"Baseline update failed for {metric_name}: {e}")
             return False
@@ -181,11 +174,10 @@ class StatisticalAnalyzer:
             if baseline == 0.0:
                 return 0.0, 0.0
 
-            absolute_improvement = current - baseline
-            percentage_improvement = (absolute_improvement / baseline) * 100
+            improvement = current - baseline
+            improvement_percentage = (improvement / baseline) * 100.0
 
-            return absolute_improvement, percentage_improvement
-
+            return improvement, improvement_percentage
         except Exception as e:
             self.logger.error(f"Improvement calculation failed: {e}")
             return 0.0, 0.0
@@ -201,47 +193,43 @@ class StatisticalAnalyzer:
             if len(baseline_samples) < 2 or len(current_samples) < 2:
                 return False, 0.0
 
-            # t検定による有意性評価（簡易実装）
-            baseline_mean = statistics.mean(baseline_samples)
-            current_mean = statistics.mean(current_samples)
+            # t-test実行
+            baseline_mean = sum(baseline_samples) / len(baseline_samples)
+            current_mean = sum(current_samples) / len(current_samples)
 
-            baseline_std = statistics.stdev(baseline_samples)
-            current_std = statistics.stdev(current_samples)
+            baseline_std = (
+                sum((x - baseline_mean) ** 2 for x in baseline_samples)
+                / (len(baseline_samples) - 1)
+            ) ** 0.5
+            current_std = (
+                sum((x - current_mean) ** 2 for x in current_samples)
+                / (len(current_samples) - 1)
+            ) ** 0.5
 
-            # プールされた標準偏差
-            pooled_std = np.sqrt(
+            # 統合分散計算
+            pooled_std = (
                 (
                     (len(baseline_samples) - 1) * baseline_std**2
                     + (len(current_samples) - 1) * current_std**2
                 )
                 / (len(baseline_samples) + len(current_samples) - 2)
-            )
+            ) ** 0.5
 
             # t統計量計算
             if pooled_std == 0:
                 return baseline_mean != current_mean, 0.5
 
-            t_statistic = abs(current_mean - baseline_mean) / (
+            # t値計算
+            t_statistic = abs(baseline_mean - current_mean) / (
                 pooled_std
-                * np.sqrt(1 / len(baseline_samples) + 1 / len(current_samples))
+                * ((1 / len(baseline_samples) + 1 / len(current_samples)) ** 0.5)
             )
 
-            # 自由度
-            degrees_of_freedom = len(baseline_samples) + len(current_samples) - 2
-
-            # 簡易臨界値判定（t分布近似）
-            if confidence_level == 0.95:
-                critical_value = 2.0 if degrees_of_freedom > 30 else 2.3
-            else:
-                critical_value = 1.96  # 標準正規分布近似
-
-            is_significant = t_statistic > critical_value
-            p_value = max(
-                0.001, min(0.999, 1.0 - (t_statistic / (critical_value * 2)))
-            )  # 近似p値
+            # 簡易的な有意性判定（t=2.0を閾値とする）
+            is_significant = t_statistic > 2.0
+            p_value = max(0.001, min(0.999, 0.5 - t_statistic * 0.1))  # 簡易p値近似
 
             return is_significant, p_value
-
         except Exception as e:
             self.logger.error(f"Statistical significance assessment failed: {e}")
             return False, 0.5
@@ -254,22 +242,19 @@ class StatisticalAnalyzer:
             if len(samples) < 2:
                 return 0.0, 0.0
 
-            mean_value = statistics.mean(samples)
-            std_dev = statistics.stdev(samples)
+            mean = sum(samples) / len(samples)
+            std_dev = (
+                sum((x - mean) ** 2 for x in samples) / (len(samples) - 1)
+            ) ** 0.5
 
-            # t分布の臨界値（近似）
-            if confidence_level == 0.95:
-                t_value = 2.0 if len(samples) > 30 else 2.3
-            else:
-                t_value = 1.96
+            # 簡易的な信頼区間計算（t分布近似）
+            t_value = 2.0  # 95%信頼区間での近似t値
+            margin_of_error = t_value * std_dev / (len(samples) ** 0.5)
 
-            margin_of_error = t_value * (std_dev / np.sqrt(len(samples)))
-
-            lower_bound = mean_value - margin_of_error
-            upper_bound = mean_value + margin_of_error
+            lower_bound = mean - margin_of_error
+            upper_bound = mean + margin_of_error
 
             return lower_bound, upper_bound
-
         except Exception as e:
             self.logger.error(f"Confidence interval calculation failed: {e}")
             return 0.0, 0.0
@@ -280,28 +265,33 @@ class StatisticalAnalyzer:
             if len(time_series) < 3:
                 return "insufficient_data"
 
-            values = [value for time, value in time_series]
+            # 線形回帰による傾き計算
+            n = len(time_series)
+            times = [t[0] for t in time_series]
+            values = [t[1] for t in time_series]
 
-            # 線形回帰によるトレンド検出（簡易実装）
-            n = len(values)
-            x = list(range(n))
-
-            sum_x = sum(x)
-            sum_y = sum(values)
-            sum_xy = sum(x[i] * values[i] for i in range(n))
-            sum_x2 = sum(x[i] ** 2 for i in range(n))
+            # 平均計算
+            time_mean = sum(times) / n
+            value_mean = sum(values) / n
 
             # 傾き計算
-            slope = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x**2)
+            numerator = sum(
+                (times[i] - time_mean) * (values[i] - value_mean) for i in range(n)
+            )
+            denominator = sum((times[i] - time_mean) ** 2 for i in range(n))
+
+            if denominator == 0:
+                return "stable"
+
+            slope = numerator / denominator
 
             # トレンド判定
-            if abs(slope) < 0.01:
-                return "stable"
-            elif slope > 0:
-                return "improving"
+            if slope > 0.1:
+                return "increasing"
+            elif slope < -0.1:
+                return "decreasing"
             else:
-                return "declining"
-
+                return "stable"
         except Exception as e:
             self.logger.error(f"Trend detection failed: {e}")
             return "unknown"
@@ -442,10 +432,8 @@ class AIEffectMeasurement:
                 f"AI contribution measured: {current_ai_effect:.3f}% (target: 2.0%)"
             )
             return ai_measurement
-
         except Exception as e:
             self.logger.error(f"AI contribution measurement failed: {e}")
-            # フォールバック測定結果
             return MeasurementResult(
                 measurement_type="ai_contribution",
                 baseline_value=0.0,
@@ -539,10 +527,8 @@ class AIEffectMeasurement:
             )
 
             return phase_b_measurement
-
         except Exception as e:
             self.logger.error(f"Phase B preservation validation failed: {e}")
-            # 安全なフォールバック（保護成功と仮定）
             return MeasurementResult(
                 measurement_type="phase_b_preservation",
                 baseline_value=66.8,
@@ -643,10 +629,8 @@ class AIEffectMeasurement:
             )
 
             return integrated_measurement
-
         except Exception as e:
             self.logger.error(f"Integrated effects measurement failed: {e}")
-            # フォールバック測定結果
             return MeasurementResult(
                 measurement_type="integrated_effects",
                 baseline_value=66.8,
@@ -679,9 +663,8 @@ class AIEffectMeasurement:
             )
 
             return max(0.0, min(1.0, integration_quality))
-
         except Exception as e:
-            self.logger.warning(f"Integration quality assessment failed: {e}")
+            self.logger.error(f"Integration quality assessment failed: {e}")
             return 0.5
 
     def monitor_quality_metrics(
@@ -715,10 +698,8 @@ class AIEffectMeasurement:
                 f"Quality metrics monitored: Overall quality {overall_quality:.3f}"
             )
             return quality_metrics
-
         except Exception as e:
             self.logger.error(f"Quality metrics monitoring failed: {e}")
-            # デフォルト品質指標
             return QualityMetrics(
                 accuracy=0.0,
                 precision=0.0,
@@ -748,9 +729,8 @@ class AIEffectMeasurement:
 
             overall_quality = sum(quality_components)
             return max(0.0, min(1.0, overall_quality))
-
         except Exception as e:
-            self.logger.warning(f"Overall quality calculation failed: {e}")
+            self.logger.error(f"Overall quality calculation failed: {e}")
             return 0.0
 
     def assess_system_stability(
@@ -805,10 +785,8 @@ class AIEffectMeasurement:
             )
 
             return stability_assessment
-
         except Exception as e:
             self.logger.error(f"System stability assessment failed: {e}")
-            # デフォルト安定性評価
             return StabilityAssessment(
                 uptime_percentage=0.0,
                 error_frequency=1.0,
@@ -824,20 +802,36 @@ class AIEffectMeasurement:
             if len(self.stability_assessments) < 3:
                 return "insufficient_data"
 
-            # 最近の回復力スコア抽出
+            # 最近の安定性スコアからトレンド分析
             recent_scores = [
                 assessment.resilience_score
-                for assessment in self.stability_assessments[-10:]
+                for assessment in self.stability_assessments[-5:]
             ]
 
-            # トレンド検出
-            time_series = [(i, score) for i, score in enumerate(recent_scores)]
-            trend = self.statistical_analyzer.detect_trend(time_series)
+            # 線形回帰による傾向分析
+            n = len(recent_scores)
+            x_mean = (n - 1) / 2
+            y_mean = sum(recent_scores) / n
 
-            return trend
+            numerator = sum(
+                (i - x_mean) * (recent_scores[i] - y_mean) for i in range(n)
+            )
+            denominator = sum((i - x_mean) ** 2 for i in range(n))
 
+            if denominator == 0:
+                return "stable"
+
+            slope = numerator / denominator
+
+            # トレンド判定
+            if slope > 0.05:
+                return "improving"
+            elif slope < -0.05:
+                return "degrading"
+            else:
+                return "stable"
         except Exception as e:
-            self.logger.warning(f"Stability trend analysis failed: {e}")
+            self.logger.error(f"Stability trend analysis failed: {e}")
             return "unknown"
 
     def generate_comprehensive_report(
@@ -919,11 +913,39 @@ class AIEffectMeasurement:
             )
 
             return report
-
         except Exception as e:
             self.logger.error(f"Comprehensive report generation failed: {e}")
-            # フォールバックレポート
-            return self._create_fallback_report(str(e))
+            return EffectReport(
+                report_id=f"error_report_{int(time.time())}",
+                timestamp=time.time(),
+                phase_b_effect=MeasurementResult(
+                    effectiveness_score=0.0,
+                    efficiency_gain=0.0,
+                    resource_usage=1.0,
+                    confidence_score=0.0,
+                ),
+                ai_effect=MeasurementResult(
+                    effectiveness_score=0.0,
+                    efficiency_gain=0.0,
+                    resource_usage=1.0,
+                    confidence_score=0.0,
+                ),
+                integrated_effect=MeasurementResult(
+                    effectiveness_score=0.0,
+                    efficiency_gain=0.0,
+                    resource_usage=1.0,
+                    confidence_score=0.0,
+                ),
+                quality_metrics={
+                    "overall_quality": 0.0,
+                    "accuracy": 0.0,
+                    "response_time": 0.0,
+                    "availability": 0.0,
+                },
+                stability_score=0.0,
+                success_criteria_met=False,
+                recommendations=["Error occurred during report generation"],
+            )
 
     def _evaluate_success_criteria(
         self,
@@ -979,7 +1001,6 @@ class AIEffectMeasurement:
                 f"Success criteria evaluation: {success_rate*100:.1f}% criteria met"
             )
             return success_criteria_met
-
         except Exception as e:
             self.logger.error(f"Success criteria evaluation failed: {e}")
             return False
@@ -1057,10 +1078,9 @@ class AIEffectMeasurement:
                 recommendations.append("Continue monitoring for sustained performance")
 
             return recommendations[:10]  # 最大10の推奨事項
-
         except Exception as e:
-            self.logger.error(f"Recommendation generation failed: {e}")
-            return ["Review system configuration and performance metrics"]
+            self.logger.error(f"Recommendations generation failed: {e}")
+            return ["System error occurred - review system configuration"]
 
     def _create_fallback_report(self, error_message: str) -> EffectReport:
         """フォールバックレポート作成"""
@@ -1132,10 +1152,12 @@ class AIEffectMeasurement:
             if not self.measurement_history:
                 return {"status": "no_measurements"}
 
+            # 最新レポート取得
             latest_report = self.measurement_history[-1]
 
             return {
-                "latest_measurement": {
+                "status": "active",
+                "latest_report": {
                     "timestamp": latest_report.timestamp,
                     "phase_b_efficiency": latest_report.phase_b_effect.current_value,
                     "ai_contribution": latest_report.ai_effect.current_value,
@@ -1192,7 +1214,6 @@ class AIEffectMeasurement:
 
             self.logger.info(f"Measurements exported to {file_path}")
             return True
-
         except Exception as e:
-            self.logger.error(f"Measurement export failed: {e}")
+            self.logger.error(f"Measurements export failed: {e}")
             return False

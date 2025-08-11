@@ -36,10 +36,9 @@ def _safe_create_var(var_class: Type[Any], value: Any = None) -> Any:
         if _TKINTER_AVAILABLE:
             return var_class(value=value)
         else:
-            return MockVar(value)
-    except RuntimeError:
-        # ルートウィンドウが無い場合はMockVarを使用
-        return MockVar(value)
+            return MockVar(value=value)
+    except Exception:
+        return MockVar(value=value)
 
 
 class GuiConfig:
@@ -118,7 +117,9 @@ class GuiConfig:
         input_file = self.get_input_file()
         if not input_file:
             return False
-        return Path(input_file).exists()
+
+        path = Path(input_file)
+        return path.exists() and path.is_file()
 
     def get_conversion_params(self) -> Dict[str, Any]:
         """変換実行用のパラメータを取得"""

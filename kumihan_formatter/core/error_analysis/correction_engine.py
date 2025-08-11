@@ -100,7 +100,7 @@ class CorrectionEngine:
 
     def generate_suggestions(self, error: GracefulSyntaxError) -> List[str]:
         """エラーに対する修正提案を生成"""
-        suggestions = []
+        suggestions: List[str] = []
 
         # ルールベースの提案生成
         rule_suggestions = self._apply_correction_rules(error)
@@ -121,7 +121,7 @@ class CorrectionEngine:
 
     def _apply_correction_rules(self, error: GracefulSyntaxError) -> List[str]:
         """ルールベースの修正提案を適用"""
-        suggestions = []
+        suggestions: List[str] = []
         message_lower = error.message.lower()
 
         for rule in sorted(
@@ -136,16 +136,16 @@ class CorrectionEngine:
 
     def _generate_context_suggestions(self, error: GracefulSyntaxError) -> List[str]:
         """コンテキストに基づく修正提案を生成"""
-        suggestions = []
+        suggestions: List[str] = []
 
         if not error.context:
             return suggestions
 
-        context = error.context.strip()
+        context = error.context
 
-        # 不完全なマーカーの検出と提案
+        # ブロック記法の不完全パターンを検出
         if context.startswith("#") and not context.endswith("#"):
-            # # キーワード の形式
+            # 開始マーカーはあるが終了マーカーがない場合
             if " " in context:
                 keyword = context[1:].strip()
                 suggestions.append(
@@ -172,7 +172,7 @@ class CorrectionEngine:
 
     def _detect_common_mistakes(self, context: str) -> List[str]:
         """よくある間違いパターンを検出"""
-        suggestions = []
+        suggestions: List[str] = []
 
         # 全角スペースの使用
         if "\u3000" in context:  # 全角スペース
@@ -237,29 +237,35 @@ class CorrectionEngine:
         if not errors:
             return {"total": 0, "patterns": {}, "severity_breakdown": {}}
 
-        # パターン別集計
+        # エラーパターンの統計
         pattern_counts = {}
-        severity_counts = {}
+        severity_counts = {"error": 0, "warning": 0, "info": 0}
 
         for error in errors:
-            # パターン分類
-            pattern = error.classify_error_pattern()
+            # パターン統計
+            pattern = error.error_pattern or "unknown"
             pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
 
-            # 重要度別集計
-            severity_counts[error.severity] = severity_counts.get(error.severity, 0) + 1
-
-        # 最も多いパターンTOP3
-        top_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[
-            :3
-        ]
+            # 重要度統計
+            severity = getattr(error, "severity", "error")
+            if severity in severity_counts:
+                severity_counts[severity] += 1
 
         return {
             "total": len(errors),
             "patterns": pattern_counts,
             "severity_breakdown": severity_counts,
-            "top_patterns": top_patterns,
-            "suggestions_generated": sum(
-                len(error.correction_suggestions) for error in errors
+            "avg_suggestions_per_error": (
+                sum(
+                    (
+                        len(error.correction_suggestions)
+                        if error.correction_suggestions
+                        else 0
+                    )
+                    for error in errors
+                )
+                / len(errors)
+                if errors
+                else 0
             ),
         }

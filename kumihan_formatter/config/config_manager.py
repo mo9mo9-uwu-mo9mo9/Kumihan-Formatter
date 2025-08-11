@@ -71,12 +71,10 @@ class ConfigManager:
         """設定を辞書として取得"""
         return self._config.to_dict()
 
-    # ExtendedConfigインターフェースの委譲（利用可能な場合）
     def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_markers"):
             return self._config.get_markers()  # type: ignore
-        return {}
 
     def add_marker(self, name: str, definition: dict[str, Any]) -> None:
         """マーカーを追加（ExtendedConfigのみ）"""
@@ -87,13 +85,11 @@ class ConfigManager:
         """マーカーを削除（ExtendedConfigのみ）"""
         if hasattr(self._config, "remove_marker"):
             return self._config.remove_marker(name)  # type: ignore
-        return False
 
     def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_themes"):
             return self._config.get_themes()  # type: ignore
-        return {}
 
     def add_theme(self, theme_id: str, theme_data: dict[str, Any]) -> None:
         """テーマを追加（ExtendedConfigのみ）"""
@@ -104,15 +100,12 @@ class ConfigManager:
         """テーマを設定（ExtendedConfigのみ）"""
         if hasattr(self._config, "set_theme"):
             return self._config.set_theme(theme_id)  # type: ignore
-        return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_current_theme"):
             return self._config.get_current_theme()  # type: ignore
-        return "default"
 
-    # 互換性メソッド
     def load_config(self, config_path: str) -> bool:
         """設定ファイルを読み込み（互換性用）
 
@@ -126,7 +119,8 @@ class ConfigManager:
             self._config = load_config_file(self.config_type, config_path, self._config)
             self._env_handler.load_from_env(self._config)  # 環境変数を再適用
             return True
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Failed to load config file: {e}")
             return False
 
     def merge_config(self, other_config: dict[str, Any]) -> None:
@@ -143,7 +137,6 @@ class ConfigManager:
         return self._config
 
 
-# 便利関数
 def create_config_manager(
     config_type: str = "extended",
     config_path: str | None = None,

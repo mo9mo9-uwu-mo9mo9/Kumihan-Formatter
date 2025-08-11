@@ -137,4 +137,5 @@ def setup_test_environment():
     os.environ.pop("KUMIHAN_TEST_MODE", None)
     os.environ.pop("KUMIHAN_LOG_LEVEL", None)
 
+
 # 新規ファイル作成のため、tests/unit/test_toc_generator.py を作成

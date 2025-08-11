@@ -8,7 +8,7 @@ PIP = $(PYTHON) -m pip
 PROJECT_NAME = kumihan_formatter
 SRC_DIR = $(PROJECT_NAME)
 
-.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit
+.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci
 
 # デフォルトターゲット
 help:
@@ -28,6 +28,8 @@ help:
 	@echo "  make check-tmp-rule - tmp/配下強制ルール違反チェック"
 	@echo "  make enforce-tmp-rule - tmp/配下強制ルール適用（対話的）"
 	@echo "  make enforce-tmp-rule-auto - tmp/配下強制ルール適用（自動）"
+	@echo "  make tech-debt-check - 技術的負債監視チェック実行"
+	@echo "  make tech-debt-report - 技術的負債詳細レポート生成"
 	@echo ""
 
 # 基本コマンド実装
@@ -185,4 +187,24 @@ enforce-tmp-rule-auto:
 tmp-organizer:
 	@echo "📁 tmp/配下強制ルール（file-organizer版）適用中..."
 	$(PYTHON) scripts/file-organizer.py --enforce-tmp-rule
-	@echo "✅ tmp/配下強制ルール（file-organizer版）適用完了"
+
+# 技術的負債監視システム
+tech-debt-check:
+	@echo "🔍 技術的負債監視チェック実行中..."
+	$(PYTHON) scripts/tech_debt_monitor.py --format console
+	@echo "✅ 技術的負債チェック完了"
+
+tech-debt-report:
+	@echo "📊 技術的負債詳細レポート生成中..."
+	$(PYTHON) scripts/tech_debt_monitor.py --format html --output tmp/tech_debt_report.html
+	@echo "✅ 技術的負債レポート生成完了 → tmp/tech_debt_report.html"
+
+tech-debt-json:
+	@echo "📋 技術的負債JSONレポート生成中..."
+	$(PYTHON) scripts/tech_debt_monitor.py --format json --output tmp/tech_debt_report.json
+	@echo "✅ 技術的負債JSONレポート生成完了 → tmp/tech_debt_report.json"
+
+tech-debt-ci:
+	@echo "🚨 技術的負債CI/CDチェック実行中..."
+	$(PYTHON) scripts/tech_debt_monitor.py --ci --format console
+	@echo "✅ 技術的負債CI/CDチェック完了"

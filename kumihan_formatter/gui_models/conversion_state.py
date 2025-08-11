@@ -40,10 +40,9 @@ def _safe_create_var(var_class: Any, value: Any = None) -> Any:
         if _TKINTER_AVAILABLE:
             return var_class(value=value)
         else:
-            return MockVar(value)
-    except RuntimeError:
-        # ルートウィンドウが無い場合はMockVarを使用
-        return MockVar(value)
+            return MockVar()
+    except Exception:
+        return MockVar()
 
 
 class ConversionState:
@@ -102,8 +101,6 @@ class ConversionState:
         """ステータスメッセージを設定（Thread-Safe）"""
         try:
             with self._lock:
-                if not isinstance(message, str):
-                    message = str(message)
                 self.status_var.set(message)
 
                 # コールバック実行
@@ -129,8 +126,6 @@ class ConversionState:
                 self.progress_var.set(value)
 
                 if status:
-                    if not isinstance(status, str):
-                        status = str(status)
                     self.status_var.set(status)
 
                 # コールバック実行

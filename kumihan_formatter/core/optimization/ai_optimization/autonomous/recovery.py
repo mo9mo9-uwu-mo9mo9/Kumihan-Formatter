@@ -197,71 +197,68 @@ class AutoRecoveryEngine:
             if self.recovery_in_progress:
                 return {"recovery_executed": False, "reason": "recovery_in_progress"}
 
+            # 異常を重要度順にソート
+            sorted_anomalies = sorted(
+                anomalies,
+                key=lambda x: self._get_severity_priority(x.severity),
+                reverse=True,
+            )
+
+            recovery_results = []
             self.recovery_in_progress = True
 
-            try:
-                # 異常優先度順にソート
-                sorted_anomalies = sorted(
-                    anomalies,
-                    key=lambda x: self._get_severity_priority(x.severity),
-                    reverse=True,
-                )
+            # 異常毎に復旧実行
+            for anomaly in sorted_anomalies:
+                if anomaly.resolved:
+                    continue
 
-                recovery_results = []
+                anomaly_recovery = self._execute_anomaly_recovery(anomaly)
+                recovery_results.append(anomaly_recovery)
 
-                # 異常毎に復旧実行
-                for anomaly in sorted_anomalies:
-                    if anomaly.resolved:
-                        continue
+                # Critical異常の場合は即座に対応
+                if anomaly.severity == "critical" and anomaly_recovery.get(
+                    "success", False
+                ):
+                    break
 
-                    anomaly_recovery = self._execute_anomaly_recovery(anomaly)
-                    recovery_results.append(anomaly_recovery)
+            # 復旧効果評価
+            recovery_effectiveness = self._evaluate_recovery_effectiveness(
+                recovery_results
+            )
 
-                    # Critical異常の場合は即座に対応
-                    if anomaly.severity == "critical" and anomaly_recovery.get(
-                        "success", False
-                    ):
-                        break
+            recovery_time = time.time() - recovery_start
+            self.last_recovery_time = time.time()
 
-                # 復旧効果評価
-                recovery_effectiveness = self._evaluate_recovery_effectiveness(
-                    recovery_results
-                )
+            # 復旧履歴記録
+            recovery_record = {
+                "timestamp": time.time(),
+                "anomalies_processed": len(sorted_anomalies),
+                "recovery_results": recovery_results,
+                "recovery_effectiveness": recovery_effectiveness,
+                "recovery_time": recovery_time,
+            }
 
-                recovery_time = time.time() - recovery_start
-                self.last_recovery_time = time.time()
+            self.recovery_history.append(recovery_record)
 
-                # 復旧履歴記録
-                recovery_record = {
-                    "timestamp": time.time(),
-                    "anomalies_processed": len(sorted_anomalies),
-                    "recovery_results": recovery_results,
-                    "recovery_effectiveness": recovery_effectiveness,
-                    "recovery_time": recovery_time,
-                }
+            self.logger.info(
+                f"Recovery completed: {len(recovery_results)} actions executed in "
+                f"{recovery_time:.2f}s"
+            )
 
-                self.recovery_history.append(recovery_record)
-
-                self.logger.info(
-                    f"Recovery completed: {len(recovery_results)} actions executed in "
-                    f"{recovery_time:.2f}s"
-                )
-
-                return {
-                    "recovery_executed": True,
-                    "recovery_results": recovery_results,
-                    "recovery_effectiveness": recovery_effectiveness,
-                    "recovery_time": recovery_time,
-                    "anomalies_processed": len(sorted_anomalies),
-                }
-
-            finally:
-                self.recovery_in_progress = False
+            return {
+                "recovery_executed": True,
+                "recovery_results": recovery_results,
+                "recovery_effectiveness": recovery_effectiveness,
+                "recovery_time": recovery_time,
+                "anomalies_processed": len(sorted_anomalies),
+            }
 
         except Exception as e:
             self.recovery_in_progress = False
             self.logger.error(f"Recovery execution failed: {e}")
             return {"recovery_executed": False, "error": str(e)}
+        finally:
+            self.recovery_in_progress = False
 
     def _get_severity_priority(self, severity: str) -> int:
         """深刻度優先度取得"""
@@ -385,8 +382,7 @@ class AutoRecoveryEngine:
             time.sleep(0.1)  # 処理時間シミュレーション
             self.logger.info("Cache cleared successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Cache clear failed: {e}")
+        except Exception:
             return False
 
     def _clear_all_caches(self) -> bool:
@@ -395,8 +391,7 @@ class AutoRecoveryEngine:
             time.sleep(0.5)
             self.logger.info("All caches cleared successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"All caches clear failed: {e}")
+        except Exception:
             return False
 
     def _force_garbage_collection(self) -> bool:
@@ -407,8 +402,7 @@ class AutoRecoveryEngine:
                 f"Garbage collection completed: {collected} objects collected"
             )
             return True
-        except Exception as e:
-            self.logger.error(f"Garbage collection failed: {e}")
+        except Exception:
             return False
 
     def _reduce_model_complexity(self) -> bool:
@@ -417,8 +411,7 @@ class AutoRecoveryEngine:
             time.sleep(0.2)
             self.logger.info("Model complexity reduced successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Model complexity reduction failed: {e}")
+        except Exception:
             return False
 
     def _trigger_model_retrain(self) -> bool:
@@ -427,8 +420,7 @@ class AutoRecoveryEngine:
             time.sleep(1.0)  # 再訓練時間シミュレーション
             self.logger.info("Model retraining triggered successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Model retraining trigger failed: {e}")
+        except Exception:
             return False
 
     def _reset_to_baseline(self) -> bool:
@@ -437,8 +429,7 @@ class AutoRecoveryEngine:
             time.sleep(0.3)
             self.logger.info("Reset to baseline completed successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Baseline reset failed: {e}")
+        except Exception:
             return False
 
     def _optimize_prediction_cache(self) -> bool:
@@ -447,8 +438,7 @@ class AutoRecoveryEngine:
             time.sleep(0.2)
             self.logger.info("Prediction cache optimized successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Prediction cache optimization failed: {e}")
+        except Exception:
             return False
 
     def _reduce_batch_size(self) -> bool:
@@ -457,8 +447,7 @@ class AutoRecoveryEngine:
             time.sleep(0.1)
             self.logger.info("Batch size reduced successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Batch size reduction failed: {e}")
+        except Exception:
             return False
 
     def _enable_fallback_mode(self) -> bool:
@@ -467,8 +456,7 @@ class AutoRecoveryEngine:
             time.sleep(0.1)
             self.logger.info("Fallback mode enabled successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Fallback mode enable failed: {e}")
+        except Exception:
             return False
 
     def _reset_error_state(self) -> bool:
@@ -477,8 +465,7 @@ class AutoRecoveryEngine:
             time.sleep(0.05)
             self.logger.info("Error state reset successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Error state reset failed: {e}")
+        except Exception:
             return False
 
     def _enable_data_validation(self) -> bool:
@@ -487,8 +474,7 @@ class AutoRecoveryEngine:
             time.sleep(0.1)
             self.logger.info("Data validation enabled successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Data validation enable failed: {e}")
+        except Exception:
             return False
 
     def _fallback_to_historical_data(self) -> bool:
@@ -497,8 +483,7 @@ class AutoRecoveryEngine:
             time.sleep(0.2)
             self.logger.info("Fallback to historical data completed successfully")
             return True
-        except Exception as e:
-            self.logger.error(f"Historical data fallback failed: {e}")
+        except Exception:
             return False
 
     def _evaluate_recovery_effectiveness(
@@ -516,7 +501,6 @@ class AutoRecoveryEngine:
 
             success_rate = len(successful_recoveries) / total_recoveries
 
-            # 平均効果
             if successful_recoveries:
                 effectiveness_values = [
                     r.get("recovery_effectiveness", 0.0) for r in successful_recoveries

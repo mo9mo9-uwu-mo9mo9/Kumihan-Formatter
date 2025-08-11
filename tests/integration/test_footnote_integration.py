@@ -31,12 +31,12 @@ class TestFootnoteIntegration:
         assert html is not None
 
         # 脚注リンクが本文に含まれることを確認
-        assert 'footnote-ref' in html
-        assert '[1]' in html
+        assert "footnote-ref" in html
+        assert "[1]" in html
 
         # 脚注セクションが末尾に含まれることを確認
         assert 'class="footnotes"' in html
-        assert 'これは脚注の内容です' in html
+        assert "これは脚注の内容です" in html
 
     def test_multiple_footnotes_parsing_and_rendering(self):
         """複数脚注のパース→レンダリング統合テスト"""
@@ -55,14 +55,14 @@ class TestFootnoteIntegration:
         assert html is not None
 
         # 複数の脚注番号が正しく割り当てられることを確認
-        assert '[1]' in html
-        assert '[2]' in html
-        assert '[3]' in html
+        assert "[1]" in html
+        assert "[2]" in html
+        assert "[3]" in html
 
         # 全ての脚注内容が含まれることを確認
-        assert '第一の脚注' in html
-        assert '第二の脚注' in html
-        assert '第三の脚注' in html
+        assert "第一の脚注" in html
+        assert "第二の脚注" in html
+        assert "第三の脚注" in html
 
         # 脚注セクションが正しく生成されることを確認
         assert 'class="footnotes"' in html
@@ -83,8 +83,8 @@ class TestFootnoteIntegration:
         assert html is not None
 
         # HTML特殊文字が適切にエスケープされることを確認
-        assert '&lt;' in html or '<' in html
-        assert '&gt;' in html or '>' in html
+        assert "&lt;" in html or "<" in html
+        assert "&gt;" in html or ">" in html
 
     def test_footnote_bidirectional_links(self):
         """脚注の双方向リンク生成テスト"""
@@ -101,7 +101,7 @@ class TestFootnoteIntegration:
         # 脚注から本文への戻りリンク
         assert 'href="#footnote-ref-1"' in html
         assert 'id="footnote-1"' in html
-        assert '↩' in html
+        assert "↩" in html
 
     def test_footnote_accessibility_attributes(self):
         """脚注のアクセシビリティ属性テスト"""
@@ -133,7 +133,7 @@ class TestFootnoteEdgeCases:
         nodes = self.parser.parse(text)
         html = self.renderer.render(nodes)
 
-        assert '[1]' in html
+        assert "[1]" in html
         assert 'class="footnotes"' in html
 
     def test_consecutive_footnotes(self):
@@ -143,8 +143,8 @@ class TestFootnoteEdgeCases:
         nodes = self.parser.parse(text)
         html = self.renderer.render(nodes)
 
-        assert '[1]' in html
-        assert '[2]' in html
+        assert "[1]" in html
+        assert "[2]" in html
         assert 'class="footnotes"' in html
 
     def test_footnote_with_nested_keywords(self):
@@ -160,7 +160,7 @@ class TestFootnoteEdgeCases:
         assert html is not None
 
         # 脚注が正しく処理されることを確認
-        assert 'footnote-ref' in html
+        assert "footnote-ref" in html
         assert 'class="footnotes"' in html
 
 

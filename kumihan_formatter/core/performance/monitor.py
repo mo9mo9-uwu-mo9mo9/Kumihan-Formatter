@@ -65,7 +65,6 @@ class ProcessingStats:
         """完了率（%）"""
         if self.total_items == 0:
             return 0.0
-        return (self.items_processed / self.total_items) * 100
 
 
 class PerformanceMonitor:
@@ -182,12 +181,16 @@ class PerformanceMonitor:
             processing_rate = self.stats.items_per_second
 
             # ディスクI/O（可能な場合）
-            try:
-                io_counters = self.process.io_counters()
-                disk_io_read_mb = io_counters.read_bytes / 1024 / 1024
-                disk_io_write_mb = io_counters.write_bytes / 1024 / 1024
-            except (AttributeError, psutil.AccessDenied):
-                disk_io_read_mb = disk_io_write_mb = 0.0
+            disk_io_read_mb = 0.0
+            disk_io_write_mb = 0.0
+            if hasattr(self.process, "io_counters"):
+                try:
+                    io_counters = self.process.io_counters()
+                    disk_io_read_mb = io_counters.read_bytes / 1024 / 1024
+                    disk_io_write_mb = io_counters.write_bytes / 1024 / 1024
+                except psutil.AccessDenied:
+                    # AccessDenied is a specific psutil error, keep handling it
+                    pass
 
             # スレッド数
             thread_count = self.process.num_threads()
@@ -307,7 +310,7 @@ class PerformanceMonitor:
         for alert in alerts:
             for callback in self.alert_callbacks:
                 try:
-                    callback(alert["type"], alert)
+                    callback(str(alert["type"]), alert)
                 except Exception as e:
                     self.logger.error(f"Error in alert callback: {e}")
 
@@ -403,29 +406,20 @@ class PerformanceMonitor:
         if len(values) < 2:
             return 0.0
 
-        n = len(values)
-        x_avg = sum(range(n)) / n
-        y_avg = sum(values) / n
-
-        numerator = sum((i - x_avg) * (values[i] - y_avg) for i in range(n))
-        denominator = sum((i - x_avg) ** 2 for i in range(n))
-
-        return numerator / denominator if denominator != 0 else 0.0
-
-    def save_metrics_to_file(self, file_path: str = None):
+    def save_metrics_to_file(self, file_path: Optional[str] = None):
         """パフォーマンスメトリクスをファイルに保存"""
         # tmp/配下にファイルを作成
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
 
         if not file_path:
-            file_path = (
+            actual_path = (
                 tmp_dir
                 / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             )
         else:
             # 既存パスがあってもtmp/配下に移動
-            file_path = tmp_dir / Path(file_path).name
+            actual_path = tmp_dir / Path(file_path).name
 
         try:
             metrics_data = {
@@ -435,10 +429,10 @@ class PerformanceMonitor:
                 "summary": self.get_performance_summary(),
             }
 
-            with open(file_path, "w", encoding="utf-8") as f:
+            with open(actual_path, "w", encoding="utf-8") as f:
                 json.dump(metrics_data, f, indent=2, ensure_ascii=False)
 
-            self.logger.info(f"Performance metrics saved to {file_path}")
+            self.logger.info(f"Performance metrics saved to {actual_path}")
 
         except Exception as e:
             self.logger.error(f"Failed to save metrics to file: {e}")
@@ -473,8 +467,8 @@ def monitor_performance(func):
             result = func(*args, **kwargs)
             monitor.update_progress(1)
             return result
-        except Exception:
-            monitor.add_error()
+        except Exception as e:
+            monitor.logger.error(f"Performance monitoring failed: {e}")
             raise
         finally:
             monitor.stop_monitoring()

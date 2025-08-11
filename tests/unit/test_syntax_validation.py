@@ -48,7 +48,11 @@ class TestKumihanSyntaxValidator:
             # Valid syntax should produce minimal or no errors
             if len(errors) > 0:
                 # Check if errors are just warnings
-                severe_errors = [e for e in errors if hasattr(e, 'severity') and e.severity == ErrorSeverity.ERROR]
+                severe_errors = [
+                    e
+                    for e in errors
+                    if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
+                ]
                 assert len(severe_errors) == 0, f"Unexpected errors for valid text: {text}"
 
     def test_file_validation(self, sample_text_files):
@@ -80,7 +84,11 @@ class TestKumihanSyntaxValidator:
             errors = self.validator.validate_text(text)
 
             if expected_severe_count is not None:
-                severe_errors = [e for e in errors if hasattr(e, 'severity') and e.severity == ErrorSeverity.ERROR]
+                severe_errors = [
+                    e
+                    for e in errors
+                    if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
+                ]
                 assert len(severe_errors) == expected_severe_count
 
     def test_configuration_handling(self):
@@ -110,15 +118,15 @@ class TestSyntaxErrors:
 
     def test_error_severity_enum(self):
         """Test error severity enumeration."""
-        assert hasattr(ErrorSeverity, 'WARNING') or hasattr(ErrorSeverity, 'WARN')
-        assert hasattr(ErrorSeverity, 'ERROR')
-        assert hasattr(ErrorSeverity, 'INFO') or hasattr(ErrorSeverity, 'DEBUG')
+        assert hasattr(ErrorSeverity, "WARNING") or hasattr(ErrorSeverity, "WARN")
+        assert hasattr(ErrorSeverity, "ERROR")
+        assert hasattr(ErrorSeverity, "INFO") or hasattr(ErrorSeverity, "DEBUG")
 
     def test_error_types_enum(self):
         """Test error types enumeration."""
         # Should have various error categories
         error_attrs = dir(ErrorTypes)
-        expected_types = ['SYNTAX', 'STRUCTURE', 'VALIDATION', 'PARSING']
+        expected_types = ["SYNTAX", "STRUCTURE", "VALIDATION", "PARSING"]
 
         # At least some error types should be defined
         found_types = [attr for attr in error_attrs if any(t in attr for t in expected_types)]
@@ -131,7 +139,7 @@ class TestSyntaxErrors:
                 message="Test error message",
                 severity=ErrorSeverity.ERROR,
                 line_number=1,
-                position=0
+                position=0,
             )
 
             assert error.message == "Test error message"
@@ -149,7 +157,7 @@ class TestSyntaxErrors:
             friendly_error = UserFriendlyError(
                 original_error="Complex technical error",
                 user_message="分かりやすいエラーメッセージ",
-                suggestions=["提案1", "提案2"]
+                suggestions=["提案1", "提案2"],
             )
 
             assert "分かりやすい" in friendly_error.user_message
@@ -194,7 +202,7 @@ class TestSyntaxRules:
         if categories:
             assert isinstance(categories, (list, dict))
             # Should have different rule categories
-            expected_categories = ['structure', 'formatting', 'nesting', 'keywords']
+            expected_categories = ["structure", "formatting", "nesting", "keywords"]
             found_categories = [cat for cat in expected_categories if cat in str(categories)]
         else:
             pytest.skip("Rule categories not implemented")
@@ -206,9 +214,9 @@ class TestSyntaxRules:
 
             # Try to add a custom rule
             custom_rule = {
-                'name': 'test_rule',
-                'pattern': r'#[\w]+',
-                'message': 'Test rule violation'
+                "name": "test_rule",
+                "pattern": r"#[\w]+",
+                "message": "Test rule violation",
             }
 
             self.rules.add_rule(custom_rule)
