@@ -11,10 +11,10 @@ import re
 
 from .ast_nodes import Node
 
-# Removed unused imports:
-# from .toc_formatter import TOCFormatter
-# from .toc_generator_main import TOCGenerator
-# from .toc_validator import TOCValidator
+# Re-export for compatibility
+from .toc_generator_main import TOCGenerator
+
+__all__ = ["TOCGenerator"]
 
 
 class TOCEntry:

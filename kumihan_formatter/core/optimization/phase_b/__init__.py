@@ -27,7 +27,7 @@ from .config import (
 )
 
 # メイン統合システム
-from .integrator import OptimizationIntegrator, create_optimization_integrator
+from .integrator import OptimizationIntegrator, create_phase_b_integrator
 
 # 効果測定システム
 from .measurement import EffectMeasurementSystem
@@ -51,7 +51,7 @@ __all__ = [
     "PhaseBReportGenerator",
     # メインシステム
     "OptimizationIntegrator",
-    "create_optimization_integrator",
+    "create_phase_b_integrator",
     # 後方互換エイリアス
     "OptimizationIntegratorSystem",
     "PhaseBEffectMeasurement",
