@@ -87,7 +87,9 @@ class ConfigLoader:
             with open(config_file, "r", encoding="utf-8") as f:
                 if file_format == ConfigFormat.YAML:
                     if not HAS_YAML:
-                        raise ConfigLoadError("YAML設定ファイルの読み込みにはPyYAMLが必要です")
+                        raise ConfigLoadError(
+                            "YAML設定ファイルの読み込みにはPyYAMLが必要です"
+                        )
                     config_data = yaml.safe_load(f)
 
                 elif file_format == ConfigFormat.JSON:
@@ -95,41 +97,41 @@ class ConfigLoader:
 
                 elif file_format == ConfigFormat.TOML:
                     if not HAS_TOML:
-                        raise ConfigLoadError("TOML設定ファイルの読み込みにはtomliが必要です")
+                        raise ConfigLoadError(
+                            "TOML設定ファイルの読み込みにはtomliが必要です"
+                        )
                     # TOMLはバイナリモードで読む必要がある
                     f.close()
                     with open(config_file, "rb") as fb:
                         config_data = tomli.load(fb)
 
                 else:
-                    raise ConfigLoadError(f"未サポートの設定ファイル形式: {file_format}")
+                    raise ConfigLoadError(
+                        f"未サポートの設定ファイル形式: {file_format}"
+                    )
 
             if not isinstance(config_data, dict):
                 raise ConfigLoadError("設定ファイルは辞書形式である必要があります")
 
-            self.logger.info(f"設定ファイル読み込み成功: {config_path} ({file_format.value})")
+            self.logger.info(
+                f"設定ファイル読み込み成功: {config_path} ({file_format.value})"
+            )
             return config_data
 
-        except (yaml.YAMLError, json.JSONDecodeError, Exception) as e:
-            error_msg = f"設定ファイル解析エラー: {config_path}: {e}"
-            self.logger.error(error_msg)
-
-            # 統一エラーハンドリングで処理
-            try:
-                # result = handle_error_unified(  # removed - unused variable (F841)
-                handle_error_unified(
-                    e,
-                    context={
-                        "config_path": str(config_path),
-                        "file_format": file_format.value,
-                        "operation": "config_file_loading",
-                    },
-                    operation="load_config_file",
-                    component_name="ConfigLoader",
-                )
-                raise ConfigLoadError(error_msg) from e
-            except Exception:
-                raise ConfigLoadError(error_msg) from e
+        except Exception as e:
+            # result = handle_error_unified(  # removed - unused variable (F841)
+            handle_error_unified(
+                e,
+                context={
+                    "config_path": str(config_path),
+                    "file_format": file_format.value,
+                    "operation": "config_file_loading",
+                },
+                operation="load_config_file",
+                component_name="ConfigLoader",
+            )
+            error_msg = f"設定ファイル読み込みエラー: {config_path}"
+            raise ConfigLoadError(error_msg) from e
 
     def _detect_format(self, config_file: Path) -> ConfigFormat:
         """ファイル拡張子から設定ファイル形式を判定
@@ -159,7 +161,7 @@ class ConfigLoader:
             return ConfigFormat.TOML
 
         else:
-            raise ConfigLoadError(f"未サポートの設定ファイル拡張子: {suffix}")
+            raise ConfigLoadError(f"サポートされていない設定ファイル形式: {suffix}")
 
     def load_from_environment(self, prefix: str = "KUMIHAN_") -> Dict[str, Any]:
         """環境変数から設定を読み込み
@@ -180,7 +182,9 @@ class ConfigLoader:
                 # ネストした設定対応 (例: KUMIHAN_PARALLEL__THRESHOLD_LINES)
                 if "__" in config_key:
                     keys = config_key.split("__")
-                    self._set_nested_value(config_data, keys, self._convert_env_value(value))
+                    self._set_nested_value(
+                        config_data, keys, self._convert_env_value(value)
+                    )
                 else:
                     config_data[config_key] = self._convert_env_value(value)
 
@@ -189,7 +193,9 @@ class ConfigLoader:
 
         return config_data
 
-    def _set_nested_value(self, data: Dict[str, Any], keys: List[str], value: Any) -> None:
+    def _set_nested_value(
+        self, data: Dict[str, Any], keys: List[str], value: Any
+    ) -> None:
         """ネストした辞書に値を設定
 
         Args:
@@ -221,14 +227,12 @@ class ConfigLoader:
 
         # 数値の変換
         try:
-            # 整数の場合
-            if "." not in value:
-                return int(value)
-            # 浮動小数点数の場合
-            else:
+            if "." in value:
                 return float(value)
+            else:
+                return int(value)
         except ValueError:
-            # 文字列のまま返す
+            # 変換できない場合は文字列のまま返す
             return value
 
     def find_config_file(
@@ -250,7 +254,9 @@ class ConfigLoader:
                 Path.cwd(),  # カレントディレクトリ
                 Path.home() / ".kumihan",  # ユーザーホーム/.kumihan
                 Path.home() / ".config" / "kumihan",  # XDG Config
-                (Path("/etc/kumihan") if sys.platform != "win32" else Path()),  # システム設定
+                (
+                    Path("/etc/kumihan") if sys.platform != "win32" else Path()
+                ),  # システム設定
             ]
 
         if filename_patterns is None:
@@ -278,9 +284,6 @@ class ConfigLoader:
                     self.logger.info(f"設定ファイル発見: {config_file}")
                     return config_file
 
-        self.logger.debug("設定ファイルが見つかりませんでした")
-        return None
-
     def merge_configs(self, *configs: Dict[str, Any]) -> Dict[str, Any]:
         """複数の設定を優先順位に従ってマージ
 
@@ -298,7 +301,9 @@ class ConfigLoader:
 
         return merged
 
-    def _deep_merge(self, base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
+    def _deep_merge(
+        self, base: Dict[str, Any], update: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """辞書の深いマージ
 
         Args:
@@ -311,7 +316,11 @@ class ConfigLoader:
         result = base.copy()
 
         for key, value in update.items():
-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            if (
+                key in result
+                and isinstance(result[key], dict)
+                and isinstance(value, dict)
+            ):
                 result[key] = self._deep_merge(result[key], value)
             else:
                 result[key] = value
@@ -349,13 +358,17 @@ class ConfigLoader:
                 if format == ConfigFormat.YAML:
                     if not HAS_YAML:
                         raise ConfigLoadError("YAML保存にはPyYAMLが必要です")
-                    yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
+                    yaml.dump(
+                        config_data, f, default_flow_style=False, allow_unicode=True
+                    )
 
                 elif format == ConfigFormat.JSON:
                     json.dump(config_data, f, indent=2, ensure_ascii=False)
 
                 elif format == ConfigFormat.TOML:
-                    raise ConfigLoadError("TOML形式での保存は現在サポートされていません")
+                    raise ConfigLoadError(
+                        "TOML形式での保存は現在サポートされていません"
+                    )
 
                 else:
                     raise ConfigLoadError(f"未サポートの保存形式: {format}")

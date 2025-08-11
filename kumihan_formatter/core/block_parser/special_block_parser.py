@@ -145,47 +145,8 @@ class SpecialBlockParser:
             if any(indicator in cell for indicator in header_indicators):
                 return True
 
-        # Count numeric vs non-numeric cells
-        numeric_count = 0
-        for cell in row:
-            cell = cell.strip()
-            if not cell:  # Empty cell
-                continue
-
-            # More strict numeric pattern validation
-            if self._is_numeric_value(cell):
-                numeric_count += 1
-
-        # If more than 70% of cells are numeric, likely a data row
-        non_empty_cells = len([cell for cell in row if cell.strip()])
-        if non_empty_cells == 0:
-            return False
-
-        numeric_ratio = numeric_count / non_empty_cells
-        return numeric_ratio <= 0.7
-
     def _is_numeric_value(self, value: str) -> bool:
         """Check if a value is purely numeric"""
         value = value.strip()
         if not value:
             return False
-
-        # Remove common numeric formatting
-        cleaned = value.replace(",", "").replace(".", "").replace("-", "").replace("+", "")
-
-        # Check for pure digits or float patterns
-        try:
-            float(value.replace(",", ""))
-            return True
-        except ValueError:
-            pass
-
-        # Check for percentage
-        if value.endswith("%") and cleaned[:-1].isdigit():
-            return True
-
-        # Check for currency patterns (simple)
-        if value.startswith(("¥", "$", "€")) and cleaned[1:].isdigit():
-            return True
-
-        return cleaned.isdigit()

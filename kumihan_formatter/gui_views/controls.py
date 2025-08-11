@@ -143,7 +143,9 @@ class LogFrame:
         self.log_text = Text(self.frame, height=8, wrap=WORD, state=DISABLED)
 
         # スクロールバー
-        self.log_scrollbar = ttk.Scrollbar(self.frame, orient=VERTICAL, command=self.log_text.yview)
+        self.log_scrollbar = ttk.Scrollbar(
+            self.frame, orient=VERTICAL, command=self.log_text.yview
+        )
         self.log_text.configure(yscrollcommand=self.log_scrollbar.set)
 
         # 配置

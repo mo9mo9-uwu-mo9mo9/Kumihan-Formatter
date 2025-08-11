@@ -10,7 +10,9 @@ from .node import Node
 from .node_builder import NodeBuilder
 
 
-def paragraph(content: Union[str, list[Any]], attributes: dict[str, Any] | None = None) -> Node:
+def paragraph(
+    content: Union[str, list[Any]], attributes: dict[str, Any] | None = None
+) -> Node:
     """Create a paragraph node"""
     builder = NodeBuilder("paragraph").content(content)
     if attributes:

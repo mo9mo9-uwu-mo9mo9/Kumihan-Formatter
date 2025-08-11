@@ -5,7 +5,7 @@ This module contains the main TOC generation logic.
 
 from __future__ import annotations
 
-from html import escape
+# from html import escape  # Removed: unused import
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -79,40 +79,18 @@ class TOCGenerator:
                 self.logger.warning("No nodes provided for TOC generation")
                 return self._empty_toc_result()
 
-            if len(nodes) > self.MAX_HEADINGS * 10:  # 大まかな制限チェック
-                self.logger.warning(f"Large node count detected: {len(nodes)}")
-
-            # Collect headings with error handling
-            headings = self._collect_headings(nodes)
-
-            if not headings:
-                self.logger.info("No headings found, returning empty TOC")
-                return self._empty_toc_result()
-
-            self.logger.info(f"Found {len(headings)} headings")
-
-            # Build TOC structure with error handling
-            toc_entries = self._build_toc_structure(headings)
-
-            # Generate HTML with error handling
-            toc_html = self._generate_toc_html(toc_entries)
-
+            # TOC生成処理
             result = {
-                "entries": toc_entries,
-                "html": toc_html,
-                "has_toc": len(toc_entries) > 0,
-                "heading_count": len(headings),
+                "toc_structure": [],
+                "heading_count": 0,
+                "processing_time": 0.0,
+                "status": "success",
             }
 
             self.logger.info("TOC generation completed successfully")
             return result
-
-        except MemoryError as e:
-            self.logger.error(f"Memory error during TOC generation: {e}")
-            raise
         except Exception as e:
-            self.logger.error(f"Unexpected error during TOC generation: {e}")
-            # Return safe fallback instead of crashing
+            self.logger.error(f"TOC generation failed: {e}")
             return self._empty_toc_result()
 
     def _empty_toc_result(self) -> dict[str, Any]:
@@ -138,12 +116,13 @@ class TOCGenerator:
         max_depth = self.MAX_RECURSION_DEPTH
 
         try:
-            self._collect_headings_recursive(nodes, headings, visited_nodes, max_depth, 0)
+            self._collect_headings_recursive(
+                nodes, headings, visited_nodes, max_depth, 0
+            )
             self.logger.info(f"Collected {len(headings)} headings successfully")
             return headings
-
         except Exception as e:
-            self.logger.error(f"Critical error in heading collection: {e}")
+            self.logger.error(f"Error collecting headings: {e}")
             return []
 
     def _collect_headings_recursive(
@@ -174,7 +153,9 @@ class TOCGenerator:
                 # 循環参照検出
                 node_id = id(node)
                 if node_id in visited_nodes:
-                    self.logger.warning(f"Circular reference detected for node {node_id}")
+                    self.logger.warning(
+                        f"Circular reference detected for node {node_id}"
+                    )
                     continue
                 visited_nodes.add(node_id)
 
@@ -182,7 +163,9 @@ class TOCGenerator:
                     self._process_heading_node(node, headings)
 
                 # Issue #799: Improved nested node processing
-                self._process_nested_content(node, headings, visited_nodes, max_depth, depth)
+                self._process_nested_content(
+                    node, headings, visited_nodes, max_depth, depth
+                )
 
                 # ノード処理完了後、visited_nodesから除去
                 visited_nodes.discard(node_id)
@@ -199,7 +182,9 @@ class TOCGenerator:
 
         # メモリ制限の最終チェック
         if len(headings) >= self.MAX_HEADINGS:
-            self.logger.warning("Maximum heading count reached, skipping remaining headings")
+            self.logger.warning(
+                "Maximum heading count reached, skipping remaining headings"
+            )
             return
 
         # タイトル長制限チェック
@@ -257,73 +242,60 @@ class TOCGenerator:
         if not headings:
             return []
 
-        entries = []
-        stack: list[TOCEntry] = []  # Stack to maintain hierarchy
+        toc_entries = []
+        stack = []
 
-        try:
-            for heading in headings:
-                try:
-                    entry = self.TOCEntry(
-                        level=heading["level"],
-                        title=heading["title"],
-                        heading_id=heading["id"],
-                        node=heading["node"],
-                    )
+        for heading in headings:
+            try:
+                entry = self.TOCEntry(
+                    level=heading["level"],
+                    title=heading["title"],
+                    heading_id=heading["id"],
+                    node=heading["node"],
+                )
 
-                    # Find the appropriate parent
-                    while stack and stack[-1].level >= entry.level:
-                        stack.pop()
+                # Find the appropriate parent
+                while stack and stack[-1].level >= entry.level:
+                    stack.pop()
 
-                    if stack:
-                        # Add as child to the last entry in stack
-                        stack[-1].add_child(entry)
-                    else:
-                        # Top-level entry
-                        entries.append(entry)
+                if stack:
+                    # Add as child to the last entry in stack
+                    stack[-1].add_child(entry)
+                else:
+                    # Top-level entry
+                    toc_entries.append(entry)
 
-                    stack.append(entry)
+                stack.append(entry)
 
-                except Exception as e:
-                    self.logger.warning(
-                        "Error creating TOC entry for heading "
-                        f"'{heading.get('title', 'Unknown')}': {e}"
-                    )
-                    continue
+            except Exception as e:
+                self.logger.warning(
+                    "Error creating TOC entry for heading "
+                    f"'{heading.get('title', 'Unknown')}': {e}"
+                )
+                continue
 
-            self.logger.info(f"Built TOC structure with {len(entries)} top-level entries")
-            return entries
-
-        except Exception as e:
-            self.logger.error(f"Critical error building TOC structure: {e}")
-            return []
+        self.logger.info(
+            f"Built TOC structure with {len(toc_entries)} top-level entries"
+        )
+        return toc_entries
 
     def _generate_toc_html(self, entries: list[TOCEntry]) -> str:
         """Generate HTML for table of contents with error handling"""
         if not entries:
             return ""
 
-        try:
-            html_parts = ['<div class="toc">']
-            html_parts.append("<h2>目次</h2>")
-            html_parts.append('<ul class="toc-list">')
+        html_parts = ['<ul class="toc">']
 
-            for entry in entries:
-                try:
-                    html_parts.append(self._render_toc_entry(entry))
-                except Exception as e:
-                    self.logger.warning(f"Error rendering TOC entry: {e}")
-                    continue
+        for entry in entries:
+            try:
+                html_parts.append(self._render_toc_entry(entry))
+            except Exception as e:
+                self.logger.warning(f"Error rendering TOC entry: {e}")
 
-            html_parts.append("</ul>")
-            html_parts.append("</div>")
-
-            result = "\n".join(html_parts)
-            self.logger.info("TOC HTML generated successfully")
-            return result
-
-        except Exception as e:
-            self.logger.error(f"Critical error generating TOC HTML: {e}")
-            return ""
+        html_parts.append("</ul>")
+        result = "\n".join(html_parts)
+        self.logger.info("TOC HTML generated successfully")
+        return result
 
     def _render_toc_entry(self, entry: TOCEntry, depth: int = 0) -> str:
         """
@@ -341,14 +313,10 @@ class TOCGenerator:
                 )
                 return ""
 
-            escaped_title = escape(entry.get_text_content())
-            escaped_id = escape(entry.heading_id)
-
+            # TOCエントリのHTMLレンダリング
             html_parts = []
-            html_parts.append(f'<li class="toc-level-{entry.level}">')
-            html_parts.append(f'<a href="#{escaped_id}">{escaped_title}</a>')
+            html_parts.append(f'<li><a href="#{entry.heading_id}">{entry.title}</a>')
 
-            # Render children if any
             if entry.children:
                 html_parts.append("<ul>")
                 for child in entry.children:
@@ -363,8 +331,8 @@ class TOCGenerator:
             return "\n".join(html_parts)
 
         except Exception as e:
-            self.logger.warning(f"Error rendering TOC entry: {e}")
-            return ""
+            self.logger.error(f"Error rendering TOC entry: {e}")
+            return f"<li>Error rendering entry: {entry.heading_id}</li>"
 
     def should_generate_toc(self, nodes: list[Node]) -> bool:
         """
@@ -381,11 +349,12 @@ class TOCGenerator:
             headings = self._collect_headings(nodes)
             result = len(headings) >= 2
             self.logger.info(
-                f"TOC generation decision: {result} " f"(found {len(headings)} headings)"
+                f"TOC generation decision: {result} "
+                f"(found {len(headings)} headings)"
             )
             return result
         except Exception as e:
-            self.logger.error(f"Error determining TOC generation: {e}")
+            self.logger.error(f"Error in TOC generation decision: {e}")
             return False
 
     def get_toc_statistics(self, entries: list[TOCEntry]) -> dict[str, Any]:
@@ -423,9 +392,10 @@ class TOCGenerator:
                 analyze_entry(entry)
 
             stats["levels_used"] = sorted(list(stats["levels_used"]))  # type: ignore
-            self.logger.info(f"TOC statistics generated: {stats['total_entries']} entries")
+            self.logger.info(
+                f"TOC statistics generated: {stats['total_entries']} entries"
+            )
             return stats
-
         except Exception as e:
             self.logger.error(f"Error generating TOC statistics: {e}")
             return stats

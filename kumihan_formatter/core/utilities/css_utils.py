@@ -36,7 +36,7 @@ def load_default_css() -> str:
         with open(css_path, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        raise RuntimeError(f"CSSファイルの読み込みに失敗しました: {e}")
+        raise FileNotFoundError(f"CSSファイル読み込みエラー: {e}")
 
 
 def get_css_requirements() -> dict[str, list[str]]:
@@ -76,7 +76,8 @@ def validate_css_availability(css_content: str) -> dict[str, bool]:
         else:
             # 必要なクラスがすべて含まれているかチェック
             all_classes_available = all(
-                f".{cls}" in css_content or f".{cls} " in css_content for cls in required_classes
+                f".{cls}" in css_content or f".{cls} " in css_content
+                for cls in required_classes
             )
             availability[keyword] = all_classes_available
 

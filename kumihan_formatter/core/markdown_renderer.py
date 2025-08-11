@@ -20,7 +20,9 @@ class MarkdownRenderer:
         """Initialize renderer"""
         pass
 
-    def _extract_title_from_content(self, content: str, patterns: dict[str, Any]) -> Optional[str]:
+    def _extract_title_from_content(
+        self, content: str, patterns: dict[str, Any]
+    ) -> Optional[str]:
         """コンテンツから最初のH1見出しを抽出"""
         match = patterns["h1"].search(content)
         return match.group(1).strip() if match else None

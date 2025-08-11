@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import json
 import logging
-import sys
+
+# import sys  # Removed: unused import
 from datetime import datetime
 
 # typing.Any removed as unused
@@ -76,8 +77,6 @@ class StructuredLogFormatter(logging.Formatter):
 
         try:
             return json.dumps(log_data, ensure_ascii=False, separators=(",", ":"))
-        except (TypeError, ValueError) as e:
-            # Fallback to standard formatting if JSON serialization fails
-            # Log the error to stderr for debugging
-            print(f"JSON serialization failed: {e}", file=sys.stderr)
-            return super().format(record)
+        except Exception:
+            # フォールバック: 基本的な文字列フォーマット
+            return f"{record.levelname}: {record.getMessage()}"

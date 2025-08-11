@@ -43,10 +43,16 @@ class ConversionThreads:
     def convert_file_thread(self) -> None:
         """ファイル変換スレッド"""
         try:
-            if self.controller.main_view and hasattr(self.controller.main_view, "log_frame"):
+            if self.controller.main_view and hasattr(
+                self.controller.main_view, "log_frame"
+            ):
                 self.controller.main_view.log_frame.add_message("変換を開始します...")
-            if self.controller.app_state and hasattr(self.controller.app_state, "conversion_state"):
-                self.controller.app_state.conversion_state.update_progress(0, "変換準備中...")
+            if self.controller.app_state and hasattr(
+                self.controller.app_state, "conversion_state"
+            ):
+                self.controller.app_state.conversion_state.update_progress(
+                    0, "変換準備中..."
+                )
 
             # 変換パラメータ取得
             if self.controller.app_state:
@@ -65,7 +71,9 @@ class ConversionThreads:
                 )
 
                 convert_command.execute(**params)
-                self.controller.app_state.conversion_state.update_progress(80, "変換完了...")
+                self.controller.app_state.conversion_state.update_progress(
+                    80, "変換完了..."
+                )
 
                 # 出力パスはparamsから取得
                 output_path = Path(params.get("output", "output"))
@@ -110,9 +118,13 @@ class ConversionThreads:
         except Exception as e:
             error_msg = f"変換中にエラーが発生しました: {str(e)}"
             self.logger.error(error_msg)
-            if self.controller.main_view and hasattr(self.controller.main_view, "log_frame"):
+            if self.controller.main_view and hasattr(
+                self.controller.main_view, "log_frame"
+            ):
                 self.controller.main_view.log_frame.add_message(error_msg, "error")
-            if self.controller.app_state and hasattr(self.controller.app_state, "conversion_state"):
+            if self.controller.app_state and hasattr(
+                self.controller.app_state, "conversion_state"
+            ):
                 self.controller.app_state.conversion_state.update_progress(0, "エラー")
 
             # エラーダイアログ
@@ -132,17 +144,23 @@ class ConversionThreads:
     def generate_sample_thread(self) -> None:
         """サンプル生成スレッド"""
         try:
-            if self.controller.main_view and hasattr(self.controller.main_view, "log_frame"):
+            if self.controller.main_view and hasattr(
+                self.controller.main_view, "log_frame"
+            ):
                 self.controller.main_view.log_frame.add_message(
                     "サンプルファイルの生成を開始します..."
                 )
-            if self.controller.app_state and hasattr(self.controller.app_state, "conversion_state"):
+            if self.controller.app_state and hasattr(
+                self.controller.app_state, "conversion_state"
+            ):
                 self.controller.app_state.conversion_state.update_progress(
                     0, "サンプル生成準備中..."
                 )
 
             if self.controller.app_state:
-                use_source_toggle = self.controller.app_state.config.get_include_source()
+                use_source_toggle = (
+                    self.controller.app_state.config.get_include_source()
+                )
                 self.controller.app_state.conversion_state.update_progress(
                     30, "サンプルファイルを作成中..."
                 )
@@ -202,9 +220,13 @@ class ConversionThreads:
         except Exception as e:
             error_msg = f"サンプル生成中にエラーが発生しました: {str(e)}"
             self.logger.error(error_msg)
-            if self.controller.main_view and hasattr(self.controller.main_view, "log_frame"):
+            if self.controller.main_view and hasattr(
+                self.controller.main_view, "log_frame"
+            ):
                 self.controller.main_view.log_frame.add_message(error_msg, "error")
-            if self.controller.app_state and hasattr(self.controller.app_state, "conversion_state"):
+            if self.controller.app_state and hasattr(
+                self.controller.app_state, "conversion_state"
+            ):
                 self.controller.app_state.conversion_state.update_progress(0, "エラー")
 
             # エラーダイアログ

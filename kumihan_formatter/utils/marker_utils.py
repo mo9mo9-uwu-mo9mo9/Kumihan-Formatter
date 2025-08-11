@@ -1,6 +1,7 @@
 """マーカーキーワードのパース処理に関する共通ユーティリティ"""
 
 import re
+from typing import Any, Dict, List
 
 
 def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
@@ -27,7 +28,7 @@ def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
         keyword_part = keyword_part.strip()
 
     # 属性の抽出（例: color=#ff0000）
-    attributes = {}
+    attributes: Dict[str, Any] = {}
 
     # color属性の検出と分離
     color_match = re.search(r"\s+color=([#\w]+)", keyword_part)
@@ -44,7 +45,7 @@ def parse_marker_keywords(marker_line: str) -> tuple[list[str], dict[str, str]]:
     # キーワードの分割（+または＋で区切る）
     if "+" in keyword_part or "＋" in keyword_part:
         # 複合キーワード
-        keywords = []
+        keywords: List[str] = []
         parts = re.split(r"[+＋]", keyword_part)
         for part in parts:
             part = part.strip()
@@ -114,7 +115,7 @@ def validate_keyword_combinations(keywords: list[str]) -> tuple[bool, list[str]]
     Returns:
         tuple: (有効かどうか, エラーメッセージリスト)
     """
-    errors = []
+    errors: List[str] = []
 
     # 定義されたキーワードセット
     valid_keywords = {
@@ -186,16 +187,15 @@ def get_keyword_suggestions(invalid_keyword: str) -> list[str]:
         """簡易類似度計算"""
         if not s1 or not s2:
             return 0.0
+        # 簡易的な類似度計算（共通文字数 / 最大長）
+        common_chars = sum(1 for c in s1 if c in s2)
+        return common_chars / max(len(s1), len(s2))
 
-        longer = max(len(s1), len(s2))
-        common = len(set(s1) & set(s2))
-        return common / longer
-
-    # 類似度による候補追加
+    # 類似度による追加候補検出
     for valid_keyword in valid_keywords:
         if valid_keyword not in suggestions:
             similarity = simple_similarity(invalid_lower, valid_keyword.lower())
-            if similarity > 0.4:  # 40%以上の類似度
+            if similarity > 0.3:  # 30%以上の類似度
                 suggestions.append(valid_keyword)
 
-    return suggestions[:3]  # 最多3つまで  # 最大3つまで
+    return suggestions[:3]  # 最大3つまで

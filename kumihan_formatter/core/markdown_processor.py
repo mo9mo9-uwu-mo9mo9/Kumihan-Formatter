@@ -27,13 +27,11 @@ class MarkdownProcessor:
             code_content = match.group(1)
             # HTMLエスケープ
             code_content = (
-                code_content.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                code_content.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
             )
             return f"<pre><code>{code_content}</code></pre>"
-
-        # ```code``` パターンを処理
-        pattern = re.compile(r"```\n?(.*?)\n?```", re.DOTALL)
-        return pattern.sub(replace_code_block, text)
 
     def _generate_heading_id(self, heading_text: str) -> str:
         """見出しからIDを生成"""

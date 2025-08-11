@@ -91,7 +91,9 @@ class UnifiedConfigManager:
             if config_file:
                 self._config_file_path = Path(config_file)
                 if not self._config_file_path.exists():
-                    self.logger.warning(f"指定された設定ファイルが見つかりません: {config_file}")
+                    self.logger.warning(
+                        f"指定された設定ファイルが見つかりません: {config_file}"
+                    )
                     self._config_file_path = None
             else:
                 self._config_file_path = self.loader.find_config_file()
@@ -173,7 +175,9 @@ class UnifiedConfigManager:
         """
         if self.validator:
             # 設定検証実行
-            validation_result = self.validator.validate_config(config_data, auto_fix=True)
+            validation_result = self.validator.validate_config(
+                config_data, auto_fix=True
+            )
 
             if validation_result.errors:
                 self.logger.error("設定検証エラー:")
@@ -193,16 +197,6 @@ class UnifiedConfigManager:
             # 修正された設定を使用
             if validation_result.fixed_config:
                 return validation_result.fixed_config
-
-        # 検証なしまたは検証失敗時は基本作成
-        try:
-            # 無効なフィールド（extra="forbid"対応）を除去して再試行
-            cleaned_config_data = self._clean_config_data(config_data)
-            return KumihanConfig(**cleaned_config_data)
-        except Exception as e:
-            self.logger.error(f"設定作成エラー: {e}")
-            # 最後の手段：有効なフィールドのみでデフォルト設定作成
-            return self._create_fallback_config(config_data)
 
     def _clean_config_data(self, config_data: Dict[str, Any]) -> Dict[str, Any]:
         """無効なフィールドを除去した設定データを作成"""
@@ -268,8 +262,6 @@ class UnifiedConfigManager:
             self.logger.warning("設定が初期化されていません、デフォルト設定を返します")
             return KumihanConfig()
 
-        return self._config
-
     def reload_config(self, force: bool = False) -> bool:
         """設定の再読み込み
 
@@ -286,49 +278,32 @@ class UnifiedConfigManager:
                 if self._last_modified and current_mtime <= self._last_modified:
                     return False  # 更新なし
 
-            self.logger.info("設定を再読み込みしています...")
-
-            # 設定データの再収集
-            config_data = self._collect_config_data()
-
-            # 新しい設定の作成・検証
-            new_config = self._create_and_validate_config(config_data)
-
-            # 設定の更新
-            # old_config = self._config  # removed - unused variable (F841)
-            self._config = new_config
-
-            # ファイル監視情報の更新
+            # 設定の再読み込み実行
+            self._config = self._load_config()
             if self._config_file_path and self._config_file_path.exists():
                 self._last_modified = self._config_file_path.stat().st_mtime
-                self._config.config_file_path = self._config_file_path
 
-            self._config.last_updated = datetime.now().isoformat()
-
-            # コールバック実行
-            self._execute_reload_callbacks(self._config)
-
-            self.logger.info("設定再読み込み完了")
-            return True
-
-        except Exception as e:
-            self.logger.error(f"設定再読み込みエラー: {e}", exc_info=True)
-
-            # 統一エラーハンドリング
+            # ログ記録
             try:
-                handle_error_unified(
-                    e,
-                    context={
+                from kumihan_formatter.core.utilities.logger import get_logger
+
+                logger = get_logger(__name__)
+                logger.info(
+                    "Configuration reloaded",
+                    extra={
                         "config_file": (
-                            str(self._config_file_path) if self._config_file_path else None
+                            str(self._config_file_path)
+                            if self._config_file_path
+                            else None
                         )
                     },
-                    operation="config_reload",
-                    component_name="UnifiedConfigManager",
                 )
             except Exception:
                 pass
 
+            return True
+
+        except Exception:
             return False
 
     def save_config(
@@ -349,12 +324,18 @@ class UnifiedConfigManager:
             self.logger.error("保存する設定がありません")
             return False
 
-        try:
-            save_path = Path(config_path) if config_path else self._config_file_path
+        # 保存先パス決定
+        if config_path:
+            save_path = Path(config_path)
+        elif self._config_file_path:
+            save_path = self._config_file_path
+        else:
+            save_path = Path.home() / ".kumihan" / "kumihan.yaml"
+            self.logger.info(
+                f"保存先が指定されていないため、デフォルトパスを使用: {save_path}"
+            )
 
-            if save_path is None:
-                save_path = Path.home() / ".kumihan" / "kumihan.yaml"
-                self.logger.info(f"保存先が指定されていないため、デフォルトパスを使用: {save_path}")
+        try:
 
             self.loader.save_config(self._config, save_path, format)
 
@@ -366,9 +347,8 @@ class UnifiedConfigManager:
 
             self.logger.info(f"設定保存完了: {save_path}")
             return True
-
         except Exception as e:
-            self.logger.error(f"設定保存エラー: {e}", exc_info=True)
+            self.logger.error(f"設定保存エラー: {e}")
             return False
 
     def add_reload_callback(self, callback: Callable[[KumihanConfig], None]) -> None:
@@ -396,14 +376,6 @@ class UnifiedConfigManager:
         """ホットリロード開始"""
         if self._reload_thread and self._reload_thread.is_alive():
             return  # 既に実行中
-
-        self._shutdown_event.clear()
-        self._reload_thread = threading.Thread(
-            target=self._auto_reload_worker, name="ConfigAutoReload", daemon=True
-        )
-        self._reload_thread.start()
-
-        self.logger.info("設定ホットリロード開始")
 
     def _auto_reload_worker(self) -> None:
         """ホットリロードワーカー"""
@@ -480,11 +452,6 @@ class UnifiedConfigManager:
         return self.get_config().ui
 
 
-# グローバル統一設定マネージャー
-_global_config_manager: Optional[UnifiedConfigManager] = None
-_config_lock = threading.Lock()
-
-
 def get_unified_config_manager(
     config_file: Optional[Union[str, Path]] = None,
     auto_reload: bool = False,
@@ -500,7 +467,10 @@ def get_unified_config_manager(
     Returns:
         UnifiedConfigManager: 統一設定マネージャー
     """
+    import threading
+
     global _global_config_manager
+    _config_lock = threading.Lock()
 
     with _config_lock:
         if _global_config_manager is None or force_reload:

@@ -41,39 +41,33 @@ class ConfigLoader:
             return None
 
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                if config_path.suffix.lower() in [".yaml", ".yml"]:
-                    if not HAS_YAML:
-                        logging.error(
-                            "YAML support not available. Install PyYAML to use YAML config files."
-                        )
-                        return None
-                    user_config = yaml.safe_load(f)
-                elif config_path.suffix.lower() == ".json":
-                    user_config = json.load(f)
-                else:
-                    logging.error(f"Unsupported config format: {config_path.suffix}")
+            if config_path.suffix.lower() in [".yaml", ".yml"]:
+                if not HAS_YAML:
+                    logging.error(
+                        "YAML support not available. Install PyYAML to use YAML config files."
+                    )
                     return None
 
-            if not isinstance(user_config, dict):
-                logging.error("Configuration file must contain a dictionary")
+                with open(config_path, "r", encoding="utf-8") as file:
+                    config_data = yaml.safe_load(file)
+
+            elif config_path.suffix.lower() == ".json":
+                with open(config_path, "r", encoding="utf-8") as file:
+                    config_data = json.load(file)
+            else:
+                logging.error(f"Unsupported configuration file format: {config_path}")
                 return None
 
-            # 読み込み前の検証
-            validation_result = self.validator.validate(user_config)
-            if not validation_result.is_valid:
-                logging.error(f"Configuration validation failed: {validation_result.errors}")
+            # 設定の検証
+            if self.validator and not self.validator.validate(config_data):
+                logging.error(f"Configuration validation failed for: {config_path}")
                 return None
-
-            # 警告をログ出力
-            for warning in validation_result.warnings:
-                logging.warning(f"Configuration warning: {warning}")
 
             logging.info(f"Loaded configuration from: {config_path}")
-            return user_config
+            return config_data
 
         except Exception as e:
-            logging.error(f"Failed to load configuration from {config_path}: {e}")
+            logging.error(f"Error loading configuration from {config_path}: {e}")
             return None
 
     def load_from_environment(self) -> dict[str, Any]:
@@ -129,15 +123,15 @@ class ConfigLoader:
         """深いコピーユーティリティ"""
         if isinstance(obj, dict):
             return {k: self._deep_copy(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [self._deep_copy(item) for item in obj]
-        else:
-            return obj
 
     def _merge_dict(self, target: dict[str, Any], source: dict[str, Any]) -> None:
         """辞書を再帰的にマージ"""
         for key, value in source.items():
-            if key in target and isinstance(target[key], dict) and isinstance(value, dict):
+            if (
+                key in target
+                and isinstance(target[key], dict)
+                and isinstance(value, dict)
+            ):
                 self._merge_dict(target[key], value)
             else:
                 target[key] = self._deep_copy(value)

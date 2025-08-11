@@ -50,19 +50,13 @@ class ConvertValidator:
                 get_console_ui().info("処理を中断しました")
                 return False
 
-            # 推定処理時間を表示
-            estimated_time = FilePathUtilities.estimate_processing_time(size_info["size_mb"])
-            get_console_ui().hint(f"推定処理時間: {estimated_time}")
-
-        return True
-
     def perform_syntax_check(self, input_path: Path) -> dict[str, Any]:
         """詳細な構文チェックを実行"""
         get_console_ui().info("記法チェック", f"{input_path.name} の記法を検証中...")
 
         try:
             # 構文チェック実行
-            results = check_files([input_path], verbose=False)
+            results = check_files([str(input_path)], verbose=False)
 
             # 辞書形式のエラーレポートに変換
             error_report: dict[str, Any] = {
@@ -80,11 +74,13 @@ class ConvertValidator:
                         error_report["has_errors"] = True
 
             return error_report
-
         except Exception as e:
-            get_console_ui().error("記法チェック中にエラーが発生しました", str(e))
-            # 空のレポートを返す
-            return {"source_file": str(input_path), "errors": [], "has_errors": False}
+            get_console_ui().error("構文チェック失敗", str(e))
+            return {
+                "source_file": str(input_path),
+                "errors": [{"type": "check_error", "message": str(e)}],
+                "has_errors": True,
+            }
 
     def _convert_to_error_info(self, error: Any, file_path: Path) -> dict[str, Any]:
         """エラーオブジェクトを辞書形式の情報に変換"""
@@ -120,11 +116,15 @@ class ConvertValidator:
         try:
             output_path = Path(output_dir) / f"{input_path.stem}_errors.txt"
             self._save_error_report_to_file(error_report, output_path)
-            get_console_ui().info("エラーレポート", f"詳細レポートを保存しました: {output_path}")
+            get_console_ui().info(
+                "エラーレポート", f"詳細レポートを保存しました: {output_path}"
+            )
         except Exception as e:
             get_console_ui().warning("エラーレポートの保存に失敗しました", str(e))
 
-    def _save_error_report_to_file(self, error_report: dict[str, Any], output_path: Path) -> None:
+    def _save_error_report_to_file(
+        self, error_report: dict[str, Any], output_path: Path
+    ) -> None:
         """エラーレポートを実際にファイルに書き出し"""
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(f"エラーレポート: {error_report['source_file']}\n")

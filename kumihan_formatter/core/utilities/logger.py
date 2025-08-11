@@ -4,11 +4,13 @@ Addresses mypy type errors and ensures strict type safety.
 """
 
 import logging
+
+# import os  # Removed: unused import
 import threading
-import os
+
+# from datetime import datetime  # Removed: unused import
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
-from datetime import datetime
+from typing import Any, Dict, Optional, Union
 
 
 class LogFormatter(logging.Formatter):
@@ -45,7 +47,10 @@ class LogFormatter(logging.Formatter):
 
     def _get_json_format(self) -> str:
         """JSON format template."""
-        return '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}'
+        return (
+            '{"timestamp": "%(asctime)s", "level": "%(levelname)s", '
+            '"logger": "%(name)s", "message": "%(message)s"}'
+        )
 
 
 class KumihanLogger:
@@ -107,7 +112,9 @@ class KumihanLogger:
             root_logger = logging.getLogger()
             root_logger.handlers.clear()
             root_logger.addHandler(handler)
-            root_logger.setLevel(logging.DEBUG if self.dev_log_enabled else logging.INFO)
+            root_logger.setLevel(
+                logging.DEBUG if self.dev_log_enabled else logging.INFO
+            )
 
         except Exception as e:
             print(f"Logger setup failed: {e}")
@@ -141,7 +148,9 @@ class KumihanLogger:
             perf_log_file = self.log_dir / "performance.log"
             self.performance_logger = logging.getLogger("performance")
             handler = logging.FileHandler(str(perf_log_file), encoding="utf-8")
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             handler.setFormatter(formatter)
             self.performance_logger.addHandler(handler)
             self.performance_logger.setLevel(logging.INFO)
@@ -191,7 +200,9 @@ def log_performance(
     logger_instance.info(f"PERF: {operation} took {duration:.4f}s - {details}")
 
 
-def setup_logging(level: Union[int, str] = "INFO", config: Optional[Dict[str, Any]] = None) -> None:
+def setup_logging(
+    level: Union[int, str] = "INFO", config: Optional[Dict[str, Any]] = None
+) -> None:
     """統合ログセットアップ（型安全）"""
     if config is None:
         config = {}

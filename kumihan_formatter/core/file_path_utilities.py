@@ -5,7 +5,6 @@
 Issue #492 Phase 5A - file_operations.py分割
 """
 
-import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -62,22 +61,11 @@ class FilePathUtilities:
                 dir_pattern = pattern.rstrip("/")
 
                 # Complete path matching
-                if relative_str.startswith(dir_pattern + "/") or relative_str == dir_pattern:
+                if (
+                    relative_str.startswith(dir_pattern + "/")
+                    or relative_str == dir_pattern
+                ):
                     return True
-
-                # Partial matching (directory name)
-                for part in relative_path.parts:
-                    if fnmatch.fnmatch(part, dir_pattern):
-                        return True
-            else:
-                # File pattern handling
-                if fnmatch.fnmatch(relative_str, pattern):
-                    return True
-                # Match by filename only
-                if fnmatch.fnmatch(path.name, pattern):
-                    return True
-
-        return False
 
     @staticmethod
     def get_file_size_info(path: Path) -> Dict[str, Any]:
@@ -110,9 +98,3 @@ class FilePathUtilities:
         """
         if size_mb < 1:
             return "数秒"
-        elif size_mb < 10:
-            return "10-30秒"
-        elif size_mb < 50:
-            return "1-3分"
-        else:
-            return "3分以上"

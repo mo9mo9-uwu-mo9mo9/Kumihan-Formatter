@@ -108,21 +108,9 @@ class HTMLRenderer:
             return self.render_nodes_with_errors(nodes)
 
         html_parts = []
-
-        # FootnoteManagerのインスタンスを初期化（脚注の全体管理用）
-        footnote_manager = None
-        if hasattr(self.formatter, "_footnote_manager"):
-            footnote_manager = self.formatter._footnote_manager
-        else:
-            from kumihan_formatter.core.rendering.html_formatter import FootnoteManager
-
-            footnote_manager = FootnoteManager()
-            self.formatter._footnote_manager = footnote_manager
-
         for node in nodes:
             html = self.render_node(node)
-            if html:
-                html_parts.append(html)
+            html_parts.append(html)
 
         # Generate main content HTML
         main_html = "\n".join(html_parts)
@@ -154,6 +142,9 @@ class HTMLRenderer:
                 # Continue with original HTML if footnote processing fails
 
         # 新記法脚注システム：文書末尾に脚注セクションを追加
+        footnote_manager = (
+            self.footnotes_data.get("manager") if self.footnotes_data else None
+        )
         if footnote_manager and footnote_manager.get_footnotes():
             footnotes_html = footnote_manager.generate_footnotes_html(
                 footnote_manager.get_footnotes()
@@ -189,17 +180,13 @@ class HTMLRenderer:
             if self.graceful_errors and self.embed_errors_in_html:
                 return self.render_nodes_with_errors_optimized(nodes)
 
-            # StringBuilder パターン: リスト蓄積でガベージコレクション負荷軽減
             html_parts = []
-            html_parts_append = html_parts.append  # メソッド参照キャッシュ
-
-            # 最適化されたレンダリングループ
+            html_parts_append = html_parts.append
             for node in nodes:
-                html = self.render_node_optimized(node)
-                if html:
-                    html_parts_append(html)
-                    # パフォーマンス監視にアイテム処理を記録
-                    perf_monitor.record_item_processed()
+                html = self.render_node(node)
+                html_parts_append(html)
+                # パフォーマンス監視にアイテム処理を記録
+                perf_monitor.record_item_processed()
 
             # 高速文字列結合（join最適化）
             return "\n".join(html_parts)
@@ -252,17 +239,16 @@ class HTMLRenderer:
             html_parts.insert(0, error_summary_html)
 
             # 効率的なエラーマーカー埋め込み
-            html_with_markers = self._embed_error_markers_optimized("\n".join(html_parts))
+            html_with_markers = self._embed_error_markers_optimized(
+                "\n".join(html_parts)
+            )
             return html_with_markers
-
-        return "\n".join(html_parts)
 
     def _render_error_summary_optimized(self) -> str:
         """最適化されたエラーサマリーHTML生成"""
         if not self.graceful_errors:
             return ""
 
-        # 統計情報の効率的計算
         error_count = 0
         warning_count = 0
 
@@ -324,28 +310,26 @@ class HTMLRenderer:
         if not self.graceful_errors:
             return html
 
-        # 行分割の最適化
-        lines = html.splitlines()
-        modified_lines = []
-        modified_lines_append = modified_lines.append
-
-        # エラー行のインデックス作成（検索最適化）
+        lines = html.split("\n")
         error_by_line = {}
+        modified_lines = []
+
+        # エラーを行番号でグループ化
         for error in self.graceful_errors:
-            line_no = error.line_number
+            line_no = getattr(error, "line_number", 1)
             if line_no not in error_by_line:
                 error_by_line[line_no] = []
             error_by_line[line_no].append(error)
 
         # 効率的な行処理
         for line_no, line in enumerate(lines, 1):
-            modified_lines_append(line)
+            modified_lines.append(line)
 
             # エラーマーカー挿入（最適化）
             if line_no in error_by_line:
                 for error in error_by_line[line_no]:
                     error_marker = self._create_error_marker_optimized(error)
-                    modified_lines_append(error_marker)
+                    modified_lines.append(error_marker)
 
         return "\n".join(modified_lines)
 
@@ -359,7 +343,9 @@ class HTMLRenderer:
 
         # f-string最適化
         suggestion_html = (
-            f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ""
+            f'<div class="error-suggestion">💡 {safe_suggestion}</div>'
+            if safe_suggestion
+            else ""
         )
 
         return (
@@ -395,25 +381,9 @@ class HTMLRenderer:
         if not isinstance(node, Node):
             return escape(str(node))  # type: ignore
 
-        # 新記法のキーワードに special_handler が指定されている場合の処理
-        keyword = node.get_attribute("keyword")
-        if keyword:
-            # KeywordDefinitionsからspecial_handlerを確認
-            from kumihan_formatter.core.keyword_parsing.definitions import (
-                KeywordDefinitions,
-            )
-
-            keyword_defs = KeywordDefinitions()
-            keyword_info = keyword_defs.get_keyword_info(keyword)
-
-            if keyword_info and keyword_info.get("special_handler"):
-                # special_handlerが指定されている場合、HTMLFormatterで処理
-                content = node.get_content() if hasattr(node, "get_content") else str(node.content)
-                attributes = node.attributes if hasattr(node, "attributes") else {}
-                return self.formatter.handle_special_element(keyword, content, attributes)
-
-        # Route to specific rendering method
-        renderer_method = getattr(self, f"_render_{node.type}", self._render_generic)
+        # Delegateメソッドを動的に検索して呼び出し
+        method_name = f"_render_{node.type}"
+        renderer_method = getattr(self, method_name, self._render_generic)
         return renderer_method(node)
 
     def _render_generic(self, node: Node) -> str:
@@ -528,7 +498,9 @@ class HTMLRenderer:
 
         return render_attributes(attributes)
 
-    def collect_headings(self, nodes: list[Node], depth: int = 0) -> List[dict[str, Any]]:
+    def collect_headings(
+        self, nodes: list[Node], depth: int = 0
+    ) -> List[dict[str, Any]]:
         """
         Collect all headings from nodes for TOC generation
 
@@ -557,7 +529,9 @@ class HTMLRenderer:
         self.element_renderer.heading_counter = value
         self.heading_collector.heading_counter = value
 
-    def set_graceful_errors(self, errors: list[Any], embed_in_html: bool = True) -> None:
+    def set_graceful_errors(
+        self, errors: list[Any], embed_in_html: bool = True
+    ) -> None:
         """Issue #700: graceful error handlingのエラー情報を設定"""
 
         self.graceful_errors = errors
@@ -588,29 +562,15 @@ class HTMLRenderer:
         if not self.graceful_errors:
             return ""
 
-        # エラー数とレベル別の統計
-        error_count = sum(1 for e in self.graceful_errors if e.severity == "error")
-        warning_count = sum(1 for e in self.graceful_errors if e.severity == "warning")
-        total_count = len(self.graceful_errors)
-
-        # エラー統計レポート生成
-        from ..error_analysis.statistics_generator import StatisticsGenerator
-
-        stats_generator = StatisticsGenerator()
-        statistics = stats_generator.generate_statistics(self.graceful_errors)
-        stats_html = stats_generator.generate_html_report(statistics)
-
+        # エラーサマリーのヘッダー部分
+        error_count = len(self.graceful_errors)
         summary_html = f"""
-<div class="kumihan-error-summary" id="error-summary">
-    <h3>🔍 記法エラーレポート</h3>
-    <div class="error-stats">
-        <span class="error-count">❌ エラー: {error_count}件</span>
-        <span class="warning-count">⚠️ 警告: {warning_count}件</span>
-        <span class="total-count">📊 合計: {total_count}件</span>
-    </div>
-    {stats_html}
-    <details class="error-details">
-        <summary>詳細を表示</summary>
+<div class="kumihan-error-summary">
+    <details open>
+        <summary class="error-summary-header">
+            <span class="error-count-badge">{error_count}</span>
+            <span class="error-summary-title">構文エラー・警告一覧</span>
+        </summary>
         <div class="error-list">
 """
 
@@ -621,7 +581,9 @@ class HTMLRenderer:
             # XSS対策: エラー情報のエスケープ処理
             safe_title = escape_html(error.display_title)
             safe_severity = escape_html(error.severity.upper())
-            safe_content = error.html_content  # html_contentプロパティ内で既にエスケープ済み
+            safe_content = (
+                error.html_content
+            )  # html_contentプロパティ内で既にエスケープ済み
 
             # ハイライト付きコンテキストと修正提案を追加
             highlighted_context = error.get_highlighted_context()
@@ -658,23 +620,17 @@ class HTMLRenderer:
         if not self.graceful_errors:
             return html
 
-        # 簡易実装: エラーが発生した行の近傍にマーカーを挿入
-        # より高度な実装では、実際の行番号とHTMLの対応付けが必要
-        lines = html.split("\n")
-        modified_lines = []
+        modified_lines = html.split("\n")
 
-        for line_no, line in enumerate(lines, 1):
-            modified_lines.append(line)
-
-            # この行にエラーがあるかチェック
-            line_errors = [e for e in self.graceful_errors if e.line_number == line_no]
-
-            for error in line_errors:
+        for error in self.graceful_errors:
+            if error.line_number and error.line_number <= len(modified_lines):
                 from .html_escaping import escape_html
 
                 # XSS対策: エラー情報のエスケープ処理
                 safe_message = escape_html(error.message)
-                safe_suggestion = escape_html(error.suggestion) if error.suggestion else ""
+                safe_suggestion = (
+                    escape_html(error.suggestion) if error.suggestion else ""
+                )
                 error_icon = "❌" if error.severity == "error" else "⚠️"
 
                 error_marker = f"""
@@ -685,12 +641,11 @@ class HTMLRenderer:
         {f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''}
     </div>
 </div>"""
-                modified_lines.append(error_marker)
+                modified_lines.insert(error.line_number - 1, error_marker)
 
         return "\n".join(modified_lines)
 
 
-# Module-level function for backward compatibility
 def render_single_node(node: Node, depth: int = 0) -> str:
     """
     Render a single node (used by element_renderer for recursive calls)
@@ -705,9 +660,3 @@ def render_single_node(node: Node, depth: int = 0) -> str:
     # Create a temporary renderer instance for recursive calls
     renderer = HTMLRenderer()
     return renderer._render_node_with_depth(node, depth)
-
-
-# Maintain the original CompoundElementRenderer class for backward compatibility
-CompoundElementRenderer = CompoundElementRenderer
-
-__all__ = ["HTMLRenderer", "CompoundElementRenderer", "render_single_node"]

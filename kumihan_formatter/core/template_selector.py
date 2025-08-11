@@ -30,18 +30,6 @@ class TemplateSelector:
         if template:
             return template
 
-        # Priority 2: Experimental features
-        if experimental:
-            experimental_template = f"experimental_{experimental}.html"
-            return experimental_template
-
-        # Priority 3: Source toggle requirement
-        if source_text:
-            return "kumihan_with_source.html"
-
-        # Priority 4: Default template
-        return "kumihan.html"
-
     @staticmethod
     def get_available_templates(template_dir: Path) -> list[str]:
         """Get list of available template files
@@ -54,12 +42,6 @@ class TemplateSelector:
         """
         if not template_dir.exists():
             return []
-
-        templates = []
-        for template_file in template_dir.glob("*.html"):
-            templates.append(template_file.name)
-
-        return sorted(templates)
 
     @staticmethod
     def validate_template_exists(template_dir: Path, template_name: str) -> bool:
@@ -119,16 +101,11 @@ class TemplateSelector:
         if TemplateSelector.validate_template_exists(template_dir, preferred_name):
             return preferred_name
 
-        # Fallback hierarchy
-        fallbacks = [
-            "kumihan.html",
-            "base.html",
-            "default.html",
-        ]
-
-        for fallback in fallbacks:
+        # Try fallback templates
+        fallback_templates = ["default.html", "base.html", "main.html"]
+        for fallback in fallback_templates:
             if TemplateSelector.validate_template_exists(template_dir, fallback):
                 return fallback
 
-        # If no fallbacks exist, return preferred (will cause error)
+        # Return the preferred name as fallback if no templates exist
         return preferred_name

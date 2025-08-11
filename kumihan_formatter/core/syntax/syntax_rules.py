@@ -77,14 +77,10 @@ class SyntaxRules:
         if not keyword_part:
             return []
 
-        # Split by + or ＋
-        keywords = re.split(r"[+＋]", keyword_part)
-
-        # Clean and validate
         result = []
+        keywords = keyword_part.replace("＋", "+").split("+")
         for kw in keywords:
-            kw = kw.strip()
-            if kw:
+            if kw.strip():
                 result.append(kw)
 
         return result
@@ -101,20 +97,12 @@ class SyntaxRules:
         if "color=" in keyword:
             if " color=" in keyword:
                 return keyword.split(" color=")[0].strip()
-            else:
-                return keyword.split("color=")[0].strip()
-        # alt属性は削除されました（Phase 1）
-        else:
-            return keyword
 
     @classmethod
     def extract_color_value(cls, keyword: str) -> str:
         """Extract color value from keyword with color attribute"""
         if " color=" in keyword:
             return keyword.split(" color=")[1].strip()
-        elif "color=" in keyword:
-            return keyword.split("color=")[1].strip()
-        return ""
 
     @classmethod
     def extract_alt_value(cls, keyword: str) -> str:
@@ -155,7 +143,6 @@ class SyntaxRules:
 
         if len(headings) > 1:
             return headings
-        return []
 
     @classmethod
     def get_sorted_keywords(cls) -> list[str]:
@@ -235,7 +222,9 @@ class SyntaxRules:
         has_full_width = bool(re.search(r"[＃]", text))
 
         if has_half_width and has_full_width:
-            violations.append("半角マーカー（#）と全角マーカー（＃）の混在は禁止されています")
+            violations.append(
+                "半角マーカー（#）と全角マーカー（＃）の混在は禁止されています"
+            )
 
         return violations
 
@@ -259,7 +248,9 @@ class SyntaxRules:
             # 大文字小文字が混在していないかチェック
             lowercase_colors = [c for c in color_patterns if c.islower()]
             uppercase_colors = [c for c in color_patterns if c.isupper()]
-            mixed_case_colors = [c for c in color_patterns if not c.islower() and not c.isupper()]
+            mixed_case_colors = [
+                c for c in color_patterns if not c.islower() and not c.isupper()
+            ]
 
             # 複数のカテゴリに色名が存在する場合のみ違反
             categories_with_colors = 0
@@ -271,7 +262,9 @@ class SyntaxRules:
                 categories_with_colors += 1
 
             if categories_with_colors > 1:
-                violations.append("color属性で大文字・小文字・混在表記の混用は禁止されています")
+                violations.append(
+                    "color属性で大文字・小文字・混在表記の混用は禁止されています"
+                )
 
         return violations
 

@@ -72,7 +72,9 @@ class TOCFormatter:
                 counters[level] += 1
 
             # Reset counters for deeper levels
-            levels_to_reset = [level_key for level_key in counters.keys() if level_key > level]
+            levels_to_reset = [
+                level_key for level_key in counters.keys() if level_key > level
+            ]
             for level_key in levels_to_reset:
                 del counters[level_key]
 
@@ -115,9 +117,11 @@ class TOCFormatter:
         if not entries:
             return ""
 
-        container_class = self.css_classes.get("container", "toc")
-        list_class = self.css_classes.get("list", "toc-list")
-        html_parts = [f'<div class="{container_class}">', f'<ul class="{list_class}">']
+        html_parts = [
+            f'<div class="{self.css_classes.get("container", "toc-container")}">',
+            f'<h2 class="{self.css_classes.get("title", "toc-title")}">{self.title}</h2>',
+            '<ul class="toc-list">',
+        ]
 
         def add_entry(entry: TOCEntry) -> None:
             import html
@@ -154,8 +158,8 @@ class TOCFormatter:
         if not entries:
             return ""
 
+        counters: dict[int, int] = {}
         lines: list[str] = []
-        counters: dict[int, int] = {}  # Track counters for each level
 
         def add_entry(entry: TOCEntry) -> None:
             level = entry.level
@@ -167,7 +171,9 @@ class TOCFormatter:
                 counters[level] += 1
 
             # Reset counters for deeper levels
-            levels_to_reset = [level_key for level_key in counters.keys() if level_key > level]
+            levels_to_reset = [
+                level_key for level_key in counters.keys() if level_key > level
+            ]
             for level_key in levels_to_reset:
                 del counters[level_key]
 

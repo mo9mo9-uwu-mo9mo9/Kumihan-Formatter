@@ -40,10 +40,9 @@ def _safe_create_var(var_class: Any, value: Any = None) -> Any:
         if _TKINTER_AVAILABLE:
             return var_class(value=value)
         else:
-            return MockVar(value)
-    except RuntimeError:
-        # ルートウィンドウが無い場合はMockVarを使用
-        return MockVar(value)
+            return MockVar()
+    except Exception:
+        return MockVar()
 
 
 class ConversionState:
@@ -79,7 +78,9 @@ class ConversionState:
                 if not isinstance(value, (int, float)):
                     raise ValueError(f"進捗値は数値である必要があります: {type(value)}")
                 if not 0 <= value <= 100:
-                    raise ValueError(f"進捗値は0-100の範囲である必要があります: {value}")
+                    raise ValueError(
+                        f"進捗値は0-100の範囲である必要があります: {value}"
+                    )
 
                 self.progress_var.set(value)
 
@@ -118,7 +119,9 @@ class ConversionState:
                 if not isinstance(value, (int, float)):
                     raise ValueError(f"進捗値は数値である必要があります: {type(value)}")
                 if not 0 <= value <= 100:
-                    raise ValueError(f"進捗値は0-100の範囲である必要があります: {value}")
+                    raise ValueError(
+                        f"進捗値は0-100の範囲である必要があります: {value}"
+                    )
 
                 self.progress_var.set(value)
 

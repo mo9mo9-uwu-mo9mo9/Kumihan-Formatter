@@ -52,7 +52,9 @@ class OptimizationIntegrator:
         # 統合設定最適化システム・学習型最適化システム統合（設定が利用可能な場合のみ）
         if enhanced_config is not None:
             try:
-                self.integrated_settings_optimizer = IntegratedSettingsOptimizer(enhanced_config)
+                self.integrated_settings_optimizer = IntegratedSettingsOptimizer(
+                    enhanced_config
+                )
 
                 # AdaptiveSettingsManagerのインスタンスを取得
                 self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
@@ -150,11 +152,15 @@ class OptimizationIntegrator:
             )
 
             # 安定性検証実行
-            stability_result = await self.stability_validator.validate_system_stability()
+            stability_result = (
+                await self.stability_validator.validate_system_stability()
+            )
 
             # 総合レポート生成
-            comprehensive_report = await self.report_generator.generate_comprehensive_report(
-                effect_result, stability_result
+            comprehensive_report = (
+                await self.report_generator.generate_comprehensive_report(
+                    effect_result, stability_result
+                )
             )
 
             # テスト結果サマリー
@@ -187,12 +193,8 @@ class OptimizationIntegrator:
             self.logger.info(f"統合テスト完了: {effect_result.total_rate:.1f}%削減達成")
             return test_summary
 
-        except (asyncio.CancelledError, asyncio.TimeoutError) as e:
-            self.logger.error(f"統合テスト非同期処理エラー: {e}")
-        except (AttributeError, TypeError, ValueError) as e:
-            self.logger.error(f"統合テスト設定・データエラー: {e}")
         except Exception as e:
-            self.logger.error(f"統合テスト予期しないエラー: {e}")
+            self.logger.error(f"Integration test failed: {e}")
             return {
                 "test_status": "failed",
                 "error": str(e),
@@ -217,7 +219,9 @@ class OptimizationIntegrator:
                     complexity_level="medium",
                 )
 
-                await self.effect_measurement.measure_realtime_effect(1000, 350, test_context)
+                await self.effect_measurement.measure_realtime_effect(
+                    1000, 350, test_context
+                )
 
             except asyncio.CancelledError:
                 break
@@ -257,7 +261,9 @@ class OptimizationIntegrator:
                     and self.stability_validator.validation_history
                 ):
 
-                    latest_measurement = self.effect_measurement.measurement_history[-1]  # type: ignore[unreachable]
+                    latest_measurement = self.effect_measurement.measurement_history[
+                        -1
+                    ]  # type: ignore[unreachable]
                     latest_validation = self.stability_validator.validation_history[-1]
 
                     report = await self.report_generator.generate_comprehensive_report(
@@ -324,61 +330,37 @@ class OptimizationIntegrator:
         try:
             # 基本システム状態チェック
             if not hasattr(self, "is_running"):
-                return False  # type: ignore[unreachable]
+                return False
 
-            # コアコンポーネントの存在確認
+            # 必要なコンポーネントの存在確認
             if not all(
                 [
-                    hasattr(self, "effect_measurement") and self.effect_measurement is not None,
-                    hasattr(self, "stability_validator") and self.stability_validator is not None,
-                    hasattr(self, "report_generator") and self.report_generator is not None,
+                    hasattr(self, "effect_measurement")
+                    and self.effect_measurement is not None,
+                    hasattr(self, "stability_validator")
+                    and self.stability_validator is not None,
+                    hasattr(self, "report_generator")
+                    and self.report_generator is not None,
                     hasattr(self, "logger") and self.logger is not None,
                 ]
             ):
-                return False  # type: ignore[unreachable]
+                return False
 
-            # ThreadPoolExecutorの状態確認
-            if hasattr(self, "executor") and self.executor is not None and self.executor._shutdown:
-                return False  # type: ignore[unreachable]
-
-            # 統合システムが動作中かチェック
+            # アクティブタスクの確認（実行中の場合）
             if self.is_running:
-                # アクティブなタスクの存在確認
-                if hasattr(self, "integration_tasks"):
-                    active_tasks = [t for t in self.integration_tasks if t and not t.done()]
-                    if not active_tasks:
-                        self.logger.warning("統合システム動作中だがアクティブタスクなし")
-                        return False  # type: ignore[unreachable]
-
-            # 最適化システムの状態確認（オプショナル）
-            has_optimizers = all(
-                [
-                    hasattr(self, "integrated_settings_optimizer"),
-                    hasattr(self, "learning_based_optimizer"),
-                    hasattr(self, "adaptive_settings"),
-                ]
-            )
-
-            if has_optimizers:
-                # 最適化システムが初期化されている場合の追加チェック
-                if (
-                    self.integrated_settings_optimizer is None
-                    and self.learning_based_optimizer is None
-                    and self.adaptive_settings is None
-                ):
-                    self.logger.info("最適化システム無効だが基本機能は動作可能")
-                    return True  # type: ignore[unreachable]
+                active_tasks = [t for t in self.integration_tasks if t and not t.done()]
+                if not active_tasks:
+                    self.logger.warning("統合システム動作中だがアクティブタスクなし")
+                    return False
 
             return True
 
         except Exception as e:
-            if hasattr(self, "logger") and self.logger is not None:
-                self.logger.error(f"システム状態チェックエラー: {e}")
-            return False  # type: ignore[unreachable]
+            self.logger.error(f"システム状態チェック失敗: {e}")
+            return False
 
 
-# エクスポート用のファクトリー関数
-async def create_optimization_integrator(
+async def create_phase_b_integrator(
     config: Optional[PhaseBIntegrationConfig] = None,
 ) -> OptimizationIntegrator:
     """統合制御システム作成"""
@@ -387,7 +369,6 @@ async def create_optimization_integrator(
     return integrator
 
 
-# 使用例とテスト関数
 async def main():
     """統合制御システムテスト実行"""
     config = PhaseBIntegrationConfig(

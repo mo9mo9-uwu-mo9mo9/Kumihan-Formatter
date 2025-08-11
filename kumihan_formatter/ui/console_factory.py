@@ -35,8 +35,8 @@ class ConsoleUIFactory:
             else:
                 return Console(force_terminal=True)
         except Exception:
-            # Minimal console as fallback
-            return Console(legacy_windows=True)
+            # Fallback to basic console if configuration fails
+            return Console()
 
     @staticmethod
     def setup_encoding() -> None:
@@ -44,7 +44,9 @@ class ConsoleUIFactory:
         ConsoleEncodingSetup.setup_encoding()
 
 
-def get_console_ui_components() -> Tuple[ConsoleMessaging, ConsoleOperations, ConsoleInteraction]:
+def get_console_ui_components() -> (
+    Tuple[ConsoleMessaging, ConsoleOperations, ConsoleInteraction]
+):
     """Get all console UI components with shared console instance"""
     factory = ConsoleUIFactory()
     factory.setup_encoding()

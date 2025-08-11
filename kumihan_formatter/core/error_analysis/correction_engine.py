@@ -124,7 +124,9 @@ class CorrectionEngine:
         suggestions: List[str] = []
         message_lower = error.message.lower()
 
-        for rule in sorted(self.correction_rules, key=lambda r: r.priority, reverse=True):
+        for rule in sorted(
+            self.correction_rules, key=lambda r: r.priority, reverse=True
+        ):
             if re.search(rule.pattern, message_lower):
                 suggestions.extend(rule.suggestions)
                 error.error_pattern = rule.error_type  # エラーパターンを設定
@@ -139,14 +141,16 @@ class CorrectionEngine:
         if not error.context:
             return suggestions
 
-        context = error.context.strip()
+        context = error.context
 
-        # 不完全なマーカーの検出と提案
+        # ブロック記法の不完全パターンを検出
         if context.startswith("#") and not context.endswith("#"):
-            # # キーワード の形式
+            # 開始マーカーはあるが終了マーカーがない場合
             if " " in context:
                 keyword = context[1:].strip()
-                suggestions.append(f"「{context}」を「# {keyword} #」に修正してください")
+                suggestions.append(
+                    f"「{context}」を「# {keyword} #」に修正してください"
+                )
             else:
                 suggestions.append(f"「{context}」の後に「 #」を追加してください")
 
@@ -184,7 +188,9 @@ class CorrectionEngine:
 
         return suggestions
 
-    def enhance_error_with_suggestions(self, error: GracefulSyntaxError) -> GracefulSyntaxError:
+    def enhance_error_with_suggestions(
+        self, error: GracefulSyntaxError
+    ) -> GracefulSyntaxError:
         """エラーに修正提案を追加して拡張"""
         suggestions = self.generate_suggestions(error)
 
@@ -231,28 +237,35 @@ class CorrectionEngine:
         if not errors:
             return {"total": 0, "patterns": {}, "severity_breakdown": {}}
 
-        # パターン別集計
-        pattern_counts: Dict[str, int] = {}
-        severity_counts: Dict[str, int] = {}
+        # エラーパターンの統計
+        pattern_counts = {}
+        severity_counts = {"error": 0, "warning": 0, "info": 0}
 
         for error in errors:
-            # パターン分類
-            pattern = error.classify_error_pattern()
+            # パターン統計
+            pattern = error.error_pattern or "unknown"
             pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
 
-            # 重要度別集計
-            severity_counts[error.severity] = severity_counts.get(error.severity, 0) + 1
-
-        # 最も多いパターンTOP3
-        top_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+            # 重要度統計
+            severity = getattr(error, "severity", "error")
+            if severity in severity_counts:
+                severity_counts[severity] += 1
 
         return {
             "total": len(errors),
             "patterns": pattern_counts,
             "severity_breakdown": severity_counts,
-            "top_patterns": top_patterns,
-            "suggestions_generated": sum(
-                len(error.correction_suggestions) if error.correction_suggestions else 0
-                for error in errors
+            "avg_suggestions_per_error": (
+                sum(
+                    (
+                        len(error.correction_suggestions)
+                        if error.correction_suggestions
+                        else 0
+                    )
+                    for error in errors
+                )
+                / len(errors)
+                if errors
+                else 0
             ),
         }

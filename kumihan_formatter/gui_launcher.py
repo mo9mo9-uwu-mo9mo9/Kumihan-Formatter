@@ -34,7 +34,7 @@ info("GUI Launcher module loading...")
 # GUIコントローラーのインポート
 try:
     info("Importing GUI controller...")
-    from .gui_controller import create_gui_application
+    from .gui_controllers.gui_controller import create_gui_application
 
     info("GUI controller imported successfully")
 except ImportError as gui_error:
@@ -54,7 +54,9 @@ except ImportError as gui_error:
             f"必要なモジュールがインストールされているか確認してください。",
         )
     except Exception:
-        print(f"GUIコンポーネントの読み込みに失敗しました: {gui_error}", file=sys.stderr)
+        print(
+            f"GUIコンポーネントの読み込みに失敗しました: {gui_error}", file=sys.stderr
+        )
 
     sys.exit(1)
 

@@ -32,10 +32,6 @@ def create_simple_config() -> ConfigManager:
     return create_config_manager(config_type="base")
 
 
-# デフォルト設定インスタンス（遅延初期化）
-_default_config = None
-
-
 def get_default_config() -> ConfigManager:
     """デフォルト設定インスタンスを取得
 

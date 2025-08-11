@@ -26,7 +26,9 @@ class AsyncIOOptimizer:
         self._aiofiles_available = self._check_aiofiles_availability()
 
         if self._aiofiles_available:
-            self.logger.info(f"AsyncIO optimizer initialized with buffer size: {buffer_size}")
+            self.logger.info(
+                f"AsyncIO optimizer initialized with buffer size: {buffer_size}"
+            )
         else:
             self.logger.warning("aiofiles not available, using synchronous I/O")
 
@@ -39,8 +41,8 @@ class AsyncIOOptimizer:
         except ImportError:
             return False
 
-    async def async_read_file_chunked(
-        self, file_path: Path, chunk_size: int = 64 * 1024
+    async def async_read_chunks(
+        self, file_path: Path, chunk_size: int = 8192
     ) -> AsyncIterator[str]:
         """
         非同期チャンク読み込み

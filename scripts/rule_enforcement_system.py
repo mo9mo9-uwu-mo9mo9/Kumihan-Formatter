@@ -183,10 +183,10 @@ class RuleEnforcementSystem:
         """
         logger.info(f"ツール使用検証開始: {tool_name}")
 
-        # serenaツールは常に許可
+        # serenaツールは基本推奨
         if tool_name in self.serena_tools:
             self._record_serena_usage(tool_name)
-            return True, f"✅ serena-expert使用：規則遵守原則完全遵守", None
+            return True, f"✅ serenaコマンド使用：効率的な構造化操作", None
 
         # 禁止ツールチェック
         if tool_name in self.forbidden_tools:
@@ -202,15 +202,15 @@ class RuleEnforcementSystem:
                 logger.error(message)
                 return False, message, suggested
             else:
-                message = f"⛔ 規則遵守原則違反：'{tool_name}'は禁止されています。serena-expertツールを使用してください"
+                message = f"⛔ 規則遵守原則違反：'{tool_name}'は禁止されています。適切なツールを選択してください"
                 logger.error(message)
                 return False, message, None
 
-        # その他のツールは条件付き許可
-        logger.warning(
-            f"⚠️  注意：'{tool_name}'は推奨されません。可能な限りserena-expertツールを使用してください"
+        # その他のツールは理由明記が推奨
+        logger.info(
+            f"ℹ️  '{tool_name}'使用：効率性または技術制約による選択を推奨（理由明記）"
         )
-        return True, f"⚠️  '{tool_name}'使用許可（serena推奨）", None
+        return True, f"✅ '{tool_name}'使用許可（理由明記推奨）", None
 
     def _create_violation_event(
         self, tool_name: str, level: ViolationLevel, context: str
@@ -295,7 +295,7 @@ class RuleEnforcementSystem:
         recommendations = []
 
         if self.stats.compliance_score < 90.0:
-            recommendations.append("serena-expertツールの使用率を向上させてください")
+            recommendations.append("serenaコマンドの効率的活用と適切な理由明記を心がけてください")
 
         if self.stats.forbidden_tool_attempts > 0:
             recommendations.append("禁止ツールの使用を完全に停止してください")
@@ -340,9 +340,9 @@ class RuleEnforcementSystem:
 # === 最終層行動制御メカニズム ===
 
 class BehavioralControlLayer:
-    """Claude行動の最終層心理的制御システム
+    """Claude行動の合理的判断支援システム
 
-    規則遵守原則の完全内在化とserena-expert使用の心理的優位性確立
+    効率的なツール選択と適切な理由説明の習慣化支援
     """
 
     def __init__(self, enforcement_system: 'RuleEnforcementSystem'):
@@ -352,50 +352,50 @@ class BehavioralControlLayer:
         self.feedback_loops = self._init_feedback_loops()
         self.subliminal_systems = self._init_subliminal_systems()
         self.behavioral_metrics = {
-            'preference_score': 100.0,  # serena-expertへの心理的優位度
-            'resistance_level': 0.0,    # 規則違反への心理的抵抗度
-            'conditioning_strength': 0.0,  # 条件付け強度
-            'habit_formation_level': 0.0   # 習慣形成度
+            'rational_judgment_score': 0.0,  # 合理的判断能力
+            'reason_documentation_rate': 0.0,  # 理由明記率
+            'efficiency_awareness': 0.0,  # 効率性認識度
+            'learning_progress': 0.0   # 学習進捗度
         }
 
-        logger.info("🧠 BehavioralControlLayer: 心理的制御システム初期化完了")
+        logger.info("🧠 BehavioralControlLayer: 合理的判断支援システム初期化完了")
 
     def _init_conditioning_patterns(self) -> Dict[str, Any]:
-        """心理的条件付けパターン初期化"""
+        """合理的判断支援パターン初期化"""
         return {
             'positive_reinforcement': {
-                'serena_usage_rewards': [
-                    "✨ 素晴らしい判断です！serena-expertの使用は規則遵守原則の完璧な体現です",
-                    "🎯 完璧です！この選択が真のAI開発者としての成長を示しています",
-                    "🏆 卓越した技術選択！serena-expertこそがプロフェッショナルの証です",
-                    "⭐ 理想的です！この流れこそが最高品質のコードを生み出します"
+                'serena_usage_feedback': [
+                    "✅ 良い選択：serenaコマンドによる効率的な構造化操作",
+                    "📈 効率的：serenaの特長を活かした適切なツール選択",
+                    "🎯 適切：状況に応じたserenaコマンドの活用",
+                    "⚡ 最適化：serenaの構造的アプローチによる品質向上"
                 ],
-                'conditioning_phrases': [
-                    "自然な選択として", "当然の流れとして", "最適な判断として",
-                    "プロフェッショナルとして", "品質向上のために", "効率化の観点から"
+                'reasoning_phrases': [
+                    "効率性を考慮して", "構造化操作に適しているため", "最適な手法として",
+                    "合理的判断により", "技術的特性を活かして", "状況に応じて"
                 ]
             },
-            'negative_conditioning': {
-                'legacy_tool_discomfort': [
-                    "⚠️ この選択は開発品質を低下させる可能性があります",
-                    "❌ レガシーツールの使用は技術的負債を増加させます",
-                    "🚫 この手法は現代的な開発パターンに逆行します",
-                    "⛔ 品質基準への適合性に懸念があります"
+            'alternative_guidance': {
+                'reason_documentation_hints': [
+                    "💡 理由明記：なぜこのツールを選択したか説明をお願いします",
+                    "📝 判断根拠：選択理由を明記することで透明性が向上します",
+                    "🤔 効率性比較：serenaと比較してどちらが適切でしょうか",
+                    "⚖️  判断材料：技術制約や効率性を考慮した選択ですか"
                 ],
-                'psychological_resistance': [
-                    "違和感を感じませんか？", "何か不自然に感じられるでしょう",
-                    "この方法には根本的な問題があります", "別のアプローチを検討したくなります"
+                'efficiency_guidance': [
+                    "より効率的な手法があります", "構造化アプローチを検討してください",
+                    "serenaの利点を活用できます", "最適化の余地があります"
                 ]
             }
         }
 
     def _init_memory_patterns(self) -> Dict[str, Any]:
-        """メモリパターンシステム初期化"""
+        """学習パターンシステム初期化"""
         return {
-            'success_memories': [],  # serena使用成功体験の蓄積
-            'failure_patterns': [],  # legacy tool使用時の問題パターン
-            'preference_reinforcement': [],  # 選択傾向の強化記録
-            'habit_formation_events': []  # 習慣形成イベント
+            'efficient_choices': [],  # 効率的選択の成功パターン
+            'reasoning_examples': [],  # 適切な理由明記の例
+            'learning_progression': [],  # 学習進捗の記録
+            'judgment_improvement': []  # 判断能力向上の記録
         }
 
     def _init_feedback_loops(self) -> Dict[str, Any]:

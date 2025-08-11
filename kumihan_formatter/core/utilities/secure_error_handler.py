@@ -63,7 +63,9 @@ class SecureErrorHandler:
         """初期化"""
         self.config_path = (
             config_path
-            or Path(__file__).parent.parent.parent.parent / "config" / "error_sanitization.json"
+            or Path(__file__).parent.parent.parent.parent
+            / "config"
+            / "error_sanitization.json"
         )
         self.config = self._load_config()
 
@@ -85,58 +87,10 @@ class SecureErrorHandler:
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     config_data: Dict[str, Any] = json.load(f)
                     return config_data
+            return {}
         except Exception as e:
-            logger.warning(f"エラーサニタイズ設定読み込み失敗: {e}")
-
-        # デフォルト設定
-        return {
-            "sensitive_patterns": {
-                "file_paths": (r"(?i)(?:c:|d:|/home|/usr|/var|/etc|/root|\users\|\windows\)"),
-                "credentials": r"(?i)(?:password|token|key|secret)[\s=:\"']*[^\s\"']{8,}",
-                "ip_addresses": r"\b(?:\d{1,3}\.){3}\d{1,3}\b",
-                "database_info": r"(?i)(?:database|db|sql)[\s=:\"']*[^\s\"']+",
-                "urls": r"https?://[^\s\"']+",
-                "email_addresses": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-                "version_info": r"(?i)version[\s=:\"']*[\d.]+",
-                "stack_traces": r"(?i)traceback|at\s+[^\s]+\.[^\s]+\(\w+\.py:\d+\)",
-            },
-            "sanitization_replacements": {
-                "file_paths": "[PATH_SANITIZED]",
-                "credentials": "[CREDENTIAL_SANITIZED]",
-                "ip_addresses": "[IP_SANITIZED]",
-                "database_info": "[DB_INFO_SANITIZED]",
-                "urls": "[URL_SANITIZED]",
-                "email_addresses": "[EMAIL_SANITIZED]",
-                "version_info": "[VERSION_SANITIZED]",
-                "stack_traces": "[STACK_TRACE_SANITIZED]",
-            },
-            "error_code_mapping": {
-                "FileNotFoundError": "ERR_FILE_ACCESS_001",
-                "PermissionError": "ERR_FILE_ACCESS_002",
-                "ValueError": "ERR_VALIDATION_001",
-                "TypeError": "ERR_TYPE_001",
-                "KeyError": "ERR_DATA_001",
-                "ImportError": "ERR_MODULE_001",
-                "ConnectionError": "ERR_NETWORK_001",
-                "TimeoutError": "ERR_NETWORK_002",
-            },
-            "user_message_templates": {
-                "ERR_FILE_ACCESS_001": "指定されたファイルまたはディレクトリにアクセスできません",
-                "ERR_FILE_ACCESS_002": "ファイルまたはディレクトリへのアクセス権限が不足しています",
-                "ERR_VALIDATION_001": "入力データの形式が正しくありません",
-                "ERR_TYPE_001": "データ型が期待される形式と異なります",
-                "ERR_DATA_001": "必要なデータが見つかりません",
-                "ERR_MODULE_001": "必要なモジュールが利用できません",
-                "ERR_NETWORK_001": "ネットワーク接続に問題があります",
-                "ERR_NETWORK_002": "処理がタイムアウトしました",
-                "ERR_GENERIC": "予期しないエラーが発生しました",
-            },
-            "exposure_control": {
-                "development": "internal",
-                "staging": "internal",
-                "production": "safe",
-            },
-        }
+            logger.warning(f"設定ファイル読み込みエラー: {e}")
+            return {}
 
     def _compile_sensitive_patterns(self) -> Dict[str, re.Pattern[str]]:
         """機密情報パターンをコンパイル"""
@@ -145,7 +99,9 @@ class SecureErrorHandler:
 
         for pattern_name, pattern_regex in sensitive_patterns.items():
             try:
-                patterns[pattern_name] = re.compile(pattern_regex, re.MULTILINE | re.DOTALL)
+                patterns[pattern_name] = re.compile(
+                    pattern_regex, re.MULTILINE | re.DOTALL
+                )
             except re.error as e:
                 logger.warning(f"不正なパターン {pattern_name}: {e}")
 
@@ -158,24 +114,6 @@ class SecureErrorHandler:
 
         if not error_message:
             return ""
-
-        sanitized = error_message
-        replacements = self.config.get("sanitization_replacements", {})
-
-        # 機密情報パターンの置換
-        for pattern_name, pattern in self.sensitive_patterns.items():
-            replacement = replacements.get(pattern_name, f"[{pattern_name.upper()}_SANITIZED]")
-            sanitized = pattern.sub(replacement, sanitized)
-
-        # 露出レベルに応じた追加制御
-        if exposure_level == ExposureRisk.SAFE:
-            # 最小限の情報のみ
-            sanitized = self._minimize_technical_details(sanitized)
-        elif exposure_level == ExposureRisk.INTERNAL:
-            # 内部向けは技術的詳細を一部保持
-            sanitized = self._filter_internal_safe_info(sanitized)
-
-        return sanitized.strip()
 
     def _minimize_technical_details(self, message: str) -> str:
         """技術的詳細を最小化"""
@@ -209,17 +147,12 @@ class SecureErrorHandler:
             mapped_code: str = self.error_code_mapping[exception_name]
             return mapped_code
 
-        # 動的エラーコード生成
-        error_hash = (
-            hashlib.md5(f"{exception_name}_{str(exception)[:50]}".encode()).hexdigest()[:8].upper()
-        )
-
-        return f"ERR_DYNAMIC_{error_hash}"
-
     def generate_trace_id(self) -> str:
         """トレースID生成"""
         timestamp = datetime.now().isoformat()
-        trace_hash = hashlib.sha256(f"{timestamp}_{id(self)}".encode()).hexdigest()[:16].upper()
+        trace_hash = (
+            hashlib.sha256(f"{timestamp}_{id(self)}".encode()).hexdigest()[:16].upper()
+        )
 
         return f"TRACE_{trace_hash}"
 
@@ -252,7 +185,9 @@ class SecureErrorHandler:
         if user_exposure in [ExposureRisk.INTERNAL, ExposureRisk.SENSITIVE]:
             # 内部向けには詳細情報を含める
             detailed_message = f"{original_message}\n\nContext: {context or {}}"
-            sanitized_message = self.sanitize_error_message(detailed_message, user_exposure)
+            sanitized_message = self.sanitize_error_message(
+                detailed_message, user_exposure
+            )
         else:
             # 外部向けには汎用メッセージのみ
             sanitized_message = user_message
@@ -261,7 +196,9 @@ class SecureErrorHandler:
         internal_details = {
             "original_error": original_message,
             "exception_type": type(exception).__name__,
-            "traceback": self.sanitize_error_message(full_traceback, ExposureRisk.INTERNAL),
+            "traceback": self.sanitize_error_message(
+                full_traceback, ExposureRisk.INTERNAL
+            ),
             "context": context,
             "timestamp": datetime.now().isoformat(),
         }
@@ -281,7 +218,9 @@ class SecureErrorHandler:
             severity=severity,
             timestamp=datetime.now(),
             trace_id=trace_id,
-            internal_details=(internal_details if user_exposure != ExposureRisk.SAFE else None),
+            internal_details=(
+                internal_details if user_exposure != ExposureRisk.SAFE else None
+            ),
             original_error=(
                 original_message
                 if user_exposure in [ExposureRisk.SENSITIVE, ExposureRisk.CRITICAL]
@@ -346,9 +285,7 @@ class SecureErrorHandler:
         )
 
         if include_support_info:
-            support_message = (
-                f"\n\nサポートが必要な場合は、エラーコード '{error_code}' をお伝えください。"
-            )
+            support_message = f"\n\nサポートが必要な場合は、エラーコード '{error_code}' をお伝えください。"
             base_message += support_message
 
         return base_message
@@ -376,7 +313,6 @@ def get_secure_error_handler() -> SecureErrorHandler:
     return _global_error_handler
 
 
-# 便利な関数群
 def safe_handle_exception(
     exception: Exception,
     context: Optional[Dict[str, Any]] = None,
@@ -384,10 +320,14 @@ def safe_handle_exception(
     severity: SecureErrorSeverity = SecureErrorSeverity.MEDIUM,
 ) -> SanitizedError:
     """例外の安全な処理（関数版）"""
-    return get_secure_error_handler().handle_exception(exception, context, user_exposure, severity)
+    return get_secure_error_handler().handle_exception(
+        exception, context, user_exposure, severity
+    )
 
 
-def sanitize_message(message: str, exposure_level: ExposureRisk = ExposureRisk.SAFE) -> str:
+def sanitize_message(
+    message: str, exposure_level: ExposureRisk = ExposureRisk.SAFE
+) -> str:
     """メッセージのサニタイズ（関数版）"""
     return get_secure_error_handler().sanitize_error_message(message, exposure_level)
 

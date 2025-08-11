@@ -87,7 +87,9 @@ class StatisticsGenerator:
                 line_range_counts["100+"] += 1
 
         # 最も多いエラーパターンTOP5
-        most_common = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        most_common = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[
+            :5
+        ]
         most_common_errors = [
             {
                 "pattern": pattern,
@@ -118,48 +120,43 @@ class StatisticsGenerator:
         self.logger.info(f"Generated statistics for {total_errors} errors")
         return statistics
 
-    def _get_example_message(self, errors: List[GracefulSyntaxError], pattern: str) -> str:
+    def _get_example_message(
+        self, errors: List[GracefulSyntaxError], pattern: str
+    ) -> str:
         """特定パターンの例示メッセージを取得"""
         for error in errors:
             if error.classify_error_pattern() == pattern:
                 return error.message
-        return ""
 
     def generate_html_report(self, statistics: ErrorStatistics) -> str:
         """HTML形式の統計レポートを生成"""
         if statistics.total_errors == 0:
             return self._generate_no_errors_html()
 
-        html_parts = [
-            '<div class="error-statistics-report">',
-            "<h3>エラー統計レポート</h3>",
-            f'<p class="timestamp">生成日時: {statistics.processing_timestamp}</p>',
-            # 概要
-            '<div class="stats-overview">',
-            f'<div class="stat-item">'
-            f'<span class="stat-label">総エラー数:</span> '
-            f'<span class="stat-value">{statistics.total_errors}</span>'
-            f"</div>",
-            f'<div class="stat-item">'
-            f'<span class="stat-label">修正提案数:</span> '
-            f'<span class="stat-value">{statistics.suggestions_generated}</span>'
-            f"</div>",
-            "</div>",
-            # 重要度別グラフ
-            self._generate_severity_chart(statistics.error_by_severity),
-            # パターン別分析
-            self._generate_pattern_analysis(statistics.most_common_errors),
-            # 行範囲別分布
-            self._generate_line_range_chart(statistics.error_by_line_range),
-            "</div>",
-        ]
+        html_parts = []
+        html_parts.append("<h3>エラー統計レポート</h3>")
+
+        # 重要度別チャート
+        severity_chart = self._generate_severity_chart(statistics.error_by_severity)
+        html_parts.append(severity_chart)
+
+        # パターン分析
+        pattern_analysis = self._generate_pattern_analysis(
+            statistics.most_common_errors
+        )
+        html_parts.append(pattern_analysis)
+
+        # 行範囲別チャート
+        line_range_chart = self._generate_line_range_chart(
+            statistics.error_by_line_range
+        )
+        html_parts.append(line_range_chart)
 
         return "\n".join(html_parts)
 
     def _generate_no_errors_html(self) -> str:
         """エラーなしの場合のHTML"""
         return """
-        <div class="error-statistics-report no-errors">
             <h3>エラー統計レポート</h3>
             <div class="success-message">
                 <span class="success-icon">✅</span>
@@ -174,14 +171,13 @@ class StatisticsGenerator:
             return ""
 
         total = sum(severity_counts.values())
+        chart_html = []
 
-        chart_html = ['<div class="severity-chart">', "<h4>重要度別分布</h4>"]
+        severity_colors = {"error": "#ff4757", "warning": "#ffa502", "info": "#3742fa"}
 
-        severity_order = ["error", "warning", "info"]
         severity_labels = {"error": "エラー", "warning": "警告", "info": "情報"}
-        severity_colors = {"error": "#ff4444", "warning": "#ffaa00", "info": "#4444ff"}
 
-        for severity in severity_order:
+        for severity in ["error", "warning", "info"]:
             if severity in severity_counts:
                 count = severity_counts[severity]
                 percentage = (count / total) * 100
@@ -204,23 +200,21 @@ class StatisticsGenerator:
         chart_html.append("</div>")
         return "\n".join(chart_html)
 
-    def _generate_pattern_analysis(self, most_common_errors: List[Dict[str, Any]]) -> str:
+    def _generate_pattern_analysis(
+        self, most_common_errors: List[Dict[str, Any]]
+    ) -> str:
         """パターン分析HTML生成"""
         if not most_common_errors:
             return ""
 
-        html_parts = [
-            '<div class="pattern-analysis">',
-            "<h4>最も多いエラーパターン</h4>",
-        ]
+        html_parts = ["<div class='pattern-analysis'>", "<h4>エラーパターン分析</h4>"]
 
         pattern_labels = {
-            "marker_mismatch": "マーカー不一致",
-            "incomplete_marker": "不完全マーカー",
-            "invalid_syntax": "無効な構文",
-            "missing_element": "要素不足",
+            "incomplete_marker": "不完全なマーカー",
+            "marker_mismatch": "マーカーの不一致",
+            "invalid_syntax": "構文エラー",
             "invalid_color": "無効な色指定",
-            "general_syntax": "一般的な構文エラー",
+            "missing_element": "要素不足",
         }
 
         for i, error_info in enumerate(most_common_errors, 1):
@@ -252,9 +246,8 @@ class StatisticsGenerator:
         if not any(line_range_counts.values()):
             return ""
 
+        html_parts = ["<div class='line-range-chart'>", "<h4>行範囲別エラー分布</h4>"]
         total = sum(line_range_counts.values())
-
-        html_parts = ['<div class="line-range-chart">', "<h4>エラー発生行の分布</h4>"]
 
         for range_name, count in line_range_counts.items():
             if count > 0:
@@ -275,7 +268,9 @@ class StatisticsGenerator:
         html_parts.append("</div>")
         return "\n".join(html_parts)
 
-    def save_statistics_json(self, statistics: ErrorStatistics, output_path: Path) -> None:
+    def save_statistics_json(
+        self, statistics: ErrorStatistics, output_path: Path
+    ) -> None:
         """統計情報をJSONファイルに保存"""
         try:
             stats_data = {
@@ -302,15 +297,11 @@ class StatisticsGenerator:
         if statistics.total_errors == 0:
             return "エラーは検出されませんでした。"
 
-        summary_lines = [
-            "=== エラー統計サマリー ===",
-            f"総エラー数: {statistics.total_errors}",
-            f"修正提案数: {statistics.suggestions_generated}",
-            "",
-        ]
+        summary_lines = [f"総エラー数: {statistics.total_errors}"]
 
-        # 重要度別
+        # 重要度別統計
         if statistics.error_by_severity:
+            summary_lines.append("")
             summary_lines.append("重要度別:")
             for severity, count in statistics.error_by_severity.items():
                 percentage = (count / statistics.total_errors) * 100

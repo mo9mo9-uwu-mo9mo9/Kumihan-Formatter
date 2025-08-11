@@ -17,7 +17,9 @@ from collections import deque
 # 循環インポート回避のため型ヒント用
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from kumihan_formatter.core.unified_config import EnhancedConfigAdapter as EnhancedConfig
+from kumihan_formatter.core.unified_config import (
+    EnhancedConfigAdapter as EnhancedConfig,
+)
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
@@ -51,7 +53,9 @@ class IntegratedSettingsOptimizer:
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
 
-            self.adaptive_manager = AdaptiveSettingsManager(self.config)  # type: ignore[unreachable]
+            self.adaptive_manager = AdaptiveSettingsManager(
+                self.config
+            )  # type: ignore[unreachable]
             self.context_optimizer = ContextAwareOptimizer()
             self.realtime_adjuster = RealTimeConfigAdjuster(self.adaptive_manager)
 
@@ -105,7 +109,9 @@ class LearningBasedOptimizer:
     目標: 追加5%削減（総合66.8%削減達成）
     """
 
-    def __init__(self, config: EnhancedConfig, adaptive_manager: "AdaptiveSettingsManager" = None):
+    def __init__(
+        self, config: EnhancedConfig, adaptive_manager: "AdaptiveSettingsManager" = None
+    ):
         self.logger = get_logger(__name__)
         self.config = config
         self.adaptive_manager = adaptive_manager
@@ -131,14 +137,18 @@ class LearningBasedOptimizer:
             "last_learning_session": None,
         }
 
-        self.logger.info("LearningBasedOptimizer initialized - 5% additional reduction target")
+        self.logger.info(
+            "LearningBasedOptimizer initialized - 5% additional reduction target"
+        )
 
     def _initialize_adaptive_manager(self):
         """AdaptiveSettingsManagerを遅延初期化"""
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
 
-            self.adaptive_manager = AdaptiveSettingsManager(self.config)  # type: ignore[unreachable]
+            self.adaptive_manager = AdaptiveSettingsManager(
+                self.config
+            )  # type: ignore[unreachable]
 
     def integrate_efficiency_analyzer(self, analyzer):
         """TokenEfficiencyAnalyzerとの統合"""
@@ -157,7 +167,9 @@ class LearningBasedOptimizer:
             # 2. 効率性予測の取得（統合システム使用）
             efficiency_insights = {}
             if self.efficiency_analyzer:
-                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()  # type: ignore[unreachable]
+                efficiency_insights = (
+                    self.efficiency_analyzer.get_pattern_insights()
+                )  # type: ignore[unreachable]
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -165,10 +177,14 @@ class LearningBasedOptimizer:
             )
 
             # 4. 最適化提案生成
-            optimization_proposals = self._generate_optimization_proposals(integrated_analysis)
+            optimization_proposals = self._generate_optimization_proposals(
+                integrated_analysis
+            )
 
             # 5. 自動最適化適用
-            applied_optimizations = self._apply_automatic_optimizations(optimization_proposals)
+            applied_optimizations = self._apply_automatic_optimizations(
+                optimization_proposals
+            )
 
             # 6. A/Bテスト設定
             ab_tests_started = self._setup_ab_tests(optimization_proposals)
@@ -180,7 +196,9 @@ class LearningBasedOptimizer:
                 "patterns_analyzed": learning_summary["patterns_discovered"],
                 "optimizations_applied": len(applied_optimizations),
                 "ab_tests_started": len(ab_tests_started),
-                "expected_improvement": sum(opt.expected_benefit for opt in applied_optimizations),
+                "expected_improvement": sum(
+                    opt.expected_benefit for opt in applied_optimizations
+                ),
                 "learning_summary": learning_summary,
                 "efficiency_insights": efficiency_insights,
                 "status": "completed",
@@ -197,6 +215,7 @@ class LearningBasedOptimizer:
             return cycle_result
 
         except Exception as e:
+            # エラー発生時の処理
             self.logger.error(f"Learning cycle failed: {e}")
             return {
                 "timestamp": cycle_start,
@@ -217,7 +236,9 @@ class LearningBasedOptimizer:
         }
 
         # パターン優先度決定
-        for pattern_key, pattern_data in learning_summary.get("efficiency_insights", {}).items():
+        for pattern_key, pattern_data in learning_summary.get(
+            "efficiency_insights", {}
+        ).items():
             efficiency_score = pattern_data["efficiency_score"]
             sample_count = pattern_data["sample_count"]
 
@@ -248,6 +269,7 @@ class LearningBasedOptimizer:
         adaptive_opportunities = learning_summary.get("optimization_opportunities", [])
         analyzer_suggestions = []
         if self.efficiency_analyzer:
+            # 効率アナライザーからの最適化提案取得
             analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(  # type: ignore[unreachable]
                 self.config.get_all()
             )
@@ -270,7 +292,9 @@ class LearningBasedOptimizer:
 
         return integrated
 
-    def _generate_optimization_proposals(self, integrated_analysis: Dict) -> List[Dict[str, Any]]:
+    def _generate_optimization_proposals(
+        self, integrated_analysis: Dict
+    ) -> List[Dict[str, Any]]:
         """最適化提案生成"""
         proposals = []
 
@@ -284,7 +308,9 @@ class LearningBasedOptimizer:
                         {
                             "pattern": opportunity["pattern"],
                             "type": recommendation["type"],
-                            "expected_improvement": recommendation["expected_improvement"],
+                            "expected_improvement": recommendation[
+                                "expected_improvement"
+                            ],
                             "confidence": integrated_analysis["confidence_scores"].get(
                                 opportunity["pattern"], 0.5
                             ),
@@ -300,7 +326,9 @@ class LearningBasedOptimizer:
         proposals.sort(key=lambda x: x["expected_improvement"], reverse=True)
         return proposals[:10]  # 上位10提案
 
-    def _apply_automatic_optimizations(self, proposals: List[Dict]) -> List["ConfigAdjustment"]:
+    def _apply_automatic_optimizations(
+        self, proposals: List[Dict]
+    ) -> List["ConfigAdjustment"]:
         """自動最適化適用"""
         from .manager import ConfigAdjustment
 
@@ -359,12 +387,18 @@ class LearningBasedOptimizer:
 
     def _update_learning_metrics(self, cycle_result: Dict):
         """学習型最適化メトリクス更新"""
-        self.learning_metrics["patterns_learned"] += cycle_result.get("patterns_analyzed", 0)
+        self.learning_metrics["patterns_learned"] += cycle_result.get(
+            "patterns_analyzed", 0
+        )
         self.learning_metrics["optimizations_applied"] += cycle_result.get(
             "optimizations_applied", 0
         )
-        self.learning_metrics["ab_tests_completed"] += cycle_result.get("ab_tests_started", 0)
-        self.learning_metrics["total_improvement"] += cycle_result.get("expected_improvement", 0)
+        self.learning_metrics["ab_tests_completed"] += cycle_result.get(
+            "ab_tests_started", 0
+        )
+        self.learning_metrics["total_improvement"] += cycle_result.get(
+            "expected_improvement", 0
+        )
         self.learning_metrics["last_learning_session"] = cycle_result["timestamp"]
 
     def get_learning_status(self) -> Dict[str, Any]:
@@ -374,7 +408,9 @@ class LearningBasedOptimizer:
 
         # 総合削減率計算（統合設定最適化 61.8% + 学習型最適化追加分）
         integrated_reduction = 0.618  # 統合設定最適化実績
-        learning_additional = min(self.learning_metrics["total_improvement"], 0.1)  # 最大10%
+        learning_additional = min(
+            self.learning_metrics["total_improvement"], 0.1
+        )  # 最大10%
         total_reduction = integrated_reduction + learning_additional
 
         return {

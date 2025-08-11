@@ -6,7 +6,6 @@ Issue #492 Phase 5A - list_parser.py分割
 """
 
 import logging
-import re
 from typing import Tuple
 
 from .ast_nodes import Node, list_item, ordered_list, unordered_list
@@ -87,11 +86,15 @@ class ListParserCore:
             # トップレベル項目のみここで処理
             if indent_level == 0:
                 content = line.strip()
-                processed_content = self.keyword_parser._process_inline_keywords(content)
+                processed_content = self.keyword_parser._process_inline_keywords(
+                    content
+                )
                 item_node = list_item(processed_content)
 
                 # 次の行から子項目をチェック
-                child_items, consumed = self._parse_child_items(lines, current_index + 1, 1)
+                child_items, consumed = self._parse_child_items(
+                    lines, current_index + 1, 1
+                )
                 if child_items:
                     # 子項目がある場合はネストしたリストを追加
                     nested_list = unordered_list(child_items)
@@ -118,17 +121,9 @@ class ListParserCore:
         if not line:
             return None
 
-        # 順序なしリストパターン
-        if line.startswith(("- ", "・", "* ", "+ ")):
-            return "unordered"
-
-        # 順序ありリストパターン
-        if re.match(r"^\d+\.\s", line):
-            return "ordered"
-
-        return None
-
-    def parse_unordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
+    def parse_unordered_list(
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         旧記法互換性のための順序なしリストパーサー
 
@@ -161,7 +156,9 @@ class ListParserCore:
         list_node = unordered_list(items)
         return list_node, current_index
 
-    def parse_ordered_list(self, lines: list[str], start_index: int) -> tuple[Node, int]:
+    def parse_ordered_list(
+        self, lines: list[str], start_index: int
+    ) -> tuple[Node, int]:
         """
         旧記法互換性のための順序ありリストパーサー
 
@@ -189,7 +186,9 @@ class ListParserCore:
             match = re.match(r"^\d+\.\s(.+)", line)
             if match:
                 content = match.group(1)
-                processed_content = self.keyword_parser._process_inline_keywords(content)
+                processed_content = self.keyword_parser._process_inline_keywords(
+                    content
+                )
                 item_node = list_item(processed_content)
                 items.append(item_node)
 
@@ -226,7 +225,9 @@ class ListParserCore:
             elif indent_level == target_level:
                 # 同じレベルの項目
                 content = line.strip()
-                processed_content = self.keyword_parser._process_inline_keywords(content)
+                processed_content = self.keyword_parser._process_inline_keywords(
+                    content
+                )
                 item_node = list_item(processed_content)
 
                 # さらに深い子項目をチェック
@@ -259,24 +260,16 @@ class ListParserCore:
 
         タブ文字は0を返す（タブは禁止）
         """
-        indent = 0
+        # TODO: implement indentation handling
         for char in line:
             if char == "\t":  # タブ文字検出
                 return -1  # エラー値
-            elif char == " ":  # 半角スペース
-                indent += 1
-            elif char == "　":  # 全角スペース
-                indent += 1
-            else:
-                break
-        return indent
 
     def _find_block_end(self, lines: list[str], start_index: int) -> int:
         """ブロック終了位置を検索"""
         for i in range(start_index, len(lines)):
             if lines[i].strip() in ["##", "＃＃"]:
                 return i + 1
-        return len(lines)
 
     def is_list_block_start(self, line: str) -> bool:
         """
@@ -308,7 +301,6 @@ class ListParserCore:
         for line in lines:
             if self.is_list_block_start(line):
                 return True
-        return False
 
     def extract_list_items(self, content: str) -> list[str]:
         """
@@ -338,6 +330,3 @@ class ListParserCore:
                     items.append(stripped)
 
         return items
-
-    # 旧記法サポートメソッドを削除
-    # parse_unordered_list, parse_ordered_list, is_list_line など全て削除

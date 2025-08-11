@@ -33,7 +33,9 @@ def create_simple_tag(
     if formatter:
         from .html_escaping import render_attributes_with_enhancements
 
-        attr_str = render_attributes_with_enhancements(tag, attributes, content, formatter)
+        attr_str = render_attributes_with_enhancements(
+            tag, attributes, content, formatter
+        )
     else:
         attr_str = render_attributes(attributes)
 
@@ -41,8 +43,6 @@ def create_simple_tag(
 
     if self_closing:
         return f"<{tag}{attr_part} />"
-    else:
-        return f"<{tag}{attr_part}>{content}</{tag}>"
 
 
 def create_self_closing_tag(tag: str, attributes: dict[str, Any] | None = None) -> str:

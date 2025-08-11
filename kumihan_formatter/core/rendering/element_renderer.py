@@ -63,7 +63,6 @@ class ElementRenderer:
 
         if attr_str:
             return f"<p {attr_str}>{content}</p>"
-        return f"<p>{content}</p>"
 
     def render_strong(self, node: Node) -> str:
         """太字要素をレンダリング（Phase 4: 統合機能適用）"""
@@ -76,7 +75,6 @@ class ElementRenderer:
 
         if attr_str:
             return f"<strong {attr_str}>{content}</strong>"
-        return f"<strong>{content}</strong>"
 
     def render_emphasis(self, node: Node) -> str:
         """斜体要素をレンダリング（Phase 4: 統合機能適用）"""
@@ -89,7 +87,6 @@ class ElementRenderer:
 
         if attr_str:
             return f"<em {attr_str}>{content}</em>"
-        return f"<em>{content}</em>"
 
     def render_preformatted(self, node: Node) -> str:
         """整形済みテキストをレンダリング"""
@@ -121,8 +118,6 @@ class ElementRenderer:
 
         if attributes:
             return f"<pre {attributes}>{content}</pre>"
-        else:
-            return f"<pre>{content}</pre>"
 
     def render_code(self, node: Node) -> str:
         """インラインコードをレンダリング"""
@@ -135,8 +130,6 @@ class ElementRenderer:
 
         if attributes:
             return f"<code {attributes}>{content}</code>"
-        else:
-            return f"<code>{content}</code>"
 
     def render_image(self, node: Node) -> str:
         """画像要素をレンダリング（Phase 4: アクセシビリティ改善）"""
@@ -152,7 +145,9 @@ class ElementRenderer:
             attributes["alt"] = self.formatter._generate_alt_text(filename)
 
         # Use enhanced attribute rendering with accessibility features
-        attr_str = render_attributes_with_enhancements("img", attributes, filename, self.formatter)
+        attr_str = render_attributes_with_enhancements(
+            "img", attributes, filename, self.formatter
+        )
 
         return f"<img {attr_str} />"
 
@@ -187,20 +182,6 @@ class ElementRenderer:
         if not hasattr(node, "attributes") or not node.attributes:
             return escape_html(str(node.content))
 
-        ruby_base = node.attributes.get("ruby_base", "")
-        ruby_text = node.attributes.get("ruby_text", "")
-
-        if not ruby_base or not ruby_text:
-            return escape_html(str(node.content))
-
-        # HTML ruby要素を生成
-        safe_base = escape_html(ruby_base)
-        safe_text = escape_html(ruby_text)
-
-        return f"<ruby><rb>{safe_base}</rb><rt>{safe_text}</rt></ruby>"
-
-    # === 見出し要素レンダリング機能 ===
-
     def render_heading(self, node: Node, level: int) -> str:
         """見出し要素をIDと共にレンダリング（Phase 4: アクセシビリティ改善）
 
@@ -221,11 +202,11 @@ class ElementRenderer:
             attributes["id"] = f"heading-{self.heading_counter}"
 
         # Phase 4: Enhanced accessibility and CSS class handling
-        attr_str = render_attributes_with_enhancements(tag, attributes, content, self.formatter)
+        attr_str = render_attributes_with_enhancements(
+            tag, attributes, content, self.formatter
+        )
 
         return f"<{tag} {attr_str}>{content}</{tag}>"
-
-    # === リスト要素レンダリング機能 ===
 
     def render_unordered_list(self, node: Node) -> str:
         """順序なしリストをレンダリング（Phase 4: 統合機能適用）"""
@@ -270,8 +251,6 @@ class ElementRenderer:
 
         return f"<li {attr_str}>{content}</li>"
 
-    # === Div・Details要素レンダリング機能 ===
-
     def render_div(self, node: Node) -> str:
         """div要素をレンダリング（Phase 4: 統合機能適用）"""
         content = self._render_content(node.content, 0)
@@ -284,7 +263,6 @@ class ElementRenderer:
 
         if attr_str:
             return f"<div {attr_str}>{content}</div>"
-        return f"<div>{content}</div>"
 
     def render_details(self, node: Node) -> str:
         """details要素をレンダリング（Phase 4: アクセシビリティ改善）"""
@@ -297,7 +275,7 @@ class ElementRenderer:
         if node.attributes is not None:
             attributes = {k: v for k, v in node.attributes.items() if k != "summary"}
         else:
-            attributes = {}
+            attributes: dict[str, Any] = {}
 
         # Phase 4: Enhanced accessibility and CSS class handling
         attr_str = render_attributes_with_enhancements(
@@ -315,10 +293,6 @@ class ElementRenderer:
 
         if attributes:
             return f"<summary {attributes}>{content}</summary>"
-        else:
-            return f"<summary>{content}</summary>"
-
-    # === 汎用要素レンダリング ===
 
     def render_element(self, node: Node) -> str:
         """汎用要素をレンダリング"""
@@ -337,44 +311,24 @@ class ElementRenderer:
 
             if keyword_info and keyword_info.get("special_handler"):
                 # special_handlerが指定されている場合、HTMLFormatterで処理
-                content = node.get_content() if hasattr(node, "get_content") else str(node.content)
+                content = (
+                    node.get_content()
+                    if hasattr(node, "get_content")
+                    else str(node.content)
+                )
                 attributes = node.attributes if hasattr(node, "attributes") else {}
-                return self.formatter.handle_special_element(keyword, content, attributes)
-
-        # 要素タイプ別の分岐
-        element_handlers = {
-            "paragraph": self.render_paragraph,
-            "strong": self.render_strong,
-            "emphasis": self.render_emphasis,
-            "preformatted": self.render_preformatted,
-            "code": self.render_code,
-            "image": self.render_image,
-            "error": self.render_error,
-            "toc_placeholder": self.render_toc_placeholder,
-            "unordered_list": self.render_unordered_list,
-            "ordered_list": self.render_ordered_list,
-            "list_item": self.render_list_item,
-            "div": self.render_div,
-            "details": self.render_details,
-            "summary": self.render_summary,
-        }
+                return self.formatter.handle_special_element(
+                    keyword, content, attributes
+                )
 
         # 見出し要素の処理
         if element_type.startswith("heading"):
             try:
                 level = int(element_type.replace("heading", ""))
                 return self.render_heading(node, level)
-            except (ValueError, AttributeError):
-                level = 1
-                return self.render_heading(node, level)
-
-        # 登録されたハンドラーの実行
-        handler = element_handlers.get(element_type)
-        if handler:
-            return handler(node)
-
-        # 未知の要素タイプの処理
-        return self._render_unknown_element(node)
+            except ValueError:
+                # レベル変換に失敗した場合は汎用処理
+                return self._render_unknown_element(node)
 
     def render_generic(self, node: Node) -> str:
         """汎用ノードレンダリング（後方互換性のため）"""
@@ -383,9 +337,9 @@ class ElementRenderer:
     def _render_unknown_element(self, node: Node) -> str:
         """未知の要素タイプをレンダリング（Phase 4: 統一機能適用）"""
         content = self._render_content(node.content, 0)
-        return create_simple_tag(node.type, content, node.attributes, formatter=self.formatter)
-
-    # === ヘルパーメソッド ===
+        return create_simple_tag(
+            node.type, content, node.attributes, formatter=self.formatter
+        )
 
     def _render_content(self, content: Any, depth: int = 0) -> str:
         """ノードコンテンツをレンダリング（再帰的）
@@ -402,23 +356,23 @@ class ElementRenderer:
         if depth > max_depth:
             return "[ERROR: Maximum recursion depth reached]"
 
-        if content is None:
-            return ""
-        elif isinstance(content, str):
-            return process_text_content(content)
-        elif isinstance(content, Node):
-            # メインレンダラーを使用してノードをレンダリング
+        # 単一ノードの場合
+        if hasattr(content, "type"):
             if self._main_renderer:
                 result = self._main_renderer._render_node_with_depth(content, depth + 1)
                 return str(result)
             else:
                 return f"{{NODE:{content.type}}}"
-        elif isinstance(content, list):
+
+        # リストの場合
+        if isinstance(content, list):
             parts = []
             for item in content:
-                if isinstance(item, Node):
+                if hasattr(item, "type"):
                     if self._main_renderer:
-                        parts.append(self._main_renderer._render_node_with_depth(item, depth + 1))
+                        parts.append(
+                            self._main_renderer._render_node_with_depth(item, depth + 1)
+                        )
                     else:
                         parts.append(f"{{NODE:{item.type}}}")
                 elif isinstance(item, str):
@@ -426,20 +380,10 @@ class ElementRenderer:
                 else:
                     parts.append(process_text_content(str(item)))
             return "".join(parts)
-        else:
-            return process_text_content(str(content))
 
+        # 文字列の場合
+        if isinstance(content, str):
+            return process_text_content(content)
 
-# 後方互換性のため、分割されていたクラスもエクスポート（廃止予定）
-BasicElementRenderer = ElementRenderer  # 廃止予定
-HeadingRenderer = ElementRenderer  # 廃止予定
-ListRenderer = ElementRenderer  # 廃止予定
-DivRenderer = ElementRenderer  # 廃止予定
-
-__all__ = [
-    "ElementRenderer",
-    "BasicElementRenderer",  # 廃止予定
-    "HeadingRenderer",  # 廃止予定
-    "ListRenderer",  # 廃止予定
-    "DivRenderer",  # 廃止予定
-]
+        # その他
+        return process_text_content(str(content))

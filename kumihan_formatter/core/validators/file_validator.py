@@ -32,7 +32,7 @@ class FileValidator:
             )
             return issues
 
-        # Check if it's a file
+        # Check if it's actually a file
         if not file_path.is_file():
             issues.append(
                 ValidationIssue(
@@ -60,10 +60,11 @@ class FileValidator:
         if not file_path.exists():
             return issues
 
+        # Check file permissions and readability
         try:
-            # Try to open for reading
-            with open(file_path, "r", encoding="utf-8"):
-                pass
+            with open(file_path, "r", encoding="utf-8") as f:
+                # Try to read a small portion to verify readability
+                f.read(1)  # Read just one character to test
         except PermissionError:
             issues.append(
                 ValidationIssue(

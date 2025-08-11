@@ -94,7 +94,9 @@ class KumihanError(Exception):
         new_context = ErrorContext(
             file_path=context_updates.get("file_path", self.context.file_path),
             line_number=context_updates.get("line_number", self.context.line_number),
-            column_number=context_updates.get("column_number", self.context.column_number),
+            column_number=context_updates.get(
+                "column_number", self.context.column_number
+            ),
             operation=context_updates.get("operation", self.context.operation),
             user_input=context_updates.get("user_input", self.context.user_input),
             system_info=context_updates.get("system_info", self.context.system_info),
@@ -114,17 +116,25 @@ class KumihanError(Exception):
 class FileSystemError(KumihanError):
     """File system operation errors"""
 
-    def __init__(self, message: str, file_path: str | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self, message: str, file_path: str | None = None, **kwargs: Any
+    ) -> None:
         context = ErrorContext(file_path=file_path, operation="file_system")
-        super().__init__(message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs)
+        super().__init__(
+            message, category=ErrorCategory.FILE_SYSTEM, context=context, **kwargs
+        )
 
 
 class SyntaxError(KumihanError):
     """Syntax parsing errors"""
 
-    def __init__(self, message: str, line_number: int | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self, message: str, line_number: int | None = None, **kwargs: Any
+    ) -> None:
         context = ErrorContext(line_number=line_number, operation="syntax_parsing")
-        super().__init__(message, category=ErrorCategory.SYNTAX, context=context, **kwargs)
+        super().__init__(
+            message, category=ErrorCategory.SYNTAX, context=context, **kwargs
+        )
 
 
 @dataclass
@@ -214,33 +224,10 @@ class GracefulSyntaxError:
         if not self.context or self.highlight_start == self.highlight_end:
             return self.context
 
-        # HTMLエスケープ
-        import html
-
-        safe_context = html.escape(self.context)
-
-        # ハイライト部分を囲む
-        if self.highlight_end > self.highlight_start >= 0:
-            before = safe_context[: self.highlight_start]
-            highlight = safe_context[self.highlight_start : self.highlight_end]
-            after = safe_context[self.highlight_end :]
-            return f"{before}<mark class='error-highlight'>{highlight}</mark>{after}"
-
-        return safe_context
-
     def get_correction_suggestions_html(self) -> str:
         """修正提案のHTML形式を返す"""
         if not self.correction_suggestions:
             return ""
-
-        import html
-
-        suggestions_html = "<ul class='correction-suggestions'>"
-        for suggestion in self.correction_suggestions:
-            safe_suggestion = html.escape(suggestion)
-            suggestions_html += f"<li>{safe_suggestion}</li>"
-        suggestions_html += "</ul>"
-        return suggestions_html
 
     def add_correction_suggestion(self, suggestion: str) -> None:
         """修正提案を追加"""
@@ -258,21 +245,6 @@ class GracefulSyntaxError:
         """エラーパターンを分類して統計用IDを返す"""
         if self.error_pattern:
             return self.error_pattern
-
-        # 基本的なパターン分類
-        message_lower = self.message.lower()
-        if "marker" in message_lower and "mismatch" in message_lower:
-            self.error_pattern = "marker_mismatch"
-        elif "incomplete" in message_lower and "marker" in message_lower:
-            self.error_pattern = "incomplete_marker"
-        elif "invalid" in message_lower and "syntax" in message_lower:
-            self.error_pattern = "invalid_syntax"
-        elif "missing" in message_lower:
-            self.error_pattern = "missing_element"
-        else:
-            self.error_pattern = "general_syntax"
-
-        return self.error_pattern
 
 
 class ValidationError(KumihanError):

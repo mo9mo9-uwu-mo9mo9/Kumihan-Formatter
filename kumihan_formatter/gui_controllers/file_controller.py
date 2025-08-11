@@ -67,7 +67,9 @@ class FileController:
             if self.app_state:
                 self.app_state.config.set_input_file(filename)
             if hasattr(self.main_view, "log_frame"):
-                self.main_view.log_frame.add_message(f"入力ファイル: {Path(filename).name}")
+                self.main_view.log_frame.add_message(
+                    f"入力ファイル: {Path(filename).name}"
+                )
         else:
             debug("Input file selection cancelled")
 
@@ -111,7 +113,9 @@ class FileController:
             elif platform.system() == "Windows":  # Windows
                 # Windowsではexplorerはシェルインジェクションに脆弱性があるため、
                 # 絶対パスを使用し、追加の引数を防ぐ
-                subprocess.run(["explorer.exe", str(directory_path)], check=True, shell=False)
+                subprocess.run(
+                    ["explorer.exe", str(directory_path)], check=True, shell=False
+                )
             else:  # Linux
                 subprocess.run(["xdg-open", str(directory_path)], check=True)
         except subprocess.CalledProcessError as e:

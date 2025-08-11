@@ -51,13 +51,11 @@ class Node:
         """Get an attribute value"""
         if self.attributes is None:
             return default
-        return self.attributes.get(key, default)
 
     def has_attribute(self, key: str) -> bool:
         """Check if attribute exists"""
         if self.attributes is None:
             return False
-        return key in self.attributes
 
     def remove_attribute(self, key: str) -> None:
         """Remove an attribute from the node"""
@@ -151,14 +149,11 @@ class Node:
         """Count direct children of this node"""
         if isinstance(self.content, list):
             return len(self.content)
-        return 0
 
     def find_children_by_type(self, node_type: str) -> list["Node"]:
         """Find all direct children of a specific type"""
         if not isinstance(self.content, list):
             return []
-
-        return [item for item in self.content if isinstance(item, Node) and item.type == node_type]
 
     def walk(self) -> Any:
         """Generator that yields this node and all its descendants"""

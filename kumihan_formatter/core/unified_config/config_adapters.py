@@ -46,7 +46,6 @@ class ParallelProcessingConfigAdapter:
         """統一設定から並列処理設定を取得"""
         return self._config_manager.get_parallel_config()
 
-    # 旧API互換プロパティ
     @property
     def threshold_lines(self) -> int:
         """並列処理しきい値行数 (旧API互換)"""
@@ -87,7 +86,6 @@ class ParallelProcessingConfigAdapter:
         """処理タイムアウト(秒)"""
         return self.config.processing_timeout_seconds
 
-    # 旧API互換メソッド
     def should_use_parallel_processing(self, line_count: int, file_size: int) -> bool:
         """並列処理が必要かチェック (旧API互換)
 
@@ -165,14 +163,15 @@ class ErrorConfigManagerAdapter:
 
         # 指定されたconfig_fileは無視（統一設定で管理）
         if config_file:
-            self.logger.info(f"設定ファイル'{config_file}'は統一設定システムで管理されます")
+            self.logger.info(
+                f"設定ファイル'{config_file}'は統一設定システムで管理されます"
+            )
 
     @property
     def config(self) -> ErrorConfig:
         """統一設定からエラー処理設定を取得"""
         return self._config_manager.get_error_config()
 
-    # 旧API互換プロパティ
     @property
     def graceful_errors(self) -> bool:
         """グレースフルエラー有効"""
@@ -203,7 +202,6 @@ class ErrorConfigManagerAdapter:
         """エラーコンテキスト行数"""
         return self.config.max_error_context_lines
 
-    # 旧API互換メソッド
     def get_error_handling_level(self, category: str = "default") -> str:
         """エラー処理レベル取得 (旧API互換)
 
@@ -214,7 +212,8 @@ class ErrorConfigManagerAdapter:
             str: エラー処理レベル
         """
         category_settings = self.config.category_settings.get(category, {})
-        return category_settings.get("level", self.config.default_level.value)
+        level = category_settings.get("level", self.config.default_level.value)
+        return str(level)
 
     def should_continue_on_error(self, category: str = "default") -> bool:
         """エラー時継続判定 (旧API互換)
@@ -265,7 +264,10 @@ class ErrorConfigManagerAdapter:
         try:
             return self._config_manager.save_config()
         except Exception as e:
-            self.logger.error(f"設定保存エラー: {e}")
+            from ..utilities.logger import get_logger
+
+            logger = get_logger(__name__)
+            logger.error(f"設定保存エラー: {e}")
             return False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -296,7 +298,7 @@ class EnhancedConfigAdapter:
     def get_config(self) -> Dict[str, Any]:
         """統一設定から全設定を取得"""
         config = self._config_manager.get_config()
-        return config.dict() if hasattr(config, 'dict') else config.__dict__
+        return config.dict() if hasattr(config, "dict") else config.__dict__
 
     def get(self, key: str, default: Any = None) -> Any:
         """設定値取得（旧API互換）"""
@@ -338,7 +340,6 @@ class BaseConfigAdapter:
         """統一設定からレンダリング設定を取得"""
         return self._config_manager.get_rendering_config()
 
-    # 旧API互換プロパティ
     @property
     def max_width(self) -> str:
         """最大幅"""
@@ -389,7 +390,6 @@ class BaseConfigAdapter:
         """構文ハイライト有効"""
         return self.config.enable_syntax_highlighting
 
-    # 旧API互換メソッド
     def get_css_style(self) -> str:
         """CSS文字列生成 (旧API互換)
 
@@ -436,10 +436,9 @@ class BaseConfigAdapter:
         return self.config.dict()
 
 
-# 互換性ヘルパー関数群
-
-
-def create_parallel_processing_config(*args, **kwargs) -> ParallelProcessingConfigAdapter:
+def create_parallel_processing_config(
+    *args, **kwargs
+) -> ParallelProcessingConfigAdapter:
     """ParallelProcessingConfig作成ヘルパー (旧API互換)
 
     Returns:
@@ -469,9 +468,6 @@ def create_base_config() -> BaseConfigAdapter:
         BaseConfigAdapter: アダプターインスタンス
     """
     return BaseConfigAdapter()
-
-
-# 移行支援関数
 
 
 def migrate_config_usage(old_config_type: str) -> str:
@@ -539,6 +535,6 @@ def check_config_compatibility() -> Dict[str, bool]:
     except Exception as e:
         logger = get_logger(__name__)
         logger.error(f"設定互換性チェックエラー: {e}")
-        compatibility_status["error"] = str(e)
+        compatibility_status["error"] = True
 
     return compatibility_status

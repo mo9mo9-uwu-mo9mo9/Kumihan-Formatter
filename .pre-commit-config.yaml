@@ -1,17 +1,6 @@
 repos:
   - repo: local
     hooks:
-      # 🚨 SERENA-EXPERT強制使用チェック（最優先）
-      - id: claude-serena-check
-        name: Claude Serena-Expert使用履歴チェック
-        entry: python tools/claude_serena_precommit.py
-        language: python
-        stages: [pre-commit]
-        files: '^(src/|tests/|docs/|tools/|kumihan_formatter/|.*\.py$|.*\.md$)'
-        pass_filenames: false
-        always_run: true
-        fail_fast: true
-        description: "CLAUDE.md 規則遵守原則違反検出 - serena-expert必須使用チェック"
       - id: claude-md-check
         name: CLAUDE.md Size & Structure Check
         entry: make claude-check

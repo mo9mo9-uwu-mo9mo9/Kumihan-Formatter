@@ -8,12 +8,12 @@ import threading
 import time
 from collections import deque
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from pathlib import Path
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import psutil
 
-from ...utilities.logger import get_logger
+# from ...utilities.logger import get_logger  # Removed: unused import
 
 
 class MemoryOptimizer:
@@ -54,9 +54,13 @@ class MemoryOptimizer:
         )
         gc.set_threshold(*new_thresholds)
 
-        self.logger.info(f"GC thresholds adjusted: {original_thresholds} -> {new_thresholds}")
+        self.logger.info(
+            f"GC thresholds adjusted: {original_thresholds} -> {new_thresholds}"
+        )
 
-    def create_object_pool(self, pool_name: str, factory_func: Callable, max_size: int = 100):
+    def create_object_pool(
+        self, pool_name: str, factory_func: Callable, max_size: int = 100
+    ):
         """
         オブジェクトプール作成
 
@@ -139,7 +143,9 @@ class MemoryOptimizer:
                 import mmap
 
                 with open(file_path, "r", encoding="utf-8") as f:
-                    with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmapped_file:
+                    with mmap.mmap(
+                        f.fileno(), 0, access=mmap.ACCESS_READ
+                    ) as mmapped_file:
                         for i in range(0, len(mmapped_file), chunk_size):
                             chunk = mmapped_file[i : i + chunk_size].decode(
                                 "utf-8", errors="ignore"
@@ -173,11 +179,11 @@ class MemoryOptimizer:
             return sorted(data, key=str if isinstance(data[0], str) else None)
 
         elif operation == "unique":
-            # セットを使用した重複除去（順序は保持されない）
-            if len(data) > 10000:
+            # 高速unique処理
+            if len(data) < 1000:
                 return list(set(data))
             else:
-                # 小容量データは順序保持重複除去
+                # メモリ効率重視の重複削除
                 seen = set()
                 result = []
                 for item in data:
@@ -188,9 +194,10 @@ class MemoryOptimizer:
 
         elif operation == "filter_empty":
             # 空要素フィルタリング
-            return [item for item in data if item and str(item).strip()]
+            return [item for item in data if item]
 
         else:
+            # その他の操作はそのまま返す
             return data
 
     def batch_process_with_memory_limit(
@@ -293,7 +300,9 @@ class MemoryOptimizer:
         initial_memory = process.memory_info().rss / 1024 / 1024
         samples.append((time.time(), initial_memory))
 
-        self.logger.info(f"Memory leak detection started. Initial memory: {initial_memory:.2f} MB")
+        self.logger.info(
+            f"Memory leak detection started. Initial memory: {initial_memory:.2f} MB"
+        )
 
         # 複数回サンプリング
         for i in range(sample_interval):
@@ -337,7 +346,9 @@ class MemoryOptimizer:
                 f"Rate: {growth_rate:.4f} MB/s"
             )
         else:
-            self.logger.info(f"No significant memory leak detected. Growth: {memory_growth:.2f} MB")
+            self.logger.info(
+                f"No significant memory leak detected. Growth: {memory_growth:.2f} MB"
+            )
 
         return leak_info
 
@@ -386,7 +397,9 @@ class MemoryOptimizer:
                     results["collections_performed"].append(
                         {"generation": generation, "objects_collected": collected}
                     )
-                    self.logger.debug(f"Generation {generation} GC: {collected} objects collected")
+                    self.logger.debug(
+                        f"Generation {generation} GC: {collected} objects collected"
+                    )
             else:
                 # 標準GC実行
                 collected = gc.collect()
@@ -465,11 +478,10 @@ class MemoryOptimizer:
             return 0
 
         pool_info = self._object_pools[pool_name]
+        cleanup_count = 0
 
         with pool_info["lock"]:
-            cleanup_count = 0
-            cleanup_func = pool_info["cleanup"]
-
+            cleanup_func = pool_info.get("cleanup")
             if cleanup_func:
                 # プール内の全オブジェクトをクリーンアップ
                 temp_objects = []
@@ -480,7 +492,9 @@ class MemoryOptimizer:
                         temp_objects.append(obj)
                         cleanup_count += 1
                     except Exception as e:
-                        self.logger.warning(f"Cleanup failed for object in pool '{pool_name}': {e}")
+                        self.logger.warning(
+                            f"Cleanup failed for object in pool '{pool_name}': {e}"
+                        )
 
                 # クリーンアップされたオブジェクトを戻す
                 for obj in temp_objects:
@@ -494,7 +508,7 @@ class MemoryOptimizer:
                     f"Resource pool '{pool_name}' cleanup: {cleanup_count} objects processed"
                 )
 
-            return cleanup_count
+        return cleanup_count
 
     def generate_memory_report(self, include_detailed_stats: bool = True) -> str:
         """
@@ -563,7 +577,9 @@ class MemoryOptimizer:
         # tmp/配下に保存
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
-        report_path = tmp_dir / f"memory_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        report_path = (
+            tmp_dir / f"memory_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        )
 
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_report)

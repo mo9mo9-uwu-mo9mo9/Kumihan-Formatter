@@ -10,16 +10,14 @@ import time
 from pathlib import Path
 from typing import Callable, Iterator, Optional
 
+from kumihan_formatter.core.utilities.logger import get_logger
+
 from ..core.ast_nodes import Node
 from .error_handler import (
     ChunkProcessingError,
     MemoryMonitoringError,
     ParallelProcessingError,
 )
-
-
-from kumihan_formatter.core.utilities.logger import get_logger
-
 
 # mypy: ignore-errors
 # Legacy parser with numerous type issues - strategic ignore for rapid error reduction
@@ -44,7 +42,9 @@ class ParallelProcessorMixin:
             return
 
         # ストリーミング設定
-        _ = getattr(self.parallel_config, "streaming_buffer_size", 8192)  # Buffer size (unused)
+        _ = getattr(
+            self.parallel_config, "streaming_buffer_size", 8192
+        )  # Buffer size (unused)
         chunk_size = getattr(self.parallel_config, "streaming_chunk_size", 1024)
 
         lines = text.split("\n")
@@ -76,7 +76,9 @@ class ParallelProcessorMixin:
                 # バッファの処理
                 try:
                     # 効率的なバッファ処理
-                    for node in self._process_streaming_buffer(chunk_lines, processed_lines):
+                    for node in self._process_streaming_buffer(
+                        chunk_lines, processed_lines
+                    ):
                         if node and not self._cancelled:
                             yield node
                             processed_nodes += 1
@@ -101,7 +103,9 @@ class ParallelProcessorMixin:
                         gc.collect()
 
                 except Exception as e:
-                    self.logger.warning(f"Buffer processing error at line {processed_lines}: {e}")
+                    self.logger.warning(
+                        f"Buffer processing error at line {processed_lines}: {e}"
+                    )
                     processed_lines += 1  # 処理を継続
 
             # 最終プログレス更新
@@ -181,12 +185,15 @@ class ParallelProcessorMixin:
         should_parallelize = self._should_use_parallel_processing(text, lines)
 
         if not should_parallelize:
-            self.logger.info("Using traditional streaming parse (below parallel threshold)")
+            self.logger.info(
+                "Using traditional streaming parse (below parallel threshold)"
+            )
             yield from self.parse_streaming_from_text(text, progress_callback)
             return
 
         self.logger.info(
-            f"Parallel processing enabled: {total_lines} lines, " f"estimated improvement: 60-80%"
+            f"Parallel processing enabled: {total_lines} lines, "
+            f"estimated improvement: 60-80%"
         )
 
         # 並列処理状態
@@ -204,7 +211,8 @@ class ParallelProcessorMixin:
 
             chunk_size = len(chunks[0].lines) if chunks else 100
             self.logger.info(
-                f"Parallel configuration: {len(chunks)} chunks, " f"chunk_size={chunk_size}"
+                f"Parallel configuration: {len(chunks)} chunks, "
+                f"chunk_size={chunk_size}"
             )
 
             # 並列処理実行
@@ -330,7 +338,10 @@ class ParallelProcessorMixin:
 
                 # メモリチェック
                 current_memory_mb = memory_monitor.get("current_memory_mb", 0)
-                if current_memory_mb > self.parallel_config.memory_critical_threshold_mb:
+                if (
+                    current_memory_mb
+                    > self.parallel_config.memory_critical_threshold_mb
+                ):
                     self.logger.warning(
                         f"Memory usage critical: {current_memory_mb}MB > "
                         f"{self.parallel_config.memory_critical_threshold_mb}MB"
@@ -342,7 +353,10 @@ class ParallelProcessorMixin:
 
                     # 再チェック後も高い場合は処理制限
                     current_memory_mb = memory_monitor.get("current_memory_mb", 0)
-                    if current_memory_mb > self.parallel_config.memory_critical_threshold_mb:
+                    if (
+                        current_memory_mb
+                        > self.parallel_config.memory_critical_threshold_mb
+                    ):
                         raise MemoryMonitoringError(
                             f"Critical memory threshold exceeded: {current_memory_mb}MB"
                         )
@@ -393,7 +407,9 @@ class ParallelProcessorMixin:
         file_size = file_path.stat().st_size
         estimated_lines = self._estimate_total_lines_fast(file_path)
 
-        self.logger.info(f"File analysis: {file_size/1024/1024:.1f}MB, ~{estimated_lines} lines")
+        self.logger.info(
+            f"File analysis: {file_size/1024/1024:.1f}MB, ~{estimated_lines} lines"
+        )
 
         streaming_context = None
         try:
@@ -425,7 +441,9 @@ class ParallelProcessorMixin:
         self, file_path: Path, estimated_lines: int, progress_callback
     ) -> dict:
         """ストリーミング処理コンテキストの初期化"""
-        _ = getattr(self.parallel_config, "streaming_buffer_size", 8192)  # Buffer size (unused)
+        _ = getattr(
+            self.parallel_config, "streaming_buffer_size", 8192
+        )  # Buffer size (unused)
 
         context = {
             "file_path": file_path,
@@ -486,7 +504,9 @@ class ParallelProcessorMixin:
 
         if complete_lines:
             # 完全な行を処理
-            for node in self._process_streaming_buffer(complete_lines, context["processed_lines"]):
+            for node in self._process_streaming_buffer(
+                complete_lines, context["processed_lines"]
+            ):
                 if node and not context["cancelled"]:
                     yield node
                     context["processed_nodes"] += 1
@@ -497,7 +517,9 @@ class ParallelProcessorMixin:
         """最終バッファの処理"""
         if context["buffer"].strip():
             final_lines = [context["buffer"]]
-            for node in self._process_streaming_buffer(final_lines, context["processed_lines"]):
+            for node in self._process_streaming_buffer(
+                final_lines, context["processed_lines"]
+            ):
                 if node:
                     yield node
                     context["processed_nodes"] += 1
@@ -576,10 +598,14 @@ class ParallelProcessorMixin:
                 yield from self._parse_from_file_hybrid(file_path, progress_callback)
             else:
                 # テキスト処理
-                yield from self._parse_from_text_hybrid(str(input_source), progress_callback)
+                yield from self._parse_from_text_hybrid(
+                    str(input_source), progress_callback
+                )
         else:
             # その他はテキストとして処理
-            yield from self._parse_from_text_hybrid(str(input_source), progress_callback)
+            yield from self._parse_from_text_hybrid(
+                str(input_source), progress_callback
+            )
 
     def _parse_from_file_hybrid(
         self,
@@ -616,7 +642,9 @@ class ParallelProcessorMixin:
 
         else:
             # フォールバック
-            yield from self._parse_file_streaming_optimized(file_path, progress_callback)
+            yield from self._parse_file_streaming_optimized(
+                file_path, progress_callback
+            )
 
     def _parse_from_text_hybrid(
         self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
@@ -658,26 +686,18 @@ class ParallelProcessorMixin:
         size_mb = size_bytes / 1024 / 1024
 
         # CPU数考慮
-        cpu_count = os.cpu_count() or 1
+        # TODO: implement CPU count-based optimization
 
         # 判定ロジック
         if size_mb < 1 and estimated_lines < 1000:
             # 小容量: 従来方式が最適
             return "traditional"
-
-        elif size_mb < 10 and estimated_lines < 10000:
-            # 中容量: ストリーミング方式
-            return "streaming"
-
-        elif size_mb >= 10 or estimated_lines >= 10000:
-            # 大容量: 並列処理が有効
-            if cpu_count >= 2:
-                return "parallel_streaming"
-            else:
-                return "streaming"  # シングルコアならストリーミング
+        elif size_mb > 10 or estimated_lines > 10000:
+            # 大容量: 並列ストリーミングが最適
+            return "parallel_streaming"
         else:
-            # デフォルト
-            return "traditional"
+            # 中容量: 通常の並列処理
+            return "parallel"
 
     def _parse_file_streaming_optimized(
         self,
@@ -782,7 +802,9 @@ class ParallelProcessorMixin:
 
         return recommendations
 
-    def _process_streaming_buffer(self, lines: list[str], start_line: int) -> Iterator[Node]:
+    def _process_streaming_buffer(
+        self, lines: list[str], start_line: int
+    ) -> Iterator[Node]:
         """ストリーミングバッファの効率的処理"""
         try:
             # 効率的なテキスト結合
@@ -814,20 +836,18 @@ class ParallelProcessorMixin:
                 if not sample:
                     return 0
 
-                sample_lines = sample.count("\n")
-                file_size = file_path.stat().st_size
+                # サンプル内の行数カウント
+                lines_in_sample = sample.count("\n")
+                if lines_in_sample == 0:
+                    return 1
 
-                if len(sample) < file_size:
-                    # 全体の行数を推定
-                    estimated_lines = int((sample_lines / len(sample)) * file_size)
-                    return max(estimated_lines, 1)
-                else:
-                    return sample_lines + 1
+                # 全体サイズから推定
+                total_size = file_path.stat().st_size
+                estimated_lines = (lines_in_sample * total_size) // sample_size
+                return max(1, estimated_lines)
 
-        except Exception as e:
-            self.logger.warning(f"Line estimation error: {e}")
-            # フォールバック: ファイルサイズベースの推定
-            return max(1, int(file_path.stat().st_size / 60))  # 平均60バイト/行と仮定
+        except Exception:
+            return 1000  # フォールバック
 
     def _should_use_parallel_processing(self, text: str, lines: list[str]) -> bool:
         """並列処理を使用すべきかを判定"""
@@ -870,12 +890,12 @@ class ParallelProcessorMixin:
             if not chunk_text.strip():
                 return []
 
-            # 最適化解析実行
-            nodes = thread_parser.parse_optimized(chunk_text)
-            return nodes if nodes else []
+            # パーサーでチャンクを解析
+            nodes = thread_parser.parse_lines(chunk_text.split("\n"))
+            return list(nodes) if nodes else []
 
         except Exception as e:
-            self.logger.warning(f"Parallel chunk parse error: {e}")
+            self.logger.error(f"Error in parallel chunk processing: {e}")
             return []
 
     def _get_thread_local_parser(self):
@@ -914,7 +934,9 @@ class ParallelProcessorMixin:
 
             # 処理速度計算
             if elapsed > 0:
-                processing_rate = (completed_chunks / elapsed) * (total_lines / total_chunks)
+                processing_rate = (completed_chunks / elapsed) * (
+                    total_lines / total_chunks
+                )
             else:
                 processing_rate = 0
 
@@ -952,7 +974,9 @@ class ParallelProcessorMixin:
             self._thread_local = threading.local()
         return self._thread_local
 
-    def _calculate_optimal_chunk_size(self, total_lines: int, target_chunks: int) -> int:
+    def _calculate_optimal_chunk_size(
+        self, total_lines: int, target_chunks: int
+    ) -> int:
         """最適なチャンクサイズを計算"""
         base_chunk_size = max(50, total_lines // target_chunks)
         max_chunk_size = getattr(self.parallel_config, "max_chunk_size", 1000)
@@ -966,10 +990,14 @@ class ParallelProcessorMixin:
             if not chunk_text.strip():
                 return []
 
-            # 最適化解析実行
-            return self.parse_optimized(chunk_text)
+            # 軽量パーサーでチャンク解析
+            parser = self._get_thread_local_parser()
+            lines = chunk_text.split("\n")
+            nodes = parser.parse_lines(lines)
+            return list(nodes) if nodes else []
+
         except Exception as e:
-            self.logger.warning(f"Chunk parse error: {e}")
+            self.logger.error(f"Error in optimized chunk parsing: {e}")
             return []
 
     def cancel_parsing(self) -> None:

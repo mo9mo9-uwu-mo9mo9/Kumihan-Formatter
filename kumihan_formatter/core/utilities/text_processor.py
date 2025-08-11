@@ -1,6 +1,4 @@
 import re
-
-
 from typing import Dict, List, Optional
 
 
@@ -29,18 +27,17 @@ class TextProcessor:
         if len(text) <= max_length:
             return text
 
-        truncated_length = max_length - len(suffix)
-        if truncated_length <= 0:
-            return suffix[:max_length]
-
-        return text[:truncated_length] + suffix
+        truncated = text[: max_length - len(suffix)]
+        return truncated + suffix
 
     @staticmethod
     def count_words(text: str) -> int:
         """Count words in text (Japanese-aware)"""
         # Japanese text doesn't use spaces between words
         # Count characters for Japanese, words for Latin
-        japanese_chars = len(re.findall(r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]", text))
+        japanese_chars = len(
+            re.findall(r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]", text)
+        )
         latin_words = len(re.findall(r"\b[a-zA-Z]+\b", text))
 
         # Estimate: Japanese characters count as words, plus Latin words
@@ -91,14 +88,16 @@ class TextProcessor:
         if include_spaces:
             return len(text)
         else:
-            return len(text.replace(" ", "").replace("\t", "").replace("\n", "").replace("\r", ""))
+            return len(text.replace(" ", "").replace("\t", "").replace("\n", ""))
 
     @staticmethod
     def get_text_statistics(text: str) -> Dict[str, int]:
         """Get comprehensive text statistics"""
         return {
             "characters": len(text),
-            "characters_no_spaces": TextProcessor.count_characters(text, include_spaces=False),
+            "characters_no_spaces": TextProcessor.count_characters(
+                text, include_spaces=False
+            ),
             "words": TextProcessor.count_words(text),
             "lines": len(text.split("\n")),
             "paragraphs": len([p for p in text.split("\n\n") if p.strip()]),
@@ -122,11 +121,13 @@ class TextProcessor:
             text_bytes.decode("utf-8")
             return "utf-8"
         except UnicodeDecodeError:
-            try:
-                # Try common encodings
-                for encoding in ["shift_jis", "euc-jp", "iso-2022-jp", "cp932"]:
+            # Try common encodings
+            for encoding in ["shift_jis", "euc-jp", "iso-2022-jp", "cp932"]:
+                try:
                     text_bytes.decode(encoding)
                     return encoding
-            except UnicodeDecodeError:
-                pass
-        return "unknown"
+                except UnicodeDecodeError:
+                    continue
+
+        # Default fallback
+        return "utf-8"

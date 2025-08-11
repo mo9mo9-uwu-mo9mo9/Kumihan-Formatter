@@ -139,8 +139,6 @@ class EnhancedConfig:
             self._merge_config(user_config, str(config_path))
             self.logger.info(f"Successfully loaded configuration from {config_path}")
             return True
-        self.logger.warning(f"Failed to load configuration from {config_path}")
-        return False
 
     def load_from_environment(self) -> bool:
         """環境変数から設定を読み込み"""
@@ -150,8 +148,6 @@ class EnhancedConfig:
             self._merge_config(env_config, "environment")
             self.logger.info("Loaded configuration from environment variables")
             return True
-        self.logger.debug("No configuration found in environment variables")
-        return False
 
     def _merge_config(self, user_config: Dict[str, Any], source: str):
         """設定をマージ"""
@@ -168,10 +164,10 @@ class EnhancedConfig:
             if isinstance(current, dict) and k in current:
                 current = current[k]
             else:
-                self.logger.debug(f"Configuration key not found: {key}, using default: {default}")
+                self.logger.debug(
+                    f"Configuration key not found: {key}, using default: {default}"
+                )
                 return default
-
-        return current
 
     def set(self, key: str, value: Any, source: str = "runtime"):
         """設定値を設定"""

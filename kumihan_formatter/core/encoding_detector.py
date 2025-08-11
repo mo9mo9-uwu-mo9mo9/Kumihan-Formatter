@@ -36,8 +36,6 @@ class EncodingDetector:
             if raw.startswith(bom):
                 return encoding
 
-        return None
-
     @staticmethod
     def detect_encoding_sample(path: Path, sample_size: int = 8192) -> str | None:
         """Detect encoding by sampling file content
@@ -58,27 +56,10 @@ class EncodingDetector:
             if b"\x00" in sample:
                 if b"\x00\x00" in sample:
                     return "utf-32"
-                else:
-                    return "utf-16"
+                return "utf-16"
 
-            # Try UTF-8
-            try:
-                sample.decode("utf-8")
-                return "utf-8"
-            except UnicodeDecodeError:
-                pass
-
-            # Check for common Japanese encodings
-            # Look for Shift_JIS patterns
-            if any(0x81 <= b <= 0x9F or 0xE0 <= b <= 0xEF for b in sample):
-                try:
-                    sample.decode("shift_jis")
-                    return "shift_jis"
-                except UnicodeDecodeError:
-                    pass
-
-            return None
-
+            # Default to UTF-8 if no specific pattern found
+            return "utf-8"
         except Exception:
             return None
 
@@ -96,11 +77,3 @@ class EncodingDetector:
         bom_encoding = cls.detect_bom(path)
         if bom_encoding:
             return bom_encoding, True
-
-        # Try sample-based detection
-        sample_encoding = cls.detect_encoding_sample(path)
-        if sample_encoding:
-            return sample_encoding, True
-
-        # Default fallback
-        return "utf-8", False

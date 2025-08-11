@@ -87,25 +87,25 @@ class SyntaxValidatorUtils:
                 content = f.read()
             return content, errors
         except UnicodeDecodeError:
-            SyntaxValidatorUtils.add_error(
-                errors,
-                1,
-                1,
-                ErrorSeverity.ERROR,
-                ErrorTypes.ENCODING,
-                "ファイルのエンコーディングが UTF-8 ではありません",
-                str(file_path),
+            errors.append(
+                SyntaxError(
+                    1,
+                    1,
+                    ErrorSeverity.ERROR,
+                    ErrorTypes.ENCODING,
+                    "ファイルのエンコーディングエラー",
+                )
             )
             return "", errors
-        except FileNotFoundError:
-            SyntaxValidatorUtils.add_error(
-                errors,
-                1,
-                1,
-                ErrorSeverity.ERROR,
-                ErrorTypes.FILE_NOT_FOUND,
-                "ファイルが見つかりません",
-                str(file_path),
+        except Exception:
+            errors.append(
+                SyntaxError(
+                    1,
+                    1,
+                    ErrorSeverity.ERROR,
+                    ErrorTypes.FILE_NOT_FOUND,
+                    "ファイル読み込みエラー",
+                )
             )
             return "", errors
 
@@ -121,14 +121,3 @@ class SyntaxValidatorUtils:
         """
         if not text:
             return ""
-
-        # 改行コードの統一
-        processed = text.replace("\r\n", "\n").replace("\r", "\n")
-
-        # 末尾の空白行を除去
-        processed = processed.rstrip()
-
-        # 全角スペースを半角スペースに置換（部分的）
-        processed = processed.replace("\u3000", " ")
-
-        return processed

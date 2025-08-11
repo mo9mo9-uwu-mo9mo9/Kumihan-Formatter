@@ -29,7 +29,9 @@ class MarkdownFactory:
         return MarkdownRenderer()
 
 
-def create_markdown_converter() -> tuple[MarkdownParser, MarkdownProcessor, MarkdownRenderer]:
+def create_markdown_converter() -> (
+    tuple[MarkdownParser, MarkdownProcessor, MarkdownRenderer]
+):
     """Get all markdown converter components"""
     factory = MarkdownFactory()
 

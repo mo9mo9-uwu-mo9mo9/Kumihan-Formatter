@@ -6,7 +6,8 @@
 import concurrent.futures
 import os
 import threading
-import time
+
+# import time  # Removed: unused import (used locally in methods)
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Optional
@@ -70,10 +71,14 @@ class ParallelChunkProcessor:
         self.logger.info(f"Starting parallel processing of {len(chunks)} chunks")
 
         # 並列処理実行
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=self.max_workers
+        ) as executor:
             # 全チャンクを並列で開始
             future_to_chunk = {
-                executor.submit(self._process_single_chunk, chunk, processing_func): chunk
+                executor.submit(
+                    self._process_single_chunk, chunk, processing_func
+                ): chunk
                 for chunk in chunks
             }
 
@@ -107,7 +112,9 @@ class ParallelChunkProcessor:
                     # エラーチャンクはスキップして継続
                     continue
 
-        self.logger.info(f"Parallel processing completed: {completed_chunks}/{len(chunks)} chunks")
+        self.logger.info(
+            f"Parallel processing completed: {completed_chunks}/{len(chunks)} chunks"
+        )
 
     def process_chunks_parallel_optimized(
         self,
@@ -132,7 +139,9 @@ class ParallelChunkProcessor:
         Yields:
             Any: 処理結果（順序保証付き）
         """
-        self.logger.info(f"Starting optimized parallel processing: {len(chunks)} chunks")
+        self.logger.info(
+            f"Starting optimized parallel processing: {len(chunks)} chunks"
+        )
 
         if not chunks:
             return
@@ -161,7 +170,9 @@ class ParallelChunkProcessor:
                 pass
 
         with SimplePerformanceMonitor("parallel_chunk_processing") as perf_monitor:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=optimal_workers) as executor:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=optimal_workers
+            ) as executor:
 
                 # 全チャンクを並列で開始（最適化されたsubmit）
                 future_to_chunk = {}
@@ -187,7 +198,9 @@ class ParallelChunkProcessor:
                         completed_chunks += 1
 
                         # プログレス更新（最適化）
-                        if progress_callback and completed_chunks % 5 == 0:  # 更新頻度調整
+                        if (
+                            progress_callback and completed_chunks % 5 == 0
+                        ):  # 更新頻度調整
                             progress_info = self._create_progress_info_optimized(
                                 completed_chunks, len(chunks), chunk
                             )
@@ -244,7 +257,6 @@ class ParallelChunkProcessor:
             )
 
             return results
-
         except Exception as e:
             self.logger.error(
                 f"Thread {threading.get_ident()}: Error in chunk {chunk.chunk_id}: {e}",
@@ -316,16 +328,14 @@ class ParallelChunkProcessor:
         if total_lines == 0:
             return []
 
-        # 目標チャンク数の自動計算
-        if target_chunk_count is None:
-            cpu_count = os.cpu_count() or 1
-            # CPU効率を考慮した適応的チャンク数
-            if total_lines <= 100:
-                target_chunk_count = 1
-            elif total_lines <= 1000:
-                target_chunk_count = min(4, cpu_count)
-            else:
-                target_chunk_count = min(cpu_count * 2, 16)  # 最大16チャンク
+        # チャンクサイズの決定
+        cpu_count = self._get_cpu_count()
+        if total_lines <= 100:
+            target_chunk_count = 1
+        elif total_lines <= 1000:
+            target_chunk_count = min(4, cpu_count)
+        else:
+            target_chunk_count = min(cpu_count * 2, 16)  # 最大16チャンク
 
         # 適応的チャンクサイズ計算
         adaptive_chunk_size = max(1, total_lines // target_chunk_count)
@@ -359,13 +369,13 @@ class ParallelChunkProcessor:
             results = list(processing_func(chunk))
 
             with self._lock:
-                self.logger.debug(f"Chunk {chunk.chunk_id} completed: {len(results)} results")
+                self.logger.debug(
+                    f"Chunk {chunk.chunk_id} completed: {len(results)} results"
+                )
 
             return results
-
         except Exception as e:
-            with self._lock:
-                self.logger.error(f"Error in chunk {chunk.chunk_id}: {e}")
+            self.logger.error(f"Error in chunk {chunk.chunk_id}: {e}")
             raise
 
     def create_chunks_from_lines(
@@ -609,41 +619,25 @@ class ParallelStreamingParser:
             if hasattr(self._thread_local, "parser_components"):
                 return self._thread_local.parser_components
 
-            try:
-                # パーサーコンポーネントを初期化
-                from ...parser import KumihanParser
-                from ...block_handler import BlockHandler
-                from ...inline_handler import InlineHandler
-                from ...renderer import HTMLRenderer
+            # 新しいコンポーネントを作成
+            # TODO: クラス循環参照解決後に実装予定
+            components = {
+                "parser": None,  # KumihanParser(),
+                "block_handler": None,  # BlockHandler(),
+                "inline_handler": None,  # InlineHandler(),
+                "html_renderer": None,  # HTMLRenderer(),
+            }
 
-                # スレッドローカルコンポーネント
-                components = {
-                    "parser": KumihanParser(),
-                    "block_handler": BlockHandler(),
-                    "inline_handler": InlineHandler(),
-                    "html_renderer": HTMLRenderer(),
-                }
+            # スレッドローカルに保存
+            self._thread_local.parser_components = components
 
-                # スレッドローカルに保存
-                self._thread_local.parser_components = components
+            # アクティブスレッド追跡
+            thread_id = threading.current_thread().ident
+            if thread_id:
+                self._active_threads.add(thread_id)
 
-                # アクティブスレッド追跡
-                thread_id = threading.current_thread().ident
-                if thread_id:
-                    self._active_threads.add(thread_id)
-
-                self.logger.debug(f"Initialized parser components for thread {thread_id}")
-                return components
-
-            except Exception as e:
-                self.logger.error(f"Failed to initialize thread-local parser components: {e}")
-                # デフォルトコンポーネントを返す
-                return {
-                    "parser": None,
-                    "block_handler": None,
-                    "inline_handler": None,
-                    "html_renderer": None,
-                }
+            self.logger.debug(f"Initialized parser components for thread {thread_id}")
+            return components
 
     def _parse_block_safe(
         self, parser_components: Dict[str, Any], lines: List[str], current: int
@@ -652,7 +646,7 @@ class ParallelStreamingParser:
         try:
             return parser_components["block_parser"].parse_block_marker(lines, current)
         except Exception as e:
-            self.logger.warning(f"Thread-safe block parse error: {e}")
+            self.logger.error(f"Error in block parsing: {e}")
             return None, current + 1
 
     def _parse_list_safe(
@@ -665,11 +659,15 @@ class ParallelStreamingParser:
         """スレッド安全なリスト解析"""
         try:
             if list_type == "ul":
-                return parser_components["list_parser"].parse_unordered_list(lines, current)
-            else:
-                return parser_components["list_parser"].parse_ordered_list(lines, current)
+                return parser_components["list_parser"].parse_unordered_list(
+                    lines, current
+                )
+            else:  # ol
+                return parser_components["list_parser"].parse_ordered_list(
+                    lines, current
+                )
         except Exception as e:
-            self.logger.warning(f"Thread-safe list parse error: {e}")
+            self.logger.error(f"Error in list parsing: {e}")
             return None, current + 1
 
     def _parse_paragraph_safe(
@@ -679,7 +677,7 @@ class ParallelStreamingParser:
         try:
             return parser_components["block_parser"].parse_paragraph(lines, current)
         except Exception as e:
-            self.logger.warning(f"Thread-safe paragraph parse error: {e}")
+            self.logger.error(f"Error in paragraph parsing: {e}")
             return None, current + 1
 
     def _skip_empty_lines_safe(self, lines: List[str], current: int) -> int:

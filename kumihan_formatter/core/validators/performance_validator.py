@@ -126,7 +126,9 @@ class PerformanceValidator:
 
         for node in ast:
             if hasattr(node, "children") and node.children:
-                child_depth = self._calculate_max_nesting_depth(node.children, depth + 1)
+                child_depth = self._calculate_max_nesting_depth(
+                    node.children, depth + 1
+                )
                 max_depth = max(max_depth, child_depth)
 
         return max_depth

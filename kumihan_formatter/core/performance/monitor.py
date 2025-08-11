@@ -65,7 +65,6 @@ class ProcessingStats:
         """完了率（%）"""
         if self.total_items == 0:
             return 0.0
-        return (self.items_processed / self.total_items) * 100
 
 
 class PerformanceMonitor:
@@ -114,16 +113,21 @@ class PerformanceMonitor:
                 return
 
             # 統計情報初期化
-            self.stats = ProcessingStats(start_time=time.time(), total_items=total_items)
+            self.stats = ProcessingStats(
+                start_time=time.time(), total_items=total_items
+            )
             self.stats.processing_phases.append(initial_stage)
 
             # 監視開始
             self._monitoring = True
-            self._monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+            self._monitor_thread = threading.Thread(
+                target=self._monitoring_loop, daemon=True
+            )
             self._monitor_thread.start()
 
             self.logger.info(
-                f"Performance monitoring started: {total_items} items, " f"stage: {initial_stage}"
+                f"Performance monitoring started: {total_items} items, "
+                f"stage: {initial_stage}"
             )
 
     def stop_monitoring(self):
@@ -193,7 +197,9 @@ class PerformanceMonitor:
 
             # 現在のステージ
             current_stage = (
-                self.stats.processing_phases[-1] if self.stats.processing_phases else "unknown"
+                self.stats.processing_phases[-1]
+                if self.stats.processing_phases
+                else "unknown"
             )
 
             return PerformanceSnapshot(
@@ -288,7 +294,9 @@ class PerformanceMonitor:
             )
 
         # 低処理速度アラート
-        if snapshot.processing_rate > 0 and snapshot.processing_rate < 100:  # 100 items/sec未満
+        if (
+            snapshot.processing_rate > 0 and snapshot.processing_rate < 100
+        ):  # 100 items/sec未満
             alerts.append(
                 {
                     "type": "low_processing_rate",
@@ -322,7 +330,9 @@ class PerformanceMonitor:
                 "peak_memory_mb": self.stats.peak_memory_mb,
                 "avg_cpu_percent": self.stats.avg_cpu_percent,
                 "processing_phases": self.stats.processing_phases,
-                "current_memory_mb": (recent_snapshots[-1].memory_mb if recent_snapshots else 0),
+                "current_memory_mb": (
+                    recent_snapshots[-1].memory_mb if recent_snapshots else 0
+                ),
                 "current_cpu_percent": (
                     recent_snapshots[-1].cpu_percent if recent_snapshots else 0
                 ),
@@ -366,18 +376,26 @@ class PerformanceMonitor:
             snapshots_list = list(self.snapshots)
 
             # メモリ使用量傾向
-            memory_trend = self._calculate_trend([s.memory_mb for s in snapshots_list[-10:]])
+            memory_trend = self._calculate_trend(
+                [s.memory_mb for s in snapshots_list[-10:]]
+            )
             memory_status = (
-                "増加" if memory_trend > 0.5 else "安定" if memory_trend > -0.5 else "減少"
+                "増加"
+                if memory_trend > 0.5
+                else "安定" if memory_trend > -0.5 else "減少"
             )
             report_lines.append(f"  メモリ使用量: {memory_status}")
 
             # 処理速度傾向
-            rates = [s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0]
+            rates = [
+                s.processing_rate for s in snapshots_list[-10:] if s.processing_rate > 0
+            ]
             if rates:
                 rate_trend = self._calculate_trend(rates)
                 rate_status = (
-                    "向上" if rate_trend > 0.5 else "安定" if rate_trend > -0.5 else "低下"
+                    "向上"
+                    if rate_trend > 0.5
+                    else "安定" if rate_trend > -0.5 else "低下"
                 )
                 report_lines.append(f"  処理速度: {rate_status}")
 
@@ -388,15 +406,6 @@ class PerformanceMonitor:
         if len(values) < 2:
             return 0.0
 
-        n = len(values)
-        x_avg = sum(range(n)) / n
-        y_avg = sum(values) / n
-
-        numerator = sum((i - x_avg) * (values[i] - y_avg) for i in range(n))
-        denominator = sum((i - x_avg) ** 2 for i in range(n))
-
-        return numerator / denominator if denominator != 0 else 0.0
-
     def save_metrics_to_file(self, file_path: Optional[str] = None):
         """パフォーマンスメトリクスをファイルに保存"""
         # tmp/配下にファイルを作成
@@ -405,7 +414,8 @@ class PerformanceMonitor:
 
         if not file_path:
             actual_path = (
-                tmp_dir / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                tmp_dir
+                / f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             )
         else:
             # 既存パスがあってもtmp/配下に移動
@@ -431,7 +441,9 @@ class PerformanceMonitor:
 class PerformanceContext:
     """パフォーマンス監視コンテキストマネージャー"""
 
-    def __init__(self, monitor: PerformanceMonitor, total_items: int, stage: str = "処理"):
+    def __init__(
+        self, monitor: PerformanceMonitor, total_items: int, stage: str = "処理"
+    ):
         self.monitor = monitor
         self.total_items = total_items
         self.stage = stage
@@ -455,8 +467,8 @@ def monitor_performance(func):
             result = func(*args, **kwargs)
             monitor.update_progress(1)
             return result
-        except Exception:
-            monitor.add_error()
+        except Exception as e:
+            monitor.logger.error(f"Performance monitoring failed: {e}")
             raise
         finally:
             monitor.stop_monitoring()

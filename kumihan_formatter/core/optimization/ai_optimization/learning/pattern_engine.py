@@ -59,30 +59,28 @@ class HyperparameterOptimizer:
             optimization_start = time.time()
 
             if not OPTUNA_AVAILABLE:
-                self.logger.warning("Optuna not available, using default hyperparameters")
+                self.logger.warning(
+                    "Optuna not available, using default hyperparameters"
+                )
                 return self._get_default_hyperparameters(model_type)
 
-            # 最適化問題定義
             def objective(trial: Trial) -> float:
-                return self._objective_function(trial, model_type, training_data, validation_data)
+                return self._objective_function(
+                    trial, model_type, training_data, validation_data
+                )
 
-            # 最適化実行
+            # Optuna研究実行
             study = create_study(direction="minimize")
             study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout)
 
-            # 最適パラメータ取得
             best_params = study.best_params
             best_value = study.best_value
 
-            # 結果構築
             optimization_result = {
-                "model_name": model_name,
-                "model_type": model_type,
                 "best_parameters": best_params,
                 "best_score": best_value,
-                "n_trials": len(study.trials),
                 "optimization_time": time.time() - optimization_start,
-                "improvement_over_default": self._calculate_improvement(model_type, best_value),
+                "improvement": self._calculate_improvement(model_type, best_value),
             }
 
             # 履歴保存
@@ -98,9 +96,10 @@ class HyperparameterOptimizer:
                 f"Hyperparameter optimization completed for {model_name}: score={best_value:.4f}"
             )
             return optimization_result
-
         except Exception as e:
-            self.logger.error(f"Hyperparameter optimization failed for {model_name}: {e}")
+            self.logger.error(
+                f"Hyperparameter optimization failed for {model_name}: {e}"
+            )
             return self._get_default_hyperparameters(model_type)
 
     def _objective_function(
@@ -147,10 +146,9 @@ class HyperparameterOptimizer:
                 score = -np.mean(cv_scores)
 
             return score
-
         except Exception as e:
-            self.logger.warning(f"Objective function evaluation failed: {e}")
-            return float("inf")
+            self.logger.error(f"Objective function failed: {e}")
+            return float("inf")  # 最悪のスコアを返す
 
     def _create_model_with_trial_params(self, trial: Trial, model_type: str):
         """試行パラメータでモデル作成"""
@@ -164,7 +162,9 @@ class HyperparameterOptimizer:
                         learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3),
                         max_depth=trial.suggest_int("max_depth", 3, 10),
                         subsample=trial.suggest_float("subsample", 0.6, 1.0),
-                        colsample_bytree=trial.suggest_float("colsample_bytree", 0.6, 1.0),
+                        colsample_bytree=trial.suggest_float(
+                            "colsample_bytree", 0.6, 1.0
+                        ),
                         random_state=42,
                         verbose=-1,
                     )
@@ -180,7 +180,9 @@ class HyperparameterOptimizer:
                         learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3),
                         max_depth=trial.suggest_int("max_depth", 3, 10),
                         subsample=trial.suggest_float("subsample", 0.6, 1.0),
-                        colsample_bytree=trial.suggest_float("colsample_bytree", 0.6, 1.0),
+                        colsample_bytree=trial.suggest_float(
+                            "colsample_bytree", 0.6, 1.0
+                        ),
                         random_state=42,
                         verbosity=0,
                     )
@@ -248,8 +250,8 @@ class HyperparameterOptimizer:
                     return (baseline_score - best_score) / baseline_score
 
             return 0.0
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Improvement calculation failed: {e}")
             return 0.0
 
 
@@ -319,12 +321,11 @@ class OnlineLearningEngine:
             if batch_data is None:
                 return {"learning_executed": False, "reason": "insufficient_data"}
 
-            # 各モデルの増分学習
+            # 並列学習実行
             learning_results = {}
+            learning_futures = {}
 
             with ThreadPoolExecutor(max_workers=3) as executor:
-                learning_futures = {}
-
                 for model_name, model in models.items():
                     if model.is_trained:
                         future = executor.submit(
@@ -338,21 +339,27 @@ class OnlineLearningEngine:
                         result = future.result(timeout=60.0)
                         learning_results[model_name] = result
                     except Exception as e:
-                        self.logger.error(f"Incremental learning failed for {model_name}: {e}")
+                        self.logger.error(
+                            f"Incremental learning failed for {model_name}: {e}"
+                        )
                         learning_results[model_name] = {
                             "success": False,
                             "error": str(e),
                         }
 
             # 学習効果評価
-            learning_effectiveness = self._evaluate_learning_effectiveness(learning_results)
+            learning_effectiveness = self._evaluate_learning_effectiveness(
+                learning_results
+            )
 
             # 履歴更新
             learning_record = {
                 "timestamp": time.time(),
                 "batch_size": len(batch_data.features),
                 "models_updated": sum(
-                    1 for result in learning_results.values() if result.get("success", False)
+                    1
+                    for result in learning_results.values()
+                    if result.get("success", False)
                 ),
                 "learning_effectiveness": learning_effectiveness,
                 "processing_time": time.time() - learning_start,
@@ -387,14 +394,15 @@ class OnlineLearningEngine:
             if len(self.learning_buffer) < self.min_samples_for_learning:
                 return None
 
-            # 最新バッチサイズ分のサンプル取得
+            # バッファからデータ抽出
             recent_samples = list(self.learning_buffer)[-self.batch_size :]
 
-            # 特徴量・ラベル抽出
+            if not recent_samples:
+                return None
+
             features = np.array([sample["features"] for sample in recent_samples])
             labels = np.array([sample["label"] for sample in recent_samples])
 
-            # TrainingData作成
             return TrainingData(
                 features=features,
                 labels=labels,
@@ -414,9 +422,13 @@ class OnlineLearningEngine:
     ) -> Dict[str, Any]:
         """モデル増分学習"""
         try:
+            learning_start = time.time()
+
             # 学習前性能
             pre_performance = (
-                model.performance_metrics.copy() if hasattr(model, "performance_metrics") else {}
+                model.performance_metrics.copy()
+                if hasattr(model, "performance_metrics")
+                else {}
             )
 
             # 増分学習実行
@@ -427,11 +439,13 @@ class OnlineLearningEngine:
 
             # 学習後性能
             post_performance = (
-                model.performance_metrics.copy() if hasattr(model, "performance_metrics") else {}
+                model.performance_metrics.copy()
+                if hasattr(model, "performance_metrics")
+                else {}
             )
 
             # 性能変化計算
-            performance_change = self._calculate_performance_change(
+            performance_changes = self._calculate_performance_change(
                 pre_performance, post_performance
             )
 
@@ -439,12 +453,14 @@ class OnlineLearningEngine:
                 "success": True,
                 "pre_performance": pre_performance,
                 "post_performance": post_performance,
-                "performance_change": performance_change,
-                "learning_samples": len(batch_data.features),
+                "performance_changes": performance_changes,
+                "training_time": time.time() - learning_start,
             }
 
         except Exception as e:
-            self.logger.error(f"Incremental model training failed for {model_name}: {e}")
+            self.logger.error(
+                f"Incremental model training failed for {model_name}: {e}"
+            )
             return {"success": False, "error": str(e)}
 
     def _calculate_performance_change(
@@ -455,8 +471,12 @@ class OnlineLearningEngine:
             changes = {}
 
             for metric in ["r2_score", "mse", "mae"]:
-                pre_value = pre_performance.get("ensemble_performance", {}).get(metric, 0.0)
-                post_value = post_performance.get("ensemble_performance", {}).get(metric, 0.0)
+                pre_value = pre_performance.get("ensemble_performance", {}).get(
+                    metric, 0.0
+                )
+                post_value = post_performance.get("ensemble_performance", {}).get(
+                    metric, 0.0
+                )
 
                 if pre_value != 0:
                     if metric == "r2_score":
@@ -469,28 +489,32 @@ class OnlineLearningEngine:
                     changes[metric] = 0.0
 
             return changes
+        except Exception as e:
+            self.logger.error(f"Performance change calculation failed: {e}")
+            return {"r2_score": 0.0, "mse": 0.0, "mae": 0.0}
 
-        except Exception:
-            return {}
-
-    def _evaluate_learning_effectiveness(self, learning_results: Dict[str, Dict]) -> Dict[str, Any]:
+    def _evaluate_learning_effectiveness(
+        self, learning_results: Dict[str, Dict]
+    ) -> Dict[str, Any]:
         """学習効果評価"""
         try:
             successful_models = [
-                result for result in learning_results.values() if result.get("success", False)
+                result
+                for result in learning_results.values()
+                if result.get("success", False)
             ]
 
             if not successful_models:
                 return {"effectiveness_score": 0.0, "improvement_count": 0}
 
-            # 平均性能変化
+            # 改善度分析
             r2_improvements = []
             mse_improvements = []
 
             for result in successful_models:
-                performance_change = result.get("performance_change", {})
-                r2_change = performance_change.get("r2_score", 0.0)
-                mse_change = performance_change.get("mse", 0.0)
+                performance_changes = result.get("performance_changes", {})
+                r2_change = performance_changes.get("r2_score", 0.0)
+                mse_change = performance_changes.get("mse", 0.0)
 
                 if r2_change > 0.01:  # 1%以上の改善
                     r2_improvements.append(r2_change)
@@ -502,7 +526,9 @@ class OnlineLearningEngine:
             avg_r2_improvement = np.mean(r2_improvements) if r2_improvements else 0.0
             avg_mse_improvement = np.mean(mse_improvements) if mse_improvements else 0.0
 
-            effectiveness_score = min(1.0, (avg_r2_improvement + avg_mse_improvement) / 2.0)
+            effectiveness_score = min(
+                1.0, (avg_r2_improvement + avg_mse_improvement) / 2.0
+            )
 
             return {
                 "effectiveness_score": effectiveness_score,

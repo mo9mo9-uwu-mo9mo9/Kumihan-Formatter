@@ -41,7 +41,6 @@ class TemplateFilters:
         """Truncate text to specified length"""
         if len(text) <= max_length:
             return text
-        return text[: max_length - 3] + "..."
 
     @staticmethod
     def format_size(size_bytes: int) -> str:
@@ -50,8 +49,6 @@ class TemplateFilters:
         for unit in ["B", "KB", "MB", "GB"]:
             if size_value < 1024.0:
                 return f"{size_value:.1f}{unit}"
-            size_value = size_value / 1024.0
-        return f"{size_value:.1f}TB"
 
     @staticmethod
     def highlight_keywords(text: str, keywords: list[str]) -> str:

@@ -84,7 +84,9 @@ class BlockValidator:
 
                 # Check for invalid nested marker content
                 if not self._is_valid_nested_marker(marker_content):
-                    issues.append(f"行 {i + 1}: 入れ子構造で無効なマーカー: {marker_content}")
+                    issues.append(
+                        f"行 {i + 1}: 入れ子構造で無効なマーカー: {marker_content}"
+                    )
 
                 # Check nesting depth (limit to reasonable depth)
                 if len(nesting_stack) > 10:

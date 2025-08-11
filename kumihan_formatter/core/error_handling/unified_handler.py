@@ -9,7 +9,7 @@ from logging import Logger
 from typing import Any, Dict, Optional
 
 from ..common.error_base import KumihanError
-from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
+from ..common.error_types import ErrorCategory, ErrorSeverity
 from ..error_analysis.error_config import ErrorConfigManager
 from ..utilities.logger import get_logger
 
@@ -121,31 +121,6 @@ class UnifiedErrorHandler:
         if isinstance(error, KumihanError):
             return error
 
-        # エラータイプに基づく分類
-        severity, category = self._classify_error(error)
-
-        # コンテキスト作成
-        error_context = ErrorContext(
-            file_path=context.get("file_path") if context else None,
-            line_number=context.get("line_number") if context else None,
-            column_number=context.get("column_number") if context else None,
-            operation=operation,
-            user_input=context.get("user_input") if context else None,
-            system_info=context.get("system_info") if context else None,
-        )
-
-        # 提案生成
-        suggestions = self._generate_suggestions(error, category)
-
-        return KumihanError(
-            message=str(error),
-            severity=severity,
-            category=category,
-            context=error_context,
-            suggestions=suggestions,
-            original_error=error,
-        )
-
     def _classify_error(self, error: Exception) -> tuple[ErrorSeverity, ErrorCategory]:
         """エラーを分類してseverityとcategoryを決定
 
@@ -155,32 +130,13 @@ class UnifiedErrorHandler:
         Returns:
             tuple: (severity, category)
         """
-        error_message = str(error).lower()
-
         # ファイルシステムエラー
         if isinstance(error, (FileNotFoundError, PermissionError, OSError)):
             return ErrorSeverity.ERROR, ErrorCategory.FILE_SYSTEM
 
-        # 構文エラー
-        if isinstance(error, SyntaxError) or "syntax" in error_message:
-            return ErrorSeverity.WARNING, ErrorCategory.SYNTAX
-
-        # 値エラー・型エラー
-        if isinstance(error, (ValueError, TypeError)):
-            return ErrorSeverity.WARNING, ErrorCategory.VALIDATION
-
-        # メモリエラー
-        if isinstance(error, MemoryError):
-            return ErrorSeverity.CRITICAL, ErrorCategory.SYSTEM
-
-        # ネットワーク関連
-        if "connection" in error_message or "network" in error_message:
-            return ErrorSeverity.ERROR, ErrorCategory.NETWORK
-
-        # その他
-        return ErrorSeverity.ERROR, ErrorCategory.UNKNOWN
-
-    def _generate_suggestions(self, error: Exception, category: ErrorCategory) -> list[str]:
+    def _generate_suggestions(
+        self, error: Exception, category: ErrorCategory
+    ) -> list[str]:
         """エラーカテゴリに基づく提案生成
 
         Args:
@@ -255,7 +211,9 @@ class UnifiedErrorHandler:
 
         return suggestions
 
-    def _should_continue_processing(self, error: KumihanError, occurrence_count: int) -> bool:
+    def _should_continue_processing(
+        self, error: KumihanError, occurrence_count: int
+    ) -> bool:
         """処理を継続すべきかを判定
 
         Args:
@@ -268,9 +226,6 @@ class UnifiedErrorHandler:
         # クリティカルエラーは即座停止
         if error.severity == ErrorSeverity.CRITICAL:
             return False
-
-        # 設定管理による判定
-        return self.config.should_continue_on_error(error.category.value, occurrence_count)
 
     def _log_error(self, error: KumihanError, operation: str) -> None:
         """統一フォーマットでエラーログ出力
@@ -329,9 +284,8 @@ class UnifiedErrorHandler:
                 f"Graceful handling applied for {error.category.value}: {error.message}"
             )
             return True
-
         except Exception as e:
-            self.logger.warning(f"Failed to apply graceful handling: {e}")
+            self.logger.error(f"Graceful handling failed: {e}")
             return False
 
     def _generate_user_message(self, error: KumihanError) -> str:
@@ -345,8 +299,6 @@ class UnifiedErrorHandler:
         """
         if self.config.config.show_suggestions and error.suggestions:
             return error.get_user_message()
-        else:
-            return error.message
 
     def get_error_statistics(self) -> Dict[str, int]:
         """エラー統計取得

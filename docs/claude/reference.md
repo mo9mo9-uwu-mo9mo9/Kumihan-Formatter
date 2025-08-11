@@ -176,10 +176,10 @@ kumihan config set learning.update_interval 24h
 
 ### Claude Code統合利用
 
-#### serena-expertエージェント最適化
+#### serenaコマンド効率的活用
 ```bash
-# serena-expert使用時の自動最適化
-kumihan serena optimize --agent expert --auto
+# serenaコマンド基本使用・最適化
+kumihan serena optimize --mode efficient --reason-required
 
 # トークン使用量予測
 kumihan serena predict --task development --duration 2h
@@ -205,10 +205,10 @@ from kumihan_formatter.optimization import OptimizationManager
 optimizer = OptimizationManager()
 optimizer.start_development_session()
 
-# serena-expert使用
-with optimizer.serena_expert_context():
-    # 高度コード生成・編集作業
-    result = serena_expert.generate_code(requirements)
+# serenaコマンド基本使用（理由明記）
+with optimizer.serena_context(reason="構造化操作に適している"):
+    # 効率的なコード生成・編集作業
+    result = serena.generate_code(requirements)
 
 # 効果測定・報告
 optimizer.generate_session_report()
@@ -321,7 +321,7 @@ class CustomOptimizationStrategy:
 # 完全統合開発フロー
 kumihan workflow start --optimization-enabled
   ↓
-serena-expert development --token-optimized
+serena development --token-optimized --with-reasoning
   ↓
 mcp-tools integration --efficiency-enhanced
   ↓
@@ -371,7 +371,7 @@ reporting:
 1. **段階的導入**: minimal → standard → aggressive順での導入
 2. **継続監視**: 効果の定期的な確認・調整
 3. **学習促進**: 使用パターンの多様化による学習効果向上
-4. **統合活用**: serena-expert・MCPツールとの連携最大化
+4. **統合活用**: serenaコマンド・MCPツールとの効率的連携
 
 #### パフォーマンス最適化
 1. **リソース管理**: メモリ・CPU使用量の適切な制限

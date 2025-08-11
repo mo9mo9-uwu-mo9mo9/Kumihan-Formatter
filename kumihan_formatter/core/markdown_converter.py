@@ -11,6 +11,7 @@ from typing import Optional
 from .markdown_parser import MarkdownParser
 from .markdown_processor import MarkdownProcessor
 from .markdown_renderer import MarkdownRenderer
+from .utilities.logger import get_logger
 
 
 class SimpleMarkdownConverter:
@@ -86,8 +87,6 @@ class SimpleMarkdownConverter:
 
         return text
 
-    # Delegate methods to appropriate components for backward compatibility
-
     def _extract_title_from_content(self, content: str) -> Optional[str]:
         """コンテンツから最初のH1見出しを抽出"""
         return self.renderer._extract_title_from_content(content, self.patterns)
@@ -121,7 +120,9 @@ class SimpleMarkdownConverter:
         return self.renderer._create_full_html(title, content, source_filename)
 
 
-def convert_markdown_file(input_file: Path, output_file: Path, title: Optional[str] = None) -> bool:
+def convert_markdown_file(
+    input_file: Path, output_file: Path, title: Optional[str] = None
+) -> bool:
     """Markdownファイルを変換してHTMLファイルを作成
 
     Args:
@@ -144,9 +145,9 @@ def convert_markdown_file(input_file: Path, output_file: Path, title: Optional[s
             f.write(html_content)
 
         return True
-
     except Exception as e:
-        print(f"変換エラー: {e}")
+        logger = get_logger(__name__)
+        logger.error(f"Markdown conversion failed: {e}")
         return False
 
 

@@ -27,11 +27,9 @@ def safe_bool(value: Any, default: bool = False) -> bool:
     """Safely convert value to boolean"""
     if isinstance(value, bool):
         return value
-    elif isinstance(value, str):
-        return value.lower() in ("true", "1", "yes", "on")
-    elif isinstance(value, (int, float)):
+    try:
         return bool(value)
-    else:
+    except (ValueError, TypeError):
         return default
 
 

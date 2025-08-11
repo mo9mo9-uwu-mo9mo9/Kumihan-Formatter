@@ -24,14 +24,6 @@ def process_text_content(text: str) -> str:
     if not text:
         return ""
 
-    # First convert newlines to <br> tags (before HTML escaping)
-    processed = text.replace("\n", "<br>")
-
-    # Then HTML escape the content, but preserve <br> tags
-    processed = escape_html(processed).replace("&lt;br&gt;", "<br>")
-
-    return processed
-
 
 def process_block_content(text: str) -> str:
     """
@@ -45,14 +37,6 @@ def process_block_content(text: str) -> str:
     """
     if not text:
         return ""
-
-    # Convert list markers to HTML lists
-    processed = _convert_list_markers(text)
-
-    # Convert newlines to <br> tags for remaining content
-    processed = processed.replace("\n", "<br>")
-
-    return processed
 
 
 def process_collapsible_content(text: str) -> str:
@@ -68,14 +52,6 @@ def process_collapsible_content(text: str) -> str:
     if not text:
         return ""
 
-    # Handle list markers with HTML preservation
-    processed = _convert_list_markers_with_html(text)
-
-    # Convert remaining newlines to <br> tags
-    processed = processed.replace("\n", "<br>")
-
-    return processed
-
 
 def _convert_list_markers(text: str) -> str:
     """
@@ -90,14 +66,13 @@ def _convert_list_markers(text: str) -> str:
     if not text:
         return ""
 
-    # Convert unordered list markers (-, *, +)
     lines = text.split("\n")
     result_lines = []
     in_list = False
 
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith(("- ", "* ", "+ ")):
+        if stripped.startswith("・") or stripped.startswith("- "):
             if not in_list:
                 result_lines.append("<ul>")
                 in_list = True
@@ -128,7 +103,6 @@ def _convert_lists_to_html(text: str) -> str:
     if not text:
         return ""
 
-    # Handle both ordered and unordered lists
     lines = text.split("\n")
     result_lines = []
     in_ul = False
@@ -136,9 +110,7 @@ def _convert_lists_to_html(text: str) -> str:
 
     for line in lines:
         stripped = line.strip()
-
-        # Unordered list markers
-        if stripped.startswith(("- ", "* ", "+ ")):
+        if stripped.startswith("・") or stripped.startswith("- "):
             if in_ol:
                 result_lines.append("</ol>")
                 in_ol = False
@@ -189,11 +161,3 @@ def _convert_list_markers_with_html(text: str) -> str:
     """
     if not text:
         return ""
-
-    # Check if text already contains HTML
-    if "<" in text and ">" in text:
-        # If it contains HTML, be more careful about conversion
-        return _convert_lists_to_html(text)
-    else:
-        # If no HTML, use simple conversion
-        return _convert_list_markers(text)

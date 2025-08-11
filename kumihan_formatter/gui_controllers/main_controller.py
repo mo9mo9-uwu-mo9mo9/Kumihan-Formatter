@@ -66,7 +66,9 @@ class MainController:
             # 実際の環境では内部で作成
             if self.app_state:
                 self.file_controller = FileController(self.main_view)
-                self.conversion_controller = ConversionController(self.model, self.main_view)
+                self.conversion_controller = ConversionController(
+                    self.model, self.main_view
+                )
             else:
                 self.file_controller = None
                 self.conversion_controller = None
@@ -78,7 +80,11 @@ class MainController:
 
     def _setup_event_handlers(self) -> None:
         """イベントハンドラーの設定"""
-        if not self.main_view or not self.file_controller or not self.conversion_controller:
+        if (
+            not self.main_view
+            or not self.file_controller
+            or not self.conversion_controller
+        ):
             return
 
         # ファイル選択
@@ -92,7 +98,9 @@ class MainController:
 
         # オプション設定
         if hasattr(self.main_view, "options_frame"):
-            self.main_view.options_frame.set_source_toggle_command(self.on_source_toggle_change)
+            self.main_view.options_frame.set_source_toggle_command(
+                self.on_source_toggle_change
+            )
 
         # アクションボタン
         if hasattr(self.main_view, "action_button_frame"):
@@ -106,7 +114,11 @@ class MainController:
             self.main_view.action_button_frame.set_exit_command(self.exit_application)
 
         # デバッグモード時のログボタン
-        if self.app_state and hasattr(self.app_state, "debug_mode") and self.app_state.debug_mode:
+        if (
+            self.app_state
+            and hasattr(self.app_state, "debug_mode")
+            and self.app_state.debug_mode
+        ):
             if hasattr(self.main_view, "action_button_frame"):
                 self.main_view.action_button_frame.set_log_command(self.show_log_viewer)
 
@@ -166,7 +178,9 @@ class MainController:
                     info("Log viewer window opened")
         except Exception as e:
             error("Failed to open log viewer", e)
-            messagebox.showerror("エラー", f"ログビューアーの表示に失敗しました:\n\n{str(e)}")
+            messagebox.showerror(
+                "エラー", f"ログビューアーの表示に失敗しました:\n\n{str(e)}"
+            )
 
     def exit_application(self) -> None:
         """アプリケーションの終了"""

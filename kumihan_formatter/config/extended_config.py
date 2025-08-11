@@ -121,7 +121,6 @@ class ExtendedConfig(BaseConfig):
         if name in self._markers:
             del self._markers[name]
             return True
-        return False
 
     def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得
@@ -156,7 +155,6 @@ class ExtendedConfig(BaseConfig):
             self._current_theme = theme_id
             self._apply_theme()
             return True
-        return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得
@@ -174,7 +172,6 @@ class ExtendedConfig(BaseConfig):
         """
         if self._current_theme in self._themes:
             return self._themes[self._current_theme].get("name", "不明")  # type: ignore
-        return "不明"
 
     def validate(self) -> bool:
         """設定の妥当性をチェック
@@ -185,22 +182,6 @@ class ExtendedConfig(BaseConfig):
         if not super().validate():
             return False
 
-        # マーカー定義の検証
-        for name, marker in self._markers.items():
-            if not isinstance(marker, dict) or "tag" not in marker:
-                return False
-
-        # テーマ定義の検証
-        for theme_id, theme_data in self._themes.items():
-            if not isinstance(theme_data, dict) or "name" not in theme_data:
-                return False
-
-        # 現在のテーマの検証
-        if self._current_theme not in self._themes:
-            return False
-
-        return True
-
     def merge_config(self, other_config: dict[str, Any]) -> None:
         """他の設定をマージ
 
@@ -209,25 +190,6 @@ class ExtendedConfig(BaseConfig):
         """
         if not isinstance(other_config, dict):
             return  # type: ignore
-
-        # マーカーのマージ
-        if "markers" in other_config and isinstance(other_config["markers"], dict):
-            self._markers.update(other_config["markers"])
-
-        # テーマのマージ
-        if "themes" in other_config and isinstance(other_config["themes"], dict):
-            self._themes.update(other_config["themes"])
-
-        # CSS設定のマージ
-        if "css" in other_config and isinstance(other_config["css"], dict):
-            self._css_vars.update(other_config["css"])
-
-        # テーマ設定の更新
-        if "theme" in other_config and other_config["theme"] in self._themes:
-            self.set_theme(other_config["theme"])
-
-        # その他の設定のマージ
-        self._config.update(other_config)
 
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得

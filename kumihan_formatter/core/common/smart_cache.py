@@ -5,11 +5,11 @@ Issue #319対応: cachingモジュール削除のため基本実装を統合
 このファイルは既存コードとの互換性維持のために残されています。
 """
 
-import warnings
-from typing import Any, Dict, Generic, Optional, TypeVar, Protocol
-from dataclasses import dataclass
-from datetime import datetime, timedelta
 import threading
+import warnings
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, Generic, Optional, Protocol, TypeVar
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -107,16 +107,10 @@ class SmartCache(Generic[K, T]):
         if entry is None:
             return None
 
-        if self.strategy.should_evict(entry):
-            self.storage.remove(key)
-            return None
-
-        entry.access_count += 1
-        entry.last_accessed = datetime.now()
-        return entry.value
-
     def set(self, key: K, value: T) -> None:
-        entry = CacheEntry(value=value, created_at=datetime.now(), last_accessed=datetime.now())
+        entry = CacheEntry(
+            value=value, created_at=datetime.now(), last_accessed=datetime.now()
+        )
         self.storage.set(key, entry)
 
 

@@ -150,16 +150,30 @@ scripts/serena-health-check.sh
 scripts/serena-auto-recovery.sh
 scripts/serena-deep-clean.sh
 
-# Claude Code personal settings
-.claude/settings.local.json*
-.claude/*.log
-.claude/serena-stats.json
-.claude/hooks.json
-.mcp.json*
-
-# Serena関係（全体除外）
+# 外部ツール（著作権問題回避）
 .serena/
+serena/
+scripts/serena_*.py
+scripts/serena-*.sh
+scripts/setup-*serena*.sh
+.claude/
+.claude-*.log
+.claude-*.yml
+.claude_md_config.yaml
+scripts/claude_md/
 
-# Serena cache
-.serena/cache/
-.serena/logs/
+# 環境依存
+.venv312/
+venv*/
+.mypy_cache/
+.ruff_cache/
+.kumihan_cache/
+
+# 個人設定
+.benchmarks/
+.improvement_plans/
+.cleanup.yml
+
+# Claude Code personal settings (legacy - covered above)
+# .claude/ already covered in external tools section
+.mcp.json*

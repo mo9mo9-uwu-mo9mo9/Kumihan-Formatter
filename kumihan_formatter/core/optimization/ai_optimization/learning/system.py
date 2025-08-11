@@ -37,15 +37,21 @@ class LearningSystem:
         self.config = config or {}
 
         # コンポーネント初期化
-        self.data_quality_manager = DataQualityManager(self.config.get("data_quality", {}))
+        self.data_quality_manager = DataQualityManager(
+            self.config.get("data_quality", {})
+        )
         self.hyperparameter_optimizer = HyperparameterOptimizer(
             self.config.get("hyperparameter_opt", {})
         )
-        self.online_learning_engine = OnlineLearningEngine(self.config.get("online_learning", {}))
+        self.online_learning_engine = OnlineLearningEngine(
+            self.config.get("online_learning", {})
+        )
 
         # 【メモリリーク対策】学習監視
         self.learning_metrics: Dict[str, Any] = {}
-        self._learning_metrics_max_size = self.config.get("learning_metrics_max_size", 100)
+        self._learning_metrics_max_size = self.config.get(
+            "learning_metrics_max_size", 100
+        )
         self.quality_monitoring_enabled = self.config.get("quality_monitoring", True)
 
         # 自動調整
@@ -66,7 +72,9 @@ class LearningSystem:
             training_start = time.time()
 
             # データ品質検証
-            quality_result = self.data_quality_manager.validate_training_data(new_training_data)
+            quality_result = self.data_quality_manager.validate_training_data(
+                new_training_data
+            )
 
             if quality_result.get("quality_score", 0.0) < 0.4:
                 self.logger.warning(
@@ -84,10 +92,14 @@ class LearningSystem:
                 label = new_training_data.labels[i]
                 context = {"quality_score": quality_result.get("quality_score", 0.0)}
 
-                self.online_learning_engine.add_training_sample(features, label, context)
+                self.online_learning_engine.add_training_sample(
+                    features, label, context
+                )
 
             # 増分学習実行
-            learning_result = self.online_learning_engine.execute_incremental_learning(models)
+            learning_result = self.online_learning_engine.execute_incremental_learning(
+                models
+            )
 
             # 学習効果評価
             learning_effectiveness = learning_result.get("learning_effectiveness", {})
@@ -99,7 +111,9 @@ class LearningSystem:
                 and learning_effectiveness.get("effectiveness_score", 0.0)
                 < self.adjustment_threshold
             ):
-                adjustment_result = self._execute_automatic_adjustment(models, learning_result)
+                adjustment_result = self._execute_automatic_adjustment(
+                    models, learning_result
+                )
 
             training_time = time.time() - training_start
 
@@ -127,10 +141,9 @@ class LearningSystem:
                 f"{final_result['models_updated']} models updated in {training_time:.2f}s"
             )
             return final_result
-
         except Exception as e:
             self.logger.error(f"Incremental training failed: {e}")
-            return {"training_success": False, "error": str(e), "training_time": 0.0}
+            return {"training_success": False, "error": str(e)}
 
     def evaluate_model_performance(
         self, models: Dict[str, EnsemblePredictionModel], validation_data: TrainingData
@@ -161,17 +174,23 @@ class LearningSystem:
                         result = future.result(timeout=30.0)
                         evaluation_results[model_name] = result
                     except Exception as e:
-                        self.logger.error(f"Model evaluation failed for {model_name}: {e}")
+                        self.logger.error(
+                            f"Model evaluation failed for {model_name}: {e}"
+                        )
                         evaluation_results[model_name] = {"error": str(e)}
 
             # 統合評価
-            integrated_evaluation = self._integrate_model_evaluations(evaluation_results)
+            integrated_evaluation = self._integrate_model_evaluations(
+                evaluation_results
+            )
 
             # 過学習検出
             overfitting_analysis = self._detect_overfitting(evaluation_results)
 
             # 性能劣化検出
-            performance_degradation = self._detect_performance_degradation(evaluation_results)
+            performance_degradation = self._detect_performance_degradation(
+                evaluation_results
+            )
 
             evaluation_time = time.time() - evaluation_start
 
@@ -312,37 +331,36 @@ class LearningSystem:
             self.logger.error(f"Single model evaluation failed for {model_name}: {e}")
             return {"error": str(e)}
 
-    def _integrate_model_evaluations(self, evaluation_results: Dict[str, Dict]) -> Dict[str, Any]:
+    def _integrate_model_evaluations(
+        self, evaluation_results: Dict[str, Dict]
+    ) -> Dict[str, Any]:
         """モデル評価統合"""
         try:
             valid_results = [
-                result for result in evaluation_results.values() if "error" not in result
+                result
+                for result in evaluation_results.values()
+                if "error" not in result
             ]
 
             if not valid_results:
                 return {"integrated_r2": 0.0, "integrated_mse": float("inf")}
 
-            # 平均性能指標
-            avg_r2 = np.mean([result["r2_score"] for result in valid_results])
-            avg_mse = np.mean([result["mse"] for result in valid_results])
-            avg_mae = np.mean([result["mae"] for result in valid_results])
+            # 統合指標計算
+            r2_scores = [result.get("r2_score", 0.0) for result in valid_results]
+            mse_scores = [result.get("mse", float("inf")) for result in valid_results]
 
-            # 最高性能
-            best_r2 = max([result["r2_score"] for result in valid_results])
-            best_model = max(evaluation_results.items(), key=lambda x: x[1].get("r2_score", 0.0))[0]
-
-            # 性能分散
-            r2_std = np.std([result["r2_score"] for result in valid_results])
+            integrated_r2 = sum(r2_scores) / len(r2_scores)
+            integrated_mse = sum(mse_scores) / len(mse_scores)
 
             return {
-                "integrated_r2": float(avg_r2),
-                "integrated_mse": float(avg_mse),
-                "integrated_mae": float(avg_mae),
-                "best_r2": float(best_r2),
-                "best_model": best_model,
-                "performance_consistency": float(1.0 - r2_std),  # 低い分散ほど一貫性が高い
-                "valid_models": len(valid_results),
-                "total_models": len(evaluation_results),
+                "integrated_r2": float(integrated_r2),
+                "integrated_mse": float(integrated_mse),
+                "models_count": len(valid_results),
+                "integration_quality": (
+                    "high"
+                    if integrated_r2 > 0.8
+                    else "medium" if integrated_r2 > 0.6 else "low"
+                ),
             }
 
         except Exception as e:
@@ -353,7 +371,9 @@ class LearningSystem:
                 "error": str(e),
             }
 
-    def _detect_overfitting(self, evaluation_results: Dict[str, Dict]) -> Dict[str, Any]:
+    def _detect_overfitting(
+        self, evaluation_results: Dict[str, Dict]
+    ) -> Dict[str, Any]:
         """過学習検出"""
         try:
             overfitting_detected = []
@@ -374,7 +394,8 @@ class LearningSystem:
                             "model_name": model_name,
                             "r2_score": r2_score,
                             "cv_r2_mean": cv_r2_mean,
-                            "overfitting_severity": (r2_score - cv_r2_mean) / max(cv_r2_std, 0.01),
+                            "overfitting_severity": (r2_score - cv_r2_mean)
+                            / max(cv_r2_std, 0.01),
                         }
                     )
 
@@ -382,7 +403,9 @@ class LearningSystem:
                 "overfitting_detected": len(overfitting_detected) > 0,
                 "overfitted_models": overfitting_detected,
                 "overfitting_count": len(overfitting_detected),
-                "recommendations": self._generate_overfitting_recommendations(overfitting_detected),
+                "recommendations": self._generate_overfitting_recommendations(
+                    overfitting_detected
+                ),
             }
 
         except Exception as e:
@@ -405,7 +428,9 @@ class LearningSystem:
 
                 # 学習メトリクス履歴から比較
                 if model_name in self.learning_metrics:
-                    historical_r2 = self.learning_metrics[model_name].get("best_r2", 0.0)
+                    historical_r2 = self.learning_metrics[model_name].get(
+                        "best_r2", 0.0
+                    )
 
                     if historical_r2 > 0 and current_r2 < historical_r2 * (
                         1.0 - self.adjustment_threshold
@@ -415,7 +440,8 @@ class LearningSystem:
                                 "model_name": model_name,
                                 "current_r2": current_r2,
                                 "historical_r2": historical_r2,
-                                "degradation_ratio": (historical_r2 - current_r2) / historical_r2,
+                                "degradation_ratio": (historical_r2 - current_r2)
+                                / historical_r2,
                             }
                         )
 
@@ -423,7 +449,8 @@ class LearningSystem:
                 "degradation_detected": len(degradation_detected) > 0,
                 "degraded_models": degradation_detected,
                 "degradation_count": len(degradation_detected),
-                "adjustment_needed": len(degradation_detected) > 0 and self.auto_adjustment_enabled,
+                "adjustment_needed": len(degradation_detected) > 0
+                and self.auto_adjustment_enabled,
             }
 
         except Exception as e:
@@ -497,7 +524,8 @@ class LearningSystem:
             )
 
             return {
-                "effectiveness_score": significant_improvements / max(1, total_optimizations),
+                "effectiveness_score": significant_improvements
+                / max(1, total_optimizations),
                 "total_improvements": total_improvements,
                 "significant_improvements": significant_improvements,
                 "total_optimizations": total_optimizations,
@@ -521,12 +549,15 @@ class LearningSystem:
 
                     for model_type, optimization_result in model_results.items():
                         if (
-                            optimization_result.get("improvement_over_default", 0.0) > 0.02
+                            optimization_result.get("improvement_over_default", 0.0)
+                            > 0.02
                         ):  # 2%以上改善時のみ適用
                             # パラメータ適用（実際の適用は簡略化）
                             model_applications[model_type] = {
                                 "applied": True,
-                                "parameters": optimization_result.get("best_parameters", {}),
+                                "parameters": optimization_result.get(
+                                    "best_parameters", {}
+                                ),
                                 "expected_improvement": optimization_result.get(
                                     "improvement_over_default", 0.0
                                 ),
@@ -540,12 +571,13 @@ class LearningSystem:
                     application_results[model_name] = model_applications
 
             return application_results
-
         except Exception as e:
-            self.logger.error(f"Hyperparameter application failed: {e}")
+            self.logger.error(f"Optimized hyperparameters application failed: {e}")
             return {"error": str(e)}
 
-    def _generate_overfitting_recommendations(self, overfitted_models: List[Dict]) -> List[str]:
+    def _generate_overfitting_recommendations(
+        self, overfitted_models: List[Dict]
+    ) -> List[str]:
         """過学習対処推奨事項生成"""
         recommendations = []
 
@@ -572,7 +604,9 @@ class LearningSystem:
             for model_name, result in learning_results.items():
                 if result.get("success", False):
                     post_performance = result.get("post_performance", {})
-                    ensemble_performance = post_performance.get("ensemble_performance", {})
+                    ensemble_performance = post_performance.get(
+                        "ensemble_performance", {}
+                    )
 
                     if model_name not in self.learning_metrics:
                         self.learning_metrics[model_name] = {}
@@ -611,7 +645,9 @@ class LearningSystem:
             return {
                 "system_status": "operational",
                 "data_quality_manager": {
-                    "quality_history_size": len(self.data_quality_manager.quality_history),
+                    "quality_history_size": len(
+                        self.data_quality_manager.quality_history
+                    ),
                     "outlier_threshold": self.data_quality_manager.outlier_threshold,
                 },
                 "hyperparameter_optimizer": {
@@ -625,7 +661,9 @@ class LearningSystem:
                 "online_learning_engine": {
                     "buffer_size": len(self.online_learning_engine.learning_buffer),
                     "sample_count": self.online_learning_engine.sample_count,
-                    "learning_history_size": len(self.online_learning_engine.learning_history),
+                    "learning_history_size": len(
+                        self.online_learning_engine.learning_history
+                    ),
                 },
                 "learning_metrics": self.learning_metrics,
                 "configuration": {

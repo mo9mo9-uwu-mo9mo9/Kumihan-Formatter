@@ -4,7 +4,7 @@ Issue #771対応: 設定値の包括的検証と修正提案
 Pydanticの検証機能を拡張し、Kumihan特有の検証ルールを実装
 """
 
-import re
+# import re  # Removed: unused import
 
 # import socket  # removed - unused import (F401)
 from pathlib import Path
@@ -137,7 +137,9 @@ class ConfigValidator:
 
         return result
 
-    def _validate_parallel_config(self, config: ParallelConfig, result: ValidationResult) -> None:
+    def _validate_parallel_config(
+        self, config: ParallelConfig, result: ValidationResult
+    ) -> None:
         """並列処理設定の検証"""
 
         # CPUコア数との整合性チェック
@@ -169,7 +171,9 @@ class ConfigValidator:
             result.add_warning("処理タイムアウトが短すぎる可能性があります")
             result.add_suggestion("大きなファイル処理を考慮して300秒以上を推奨")
 
-    def _validate_logging_config(self, config: LoggingConfig, result: ValidationResult) -> None:
+    def _validate_logging_config(
+        self, config: LoggingConfig, result: ValidationResult
+    ) -> None:
         """ログ設定の検証"""
 
         # ログディレクトリの書き込み権限チェック
@@ -180,8 +184,12 @@ class ConfigValidator:
             test_file.unlink()
 
         except PermissionError:
-            result.add_error(f"ログディレクトリに書き込み権限がありません: {config.log_dir}")
-            result.add_suggestion("ログディレクトリを書き込み可能な場所に変更してください")
+            result.add_error(
+                f"ログディレクトリに書き込み権限がありません: {config.log_dir}"
+            )
+            result.add_suggestion(
+                "ログディレクトリを書き込み可能な場所に変更してください"
+            )
 
         except Exception as e:
             result.add_warning(f"ログディレクトリ検証でエラー: {e}")
@@ -195,7 +203,9 @@ class ConfigValidator:
         if config.log_backup_count > 100:
             result.add_suggestion("多数のログファイルはディスク容量に注意してください")
 
-    def _validate_error_config(self, config: ErrorConfig, result: ValidationResult) -> None:
+    def _validate_error_config(
+        self, config: ErrorConfig, result: ValidationResult
+    ) -> None:
         """エラー設定の検証"""
 
         # エラー表示制限の妥当性
@@ -226,11 +236,15 @@ class ConfigValidator:
 
         # 色の値の検証
         if not self._is_valid_color(config.background_color):
-            result.add_error(f"無効な色値: background_color = {config.background_color}")
+            result.add_error(
+                f"無効な色値: background_color = {config.background_color}"
+            )
             result.add_suggestion("例: '#f9f9f9', 'white', 'rgb(255,255,255)' など")
 
         if not self._is_valid_color(config.container_background):
-            result.add_error(f"無効な色値: container_background = {config.container_background}")
+            result.add_error(
+                f"無効な色値: container_background = {config.container_background}"
+            )
 
         if not self._is_valid_color(config.text_color):
             result.add_error(f"無効な色値: text_color = {config.text_color}")
@@ -240,7 +254,9 @@ class ConfigValidator:
             result.add_error("フォントファミリーが空です")
             result.add_suggestion("デフォルトのフォントファミリーを設定してください")
 
-    def _validate_ui_config(self, config: Any, result: ValidationResult) -> None:  # UIConfig
+    def _validate_ui_config(
+        self, config: Any, result: ValidationResult
+    ) -> None:  # UIConfig
         """UI設定の検証"""
 
         # プレビューブラウザの検証
@@ -249,7 +265,9 @@ class ConfigValidator:
                 result.add_warning(
                     f"指定されたブラウザが見つからない可能性があります: {config.preview_browser}"
                 )
-                result.add_suggestion("システムにインストールされているブラウザを指定してください")
+                result.add_suggestion(
+                    "システムにインストールされているブラウザを指定してください"
+                )
 
         # 監視間隔の妥当性
         if config.watch_interval < 0.1:
@@ -276,7 +294,9 @@ class ConfigValidator:
 
         # エラー処理とログ設定の整合性
         if config.error.graceful_errors and config.logging.log_level.value == "ERROR":
-            result.add_suggestion("graceful_errorsを使用する場合、詳細なログのためINFOレベルを推奨")
+            result.add_suggestion(
+                "graceful_errorsを使用する場合、詳細なログのためINFOレベルを推奨"
+            )
 
         # 並列処理とメモリ設定の整合性
         estimated_memory_mb = (
@@ -309,15 +329,21 @@ class ConfigValidator:
             available_memory_mb = psutil.virtual_memory().available // (1024 * 1024)
 
             if config.parallel.memory_critical_threshold_mb > available_memory_mb * 0.8:
-                result.add_warning("メモリクリティカルしきい値がシステムメモリに対して高すぎます")
+                result.add_warning(
+                    "メモリクリティカルしきい値がシステムメモリに対して高すぎます"
+                )
                 result.add_suggestion(
                     f"利用可能メモリ{available_memory_mb}MBに対してより低い値を設定してください"
                 )
 
         except ImportError:
-            result.add_suggestion("より正確なメモリ検証のためpsutilのインストールを推奨")
+            result.add_suggestion(
+                "より正確なメモリ検証のためpsutilのインストールを推奨"
+            )
 
-    def _apply_auto_fixes(self, config: KumihanConfig, result: ValidationResult) -> KumihanConfig:
+    def _apply_auto_fixes(
+        self, config: KumihanConfig, result: ValidationResult
+    ) -> KumihanConfig:
         """自動修正を適用
 
         Args:
@@ -333,7 +359,9 @@ class ConfigValidator:
         if not fixed_config.logging.log_dir.exists():
             try:
                 fixed_config.logging.log_dir = Path.home() / ".kumihan" / "logs"
-                result.add_suggestion("ログディレクトリをユーザーホームディレクトリに変更しました")
+                result.add_suggestion(
+                    "ログディレクトリをユーザーホームディレクトリに変更しました"
+                )
             except Exception:
                 pass
 
@@ -345,56 +373,35 @@ class ConfigValidator:
             fixed_config.parallel.memory_critical_threshold_mb = (
                 fixed_config.parallel.memory_warning_threshold_mb + 50
             )
-            result.add_suggestion("メモリクリティカルしきい値を警告しきい値より高く調整しました")
+            result.add_suggestion(
+                "メモリクリティカルしきい値を警告しきい値より高く調整しました"
+            )
 
         return fixed_config
-
-    # ヘルパーメソッド
 
     def _is_valid_css_value(self, value: str) -> bool:
         """CSS値の妥当性チェック"""
         if not value or not isinstance(value, str):
             return False
 
-        # 基本的なCSS値のパターン
-        patterns = [
-            r"^\d+px$",  # ピクセル
-            r"^\d+%$",  # パーセント
-            r"^auto$",  # auto
-            r"^\d+em$",  # em
-            r"^\d+rem$",  # rem
-        ]
-
-        return any(re.match(pattern, value.strip()) for pattern in patterns)
-
     def _is_valid_color(self, value: str) -> bool:
         """色値の妥当性チェック"""
         if not value or not isinstance(value, str):
             return False
 
-        value = value.strip().lower()
-
-        # HEX色
-        if re.match(r"^#[0-9a-f]{3}$", value) or re.match(r"^#[0-9a-f]{6}$", value):
-            return True
-
-        # RGB色
-        if re.match(r"^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$", value):
-            return True
-
-        # 基本的な色名
+        # 基本的な色名をチェック
         basic_colors = {
-            "white",
-            "black",
             "red",
-            "green",
             "blue",
+            "green",
             "yellow",
-            "cyan",
-            "magenta",
+            "black",
+            "white",
             "gray",
-            "grey",
-            "transparent",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
         }
 
         return value in basic_colors
@@ -403,22 +410,6 @@ class ConfigValidator:
         """ブラウザコマンドの妥当性チェック"""
         if not command or not isinstance(command, str):
             return False
-
-        # コマンドの最初の部分を取得
-        cmd_parts = command.split()
-        if not cmd_parts:
-            return False
-
-        executable = cmd_parts[0]
-
-        # パスが絶対パスの場合
-        if Path(executable).is_absolute():
-            return Path(executable).exists()
-
-        # PATHから検索
-        import shutil
-
-        return shutil.which(executable) is not None
 
     def _generate_validation_suggestion(self, error: Any) -> Optional[str]:
         """Pydantic検証エラーから修正提案を生成

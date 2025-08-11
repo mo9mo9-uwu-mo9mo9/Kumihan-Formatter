@@ -8,17 +8,15 @@ Phase B.4-Beta継続学習システム実装 - コア機能
 
 import time
 import warnings
-from collections import defaultdict, deque
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from collections import deque
+from typing import TYPE_CHECKING, Any, Dict, List
 
 import numpy as np
 
 if TYPE_CHECKING:
     import scipy.stats as stats
-    from sklearn.metrics import mean_squared_error  # type: ignore
-    from sklearn.model_selection import cross_val_score  # type: ignore
-    import lightgbm as lgb
-    import xgboost as xgb
+
+    # Removed unused ML imports: sklearn, lightgbm, xgboost
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -26,18 +24,14 @@ from ..basic_ml_system import TrainingData
 
 warnings.filterwarnings("ignore")
 
-# ハイパーパラメータ最適化
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from optuna import Trial, create_study
-
+OPTUNA_AVAILABLE = True
 try:
     from optuna import Trial, create_study
-
-    OPTUNA_AVAILABLE = True
 except ImportError:
     OPTUNA_AVAILABLE = False
+    # Fallback for type hints when optuna is not available
+    Trial = None  # type: ignore
+    create_study = None  # type: ignore
 
 
 class DataQualityManager:
@@ -97,9 +91,10 @@ class DataQualityManager:
                 }
             )
 
-            self.logger.debug(f"Data quality validation completed: score={quality_score:.3f}")
+            self.logger.debug(
+                f"Data quality validation completed: score={quality_score:.3f}"
+            )
             return validation_result
-
         except Exception as e:
             self.logger.error(f"Data quality validation failed: {e}")
             return {"quality_score": 0.0, "error": str(e)}
@@ -113,11 +108,16 @@ class DataQualityManager:
             return {
                 "sample_count": len(features),
                 "feature_count": features.shape[1] if len(features.shape) > 1 else 1,
-                "feature_means": (np.mean(features, axis=0).tolist() if len(features) > 0 else []),
-                "feature_stds": (np.std(features, axis=0).tolist() if len(features) > 0 else []),
+                "feature_means": (
+                    np.mean(features, axis=0).tolist() if len(features) > 0 else []
+                ),
+                "feature_stds": (
+                    np.std(features, axis=0).tolist() if len(features) > 0 else []
+                ),
                 "label_mean": float(np.mean(labels)) if len(labels) > 0 else 0.0,
                 "label_std": float(np.std(labels)) if len(labels) > 0 else 0.0,
-                "missing_values": int(np.sum(np.isnan(features))) + int(np.sum(np.isnan(labels))),
+                "missing_values": int(np.sum(np.isnan(features)))
+                + int(np.sum(np.isnan(labels))),
             }
 
         except Exception as e:
@@ -146,11 +146,15 @@ class DataQualityManager:
 
             # 総合異常値
             total_outliers = len(feature_outliers) + int(np.sum(label_outliers))
-            outlier_ratio = total_outliers / max(1, len(features)) if len(features) > 0 else 0.0
+            outlier_ratio = (
+                total_outliers / max(1, len(features)) if len(features) > 0 else 0.0
+            )
 
             return {
                 "feature_outlier_count": (
-                    int(np.sum(feature_outliers > 0)) if len(feature_outliers) > 0 else 0
+                    int(np.sum(feature_outliers > 0))
+                    if len(feature_outliers) > 0
+                    else 0
                 ),
                 "label_outlier_count": (
                     int(np.sum(label_outliers)) if len(label_outliers) > 0 else 0
@@ -159,7 +163,9 @@ class DataQualityManager:
                 "outlier_ratio": outlier_ratio,
                 "outlier_threshold": self.outlier_threshold,
                 "quality_impact": (
-                    "high" if outlier_ratio > 0.1 else "medium" if outlier_ratio > 0.05 else "low"
+                    "high"
+                    if outlier_ratio > 0.1
+                    else "medium" if outlier_ratio > 0.05 else "low"
                 ),
             }
 
@@ -215,10 +221,9 @@ class DataQualityManager:
             )
 
             return bias_metrics
-
         except Exception as e:
             self.logger.error(f"Bias analysis failed: {e}")
-            return {"bias_score": 0.0, "bias_level": "unknown", "error": str(e)}
+            return {"bias_score": 0.0, "error": str(e)}
 
     def _calculate_bias_score(self, bias_metrics: Dict[str, Any]) -> float:
         """バイアススコア計算"""
@@ -237,7 +242,6 @@ class DataQualityManager:
             score += min(1.0, kurtosis / 10.0) * 0.3
 
             return min(1.0, score)
-
         except Exception:
             return 0.0
 
@@ -256,7 +260,9 @@ class DataQualityManager:
                         "label_min": float(np.min(labels)),
                         "label_max": float(np.max(labels)),
                         "label_range": float(np.max(labels) - np.min(labels)),
-                        "label_iqr": float(np.percentile(labels, 75) - np.percentile(labels, 25)),
+                        "label_iqr": float(
+                            np.percentile(labels, 75) - np.percentile(labels, 25)
+                        ),
                         "label_median": float(np.median(labels)),
                     }
                 )
@@ -264,12 +270,16 @@ class DataQualityManager:
                 # 正規性検定
                 if len(labels) >= 8:  # shapiro-wilk最小サンプル
                     try:
-                        shapiro_stat, shapiro_p = stats.shapiro(labels[:5000])  # サンプル制限
+                        shapiro_stat, shapiro_p = stats.shapiro(
+                            labels[:5000]
+                        )  # サンプル制限
                         distribution_analysis.update(
                             {
                                 "shapiro_statistic": float(shapiro_stat),
                                 "shapiro_p_value": float(shapiro_p),
-                                "normality": ("normal" if shapiro_p > 0.05 else "non_normal"),
+                                "normality": (
+                                    "normal" if shapiro_p > 0.05 else "non_normal"
+                                ),
                             }
                         )
                     except Exception:
@@ -282,12 +292,13 @@ class DataQualityManager:
                     {
                         "feature_range_mean": float(np.mean(feature_ranges)),
                         "feature_range_std": float(np.std(feature_ranges)),
-                        "zero_variance_features": int(np.sum(np.var(features, axis=0) == 0)),
+                        "zero_variance_features": int(
+                            np.sum(np.var(features, axis=0) == 0)
+                        ),
                     }
                 )
 
             return distribution_analysis
-
         except Exception as e:
             self.logger.error(f"Distribution analysis failed: {e}")
             return {"error": str(e)}
@@ -324,9 +335,9 @@ class DataQualityManager:
                 score *= 0.9
 
             return max(0.0, min(1.0, score))
-
-        except Exception:
-            return 0.5
+        except Exception as e:
+            self.logger.error(f"Quality score calculation failed: {e}")
+            return 0.0
 
     def _generate_quality_recommendations(
         self, quality_score: float, outlier_detection: Dict, bias_analysis: Dict
@@ -337,12 +348,16 @@ class DataQualityManager:
         try:
             # 品質スコアベース推奨
             if quality_score < 0.6:
-                recommendations.append("データ品質が低いため、データクリーニングを実施してください")
+                recommendations.append(
+                    "データ品質が低いため、データクリーニングを実施してください"
+                )
 
             # 異常値対処
             outlier_ratio = outlier_detection.get("outlier_ratio", 0.0)
             if outlier_ratio > 0.1:
-                recommendations.append("異常値が多く検出されました。外れ値除去を検討してください")
+                recommendations.append(
+                    "異常値が多く検出されました。外れ値除去を検討してください"
+                )
 
             # バイアス対処
             bias_level = bias_analysis.get("bias_level", "low")

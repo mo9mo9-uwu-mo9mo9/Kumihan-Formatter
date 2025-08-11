@@ -20,11 +20,12 @@ from collections import defaultdict, deque
 # 循環インポート回避のため型ヒント用
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
-from kumihan_formatter.core.unified_config import EnhancedConfigAdapter as EnhancedConfig
+from kumihan_formatter.core.unified_config import (
+    EnhancedConfigAdapter as EnhancedConfig,
+)
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
-    from .analyzers import ComplexityAnalyzer
     from .manager import AdaptiveSettingsManager, WorkContext
 
 
@@ -66,7 +67,9 @@ class FileSizeLimitOptimizer:
 
         self.logger.info("FileSizeLimitOptimizer initialized with dynamic thresholds")
 
-    def optimize_read_size(self, file_path: str, requested_size: int) -> Tuple[int, Dict[str, Any]]:
+    def optimize_read_size(
+        self, file_path: str, requested_size: int
+    ) -> Tuple[int, Dict[str, Any]]:
         """
         ファイル読み取りサイズを最適化
 
@@ -100,7 +103,9 @@ class FileSizeLimitOptimizer:
                     "optimized_size": optimized_size,
                     "reduction_rate": reduction_rate,
                     "file_type": file_type,
-                    "tokens_saved_estimate": int(reduction_rate * requested_size * 0.25),
+                    "tokens_saved_estimate": int(
+                        reduction_rate * requested_size * 0.25
+                    ),
                 }
 
                 self.logger.debug(
@@ -126,16 +131,19 @@ class FileSizeLimitOptimizer:
         """ファイルタイプを分類"""
         path_lower = file_path.lower()
 
-        if any(ext in path_lower for ext in [".py", ".js", ".ts", ".java", ".cpp", ".c", ".rs"]):
+        if any(
+            ext in path_lower
+            for ext in [".py", ".js", ".ts", ".java", ".cpp", ".c", ".rs"]
+        ):
             return "code"
-        elif any(ext in path_lower for ext in [".json", ".yaml", ".yml", ".toml", ".cfg"]):
-            return "config"
         elif any(ext in path_lower for ext in [".md", ".rst", ".txt", ".doc"]):
             return "documentation"
-        elif any(ext in path_lower for ext in [".txt", ".log"]):
-            return "text"
+        elif any(
+            ext in path_lower for ext in [".yaml", ".yml", ".json", ".toml", ".ini"]
+        ):
+            return "config"
         else:
-            return "default"
+            return "text"
 
     def _update_reduction_average(self, new_reduction: float):
         """平均削減率を更新"""
@@ -143,9 +151,10 @@ class FileSizeLimitOptimizer:
         limited_reads = self.read_statistics["size_limited_reads"]
 
         # 加重平均で更新
-        self.read_statistics["average_reduction"] = (
-            current_avg * (limited_reads - 1) + new_reduction
-        ) / limited_reads
+        if limited_reads > 0:
+            self.read_statistics["average_reduction"] = (
+                current_avg * (limited_reads - 1) + new_reduction
+            ) / limited_reads
 
     def adjust_limits_dynamically(self, context: "WorkContext") -> bool:
         """コンテキストに応じた動的制限調整"""
@@ -212,7 +221,9 @@ class FileSizeLimitOptimizer:
             return {
                 "total_file_reads": total_reads,
                 "size_limited_reads": limited_reads,
-                "optimization_rate": (limited_reads / total_reads if total_reads > 0 else 0.0),
+                "optimization_rate": (
+                    limited_reads / total_reads if total_reads > 0 else 0.0
+                ),
                 "average_reduction_rate": self.read_statistics["average_reduction"],
                 "estimated_tokens_saved": self.read_statistics["tokens_saved"],
                 "current_limits": self.size_limits.copy(),
@@ -228,11 +239,8 @@ class FileSizeLimitOptimizer:
 
         optimization_rate = self.read_statistics["size_limited_reads"] / total_reads
         avg_reduction = self.read_statistics["average_reduction"]
-
-        # 効果スコア = 最適化頻度 × 平均削減率 × 品質調整
-        effectiveness = optimization_rate * avg_reduction * 0.85  # 品質維持調整
-
-        return min(1.0, effectiveness)
+        # 効果スコア = 最適化率 × 平均削減率
+        return optimization_rate * avg_reduction
 
 
 class ContextAwareOptimizer:
@@ -254,6 +262,7 @@ class ContextAwareOptimizer:
     def _get_complexity_analyzer(self):
         """ComplexityAnalyzerを遅延インポート"""
         if self.complexity_analyzer is None:
+            from .analyzers import ComplexityAnalyzer
 
             self.complexity_analyzer = ComplexityAnalyzer()
         return self.complexity_analyzer
@@ -281,7 +290,9 @@ class ContextAwareOptimizer:
             user_pattern=user_pattern,
         )
 
-    def _learn_user_pattern(self, user_id: str, operation: str, content_size: int) -> str:
+    def _learn_user_pattern(
+        self, user_id: str, operation: str, content_size: int
+    ) -> str:
         """ユーザーパターンを学習"""
         if user_id not in self.user_patterns:
             self.user_patterns[user_id] = {
@@ -295,7 +306,9 @@ class ContextAwareOptimizer:
         pattern["total_operations"] += 1
 
         # 移動平均で平均コンテンツサイズ更新
-        pattern["avg_content_size"] = pattern["avg_content_size"] * 0.9 + content_size * 0.1
+        pattern["avg_content_size"] = (
+            pattern["avg_content_size"] * 0.9 + content_size * 0.1
+        )
 
         # パターン分類
         most_common_op = max(pattern["operations"], key=pattern["operations"].get)
@@ -324,7 +337,9 @@ class ConcurrentToolCallLimiter:
         self.config = config
 
         # 並列制限設定
-        self.max_concurrent_calls = self.config.get("optimization.max_concurrent_tools", 3)
+        self.max_concurrent_calls = self.config.get(
+            "optimization.max_concurrent_tools", 3
+        )
         self.current_active_calls = 0
         self.call_queue = deque()
 
@@ -379,7 +394,9 @@ class ConcurrentToolCallLimiter:
             )
 
             # カテゴリ別制限チェック
-            category_limit = self.tool_limits.get(tool_category, self.tool_limits["default"])
+            category_limit = self.tool_limits.get(
+                tool_category, self.tool_limits["default"]
+            )
             if current_category_calls >= category_limit:
                 self.call_statistics["queued_calls"] += 1
                 reason = (
@@ -389,7 +406,7 @@ class ConcurrentToolCallLimiter:
                 self.logger.debug(f"Tool call queued: {call_id} - {reason}")
                 return False, reason
 
-            # 全体制限チェック
+            # グローバル制限チェック
             if len(self._active_calls) >= self.max_concurrent_calls:
                 self.call_statistics["queued_calls"] += 1
                 reason = (
@@ -399,13 +416,7 @@ class ConcurrentToolCallLimiter:
                 self.logger.debug(f"Tool call queued: {call_id} - {reason}")
                 return False, reason
 
-            # リソース使用量チェック
-            if context and self._should_throttle_for_resources(context):
-                self.call_statistics["queued_calls"] += 1
-                reason = "Resource throttling active"
-                return False, reason
-
-            # 許可
+            # 呼び出し許可
             self._active_calls[call_id] = {
                 "tool_name": tool_name,
                 "category": tool_category,
@@ -418,7 +429,9 @@ class ConcurrentToolCallLimiter:
                 self.call_statistics["concurrent_peaks"], len(self._active_calls)
             )
 
-            self.logger.debug(f"Tool call permitted: {call_id} ({len(self._active_calls)} active)")
+            self.logger.debug(
+                f"Tool call permitted: {call_id} ({len(self._active_calls)} active)"
+            )
             return True, call_id
 
     def release_call_permission(self, call_id: str):
@@ -448,7 +461,9 @@ class ConcurrentToolCallLimiter:
 
         if any(keyword in tool_lower for keyword in ["read", "write", "edit", "file"]):
             return "file_operations"
-        elif any(keyword in tool_lower for keyword in ["search", "grep", "find", "glob"]):
+        elif any(
+            keyword in tool_lower for keyword in ["search", "grep", "find", "glob"]
+        ):
             return "search_operations"
         elif any(keyword in tool_lower for keyword in ["analyze", "check", "validate"]):
             return "analysis_operations"
@@ -457,13 +472,16 @@ class ConcurrentToolCallLimiter:
 
     def _should_throttle_for_resources(self, context: "WorkContext") -> bool:
         """リソース使用量に基づくスロットリング判定"""
+        if context is None:
+            return False
         # 大きなコンテンツまたは高複雑性の場合はスロットリング
         if context.content_size > 100000 or context.complexity_score > 0.9:
             current_resource_usage = sum(
-                call_info.get("context_size", 0) for call_info in self._active_calls.values()
+                call_info.get("context_size", 0)
+                for call_info in self._active_calls.values()
             )
 
-            # 現在の総リソース使用量が闾値を超える場合
+            # 現在の総リソース使用量が閾値を超える場合
             if current_resource_usage > 500000:  # 500KB相当
                 return True
 
@@ -553,13 +571,12 @@ class ConcurrentToolCallLimiter:
         if total_calls == 0:
             return 1.0
 
-        queued_ratio = self.call_statistics["queued_calls"] / total_calls
-        resource_efficiency = self.call_statistics["resource_savings"] / total_calls
-
-        # 効率スコア = (1 - キュー比率) + リソース効率
-        efficiency = (1 - queued_ratio) * 0.7 + min(resource_efficiency, 0.3)
-
-        return max(0.0, min(1.0, efficiency))
+        queued_calls = self.call_statistics["queued_calls"]
+        if total_calls == 0:
+            return 1.0
+        # 効率性 = 1 - (キューされた呼び出し / 総呼び出し数)
+        efficiency = 1.0 - (queued_calls / total_calls)
+        return max(0.0, efficiency)
 
 
 class RealTimeConfigAdjuster:
@@ -593,7 +610,9 @@ class RealTimeConfigAdjuster:
                 "baseline_metrics": None,
             }
 
-        self.logger.info(f"Started realtime adjustment monitoring for {len(adjustments)} settings")
+        self.logger.info(
+            f"Started realtime adjustment monitoring for {len(adjustments)} settings"
+        )
 
     def stop_realtime_adjustment(self) -> Dict[str, Any]:
         """リアルタイム調整を停止し結果を返す"""

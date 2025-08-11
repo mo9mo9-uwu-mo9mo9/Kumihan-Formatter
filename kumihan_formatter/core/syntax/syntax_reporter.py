@@ -16,7 +16,9 @@ class SyntaxReporter:
     """Handles formatting and reporting of syntax validation results"""
 
     @staticmethod
-    def check_files(file_paths: list[Path], verbose: bool = False) -> dict[str, list[SyntaxError]]:
+    def check_files(
+        file_paths: list[Path], verbose: bool = False
+    ) -> dict[str, list[SyntaxError]]:
         """Check multiple files for syntax errors"""
         validator = KumihanSyntaxValidator()
         results = {}
@@ -39,44 +41,31 @@ class SyntaxReporter:
         if not results:
             return "✅ 記法エラーは見つかりませんでした。"
 
-        report = []
-        total_errors = sum(len(errors) for errors in results.values())
-
-        report.append(
-            f"🔍 {len(results)} ファイルで {total_errors} 個の記法エラーが見つかりました:\n"
-        )
-
-        for file_path, errors in results.items():
-            report.append(f"📁 {file_path}")
-
-            # Group by severity
-            by_severity = {}  # type: ignore
-            for error in errors:
+        # Group errors by severity
+        by_severity = {}
+        for file_errors in results.values():
+            for error in file_errors:
                 if error.severity not in by_severity:
                     by_severity[error.severity] = []
                 by_severity[error.severity].append(error)
 
-            for severity in [
-                ErrorSeverity.ERROR,
-                ErrorSeverity.WARNING,
-                ErrorSeverity.INFO,
-            ]:
-                if severity in by_severity:
-                    for error in by_severity[severity]:
-                        icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[severity.value]
-                        report.append(f"  {icon} Line {error.line_number}: {error.message}")
+        # Format output
+        output_lines = []
+        for severity in [
+            ErrorSeverity.ERROR,
+            ErrorSeverity.WARNING,
+            ErrorSeverity.INFO,
+        ]:
+            if severity in by_severity:
+                for error in by_severity[severity]:
+                    icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[severity.value]
+                    output_lines.append(
+                        f"  {icon} Line {error.line_number}: {error.message}"
+                    )
+                    if error.context:
+                        output_lines.append(f"     Context: {error.context}")
 
-                        if error.context:
-                            report.append(f"     Context: {error.context}")
-
-                        if show_suggestions and error.suggestion:
-                            report.append(f"     💡 Suggestion: {error.suggestion}")
-
-                        report.append("")
-
-            report.append("")
-
-        return "\n".join(report)
+        return "\n".join(output_lines)
 
     @staticmethod
     def format_json_report(results: dict[str, list[SyntaxError]]) -> str:
@@ -140,8 +129,12 @@ def main():
     parser = argparse.ArgumentParser(description="Kumihan記法 構文チェッカー")
     parser.add_argument("files", nargs="+", type=Path, help="チェックするファイルパス")
     parser.add_argument("-v", "--verbose", action="store_true", help="詳細な出力")
-    parser.add_argument("--no-suggestions", action="store_true", help="修正提案を表示しない")
-    parser.add_argument("--format", choices=["text", "json"], default="text", help="出力形式")
+    parser.add_argument(
+        "--no-suggestions", action="store_true", help="修正提案を表示しない"
+    )
+    parser.add_argument(
+        "--format", choices=["text", "json"], default="text", help="出力形式"
+    )
 
     args = parser.parse_args()
 

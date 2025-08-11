@@ -10,7 +10,8 @@ from typing import Any, List
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
-from .core.template_manager import RenderContext, TemplateManager
+from .core.template_manager import TemplateManager
+from .core.template_context import RenderContext
 from .core.toc_generator import TOCGenerator
 from .core.utilities.logger import get_logger, log_performance
 from .simple_config import create_simple_config
@@ -55,7 +56,7 @@ class Renderer:
     def render(
         self,
         ast: list[Node],
-        config: Any = None,
+        config: "Any | None" = None,  # BaseConfig | ConfigManager
         template: str | None = None,
         title: str | None = None,
         source_text: str | None = None,
@@ -68,7 +69,7 @@ class Renderer:
 
         Args:
             ast: List of AST nodes to render
-            config: Optional configuration
+            config: Optional configuration (BaseConfig or ConfigManager)
             template: Optional template name
             title: Page title
             source_text: Source text for toggle feature (footnotes already removed)
@@ -117,7 +118,10 @@ class Renderer:
         footnotes_html = None
         has_footnotes = False
 
-        if hasattr(self.html_renderer, "footnotes_data") and self.html_renderer.footnotes_data:
+        if (
+            hasattr(self.html_renderer, "footnotes_data")
+            and self.html_renderer.footnotes_data
+        ):
             try:
                 footnotes_data = self.html_renderer.footnotes_data
                 footnote_html = footnotes_data["manager"].generate_footnote_html(
@@ -181,7 +185,9 @@ class Renderer:
         Returns:
             str: Rendered HTML
         """
-        self.logger.info(f"Rendering with custom context using template: {template_name}")
+        self.logger.info(
+            f"Rendering with custom context using template: {template_name}"
+        )
 
         # Generate basic content
         body_content = self.html_renderer.render_nodes(ast)
@@ -283,4 +289,4 @@ def render(
     )
 
 
-HTMLRenderer = Renderer
+# HTMLRenderer = Renderer  # Removed: conflicts with imported HTMLRenderer

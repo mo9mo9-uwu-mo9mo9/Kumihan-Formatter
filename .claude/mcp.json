@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "serena": {
-      "command": "uv",
-      "args": ["run", "serena-mcp-server"],
-      "cwd": "./serena"
-    }
-  }
-}

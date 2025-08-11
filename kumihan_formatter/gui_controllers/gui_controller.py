@@ -44,7 +44,6 @@ class GuiController:
         """ログビューアーへのアクセス（後方互換性）"""
         if self.main_controller:
             return self.main_controller.log_viewer
-        return None
 
     @log_viewer.setter
     def log_viewer(self, value: Any) -> None:

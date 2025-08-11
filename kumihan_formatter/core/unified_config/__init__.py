@@ -14,9 +14,9 @@ Issue #771対応: 分散した設定クラスを統合し、
 
 from .config_adapters import (
     BaseConfigAdapter,
+    EnhancedConfigAdapter,
     ErrorConfigManagerAdapter,
     ParallelProcessingConfigAdapter,
-    EnhancedConfigAdapter,
 )
 from .config_loader import ConfigFormat, ConfigLoader
 from .config_models import (

@@ -14,7 +14,9 @@ class ValidationReporter:
     def __init__(self) -> None:
         pass
 
-    def generate_report(self, issues: list[ValidationIssue], format_type: str = "text") -> str:
+    def generate_report(
+        self, issues: list[ValidationIssue], format_type: str = "text"
+    ) -> str:
         """
         Generate validation report
 
@@ -27,32 +29,18 @@ class ValidationReporter:
         """
         if format_type == "json":
             return self._generate_json_report(issues)
-        elif format_type == "html":
-            return self._generate_html_report(issues)
-        else:
-            return self._generate_text_report(issues)
 
     def _generate_text_report(self, issues: list[ValidationIssue]) -> str:
         """Generate text format report"""
         if not issues:
             return "✅ No validation issues found."
 
-        lines = ["📋 Validation Report", "=" * 50]
+        lines = []
+        grouped = self._group_issues_by_level(issues)
 
-        # Group by severity
-        errors = [i for i in issues if i.is_error()]
-        warnings = [i for i in issues if i.is_warning()]
-        info = [i for i in issues if i.is_info()]
-
-        lines.append(f"Summary: {len(errors)} errors, {len(warnings)} warnings, {len(info)} info")
-        lines.append("")
-
-        for level, items, icon in [
-            ("ERRORS", errors, "❌"),
-            ("WARNINGS", warnings, "⚠️ "),
-            ("INFO", info, "ℹ️ "),
-        ]:
+        for level, items in grouped.items():
             if items:
+                icon = {"error": "❌", "warning": "⚠️", "info": "ℹ️"}.get(level, "•")
                 lines.append(f"{icon} {level} ({len(items)})")
                 lines.append("-" * 30)
                 for issue in items:
@@ -60,6 +48,20 @@ class ValidationReporter:
                 lines.append("")
 
         return "\n".join(lines)
+
+    def _group_issues_by_level(
+        self, issues: list[ValidationIssue]
+    ) -> dict[str, list[ValidationIssue]]:
+        """Group issues by level"""
+        grouped = {"error": [], "warning": [], "info": []}
+        for issue in issues:
+            if issue.is_error():
+                grouped["error"].append(issue)
+            elif issue.is_warning():
+                grouped["warning"].append(issue)
+            else:
+                grouped["info"].append(issue)
+        return grouped
 
     def _generate_json_report(self, issues: list[ValidationIssue]) -> str:
         """Generate JSON format report"""
@@ -89,30 +91,16 @@ class ValidationReporter:
     def _generate_html_report(self, issues: list[ValidationIssue]) -> str:
         """Generate HTML format report"""
         if not issues:
-            return "<div class='validation-success'>✅ No validation issues found.</div>"
+            return (
+                "<div class='validation-success'>✅ No validation issues found.</div>"
+            )
 
-        html_parts = [
-            '<div class="validation-report">',
-            "<h2>📋 Validation Report</h2>",
-        ]
+        html_parts = []
+        grouped = self._group_issues_by_level(issues)
 
-        # Summary
-        errors = [i for i in issues if i.is_error()]
-        warnings = [i for i in issues if i.is_warning()]
-        info = [i for i in issues if i.is_info()]
-
-        html_parts.append(
-            f'<div class="summary">Summary: {len(errors)} errors, '
-            f"{len(warnings)} warnings, {len(info)} info</div>"
-        )
-
-        # Issues by category
-        for level, items, class_name in [
-            ("Errors", errors, "errors"),
-            ("Warnings", warnings, "warnings"),
-            ("Info", info, "info"),
-        ]:
+        for level, items in grouped.items():
             if items:
+                class_name = f"validation-{level}"
                 html_parts.append(f'<div class="{class_name}">')
                 html_parts.append(f"<h3>{level} ({len(items)})</h3>")
                 html_parts.append("<ul>")
@@ -124,12 +112,12 @@ class ValidationReporter:
                         )
                     html_parts.append(f'<span class="message">{issue.message}</span>')
                     if issue.suggestion:
-                        html_parts.append(f' <span class="suggestion">({issue.suggestion})</span>')
+                        html_parts.append(
+                            f' <span class="suggestion">({issue.suggestion})</span>'
+                        )
                     html_parts.append("</li>")
                 html_parts.append("</ul>")
                 html_parts.append("</div>")
-
-        html_parts.append("</div>")
 
         return "\n".join(html_parts)
 
@@ -142,7 +130,9 @@ class ValidationReporter:
         if not issues:
             print("✅ No validation issues found.")
         else:
-            print(f"Validation complete: {errors} errors, {warnings} warnings, {info} info")
+            print(
+                f"Validation complete: {errors} errors, {warnings} warnings, {info} info"
+            )
 
             if errors > 0:
                 print("❌ Errors must be fixed before proceeding.")

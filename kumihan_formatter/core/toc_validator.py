@@ -70,7 +70,9 @@ class TOCValidator:
                     if children:
                         check_required_fields(children)
                 else:
-                    self.issues.append(f"エントリー {i}: Invalid entry format or structure")
+                    self.issues.append(
+                        f"エントリー {i}: Invalid entry format or structure"
+                    )
 
         check_required_fields(entries)
 
@@ -88,11 +90,17 @@ class TOCValidator:
     def _check_required_fields(self, entry: dict[str, Any], index: int) -> None:
         """Check if all required fields are present"""
         if "title" not in entry:
-            self.issues.append(f"エントリー {index}: 必須フィールド 'title' が見つかりません")
+            self.issues.append(
+                f"エントリー {index}: 必須フィールド 'title' が見つかりません"
+            )
         if "level" not in entry:
-            self.issues.append(f"エントリー {index}: 必須フィールド 'level' が見つかりません")
+            self.issues.append(
+                f"エントリー {index}: 必須フィールド 'level' が見つかりません"
+            )
         if "id" not in entry:
-            self.issues.append(f"エントリー {index}: 必須フィールド 'id' が見つかりません")
+            self.issues.append(
+                f"エントリー {index}: 必須フィールド 'id' が見つかりません"
+            )
 
     def _validate_level_field(self, entry: dict[str, Any], index: int) -> None:
         """Validate level field type and range"""
@@ -118,9 +126,13 @@ class TOCValidator:
             if not id_value or not str(id_value).strip():
                 self.issues.append(f"エントリー {index}: Empty ID detected")
             elif not isinstance(id_value, str):
-                self.issues.append(f"エントリー {index}: Invalid ID format - ID must be string")
+                self.issues.append(
+                    f"エントリー {index}: Invalid ID format - ID must be string"
+                )
             elif not self._is_valid_id_format(str(id_value)):
-                self.issues.append(f"エントリー {index}: Invalid ID format - '{id_value}'")
+                self.issues.append(
+                    f"エントリー {index}: Invalid ID format - '{id_value}'"
+                )
 
     def _is_valid_id_format(self, id_value: str) -> bool:
         """Check if ID has valid format (basic validation)"""
@@ -182,7 +194,9 @@ class TOCValidator:
                     continue
 
                 if heading_id in seen_ids:
-                    self.issues.append(f"重複する見出しID: '{heading_id}' " f"('{title}')")
+                    self.issues.append(
+                        f"重複する見出しID: '{heading_id}' " f"('{title}')"
+                    )
                 else:
                     seen_ids.add(heading_id)
 

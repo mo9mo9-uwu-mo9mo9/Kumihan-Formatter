@@ -94,8 +94,12 @@ class SystemMonitor:
         self.config = config
 
         # 監視データ
-        self.metrics_history: deque = deque(maxlen=config.get("metrics_history_size", 10000))
-        self.anomaly_history: deque = deque(maxlen=config.get("anomaly_history_size", 1000))
+        self.metrics_history: deque = deque(
+            maxlen=config.get("metrics_history_size", 10000)
+        )
+        self.anomaly_history: deque = deque(
+            maxlen=config.get("anomaly_history_size", 1000)
+        )
 
         # 異常検出閾値
         self.thresholds = {
@@ -109,7 +113,9 @@ class SystemMonitor:
 
         # 統計的異常検出
         self.statistical_window = config.get("statistical_window", 100)
-        self.anomaly_sensitivity = config.get("anomaly_sensitivity", 2.0)  # 標準偏差倍数
+        self.anomaly_sensitivity = config.get(
+            "anomaly_sensitivity", 2.0
+        )  # 標準偏差倍数
 
         # 監視状態
         self.monitoring_active = False
@@ -120,7 +126,9 @@ class SystemMonitor:
         try:
             if not self.monitoring_active:
                 self.monitoring_active = True
-                self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+                self.monitoring_thread = threading.Thread(
+                    target=self._monitoring_loop, daemon=True
+                )
                 self.monitoring_thread.start()
                 self.logger.info("System monitoring started")
 
@@ -226,69 +234,63 @@ class SystemMonitor:
             _ = sum(range(1000))
             return time.time() - start
         except Exception:
-            return 0.1
+            return 0.0
 
     def _measure_prediction_accuracy(self) -> float:
         """予測精度測定"""
         try:
             # 最近の予測精度履歴から計算（簡略化）
-            recent_metrics = list(self.metrics_history)[-10:] if self.metrics_history else []
+            recent_metrics = (
+                list(self.metrics_history)[-10:] if self.metrics_history else []
+            )
             if recent_metrics:
                 accuracies = [
-                    m.prediction_accuracy for m in recent_metrics if m.prediction_accuracy > 0
+                    m.prediction_accuracy
+                    for m in recent_metrics
+                    if m.prediction_accuracy > 0
                 ]
                 if NUMPY_AVAILABLE and accuracies:
-                    return np.mean(accuracies)
-                elif accuracies:
-                    return sum(accuracies) / len(accuracies)
-                else:
-                    return 0.9
-            return 0.9
+                    return float(np.mean(accuracies))
+            return 0.0
         except Exception:
-            return 0.9
+            return 0.0
 
     def _measure_error_rate(self) -> float:
         """エラー率測定"""
         try:
             # 最近のエラー率履歴から計算（簡略化）
-            recent_metrics = list(self.metrics_history)[-20:] if self.metrics_history else []
+            recent_metrics = (
+                list(self.metrics_history)[-20:] if self.metrics_history else []
+            )
             if recent_metrics:
-                error_rates = [m.error_rate for m in recent_metrics if m.error_rate >= 0]
+                error_rates = [
+                    m.error_rate for m in recent_metrics if m.error_rate >= 0
+                ]
                 if NUMPY_AVAILABLE and error_rates:
-                    return np.mean(error_rates)
-                elif error_rates:
-                    return sum(error_rates) / len(error_rates)
-                else:
-                    return 0.01
-            return 0.01
+                    return float(np.mean(error_rates))
+            return 0.0
         except Exception:
-            return 0.01
+            return 0.0
 
     def _measure_throughput(self) -> float:
         """スループット測定"""
         try:
             # スループット測定（簡略化）
-            import random
-
             if NUMPY_AVAILABLE:
                 return 120.0 + np.random.normal(0, 10)  # 仮想的なスループット
-            else:
-                return 120.0 + random.gauss(0, 10)  # 標準ライブラリを使用
+            return 120.0
         except Exception:
-            return 100.0
+            return 0.0
 
     def _measure_cache_hit_rate(self) -> float:
         """キャッシュヒット率測定"""
         try:
             # キャッシュヒット率測定（簡略化）
-            import random
-
             if NUMPY_AVAILABLE:
                 return 0.75 + np.random.normal(0, 0.1)  # 仮想的なヒット率
-            else:
-                return 0.75 + random.gauss(0, 0.1)  # 標準ライブラリを使用
+            return 0.75
         except Exception:
-            return 0.8
+            return 0.0
 
     def _detect_anomalies(self, current_metrics: SystemMetrics) -> List[AnomalyEvent]:
         """異常検出"""
@@ -387,7 +389,9 @@ class SystemMonitor:
 
         return anomalies
 
-    def _detect_statistical_anomalies(self, current_metrics: SystemMetrics) -> List[AnomalyEvent]:
+    def _detect_statistical_anomalies(
+        self, current_metrics: SystemMetrics
+    ) -> List[AnomalyEvent]:
         """統計的異常検出"""
         anomalies = []
 
@@ -395,31 +399,51 @@ class SystemMonitor:
             if len(self.metrics_history) < self.statistical_window:
                 return anomalies
 
-            # 最近のメトリクス
-            recent_metrics = list(self.metrics_history)[-self.statistical_window :]
-
-            # 各メトリクスの統計的異常検出
+            # 各メトリクスに対して統計的異常検出を実施
             metrics_to_check = [
-                ("cpu_usage", AnomalyType.PERFORMANCE_DEGRADATION),
-                ("memory_usage", AnomalyType.MEMORY_LEAK),
-                ("response_time", AnomalyType.RESPONSE_TIME_INCREASE),
-                ("prediction_accuracy", AnomalyType.PREDICTION_ACCURACY_DROP),
-                ("error_rate", AnomalyType.ERROR_RATE_SPIKE),
+                (
+                    "cpu_usage",
+                    current_metrics.cpu_usage,
+                    AnomalyType.PERFORMANCE_DEGRADATION,
+                ),
+                ("memory_usage", current_metrics.memory_usage, AnomalyType.MEMORY_LEAK),
+                (
+                    "response_time",
+                    current_metrics.response_time,
+                    AnomalyType.RESPONSE_TIME_INCREASE,
+                ),
+                (
+                    "prediction_accuracy",
+                    current_metrics.prediction_accuracy,
+                    AnomalyType.PREDICTION_ACCURACY_DROP,
+                ),
+                (
+                    "error_rate",
+                    current_metrics.error_rate,
+                    AnomalyType.ERROR_RATE_SPIKE,
+                ),
             ]
 
-            for metric_name, anomaly_type in metrics_to_check:
-                historical_values = [getattr(m, metric_name) for m in recent_metrics]
-                current_value = getattr(current_metrics, metric_name)
+            for metric_name, current_value, anomaly_type in metrics_to_check:
+                # 履歴データから該当メトリクスの値を取得
+                recent_metrics = list(self.metrics_history)[-self.statistical_window :]
+                historical_values = []
 
-                if len(historical_values) > 10:
+                for m in recent_metrics:
+                    if hasattr(m, metric_name):
+                        val = getattr(m, metric_name)
+                        if val is not None and val != float("inf"):
+                            historical_values.append(val)
+
+                if len(historical_values) >= 10:  # 最小データ数
                     if NUMPY_AVAILABLE:
                         mean_val = np.mean(historical_values)
                         std_val = np.std(historical_values)
                     else:
                         mean_val = sum(historical_values) / len(historical_values)
-                        variance = sum((x - mean_val) ** 2 for x in historical_values) / len(
-                            historical_values
-                        )
+                        variance = sum(
+                            (x - mean_val) ** 2 for x in historical_values
+                        ) / len(historical_values)
                         std_val = variance**0.5
 
                     if std_val > 0:
@@ -427,7 +451,9 @@ class SystemMonitor:
 
                         if z_score > self.anomaly_sensitivity:
                             severity = (
-                                "critical" if z_score > 4 else "high" if z_score > 3 else "medium"
+                                "critical"
+                                if z_score > 4
+                                else "high" if z_score > 3 else "medium"
                             )
 
                             anomalies.append(
@@ -453,7 +479,9 @@ class SystemMonitor:
 
         return anomalies
 
-    def _detect_trend_anomalies(self, current_metrics: SystemMetrics) -> List[AnomalyEvent]:
+    def _detect_trend_anomalies(
+        self, current_metrics: SystemMetrics
+    ) -> List[AnomalyEvent]:
         """トレンド異常検出"""
         anomalies = []
 
@@ -462,15 +490,14 @@ class SystemMonitor:
                 # scipy利用不可時はトレンド分析をスキップ
                 return anomalies
 
-            if len(self.metrics_history) < 30:  # 最小30データポイント
+            if len(self.metrics_history) < 20:
                 return anomalies
 
-            recent_metrics = list(self.metrics_history)[-30:]
+            recent_metrics = list(self.metrics_history)[-20:]
 
             # 予測精度の下降トレンド検出
             accuracy_values = [m.prediction_accuracy for m in recent_metrics]
             if len(accuracy_values) >= 10 and NUMPY_AVAILABLE:
-                # 線形回帰でトレンド検出
                 x = np.arange(len(accuracy_values))
                 slope, _, r_value, _, _ = stats.linregress(x, accuracy_values)
 
@@ -482,7 +509,8 @@ class SystemMonitor:
                             anomaly_type=AnomalyType.PREDICTION_ACCURACY_DROP,
                             severity="medium",
                             description=(
-                                f"Declining accuracy trend: slope={slope:.4f}, " f"r={r_value:.3f}"
+                                f"Declining accuracy trend: slope={slope:.4f}, "
+                                f"r={r_value:.3f}"
                             ),
                             affected_components=["prediction", "trend"],
                             metrics={"slope": slope, "r_value": r_value},
@@ -527,6 +555,10 @@ class SystemMonitor:
         """最近の異常取得"""
         try:
             cutoff_time = time.time() - (hours * 3600)
-            return [anomaly for anomaly in self.anomaly_history if anomaly.timestamp >= cutoff_time]
+            return [
+                anomaly
+                for anomaly in self.anomaly_history
+                if anomaly.timestamp >= cutoff_time
+            ]
         except Exception:
             return []

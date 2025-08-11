@@ -77,7 +77,9 @@ class PerformanceBenchmark:
         Returns:
             Dict[str, Any]: ベンチマーク結果
         """
-        self.logger.info(f"Starting benchmark: {benchmark_name} ({iterations} iterations)")
+        self.logger.info(
+            f"Starting benchmark: {benchmark_name} ({iterations} iterations)"
+        )
 
         # ウォームアップ実行
         for i in range(warmup_iterations):
@@ -90,7 +92,7 @@ class PerformanceBenchmark:
         # ベンチマーク実行
         execution_times = []
         memory_usages = []
-        errors = []
+        errors: List[str] = []
 
         for iteration in range(iterations):
             try:
@@ -168,18 +170,16 @@ class PerformanceBenchmark:
             return {}
 
         stats = {
-            "execution_time": {
-                "mean": mean(execution_times),
-                "median": median(execution_times),
-                "min": min(execution_times),
-                "max": max(execution_times),
-                "std_dev": stdev(execution_times) if len(execution_times) > 1 else 0.0,
-                "cv_percent": (
-                    (stdev(execution_times) / mean(execution_times)) * 100
-                    if len(execution_times) > 1 and mean(execution_times) > 0
-                    else 0.0
-                ),
-            }
+            "mean": mean(execution_times),
+            "median": median(execution_times),
+            "min": min(execution_times),
+            "max": max(execution_times),
+            "std_dev": stdev(execution_times) if len(execution_times) > 1 else 0.0,
+            "cv_percent": (
+                (stdev(execution_times) / mean(execution_times)) * 100
+                if len(execution_times) > 1 and mean(execution_times) > 0
+                else 0.0
+            ),
         }
 
         if memory_usages:
@@ -244,7 +244,6 @@ class PerformanceBenchmark:
         if not benchmark_names:
             return {"error": "No benchmark names provided"}
 
-        # 該当するベンチマーク結果を取得
         comparison_data = {}
         for name in benchmark_names:
             matching_results = [
@@ -277,16 +276,20 @@ class PerformanceBenchmark:
         if not metric_values:
             return {"error": f"Metric {metric} not found in any benchmark"}
 
-        # 比較分析
+        # 比較分析を実行
         best_performance = min(metric_values.items(), key=lambda x: x[1])
         worst_performance = max(metric_values.items(), key=lambda x: x[1])
 
+        # 改善率計算
         improvements = {}
-        baseline_value = worst_performance[1]
-        for name, value in metric_values.items():
-            if baseline_value > 0:
-                improvement_percent = ((baseline_value - value) / baseline_value) * 100
-                improvements[name] = improvement_percent
+        if len(metric_values) > 1:
+            baseline_value = best_performance[1]
+            for name, value in metric_values.items():
+                if name != best_performance[0]:
+                    improvement_percent = (
+                        (baseline_value - value) / baseline_value
+                    ) * 100
+                    improvements[name] = improvement_percent
 
         comparison_result = {
             "metric": metric,
@@ -317,7 +320,9 @@ class PerformanceBenchmark:
         """
         # フィルタリング
         if category:
-            filtered_results = [r for r in self.benchmark_results if r.get("category") == category]
+            filtered_results = [
+                r for r in self.benchmark_results if r.get("category") == category
+            ]
         else:
             filtered_results = self.benchmark_results
 
@@ -325,33 +330,22 @@ class PerformanceBenchmark:
             return "<html><body><h1>No benchmark results found</h1></body></html>"
 
         # HTMLレポート生成
-        html_content = f"""<!DOCTYPE html>
-<html lang="ja">
+        html_content = """
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Kumihan-Formatter ベンチマークレポート</title>
+    <title>Benchmark Report</title>
     <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        .container {{ max-width: 1200px; margin: 0 auto; }}
-        .benchmark-card {{
-            background: #f8f9fa; padding: 15px; margin: 10px 0;
-            border-radius: 6px; border-left: 4px solid #007bff;
-        }}
-        .stats-table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
-        .stats-table th, .stats-table td {{
-            border: 1px solid #ddd; padding: 8px; text-align: left;
-        }}
-        .stats-table th {{ background-color: #007bff; color: white; }}
-        .success {{ color: #28a745; }}
-        .warning {{ color: #ffc107; }}
-        .error {{ color: #dc3545; }}
+        .benchmark-card { margin: 20px; padding: 15px; border: 1px solid #ccc; }
+        .stats-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .stats-table th, .stats-table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        .success { color: green; }
+        .warning { color: orange; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏃‍♂️ Kumihan-Formatter ベンチマークレポート</h1>
-        <p>生成時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p>ベンチマーク結果: {len(filtered_results)}件</p>
+    <h1>ベンチマークレポート</h1>
+    <div class="benchmark-container">
 """
 
         for result in filtered_results[-10:]:  # 最新10件
@@ -360,30 +354,50 @@ class PerformanceBenchmark:
                 if result["iterations"] > 0
                 else 0
             )
+            success_rate_str = f"{success_rate:.1f}"
 
             status_class = (
-                "success" if success_rate == 100 else "warning" if success_rate > 50 else "error"
+                "success"
+                if success_rate == 100
+                else "warning" if success_rate > 50 else "error"
             )
 
+            # f-string構文エラー回避のため変数に格納
+            result_name = result["name"]
+            result_category = result.get("category", "general")
+            result_timestamp = result["timestamp"]
+            successful_iterations = result["successful_iterations"]
+            total_iterations = result["iterations"]
+
             html_content += f"""
-        <div class="benchmark-card">
-            <h3>{result['name']} ({result.get('category', 'general')})</h3>
-            <p>実行時刻: {result['timestamp']}</p>
-            <p class="{status_class}">成功率: {success_rate:.1f}%
-               ({result['successful_iterations']}/{result['iterations']} iterations)</p>
+<div class="benchmark-card">
+            <h3>{result_name} ({result_category})</h3>
+            <p>実行時刻: {result_timestamp}</p>
+            <p class="{status_class}">成功率: {success_rate_str}%</p>
+            <p>実行結果: ({successful_iterations}/{total_iterations} iterations)</p>
+</div>
 """
 
             if "statistics" in result and "execution_time" in result["statistics"]:
                 stats = result["statistics"]["execution_time"]
+
+                # f-string構文エラー回避のため事前にフォーマット
+                mean_time = f"{stats['mean']:.4f}"
+                median_time = f"{stats['median']:.4f}"
+                min_time = f"{stats['min']:.4f}"
+                max_time = f"{stats['max']:.4f}"
+                std_dev_time = f"{stats['std_dev']:.4f}"
+                cv_percent = f"{stats['cv_percent']:.2f}"
+
                 html_content += f"""
             <table class="stats-table">
                 <tr><th>メトリクス</th><th>値</th></tr>
-                <tr><td>平均実行時間</td><td>{stats['mean']:.4f}秒</td></tr>
-                <tr><td>中央値</td><td>{stats['median']:.4f}秒</td></tr>
-                <tr><td>最小値</td><td>{stats['min']:.4f}秒</td></tr>
-                <tr><td>最大値</td><td>{stats['max']:.4f}秒</td></tr>
-                <tr><td>標準偏差</td><td>{stats['std_dev']:.4f}秒</td></tr>
-                <tr><td>変動係数</td><td>{stats['cv_percent']:.2f}%</td></tr>
+                <tr><td>平均実行時間</td><td>{mean_time}秒</td></tr>
+                <tr><td>中央値</td><td>{median_time}秒</td></tr>
+                <tr><td>最小値</td><td>{min_time}秒</td></tr>
+                <tr><td>最大値</td><td>{max_time}秒</td></tr>
+                <tr><td>標準偏差</td><td>{std_dev_time}秒</td></tr>
+                <tr><td>変動係数</td><td>{cv_percent}%</td></tr>
             </table>
 """
 
@@ -407,7 +421,10 @@ class PerformanceBenchmark:
         # tmp/配下に保存
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
-        report_path = tmp_dir / f"benchmark_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        report_path = (
+            tmp_dir
+            / f"benchmark_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        )
 
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
@@ -420,26 +437,35 @@ class PerformanceBenchmark:
         if not self.benchmark_results:
             return {"total_benchmarks": 0}
 
-        # カテゴリ別集計
-        category_counts: Dict[str, int] = {}
-        total_iterations = 0
+        # カテゴリ別統計
+        categories = {}
         total_successful = 0
+        total_iterations = 0
 
         for result in self.benchmark_results:
             category = result.get("category", "general")
-            category_counts[category] = category_counts.get(category, 0) + 1
-            total_iterations += result["iterations"]
-            total_successful += result["successful_iterations"]
+            if category not in categories:
+                categories[category] = {
+                    "count": 0,
+                    "successful": 0,
+                    "total_iterations": 0,
+                }
 
-        success_rate = (total_successful / total_iterations * 100) if total_iterations > 0 else 0
+            categories[category]["count"] += 1
+            categories[category]["successful"] += result.get("successful_iterations", 0)
+            categories[category]["total_iterations"] += result.get("iterations", 0)
+
+            total_successful += result.get("successful_iterations", 0)
+            total_iterations += result.get("iterations", 0)
 
         return {
             "total_benchmarks": len(self.benchmark_results),
-            "categories": category_counts,
+            "total_successful_iterations": total_successful,
             "total_iterations": total_iterations,
-            "successful_iterations": total_successful,
-            "overall_success_rate_percent": success_rate,
+            "categories": categories,
             "latest_benchmark": (
-                self.benchmark_results[-1]["timestamp"] if self.benchmark_results else None
+                self.benchmark_results[-1]["timestamp"]
+                if self.benchmark_results
+                else None
             ),
         }

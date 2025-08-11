@@ -44,7 +44,9 @@ class CheckSyntaxCommand:
                 get_console_ui().error("チェックするファイルが見つかりません")
                 sys.exit(1)
 
-            get_console_ui().info("構文チェック", f"{len(file_paths)} ファイルをチェック中...")
+            get_console_ui().info(
+                "構文チェック", f"{len(file_paths)} ファイルをチェック中..."
+            )
 
             # Run syntax check
             results = check_files(file_paths, verbose=False)
@@ -72,10 +74,9 @@ class CheckSyntaxCommand:
                 }
             else:
                 return {"success": True, "error_count": 0, "results": {}}
-
         except Exception as e:
             get_console_ui().error(f"構文チェック中にエラーが発生しました: {e}")
-            return {"success": False, "error": str(e), "results": {}}
+            return {"success": False, "error_count": -1, "results": {}}
 
     def _collect_files(self, file_patterns: list[str], recursive: bool) -> list[Path]:
         """Collect files to check from patterns"""
@@ -88,18 +89,24 @@ class CheckSyntaxCommand:
                 if path.suffix == ".txt":
                     file_paths.append(path)
                 else:
-                    get_console_ui().warning(f"スキップ: {pattern} (txtファイルではありません)")
+                    get_console_ui().warning(
+                        f"スキップ: {pattern} (txtファイルではありません)"
+                    )
             elif path.is_dir():
                 if recursive:
                     # Find all .txt files recursively
                     txt_files = list(path.rglob("*.txt"))
                     file_paths.extend(txt_files)
-                    get_console_ui().info("検索", f"{path} から {len(txt_files)} ファイルを発見")
+                    get_console_ui().info(
+                        "検索", f"{path} から {len(txt_files)} ファイルを発見"
+                    )
                 else:
                     # Find .txt files in directory (non-recursive)
                     txt_files = list(path.glob("*.txt"))
                     file_paths.extend(txt_files)
-                    get_console_ui().info("検索", f"{path} から {len(txt_files)} ファイルを発見")
+                    get_console_ui().info(
+                        "検索", f"{path} から {len(txt_files)} ファイルを発見"
+                    )
             else:
                 get_console_ui().warning(f"ファイルが見つかりません: {pattern}")
 
@@ -110,7 +117,9 @@ class CheckSyntaxCommand:
         report = format_error_report(results, show_suggestions)
 
         if not results:
-            get_console_ui().success("構文チェック完了", "記法エラーは見つかりませんでした")
+            get_console_ui().success(
+                "構文チェック完了", "記法エラーは見つかりませんでした"
+            )
         else:
             total_errors = sum(len(errors) for errors in results.values())
             error_count = sum(

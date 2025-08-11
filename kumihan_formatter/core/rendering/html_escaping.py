@@ -73,7 +73,7 @@ def render_attributes_with_enhancements(
     """
     # Always create attributes dict to ensure Phase 4 features are applied
     if not attributes:
-        attributes = {}
+        attributes: dict[str, Any] = {}
     else:
         attributes = attributes.copy()
 
@@ -109,13 +109,8 @@ def _process_attribute_value(key: str, value: Any) -> Any:
     if key in ["style"]:
         # Process inline styles with color validation
         return _process_style_attribute(str(value))
-    elif key in ["color", "background-color", "border-color"]:
-        # Process color attributes
-        return _process_color_value(str(value))
-    elif key == "class":
-        # Normalize CSS class names
-        return _normalize_css_classes(str(value))
 
+    # Return original value for other attributes
     return value
 
 
@@ -124,24 +119,23 @@ def _process_style_attribute(style: str) -> str:
     if not style:
         return style
 
-    # Simple style processing - could be enhanced
-    style_parts = []
+    # Process style properties
+    parts = []
     for part in style.split(";"):
-        part = part.strip()
         if ":" in part:
             prop, val = part.split(":", 1)
             prop = prop.strip()
             val = val.strip()
 
             # Process color properties
-            if "color" in prop.lower():
-                processed_color = _process_color_value(val)
-                if processed_color:
-                    style_parts.append(f"{prop}: {processed_color}")
-            else:
-                style_parts.append(f"{prop}: {val}")
+            if prop in ["color", "background-color", "border-color"]:
+                val = _process_color_value(val)
 
-    return "; ".join(style_parts)
+            parts.append(f"{prop}: {val}")
+        else:
+            parts.append(part.strip())
+
+    return "; ".join(parts)
 
 
 def _process_color_value(color: str) -> str:
@@ -149,16 +143,29 @@ def _process_color_value(color: str) -> str:
     if not color:
         return color
 
+    # Basic color validation and normalization
     color = color.strip()
 
-    # Basic color validation - could be enhanced with HTMLFormatter
+    # Support common color formats
     if color.startswith("#") and len(color) in [4, 7]:
-        return color.lower()
-    elif color.startswith(("rgb(", "rgba(", "hsl(", "hsla(")):
         return color
-    elif color.lower() in ["black", "white", "red", "green", "blue", "transparent"]:
-        return color.lower()
+    elif color.startswith("rgb"):
+        return color
+    elif color in [
+        "red",
+        "blue",
+        "green",
+        "black",
+        "white",
+        "yellow",
+        "orange",
+        "purple",
+        "gray",
+        "grey",
+    ]:
+        return color
 
+    # Return original if format is unknown
     return color
 
 
@@ -167,11 +174,9 @@ def _normalize_css_classes(class_string: str) -> str:
     if not class_string:
         return class_string
 
-    # Split, clean, and rejoin class names
     classes = []
     for cls in class_string.split():
-        cls = cls.strip()
-        if cls:
+        if cls.strip():
             # Normalize to lowercase with hyphens
             normalized = cls.lower().replace("_", "-")
             classes.append(normalized)

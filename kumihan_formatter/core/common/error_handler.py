@@ -125,10 +125,6 @@ class ErrorHandlerChain:
                 handler.handle_error(error)
                 return True
 
-        # If no handler can handle the error, use default behavior
-        print(f"UNHANDLED ERROR: {error}")
-        return False
-
     def get_chain_info(self) -> dict[str, Any]:
         """Get information about the handler chain"""
         return {

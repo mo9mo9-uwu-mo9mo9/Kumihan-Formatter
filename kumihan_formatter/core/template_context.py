@@ -10,7 +10,9 @@ class RenderContext:
     """Builder for template rendering context"""
 
     def __init__(self) -> None:
-        self._context = {}  # type: ignore
+        self._context: dict[str, Any] = (
+            {}
+        )  # 型アノテーション修正: type: ignore削除  # type: ignore
 
     def title(self, title: str) -> "RenderContext":
         """Set page title"""

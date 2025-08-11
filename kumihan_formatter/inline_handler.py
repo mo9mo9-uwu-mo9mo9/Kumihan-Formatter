@@ -4,7 +4,7 @@ This module contains inline notation parsing logic extracted from the monolithic
 Handles list processing and other inline elements.
 """
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .parser import Parser
@@ -31,20 +31,12 @@ class InlineHandler:
         self.parser = parser_instance
         self.logger = get_logger(__name__)
 
-    def parse_list_fast(self, lines: list[str], current: int) -> tuple[Optional[Node], int]:
+    def parse_list_fast(
+        self, lines: list[str], current: int
+    ) -> tuple[Optional[Node], int]:
         """高速リスト解析"""
         if current >= len(lines):
             return None, current + 1
-
-        line = lines[current].strip()
-        list_type = self.parser.list_parser.is_list_line(line)
-
-        if list_type == "unordered":
-            node, next_index = self.parser.list_parser.parse_unordered_list(lines, current)
-        else:
-            node, next_index = self.parser.list_parser.parse_ordered_list(lines, current)
-
-        return node, next_index
 
     def parse_list_fast_internal(self) -> Optional[Node]:
         """内部用高速リスト解析（current位置を自動更新）"""
@@ -95,17 +87,9 @@ class InlineHandler:
 
                 return node, next_index
 
-        except Exception as e:
-            # リスト解析エラーを記録して継続
-            self.parser._record_graceful_error(
-                current + 1,
-                1,
-                "list_parse_error",
-                "error",
-                f"リスト解析エラー: {str(e)}",
-                line,
-                "リスト記法を確認してください",
-            )
-            return self.parser._create_error_node(line, str(e)), current + 1
+            # リスト以外の要素は None を返す
+            return None, current
 
-        return None, current
+        except Exception as e:
+            self.logger.error(f"インライン要素解析エラー: {e}")
+            return None, current

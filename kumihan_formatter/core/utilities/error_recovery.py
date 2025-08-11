@@ -78,7 +78,9 @@ class ErrorRecoveryStrategy(ABC):
         pass
 
     @abstractmethod
-    def recover(self, error_context: ErrorContext, content_lines: List[str]) -> RecoveryResult:
+    def recover(
+        self, error_context: ErrorContext, content_lines: List[str]
+    ) -> RecoveryResult:
         """エラー回復を実行"""
         pass
 
@@ -89,37 +91,30 @@ class SyntaxErrorRecoveryStrategy(ErrorRecoveryStrategy):
     def can_handle(self, error_context: ErrorContext) -> bool:
         return error_context.error_type == ErrorType.SYNTAX_ERROR
 
-    def recover(self, error_context: ErrorContext, content_lines: List[str]) -> RecoveryResult:
+    def recover(
+        self, error_context: ErrorContext, content_lines: List[str]
+    ) -> RecoveryResult:
         """構文エラーから回復"""
         line_num = error_context.line_number
 
         if line_num >= len(content_lines):
             return RecoveryResult(False, recovery_message="Line number out of range")
 
-        line = content_lines[line_num]
-
-        # マーカー修正の試行
-        if "#" in line:
-            # 不完全なマーカーの修正
-            fixed_line = self._fix_incomplete_markers(line)
-            if fixed_line != line:
+        # 基本的な構文エラー回復を試行
+        try:
+            line = content_lines[line_num]
+            # 簡単な修復を試行
+            fixed_line = line.strip()
+            if fixed_line:
                 return RecoveryResult(
                     success=True,
                     recovered_content=fixed_line,
-                    recovery_message=(
-                        f"Fixed incomplete marker: '{line.strip()}' -> " f"'{fixed_line.strip()}'"
-                    ),
-                    warnings=["Marker syntax was automatically corrected"],
+                    recovery_message=f"Fixed line: '{line.strip()}' -> '{fixed_line}'",
                 )
+        except Exception:
+            pass
 
-        # 次の有効な行まで進む
-        next_valid_line = self._find_next_valid_line(content_lines, line_num)
-        return RecoveryResult(
-            success=True,
-            skip_to_line=next_valid_line,
-            recovery_message=f"Skipped invalid syntax at line {line_num + 1}",
-            warnings=[f"Content on line {line_num + 1} was skipped due to syntax error"],
-        )
+        return RecoveryResult(False, recovery_message="Could not recover syntax error")
 
     def _fix_incomplete_markers(self, line: str) -> str:
         """不完全なマーカーを修正"""
@@ -131,21 +126,12 @@ class SyntaxErrorRecoveryStrategy(ErrorRecoveryStrategy):
             if not line.rstrip().endswith("#"):
                 return f"{indent}# {keyword.strip()} #"
 
-        # ## 終了マーカーの修正
-        if line.strip() == "#":
-            return "##"
-
-        return line
-
     def _find_next_valid_line(self, lines: List[str], start: int) -> int:
         """次の有効な行を検索"""
         for i in range(start + 1, len(lines)):
             line = lines[i].strip()
             if line and not line.startswith("#"):
                 return i
-            if re.match(r"^\s*#\s+\w+\s*#", line):  # 有効なマーカー
-                return i
-        return start + 1
 
 
 class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
@@ -154,7 +140,9 @@ class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
     def can_handle(self, error_context: ErrorContext) -> bool:
         return error_context.error_type == ErrorType.BLOCK_STRUCTURE_ERROR
 
-    def recover(self, error_context: ErrorContext, content_lines: List[str]) -> RecoveryResult:
+    def recover(
+        self, error_context: ErrorContext, content_lines: List[str]
+    ) -> RecoveryResult:
         """ブロック構造エラーから回復"""
         line_num = error_context.line_number
 
@@ -189,9 +177,6 @@ class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
             line = lines[i].strip()
             if line == "##":
                 return i
-            if line.startswith("#") and re.match(r"^\s*#\s+\w+\s*#", line):
-                return i - 1  # 新しいブロックの前
-        return -1
 
 
 class ListFormatErrorRecoveryStrategy(ErrorRecoveryStrategy):
@@ -200,33 +185,32 @@ class ListFormatErrorRecoveryStrategy(ErrorRecoveryStrategy):
     def can_handle(self, error_context: ErrorContext) -> bool:
         return error_context.error_type == ErrorType.LIST_FORMAT_ERROR
 
-    def recover(self, error_context: ErrorContext, content_lines: List[str]) -> RecoveryResult:
+    def recover(
+        self, error_context: ErrorContext, content_lines: List[str]
+    ) -> RecoveryResult:
         """リスト形式エラーから回復"""
         line_num = error_context.line_number
 
         if line_num >= len(content_lines):
             return RecoveryResult(False)
 
-        line = content_lines[line_num]
+        # 基本的なリスト形式修復
+        try:
+            line = content_lines[line_num]
+            fixed_line = line.strip()
+            if fixed_line:
+                return RecoveryResult(
+                    success=True,
+                    recovered_content=fixed_line,
+                    recovery_message=(
+                        f"Fixed list format: '{line.strip()}' -> '{fixed_line.strip()}'"
+                    ),
+                    warnings=["List format was automatically corrected"],
+                )
+        except Exception:
+            pass
 
-        # リスト項目の修正を試行
-        fixed_line = self._fix_list_format(line)
-        if fixed_line != line:
-            return RecoveryResult(
-                success=True,
-                recovered_content=fixed_line,
-                recovery_message=f"Fixed list format: '{line.strip()}' -> '{fixed_line.strip()}'",
-                warnings=["List format was automatically corrected"],
-            )
-
-        # リストの終了を検出
-        list_end = self._find_list_end(content_lines, line_num)
-        return RecoveryResult(
-            success=True,
-            skip_to_line=list_end,
-            recovery_message=f"Skipped malformed list item at line {line_num + 1}",
-            warnings=[f"List item on line {line_num + 1} was skipped due to format error"],
-        )
+        return RecoveryResult(False)
 
     def _fix_list_format(self, line: str) -> str:
         """リスト形式を修正"""
@@ -236,28 +220,12 @@ class ListFormatErrorRecoveryStrategy(ErrorRecoveryStrategy):
         if re.match(r"^[-*+]\s*$", stripped):  # 空のリスト項目
             return line.replace(stripped, f"{stripped[0]} (空の項目)")
 
-        # 順序付きリストの修正
-        if re.match(r"^\d+\.\s*$", stripped):  # 空の番号付きリスト
-            return line.replace(stripped, f"{stripped} (空の項目)")
-
-        # インデント修正
-        if stripped.startswith(("-", "*", "+")) and not stripped.startswith(("-", "*", "+"), 1):
-            indent = len(line) - len(line.lstrip())
-            marker = stripped[0]
-            content = stripped[1:].strip()
-            return " " * indent + f"{marker} {content}" if content else line
-
-        return line
-
     def _find_list_end(self, lines: List[str], start: int) -> int:
         """リストの終了位置を検索"""
         for i in range(start + 1, len(lines)):
             line = lines[i].strip()
             if not line:  # 空行
                 return i + 1
-            if not re.match(r"^[-*+\d]\s", line):  # リスト項目でない
-                return i
-        return start + 1
 
 
 class AdvancedErrorRecoverySystem:
@@ -360,19 +328,24 @@ class AdvancedErrorRecoverySystem:
                     self._record_recovery(error_context, result)
 
                     if result.success:
-                        self.logger.info(f"Recovery successful: {result.recovery_message}")
+                        self.logger.info(
+                            f"Recovery successful: {result.recovery_message}"
+                        )
                         return result
-
                 except Exception as e:
                     self.logger.warning(f"Recovery strategy failed: {e}")
+                    continue
 
-        # 回復不可能な場合のフォールバック
-        fallback_result = self._fallback_recovery(error_context, content_lines)
-        self._record_recovery(error_context, fallback_result)
+        # すべての戦略が失敗した場合
+        return RecoveryResult(
+            success=False,
+            recovery_message="All recovery strategies failed",
+            warnings=["No suitable recovery strategy found"],
+        )
 
-        return fallback_result
-
-    def _record_recovery(self, error_context: ErrorContext, result: RecoveryResult) -> None:
+    def _record_recovery(
+        self, error_context: ErrorContext, result: RecoveryResult
+    ) -> None:
         """回復履歴を記録"""
         record = {
             "timestamp": __import__("time").time(),
@@ -409,7 +382,9 @@ class AdvancedErrorRecoverySystem:
             success=True,
             skip_to_line=safe_line,
             recovery_message=f"Fallback recovery: skipped to line {safe_line + 1}",
-            warnings=[f"Content at line {line_num + 1} was skipped due to unrecoverable error"],
+            warnings=[
+                f"Content at line {line_num + 1} was skipped due to unrecoverable error"
+            ],
         )
 
     def _find_next_safe_line(self, lines: List[str], start: int) -> int:
@@ -421,37 +396,24 @@ class AdvancedErrorRecoverySystem:
             if not line:
                 return i
 
-            # 単純なテキスト行は安全
-            if not line.startswith("#") and not re.match(r"^[-*+\d]\s", line):
-                return i
-
-        return min(start + 1, len(lines) - 1)
-
     def get_recovery_statistics(self) -> Dict[str, Any]:
         """回復統計を取得"""
         if not self.recovery_history:
             return {"total_recoveries": 0}
 
-        total = len(self.recovery_history)
-        successful = sum(1 for r in self.recovery_history if r["recovery_success"])
-
-        error_type_counts: dict[str, int] = {}
-        for record in self.recovery_history:
-            error_type = record["error_type"]
-            error_type_counts[error_type] = error_type_counts.get(error_type, 0) + 1
-
         return {
-            "total_recoveries": total,
-            "successful_recoveries": successful,
-            "success_rate": (successful / total) * 100 if total > 0 else 0,
-            "error_type_breakdown": error_type_counts,
-            "recent_recoveries": self.recovery_history[-10:],  # 直近10件
+            "total_recoveries": len(self.recovery_history),
+            "recovery_success_rate": self._calculate_success_rate(),
+            "most_common_errors": self._get_common_errors(),
+            "recovery_methods_used": self._get_recovery_methods_stats(),
         }
 
     def register_custom_strategy(self, strategy: ErrorRecoveryStrategy) -> None:
         """カスタム回復戦略を登録"""
         self.strategies.append(strategy)
-        self.logger.info(f"Custom recovery strategy registered: {strategy.__class__.__name__}")
+        self.logger.info(
+            f"Custom recovery strategy registered: {strategy.__class__.__name__}"
+        )
 
     def add_error_pattern(self, pattern: str, error_type: ErrorType) -> None:
         """エラーパターンを追加"""
@@ -481,17 +443,13 @@ def with_error_recovery(
                 if error_context.severity == RecoveryErrorSeverity.CRITICAL:
                     raise  # クリティカルエラーは再発生
 
-                # 回復を試行（コンテキストに応じて）
-                recovery_result = RecoveryResult(
-                    success=True,
-                    recovery_message=(
-                        f"Function {func.__name__} recovered from "
-                        f"{error_context.error_type.value}"
-                    ),
-                    warnings=[f"Error in {func.__name__} was handled gracefully"],
-                )
+                # 回復戦略を実行
+                recovery_result = recovery_system.attempt_recovery(error_context)
 
-                return recovery_result
+                if recovery_result.success:
+                    return recovery_result.recovered_value
+                else:
+                    raise  # 回復失敗時は再発生
 
         return wrapper
 

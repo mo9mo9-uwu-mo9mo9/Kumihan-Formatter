@@ -23,17 +23,23 @@ class ConsoleOperations:
     # File operations
     def file_copied(self, count: int) -> None:
         """Display file copy count"""
-        self.console.print("[green]{}個の画像ファイルをコピーしました[/green]".format(count))
+        self.console.print(
+            "[green]{}個の画像ファイルをコピーしました[/green]".format(count)
+        )
 
     def files_missing(self, files: List[str]) -> None:
         """Display missing files"""
-        self.console.print(f"[red][エラー] {len(files)}個の画像ファイルが" "見つかりません:[/red]")
+        self.console.print(
+            f"[red][エラー] {len(files)}個の画像ファイルが" "見つかりません:[/red]"
+        )
         for filename in files:
             self.console.print(f"[red]   - {filename}[/red]")
 
     def duplicate_files(self, duplicates: Dict[str, int]) -> None:
         """Display duplicate files warning"""
-        self.console.print("[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]")
+        self.console.print(
+            "[yellow][警告]  同名の画像ファイルが複数回参照されています:[/yellow]"
+        )
         for filename, count in duplicates.items():
             self.console.print(f"[yellow]   - {filename} ({count}回参照)[/yellow]")
 
@@ -46,7 +52,9 @@ class ConsoleOperations:
 
     def watch_file_changed(self, file_name: str) -> None:
         """Display file change notification"""
-        self.console.print(f"\n[blue][更新] ファイルが変更されました:[/blue] {file_name}")
+        self.console.print(
+            f"\n[blue][更新] ファイルが変更されました:[/blue] {file_name}"
+        )
 
     def watch_update_complete(self, timestamp: str) -> None:
         """Display watch update completion"""
@@ -76,11 +84,15 @@ class ConsoleOperations:
         self.console.print(f"[green]   [画像]  画像: {image_count}個[/green]")
 
     # Test case detection
-    def test_cases_detected(self, count: int, cases: List[Tuple[int, str, str]]) -> None:
+    def test_cases_detected(
+        self, count: int, cases: List[Tuple[int, str, str]]
+    ) -> None:
         """Display test case detection"""
         self.console.print(f"[blue][テスト] テストケース検出: {count}個[/blue]")
         for i, (num, category, description) in enumerate(cases[:5]):
-            self.console.print(f"[dim]   - [TEST-{num}] {category}: {description}[/dim]")
+            self.console.print(
+                f"[dim]   - [TEST-{num}] {category}: {description}[/dim]"
+            )
         if len(cases) > 5:
             self.console.print(f"[dim]   ... 他 {len(cases) - 5}個[/dim]")
 
@@ -88,25 +100,39 @@ class ConsoleOperations:
     def test_file_generation(self, double_click_mode: bool = False) -> None:
         """Display test file generation start"""
         if double_click_mode:
-            self.console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
+            self.console.print(
+                "[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]"
+            )
             self.console.print(
                 "[dim]   すべての記法パターンを網羅したテストファイルを作成します[/dim]"
             )
         else:
-            self.console.print("[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]")
+            self.console.print(
+                "[cyan][設定] テスト用記法網羅ファイルを生成中...[/cyan]"
+            )
 
-    def test_file_complete(self, output_file: str, double_click_mode: bool = False) -> None:
+    def test_file_complete(
+        self, output_file: str, double_click_mode: bool = False
+    ) -> None:
         """Display test file generation completion"""
         if double_click_mode:
-            self.console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
+            self.console.print(
+                f"[green][完了] テストファイルを生成しました:[/green] {output_file}"
+            )
         else:
-            self.console.print(f"[green][完了] テストファイルを生成しました:[/green] {output_file}")
+            self.console.print(
+                f"[green][完了] テストファイルを生成しました:[/green] {output_file}"
+            )
 
     def test_conversion_start(self, double_click_mode: bool = False) -> None:
         """Display test conversion start"""
         if double_click_mode:
-            self.console.print("\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]")
-            self.console.print("[dim]   すべての記法が正しく処理されるか" "テストしています[/dim]")
+            self.console.print(
+                "\n[yellow][テスト] 生成されたファイルをHTMLに変換中...[/yellow]"
+            )
+            self.console.print(
+                "[dim]   すべての記法が正しく処理されるか" "テストしています[/dim]"
+            )
         else:
             self.console.print(
                 "\n[yellow][テスト] 生成されたファイルのテスト変換を実行中...[/yellow]"
@@ -117,7 +143,9 @@ class ConsoleOperations:
     ) -> None:
         """Display test conversion completion"""
         if double_click_mode:
-            self.console.print(f"[green][完了] HTML変換成功:[/green] {test_output_file}")
+            self.console.print(
+                f"[green][完了] HTML変換成功:[/green] {test_output_file}"
+            )
             self.console.print(
                 "[dim]   [ファイル] テストファイル (.txt) と変換結果 (.html) の両方が生成されました[/dim]"
             )
@@ -128,8 +156,12 @@ class ConsoleOperations:
             self.console.print(f"[dim]    テキストファイル: {txt_size:,} バイト[/dim]")
             self.console.print(f"[dim]    HTMLファイル: {html_size:,} バイト[/dim]")
         else:
-            self.console.print(f"[green][完了] テスト変換成功:[/green] {test_output_file}")
+            self.console.print(
+                f"[green][完了] テスト変換成功:[/green] {test_output_file}"
+            )
 
     def test_conversion_error(self, error: str) -> None:
         """Display test conversion error"""
-        self.console.print(f"[red][エラー] テスト変換中にエラーが発生しました: {error}[/red]")
+        self.console.print(
+            f"[red][エラー] テスト変換中にエラーが発生しました: {error}[/red]"
+        )

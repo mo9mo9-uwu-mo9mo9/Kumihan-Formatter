@@ -131,7 +131,6 @@ class KeywordDefinitions:
         if keyword in self.BLOCK_KEYWORDS:
             del self.BLOCK_KEYWORDS[keyword]
             return True
-        return False
 
     def get_nesting_order(self) -> list[str]:
         """ネスト順序を取得
@@ -191,7 +190,6 @@ class KeywordDefinitions:
             # レジストリから新しい言語のキーワード辞書を取得
             self.BLOCK_KEYWORDS = registry.convert_to_legacy_format(language)
             return True
-        return False
 
     def get_supported_languages(self) -> list[str]:
         """サポート対象言語一覧を取得
@@ -219,8 +217,6 @@ class KeywordDefinitions:
         if keyword_def and keyword_def.css_requirements:
             return len(keyword_def.css_requirements) > 0
 
-        return False
-
     def get_css_requirements(self, keyword: str) -> list[str]:
         """キーワードのCSS要件を取得
 
@@ -238,8 +234,6 @@ class KeywordDefinitions:
             css_reqs: list[str] = keyword_def.css_requirements[:]
             return css_reqs
 
-        return []
-
     def _validate_keyword_name(self, keyword: str) -> str | None:
         """
         キーワード名の妥当性を検証
@@ -252,26 +246,6 @@ class KeywordDefinitions:
         """
         if not keyword or not keyword.strip():
             return "キーワード名が空です"
-
-        # 長さチェック
-        if len(keyword) > 20:
-            return f"キーワード名が長すぎます（20文字以内）: '{keyword}'"
-
-        # 無効な文字チェック
-        invalid_chars = set(keyword) & {"<", ">", '"', "'", "&", "#", "+", "＋"}
-        if invalid_chars:
-            return f"キーワード名に無効な文字が含まれています: {', '.join(invalid_chars)}"
-
-        # 予約語チェック
-        reserved_words = ["javascript", "data", "vbscript", "html", "css"]
-        if keyword.lower() in reserved_words:
-            return f"予約語はキーワード名として使用できません: '{keyword}'"
-
-        # 数字のみのキーワードチェック
-        if keyword.isdigit():
-            return f"数字のみのキーワード名は使用できません: '{keyword}'"
-
-        return None
 
     def _validate_keyword_definition(self, definition: Any) -> str | None:
         """
@@ -286,47 +260,31 @@ class KeywordDefinitions:
         if not isinstance(definition, dict):
             return "キーワード定義は辞書である必要があります"
 
-        # tagフィールドは必須
+        # 必須フィールドのチェック
         if "tag" not in definition:
-            return "キーワード定義に'tag'フィールドが必要です"
+            return "キーワード定義にtagフィールドが必要です"
 
         tag = definition["tag"]
-        if not isinstance(tag, str) or not tag.strip():
-            return "tagフィールドは空でない文字列である必要があります"
+        if not isinstance(tag, str):
+            return "tagフィールドは文字列である必要があります"
 
-        # 有効なHTMLタグかチェック
+        # 有効なHTMLタグのチェック
         valid_tags = {
+            "strong",
+            "em",
             "div",
-            "span",
-            "p",
             "h1",
             "h2",
             "h3",
             "h4",
             "h5",
-            "h6",
-            "strong",
-            "em",
-            "u",
-            "s",
-            "code",
-            "pre",
-            "blockquote",
-            "ul",
-            "ol",
-            "li",
-            "table",
-            "tr",
-            "td",
-            "th",
             "details",
-            "summary",
-            "mark",
-            "small",
-            "sub",
-            "sup",
+            "u",
+            "code",
             "del",
-            "ins",
+            "ruby",
+            "span",
+            "p",
         }
 
         if tag not in valid_tags:

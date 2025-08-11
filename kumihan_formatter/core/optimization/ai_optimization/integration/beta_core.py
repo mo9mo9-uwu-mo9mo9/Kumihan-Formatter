@@ -90,7 +90,9 @@ class AlphaBetaCoordinator:
         self.coordination_mode = IntegrationMode.ALPHA_ONLY
 
         # 協調履歴
-        self.coordination_history: deque = deque(maxlen=config.get("history_size", 1000))
+        self.coordination_history: deque = deque(
+            maxlen=config.get("history_size", 1000)
+        )
 
         # 効果測定
         self.synergy_effects: Dict[SynergyType, List[SynergyEffect]] = defaultdict(list)
@@ -136,7 +138,9 @@ class AlphaBetaCoordinator:
             autonomous_available = self.autonomous_controller is not None
 
             # Beta完全性チェック
-            beta_complete = all([prediction_available, learning_available, autonomous_available])
+            beta_complete = all(
+                [prediction_available, learning_available, autonomous_available]
+            )
 
             if alpha_available and beta_complete:
                 self.coordination_mode = IntegrationMode.FULL_INTEGRATION
@@ -193,30 +197,22 @@ class AlphaBetaCoordinator:
                 f"with mode {self.coordination_mode.value}"
             )
             return final_result
-
         except Exception as e:
-            self.logger.error(f"Coordination optimization failed: {e}")
+            self.logger.error(f"Coordinate optimization failed: {e}")
             return self._get_fallback_coordination_result(context_data)
 
-    def _execute_alpha_optimization(self, context_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_alpha_optimization(
+        self, context_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Alpha基盤最適化実行"""
         try:
             if not self.alpha_system:
                 return {"success": False, "reason": "alpha_system_not_available"}
 
-            # Alpha基盤の最適化機会予測
-            alpha_predictions = self.alpha_system.predict_optimization_opportunities(context_data)
+            # Alpha最適化実行（簡略化）
+            optimization_result = self.alpha_system.optimize()
 
-            # Alpha性能測定
-            alpha_performance = self.alpha_system.get_model_performance()
-
-            return {
-                "success": True,
-                "predictions": alpha_predictions,
-                "performance": alpha_performance,
-                "contribution": alpha_predictions.get("expected_improvement", 0.0),
-                "confidence": alpha_predictions.get("integrated_confidence", 0.0),
-            }
+            return {"success": True, "optimization_result": optimization_result}
 
         except Exception as e:
             self.logger.error(f"Alpha optimization execution failed: {e}")
@@ -231,12 +227,16 @@ class AlphaBetaCoordinator:
 
             # 予測エンジン実行
             if self.prediction_engine:
-                prediction_result = self.prediction_engine.predict_next_operations(context_data)
+                prediction_result = self.prediction_engine.predict_next_operations(
+                    context_data
+                )
                 beta_results["prediction"] = prediction_result
 
             # 学習システム実行（必要時）
             if self.learning_system and self._should_trigger_learning(alpha_result):
-                learning_result = self._trigger_learning_system(context_data, alpha_result)
+                learning_result = self._trigger_learning_system(
+                    context_data, alpha_result
+                )
                 beta_results["learning"] = learning_result
 
             # 自律制御システム実行
@@ -276,11 +276,15 @@ class AlphaBetaCoordinator:
             # 統合効果計算
             if self.coordination_mode == IntegrationMode.FULL_INTEGRATION:
                 # 完全統合：相乗効果込み
-                synergy_multiplier = self._calculate_synergy_multiplier(alpha_result, beta_result)
+                synergy_multiplier = self._calculate_synergy_multiplier(
+                    alpha_result, beta_result
+                )
                 integrated_contribution = (
                     alpha_contribution + beta_contribution
                 ) * synergy_multiplier
-                integrated_confidence = (alpha_confidence * 0.6 + 0.8 * 0.4) * synergy_multiplier
+                integrated_confidence = (
+                    alpha_confidence * 0.6 + 0.8 * 0.4
+                ) * synergy_multiplier
 
             elif self.coordination_mode == IntegrationMode.BETA_ENHANCED:
                 # Beta強化：加算的効果
@@ -329,25 +333,39 @@ class AlphaBetaCoordinator:
             synergy_effects = {}
 
             # 予測強化相乗効果
-            if beta_result.get("success", False) and "prediction" in beta_result.get("results", {}):
-                prediction_synergy = self._calculate_prediction_synergy(alpha_result, beta_result)
-                synergy_effects[SynergyType.PREDICTION_ENHANCEMENT.value] = prediction_synergy
+            if beta_result.get("success", False) and "prediction" in beta_result.get(
+                "results", {}
+            ):
+                prediction_synergy = self._calculate_prediction_synergy(
+                    alpha_result, beta_result
+                )
+                synergy_effects[SynergyType.PREDICTION_ENHANCEMENT.value] = (
+                    prediction_synergy
+                )
 
             # 学習加速相乗効果
             if "learning" in beta_result.get("results", {}):
-                learning_synergy = self._calculate_learning_synergy(alpha_result, beta_result)
-                synergy_effects[SynergyType.LEARNING_ACCELERATION.value] = learning_synergy
+                learning_synergy = self._calculate_learning_synergy(
+                    alpha_result, beta_result
+                )
+                synergy_effects[SynergyType.LEARNING_ACCELERATION.value] = (
+                    learning_synergy
+                )
 
             # 効率性増幅相乗効果
             efficiency_synergy = self._calculate_efficiency_synergy(
                 alpha_result, beta_result, integrated_result
             )
-            synergy_effects[SynergyType.EFFICIENCY_AMPLIFICATION.value] = efficiency_synergy
+            synergy_effects[SynergyType.EFFICIENCY_AMPLIFICATION.value] = (
+                efficiency_synergy
+            )
 
             # 安定性向上相乗効果
             if "autonomous" in beta_result.get("results", {}):
                 stability_synergy = self._calculate_stability_synergy(beta_result)
-                synergy_effects[SynergyType.STABILITY_IMPROVEMENT.value] = stability_synergy
+                synergy_effects[SynergyType.STABILITY_IMPROVEMENT.value] = (
+                    stability_synergy
+                )
 
             # 総合相乗効果
             total_synergy_magnitude = sum(
@@ -401,14 +419,16 @@ class AlphaBetaCoordinator:
         """学習加速相乗効果計算"""
         try:
             learning_result = beta_result.get("results", {}).get("learning", {})
-            learning_effectiveness = learning_result.get("learning_effectiveness", {}).get(
-                "effectiveness_score", 0.0
-            )
+            learning_effectiveness = learning_result.get(
+                "learning_effectiveness", {}
+            ).get("effectiveness_score", 0.0)
 
             alpha_contribution = alpha_result.get("contribution", 0.0)
 
             # 学習相乗効果
-            learning_synergy_magnitude = alpha_contribution * learning_effectiveness * 0.3
+            learning_synergy_magnitude = (
+                alpha_contribution * learning_effectiveness * 0.3
+            )
 
             return {
                 "magnitude": learning_synergy_magnitude,
@@ -431,7 +451,9 @@ class AlphaBetaCoordinator:
         try:
             alpha_contribution = alpha_result.get("contribution", 0.0)
             beta_contribution = beta_result.get("contribution", 0.0)
-            integrated_contribution = integrated_result.get("integrated_contribution", 0.0)
+            integrated_contribution = integrated_result.get(
+                "integrated_contribution", 0.0
+            )
 
             # 効率性相乗効果（統合効果 - 単純加算）
             efficiency_synergy_magnitude = max(
@@ -449,7 +471,9 @@ class AlphaBetaCoordinator:
         except Exception:
             return {"magnitude": 0.0, "confidence": 0.0}
 
-    def _calculate_stability_synergy(self, beta_result: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_stability_synergy(
+        self, beta_result: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """安定性向上相乗効果計算"""
         try:
             autonomous_result = beta_result.get("results", {}).get("autonomous", {})
@@ -487,16 +511,10 @@ class AlphaBetaCoordinator:
             if not self.learning_system:
                 return {"triggered": False, "reason": "learning_system_not_available"}
 
-            # Alpha結果から学習データ構築（簡略化）
-            # 学習システム実行（モック）
-            learning_result = {
-                "triggered": True,
-                "training_samples": 1,
-                "learning_effectiveness": {"effectiveness_score": 0.7},
-            }
+            # 学習システム実行（簡略化）
+            learning_result = self.learning_system.adapt_from_data(context_data)
 
             return learning_result
-
         except Exception as e:
             self.logger.error(f"Learning system trigger failed: {e}")
             return {"triggered": False, "error": str(e)}
@@ -509,27 +527,31 @@ class AlphaBetaCoordinator:
             # 予測エンジン貢献
             if "prediction" in beta_results:
                 prediction_result = beta_results["prediction"]
-                prediction_contribution = prediction_result.get("expected_efficiency_gain", 0.0)
+                prediction_contribution = prediction_result.get(
+                    "expected_efficiency_gain", 0.0
+                )
                 total_contribution += prediction_contribution * 0.5
 
             # 学習システム貢献
             if "learning" in beta_results:
                 learning_result = beta_results["learning"]
-                learning_effectiveness = learning_result.get("learning_effectiveness", {}).get(
-                    "effectiveness_score", 0.0
-                )
+                learning_effectiveness = learning_result.get(
+                    "learning_effectiveness", {}
+                ).get("effectiveness_score", 0.0)
                 total_contribution += learning_effectiveness * 0.3
 
             # 自律制御貢献
             if "autonomous" in beta_results:
                 autonomous_result = beta_results["autonomous"]
-                efficiency_assessment = autonomous_result.get("efficiency_assessment", {})
+                efficiency_assessment = autonomous_result.get(
+                    "efficiency_assessment", {}
+                )
                 efficiency_score = efficiency_assessment.get("overall_efficiency", 0.0)
                 total_contribution += (efficiency_score - 0.8) * 0.2  # 80%以上で貢献
 
             return max(0.0, total_contribution)
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Beta contribution calculation failed: {e}")
             return 0.0
 
     def _calculate_synergy_multiplier(
@@ -557,8 +579,8 @@ class AlphaBetaCoordinator:
                 base_multiplier += 0.05
 
             return min(1.3, base_multiplier)  # 最大30%増幅
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Synergy multiplier calculation failed: {e}")
             return 1.0
 
     def _calculate_current_synergy_factor(self) -> float:
@@ -567,13 +589,15 @@ class AlphaBetaCoordinator:
             # 最近の相乗効果から計算
             recent_effects = []
             for synergy_type, effects in self.synergy_effects.items():
-                recent_effects.extend([effect.magnitude for effect in effects[-5:]])  # 最新5件
+                recent_effects.extend(
+                    [effect.magnitude for effect in effects[-5:]]
+                )  # 最新5件
 
             if recent_effects:
                 return np.mean(recent_effects)
             return 0.0
-
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Current synergy factor calculation failed: {e}")
             return 0.0
 
     def _calculate_integration_effectiveness(
@@ -587,11 +611,11 @@ class AlphaBetaCoordinator:
             if alpha_success and beta_success:
                 return 0.9  # 両方成功
             elif alpha_success or beta_success:
-                return 0.6  # 片方成功
+                return 0.7  # いずれか成功
             else:
-                return 0.2  # 両方失敗
-
-        except Exception:
+                return 0.3  # どちらも失敗
+        except Exception as e:
+            self.logger.error(f"Integration effectiveness calculation failed: {e}")
             return 0.0
 
     def _generate_integrated_recommendations(
@@ -603,7 +627,9 @@ class AlphaBetaCoordinator:
         try:
             # Alpha推奨事項
             alpha_predictions = alpha_result.get("predictions", {})
-            alpha_opportunities = alpha_predictions.get("optimization_opportunities", [])
+            alpha_opportunities = alpha_predictions.get(
+                "optimization_opportunities", []
+            )
             recommendations.extend(alpha_opportunities[:3])  # 上位3つ
 
             # Beta推奨事項
@@ -611,7 +637,9 @@ class AlphaBetaCoordinator:
                 beta_results = beta_result.get("results", {})
 
                 if "prediction" in beta_results:
-                    prediction_ops = beta_results["prediction"].get("predicted_operations", [])
+                    prediction_ops = beta_results["prediction"].get(
+                        "predicted_operations", []
+                    )
                     recommendations.extend(prediction_ops[:2])  # 上位2つ
 
                 if "autonomous" in beta_results:
@@ -619,13 +647,15 @@ class AlphaBetaCoordinator:
 
             # 統合特有推奨事項
             if self.coordination_mode == IntegrationMode.FULL_INTEGRATION:
-                recommendations.extend(["leverage_full_integration", "maximize_synergy_effects"])
+                recommendations.extend(
+                    ["leverage_full_integration", "maximize_synergy_effects"]
+                )
 
             # 重複除去
             return list(dict.fromkeys(recommendations))[:7]  # 最大7つ
-
-        except Exception:
-            return ["basic_optimization"]
+        except Exception as e:
+            self.logger.error(f"Integrated recommendations generation failed: {e}")
+            return []
 
     def _record_coordination_result(self, result: Dict[str, Any]):
         """協調結果記録"""
@@ -634,8 +664,12 @@ class AlphaBetaCoordinator:
                 "timestamp": time.time(),
                 "integration_mode": self.coordination_mode.value,
                 "coordination_success": result.get("coordination_success", False),
-                "alpha_contribution": result.get("alpha_result", {}).get("contribution", 0.0),
-                "beta_contribution": result.get("beta_result", {}).get("contribution", 0.0),
+                "alpha_contribution": result.get("alpha_result", {}).get(
+                    "contribution", 0.0
+                ),
+                "beta_contribution": result.get("beta_result", {}).get(
+                    "contribution", 0.0
+                ),
                 "integrated_contribution": result.get("integrated_result", {}).get(
                     "integrated_contribution", 0.0
                 ),
@@ -650,7 +684,9 @@ class AlphaBetaCoordinator:
         except Exception as e:
             self.logger.warning(f"Coordination result recording failed: {e}")
 
-    def _get_fallback_coordination_result(self, context_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_fallback_coordination_result(
+        self, context_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """フォールバック協調結果"""
         return {
             "coordination_success": False,

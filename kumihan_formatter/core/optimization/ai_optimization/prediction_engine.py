@@ -61,46 +61,55 @@ class AdvancedFeatureEngineering:
             feature_names = []
 
             # 基本統計特徴量
-            basic_features, basic_names = self._extract_basic_features(optimization_data)
+            basic_features, basic_names = self._extract_basic_features(
+                optimization_data
+            )
             features.extend(basic_features)
             feature_names.extend(basic_names)
 
             # 時系列特徴量
-            temporal_features, temporal_names = self._extract_temporal_features(optimization_data)
+            temporal_features, temporal_names = self._extract_temporal_features(
+                optimization_data
+            )
             features.extend(temporal_features)
             feature_names.extend(temporal_names)
 
             # 相互作用特徴量
-            interaction_features, interaction_names = self._extract_interaction_features(
-                optimization_data
+            interaction_features, interaction_names = (
+                self._extract_interaction_features(optimization_data)
             )
             features.extend(interaction_features)
             feature_names.extend(interaction_names)
 
             # 高次統計特徴量
-            statistical_features, statistical_names = self._extract_statistical_features(
-                optimization_data
+            statistical_features, statistical_names = (
+                self._extract_statistical_features(optimization_data)
             )
             features.extend(statistical_features)
             feature_names.extend(statistical_names)
 
             # 特徴量正規化
             features_array = np.array(features).reshape(1, -1)
-            normalized_features = self._normalize_features(features_array, feature_names)
+            normalized_features = self._normalize_features(
+                features_array, feature_names
+            )
 
-            self.logger.debug(f"Advanced feature extraction: {len(feature_names)} features")
+            self.logger.debug(
+                f"Advanced feature extraction: {len(feature_names)} features"
+            )
             return normalized_features, feature_names
 
         except Exception as e:
             self.logger.error(f"Advanced feature extraction failed: {e}")
-            # フォールバック特徴量
-            return np.array([[1.0, 0.5, 0.0]]), [
+            return np.array([[0.0]]), [
                 "fallback_1",
                 "fallback_2",
                 "fallback_3",
             ]
 
-    def _extract_basic_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
+    def _extract_basic_features(
+        self, data: Dict[str, Any]
+    ) -> Tuple[List[float], List[str]]:
         """基本特徴量抽出"""
         features = []
         names = []
@@ -140,7 +149,9 @@ class AdvancedFeatureEngineering:
 
         return features, names
 
-    def _extract_temporal_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
+    def _extract_temporal_features(
+        self, data: Dict[str, Any]
+    ) -> Tuple[List[float], List[str]]:
         """時系列特徴量抽出"""
         features = []
         names = []
@@ -161,19 +172,27 @@ class AdvancedFeatureEngineering:
         # 時間的パターン
         if recent_operations:
             # 平均処理時間
-            avg_time = np.mean([op.get("processing_time", 0.0) for op in recent_operations])
+            avg_time = np.mean(
+                [op.get("processing_time", 0.0) for op in recent_operations]
+            )
             # 処理時間の分散
-            time_variance = np.var([op.get("processing_time", 0.0) for op in recent_operations])
+            time_variance = np.var(
+                [op.get("processing_time", 0.0) for op in recent_operations]
+            )
         else:
             avg_time = 0.0
             time_variance = 0.0
 
-        features.extend([float(avg_time), float(time_variance), float(np.log1p(avg_time))])
+        features.extend(
+            [float(avg_time), float(time_variance), float(np.log1p(avg_time))]
+        )
         names.extend(["avg_processing_time", "time_variance", "avg_time_log"])
 
         return features, names
 
-    def _extract_interaction_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
+    def _extract_interaction_features(
+        self, data: Dict[str, Any]
+    ) -> Tuple[List[float], List[str]]:
         """相互作用特徴量抽出"""
         features = []
         names = []
@@ -213,7 +232,9 @@ class AdvancedFeatureEngineering:
 
         return features, names
 
-    def _extract_statistical_features(self, data: Dict[str, Any]) -> Tuple[List[float], List[str]]:
+    def _extract_statistical_features(
+        self, data: Dict[str, Any]
+    ) -> Tuple[List[float], List[str]]:
         """高次統計特徴量抽出"""
         features = []
         names = []
@@ -269,7 +290,9 @@ class AdvancedFeatureEngineering:
 
         return features, names
 
-    def _normalize_features(self, features: np.ndarray, feature_names: List[str]) -> np.ndarray:
+    def _normalize_features(
+        self, features: np.ndarray, feature_names: List[str]
+    ) -> np.ndarray:
         """特徴量正規化"""
         try:
             normalized_features = features.copy()
@@ -278,7 +301,9 @@ class AdvancedFeatureEngineering:
             for i, name in enumerate(feature_names):
                 if name not in self.feature_scalers:
                     # 新しい特徴量の場合、簡易正規化
-                    feature_std = np.std(features[:, i]) if features.shape[0] > 1 else 1.0
+                    feature_std = (
+                        np.std(features[:, i]) if features.shape[0] > 1 else 1.0
+                    )
                     if feature_std > 0:
                         normalized_features[:, i] = features[:, i] / feature_std
 
@@ -379,15 +404,16 @@ class EnsemblePredictionModel:
                 return False
 
             # データ分割
-            X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+            X_train, X_val, y_train, y_val = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
 
-            # 各モデル訓練
+            # アンサンブルモデル並列訓練
             trained_models = {}
             model_performances = {}
+            training_futures = {}
 
             with ThreadPoolExecutor(max_workers=3) as executor:
-                training_futures = {}
-
                 for model_name, model in self.models.items():
                     future = executor.submit(
                         self._train_single_model,
@@ -414,22 +440,29 @@ class EnsemblePredictionModel:
                 self.logger.error("No models successfully trained")
                 return False
 
-            # 最適なモデル選択・重み調整
+            # 訓練されたモデルを更新
+            self.models = trained_models
+
+            # アンサンブル重み最適化
             self._optimize_ensemble_weights(model_performances)
 
-            # 訓練完了
-            self.models = trained_models
+            # アンサンブル性能評価
+            ensemble_performance = self._evaluate_ensemble_performance(X_val, y_val)
+
+            # 性能指標更新
+            training_time = time.time() - train_start
             self.performance_metrics = {
-                "individual_models": model_performances,
-                "ensemble_performance": self._evaluate_ensemble_performance(X_val, y_val),
-                "training_time": time.time() - train_start,
-                "training_samples": len(X),
+                "individual_performances": model_performances,
+                "ensemble_performance": ensemble_performance,
+                "training_time": training_time,
             }
 
             self.feature_names = training_data.feature_names
             self.is_trained = True
 
-            ensemble_r2 = self.performance_metrics["ensemble_performance"].get("r2_score", 0.0)
+            ensemble_r2 = self.performance_metrics["ensemble_performance"].get(
+                "r2_score", 0.0
+            )
             self.logger.info(
                 f"Ensemble training completed: R²={ensemble_r2:.4f}, "
                 f"Time={self.performance_metrics['training_time']:.2f}s"
@@ -462,14 +495,16 @@ class EnsemblePredictionModel:
             return model, performance
 
         except Exception as e:
-            self.logger.error(f"Single model training failed for {model_name}: {e}")
-            return None, {}
+            self.logger.error(f"Single model training failed: {e}")
+            return None, {"mse": float("inf"), "mae": float("inf"), "r2_score": 0.0}
 
     def _optimize_ensemble_weights(self, model_performances: Dict[str, Dict]):
         """アンサンブル重み最適化"""
         try:
             # R²スコアベースで重み調整
-            total_r2 = sum(perf.get("r2_score", 0.0) for perf in model_performances.values())
+            total_r2 = sum(
+                perf.get("r2_score", 0.0) for perf in model_performances.values()
+            )
 
             if total_r2 > 0:
                 for model_name, performance in model_performances.items():
@@ -509,22 +544,22 @@ class EnsemblePredictionModel:
             if not self.is_trained:
                 return PredictionResponse(prediction=0.0, confidence=0.0)
 
-            # 特徴量準備
-            if features.ndim == 1:
-                features = features.reshape(1, -1)
-
             # アンサンブル予測実行
-            weighted_prediction = self.predict_raw(features)
+            ensemble_prediction = self.predict_raw(features)
+            confidence = self._calculate_prediction_confidence(
+                features, ensemble_prediction
+            )
 
-            # 信頼度計算
-            confidence = self._calculate_prediction_confidence(features, weighted_prediction)
-
-            processing_time = time.time() - prediction_start
+            prediction_time = time.time() - prediction_start
 
             return PredictionResponse(
-                prediction=float(weighted_prediction[0]),
-                confidence=float(confidence),
-                processing_time=processing_time,
+                prediction=(
+                    float(ensemble_prediction[0])
+                    if len(ensemble_prediction) > 0
+                    else 0.0
+                ),
+                confidence=confidence,
+                processing_time=prediction_time,
             )
 
         except Exception as e:
@@ -549,8 +584,6 @@ class EnsemblePredictionModel:
 
         if predictions:
             return np.sum(predictions, axis=0)
-        else:
-            return np.zeros(features.shape[0])
 
     def _calculate_prediction_confidence(
         self, features: np.ndarray, prediction: np.ndarray
@@ -570,12 +603,16 @@ class EnsemblePredictionModel:
             if len(individual_predictions) < 2:
                 return 0.5  # デフォルト信頼度
 
-            # 予測の分散から信頼度計算
-            prediction_variance = np.var(individual_predictions)
+            # 予測値の分散から信頼度を計算
+            prediction_std = np.std(individual_predictions)
             max_confidence = 0.95
-            confidence = max_confidence * np.exp(-prediction_variance)
+            min_confidence = 0.1
 
-            return min(max_confidence, max(0.1, confidence))
+            # 分散が小さいほど信頼度が高い（標準偏差を逆変換）
+            confidence = max_confidence - (prediction_std / 10.0) * (
+                max_confidence - min_confidence
+            )
+            return max(min_confidence, min(max_confidence, confidence))
 
         except Exception as e:
             self.logger.warning(f"Confidence calculation failed: {e}")
@@ -648,9 +685,11 @@ class PredictionEngine:
             )
 
             # 最適化効果予測モデル
-            self.ensemble_models["optimization_effect_predictor"] = EnsemblePredictionModel(
-                "optimization_effect_predictor",
-                model_configs.get("optimization_effect_predictor", {}),
+            self.ensemble_models["optimization_effect_predictor"] = (
+                EnsemblePredictionModel(
+                    "optimization_effect_predictor",
+                    model_configs.get("optimization_effect_predictor", {}),
+                )
             )
 
             self.logger.info(f"Initialized {len(self.ensemble_models)} ensemble models")
@@ -682,41 +721,54 @@ class PredictionEngine:
             cache_key = self._generate_cache_key(context_data, "next_operations")
             if cache_key in self.prediction_cache:
                 cached_result = self.prediction_cache[cache_key]
-                if time.time() - cached_result["timestamp"] < 300:  # 5分間キャッシュ有効
-                    return self._format_next_operations_result(cached_result, from_cache=True)
+                if (
+                    time.time() - cached_result["timestamp"] < 300
+                ):  # 5分間キャッシュ有効
+                    return self._format_next_operations_result(
+                        cached_result, from_cache=True
+                    )
 
-            # 高度特徴量抽出
-            features, feature_names = self.feature_engineer.extract_advanced_features(context_data)
+            # Beta高度予測実行
+            advanced_features, feature_names = (
+                self.feature_engineer.extract_advanced_features(context_data)
+            )
 
-            # アンサンブル予測実行
-            predictions = {}
-
-            # 次操作予測
-            if "next_operation_predictor" in self.ensemble_models:
-                next_op_pred = self.ensemble_models["next_operation_predictor"].predict(features[0])
-                predictions["next_operation"] = next_op_pred
-
-            # Alpha基盤予測統合
+            # Alpha基盤予測と統合
             alpha_predictions = self.basic_ml_system.predict_optimization_opportunities(
                 context_data
             )
 
-            # 統合予測結果生成
-            integrated_result = self._integrate_next_operation_predictions(
-                predictions, alpha_predictions, context_data
+            # 予測統合
+            beta_predictions = {}
+            if "next_operation_predictor" in self.ensemble_models:
+                predictor = self.ensemble_models["next_operation_predictor"]
+                if predictor.is_trained:
+                    beta_predictions["next_operation"] = predictor.predict(
+                        advanced_features
+                    )
+
+            # 統合予測結果
+            integrated_predictions = self._integrate_next_operation_predictions(
+                beta_predictions, alpha_predictions, context_data
             )
 
             processing_time = time.time() - prediction_start
 
-            # 結果構築
             final_result = {
-                "predicted_operations": integrated_result.get("operations", []),
-                "operation_priorities": integrated_result.get("priorities", {}),
-                "expected_efficiency_gain": integrated_result.get("efficiency_gain", 0.0),
-                "prediction_confidence": integrated_result.get("confidence", 0.0),
+                "predicted_operations": integrated_predictions.get(
+                    "operations", ["basic_optimization"]
+                ),
+                "operation_priorities": integrated_predictions.get("priorities", {}),
+                "expected_efficiency_gain": integrated_predictions.get(
+                    "efficiency_gain", 0.0
+                ),
+                "prediction_confidence": integrated_predictions.get("confidence", 0.0),
                 "processing_time": processing_time,
-                "alpha_contribution": alpha_predictions.get("expected_improvement", 0.0),
-                "beta_enhancement": integrated_result.get("beta_enhancement", 0.0),
+                "alpha_contribution": alpha_predictions.get(
+                    "expected_improvement", 0.0
+                ),
+                "beta_enhancement": integrated_predictions.get("beta_enhancement", 0.0),
+                "fallback": False,
             }
 
             # キャッシュ更新
@@ -727,7 +779,9 @@ class PredictionEngine:
                 processing_time, final_result.get("prediction_confidence", 0.0)
             )
 
-            self.logger.debug(f"Next operations predicted in {processing_time * 1000:.1f}ms")
+            self.logger.debug(
+                f"Next operations predicted in {processing_time * 1000:.1f}ms"
+            )
             return final_result
 
         except Exception as e:
@@ -743,7 +797,9 @@ class PredictionEngine:
             next_operations = self.predict_next_operations(context_data)
 
             # 最適化効果予測
-            optimization_effects = self._predict_optimization_effects(context_data, next_operations)
+            optimization_effects = self._predict_optimization_effects(
+                context_data, next_operations
+            )
 
             # Phase B設定協調調整
             optimization_results = self._coordinate_with_optimization(
@@ -759,10 +815,14 @@ class PredictionEngine:
 
             return {
                 "preoptimized_settings": preoptimized_settings,
-                "expected_improvement": optimization_effects.get("total_improvement", 0.0),
+                "expected_improvement": optimization_effects.get(
+                    "total_improvement", 0.0
+                ),
                 "confidence": optimization_effects.get("confidence", 0.0),
                 "processing_time": processing_time,
-                "next_operations_basis": next_operations.get("predicted_operations", []),
+                "next_operations_basis": next_operations.get(
+                    "predicted_operations", []
+                ),
                 "optimization_coordination": optimization_results,
             }
 
@@ -770,7 +830,9 @@ class PredictionEngine:
             self.logger.error(f"Settings preoptimization failed: {e}")
             return self._get_fallback_preoptimization()
 
-    def update_prediction_accuracy(self, actual_results: Dict[str, Any]) -> Dict[str, Any]:
+    def update_prediction_accuracy(
+        self, actual_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """予測精度継続改善"""
         try:
             accuracy_update_start = time.time()
@@ -827,54 +889,86 @@ class PredictionEngine:
             formatted_results.append(formatted_result)
         return formatted_results
 
-    def _collect_prediction_results(self, actual_results: Dict[str, Any] = None) -> Dict[str, Any]:
+    def _collect_prediction_results(
+        self, actual_results: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """予測結果を収集"""
         return {
             "total_predictions": len(self.performance_history),
             "accuracy_score": getattr(self, "last_accuracy", 0.0),
             "processing_time": getattr(self, "last_processing_time", 0.0),
-            "cache_hit_rate": len(self.prediction_cache) / max(1, len(self.performance_history)),
+            "cache_hit_rate": len(self.prediction_cache)
+            / max(1, len(self.performance_history)),
             "actual_results": actual_results or {},
         }
 
-    def _evaluate_prediction_accuracy(self, prediction_history: Dict[str, Any] = None) -> float:
+    def _evaluate_prediction_accuracy(
+        self, prediction_history: Dict[str, Any] = None
+    ) -> Dict[str, float]:
         """予測精度を評価"""
         if not self.performance_history:
-            return 0.0
+            return {
+                "overall_accuracy": 0.0,
+                "confidence_avg": 0.0,
+                "time_efficiency": 0.0,
+            }
 
-        total_accuracy = sum(entry.get("accuracy", 0.0) for entry in self.performance_history[-10:])
-        base_accuracy = total_accuracy / min(10, len(self.performance_history))
+        # 最近のパフォーマンス履歴から精度を計算
+        recent_performance = (
+            self.performance_history[-50:]
+            if len(self.performance_history) > 50
+            else self.performance_history
+        )
 
-        # prediction_historyがある場合はそれも考慮
-        if prediction_history and "accuracy_score" in prediction_history:
-            return (base_accuracy + prediction_history["accuracy_score"]) / 2
+        avg_confidence = np.mean([p.get("confidence", 0.0) for p in recent_performance])
+        time_target_achievement = sum(
+            1 for p in recent_performance if p.get("meets_time_target", False)
+        ) / len(recent_performance)
+        accuracy_target_achievement = sum(
+            1 for p in recent_performance if p.get("meets_accuracy_target", False)
+        ) / len(recent_performance)
 
-        return base_accuracy
+        overall_accuracy = (
+            avg_confidence * 0.4
+            + time_target_achievement * 0.3
+            + accuracy_target_achievement * 0.3
+        )
 
-    def _analyze_model_performance(self, accuracy_metrics: Dict[str, Any] = None) -> Dict[str, Any]:
+        return {
+            "overall_accuracy": overall_accuracy,
+            "confidence_avg": avg_confidence,
+            "time_efficiency": time_target_achievement,
+            "accuracy_target_rate": accuracy_target_achievement,
+        }
+
+    def _analyze_model_performance(
+        self, accuracy_metrics: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """モデル性能を分析"""
         if not self.ensemble_models:
             return {"status": "no_models", "recommendations": []}
 
-        base_accuracy = self._evaluate_prediction_accuracy()
-        if accuracy_metrics and "overall_accuracy" in accuracy_metrics:
-            base_accuracy = accuracy_metrics["overall_accuracy"]
-
         performance_analysis = {
+            "status": "active_models",
             "model_count": len(self.ensemble_models),
-            "average_accuracy": base_accuracy,
-            "performance_trend": "stable",
             "recommendations": [],
             "accuracy_degradation": False,
+            "performance_trend": "stable",
         }
 
         # パフォーマンストレンド分析
         if len(self.performance_history) >= 5:
-            recent_scores = [entry.get("accuracy", 0.0) for entry in self.performance_history[-5:]]
-            if all(recent_scores[i] <= recent_scores[i + 1] for i in range(len(recent_scores) - 1)):
+            recent_scores = [
+                entry.get("accuracy", 0.0) for entry in self.performance_history[-5:]
+            ]
+            if all(
+                recent_scores[i] <= recent_scores[i + 1]
+                for i in range(len(recent_scores) - 1)
+            ):
                 performance_analysis["performance_trend"] = "improving"
             elif all(
-                recent_scores[i] >= recent_scores[i + 1] for i in range(len(recent_scores) - 1)
+                recent_scores[i] >= recent_scores[i + 1]
+                for i in range(len(recent_scores) - 1)
             ):
                 performance_analysis["performance_trend"] = "declining"
                 performance_analysis["recommendations"].append("model_retraining")
@@ -882,10 +976,14 @@ class PredictionEngine:
 
         return performance_analysis
 
-    def _retrain_degraded_models(self, model_performance: Dict[str, Any] = None) -> bool:
+    def _retrain_degraded_models(
+        self, model_performance: Dict[str, Any] = None
+    ) -> bool:
         """劣化したモデルを再訓練"""
         try:
-            performance_analysis = model_performance or self._analyze_model_performance()
+            performance_analysis = (
+                model_performance or self._analyze_model_performance()
+            )
             if performance_analysis.get(
                 "performance_trend"
             ) == "declining" or performance_analysis.get("accuracy_degradation", False):
@@ -893,35 +991,54 @@ class PredictionEngine:
                 if self.basic_ml_system and hasattr(self.basic_ml_system, "retrain"):
                     self.basic_ml_system.retrain()
                     return True
+
             return False
+
         except Exception as e:
-            self.logger.warning(f"モデル再訓練中にエラー: {e}")
+            self.logger.error(f"Model retraining failed: {e}")
             return False
 
     def _calculate_accuracy_improvement(
-        self, accuracy_metrics: Dict[str, Any] = None, retrain_results: Dict[str, Any] = None
+        self,
+        accuracy_metrics: Dict[str, Any] = None,
+        retrain_results: Dict[str, Any] = None,
     ) -> float:
         """精度改善を計算"""
         if len(self.performance_history) < 2:
             return 0.0
 
-        current_accuracy = self.performance_history[-1].get("accuracy", 0.0)
-        previous_accuracy = self.performance_history[-2].get("accuracy", 0.0)
+        try:
+            # 現在と過去の精度比較
+            current_accuracy = (
+                accuracy_metrics.get("overall_accuracy", 0.0)
+                if accuracy_metrics
+                else 0.0
+            )
 
-        # accuracy_metricsがある場合はそれを使用
-        if accuracy_metrics and "overall_accuracy" in accuracy_metrics:
-            current_accuracy = accuracy_metrics["overall_accuracy"]
+            # 過去の精度（最近10件の平均）
+            historical_data = (
+                self.performance_history[-20:-10]
+                if len(self.performance_history) >= 20
+                else self.performance_history[:-5]
+            )
+            if not historical_data:
+                return 0.0
 
-        if previous_accuracy == 0.0:
+            historical_accuracy = np.mean(
+                [p.get("confidence", 0.0) for p in historical_data]
+            )
+
+            improvement = current_accuracy - historical_accuracy
+
+            # 再訓練効果があった場合のボーナス
+            if retrain_results and retrain_results.get("success", False):
+                improvement += 0.05  # 5%ボーナス
+
+            return max(0.0, improvement)
+
+        except Exception as e:
+            self.logger.warning(f"Accuracy improvement calculation failed: {e}")
             return 0.0
-
-        base_improvement = ((current_accuracy - previous_accuracy) / previous_accuracy) * 100.0
-
-        # retrain_resultsによる追加改善
-        if retrain_results and retrain_results.get("success", False):
-            base_improvement += 5.0  # 再訓練による5%の改善ボーナス
-
-        return base_improvement
 
     def _integrate_next_operation_predictions(
         self, beta_predictions: Dict, alpha_predictions: Dict, context: Dict
@@ -934,7 +1051,9 @@ class PredictionEngine:
             beta_prediction = next_op_pred.prediction if next_op_pred else 0.0
 
             # Alpha基盤予測
-            alpha_opportunities = alpha_predictions.get("optimization_opportunities", [])
+            alpha_opportunities = alpha_predictions.get(
+                "optimization_opportunities", []
+            )
             alpha_confidence = alpha_predictions.get("integrated_confidence", 0.0)
             alpha_improvement = alpha_predictions.get("expected_improvement", 0.0)
 
@@ -954,11 +1073,15 @@ class PredictionEngine:
             operation_priorities = {}
             for i, op in enumerate(predicted_operations):
                 # Beta信頼度 + Alpha信頼度 + 位置による重み
-                priority = (beta_confidence * 0.6 + alpha_confidence * 0.4) * (1.0 - i * 0.1)
+                priority = (beta_confidence * 0.6 + alpha_confidence * 0.4) * (
+                    1.0 - i * 0.1
+                )
                 operation_priorities[op] = max(0.1, priority)
 
             # 統合効率性利得
-            beta_enhancement = max(0.0, beta_prediction - alpha_improvement) * beta_confidence
+            beta_enhancement = (
+                max(0.0, beta_prediction - alpha_improvement) * beta_confidence
+            )
             total_efficiency_gain = alpha_improvement + beta_enhancement
 
             # 統合信頼度
@@ -990,24 +1113,24 @@ class PredictionEngine:
             if "optimization_effect_predictor" not in self.ensemble_models:
                 return {"total_improvement": 0.0, "confidence": 0.0}
 
-            # 特徴量抽出（最適化効果予測用）
-            features, _ = self.feature_engineer.extract_advanced_features(context_data)
-
-            # 最適化効果予測
-            effect_pred = self.ensemble_models["optimization_effect_predictor"].predict(features[0])
-
-            # 次操作予測との統合
+            # 基本効果予測
             predicted_operations = next_operations.get("predicted_operations", [])
-            operation_multiplier = 1.0 + 0.1 * len(predicted_operations)  # 操作数による効果増幅
+            base_improvement = next_operations.get("expected_efficiency_gain", 0.0)
+            operation_multiplier = (
+                len(predicted_operations) * 0.2
+            )  # 操作数による乗数効果
 
-            total_improvement = effect_pred.prediction * operation_multiplier
-            confidence = effect_pred.confidence * next_operations.get("prediction_confidence", 0.5)
+            total_improvement = min(
+                3.0, base_improvement * (1.0 + operation_multiplier)
+            )
+            confidence = next_operations.get("prediction_confidence", 0.0) * 0.8
 
             return {
-                "total_improvement": min(2.5, max(0.0, total_improvement)),  # 0-2.5%範囲
+                "total_improvement": total_improvement,
                 "confidence": confidence,
-                "individual_effects": {
-                    op: total_improvement / len(predicted_operations) for op in predicted_operations
+                "operation_effects": {
+                    op: total_improvement / len(predicted_operations)
+                    for op in predicted_operations
                 },
                 "operation_multiplier": operation_multiplier,
             }
@@ -1028,7 +1151,9 @@ class PredictionEngine:
             coordination_result = {
                 "alpha_system_active": "error" not in alpha_status,
                 "coordination_mode": (
-                    "enhanced" if optimization_effects.get("confidence", 0.0) > 0.7 else "basic"
+                    "enhanced"
+                    if optimization_effects.get("confidence", 0.0) > 0.7
+                    else "basic"
                 ),
                 "suggested_adjustments": [],
                 "expected_synergy": 0.0,
@@ -1048,8 +1173,13 @@ class PredictionEngine:
             return coordination_result
 
         except Exception as e:
-            self.logger.error(f"Optimization coordination failed: {e}")
-            return {"coordination_mode": "fallback", "expected_synergy": 0.0}
+            self.logger.error(f"Coordination with optimization failed: {e}")
+            return {
+                "alpha_system_active": False,
+                "coordination_mode": "basic",
+                "suggested_adjustments": [],
+                "expected_synergy": 0.0,
+            }
 
     def _generate_preoptimized_settings(
         self,
@@ -1094,10 +1224,19 @@ class PredictionEngine:
             return base_settings
 
         except Exception as e:
-            self.logger.error(f"Preoptimized settings generation failed: {e}")
-            return {"prediction_confidence_threshold": 0.8}
+            self.logger.error(f"Generate preoptimized settings failed: {e}")
+            return {
+                "prediction_confidence_threshold": 0.8,
+                "ensemble_weight_lightgbm": 0.4,
+                "ensemble_weight_xgboost": 0.35,
+                "ensemble_weight_gradientboosting": 0.25,
+                "cache_enabled": True,
+                "max_cache_size": 1000,
+            }
 
-    def _generate_cache_key(self, context_data: Dict[str, Any], prediction_type: str) -> str:
+    def _generate_cache_key(
+        self, context_data: Dict[str, Any], prediction_type: str
+    ) -> str:
         """キャッシュキー生成"""
         try:
             key_components = [
@@ -1108,8 +1247,10 @@ class PredictionEngine:
                 str(len(context_data.get("recent_operations", []))),
             ]
             return "_".join(key_components)
-        except Exception:
-            return f"{prediction_type}_fallback"
+
+        except Exception as e:
+            self.logger.error(f"Generate cache key failed: {e}")
+            return f"default_{prediction_type}_{hash(str(context_data)) % 10000}"
 
     def _update_cache(self, cache_key: str, result: Dict[str, Any]):
         """キャッシュ更新"""
@@ -1131,7 +1272,9 @@ class PredictionEngine:
         except Exception as e:
             self.logger.warning(f"Cache update failed: {e}")
 
-    def _monitor_prediction_performance(self, processing_time: float, confidence: float):
+    def _monitor_prediction_performance(
+        self, processing_time: float, confidence: float
+    ):
         """予測性能監視"""
         try:
             performance_record = {
@@ -1206,7 +1349,9 @@ class PredictionEngine:
                 }
 
             # 性能統計
-            recent_performance = self.performance_history[-100:] if self.performance_history else []
+            recent_performance = (
+                self.performance_history[-100:] if self.performance_history else []
+            )
             avg_processing_time = (
                 np.mean([p["processing_time"] for p in recent_performance])
                 if recent_performance
@@ -1227,8 +1372,10 @@ class PredictionEngine:
                 "performance": {
                     "avg_processing_time": avg_processing_time,
                     "avg_confidence": avg_confidence,
-                    "meets_time_target": avg_processing_time <= self.inference_time_target,
-                    "meets_accuracy_target": avg_confidence >= self.prediction_accuracy_target,
+                    "meets_time_target": avg_processing_time
+                    <= self.inference_time_target,
+                    "meets_accuracy_target": avg_confidence
+                    >= self.prediction_accuracy_target,
                     "performance_history_size": len(self.performance_history),
                 },
                 "cache": {
@@ -1274,7 +1421,9 @@ class PredictionEngine:
             # Alpha基盤モデルも保存
             alpha_saved = self.basic_ml_system.save_models(model_path / "alpha_models")
 
-            self.logger.info(f"Saved {saved_count} ensemble models, Alpha models: {alpha_saved}")
+            self.logger.info(
+                f"Saved {saved_count} ensemble models, Alpha models: {alpha_saved}"
+            )
             return saved_count > 0
 
         except Exception as e:
@@ -1297,7 +1446,9 @@ class PredictionEngine:
                     ensemble_model = self.ensemble_models[model_name]
                     ensemble_model.models = ensemble_data["models"]
                     ensemble_model.model_weights = ensemble_data["model_weights"]
-                    ensemble_model.performance_metrics = ensemble_data["performance_metrics"]
+                    ensemble_model.performance_metrics = ensemble_data[
+                        "performance_metrics"
+                    ]
                     ensemble_model.feature_names = ensemble_data["feature_names"]
                     ensemble_model.is_trained = True
 
@@ -1306,7 +1457,9 @@ class PredictionEngine:
             # Alpha基盤モデルも読み込み
             alpha_loaded = self.basic_ml_system.load_models(model_path / "alpha_models")
 
-            self.logger.info(f"Loaded {loaded_count} ensemble models, Alpha models: {alpha_loaded}")
+            self.logger.info(
+                f"Loaded {loaded_count} ensemble models, Alpha models: {alpha_loaded}"
+            )
             return loaded_count > 0
 
         except Exception as e:

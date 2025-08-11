@@ -147,9 +147,6 @@ class DistributionConverter:
             if filename_lower == original:
                 return f"{friendly}{new_extension}"
 
-        # マッピングにない場合は元のファイル名（拡張子のみ変更）
-        return f"{file_path.stem}{new_extension}"
-
     def _generate_title_from_filename(self, file_path: Path) -> str:
         """ファイル名からタイトルを生成"""
         filename_lower = file_path.name.lower()
@@ -158,6 +155,3 @@ class DistributionConverter:
         for original, friendly in self.FILENAME_MAPPINGS.items():
             if filename_lower == original:
                 return friendly
-
-        # マッピングにない場合はファイル名から生成
-        return file_path.stem.replace("_", " ").replace("-", " ").title()

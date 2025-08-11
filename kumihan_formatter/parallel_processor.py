@@ -59,12 +59,15 @@ class ParallelProcessorHandler:
         should_parallelize = self._should_use_parallel_processing(text, lines)
 
         if not should_parallelize:
-            self.logger.info("Using traditional streaming parse (below parallel threshold)")
+            self.logger.info(
+                "Using traditional streaming parse (below parallel threshold)"
+            )
             yield from self.parser.parse_streaming_from_text(text, progress_callback)
             return
 
         self.logger.info(
-            f"Parallel processing enabled: {total_lines} lines, " f"estimated improvement: 60-80%"
+            f"Parallel processing enabled: {total_lines} lines, "
+            f"estimated improvement: 60-80%"
         )
 
         # 並列処理状態
@@ -82,7 +85,8 @@ class ParallelProcessorHandler:
 
             chunk_size = len(chunks[0].lines) if chunks else 100
             self.logger.info(
-                f"Parallel configuration: {len(chunks)} chunks, " f"chunk_size={chunk_size}"
+                f"Parallel configuration: {len(chunks)} chunks, "
+                f"chunk_size={chunk_size}"
             )
 
             # 並列処理実行
@@ -229,12 +233,8 @@ class ParallelProcessorHandler:
                     process = psutil.Process()
                     memory_info = process.memory_info()
                     return memory_info.rss / 1024 / 1024  # MB
-                except ImportError:
-                    self.logger.debug("psutil not available, using estimated memory")
-                    return 75.0  # 推定値
-                except Exception as e:
-                    self.logger.debug(f"Memory monitoring error: {e}")
-                    return 0.0
+                except Exception:
+                    return 0.0  # フォールバック
 
             def check_memory_status(self) -> dict:
                 """メモリ状況の包括的チェック"""
@@ -244,7 +244,8 @@ class ParallelProcessorHandler:
                     "current_mb": current_mb,
                     "warning": current_mb > self.warning_threshold_mb,
                     "critical": current_mb > self.critical_threshold_mb,
-                    "percentage_of_critical": (current_mb / self.critical_threshold_mb) * 100,
+                    "percentage_of_critical": (current_mb / self.critical_threshold_mb)
+                    * 100,
                     "safe": current_mb <= self.warning_threshold_mb,
                 }
 
@@ -269,7 +270,9 @@ class ParallelProcessorHandler:
                         yield node
 
         except Exception as e:
-            self.logger.warning(f"Parallel chunk parse failed (chunk {chunk.chunk_id}): {e}")
+            self.logger.warning(
+                f"Parallel chunk parse failed (chunk {chunk.chunk_id}): {e}"
+            )
             # エラー時も処理継続（graceful degradation）
 
     def _get_thread_local_parser(self):
@@ -367,18 +370,18 @@ class ParallelProcessorHandler:
             return 100  # 小ファイル: 100行/チャンク
         elif total_lines <= 10000:
             return 500  # 中ファイル: 500行/チャンク
-        elif total_lines <= 100000:
-            return 1000  # 大ファイル: 1000行/チャンク
         else:
-            return 2000  # 超大ファイル: 2000行/チャンク
+            return 1000  # 大ファイル: 1000行/チャンク
 
-    def parse_chunk_optimized(self, chunk_text: str, start_line: int, end_line: int) -> list[Node]:
+    def parse_chunk_optimized(
+        self, chunk_text: str, start_line: int, end_line: int
+    ) -> list[Node]:
         """チャンク解析の最適化実装（Issue #757）"""
         try:
             # Issue #755対応: 最適化されたパーサーを使用
             return self.parser.parse_optimized(chunk_text)
         except Exception as e:
-            self.logger.warning(f"Chunk parse failed (lines {start_line}-{end_line}): {e}")
+            self.logger.error(f"Chunk parsing failed: {e}")
             return []
 
     def get_parallel_processing_metrics(self) -> dict:
@@ -401,8 +404,12 @@ class ParallelProcessorHandler:
             },
             # 実行時統計
             "runtime_stats": {
-                "current_lines": (len(self.parser.lines) if hasattr(self.parser, "lines") else 0),
-                "errors_count": (len(self.parser.errors) if hasattr(self.parser, "errors") else 0),
+                "current_lines": (
+                    len(self.parser.lines) if hasattr(self.parser, "lines") else 0
+                ),
+                "errors_count": (
+                    len(self.parser.errors) if hasattr(self.parser, "errors") else 0
+                ),
                 "graceful_errors_count": (
                     len(self.parser.graceful_syntax_errors)
                     if hasattr(self.parser, "graceful_syntax_errors")
@@ -445,18 +452,20 @@ class ParallelProcessorHandler:
             # 並列プロセッサーから統計を取得
             if hasattr(self.parser.parallel_processor, "get_statistics"):
                 return self.parser.parallel_processor.get_statistics()
-            else:
-                return {
-                    "available": True,
-                    "status": "ready",
-                    "processed_chunks": 0,
-                    "total_processing_time": 0.0,
-                }
+
+            return {
+                "available": True,
+                "status": "ready",
+                "processed_chunks": 0,
+                "total_processing_time": 0.0,
+            }
         except Exception as e:
             self.logger.debug(f"Parallel statistics error: {e}")
             return {"error": str(e)}
 
-    def log_performance_summary(self, processing_time: float, total_lines: int, total_nodes: int):
+    def log_performance_summary(
+        self, processing_time: float, total_lines: int, total_nodes: int
+    ):
         """パフォーマンスサマリーをログ出力（Issue #759対応）"""
         metrics = self.get_parallel_processing_metrics()
 
@@ -469,7 +478,11 @@ class ParallelProcessorHandler:
         baseline_lines = 300000
         estimated_baseline_time = (total_lines / baseline_lines) * baseline_time
         improvement_percent = (
-            ((estimated_baseline_time - processing_time) / estimated_baseline_time * 100)
+            (
+                (estimated_baseline_time - processing_time)
+                / estimated_baseline_time
+                * 100
+            )
             if estimated_baseline_time > 0
             else 0
         )

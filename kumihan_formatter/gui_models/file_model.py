@@ -5,6 +5,7 @@ Issue #476対応 - gui_models.py分割（2/3）
 Issue #516 Phase 5A対応 - Thread-Safe設計とエラーハンドリング強化
 """
 
+import os
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -32,9 +33,13 @@ class FileManager:
             if not input_file:
                 raise ValueError("入力ファイルが指定されていません")
             if not isinstance(input_file, str):
-                raise TypeError(f"入力ファイルは文字列である必要があります: {type(input_file)}")
+                raise TypeError(
+                    f"入力ファイルは文字列である必要があります: {type(input_file)}"
+                )
             if not isinstance(output_dir, str):
-                raise TypeError(f"出力ディレクトリは文字列である必要があります: {type(output_dir)}")
+                raise TypeError(
+                    f"出力ディレクトリは文字列である必要があります: {type(output_dir)}"
+                )
 
             input_path = Path(input_file)
 
@@ -45,18 +50,20 @@ class FileManager:
             output_path = Path(output_dir) / f"{input_path.stem}.html"
             return output_path
         except Exception as e:
-            self.logger.error(f"出力パス生成エラー: {e}")
-            raise
+            self.logger.error(f"出力HTMLパス生成エラー: {e}")
+            # フォールバック
+            return Path(output_dir) / "output.html"
 
     def validate_file_exists(self, file_path: str) -> bool:
         """ファイルの存在確認（エラーハンドリング強化）"""
         try:
             if not file_path or not isinstance(file_path, str):
                 return False
+
             path = Path(file_path)
             return path.exists() and path.is_file()
-        except (OSError, ValueError) as e:
-            self.logger.warning(f"ファイル存在確認エラー: {e}")
+        except Exception as e:
+            self.logger.error(f"ファイル存在確認エラー: {e}")
             return False
 
     def validate_directory_writable(self, dir_path: str) -> bool:
@@ -65,17 +72,17 @@ class FileManager:
             if not dir_path or not isinstance(dir_path, str):
                 return False
 
-            directory = Path(dir_path)
-            directory.mkdir(parents=True, exist_ok=True)
+            path = Path(dir_path)
+            if not path.exists():
+                # ディレクトリが存在しない場合は作成を試行
+                try:
+                    path.mkdir(parents=True, exist_ok=True)
+                except Exception:
+                    return False
 
-            # 書き込みテストを実行
-            test_file = directory / ".write_test"
-            test_file.write_text("test", encoding="utf-8")
-            test_file.unlink()
-
-            return directory.is_dir()
-        except (OSError, PermissionError) as e:
-            self.logger.warning(f"ディレクトリ書き込み確認エラー: {e}")
+            return path.is_dir() and os.access(path, os.W_OK)
+        except Exception as e:
+            self.logger.error(f"ディレクトリ書き込み確認エラー: {e}")
             return False
 
     def get_file_size_mb(self, file_path: str) -> float:
@@ -83,12 +90,15 @@ class FileManager:
         try:
             if not file_path or not isinstance(file_path, str):
                 return 0.0
+
             path = Path(file_path)
-            if not path.exists():
+            if not path.exists() or not path.is_file():
                 return 0.0
-            return path.stat().st_size / (1024 * 1024)
-        except (OSError, FileNotFoundError) as e:
-            self.logger.warning(f"ファイルサイズ取得エラー: {e}")
+
+            size_bytes = path.stat().st_size
+            return size_bytes / (1024 * 1024)  # バイトをMBに変換
+        except Exception as e:
+            self.logger.error(f"ファイルサイズ取得エラー: {e}")
             return 0.0
 
     def get_file_info(self, file_path: str) -> Optional[Dict[str, Any]]:
@@ -103,25 +113,23 @@ class FileManager:
                     if path.exists() and path.stat().st_mtime <= cached.get("mtime", 0):
                         return cached
 
-                # ファイル情報取得
-                if not self.validate_file_exists(file_path):
-                    return None
-
+                # ファイル情報を新規作成
                 path = Path(file_path)
-                stat = path.stat()
+                if not path.exists():
+                    return None
 
                 info = {
                     "path": str(path.absolute()),
                     "name": path.name,
-                    "size_mb": stat.st_size / (1024 * 1024),
-                    "mtime": stat.st_mtime,
-                    "exists": True,
+                    "size": path.stat().st_size,
+                    "mtime": path.stat().st_mtime,
+                    "is_file": path.is_file(),
+                    "is_dir": path.is_dir(),
                 }
 
                 # キャッシュに保存
                 self._file_cache[file_path] = info
                 return info
-
         except Exception as e:
             self.logger.error(f"ファイル情報取得エラー: {e}")
             return None
@@ -129,10 +137,10 @@ class FileManager:
     def get_sample_output_path(self, output_dir: str = "kumihan_sample") -> Path:
         """サンプル生成用の出力パスを取得（エラーハンドリング強化）"""
         try:
-            return Path(output_dir)
+            return Path(output_dir) / "sample_output.html"
         except Exception as e:
-            self.logger.warning(f"サンプル出力パス生成エラー: {e}")
-            return Path("kumihan_sample")
+            self.logger.error(f"サンプル出力パス生成エラー: {e}")
+            return Path("sample_output.html")
 
     def clear_cache(self) -> None:
         """ファイルキャッシュをクリア"""

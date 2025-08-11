@@ -97,15 +97,14 @@ class ConvertWatcher:
             "syntax_check": syntax_check,
         }
 
-        # ファイル処理ロジックを外部クラスに委任
-        file_processor = FileWatchProcessor(  # type: ignore[name-defined]
-            self.validator, self.processor, handler_config
-        )
+        # ファイル処理ロジックを内部クラスで実装
 
         class SimpleEventHandler(FileSystemEventHandler):
-            def __init__(self, processor):
+            def __init__(self, validator, processor, config):
                 super().__init__()
+                self.validator = validator
                 self.processor = processor
+                self.config = config
 
             def on_modified(self, event):
                 if self.processor.should_skip_event(event):
@@ -120,4 +119,4 @@ class ConvertWatcher:
                 except Exception as e:
                     self.processor.handle_error(e)
 
-        return SimpleEventHandler(file_processor)
+        return SimpleEventHandler(self.validator, self.processor, handler_config)

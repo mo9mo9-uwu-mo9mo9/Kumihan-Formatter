@@ -33,14 +33,18 @@ class ConsoleEncodingSetup:
         # Force UTF-8 encoding for stdout/stderr
         if sys.stdout and sys.stdout.encoding != "utf-8":
             try:
-                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+                sys.stdout = io.TextIOWrapper(
+                    sys.stdout.buffer, encoding="utf-8", errors="replace"
+                )
             except AttributeError:
                 # Already wrapped or no buffer attribute
                 pass
 
         if sys.stderr and sys.stderr.encoding != "utf-8":
             try:
-                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+                sys.stderr = io.TextIOWrapper(
+                    sys.stderr.buffer, encoding="utf-8", errors="replace"
+                )
             except AttributeError:
                 pass
 

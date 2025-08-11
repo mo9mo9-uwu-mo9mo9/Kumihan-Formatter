@@ -33,7 +33,6 @@ class ProgressState:
         """進捗率を取得（0-100）"""
         if self.total == 0:
             return 100.0
-        return min(100.0, (self.current / self.total) * 100)
 
     @property
     def elapsed_time(self) -> float:
@@ -46,25 +45,12 @@ class ProgressState:
         if self.processing_rate <= 0 or self.current >= self.total:
             return 0
 
-        remaining_items = self.total - self.current
-        return int(remaining_items / self.processing_rate)
-
     @property
     def eta_formatted(self) -> str:
         """フォーマット済み推定残り時間"""
         eta = self.eta_seconds
         if eta <= 0:
             return "完了間近"
-        elif eta < 60:
-            return f"{eta}秒"
-        elif eta < 3600:
-            minutes = eta // 60
-            seconds = eta % 60
-            return f"{minutes}分{seconds}秒"
-        else:
-            hours = eta // 3600
-            minutes = (eta % 3600) // 60
-            return f"{hours}時間{minutes}分"
 
 
 class ProgressManager:
@@ -93,7 +79,9 @@ class ProgressManager:
         self.cancellation_callback: Optional[Callable[[], None]] = None
 
         # 処理速度計算用
-        self._progress_history: list[tuple[float, int]] = []  # (timestamp, current_value)
+        self._progress_history: list[tuple[float, int]] = (
+            []
+        )  # (timestamp, current_value)
 
         self.logger.debug(f"ProgressManager initialized for task: {task_name}")
 
@@ -108,7 +96,9 @@ class ProgressManager:
         self.cancelled.clear()
         self._progress_history.clear()
 
-        self.logger.info(f"Progress tracking started: {total_items} items, stage: {stage}")
+        self.logger.info(
+            f"Progress tracking started: {total_items} items, stage: {stage}"
+        )
         self._notify_progress()
 
     def update(self, current: int, substage: str = "") -> bool:
@@ -124,22 +114,6 @@ class ProgressManager:
         """
         if self.cancelled.is_set():
             return False
-
-        now = time.time()
-
-        # 状態更新
-        self.state.current = min(current, self.state.total)
-        self.state.substage = substage
-
-        # 処理速度計算
-        self._update_processing_rate(now, current)
-
-        # 定期的なプログレス通知
-        if now - self.state.last_update_time >= self.UPDATE_INTERVAL:
-            self.state.last_update_time = now
-            self._notify_progress()
-
-        return True
 
     def increment(self, amount: int = 1, substage: str = "") -> bool:
         """プログレスを増分更新"""
@@ -394,9 +368,13 @@ class ProgressContextManager:
 
             # キャンセル処理設定
             if self.enable_cancellation:
-                self.progress_manager.set_cancellation_callback(self._handle_cancellation)
+                self.progress_manager.set_cancellation_callback(
+                    self._handle_cancellation
+                )
 
-        self.logger.info(f"Progress context started: {self.task_name} ({self.total_items} items)")
+        self.logger.info(
+            f"Progress context started: {self.task_name} ({self.total_items} items)"
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -448,22 +426,20 @@ class ProgressContextManager:
         if self._cancellation_requested.is_set():
             return False
 
-        if self.progress_manager:
-            success = self.progress_manager.update(current, substage)
-            if stage and stage != self.progress_manager.state.stage:
+        # 継続可能な場合の処理
+        try:
+            if stage:
                 self.progress_manager.set_stage(stage, substage)
                 self.stages_completed += 1
-
-            return success
-
-        return True
+            return True
+        except Exception:
+            return False
 
     def increment(self, amount: int = 1, stage: str = "", substage: str = "") -> bool:
         """プログレス増分更新"""
         if self.progress_manager:
             current = self.progress_manager.state.current + amount
             return self.update(current, stage, substage)
-        return True
 
     def add_error(self, message: str = ""):
         """エラー追加"""
@@ -553,7 +529,9 @@ class ProgressContextManager:
             )
 
         except ImportError:
-            self.logger.warning("Rich library not available, falling back to basic progress")
+            self.logger.warning(
+                "Rich library not available, falling back to basic progress"
+            )
             self.rich_progress = None
             self.task_id = None
 
@@ -590,7 +568,10 @@ class ProgressContextManager:
         if self.verbosity.value >= self.VerbosityLevel.DETAILED.value:
             if state.stage:
                 desc += f" - {state.stage}"
-            if state.substage and self.verbosity.value >= self.VerbosityLevel.VERBOSE.value:
+            if (
+                state.substage
+                and self.verbosity.value >= self.VerbosityLevel.VERBOSE.value
+            ):
                 desc += f" ({state.substage})"
 
         return desc

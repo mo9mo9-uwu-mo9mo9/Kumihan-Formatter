@@ -40,7 +40,6 @@ class ConsoleInteraction:
         response = self.input("[yellow]この機能を使用しますか？ (Y/n): [/yellow]")
         return response.lower() in ["y", "yes", ""]
 
-    # Generic progress
     def create_progress(self) -> Progress:
         """Create a progress instance"""
         return Progress()

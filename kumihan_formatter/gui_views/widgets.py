@@ -66,7 +66,9 @@ class FileSelectionFrame:
         self.frame.columnconfigure(1, weight=1)
 
         # 入力ファイル選択
-        ttk.Label(self.frame, text="入力ファイル:").grid(row=0, column=0, sticky=W, padx=(0, 10))
+        ttk.Label(self.frame, text="入力ファイル:").grid(
+            row=0, column=0, sticky=W, padx=(0, 10)
+        )
         self.input_entry = ttk.Entry(
             self.frame, textvariable=self.app_state.config.input_file_var, width=50
         )
@@ -122,7 +124,9 @@ class OptionsFrame:
         self.frame.columnconfigure(1, weight=1)
 
         # テンプレート選択
-        ttk.Label(self.frame, text="テンプレート:").grid(row=0, column=0, sticky=W, padx=(0, 10))
+        ttk.Label(self.frame, text="テンプレート:").grid(
+            row=0, column=0, sticky=W, padx=(0, 10)
+        )
         self.template_combo = ttk.Combobox(
             self.frame,
             textvariable=self.app_state.config.template_var,
