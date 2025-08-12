@@ -32,17 +32,19 @@ warnings.filterwarnings("ignore")
 
 # 高度ML技術スタック
 try:
-    import lightgbm as lgb
+    import lightgbm as lgb  # type: ignore
 
     LIGHTGBM_AVAILABLE = True
 except ImportError:
+    lgb = None
     LIGHTGBM_AVAILABLE = False
 
 try:
-    import xgboost as xgb
+    import xgboost as xgb  # type: ignore
 
     XGBOOST_AVAILABLE = True
 except ImportError:
+    xgb = None
     XGBOOST_AVAILABLE = False
 
 
@@ -719,7 +721,9 @@ class PredictionEngine:
         except Exception as e:
             self.logger.warning(f"Alpha integration verification failed: {e}")
 
-    def predict_next_operations(self, context_data: Dict[str, Any]) -> Dict[str, Any]:
+    def predict_next_operations(
+        self, context_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """次操作高精度予測（50ms以内超高速推論）"""
         try:
             prediction_start = time.time()
@@ -732,7 +736,7 @@ class PredictionEngine:
                     time.time() - cached_result["timestamp"] < 300
                 ):  # 5分間キャッシュ有効
                     return self._format_next_operations_result(
-                        cached_result, from_cache=True
+                        [cached_result], from_cache=True
                     )
 
             # Beta高度予測実行
@@ -789,11 +793,11 @@ class PredictionEngine:
             self.logger.debug(
                 f"Next operations predicted in {processing_time * 1000:.1f}ms"
             )
-            return final_result
+            return [final_result] if isinstance(final_result, dict) else final_result
 
         except Exception as e:
             self.logger.error(f"Next operations prediction failed: {e}")
-            return self._get_fallback_next_operations()
+            return [self._get_fallback_next_operations()]
 
     def preoptimize_settings(self, context_data: Dict[str, Any]) -> Dict[str, Any]:
         """事前設定高度最適化（予測結果基づく事前調整）"""
@@ -805,7 +809,7 @@ class PredictionEngine:
 
             # 最適化効果予測
             optimization_effects = self._predict_optimization_effects(
-                context_data, next_operations
+                context_data, next_operations  # type: ignore[arg-type]
             )
 
             # Phase B設定協調調整
@@ -827,8 +831,8 @@ class PredictionEngine:
                 ),
                 "confidence": optimization_effects.get("confidence", 0.0),
                 "processing_time": processing_time,
-                "next_operations_basis": next_operations.get(
-                    "predicted_operations", []
+                "next_operations_basis": (
+                    next_operations if isinstance(next_operations, list) else []
                 ),
                 "optimization_coordination": optimization_results,
             }

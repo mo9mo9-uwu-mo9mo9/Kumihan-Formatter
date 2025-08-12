@@ -18,10 +18,11 @@ except ImportError:
     HAS_YAML = False
 
 try:
-    import tomli
+    import tomli  # type: ignore
 
     HAS_TOML = True
 except ImportError:
+    tomli = None
     HAS_TOML = False
 
 from ..error_handling import handle_error_unified

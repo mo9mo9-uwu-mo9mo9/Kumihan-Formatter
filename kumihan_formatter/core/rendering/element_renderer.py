@@ -283,13 +283,15 @@ class ElementRenderer:
         # 他の属性を処理（summaryを除く）
         # node.attributesがNoneでないことを確認
         if node.attributes is not None:
-            attributes = {k: v for k, v in node.attributes.items() if k != "summary"}
+            detail_attributes = {
+                k: v for k, v in node.attributes.items() if k != "summary"
+            }
         else:
-            attributes: dict[str, Any] = {}
+            detail_attributes = {}
 
         # Phase 4: Enhanced accessibility and CSS class handling
         attr_str = render_attributes_with_enhancements(
-            "details", attributes, summary_text, self.formatter
+            "details", detail_attributes, summary_text, self.formatter
         )
 
         summary_html = f"<summary>{escape_html(summary_text)}</summary>"

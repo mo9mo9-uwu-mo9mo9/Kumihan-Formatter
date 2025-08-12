@@ -450,9 +450,7 @@ class ConvertProcessor:
                 text, config, input_path, size_mb, line_count, error_config_manager
             )
         else:
-            return self._parse_with_traditional_progress(
-                text, config, size_mb, error_config_manager
-            )
+            return self._parse_with_traditional_progress(text, config, size_mb)
 
     def _parse_with_streaming_progress(
         self,

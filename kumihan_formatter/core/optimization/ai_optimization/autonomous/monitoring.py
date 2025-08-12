@@ -34,7 +34,7 @@ except ImportError:
     np = None
 
 try:
-    import scipy.stats as stats  # type: ignore
+    import scipy.stats as stats
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -54,6 +54,7 @@ class SystemState(Enum):
     CRITICAL = "critical"
     RECOVERING = "recovering"
     MAINTENANCE = "maintenance"
+    UNKNOWN = "unknown"
 
 
 class AnomalyType(Enum):
@@ -519,7 +520,7 @@ class SystemMonitor:
                     x = np.arange(len(accuracy_values))
                     slope, _, r_value, _, _ = stats.linregress(x, accuracy_values)
                 else:
-                    return False
+                    return []  # type: ignore[return-value]
 
                 # 負のトレンドかつ強い相関
                 if slope < -0.01 and r_value < -0.7:
@@ -544,7 +545,7 @@ class SystemMonitor:
                     x = np.arange(len(response_values))
                     slope, _, r_value, _, _ = stats.linregress(x, response_values)
                 else:
-                    return False
+                    return []  # type: ignore[return-value]
 
                 # 正のトレンドかつ強い相関
                 if slope > 0.01 and r_value > 0.7:

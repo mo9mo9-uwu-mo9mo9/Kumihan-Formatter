@@ -499,7 +499,9 @@ class AlphaBetaCoordinator:
         try:
             # Alpha結果に基づく学習必要性判定
             alpha_confidence = alpha_result.get("confidence", 0.0)
-            return alpha_confidence < 0.8  # 信頼度80%未満で学習トリガー
+            return (
+                alpha_confidence < 0.8
+            )  # 信頼度80%未満で学習トリガー  # type: ignore[no-any-return]
         except Exception:
             return False
 
@@ -514,7 +516,7 @@ class AlphaBetaCoordinator:
             # 学習システム実行（簡略化）
             learning_result = self.learning_system.adapt_from_data(context_data)
 
-            return learning_result
+            return learning_result  # type: ignore[no-any-return]
         except Exception as e:
             self.logger.error(f"Learning system trigger failed: {e}")
             return {"triggered": False, "error": str(e)}

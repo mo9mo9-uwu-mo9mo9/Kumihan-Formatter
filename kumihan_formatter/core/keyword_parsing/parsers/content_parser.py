@@ -13,7 +13,7 @@ class ContentParser(BaseParser):
         """Initialize content parser."""
         super().__init__()
 
-    def parse_footnotes(self, text: str) -> List[Dict[str, Any]]:
+    def parse_footnotes(self, text: Any) -> List[Dict[str, Any]]:
         """Parse footnotes from text.
 
         Args:
@@ -30,7 +30,7 @@ class ContentParser(BaseParser):
         # TODO: Implement footnote parsing logic
         return footnotes
 
-    def extract_footnotes_from_text(self, text: str) -> List[Dict[str, Any]]:
+    def extract_footnotes_from_text(self, text: Any) -> List[Dict[str, Any]]:
         """Extract footnotes from text content.
 
         Args:
@@ -58,7 +58,7 @@ class ContentParser(BaseParser):
 
         return footnotes
 
-    def extract_inline_content(self, line: str) -> Optional[str]:
+    def extract_inline_content(self, line: Any) -> Optional[str]:
         """Extract inline content from a line.
 
         Args:
@@ -77,7 +77,7 @@ class ContentParser(BaseParser):
 
         return None
 
-    def is_new_marker_format(self, line: str) -> bool:
+    def is_new_marker_format(self, line: Any) -> bool:
         """Check if line uses new marker format.
 
         Args:
@@ -104,7 +104,7 @@ class ContentParser(BaseParser):
 
         return False
 
-    def is_block_end_marker(self, line: str) -> bool:
+    def is_block_end_marker(self, line: Any) -> bool:
         """Check if line is a block end marker.
 
         Args:
@@ -123,7 +123,7 @@ class ContentParser(BaseParser):
 
         return False
 
-    def normalize_marker_syntax(self, marker_content: str) -> str:
+    def normalize_marker_syntax(self, marker_content: Any) -> str:
         """Normalize marker syntax to standard format.
 
         Args:
@@ -138,7 +138,7 @@ class ContentParser(BaseParser):
         # Return normalized content
         return marker_content.strip()
 
-    def _extract_block_content(self, line: str) -> Optional[str]:
+    def _extract_block_content(self, line: Any) -> Optional[str]:
         """Extract content from block format line.
 
         Args:
@@ -153,7 +153,7 @@ class ContentParser(BaseParser):
             return match.group(2) if len(match.groups()) >= 2 else None
         return None
 
-    def _validate_new_format_structure(self, line: str) -> bool:
+    def _validate_new_format_structure(self, line: Any) -> bool:
         """Validate new format structure.
 
         Args:
@@ -183,13 +183,13 @@ class ContentParser(BaseParser):
         errors: List[str] = []
 
         if not isinstance(footnotes, list):
-            errors.append("Footnotes must be a list")
+            errors.append("Footnotes must be a list")  # type: ignore[unreachable]
             return errors
 
         seen_ids = set()
         for i, footnote in enumerate(footnotes):
             if not isinstance(footnote, dict):
-                errors.append(f"Footnote {i} is not a dictionary")
+                errors.append(f"Footnote {i} is not a dictionary")  # type: ignore[unreachable]
                 continue
 
             # Check required fields
@@ -215,7 +215,7 @@ class ContentParser(BaseParser):
 
         return errors
 
-    def _sanitize_footnote_content(self, content: str) -> str:
+    def _sanitize_footnote_content(self, content: Any) -> str:
         """Sanitize footnote content.
 
         Args:

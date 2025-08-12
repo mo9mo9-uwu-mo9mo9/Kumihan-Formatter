@@ -19,7 +19,7 @@ class KeywordParser(BaseParser):
         self.definitions = definitions
 
     def parse_marker_keywords(
-        self, marker_content: str
+        self, marker_content: Any
     ) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """Parse keywords from marker content.
 
@@ -62,7 +62,7 @@ class KeywordParser(BaseParser):
 
         return keywords, attributes, errors
 
-    def split_compound_keywords(self, keyword_content: str) -> List[str]:
+    def split_compound_keywords(self, keyword_content: Any) -> List[str]:
         """複合キーワードを個別のキーワードに分割
 
         Args:
@@ -104,7 +104,7 @@ class KeywordParser(BaseParser):
 
         return self.definitions.is_valid_keyword(keyword) if self.definitions else True
 
-    def _parse_ruby_content(self, content: str) -> Dict[str, str]:
+    def _parse_ruby_content(self, content: Any) -> Dict[str, str]:
         """Parse ruby content for Japanese text formatting.
 
         Args:
@@ -129,7 +129,7 @@ class KeywordParser(BaseParser):
 
         return {}
 
-    def _sanitize_color_attribute(self, color_value: str) -> str:
+    def _sanitize_color_attribute(self, color_value: Any) -> str:
         """Sanitize color attribute value.
 
         Args:

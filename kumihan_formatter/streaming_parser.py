@@ -40,7 +40,7 @@ class StreamingParser:
         from .parser import Parser
 
         parser = Parser(config=self.config)
-        return cast(list[Node], parser.parse(text))
+        return parser.parse(text)
 
     # 最適化された定数
     CHUNK_SIZE = 500  # チャンクサイズ増強（200→500行）
@@ -349,7 +349,7 @@ class StreamingParser:
             )
         else:
             # デフォルト処理
-            return None
+            return (None, current)
 
     def _get_cached_parsers(self) -> dict:
         """パーサーコンポーネントのキャッシュ取得（メモリ効率化）"""
@@ -487,7 +487,7 @@ class StreamingParser:
         line_buffer = []
         total_processed = 0
         line_count = 0
-        self._start_time: float | None = time.time()
+        self._parsing_start_time: float | None = time.time()
 
         for line in lines_gen:
             # タイムアウトチェック

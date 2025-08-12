@@ -46,8 +46,7 @@ class TextBlockParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "段落解析エラー",
-                    f"開始インデックス {start_index} が行数 {len(lines)} を超えています",
+                    f"段落解析エラー: 開始インデックス {start_index} が行数 {len(lines)} を超えています",
                     start_index,
                 ),
                 start_index + 1,
@@ -59,8 +58,7 @@ class TextBlockParser(BaseBlockParser):
             from kumihan_formatter.core.ast_nodes import error_node
 
             return error_node(
-                "段落解析エラー",
-                "空行をスキップした後、処理する行が見つかりません",
+                "段落解析エラー: 空行をスキップした後、処理する行が見つかりません",
                 start_index,
             ), len(lines)
 
@@ -88,8 +86,8 @@ class TextBlockParser(BaseBlockParser):
         # Apply inline processing if parser reference available
         processed_content = content
         # Apply inline processing if parser reference available
-        if self.parser_ref is not None and hasattr(self.parser_ref, "inline_parser"):
-            try:
+        if self.parser_ref is not None and hasattr(self.parser_ref, "inline_parser"):  # type: ignore[unreachable]
+            try:  # type: ignore[unreachable]
                 processed_content = self.parser_ref.inline_parser.process_text(content)
             except Exception as e:
                 self.logger.warning(f"Inline processing failed: {e}")
@@ -101,7 +99,7 @@ class TextBlockParser(BaseBlockParser):
         else:
             from kumihan_formatter.core.ast_nodes import error_node
 
-            paragraph_node = error_node("空段落エラー", "段落内容が空です", start_index)
+            paragraph_node = error_node("空段落エラー: 段落内容が空です", start_index)
 
         return paragraph_node, current_index
 

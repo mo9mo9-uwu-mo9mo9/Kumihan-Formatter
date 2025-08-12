@@ -5,7 +5,7 @@ Issue #813: Split monolithic parser.py into modular components.
 """
 
 import time
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional
 
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
@@ -92,8 +92,9 @@ class ParallelProcessingConfig:
 
         if memory_limit := os.getenv("KUMIHAN_MEMORY_LIMIT_MB"):
             try:
-                config.memory_critical_threshold_mb = int(memory_limit)
-                config.memory_warning_threshold_mb = int(memory_limit * 0.6)
+                memory_limit_int = int(memory_limit)
+                config.memory_critical_threshold_mb = memory_limit_int
+                config.memory_warning_threshold_mb = int(memory_limit_int * 0.6)
             except ValueError:
                 pass
 
@@ -395,7 +396,7 @@ class Parser:
                                 yield node
                                 processed_nodes += 1
                             else:
-                                break
+                                break  # type: ignore[unreachable]
 
                     except Exception as e:
                         self.logger.warning(
@@ -564,7 +565,7 @@ class Parser:
                 graceful_error
             )
             self.logger.info(
-                f"Enhanced error with {len(graceful_error.correction_suggestions)} suggestions"
+                f"Enhanced error with {len(graceful_error.correction_suggestions or [])} suggestions"
             )
 
         self.graceful_syntax_errors.append(graceful_error)
@@ -572,10 +573,8 @@ class Parser:
 
     def _create_error_node(self, line: str, error_message: str) -> Node:
         """エラー発生箇所にエラー情報を含むノードを作成"""
-        error_content = f"❌ 解析エラー: {error_message}"
-        return error_node(
-            error_content, {"original_line": line, "error_type": "parse_error"}
-        )
+        error_content = f"❌ 解析エラー: {error_message} (original_line: {line})"
+        return error_node(error_content)
 
     def get_graceful_errors(self) -> list["GracefulSyntaxError"]:
         """Issue #700: graceful error handlingで収集したエラーを取得"""
@@ -644,9 +643,9 @@ def parse_with_error_config(
         use_streaming = size_mb > 1.0
 
     if use_streaming:
-        parser = StreamingParser(config=config)
-        nodes = list(parser.parse_streaming_from_text(text))
+        streaming_parser = StreamingParser(config=config)
+        nodes = list(streaming_parser.parse_streaming_from_text(text))
         return nodes
     else:
         parser: Parser = Parser(config=config)
-        return cast(list[Node], parser.parse(text))
+        return parser.parse(text)

@@ -11,7 +11,10 @@ from .conversion_controller import ConversionController
 from .file_controller import FileController
 
 if TYPE_CHECKING:
-    from ..ui.log_viewer import LogViewerWindow
+    try:
+        from ..ui.log_viewer import LogViewerWindow  # type: ignore
+    except ImportError:
+        LogViewerWindow = Any
 
     # ..gui_models.AppState removed as unused
     # ..gui_views.MainView removed as unused

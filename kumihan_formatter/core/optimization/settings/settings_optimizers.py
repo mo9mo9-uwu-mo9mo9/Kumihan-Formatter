@@ -210,7 +210,7 @@ class LearningBasedOptimizer:
             # 2. 効率性予測の取得（統合システム使用）
             efficiency_insights: dict[str, Any] = {}
             if self.efficiency_analyzer:
-                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()
+                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()  # type: ignore[unreachable]
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -313,7 +313,7 @@ class LearningBasedOptimizer:
         analyzer_suggestions: list[dict[str, Any]] = []
         if self.efficiency_analyzer:
             # 効率アナライザーからの最適化提案取得
-            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
+            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(  # type: ignore[unreachable]
                 self.config.get_all()
             )
 
@@ -478,7 +478,8 @@ class LearningBasedOptimizer:
             },
             "learning_sessions_count": len(self.learning_sessions),
             "recent_learning_active": (
-                time.time() - self.learning_metrics["last_learning_session"] < 3600
+                time.time() - (self.learning_metrics["last_learning_session"] or 0)
+                < 3600
                 if self.learning_metrics.get("last_learning_session")
                 else False
             ),

@@ -482,7 +482,7 @@ class Parser:
         Returns:
             Node: Error node with appropriate styling
         """
-        return error_node(error_content, error_type=error_type)
+        return error_node(f"{error_content} (error_type: {error_type})")
 
     def get_graceful_errors(self) -> list:
         """Get graceful syntax errors"""

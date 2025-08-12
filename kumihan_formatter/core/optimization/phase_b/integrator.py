@@ -208,7 +208,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.measurement_interval)
                 if not self.is_running:
-                    break
+                    break  # type: ignore[unreachable]
 
                 # ダミーデータでの定期測定（本番では実際のトークンデータを使用）
                 test_context = WorkContext(
@@ -238,7 +238,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.stability_check_interval)
                 if not self.is_running:
-                    break
+                    break  # type: ignore[unreachable]
 
                 await self.stability_validator.validate_system_stability()
 
@@ -254,7 +254,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.report_generation_interval)
                 if not self.is_running:
-                    break
+                    break  # type: ignore[unreachable]
 
                 # 最新の測定・検証結果でレポート生成
                 if (

@@ -1,7 +1,7 @@
 """Base parser class for marker parsing functionality."""
 
 import re
-from typing import Optional
+from typing import Any, Optional
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -26,7 +26,7 @@ class BaseParser:
         self.HASH_MARKERS = ["#", "##", "###", "####", "#####"]
         self.BLOCK_END_MARKERS = ["##", "###", "####", "#####"]
 
-    def _contains_malicious_content(self, content: str) -> bool:
+    def _contains_malicious_content(self, content: Any) -> bool:
         """Check if content contains potentially malicious patterns.
 
         Args:
@@ -38,7 +38,6 @@ class BaseParser:
         if not isinstance(content, str):
             return False
 
-        # Check for potentially malicious patterns
         # Check for potentially malicious patterns
         malicious_patterns = [
             "<script",
@@ -57,7 +56,7 @@ class BaseParser:
 
         return False
 
-    def _sanitize_content(self, content: str) -> str:
+    def _sanitize_content(self, content: Any) -> str:
         """Sanitize content by removing potentially dangerous elements.
 
         Args:
@@ -119,7 +118,7 @@ class BaseParser:
 
         return None
 
-    def _is_valid_marker_content(self, content: str) -> bool:
+    def _is_valid_marker_content(self, content: Any) -> bool:
         """Validate marker content for basic structure.
 
         Args:
