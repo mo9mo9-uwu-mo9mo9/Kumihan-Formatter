@@ -4,6 +4,7 @@ This module contains the sample generation functionality.
 """
 
 from pathlib import Path
+from typing import Any
 
 import click
 from rich.progress import Progress
@@ -129,7 +130,7 @@ def create_sample_command() -> None:
     @click.option(
         "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
     )
-    def generate_sample(output, with_source_toggle, quiet) -> None:
+    def generate_sample(output: Any, with_source_toggle: Any, quiet: Any) -> None:
         """機能ショーケースサンプルを生成します"""
 
         # Determine source toggle usage

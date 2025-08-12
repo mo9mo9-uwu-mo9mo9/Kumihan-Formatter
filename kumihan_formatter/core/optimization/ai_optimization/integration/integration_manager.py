@@ -286,7 +286,7 @@ class PhaseB4BetaIntegrator:
         prediction_engine: Optional[PredictionEngine] = None,
         learning_system: Optional[LearningSystem] = None,
         autonomous_controller: Optional[AutonomousController] = None,
-    ):
+    ) -> None:
         """統合システム初期化"""
         try:
             # システム設定

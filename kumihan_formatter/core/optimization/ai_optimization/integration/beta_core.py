@@ -103,7 +103,7 @@ class AlphaBetaCoordinator:
         prediction_engine: Optional[PredictionEngine] = None,
         learning_system: Optional[LearningSystem] = None,
         autonomous_controller: Optional[AutonomousController] = None,
-    ):
+    ) -> None:
         """システム初期化"""
         try:
             # Alpha基盤設定

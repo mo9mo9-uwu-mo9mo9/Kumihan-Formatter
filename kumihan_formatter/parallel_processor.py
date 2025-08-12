@@ -152,9 +152,9 @@ class ParallelProcessorHandler:
 
     def _process_chunks_with_memory_monitoring(
         self,
-        chunks,
+        chunks: Any,
         chunk_progress_info: dict[str, Any],
-        progress_callback,
+        progress_callback: Any,
         start_time: float,
         total_lines: int,
     ) -> Iterator[Node]:
@@ -253,7 +253,7 @@ class ParallelProcessorHandler:
 
         return EnhancedMemoryMonitor()
 
-    def _parse_chunk_parallel_optimized(self, chunk) -> Iterator[Node]:
+    def _parse_chunk_parallel_optimized(self, chunk: Any) -> Iterator[Node]:
         """単一チャンクの並列最適化解析（スレッドセーフ）"""
         try:
             # スレッドローカルパーサーコンポーネントを使用
@@ -319,10 +319,10 @@ class ParallelProcessorHandler:
         self,
         chunk_info: dict[str, Any],
         chunk_progress: dict[str, Any],
-        progress_callback,
+        progress_callback: Any,
         start_time: float,
         total_lines: int,
-    ):
+    ) -> None:
         """並列処理プログレス更新"""
         if not progress_callback:
             return
@@ -469,7 +469,7 @@ class ParallelProcessorHandler:
 
     def log_performance_summary(
         self, processing_time: float, total_lines: int, total_nodes: int
-    ):
+    ) -> None:
         """パフォーマンスサマリーをログ出力（Issue #759対応）"""
         metrics = self.get_parallel_processing_metrics()
 

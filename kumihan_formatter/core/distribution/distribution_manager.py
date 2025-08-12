@@ -6,6 +6,7 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 from pathlib import Path
+from typing import Any
 
 from ..doc_classifier import DocumentClassifier, DocumentType
 from .distribution_converter import DistributionConverter
@@ -19,7 +20,7 @@ class DistributionManager:
     責任: 配布構造作成の全体制御・各処理のオーケストレーション
     """
 
-    def __init__(self, ui=None) -> None:
+    def __init__(self, ui: Any = None) -> None:
         """配布管理器を初期化
 
         Args:

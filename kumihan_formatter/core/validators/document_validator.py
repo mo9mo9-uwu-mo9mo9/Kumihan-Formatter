@@ -5,6 +5,7 @@ comprehensive document validation.
 """
 
 from pathlib import Path
+from typing import Any
 
 from ..ast_nodes import Node
 from .file_validator import FileValidator
@@ -17,7 +18,7 @@ from .validation_issue import ValidationIssue
 class DocumentValidator:
     """Main validator that coordinates all validation components"""
 
-    def __init__(self, config=None) -> None:
+    def __init__(self, config: Any = None) -> None:
         """Initialize document validator with all sub-validators"""
         self.config = config
 
