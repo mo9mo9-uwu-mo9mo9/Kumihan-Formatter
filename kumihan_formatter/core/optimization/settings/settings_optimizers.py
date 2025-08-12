@@ -315,8 +315,10 @@ class LearningBasedOptimizer:
         analyzer_suggestions: list[dict[str, Any]] = []
         if self.efficiency_analyzer:
             # 効率アナライザーからの最適化提案取得
-            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
-                self.config.get_all()
+            analyzer_suggestions = (
+                self.efficiency_analyzer.auto_suggest_optimizations(
+                    self.config.get_all()
+                )
             )  # type: ignore[unreachable]
 
         # 重複除去と統合
