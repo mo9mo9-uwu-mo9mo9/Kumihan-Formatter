@@ -27,6 +27,13 @@ from quality.quality_manager import QualityManager
 from monitoring.quality_monitor import QualityMonitor
 from reporting.quality_reporter import QualityReporter
 
+# Issue #844: ハイブリッド実装フロー統合
+from workflow.hybrid_implementation_flow import HybridImplementationFlow, HybridImplementationSpec
+from phases.phase_a_architecture import PhaseAArchitecture
+from phases.phase_b_implementation import PhaseBImplementation
+from phases.phase_c_integration import PhaseCIntegration
+from monitoring.success_rate_monitor import SuccessRateMonitor
+
 class DualAgentCoordinator:
     """Claude ↔ Gemini協業の統合コーディネーター"""
 
@@ -44,6 +51,16 @@ class DualAgentCoordinator:
         self.quality_reporter = QualityReporter()
         self.session_id = f"session_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+        # Issue #844: 3段階ハイブリッド実装フローシステム
+        self.hybrid_flow = HybridImplementationFlow()
+        self.phase_a = PhaseAArchitecture()
+        self.phase_b = PhaseBImplementation()
+        self.phase_c = PhaseCIntegration()
+        self.success_monitor = SuccessRateMonitor()
+
+        # 成功率監視開始
+        self.success_monitor.start_monitoring(check_interval_seconds=300)
+
         print(f"🤖 Dual-Agent Workflow 開始 (Flash 2.5 最適化)")
         print(f"📋 セッションID: {self.session_id}")
         print(f"🔄 Claude Code ↔ Gemini CLI 協業システム")
@@ -54,6 +71,8 @@ class DualAgentCoordinator:
         print(f"📊 品質監視システム: 有効")
         print(f"🛡️ 構文エラー防止機構: 有効")
         print(f"✅ 品質保証テンプレート: 有効")
+        print(f"🏗️ ハイブリッド実装フロー: 有効 (Issue #844)")
+        print(f"📊 成功率監視システム: 有効 (目標: 実装≥70%, Token≥90%, 品質≥80%, 統合≥95%)")
 
     def create_mypy_fix_task(self,
                            target_files: List[str],
@@ -64,10 +83,10 @@ class DualAgentCoordinator:
                            auto_execute: bool = True) -> List[str]:
         """mypy修正タスク作成（自動判定・実行機能付き）"""
         return self._create_task_with_type(
-            "code_modification", target_files, error_type, priority, 
+            "code_modification", target_files, error_type, priority,
             use_micro_tasks, force_mode, auto_execute
         )
-    
+
     def create_new_implementation_task(self,
                                      target_files: List[str],
                                      implementation_spec: Dict[str, Any],
@@ -79,7 +98,7 @@ class DualAgentCoordinator:
             "new_implementation", target_files, implementation_spec,
             priority, force_mode, auto_execute
         )
-    
+
     def create_hybrid_implementation_task(self,
                                         target_files: List[str],
                                         implementation_spec: Dict[str, Any],
@@ -91,7 +110,7 @@ class DualAgentCoordinator:
             "hybrid_implementation", target_files, implementation_spec,
             priority, force_mode, auto_execute
         )
-    
+
     def create_feature_development_task(self,
                                       target_files: List[str],
                                       feature_spec: Dict[str, Any],
@@ -103,7 +122,273 @@ class DualAgentCoordinator:
             "new_feature_development", target_files, feature_spec,
             priority, force_mode, auto_execute
         )
-    
+
+    # === Issue #844: 3段階ハイブリッド実装フロー ===
+
+    def execute_hybrid_implementation_flow(self,
+                                         target_files: List[str],
+                                         implementation_spec: Dict[str, Any],
+                                         auto_execute: bool = True) -> str:
+        """Issue #844: 3段階ハイブリッド実装フロー実行
+
+        Args:
+            target_files: 実装対象ファイルリスト
+            implementation_spec: 実装仕様
+            auto_execute: 自動実行フラグ
+
+        Returns:
+            str: 実装ID
+        """
+
+        print(f"🏗️ 3段階ハイブリッド実装フロー開始")
+        print(f"📁 対象ファイル: {len(target_files)}件")
+
+        # 実装仕様作成
+        hybrid_spec = HybridImplementationSpec(
+            implementation_id=f"hybrid_{self.session_id}_{int(time.time())}",
+            implementation_type=implementation_spec.get("type", "hybrid_implementation"),
+            target_files=target_files,
+            requirements=implementation_spec.get("requirements", {}),
+            success_criteria=implementation_spec.get("success_criteria", {
+                "quality_score": 0.80,
+                "functionality": "complete",
+                "integration_success": 0.95
+            }),
+            quality_standards=implementation_spec.get("quality_standards", {
+                "code_quality": {"style": "pep8", "typing": "strict"},
+                "test_coverage": 0.8,
+                "documentation": {"required": True}
+            }),
+            context=implementation_spec.get("context", {
+                "session_id": self.session_id,
+                "coordinator": "dual_agent"
+            })
+        )
+
+        # フロー実行
+        implementation_id = self.hybrid_flow.start_hybrid_implementation(
+            hybrid_spec, auto_execute=auto_execute
+        )
+
+        print(f"✅ 3段階ハイブリッド実装フロー開始完了: {implementation_id}")
+        return implementation_id
+
+    def get_hybrid_implementation_status(self, implementation_id: str) -> Dict[str, Any]:
+        """ハイブリッド実装ステータス取得
+
+        Args:
+            implementation_id: 実装ID
+
+        Returns:
+            Dict[str, Any]: 実装ステータス
+        """
+
+        return self.hybrid_flow.get_implementation_status(implementation_id)
+
+    def execute_phase_a_only(self, target_files: List[str],
+                           implementation_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Phase A (アーキテクチャ設計) のみ実行
+
+        Args:
+            target_files: 対象ファイル
+            implementation_spec: 実装仕様
+
+        Returns:
+            Dict[str, Any]: Phase A実行結果
+        """
+
+        print(f"🧠 Phase A (アーキテクチャ設計) 単独実行開始")
+
+        # Phase A実行
+        analysis = self.phase_a.execute_architecture_analysis(implementation_spec)
+        interfaces = self.phase_a.design_component_interfaces(analysis, target_files)
+        strategy = self.phase_a.create_implementation_strategy(analysis, interfaces, implementation_spec)
+        quality_eval = self.phase_a.evaluate_architecture_quality(analysis, interfaces, strategy)
+        handoff = self.phase_a.generate_phase_b_handoff(analysis, interfaces, strategy)
+
+        result = {
+            "phase": "A",
+            "status": "completed" if quality_eval["phase_a_pass"] else "needs_review",
+            "architecture_analysis": analysis.__dict__,
+            "interface_design": {k: v.__dict__ for k, v in interfaces.items()},
+            "implementation_strategy": strategy,
+            "quality_evaluation": quality_eval,
+            "phase_b_handoff": handoff
+        }
+
+        # 成功率記録
+        self.success_monitor.record_implementation_success(
+            f"phase_a_{int(time.time())}", "phase_a", quality_eval["phase_a_pass"]
+        )
+        self.success_monitor.record_quality_score(
+            f"phase_a_{int(time.time())}", "phase_a", quality_eval["overall_quality_score"]
+        )
+
+        print(f"✅ Phase A 完了: {'成功' if quality_eval['phase_a_pass'] else '要改善'}")
+        return result
+
+    def get_success_rate_dashboard(self) -> Dict[str, Any]:
+        """Issue #844成功率ダッシュボードデータ取得
+
+        Returns:
+            Dict[str, Any]: ダッシュボードデータ
+        """
+
+        dashboard_data = self.success_monitor.get_metrics_dashboard_data()
+        current_rates = self.success_monitor.get_current_success_rates()
+
+        # 追加の統合情報
+        dashboard_data["session_info"] = {
+            "session_id": self.session_id,
+            "coordinator_type": "dual_agent",
+            "hybrid_flow_enabled": True,
+            "monitoring_active": True
+        }
+
+        dashboard_data["issue_844_compliance"] = {
+            "overall_success": current_rates["overall_success"],
+            "criteria_summary": current_rates["summary"],
+            "targets_met": {
+                "implementation_success": current_rates["individual_metrics"]["implementation_success"]["meets_target"],
+                "token_savings": current_rates["individual_metrics"]["token_savings"]["meets_target"],
+                "quality_score": current_rates["individual_metrics"]["quality_score"]["meets_target"],
+                "integration_success": current_rates["individual_metrics"]["integration_success"]["meets_target"]
+            }
+        }
+
+        return dashboard_data
+
+    def generate_hybrid_flow_report(self) -> Dict[str, Any]:
+        """ハイブリッドフロー統合レポート生成
+
+        Returns:
+            Dict[str, Any]: 統合レポート
+        """
+
+        print(f"📊 ハイブリッドフロー統合レポート生成中...")
+
+        # 各システムからデータ収集
+        success_metrics = self.success_monitor.get_success_rate_metrics()
+        current_rates = self.success_monitor.get_current_success_rates()
+
+        report = {
+            "report_timestamp": datetime.datetime.now().isoformat(),
+            "session_id": self.session_id,
+            "system_status": {
+                "hybrid_flow_active": True,
+                "success_monitoring_active": self.success_monitor.monitoring_active,
+                "phase_systems_loaded": {
+                    "phase_a": bool(self.phase_a),
+                    "phase_b": bool(self.phase_b),
+                    "phase_c": bool(self.phase_c)
+                }
+            },
+            "issue_844_compliance": {
+                "overall_criteria_met": current_rates["overall_success"],
+                "individual_targets": {
+                    "implementation_success_rate": {
+                        "current": current_rates["summary"]["implementation_success"],
+                        "target": 0.70,
+                        "met": current_rates["summary"]["implementation_success"] >= 0.70
+                    },
+                    "token_savings_rate": {
+                        "current": current_rates["summary"]["token_savings"],
+                        "target": 0.90,
+                        "met": current_rates["summary"]["token_savings"] >= 0.90
+                    },
+                    "quality_score": {
+                        "current": current_rates["summary"]["quality_score"],
+                        "target": 0.80,
+                        "met": current_rates["summary"]["quality_score"] >= 0.80
+                    },
+                    "integration_success_rate": {
+                        "current": current_rates["summary"]["integration_success"],
+                        "target": 0.95,
+                        "met": current_rates["summary"]["integration_success"] >= 0.95
+                    }
+                },
+                "compliance_percentage": sum(
+                    1 for metric in current_rates["individual_metrics"].values()
+                    if metric["meets_target"]
+                ) / len(current_rates["individual_metrics"]) * 100
+            },
+            "performance_metrics": success_metrics,
+            "recommendations": self._generate_integration_recommendations(current_rates),
+            "next_actions": self._generate_next_actions(current_rates)
+        }
+
+        print(f"📊 統合レポート生成完了")
+        print(f"🎯 Issue #844基準達成: {'✅' if report['issue_844_compliance']['overall_criteria_met'] else '❌'}")
+        print(f"📈 達成率: {report['issue_844_compliance']['compliance_percentage']:.1f}%")
+
+        return report
+
+    def _generate_integration_recommendations(self, current_rates: Dict[str, Any]) -> List[str]:
+        """統合推奨事項生成"""
+
+        recommendations = []
+        individual_metrics = current_rates["individual_metrics"]
+
+        for metric_name, metric_data in individual_metrics.items():
+            if not metric_data["meets_target"]:
+                current = metric_data["current_rate"]
+                target = metric_data["target_rate"]
+                deficit = target - current
+
+                if metric_name == "implementation_success":
+                    recommendations.append(f"実装成功率改善が必要: {current:.1%} → {target:.1%} (+{deficit:.1%})")
+                    recommendations.append("- Phase A設計品質の向上")
+                    recommendations.append("- Gemini指示の具体性強化")
+                elif metric_name == "token_savings":
+                    recommendations.append(f"Token節約率改善が必要: {current:.1%} → {target:.1%} (+{deficit:.1%})")
+                    recommendations.append("- タスク分割の最適化")
+                    recommendations.append("- テンプレート効率化")
+                elif metric_name == "quality_score":
+                    recommendations.append(f"品質スコア改善が必要: {current:.2f} → {target:.2f} (+{deficit:.2f})")
+                    recommendations.append("- コードレビュープロセス強化")
+                    recommendations.append("- 自動品質チェック拡充")
+                elif metric_name == "integration_success":
+                    recommendations.append(f"統合成功率改善が必要: {current:.1%} → {target:.1%} (+{deficit:.1%})")
+                    recommendations.append("- 統合テストの充実")
+                    recommendations.append("- 依存関係管理改善")
+
+        if not recommendations:
+            recommendations.append("全ての成功基準を達成しています。現在の品質を維持してください。")
+
+        return recommendations
+
+    def _generate_next_actions(self, current_rates: Dict[str, Any]) -> List[str]:
+        """次のアクション生成"""
+
+        actions = []
+
+        if current_rates["overall_success"]:
+            actions.extend([
+                "Issue #844基準達成を維持",
+                "継続的な品質監視",
+                "システム最適化の継続実施"
+            ])
+        else:
+            actions.extend([
+                "未達成基準の重点改善",
+                "改善計画の策定・実行",
+                "監視頻度の増加"
+            ])
+
+        return actions
+
+    def cleanup_hybrid_systems(self) -> None:
+        """ハイブリッドシステムクリーンアップ"""
+
+        print("🧹 ハイブリッドシステムクリーンアップ開始")
+
+        # 監視停止
+        if hasattr(self, 'success_monitor'):
+            self.success_monitor.stop_monitoring()
+            print("📊 成功率監視停止")
+
+        print("✅ ハイブリッドシステムクリーンアップ完了")
+
     def _create_task_with_type(self,
                              task_type: str,
                              target_files: List[str],
@@ -115,7 +400,7 @@ class DualAgentCoordinator:
         """タスク作成（タイプ別統一インターフェース）"""
 
         task_description = f"{error_type} エラー修正 - {len(target_files)}ファイル" if task_type == "code_modification" else f"{task_type} - {len(target_files)}ファイル"
-        
+
         print(f"🔍 タスク作成開始: {task_description}")
         print(f"📁 対象ファイル: {len(target_files)}件")
         print(f"🧠 微分化モード: {'有効' if use_micro_tasks else '無効'}")
@@ -170,57 +455,57 @@ class DualAgentCoordinator:
 
         print(f"\n✅ タスク作成完了: {len(created_task_ids)}件")
         return created_task_ids
-    
+
     def _create_implementation_task(self,
                                   task_type: str,
-                                  target_files: List[str], 
+                                  target_files: List[str],
                                   implementation_spec: Dict[str, Any],
                                   priority: str,
                                   force_mode: str,
                                   auto_execute: bool) -> List[str]:
         """新規実装タスク作成（統一インターフェース）"""
-        
+
         print(f"🎨 新規実装タスク作成開始: {task_type}")
         print(f"📁 対象ファイル: {len(target_files)}件")
-        
+
         # タスク分析実行
         task_description = f"{task_type} - {len(target_files)}ファイル実装"
         task_analysis = self.decision_engine.analyze_task(
             task_description, target_files, "new_implementation",
             context={
-                "priority": priority, 
+                "priority": priority,
                 "session_id": self.session_id,
                 "task_type": task_type,
                 "implementation_spec": implementation_spec
             }
         )
-        
+
         # Gemini使用判定
         user_prefs = {"force_mode": force_mode} if force_mode else {}
         decision = self.decision_engine.make_decision(task_analysis, user_prefs)
-        
+
         print(f"\n🎯 自動判定結果:")
         print(f"   Gemini使用: {'はい' if decision.use_gemini else 'いいえ'}")
         print(f"   自動化レベル: {decision.automation_level.value}")
         print(f"   推定コスト: ${decision.task_analysis.estimated_cost:.4f}")
         print(f"   理由: {decision.reasoning}")
-        
+
         # 実装タスク作成
         created_task_ids = []
-        
+
         for file_path in target_files:
             print(f"\n📄 実装タスク作成: {file_path}")
-            
+
             # 実装タスク作成
             task_id = self._create_implementation_task_for_file(
                 file_path, task_type, implementation_spec, priority, decision
             )
             created_task_ids.append(task_id)
-        
+
         # 自動実行判定
         if auto_execute and decision.automation_level in [AutomationLevel.FULL_AUTO, AutomationLevel.SEMI_AUTO]:
             print(f"\n⚡ 自動実行開始（レベル: {decision.automation_level.value}）")
-            
+
             if decision.automation_level == AutomationLevel.SEMI_AUTO:
                 # 重要な変更の場合のみ確認
                 if decision.task_analysis.risk_level == "high" or decision.task_analysis.estimated_cost > 0.005:
@@ -232,10 +517,10 @@ class DualAgentCoordinator:
         elif decision.automation_level == AutomationLevel.APPROVAL_REQUIRED:
             print(f"\n🤚 承認必須: 実行前にユーザー確認が必要")
             print(f"   実行コマンド: coordinator.execute_workflow_cycle()")
-        
+
         print(f"\n✅ 実装タスク作成完了: {len(created_task_ids)}件")
         return created_task_ids
-    
+
     def _create_implementation_task_for_file(self,
                                            file_path: str,
                                            task_type: str,
@@ -243,17 +528,17 @@ class DualAgentCoordinator:
                                            priority: str,
                                            decision) -> str:
         """ファイル単位の実装タスク作成"""
-        
+
         # Claudeによる詳細分析
         claude_analysis = self._claude_analyze_implementation_task(
             file_path, task_type, implementation_spec
         )
-        
+
         # 実装指示生成
         implementation_instruction = self._generate_implementation_instruction(
             file_path, task_type, implementation_spec
         )
-        
+
         task_id = self.task_manager.create_task(
             task_type=task_type,
             description=f"{task_type} - {file_path}",
@@ -285,19 +570,19 @@ class DualAgentCoordinator:
                 "session_id": self.session_id
             }
         )
-        
+
         print(f"📄 実装タスク作成: {file_path}")
         return task_id
-    
+
     def _claude_analyze_implementation_task(self,
                                           file_path: str,
                                           task_type: str,
                                           implementation_spec: Dict[str, Any]) -> str:
         """実装タスク用Claude分析"""
-        
+
         template_type = implementation_spec.get("template_type", "generic")
         complexity_estimate = implementation_spec.get("complexity", "medium")
-        
+
         analysis = f"""
 📊 Claude 実装タスク分析 - {task_type}
 
@@ -309,7 +594,7 @@ class DualAgentCoordinator:
 
 🧠 実装方針:
 """
-        
+
         if task_type == "new_implementation":
             analysis += """
 - 純粋新規実装アプローチ
@@ -328,7 +613,7 @@ class DualAgentCoordinator:
 - 関連ファイルとの整合性確保
 - テストケースを含む完全実装
 """
-        
+
         # 実装仕様の詳細
         if "class_name" in implementation_spec:
             analysis += f"\n🏷️ クラス実装: {implementation_spec['class_name']}"
@@ -336,7 +621,7 @@ class DualAgentCoordinator:
             analysis += f"\n🔧 メソッド数: {len(implementation_spec['methods'])}件"
         if "functions" in implementation_spec:
             analysis += f"\n⚙️ 関数数: {len(implementation_spec['functions'])}件"
-        
+
         analysis += f"""
 
 🛡️ 品質保証:
@@ -351,17 +636,17 @@ class DualAgentCoordinator:
 3. 品質チェックとテスト実行
 4. ドキュメントとコメントの充実
 """
-        
+
         return analysis
-    
+
     def _generate_implementation_instruction(self,
                                            file_path: str,
                                            task_type: str,
                                            implementation_spec: Dict[str, Any]) -> str:
         """実装指示生成"""
-        
+
         template_type = implementation_spec.get("template_type", "generic")
-        
+
         instruction = f"""
 🎯 {task_type}実装指示 - {file_path}
 
@@ -372,7 +657,7 @@ class DualAgentCoordinator:
 
 🔧 実装手順:
 """
-        
+
         if template_type == "class":
             class_name = implementation_spec.get("class_name", "NewClass")
             methods = implementation_spec.get("methods", [])
@@ -383,21 +668,21 @@ class DualAgentCoordinator:
             for i, method in enumerate(methods, 3):
                 method_name = method.get("name", "new_method")
                 instruction += f"{i}. {method_name} メソッドの実装\n"
-        
+
         elif template_type == "module":
             functions = implementation_spec.get("functions", [])
             instruction += "1. モジュールレベルのインポート設定\n"
             for i, func in enumerate(functions, 2):
                 func_name = func.get("name", "new_function")
                 instruction += f"{i}. {func_name} 関数の実装\n"
-        
+
         elif template_type == "function":
             func_name = implementation_spec.get("function_name", "main_function")
             instruction += f"""
 1. {func_name} 関数の定義作成
 2. メイン実行部の設定
 """
-        
+
         instruction += f"""
 
 📁 必須要件:
@@ -419,7 +704,7 @@ class DualAgentCoordinator:
 ✅ mypy strict mode エラー 0件
 ✅ 適切な docstring ドキュメント
 """
-        
+
         return instruction
 
     def _create_with_gemini_mode(self, target_files: List[str], error_type: str,
@@ -656,10 +941,10 @@ class DualAgentCoordinator:
         enhanced_instruction = self.enhanced_templates.generate_quality_assured_instruction(
             error_type, tasks, file_path
         )
-        
+
         # エラー防止ガイドを追加
         error_prevention_guide = self.enhanced_templates.get_error_prevention_guide(error_type)
-        
+
         final_instruction = f"""
 {enhanced_instruction}
 
@@ -806,6 +1091,14 @@ class DualAgentCoordinator:
         self._print_session_summary(results)
 
         return results
+
+    def __del__(self):
+        """デストラクタ - ハイブリッドシステムクリーンアップ"""
+        if hasattr(self, 'success_monitor'):
+            try:
+                self.cleanup_hybrid_systems()
+            except:
+                pass
 
     def _claude_analyze_files(self, target_files: List[str], error_type: str) -> str:
         """Claude による詳細事前分析"""
@@ -1065,7 +1358,7 @@ class DualAgentCoordinator:
             # Gemini Helper経由で実行
             print("🔄 Gemini実行中...")
             raw_result = self.gemini_helper.execute_task(task_data)
-            
+
             # 品質保証フェーズ
             print("🛡️ 構文検証・品質保証開始...")
             quality_assured_result = self._apply_quality_assurance(raw_result, task_data)
@@ -1088,68 +1381,68 @@ class DualAgentCoordinator:
                 "task_id": task_data["task_id"]
             }
 
-    def _apply_quality_assurance(self, gemini_result: Dict[str, Any], 
+    def _apply_quality_assurance(self, gemini_result: Dict[str, Any],
                                 task_data: Dict[str, Any]) -> Dict[str, Any]:
         """Gemini結果への品質保証適用"""
-        
+
         print("🔍 Gemini出力品質検証中...")
-        
+
         modifications = gemini_result.get("modifications", {})
         files_modified = modifications.get("files_modified", [])
-        
+
         quality_issues = []
         quality_fixes = []
         total_syntax_fixes = 0
-        
+
         for file_mod in files_modified:
             file_path = file_mod.get("file", "")
-            
+
             if not file_path or not os.path.exists(file_path):
                 continue
-                
+
             try:
                 # 修正されたファイルの内容を読み取り
                 with open(file_path, 'r', encoding='utf-8') as f:
                     modified_code = f.read()
-                
+
                 # 構文検証実行
                 validation_result = self.syntax_validator.comprehensive_validation(
                     modified_code, file_path
                 )
-                
+
                 print(f"📊 {file_path} 検証結果:")
                 print(f"   構文OK: {validation_result['syntax_valid']}")
                 print(f"   型注釈OK: {validation_result['type_annotations_valid']}")
                 print(f"   品質スコア: {validation_result['validation_score']:.2f}")
-                
+
                 # 品質問題の記録
                 if not validation_result['syntax_valid']:
                     quality_issues.extend(validation_result['syntax_errors'])
-                    
+
                 if not validation_result['type_annotations_valid']:
                     quality_issues.extend(validation_result['type_errors'])
-                
+
                 # 自動修正の適用
                 if validation_result['fixed_code'] and (
-                    not validation_result['syntax_valid'] or 
+                    not validation_result['syntax_valid'] or
                     not validation_result['type_annotations_valid']
                 ):
                     print(f"🔧 {file_path} 自動修正適用中...")
-                    
+
                     # 修正されたコードでファイルを更新
                     with open(file_path, 'w', encoding='utf-8') as f:
                         f.write(validation_result['fixed_code'])
-                    
+
                     quality_fixes.append(f"{file_path}: 構文エラー自動修正")
                     total_syntax_fixes += 1
-                    
+
                     # 修正後の再検証
                     revalidation = self.syntax_validator.comprehensive_validation(
                         validation_result['fixed_code'], file_path
                     )
-                    
+
                     print(f"✅ {file_path} 修正後: スコア {revalidation['validation_score']:.2f}")
-                    
+
                 # ファイル修正情報の更新
                 file_mod["quality_validation"] = {
                     "syntax_valid": validation_result['syntax_valid'],
@@ -1157,10 +1450,10 @@ class DualAgentCoordinator:
                     "validation_score": validation_result['validation_score'],
                     "auto_fixed": bool(validation_result['fixed_code'])
                 }
-                
+
             except Exception as e:
                 quality_issues.append(f"{file_path}: 品質検証エラー - {str(e)}")
-        
+
         # 品質保証結果の統合
         enhanced_result = gemini_result.copy()
         enhanced_result["quality_assurance"] = {
@@ -1170,38 +1463,38 @@ class DualAgentCoordinator:
             "total_syntax_fixes": total_syntax_fixes,
             "overall_quality_score": self._calculate_overall_quality_score(files_modified)
         }
-        
+
         # 修正情報の更新
         if total_syntax_fixes > 0:
             enhanced_result["modifications"]["supervisor_fixes"] = total_syntax_fixes
             enhanced_result["modifications"]["quality_enhanced"] = True
-            
+
             print(f"🔧 監督者品質修正: {total_syntax_fixes}件の構文エラー修正完了")
-        
+
         if quality_issues:
             print(f"⚠️ 品質問題検出: {len(quality_issues)}件")
             for issue in quality_issues[:5]:  # 最初の5件のみ表示
                 print(f"  - {issue}")
         else:
             print("✅ 品質検証: 問題なし")
-            
+
         return enhanced_result
-    
+
     def _calculate_overall_quality_score(self, files_modified: List[Dict]) -> float:
         """全体品質スコア計算"""
-        
+
         if not files_modified:
             return 0.0
-            
+
         total_score = 0.0
         valid_files = 0
-        
+
         for file_mod in files_modified:
             quality_val = file_mod.get("quality_validation")
             if quality_val:
                 total_score += quality_val.get("validation_score", 0.0)
                 valid_files += 1
-        
+
         return total_score / max(1, valid_files)
 
     def _claude_review_result(self, gemini_result: Dict[str, Any]) -> Dict[str, Any]:

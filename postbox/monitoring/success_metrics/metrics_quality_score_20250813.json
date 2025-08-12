@@ -1,0 +1,103 @@
+{
+  "metrics": [
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:21.023465",
+      "implementation_id": "test_001",
+      "phase": "phase_c",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.060439",
+      "implementation_id": "test_0",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.061871",
+      "implementation_id": "test_1",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.063137",
+      "implementation_id": "test_2",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.064745",
+      "implementation_id": "test_3",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.066725",
+      "implementation_id": "test_4",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.068815",
+      "implementation_id": "test_5",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.070369",
+      "implementation_id": "test_6",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.072028",
+      "implementation_id": "test_7",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.074153",
+      "implementation_id": "test_8",
+      "phase": "test_phase",
+      "details": {}
+    },
+    {
+      "metric_type": "quality_score",
+      "value": 0.85,
+      "target_value": 0.8,
+      "timestamp": "2025-08-13T07:01:28.075695",
+      "implementation_id": "test_9",
+      "phase": "test_phase",
+      "details": {}
+    }
+  ]
+}
