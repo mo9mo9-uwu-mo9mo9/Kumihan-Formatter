@@ -1,0 +1,45 @@
+{
+  "total_cost": 0.0098,
+  "tasks": [
+    {
+      "task_id": "task_20250812_131804",
+      "timestamp": "2025-08-12T13:18:05.350771",
+      "token_usage": {
+        "input_tokens": 1500,
+        "output_tokens": 800,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.00245
+    },
+    {
+      "task_id": "task_20250812_133055",
+      "timestamp": "2025-08-12T13:31:01.826553",
+      "token_usage": {
+        "input_tokens": 1500,
+        "output_tokens": 800,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.00245
+    },
+    {
+      "task_id": "task_20250812_133207",
+      "timestamp": "2025-08-12T13:32:08.694342",
+      "token_usage": {
+        "input_tokens": 1500,
+        "output_tokens": 800,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.00245
+    },
+    {
+      "task_id": "task_20250812_140323",
+      "timestamp": "2025-08-12T14:03:24.280089",
+      "token_usage": {
+        "input_tokens": 1500,
+        "output_tokens": 800,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.00245
+    }
+  ]
+}

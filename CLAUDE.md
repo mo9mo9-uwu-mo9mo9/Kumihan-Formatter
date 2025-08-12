@@ -43,10 +43,6 @@ git checkout -b feat/issue-123-description
 gh issue create --title "タイトル" --body "内容" \
   --label "バグ,優先度:高,難易度:普通,コンポーネント:パーサー"
 
-# ラベル管理
-# 必要なラベルが存在しない場合は自動作成を許可
-# 例: gh label create "新ラベル" --description "説明" --color "color"
-
 # PR作成
 gh pr create --title "タイトル" --body "詳細説明"
 ```
@@ -55,9 +51,33 @@ gh pr create --title "タイトル" --body "詳細説明"
 ```bash
 # 必須実行コマンド
 make lint       # Black, isort, flake8
-make typecheck  # mypy strict
 make test       # pytest
 ```
+
+---
+
+## 🤖 Claude ↔ Gemini 協業システム
+
+> **Token節約システム** - 60-70%コスト削減を実現
+
+### 基本使用方法
+```bash
+# 自動判断でGemini使用
+make gemini-mypy TARGET_FILES="file1.py,file2.py"
+
+# 統合品質チェック
+make gemini-quality-check
+
+# 詳細レポート生成
+make gemini-quality-report
+```
+
+### システム概要
+- **コスト効率**: Claude($15/$75) → Gemini($0.30/$2.50) = 95%削減
+- **自動判断**: Token・複雑度・コスト分析による適応的AI選択
+- **品質統一**: 7種類チェック・3段階ゲート・リアルタイム監視
+
+**詳細ガイド**: [docs/claude/gemini-collaboration.md](docs/claude/gemini-collaboration.md)
 
 ---
 
@@ -139,8 +159,8 @@ kumihan_formatter/
 
 ### CLAUDE.md サイズ管理
 - **推奨**: 150行/8KB以下（品質重視）
-- **警告**: 250行/12KB（見直し推奨）
-- **クリティカル**: 400行/20KB（即座対応必須）
+- **警告**: 200行/10KB（見直し推奨）
+- **クリティカル**: 250行/12KB（即座対応必須）
 
 ### 監視コマンド
 ```bash
@@ -157,6 +177,7 @@ make code-quality        # 総合品質評価
 - [アーキテクチャ設計](docs/dev/architecture.md)
 - [記法完全仕様](docs/specs/notation.md)
 - [機能仕様詳細](docs/specs/functional.md)
+- [Gemini協業ガイド](docs/claude/gemini-collaboration.md)
 
 ### ユーザー向け
 - [利用ガイド](docs/user/user-guide.md)

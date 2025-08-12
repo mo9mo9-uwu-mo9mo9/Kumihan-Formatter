@@ -1,0 +1,92 @@
+[
+  {
+    "timestamp": "2025-08-12T14:03:23.088814",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "full_auto",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(1150)"
+    },
+    "analysis": {
+      "complexity": "simple",
+      "estimated_time": 34,
+      "estimated_cost": 0.0012075,
+      "benefit_score": 0.4,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:04:53.812113",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(7303), 高複雑度タスク(complex), 高効果期待(1.00)"
+    },
+    "analysis": {
+      "complexity": "complex",
+      "estimated_time": 630,
+      "estimated_cost": 0.0076681499999999994,
+      "benefit_score": 1.0,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:05:26.579705",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "manual_only",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(1565)"
+    },
+    "analysis": {
+      "complexity": "trivial",
+      "estimated_time": 6,
+      "estimated_cost": 0.0016432499999999997,
+      "benefit_score": 0.2,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:07:59.969014",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(5765), 高複雑度タスク(complex), 高効果期待(1.00)"
+    },
+    "analysis": {
+      "complexity": "complex",
+      "estimated_time": 810,
+      "estimated_cost": 0.00605325,
+      "benefit_score": 1.0,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:08:14.231090",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(5766), 高複雑度タスク(critical), 高効果期待(1.00)"
+    },
+    "analysis": {
+      "complexity": "critical",
+      "estimated_time": 2160,
+      "estimated_cost": 0.0060542999999999994,
+      "benefit_score": 1.0,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:08:28.935600",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(5756), 高複雑度タスク(critical), 高効果期待(1.00)"
+    },
+    "analysis": {
+      "complexity": "critical",
+      "estimated_time": 2160,
+      "estimated_cost": 0.006043799999999999,
+      "benefit_score": 1.0,
+      "confidence": 0.8999999999999999
+    }
+  }
+]

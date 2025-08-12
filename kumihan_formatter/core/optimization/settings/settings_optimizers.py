@@ -156,7 +156,7 @@ class LearningBasedOptimizer:
         self.adaptive_manager = adaptive_manager
 
         # TokenEfficiencyAnalyzer統合
-        self.efficiency_analyzer = None
+        self.efficiency_analyzer: Any = None
 
         # 学習型最適化専用設定
         self.learning_enabled = True
@@ -189,7 +189,7 @@ class LearningBasedOptimizer:
                 _convert_to_enhanced_config(self.config)
             )
 
-    def integrate_efficiency_analyzer(self, analyzer):
+    def integrate_efficiency_analyzer(self, analyzer: Any) -> None:
         """TokenEfficiencyAnalyzerとの統合"""
         self.efficiency_analyzer = analyzer
         self.logger.info("Integrated with TokenEfficiencyAnalyzer")
@@ -210,9 +210,7 @@ class LearningBasedOptimizer:
             # 2. 効率性予測の取得（統合システム使用）
             efficiency_insights: dict[str, Any] = {}
             if self.efficiency_analyzer:
-                efficiency_insights = (
-                    self.efficiency_analyzer.get_pattern_insights()
-                )  # type: ignore[unreachable]
+                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -315,11 +313,9 @@ class LearningBasedOptimizer:
         analyzer_suggestions: list[dict[str, Any]] = []
         if self.efficiency_analyzer:
             # 効率アナライザーからの最適化提案取得
-            analyzer_suggestions = (
-                self.efficiency_analyzer.auto_suggest_optimizations(
-                    self.config.get_all()
-                )
-            )  # type: ignore[unreachable]
+            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
+                self.config.get_all()
+            )
 
         # 重複除去と統合
         all_opportunities = adaptive_opportunities + [

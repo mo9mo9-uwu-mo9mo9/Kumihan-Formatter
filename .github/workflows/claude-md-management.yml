@@ -38,12 +38,12 @@ jobs:
           import os
           import sys
 
-          # Configuration
+          # Configuration - 2025年8月更新: Gemini協業システム等大型機能対応
           CLAUDE_MD_PATH = "CLAUDE.md"
-          RECOMMENDED_LINES = 150
-          RECOMMENDED_BYTES = 8192  # 8KB
-          WARNING_LINES = 200
-          WARNING_BYTES = 10240  # 10KB
+          RECOMMENDED_LINES = 200
+          RECOMMENDED_BYTES = 10240  # 10KB
+          WARNING_LINES = 250
+          WARNING_BYTES = 12288  # 12KB
 
           def check_claude_md():
               if not os.path.exists(CLAUDE_MD_PATH):

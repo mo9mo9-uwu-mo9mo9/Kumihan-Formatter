@@ -1,0 +1,288 @@
+[
+  {
+    "timestamp": "2025-08-12T14:03:01.036622",
+    "ai_agent": "claude",
+    "execution_time": 10.415142,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/__init__.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py",
+      "kumihan_formatter/ui/console_operations.py",
+      "kumihan_formatter/ui/console_ui.py",
+      "kumihan_formatter/ui/__init__.py",
+      "kumihan_formatter/ui/console_factory.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1380,
+      "warning_count": 197,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:03:14.537520",
+    "ai_agent": "claude",
+    "execution_time": 6.929158,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/__init__.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:05:26.061208",
+    "ai_agent": "claude",
+    "execution_time": 0.492661,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9500000000000001,
+      "quality_level": "excellent",
+      "error_count": 0,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 1.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:05:26.422712",
+    "ai_agent": "claude",
+    "execution_time": 0.361021,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9500000000000001,
+      "quality_level": "excellent",
+      "error_count": 0,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 1.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:05:27.226858",
+    "ai_agent": "claude",
+    "execution_time": 0.349726,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9500000000000001,
+      "quality_level": "excellent",
+      "error_count": 0,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 1.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:05:27.578290",
+    "ai_agent": "claude",
+    "execution_time": 0.351101,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9500000000000001,
+      "quality_level": "excellent",
+      "error_count": 0,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 1.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:08:44.097159",
+    "ai_agent": "claude",
+    "execution_time": 7.215486,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:08:51.492986",
+    "ai_agent": "claude",
+    "execution_time": 7.393964,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:08:59.123071",
+    "ai_agent": "claude",
+    "execution_time": 7.628732,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:09:06.251077",
+    "ai_agent": "claude",
+    "execution_time": 7.125644,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-12T14:09:12.995965",
+    "ai_agent": "claude",
+    "execution_time": 6.744272,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py"
+    ],
+    "metrics": {
+      "overall_score": 0.7000000000000001,
+      "quality_level": "acceptable",
+      "error_count": 1150,
+      "warning_count": 161,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  }
+]

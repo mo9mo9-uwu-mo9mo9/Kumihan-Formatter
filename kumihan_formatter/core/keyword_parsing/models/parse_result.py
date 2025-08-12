@@ -22,7 +22,7 @@ class ParseResult:
     attributes: Dict[str, Any] = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize fields - dataclass fields with default_factory are never None."""
         # All fields have default_factory, so no None checks needed
         pass
