@@ -177,3 +177,9 @@ venv*/
 # Claude Code personal settings (legacy - covered above)
 # .claude/ already covered in external tools section
 .mcp.json*
+
+# postbox関連の動的生成ファイル
+postbox/todo/*.json
+postbox/monitoring/session_*.json
+postbox/monitoring/cost_tracking.json
+postbox/monitoring/decision_history.json
