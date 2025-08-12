@@ -167,7 +167,9 @@ class ContentParser(BaseBlockParser):
         """
         # Check if parser reference has list parser
         # Check if parser reference has list parser
-        if self.parser_ref is None or not hasattr(self.parser_ref, "list_parser"):  # type: ignore[unreachable]
+        if self.parser_ref is None or not hasattr(
+            self.parser_ref, "list_parser"
+        ):  # type: ignore[unreachable]
             from kumihan_formatter.core.ast_nodes import (
                 error_node,
             )

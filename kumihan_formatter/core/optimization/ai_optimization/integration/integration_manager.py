@@ -184,12 +184,10 @@ class PerformanceMonitor:
             total_rate = (
                 alpha_rate + beta_contribution + (alpha_rate * synergy_factor / 100)
             )
-            return min(
-                75.0, max(65.0, total_rate)
-            )  # 65-75%範囲に制限  # type: ignore[no-any-return]
+            return float(min(75.0, max(65.0, total_rate)))  # 65-75%範囲に制限
         except Exception as e:
             self.logger.error(f"Current deletion rate measurement failed: {e}")
-            return self.alpha_baseline  # type: ignore[no-any-return]
+            return float(self.alpha_baseline)
 
     def get_performance_summary(self) -> Dict[str, Any]:
         """性能サマリー取得"""

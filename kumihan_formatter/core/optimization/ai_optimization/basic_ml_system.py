@@ -170,8 +170,10 @@ class TokenEfficiencyPredictor(BaseMLModel):
             return PredictionResponse(
                 prediction=0.0, confidence=0.0, processing_time=0.0
             )
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"  # type: ignore[unreachable]
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
 
         try:
             prediction_start = time.time()
@@ -293,8 +295,10 @@ class UsagePatternClassifier(BaseMLModel):
             return PredictionResponse(
                 prediction="unknown", confidence=0.0, processing_time=0.0
             )
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"  # type: ignore[unreachable]
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
         assert self.label_encoder is not None, "Label encoder not initialized properly"
 
         try:
@@ -409,8 +413,10 @@ class OptimizationRecommender(BaseMLModel):
                 prediction="basic_optimization", confidence=0.0, processing_time=0.0
             )
 
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"  # type: ignore[unreachable]
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
         assert self.label_encoder is not None, "Label encoder not initialized properly"
 
         try:

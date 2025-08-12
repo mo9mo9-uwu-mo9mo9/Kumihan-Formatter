@@ -520,7 +520,7 @@ class SystemMonitor:
                     x = np.arange(len(accuracy_values))
                     slope, _, r_value, _, _ = stats.linregress(x, accuracy_values)
                 else:
-                    return []  # type: ignore[return-value]
+                    return []
 
                 # 負のトレンドかつ強い相関
                 if slope < -0.01 and r_value < -0.7:
@@ -545,7 +545,7 @@ class SystemMonitor:
                     x = np.arange(len(response_values))
                     slope, _, r_value, _, _ = stats.linregress(x, response_values)
                 else:
-                    return []  # type: ignore[return-value]
+                    return []
 
                 # 正のトレンドかつ強い相関
                 if slope > 0.01 and r_value > 0.7:

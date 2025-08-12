@@ -210,7 +210,9 @@ class LearningBasedOptimizer:
             # 2. 効率性予測の取得（統合システム使用）
             efficiency_insights: dict[str, Any] = {}
             if self.efficiency_analyzer:
-                efficiency_insights = self.efficiency_analyzer.get_pattern_insights()  # type: ignore[unreachable]
+                efficiency_insights = (
+                    self.efficiency_analyzer.get_pattern_insights()
+                )  # type: ignore[unreachable]
 
             # 3. 統合分析
             integrated_analysis = self._integrate_learning_data(
@@ -313,9 +315,9 @@ class LearningBasedOptimizer:
         analyzer_suggestions: list[dict[str, Any]] = []
         if self.efficiency_analyzer:
             # 効率アナライザーからの最適化提案取得
-            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(  # type: ignore[unreachable]
+            analyzer_suggestions = self.efficiency_analyzer.auto_suggest_optimizations(
                 self.config.get_all()
-            )
+            )  # type: ignore[unreachable]
 
         # 重複除去と統合
         all_opportunities = adaptive_opportunities + [

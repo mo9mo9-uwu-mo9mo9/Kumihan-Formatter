@@ -88,11 +88,20 @@ class MarkerBlockParser(BaseBlockParser):
                 self.logger.warning(f"Parse errors in marker: {parse_errors}")
 
             # Check for inline content
-            inline_content = self._extract_inline_content(opening_line, keywords)  # type: ignore[arg-type]
+            inline_content = self._extract_inline_content(
+                opening_line, [keywords] if isinstance(keywords, str) else keywords
+            )
             if inline_content:
                 # Process as inline format
-                return self._parse_inline_format(  # type: ignore[arg-type]
-                    keywords, attributes, inline_content, start_index
+                return self._parse_inline_format(
+                    [keywords] if isinstance(keywords, str) else keywords,
+                    (
+                        {"content": attributes}
+                        if isinstance(attributes, str)
+                        else attributes
+                    ),
+                    inline_content,
+                    start_index,
                 )
 
             # Default fallback for non-inline markers

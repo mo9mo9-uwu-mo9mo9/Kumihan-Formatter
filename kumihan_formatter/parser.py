@@ -565,7 +565,8 @@ class Parser:
                 graceful_error
             )
             self.logger.info(
-                f"Enhanced error with {len(graceful_error.correction_suggestions or [])} suggestions"
+                f"Enhanced error with "
+                f"{len(graceful_error.correction_suggestions or [])} suggestions"
             )
 
         self.graceful_syntax_errors.append(graceful_error)

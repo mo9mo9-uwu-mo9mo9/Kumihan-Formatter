@@ -405,12 +405,14 @@ class OnlineLearningEngine:
 
             return TrainingData(
                 features=features,
+                targets=labels,  # targets引数追加
                 labels=labels,
                 feature_names=(
                     [f"feature_{i}" for i in range(features.shape[1])]
                     if len(features.shape) > 1
                     else ["feature_0"]
                 ),
+                target_name="optimization_score",  # target_name引数追加
             )
 
         except Exception as e:

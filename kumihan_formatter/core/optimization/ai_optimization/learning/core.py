@@ -207,8 +207,8 @@ class DataQualityManager:
                         "label_kurtosis": float(label_kurtosis),
                         "distribution_bias": (
                             "high"
-                            if abs(label_skewness) > 1.0
-                            else "medium" if abs(label_skewness) > 0.5 else "low"
+                            if float(abs(label_skewness)) > 1.0
+                            else "medium" if float(abs(label_skewness)) > 0.5 else "low"
                         ),
                     }
                 )
@@ -277,9 +277,7 @@ class DataQualityManager:
                             {
                                 "shapiro_statistic": float(shapiro_stat),
                                 "shapiro_p_value": float(shapiro_p),
-                                "normality": (
-                                    "normal" if shapiro_p > 0.05 else "non_normal"
-                                ),
+                                "normality_score": (1.0 if shapiro_p > 0.05 else 0.0),
                             }
                         )
                     except Exception:

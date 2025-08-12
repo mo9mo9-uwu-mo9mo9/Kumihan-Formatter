@@ -505,7 +505,7 @@ class AdaptiveSettingsManager:
         return (
             self.concurrent_limiter.acquire_call_permission(tool_name, context)
             if self.concurrent_limiter
-            else None
+            else (False, "concurrent_limiter_not_available")
         )
 
     def release_tool_permission(self, permission_id: str):
