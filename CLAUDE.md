@@ -40,7 +40,6 @@
 ### ブランチ管理
 ```bash
 # 必須形式: {type}/issue-{番号}-{英語概要}
-# 例: feat/issue-123-add-block-parser
 git checkout -b feat/issue-123-description
 ```
 
@@ -56,7 +55,6 @@ gh pr create --title "タイトル" --body "詳細説明"
 
 ### テスト・品質管理
 ```bash
-# 必須実行コマンド
 make lint       # Black, isort, flake8, mypy
 make test       # pytest
 ```
@@ -119,16 +117,10 @@ make gemini-mypy TARGET_FILES="*.py"  # 一括処理
 ## 🛡️ 品質保証システム（3層検証体制）
 
 ### Layer 1: 構文検証（自動）
-```python
-# postbox/quality/syntax_validator.py
-- AST解析による構文エラー検出
-- 型注釈パターン自動修正
-- 禁止構文の事前検証
-```
+- AST解析による構文エラー検出、型注釈パターン自動修正、禁止構文の事前検証
 
 ### Layer 2: 品質検証（自動）
 ```bash
-# 品質チェック必須項目
 make lint        # Black, isort, flake8 通過必須
 make mypy        # strict mode 通過必須  
 make test        # 既存テスト全通過必須
@@ -140,17 +132,9 @@ make test        # 既存テスト全通過必須
 - **統合確認**: 全体システムとの整合性検証
 
 ### 🔄 フェイルセーフ機能
-```yaml
-Gemini実行失敗時:
-  - 自動的にClaude代替実行
-  - 品質基準未達時の自動修正
-  - エラー時の詳細ログ記録
-
-品質不足時:
-  - 自動的な追加修正指示
-  - Claude直接介入・修正
-  - 学習データとしてフィードバック
-```
+- Gemini実行失敗時: 自動的にClaude代替実行
+- 品質基準未達時: 自動的な追加修正指示
+- エラー時: 詳細ログ記録・学習データ化
 
 ### 📊 品質監視
 - **リアルタイム監視**: `postbox/monitoring/` システム
@@ -170,7 +154,6 @@ Gemini実行失敗時:
 ### ファイル出力規則
 ```python
 # 正しい実装パターン
-import os
 output_path = "tmp/" + filename
 os.makedirs("tmp", exist_ok=True)
 with open(output_path, "w", encoding="utf-8") as f:
