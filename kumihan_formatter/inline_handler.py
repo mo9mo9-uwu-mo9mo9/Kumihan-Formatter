@@ -38,6 +38,18 @@ class InlineHandler:
         if current >= len(lines):
             return None, current + 1
 
+        # 高速リスト解析処理
+        line = lines[current].strip()
+        list_type = self.parser.list_parser.is_list_line(line)
+
+        if list_type:
+            if list_type == "unordered":
+                return self.parser.list_parser.parse_unordered_list(lines, current)
+            else:
+                return self.parser.list_parser.parse_ordered_list(lines, current)
+
+        return None, current + 1
+
     def parse_list_fast_internal(self) -> Optional[Node]:
         """内部用高速リスト解析（current位置を自動更新）"""
         line = self.parser.lines[self.parser.current].strip()

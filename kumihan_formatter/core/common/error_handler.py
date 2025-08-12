@@ -125,6 +125,9 @@ class ErrorHandlerChain:
                 handler.handle_error(error)
                 return True
 
+        # No handler could handle the error
+        return False
+
     def get_chain_info(self) -> dict[str, Any]:
         """Get information about the handler chain"""
         return {

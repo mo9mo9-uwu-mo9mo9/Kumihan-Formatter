@@ -129,6 +129,8 @@ class KumihanSyntaxValidator:
             )
             return self.errors
 
+        return self.errors
+
     def validate_files(self, file_paths: list[str]) -> list[SyntaxError]:
         """複数ファイルをバッチ検証（テスト互換性のため）
 

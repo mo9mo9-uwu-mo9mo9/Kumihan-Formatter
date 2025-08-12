@@ -47,3 +47,5 @@ def parse_error_types(type_str: Optional[str]) -> Optional[List[str]]:
         error_types = [t.strip() for t in type_str.split(",")]
         click.echo(f"Fixing only specified error types: {', '.join(error_types)}")
         return error_types
+
+    return None

@@ -94,6 +94,8 @@ class BaseConfig:
         if not isinstance(self._config, dict):
             return False  # type: ignore
 
+        return True
+
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得
 

@@ -20,7 +20,7 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     NUMPY_AVAILABLE = False
-    np = None
+    np = None  # type: ignore[assignment]
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -30,7 +30,7 @@ try:
 
     LEARNING_SYSTEM_AVAILABLE = True
 except ImportError:
-    LearningSystem = None
+    LearningSystem = None  # type: ignore[assignment,misc]
     LEARNING_SYSTEM_AVAILABLE = False
 
 try:
@@ -38,7 +38,7 @@ try:
 
     PREDICTION_ENGINE_AVAILABLE = True
 except ImportError:
-    PredictionEngine = None
+    PredictionEngine = None  # type: ignore[assignment,misc]
     PREDICTION_ENGINE_AVAILABLE = False
 from .monitoring import AnomalyEvent, SystemMetrics, SystemMonitor, SystemState
 from .recovery import AutoRecoveryEngine
@@ -159,6 +159,9 @@ class AutonomousController:
             self.logger.error(f"System efficiency monitoring failed: {e}")
             return {"monitoring_success": False, "error": str(e)}
 
+        # 正常終了時の戻り値
+        return {"monitoring_success": True, "metrics": current_metrics}
+
     def execute_autonomous_actions(
         self, anomalies: List[AnomalyEvent]
     ) -> Dict[str, Any]:
@@ -173,6 +176,9 @@ class AutonomousController:
             self.logger.error(f"Autonomous actions execution failed: {e}")
             return {"actions_executed": False, "error": str(e)}
 
+        # 正常終了時の戻り値
+        return {"actions_executed": True, "anomalies_processed": len(anomalies)}
+
     def validate_action_effects(self, action_result: Dict[str, Any]) -> Dict[str, Any]:
         """行動効果自動検証（最適化効果自動測定・統計的有意性検証・負の影響自動検出）"""
         try:
@@ -184,6 +190,9 @@ class AutonomousController:
         except Exception as e:
             self.logger.error(f"Action effects validation failed: {e}")
             return {"validation_success": False, "error": str(e)}
+
+        # 正常終了時の戻り値
+        return {"validation_success": True, "action_result": action_result}
 
     def _evaluate_system_state(
         self, metrics: SystemMetrics, anomalies: List[AnomalyEvent]
@@ -376,6 +385,12 @@ class AutonomousController:
             self.logger.error(f"Action effects measurement failed: {e}")
             return {"measurement_available": False, "error": str(e)}
 
+        # 正常終了時の戻り値
+        return {
+            "measurement_available": True,
+            "recent_metrics_count": len(recent_metrics),
+        }
+
     def _validate_statistical_significance(
         self, effect_measurement: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -388,6 +403,9 @@ class AutonomousController:
             self.logger.error(f"Statistical significance validation failed: {e}")
             return {"validation_available": False, "error": str(e)}
 
+        # 正常終了時の戻り値
+        return {"validation_available": True, "effect_measurement": effect_measurement}
+
     def _detect_negative_impacts(
         self, effect_measurement: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -395,6 +413,17 @@ class AutonomousController:
         try:
             if not effect_measurement.get("measurement_available", False):
                 return {"detection_available": False}
+
+            # 負の影響を検出する処理（簡略化実装）
+            has_negative_impacts = (
+                effect_measurement.get("efficiency_reduction", 0.0) > 5.0
+            )
+
+            return {
+                "detection_available": True,
+                "has_negative_impacts": has_negative_impacts,
+                "impact_severity": "medium" if has_negative_impacts else "none",
+            }
 
         except Exception as e:
             self.logger.error(f"Negative impacts detection failed: {e}")

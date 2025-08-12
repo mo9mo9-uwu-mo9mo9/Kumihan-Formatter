@@ -63,6 +63,7 @@ class ElementRenderer:
 
         if attr_str:
             return f"<p {attr_str}>{content}</p>"
+        return f"<p>{content}</p>"
 
     def render_strong(self, node: Node) -> str:
         """太字要素をレンダリング（Phase 4: 統合機能適用）"""
@@ -75,6 +76,7 @@ class ElementRenderer:
 
         if attr_str:
             return f"<strong {attr_str}>{content}</strong>"
+        return f"<strong>{content}</strong>"
 
     def render_emphasis(self, node: Node) -> str:
         """斜体要素をレンダリング（Phase 4: 統合機能適用）"""
@@ -87,6 +89,7 @@ class ElementRenderer:
 
         if attr_str:
             return f"<em {attr_str}>{content}</em>"
+        return f"<em>{content}</em>"
 
     def render_preformatted(self, node: Node) -> str:
         """整形済みテキストをレンダリング"""
@@ -118,6 +121,7 @@ class ElementRenderer:
 
         if attributes:
             return f"<pre {attributes}>{content}</pre>"
+        return f"<pre>{content}</pre>"
 
     def render_code(self, node: Node) -> str:
         """インラインコードをレンダリング"""
@@ -130,6 +134,7 @@ class ElementRenderer:
 
         if attributes:
             return f"<code {attributes}>{content}</code>"
+        return f"<code>{content}</code>"
 
     def render_image(self, node: Node) -> str:
         """画像要素をレンダリング（Phase 4: アクセシビリティ改善）"""
@@ -181,6 +186,9 @@ class ElementRenderer:
         """
         if not hasattr(node, "attributes") or not node.attributes:
             return escape_html(str(node.content))
+
+        # Default implementation for ruby rendering
+        return escape_html(str(node.content))
 
     def render_heading(self, node: Node, level: int) -> str:
         """見出し要素をIDと共にレンダリング（Phase 4: アクセシビリティ改善）
@@ -263,6 +271,8 @@ class ElementRenderer:
 
         if attr_str:
             return f"<div {attr_str}>{content}</div>"
+        else:
+            return f"<div>{content}</div>"
 
     def render_details(self, node: Node) -> str:
         """details要素をレンダリング（Phase 4: アクセシビリティ改善）"""
@@ -293,6 +303,8 @@ class ElementRenderer:
 
         if attributes:
             return f"<summary {attributes}>{content}</summary>"
+        else:
+            return f"<summary>{content}</summary>"
 
     def render_element(self, node: Node) -> str:
         """汎用要素をレンダリング"""
@@ -329,6 +341,9 @@ class ElementRenderer:
             except ValueError:
                 # レベル変換に失敗した場合は汎用処理
                 return self._render_unknown_element(node)
+
+        # 他の要素の場合、汎用処理
+        return self._render_unknown_element(node)
 
     def render_generic(self, node: Node) -> str:
         """汎用ノードレンダリング（後方互換性のため）"""

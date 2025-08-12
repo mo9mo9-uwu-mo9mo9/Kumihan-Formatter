@@ -9,7 +9,7 @@ Handles:
 Created: 2025-08-10 (Error問題修正 - BlockParser分割)
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 
 from .base_parser import BaseBlockParser
 
@@ -86,6 +86,16 @@ class ContentParser(BaseBlockParser):
                         self._apply_attributes_to_node(node, attributes)
                         return node, end_index
 
+        # Default fallback
+        from kumihan_formatter.core.ast_nodes import error_node
+
+        return (
+            error_node(
+                "ブロック解析エラー", "ブロックの解析に失敗しました", start_index
+            ),
+            start_index + 1,
+        )
+
     def _generate_block_fix_suggestions(
         self, opening_line: str, keywords: List[str]
     ) -> str:
@@ -158,8 +168,11 @@ class ContentParser(BaseBlockParser):
             Tuple of (parsed list node, next index)
         """
         # Check if parser reference has list parser
-        if not self.parser_ref or not hasattr(self.parser_ref, "list_parser"):
-            from kumihan_formatter.core.ast_nodes import error_node
+        # Check if parser reference has list parser
+        if self.parser_ref is None or not hasattr(self.parser_ref, "list_parser"):
+            from kumihan_formatter.core.ast_nodes import (
+                error_node,
+            )
 
             return (
                 error_node(
@@ -203,7 +216,7 @@ class ContentParser(BaseBlockParser):
             # Get node factory for keyword
             factory_func = self.keyword_parser.get_node_factory(keyword)
             if factory_func:
-                return factory_func(content)
+                return cast("Node | None", factory_func(content))
 
         except Exception as e:
             self.logger.error(f"Error creating node for keyword '{keyword}': {e}")

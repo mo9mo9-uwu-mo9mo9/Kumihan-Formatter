@@ -13,9 +13,11 @@ import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import numpy as np
+from numpy import ndarray
+from numpy.typing import dtype
 
 # 基盤ML技術（フォールバック）
 from sklearn.ensemble import GradientBoostingRegressor
@@ -323,13 +325,13 @@ class EnsemblePredictionModel:
         self.logger = get_logger(__name__)
 
         # アンサンブルモデル群
-        self.models = {}
-        self.model_weights = {}
+        self.models: dict[str, Any] = {}
+        self.model_weights: dict[str, float] = {}
         self.is_trained = False
 
         # 性能指標
-        self.performance_metrics = {}
-        self.feature_names = []
+        self.performance_metrics: dict[str, Any] = {}
+        self.feature_names: list[str] = []
 
         # 初期化
         self._initialize_ensemble_models()
@@ -468,7 +470,7 @@ class EnsemblePredictionModel:
                 f"Time={self.performance_metrics['training_time']:.2f}s"
             )
 
-            return ensemble_r2 > 0.7  # 70%以上の決定係数を要求
+            return cast(bool, ensemble_r2 > 0.7)  # 70%以上の決定係数を要求
 
         except Exception as e:
             self.logger.error(f"Ensemble training failed: {e}")
@@ -583,7 +585,12 @@ class EnsemblePredictionModel:
                 self.logger.warning(f"Model {model_name} prediction failed: {e}")
 
         if predictions:
-            return np.sum(predictions, axis=0)
+            return cast(
+                "ndarray[tuple[Any, ...], dtype[Any]]", np.sum(predictions, axis=0)
+            )
+
+        # 予測がない場合はゼロ配列を返す
+        return cast("ndarray[tuple[Any, ...], dtype[Any]]", np.zeros_like(features))
 
     def _calculate_prediction_confidence(
         self, features: np.ndarray, prediction: np.ndarray
@@ -612,7 +619,7 @@ class EnsemblePredictionModel:
             confidence = max_confidence - (prediction_std / 10.0) * (
                 max_confidence - min_confidence
             )
-            return max(min_confidence, min(max_confidence, confidence))
+            return cast(float, max(min_confidence, min(max_confidence, confidence)))
 
         except Exception as e:
             self.logger.warning(f"Confidence calculation failed: {e}")
@@ -849,7 +856,9 @@ class PredictionEngine:
             # 必要時モデル再訓練
             retrain_results = {}
             if model_performance.get("accuracy_degradation", False):
-                retrain_results = self._retrain_degraded_models(model_performance)
+                retrain_results = {
+                    "success": self._retrain_degraded_models(model_performance)
+                }
 
             # 精度改善効果
             improvement_effects = self._calculate_accuracy_improvement(
@@ -890,7 +899,7 @@ class PredictionEngine:
         return formatted_results
 
     def _collect_prediction_results(
-        self, actual_results: Dict[str, Any] = None
+        self, actual_results: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
         """予測結果を収集"""
         return {
@@ -903,7 +912,7 @@ class PredictionEngine:
         }
 
     def _evaluate_prediction_accuracy(
-        self, prediction_history: Dict[str, Any] = None
+        self, prediction_history: Dict[str, Any] | None = None
     ) -> Dict[str, float]:
         """予測精度を評価"""
         if not self.performance_history:
@@ -942,13 +951,13 @@ class PredictionEngine:
         }
 
     def _analyze_model_performance(
-        self, accuracy_metrics: Dict[str, Any] = None
+        self, accuracy_metrics: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
         """モデル性能を分析"""
         if not self.ensemble_models:
             return {"status": "no_models", "recommendations": []}
 
-        performance_analysis = {
+        performance_analysis: dict[str, Any] = {
             "status": "active_models",
             "model_count": len(self.ensemble_models),
             "recommendations": [],
@@ -977,7 +986,7 @@ class PredictionEngine:
         return performance_analysis
 
     def _retrain_degraded_models(
-        self, model_performance: Dict[str, Any] = None
+        self, model_performance: Dict[str, Any] | None = None
     ) -> bool:
         """劣化したモデルを再訓練"""
         try:
@@ -1000,8 +1009,8 @@ class PredictionEngine:
 
     def _calculate_accuracy_improvement(
         self,
-        accuracy_metrics: Dict[str, Any] = None,
-        retrain_results: Dict[str, Any] = None,
+        accuracy_metrics: Dict[str, Any] | None = None,
+        retrain_results: Dict[str, Any] | None = None,
     ) -> float:
         """精度改善を計算"""
         if len(self.performance_history) < 2:
@@ -1034,7 +1043,7 @@ class PredictionEngine:
             if retrain_results and retrain_results.get("success", False):
                 improvement += 0.05  # 5%ボーナス
 
-            return max(0.0, improvement)
+            return cast(float, max(0.0, improvement))
 
         except Exception as e:
             self.logger.warning(f"Accuracy improvement calculation failed: {e}")
@@ -1148,7 +1157,7 @@ class PredictionEngine:
             alpha_status = self.basic_ml_system.get_system_status()
 
             # 最適化協調調整
-            coordination_result = {
+            coordination_result: dict[str, Any] = {
                 "alpha_system_active": "error" not in alpha_status,
                 "coordination_mode": (
                     "enhanced"

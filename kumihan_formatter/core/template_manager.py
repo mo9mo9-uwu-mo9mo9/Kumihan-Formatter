@@ -117,6 +117,11 @@ class TemplateManager:
             }
             return template_mapping.get(template, template)
 
+        # デフォルトテンプレートを返す
+        if source_text:
+            return "base-with-source-toggle.html.j2"
+        return "base.html.j2"
+
     def get_available_templates(self) -> list[str]:
         """Get list of available template files"""
         templates = []
@@ -178,10 +183,16 @@ class TemplateManager:
             if len(words) <= length:
                 return text
 
+            truncated = " ".join(words[:length])
+            return truncated + suffix
+
         def extract_text(content: Any) -> str:
             """Extract plain text from complex content"""
             if isinstance(content, str):
                 return content
+
+            # その他のタイプの場合は文字列化
+            return str(content)
 
         def format_toc_level(level: int) -> str:
             """Format TOC indentation based on heading level"""

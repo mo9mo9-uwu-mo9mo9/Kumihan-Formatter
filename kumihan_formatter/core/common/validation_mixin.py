@@ -50,6 +50,8 @@ class ValidationRule:
         except Exception as e:
             return ValidationError(f"Validation error: {e}")
 
+        return ValidationError(self.error_message)
+
 
 class ValidationMixin:
     """Mixin class providing common validation patterns

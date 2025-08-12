@@ -65,6 +65,7 @@ class ProcessingStats:
         """完了率（%）"""
         if self.total_items == 0:
             return 0.0
+        return (self.items_processed / self.total_items) * 100.0
 
 
 class PerformanceMonitor:
@@ -405,6 +406,24 @@ class PerformanceMonitor:
         """値の傾向を計算（簡易線形回帰）"""
         if len(values) < 2:
             return 0.0
+
+        # Simple linear trend calculation
+        n = len(values)
+        x = list(range(n))
+        y = values
+
+        # Calculate slope using least squares method
+        sum_x = sum(x)
+        sum_y = sum(y)
+        sum_xy = sum(x[i] * y[i] for i in range(n))
+        sum_x_squared = sum(x[i] ** 2 for i in range(n))
+
+        denominator = n * sum_x_squared - sum_x**2
+        if denominator == 0:
+            return 0.0
+
+        slope = (n * sum_xy - sum_x * sum_y) / denominator
+        return slope
 
     def save_metrics_to_file(self, file_path: Optional[str] = None):
         """パフォーマンスメトリクスをファイルに保存"""

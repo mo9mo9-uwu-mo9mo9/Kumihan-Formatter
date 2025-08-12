@@ -153,8 +153,15 @@ class AIIntegrationManager:
                 raise RuntimeError("OptimizationIntegrator initialization failed")
 
             # AdaptiveSettingsManager初期化
-            config_dict = self.config if isinstance(self.config, dict) else {}
-            self.adaptive_settings = AdaptiveSettingsManager(config_dict)
+            from kumihan_formatter.core.config.config_manager import EnhancedConfig
+
+            if isinstance(self.config, dict):
+                enhanced_config = EnhancedConfig()
+                for key, value in self.config.items():
+                    enhanced_config.set(key, value)
+            else:
+                enhanced_config = EnhancedConfig()
+            self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
             if (
                 self.adaptive_settings is None
                 or not self.adaptive_settings.is_initialized()
@@ -893,8 +900,15 @@ class AIIntegrationManager:
                 self.adaptive_settings is None
                 or not self.adaptive_settings.is_initialized()
             ):
-                config_dict = self.config if isinstance(self.config, dict) else {}
-                self.adaptive_settings = AdaptiveSettingsManager(config_dict)
+                from kumihan_formatter.core.config.config_manager import EnhancedConfig
+
+                if isinstance(self.config, dict):
+                    enhanced_config = EnhancedConfig()
+                    for key, value in self.config.items():
+                        enhanced_config.set(key, value)
+                else:
+                    enhanced_config = EnhancedConfig()
+                self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
 
             # 復旧確認
             if self._check_phase_b_health():

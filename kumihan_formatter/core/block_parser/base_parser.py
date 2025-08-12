@@ -48,7 +48,11 @@ class BaseBlockParser:
 
     def _is_marker_internal(self, line: str) -> bool:
         """Internal marker detection."""
-        return self.keyword_parser.is_marker(line) if self.keyword_parser else False
+        # Kumihanマーカー形式の簡易検出: # keyword #content##
+        import re
+
+        marker_pattern = re.compile(r"^#\s*[^#]+\s*#[^#]*##")
+        return bool(marker_pattern.match(line.strip()))
 
     def _is_list_internal(self, line: str) -> bool:
         """Internal list detection."""
@@ -94,6 +98,8 @@ class BaseBlockParser:
             self.logger.error(f"Error during line preprocessing: {e}")
             return lines  # Return original lines on error
 
+        return processed_lines
+
     def _find_next_block_end(self, start_index: int) -> int:
         """Find the end index of the next block with caching.
 
@@ -138,8 +144,8 @@ class BaseBlockParser:
             return self._is_marker_cache[line]
 
         def _cached_marker_check() -> bool:
-            parser = keyword_parser or self.keyword_parser
-            return parser.is_marker(line) if parser else False
+            # 内部のマーカー検出メソッドを使用
+            return self._is_marker_internal(line)
 
         result = _cached_marker_check()
         self._is_marker_cache[line] = result

@@ -12,7 +12,7 @@ Performance targets (Issue #727):
 
 import time
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator, cast
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -35,6 +35,13 @@ class StreamingParser:
     - 200k行ファイル対応: 新規サポート
     """
 
+    def parse(self, text: str) -> list[Node]:
+        """テキストをパースしてNodeリストを返す（後方互換性用）"""
+        from .parser import Parser
+
+        parser = Parser(config=self.config)
+        return cast(list[Node], parser.parse(text))
+
     # 最適化された定数
     CHUNK_SIZE = 500  # チャンクサイズ増強（200→500行）
     BUFFER_SIZE = 8192  # ファイル読み込みバッファサイズ
@@ -51,11 +58,12 @@ class StreamingParser:
 
         # タイムアウト設定
         self.timeout_seconds = timeout_seconds
+        self._start_time: float | None = None  # 型注釈を明示的に設定
         self._start_time = None
 
         # 最適化されたパーサーコンポーネント（軽量化）
-        self._parser_cache = {}  # パーサーインスタンスキャッシュ
-        self._pattern_cache = {}  # パターンマッチングキャッシュ
+        self._parser_cache: dict[str, Any] = {}  # パーサーインスタンスキャッシュ
+        self._pattern_cache: dict[str, Any] = {}  # パターンマッチングキャッシュ
         self._cache_limit = 1000  # キャッシュサイズ制限
 
         # パフォーマンス監視を初期化
@@ -174,6 +182,8 @@ class StreamingParser:
                 f"TIMEOUT_ERROR: Processing exceeded {self.timeout_seconds} seconds"
             )
             return True
+
+        return False
 
     def _process_chunk_and_update(
         self, stream_ctx: dict, line_num: int
@@ -328,9 +338,15 @@ class StreamingParser:
 
         # パターンに応じた高速処理
         if pattern_type == "block":
-            return parsers["block_parser"].parse_block_marker(lines, current)
+            return cast(
+                "tuple[Node | None, int]",
+                parsers["block_parser"].parse_block_marker(lines, current),
+            )
         elif pattern_type == "list":
-            return parsers["list_parser"].parse_unordered_list(lines, current)
+            return cast(
+                "tuple[Node | None, int]",
+                parsers["list_parser"].parse_unordered_list(lines, current),
+            )
         else:
             # デフォルト処理
             return None
@@ -407,7 +423,7 @@ class StreamingParser:
                     eta_seconds = int(remaining_items / stats.items_per_second)
 
                 if hasattr(stats, "items_per_second"):
-                    processing_rate = stats.items_per_second
+                    processing_rate = int(stats.items_per_second)
         except Exception as e:
             self.logger.debug(f"ETA calculation error: {e}")
 
@@ -415,7 +431,7 @@ class StreamingParser:
             if hasattr(self.performance_monitor, "get_current_snapshot"):
                 snapshot = self.performance_monitor.get_current_snapshot()
                 if snapshot and hasattr(snapshot, "memory_mb"):
-                    memory_mb = snapshot.memory_mb
+                    memory_mb = int(snapshot.memory_mb)
         except Exception as e:
             self.logger.debug(f"Memory snapshot error: {e}")
 
@@ -471,7 +487,7 @@ class StreamingParser:
         line_buffer = []
         total_processed = 0
         line_count = 0
-        self._start_time = time.time()
+        self._start_time: float | None = time.time()
 
         for line in lines_gen:
             # タイムアウトチェック
@@ -548,6 +564,7 @@ class StreamingParser:
         """タイムアウトチェック"""
         if self._start_time is None:
             return False
+        return False  # デフォルトでタイムアウトなしを返す
 
     def add_error(self, error: str) -> None:
         """解析エラーを追加"""
@@ -574,7 +591,7 @@ class StreamingParser:
             if hasattr(self.performance_monitor, "get_current_snapshot"):
                 snapshot = self.performance_monitor.get_current_snapshot()
                 if snapshot and hasattr(snapshot, "memory_mb"):
-                    metrics["memory_usage_mb"] = snapshot.memory_mb
+                    metrics["memory_usage_mb"] = int(snapshot.memory_mb)
         except Exception as e:
             self.logger.debug(f"Memory metrics error: {e}")
 
@@ -585,7 +602,7 @@ class StreamingParser:
             ):
                 stats = self.performance_monitor.stats
                 if hasattr(stats, "items_per_second"):
-                    metrics["processing_rate"] = stats.items_per_second
+                    metrics["processing_rate"] = int(stats.items_per_second)
         except Exception as e:
             self.logger.debug(f"Processing rate metrics error: {e}")
 

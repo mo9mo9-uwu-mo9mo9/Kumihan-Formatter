@@ -284,6 +284,8 @@ class KeywordRegistry:
         if keyword_id:
             return self.keywords.get(keyword_id)
 
+        return None
+
     def get_keyword_by_id(self, keyword_id: str) -> Optional[KeywordDefinition]:
         """IDからキーワード定義を取得
 
@@ -376,3 +378,5 @@ class KeywordRegistry:
         if language in self._language_mappings:
             self.default_language = language
             return True
+
+        return False

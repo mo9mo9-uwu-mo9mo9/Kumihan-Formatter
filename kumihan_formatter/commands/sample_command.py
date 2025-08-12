@@ -114,7 +114,7 @@ class SampleCommand:
         return html
 
 
-def create_sample_command():  # type: ignore
+def create_sample_command():
     """Create the sample generation click command"""
 
     @click.command()
@@ -129,7 +129,7 @@ def create_sample_command():  # type: ignore
     @click.option(
         "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
     )
-    def generate_sample(output, with_source_toggle, quiet):  # type: ignore
+    def generate_sample(output, with_source_toggle, quiet):
         """機能ショーケースサンプルを生成します"""
 
         # Determine source toggle usage

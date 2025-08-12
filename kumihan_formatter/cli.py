@@ -234,7 +234,7 @@ def register_commands() -> None:
     try:
         from .commands.sample import create_sample_command
 
-        cli.add_command(create_sample_command(), name="generate-sample")  # type: ignore
+        cli.add_command(create_sample_command(), name="generate-sample")
         logger.debug("Sample generation commands registered successfully")
     except ImportError as e:
         import warnings

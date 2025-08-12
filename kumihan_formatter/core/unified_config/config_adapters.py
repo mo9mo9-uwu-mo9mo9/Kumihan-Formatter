@@ -6,7 +6,7 @@ Issue #771対応: 既存設定クラスとの互換性を保つアダプター�
 
 import warnings
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, cast
 
 from ..utilities.logger import get_logger
 from .config_models import (  # KumihanConfig, LoggingConfig - removed unused imports (F401)
@@ -225,8 +225,11 @@ class ErrorConfigManagerAdapter:
             bool: 継続するかどうか
         """
         if category in self.config.category_settings:
-            return self.config.category_settings[category].get(
-                "continue_on_error", self.config.continue_on_error
+            return cast(
+                bool,
+                self.config.category_settings[category].get(
+                    "continue_on_error", self.config.continue_on_error
+                ),
             )
         return self.config.continue_on_error
 

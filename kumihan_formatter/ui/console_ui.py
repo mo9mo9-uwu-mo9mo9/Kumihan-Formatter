@@ -5,7 +5,7 @@
 Issue #492 Phase 5A - console_ui.py分割
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from rich.console import Console
 from rich.progress import Progress
@@ -15,6 +15,9 @@ from .console_factory import ConsoleUIFactory
 from .console_interaction import ConsoleInteraction
 from .console_messaging import ConsoleMessaging
 from .console_operations import ConsoleOperations
+
+# グローバル変数宣言
+_console_ui_instance: "ConsoleUI | None" = None
 
 
 class ConsoleUI:
@@ -195,4 +198,4 @@ def get_console_ui() -> ConsoleUI:
     global _console_ui_instance
     if _console_ui_instance is None:
         _console_ui_instance = ConsoleUI()
-    return _console_ui_instance
+    return cast(ConsoleUI, _console_ui_instance)

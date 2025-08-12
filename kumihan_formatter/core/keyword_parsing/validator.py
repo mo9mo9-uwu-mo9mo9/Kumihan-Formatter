@@ -34,8 +34,9 @@ class KeywordValidator:
         # 新記法のみに対応
         if "#" in text or "＃" in text:
             # 新記法の解析
-            # TODO: implement keyword validation logic
-            pass
+            keywords = self._extract_keywords_from_new_format(text)
+            _, errors = self.validate_keywords(keywords)
+            return errors
         else:
             return []  # 記法が見つからない場合はエラーなし
 
@@ -108,6 +109,12 @@ class KeywordValidator:
         """
         if self.definitions.is_valid_keyword(keyword):
             return True, None
+
+        suggestions = self.get_keyword_suggestions(keyword)
+        error_msg = f"不明なキーワード: {keyword}"
+        if suggestions:
+            error_msg += f" (候補: {', '.join(suggestions)})"
+        return False, error_msg
 
     def is_keyword_valid(self, keyword: str) -> bool:
         """キーワードが有効かチェック

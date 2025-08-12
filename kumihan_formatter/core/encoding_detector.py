@@ -36,6 +36,8 @@ class EncodingDetector:
             if raw.startswith(bom):
                 return encoding
 
+        return None
+
     @staticmethod
     def detect_encoding_sample(path: Path, sample_size: int = 8192) -> str | None:
         """Detect encoding by sampling file content
@@ -77,3 +79,11 @@ class EncodingDetector:
         bom_encoding = cls.detect_bom(path)
         if bom_encoding:
             return bom_encoding, True
+
+        # Try sample-based detection
+        sample_encoding = cls.detect_encoding_sample(path)
+        if sample_encoding:
+            return sample_encoding, False
+
+        # Fallback to UTF-8
+        return "utf-8", False

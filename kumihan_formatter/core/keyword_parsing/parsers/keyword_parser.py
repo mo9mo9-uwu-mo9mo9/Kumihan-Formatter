@@ -32,9 +32,9 @@ class KeywordParser(BaseParser):
         if not isinstance(marker_content, str):
             return [], {}, ["Invalid marker content type"]
 
-        keywords = []
-        attributes = {}
-        errors = []
+        keywords: List[str] = []
+        attributes: Dict[str, Any] = {}
+        errors: List[str] = []
 
         marker_content = marker_content.strip()
         if not marker_content:
@@ -74,7 +74,7 @@ class KeywordParser(BaseParser):
         if not isinstance(keyword_content, str):
             return []
 
-        keywords = []
+        keywords: List[str] = []
         # Check for compound keywords (+ or ＋)
         if "+" in keyword_content or "＋" in keyword_content:
             parts = re.split(r"[+＋]", keyword_content)

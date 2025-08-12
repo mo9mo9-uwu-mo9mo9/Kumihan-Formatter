@@ -7,7 +7,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .logger import get_logger
 
@@ -126,12 +126,18 @@ class SyntaxErrorRecoveryStrategy(ErrorRecoveryStrategy):
             if not line.rstrip().endswith("#"):
                 return f"{indent}# {keyword.strip()} #"
 
+        # 修正不可の場合は元の行を返す
+        return line
+
     def _find_next_valid_line(self, lines: List[str], start: int) -> int:
         """次の有効な行を検索"""
         for i in range(start + 1, len(lines)):
             line = lines[i].strip()
             if line and not line.startswith("#"):
                 return i
+
+        # 有効な行が見つからない場合
+        return len(lines)
 
 
 class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
@@ -178,6 +184,9 @@ class BlockStructureErrorRecoveryStrategy(ErrorRecoveryStrategy):
             if line == "##":
                 return i
 
+        # 終了マーカーが見つからない場合
+        return -1
+
 
 class ListFormatErrorRecoveryStrategy(ErrorRecoveryStrategy):
     """リスト形式エラー回復戦略"""
@@ -220,12 +229,18 @@ class ListFormatErrorRecoveryStrategy(ErrorRecoveryStrategy):
         if re.match(r"^[-*+]\s*$", stripped):  # 空のリスト項目
             return line.replace(stripped, f"{stripped[0]} (空の項目)")
 
+        # 修正不可の場合は元の行を返す
+        return line
+
     def _find_list_end(self, lines: List[str], start: int) -> int:
         """リストの終了位置を検索"""
         for i in range(start + 1, len(lines)):
             line = lines[i].strip()
             if not line:  # 空行
                 return i + 1
+
+        # リストの終了が見つからない場合
+        return len(lines)
 
 
 class AdvancedErrorRecoverySystem:
@@ -396,6 +411,9 @@ class AdvancedErrorRecoverySystem:
             if not line:
                 return i
 
+        # 安全な行が見つからない場合は最後の行
+        return len(lines)
+
     def get_recovery_statistics(self) -> Dict[str, Any]:
         """回復統計を取得"""
         if not self.recovery_history:
@@ -407,6 +425,108 @@ class AdvancedErrorRecoverySystem:
             "most_common_errors": self._get_common_errors(),
             "recovery_methods_used": self._get_recovery_methods_stats(),
         }
+
+    def _calculate_success_rate(self) -> float:
+        """
+        回復成功率を計算
+
+        Returns:
+            float: 成功率 (0.0-1.0)
+        """
+        if not self.recovery_history:
+            return 0.0
+
+        successful_recoveries = sum(
+            1 for entry in self.recovery_history if entry.get("success", False)
+        )
+
+        return successful_recoveries / len(self.recovery_history)
+
+    def _get_common_errors(self) -> List[Tuple[str, int]]:
+        """
+        よく発生するエラーを取得
+
+        Returns:
+            List[Tuple[str, int]]: エラータイプと発生回数のリスト
+        """
+        from collections import Counter
+
+        error_types = []
+        for entry in self.recovery_history:
+            if "error_type" in entry:
+                error_types.append(entry["error_type"])
+
+        return Counter(error_types).most_common(5)
+
+    def _get_recovery_methods_stats(self) -> Dict[str, int]:
+        """
+        使用された回復手法の統計を取得
+
+        Returns:
+            Dict[str, int]: 回復手法と使用回数
+        """
+        from collections import defaultdict
+
+        method_stats: Dict[str, int] = defaultdict(int)
+        for entry in self.recovery_history:
+            if "recovery_method" in entry:
+                method_stats[entry["recovery_method"]] += 1
+
+        return dict(method_stats)
+
+    def attempt_recovery(self, error_context: "ErrorContext") -> "RecoveryResult":
+        """
+        エラー回復を試行
+
+        Args:
+            error_context: エラーコンテキスト
+
+        Returns:
+            RecoveryResult: 回復結果
+        """
+        self.logger.info(f"Attempting recovery for error: {error_context.error_type}")
+
+        for strategy in self.strategies:
+            if strategy.can_handle(error_context):
+                try:
+                    result = strategy.recover(error_context, [])
+                    if result and result.success:
+                        # 回復成功を記録
+                        self.recovery_history.append(
+                            {
+                                "timestamp": self._get_timestamp(),
+                                "error_type": error_context.error_type.value,
+                                "recovery_method": strategy.__class__.__name__,
+                                "success": True,
+                            }
+                        )
+                        self.logger.info(
+                            f"Recovery successful using {strategy.__class__.__name__}"
+                        )
+                        return result
+                except Exception as e:
+                    self.logger.warning(
+                        f"Recovery strategy {strategy.__class__.__name__} failed: {e}"
+                    )
+                    continue
+
+        # 回復失敗を記録
+        self.recovery_history.append(
+            {
+                "timestamp": self._get_timestamp(),
+                "error_type": error_context.error_type.value,
+                "success": False,
+            }
+        )
+
+        # デフォルトの失敗結果を返す
+        return RecoveryResult(success=False)
+
+    def _get_timestamp(self) -> str:
+        """現在のタイムスタンプを取得"""
+        import datetime
+
+        return datetime.datetime.now().isoformat()
 
     def register_custom_strategy(self, strategy: ErrorRecoveryStrategy) -> None:
         """カスタム回復戦略を登録"""
@@ -447,7 +567,7 @@ def with_error_recovery(
                 recovery_result = recovery_system.attempt_recovery(error_context)
 
                 if recovery_result.success:
-                    return recovery_result.recovered_value
+                    return recovery_result.recovered_content
                 else:
                     raise  # 回復失敗時は再発生
 

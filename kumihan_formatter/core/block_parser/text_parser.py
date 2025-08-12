@@ -87,7 +87,8 @@ class TextBlockParser(BaseBlockParser):
 
         # Apply inline processing if parser reference available
         processed_content = content
-        if self.parser_ref and hasattr(self.parser_ref, "inline_parser"):
+        # Apply inline processing if parser reference available
+        if self.parser_ref is not None and hasattr(self.parser_ref, "inline_parser"):
             try:
                 processed_content = self.parser_ref.inline_parser.process_text(content)
             except Exception as e:
@@ -116,6 +117,8 @@ class TextBlockParser(BaseBlockParser):
         if not content:
             return ""
 
+        return content.strip()
+
     def _validate_text_content(self, content: str) -> bool:
         """Validate text content.
 
@@ -128,6 +131,8 @@ class TextBlockParser(BaseBlockParser):
         if not content or not content.strip():
             return False
 
+        return True
+
     def _process_text_lines(self, lines: List[str]) -> str:
         """Process multiple text lines into single content.
 
@@ -139,3 +144,5 @@ class TextBlockParser(BaseBlockParser):
         """
         if not lines:
             return ""
+
+        return "\n".join(line.strip() for line in lines)

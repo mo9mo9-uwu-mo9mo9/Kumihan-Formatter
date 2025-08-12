@@ -4,9 +4,14 @@
 全ての設定機能を一元的に提供し、既存コードとの互換性を維持する。
 """
 
+from typing import cast
+
 from .base_config import BaseConfig
 from .config_manager import ConfigManager, create_config_manager, load_config
 from .extended_config import ExtendedConfig
+
+# グローバル変数宣言
+_default_config: ConfigManager | None = None
 
 # 下位互換性のためのエイリアス
 Config = ConfigManager  # 既存のConfigクラスとの互換性
@@ -41,7 +46,7 @@ def get_default_config() -> ConfigManager:
     global _default_config
     if _default_config is None:
         _default_config = create_config_manager()
-    return _default_config
+    return cast(ConfigManager, _default_config)
 
 
 def reset_default_config() -> None:

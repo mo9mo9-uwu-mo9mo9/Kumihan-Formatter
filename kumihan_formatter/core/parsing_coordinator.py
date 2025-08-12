@@ -118,6 +118,8 @@ class ParsingCoordinator:
         if optimal_parser_info[1] == 0:
             return "coordinator"  # どの記法も検出されない場合
 
+        return optimal_parser_info[0]
+
     def _analyze_line_for_parser_scoring(
         self, line_content: str, parser_scores: Dict[str, int]
     ) -> None:

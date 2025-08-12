@@ -12,7 +12,7 @@ import threading
 # import time  # removed - unused import (F401)
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 from ..error_handling import handle_error_unified
 from ..utilities.logger import get_logger
@@ -30,6 +30,9 @@ from .config_models import (
 from .config_validator import (  # ValidationResult removed - unused import (F401)
     ConfigValidator,
 )
+
+# グローバル変数宣言
+_global_config_manager: "UnifiedConfigManager | None" = None
 
 
 class UnifiedConfigManager:
@@ -78,7 +81,7 @@ class UnifiedConfigManager:
 
         # ホットリロード開始
         if self._auto_reload and self._config_file_path:
-            self._start_auto_reload()  # type: ignore[unreachable]
+            self._start_auto_reload()
 
     def _load_initial_config(self, config_file: Optional[Union[str, Path]]) -> None:
         """初期設定読み込み
@@ -198,6 +201,9 @@ class UnifiedConfigManager:
             if validation_result.fixed_config:
                 return validation_result.fixed_config
 
+        # バリデーターがないか、修正された設定がない場合はフォールバック設定を作成
+        return self._create_fallback_config(config_data)
+
     def _clean_config_data(self, config_data: Dict[str, Any]) -> Dict[str, Any]:
         """無効なフィールドを除去した設定データを作成"""
         # KumihanConfigで有効なフィールドのリスト
@@ -262,6 +268,8 @@ class UnifiedConfigManager:
             self.logger.warning("設定が初期化されていません、デフォルト設定を返します")
             return KumihanConfig()
 
+        return self._config
+
     def reload_config(self, force: bool = False) -> bool:
         """設定の再読み込み
 
@@ -279,7 +287,7 @@ class UnifiedConfigManager:
                     return False  # 更新なし
 
             # 設定の再読み込み実行
-            self._config = self._load_config()
+            self.reload_config()
             if self._config_file_path and self._config_file_path.exists():
                 self._last_modified = self._config_file_path.stat().st_mtime
 
@@ -478,7 +486,7 @@ def get_unified_config_manager(
                 config_file=config_file, auto_reload=auto_reload
             )
 
-        return _global_config_manager
+        return cast("UnifiedConfigManager", _global_config_manager)
 
 
 def get_unified_config() -> KumihanConfig:

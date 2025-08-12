@@ -9,7 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 try:
     import yaml
@@ -64,7 +64,7 @@ class ConfigLoader:
                 return None
 
             logging.info(f"Loaded configuration from: {config_path}")
-            return config_data
+            return cast(dict[str, Any], config_data)
 
         except Exception as e:
             logging.error(f"Error loading configuration from {config_path}: {e}")

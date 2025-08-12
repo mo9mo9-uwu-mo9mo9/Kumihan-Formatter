@@ -158,6 +158,8 @@ class ErrorConfigManager:
                 self.logger.debug(f"Found config file in parent: {parent_config}")
                 return parent_config
 
+        return None
+
     def _load_from_file(self, config_file: Path) -> None:
         """設定ファイルから読み込み"""
         try:

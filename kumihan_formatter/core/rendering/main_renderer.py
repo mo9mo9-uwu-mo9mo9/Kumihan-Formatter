@@ -5,7 +5,7 @@ all specialized renderers and maintains backward compatibility.
 """
 
 from html import escape
-from typing import Any, List
+from typing import Any, List, cast
 
 from ..ast_nodes import Node
 from .compound_renderer import CompoundElementRenderer
@@ -75,7 +75,7 @@ class HTMLRenderer:
         self.embed_errors_in_html = False
 
         # Footnote integration support
-        self.footnotes_data = None
+        self.footnotes_data: dict | None = None
 
     def set_footnote_data(self, footnotes_data: dict) -> None:
         """
@@ -120,7 +120,7 @@ class HTMLRenderer:
             try:
                 footnotes = self.footnotes_data.get("footnotes", [])
 
-                if footnotes:  # type: ignore[unreachable]
+                if footnotes:
                     # Replace footnote placeholders with actual HTML links
                     # import re removed - unused import (F401)
 
@@ -180,7 +180,7 @@ class HTMLRenderer:
             if self.graceful_errors and self.embed_errors_in_html:
                 return self.render_nodes_with_errors_optimized(nodes)
 
-            html_parts = []
+            html_parts: list[str] = []
             html_parts_append = html_parts.append
             for node in nodes:
                 html = self.render_node(node)
@@ -203,14 +203,14 @@ class HTMLRenderer:
         """
         # 最適化: メソッド動的検索を避けるため事前キャッシュ
         renderer_method = self._get_cached_renderer_method(node.type)
-        return renderer_method(node)
+        return cast(str, renderer_method(node))
 
     def _get_cached_renderer_method(self, node_type: str):
         """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
 
         # レンダラーメソッドキャッシュが未初期化なら作成
         if not hasattr(self, "_renderer_method_cache"):
-            self._renderer_method_cache = {}
+            self._renderer_method_cache: dict[str, Any] = {}
 
         # キャッシュから取得
         if node_type not in self._renderer_method_cache:
@@ -225,7 +225,7 @@ class HTMLRenderer:
         """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
 
         # StringBuilder パターン
-        html_parts = []
+        html_parts: list[str] = []
         html_parts_append = html_parts.append
 
         for node in nodes:
@@ -243,6 +243,8 @@ class HTMLRenderer:
                 "\n".join(html_parts)
             )
             return html_with_markers
+
+        return "\n".join(html_parts)
 
     def _render_error_summary_optimized(self) -> str:
         """最適化されたエラーサマリーHTML生成"""
@@ -311,7 +313,7 @@ class HTMLRenderer:
             return html
 
         lines = html.split("\n")
-        error_by_line = {}
+        error_by_line: dict[int, list[Any]] = {}
         modified_lines = []
 
         # エラーを行番号でグループ化

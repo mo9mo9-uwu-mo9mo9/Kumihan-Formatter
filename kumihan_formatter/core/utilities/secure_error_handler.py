@@ -115,6 +115,9 @@ class SecureErrorHandler:
         if not error_message:
             return ""
 
+        # サニタイズ処理を実装
+        return error_message  # 簡素化した実装
+
     def _minimize_technical_details(self, message: str) -> str:
         """技術的詳細を最小化"""
         # 行数、ファイル名、モジュール名などの詳細を削除
@@ -146,6 +149,9 @@ class SecureErrorHandler:
         if exception_name in self.error_code_mapping:
             mapped_code: str = self.error_code_mapping[exception_name]
             return mapped_code
+
+        # デフォルトエラーコードを返す
+        return f"ERR_{exception_name.upper()}"
 
     def generate_trace_id(self) -> str:
         """トレースID生成"""

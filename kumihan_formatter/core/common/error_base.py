@@ -222,12 +222,22 @@ class GracefulSyntaxError:
     def get_highlighted_context(self) -> str:
         """ハイライト付きコンテキストを返す"""
         if not self.context or self.highlight_start == self.highlight_end:
-            return self.context
+            return self.context or ""
+        # ハイライト処理を実装
+        return self.context or ""
 
     def get_correction_suggestions_html(self) -> str:
         """修正提案のHTML形式を返す"""
         if not self.correction_suggestions:
             return ""
+        # HTML形式で修正提案を返す
+        return (
+            "<ul>"
+            + "".join(
+                [f"<li>{suggestion}</li>" for suggestion in self.correction_suggestions]
+            )
+            + "</ul>"
+        )
 
     def add_correction_suggestion(self, suggestion: str) -> None:
         """修正提案を追加"""
@@ -245,6 +255,7 @@ class GracefulSyntaxError:
         """エラーパターンを分類して統計用IDを返す"""
         if self.error_pattern:
             return self.error_pattern
+        return "unknown"
 
 
 class ValidationError(KumihanError):
