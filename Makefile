@@ -442,24 +442,27 @@ quality-learning-train:
 
 quality-dashboard:
 	@echo "📊 品質ダッシュボード生成..."
-	@$(PYTHON) -c "import sys, os; sys.path.append('postbox'); \
-	from quality.dashboard.metrics_collector import QualityMetricsCollector; \
-	from quality.dashboard.dashboard_generator import QualityDashboardGenerator; \
-	print('📊 メトリクス収集中...'); \
-	collector = QualityMetricsCollector(); \
-	metrics = collector.collect_all_metrics(); \
-	print('🎨 ダッシュボード生成中...'); \
-	generator = QualityDashboardGenerator(); \
-	dashboard_path = generator.generate_dashboard(metrics); \
-	os.makedirs('tmp', exist_ok=True); \
-	if dashboard_path.startswith('postbox'): \
-		import shutil; \
-		target_path = f'tmp/{dashboard_path.split(\"/\")[-1]}'; \
-		shutil.copy2(dashboard_path, target_path); \
-		dashboard_path = target_path; \
-	print(f'✅ ダッシュボード完成: {dashboard_path}'); \
-	import webbrowser; \
-	webbrowser.open(f'file://{os.path.abspath(dashboard_path)}')"
+	@$(PYTHON) -c "\
+import sys, os; \
+sys.path.append('postbox'); \
+from quality.dashboard.metrics_collector import QualityMetricsCollector; \
+from quality.dashboard.dashboard_generator import QualityDashboardGenerator; \
+print('📊 メトリクス収集中...'); \
+collector = QualityMetricsCollector(); \
+metrics = collector.collect_all_metrics(); \
+print('🎨 ダッシュボード生成中...'); \
+generator = QualityDashboardGenerator(); \
+dashboard_path = generator.generate_dashboard(metrics); \
+os.makedirs('tmp', exist_ok=True); \
+if dashboard_path.startswith('postbox'): \
+	import shutil; \
+	target_path = f'tmp/{dashboard_path.split(\"/\")[-1]}'; \
+	shutil.copy2(dashboard_path, target_path); \
+	dashboard_path = target_path; \
+print(f'✅ ダッシュボード完成: {dashboard_path}'); \
+import webbrowser; \
+webbrowser.open(f'file://{os.path.abspath(dashboard_path)}'); \
+"
 
 quality-full-check:
 	@echo "🎯 全品質システム実行..."
