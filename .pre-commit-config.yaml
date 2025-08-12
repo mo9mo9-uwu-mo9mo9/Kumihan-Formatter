@@ -18,11 +18,12 @@ repos:
 
       - id: mypy-type-check
         name: MyPy Type Checking
-        entry: python3 -m mypy kumihan_formatter
+        entry: python3 -m mypy kumihan_formatter --config-file pyproject.toml
         language: system
         files: '\.py$'
         pass_filenames: false
-        description: "Type checking with MyPy"
+        description: "Type checking with MyPy using unified pyproject.toml config"
+        verbose: true
 
       - id: kumihan-lint-fix
         name: Kumihan Auto-fix flake8 errors
