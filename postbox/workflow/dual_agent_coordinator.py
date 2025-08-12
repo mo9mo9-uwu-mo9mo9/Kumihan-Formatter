@@ -20,6 +20,8 @@ from utils.task_manager import TaskManager
 from utils.gemini_helper import GeminiHelper
 from utils.task_analyzer import TaskAnalyzer
 from templates.flash_templates import Flash25Templates
+from templates.enhanced_flash_templates import EnhancedFlash25Templates
+from quality.syntax_validator import SyntaxValidator, TypeAnnotationTemplate
 from core.workflow_decision_engine import WorkflowDecisionEngine, AutomationLevel
 from quality.quality_manager import QualityManager
 from monitoring.quality_monitor import QualityMonitor
@@ -33,6 +35,9 @@ class DualAgentCoordinator:
         self.gemini_helper = GeminiHelper()
         self.task_analyzer = TaskAnalyzer()
         self.flash_templates = Flash25Templates()
+        self.enhanced_templates = EnhancedFlash25Templates()
+        self.syntax_validator = SyntaxValidator()
+        self.type_template = TypeAnnotationTemplate()
         self.decision_engine = WorkflowDecisionEngine()
         self.quality_manager = QualityManager()
         self.quality_monitor = QualityMonitor()
@@ -47,6 +52,8 @@ class DualAgentCoordinator:
         print(f"🎯 自動判定エンジン: 有効")
         print(f"🔍 統合品質管理: 有効")
         print(f"📊 品質監視システム: 有効")
+        print(f"🛡️ 構文エラー防止機構: 有効")
+        print(f"✅ 品質保証テンプレート: 有効")
 
     def create_mypy_fix_task(self,
                            target_files: List[str],
@@ -56,18 +63,69 @@ class DualAgentCoordinator:
                            force_mode: str = None,
                            auto_execute: bool = True) -> List[str]:
         """mypy修正タスク作成（自動判定・実行機能付き）"""
+        return self._create_task_with_type(
+            "code_modification", target_files, error_type, priority, 
+            use_micro_tasks, force_mode, auto_execute
+        )
+    
+    def create_new_implementation_task(self,
+                                     target_files: List[str],
+                                     implementation_spec: Dict[str, Any],
+                                     priority: str = "high",
+                                     force_mode: str = None,
+                                     auto_execute: bool = True) -> List[str]:
+        """新規実装タスク作成"""
+        return self._create_implementation_task(
+            "new_implementation", target_files, implementation_spec,
+            priority, force_mode, auto_execute
+        )
+    
+    def create_hybrid_implementation_task(self,
+                                        target_files: List[str],
+                                        implementation_spec: Dict[str, Any],
+                                        priority: str = "high",
+                                        force_mode: str = None,
+                                        auto_execute: bool = True) -> List[str]:
+        """ハイブリッド実装タスク作成"""
+        return self._create_implementation_task(
+            "hybrid_implementation", target_files, implementation_spec,
+            priority, force_mode, auto_execute
+        )
+    
+    def create_feature_development_task(self,
+                                      target_files: List[str],
+                                      feature_spec: Dict[str, Any],
+                                      priority: str = "high",
+                                      force_mode: str = None,
+                                      auto_execute: bool = True) -> List[str]:
+        """新機能開発タスク作成"""
+        return self._create_implementation_task(
+            "new_feature_development", target_files, feature_spec,
+            priority, force_mode, auto_execute
+        )
+    
+    def _create_task_with_type(self,
+                             task_type: str,
+                             target_files: List[str],
+                             error_type: str,
+                             priority: str,
+                             use_micro_tasks: bool,
+                             force_mode: str,
+                             auto_execute: bool) -> List[str]:
+        """タスク作成（タイプ別統一インターフェース）"""
 
-        print(f"🔍 タスク作成開始: {error_type} エラー修正")
+        task_description = f"{error_type} エラー修正 - {len(target_files)}ファイル" if task_type == "code_modification" else f"{task_type} - {len(target_files)}ファイル"
+        
+        print(f"🔍 タスク作成開始: {task_description}")
         print(f"📁 対象ファイル: {len(target_files)}件")
         print(f"🧠 微分化モード: {'有効' if use_micro_tasks else '無効'}")
 
         # ===== 自動判定フェーズ =====
-        task_description = f"{error_type} エラー修正 - {len(target_files)}ファイル"
 
         # タスク分析実行
         task_analysis = self.decision_engine.analyze_task(
             task_description, target_files, error_type,
-            context={"priority": priority, "session_id": self.session_id}
+            context={"priority": priority, "session_id": self.session_id, "task_type": task_type}
         )
 
         # Gemini使用判定
@@ -85,12 +143,12 @@ class DualAgentCoordinator:
         if decision.use_gemini:
             print(f"\n🚀 Gemini協業モードで実行")
             created_task_ids = self._create_with_gemini_mode(
-                target_files, error_type, priority, use_micro_tasks, decision
+                target_files, error_type, priority, use_micro_tasks, decision, task_type
             )
         else:
             print(f"\n🧠 Claude単独モードで実行")
             created_task_ids = self._create_with_claude_mode(
-                target_files, error_type, priority, decision
+                target_files, error_type, priority, decision, task_type
             )
 
         # ===== 自動実行判定 =====
@@ -112,9 +170,260 @@ class DualAgentCoordinator:
 
         print(f"\n✅ タスク作成完了: {len(created_task_ids)}件")
         return created_task_ids
+    
+    def _create_implementation_task(self,
+                                  task_type: str,
+                                  target_files: List[str], 
+                                  implementation_spec: Dict[str, Any],
+                                  priority: str,
+                                  force_mode: str,
+                                  auto_execute: bool) -> List[str]:
+        """新規実装タスク作成（統一インターフェース）"""
+        
+        print(f"🎨 新規実装タスク作成開始: {task_type}")
+        print(f"📁 対象ファイル: {len(target_files)}件")
+        
+        # タスク分析実行
+        task_description = f"{task_type} - {len(target_files)}ファイル実装"
+        task_analysis = self.decision_engine.analyze_task(
+            task_description, target_files, "new_implementation",
+            context={
+                "priority": priority, 
+                "session_id": self.session_id,
+                "task_type": task_type,
+                "implementation_spec": implementation_spec
+            }
+        )
+        
+        # Gemini使用判定
+        user_prefs = {"force_mode": force_mode} if force_mode else {}
+        decision = self.decision_engine.make_decision(task_analysis, user_prefs)
+        
+        print(f"\n🎯 自動判定結果:")
+        print(f"   Gemini使用: {'はい' if decision.use_gemini else 'いいえ'}")
+        print(f"   自動化レベル: {decision.automation_level.value}")
+        print(f"   推定コスト: ${decision.task_analysis.estimated_cost:.4f}")
+        print(f"   理由: {decision.reasoning}")
+        
+        # 実装タスク作成
+        created_task_ids = []
+        
+        for file_path in target_files:
+            print(f"\n📄 実装タスク作成: {file_path}")
+            
+            # 実装タスク作成
+            task_id = self._create_implementation_task_for_file(
+                file_path, task_type, implementation_spec, priority, decision
+            )
+            created_task_ids.append(task_id)
+        
+        # 自動実行判定
+        if auto_execute and decision.automation_level in [AutomationLevel.FULL_AUTO, AutomationLevel.SEMI_AUTO]:
+            print(f"\n⚡ 自動実行開始（レベル: {decision.automation_level.value}）")
+            
+            if decision.automation_level == AutomationLevel.SEMI_AUTO:
+                # 重要な変更の場合のみ確認
+                if decision.task_analysis.risk_level == "high" or decision.task_analysis.estimated_cost > 0.005:
+                    print("⚠️ 重要な変更のため手動確認推奨")
+                else:
+                    self._auto_execute_tasks(created_task_ids, decision)
+            else:
+                self._auto_execute_tasks(created_task_ids, decision)
+        elif decision.automation_level == AutomationLevel.APPROVAL_REQUIRED:
+            print(f"\n🤚 承認必須: 実行前にユーザー確認が必要")
+            print(f"   実行コマンド: coordinator.execute_workflow_cycle()")
+        
+        print(f"\n✅ 実装タスク作成完了: {len(created_task_ids)}件")
+        return created_task_ids
+    
+    def _create_implementation_task_for_file(self,
+                                           file_path: str,
+                                           task_type: str,
+                                           implementation_spec: Dict[str, Any],
+                                           priority: str,
+                                           decision) -> str:
+        """ファイル単位の実装タスク作成"""
+        
+        # Claudeによる詳細分析
+        claude_analysis = self._claude_analyze_implementation_task(
+            file_path, task_type, implementation_spec
+        )
+        
+        # 実装指示生成
+        implementation_instruction = self._generate_implementation_instruction(
+            file_path, task_type, implementation_spec
+        )
+        
+        task_id = self.task_manager.create_task(
+            task_type=task_type,
+            description=f"{task_type} - {file_path}",
+            target_files=[file_path],
+            priority=priority,
+            requirements={
+                "implementation_spec": implementation_spec,
+                "task_type": task_type,
+                "implementation_instruction": implementation_instruction,
+                "quality_requirements": {
+                    "syntax_check": True,
+                    "type_check": True,
+                    "style_check": True,
+                    "test_creation": implementation_spec.get("create_tests", False)
+                }
+            },
+            claude_analysis=claude_analysis,
+            expected_outcome=f"{task_type}完了 - {file_path}",
+            constraints=[
+                "品質基準遵守",
+                "テスト通過必須",
+                "mypy strict mode適合"
+            ],
+            context={
+                "task_type": task_type,
+                "implementation_type": implementation_spec.get("template_type", "generic"),
+                "decision_engine_result": decision.task_analysis.__dict__,
+                "automation_level": decision.automation_level.value,
+                "session_id": self.session_id
+            }
+        )
+        
+        print(f"📄 実装タスク作成: {file_path}")
+        return task_id
+    
+    def _claude_analyze_implementation_task(self,
+                                          file_path: str,
+                                          task_type: str,
+                                          implementation_spec: Dict[str, Any]) -> str:
+        """実装タスク用Claude分析"""
+        
+        template_type = implementation_spec.get("template_type", "generic")
+        complexity_estimate = implementation_spec.get("complexity", "medium")
+        
+        analysis = f"""
+📊 Claude 実装タスク分析 - {task_type}
+
+🎯 実装対象:
+- ファイル: {file_path}
+- タスクタイプ: {task_type}
+- テンプレート: {template_type}
+- 複雑度: {complexity_estimate}
+
+🧠 実装方針:
+"""
+        
+        if task_type == "new_implementation":
+            analysis += """
+- 純粋新規実装アプローチ
+- テンプレートベースのコード生成
+- 品質基準適合を必須とした実装
+"""
+        elif task_type == "hybrid_implementation":
+            analysis += """
+- 既存コードとの統合を考慮
+- 段階的な実装アプローチ
+- 既存機能への影響最小化
+"""
+        elif task_type == "new_feature_development":
+            analysis += """
+- 包括的な機能開発アプローチ
+- 関連ファイルとの整合性確保
+- テストケースを含む完全実装
+"""
+        
+        # 実装仕様の詳細
+        if "class_name" in implementation_spec:
+            analysis += f"\n🏷️ クラス実装: {implementation_spec['class_name']}"
+        if "methods" in implementation_spec:
+            analysis += f"\n🔧 メソッド数: {len(implementation_spec['methods'])}件"
+        if "functions" in implementation_spec:
+            analysis += f"\n⚙️ 関数数: {len(implementation_spec['functions'])}件"
+        
+        analysis += f"""
+
+🛡️ 品質保証:
+- mypy strict mode適合必須
+- コードスタイルガイド遵守
+- 必要に応じてテスト作成
+- ドキュメントコメント必須
+
+📝 推奨アプローチ:
+1. テンプレートベースでの基本構造作成
+2. 段階的な実装と確認
+3. 品質チェックとテスト実行
+4. ドキュメントとコメントの充実
+"""
+        
+        return analysis
+    
+    def _generate_implementation_instruction(self,
+                                           file_path: str,
+                                           task_type: str,
+                                           implementation_spec: Dict[str, Any]) -> str:
+        """実装指示生成"""
+        
+        template_type = implementation_spec.get("template_type", "generic")
+        
+        instruction = f"""
+🎯 {task_type}実装指示 - {file_path}
+
+📄 基本情報:
+- ファイル: {file_path}
+- タスクタイプ: {task_type}
+- テンプレート: {template_type}
+
+🔧 実装手順:
+"""
+        
+        if template_type == "class":
+            class_name = implementation_spec.get("class_name", "NewClass")
+            methods = implementation_spec.get("methods", [])
+            instruction += f"""
+1. クラス {class_name} の定義作成
+2. __init__ メソッドの実装
+"""
+            for i, method in enumerate(methods, 3):
+                method_name = method.get("name", "new_method")
+                instruction += f"{i}. {method_name} メソッドの実装\n"
+        
+        elif template_type == "module":
+            functions = implementation_spec.get("functions", [])
+            instruction += "1. モジュールレベルのインポート設定\n"
+            for i, func in enumerate(functions, 2):
+                func_name = func.get("name", "new_function")
+                instruction += f"{i}. {func_name} 関数の実装\n"
+        
+        elif template_type == "function":
+            func_name = implementation_spec.get("function_name", "main_function")
+            instruction += f"""
+1. {func_name} 関数の定義作成
+2. メイン実行部の設定
+"""
+        
+        instruction += f"""
+
+📁 必須要件:
+- すべての関数・メソッドに型注釈必須
+- docstring でのドキュメント必須
+- from typing import の適切なインポート
+- mypy strict mode 適合必須
+
+🛠️ 品質チェック:
+1. 実装完了後に Python 構文チェック
+2. mypy チェック実行
+3. コードスタイルチェック
+4. 必要に応じてテスト作成
+
+🎯 成功基準:
+✅ ファイルが正常に作成される
+✅ 全ての関数・メソッドに適切な型注釈
+✅ Python 構文エラー 0件
+✅ mypy strict mode エラー 0件
+✅ 適切な docstring ドキュメント
+"""
+        
+        return instruction
 
     def _create_with_gemini_mode(self, target_files: List[str], error_type: str,
-                                priority: str, use_micro_tasks: bool, decision) -> List[str]:
+                                priority: str, use_micro_tasks: bool, decision, task_type: str = "code_modification") -> List[str]:
         """Gemini協業モードでのタスク作成"""
 
         created_task_ids = []
@@ -154,7 +463,7 @@ class DualAgentCoordinator:
         return created_task_ids
 
     def _create_with_claude_mode(self, target_files: List[str], error_type: str,
-                                priority: str, decision) -> List[str]:
+                                priority: str, decision, task_type: str = "code_modification") -> List[str]:
         """Claude単独モードでのタスク作成"""
 
         print("📝 Claude単独モードでタスク作成（Gemini使用なし）")
@@ -270,8 +579,8 @@ class DualAgentCoordinator:
         batch_id = batch['batch_id']
         tasks = batch['tasks']
 
-        # Flash 2.5向け具体的指示生成
-        flash_instruction = self._generate_batch_flash_instruction(tasks, error_type)
+        # Flash 2.5向け具体的指示生成（品質保証付き）
+        flash_instruction = self._generate_batch_flash_instruction(tasks, error_type, file_path)
 
         # Claude による詳細分析
         claude_analysis = self._claude_analyze_micro_tasks(tasks, error_type, file_path)
@@ -340,45 +649,42 @@ class DualAgentCoordinator:
         print(f"📄 ファイルタスク作成: {file_path}")
         return task_id
 
-    def _generate_batch_flash_instruction(self, tasks: List[Dict], error_type: str) -> str:
-        """バッチ用Flash 2.5指示生成"""
+    def _generate_batch_flash_instruction(self, tasks: List[Dict], error_type: str, file_path: str = "") -> str:
+        """品質保証付きバッチ用Flash 2.5指示生成"""
 
-        template = self.flash_templates.get_template(error_type)
-        base_instruction = template.get("flash_instruction_template", "")
+        # 強化版テンプレートを使用
+        enhanced_instruction = self.enhanced_templates.generate_quality_assured_instruction(
+            error_type, tasks, file_path
+        )
+        
+        # エラー防止ガイドを追加
+        error_prevention_guide = self.enhanced_templates.get_error_prevention_guide(error_type)
+        
+        final_instruction = f"""
+{enhanced_instruction}
 
-        # バッチ固有の指示
-        batch_instruction = f"""
-🚀 Flash 2.5 バッチ修正指示
+{error_prevention_guide}
 
-📦 バッチ概要:
-- 修正対象: {len(tasks)}個の関数
-- エラータイプ: {template.get('name', error_type)}
-- 難易度: {template.get('difficulty', 'medium')}
+🔒 品質保証チェックポイント:
+1. 修正前: 対象関数の確認
+2. 修正中: 構文エラーの即座確認
+3. 修正後: Python構文検証実行
+4. 完了後: 全体品質チェック実行
 
-{base_instruction}
+⚠️ エラー発生時の対応:
+- 構文エラー → 禁止パターンをチェック・修正
+- 型注釈エラー → 正解パターンを確認・適用
+- import エラー → 'from typing import Any' を追加
+- 不明時 → 'Any' 型を使用
 
-📋 修正対象リスト:
+🎯 最終確認項目:
+□ 全関数に型注釈追加完了
+□ Python構文エラー 0件
+□ 必要なimport文追加完了
+□ 修正内容が期待通り
 """
 
-        for i, task in enumerate(tasks, 1):
-            func_name = task.get('target_function', 'unknown')
-            error_count = task.get('error_count', 0)
-            batch_instruction += f"{i}. {func_name}関数 ({error_count}エラー)\n"
-
-        batch_instruction += f"""
-⚡ Flash 2.5 最適化ルール:
-1. 上記リストの順番で1つずつ修正
-2. 各関数の修正完了後、次の関数へ
-3. 分からない場合は type: ignore 使用
-4. 修正時間: 1関数あたり最大5分
-
-🎯 成功パターン:
-- 例に従った正確な修正
-- 既存コードの最小変更
-- 段階的な進行
-"""
-
-        return batch_instruction
+        return final_instruction
 
     def _claude_analyze_micro_tasks(self, tasks: List[Dict], error_type: str, file_path: str) -> str:
         """微細タスク用Claude分析"""
@@ -753,11 +1059,16 @@ class DualAgentCoordinator:
         return patterns.get(error_type, "generic_fix")
 
     def _execute_with_gemini(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Gemini CLI でのタスク実行"""
+        """品質保証付きGemini CLI でのタスク実行"""
 
         try:
             # Gemini Helper経由で実行
-            result = self.gemini_helper.execute_task(task_data)
+            print("🔄 Gemini実行中...")
+            raw_result = self.gemini_helper.execute_task(task_data)
+            
+            # 品質保証フェーズ
+            print("🛡️ 構文検証・品質保証開始...")
+            quality_assured_result = self._apply_quality_assurance(raw_result, task_data)
 
             # コスト追跡
             token_usage = {
@@ -768,7 +1079,7 @@ class DualAgentCoordinator:
 
             self.task_manager.track_cost(task_data["task_id"], token_usage)
 
-            return result
+            return quality_assured_result
 
         except Exception as e:
             return {
@@ -776,6 +1087,122 @@ class DualAgentCoordinator:
                 "error": str(e),
                 "task_id": task_data["task_id"]
             }
+
+    def _apply_quality_assurance(self, gemini_result: Dict[str, Any], 
+                                task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Gemini結果への品質保証適用"""
+        
+        print("🔍 Gemini出力品質検証中...")
+        
+        modifications = gemini_result.get("modifications", {})
+        files_modified = modifications.get("files_modified", [])
+        
+        quality_issues = []
+        quality_fixes = []
+        total_syntax_fixes = 0
+        
+        for file_mod in files_modified:
+            file_path = file_mod.get("file", "")
+            
+            if not file_path or not os.path.exists(file_path):
+                continue
+                
+            try:
+                # 修正されたファイルの内容を読み取り
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    modified_code = f.read()
+                
+                # 構文検証実行
+                validation_result = self.syntax_validator.comprehensive_validation(
+                    modified_code, file_path
+                )
+                
+                print(f"📊 {file_path} 検証結果:")
+                print(f"   構文OK: {validation_result['syntax_valid']}")
+                print(f"   型注釈OK: {validation_result['type_annotations_valid']}")
+                print(f"   品質スコア: {validation_result['validation_score']:.2f}")
+                
+                # 品質問題の記録
+                if not validation_result['syntax_valid']:
+                    quality_issues.extend(validation_result['syntax_errors'])
+                    
+                if not validation_result['type_annotations_valid']:
+                    quality_issues.extend(validation_result['type_errors'])
+                
+                # 自動修正の適用
+                if validation_result['fixed_code'] and (
+                    not validation_result['syntax_valid'] or 
+                    not validation_result['type_annotations_valid']
+                ):
+                    print(f"🔧 {file_path} 自動修正適用中...")
+                    
+                    # 修正されたコードでファイルを更新
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(validation_result['fixed_code'])
+                    
+                    quality_fixes.append(f"{file_path}: 構文エラー自動修正")
+                    total_syntax_fixes += 1
+                    
+                    # 修正後の再検証
+                    revalidation = self.syntax_validator.comprehensive_validation(
+                        validation_result['fixed_code'], file_path
+                    )
+                    
+                    print(f"✅ {file_path} 修正後: スコア {revalidation['validation_score']:.2f}")
+                    
+                # ファイル修正情報の更新
+                file_mod["quality_validation"] = {
+                    "syntax_valid": validation_result['syntax_valid'],
+                    "type_annotations_valid": validation_result['type_annotations_valid'],
+                    "validation_score": validation_result['validation_score'],
+                    "auto_fixed": bool(validation_result['fixed_code'])
+                }
+                
+            except Exception as e:
+                quality_issues.append(f"{file_path}: 品質検証エラー - {str(e)}")
+        
+        # 品質保証結果の統合
+        enhanced_result = gemini_result.copy()
+        enhanced_result["quality_assurance"] = {
+            "syntax_validation_applied": True,
+            "quality_issues_found": quality_issues,
+            "quality_fixes_applied": quality_fixes,
+            "total_syntax_fixes": total_syntax_fixes,
+            "overall_quality_score": self._calculate_overall_quality_score(files_modified)
+        }
+        
+        # 修正情報の更新
+        if total_syntax_fixes > 0:
+            enhanced_result["modifications"]["supervisor_fixes"] = total_syntax_fixes
+            enhanced_result["modifications"]["quality_enhanced"] = True
+            
+            print(f"🔧 監督者品質修正: {total_syntax_fixes}件の構文エラー修正完了")
+        
+        if quality_issues:
+            print(f"⚠️ 品質問題検出: {len(quality_issues)}件")
+            for issue in quality_issues[:5]:  # 最初の5件のみ表示
+                print(f"  - {issue}")
+        else:
+            print("✅ 品質検証: 問題なし")
+            
+        return enhanced_result
+    
+    def _calculate_overall_quality_score(self, files_modified: List[Dict]) -> float:
+        """全体品質スコア計算"""
+        
+        if not files_modified:
+            return 0.0
+            
+        total_score = 0.0
+        valid_files = 0
+        
+        for file_mod in files_modified:
+            quality_val = file_mod.get("quality_validation")
+            if quality_val:
+                total_score += quality_val.get("validation_score", 0.0)
+                valid_files += 1
+        
+        return total_score / max(1, valid_files)
 
     def _claude_review_result(self, gemini_result: Dict[str, Any]) -> Dict[str, Any]:
         """Claude による詳細結果レビュー・品質評価"""

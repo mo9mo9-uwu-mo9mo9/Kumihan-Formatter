@@ -19,12 +19,19 @@
 2. **ユーザー主導**: AIは提案のみ、決定権はユーザーが保持
 3. **指示の厳格遵守**: 非効率でもユーザー指示を最優先
 4. **透明性の確保**: 全作業プロセスを明確に報告
+5. **🤖 Gemini協業優先**: Token節約・コスト効率化のため積極活用
 
 ### 基本ルール
 - **新規Issue対応時のみ**: 適切なブランチ作成・切り替え実施
 - **一時ファイル**: 全て `tmp/` 配下に出力（絶対遵守）
 - **日本語使用**: コメント・レビュー・ドキュメントは日本語
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
+
+### 🤖 Gemini活用指針
+- **自動判定優先**: 1000トークン以上・定型作業はGemini実行
+- **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
+- **フェイルセーフ活用**: Gemini失敗時は即座にClaude代替
+- **学習・改善**: 実行結果を蓄積し継続的品質向上
 
 ---
 
@@ -61,28 +68,94 @@ make test       # pytest
 
 ---
 
-## 🤖 Claude ↔ Gemini 協業システム
+## 👑 Claude-Gemini 役割分担体制
 
-> **Token節約システム** - 60-70%コスト削減を実現
+> **上司Claude・部下Gemini** - 明確な責任分担によるToken節約とコスト効率化
 
-### 基本使用方法
-```bash
-# 自動判断でGemini使用
-make gemini-mypy TARGET_FILES="file1.py,file2.py"
+### Claude（上司・管理者）責任範囲
+- **🎯 戦略・設計**: プロジェクト全体アーキテクチャ・新機能設計・要求解析
+- **🛡️ 品質保証**: コードレビュー・最終承認・複雑なデバッグ・品質責任  
+- **👥 コミュニケーション**: ユーザー対話・進捗報告・意思決定・問題解決
 
-# 統合品質チェック
-make gemini-quality-check
+### Gemini（部下・実装者）責任範囲  
+- **⚡ 実装作業**: 具体的コード修正・型注釈追加・定型バグ修正・コード整形
+- **📦 大量処理**: 複数ファイル一括処理・テンプレート生成・繰り返し作業
+- **✅ 品質準拠**: Claude指示厳格遵守・品質基準通過・構文エラー防止
 
-# 詳細レポート生成
-make gemini-quality-report
+### 💰 Token節約戦略（目標: 99%削減）
+- **自動判定**: 1000トークン以上 + simple/moderate → Gemini優先
+- **コスト効率**: Claude($15/$75) → Gemini($0.30/$2.50) = **99%削減目標**
+- **品質保証**: 3層検証（構文→品質→Claude承認）でリスク管理
+
+---
+
+## 🤖 協業システム実行指針
+
+### Gemini推奨ケース（自動実行）
+```python
+# 型注釈修正（no-untyped-def等）
+def function(param) -> None:          # ❌ 修正前
+def function(param: Any) -> None:     # ✅ 修正後
+
+# 単純バグ修正・コード整形
+make gemini-mypy TARGET_FILES="*.py"  # 一括処理
 ```
 
-### システム概要
-- **コスト効率**: Claude($15/$75) → Gemini($0.30/$2.50) = 95%削減
-- **自動判断**: Token・複雑度・コスト分析による適応的AI選択
-- **品質統一**: 7種類チェック・3段階ゲート・リアルタイム監視
+### Claude専任ケース（直接実行）  
+- **新機能設計・実装** - アーキテクチャレベル判断
+- **複雑デバッグ・問題解決** - 高度な分析・推論
+- **ユーザー要求対応** - コミュニケーション・戦略判断
+
+### 自動化レベル設定
+- **FULL_AUTO**: simple + 低リスク → 即座自動実行
+- **SEMI_AUTO**: moderate + 中リスク → 承認後実行  
+- **APPROVAL_REQUIRED**: complex + 高リスク → 事前承認必須
+- **MANUAL_ONLY**: critical + 最高リスク → Claude専任
 
 **詳細ガイド**: [docs/claude/gemini-collaboration.md](docs/claude/gemini-collaboration.md)
+
+---
+
+## 🛡️ 品質保証システム（3層検証体制）
+
+### Layer 1: 構文検証（自動）
+```python
+# postbox/quality/syntax_validator.py
+- AST解析による構文エラー検出
+- 型注釈パターン自動修正
+- 禁止構文の事前検証
+```
+
+### Layer 2: 品質検証（自動）
+```bash
+# 品質チェック必須項目
+make lint        # Black, isort, flake8 通過必須
+make mypy        # strict mode 通過必須  
+make test        # 既存テスト全通過必須
+```
+
+### Layer 3: Claude最終承認（手動）
+- **コードレビュー**: Gemini成果物の詳細確認
+- **品質責任**: 最終的な品質保証・承認
+- **統合確認**: 全体システムとの整合性検証
+
+### 🔄 フェイルセーフ機能
+```yaml
+Gemini実行失敗時:
+  - 自動的にClaude代替実行
+  - 品質基準未達時の自動修正
+  - エラー時の詳細ログ記録
+
+品質不足時:
+  - 自動的な追加修正指示
+  - Claude直接介入・修正
+  - 学習データとしてフィードバック
+```
+
+### 📊 品質監視
+- **リアルタイム監視**: `postbox/monitoring/` システム
+- **品質履歴追跡**: 改善トレンド分析
+- **コスト・品質バランス**: ROI最適化
 
 ---
 
@@ -122,41 +195,20 @@ except Exception as e:
 
 ## 🎨 Kumihan記法仕様
 
-### ブロック記法（推奨）
-```
-# 太字 #重要なテキスト##
-# イタリック #強調テキスト##
-# 見出し1 #メインタイトル##
-# ハイライト #注目ポイント##
-# 色指定 color="#FF0000" #赤色テキスト##
-```
-
-### 構造要素
-- **見出し**: `# 見出し1-5 #タイトル##`
-- **リスト**: `# リスト #項目1|項目2|項目3##`
-- **目次**: `# 目次 #自動生成##`
-- **リンク**: `# リンク url="https://..." #表示テキスト##`
+### 基本記法
+- **ブロック記法**: `# 装飾名 #内容##` （太字・イタリック・見出し等）
+- **構造要素**: 見出し・リスト・目次・リンク対応
+- **詳細仕様**: [記法完全仕様](docs/specs/notation.md)
 
 ---
 
 ## 📊 プロジェクト構造
 
 ### 主要コンポーネント
-- **パーサー**: `kumihan_formatter/core/` - 記法解析エンジン
-- **レンダラー**: `kumihan_formatter/core/rendering/` - HTML出力
-- **CLI**: `kumihan_formatter/cli.py` - コマンドライン interface
-- **設定**: `kumihan_formatter/config/` - 設定管理
-
-### 重要ディレクトリ
-```
-kumihan_formatter/
-├── core/                 # コア機能
-│   ├── block_parser/     # ブロック解析
-│   ├── rendering/        # レンダリング
-│   └── utilities/        # 共通ユーティリティ
-├── commands/             # CLI コマンド
-└── config/              # 設定管理
-```
+- **パーサー**: `core/` - 記法解析エンジン（block_parser, utilities含む）
+- **レンダラー**: `core/rendering/` - HTML出力・テンプレート処理
+- **CLI**: `cli.py + commands/` - コマンドライン interface  
+- **設定**: `config/` - 設定管理・品質基準
 
 ---
 
@@ -167,26 +219,11 @@ kumihan_formatter/
 - **警告**: 200行/10KB（見直し推奨）
 - **クリティカル**: 250行/12KB（即座対応必須）
 
-### 監視コマンド
-```bash
-make claude-check         # CLAUDE.md品質チェック
-make performance-test     # 性能テスト実行
-make code-quality        # 総合品質評価
-```
-
----
-
-## 📚 ドキュメント・リンク
-
-### 開発者向け
-- [アーキテクチャ設計](docs/dev/architecture.md)
-- [記法完全仕様](docs/specs/notation.md)
-- [機能仕様詳細](docs/specs/functional.md)
-- [Gemini協業ガイド](docs/claude/gemini-collaboration.md)
-
-### ユーザー向け
-- [利用ガイド](docs/user/user-guide.md)
-- [Claude活用法](docs/claude/reference.md)
+### 監視・ドキュメント
+- **監視**: `make claude-check` / `make code-quality` （品質・性能評価）
+- **開発者向け**: [アーキテクチャ](docs/dev/architecture.md) / [Gemini協業](docs/claude/gemini-collaboration.md)  
+- **記法・仕様**: [記法仕様](docs/specs/notation.md) / [機能仕様](docs/specs/functional.md)
+- **ユーザー**: [利用ガイド](docs/user/user-guide.md) / [Claude活用法](docs/claude/reference.md)
 
 ---
 
@@ -197,12 +234,21 @@ make code-quality        # 総合品質評価
 - ❌ プロジェクトルート直下への一時ファイル出力
 - ❌ 英語でのレビュー・コメント
 - ❌ 未承認でのファイル作成・変更
+- ❌ **Gemini品質基準未達成でのマージ**（3層検証必須）
+- ❌ **自動判定システムの無視**（Token節約機会の逸失）
 
 ### 必須事項
 - ✅ 作業前の計画報告
 - ✅ tmp/ 配下での一時ファイル管理
 - ✅ 適切なラベル付きIssue作成
 - ✅ 品質チェック（lint/typecheck）の実行
+- ✅ **Gemini実行時3層検証**（構文→品質→Claude承認）
+- ✅ **Token使用量1000以上時Gemini検討**（コスト効率優先）
+
+### 🤖 Gemini協業時の特別注意事項
+- **品質責任**: 部下成果物でもClaude最終責任
+- **フェイルセーフ**: 実行失敗時は即座代替実行
+- **継続改善**: 結果蓄積・学習データ化・品質向上
 
 ---
 
