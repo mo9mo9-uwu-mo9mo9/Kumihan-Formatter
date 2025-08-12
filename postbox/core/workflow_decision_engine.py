@@ -234,7 +234,7 @@ class WorkflowDecisionEngine:
         return analysis
 
     def _calculate_complexity(self, task_description: str, file_analysis: Dict, error_type: str) -> TaskComplexity:
-        """複雑度計算"""
+        """複雑度計算（新規実装対応）"""
 
         score = 0
 
@@ -247,7 +247,7 @@ class WorkflowDecisionEngine:
         # エラー数による加算
         score += min(file_analysis["error_count"] / 10, 3)
 
-        # タスクタイプによる加算
+        # タスクタイプによる加算（新規実装対応）
         task_lower = task_description.lower()
         if "refactor" in task_lower or "リファクタ" in task_lower:
             score += 2
@@ -255,14 +255,26 @@ class WorkflowDecisionEngine:
             score += 2
         if "architecture" in task_lower or "アーキテクチャ" in task_lower:
             score += 3
+        
+        # 新規実装関連キーワード
+        if "new_implementation" in task_lower or "新規実装" in task_lower:
+            score += 3
+        if "hybrid_implementation" in task_lower or "ハイブリッド実装" in task_lower:
+            score += 4
+        if "new_feature_development" in task_lower or "機能開発" in task_lower:
+            score += 5
+        if "create" in task_lower and ("class" in task_lower or "function" in task_lower or "module" in task_lower):
+            score += 3
 
-        # エラータイプによる加算
+        # エラータイプによる加算（新規実装対応）
         error_complexity = {
             "no-untyped-def": 1,
             "no-untyped-call": 2,
             "type-arg": 2,
             "call-arg": 3,
-            "attr-defined": 3
+            "attr-defined": 3,
+            "new_implementation": 4,  # 新規実装
+            "complex_code_implementation": 5  # 複雑な実装
         }
         score += error_complexity.get(error_type, 1)
 
@@ -370,11 +382,11 @@ class WorkflowDecisionEngine:
 
     def _calculate_gemini_benefit(self, complexity: TaskComplexity, file_analysis: Dict,
                                 time_estimate: int, cost_estimate: float) -> float:
-        """Gemini使用による効果スコア計算"""
+        """Gemini使用による効果スコア計算（新規実装対応）"""
 
         benefit_score = 0.0
 
-        # 複雑度による効果
+        # 複雑度による効果（新規実装は効果が高い）
         complexity_benefit = {
             TaskComplexity.TRIVIAL: 0.1,
             TaskComplexity.SIMPLE: 0.3,
@@ -384,27 +396,42 @@ class WorkflowDecisionEngine:
         }
         benefit_score += complexity_benefit[complexity]
 
+        # 新規実装タスクは追加効果
+        complexity_factors = file_analysis.get("complexity_factors", [])
+        if any("新規" in factor or "実装" in factor for factor in complexity_factors):
+            benefit_score += 0.2
+
         # ファイル数による効果（多いほど効果的）
         if file_analysis["file_count"] > 5:
             benefit_score += 0.2
         if file_analysis["file_count"] > 10:
             benefit_score += 0.2
 
-        # エラー数による効果（多いほど効果的）
-        if file_analysis["error_count"] > 10:
+        # エラー数による効果（多いほど効果的）- 新規実装では0の場合もある
+        error_count = file_analysis.get("error_count", 0)
+        if error_count > 10:
             benefit_score += 0.2
-        if file_analysis["error_count"] > 50:
+        elif error_count > 50:
             benefit_score += 0.2
+        elif error_count == 0:
+            # 新規実装の場合、エラーがなくても効果的
+            benefit_score += 0.1
 
-        # 時間節約効果
+        # 時間節約効果（新規実装は特に効果的）
         if time_estimate > 60:  # 1時間以上
             benefit_score += 0.1
         if time_estimate > 180:  # 3時間以上
+            benefit_score += 0.2
+        if time_estimate > 360:  # 6時間以上（新規実装典型）
             benefit_score += 0.2
 
         # コスト効率性
         if cost_estimate < 0.01:  # 1セント未満
             benefit_score += 0.1
+
+        # 新規実装特有の効果要因
+        if file_analysis.get("implementation_type") in ["new_implementation", "hybrid_implementation", "feature_development"]:
+            benefit_score += 0.3  # 新規実装はGeminiの得意分野
 
         return min(benefit_score, 1.0)
 

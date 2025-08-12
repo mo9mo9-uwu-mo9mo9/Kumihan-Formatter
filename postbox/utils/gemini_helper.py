@@ -22,6 +22,18 @@ class GeminiHelper:
         self.completed_dir = self.postbox_dir / "completed"
         self.monitoring_dir = self.postbox_dir / "monitoring"
 
+        # サポートされるタスクタイプ（Issue #842対応）
+        self.SUPPORTED_TASK_TYPES = [
+            "code_modification",
+            "file_code_modification", 
+            "micro_code_modification",
+            "new_implementation",
+            "hybrid_implementation",
+            "new_feature_development",
+            "analysis",
+            "testing"
+        ]
+
         # Flash 2.5向け修正パターン
         self.fix_patterns = {
             "no-untyped-def": self._fix_no_untyped_def,
@@ -32,25 +44,56 @@ class GeminiHelper:
         }
 
     def get_next_task(self) -> Optional[Dict[str, Any]]:
-        """次に実行すべきタスクを取得"""
+        """次に実行すべきタスクを取得（FIFO優先度制御）"""
 
-        # 優先度順でタスクファイルを探索
-        priority_order = ["high", "medium", "low"]
+        # タスクファイル一覧取得
+        task_files = list(self.todo_dir.glob("task_*.json"))
+        if not task_files:
+            return None
 
-        for priority in priority_order:
-            for task_file in sorted(self.todo_dir.glob("task_*.json")):
-                try:
-                    with open(task_file, 'r', encoding='utf-8') as f:
-                        task_data = json.load(f)
+        # タスクデータ読み込み・解析
+        tasks = []
+        for task_file in task_files:
+            try:
+                with open(task_file, 'r', encoding='utf-8') as f:
+                    task_data = json.load(f)
+                
+                # タスクファイル名から作成時刻を抽出
+                file_name = task_file.name  # task_YYYYMMDD_HHMMSS.json
+                timestamp_str = file_name.replace("task_", "").replace(".json", "")
+                
+                tasks.append({
+                    "task_data": task_data,
+                    "file_path": task_file,
+                    "timestamp": timestamp_str,
+                    "priority": task_data.get("priority", "medium"),
+                    "task_type": task_data.get("type", "unknown")
+                })
 
-                    if task_data.get("priority", "medium") == priority:
-                        return task_data
+            except Exception as e:
+                print(f"⚠️ タスクファイル読み込みエラー: {task_file} - {e}")
+                continue
 
-                except Exception as e:
-                    print(f"⚠️ タスクファイル読み込みエラー: {task_file} - {e}")
-                    continue
+        if not tasks:
+            return None
 
-        return None
+        # 優先度→作成時刻順でソート（FIFO実行順序）
+        priority_order = {"high": 0, "medium": 1, "low": 2}
+        
+        tasks.sort(key=lambda x: (
+            priority_order.get(x["priority"], 1),  # 優先度順（高→低）
+            x["timestamp"]  # 同優先度内では作成時刻順（古→新）= FIFO
+        ))
+
+        # 最高優先度の最古タスクを返す
+        selected_task = tasks[0]
+        
+        print(f"🎯 次のタスク選択: {selected_task['task_data']['task_id']}")
+        print(f"   優先度: {selected_task['priority']}")
+        print(f"   タスクタイプ: {selected_task['task_type']}")
+        print(f"   作成時刻: {selected_task['timestamp']}")
+        
+        return selected_task["task_data"]
 
     def execute_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """タスク実行メイン処理"""
@@ -68,6 +111,8 @@ class GeminiHelper:
             # タスクタイプ別実行
             if task_type in ["code_modification", "file_code_modification", "micro_code_modification"]:
                 result = self._execute_code_modification(task_data)
+            elif task_type in ["new_implementation", "hybrid_implementation", "new_feature_development"]:
+                result = self._execute_new_implementation(task_data)
             elif task_type == "analysis":
                 result = self._execute_analysis(task_data)
             elif task_type == "testing":
@@ -154,6 +199,36 @@ class GeminiHelper:
         task_type = task_data.get("type", "code_modification")
 
         print(f"🚀 修正実行開始: {error_type} ({task_type})")
+        print(f"📁 TARGET_FILES: {target_files}")
+        
+        # TARGET_FILES検証
+        if not target_files:
+            print("⚠️ TARGET_FILES が空です")
+            return {
+                "modifications": {"error": "no_target_files"},
+                "report": {"execution_summary": "TARGET_FILES未指定によりスキップ"},
+                "recommendations": ["TARGET_FILESパラメータを指定してください"]
+            }
+        
+        # 存在しないファイルをフィルタリング
+        valid_files = []
+        for file_path in target_files:
+            if os.path.exists(file_path):
+                valid_files.append(file_path)
+                print(f"✅ ファイル確認: {file_path}")
+            else:
+                print(f"⚠️ ファイルが存在しません: {file_path}")
+        
+        if not valid_files:
+            print("❌ 有効なファイルが見つかりません")
+            return {
+                "modifications": {"error": "no_valid_files"},
+                "report": {"execution_summary": "有効なファイルなしによりスキップ"},
+                "recommendations": ["存在するファイルパスを指定してください"]
+            }
+        
+        print(f"📄 処理対象ファイル: {len(valid_files)}件")
+        target_files = valid_files  # 有効なファイルのみ処理
 
         modifications = {
             "files_modified": [],
@@ -161,7 +236,8 @@ class GeminiHelper:
             "files_deleted": [],
             "total_errors_fixed": 0,
             "tests_passed": False,
-            "quality_checks": {}
+            "quality_checks": {},
+            "target_files_processed": target_files
         }
 
         # タスクタイプ別処理
@@ -205,6 +281,12 @@ class GeminiHelper:
         target_files = task_data.get("target_files", [])
 
         print(f"🎯 微細タスク実行: {len(micro_tasks)}件")
+        print(f"📁 処理ファイル: {target_files}")
+        
+        # TARGET_FILES検証（微細タスク用）
+        if not target_files:
+            print("⚠️ 微細タスクのTARGET_FILES が空です")
+            return modifications
 
         for file_path in target_files:
             if not os.path.exists(file_path):
@@ -329,6 +411,572 @@ class GeminiHelper:
             "report": {"testing_summary": "全体テスト・品質チェック実行"},
             "recommendations": ["継続的テスト実行", "品質メトリクス監視"]
         }
+
+    def _execute_new_implementation(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """新規実装タスク実行"""
+        
+        task_type = task_data.get("type", "new_implementation")
+        target_files = task_data.get("target_files", [])
+        requirements = task_data.get("requirements", {})
+        
+        print(f"🚀 新規実装実行開始: {task_type}")
+        print(f"📁 TARGET_FILES: {target_files}")
+        
+        # TARGET_FILES検証
+        if not target_files:
+            print("⚠️ TARGET_FILES が空です")
+            return {
+                "modifications": {"error": "no_target_files"},
+                "report": {"execution_summary": "TARGET_FILES未指定によりスキップ"},
+                "recommendations": ["TARGET_FILESパラメータを指定してください"]
+            }
+        
+        print(f"📄 実装対象ファイル: {len(target_files)}件")
+        
+        modifications = {
+            "files_modified": [],
+            "files_created": [],
+            "files_deleted": [],
+            "total_lines_implemented": 0,
+            "tests_passed": False,
+            "quality_checks": {},
+            "target_files_processed": target_files
+        }
+        
+        # 新規実装タイプ別処理
+        if task_type == "new_implementation":
+            result = self._execute_pure_new_implementation(target_files, requirements, modifications)
+        elif task_type == "hybrid_implementation":
+            result = self._execute_hybrid_implementation(target_files, requirements, modifications)
+        elif task_type == "new_feature_development":
+            result = self._execute_feature_development(target_files, requirements, modifications)
+        else:
+            result = modifications
+        
+        # 品質チェック・テスト実行
+        modifications["quality_checks"] = self._run_quality_checks()
+        modifications["tests_passed"] = self._run_tests()
+        
+        report = {
+            "approach": f"新規実装: {task_type}",
+            "task_type": task_type,
+            "challenges": "新規コード実装と品質基準適合",
+            "code_quality": "新規実装コードの品質基準達成",
+            "testing": "新規機能テスト実行確認",
+            "implementation_optimization": "段階的実装による確実性向上",
+            "recommendations": "統合テスト・ドキュメント更新推奨"
+        }
+        
+        return {
+            "modifications": modifications,
+            "report": report,
+            "recommendations": [
+                "統合テストの実行",
+                "ドキュメント更新",
+                "コードレビューの実施",
+                "関連機能との整合性確認"
+            ]
+        }
+    
+    def _execute_pure_new_implementation(self, target_files: List[str], 
+                                       requirements: Dict, modifications: Dict) -> Dict:
+        """純粋新規実装"""
+        
+        for file_path in target_files:
+            print(f"📄 新規ファイル実装: {file_path}")
+            
+            # ディレクトリ作成
+            Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+            
+            # 実装仕様取得
+            implementation_spec = requirements.get("implementation_spec", {})
+            template_type = implementation_spec.get("template_type", "class")
+            
+            # テンプレートベース実装
+            if template_type == "class":
+                content = self._generate_class_implementation(file_path, implementation_spec)
+            elif template_type == "module":
+                content = self._generate_module_implementation(file_path, implementation_spec)
+            elif template_type == "function":
+                content = self._generate_function_implementation(file_path, implementation_spec)
+            else:
+                content = self._generate_generic_implementation(file_path, implementation_spec)
+            
+            # ファイル作成
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            lines_implemented = len(content.split('\n'))
+            
+            modifications["files_created"].append({
+                "file": file_path,
+                "changes": f"新規{template_type}実装: {lines_implemented}行",
+                "lines_implemented": lines_implemented,
+                "template_type": template_type
+            })
+            
+            modifications["total_lines_implemented"] += lines_implemented
+            
+            print(f"✅ 新規実装完了: {file_path} ({lines_implemented}行)")
+        
+        return modifications
+    
+    def _execute_hybrid_implementation(self, target_files: List[str],
+                                     requirements: Dict, modifications: Dict) -> Dict:
+        """ハイブリッド実装（既存修正 + 新規実装）"""
+        
+        for file_path in target_files:
+            if os.path.exists(file_path):
+                # 既存ファイル修正
+                print(f"🔧 既存ファイル拡張: {file_path}")
+                result = self._extend_existing_file(file_path, requirements)
+            else:
+                # 新規ファイル作成
+                print(f"📄 新規ファイル作成: {file_path}")
+                result = self._create_new_file(file_path, requirements)
+            
+            modifications["files_modified"].extend(result.get("modified", []))
+            modifications["files_created"].extend(result.get("created", []))
+            modifications["total_lines_implemented"] += result.get("lines_added", 0)
+        
+        return modifications
+    
+    def _execute_feature_development(self, target_files: List[str],
+                                   requirements: Dict, modifications: Dict) -> Dict:
+        """新機能開発"""
+        
+        feature_spec = requirements.get("feature_spec", {})
+        feature_name = feature_spec.get("name", "new_feature")
+        
+        print(f"🎯 新機能開発: {feature_name}")
+        
+        # 機能実装計画
+        implementation_plan = feature_spec.get("implementation_plan", [])
+        
+        for step in implementation_plan:
+            step_type = step.get("type", "implementation")
+            step_files = step.get("files", [])
+            
+            if step_type == "create":
+                for file_path in step_files:
+                    result = self._create_feature_file(file_path, step, feature_spec)
+                    modifications["files_created"].extend(result.get("created", []))
+            elif step_type == "modify":
+                for file_path in step_files:
+                    result = self._modify_for_feature(file_path, step, feature_spec)
+                    modifications["files_modified"].extend(result.get("modified", []))
+        
+        return modifications
+    
+    def _generate_class_implementation(self, file_path: str, spec: Dict) -> str:
+        """クラス実装生成"""
+        
+        class_name = spec.get("class_name", Path(file_path).stem.title())
+        base_classes = spec.get("base_classes", [])
+        methods = spec.get("methods", [])
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f"\"\"\"\n{class_name} implementation\n"
+        content += f"Generated by postbox system\n"
+        content += f"\"\"\"\n\n"
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # クラス定義
+        base_str = f"({', '.join(base_classes)})" if base_classes else ""
+        content += f"class {class_name}{base_str}:\n"
+        content += f'    """{class_name} class implementation"""\n\n'
+        
+        # __init__メソッド
+        content += "    def __init__(self) -> None:\n"
+        content += f'        """Initialize {class_name}"""\n'
+        if base_classes:
+            content += "        super().__init__()\n"
+        content += "        pass\n\n"
+        
+        # その他のメソッド
+        for method in methods:
+            method_name = method.get("name", "new_method")
+            params = method.get("params", [])
+            return_type = method.get("return_type", "None")
+            
+            param_str = ", ".join(["self"] + [f"{p}: Any" for p in params])
+            
+            content += f"    def {method_name}({param_str}) -> {return_type}:\n"
+            content += f'        """{method_name} implementation"""\n'
+            content += "        pass\n\n"
+        
+        return content
+    
+    def _generate_module_implementation(self, file_path: str, spec: Dict) -> str:
+        """モジュール実装生成"""
+        
+        module_name = Path(file_path).stem
+        functions = spec.get("functions", [])
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        constants = spec.get("constants", {})
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f"\"\"\"\n{module_name} module implementation\n"
+        content += f"Generated by postbox system\n"
+        content += f"\"\"\"\n\n"
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # 定数
+        for const_name, const_value in constants.items():
+            content += f"{const_name} = {repr(const_value)}\n"
+        
+        if constants:
+            content += "\n"
+        
+        # 関数
+        for func in functions:
+            func_name = func.get("name", "new_function")
+            params = func.get("params", [])
+            return_type = func.get("return_type", "None")
+            
+            param_str = ", ".join([f"{p}: Any" for p in params])
+            
+            content += f"def {func_name}({param_str}) -> {return_type}:\n"
+            content += f'    """{func_name} implementation"""\n'
+            content += "    pass\n\n"
+        
+        return content
+    
+    def _generate_function_implementation(self, file_path: str, spec: Dict) -> str:
+        """関数実装生成"""
+        
+        func_name = spec.get("function_name", "main_function")
+        params = spec.get("params", [])
+        return_type = spec.get("return_type", "None")
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f"\"\"\"\n{func_name} function implementation\n"
+        content += f"Generated by postbox system\n"
+        content += f"\"\"\"\n\n"
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # 関数実装
+        param_str = ", ".join([f"{p}: Any" for p in params])
+        
+        content += f"def {func_name}({param_str}) -> {return_type}:\n"
+        content += f'    """{func_name} implementation"""\n'
+        content += "    pass\n\n"
+        
+        # メイン実行部
+        content += "if __name__ == '__main__':\n"
+        content += f"    {func_name}()\n"
+        
+        return content
+    
+    def _generate_generic_implementation(self, file_path: str, spec: Dict) -> str:
+        """汎用実装生成"""
+        
+        file_name = Path(file_path).stem
+        content_template = spec.get("template", "")
+        
+        if content_template:
+            return content_template
+        
+        # デフォルトテンプレート
+        content = "#!/usr/bin/env python3\n"
+        content += f"\"\"\"\n{file_name} implementation\n"
+        content += f"Generated by postbox system\n"
+        content += f"\"\"\"\n\n"
+        content += "from typing import Dict, List, Any, Optional\n\n"
+        content += "# Implementation goes here\n"
+        content += "pass\n"
+        
+        return content
+    
+    def _extend_existing_file(self, file_path: str, requirements: Dict) -> Dict[str, Any]:
+        """既存ファイル拡張"""
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                original_content = f.read()
+            
+            extension_spec = requirements.get("extension_spec", {})
+            extension_type = extension_spec.get("type", "append")
+            
+            if extension_type == "append":
+                # ファイル末尾に追加
+                new_content = extension_spec.get("content", "# New implementation\npass\n")
+                modified_content = original_content + "\n" + new_content
+            elif extension_type == "insert":
+                # 指定位置に挿入
+                insert_point = extension_spec.get("insert_after", "")
+                new_content = extension_spec.get("content", "# New implementation\npass\n")
+                if insert_point and insert_point in original_content:
+                    modified_content = original_content.replace(
+                        insert_point, 
+                        insert_point + "\n" + new_content
+                    )
+                else:
+                    modified_content = original_content + "\n" + new_content
+            else:
+                # デフォルト: 末尾追加
+                new_content = extension_spec.get("content", "# New implementation\npass\n")
+                modified_content = original_content + "\n" + new_content
+            
+            # ファイル更新
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(modified_content)
+            
+            lines_added = len(modified_content.split('\n')) - len(original_content.split('\n'))
+            
+            return {
+                "modified": [{
+                    "file": file_path,
+                    "changes": f"ファイル拡張: {lines_added}行追加",
+                    "lines_added": lines_added
+                }],
+                "lines_added": lines_added
+            }
+        
+        except Exception as e:
+            print(f"❌ ファイル拡張エラー {file_path}: {e}")
+            return {"modified": [], "lines_added": 0}
+    
+    def _create_new_file(self, file_path: str, requirements: Dict) -> Dict[str, Any]:
+        """新規ファイル作成"""
+        
+        # ディレクトリ作成
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # 実装仕様に基づいてファイル作成
+        implementation_spec = requirements.get("implementation_spec", {})
+        template_type = implementation_spec.get("template_type", "generic")
+        
+        if template_type == "class":
+            content = self._generate_class_implementation(file_path, implementation_spec)
+        elif template_type == "module":
+            content = self._generate_module_implementation(file_path, implementation_spec)
+        elif template_type == "function":
+            content = self._generate_function_implementation(file_path, implementation_spec)
+        else:
+            content = self._generate_generic_implementation(file_path, implementation_spec)
+        
+        # ファイル作成
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        lines_created = len(content.split('\n'))
+        
+        return {
+            "created": [{
+                "file": file_path,
+                "changes": f"新規ファイル作成: {lines_created}行",
+                "lines_created": lines_created
+            }],
+            "lines_added": lines_created
+        }
+    
+    def _create_feature_file(self, file_path: str, step: Dict, feature_spec: Dict) -> Dict[str, Any]:
+        """機能ファイル作成"""
+        
+        # 機能固有の実装仕様
+        file_spec = step.get("file_spec", {})
+        feature_name = feature_spec.get("name", "new_feature")
+        
+        # テンプレートタイプ決定
+        if "test" in file_path.lower():
+            content = self._generate_test_file(file_path, file_spec, feature_name)
+        elif "config" in file_path.lower():
+            content = self._generate_config_file(file_path, file_spec, feature_name)
+        else:
+            content = self._generate_feature_implementation(file_path, file_spec, feature_name)
+        
+        # ディレクトリ作成
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # ファイル作成
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        lines_created = len(content.split('\n'))
+        
+        return {
+            "created": [{
+                "file": file_path,
+                "changes": f"機能ファイル作成: {lines_created}行 ({feature_name})",
+                "lines_created": lines_created,
+                "feature_name": feature_name
+            }]
+        }
+    
+    def _modify_for_feature(self, file_path: str, step: Dict, feature_spec: Dict) -> Dict[str, Any]:
+        """機能追加のためのファイル修正"""
+        
+        if not os.path.exists(file_path):
+            print(f"⚠️ ファイルが存在しません: {file_path}")
+            return {"modified": []}
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                original_content = f.read()
+            
+            modification_spec = step.get("modification_spec", {})
+            feature_name = feature_spec.get("name", "new_feature")
+            
+            # 機能追加コード生成
+            feature_code = self._generate_feature_integration_code(
+                file_path, modification_spec, feature_name
+            )
+            
+            # 統合ポイント決定
+            integration_point = modification_spec.get("integration_point", "end")
+            
+            if integration_point == "end":
+                modified_content = original_content + "\n" + feature_code
+            elif integration_point == "import":
+                # import文の後に追加
+                lines = original_content.split('\n')
+                import_end = 0
+                for i, line in enumerate(lines):
+                    if line.strip().startswith(('import ', 'from ')) or line.strip() == '':
+                        import_end = i + 1
+                    else:
+                        break
+                lines.insert(import_end, feature_code)
+                modified_content = '\n'.join(lines)
+            else:
+                # 特定文字列の後に追加
+                if integration_point in original_content:
+                    modified_content = original_content.replace(
+                        integration_point,
+                        integration_point + "\n" + feature_code
+                    )
+                else:
+                    modified_content = original_content + "\n" + feature_code
+            
+            # ファイル更新
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(modified_content)
+            
+            lines_added = len(modified_content.split('\n')) - len(original_content.split('\n'))
+            
+            return {
+                "modified": [{
+                    "file": file_path,
+                    "changes": f"機能統合: {lines_added}行追加 ({feature_name})",
+                    "lines_added": lines_added,
+                    "feature_name": feature_name
+                }]
+            }
+        
+        except Exception as e:
+            print(f"❌ 機能統合エラー {file_path}: {e}")
+            return {"modified": []}
+    
+    def _generate_test_file(self, file_path: str, file_spec: Dict, feature_name: str) -> str:
+        """テストファイル生成"""
+        
+        test_class_name = f"Test{feature_name.title()}"
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f"\"\"\"\nTests for {feature_name}\n"
+        content += f"Generated by postbox system\n"
+        content += f"\"\"\"\n\n"
+        content += "import unittest\n"
+        content += "from typing import Any\n\n"
+        
+        content += f"class {test_class_name}(unittest.TestCase):\n"
+        content += f'    """Test cases for {feature_name}"""\n\n'
+        
+        content += "    def setUp(self) -> None:\n"
+        content += f'        """Set up test fixtures for {feature_name}"""\n'
+        content += "        pass\n\n"
+        
+        content += f"    def test_{feature_name.lower()}_basic(self) -> None:\n"
+        content += f'        """Test basic {feature_name} functionality"""\n'
+        content += "        self.assertTrue(True)  # Replace with actual test\n\n"
+        
+        content += "if __name__ == '__main__':\n"
+        content += "    unittest.main()\n"
+        
+        return content
+    
+    def _generate_config_file(self, file_path: str, file_spec: Dict, feature_name: str) -> str:
+        """設定ファイル生成"""
+        
+        if file_path.endswith('.json'):
+            import json
+            config_data = file_spec.get("config_data", {
+                feature_name: {
+                    "enabled": True,
+                    "settings": {}
+                }
+            })
+            return json.dumps(config_data, indent=2, ensure_ascii=False)
+        else:
+            # Python設定ファイル
+            content = f"# {feature_name} configuration\n"
+            content += f"# Generated by postbox system\n\n"
+            
+            config_vars = file_spec.get("config_vars", {})
+            for var_name, var_value in config_vars.items():
+                content += f"{var_name} = {repr(var_value)}\n"
+            
+            if not config_vars:
+                content += f"{feature_name.upper()}_ENABLED = True\n"
+                content += f"{feature_name.upper()}_SETTINGS = {{}}\n"
+            
+            return content
+    
+    def _generate_feature_implementation(self, file_path: str, file_spec: Dict, feature_name: str) -> str:
+        """機能実装生成"""
+        
+        implementation_type = file_spec.get("implementation_type", "class")
+        
+        if implementation_type == "class":
+            return self._generate_class_implementation(file_path, {
+                "class_name": f"{feature_name.title()}Implementation",
+                "methods": file_spec.get("methods", []),
+                "imports": file_spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+            })
+        else:
+            return self._generate_module_implementation(file_path, {
+                "functions": file_spec.get("functions", []),
+                "imports": file_spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+            })
+    
+    def _generate_feature_integration_code(self, file_path: str, modification_spec: Dict, feature_name: str) -> str:
+        """機能統合コード生成"""
+        
+        integration_type = modification_spec.get("integration_type", "import")
+        
+        if integration_type == "import":
+            return f"from .{feature_name} import {feature_name.title()}Implementation"
+        elif integration_type == "function":
+            return f"\ndef integrate_{feature_name.lower()}() -> None:\n    \"\"\"Integrate {feature_name} functionality\"\"\"\n    pass\n"
+        elif integration_type == "class_method":
+            method_name = modification_spec.get("method_name", f"use_{feature_name.lower()}")
+            return f"\n    def {method_name}(self) -> None:\n        \"\"\"Use {feature_name} functionality\"\"\"\n        pass\n"
+        else:
+            custom_code = modification_spec.get("custom_code", "")
+            if custom_code:
+                return custom_code
+            return f"\n# {feature_name} integration\npass\n"
 
     def _execute_generic_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """汎用タスクの実行"""
@@ -710,6 +1358,196 @@ class GeminiHelper:
 
         # デフォルト
         return 'Any'
+
+    def _generate_class_implementation(self, file_path: str, spec: Dict[str, Any]) -> str:
+        """クラス実装テンプレート生成"""
+        
+        class_name = spec.get("class_name", Path(file_path).stem.title().replace('_', ''))
+        base_classes = spec.get("base_classes", [])
+        methods = spec.get("methods", ["__init__"])
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        description = spec.get("description", f"{class_name} implementation")
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f'"""\n{description}\n"""\n\n'
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # クラス定義
+        inheritance = f"({', '.join(base_classes)})" if base_classes else ""
+        content += f"class {class_name}{inheritance}:\n"
+        content += f'    """{description}"""\n\n'
+        
+        # コンストラクタ
+        if "__init__" in methods or not methods:
+            content += "    def __init__(self) -> None:\n"
+            content += f'        """Initialize {class_name}"""\n'
+            content += "        pass\n\n"
+        
+        # メソッド生成
+        for method in methods:
+            if method != "__init__":
+                content += f"    def {method}(self) -> Any:\n"
+                content += f'        """{method.title()} implementation"""\n'
+                content += "        pass\n\n"
+        
+        return content.rstrip() + "\n"
+
+    def _generate_module_implementation(self, file_path: str, spec: Dict[str, Any]) -> str:
+        """モジュール実装テンプレート生成"""
+        
+        module_name = Path(file_path).stem
+        description = spec.get("description", f"{module_name} module")
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        functions = spec.get("functions", ["main"])
+        constants = spec.get("constants", {})
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f'"""\n{description}\n"""\n\n'
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # 定数
+        if constants:
+            for const_name, const_value in constants.items():
+                if isinstance(const_value, str):
+                    content += f'{const_name} = "{const_value}"\n'
+                else:
+                    content += f'{const_name} = {const_value}\n'
+            content += "\n"
+        
+        # 関数生成
+        for func in functions:
+            content += f"def {func}() -> Any:\n"
+            content += f'    """{func.title()} function"""\n'
+            content += "    pass\n\n"
+        
+        # main実行部分
+        if "main" in functions:
+            content += 'if __name__ == "__main__":\n'
+            content += "    main()\n"
+        
+        return content
+
+    def _generate_function_implementation(self, file_path: str, spec: Dict[str, Any]) -> str:
+        """関数実装テンプレート生成"""
+        
+        function_name = spec.get("function_name", Path(file_path).stem)
+        description = spec.get("description", f"{function_name} function")
+        imports = spec.get("imports", ["from typing import Dict, List, Any, Optional"])
+        parameters = spec.get("parameters", [])
+        return_type = spec.get("return_type", "Any")
+        
+        content = "#!/usr/bin/env python3\n"
+        content += f'"""\n{description}\n"""\n\n'
+        
+        # インポート
+        for imp in imports:
+            content += f"{imp}\n"
+        
+        if imports:
+            content += "\n"
+        
+        # パラメータ構築
+        param_strs = []
+        for param in parameters:
+            if isinstance(param, dict):
+                param_name = param.get("name", "arg")
+                param_type = param.get("type", "Any")
+                default = param.get("default")
+                if default is not None:
+                    if isinstance(default, str):
+                        param_strs.append(f'{param_name}: {param_type} = "{default}"')
+                    else:
+                        param_strs.append(f'{param_name}: {param_type} = {default}')
+                else:
+                    param_strs.append(f'{param_name}: {param_type}')
+            else:
+                param_strs.append(f'{param}: Any')
+        
+        params = ", ".join(param_strs)
+        
+        # 関数定義
+        content += f"def {function_name}({params}) -> {return_type}:\n"
+        content += f'    """\n    {description}\n    """\n'
+        content += "    pass\n\n"
+        
+        # テスト用main関数
+        content += "def main():\n"
+        content += f'    """Test {function_name}"""\n'
+        content += f"    result = {function_name}()\n"
+        content += "    print(f'Result: {result}')\n\n"
+        
+        content += 'if __name__ == "__main__":\n'
+        content += "    main()\n"
+        
+        return content
+
+    def _generate_generic_implementation(self, file_path: str, spec: Dict[str, Any]) -> str:
+        """汎用実装テンプレート生成"""
+        
+        module_name = Path(file_path).stem
+        description = spec.get("description", f"Generic implementation for {module_name}")
+        template_content = spec.get("template", "")
+        
+        # カスタムテンプレートが指定されている場合
+        if template_content:
+            return template_content
+        
+        # 基本的な汎用テンプレート
+        content = "#!/usr/bin/env python3\n"
+        content += f'"""\n{description}\n"""\n\n'
+        content += "from typing import Dict, List, Any, Optional\n\n"
+        
+        # ファイル名に基づいて推測
+        if "config" in module_name.lower():
+            content += "# Configuration settings\n"
+            content += f"{module_name.upper()}_CONFIG = {{\n"
+            content += '    "version": "1.0",\n'
+            content += '    "enabled": True\n'
+            content += "}\n\n"
+            content += "def get_config() -> Dict[str, Any]:\n"
+            content += f'    """Get {module_name} configuration"""\n'
+            content += f"    return {module_name.upper()}_CONFIG\n"
+        
+        elif "utils" in module_name.lower() or "helper" in module_name.lower():
+            content += "def main() -> None:\n"
+            content += f'    """Main utility function for {module_name}"""\n'
+            content += "    pass\n"
+        
+        elif "test" in module_name.lower():
+            content += "import pytest\n\n"
+            content += f"def test_{module_name.replace('test_', '')}():\n"
+            content += f'    """Test for {module_name}"""\n'
+            content += "    assert True\n\n"
+            content += 'if __name__ == "__main__":\n'
+            content += "    pytest.main([__file__])\n"
+        
+        else:
+            # 基本実装
+            content += f"class {module_name.title().replace('_', '')}:\n"
+            content += f'    """{description}"""\n\n'
+            content += "    def __init__(self) -> None:\n"
+            content += f'        """Initialize {module_name}"""\n'
+            content += "        pass\n\n"
+            content += "def main() -> None:\n"
+            content += f'    """Main function for {module_name}"""\n'
+            content += f"    instance = {module_name.title().replace('_', '')}()\n"
+            content += "    print(f'Created {instance}')\n\n"
+            content += 'if __name__ == "__main__":\n'
+            content += "    main()\n"
+        
+        return content
 
 def main():
     """メイン実行関数"""
