@@ -58,7 +58,7 @@ class ConvertValidator:
 
         try:
             # 構文チェック実行
-            results = check_files([str(input_path)], verbose=False)
+            results = check_files([input_path], verbose=False)
 
             # 辞書形式のエラーレポートに変換
             error_report: dict[str, Any] = {
@@ -71,7 +71,7 @@ class ConvertValidator:
                 for file_path, errors in results.items():
                     for error in errors:
                         # 辞書形式のエラー情報に変換
-                        error_info = self._convert_to_error_info(error, file_path)
+                        error_info = self._convert_to_error_info(error, Path(file_path))
                         error_report["errors"].append(error_info)
                         error_report["has_errors"] = True
 

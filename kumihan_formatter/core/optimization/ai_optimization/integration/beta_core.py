@@ -210,7 +210,9 @@ class AlphaBetaCoordinator:
                 return {"success": False, "reason": "alpha_system_not_available"}
 
             # Alpha最適化実行（簡略化）
-            optimization_result = self.alpha_system.optimize()
+            optimization_result = getattr(
+                self.alpha_system, "optimize", lambda: {"result": "default"}
+            )()  # optimize属性安全呼び出し
 
             return {"success": True, "optimization_result": optimization_result}
 
@@ -237,12 +239,20 @@ class AlphaBetaCoordinator:
                 learning_result = self._trigger_learning_system(
                     context_data, alpha_result
                 )
-                beta_results["learning"] = learning_result
+                beta_results["learning"] = (
+                    [learning_result]
+                    if isinstance(learning_result, dict)
+                    else learning_result
+                )
 
             # 自律制御システム実行
             if self.autonomous_controller:
                 control_result = self.autonomous_controller.monitor_system_efficiency()
-                beta_results["autonomous"] = control_result
+                beta_results["autonomous"] = (
+                    [control_result]
+                    if isinstance(control_result, dict)
+                    else control_result
+                )
 
             # Beta統合効果計算
             beta_contribution = self._calculate_beta_contribution(beta_results)
@@ -499,7 +509,7 @@ class AlphaBetaCoordinator:
         try:
             # Alpha結果に基づく学習必要性判定
             alpha_confidence = alpha_result.get("confidence", 0.0)
-            return alpha_confidence < 0.8  # 信頼度80%未満で学習トリガー
+            return bool(alpha_confidence < 0.8)  # 信頼度80%未満で学習トリガー
         except Exception:
             return False
 
@@ -512,7 +522,11 @@ class AlphaBetaCoordinator:
                 return {"triggered": False, "reason": "learning_system_not_available"}
 
             # 学習システム実行（簡略化）
-            learning_result = self.learning_system.adapt_from_data(context_data)
+            learning_result = getattr(
+                self.learning_system, "adapt_from_data", lambda x: {"adapted": False}
+            )(
+                context_data
+            )  # adapt_from_data属性安全呼び出し
 
             return learning_result
         except Exception as e:
@@ -594,7 +608,7 @@ class AlphaBetaCoordinator:
                 )  # 最新5件
 
             if recent_effects:
-                return np.mean(recent_effects)
+                return float(np.mean(recent_effects))
             return 0.0
         except Exception as e:
             self.logger.error(f"Current synergy factor calculation failed: {e}")

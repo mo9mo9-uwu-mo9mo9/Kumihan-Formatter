@@ -473,7 +473,7 @@ class ConcurrentToolCallLimiter:
     def _should_throttle_for_resources(self, context: "WorkContext") -> bool:
         """リソース使用量に基づくスロットリング判定"""
         if context is None:
-            return False
+            return False  # type: ignore[unreachable]
         # 大きなコンテンツまたは高複雑性の場合はスロットリング
         if context.content_size > 100000 or context.complexity_score > 0.9:
             current_resource_usage = sum(

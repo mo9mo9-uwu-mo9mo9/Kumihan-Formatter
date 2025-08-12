@@ -13,7 +13,7 @@ class AttributeParser(BaseParser):
         """Initialize attribute parser."""
         super().__init__()
 
-    def extract_color_attribute(self, marker_content: str) -> tuple[str, str]:
+    def extract_color_attribute(self, marker_content: Any) -> tuple[str, str]:
         """Extract color attribute from marker content.
 
         Args:
@@ -29,7 +29,7 @@ class AttributeParser(BaseParser):
         # TODO: Implement color extraction logic
         return "", marker_content
 
-    def parse_attributes_from_content(self, content: str) -> Dict[str, Any]:
+    def parse_attributes_from_content(self, content: Any) -> Dict[str, Any]:
         """Parse all attributes from content.
 
         Args:
@@ -46,7 +46,7 @@ class AttributeParser(BaseParser):
         # TODO: Implement attribute parsing logic
         return attributes
 
-    def _extract_size_attributes(self, content: str) -> Dict[str, Any]:
+    def _extract_size_attributes(self, content: Any) -> Dict[str, Any]:
         """Extract size-related attributes.
 
         Args:
@@ -68,7 +68,7 @@ class AttributeParser(BaseParser):
 
         return attributes
 
-    def _extract_style_attributes(self, content: str) -> Dict[str, Any]:
+    def _extract_style_attributes(self, content: Any) -> Dict[str, Any]:
         """Extract style-related attributes.
 
         Args:
@@ -90,7 +90,7 @@ class AttributeParser(BaseParser):
 
         return attributes
 
-    def _is_valid_size_value(self, size_value: str) -> bool:
+    def _is_valid_size_value(self, size_value: Any) -> bool:
         """Validate size attribute value.
 
         Args:
@@ -108,7 +108,7 @@ class AttributeParser(BaseParser):
         )
         return bool(size_pattern.match(size_value.strip().lower()))
 
-    def _is_valid_style_value(self, style_value: str) -> bool:
+    def _is_valid_style_value(self, style_value: Any) -> bool:
         """Validate style attribute value.
 
         Args:
@@ -133,7 +133,7 @@ class AttributeParser(BaseParser):
 
         return style_value.lower() in valid_styles
 
-    def _sanitize_color_attribute(self, color_value: str) -> str:
+    def _sanitize_color_attribute(self, color_value: Any) -> str:
         """Sanitize color attribute value.
 
         Args:

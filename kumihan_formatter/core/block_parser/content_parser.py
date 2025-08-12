@@ -53,7 +53,7 @@ class ContentParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "ブロック解析エラー", "キーワードが指定されていません", start_index
+                    "ブロック解析エラー: キーワードが指定されていません", start_index
                 ),
                 start_index + 1,
             )
@@ -90,9 +90,7 @@ class ContentParser(BaseBlockParser):
         from kumihan_formatter.core.ast_nodes import error_node
 
         return (
-            error_node(
-                "ブロック解析エラー", "ブロックの解析に失敗しました", start_index
-            ),
+            error_node("ブロック解析エラー: ブロックの解析に失敗しました", start_index),
             start_index + 1,
         )
 
@@ -169,19 +167,21 @@ class ContentParser(BaseBlockParser):
         """
         # Check if parser reference has list parser
         # Check if parser reference has list parser
-        if self.parser_ref is None or not hasattr(self.parser_ref, "list_parser"):
+        if self.parser_ref is None or not hasattr(
+            self.parser_ref, "list_parser"
+        ):  # type: ignore[unreachable]
             from kumihan_formatter.core.ast_nodes import (
                 error_node,
             )
 
             return (
                 error_node(
-                    "リスト解析エラー", "リストパーサーが利用できません", start_index
+                    "リスト解析エラー: リストパーサーが利用できません", start_index
                 ),
                 start_index + 1,
             )
 
-        try:
+        try:  # type: ignore[unreachable]
             # Use list parser from main parser
             list_parser = self.parser_ref.list_parser
             list_node, next_index = list_parser.parse_list_block(
@@ -194,7 +194,7 @@ class ContentParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "リスト解析エラー", f"予期しないエラー: {str(e)}", start_index
+                    f"リスト解析エラー: 予期しないエラー: {str(e)}", start_index
                 ),
                 start_index + 1,
             )

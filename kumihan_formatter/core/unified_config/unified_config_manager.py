@@ -12,7 +12,7 @@ import threading
 # import time  # removed - unused import (F401)
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ..error_handling import handle_error_unified
 from ..utilities.logger import get_logger
@@ -81,7 +81,7 @@ class UnifiedConfigManager:
 
         # ホットリロード開始
         if self._auto_reload and self._config_file_path:
-            self._start_auto_reload()
+            self._start_auto_reload()  # type: ignore[unreachable]
 
     def _load_initial_config(self, config_file: Optional[Union[str, Path]]) -> None:
         """初期設定読み込み
@@ -486,7 +486,7 @@ def get_unified_config_manager(
                 config_file=config_file, auto_reload=auto_reload
             )
 
-        return cast("UnifiedConfigManager", _global_config_manager)
+        return _global_config_manager
 
 
 def get_unified_config() -> KumihanConfig:

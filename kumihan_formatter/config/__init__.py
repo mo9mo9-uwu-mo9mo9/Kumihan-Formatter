@@ -46,7 +46,7 @@ def get_default_config() -> ConfigManager:
     global _default_config
     if _default_config is None:
         _default_config = create_config_manager()
-    return cast(ConfigManager, _default_config)
+    return _default_config
 
 
 def reset_default_config() -> None:

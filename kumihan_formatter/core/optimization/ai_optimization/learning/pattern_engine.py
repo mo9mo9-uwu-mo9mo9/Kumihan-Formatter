@@ -155,7 +155,7 @@ class HyperparameterOptimizer:
         try:
             if model_type == "lightgbm":
                 try:
-                    import lightgbm as lgb
+                    import lightgbm as lgb  # type: ignore
 
                     return lgb.LGBMRegressor(
                         n_estimators=trial.suggest_int("n_estimators", 50, 200),
@@ -173,7 +173,7 @@ class HyperparameterOptimizer:
 
             elif model_type == "xgboost":
                 try:
-                    import xgboost as xgb
+                    import xgboost as xgb  # type: ignore
 
                     return xgb.XGBRegressor(
                         n_estimators=trial.suggest_int("n_estimators", 50, 200),
@@ -405,12 +405,14 @@ class OnlineLearningEngine:
 
             return TrainingData(
                 features=features,
+                targets=labels,  # targets引数追加
                 labels=labels,
                 feature_names=(
                     [f"feature_{i}" for i in range(features.shape[1])]
                     if len(features.shape) > 1
                     else ["feature_0"]
                 ),
+                target_name="optimization_score",  # target_name引数追加
             )
 
         except Exception as e:

@@ -153,7 +153,7 @@ class Renderer:
         result = self.template_manager.render_template(template_name, context.build())
 
         duration = time.time() - start_time
-        log_performance("render", duration, len(result))
+        log_performance("render", duration, {"result_length": len(result)})
         self.logger.info(f"Render complete: {len(result)} characters")
 
         return result

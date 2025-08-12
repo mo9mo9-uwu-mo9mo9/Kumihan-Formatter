@@ -47,8 +47,7 @@ class MarkerBlockParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "マーカー解析エラー",
-                    f"開始インデックス {start_index} が行数 {len(lines)} を超えています",
+                    f"マーカー解析エラー: 開始インデックス {start_index} が行数 {len(lines)} を超えています",
                     start_index,
                 ),
                 start_index + 1,
@@ -64,8 +63,7 @@ class MarkerBlockParser(BaseBlockParser):
 
                 return (
                     error_node(
-                        "パーサーエラー",
-                        "キーワードパーサーが利用できません",
+                        "パーサーエラー: キーワードパーサーが利用できません",
                         start_index,
                     ),
                     start_index + 1,
@@ -77,8 +75,7 @@ class MarkerBlockParser(BaseBlockParser):
 
                 return (
                     error_node(
-                        "マーカー解析エラー",
-                        f"新形式マーカーの解析に失敗しました: {opening_line}",
+                        f"マーカー解析エラー: 新形式マーカーの解析に失敗しました: {opening_line}",
                         start_index,
                     ),
                     start_index + 1,
@@ -91,11 +88,20 @@ class MarkerBlockParser(BaseBlockParser):
                 self.logger.warning(f"Parse errors in marker: {parse_errors}")
 
             # Check for inline content
-            inline_content = self._extract_inline_content(opening_line, keywords)
+            inline_content = self._extract_inline_content(
+                opening_line, [keywords] if isinstance(keywords, str) else keywords
+            )
             if inline_content:
                 # Process as inline format
                 return self._parse_inline_format(
-                    keywords, attributes, inline_content, start_index
+                    [keywords] if isinstance(keywords, str) else keywords,
+                    (
+                        {"content": attributes}
+                        if isinstance(attributes, str)
+                        else attributes
+                    ),
+                    inline_content,
+                    start_index,
                 )
 
             # Default fallback for non-inline markers
@@ -103,8 +109,7 @@ class MarkerBlockParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "マーカー解析エラー",
-                    "ブロック形式のマーカー処理が未実装です",
+                    "マーカー解析エラー: ブロック形式のマーカー処理が未実装です",
                     start_index,
                 ),
                 start_index + 1,
@@ -114,8 +119,7 @@ class MarkerBlockParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "マーカー解析エラー",
-                    f"解析中にエラーが発生しました: {e}",
+                    f"マーカー解析エラー: 解析中にエラーが発生しました: {e}",
                     start_index,
                 ),
                 start_index + 1,
@@ -164,8 +168,7 @@ class MarkerBlockParser(BaseBlockParser):
 
             return (
                 error_node(
-                    "インライン解析エラー",
-                    "キーワードが指定されていません",
+                    "インライン解析エラー: キーワードが指定されていません",
                     start_index,
                 ),
                 start_index + 1,
@@ -272,4 +275,4 @@ class MarkerBlockParser(BaseBlockParser):
         """
         from kumihan_formatter.core.ast_nodes import error_node
 
-        return error_node("マーカー解析エラー", "ノード作成に失敗しました", start_index)
+        return error_node("マーカー解析エラー: ノード作成に失敗しました", start_index)

@@ -260,7 +260,7 @@ class StatisticalTestingEngine:
                     test_type=test_type,
                     statistic=float(statistic),
                     p_value=float(p_value),
-                    significant=p_value < alpha,
+                    significant=bool(p_value < alpha),
                     confidence_interval=(float(ci_lower), float(ci_upper)),
                     effect_size=effect_size,
                     power=power,
@@ -276,7 +276,7 @@ class StatisticalTestingEngine:
                     test_type=test_type,
                     statistic=float(statistic),
                     p_value=float(p_value),
-                    significant=p_value < alpha,
+                    significant=bool(p_value < alpha),
                     effect_size=self.calculate_cohens_d(group1, group2),
                 )
 

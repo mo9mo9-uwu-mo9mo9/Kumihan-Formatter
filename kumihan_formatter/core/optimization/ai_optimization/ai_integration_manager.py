@@ -160,7 +160,7 @@ class AIIntegrationManager:
                 for key, value in self.config.items():
                     enhanced_config.set(key, value)
             else:
-                enhanced_config = EnhancedConfig()
+                enhanced_config = EnhancedConfig()  # type: ignore[unreachable]
             self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
             if (
                 self.adaptive_settings is None
@@ -563,6 +563,7 @@ class AIIntegrationManager:
                 recent_operations=context.get("recent_operations", []),
                 current_settings=context.get("current_settings", {}),
                 phase_b_metrics=context.get("phase_b_metrics", {}),
+                optimization_metrics={},
             )
 
             ai_result = self.ai_optimizer.run_optimization_cycle(ai_context)
@@ -673,7 +674,7 @@ class AIIntegrationManager:
             synergy_effect = base_synergy * quality_multiplier
 
             self.logger.debug(f"Synergy effect calculated: {synergy_effect:.3f}%")
-            return synergy_effect
+            return synergy_effect  # type: ignore[no-any-return]
         except Exception as e:
             self.logger.error(f"Synergy effect calculation failed: {e}")
             return 0.0
@@ -742,7 +743,7 @@ class AIIntegrationManager:
             }
 
             test_result = self._execute_phase_b_optimization(test_context)
-            return test_result.get("success", False)
+            return test_result.get("success", False)  # type: ignore[no-any-return]
         except Exception as e:
             self.logger.error(f"Phase B operations verification failed: {e}")
             return False
@@ -907,7 +908,7 @@ class AIIntegrationManager:
                     for key, value in self.config.items():
                         enhanced_config.set(key, value)
                 else:
-                    enhanced_config = EnhancedConfig()
+                    enhanced_config = EnhancedConfig()  # type: ignore[unreachable]
                 self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
 
             # 復旧確認

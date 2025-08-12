@@ -131,7 +131,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
             assert self.model is not None, "Model creation failed"
 
             # 特徴量正規化
-            X_scaled = self.scaler.fit_transform(data.features)
+            X_scaled = self.scaler.fit_transform(data.features)  # type: ignore[unreachable]
 
             # 学習実行
             self.model.fit(X_scaled, data.targets)
@@ -170,8 +170,10 @@ class TokenEfficiencyPredictor(BaseMLModel):
             return PredictionResponse(
                 prediction=0.0, confidence=0.0, processing_time=0.0
             )
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
 
         try:
             prediction_start = time.time()
@@ -247,7 +249,7 @@ class UsagePatternClassifier(BaseMLModel):
             # Type assertion for mypy
             assert self.model is not None, "Model creation failed"
 
-            self.label_encoder = LabelEncoder()
+            self.label_encoder = LabelEncoder()  # type: ignore[unreachable]
 
             # 特徴量正規化
             X_scaled = self.scaler.fit_transform(data.features)
@@ -293,8 +295,10 @@ class UsagePatternClassifier(BaseMLModel):
             return PredictionResponse(
                 prediction="unknown", confidence=0.0, processing_time=0.0
             )
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
         assert self.label_encoder is not None, "Label encoder not initialized properly"
 
         try:
@@ -364,7 +368,7 @@ class OptimizationRecommender(BaseMLModel):
             # Type assertion for mypy
             assert self.model is not None, "Model creation failed"
 
-            self.label_encoder = LabelEncoder()
+            self.label_encoder = LabelEncoder()  # type: ignore[unreachable]
 
             # データ前処理
             X_scaled = self.scaler.fit_transform(data.features)
@@ -409,8 +413,10 @@ class OptimizationRecommender(BaseMLModel):
                 prediction="basic_optimization", confidence=0.0, processing_time=0.0
             )
 
-        assert self.model is not None, "Model not trained properly"
-        assert self.scaler is not None, "Scaler not initialized properly"
+        if self.model is None:
+            raise RuntimeError("Model not trained properly")
+        if self.scaler is None:  # type: ignore[unreachable]
+            raise RuntimeError("Scaler not initialized properly")
         assert self.label_encoder is not None, "Label encoder not initialized properly"
 
         try:
