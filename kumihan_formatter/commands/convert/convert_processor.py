@@ -77,7 +77,7 @@ class ConvertProcessor:
         self,
         input_path: Path,
         output_dir: str,
-        config_obj=None,
+        config_obj: Any = None,
         show_test_cases: bool = False,
         template: str | None = None,
         include_source: bool = False,
@@ -277,13 +277,13 @@ class ConvertProcessor:
     def _parse_with_enhanced_progress(
         self,
         text: str,
-        config_obj,
+        config_obj: Any,
         input_path: Path,
-        progress_manager,
+        progress_manager: Any,
         continue_on_error: bool = False,
         graceful_errors: bool = False,
         error_config_manager: Any = None,
-    ):
+    ) -> tuple[Any, Any]:
         """プログレス管理付きパース処理（Issue #695対応）"""
         from ...parser import Parser
 
@@ -332,17 +332,24 @@ class ConvertProcessor:
             )
             # Issue #700: パーサーオブジェクトも返す
             return (nodes, parser)
+        else:
+            # 小容量ファイルは通常解析
+            self.logger.info(
+                f"Small file ({size_mb:.1f}MB, {line_count} lines), using regular parse"
+            )
+            nodes = parser.parse(text)
+            return (nodes, parser)
 
     def _render_with_enhanced_progress(
         self,
-        ast,
-        config_obj,
+        ast: Any,
+        config_obj: Any,
         template: str | None,
         title: str,
-        progress_manager,
+        progress_manager: Any,
         graceful_errors: bool = False,
         parser_errors: list[Any] | None = None,
-        **source_args,
+        **source_args: Any,
     ) -> str:
         """プログレス管理付きレンダリング処理（Issue #695対応）"""
         from ...renderer import Renderer
@@ -596,7 +603,7 @@ class ConvertProcessor:
     def _render_with_progress(
         self,
         ast: Any,
-        config,
+        config: Any,
         template: str | None,
         title: str,
         source_text: str | None = None,

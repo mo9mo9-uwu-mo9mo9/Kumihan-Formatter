@@ -112,7 +112,7 @@ class CheckSyntaxCommand:
 
         return file_paths
 
-    def _output_text(self, results, show_suggestions: bool) -> None:
+    def _output_text(self, results: Any, show_suggestions: bool) -> None:
         """Output results in text format"""
         report = format_error_report(results, show_suggestions)
 
@@ -143,7 +143,7 @@ class CheckSyntaxCommand:
             print()
             print(report)
 
-    def _output_json(self, results) -> None:
+    def _output_json(self, results: Any) -> None:
         """Output results in JSON format"""
         import json
 
@@ -179,7 +179,9 @@ def create_check_syntax_command() -> click.Command:
         default="text",
         help="出力形式",
     )
-    def check_syntax(files, recursive, no_suggestions, output_format) -> None:
+    def check_syntax(
+        files: Any, recursive: Any, no_suggestions: Any, output_format: Any
+    ) -> None:
         """Kumihan記法の構文をチェックします"""
 
         command = CheckSyntaxCommand()

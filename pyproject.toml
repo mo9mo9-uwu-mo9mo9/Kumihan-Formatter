@@ -119,7 +119,7 @@ warn_unreachable = true
 warn_unused_configs = true
 
 # 段階的strict化のため一時無効化（後続Issue対応）
-disallow_untyped_defs = false      # Issue #832対応予定 (no-untyped-def)
+disallow_untyped_defs = true       # Issue #832対応完了 (no-untyped-def)
 disallow_any_generics = false      # Issue #834対応予定 (type-arg)
 disallow_untyped_calls = false     # Issue #833対応予定 (no-untyped-call)
 disallow_any_unimported = false    # 外部ライブラリ対応

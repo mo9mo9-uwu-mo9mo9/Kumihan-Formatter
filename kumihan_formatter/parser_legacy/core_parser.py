@@ -40,7 +40,7 @@ class Parser:
 
     def __init__(
         self,
-        config=None,
+        config: Any = None,
         graceful_errors: bool = False,
         parallel_config: ParallelProcessingConfig | None = None,
     ) -> None:  # 型アノテーション正常化: type: ignore削除

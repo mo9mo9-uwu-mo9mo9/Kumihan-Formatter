@@ -140,7 +140,7 @@ class Parser:
 
     def __init__(
         self,
-        config=None,
+        config: Any = None,
         graceful_errors: bool = False,
         parallel_config: ParallelProcessingConfig | None = None,
     ) -> None:
@@ -475,7 +475,7 @@ class Parser:
 
     def log_performance_summary(
         self, processing_time: float, total_lines: int, total_nodes: int
-    ):
+    ) -> None:
         """パフォーマンスサマリーをログ出力（ハンドラー委譲）"""
         self.parallel_handler.log_performance_summary(
             processing_time, total_lines, total_nodes
@@ -612,7 +612,7 @@ class Parser:
         }
 
 
-def parse(text: str, config=None) -> list[Node]:
+def parse(text: str, config: Any = None) -> list[Node]:
     """
     Main parsing function (compatibility with existing API)
 

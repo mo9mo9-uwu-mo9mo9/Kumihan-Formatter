@@ -477,7 +477,7 @@ class AutonomousController:
         efficiency_status: Dict[str, Any],
         recovery_result: Dict[str, Any],
         validation_result: Dict[str, Any],
-    ):
+    ) -> None:
         """制御行動記録"""
         try:
             control_record = {
@@ -498,7 +498,7 @@ class AutonomousController:
         self,
         prediction_engine: Optional[PredictionEngine] = None,
         learning_system: Optional[LearningSystem] = None,
-    ):
+    ) -> None:
         """参照システム設定"""
         try:
             if prediction_engine:
