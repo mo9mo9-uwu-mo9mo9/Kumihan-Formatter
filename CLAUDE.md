@@ -50,9 +50,14 @@ gh pr create --title "タイトル" --body "詳細説明"
 ### テスト・品質管理
 ```bash
 # 必須実行コマンド
-make lint       # Black, isort, flake8
+make lint       # Black, isort, flake8, mypy
 make test       # pytest
 ```
+
+#### 品質管理基盤 (Issue #831対応済み)
+- **設定統一**: pre-commit ↔ mypy 完全統一（pyproject.toml基準）
+- **現状**: 73件エラー（段階的解決計画策定済み）
+- **後続対応**: Issue #832(unreachable), #833(return-value)で段階的改善
 
 ---
 

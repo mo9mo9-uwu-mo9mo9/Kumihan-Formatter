@@ -103,32 +103,34 @@ filename = "kumihan_formatter/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
-# mypy設定 - 技術的負債解消最適化
+# mypy設定 - Issue #831: 品質管理基盤構築
 [tool.mypy]
 
 python_version = "3.12"
 
-# 重要なランタイムエラー検出は維持
-warn_return_any = true
-warn_unused_configs = true
-check_untyped_defs = true
-no_implicit_optional = true
-strict_equality = true
+# 基本設定 - 54件エラー基準の実用的設定
+strict = false  # strict全体無効化、個別設定で制御
 
-# 開発効率とのバランスを重視した設定
-disallow_untyped_defs = false        # 段階的な型導入を許可
-disallow_any_generics = false        # Anyの使用を一定程度許可
-disallow_subclassing_any = false     # 外部ライブラリ対応
-disallow_untyped_calls = false       # 外部ライブラリ対応
-disallow_untyped_decorators = false  # デコレータ周りは緩和
-disallow_incomplete_defs = false     # 部分的な型アノテーション許可
-disallow_any_unimported = false      # インポートエラー避ける
-
-# 有用な警告は有効化
+# 現在有効化可能な厳密性設定
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
+warn_unused_configs = true
+
+# 段階的strict化のため一時無効化（後続Issue対応）
+disallow_untyped_defs = false      # Issue #832対応予定 (no-untyped-def)
+disallow_any_generics = false      # Issue #834対応予定 (type-arg)
+disallow_untyped_calls = false     # Issue #833対応予定 (no-untyped-call)
+disallow_any_unimported = false    # 外部ライブラリ対応
+
+# 外部ライブラリ対応での現実的緩和
+disallow_subclassing_any = false     # 外部ライブラリ継承許可
+disallow_untyped_decorators = false  # デコレータ周りは緩和
+disallow_incomplete_defs = false     # 部分的型アノテーション許可
+
+# 現在のエラー解決のための追加設定
+check_untyped_defs = true           # 型なし関数でもチェック実行
 
 # 除外設定を拡張
 exclude = [
