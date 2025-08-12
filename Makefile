@@ -309,11 +309,11 @@ gemini-status:
 	print(f'\n🎯 判定統計:'); \
 	print(f'  総判定回数: {stats.get(\"total_decisions\", 0)}回'); \
 	print(f'  Gemini使用率: {stats.get(\"gemini_usage_rate\", 0):.1%}'); \
-	print(f'  平均コスト: \${stats.get(\"average_cost\", 0):.4f}'); \
+	print(f'  平均コスト: $${stats.get(\"average_cost\", 0):.4f}'); \
 	print(f'  平均効果スコア: {stats.get(\"average_benefit_score\", 0):.2f}'); \
 	try: \
 		with open('postbox/monitoring/cost_tracking.json', 'r') as f: cost_data = json.load(f); \
-		print(f'\n💰 累積コスト: \${cost_data.get(\"total_cost\", 0):.4f}'); \
+		print(f'\n💰 累積コスト: $${cost_data.get(\"total_cost\", 0):.4f}'); \
 	except: print('\n💰 コスト情報: 未初期化')"
 
 gemini-config:
@@ -325,7 +325,7 @@ gemini-config:
 	config = engine.config; \
 	print('🎯 現在の設定:'); \
 	print(f'  最小Token数: {config.get(\"min_tokens_for_gemini\", 1000)}'); \
-	print(f'  最大自動コスト: \${config.get(\"max_cost_auto_approval\", 0.01):.3f}'); \
+	print(f'  最大自動コスト: $${config.get(\"max_cost_auto_approval\", 0.01):.3f}'); \
 	print(f'  最小効果スコア: {config.get(\"min_benefit_score\", 0.6):.1f}'); \
 	print(f'  複雑度閾値: {config.get(\"complexity_threshold\", \"moderate\")}'); \
 	print('\n設定変更例:'); \
@@ -348,7 +348,7 @@ gemini-report:
 	print(f'📈 総タスク数: {report[\"task_summary\"][\"total_tasks\"]}'); \
 	print(f'✅ 完了率: {report[\"task_summary\"][\"completion_rate\"]:.1%}'); \
 	print(f'🐛 修正エラー数: {report[\"quality_metrics\"][\"total_errors_fixed\"]}'); \
-	print(f'💰 総コスト: \${report[\"cost_metrics\"][\"total_cost\"]:.4f}')"
+	print(f'💰 総コスト: $${report[\"cost_metrics\"][\"total_cost\"]:.4f}')"
 
 gemini-test:
 	@echo "🧪 Gemini協業システム: 動作テスト..."
