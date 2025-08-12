@@ -43,10 +43,6 @@ git checkout -b feat/issue-123-description
 gh issue create --title "タイトル" --body "内容" \
   --label "バグ,優先度:高,難易度:普通,コンポーネント:パーサー"
 
-# ラベル管理
-# 必要なラベルが存在しない場合は自動作成を許可
-# 例: gh label create "新ラベル" --description "説明" --color "color"
-
 # PR作成
 gh pr create --title "タイトル" --body "詳細説明"
 ```
@@ -55,140 +51,33 @@ gh pr create --title "タイトル" --body "詳細説明"
 ```bash
 # 必須実行コマンド
 make lint       # Black, isort, flake8
-make typecheck  # mypy strict
 make test       # pytest
 ```
 
 ---
 
-## 🤖 Claude ↔ Gemini協業システム
+## 🤖 Claude ↔ Gemini 協業システム
 
-### 📊 自動判定基準
+> **Token節約システム** - 60-70%コスト削減を実現
 
-**Gemini使用判定条件（自動）:**
-- **Token使用量**: 1,000トークン以上の大規模タスク
-- **複雑度**: moderate以上（2時間超の作業）
-- **エラー数**: 10件以上の修正が必要
-- **効果スコア**: 0.6以上の改善期待値
-
-**自動化レベル:**
-- 🟢 **FULL_AUTO**: 低リスク・低コスト（$0.01以下）で自動実行
-- 🟡 **SEMI_AUTO**: 中リスク時は重要変更のみ承認
-- 🔴 **APPROVAL_REQUIRED**: 高リスク・高コストは必ず手動承認
-- ⚫ **MANUAL_ONLY**: 効果が低い場合はClaude単独
-
-### 🚀 Gemini活用コマンド
-
+### 基本使用方法
 ```bash
-# mypy修正の自動判定・実行
-make gemini-mypy
+# 自動判断でGemini使用
+make gemini-mypy TARGET_FILES="file1.py,file2.py"
 
-# 特定エラータイプの一括修正
-make gemini-fix ERROR_TYPE=no-untyped-def
-
-# 進捗・コスト確認
-make gemini-status
-
-# 設定変更
-make gemini-config
-```
-
-### 📋 具体的使用場面
-
-**🎯 Gemini推奨シナリオ:**
-- Issues #831-836: 大量mypy修正（1,219エラー）
-- 100ファイル以上の一括リファクタリング  
-- 型注釈の全プロジェクト適用
-- 複数エラータイプの同時修正
-
-**🧠 Claude単独推奨:**
-- 複雑なロジック設計・アーキテクチャ変更
-- セキュリティ重要ファイルの修正
-- カスタムビジネスロジック実装
-- 詳細なコードレビュー
-
-### 💰 コスト効率管理
-
-**Token節約効果: 60-70%削減**
-- **従来**: Claude単独 → 高Token消費
-- **協業**: Claude（分析・計画）↔ Gemini 2.5 Flash（実行）→ $0.30/1M入力, $2.50/1M出力
-
-**品質保証プロセス:**
-1. **Claude事前分析**: リスク評価・修正計画
-2. **Gemini実行**: Flash 2.5による効率的修正
-3. **Claude品質レビュー**: 結果検証・承認判定
-4. **統合レポート**: コスト・品質・効果測定
-
-### ⚙️ 設定カスタマイズ
-
-```python
-# 自動化設定例
-coordinator.set_automation_preferences({
-    "thresholds": {
-        "min_tokens_for_gemini": 1500,    # Gemini使用最小Token数
-        "max_cost_auto_approval": 0.02,   # 自動承認最大コスト
-        "min_benefit_score": 0.7,         # 最小効果スコア
-        "complexity_threshold": "moderate" # 複雑度閾値
-    }
-})
-```
-
-### 🔍 監視・品質管理
-
-**自動品質チェック:**
-- mypy strict mode適合性
-- pre-commit hooks通過
-- テスト全件通過
-- セキュリティスキャン
-
-**進捗監視:**
-```bash
-# 実行統計表示
-python3 postbox/workflow/dual_agent_coordinator.py --stats
-
-# コスト追跡
-cat postbox/monitoring/cost_tracking.json
-
-# 品質レポート
-make gemini-report
-```
-
-#### 🎯 統合品質管理システム
-
-**Claude ↔ Gemini協業での統一品質保証:**
-
-```bash
-# 包括的品質チェック (7項目評価)
+# 統合品質チェック
 make gemini-quality-check
 
-# 品質ゲートチェック (段階別基準)
-make gemini-quality-gate GATE_TYPE=pre_commit   # 0.8以上
-make gemini-quality-gate GATE_TYPE=pre_push     # 0.85以上
-make gemini-quality-gate GATE_TYPE=production   # 0.9以上
-
-# 品質統合ワークフロー (事前→修正→事後チェック)
-make gemini-integrated-workflow
-
-# 詳細品質レポート生成
-make gemini-quality-report FORMAT=html    # HTML形式
-make gemini-quality-report FORMAT=json    # JSON形式
-
-# リアルタイム品質監視
-make gemini-quality-monitor
+# 詳細レポート生成
+make gemini-quality-report
 ```
 
-**品質基準統一:**
-- **総合スコア**: 0.7以上（最低基準）
-- **型チェック**: 0.8以上（mypy strict必須）
-- **セキュリティ**: 0.9以上（脆弱性ゼロ目標）
-- **エラー数制限**: 10件以下
-- **フォーマット**: Black完全準拠
+### システム概要
+- **コスト効率**: Claude($15/$75) → Gemini($0.30/$2.50) = 95%削減
+- **自動判断**: Token・複雑度・コスト分析による適応的AI選択
+- **品質統一**: 7種類チェック・3段階ゲート・リアルタイム監視
 
-**自動アラート:**
-- 品質スコア急低下検出
-- エラー数閾値超過通知
-- 連続的品質劣化警告
-- セキュリティリスク即時通知
+**詳細ガイド**: [docs/claude/gemini-collaboration.md](docs/claude/gemini-collaboration.md)
 
 ---
 
@@ -270,8 +159,8 @@ kumihan_formatter/
 
 ### CLAUDE.md サイズ管理
 - **推奨**: 150行/8KB以下（品質重視）
-- **警告**: 250行/12KB（見直し推奨）
-- **クリティカル**: 400行/20KB（即座対応必須）
+- **警告**: 200行/10KB（見直し推奨）
+- **クリティカル**: 250行/12KB（即座対応必須）
 
 ### 監視コマンド
 ```bash
@@ -288,6 +177,7 @@ make code-quality        # 総合品質評価
 - [アーキテクチャ設計](docs/dev/architecture.md)
 - [記法完全仕様](docs/specs/notation.md)
 - [機能仕様詳細](docs/specs/functional.md)
+- [Gemini協業ガイド](docs/claude/gemini-collaboration.md)
 
 ### ユーザー向け
 - [利用ガイド](docs/user/user-guide.md)
