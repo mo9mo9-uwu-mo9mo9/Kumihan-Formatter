@@ -1,0 +1,7 @@
+[
+  {
+    "rule_id": "implementation_pattern_inheritance",
+    "source_pattern": ".*_implementation",
+    "target_pattern": ".*_implementation",
+    "context_types": [
+      
