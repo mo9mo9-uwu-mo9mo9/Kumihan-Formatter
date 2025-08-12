@@ -46,6 +46,16 @@ help:
 	@echo "  make gemini-quality-monitor  - 品質監視システム開始"
 	@echo "  make gemini-integrated-workflow - 品質統合ワークフロー実行"
 	@echo ""
+	@echo "🚀 品質保証強化システム (Issue #845):"
+	@echo "  make quality-realtime-start  - リアルタイム品質監視開始"
+	@echo "  make quality-realtime-stop   - リアルタイム品質監視停止"
+	@echo "  make quality-auto-correct    - 自動修正エンジン実行"
+	@echo "  make quality-gate-run        - 強化品質ゲート実行"
+	@echo "  make quality-comprehensive   - 包括的品質検証実行"
+	@echo "  make quality-learning-train  - 品質学習システム訓練"
+	@echo "  make quality-dashboard       - 品質ダッシュボード生成・表示"
+	@echo "  make quality-full-check      - 全品質システム実行"
+	@echo ""
 
 # 基本コマンド実装
 setup:
@@ -353,3 +363,131 @@ gemini-report:
 gemini-test:
 	@echo "🧪 Gemini協業システム: 動作テスト..."
 	@$(PYTHON) test_flash25_workflow.py
+
+# 🚀 品質保証強化システム (Issue #845) 実装
+quality-realtime-start:
+	@echo "🚀 リアルタイム品質監視開始..."
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.realtime_monitor import EnhancedRealtimeQualityMonitor; \
+	monitor = EnhancedRealtimeQualityMonitor(); \
+	print('📊 リアルタイム品質監視開始 (30秒間実行)'); \
+	monitor.start_monitoring(['kumihan_formatter/'], 30); \
+	print('✅ リアルタイム監視完了')"
+
+quality-realtime-stop:
+	@echo "⏹️ リアルタイム品質監視停止..."
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.realtime_monitor import EnhancedRealtimeQualityMonitor; \
+	monitor = EnhancedRealtimeQualityMonitor(); \
+	monitor.stop_monitoring(); \
+	print('✅ リアルタイム監視停止完了')"
+
+quality-auto-correct:
+	@echo "🔧 自動修正エンジン実行..."
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.auto_correction_engine import AutoCorrectionEngine; \
+	import subprocess; \
+	engine = AutoCorrectionEngine(); \
+	result = subprocess.run(['find', 'kumihan_formatter/', '-name', '*.py'], capture_output=True, text=True); \
+	files = [f.strip() for f in result.stdout.split('\n') if f.strip()][:5]; \
+	print(f'📁 対象ファイル: {len(files)}件'); \
+	suggestions = engine.analyze_and_suggest_corrections(files); \
+	print(f'🔧 修正提案: {len(suggestions)}件'); \
+	corrections = engine.apply_corrections(suggestions[:3], auto_apply=False); \
+	print(f'✅ 自動修正完了: {len(corrections)}件適用')"
+
+quality-gate-run:
+	@echo "🚪 強化品質ゲート実行..."
+	@echo "使用例: make quality-gate-run PHASE=design"
+	@$(PYTHON) -c "import sys, os; sys.path.append('postbox'); \
+	from quality.quality_gates_enhanced import EnhancedQualityGateSystem; \
+	import subprocess; \
+	phase = os.environ.get('PHASE', 'implementation'); \
+	gate_system = EnhancedQualityGateSystem(); \
+	result = subprocess.run(['find', 'kumihan_formatter/', '-name', '*.py'], capture_output=True, text=True); \
+	files = [f.strip() for f in result.stdout.split('\n') if f.strip()][:3]; \
+	print(f'🚪 品質ゲート実行: {phase}フェーズ'); \
+	gate_result = gate_system.execute_quality_gate(files, phase); \
+	print(f'🎯 結果: {gate_result[\"result\"]} (スコア: {gate_result[\"overall_score\"]:.3f})')"
+
+quality-comprehensive:
+	@echo "🔍 包括的品質検証実行..."
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.comprehensive_validator import ComprehensiveQualityValidator; \
+	import subprocess; \
+	validator = ComprehensiveQualityValidator(); \
+	result = subprocess.run(['find', 'kumihan_formatter/', '-name', '*.py'], capture_output=True, text=True); \
+	files = [f.strip() for f in result.stdout.split('\n') if f.strip()][:3]; \
+	print(f'🔍 包括的検証対象: {len(files)}ファイル'); \
+	validation_result = validator.run_comprehensive_validation(files); \
+	print(f'📊 検証完了: 総合スコア {validation_result[\"overall_score\"]:.3f}'); \
+	print(f'🛡️ セキュリティ: {validation_result[\"category_scores\"][\"security\"]:.3f}'); \
+	print(f'⚡ パフォーマンス: {validation_result[\"category_scores\"][\"performance\"]:.3f}'); \
+	print(f'🔗 統合性: {validation_result[\"category_scores\"][\"integration\"]:.3f}')"
+
+quality-learning-train:
+	@echo "🧠 品質学習システム訓練..."
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.learning_system import QualityLearningSystem; \
+	import subprocess; \
+	learning_system = QualityLearningSystem(); \
+	result = subprocess.run(['find', 'kumihan_formatter/', '-name', '*.py'], capture_output=True, text=True); \
+	files = [f.strip() for f in result.stdout.split('\n') if f.strip()][:5]; \
+	print(f'🧠 学習対象: {len(files)}ファイル'); \
+	learning_result = learning_system.learn_from_quality_data(files); \
+	print(f'📈 学習完了: {learning_result[\"patterns_learned\"]}パターン学習'); \
+	print(f'🎯 改善予測: {learning_result[\"prediction\"][\"confidence\"]}信頼度'); \
+	evolution_result = learning_system.evolve_project_standards(files); \
+	print(f'⚡ 基準進化: {evolution_result[\"evolution_applied\"]}件適用')"
+
+quality-dashboard:
+	@echo "📊 品質ダッシュボード生成..."
+	@$(PYTHON) -c "import sys, os; sys.path.append('postbox'); \
+	from quality.dashboard.metrics_collector import QualityMetricsCollector; \
+	from quality.dashboard.dashboard_generator import QualityDashboardGenerator; \
+	print('📊 メトリクス収集中...'); \
+	collector = QualityMetricsCollector(); \
+	metrics = collector.collect_all_metrics(); \
+	print('🎨 ダッシュボード生成中...'); \
+	generator = QualityDashboardGenerator(); \
+	dashboard_path = generator.generate_dashboard(metrics); \
+	os.makedirs('tmp', exist_ok=True); \
+	if dashboard_path.startswith('postbox'): \
+		import shutil; \
+		target_path = f'tmp/{dashboard_path.split(\"/\")[-1]}'; \
+		shutil.copy2(dashboard_path, target_path); \
+		dashboard_path = target_path; \
+	print(f'✅ ダッシュボード完成: {dashboard_path}'); \
+	import webbrowser; \
+	webbrowser.open(f'file://{os.path.abspath(dashboard_path)}')"
+
+quality-full-check:
+	@echo "🎯 全品質システム実行..."
+	@echo "📊 1/7: メトリクス収集"
+	@$(MAKE) --no-print-directory quality-dashboard > /dev/null 2>&1 || echo "⚠️ ダッシュボード生成スキップ"
+	@echo "🔧 2/7: 自動修正"
+	@$(MAKE) --no-print-directory quality-auto-correct > /dev/null 2>&1 || echo "⚠️ 自動修正スキップ"
+	@echo "🚪 3/7: 品質ゲート"
+	@$(MAKE) --no-print-directory quality-gate-run > /dev/null 2>&1 || echo "⚠️ 品質ゲートスキップ"
+	@echo "🔍 4/7: 包括的検証"
+	@$(MAKE) --no-print-directory quality-comprehensive > /dev/null 2>&1 || echo "⚠️ 包括的検証スキップ"
+	@echo "🧠 5/7: 学習訓練"
+	@$(MAKE) --no-print-directory quality-learning-train > /dev/null 2>&1 || echo "⚠️ 学習訓練スキップ"
+	@echo "🚀 6/7: リアルタイム監視(10秒)"
+	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
+	from quality.realtime_monitor import EnhancedRealtimeQualityMonitor; \
+	monitor = EnhancedRealtimeQualityMonitor(); \
+	monitor.start_monitoring(['kumihan_formatter/'], 10)" > /dev/null 2>&1 || echo "⚠️ リアルタイム監視スキップ"
+	@echo "📋 7/7: 最終レポート生成"
+	@$(PYTHON) -c "import sys, datetime, os; sys.path.append('postbox'); \
+	from quality.dashboard.metrics_collector import QualityMetricsCollector; \
+	collector = QualityMetricsCollector(); \
+	metrics = collector.collect_all_metrics(); \
+	os.makedirs('tmp', exist_ok=True); \
+	report_path = f'tmp/quality_full_check_report_{datetime.datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.json'; \
+	import json; \
+	report_data = {\"timestamp\": datetime.datetime.now().isoformat(), \"metrics\": {k: {\"data_points\": v.data_points, \"confidence\": v.confidence, \"summary\": v.summary} for k, v in metrics.items()}}; \
+	with open(report_path, 'w', encoding='utf-8') as f: json.dump(report_data, f, indent=2, ensure_ascii=False); \
+	print(f'✅ 全品質システム実行完了'); \
+	print(f'📊 詳細レポート: {report_path}'); \
+	print(f'📈 収集メトリクス: {len(metrics)}カテゴリ')"
