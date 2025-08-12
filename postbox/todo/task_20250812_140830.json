@@ -1,0 +1,598 @@
+{
+  "task_id": "task_20250812_140830",
+  "type": "micro_code_modification",
+  "priority": "high",
+  "description": "type-arg バッチ修正 - kumihan_formatter/gui_controllers/file_controller.py Batch#3",
+  "target_files": [
+    "kumihan_formatter/gui_controllers/file_controller.py"
+  ],
+  "requirements": {
+    "error_type": "type-arg",
+    "batch_info": {
+      "batch_id": 3,
+      "tasks": [
+        {
+          "type": "micro_fix",
+          "target_file": "kumihan_formatter/gui_controllers/file_controller.py",
+          "target_function": "_module_level",
+          "error_type": "type-arg",
+          "error_count": 44,
+          "errors": [
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 242,
+              "message": "Missing type parameters for generic type \"set\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 264,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 404,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 550,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 612,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/html_formatter.py",
+              "line": 695,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+              "line": 206,
+              "message": "Missing type parameters for generic type \"Callable\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+              "line": 431,
+              "message": "Missing type parameters for generic type \"Callable\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+              "line": 433,
+              "message": "Missing type parameters for generic type \"Callable\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 168,
+              "message": "Missing type parameters for generic type \"Dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/analytics.py",
+              "line": 164,
+              "message": "Missing type parameters for generic type \"Dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/analytics.py",
+              "line": 342,
+              "message": "Missing type parameters for generic type \"Dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+              "line": 299,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+              "line": 350,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+              "line": 490,
+              "message": "Missing type parameters for generic type \"Callable\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+              "line": 517,
+              "message": "Missing type parameters for generic type \"Callable\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/core/rendering/main_renderer.py",
+              "line": 364,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 153,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 164,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 189,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 211,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 218,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 248,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 258,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 309,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 354,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 403,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/streaming_parser.py",
+              "line": 579,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 154,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 239,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 318,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 319,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 387,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 431,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parallel_processor.py",
+              "line": 449,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 331,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 442,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 454,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 468,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 588,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/parser.py",
+              "line": 602,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/commands/convert/convert_processor.py",
+              "line": 312,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/commands/convert/convert_processor.py",
+              "line": 344,
+              "message": "Missing type parameters for generic type \"list\" ",
+              "error_code": "type-arg"
+            },
+            {
+              "file": "kumihan_formatter/commands/convert/convert_processor.py",
+              "line": 497,
+              "message": "Missing type parameters for generic type \"dict\" ",
+              "error_code": "type-arg"
+            }
+          ],
+          "function_code": [],
+          "flash_instruction": "🎯 修正対象: _module_level関数\n🔧 修正内容: List[str], Dict[str, int] など具体的な型を指定\n📊 エラー数: 44件\n\n📝 具体的手順:\n1. _module_level関数を見つける\n2. List[str], Dict[str, int] など具体的な型を指定\n3. 修正例: items: List[str] = []\n\n⚠️ 注意:\n- 既存のロジックは変更しない\n- インポート文が必要な場合は追加\n- 修正後の形式を正確に確認\n\n🐛 修正対象エラー:\n1. Line 242: Missing type parameters for generic type \"set\" \n2. Line 264: Missing type parameters for generic type \"dict\" \n3. Line 404: Missing type parameters for generic type \"dict\" \n   ... 他41件",
+          "complexity": "medium",
+          "estimated_time": 88
+        }
+      ],
+      "estimated_time": 88,
+      "complexity": "medium"
+    },
+    "micro_tasks": [
+      {
+        "type": "micro_fix",
+        "target_file": "kumihan_formatter/gui_controllers/file_controller.py",
+        "target_function": "_module_level",
+        "error_type": "type-arg",
+        "error_count": 44,
+        "errors": [
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 242,
+            "message": "Missing type parameters for generic type \"set\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 264,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 404,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 550,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 612,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/html_formatter.py",
+            "line": 695,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+            "line": 206,
+            "message": "Missing type parameters for generic type \"Callable\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+            "line": 431,
+            "message": "Missing type parameters for generic type \"Callable\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+            "line": 433,
+            "message": "Missing type parameters for generic type \"Callable\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 168,
+            "message": "Missing type parameters for generic type \"Dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/analytics.py",
+            "line": 164,
+            "message": "Missing type parameters for generic type \"Dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/analytics.py",
+            "line": 342,
+            "message": "Missing type parameters for generic type \"Dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+            "line": 299,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+            "line": 350,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+            "line": 490,
+            "message": "Missing type parameters for generic type \"Callable\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/utilities/parallel_processor.py",
+            "line": 517,
+            "message": "Missing type parameters for generic type \"Callable\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/core/rendering/main_renderer.py",
+            "line": 364,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 153,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 164,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 189,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 211,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 218,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 248,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 258,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 309,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 354,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 403,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/streaming_parser.py",
+            "line": 579,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 154,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 239,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 318,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 319,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 387,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 431,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parallel_processor.py",
+            "line": 449,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 331,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 442,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 454,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 468,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 588,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/parser.py",
+            "line": 602,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/commands/convert/convert_processor.py",
+            "line": 312,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/commands/convert/convert_processor.py",
+            "line": 344,
+            "message": "Missing type parameters for generic type \"list\" ",
+            "error_code": "type-arg"
+          },
+          {
+            "file": "kumihan_formatter/commands/convert/convert_processor.py",
+            "line": 497,
+            "message": "Missing type parameters for generic type \"dict\" ",
+            "error_code": "type-arg"
+          }
+        ],
+        "function_code": [],
+        "flash_instruction": "🎯 修正対象: _module_level関数\n🔧 修正内容: List[str], Dict[str, int] など具体的な型を指定\n📊 エラー数: 44件\n\n📝 具体的手順:\n1. _module_level関数を見つける\n2. List[str], Dict[str, int] など具体的な型を指定\n3. 修正例: items: List[str] = []\n\n⚠️ 注意:\n- 既存のロジックは変更しない\n- インポート文が必要な場合は追加\n- 修正後の形式を正確に確認\n\n🐛 修正対象エラー:\n1. Line 242: Missing type parameters for generic type \"set\" \n2. Line 264: Missing type parameters for generic type \"dict\" \n3. Line 404: Missing type parameters for generic type \"dict\" \n   ... 他41件",
+        "complexity": "medium",
+        "estimated_time": 88
+      }
+    ],
+    "flash_instruction": "\n🚀 Flash 2.5 バッチ修正指示\n\n📦 バッチ概要:\n- 修正対象: 1個の関数\n- エラータイプ: ジェネリック型引数不足\n- 難易度: medium\n\n\n🎯 ジェネリック型引数追加\n📝 手順:\n1. List, Dict, Set, Tuple を見つける\n2. 角括弧[]で型引数を追加\n3. 型引数の選び方:\n   - List[str]: 文字列のリスト\n   - Dict[str, Any]: 文字列キー、任意の値\n   - Set[int]: 整数のセット\n\n✅ 修正例:\nitems: List = []  → items: List[str] = []\ndata: Dict = {}   → data: Dict[str, Any] = {}\n\n💡 よく使う型:\n- str, int, bool (基本型)\n- Any (なんでも)\n\n\n📋 修正対象リスト:\n1. _module_level関数 (44エラー)\n\n⚡ Flash 2.5 最適化ルール:\n1. 上記リストの順番で1つずつ修正\n2. 各関数の修正完了後、次の関数へ\n3. 分からない場合は type: ignore 使用\n4. 修正時間: 1関数あたり最大5分\n\n🎯 成功パターン:\n- 例に従った正確な修正\n- 既存コードの最小変更\n- 段階的な進行\n",
+    "max_context_tokens": 2000,
+    "step_by_step": true
+  },
+  "claude_analysis": "\n📊 Claude微細タスク分析 - type-arg\n\n🎯 対象ファイル: kumihan_formatter/gui_controllers/file_controller.py\n🔧 エラータイプ: type-arg\n📦 バッチサイズ: 1件\n\n🧠 分析結果:\n\n  • _module_level関数:\n    - エラー数: 44件\n    - 複雑度: medium\n    - 推定時間: 88分\n    - Flash指示: 適用済み\n\n⚠️ Flash 2.5 考慮事項:\n- コンテキスト制限: 2000トークン以内\n- 具体的例示による指示\n- 段階的実行による確実性\n- エラー時の適切なフォールバック\n\n📋 推奨アプローチ:\n1. 関数単位での逐次処理\n2. 修正パターンの厳格適用\n3. 各ステップでの検証\n4. 予期しない状況でのtype: ignore使用\n",
+  "expected_outcome": "バッチ内全タスク完了 (1件)",
+  "constraints": [
+    "Flash 2.5コンテキスト制限遵守",
+    "1バッチ20分以内",
+    "具体的指示に従った修正のみ"
+  ],
+  "context": {
+    "batch_id": 3,
+    "total_batches": 3,
+    "execution_plan": {
+      "max_context_per_task": 2000,
+      "simple_instruction_style": true,
+      "concrete_examples": true,
+      "step_by_step": true
+    },
+    "session_id": "session_20250812_140752"
+  },
+  "timestamp": "2025-08-12T14:08:30.161138",
+  "created_by": "claude_code"
+}

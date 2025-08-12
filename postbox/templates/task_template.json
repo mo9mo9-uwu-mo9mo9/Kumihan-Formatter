@@ -1,0 +1,30 @@
+{
+  "task_id": "task_YYYYMMDD_HHMMSS",
+  "type": "code_modification|analysis|testing|documentation",
+  "priority": "high|medium|low",
+  "description": "タスクの詳細説明",
+  "target_files": [
+    "path/to/target/file.py"
+  ],
+  "requirements": {
+    "error_count": 0,
+    "error_type": "no-untyped-def|no-untyped-call|type-arg|other",
+    "fix_pattern": "add_return_type_annotations|add_type_imports|fix_generics|custom",
+    "test_required": true,
+    "quality_check": true
+  },
+  "claude_analysis": "Claude による分析結果・修正方針・注意点",
+  "expected_outcome": "期待される結果・成果物",
+  "constraints": [
+    "既存機能への影響最小化",
+    "テスト通過必須",
+    "コードスタイル維持"
+  ],
+  "context": {
+    "related_issues": ["#831", "#832"],
+    "dependency_files": ["path/to/dependency.py"],
+    "reference_docs": ["docs/coding_standards.md"]
+  },
+  "timestamp": "2025-08-12T14:30:00Z",
+  "created_by": "claude_code"
+}

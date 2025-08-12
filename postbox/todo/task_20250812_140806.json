@@ -1,0 +1,28 @@
+{
+  "task_id": "task_20250812_140806",
+  "type": "file_code_modification",
+  "priority": "high",
+  "description": "no-untyped-def ファイル修正 - kumihan_formatter/ui/console_factory.py",
+  "target_files": [
+    "kumihan_formatter/ui/console_factory.py"
+  ],
+  "requirements": {
+    "error_type": "no-untyped-def",
+    "fix_pattern": "add_return_type_annotations",
+    "test_required": true,
+    "quality_check": true
+  },
+  "claude_analysis": "\n📊 Claude 詳細事前分析 - no-untyped-def エラー修正\n\n🎯 対象範囲:\n- ファイル数: 1件\n- 総エラー数: 0件\n- 修正複雑度: 低 (2.0/10)\n- 推定所要時間: 5分\n\n📁 ファイル別分析:\n  • kumihan_formatter/ui/console_factory.py\n    エラー: 0件, 複雑度: 2/10, 時間: 5分\n\n\n⚠️ リスク評価:\nリスクレベル: 低\n主要リスク要因:\n  - 既存型注釈との整合性問題\n推奨対策:\n  + 既存注釈の詳細確認\n\n\n🎯 推奨戦略:\n\n🎯 no-untyped-def 修正戦略:\n\n【シンプル戦略】\n- ファイル単位での一括修正\n- 標準的な修正パターン適用\n\n🔧 Flash 2.5 最適化:\n- 微細タスク分割: 不要\n- バッチサイズ: 1タスク/バッチ\n- コンテキスト制限: 2000トークン/タスク\n\n📋 成功要因:\n1. 段階的・確実な修正アプローチ\n2. 各ステップでの品質確認\n3. 既存機能への影響最小化\n4. 適切なテスト実行\n",
+  "expected_outcome": "no-untyped-def エラーを0件に削減",
+  "constraints": [
+    "既存機能への影響最小化",
+    "テスト通過必須",
+    "pre-commit hooks通過必須"
+  ],
+  "context": {
+    "fallback_mode": true,
+    "session_id": "session_20250812_140752"
+  },
+  "timestamp": "2025-08-12T14:08:06.794088",
+  "created_by": "claude_code"
+}
