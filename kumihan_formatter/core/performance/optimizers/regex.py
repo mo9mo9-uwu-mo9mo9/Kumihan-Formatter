@@ -104,7 +104,7 @@ class RegexOptimizer:
 
         return compiled_pattern
 
-    def _evict_least_used_pattern(self):
+    def _evict_least_used_pattern(self) -> None:
         """最も使用頻度の低いパターンをキャッシュから削除"""
         if not self._usage_counter:
             return
@@ -229,7 +229,7 @@ class RegexOptimizer:
             "precompiled_patterns": len(self._precompiled_patterns),
         }
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """キャッシュをクリア"""
         cleared_count = len(self._pattern_cache)
         self._pattern_cache.clear()

@@ -40,7 +40,7 @@ class MemoryOptimizer:
 
         self.logger.info("MemoryOptimizer initialized")
 
-    def _configure_gc_optimization(self):
+    def _configure_gc_optimization(self) -> None:
         """ガベージコレクション最適化設定"""
         import gc
 
@@ -59,8 +59,8 @@ class MemoryOptimizer:
         )
 
     def create_object_pool(
-        self, pool_name: str, factory_func: Callable, max_size: int = 100
-    ):
+        self, pool_name: str, factory_func: Callable[[], Any], max_size: int = 100
+    ) -> None:
         """
         オブジェクトプール作成
 
@@ -79,7 +79,7 @@ class MemoryOptimizer:
 
         self.logger.info(f"Object pool '{pool_name}' created with max size: {max_size}")
 
-    def get_pooled_object(self, pool_name: str):
+    def get_pooled_object(self, pool_name: str) -> None:
         """プールからオブジェクトを取得"""
         if pool_name not in self._object_pools:
             raise ValueError(f"Object pool '{pool_name}' not found")
@@ -100,7 +100,7 @@ class MemoryOptimizer:
             self._memory_stats["allocations"] += 1
             return obj
 
-    def return_pooled_object(self, pool_name: str, obj: Any):
+    def return_pooled_object(self, pool_name: str, obj: Any) -> None:
         """オブジェクトをプールに返却"""
         if pool_name not in self._object_pools:
             return
@@ -242,7 +242,7 @@ class MemoryOptimizer:
             for result in processing_func(batch):
                 yield result
 
-    def force_garbage_collection(self):
+    def force_garbage_collection(self) -> None:
         """強制ガベージコレクション実行"""
         import gc
 
@@ -459,7 +459,7 @@ class MemoryOptimizer:
         self._object_pools[pool_name] = pool_info
 
         # 自動クリーンアップタイマー設定
-        def auto_cleanup():
+        def auto_cleanup() -> None:
             while pool_name in self._object_pools:
                 time.sleep(auto_cleanup_interval)
                 self._cleanup_resource_pool(pool_name)

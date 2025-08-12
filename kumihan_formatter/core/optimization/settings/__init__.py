@@ -16,6 +16,7 @@ Issue #804 対応: AI最適化システム統合
 """
 
 # 循環インポート回避のため順序を重視したインポート
+from typing import Any
 
 # 2. A/Bテストフレームワーク
 from .ab_testing import (
@@ -84,7 +85,7 @@ __status__ = "Production"  # Development -> Production (Issue #813完了)
 
 
 # 統合システム便利関数
-def create_adaptive_manager(config):
+def create_adaptive_manager(config: Any) -> Any:
     """
     AdaptiveSettingsManagerの便利な作成関数
 
@@ -97,7 +98,7 @@ def create_adaptive_manager(config):
     return AdaptiveSettingsManager(config)
 
 
-def create_full_optimization_stack(config):
+def create_full_optimization_stack(config: Any) -> Any:
     """
     完全最適化スタックを作成（開発・テスト用）
 
@@ -123,7 +124,7 @@ def create_full_optimization_stack(config):
 
 
 # モジュール情報
-def get_module_info():
+def get_module_info() -> None:
     """モジュール情報を取得"""
     return {
         "name": "adaptive_settings",

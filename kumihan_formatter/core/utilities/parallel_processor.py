@@ -37,7 +37,9 @@ class ParallelChunkProcessor:
     - プログレス追跡統合
     """
 
-    def __init__(self, max_workers: Optional[int] = None, chunk_size: int = 100):
+    def __init__(
+        self, max_workers: Optional[int] = None, chunk_size: int = 100
+    ) -> None:
         self.logger = get_logger(__name__)
         self.max_workers = max_workers or min(4, (threading.active_count() or 1) + 2)
         self.chunk_size = chunk_size
@@ -156,17 +158,22 @@ class ParallelChunkProcessor:
         # パフォーマンス監視（簡易版）
         # performance_metricsモジュールが存在しないため、基本的なモニタリング実装を使用
         class SimplePerformanceMonitor:
-            def __init__(self, name: str):
+            def __init__(self, name: str) -> None:
                 self.name = name
                 self.items_processed = 0
 
-            def record_item_processed(self):
+            def record_item_processed(self) -> None:
                 self.items_processed += 1
 
-            def __enter__(self):
+            def __enter__(self) -> None:
                 return self
 
-            def __exit__(self, exc_type, exc_val, exc_tb):
+            def __exit__(
+                self,
+                exc_type: Optional[type],
+                exc_val: Optional[BaseException],
+                exc_tb: Optional[Any],
+            ) -> None:
                 pass
 
         with SimplePerformanceMonitor("parallel_chunk_processing") as perf_monitor:
@@ -230,7 +237,7 @@ class ParallelChunkProcessor:
         self,
         chunk: ChunkInfo,
         processing_func: Callable[[ChunkInfo], Iterator[Any]],
-        perf_monitor,
+        perf_monitor: Any,
     ) -> List[Any]:
         """単一チャンクの最適化処理（効率向上版）"""
 
@@ -296,7 +303,7 @@ class ParallelChunkProcessor:
 
     def _create_progress_info_optimized(
         self, completed: int, total: int, current_chunk: ChunkInfo
-    ) -> dict:
+    ) -> dict[str, Any]:
         """最適化されたプログレス情報作成"""
 
         progress_percent = (completed / total) * 100 if total > 0 else 100
@@ -347,7 +354,7 @@ class ParallelChunkProcessor:
 
         return self.create_chunks_from_lines(lines, adaptive_chunk_size)
 
-    def get_parallel_metrics(self) -> dict:
+    def get_parallel_metrics(self) -> dict[str, Any]:
         """並列処理メトリクスを取得"""
         return {
             "max_workers": self.max_workers,
@@ -467,7 +474,9 @@ class ParallelStreamingParser:
     - メモリリーク防止
     """
 
-    def __init__(self, max_workers: Optional[int] = None, chunk_size: int = 100):
+    def __init__(
+        self, max_workers: Optional[int] = None, chunk_size: int = 100
+    ) -> None:
         self.logger = get_logger(__name__)
         self.chunk_processor = ParallelChunkProcessor(max_workers, chunk_size)
 
@@ -714,7 +723,7 @@ class ParallelStreamingParser:
                 break
         return current
 
-    def request_shutdown(self):
+    def request_shutdown(self) -> None:
         """すべてのスレッドに安全なシャットダウンを要求"""
         self.logger.info("Requesting graceful shutdown of all worker threads")
         self._shutdown_requested = True
@@ -735,7 +744,7 @@ class ParallelStreamingParser:
         else:
             self.logger.info("All threads finished gracefully")
 
-    def _cleanup_thread_resources(self):
+    def _cleanup_thread_resources(self) -> None:
         """スレッドリソースをクリーンアップ"""
         # スレッドローカルストレージのクリーンアップ
         if hasattr(self._thread_local, "parser_components"):
@@ -750,7 +759,7 @@ class ParallelStreamingParser:
 
         self.logger.debug("Thread resources cleaned up")
 
-    def add_cleanup_callback(self, callback: Callable[[], None]):
+    def add_cleanup_callback(self, callback: Callable[[], None]) -> None:
         """リソースクリーンアップコールバックを追加"""
         self._resource_cleanup_callbacks.append(callback)
 
@@ -767,7 +776,7 @@ class ParallelStreamingParser:
             "cleanup_callbacks_count": len(self._resource_cleanup_callbacks),
         }
 
-    def __del__(self):
+    def __del__(self) -> None:
         """デストラクタでリソースクリーンアップを保証"""
         try:
             if hasattr(self, "_shutdown_requested") and not self._shutdown_requested:

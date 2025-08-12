@@ -40,7 +40,7 @@ class StatisticsGenerator:
     - エラー傾向の可視化データ作成
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def generate_statistics(

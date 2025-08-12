@@ -263,7 +263,10 @@ class Parser:
         return line_types
 
     def _parse_line_optimized(
-        self, line_types: dict[int, str], pattern_cache: dict, line_type_cache: dict
+        self,
+        line_types: dict[int, str],
+        pattern_cache: dict[str, Any],
+        line_type_cache: dict[str, Any],
     ) -> Optional[Node]:
         """
         Issue #757対応: 最適化されたライン解析
@@ -406,7 +409,7 @@ class Parser:
         self.current += 1
         return None
 
-    def get_errors(self) -> list:
+    def get_errors(self) -> list[Any]:
         """Get parsing errors"""
         return self.errors
 
@@ -484,7 +487,7 @@ class Parser:
         """
         return error_node(f"{error_content} (error_type: {error_type})")
 
-    def get_graceful_errors(self) -> list:
+    def get_graceful_errors(self) -> list[Any]:
         """Get graceful syntax errors"""
         return self.graceful_syntax_errors
 
@@ -540,8 +543,8 @@ def parse(text: str, graceful_errors: bool = False) -> list[Node]:
 
 
 def parse_with_error_config(
-    text: str, error_config: dict | None = None
-) -> tuple[list[Node], list]:
+    text: str, error_config: dict[str, Any] | None = None
+) -> tuple[list[Node], list[Any]]:
     """Parse text with error configuration"""
     graceful_errors = (
         error_config.get("graceful_errors", False) if error_config else False

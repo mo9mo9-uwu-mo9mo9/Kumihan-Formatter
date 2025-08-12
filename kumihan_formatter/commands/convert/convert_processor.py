@@ -309,7 +309,7 @@ class ConvertProcessor:
             )
 
             # ストリーミング解析用プログレスコールバック
-            def enhanced_progress_callback(progress_info: dict):
+            def enhanced_progress_callback(progress_info: dict[str, Any]) -> None:
                 if progress_manager.is_cancelled():
                     parser.cancel_parsing()
                     return
@@ -341,7 +341,7 @@ class ConvertProcessor:
         title: str,
         progress_manager,
         graceful_errors: bool = False,
-        parser_errors: list | None = None,
+        parser_errors: list[Any] | None = None,
         **source_args,
     ) -> str:
         """プログレス管理付きレンダリング処理（Issue #695対応）"""
@@ -353,7 +353,7 @@ class ConvertProcessor:
         node_count = len(ast) if ast else 0
         processed_nodes = 0
 
-        def render_progress_callback():
+        def render_progress_callback() -> None:
             nonlocal processed_nodes
             processed_nodes += 1
 
@@ -494,7 +494,7 @@ class ConvertProcessor:
 
             start_time = time.time()
 
-            def progress_callback(progress_info: dict) -> None:
+            def progress_callback(progress_info: dict[str, Any]) -> None:
                 """ストリーミング解析のプログレス更新"""
                 current = progress_info["current_line"]
                 total = progress_info["total_lines"]

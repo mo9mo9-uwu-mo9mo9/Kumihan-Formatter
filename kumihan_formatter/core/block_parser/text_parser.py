@@ -86,10 +86,8 @@ class TextBlockParser(BaseBlockParser):
         # Apply inline processing if parser reference available
         processed_content = content
         # Apply inline processing if parser reference available
-        if self.parser_ref is not None and hasattr(
-            self.parser_ref, "inline_parser"
-        ):  # type: ignore[unreachable]
-            try:  # type: ignore[unreachable]
+        if self.parser_ref is not None and hasattr(self.parser_ref, "inline_parser"):
+            try:
                 processed_content = self.parser_ref.inline_parser.process_text(content)
             except Exception as e:
                 self.logger.warning(f"Inline processing failed: {e}")

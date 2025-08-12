@@ -9,7 +9,7 @@ from .base_parser import BaseParser
 class KeywordParser(BaseParser):
     """Parser for keyword extraction and validation."""
 
-    def __init__(self, definitions):
+    def __init__(self, definitions: Any) -> None:
         """Initialize keyword parser.
 
         Args:

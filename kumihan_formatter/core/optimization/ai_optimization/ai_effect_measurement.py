@@ -78,7 +78,7 @@ class StabilityAssessment:
 class BaselineMeasurement:
     """ベースライン測定管理"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__ + ".BaselineMeasurement")
         self.baselines: Dict[str, float] = {}
         self.baseline_history: List[Dict[str, Any]] = []
@@ -163,7 +163,7 @@ class BaselineMeasurement:
 class StatisticalAnalyzer:
     """統計分析システム"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__ + ".StatisticalAnalyzer")
 
     def calculate_improvement(

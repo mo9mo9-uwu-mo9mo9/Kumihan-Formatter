@@ -25,7 +25,7 @@ class ConfigLoader:
     責任: ファイル読み込み・環境変数処理・設定マージ
     """
 
-    def __init__(self, validator) -> None:
+    def __init__(self, validator: Any) -> None:
         """
         Args:
             validator: ConfigValidator インスタンス

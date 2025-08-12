@@ -92,7 +92,7 @@ class BaseConfig:
         """
         # 基本的な型チェック
         if not isinstance(self._config, dict):
-            return False  # type: ignore
+            return False
 
         return True
 

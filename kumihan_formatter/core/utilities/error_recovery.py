@@ -547,8 +547,8 @@ def with_error_recovery(
 ) -> Callable[..., Any]:
     """エラー回復機能付きデコレータ"""
 
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except Exception as e:

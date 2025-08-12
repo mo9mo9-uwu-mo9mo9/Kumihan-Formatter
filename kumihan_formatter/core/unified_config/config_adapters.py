@@ -325,7 +325,7 @@ class BaseConfigAdapter:
     統一設定システムからレンダリング設定を取得し、旧API形式で提供
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """アダプター初期化"""
         self.logger = get_logger(__name__)
         self._config_manager = get_unified_config_manager()
@@ -440,7 +440,7 @@ class BaseConfigAdapter:
 
 
 def create_parallel_processing_config(
-    *args, **kwargs
+    *args: Any, **kwargs: Any
 ) -> ParallelProcessingConfigAdapter:
     """ParallelProcessingConfig作成ヘルパー (旧API互換)
 

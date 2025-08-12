@@ -118,7 +118,7 @@ class KeywordParser:
         # 基本的な解析結果を返す
         return {"keywords": [], "content": line, "attributes": {}}
 
-    def get_node_factory(self, keywords: Union[str, tuple]) -> Any:
+    def get_node_factory(self, keywords: Union[str, tuple[Any, ...]]) -> Any:
         """ノードファクトリーの取得（後方互換用）"""
         # NodeBuilderインスタンスを返す
         return NodeBuilder(node_type="div")

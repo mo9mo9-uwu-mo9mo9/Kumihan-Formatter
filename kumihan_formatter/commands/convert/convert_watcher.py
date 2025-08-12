@@ -100,13 +100,13 @@ class ConvertWatcher:
         # ファイル処理ロジックを内部クラスで実装
 
         class SimpleEventHandler(FileSystemEventHandler):
-            def __init__(self, validator, processor, config):
+            def __init__(self, validator: Any, processor: Any, config: Any) -> None:
                 super().__init__()
                 self.validator = validator
                 self.processor = processor
                 self.config = config
 
-            def on_modified(self, event):
+            def on_modified(self, event: Any) -> None:
                 if self.processor.should_skip_event(event):
                     return
 

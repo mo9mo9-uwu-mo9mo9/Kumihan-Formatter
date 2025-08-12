@@ -128,7 +128,7 @@ class AlphaBetaCoordinator:
             self.logger.error(f"Systems initialization failed: {e}")
             raise
 
-    def _determine_integration_mode(self):
+    def _determine_integration_mode(self) -> None:
         """統合モード判定"""
         try:
             # 利用可能システム確認
@@ -671,7 +671,7 @@ class AlphaBetaCoordinator:
             self.logger.error(f"Integrated recommendations generation failed: {e}")
             return []
 
-    def _record_coordination_result(self, result: Dict[str, Any]):
+    def _record_coordination_result(self, result: Dict[str, Any]) -> None:
         """協調結果記録"""
         try:
             coordination_record = {

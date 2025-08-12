@@ -131,7 +131,7 @@ class SystemMonitor:
         self.monitoring_active = False
         self.monitoring_thread: Optional[threading.Thread] = None
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """監視開始"""
         try:
             if not self.monitoring_active:
@@ -145,7 +145,7 @@ class SystemMonitor:
         except Exception as e:
             self.logger.error(f"Failed to start monitoring: {e}")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """監視停止"""
         try:
             self.monitoring_active = False
@@ -156,7 +156,7 @@ class SystemMonitor:
         except Exception as e:
             self.logger.error(f"Failed to stop monitoring: {e}")
 
-    def _monitoring_loop(self):
+    def _monitoring_loop(self) -> None:
         """監視ループ"""
         try:
             while self.monitoring_active:

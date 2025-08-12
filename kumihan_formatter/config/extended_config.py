@@ -193,7 +193,7 @@ class ExtendedConfig(BaseConfig):
             other_config: マージする設定辞書
         """
         if not isinstance(other_config, dict):
-            return  # type: ignore
+            return
 
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得

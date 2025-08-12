@@ -58,7 +58,7 @@ class HTMLFormatter:
         self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "hsla", "named"]
 
     def handle_special_element(
-        self, keyword: str, content: str, attributes: dict | None = None
+        self, keyword: str, content: str, attributes: dict[str, Any] | None = None
     ) -> str:
         """
         特殊キーワード（special_handler指定）の処理
@@ -81,7 +81,7 @@ class HTMLFormatter:
         # 未知のspecial_handlerキーワードの場合はデフォルト処理
         return f'<span class="{self.generate_css_class(keyword)}">{content}</span>'
 
-    def _handle_footnote(self, content: str, attributes: dict) -> str:
+    def _handle_footnote(self, content: str, attributes: dict[str, Any]) -> str:
         """
         脚注キーワードの処理
 
@@ -239,7 +239,7 @@ class HTMLFormatter:
 
         return "rgb(0,0,0)"
 
-    def _get_named_colors(self) -> set:
+    def _get_named_colors(self) -> set[Any]:
         """
         サポートされている色名の一覧を取得
 
@@ -261,7 +261,7 @@ class HTMLFormatter:
             "grey",
         }
 
-    def format_html(self, html: str, options: dict | None = None) -> str:
+    def format_html(self, html: str, options: dict[str, Any] | None = None) -> str:
         """
         HTML文字列を整形
 
@@ -401,7 +401,7 @@ class HTMLFormatter:
 
         return normalized.strip()
 
-    def validate_html(self, html: str) -> dict:
+    def validate_html(self, html: str) -> dict[str, Any]:
         """
         HTML妥当性チェック
 
@@ -547,7 +547,7 @@ class HTMLFormatter:
         return compressed.strip()
 
     def create_document_structure(
-        self, content: str, options: dict | None = None
+        self, content: str, options: dict[str, Any] | None = None
     ) -> str:
         """
         完全なHTMLドキュメント構造の生成
@@ -605,11 +605,11 @@ class FootnoteManager:
     - 脚注リストの出力
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.footnotes = {}  # footnote_id -> footnote_data
         self.footnote_counter = 0
 
-    def add_footnote(self, footnote_data: dict) -> str:
+    def add_footnote(self, footnote_data: dict[str, Any]) -> str:
         """
         脚注を追加
 
@@ -668,7 +668,7 @@ class FootnoteManager:
 
         return footnote_list
 
-    def clear_footnotes(self):
+    def clear_footnotes(self) -> None:
         """
         脚注データのクリア
         """
@@ -692,7 +692,7 @@ def format_html(html: str, indent_size: int = 2) -> str:
     return formatter.format_html(html)
 
 
-def validate_html_string(html: str) -> dict:
+def validate_html_string(html: str) -> dict[str, Any]:
     """
     HTMLバリデーションのユーティリティ関数
 
@@ -706,7 +706,7 @@ def validate_html_string(html: str) -> dict:
     return formatter.validate_html(html)
 
 
-def create_full_html_document(content: str, **options) -> str:
+def create_full_html_document(content: str, **options: Any) -> str:
     """
     完全なHTMLドキュメント生成のユーティリティ関数
 

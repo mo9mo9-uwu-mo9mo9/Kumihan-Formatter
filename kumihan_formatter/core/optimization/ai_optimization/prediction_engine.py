@@ -51,7 +51,7 @@ except ImportError:
 class AdvancedFeatureEngineering:
     """高度特徴量エンジニアリング（Phase B.4-Beta）"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.feature_scalers = {}
         self.feature_encoders = {}
@@ -338,7 +338,7 @@ class EnsemblePredictionModel:
         # 初期化
         self._initialize_ensemble_models()
 
-    def _initialize_ensemble_models(self):
+    def _initialize_ensemble_models(self) -> None:
         """アンサンブルモデル初期化"""
         try:
             # LightGBM（高精度・高速）
@@ -479,8 +479,14 @@ class EnsemblePredictionModel:
             return False
 
     def _train_single_model(
-        self, model_name: str, model, X_train, y_train, X_val, y_val
-    ) -> Tuple[Any, Dict]:
+        self,
+        model_name: str,
+        model: Any,
+        X_train: Any,
+        y_train: Any,
+        X_val: Any,
+        y_val: Any,
+    ) -> Tuple[Any, Dict[str, Any]]:
         """単一モデル訓練"""
         try:
             # モデル訓練
@@ -502,7 +508,9 @@ class EnsemblePredictionModel:
             self.logger.error(f"Single model training failed: {e}")
             return None, {"mse": float("inf"), "mae": float("inf"), "r2_score": 0.0}
 
-    def _optimize_ensemble_weights(self, model_performances: Dict[str, Dict]):
+    def _optimize_ensemble_weights(
+        self, model_performances: Dict[str, Dict[str, Any]]
+    ) -> None:
         """アンサンブル重み最適化"""
         try:
             # R²スコアベースで重み調整
@@ -525,7 +533,9 @@ class EnsemblePredictionModel:
         except Exception as e:
             self.logger.warning(f"Ensemble weight optimization failed: {e}")
 
-    def _evaluate_ensemble_performance(self, X_val, y_val) -> Dict[str, float]:
+    def _evaluate_ensemble_performance(
+        self, X_val: Any, y_val: Any
+    ) -> Dict[str, float]:
         """アンサンブル性能評価"""
         try:
             ensemble_predictions = self.predict_raw(X_val)
@@ -662,7 +672,7 @@ class PredictionEngine:
 
         self.logger.info("Phase B.4-Beta PredictionEngine initialized successfully")
 
-    def _initialize_prediction_engine(self):
+    def _initialize_prediction_engine(self) -> None:
         """予測エンジン初期化"""
         try:
             # 高精度アンサンブルモデル初期化
@@ -677,7 +687,7 @@ class PredictionEngine:
             self.logger.error(f"Prediction engine initialization failed: {e}")
             raise
 
-    def _initialize_ensemble_models(self):
+    def _initialize_ensemble_models(self) -> None:
         """アンサンブルモデル群初期化"""
         try:
             model_configs = self.config.get("ensemble_models", {})
@@ -707,7 +717,7 @@ class PredictionEngine:
             self.logger.error(f"Ensemble models initialization failed: {e}")
             raise
 
-    def _verify_alpha_integration(self):
+    def _verify_alpha_integration(self) -> None:
         """Alpha基盤統合確認"""
         try:
             # BasicMLSystemとの連携確認
@@ -1054,7 +1064,10 @@ class PredictionEngine:
             return 0.0
 
     def _integrate_next_operation_predictions(
-        self, beta_predictions: Dict, alpha_predictions: Dict, context: Dict
+        self,
+        beta_predictions: Dict[str, Any],
+        alpha_predictions: Dict[str, Any],
+        context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """次操作予測統合"""
         try:
@@ -1265,7 +1278,7 @@ class PredictionEngine:
             self.logger.error(f"Generate cache key failed: {e}")
             return f"default_{prediction_type}_{hash(str(context_data)) % 10000}"
 
-    def _update_cache(self, cache_key: str, result: Dict[str, Any]):
+    def _update_cache(self, cache_key: str, result: Dict[str, Any]) -> None:
         """キャッシュ更新"""
         try:
             # キャッシュサイズ制限
@@ -1287,7 +1300,7 @@ class PredictionEngine:
 
     def _monitor_prediction_performance(
         self, processing_time: float, confidence: float
-    ):
+    ) -> None:
         """予測性能監視"""
         try:
             performance_record = {

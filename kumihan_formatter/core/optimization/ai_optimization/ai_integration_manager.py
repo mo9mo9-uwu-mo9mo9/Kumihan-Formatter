@@ -160,7 +160,7 @@ class AIIntegrationManager:
                 for key, value in self.config.items():
                     enhanced_config.set(key, value)
             else:
-                enhanced_config = EnhancedConfig()  # type: ignore[unreachable]
+                enhanced_config = EnhancedConfig()
             self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
             if (
                 self.adaptive_settings is None
@@ -908,7 +908,7 @@ class AIIntegrationManager:
                     for key, value in self.config.items():
                         enhanced_config.set(key, value)
                 else:
-                    enhanced_config = EnhancedConfig()  # type: ignore[unreachable]
+                    enhanced_config = EnhancedConfig()
                 self.adaptive_settings = AdaptiveSettingsManager(enhanced_config)
 
             # 復旧確認
