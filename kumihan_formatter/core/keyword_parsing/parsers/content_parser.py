@@ -9,7 +9,7 @@ from .base_parser import BaseParser
 class ContentParser(BaseParser):
     """Parser for content extraction and validation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize content parser."""
         super().__init__()
 
@@ -183,13 +183,13 @@ class ContentParser(BaseParser):
         errors: List[str] = []
 
         if not isinstance(footnotes, list):
-            errors.append("Footnotes must be a list")  # type: ignore[unreachable]
+            errors.append("Footnotes must be a list")
             return errors
 
         seen_ids = set()
         for i, footnote in enumerate(footnotes):
             if not isinstance(footnote, dict):
-                errors.append(f"Footnote {i} is not a dictionary")  # type: ignore[unreachable]
+                errors.append(f"Footnote {i} is not a dictionary")
                 continue
 
             # Check required fields

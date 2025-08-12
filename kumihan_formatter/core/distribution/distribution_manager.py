@@ -19,7 +19,7 @@ class DistributionManager:
     責任: 配布構造作成の全体制御・各処理のオーケストレーション
     """
 
-    def __init__(self, ui=None):
+    def __init__(self, ui=None) -> None:
         """配布管理器を初期化
 
         Args:

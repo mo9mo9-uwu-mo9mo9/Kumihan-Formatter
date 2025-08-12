@@ -7,6 +7,7 @@ Issue #319対応 - convert.py から分離
 
 import sys
 import webbrowser
+from typing import Any
 
 # Error handling removed during cleanup - using basic error handling
 from ...core.utilities.logger import get_logger
@@ -163,7 +164,7 @@ class ConvertCommand:
         continue_on_error: bool,
         no_suggestions: bool,
         no_statistics: bool,
-    ):
+    ) -> None:
         """エラー処理設定の初期化"""
         from pathlib import Path
 
@@ -184,7 +185,7 @@ class ConvertCommand:
 
         return error_config_manager
 
-    def _validate_input_file(self, input_file: str | None):
+    def _validate_input_file(self, input_file: str | None) -> None:
         """入力ファイルの検証"""
         self.logger.debug("Validating input file")
         input_path = self.validator.validate_input_file(input_file)  # type: ignore
@@ -201,8 +202,8 @@ class ConvertCommand:
         return input_path
 
     def _perform_syntax_check(
-        self, input_path, error_config_manager, error_level: str, output: str
-    ):
+        self, input_path: Any, error_config_manager: Any, error_level: str, output: str
+    ) -> None:
         """構文チェックの実行"""
         self.logger.info("Performing syntax check")
         error_report = self.validator.perform_syntax_check(input_path)
@@ -216,12 +217,12 @@ class ConvertCommand:
 
     def _handle_syntax_errors(
         self,
-        error_report,
-        error_config_manager,
+        error_report: Any,
+        error_config_manager: Any,
         error_level: str,
-        input_path,
+        input_path: Any,
         output: str,
-    ):
+    ) -> None:
         """構文エラーの処理"""
         errors = error_report.get("errors", [])
         should_continue = error_config_manager.should_continue_on_error(
@@ -238,8 +239,8 @@ class ConvertCommand:
             )
 
     def _handle_continuable_syntax_errors(
-        self, errors, error_config_manager, error_level: str
-    ):
+        self, errors: Any, error_config_manager: Any, error_level: str
+    ) -> None:
         """継続可能な構文エラーの処理"""
         self.logger.warning(
             f"Syntax errors found but continuing (level={error_level}): {len(errors)} errors"
@@ -256,8 +257,13 @@ class ConvertCommand:
             self._display_error_details(errors, error_config_manager)
 
     def _handle_blocking_syntax_errors(
-        self, errors, error_level: str, input_path, output: str, error_report
-    ):
+        self,
+        errors: Any,
+        error_level: str,
+        input_path: Any,
+        output: str,
+        error_report: Any,
+    ) -> None:
         """ブロッキング構文エラーの処理"""
         self.logger.error(
             f"Syntax errors found, stopping (level={error_level}): {len(errors)} errors"
@@ -279,7 +285,7 @@ class ConvertCommand:
         )
         sys.exit(1)
 
-    def _display_error_details(self, errors, error_config_manager):
+    def _display_error_details(self, errors: Any, error_config_manager: Any) -> None:
         """エラー詳細の表示"""
         get_console_ui().info("\\n=== 検出されたエラー ===")
         for error in errors:
@@ -289,7 +295,7 @@ class ConvertCommand:
             )
             print(f"  {icon} {error.get('message', 'Unknown error')}")
 
-    def _handle_syntax_warnings(self, error_report):
+    def _handle_syntax_warnings(self, error_report: Any) -> None:
         """構文警告の処理"""
         warnings_count = len(error_report.get("warnings", []))
         self.logger.warning(f"Syntax warnings found: {warnings_count} warnings")
@@ -301,7 +307,7 @@ class ConvertCommand:
 
     def _execute_conversion(
         self,
-        input_path,
+        input_path: Any,
         output: str,
         show_test_cases: bool,
         template_name: str | None,
@@ -311,8 +317,8 @@ class ConvertCommand:
         enable_cancellation: bool,
         progress_style: str,
         progress_log: str | None,
-        error_config_manager,
-    ):
+        error_config_manager: Any,
+    ) -> Any:
         """ファイル変換の実行"""
         self.logger.info("Starting file conversion with enhanced progress management")
 
@@ -342,17 +348,17 @@ class ConvertCommand:
 
     def _handle_post_processing(
         self,
-        output_file,
+        output_file: Any,
         no_preview: bool,
         watch: bool,
         input_file: str | None,
         output: str,
-        config_obj,
+        config_obj: Any,
         show_test_cases: bool,
         template_name: str | None,
         include_source: bool,
         syntax_check: bool,
-    ):
+    ) -> None:
         """後処理（プレビュー・監視モード）"""
         # ブラウザプレビュー
         if not no_preview:

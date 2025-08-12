@@ -25,7 +25,7 @@ class ParallelProcessorHandler:
     - ハイブリッド処理モード
     """
 
-    def __init__(self, parser_instance):
+    def __init__(self, parser_instance: Any) -> None:
         """
         Args:
             parser_instance: メインParserインスタンス（依存注入）
@@ -34,7 +34,9 @@ class ParallelProcessorHandler:
         self.logger = get_logger(__name__)
 
     def parse_parallel_streaming(
-        self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """
         Issue #759対応: 並列処理×真のストリーミング統合実装
@@ -151,7 +153,7 @@ class ParallelProcessorHandler:
     def _process_chunks_with_memory_monitoring(
         self,
         chunks,
-        chunk_progress_info: dict,
+        chunk_progress_info: dict[str, Any],
         progress_callback,
         start_time: float,
         total_lines: int,
@@ -216,11 +218,11 @@ class ParallelProcessorHandler:
             self.logger.error(f"Memory monitoring error in parallel processing: {e}")
             raise Exception(f"Failed to monitor memory during parallel processing: {e}")
 
-    def _init_enhanced_memory_monitor(self):
+    def _init_enhanced_memory_monitor(self) -> None:
         """拡張メモリ監視システムの初期化"""
 
         class EnhancedMemoryMonitor:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.logger = get_logger(__name__)
                 self.warning_threshold_mb = 150  # 150MB で警告
                 self.critical_threshold_mb = 250  # 250MB で重大警告
@@ -236,7 +238,7 @@ class ParallelProcessorHandler:
                 except Exception:
                     return 0.0  # フォールバック
 
-            def check_memory_status(self) -> dict:
+            def check_memory_status(self) -> dict[str, Any]:
                 """メモリ状況の包括的チェック"""
                 current_mb = self.get_current_memory_mb()
 
@@ -275,7 +277,7 @@ class ParallelProcessorHandler:
             )
             # エラー時も処理継続（graceful degradation）
 
-    def _get_thread_local_parser(self):
+    def _get_thread_local_parser(self) -> None:
         """スレッドローカルパーサーインスタンスを取得"""
         if not hasattr(self.parser._thread_local_storage, "parser"):
             # スレッド固有のパーサーインスタンスを作成
@@ -315,8 +317,8 @@ class ParallelProcessorHandler:
 
     def _update_parallel_progress(
         self,
-        chunk_info: dict,
-        chunk_progress: dict,
+        chunk_info: dict[str, Any],
+        chunk_progress: dict[str, Any],
         progress_callback,
         start_time: float,
         total_lines: int,
@@ -384,7 +386,7 @@ class ParallelProcessorHandler:
             self.logger.error(f"Chunk parsing failed: {e}")
             return []
 
-    def get_parallel_processing_metrics(self) -> dict:
+    def get_parallel_processing_metrics(self) -> dict[str, Any]:
         """並列処理のパフォーマンスメトリクスを取得（Issue #759コードレビュー対応）"""
         metrics = {
             # システム情報
@@ -428,7 +430,7 @@ class ParallelProcessorHandler:
 
         return metrics
 
-    def _get_memory_statistics(self) -> dict:
+    def _get_memory_statistics(self) -> dict[str, Any]:
         """メモリ使用統計を取得"""
         try:
             memory_monitor = self._init_enhanced_memory_monitor()
@@ -446,7 +448,7 @@ class ParallelProcessorHandler:
             self.logger.debug(f"Memory statistics error: {e}")
             return {"error": str(e)}
 
-    def _get_parallel_statistics(self) -> dict:
+    def _get_parallel_statistics(self) -> dict[str, Any]:
         """並列処理統計を取得"""
         try:
             # 並列プロセッサーから統計を取得

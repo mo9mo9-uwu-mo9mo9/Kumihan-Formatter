@@ -208,7 +208,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.measurement_interval)
                 if not self.is_running:
-                    break  # type: ignore[unreachable]
+                    break
 
                 # ダミーデータでの定期測定（本番では実際のトークンデータを使用）
                 test_context = WorkContext(
@@ -238,7 +238,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.stability_check_interval)
                 if not self.is_running:
-                    break  # type: ignore[unreachable]
+                    break
 
                 await self.stability_validator.validate_system_stability()
 
@@ -254,7 +254,7 @@ class OptimizationIntegrator:
             try:
                 await asyncio.sleep(self.config.report_generation_interval)
                 if not self.is_running:
-                    break  # type: ignore[unreachable]
+                    break
 
                 # 最新の測定・検証結果でレポート生成
                 if (
@@ -438,7 +438,7 @@ async def create_phase_b_integrator(
     return integrator
 
 
-async def main():
+async def main() -> None:
     """統合制御システムテスト実行"""
     config = PhaseBIntegrationConfig(
         target_reduction_rate=66.8,

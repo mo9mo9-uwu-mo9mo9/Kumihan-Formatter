@@ -5,6 +5,7 @@ memory usage, and processing complexity.
 """
 
 from pathlib import Path
+from typing import Any
 
 from ..ast_nodes import Node
 from .validation_issue import ValidationIssue
@@ -13,7 +14,7 @@ from .validation_issue import ValidationIssue
 class PerformanceValidator:
     """Validator for performance-related issues"""
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         """Initialize performance validator"""
         self.config = config
         self.max_file_size = 10 * 1024 * 1024  # 10MB

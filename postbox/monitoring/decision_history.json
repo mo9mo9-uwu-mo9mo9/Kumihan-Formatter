@@ -88,5 +88,50 @@
       "benefit_score": 1.0,
       "confidence": 0.8999999999999999
     }
+  },
+  {
+    "timestamp": "2025-08-12T17:49:36.427116",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(4923), 高複雑度タスク(complex), 高効果期待(1.00)"
+    },
+    "analysis": {
+      "complexity": "complex",
+      "estimated_time": 630,
+      "estimated_cost": 0.00516915,
+      "benefit_score": 1.0,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T18:15:58.196431",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(2300)"
+    },
+    "analysis": {
+      "complexity": "simple",
+      "estimated_time": 28,
+      "estimated_cost": 0.002415,
+      "benefit_score": 0.4,
+      "confidence": 0.8999999999999999
+    }
+  },
+  {
+    "timestamp": "2025-08-12T18:15:59.544747",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(2435)"
+    },
+    "analysis": {
+      "complexity": "simple",
+      "estimated_time": 26,
+      "estimated_cost": 0.00255675,
+      "benefit_score": 0.4,
+      "confidence": 0.8999999999999999
+    }
   }
 ]

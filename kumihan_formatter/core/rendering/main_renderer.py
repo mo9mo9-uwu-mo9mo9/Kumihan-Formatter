@@ -75,9 +75,9 @@ class HTMLRenderer:
         self.embed_errors_in_html = False
 
         # Footnote integration support
-        self.footnotes_data: dict | None = None
+        self.footnotes_data: dict[str, Any] | None = None
 
-    def set_footnote_data(self, footnotes_data: dict) -> None:
+    def set_footnote_data(self, footnotes_data: dict[str, Any]) -> None:
         """
         脚注データを設定（Rendererからの統合用）
 
@@ -205,7 +205,7 @@ class HTMLRenderer:
         renderer_method = self._get_cached_renderer_method(node.type)
         return cast(str, renderer_method(node))
 
-    def _get_cached_renderer_method(self, node_type: str):
+    def _get_cached_renderer_method(self, node_type: str) -> None:
         """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
 
         # レンダラーメソッドキャッシュが未初期化なら作成
@@ -285,7 +285,7 @@ class HTMLRenderer:
 
         return "\n".join(html_parts)
 
-    def _render_single_error_optimized(self, error, error_number: int) -> str:
+    def _render_single_error_optimized(self, error: Any, error_number: int) -> str:
         """単一エラーの最適化レンダリング"""
         from .html_escaping import escape_html
 
@@ -335,7 +335,7 @@ class HTMLRenderer:
 
         return "\n".join(modified_lines)
 
-    def _create_error_marker_optimized(self, error) -> str:
+    def _create_error_marker_optimized(self, error: Any) -> str:
         """最適化されたエラーマーカー作成"""
         from .html_escaping import escape_html
 
@@ -361,7 +361,7 @@ class HTMLRenderer:
 </div>"""
         )
 
-    def get_rendering_metrics(self) -> dict:
+    def get_rendering_metrics(self) -> dict[str, Any]:
         """レンダリングメトリクスを取得"""
         return {
             "renderer_cache_size": len(getattr(self, "_renderer_method_cache", {})),
@@ -381,7 +381,7 @@ class HTMLRenderer:
             str: Generated HTML for the node
         """
         if not isinstance(node, Node):
-            return escape(str(node))  # type: ignore
+            return escape(str(node))
 
         # Delegateメソッドを動的に検索して呼び出し
         method_name = f"_render_{node.type}"

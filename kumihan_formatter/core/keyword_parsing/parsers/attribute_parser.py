@@ -9,7 +9,7 @@ from .base_parser import BaseParser
 class AttributeParser(BaseParser):
     """Parser for marker attributes and properties."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize attribute parser."""
         super().__init__()
 

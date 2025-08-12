@@ -24,7 +24,7 @@ class PerformanceBenchmark:
     - ベンチマーク結果の永続化
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.benchmark_results: List[Dict[str, Any]] = []
 
@@ -212,7 +212,7 @@ class PerformanceBenchmark:
             "total_memory_gb": psutil.virtual_memory().total / 1024 / 1024 / 1024,
         }
 
-    def _save_benchmark_result(self, result: Dict[str, Any]):
+    def _save_benchmark_result(self, result: Dict[str, Any]) -> None:
         """ベンチマーク結果をtmp/配下に保存"""
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)

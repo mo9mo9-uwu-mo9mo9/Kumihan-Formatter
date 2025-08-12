@@ -303,10 +303,10 @@ class DataQualityManager:
 
     def _calculate_quality_score(
         self,
-        data_stats: Dict,
-        outlier_detection: Dict,
-        bias_analysis: Dict,
-        distribution_analysis: Dict,
+        data_stats: Dict[str, Any],
+        outlier_detection: Dict[str, Any],
+        bias_analysis: Dict[str, Any],
+        distribution_analysis: Dict[str, Any],
     ) -> float:
         """総合品質スコア計算"""
         try:
@@ -338,7 +338,10 @@ class DataQualityManager:
             return 0.0
 
     def _generate_quality_recommendations(
-        self, quality_score: float, outlier_detection: Dict, bias_analysis: Dict
+        self,
+        quality_score: float,
+        outlier_detection: Dict[str, Any],
+        bias_analysis: Dict[str, Any],
     ) -> List[str]:
         """品質改善推奨事項生成"""
         recommendations = []

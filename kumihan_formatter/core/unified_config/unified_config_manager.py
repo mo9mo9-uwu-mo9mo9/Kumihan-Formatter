@@ -81,7 +81,7 @@ class UnifiedConfigManager:
 
         # ホットリロード開始
         if self._auto_reload and self._config_file_path:
-            self._start_auto_reload()  # type: ignore[unreachable]
+            self._start_auto_reload()
 
     def _load_initial_config(self, config_file: Optional[Union[str, Path]]) -> None:
         """初期設定読み込み
@@ -410,7 +410,7 @@ class UnifiedConfigManager:
 
         self.logger.info("統一設定管理システムシャットダウン完了")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """デストラクタ"""
         try:
             self.shutdown()

@@ -122,7 +122,7 @@ class SyntaxReporter:
             )
 
 
-def main():
+def main() -> None:
     """CLI entry point for syntax checker"""
     import argparse
 

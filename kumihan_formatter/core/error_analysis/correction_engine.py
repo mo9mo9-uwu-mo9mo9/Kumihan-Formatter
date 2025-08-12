@@ -33,12 +33,12 @@ class CorrectionEngine:
     - コンテキストに基づく提案の調整
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.correction_rules: List[CorrectionRule] = []
         self._initialize_rules()
 
-    def _initialize_rules(self):
+    def _initialize_rules(self) -> None:
         """修正ルールを初期化"""
         # 基本的なマーカー修正ルール
         self.correction_rules.extend(

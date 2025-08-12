@@ -45,7 +45,7 @@ class MemoryMonitoringError(Exception):
 class ParallelProcessingConfig:
     """並列処理の設定管理"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 並列処理しきい値設定
         self.parallel_threshold_lines = 10000  # 10K行以上で並列化
         self.parallel_threshold_size = 10 * 1024 * 1024  # 10MB以上で並列化
@@ -222,7 +222,7 @@ class Parser:
         )
 
     @property
-    def _thread_local_storage(self):
+    def _thread_local_storage(self) -> None:
         """スレッドローカルストレージへの統一アクセス"""
         return self._thread_local
 
@@ -328,7 +328,9 @@ class Parser:
         return text.splitlines()
 
     def parse_streaming_from_text(
-        self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """Issue #757対応: ストリーミングパース（ハンドラー委譲）"""
 
@@ -396,7 +398,7 @@ class Parser:
                                 yield node
                                 processed_nodes += 1
                             else:
-                                break  # type: ignore[unreachable]
+                                break
 
                     except Exception as e:
                         self.logger.warning(
@@ -439,7 +441,9 @@ class Parser:
             self._cancelled = False
 
     def parse_parallel_streaming(
-        self, text: str, progress_callback: Optional[Callable[[dict], None]] = None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """並列ストリーミング処理（ハンドラー委譲）"""
         yield from self.parallel_handler.parse_parallel_streaming(
@@ -451,7 +455,7 @@ class Parser:
         self.logger.info("Cancelling streaming parse...")
         self._cancelled = True
 
-    def get_performance_statistics(self) -> dict:
+    def get_performance_statistics(self) -> dict[str, Any]:
         """パフォーマンス統計を取得"""
         return {
             "total_lines": len(self.lines) if hasattr(self, "lines") else 0,
@@ -465,7 +469,7 @@ class Parser:
             "heading_count": getattr(self.block_parser, "heading_counter", 0),
         }
 
-    def get_parallel_processing_metrics(self) -> dict:
+    def get_parallel_processing_metrics(self) -> dict[str, Any]:
         """並列処理メトリクスを取得（ハンドラー委譲）"""
         return self.parallel_handler.get_parallel_processing_metrics()
 
@@ -585,7 +589,7 @@ class Parser:
         """graceful error handlingでエラーが記録されているかチェック"""
         return len(self.graceful_syntax_errors) > 0
 
-    def get_graceful_error_summary(self) -> dict:
+    def get_graceful_error_summary(self) -> dict[str, Any]:
         """graceful error handlingのエラーサマリーを取得"""
         errors_by_severity = {"error": 0, "warning": 0, "info": 0}
 
@@ -599,7 +603,7 @@ class Parser:
             "has_critical_errors": errors_by_severity["error"] > 0,
         }
 
-    def get_statistics(self) -> dict:
+    def get_statistics(self) -> dict[str, Any]:
         """Get parsing statistics"""
         return {
             "total_lines": len(self.lines),

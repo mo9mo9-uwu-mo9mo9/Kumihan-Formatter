@@ -41,7 +41,7 @@ class HyperparameterOptimizer:
         self.config = config
 
         # 最適化履歴
-        self.optimization_history: Dict[str, List[Dict]] = defaultdict(list)
+        self.optimization_history: Dict[str, List[Dict]] = defaultdict(list[Any])
 
         # 最適化設定
         self.n_trials = config.get("n_trials", 50)
@@ -150,7 +150,7 @@ class HyperparameterOptimizer:
             self.logger.error(f"Objective function failed: {e}")
             return float("inf")  # 最悪のスコアを返す
 
-    def _create_model_with_trial_params(self, trial: Trial, model_type: str):
+    def _create_model_with_trial_params(self, trial: Trial, model_type: str) -> None:
         """試行パラメータでモデル作成"""
         try:
             if model_type == "lightgbm":
@@ -466,7 +466,7 @@ class OnlineLearningEngine:
             return {"success": False, "error": str(e)}
 
     def _calculate_performance_change(
-        self, pre_performance: Dict, post_performance: Dict
+        self, pre_performance: Dict[str, Any], post_performance: Dict[str, Any]
     ) -> Dict[str, float]:
         """性能変化計算"""
         try:
@@ -496,7 +496,7 @@ class OnlineLearningEngine:
             return {"r2_score": 0.0, "mse": 0.0, "mae": 0.0}
 
     def _evaluate_learning_effectiveness(
-        self, learning_results: Dict[str, Dict]
+        self, learning_results: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """学習効果評価"""
         try:

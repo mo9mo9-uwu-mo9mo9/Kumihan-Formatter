@@ -121,7 +121,7 @@ class EnhancedConfig:
         self._mark_source("default", self.config)
         self.logger.debug("Loaded default configuration")
 
-    def _mark_source(self, source: str, obj: Any, path: str = ""):
+    def _mark_source(self, source: str, obj: Any, path: str = "") -> None:
         """設定ソースをマーク（追跡用）"""
         if isinstance(obj, dict):
             for key, value in obj.items():
@@ -151,7 +151,7 @@ class EnhancedConfig:
             return True
         return False
 
-    def _merge_config(self, user_config: Dict[str, Any], source: str):
+    def _merge_config(self, user_config: Dict[str, Any], source: str) -> None:
         """設定をマージ"""
         self.logger.debug(f"Merging configuration from source: {source}")
         self.config = self.loader.merge_configs(self.config, user_config)
@@ -173,7 +173,7 @@ class EnhancedConfig:
 
         return current
 
-    def set(self, key: str, value: Any, source: str = "runtime"):
+    def set(self, key: str, value: Any, source: str = "runtime") -> None:
         """設定値を設定"""
         keys = key.split(".")
         current = self.config

@@ -14,7 +14,7 @@ from .models.parse_result import ParseResult
 class MarkerParser:
     """マーカー構文解析クラス - 軽量化版（分割されたパーサー統合）"""
 
-    def __init__(self, definitions) -> None:
+    def __init__(self, definitions: Any) -> None:
         """マーカーパーサーを初期化
 
         Args:

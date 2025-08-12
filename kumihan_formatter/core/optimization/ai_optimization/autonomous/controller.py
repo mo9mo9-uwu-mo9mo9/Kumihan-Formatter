@@ -81,7 +81,7 @@ class AutonomousController:
 
         self.logger.info("Phase B.4-Beta AutonomousController initialized successfully")
 
-    def start_autonomous_control(self):
+    def start_autonomous_control(self) -> None:
         """自律制御開始"""
         try:
             if not self.control_active:
@@ -101,7 +101,7 @@ class AutonomousController:
         except Exception as e:
             self.logger.error(f"Failed to start autonomous control: {e}")
 
-    def stop_autonomous_control(self):
+    def stop_autonomous_control(self) -> None:
         """自律制御停止"""
         try:
             self.control_active = False
@@ -118,7 +118,7 @@ class AutonomousController:
         except Exception as e:
             self.logger.error(f"Failed to stop autonomous control: {e}")
 
-    def _autonomous_control_loop(self):
+    def _autonomous_control_loop(self) -> None:
         """自律制御ループ"""
         try:
             while self.control_active:

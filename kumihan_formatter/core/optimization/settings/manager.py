@@ -101,7 +101,7 @@ class AdaptiveSettingsManager:
 
         self.logger.info("AdaptiveSettingsManager initialized")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """必要なコンポーネントを遅延初期化"""
         if self.statistical_engine is None:
             from .ab_testing import StatisticalTestingEngine
@@ -508,7 +508,7 @@ class AdaptiveSettingsManager:
             else (False, "concurrent_limiter_not_available")
         )
 
-    def release_tool_permission(self, permission_id: str):
+    def release_tool_permission(self, permission_id: str) -> None:
         """ツール呼び出し許可を解放（公開API）"""
         self._initialize_components()
         if self.concurrent_limiter:
@@ -563,7 +563,7 @@ class AdaptiveSettingsManager:
         else:
             return "xlarge"
 
-    def _apply_adjustment(self, adjustment: ConfigAdjustment):
+    def _apply_adjustment(self, adjustment: ConfigAdjustment) -> None:
         """設定調整を実際に適用"""
         try:
             self.config.set(adjustment.key, adjustment.new_value, adjustment.context)
@@ -746,7 +746,7 @@ class AdaptiveSettingsManager:
 
         return True
 
-    def _finalize_ab_test(self, test_id: str):
+    def _finalize_ab_test(self, test_id: str) -> None:
         """A/Bテストを完了し結果を分析"""
         if test_id not in self.active_tests:
             return

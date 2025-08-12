@@ -6,7 +6,7 @@ Issue #813対応 - performance_metrics.pyから分離
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from statistics import mean
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ..utilities.logger import get_logger
 
@@ -161,7 +161,7 @@ class TokenEfficiencyAnalyzer:
             return 0.0
         return (current_score - self.baseline_efficiency) / self.baseline_efficiency
 
-    def get_efficiency_summary(self) -> Dict:
+    def get_efficiency_summary(self) -> Dict[str, Any]:
         """効率性概要を取得"""
         if not self.efficiency_history:
             return {"status": "no_data"}
@@ -203,7 +203,7 @@ class PatternDetector:
     - パフォーマンスボトルネックの特定
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
         # パターン検出履歴
@@ -316,7 +316,7 @@ class PatternDetector:
 
         return patterns
 
-    def _update_pattern_history(self, new_pattern: InefficiencyPattern):
+    def _update_pattern_history(self, new_pattern: InefficiencyPattern) -> None:
         """パターン履歴を更新"""
         # 既存の同じパターンを検索
         existing_pattern = None
@@ -339,7 +339,7 @@ class PatternDetector:
             # 新しいパターンを追加
             self.detected_patterns.append(new_pattern)
 
-    def get_pattern_summary(self) -> Dict:
+    def get_pattern_summary(self) -> Dict[str, Any]:
         """パターン検出概要を取得"""
         if not self.detected_patterns:
             return {"total_patterns": 0, "patterns": []}

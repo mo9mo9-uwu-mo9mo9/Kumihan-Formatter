@@ -134,7 +134,7 @@ class TokenUsageAnalyzer:
 
             return analysis_result
 
-    def _update_usage_patterns(self, usage_record: Dict[str, Any]):
+    def _update_usage_patterns(self, usage_record: Dict[str, Any]) -> None:
         """使用パターンを更新"""
         hour = time.strftime("%H", time.localtime(usage_record["timestamp"]))
         operation_type = usage_record["operation_type"]

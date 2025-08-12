@@ -21,7 +21,7 @@ class SIMDOptimizer:
     - 300K行ファイル処理の83%高速化を目標
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self._numpy_available = self._check_numpy_availability()
         self._regex_cache = {}

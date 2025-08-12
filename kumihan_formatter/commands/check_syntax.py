@@ -179,7 +179,7 @@ def create_check_syntax_command() -> click.Command:
         default="text",
         help="出力形式",
     )
-    def check_syntax(files, recursive, no_suggestions, output_format):
+    def check_syntax(files, recursive, no_suggestions, output_format) -> None:
         """Kumihan記法の構文をチェックします"""
 
         command = CheckSyntaxCommand()

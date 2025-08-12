@@ -53,7 +53,7 @@ class PerformanceMonitor:
         self.monitoring_active = False
         self.monitoring_thread: Optional[threading.Thread] = None
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """性能監視開始"""
         try:
             if not self.monitoring_active:
@@ -67,7 +67,7 @@ class PerformanceMonitor:
         except Exception as e:
             self.logger.error(f"Failed to start performance monitoring: {e}")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """性能監視停止"""
         try:
             self.monitoring_active = False
@@ -78,7 +78,7 @@ class PerformanceMonitor:
         except Exception as e:
             self.logger.error(f"Failed to stop performance monitoring: {e}")
 
-    def _monitoring_loop(self):
+    def _monitoring_loop(self) -> None:
         """監視ループ"""
         try:
             while self.monitoring_active:
@@ -734,7 +734,7 @@ class PhaseB4BetaIntegrator:
             self.logger.error(f"Deletion rate achievement verification failed: {e}")
             return {"achievement_verified": False, "error": str(e)}
 
-    def _record_integration_result(self, result: Dict[str, Any]):
+    def _record_integration_result(self, result: Dict[str, Any]) -> None:
         """統合結果記録"""
         try:
             integration_record = {
@@ -802,7 +802,7 @@ class PhaseB4BetaIntegrator:
             self.logger.error(f"System status retrieval failed: {e}")
             return {"integrator_status": "error", "error": str(e)}
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """システム終了処理"""
         try:
             # 性能監視停止

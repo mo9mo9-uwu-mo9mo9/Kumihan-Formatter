@@ -99,7 +99,7 @@ class ProgressManager:
 
         self.logger.debug(f"ProgressManager initialized for task: {task_name}")
 
-    def start(self, total_items: int, stage: str = "開始"):
+    def start(self, total_items: int, stage: str = "開始") -> None:
         """プログレス追跡を開始"""
         self.state = ProgressState(
             total=total_items,
@@ -141,28 +141,28 @@ class ProgressManager:
         """プログレスを増分更新"""
         return self.update(self.state.current + amount, substage)
 
-    def set_stage(self, stage: str, substage: str = ""):
+    def set_stage(self, stage: str, substage: str = "") -> None:
         """処理ステージを変更"""
         self.state.stage = stage
         self.state.substage = substage
         self.logger.info(f"Stage changed: {stage} - {substage}")
         self._notify_progress()
 
-    def add_error(self, error_message: str = ""):
+    def add_error(self, error_message: str = "") -> None:
         """エラーカウントを増加"""
         self.state.errors_count += 1
         if error_message:
             self.logger.warning(f"Error recorded: {error_message}")
         self._notify_progress()
 
-    def add_warning(self, warning_message: str = ""):
+    def add_warning(self, warning_message: str = "") -> None:
         """警告カウントを増加"""
         self.state.warnings_count += 1
         if warning_message:
             self.logger.info(f"Warning recorded: {warning_message}")
         self._notify_progress()
 
-    def finish(self, final_stage: str = "完了"):
+    def finish(self, final_stage: str = "完了") -> None:
         """プログレス追跡を完了"""
         self.state.current = self.state.total
         self.state.stage = final_stage
@@ -176,7 +176,7 @@ class ProgressManager:
 
         self._notify_progress()
 
-    def cancel(self, reason: str = "ユーザー要求"):
+    def cancel(self, reason: str = "ユーザー要求") -> None:
         """処理をキャンセル"""
         self.cancelled.set()
         self.state.stage = "キャンセル中"
@@ -191,11 +191,11 @@ class ProgressManager:
         """キャンセル状態を確認"""
         return self.cancelled.is_set()
 
-    def set_progress_callback(self, callback: Callable[[ProgressState], None]):
+    def set_progress_callback(self, callback: Callable[[ProgressState], None]) -> None:
         """プログレス更新コールバックを設定"""
         self.progress_callback = callback
 
-    def set_cancellation_callback(self, callback: Callable[[], None]):
+    def set_cancellation_callback(self, callback: Callable[[], None]) -> None:
         """キャンセル時コールバックを設定"""
         self.cancellation_callback = callback
 
@@ -203,7 +203,7 @@ class ProgressManager:
         """現在のプログレス状態を取得"""
         return self.state
 
-    def save_progress_log(self, filepath: str):
+    def save_progress_log(self, filepath: str) -> None:
         """プログレス情報をJSONファイルに保存"""
         import json
         from pathlib import Path
@@ -255,7 +255,7 @@ class ProgressManager:
             "is_cancelled": self.is_cancelled(),
         }
 
-    def _update_processing_rate(self, timestamp: float, current: int):
+    def _update_processing_rate(self, timestamp: float, current: int) -> None:
         """処理速度を更新"""
         # 履歴に追加
         self._progress_history.append((timestamp, current))
@@ -277,7 +277,7 @@ class ProgressManager:
             else:
                 self.state.processing_rate = 0.0
 
-    def _update_memory_stats(self):
+    def _update_memory_stats(self) -> None:
         """メモリ使用量を更新"""
         try:
             import psutil
@@ -295,7 +295,7 @@ class ProgressManager:
         except Exception as e:
             self.logger.debug(f"Memory stats update error: {e}")
 
-    def _notify_progress(self):
+    def _notify_progress(self) -> None:
         """プログレス更新を通知"""
         # メモリ統計を更新
         self._update_memory_stats()
@@ -383,7 +383,7 @@ class ProgressContextManager:
             # プログレスコールバック設定
             if self.rich_progress and self.task_id is not None:
 
-                def update_callback(state: ProgressState):
+                def update_callback(state: ProgressState) -> None:
                     self._update_rich_display(state)
 
                 self.progress_manager.set_progress_callback(update_callback)
@@ -399,7 +399,12 @@ class ProgressContextManager:
         )
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[Any],
+    ) -> None:
         """コンテキスト終了"""
         try:
             if self.progress_manager:
@@ -464,17 +469,17 @@ class ProgressContextManager:
             return self.update(current, stage, substage)
         return False
 
-    def add_error(self, message: str = ""):
+    def add_error(self, message: str = "") -> None:
         """エラー追加"""
         if self.progress_manager:
             self.progress_manager.add_error(message)
 
-    def add_warning(self, message: str = ""):
+    def add_warning(self, message: str = "") -> None:
         """警告追加"""
         if self.progress_manager:
             self.progress_manager.add_warning(message)
 
-    def request_cancellation(self, reason: str = "ユーザー要求"):
+    def request_cancellation(self, reason: str = "ユーザー要求") -> None:
         """キャンセル要求"""
         self._cancellation_requested.set()
         if self.progress_manager:
@@ -486,7 +491,7 @@ class ProgressContextManager:
             self.progress_manager is not None and self.progress_manager.is_cancelled()
         )
 
-    def add_cleanup_callback(self, callback: Callable[[], None]):
+    def add_cleanup_callback(self, callback: Callable[[], None]) -> None:
         """クリーンアップコールバック追加"""
         self._cleanup_callbacks.append(callback)
 
@@ -504,7 +509,7 @@ class ProgressContextManager:
 
         return base_stats
 
-    def _setup_rich_progress(self):
+    def _setup_rich_progress(self) -> None:
         """Rich Progress初期化"""
         try:
             from rich.console import Console
@@ -558,7 +563,7 @@ class ProgressContextManager:
             self.rich_progress = None
             self.task_id = None
 
-    def _update_rich_display(self, state: ProgressState):
+    def _update_rich_display(self, state: ProgressState) -> None:
         """Rich Progress表示更新"""
         if not self.rich_progress or self.task_id is None:
             return
@@ -599,7 +604,7 @@ class ProgressContextManager:
 
         return desc
 
-    def _update_tooltip(self, state: ProgressState):
+    def _update_tooltip(self, state: ProgressState) -> None:
         """ツールチップ情報更新"""
         if not self.show_tooltips:
             return
@@ -613,7 +618,7 @@ class ProgressContextManager:
         # コンソールに追加情報出力（必要に応じて）
         self.logger.debug(" | ".join(tooltip_info))
 
-    def _handle_cancellation(self):
+    def _handle_cancellation(self) -> None:
         """キャンセル処理"""
         self.logger.info(f"Cancellation handling for task: {self.task_name}")
 
@@ -623,7 +628,7 @@ class ProgressContextManager:
                 self.task_id, description=f"{self.task_name} - キャンセル中..."
             )
 
-    def _display_final_stats(self):
+    def _display_final_stats(self) -> None:
         """最終統計表示"""
         if self.verbosity.value < self.VerbosityLevel.DETAILED.value:
             return

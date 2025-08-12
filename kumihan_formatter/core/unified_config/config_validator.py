@@ -31,7 +31,7 @@ class ConfigValidationError(Exception):
 class ValidationResult:
     """検証結果"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_valid: bool = True
         self.errors: List[str] = []
         self.warnings: List[str] = []

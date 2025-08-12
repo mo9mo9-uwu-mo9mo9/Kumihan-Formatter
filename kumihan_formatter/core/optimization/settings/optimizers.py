@@ -145,7 +145,7 @@ class FileSizeLimitOptimizer:
         else:
             return "text"
 
-    def _update_reduction_average(self, new_reduction: float):
+    def _update_reduction_average(self, new_reduction: float) -> None:
         """平均削減率を更新"""
         current_avg = self.read_statistics["average_reduction"]
         limited_reads = self.read_statistics["size_limited_reads"]
@@ -253,13 +253,13 @@ class ContextAwareOptimizer:
     - ユーザーパターン学習
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.user_patterns: Dict[str, Dict] = {}
+        self.user_patterns: Dict[str, Dict[str, Any]] = {}
         # ComplexityAnalyzerは必要時にインポート
         self.complexity_analyzer = None
 
-    def _get_complexity_analyzer(self):
+    def _get_complexity_analyzer(self) -> None:
         """ComplexityAnalyzerを遅延インポート"""
         if self.complexity_analyzer is None:
             from .analyzers import ComplexityAnalyzer
@@ -434,7 +434,7 @@ class ConcurrentToolCallLimiter:
             )
             return True, call_id
 
-    def release_call_permission(self, call_id: str):
+    def release_call_permission(self, call_id: str) -> None:
         """ツール呼び出し許可を解放"""
         with self._lock:
             if call_id not in self._active_calls:
@@ -473,7 +473,7 @@ class ConcurrentToolCallLimiter:
     def _should_throttle_for_resources(self, context: "WorkContext") -> bool:
         """リソース使用量に基づくスロットリング判定"""
         if context is None:
-            return False  # type: ignore[unreachable]
+            return False
         # 大きなコンテンツまたは高複雑性の場合はスロットリング
         if context.content_size > 100000 or context.complexity_score > 0.9:
             current_resource_usage = sum(
@@ -487,7 +487,7 @@ class ConcurrentToolCallLimiter:
 
         return False
 
-    def _update_wait_time_statistics(self, duration: float):
+    def _update_wait_time_statistics(self, duration: float) -> None:
         """待機時間統計を更新"""
         current_avg = self.call_statistics["average_wait_time"]
         total_calls = self.call_statistics["total_calls"]
@@ -497,7 +497,9 @@ class ConcurrentToolCallLimiter:
             current_avg * (total_calls - 1) + duration
         ) / total_calls
 
-    def _calculate_resource_savings(self, call_info: Dict, duration: float) -> int:
+    def _calculate_resource_savings(
+        self, call_info: Dict[str, Any], duration: float
+    ) -> int:
         """リソース節約効果を計算"""
         # 基本節約効果（制限により他の呼び出しがブロックされた場合の効果）
         base_savings = 1
@@ -512,7 +514,9 @@ class ConcurrentToolCallLimiter:
 
         return base_savings
 
-    def adjust_limits_based_on_performance(self, performance_metrics: Dict[str, Any]):
+    def adjust_limits_based_on_performance(
+        self, performance_metrics: Dict[str, Any]
+    ) -> None:
         """パフォーマンス指標に基づく制限調整"""
         with self._lock:
             avg_response_time = performance_metrics.get("average_response_time", 0)
@@ -595,7 +599,7 @@ class RealTimeConfigAdjuster:
         self.adjustment_monitor: dict[str, Any] = {}
         self._monitoring_active = False
 
-    def start_realtime_adjustment(self, context: "WorkContext"):
+    def start_realtime_adjustment(self, context: "WorkContext") -> None:
         """リアルタイム調整を開始"""
         self._monitoring_active = True
 

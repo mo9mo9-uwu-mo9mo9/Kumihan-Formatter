@@ -136,7 +136,7 @@ class AsyncIOOptimizer:
 
     async def async_write_results_streaming(
         self, file_path: Path, results_generator: AsyncIterator[str]
-    ):
+    ) -> None:
         """
         非同期ストリーミング結果書き込み
 

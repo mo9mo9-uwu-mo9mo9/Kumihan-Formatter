@@ -332,7 +332,7 @@ class LearningSystem:
             return {"error": str(e)}
 
     def _integrate_model_evaluations(
-        self, evaluation_results: Dict[str, Dict]
+        self, evaluation_results: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """モデル評価統合"""
         try:
@@ -372,7 +372,7 @@ class LearningSystem:
             }
 
     def _detect_overfitting(
-        self, evaluation_results: Dict[str, Dict]
+        self, evaluation_results: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """過学習検出"""
         try:
@@ -413,7 +413,7 @@ class LearningSystem:
             return {"overfitting_detected": False, "error": str(e)}
 
     def _detect_performance_degradation(
-        self, evaluation_results: Dict[str, Dict]
+        self, evaluation_results: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """性能劣化検出"""
         try:
@@ -504,7 +504,7 @@ class LearningSystem:
             return {"adjustments_made": [], "error": str(e)}
 
     def _evaluate_optimization_effectiveness(
-        self, optimization_results: Dict[str, Dict]
+        self, optimization_results: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """最適化効果評価"""
         try:
@@ -537,7 +537,7 @@ class LearningSystem:
     def _apply_optimized_hyperparameters(
         self,
         models: Dict[str, EnsemblePredictionModel],
-        optimization_results: Dict[str, Dict],
+        optimization_results: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Any]:
         """最適化ハイパーパラメータ適用"""
         try:
@@ -576,7 +576,7 @@ class LearningSystem:
             return {"error": str(e)}
 
     def _generate_overfitting_recommendations(
-        self, overfitted_models: List[Dict]
+        self, overfitted_models: List[Dict[str, Any]]
     ) -> List[str]:
         """過学習対処推奨事項生成"""
         recommendations = []
@@ -593,7 +593,7 @@ class LearningSystem:
 
         return recommendations
 
-    def _update_learning_metrics(self, learning_result: Dict[str, Any]):
+    def _update_learning_metrics(self, learning_result: Dict[str, Any]) -> None:
         """【メモリリーク対策】学習メトリクス更新"""
         try:
             # 各モデルの最新性能を記録

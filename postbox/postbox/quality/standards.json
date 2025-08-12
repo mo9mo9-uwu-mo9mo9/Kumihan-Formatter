@@ -1,0 +1,23 @@
+{
+  "thresholds": {
+    "minimum_overall_score": 0.7,
+    "minimum_type_score": 0.8,
+    "minimum_lint_score": 0.8,
+    "maximum_error_count": 10,
+    "minimum_test_coverage": 0.5
+  },
+  "weights": {
+    "syntax": 0.2,
+    "type_check": 0.25,
+    "lint": 0.2,
+    "format": 0.1,
+    "security": 0.15,
+    "performance": 0.05,
+    "test": 0.05
+  },
+  "automation": {
+    "auto_fix_format": true,
+    "auto_fix_simple_types": true,
+    "auto_fix_imports": true
+  }
+}

@@ -9,7 +9,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 class BaseParser:
     """Base class for marker parsing components."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize base parser."""
         self.logger = get_logger(self.__class__.__name__)
 

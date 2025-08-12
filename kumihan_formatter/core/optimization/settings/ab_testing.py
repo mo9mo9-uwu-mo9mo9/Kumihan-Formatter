@@ -32,7 +32,7 @@ class SimpleStats:
     """scipy未使用時のフォールバック統計計算"""
 
     @staticmethod
-    def ttest_ind(a, b, equal_var=True):
+    def ttest_ind(a: Any, b: Any, equal_var: bool = True) -> Any:
         """簡易t検定（scipyフォールバック）"""
         if not a or not b:
             return type("Result", (), {"statistic": 0, "pvalue": 1.0})
@@ -56,22 +56,22 @@ class SimpleNumpy:
     """numpy未使用時のフォールバック数値計算"""
 
     @staticmethod
-    def array(data):
+    def array(data: Any) -> Any:
         return data
 
     @staticmethod
-    def std(data):
+    def std(data: Any) -> Any:
         try:
             return stdev(data) if len(data) > 1 else 0
         except (ValueError, TypeError):
             return 0
 
     @staticmethod
-    def mean(data):
+    def mean(data: Any) -> Any:
         return mean(data) if data else 0
 
     @staticmethod
-    def sqrt(x):
+    def sqrt(x: Any) -> Any:
         return math.sqrt(x) if x >= 0 else 0
 
 
@@ -130,7 +130,7 @@ class ABTestResult:
 class StatisticalTestingEngine:
     """統計的検定エンジン（scipy統合/フォールバック対応）"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.scipy_available = SCIPY_AVAILABLE
 

@@ -12,7 +12,7 @@ Performance targets (Issue #727):
 
 import time
 from pathlib import Path
-from typing import Any, Iterator, cast
+from typing import Any, Callable, Iterator, Optional, cast
 
 from .core.ast_nodes import Node
 from .core.utilities.logger import get_logger
@@ -48,7 +48,7 @@ class StreamingParser:
     PROGRESS_UPDATE_INTERVAL = 100  # プログレス更新間隔（50→100行）
     MEMORY_THRESHOLD_MB = 100  # メモリ閾値（MB）
 
-    def __init__(self, config=None, timeout_seconds: int = 300) -> None:
+    def __init__(self, config: Any = None, timeout_seconds: int = 300) -> None:
         self.config = config
         self.logger = get_logger(__name__)
         self.errors: list[str] = []  # 型アノテーション修正: type: ignore削除
@@ -79,7 +79,9 @@ class StreamingParser:
         )
 
     def parse_streaming_from_file(
-        self, file_path: Path, progress_callback=None
+        self,
+        file_path: Path,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """
         ファイルから真のストリーミング解析を実行（メモリ効率最適化版）
@@ -124,7 +126,9 @@ class StreamingParser:
             self.logger.info(f"Performance Report:\n{report}")
 
     def _stream_process_file_optimized(
-        self, file_path: Path, progress_callback=None
+        self,
+        file_path: Path,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """最適化されたファイルストリーミング処理"""
 
@@ -149,8 +153,10 @@ class StreamingParser:
             raise
 
     def _init_stream_processing_context(
-        self, file_path: Path, progress_callback
-    ) -> dict:
+        self,
+        file_path: Path,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]],
+    ) -> dict[str, Any]:
         """ストリーミング処理コンテキストの初期化"""
         return {
             "file_path": file_path,
@@ -161,7 +167,9 @@ class StreamingParser:
             "start_time": time.time(),
         }
 
-    def _execute_optimized_streaming(self, file, stream_ctx: dict) -> Iterator[Node]:
+    def _execute_optimized_streaming(
+        self, file: Any, stream_ctx: dict[str, Any]
+    ) -> Iterator[Node]:
         """最適化されたストリーミング実行"""
         for line_num, line in enumerate(file, 1):
             # タイムアウトとキャンセルチェック
@@ -186,7 +194,7 @@ class StreamingParser:
         return False
 
     def _process_chunk_and_update(
-        self, stream_ctx: dict, line_num: int
+        self, stream_ctx: dict[str, Any], line_num: int
     ) -> Iterator[Node]:
         """チャンク処理と更新"""
         # チャンクを高速処理
@@ -208,14 +216,16 @@ class StreamingParser:
         self._monitor_memory_usage()
 
     def _update_stream_context(
-        self, stream_ctx: dict, line_num: int, processed_count: int
-    ):
+        self, stream_ctx: dict[str, Any], line_num: int, processed_count: int
+    ) -> None:
         """ストリームコンテキストの更新"""
         stream_ctx["line_buffer"].clear()
         stream_ctx["buffer_line_start"] = line_num
         stream_ctx["total_processed"] += processed_count
 
-    def _update_streaming_progress_optimized(self, stream_ctx: dict, line_num: int):
+    def _update_streaming_progress_optimized(
+        self, stream_ctx: dict[str, Any], line_num: int
+    ) -> None:
         """最適化されたプログレス更新"""
         if (
             stream_ctx["progress_callback"]
@@ -229,7 +239,7 @@ class StreamingParser:
             stream_ctx["total_processed"], f"行 {line_num} 処理中"
         )
 
-    def _monitor_memory_usage(self):
+    def _monitor_memory_usage(self) -> None:
         """メモリ使用量の監視"""
         try:
             if hasattr(self.performance_monitor, "get_current_snapshot"):
@@ -245,7 +255,7 @@ class StreamingParser:
         except Exception as e:
             self.logger.debug(f"Memory monitoring error: {e}")
 
-    def _process_remaining_buffer(self, stream_ctx: dict) -> Iterator[Node]:
+    def _process_remaining_buffer(self, stream_ctx: dict[str, Any]) -> Iterator[Node]:
         """残りバッファの処理"""
         if stream_ctx["line_buffer"]:
             for node in self._process_line_buffer_optimized(
@@ -255,7 +265,7 @@ class StreamingParser:
                     yield node
                     stream_ctx["total_processed"] += 1
 
-    def _finalize_optimized_streaming(self, stream_ctx: dict):
+    def _finalize_optimized_streaming(self, stream_ctx: dict[str, Any]) -> None:
         """最適化されたストリーミングの最終処理"""
         # 最終プログレス更新
         if stream_ctx["progress_callback"]:
@@ -306,7 +316,7 @@ class StreamingParser:
                 current += 1
 
     def _parse_line_optimized(
-        self, parsers: dict, lines: list[str], current: int, line: str
+        self, parsers: dict[str, Any], lines: list[str], current: int, line: str
     ) -> tuple[Node | None, int]:
         """最適化された行解析（パターンマッチング高速化）"""
 
@@ -351,7 +361,7 @@ class StreamingParser:
             # デフォルト処理
             return (None, current)
 
-    def _get_cached_parsers(self) -> dict:
+    def _get_cached_parsers(self) -> dict[str, Any]:
         """パーサーコンポーネントのキャッシュ取得（メモリ効率化）"""
         if not self._parser_cache:
             from .core.block_parser.block_parser import BlockParser
@@ -400,7 +410,7 @@ class StreamingParser:
         except Exception:
             return 1000  # フォールバック値
 
-    def _calculate_progress_optimized(self, current_line: int) -> dict:
+    def _calculate_progress_optimized(self, current_line: int) -> dict[str, Any]:
         """最適化されたプログレス計算"""
         if self.total_lines == 0:
             self.total_lines = current_line + 1000  # 動的調整
@@ -445,7 +455,9 @@ class StreamingParser:
         }
 
     def parse_streaming_from_text(
-        self, text: str, progress_callback=None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """
         テキストから最適化ストリーミング解析を実行（高速版）
@@ -478,7 +490,9 @@ class StreamingParser:
             self.performance_monitor.stop_monitoring()
 
     def _stream_process_text_optimized(
-        self, text: str, progress_callback=None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
     ) -> Iterator[Node]:
         """最適化されたテキストストリーミング処理"""
 
@@ -576,7 +590,7 @@ class StreamingParser:
         """解析エラーを取得"""
         return self.errors[:]
 
-    def get_optimization_metrics(self) -> dict:
+    def get_optimization_metrics(self) -> dict[str, Any]:
         """最適化メトリクスを取得（エラー処理強化）"""
         metrics = {
             "cache_hits": len(self._pattern_cache),

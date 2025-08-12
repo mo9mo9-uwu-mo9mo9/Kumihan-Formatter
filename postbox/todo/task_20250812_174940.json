@@ -1,0 +1,358 @@
+{
+  "task_id": "task_20250812_174940",
+  "type": "micro_code_modification",
+  "priority": "high",
+  "description": "no-untyped-def バッチ修正 - kumihan_formatter/core/block_parser/text_parser.py Batch#3",
+  "target_files": [
+    "kumihan_formatter/core/block_parser/text_parser.py"
+  ],
+  "requirements": {
+    "error_type": "no-untyped-def",
+    "batch_info": {
+      "batch_id": 3,
+      "tasks": [
+        {
+          "type": "micro_fix",
+          "target_file": "kumihan_formatter/core/block_parser/text_parser.py",
+          "target_function": "_module_level",
+          "error_type": "no-untyped-def",
+          "error_count": 24,
+          "errors": [
+            {
+              "file": "kumihan_formatter/core/keyword_parsing/parsers/base_parser.py",
+              "line": 12,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 150,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 158,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 163,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 168,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 234,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 268,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 428,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 470,
+              "message": "Function is missing a type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 474,
+              "message": "Function is missing a type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 478,
+              "message": "Function is missing a type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/monitor.py",
+              "line": 481,
+              "message": "Function is missing a type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/benchmark.py",
+              "line": 215,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/analytics.py",
+              "line": 206,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/analytics.py",
+              "line": 319,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+              "line": 245,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+              "line": 462,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/regex.py",
+              "line": 107,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/regex.py",
+              "line": 232,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/keyword_parsing/parsers/keyword_parser.py",
+              "line": 12,
+              "message": "Function is missing a type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/keyword_parsing/parsers/content_parser.py",
+              "line": 12,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/keyword_parsing/parsers/attribute_parser.py",
+              "line": 12,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/keyword_parsing/marker_parser.py",
+              "line": 17,
+              "message": "Function is missing a type annotation for one or more arguments ",
+              "error_code": "no-untyped-def"
+            },
+            {
+              "file": "kumihan_formatter/core/performance/optimizers/simd.py",
+              "line": 24,
+              "message": "Function is missing a return type annotation ",
+              "error_code": "no-untyped-def"
+            }
+          ],
+          "function_code": [],
+          "flash_instruction": "🎯 修正対象: _module_level関数\n🔧 修正内容: 関数に -> 戻り値型 を追加してください\n📊 エラー数: 24件\n\n📝 具体的手順:\n1. _module_level関数を見つける\n2. 関数に -> 戻り値型 を追加してください\n3. 修正例: def func() -> str:\n\n⚠️ 注意:\n- 既存のロジックは変更しない\n- インポート文が必要な場合は追加\n- 修正後の形式を正確に確認\n\n🐛 修正対象エラー:\n1. Line 12: Function is missing a return type annotation \n2. Line 150: Function is missing a return type annotation \n3. Line 158: Function is missing a return type annotation \n   ... 他21件",
+          "complexity": "low",
+          "estimated_time": 48
+        }
+      ],
+      "estimated_time": 48,
+      "complexity": "low"
+    },
+    "micro_tasks": [
+      {
+        "type": "micro_fix",
+        "target_file": "kumihan_formatter/core/block_parser/text_parser.py",
+        "target_function": "_module_level",
+        "error_type": "no-untyped-def",
+        "error_count": 24,
+        "errors": [
+          {
+            "file": "kumihan_formatter/core/keyword_parsing/parsers/base_parser.py",
+            "line": 12,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 150,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 158,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 163,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 168,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 234,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 268,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 428,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 470,
+            "message": "Function is missing a type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 474,
+            "message": "Function is missing a type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 478,
+            "message": "Function is missing a type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/monitor.py",
+            "line": 481,
+            "message": "Function is missing a type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/benchmark.py",
+            "line": 215,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/analytics.py",
+            "line": 206,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/analytics.py",
+            "line": 319,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+            "line": 245,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/memory.py",
+            "line": 462,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/regex.py",
+            "line": 107,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/regex.py",
+            "line": 232,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/keyword_parsing/parsers/keyword_parser.py",
+            "line": 12,
+            "message": "Function is missing a type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/keyword_parsing/parsers/content_parser.py",
+            "line": 12,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/keyword_parsing/parsers/attribute_parser.py",
+            "line": 12,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/keyword_parsing/marker_parser.py",
+            "line": 17,
+            "message": "Function is missing a type annotation for one or more arguments ",
+            "error_code": "no-untyped-def"
+          },
+          {
+            "file": "kumihan_formatter/core/performance/optimizers/simd.py",
+            "line": 24,
+            "message": "Function is missing a return type annotation ",
+            "error_code": "no-untyped-def"
+          }
+        ],
+        "function_code": [],
+        "flash_instruction": "🎯 修正対象: _module_level関数\n🔧 修正内容: 関数に -> 戻り値型 を追加してください\n📊 エラー数: 24件\n\n📝 具体的手順:\n1. _module_level関数を見つける\n2. 関数に -> 戻り値型 を追加してください\n3. 修正例: def func() -> str:\n\n⚠️ 注意:\n- 既存のロジックは変更しない\n- インポート文が必要な場合は追加\n- 修正後の形式を正確に確認\n\n🐛 修正対象エラー:\n1. Line 12: Function is missing a return type annotation \n2. Line 150: Function is missing a return type annotation \n3. Line 158: Function is missing a return type annotation \n   ... 他21件",
+        "complexity": "low",
+        "estimated_time": 48
+      }
+    ],
+    "flash_instruction": "\n🚀 Flash 2.5 バッチ修正指示\n\n📦 バッチ概要:\n- 修正対象: 1個の関数\n- エラータイプ: 戻り値型注釈不足\n- 難易度: easy\n\n\n🎯 戻り値型注釈追加\n📝 手順:\n1. 関数定義の行を見つける\n2. ): の前に -> 型名 を追加\n3. 型名は以下から選択:\n   - None: 何も返さない\n   - str: 文字列を返す\n   - int: 数値を返す\n   - bool: True/Falseを返す\n   - list: リストを返す\n   - dict: 辞書を返す\n\n✅ 修正例:\ndef get_config():  → def get_config() -> dict:\ndef log_message():  → def log_message() -> None:\n\n\n📋 修正対象リスト:\n1. _module_level関数 (24エラー)\n\n⚡ Flash 2.5 最適化ルール:\n1. 上記リストの順番で1つずつ修正\n2. 各関数の修正完了後、次の関数へ\n3. 分からない場合は type: ignore 使用\n4. 修正時間: 1関数あたり最大5分\n\n🎯 成功パターン:\n- 例に従った正確な修正\n- 既存コードの最小変更\n- 段階的な進行\n",
+    "max_context_tokens": 2000,
+    "step_by_step": true
+  },
+  "claude_analysis": "\n📊 Claude微細タスク分析 - no-untyped-def\n\n🎯 対象ファイル: kumihan_formatter/core/block_parser/text_parser.py\n🔧 エラータイプ: no-untyped-def\n📦 バッチサイズ: 1件\n\n🧠 分析結果:\n\n  • _module_level関数:\n    - エラー数: 24件\n    - 複雑度: low\n    - 推定時間: 48分\n    - Flash指示: 適用済み\n\n⚠️ Flash 2.5 考慮事項:\n- コンテキスト制限: 2000トークン以内\n- 具体的例示による指示\n- 段階的実行による確実性\n- エラー時の適切なフォールバック\n\n📋 推奨アプローチ:\n1. 関数単位での逐次処理\n2. 修正パターンの厳格適用\n3. 各ステップでの検証\n4. 予期しない状況でのtype: ignore使用\n",
+  "expected_outcome": "バッチ内全タスク完了 (1件)",
+  "constraints": [
+    "Flash 2.5コンテキスト制限遵守",
+    "1バッチ20分以内",
+    "具体的指示に従った修正のみ"
+  ],
+  "context": {
+    "batch_id": 3,
+    "total_batches": 3,
+    "execution_plan": {
+      "max_context_per_task": 2000,
+      "simple_instruction_style": true,
+      "concrete_examples": true,
+      "step_by_step": true
+    },
+    "session_id": "session_20250812_174932"
+  },
+  "timestamp": "2025-08-12T17:49:40.399270",
+  "created_by": "claude_code"
+}

@@ -61,7 +61,7 @@ class IntegratedSettingsOptimizer:
 
         self.logger.info("IntegratedSettingsOptimizer initialized")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """Componentを遅延初期化"""
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
@@ -180,7 +180,7 @@ class LearningBasedOptimizer:
             "LearningBasedOptimizer initialized - 5% additional reduction target"
         )
 
-    def _initialize_adaptive_manager(self):
+    def _initialize_adaptive_manager(self) -> None:
         """AdaptiveSettingsManagerを遅延初期化"""
         if self.adaptive_manager is None:
             from .manager import AdaptiveSettingsManager
@@ -266,7 +266,7 @@ class LearningBasedOptimizer:
             }
 
     def _integrate_learning_data(
-        self, learning_summary: Dict, efficiency_insights: Dict
+        self, learning_summary: Dict[str, Any], efficiency_insights: Dict[str, Any]
     ) -> Dict[str, Any]:
         """学習データ統合分析"""
         integrated: Dict[str, Any] = {
@@ -336,7 +336,7 @@ class LearningBasedOptimizer:
         return integrated
 
     def _generate_optimization_proposals(
-        self, integrated_analysis: Dict
+        self, integrated_analysis: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """最適化提案生成"""
         proposals = []
@@ -370,7 +370,7 @@ class LearningBasedOptimizer:
         return proposals[:10]  # 上位10提案
 
     def _apply_automatic_optimizations(
-        self, proposals: List[Dict]
+        self, proposals: List[Dict[str, Any]]
     ) -> List["ConfigAdjustment"]:
         """自動最適化適用"""
         from .manager import ConfigAdjustment
@@ -404,7 +404,7 @@ class LearningBasedOptimizer:
 
         return applied
 
-    def _setup_ab_tests(self, proposals: List[Dict]) -> List[str]:
+    def _setup_ab_tests(self, proposals: List[Dict[str, Any]]) -> List[str]:
         """A/Bテスト設定"""
         started_tests = []
 
@@ -433,7 +433,7 @@ class LearningBasedOptimizer:
 
         return started_tests
 
-    def _update_learning_metrics(self, cycle_result: Dict):
+    def _update_learning_metrics(self, cycle_result: Dict[str, Any]) -> None:
         """学習型最適化メトリクス更新"""
         self.learning_metrics["patterns_learned"] += cycle_result.get(
             "patterns_analyzed", 0

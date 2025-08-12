@@ -99,14 +99,14 @@ class PerformanceMonitor:
         self.initial_memory = self.process.memory_info().rss
 
         # コールバック
-        self.alert_callbacks: List[Callable[[str, Dict], None]] = []
+        self.alert_callbacks: List[Callable[[str, Dict[str, Any]], None]] = []
 
         self.logger.info(
             f"PerformanceMonitor initialized: interval={monitoring_interval}s, "
             f"history={history_size}"
         )
 
-    def start_monitoring(self, total_items: int, initial_stage: str = "開始"):
+    def start_monitoring(self, total_items: int, initial_stage: str = "開始") -> None:
         """パフォーマンス監視を開始"""
         with self._lock:
             if self._monitoring:
@@ -131,7 +131,7 @@ class PerformanceMonitor:
                 f"stage: {initial_stage}"
             )
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """パフォーマンス監視を停止"""
         with self._lock:
             if not self._monitoring:
@@ -147,7 +147,7 @@ class PerformanceMonitor:
                 f"Performance monitoring stopped after {self.stats.duration_seconds:.2f}s"
             )
 
-    def update_progress(self, items_processed: int, current_stage: str = ""):
+    def update_progress(self, items_processed: int, current_stage: str = "") -> None:
         """進捗を更新"""
         with self._lock:
             self.stats.items_processed = items_processed
@@ -155,17 +155,19 @@ class PerformanceMonitor:
             if current_stage and current_stage not in self.stats.processing_phases:
                 self.stats.processing_phases.append(current_stage)
 
-    def add_error(self):
+    def add_error(self) -> None:
         """エラーカウントを増加"""
         with self._lock:
             self.stats.errors_count += 1
 
-    def add_warning(self):
+    def add_warning(self) -> None:
         """警告カウントを増加"""
         with self._lock:
             self.stats.warnings_count += 1
 
-    def add_alert_callback(self, callback: Callable[[str, Dict], None]):
+    def add_alert_callback(
+        self, callback: Callable[[str, Dict[str, Any]], None]
+    ) -> None:
         """アラートコールバックを追加"""
         self.alert_callbacks.append(callback)
 
@@ -231,7 +233,7 @@ class PerformanceMonitor:
                 stage="error",
             )
 
-    def _monitoring_loop(self):
+    def _monitoring_loop(self) -> None:
         """監視ループ（別スレッドで実行）"""
         self.logger.debug("Performance monitoring loop started")
 
@@ -265,7 +267,7 @@ class PerformanceMonitor:
 
         self.logger.debug("Performance monitoring loop ended")
 
-    def _check_performance_alerts(self, snapshot: PerformanceSnapshot):
+    def _check_performance_alerts(self, snapshot: PerformanceSnapshot) -> None:
         """パフォーマンスアラートをチェック"""
         alerts = []
 
@@ -425,7 +427,7 @@ class PerformanceMonitor:
         slope = (n * sum_xy - sum_x * sum_y) / denominator
         return slope
 
-    def save_metrics_to_file(self, file_path: Optional[str] = None):
+    def save_metrics_to_file(self, file_path: Optional[str] = None) -> None:
         """パフォーマンスメトリクスをファイルに保存"""
         # tmp/配下にファイルを作成
         tmp_dir = Path("tmp")
@@ -467,18 +469,23 @@ class PerformanceContext:
         self.total_items = total_items
         self.stage = stage
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self.monitor.start_monitoring(self.total_items, self.stage)
         return self.monitor
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[Any],
+    ) -> None:
         self.monitor.stop_monitoring()
 
 
-def monitor_performance(func):
+def monitor_performance(func: Callable[..., Any]) -> Callable[..., Any]:
     """パフォーマンス監視デコレーター"""
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         monitor = PerformanceMonitor()
         monitor.start_monitoring(total_items=1, initial_stage=func.__name__)
 
