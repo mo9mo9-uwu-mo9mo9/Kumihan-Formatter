@@ -115,9 +115,16 @@ class KumihanSyntaxValidator:
         self.current_file = str(file_path)
 
         try:
-            # TODO: implement content validation
-            with open(file_path, "r", encoding="utf-8"):
-                pass
+            # コンテンツ検証の実装
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+
+            # 行ごとの構文検証
+            for line_num, line in enumerate(lines, 1):
+                self._validate_line_syntax(line_num, line.rstrip("\n"))
+
+            # ブロック構造の検証
+            self._validate_block_structure(lines)
         except UnicodeDecodeError:
             self._add_error(
                 1,
@@ -387,3 +394,42 @@ class KumihanSyntaxValidator:
         この機能は新記法で置き換えられます
         """
         return False
+
+    def _validate_block_structure(self, lines: list[str]) -> None:
+        """ブロック構造の検証を実装"""
+        block_stack = []
+
+        for line_num, line in enumerate(lines, 1):
+            line = line.strip()
+
+            # ブロック開始マーカーの検出
+            if line.startswith("# ") and line.endswith(" #"):
+                # Kumihan記法のブロック開始
+                block_name = line[2:-2].strip()
+                if block_name:
+                    block_stack.append((block_name, line_num))
+
+            # ブロック終了マーカーの検出
+            elif line == "##":
+                if not block_stack:
+                    self._add_error(
+                        line_num,
+                        1,
+                        ErrorHandlingLevel.STRICT,
+                        ErrorTypes.INVALID_SYNTAX,
+                        "対応するブロック開始がない終了マーカーです",
+                        line,
+                    )
+                else:
+                    block_stack.pop()
+
+        # 閉じられていないブロックのチェック
+        for block_name, start_line in block_stack:
+            self._add_error(
+                start_line,
+                1,
+                ErrorHandlingLevel.STRICT,
+                ErrorTypes.INVALID_SYNTAX,
+                f"ブロック '{block_name}' が閉じられていません",
+                f"# {block_name} #",
+            )

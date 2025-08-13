@@ -12,7 +12,7 @@ from .file_controller import FileController
 
 if TYPE_CHECKING:
     try:
-        from ..ui.log_viewer import LogViewerWindow  # type: ignore
+        from ..ui.log_viewer import LogViewerWindow
     except ImportError:
         LogViewerWindow = Any
 

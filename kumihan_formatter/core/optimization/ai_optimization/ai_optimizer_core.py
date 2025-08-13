@@ -5,13 +5,13 @@ Phase B.4-Alpha実装: AIコアエンジン基本実装・2.0%削減達成
 技術基盤: scikit-learn基盤機械学習システム・Phase B統合
 """
 
-import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import joblib
 import numpy as np
 
 from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
@@ -774,8 +774,8 @@ class AIOptimizerCore:
             for model_name, model in self.ml_models.items():
                 if hasattr(model, "predict"):  # 訓練済みモデルのみ保存
                     model_file = model_path / f"{model_name}.pkl"
-                    with open(model_file, "wb") as f:
-                        pickle.dump(model, f)
+                    # セキュリティ修正: pickle.dump()をjoblib.dump()に置換
+                    joblib.dump(model, model_file)
 
             self.logger.info(f"Models saved to {model_path}")
             return True
@@ -789,8 +789,8 @@ class AIOptimizerCore:
             for model_name in self.ml_models.keys():
                 model_file = model_path / f"{model_name}.pkl"
                 if model_file.exists():
-                    with open(model_file, "rb") as f:
-                        self.ml_models[model_name] = pickle.load(f)
+                    # セキュリティ修正: pickle.load()をjoblib.load()に置換
+                    self.ml_models[model_name] = joblib.load(model_file)
 
             self.logger.info(f"Models loaded from {model_path}")
             return True

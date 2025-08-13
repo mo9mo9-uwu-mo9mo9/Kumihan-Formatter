@@ -257,9 +257,9 @@ class ContextAwareOptimizer:
         self.logger = get_logger(__name__)
         self.user_patterns: Dict[str, Dict[str, Any]] = {}
         # ComplexityAnalyzerは必要時にインポート
-        self.complexity_analyzer = None
+        self.complexity_analyzer: Optional[Any] = None
 
-    def _get_complexity_analyzer(self) -> None:
+    def _get_complexity_analyzer(self) -> Any:
         """ComplexityAnalyzerを遅延インポート"""
         if self.complexity_analyzer is None:
             from .analyzers import ComplexityAnalyzer

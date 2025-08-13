@@ -315,6 +315,7 @@ def main() -> None:
 def interactive_repl() -> None:
     """対話型変換REPL - ダブルクリック実行用"""
     import os
+    import subprocess
     import sys
     from pathlib import Path
 
@@ -369,7 +370,13 @@ def interactive_repl() -> None:
                 print("  - 'exit' で終了")
                 continue
             elif user_input.lower() == "clear":
-                os.system("clear" if os.name == "posix" else "cls")
+                # セキュリティ修正: os.system()をsubprocess.run()に置換
+                clear_cmd = ["clear"] if os.name == "posix" else ["cls"]
+                try:
+                    subprocess.run(clear_cmd, shell=False, check=True)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    # クリアコマンドが失敗した場合は単純に改行で代替
+                    print("\n" * 50)
                 continue
             elif user_input.lower() == "history":
                 print("\n📚 変換履歴:")

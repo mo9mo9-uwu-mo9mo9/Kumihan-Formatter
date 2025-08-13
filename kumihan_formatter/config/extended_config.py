@@ -195,8 +195,18 @@ class ExtendedConfig(BaseConfig):
         if not isinstance(other_config, dict):
             return
 
-        # TODO: Implement config merging logic
-        pass
+        # 設定のマージ実装
+        for key, value in other_config.items():
+            if (
+                key in self._config
+                and isinstance(self._config[key], dict)
+                and isinstance(value, dict)
+            ):
+                # 辞書の場合は再帰的にマージ
+                self._config[key].update(value)
+            else:
+                # その他の場合は上書き
+                self._config[key] = value
 
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得

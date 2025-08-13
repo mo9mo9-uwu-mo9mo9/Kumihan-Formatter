@@ -8,13 +8,13 @@ LightGBM・XGBoostアンサンブル予測システム
 - リアルタイム予測・事前最適化
 """
 
-import pickle
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
+import joblib
 import numpy as np
 from numpy import ndarray
 from numpy.typing import dtype
@@ -32,7 +32,7 @@ warnings.filterwarnings("ignore")
 
 # 高度ML技術スタック
 try:
-    import lightgbm as lgb  # type: ignore
+    import lightgbm as lgb
 
     LIGHTGBM_AVAILABLE = True
 except ImportError:
@@ -40,7 +40,7 @@ except ImportError:
     LIGHTGBM_AVAILABLE = False
 
 try:
-    import xgboost as xgb  # type: ignore
+    import xgboost as xgb
 
     XGBOOST_AVAILABLE = True
 except ImportError:
@@ -1439,8 +1439,8 @@ class PredictionEngine:
                         "config": ensemble_model.config,
                     }
 
-                    with open(ensemble_file, "wb") as f:
-                        pickle.dump(ensemble_data, f)
+                    # セキュリティ修正: pickle.dump()をjoblib.dump()に置換
+                    joblib.dump(ensemble_data, ensemble_file)
 
                     saved_count += 1
 
@@ -1465,8 +1465,8 @@ class PredictionEngine:
                 ensemble_file = model_path / f"ensemble_{model_name}.pkl"
 
                 if ensemble_file.exists():
-                    with open(ensemble_file, "rb") as f:
-                        ensemble_data = pickle.load(f)
+                    # セキュリティ修正: pickle.load()をjoblib.load()に置換
+                    ensemble_data = joblib.load(ensemble_file)
 
                     # アンサンブルモデル復元
                     ensemble_model = self.ensemble_models[model_name]

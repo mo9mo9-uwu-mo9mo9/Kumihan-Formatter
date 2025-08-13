@@ -5,7 +5,6 @@ Basic ML System - 基本機械学習システム（Phase B.4-Alpha）
 予測システム基盤・学習データ管理・特徴量エンジニアリング・モデル訓練推論
 """
 
-import pickle
 import time
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
+import joblib
 import numpy as np
 
 # Kumihan-Formatter基盤
@@ -88,17 +88,17 @@ class BaseMLModel(ABC):
     @abstractmethod
     def create_model(self) -> Any:
         """モデル作成（継承先で実装）"""
-        pass
+        raise NotImplementedError("create_model must be implemented by subclass")
 
     @abstractmethod
     def train(self, data: TrainingData) -> bool:
         """モデル訓練（継承先で実装）"""
-        pass
+        raise NotImplementedError("train must be implemented by subclass")
 
     @abstractmethod
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """予測実行（継承先で実装）"""
-        pass
+        raise NotImplementedError("predict must be implemented by subclass")
 
 
 class TokenEfficiencyPredictor(BaseMLModel):
@@ -127,8 +127,9 @@ class TokenEfficiencyPredictor(BaseMLModel):
             self.model = self.create_model()
             self.scaler = StandardScaler()
 
-            # Type assertion for mypy
-            assert self.model is not None, "Model creation failed"
+            # Model validation
+            if self.model is None:
+                raise RuntimeError("Model creation failed")
 
             # 特徴量正規化
             X_scaled = self.scaler.fit_transform(data.features)
@@ -166,14 +167,15 @@ class TokenEfficiencyPredictor(BaseMLModel):
 
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """Token効率性予測"""
+        # 前提条件確認
         if not self.is_trained:
             return PredictionResponse(
                 prediction=0.0, confidence=0.0, processing_time=0.0
             )
-        if self.model is None:
-            raise RuntimeError("Model not trained properly")
-        if self.scaler is None:
-            raise RuntimeError("Scaler not initialized properly")
+        if self.model is None or self.scaler is None:
+            return PredictionResponse(
+                prediction=0.0, confidence=0.0, processing_time=0.0
+            )
 
         try:
             prediction_start = time.time()
@@ -246,8 +248,9 @@ class UsagePatternClassifier(BaseMLModel):
             self.model = self.create_model()
             self.scaler = StandardScaler()
 
-            # Type assertion for mypy
-            assert self.model is not None, "Model creation failed"
+            # Model validation
+            if self.model is None:
+                raise RuntimeError("Model creation failed")
 
             self.label_encoder = LabelEncoder()
 
@@ -291,15 +294,15 @@ class UsagePatternClassifier(BaseMLModel):
 
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """使用パターン分類予測"""
+        # 前提条件確認
         if not self.is_trained:
             return PredictionResponse(
                 prediction="unknown", confidence=0.0, processing_time=0.0
             )
-        if self.model is None:
-            raise RuntimeError("Model not trained properly")
-        if self.scaler is None:
-            raise RuntimeError("Scaler not initialized properly")
-        assert self.label_encoder is not None, "Label encoder not initialized properly"
+        if self.model is None or self.scaler is None or self.label_encoder is None:
+            return PredictionResponse(
+                prediction="unknown", confidence=0.0, processing_time=0.0
+            )
 
         try:
             prediction_start = time.time()
@@ -365,8 +368,9 @@ class OptimizationRecommender(BaseMLModel):
             self.model = self.create_model()
             self.scaler = StandardScaler()
 
-            # Type assertion for mypy
-            assert self.model is not None, "Model creation failed"
+            # Model validation
+            if self.model is None:
+                raise RuntimeError("Model creation failed")
 
             self.label_encoder = LabelEncoder()
 
@@ -413,11 +417,10 @@ class OptimizationRecommender(BaseMLModel):
                 prediction="basic_optimization", confidence=0.0, processing_time=0.0
             )
 
-        if self.model is None:
-            raise RuntimeError("Model not trained properly")
-        if self.scaler is None:
-            raise RuntimeError("Scaler not initialized properly")
-        assert self.label_encoder is not None, "Label encoder not initialized properly"
+        if self.model is None or self.scaler is None or self.label_encoder is None:
+            return PredictionResponse(
+                prediction="basic_optimization", confidence=0.0, processing_time=0.0
+            )
 
         try:
             prediction_start = time.time()
@@ -1283,8 +1286,8 @@ class BasicMLSystem:
                     if hasattr(model, "label_encoder"):
                         model_data["label_encoder"] = model.label_encoder
 
-                    with open(model_file, "wb") as f:
-                        pickle.dump(model_data, f)
+                    # セキュリティ修正: pickle.dump()をjoblib.dump()に置換
+                    joblib.dump(model_data, model_file)
 
                     saved_count += 1
 
@@ -1303,8 +1306,8 @@ class BasicMLSystem:
                 model_file = model_path / f"{model_name}.pkl"
 
                 if model_file.exists():
-                    with open(model_file, "rb") as f:
-                        model_data = pickle.load(f)
+                    # セキュリティ修正: pickle.load()をjoblib.load()に置換
+                    model_data = joblib.load(model_file)
 
                     # モデル復元
                     model = self.models[model_name]

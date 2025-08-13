@@ -508,8 +508,12 @@ class Parser:
 
     def _parse_line_with_graceful_errors(self) -> Node | None:
         """graceful error handling対応のパース処理"""
-        # TODO: implement error recovery position tracking
-        line = self.lines[self.current].strip()
+        # エラー回復位置追跡の実装
+        original_position = self.current
+        original_line = (
+            self.lines[self.current] if self.current < len(self.lines) else ""
+        )
+        line = original_line.strip()
 
         try:
             # Parse block markers first
@@ -525,10 +529,24 @@ class Parser:
             return None
 
         except Exception as e:
+            # エラー回復位置追跡情報を含むログ
+            error_info = {
+                "original_position": original_position,
+                "original_line": original_line.strip(),
+                "current_position": self.current,
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+            }
+
             self.logger.warning(
-                f"Force advancing line due to parsing error at line {self.current}: {e}"
+                f"Parsing error at line {original_position}: {e} "
+                f"(original: '{original_line.strip()}')"
             )
-            return self._create_error_node(line, str(e))
+
+            # エラー位置を回復（元の位置+1に進む）
+            self.current = original_position + 1
+
+            return self._create_error_node(original_line.strip(), str(e))
 
     def get_errors(self) -> list[str]:
         """Get parsing errors"""

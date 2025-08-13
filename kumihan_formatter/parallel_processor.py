@@ -277,7 +277,7 @@ class ParallelProcessorHandler:
             )
             # エラー時も処理継続（graceful degradation）
 
-    def _get_thread_local_parser(self) -> None:
+    def _get_thread_local_parser(self) -> Any:
         """スレッドローカルパーサーインスタンスを取得"""
         if not hasattr(self.parser._thread_local_storage, "parser"):
             # スレッド固有のパーサーインスタンスを作成

@@ -166,11 +166,18 @@ class ContentParser(BaseBlockParser):
             Tuple of (parsed list node, next index)
         """
         # Check if parser reference has list parser
-        # Check if parser reference has list parser
-        if self.parser_ref is None or not hasattr(self.parser_ref, "list_parser"):
-            from kumihan_formatter.core.ast_nodes import (
-                error_node,
+        if self.parser_ref is None:
+            from kumihan_formatter.core.ast_nodes import error_node
+
+            return (
+                error_node(
+                    "リスト解析エラー: パーサー参照が利用できません", start_index
+                ),
+                start_index + 1,
             )
+
+        if not hasattr(self.parser_ref, "list_parser"):
+            from kumihan_formatter.core.ast_nodes import error_node
 
             return (
                 error_node(
