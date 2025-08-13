@@ -1,0 +1,50 @@
+[
+  {
+    "timestamp": "2025-08-14T00:49:30.214932",
+    "queue_size": 2,
+    "pending_tasks": 2,
+    "processing_rate": 1,
+    "error_fix_rate": 1.0,
+    "duplicate_rate": 0.0,
+    "avg_processing_time": 2.5,
+    "quality_approval_rate": 1.0,
+    "token_efficiency": 0.004166666666666667,
+    "cost_efficiency": 1388.888888888889
+  },
+  {
+    "timestamp": "2025-08-14T00:49:30.215045",
+    "queue_size": 2,
+    "pending_tasks": 2,
+    "processing_rate": 1,
+    "error_fix_rate": 1.0,
+    "duplicate_rate": 0.0,
+    "avg_processing_time": 2.5,
+    "quality_approval_rate": 1.0,
+    "token_efficiency": 0.004166666666666667,
+    "cost_efficiency": 1388.888888888889
+  },
+  {
+    "timestamp": "2025-08-14T00:49:56.778040",
+    "queue_size": 2,
+    "pending_tasks": 2,
+    "processing_rate": 271.05231317173445,
+    "error_fix_rate": 1.0,
+    "duplicate_rate": 0.0,
+    "avg_processing_time": 2.5,
+    "quality_approval_rate": 1.0,
+    "token_efficiency": 0.004166666666666667,
+    "cost_efficiency": 1388.888888888889
+  },
+  {
+    "timestamp": "2025-08-14T00:49:56.778154",
+    "queue_size": 2,
+    "pending_tasks": 2,
+    "processing_rate": 271.05231317173445,
+    "error_fix_rate": 1.0,
+    "duplicate_rate": 0.0,
+    "avg_processing_time": 2.5,
+    "quality_approval_rate": 1.0,
+    "token_efficiency": 0.004166666666666667,
+    "cost_efficiency": 1388.888888888889
+  }
+]
