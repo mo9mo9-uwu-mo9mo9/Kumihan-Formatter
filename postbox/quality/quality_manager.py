@@ -655,6 +655,240 @@ class QualityManager:
 
         return recommendations
 
+    # =========================
+    # 3層検証体制専用メソッド
+    # =========================
+
+    def validate_syntax(self, target_files: List[str]) -> Dict[str, Any]:
+        """Layer 1: 構文検証（3層検証体制）"""
+
+        print("🔍 Layer 1: 構文検証開始...")
+
+        # 構文チェック実行
+        syntax_result = self._check_syntax(target_files)
+
+        # 基本品質チェック
+        type_result = self._check_types(target_files)
+
+        # 検証結果統合
+        validation_passed = (
+            syntax_result.passed and
+            type_result.score >= 0.7  # 型チェック70%以上
+        )
+
+        result = {
+            "layer": 1,
+            "validation_type": "syntax_validation",
+            "passed": validation_passed,
+            "syntax_check": {
+                "passed": syntax_result.passed,
+                "score": syntax_result.score,
+                "errors": syntax_result.error_count,
+                "details": syntax_result.details
+            },
+            "type_check": {
+                "passed": type_result.passed,
+                "score": type_result.score,
+                "errors": type_result.error_count,
+                "details": type_result.details
+            },
+            "summary": {
+                "total_files": len(target_files),
+                "syntax_errors": syntax_result.error_count,
+                "type_errors": type_result.error_count,
+                "validation_passed": validation_passed
+            },
+            "next_layer_recommended": validation_passed,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+        print(f"✅ Layer 1完了: {'PASS' if validation_passed else 'FAIL'}")
+        print(f"   構文エラー: {syntax_result.error_count}件")
+        print(f"   型エラー: {type_result.error_count}件")
+
+        return result
+
+    def check_code_quality(self, target_files: List[str], layer1_result: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Layer 2: 品質検証（3層検証体制）"""
+
+        print("🛡️ Layer 2: 品質検証開始...")
+
+        # Layer 1の結果確認
+        if layer1_result and not layer1_result.get("passed", False):
+            return {
+                "layer": 2,
+                "validation_type": "quality_validation",
+                "passed": False,
+                "skipped": True,
+                "reason": "Layer 1構文検証が失敗したため品質検証をスキップ",
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+        # 包括的品質チェック実行
+        lint_result = self._check_lint(target_files)
+        format_result = self._check_format(target_files)
+        security_result = self._check_security(target_files)
+        performance_result = self._check_performance(target_files)
+        test_result = self._check_tests(target_files)
+
+        # 品質基準判定
+        quality_scores = {
+            "lint": lint_result.score,
+            "format": format_result.score,
+            "security": security_result.score,
+            "performance": performance_result.score,
+            "test": test_result.score
+        }
+
+        overall_quality_score = sum(quality_scores.values()) / len(quality_scores)
+        quality_passed = overall_quality_score >= 0.75  # 75%以上で合格
+
+        result = {
+            "layer": 2,
+            "validation_type": "quality_validation",
+            "passed": quality_passed,
+            "overall_quality_score": overall_quality_score,
+            "quality_checks": {
+                "lint": {
+                    "passed": lint_result.passed,
+                    "score": lint_result.score,
+                    "warnings": lint_result.warning_count
+                },
+                "format": {
+                    "passed": format_result.passed,
+                    "score": format_result.score,
+                    "issues": format_result.error_count
+                },
+                "security": {
+                    "passed": security_result.passed,
+                    "score": security_result.score,
+                    "vulnerabilities": security_result.error_count
+                },
+                "performance": {
+                    "passed": performance_result.passed,
+                    "score": performance_result.score,
+                    "bottlenecks": performance_result.warning_count
+                },
+                "test": {
+                    "passed": test_result.passed,
+                    "score": test_result.score,
+                    "coverage": test_result.score * 100
+                }
+            },
+            "summary": {
+                "total_files": len(target_files),
+                "quality_level": self._determine_quality_level(overall_quality_score),
+                "claude_review_recommended": quality_passed
+            },
+            "next_layer_recommended": quality_passed,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+        print(f"✅ Layer 2完了: {'PASS' if quality_passed else 'FAIL'}")
+        print(f"   総合品質スコア: {overall_quality_score:.3f}")
+        print(f"   品質レベル: {self._determine_quality_level(overall_quality_score).value}")
+
+        return result
+
+    def claude_final_approval(self, target_files: List[str], layer1_result: Dict[str, Any] = None,
+                            layer2_result: Dict[str, Any] = None, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Layer 3: Claude最終承認（3層検証体制）"""
+
+        print("👨‍💻 Layer 3: Claude最終承認開始...")
+
+        context = context or {}
+
+        # 前層の結果確認
+        layer1_passed = layer1_result.get("passed", False) if layer1_result else False
+        layer2_passed = layer2_result.get("passed", False) if layer2_result else False
+
+        if not (layer1_passed and layer2_passed):
+            return {
+                "layer": 3,
+                "validation_type": "claude_final_approval",
+                "approved": False,
+                "skipped": True,
+                "reason": "前層の検証が未完了または失敗のため最終承認をスキップ",
+                "layer1_passed": layer1_passed,
+                "layer2_passed": layer2_passed,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+        # Claude品質基準による最終チェック
+        final_metrics = self.run_comprehensive_check(target_files, "claude")
+
+        # 最終承認判定基準
+        approval_criteria = {
+            "minimum_overall_score": 0.80,  # 80%以上
+            "maximum_critical_errors": 0,   # 重大エラー0件
+            "minimum_test_coverage": 0.70,  # テストカバレッジ70%以上
+            "maximum_security_issues": 0    # セキュリティ問題0件
+        }
+
+        # 判定実行
+        approval_checks = {
+            "overall_score_check": final_metrics.overall_score >= approval_criteria["minimum_overall_score"],
+            "critical_errors_check": final_metrics.error_count <= approval_criteria["maximum_critical_errors"],
+            "test_coverage_check": final_metrics.test_coverage >= approval_criteria["minimum_test_coverage"],
+            "security_check": final_metrics.security_score >= 0.95  # セキュリティは95%以上
+        }
+
+        final_approved = all(approval_checks.values())
+
+        # コンテキスト考慮（新規実装の場合の特別基準）
+        if context.get("task_type") in ["new_implementation", "hybrid_implementation", "new_feature_development"]:
+            # 新規実装は基準を若干緩和
+            if final_metrics.overall_score >= 0.75 and final_metrics.error_count <= 2:
+                final_approved = True
+                approval_checks["new_implementation_exception"] = True
+
+        result = {
+            "layer": 3,
+            "validation_type": "claude_final_approval",
+            "approved": final_approved,
+            "final_metrics": {
+                "overall_score": final_metrics.overall_score,
+                "quality_level": final_metrics.quality_level.value,
+                "error_count": final_metrics.error_count,
+                "warning_count": final_metrics.warning_count,
+                "test_coverage": final_metrics.test_coverage,
+                "security_score": final_metrics.security_score
+            },
+            "approval_criteria": approval_criteria,
+            "approval_checks": approval_checks,
+            "context_considerations": {
+                "task_type": context.get("task_type", "unknown"),
+                "special_criteria_applied": "new_implementation_exception" in approval_checks
+            },
+            "recommendations": final_metrics.improvement_suggestions,
+            "summary": {
+                "layer1_passed": layer1_passed,
+                "layer2_passed": layer2_passed,
+                "layer3_approved": final_approved,
+                "three_layer_verification_complete": final_approved
+            },
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+        print(f"✅ Layer 3完了: {'APPROVED' if final_approved else 'REJECTED'}")
+        print(f"   最終品質スコア: {final_metrics.overall_score:.3f}")
+        print(f"   3層検証結果: {'完全通過' if final_approved else '要改善'}")
+
+        return result
+
+    def _determine_quality_level(self, score: float) -> QualityLevel:
+        """スコアから品質レベルを判定"""
+        if score >= 0.95:
+            return QualityLevel.EXCELLENT
+        elif score >= 0.80:
+            return QualityLevel.GOOD
+        elif score >= 0.60:
+            return QualityLevel.ACCEPTABLE
+        elif score >= 0.40:
+            return QualityLevel.POOR
+        else:
+            return QualityLevel.CRITICAL
+
 def main():
     """テスト実行"""
     qm = QualityManager()

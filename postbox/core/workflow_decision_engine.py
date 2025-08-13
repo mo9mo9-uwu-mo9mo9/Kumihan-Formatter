@@ -56,6 +56,7 @@ class WorkflowDecisionEngine:
     def __init__(self, config_path: Optional[str] = None):
         self.config = self._load_config(config_path)
         self.history_path = Path("postbox/monitoring/decision_history.json")
+        self.token_accuracy_path = Path("postbox/monitoring/token_accuracy.json")
         self.history_path.parent.mkdir(parents=True, exist_ok=True)
 
         # 判断基準設定
@@ -66,9 +67,13 @@ class WorkflowDecisionEngine:
             "complexity_threshold": self.config.get("complexity_threshold", "moderate")
         }
 
+        # Token見積もり精度追跡
+        self.accuracy_data = self._load_accuracy_data()
+
         print("🧠 WorkflowDecisionEngine 初期化完了")
         print(f"📊 判断基準: Token閾値={self.thresholds['min_tokens_for_gemini']}, "
               f"コスト閾値=${self.thresholds['max_cost_auto_approval']:.3f}")
+        print(f"📈 見積もり精度: {self._get_current_accuracy():.1%}")
 
     def analyze_task(self, task_description: str, target_files: List[str],
                     error_type: str = "", context: Dict[str, Any] = None) -> TaskAnalysis:
@@ -255,7 +260,7 @@ class WorkflowDecisionEngine:
             score += 2
         if "architecture" in task_lower or "アーキテクチャ" in task_lower:
             score += 3
-        
+
         # 新規実装関連キーワード
         if "new_implementation" in task_lower or "新規実装" in task_lower:
             score += 3
@@ -314,27 +319,195 @@ class WorkflowDecisionEngine:
         return estimated_time
 
     def _estimate_tokens(self, task_description: str, file_analysis: Dict) -> int:
-        """Token使用量見積もり"""
+        """Token使用量見積もり（精度向上版）"""
 
-        # 基本Token数
-        base_tokens = 500
+        # 基本Token数（学習調整済み）
+        base_tokens = 500 * self._get_accuracy_multiplier("base")
 
-        # タスク説明による加算
-        base_tokens += len(task_description) * 2
+        # タスク説明による加算（学習調整済み）
+        description_multiplier = self._get_accuracy_multiplier("description")
+        base_tokens += len(task_description) * 2 * description_multiplier
 
-        # ファイル内容による加算（概算）
-        content_tokens = file_analysis["total_lines"] * 3
+        # ファイル内容による加算（学習調整済み）
+        content_multiplier = self._get_accuracy_multiplier("content")
+        content_tokens = file_analysis["total_lines"] * 3 * content_multiplier
 
-        # コンテキスト・指示による加算
-        instruction_tokens = 1000
+        # コンテキスト・指示による加算（学習調整済み）
+        instruction_multiplier = self._get_accuracy_multiplier("instruction")
+        instruction_tokens = 1000 * instruction_multiplier
+
+        # 複雑度による動的調整
+        complexity_factor = self._calculate_complexity_factor(file_analysis)
 
         # Flash 2.5の効率性を考慮した調整
-        total_tokens = base_tokens + content_tokens + instruction_tokens
+        total_tokens = (base_tokens + content_tokens + instruction_tokens) * complexity_factor
 
-        # Dual-Agent効率化（30%削減）
-        optimized_tokens = int(total_tokens * 0.7)
+        # Dual-Agent効率化（学習により最適化）
+        efficiency_factor = self._get_accuracy_multiplier("efficiency")
+        optimized_tokens = int(total_tokens * efficiency_factor)
+
+        # 最小・最大値制限
+        optimized_tokens = max(optimized_tokens, 300)  # 最小300トークン
+        optimized_tokens = min(optimized_tokens, 50000)  # 最大50,000トークン
 
         return optimized_tokens
+
+    def _calculate_complexity_factor(self, file_analysis: Dict) -> float:
+        """複雑度ファクター計算"""
+
+        # ファイル数による調整
+        file_factor = min(file_analysis["file_count"] * 0.1, 0.5)
+
+        # エラー数による調整
+        error_factor = min(file_analysis["error_count"] * 0.05, 0.3)
+
+        # 関数・クラス数による調整
+        structure_factor = min((file_analysis["total_functions"] + file_analysis["total_classes"]) * 0.01, 0.2)
+
+        return 1.0 + file_factor + error_factor + structure_factor
+
+    def _get_accuracy_multiplier(self, component: str) -> float:
+        """コンポーネント別精度補正倍率取得"""
+
+        multipliers = self.accuracy_data.get("multipliers", {})
+        return multipliers.get(component, {
+            "base": 1.0,
+            "description": 1.0,
+            "content": 1.0,
+            "instruction": 1.0,
+            "efficiency": 0.7
+        }.get(component, 1.0))
+
+    def record_actual_usage(self, task_id: str, estimated_tokens: int, actual_tokens: int,
+                           task_description: str, file_analysis: Dict) -> None:
+        """実際のToken使用量を記録して精度改善"""
+
+        if actual_tokens <= 0:
+            return  # 無効なデータは記録しない
+
+        accuracy_ratio = actual_tokens / estimated_tokens if estimated_tokens > 0 else 1.0
+
+        # 精度データ記録
+        accuracy_record = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "task_id": task_id,
+            "estimated_tokens": estimated_tokens,
+            "actual_tokens": actual_tokens,
+            "accuracy_ratio": accuracy_ratio,
+            "task_description_length": len(task_description),
+            "file_analysis": {
+                "file_count": file_analysis.get("file_count", 0),
+                "total_lines": file_analysis.get("total_lines", 0),
+                "error_count": file_analysis.get("error_count", 0)
+            }
+        }
+
+        # データ蓄積
+        self.accuracy_data["records"].append(accuracy_record)
+
+        # データサイズ制限（最新500件保持）
+        if len(self.accuracy_data["records"]) > 500:
+            self.accuracy_data["records"] = self.accuracy_data["records"][-500:]
+
+        # 精度倍率更新
+        self._update_accuracy_multipliers()
+
+        # データ保存
+        self._save_accuracy_data()
+
+        print(f"📊 Token精度記録: 見積もり={estimated_tokens}, 実際={actual_tokens}, "
+              f"精度={accuracy_ratio:.2f}, 全体精度={self._get_current_accuracy():.1%}")
+
+    def _update_accuracy_multipliers(self) -> None:
+        """精度倍率の更新"""
+
+        records = self.accuracy_data["records"]
+        if len(records) < 5:
+            return  # データが少ない場合は更新しない
+
+        # 最新30件のデータで倍率計算
+        recent_records = records[-30:]
+
+        # 平均精度比率計算
+        total_ratio = sum(r["accuracy_ratio"] for r in recent_records)
+        avg_ratio = total_ratio / len(recent_records)
+
+        # 現在の倍率取得
+        current_multipliers = self.accuracy_data.get("multipliers", {})
+
+        # 段階的調整（急激な変更を避ける）
+        adjustment_factor = 0.1  # 10%ずつ調整
+
+        updated_multipliers = {}
+        for component in ["base", "description", "content", "instruction", "efficiency"]:
+            current_value = current_multipliers.get(component, 1.0)
+
+            if avg_ratio > 1.1:  # 実際が見積もりより10%以上多い
+                new_value = current_value * (1 + adjustment_factor)
+            elif avg_ratio < 0.9:  # 実際が見積もりより10%以上少ない
+                new_value = current_value * (1 - adjustment_factor)
+            else:
+                new_value = current_value
+
+            # 合理的な範囲に制限
+            new_value = max(0.3, min(new_value, 3.0))
+            updated_multipliers[component] = new_value
+
+        self.accuracy_data["multipliers"] = updated_multipliers
+        self.accuracy_data["last_update"] = datetime.datetime.now().isoformat()
+        self.accuracy_data["avg_accuracy_ratio"] = avg_ratio
+
+    def _get_current_accuracy(self) -> float:
+        """現在の見積もり精度取得"""
+
+        records = self.accuracy_data.get("records", [])
+        if not records:
+            return 0.0
+
+        # 最新10件の精度計算
+        recent_records = records[-10:]
+        accuracies = []
+
+        for record in recent_records:
+            ratio = record["accuracy_ratio"]
+            # 1.0に近いほど精度が高い（差分の逆数で精度計算）
+            accuracy = 1.0 - min(abs(ratio - 1.0), 1.0)
+            accuracies.append(accuracy)
+
+        return sum(accuracies) / len(accuracies) if accuracies else 0.0
+
+    def _load_accuracy_data(self) -> Dict[str, Any]:
+        """精度データの読み込み"""
+
+        if self.token_accuracy_path.exists():
+            try:
+                with open(self.token_accuracy_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except:
+                pass
+
+        # デフォルトデータ
+        return {
+            "records": [],
+            "multipliers": {
+                "base": 1.0,
+                "description": 1.0,
+                "content": 1.0,
+                "instruction": 1.0,
+                "efficiency": 0.7
+            },
+            "last_update": datetime.datetime.now().isoformat(),
+            "avg_accuracy_ratio": 1.0
+        }
+
+    def _save_accuracy_data(self) -> None:
+        """精度データの保存"""
+
+        try:
+            with open(self.token_accuracy_path, 'w', encoding='utf-8') as f:
+                json.dump(self.accuracy_data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"⚠️ 精度データ保存エラー: {e}")
 
     def _estimate_cost(self, token_estimate: int) -> float:
         """コスト見積もり（USD）"""
