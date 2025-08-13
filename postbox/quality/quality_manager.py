@@ -13,6 +13,15 @@ from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 
+# 統合テストシステム統合 (Issue #859)
+try:
+    from .integration_test_system import IntegrationTestSystem, IntegrationTestResult
+    from .test_generator import TestGeneratorEngine, TestSuite, GenerationStrategy
+    INTEGRATION_TEST_AVAILABLE = True
+except ImportError:
+    print("⚠️ 統合テストシステムのインポートに失敗しました")
+    INTEGRATION_TEST_AVAILABLE = False
+
 class QualityLevel(Enum):
     """品質レベル定義"""
     EXCELLENT = "excellent"     # 優秀（95%以上）
@@ -75,6 +84,20 @@ class QualityManager:
 
         self.standards = self._load_standards()
         self.thresholds = self.standards.get("thresholds", {})
+
+        # 統合テストシステム初期化 (Issue #859)
+        if INTEGRATION_TEST_AVAILABLE:
+            try:
+                self.integration_test_system = IntegrationTestSystem()
+                self.test_generator = TestGeneratorEngine()
+                print("🧪 統合テストシステム統合完了")
+            except Exception as e:
+                print(f"⚠️ 統合テストシステム初期化エラー: {e}")
+                self.integration_test_system = None
+                self.test_generator = None
+        else:
+            self.integration_test_system = None
+            self.test_generator = None
 
         print("🎯 QualityManager 初期化完了")
 
@@ -1716,6 +1739,389 @@ class QualityManager:
             return QualityLevel.POOR
         else:
             return QualityLevel.CRITICAL
+
+    # ========== 統合テストシステム統合メソッド (Issue #859) ==========
+
+    def run_integration_test_suite(self, target_files: List[str],
+                                  context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """統合テストスイート実行
+
+        Args:
+            target_files: テスト対象ファイルリスト
+            context: テスト実行コンテキスト
+
+        Returns:
+            Dict[str, Any]: 統合テスト結果
+        """
+
+        print("🧪 統合テストスイート実行開始")
+
+        if not INTEGRATION_TEST_AVAILABLE or not self.integration_test_system:
+            return {
+                "error": "統合テストシステムが利用できません",
+                "available": False,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+        context = context or {}
+
+        try:
+            integration_results = []
+
+            for file_path in target_files:
+                if not os.path.exists(file_path):
+                    print(f"⚠️ ファイルが存在しません: {file_path}")
+                    continue
+
+                # 新規実装統合テスト実行
+                result = self.integration_test_system.test_new_implementation(
+                    file_path, context
+                )
+                integration_results.append(result)
+
+            # 互換性検証
+            compatibility_result = self.integration_test_system.verify_existing_compatibility(
+                target_files
+            )
+
+            # 品質基準適合確認
+            quality_results = []
+            for file_path in target_files:
+                if os.path.exists(file_path):
+                    quality_result = self.integration_test_system.validate_quality_standards(
+                        file_path
+                    )
+                    quality_results.append(quality_result)
+
+            # 総合評価
+            overall_score = self._calculate_integration_overall_score(
+                integration_results, compatibility_result, quality_results
+            )
+
+            suite_result = {
+                "integration_tests": [
+                    {
+                        "test_id": r.test_id,
+                        "status": r.status.value,
+                        "score": r.score,
+                        "target_file": r.target_files[0] if r.target_files else "",
+                        "execution_time": r.execution_time,
+                        "recommendations": r.recommendations
+                    } for r in integration_results
+                ],
+                "compatibility_check": {
+                    "compatibility_score": compatibility_result.compatibility_score,
+                    "backward_compatible": compatibility_result.backward_compatible,
+                    "forward_compatible": compatibility_result.forward_compatible,
+                    "breaking_changes": compatibility_result.breaking_changes,
+                    "integration_issues": compatibility_result.integration_issues
+                },
+                "quality_validation": [
+                    {
+                        "file": target_files[i] if i < len(target_files) else "unknown",
+                        "overall_score": qr.overall_quality_score,
+                        "quality_level": qr.quality_level,
+                        "test_coverage": qr.test_coverage,
+                        "improvement_suggestions": qr.improvement_suggestions
+                    } for i, qr in enumerate(quality_results)
+                ],
+                "overall_assessment": {
+                    "overall_score": overall_score,
+                    "total_tests_run": len(integration_results),
+                    "tests_passed": len([r for r in integration_results if r.status.value == "pass"]),
+                    "tests_failed": len([r for r in integration_results if r.status.value == "fail"]),
+                    "compatibility_passed": compatibility_result.compatibility_score >= 0.75,
+                    "quality_standards_met": all(qr.overall_quality_score >= 0.70 for qr in quality_results)
+                },
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            print(f"✅ 統合テストスイート実行完了: 総合スコア {overall_score:.3f}")
+
+            return suite_result
+
+        except Exception as e:
+            print(f"❌ 統合テストスイート実行エラー: {e}")
+            return {
+                "error": str(e),
+                "available": True,
+                "execution_failed": True,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+    def generate_test_coverage_report(self, target_files: List[str]) -> Dict[str, Any]:
+        """テストカバレッジレポート生成
+
+        Args:
+            target_files: 対象ファイルリスト
+
+        Returns:
+            Dict[str, Any]: カバレッジレポート
+        """
+
+        print("📊 テストカバレッジレポート生成開始")
+
+        if not INTEGRATION_TEST_AVAILABLE or not self.test_generator:
+            return {
+                "error": "テスト生成エンジンが利用できません",
+                "available": False
+            }
+
+        try:
+            # 包括的テストスイート生成
+            test_suite = self.test_generator.generate_comprehensive_test_suite(
+                target_files, GenerationStrategy.COVERAGE_DRIVEN
+            )
+
+            # テストファイル生成
+            test_file_path = self.test_generator.generate_test_file(test_suite)
+
+            coverage_report = {
+                "test_suite_info": {
+                    "suite_id": test_suite.suite_id,
+                    "total_tests": test_suite.total_tests,
+                    "estimated_coverage": test_suite.estimated_coverage,
+                    "generation_strategy": test_suite.generation_strategy.value,
+                    "target_modules": test_suite.target_module
+                },
+                "coverage_analysis": {
+                    "files_analyzed": len(target_files),
+                    "test_cases_generated": len(test_suite.test_cases),
+                    "coverage_gaps": self._identify_coverage_gaps(target_files, test_suite),
+                    "improvement_opportunities": self._suggest_coverage_improvements(test_suite)
+                },
+                "generated_test_file": test_file_path,
+                "recommendations": [
+                    "生成されたテストファイルを実行してカバレッジを確認してください",
+                    "カバレッジギャップを手動で補完することを検討してください",
+                    "定期的にカバレッジレポートを更新してください"
+                ],
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            print(f"✅ テストカバレッジレポート生成完了: {test_suite.total_tests}テストケース")
+
+            return coverage_report
+
+        except Exception as e:
+            print(f"❌ テストカバレッジレポート生成エラー: {e}")
+            return {
+                "error": str(e),
+                "available": True,
+                "generation_failed": True,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+    def run_new_implementation_quality_check(self, implementation_path: str,
+                                           context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """新規実装向け品質チェック（統合テスト含む）
+
+        Args:
+            implementation_path: 新規実装ファイルパス
+            context: 実装コンテキスト（タスクタイプ、要件等）
+
+        Returns:
+            Dict[str, Any]: 品質チェック結果
+        """
+
+        print(f"🔍 新規実装向け品質チェック開始: {implementation_path}")
+
+        context = context or {}
+
+        # 1. 基本品質チェック
+        basic_quality = self.run_comprehensive_check([implementation_path], "claude")
+
+        # 2. 統合テスト実行
+        integration_result = None
+        if INTEGRATION_TEST_AVAILABLE and self.integration_test_system:
+            try:
+                integration_result = self.integration_test_system.test_new_implementation(
+                    implementation_path, context
+                )
+            except Exception as e:
+                print(f"⚠️ 統合テスト実行エラー: {e}")
+
+        # 3. テスト生成
+        test_generation_result = None
+        if INTEGRATION_TEST_AVAILABLE and self.test_generator:
+            try:
+                test_generation_result = self.test_generator.generate_comprehensive_test_suite(
+                    [implementation_path], GenerationStrategy.COMPREHENSIVE
+                )
+            except Exception as e:
+                print(f"⚠️ テスト生成エラー: {e}")
+
+        # 4. 総合評価
+        comprehensive_result = {
+            "basic_quality": {
+                "overall_score": basic_quality.overall_score,
+                "quality_level": basic_quality.quality_level.value,
+                "error_count": basic_quality.error_count,
+                "warning_count": basic_quality.warning_count,
+                "improvement_suggestions": basic_quality.improvement_suggestions
+            },
+            "integration_test": {
+                "available": integration_result is not None,
+                "test_id": integration_result.test_id if integration_result else None,
+                "status": integration_result.status.value if integration_result else "not_run",
+                "score": integration_result.score if integration_result else 0.0,
+                "execution_time": integration_result.execution_time if integration_result else 0.0,
+                "recommendations": integration_result.recommendations if integration_result else []
+            },
+            "test_generation": {
+                "available": test_generation_result is not None,
+                "suite_id": test_generation_result.suite_id if test_generation_result else None,
+                "total_tests": test_generation_result.total_tests if test_generation_result else 0,
+                "estimated_coverage": test_generation_result.estimated_coverage if test_generation_result else 0.0
+            },
+            "overall_assessment": self._calculate_new_implementation_assessment(
+                basic_quality, integration_result, test_generation_result, context
+            ),
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+        print(f"✅ 新規実装向け品質チェック完了")
+
+        return comprehensive_result
+
+    def _calculate_integration_overall_score(self, integration_results: List[Any],
+                                           compatibility_result: Any,
+                                           quality_results: List[Any]) -> float:
+        """統合テスト総合スコア計算"""
+
+        scores = []
+
+        # 統合テストスコア
+        if integration_results:
+            integration_avg = sum(r.score for r in integration_results) / len(integration_results)
+            scores.append(integration_avg * 0.4)  # 40%の重み
+
+        # 互換性スコア
+        if compatibility_result:
+            scores.append(compatibility_result.compatibility_score * 0.3)  # 30%の重み
+
+        # 品質スコア
+        if quality_results:
+            quality_avg = sum(qr.overall_quality_score for qr in quality_results) / len(quality_results)
+            scores.append(quality_avg * 0.3)  # 30%の重み
+
+        return sum(scores) if scores else 0.0
+
+    def _identify_coverage_gaps(self, target_files: List[str], test_suite: Any) -> List[str]:
+        """カバレッジギャップ特定"""
+
+        gaps = []
+
+        for file_path in target_files:
+            if not os.path.exists(file_path):
+                gaps.append(f"ファイル未存在: {file_path}")
+                continue
+
+            # 簡易ギャップ分析
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                # 関数・クラス数とテストケース数の比較
+                function_count = content.count("def ")
+                class_count = content.count("class ")
+
+                estimated_testable_units = function_count + class_count
+                actual_test_cases = len(test_suite.test_cases) if test_suite else 0
+
+                if actual_test_cases < estimated_testable_units:
+                    gaps.append(f"{file_path}: 推定{estimated_testable_units}単位に対し{actual_test_cases}テスト")
+
+            except Exception as e:
+                gaps.append(f"{file_path}: 分析エラー - {str(e)}")
+
+        return gaps
+
+    def _suggest_coverage_improvements(self, test_suite: Any) -> List[str]:
+        """カバレッジ改善提案"""
+
+        suggestions = []
+
+        if not test_suite:
+            suggestions.append("テストスイートが生成されませんでした")
+            return suggestions
+
+        if test_suite.estimated_coverage < 0.8:
+            suggestions.append("推定カバレッジが80%未満です。追加のテストケースを検討してください")
+
+        if test_suite.total_tests < 5:
+            suggestions.append("テストケース数が少なすぎます。境界値テストやエッジケースの追加を推奨します")
+
+        # テストタイプ別の提案
+        test_types = set()
+        for test_case in test_suite.test_cases:
+            test_types.add(test_case.test_type.value)
+
+        if "boundary" not in test_types:
+            suggestions.append("境界値テストの追加を推奨します")
+
+        if "integration" not in test_types:
+            suggestions.append("統合テストの追加を推奨します")
+
+        if not suggestions:
+            suggestions.append("テストカバレッジは適切です")
+
+        return suggestions
+
+    def _calculate_new_implementation_assessment(self, basic_quality: Any,
+                                               integration_result: Any,
+                                               test_generation_result: Any,
+                                               context: Dict[str, Any]) -> Dict[str, Any]:
+        """新規実装総合評価計算"""
+
+        # スコア計算
+        quality_score = basic_quality.overall_score
+        integration_score = integration_result.score if integration_result else 0.0
+        test_generation_score = (test_generation_result.estimated_coverage
+                               if test_generation_result else 0.0)
+
+        # 重み付き平均
+        weights = {"quality": 0.5, "integration": 0.3, "test_generation": 0.2}
+
+        overall_score = (
+            quality_score * weights["quality"] +
+            integration_score * weights["integration"] +
+            test_generation_score * weights["test_generation"]
+        )
+
+        # 評価判定
+        if overall_score >= 0.8:
+            assessment = "EXCELLENT"
+            recommendation = "新規実装は高品質です。本番デプロイの準備ができています"
+        elif overall_score >= 0.7:
+            assessment = "GOOD"
+            recommendation = "新規実装は良好な品質です。軽微な改善後にデプロイ可能です"
+        elif overall_score >= 0.6:
+            recommendation = "新規実装は許容範囲内ですが、改善の余地があります"
+            assessment = "ACCEPTABLE"
+        else:
+            assessment = "POOR"
+            recommendation = "新規実装は品質基準を下回っています。大幅な改善が必要です"
+
+        # コンテキスト考慮
+        task_type = context.get("task_type", "unknown")
+        if task_type in ["new_implementation", "hybrid_implementation"]:
+            # 新規実装は若干基準を緩和
+            if overall_score >= 0.65:
+                assessment = "ACCEPTABLE_FOR_NEW_IMPLEMENTATION"
+
+        return {
+            "overall_score": overall_score,
+            "assessment": assessment,
+            "recommendation": recommendation,
+            "score_breakdown": {
+                "quality": quality_score,
+                "integration": integration_score,
+                "test_generation": test_generation_score
+            },
+            "context_applied": task_type,
+            "ready_for_deployment": overall_score >= 0.7
+        }
 
 def main() -> None:
     """テスト実行"""

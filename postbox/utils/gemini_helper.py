@@ -20,6 +20,14 @@ except ImportError:
     print("⚠️ TokenMeasurementSystemのインポートに失敗しました")
     TokenMeasurementSystem = None
 
+# 統合テストシステム統合 (Issue #859)
+try:
+    from postbox.quality.quality_manager import QualityManager
+    INTEGRATION_TEST_AVAILABLE = True
+except ImportError:
+    print("⚠️ 統合テストシステムのインポートに失敗しました")
+    INTEGRATION_TEST_AVAILABLE = False
+
 class GeminiHelper:
     """Gemini CLI側の作業支援ツール"""
 
@@ -31,6 +39,17 @@ class GeminiHelper:
 
         # TokenMeasurementSystem初期化
         self.token_measurement = TokenMeasurementSystem() if TokenMeasurementSystem else None
+
+        # 統合テストシステム初期化 (Issue #859)
+        if INTEGRATION_TEST_AVAILABLE:
+            try:
+                self.quality_manager = QualityManager()
+                print("🧪 統合テストシステム初期化完了")
+            except Exception as e:
+                print(f"⚠️ 統合テストシステム初期化エラー: {e}")
+                self.quality_manager = None
+        else:
+            self.quality_manager = None
 
         # サポートされるタスクタイプ（Issue #842対応）
         self.SUPPORTED_TASK_TYPES = [
@@ -266,6 +285,9 @@ class GeminiHelper:
         modifications["quality_checks"] = self._run_quality_checks()
         modifications["tests_passed"] = self._run_tests()
 
+        # 統合テスト実行 (Issue #859)
+        modifications["integration_test_results"] = self._execute_integration_tests(target_files, task_data)
+
         report = {
             "approach": f"Flash 2.5最適化: {error_type} エラー修正",
             "task_type": task_type,
@@ -470,6 +492,9 @@ class GeminiHelper:
         # 品質チェック・テスト実行
         modifications["quality_checks"] = self._run_quality_checks()
         modifications["tests_passed"] = self._run_tests()
+
+        # 統合テスト実行 (Issue #859) - 新規実装
+        modifications["integration_test_results"] = self._execute_integration_tests(target_files, task_data)
 
         report = {
             "approach": f"新規実装: {task_type}",
@@ -1034,6 +1059,225 @@ class GeminiHelper:
             return result.returncode == 0
         except Exception:
             return False
+
+    def _execute_integration_tests(self, target_files: List[str],
+                                  task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """統合テスト実行 (Issue #859)
+
+        Args:
+            target_files: 対象ファイルリスト
+            task_data: タスクデータ
+
+        Returns:
+            Dict[str, Any]: 統合テスト結果
+        """
+
+        if not INTEGRATION_TEST_AVAILABLE or not self.quality_manager:
+            return {
+                "available": False,
+                "error": "統合テストシステムが利用できません",
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+        print("🧪 統合テスト実行開始")
+
+        try:
+            # タスクタイプ判定
+            task_type = task_data.get("type", "unknown")
+
+            if task_type in ["new_implementation", "hybrid_implementation", "new_feature_development"]:
+                # 新規実装向け品質チェック（統合テスト含む）
+                return self._execute_new_implementation_integration_test(target_files, task_data)
+            else:
+                # 既存コード修正向け統合テスト
+                return self._execute_modification_integration_test(target_files, task_data)
+
+        except Exception as e:
+            print(f"❌ 統合テスト実行エラー: {e}")
+            return {
+                "available": True,
+                "execution_failed": True,
+                "error": str(e),
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+    def _execute_new_implementation_integration_test(self, target_files: List[str],
+                                                   task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """新規実装向け統合テスト実行"""
+
+        try:
+            integration_results = {}
+
+            for file_path in target_files:
+                if not os.path.exists(file_path):
+                    print(f"⚠️ ファイルが存在しません: {file_path}")
+                    continue
+
+                # 新規実装向け品質チェック（統合テスト込み）
+                result = self.quality_manager.run_new_implementation_quality_check(
+                    file_path, {
+                        "task_type": task_data.get("type", "new_implementation"),
+                        "requirements": task_data.get("requirements", {}),
+                        "description": task_data.get("description", "")
+                    }
+                )
+
+                integration_results[file_path] = result
+
+            # 総合評価
+            overall_assessment = self._calculate_integration_summary(integration_results)
+
+            final_result = {
+                "available": True,
+                "execution_successful": True,
+                "test_type": "new_implementation_integration",
+                "files_tested": list(integration_results.keys()),
+                "individual_results": integration_results,
+                "overall_assessment": overall_assessment,
+                "recommendations": self._generate_integration_recommendations(overall_assessment),
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            print(f"✅ 新規実装統合テスト完了: 総合スコア {overall_assessment.get('overall_score', 0.0):.3f}")
+
+            return final_result
+
+        except Exception as e:
+            print(f"❌ 新規実装統合テスト実行エラー: {e}")
+            return {
+                "available": True,
+                "execution_failed": True,
+                "error": str(e),
+                "test_type": "new_implementation_integration",
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+    def _execute_modification_integration_test(self, target_files: List[str],
+                                             task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """既存コード修正向け統合テスト実行"""
+
+        try:
+            # 統合テストスイート実行
+            suite_result = self.quality_manager.run_integration_test_suite(
+                target_files, {
+                    "task_type": task_data.get("type", "code_modification"),
+                    "error_type": task_data.get("requirements", {}).get("error_type", ""),
+                    "description": task_data.get("description", "")
+                }
+            )
+
+            # テストカバレッジレポート生成
+            coverage_report = self.quality_manager.generate_test_coverage_report(target_files)
+
+            final_result = {
+                "available": True,
+                "execution_successful": True,
+                "test_type": "modification_integration",
+                "files_tested": target_files,
+                "integration_suite_result": suite_result,
+                "coverage_report": coverage_report,
+                "overall_passed": suite_result.get("overall_assessment", {}).get("overall_score", 0.0) >= 0.75,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            print(f"✅ 修正向け統合テスト完了")
+
+            return final_result
+
+        except Exception as e:
+            print(f"❌ 修正向け統合テスト実行エラー: {e}")
+            return {
+                "available": True,
+                "execution_failed": True,
+                "error": str(e),
+                "test_type": "modification_integration",
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+    def _calculate_integration_summary(self, integration_results: Dict[str, Any]) -> Dict[str, Any]:
+        """統合テスト結果サマリー計算"""
+
+        if not integration_results:
+            return {
+                "overall_score": 0.0,
+                "assessment": "NO_RESULTS",
+                "files_analyzed": 0,
+                "tests_passed": 0,
+                "tests_failed": 0,
+                "ready_for_deployment": False
+            }
+
+        scores = []
+        assessments = []
+        deployment_ready_count = 0
+
+        for file_path, result in integration_results.items():
+            overall_assessment = result.get("overall_assessment", {})
+
+            score = overall_assessment.get("overall_score", 0.0)
+            assessment = overall_assessment.get("assessment", "UNKNOWN")
+            ready = overall_assessment.get("ready_for_deployment", False)
+
+            scores.append(score)
+            assessments.append(assessment)
+
+            if ready:
+                deployment_ready_count += 1
+
+        overall_score = sum(scores) / len(scores) if scores else 0.0
+
+        # 総合評価判定
+        if overall_score >= 0.8:
+            overall_assessment = "EXCELLENT"
+        elif overall_score >= 0.7:
+            overall_assessment = "GOOD"
+        elif overall_score >= 0.6:
+            overall_assessment = "ACCEPTABLE"
+        else:
+            overall_assessment = "POOR"
+
+        return {
+            "overall_score": overall_score,
+            "assessment": overall_assessment,
+            "files_analyzed": len(integration_results),
+            "deployment_ready_files": deployment_ready_count,
+            "ready_for_deployment": deployment_ready_count == len(integration_results),
+            "score_range": {
+                "min": min(scores) if scores else 0.0,
+                "max": max(scores) if scores else 0.0,
+                "avg": overall_score
+            }
+        }
+
+    def _generate_integration_recommendations(self, assessment: Dict[str, Any]) -> List[str]:
+        """統合テスト推奨事項生成"""
+
+        recommendations = []
+
+        overall_score = assessment.get("overall_score", 0.0)
+        ready_for_deployment = assessment.get("ready_for_deployment", False)
+
+        if overall_score < 0.7:
+            recommendations.append("統合テストスコアが低いため、コードの改善が必要です")
+
+        if not ready_for_deployment:
+            recommendations.append("一部のファイルがデプロイ準備未完了です。品質向上が必要です")
+
+        files_analyzed = assessment.get("files_analyzed", 0)
+        deployment_ready_files = assessment.get("deployment_ready_files", 0)
+
+        if files_analyzed > 0 and deployment_ready_files < files_analyzed:
+            recommendations.append(f"{files_analyzed - deployment_ready_files}ファイルの品質向上が必要です")
+
+        if overall_score >= 0.8:
+            recommendations.append("統合テスト結果は優秀です。デプロイの準備ができています")
+        elif overall_score >= 0.7:
+            recommendations.append("統合テスト結果は良好です。軽微な改善後にデプロイ可能です")
+
+        if not recommendations:
+            recommendations.append("統合テスト結果を確認し、必要に応じて改善を行ってください")
+
+        return recommendations
 
     # Flash 2.5向け具体的修正パターン
 
