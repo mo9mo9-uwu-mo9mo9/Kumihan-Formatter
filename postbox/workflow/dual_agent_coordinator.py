@@ -468,39 +468,94 @@ class DualAgentCoordinator:
         print(f"🎨 新規実装タスク作成開始: {task_type}")
         print(f"📁 対象ファイル: {len(target_files)}件")
 
-        # タスク分析実行
-        task_description = f"{task_type} - {len(target_files)}ファイル実装"
-        task_analysis = self.decision_engine.analyze_task(
-            task_description, target_files, "new_implementation",
-            context={
-                "priority": priority,
-                "session_id": self.session_id,
-                "task_type": task_type,
-                "implementation_spec": implementation_spec
-            }
-        )
+        try:
+            # 入力検証
+            if not target_files:
+                print("⚠️ 対象ファイルが指定されていません。デフォルトファイルを使用します。")
+                target_files = [f"tmp/{task_type}_implementation.py"]
 
-        # Gemini使用判定
-        user_prefs = {"force_mode": force_mode} if force_mode else {}
-        decision = self.decision_engine.make_decision(task_analysis, user_prefs)
+            if not implementation_spec:
+                print("⚠️ 実装仕様が指定されていません。デフォルト仕様を使用します。")
+                implementation_spec = {"template_type": "generic", "complexity": "medium"}
 
-        print(f"\n🎯 自動判定結果:")
-        print(f"   Gemini使用: {'はい' if decision.use_gemini else 'いいえ'}")
-        print(f"   自動化レベル: {decision.automation_level.value}")
-        print(f"   推定コスト: ${decision.task_analysis.estimated_cost:.4f}")
-        print(f"   理由: {decision.reasoning}")
+            # タスク分析実行
+            task_description = f"{task_type} - {len(target_files)}ファイル実装"
+            task_analysis = self.decision_engine.analyze_task(
+                task_description, target_files, "new_implementation",
+                context={
+                    "priority": priority,
+                    "session_id": self.session_id,
+                    "task_type": task_type,
+                    "implementation_spec": implementation_spec
+                }
+            )
+        except Exception as e:
+            print(f"❌ タスク分析エラー: {e}")
+            print("🔄 フォールバック処理を実行します...")
+            # フォールバック: 簡易的なタスク分析結果を作成
+            from postbox.core.workflow_decision_engine import TaskAnalysis, TaskComplexity
+            task_analysis = TaskAnalysis(
+                complexity=TaskComplexity.MODERATE,
+                estimated_time=60,
+                estimated_tokens=1500,
+                estimated_cost=0.005,
+                risk_level="medium",
+                gemini_benefit_score=0.7,
+                automation_recommendation=AutomationLevel.SEMI_AUTO,
+                confidence=0.5
+            )
+
+        try:
+            # Gemini使用判定
+            user_prefs = {"force_mode": force_mode} if force_mode else {}
+            decision = self.decision_engine.make_decision(task_analysis, user_prefs)
+
+            print(f"\n🎯 自動判定結果:")
+            print(f"   Gemini使用: {'はい' if decision.use_gemini else 'いいえ'}")
+            print(f"   自動化レベル: {decision.automation_level.value}")
+            print(f"   推定コスト: ${decision.task_analysis.estimated_cost:.4f}")
+            print(f"   理由: {decision.reasoning}")
+
+        except Exception as e:
+            print(f"❌ Gemini判定エラー: {e}")
+            print("🔄 デフォルト判定を使用します...")
+            # フォールバック: デフォルト判定結果を作成
+            from postbox.core.workflow_decision_engine import DecisionResult
+            decision = DecisionResult(
+                use_gemini=False,
+                automation_level=AutomationLevel.SEMI_AUTO,
+                task_analysis=task_analysis,
+                reasoning="エラーによりデフォルト設定を使用",
+                alternative_approaches=["手動実行"],
+                cost_benefit_analysis={"estimated_cost": 0.005}
+            )
 
         # 実装タスク作成
         created_task_ids = []
 
         for file_path in target_files:
-            print(f"\n📄 実装タスク作成: {file_path}")
+            try:
+                print(f"\n📄 実装タスク作成: {file_path}")
 
-            # 実装タスク作成
-            task_id = self._create_implementation_task_for_file(
-                file_path, task_type, implementation_spec, priority, decision
-            )
-            created_task_ids.append(task_id)
+                # 実装タスク作成
+                task_id = self._create_implementation_task_for_file(
+                    file_path, task_type, implementation_spec, priority, decision
+                )
+                created_task_ids.append(task_id)
+
+            except Exception as e:
+                print(f"❌ タスク作成エラー ({file_path}): {e}")
+                print("🔄 フォールバック処理でタスクを作成します...")
+                # フォールバック: 簡易タスク作成
+                try:
+                    fallback_task_id = self._create_fallback_implementation_task(
+                        file_path, task_type, implementation_spec, priority
+                    )
+                    created_task_ids.append(fallback_task_id)
+                    print(f"✅ フォールバックタスク作成成功: {fallback_task_id}")
+                except Exception as fallback_error:
+                    print(f"❌ フォールバックタスク作成も失敗: {fallback_error}")
+                    continue
 
         # 自動実行判定
         if auto_execute and decision.automation_level in [AutomationLevel.FULL_AUTO, AutomationLevel.SEMI_AUTO]:
@@ -565,7 +620,16 @@ class DualAgentCoordinator:
             context={
                 "task_type": task_type,
                 "implementation_type": implementation_spec.get("template_type", "generic"),
-                "decision_engine_result": decision.task_analysis.__dict__,
+                "decision_engine_result": {
+                    "complexity": decision.task_analysis.complexity.value,
+                    "estimated_time": decision.task_analysis.estimated_time,
+                    "estimated_tokens": decision.task_analysis.estimated_tokens,
+                    "estimated_cost": decision.task_analysis.estimated_cost,
+                    "risk_level": decision.task_analysis.risk_level,
+                    "gemini_benefit_score": decision.task_analysis.gemini_benefit_score,
+                    "automation_recommendation": decision.task_analysis.automation_recommendation.value,
+                    "confidence": decision.task_analysis.confidence
+                },
                 "automation_level": decision.automation_level.value,
                 "session_id": self.session_id
             }
@@ -643,9 +707,11 @@ class DualAgentCoordinator:
                                            file_path: str,
                                            task_type: str,
                                            implementation_spec: Dict[str, Any]) -> str:
-        """実装指示生成"""
+        """実装指示生成（強化版パラメータ処理）"""
 
-        template_type = implementation_spec.get("template_type", "generic")
+        # パラメータ検証・正規化
+        validated_spec = self._validate_and_sanitize_implementation_spec(implementation_spec)
+        template_type = validated_spec["template_type"]
 
         instruction = f"""
 🎯 {task_type}実装指示 - {file_path}
@@ -654,58 +720,253 @@ class DualAgentCoordinator:
 - ファイル: {file_path}
 - タスクタイプ: {task_type}
 - テンプレート: {template_type}
+- 複雑度: {validated_spec.get("complexity", "medium")}
 
 🔧 実装手順:
 """
 
         if template_type == "class":
-            class_name = implementation_spec.get("class_name", "NewClass")
-            methods = implementation_spec.get("methods", [])
+            class_info = self._process_class_parameters(validated_spec)
             instruction += f"""
-1. クラス {class_name} の定義作成
+1. クラス {class_info['name']} の定義作成
+   - 継承: {class_info['inheritance']}
+   - 型パラメータ: {class_info['type_params']}
 2. __init__ メソッドの実装
+   - 引数: {class_info['init_params']}
+   - 型注釈完全対応
 """
-            for i, method in enumerate(methods, 3):
-                method_name = method.get("name", "new_method")
-                instruction += f"{i}. {method_name} メソッドの実装\n"
+            for i, method_info in enumerate(class_info['methods'], 3):
+                instruction += f"{i}. {method_info['name']} メソッドの実装\n"
+                instruction += f"   - 引数: {method_info['params']}\n"
+                instruction += f"   - 戻り値: {method_info['return_type']}\n"
+                if method_info.get('description'):
+                    instruction += f"   - 目的: {method_info['description']}\n"
 
         elif template_type == "module":
-            functions = implementation_spec.get("functions", [])
+            module_info = self._process_module_parameters(validated_spec)
             instruction += "1. モジュールレベルのインポート設定\n"
-            for i, func in enumerate(functions, 2):
-                func_name = func.get("name", "new_function")
-                instruction += f"{i}. {func_name} 関数の実装\n"
+            instruction += f"   - 必須インポート: {module_info['required_imports']}\n"
+            for i, func_info in enumerate(module_info['functions'], 2):
+                instruction += f"{i}. {func_info['name']} 関数の実装\n"
+                instruction += f"   - 引数: {func_info['params']}\n"
+                instruction += f"   - 戻り値: {func_info['return_type']}\n"
+                if func_info.get('description'):
+                    instruction += f"   - 目的: {func_info['description']}\n"
 
         elif template_type == "function":
-            func_name = implementation_spec.get("function_name", "main_function")
+            func_info = self._process_function_parameters(validated_spec)
             instruction += f"""
-1. {func_name} 関数の定義作成
+1. {func_info['name']} 関数の定義作成
+   - 引数: {func_info['params']}
+   - 戻り値: {func_info['return_type']}
+   - 目的: {func_info.get('description', '主要機能の実装')}
 2. メイン実行部の設定
+   - エラーハンドリング必須
+   - ログ出力対応
 """
 
+        # 品質要件の詳細化
+        quality_requirements = self._generate_quality_requirements(validated_spec, task_type)
         instruction += f"""
 
 📁 必須要件:
-- すべての関数・メソッドに型注釈必須
-- docstring でのドキュメント必須
-- from typing import の適切なインポート
-- mypy strict mode 適合必須
+{quality_requirements['basic_requirements']}
 
 🛠️ 品質チェック:
-1. 実装完了後に Python 構文チェック
-2. mypy チェック実行
-3. コードスタイルチェック
-4. 必要に応じてテスト作成
+{quality_requirements['quality_checks']}
 
 🎯 成功基準:
-✅ ファイルが正常に作成される
+{quality_requirements['success_criteria']}
+
+🔍 検証手順:
+{quality_requirements['verification_steps']}
+"""
+
+        return instruction
+
+    def _validate_and_sanitize_implementation_spec(self, implementation_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """実装仕様の検証・正規化（強化版）"""
+
+        # デフォルト値設定
+        validated_spec = {
+            "template_type": "generic",
+            "complexity": "medium",
+            "class_name": "NewClass",
+            "function_name": "main_function",
+            "methods": [],
+            "functions": [],
+            "create_tests": False,
+            "documentation_level": "standard"
+        }
+
+        # 入力値の検証・マージ
+        if isinstance(implementation_spec, dict):
+            for key, value in implementation_spec.items():
+                if key == "template_type" and value in ["class", "module", "function", "generic"]:
+                    validated_spec[key] = value
+                elif key == "complexity" and value in ["simple", "medium", "complex"]:
+                    validated_spec[key] = value
+                elif key in ["class_name", "function_name"] and isinstance(value, str) and value.strip():
+                    validated_spec[key] = value.strip()
+                elif key in ["methods", "functions"] and isinstance(value, list):
+                    validated_spec[key] = self._sanitize_method_function_list(value)
+                elif key in ["create_tests", "documentation_level"]:
+                    validated_spec[key] = value
+
+        return validated_spec
+
+    def _sanitize_method_function_list(self, items: List[Any]) -> List[Dict[str, Any]]:
+        """メソッド・関数リストの正規化"""
+
+        sanitized_items = []
+
+        for i, item in enumerate(items):
+            if isinstance(item, dict):
+                # 辞書型の場合、必要なキーを確認・補完
+                sanitized_item = {
+                    "name": item.get("name", f"method_{i+1}" if "method" in str(type(item)).lower() else f"function_{i+1}"),
+                    "params": item.get("params", "self" if "method" in str(type(item)).lower() else ""),
+                    "return_type": item.get("return_type", "None"),
+                    "description": item.get("description", "")
+                }
+            elif isinstance(item, str) and item.strip():
+                # 文字列型の場合、基本情報を設定
+                sanitized_item = {
+                    "name": item.strip(),
+                    "params": "self" if "method" in str(type(item)).lower() else "",
+                    "return_type": "None",
+                    "description": ""
+                }
+            else:
+                # 無効な型の場合、デフォルト値を設定
+                sanitized_item = {
+                    "name": f"item_{i+1}",
+                    "params": "",
+                    "return_type": "None",
+                    "description": ""
+                }
+
+            sanitized_items.append(sanitized_item)
+
+        return sanitized_items
+
+    def _process_class_parameters(self, validated_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """クラスパラメータ処理"""
+
+        class_name = validated_spec["class_name"]
+        methods = validated_spec["methods"]
+
+        # 継承情報の処理
+        inheritance = validated_spec.get("inheritance", "")
+        if inheritance and not inheritance.startswith("("):
+            inheritance = f"({inheritance})"
+
+        # 型パラメータの処理
+        type_params = validated_spec.get("type_params", "")
+
+        # __init__パラメータの処理
+        init_params = validated_spec.get("init_params", "self")
+        if not init_params.startswith("self"):
+            init_params = f"self, {init_params}"
+
+        return {
+            "name": class_name,
+            "inheritance": inheritance or "適用なし",
+            "type_params": type_params or "適用なし",
+            "init_params": init_params,
+            "methods": methods
+        }
+
+    def _process_module_parameters(self, validated_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """モジュールパラメータ処理"""
+
+        functions = validated_spec["functions"]
+
+        # 必須インポートの処理
+        required_imports = [
+            "from typing import Any, Dict, List, Optional",
+            "from kumihan_formatter.core.utilities.logger import get_logger"
+        ]
+
+        # 追加インポートの処理
+        additional_imports = validated_spec.get("additional_imports", [])
+        if isinstance(additional_imports, list):
+            required_imports.extend(additional_imports)
+
+        return {
+            "functions": functions,
+            "required_imports": required_imports
+        }
+
+    def _process_function_parameters(self, validated_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """関数パラメータ処理"""
+
+        func_name = validated_spec["function_name"]
+
+        # パラメータの処理
+        params = validated_spec.get("params", "")
+        return_type = validated_spec.get("return_type", "None")
+        description = validated_spec.get("description", "主要機能の実装")
+
+        return {
+            "name": func_name,
+            "params": params or "適用なし",
+            "return_type": return_type,
+            "description": description
+        }
+
+    def _generate_quality_requirements(self, validated_spec: Dict[str, Any], task_type: str) -> Dict[str, str]:
+        """品質要件生成"""
+
+        complexity = validated_spec["complexity"]
+        create_tests = validated_spec["create_tests"]
+        doc_level = validated_spec["documentation_level"]
+
+        # 基本要件
+        basic_requirements = """- すべての関数・メソッドに型注釈必須（mypy strict mode対応）
+- docstring でのドキュメント必須（Google Style推奨）
+- from typing import の適切なインポート
+- エラーハンドリングとログ出力の実装
+- プロジェクト標準コーディング規約遵守"""
+
+        # 複雑度別要件追加
+        if complexity == "complex":
+            basic_requirements += "\n- 詳細なコメントによる実装意図の説明\n- 複雑な処理の分割・モジュール化"
+
+        # 品質チェック
+        quality_checks = """1. 実装完了後に Python 構文チェック（py_compile）
+2. mypy strict mode チェック実行
+3. Black + isort によるコードフォーマットチェック
+4. flake8 によるリントチェック
+5. セキュリティチェック（基本パターン）"""
+
+        if create_tests:
+            quality_checks += "\n6. pytest による単体テスト実行"
+
+        # 成功基準
+        success_criteria = """✅ ファイルが正常に作成される
 ✅ 全ての関数・メソッドに適切な型注釈
 ✅ Python 構文エラー 0件
 ✅ mypy strict mode エラー 0件
 ✅ 適切な docstring ドキュメント
-"""
+✅ コードスタイルガイド準拠（Black + isort）
+✅ リントチェック合格（flake8）"""
 
-        return instruction
+        if create_tests:
+            success_criteria += "\n✅ テストケース作成・実行成功"
+
+        # 検証手順
+        verification_steps = """1. 構文検証（Layer 1）- AST解析・基本型チェック
+2. 品質検証（Layer 2）- リント・フォーマット・セキュリティ
+3. Claude最終承認（Layer 3）- 総合品質評価・実装方針確認
+4. 3層検証完全通過の確認"""
+
+        return {
+            "basic_requirements": basic_requirements,
+            "quality_checks": quality_checks,
+            "success_criteria": success_criteria,
+            "verification_steps": verification_steps
+        }
 
     def _create_with_gemini_mode(self, target_files: List[str], error_type: str,
                                 priority: str, use_micro_tasks: bool, decision, task_type: str = "code_modification") -> List[str]:
@@ -716,8 +977,8 @@ class DualAgentCoordinator:
         for file_path in target_files:
             print(f"\n📄 ファイル分析: {file_path}")
 
-            if use_micro_tasks:
-                # タスク微分化: ファイル → 関数レベル分割
+            if use_micro_tasks and task_type == "code_modification":
+                # タスク微分化: ファイル → 関数レベル分割（コード修正タスクのみ）
                 micro_tasks = self.task_analyzer.analyze_file_for_micro_tasks(file_path, error_type)
 
                 if micro_tasks:
@@ -1363,14 +1624,20 @@ class DualAgentCoordinator:
             print("🛡️ 構文検証・品質保証開始...")
             quality_assured_result = self._apply_quality_assurance(raw_result, task_data)
 
-            # コスト追跡
-            token_usage = {
-                "input_tokens": 1500,  # 推定値
-                "output_tokens": 800,   # 推定値
+            # 実際のToken使用量でコスト追跡
+            actual_token_usage = quality_assured_result.get("token_usage", {
+                "input_tokens": 1500,  # フォールバック値
+                "output_tokens": 800,   # フォールバック値
                 "model": "gemini-2.5-flash"
-            }
+            })
 
-            self.task_manager.track_cost(task_data["task_id"], token_usage)
+            self.task_manager.track_cost(task_data["task_id"], actual_token_usage)
+
+            print(f"💰 コスト追跡: 入力Token={actual_token_usage.get('input_tokens', 0)}, "
+                  f"出力Token={actual_token_usage.get('output_tokens', 0)}")
+
+            if "measurement_method" in actual_token_usage:
+                print(f"📊 測定方式: {actual_token_usage['measurement_method']}")
 
             return quality_assured_result
 
@@ -1901,8 +2168,13 @@ class DualAgentCoordinator:
 
         print("\n🎉 Dual-Agent Workflow セッション完了!")
 
-    def run_quality_check(self, target_files: List[str], ai_agent: str = "claude") -> Dict[str, Any]:
+    def run_quality_check(self, target_files: List[str] = None, ai_agent: str = "claude") -> Dict[str, Any]:
         """品質チェック実行"""
+        # target_filesが指定されていない場合のデフォルト処理
+        if target_files is None:
+            target_files = []
+            print("⚠️ 品質チェック: 対象ファイルが指定されていません。空のリストを使用します。")
+
         print(f"🔍 品質チェック開始: {len(target_files)}ファイル対象")
 
         # 包括的品質チェック実行
@@ -1929,29 +2201,56 @@ class DualAgentCoordinator:
 
         return result
 
-    def _check_quality_standards(self, metrics) -> bool:
-        """品質基準チェック"""
+    def _check_quality_standards(self, metrics: 'QualityMetrics') -> bool:
+        """品質基準チェック（型安全性強化版）"""
 
-        # 最低品質基準 (standards.jsonから取得)
-        minimum_score = 0.7
-        maximum_errors = 10
+        try:
+            # 入力検証
+            if not hasattr(metrics, 'overall_score') or not hasattr(metrics, 'error_count'):
+                print("⚠️ 無効な品質メトリクスオブジェクト")
+                return False
 
-        standards_met = True
+            # 最低品質基準 (standards.jsonから取得)
+            minimum_score = 0.7
+            maximum_errors = 10
+            minimum_type_score = 0.8
+            minimum_security_score = 0.9
 
-        if metrics.overall_score < minimum_score:
-            standards_met = False
+            standards_met = True
+            failed_criteria = []
 
-        if metrics.error_count > maximum_errors:
-            standards_met = False
+            # 総合スコアチェック
+            if metrics.overall_score < minimum_score:
+                standards_met = False
+                failed_criteria.append(f"総合スコア不足: {metrics.overall_score:.3f} < {minimum_score}")
 
-        # 重要な品質指標の個別チェック
-        if metrics.type_score < 0.8:  # 型チェックは特に重要
-            standards_met = False
+            # エラー数チェック
+            if metrics.error_count > maximum_errors:
+                standards_met = False
+                failed_criteria.append(f"エラー数超過: {metrics.error_count} > {maximum_errors}")
 
-        if metrics.security_score < 0.9:  # セキュリティも重要
-            standards_met = False
+            # 重要な品質指標の個別チェック
+            if hasattr(metrics, 'type_score') and metrics.type_score < minimum_type_score:
+                standards_met = False
+                failed_criteria.append(f"型チェック不足: {metrics.type_score:.3f} < {minimum_type_score}")
 
-        return standards_met
+            if hasattr(metrics, 'security_score') and metrics.security_score < minimum_security_score:
+                standards_met = False
+                failed_criteria.append(f"セキュリティスコア不足: {metrics.security_score:.3f} < {minimum_security_score}")
+
+            # 失敗基準のログ出力
+            if failed_criteria:
+                print(f"⚠️ 品質基準未達成: {len(failed_criteria)}件")
+                for criteria in failed_criteria[:3]:  # 最初の3件のみ表示
+                    print(f"  - {criteria}")
+            else:
+                print("✅ 全ての品質基準を満たしています")
+
+            return standards_met
+
+        except Exception as e:
+            print(f"❌ 品質基準チェックエラー: {e}")
+            return False
 
     def generate_quality_report(self, format_type: str = "html") -> str:
         """品質レポート生成"""
@@ -1963,24 +2262,81 @@ class DualAgentCoordinator:
         return report_path
 
     def start_quality_monitoring(self) -> None:
-        """品質監視開始"""
-        print("📊 品質監視システム開始")
-        self.quality_monitor.start_monitoring()
+        """品質監視開始（型安全性強化版）"""
 
-        # アラート通知設定
-        def alert_handler(alert):
-            print(f"🚨 品質アラート: {alert.message}")
+        try:
+            print("📊 品質監視システム開始")
 
-        self.quality_monitor.subscribe_to_alerts(alert_handler)
+            if not hasattr(self, 'quality_monitor') or self.quality_monitor is None:
+                print("⚠️ 品質監視システムが初期化されていません")
+                return
+
+            self.quality_monitor.start_monitoring()
+
+            # アラート通知設定（型安全性強化）
+            def alert_handler(alert: Any) -> None:
+                """Quality alert handler with enhanced error handling"""
+                try:
+                    if hasattr(alert, 'message'):
+                        print(f"🚨 品質アラート: {alert.message}")
+                    elif isinstance(alert, str):
+                        print(f"🚨 品質アラート: {alert}")
+                    else:
+                        print(f"🚨 品質アラート: {str(alert)}")
+                except Exception as handler_error:
+                    print(f"❌ アラートハンドラーエラー: {handler_error}")
+
+            self.quality_monitor.subscribe_to_alerts(alert_handler)
+            print("✅ 品質監視システムとアラートハンドラーの設定が完了しました")
+
+        except Exception as e:
+            print(f"❌ 品質監視開始エラー: {e}")
+            print("🔄 手動品質チェックモードで継続します")
 
     def get_quality_status(self) -> Dict[str, Any]:
-        """現在の品質ステータス取得"""
+        """現在の品質ステータス取得（エラーハンドリング強化版）"""
 
-        # 品質監視システムのステータス
-        monitor_status = self.quality_monitor.get_current_status()
+        try:
+            status_data = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "monitor_status": None,
+                "quality_report_data": None,
+                "error_status": "none"
+            }
 
-        # 品質レポートデータ
-        quality_report_data = self.quality_manager.get_quality_report()
+            # 品質監視システムのステータス
+            try:
+                if hasattr(self, 'quality_monitor') and self.quality_monitor is not None:
+                    status_data["monitor_status"] = self.quality_monitor.get_current_status()
+                else:
+                    status_data["monitor_status"] = {"error": "品質監視システムが利用できません"}
+                    status_data["error_status"] = "monitor_unavailable"
+            except Exception as monitor_error:
+                print(f"⚠️ 品質監視システムステータス取得エラー: {monitor_error}")
+                status_data["monitor_status"] = {"error": str(monitor_error)}
+                status_data["error_status"] = "monitor_error"
+
+            # 品質レポートデータ
+            try:
+                if hasattr(self, 'quality_manager') and self.quality_manager is not None:
+                    status_data["quality_report_data"] = self.quality_manager.get_quality_report()
+                else:
+                    status_data["quality_report_data"] = {"error": "品質マネージャーが利用できません"}
+                    status_data["error_status"] = "manager_unavailable" if status_data["error_status"] == "none" else "multiple_errors"
+            except Exception as manager_error:
+                print(f"⚠️ 品質マネージャーレポート取得エラー: {manager_error}")
+                status_data["quality_report_data"] = {"error": str(manager_error)}
+                status_data["error_status"] = "manager_error" if status_data["error_status"] == "none" else "multiple_errors"
+
+            return status_data
+
+        except Exception as e:
+            print(f"❌ 品質ステータス取得エラー: {e}")
+            return {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "error": str(e),
+                "error_status": "critical_failure"
+            }
 
         return {
             "monitoring_status": monitor_status,
@@ -2067,6 +2423,241 @@ class DualAgentCoordinator:
             "task_ids": task_ids,
             "final_gate_passed": final_gate_passed
         }
+
+    def _create_fallback_implementation_task(self,
+                                           file_path: str,
+                                           task_type: str,
+                                           implementation_spec: Dict[str, Any],
+                                           priority: str) -> str:
+        """フォールバック用簡易実装タスク作成（型安全性強化版）"""
+
+        try:
+            # 入力値検証
+            if not file_path or not isinstance(file_path, str):
+                raise ValueError("有効なファイルパスが必要です")
+
+            if not task_type or not isinstance(task_type, str):
+                raise ValueError("有効なタスクタイプが必要です")
+
+            if not isinstance(implementation_spec, dict):
+                print("⚠️ 実装仕様が辞書型ではありません。デフォルト仕様を使用します")
+                implementation_spec = {"template_type": "generic", "complexity": "simple"}
+
+            if priority not in ["low", "medium", "high"]:
+                print(f"⚠️ 無効な優先度'{priority}'。'medium'を使用します")
+                priority = "medium"
+
+            print(f"🔄 フォールバックタスク作成: {file_path}")
+            print(f"   タスクタイプ: {task_type}")
+            print(f"   優先度: {priority}")
+            print(f"   実装仕様: {implementation_spec.get('template_type', 'unknown')}")
+
+            # タスクマネージャーの存在確認
+            if not hasattr(self, 'task_manager') or self.task_manager is None:
+                raise RuntimeError("タスクマネージャーが初期化されていません")
+
+            # 最小限の要件でタスク作成
+            fallback_task_id = self.task_manager.create_task(
+                task_type=f"fallback_{task_type}",
+                description=f"フォールバック {task_type} - {file_path}",
+                target_files=[file_path],
+                priority=priority,
+                requirements={
+                    "implementation_spec": implementation_spec,
+                    "task_type": task_type,
+                    "fallback_mode": True,
+                    "quality_requirements": {
+                        "syntax_check": True,
+                        "basic_implementation": True,
+                        "error_tolerance": "high",  # フォールバック時は寛容
+                        "minimum_functionality": True
+                    }
+                },
+                claude_analysis=self._generate_fallback_analysis(file_path, task_type, implementation_spec),
+                expected_outcome=f"基本的な{task_type}完了 - {file_path}",
+                constraints=[
+                    "最小限の実装要件",
+                    "エラー時の安全な処理",
+                    "基本品質基準遵守",
+                    "フォールバック品質基準適用"
+                ],
+                context={
+                    "fallback_task": True,
+                    "original_error": "通常タスク作成失敗",
+                    "session_id": getattr(self, 'session_id', 'unknown'),
+                    "fallback_timestamp": datetime.datetime.now().isoformat(),
+                    "reduced_quality_expectations": True
+                }
+            )
+
+            print(f"✅ フォールバックタスク作成成功: {fallback_task_id}")
+            return fallback_task_id
+
+        except ValueError as ve:
+            print(f"❌ フォールバックタスク作成失敗（入力値エラー）: {ve}")
+            return self._generate_emergency_fallback_task_id("input_validation_error")
+
+        except RuntimeError as re:
+            print(f"❌ フォールバックタスク作成失敗（システムエラー）: {re}")
+            return self._generate_emergency_fallback_task_id("system_error")
+
+        except Exception as e:
+            print(f"❌ フォールバックタスク作成失敗（予期しないエラー）: {e}")
+            return self._generate_emergency_fallback_task_id("unexpected_error")
+
+    def _generate_fallback_analysis(self, file_path: str, task_type: str, implementation_spec: Dict[str, Any]) -> str:
+        """フォールバック用Claude分析生成"""
+
+        return f"""
+🔄 フォールバックタスク分析 - {task_type}
+
+📄 対象情報:
+- ファイル: {file_path}
+- タスクタイプ: {task_type}
+- 実装仕様: {implementation_spec.get('template_type', 'generic')}
+
+🎯 フォールバック方針:
+- 最小限の機能実装に焦点
+- エラー耐性を重視した設計
+- 基本的な品質基準を満たす実装
+- 段階的な改善が可能な構造
+
+⚠️ 注意事項:
+- 通常タスク作成が失敗したため簡易版を実行
+- 品質基準は通常より緩和されています
+- 実装完了後に手動レビューを推奨
+"""
+
+    def _generate_emergency_fallback_task_id(self, error_type: str) -> str:
+        """緊急フォールバックタスクID生成"""
+
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        task_id = f"emergency_fallback_{error_type}_{timestamp}"
+
+        print(f"🆘 緊急フォールバックタスクID生成: {task_id}")
+        print("   ⚠️ このタスクは手動処理が必要です")
+
+        return task_id
+
+    def run_three_layer_verification(self, target_files: List[str], context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """3層検証体制実行（新規実装タスク向け）"""
+
+        print("🔒 3層検証体制開始...")
+        print(f"📁 対象ファイル: {len(target_files)}件")
+
+        context = context or {}
+        verification_start_time = datetime.datetime.now()
+
+        # Layer 1: 構文検証
+        print("\n" + "="*50)
+        layer1_result = self.quality_manager.validate_syntax(target_files)
+
+        # Layer 2: 品質検証
+        print("\n" + "="*50)
+        layer2_result = self.quality_manager.check_code_quality(target_files, layer1_result)
+
+        # Layer 3: Claude最終承認
+        print("\n" + "="*50)
+        layer3_result = self.quality_manager.claude_final_approval(
+            target_files, layer1_result, layer2_result, context
+        )
+
+        verification_end_time = datetime.datetime.now()
+        verification_duration = str(verification_end_time - verification_start_time)
+
+        # 統合結果作成
+        overall_result = {
+            "verification_type": "three_layer_verification",
+            "execution_summary": {
+                "start_time": verification_start_time.isoformat(),
+                "end_time": verification_end_time.isoformat(),
+                "duration": verification_duration,
+                "target_files_count": len(target_files)
+            },
+            "layer_results": {
+                "layer1_syntax": layer1_result,
+                "layer2_quality": layer2_result,
+                "layer3_approval": layer3_result
+            },
+            "overall_status": {
+                "layer1_passed": layer1_result.get("passed", False),
+                "layer2_passed": layer2_result.get("passed", False),
+                "layer3_approved": layer3_result.get("approved", False),
+                "all_layers_passed": (
+                    layer1_result.get("passed", False) and
+                    layer2_result.get("passed", False) and
+                    layer3_result.get("approved", False)
+                )
+            },
+            "quality_metrics": {
+                "syntax_score": layer1_result.get("syntax_check", {}).get("score", 0),
+                "type_score": layer1_result.get("type_check", {}).get("score", 0),
+                "overall_quality_score": layer2_result.get("overall_quality_score", 0),
+                "final_score": layer3_result.get("final_metrics", {}).get("overall_score", 0)
+            },
+            "context": context,
+            "recommendations": self._generate_verification_recommendations(
+                layer1_result, layer2_result, layer3_result
+            ),
+            "timestamp": verification_end_time.isoformat()
+        }
+
+        # 結果サマリー表示
+        print("\n" + "="*50)
+        print("🎯 3層検証体制結果サマリー")
+        print("="*50)
+        print(f"Layer 1 (構文): {'✅ PASS' if layer1_result.get('passed') else '❌ FAIL'}")
+        print(f"Layer 2 (品質): {'✅ PASS' if layer2_result.get('passed') else '❌ FAIL'}")
+        print(f"Layer 3 (承認): {'✅ APPROVED' if layer3_result.get('approved') else '❌ REJECTED'}")
+        print(f"総合結果: {'🎉 完全通過' if overall_result['overall_status']['all_layers_passed'] else '⚠️ 要改善'}")
+        print(f"実行時間: {verification_duration}")
+
+        return overall_result
+
+    def _generate_verification_recommendations(self, layer1_result: Dict, layer2_result: Dict, layer3_result: Dict) -> List[str]:
+        """3層検証結果に基づく推奨事項生成"""
+
+        recommendations = []
+
+        # Layer 1の推奨事項
+        if not layer1_result.get("passed", False):
+            syntax_errors = layer1_result.get("syntax_check", {}).get("errors", 0)
+            type_errors = layer1_result.get("type_check", {}).get("errors", 0)
+
+            if syntax_errors > 0:
+                recommendations.append(f"🔧 構文エラー{syntax_errors}件の修正が必要")
+            if type_errors > 0:
+                recommendations.append(f"🏷️ 型注釈エラー{type_errors}件の修正が必要")
+
+        # Layer 2の推奨事項
+        if not layer2_result.get("passed", False) and not layer2_result.get("skipped", False):
+            quality_score = layer2_result.get("overall_quality_score", 0)
+            recommendations.append(f"📊 品質スコア改善が必要 (現在: {quality_score:.2f}, 必要: 0.75以上)")
+
+            # 個別品質チェックの推奨事項
+            quality_checks = layer2_result.get("quality_checks", {})
+            for check_name, check_result in quality_checks.items():
+                if not check_result.get("passed", True):
+                    recommendations.append(f"🔍 {check_name}品質の改善が必要")
+
+        # Layer 3の推奨事項
+        if not layer3_result.get("approved", False) and not layer3_result.get("skipped", False):
+            final_score = layer3_result.get("final_metrics", {}).get("overall_score", 0)
+            recommendations.append(f"👨‍💻 Claude最終承認基準未達 (現在: {final_score:.2f}, 必要: 0.80以上)")
+
+            # 最終メトリクスの推奨事項
+            final_recommendations = layer3_result.get("recommendations", [])
+            recommendations.extend(final_recommendations)
+
+        # 成功時の推奨事項
+        if (layer1_result.get("passed") and layer2_result.get("passed") and layer3_result.get("approved")):
+            recommendations.extend([
+                "🎉 3層検証完全通過！品質基準を満たしています",
+                "📈 継続的な品質監視を推奨します",
+                "🔄 定期的なリファクタリングを検討してください"
+            ])
+
+        return recommendations
 
 def main():
     """メイン実行"""
