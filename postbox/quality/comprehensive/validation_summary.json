@@ -1,0 +1,94 @@
+[
+  {
+    "overall_status": "passed",
+    "overall_score": 1.0,
+    "enterprise_mode": false,
+    "execution_time": 0.04874300956726074,
+    "category_scores": {
+      "integration": 1.0
+    },
+    "category_status": {
+      "integration": "passed"
+    },
+    "statistics": {
+      "total_rules": 2,
+      "passed_rules": 2,
+      "failed_rules": 0,
+      "warning_rules": 0,
+      "success_rate": 1.0
+    },
+    "recommendations": [
+      "優秀な品質レベルです。現在の水準を維持してください"
+    ],
+    "timestamp": "2025-08-13T17:26:37.286687"
+  },
+  {
+    "overall_status": "failed",
+    "overall_score": 0.22916666666666666,
+    "enterprise_mode": false,
+    "execution_time": 0.07080817222595215,
+    "category_scores": {
+      "integration": 0.22916666666666666
+    },
+    "category_status": {
+      "integration": "warning"
+    },
+    "statistics": {
+      "total_rules": 2,
+      "passed_rules": 0,
+      "failed_rules": 0,
+      "warning_rules": 2,
+      "success_rate": 0.0
+    },
+    "recommendations": [
+      "品質が基準を大幅に下回っています。緊急の改善が必要です"
+    ],
+    "timestamp": "2025-08-13T17:27:24.179413"
+  },
+  {
+    "overall_status": "failed",
+    "overall_score": 0.22916666666666666,
+    "enterprise_mode": false,
+    "execution_time": 0.06567621231079102,
+    "category_scores": {
+      "integration": 0.22916666666666666
+    },
+    "category_status": {
+      "integration": "warning"
+    },
+    "statistics": {
+      "total_rules": 2,
+      "passed_rules": 0,
+      "failed_rules": 0,
+      "warning_rules": 2,
+      "success_rate": 0.0
+    },
+    "recommendations": [
+      "品質が基準を大幅に下回っています。緊急の改善が必要です"
+    ],
+    "timestamp": "2025-08-13T17:27:25.969243"
+  },
+  {
+    "overall_status": "passed",
+    "overall_score": 1.0,
+    "enterprise_mode": false,
+    "execution_time": 0.04523324966430664,
+    "category_scores": {
+      "integration": 1.0
+    },
+    "category_status": {
+      "integration": "passed"
+    },
+    "statistics": {
+      "total_rules": 2,
+      "passed_rules": 2,
+      "failed_rules": 0,
+      "warning_rules": 0,
+      "success_rate": 1.0
+    },
+    "recommendations": [
+      "優秀な品質レベルです。現在の水準を維持してください"
+    ],
+    "timestamp": "2025-08-13T17:27:27.206844"
+  }
+]

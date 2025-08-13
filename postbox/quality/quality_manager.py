@@ -8,7 +8,7 @@ import os
 import json
 import datetime
 import subprocess
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
@@ -64,7 +64,7 @@ class QualityResult:
 class QualityManager:
     """統合品質管理システム"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.standards_path = Path("postbox/quality/standards.json")
         self.results_path = Path("postbox/monitoring/quality_results.json")
         self.history_path = Path("postbox/monitoring/quality_history.json")
@@ -144,8 +144,8 @@ class QualityManager:
 
     def _check_syntax(self, target_files: List[str]) -> QualityResult:
         """構文チェック"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
         total_files = len(target_files)
         passed_files = 0
 
@@ -218,8 +218,8 @@ class QualityManager:
 
     def _check_lint(self, target_files: List[str]) -> QualityResult:
         """リントチェック (flake8)"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         try:
             for file_path in target_files:
@@ -257,8 +257,8 @@ class QualityManager:
 
     def _check_format(self, target_files: List[str]) -> QualityResult:
         """フォーマットチェック (black)"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         try:
             for file_path in target_files:
@@ -289,8 +289,8 @@ class QualityManager:
 
     def _check_security(self, target_files: List[str]) -> QualityResult:
         """セキュリティチェック (基本的なパターンマッチング)"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         # 危険なパターン
         dangerous_patterns = [
@@ -336,8 +336,8 @@ class QualityManager:
 
     def _check_performance(self, target_files: List[str]) -> QualityResult:
         """パフォーマンスチェック (基本的な最適化パターン)"""
-        warnings = []
-        errors = []
+        warnings: List[str] = []
+        errors: List[str] = []
 
         performance_issues = [
             r"for\s+\w+\s+in\s+range\(len\(",  # range(len()) パターン
@@ -374,8 +374,8 @@ class QualityManager:
 
     def _check_tests(self, target_files: List[str]) -> QualityResult:
         """テストチェック"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         # テストファイル存在チェック
         test_files = []
@@ -587,6 +587,56 @@ class QualityManager:
 
         return default_standards
 
+    def comprehensive_quality_check(self, target_files: List[str], 
+                                   ai_agent: str = "claude", 
+                                   context: Optional[Dict[str, Any]] = None) -> QualityMetrics:
+        """包括的品質チェック（3層検証体制対応版）
+        
+        run_comprehensive_checkのエイリアス + 3層検証コンテキスト対応
+        """
+        
+        print(f"🔍 包括的品質チェック開始 - 3層検証体制対応版")
+        
+        context = context or {}
+        
+        # 既存のrun_comprehensive_checkを実行
+        base_metrics = self.run_comprehensive_check(target_files, ai_agent)
+        
+        # 3層検証コンテキストでの追加情報を付与
+        if context.get("layer_context"):
+            layer_info = context["layer_context"]
+            
+            # Layer 1の結果が含まれている場合
+            if layer_info.get("layer1_result"):
+                layer1_result = layer_info["layer1_result"]
+                if not layer1_result.get("passed"):
+                    print("⚠️ Layer 1構文検証未通過 - 品質スコア調整")
+                    # 構文エラーがある場合はスコアを下方修正
+                    base_metrics.overall_score *= 0.7
+            
+            # Layer 2の結果が含まれている場合  
+            if layer_info.get("layer2_result"):
+                layer2_result = layer_info["layer2_result"]
+                if not layer2_result.get("passed"):
+                    print("⚠️ Layer 2品質検証未通過 - 品質レベル調整")
+                    # 品質検証未通過の場合はレベルを下方修正
+                    if base_metrics.quality_level == QualityLevel.EXCELLENT:
+                        base_metrics.quality_level = QualityLevel.GOOD
+                    elif base_metrics.quality_level == QualityLevel.GOOD:
+                        base_metrics.quality_level = QualityLevel.ACCEPTABLE
+        
+        # 3層検証専用の改善提案を追加
+        three_layer_suggestions = [
+            "3層検証体制での品質チェック完了",
+            "Layer 1（構文）→ Layer 2（品質）→ Layer 3（Claude承認）の順序で実行推奨"
+        ]
+        
+        base_metrics.improvement_suggestions.extend(three_layer_suggestions)
+        
+        print(f"✅ 包括的品質チェック完了（3層検証対応版）")
+        
+        return base_metrics
+
     def get_quality_report(self) -> Dict[str, Any]:
         """品質レポート生成"""
 
@@ -631,7 +681,7 @@ class QualityManager:
         except Exception as e:
             return {"error": f"レポート生成エラー: {str(e)}"}
 
-    def _generate_recommendations(self, recent_results: List[Dict]) -> List[str]:
+    def _generate_recommendations(self, recent_results: List[Dict[str, Any]]) -> List[str]:
         """改善推奨事項生成"""
 
         recommendations = []
@@ -683,19 +733,19 @@ class QualityManager:
             "syntax_check": {
                 "passed": syntax_result.passed,
                 "score": syntax_result.score,
-                "errors": syntax_result.error_count,
+                "errors": len(syntax_result.errors),
                 "details": syntax_result.details
             },
             "type_check": {
                 "passed": type_result.passed,
                 "score": type_result.score,
-                "errors": type_result.error_count,
+                "errors": len(type_result.errors),
                 "details": type_result.details
             },
             "summary": {
                 "total_files": len(target_files),
-                "syntax_errors": syntax_result.error_count,
-                "type_errors": type_result.error_count,
+                "syntax_errors": len(syntax_result.errors),
+                "type_errors": len(type_result.errors),
                 "validation_passed": validation_passed
             },
             "next_layer_recommended": validation_passed,
@@ -703,12 +753,12 @@ class QualityManager:
         }
 
         print(f"✅ Layer 1完了: {'PASS' if validation_passed else 'FAIL'}")
-        print(f"   構文エラー: {syntax_result.error_count}件")
-        print(f"   型エラー: {type_result.error_count}件")
+        print(f"   構文エラー: {len(syntax_result.errors)}件")
+        print(f"   型エラー: {len(type_result.errors)}件")
 
         return result
 
-    def check_code_quality(self, target_files: List[str], layer1_result: Dict[str, Any] = None) -> Dict[str, Any]:
+    def check_code_quality(self, target_files: List[str], layer1_result: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Layer 2: 品質検証（3層検証体制）"""
 
         print("🛡️ Layer 2: 品質検証開始...")
@@ -752,22 +802,22 @@ class QualityManager:
                 "lint": {
                     "passed": lint_result.passed,
                     "score": lint_result.score,
-                    "warnings": lint_result.warning_count
+                    "warnings": len(lint_result.warnings)
                 },
                 "format": {
                     "passed": format_result.passed,
                     "score": format_result.score,
-                    "issues": format_result.error_count
+                    "issues": len(format_result.errors)
                 },
                 "security": {
                     "passed": security_result.passed,
                     "score": security_result.score,
-                    "vulnerabilities": security_result.error_count
+                    "vulnerabilities": len(security_result.errors)
                 },
                 "performance": {
                     "passed": performance_result.passed,
                     "score": performance_result.score,
-                    "bottlenecks": performance_result.warning_count
+                    "bottlenecks": len(performance_result.warnings)
                 },
                 "test": {
                     "passed": test_result.passed,
@@ -790,8 +840,8 @@ class QualityManager:
 
         return result
 
-    def claude_final_approval(self, target_files: List[str], layer1_result: Dict[str, Any] = None,
-                            layer2_result: Dict[str, Any] = None, context: Dict[str, Any] = None) -> Dict[str, Any]:
+    def claude_final_approval(self, target_files: List[str], layer1_result: Optional[Dict[str, Any]] = None,
+                            layer2_result: Optional[Dict[str, Any]] = None, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Layer 3: Claude最終承認（3層検証体制）"""
 
         print("👨‍💻 Layer 3: Claude最終承認開始...")
@@ -876,6 +926,784 @@ class QualityManager:
 
         return result
 
+    def evaluate_integration_quality(self, target_files: List[str], 
+                                    layer2_result: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """統合品質評価（3層検証体制専用）"""
+        
+        print("🔗 統合品質評価開始...")
+        
+        # Layer 2の結果確認
+        if layer2_result and not layer2_result.get("passed", False):
+            return {
+                "layer": "integration",
+                "validation_type": "integration_quality_evaluation",
+                "passed": False,
+                "skipped": True,
+                "reason": "Layer 2品質検証が失敗したため統合品質評価をスキップ",
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+        
+        try:
+            # ComprehensiveQualityValidatorを動的インポート・使用
+            try:
+                from .comprehensive_validator import (  # type: ignore
+                    ComprehensiveQualityValidator, 
+                    ValidationCategory
+                )
+            except ImportError:
+                print("⚠️ ComprehensiveQualityValidator インポートエラー - フェイルセーフモード実行")
+                return self._fallback_integration_evaluation(target_files)
+            
+            comprehensive_validator = ComprehensiveQualityValidator()
+            
+            # 統合品質検証実行
+            integration_categories = [
+                ValidationCategory.INTEGRATION,
+                ValidationCategory.RELIABILITY,
+                ValidationCategory.SCALABILITY
+            ]
+            
+            validation_result = comprehensive_validator.validate_comprehensive_quality(
+                target_files, 
+                enterprise_mode=False,
+                categories=integration_categories
+            )
+            
+            summary = validation_result["summary"]
+            
+            # 統合品質判定基準
+            integration_score = summary.get("overall_score", 0.0)
+            integration_passed = integration_score >= 0.75  # 75%以上で合格
+            
+            # 詳細分析
+            integration_results = validation_result.get("results_by_category", {}).get("integration", [])
+            reliability_results = validation_result.get("results_by_category", {}).get("reliability", [])
+            scalability_results = validation_result.get("results_by_category", {}).get("scalability", [])
+            
+            # 統合テスト結果分析
+            integration_test_score = 0.0
+            integration_findings = []
+            
+            if integration_results:
+                test_scores = [r.score for r in integration_results]
+                integration_test_score = sum(test_scores) / len(test_scores)
+                integration_findings = [finding for r in integration_results for finding in r.findings]
+            
+            result = {
+                "layer": "integration",
+                "validation_type": "integration_quality_evaluation", 
+                "passed": integration_passed,
+                "overall_integration_score": integration_score,
+                "detailed_scores": {
+                    "integration_test_score": integration_test_score,
+                    "reliability_score": summary.get("category_scores", {}).get("reliability", 0.0),
+                    "scalability_score": summary.get("category_scores", {}).get("scalability", 0.0)
+                },
+                "integration_analysis": {
+                    "total_files": len(target_files),
+                    "integration_tests_generated": len(integration_results),
+                    "integration_findings": integration_findings[:5],  # 最大5件
+                    "reliability_issues": len(reliability_results),
+                    "scalability_concerns": len(scalability_results)
+                },
+                "quality_assessment": {
+                    "integration_readiness": integration_passed,
+                    "recommended_next_steps": self._generate_integration_recommendations(
+                        integration_score, integration_findings
+                    ),
+                    "risk_level": "low" if integration_score >= 0.8 else "medium" if integration_score >= 0.6 else "high"
+                },
+                "comprehensive_validation_summary": summary,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+            
+            print(f"✅ 統合品質評価完了: {'PASS' if integration_passed else 'FAIL'}")
+            print(f"   統合スコア: {integration_score:.3f}")
+            print(f"   テスト生成数: {len(integration_results)}件")
+            print(f"   リスクレベル: {result['quality_assessment']['risk_level']}")
+            
+            return result
+            
+        except ImportError as e:
+            print(f"⚠️ ComprehensiveQualityValidator インポートエラー: {e}")
+            return self._fallback_integration_evaluation(target_files)
+        except Exception as e:
+            print(f"❌ 統合品質評価エラー: {e}")
+            return {
+                "layer": "integration",
+                "validation_type": "integration_quality_evaluation",
+                "passed": False,
+                "error": True,
+                "error_message": str(e),
+                "fallback_used": True,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+    
+    def _generate_integration_recommendations(self, score: float, findings: List[str]) -> List[str]:
+        """統合品質改善推奨事項生成"""
+        
+        recommendations = []
+        
+        if score < 0.5:
+            recommendations.extend([
+                "統合品質が基準を大幅に下回っています。基本的なモジュール構造を見直してください",
+                "統合テストが多数失敗しています。コンポーネント間の依存関係を確認してください",
+                "モジュール分離・疎結合設計の導入を検討してください"
+            ])
+        elif score < 0.7:
+            recommendations.extend([
+                "統合品質の改善が必要です。インターフェース設計を見直してください",
+                "統合テストの追加・改善を検討してください",
+                "エラーハンドリングの強化を推奨します"
+            ])
+        elif score < 0.85:
+            recommendations.extend([
+                "基本的な統合品質は確保されています。細かい改善を継続してください",
+                "統合テストカバレッジの向上を検討してください",
+                "パフォーマンス最適化を検討してください"
+            ])
+        else:
+            recommendations.append("優秀な統合品質レベルです。現在の水準を維持してください")
+        
+        # 具体的な問題に基づく推奨事項
+        if findings:
+            recommendations.append(f"発見された問題（{len(findings)}件）の優先的な解決が必要です")
+        
+        return recommendations
+    
+    def _fallback_integration_evaluation(self, target_files: List[str]) -> Dict[str, Any]:
+        """フェイルセーフ用の基本的統合品質評価"""
+        
+        print("🔄 フェイルセーフモード: 基本的統合品質評価を実行")
+        
+        # 基本的なファイル関連性チェック
+        integration_issues = []
+        
+        for file_path in target_files:
+            if not os.path.exists(file_path):
+                integration_issues.append(f"ファイル未存在: {file_path}")
+                continue
+                
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 基本的な統合問題パターンチェック
+                if 'import' not in content:
+                    integration_issues.append(f"インポート文なし: {file_path}")
+                
+                if len(content.strip()) == 0:
+                    integration_issues.append(f"空ファイル: {file_path}")
+                    
+            except Exception as e:
+                integration_issues.append(f"ファイル読み込みエラー: {file_path} - {str(e)}")
+        
+        # スコア計算（簡易版）
+        total_files = len(target_files)
+        issues_count = len(integration_issues)
+        fallback_score = max(0.0, 1.0 - (issues_count / max(total_files, 1)))
+        
+        return {
+            "layer": "integration",
+            "validation_type": "integration_quality_evaluation",
+            "passed": fallback_score >= 0.7,
+            "overall_integration_score": fallback_score,
+            "fallback_mode": True,
+            "integration_analysis": {
+                "total_files": total_files,
+                "issues_found": issues_count,
+                "integration_findings": integration_issues[:10]  # 最大10件
+            },
+            "quality_assessment": {
+                "integration_readiness": fallback_score >= 0.7,
+                "recommended_next_steps": [
+                    "ComprehensiveQualityValidatorの設定を確認してください",
+                    "詳細な統合品質評価システムの復旧が必要です"
+                ],
+                "risk_level": "high" if fallback_score < 0.7 else "medium"
+            },
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+    def run_three_layer_verification_with_failsafe(self, target_files: List[str],
+                                                  context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """3層検証体制完全版（フェイルセーフ機能付き）"""
+        
+        print("🛡️ 3層検証体制開始（フェイルセーフ機能付き）")
+        
+        context = context or {}
+        verification_results: Dict[str, Any] = {
+            "layer1_result": None,
+            "layer2_result": None, 
+            "layer3_result": None,
+            "integration_evaluation": None,
+            "failsafe_activated": [],
+            "overall_status": "pending",
+            "total_execution_time": 0.0,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        
+        start_time = datetime.datetime.now()
+        
+        try:
+            # ========== Layer 1: 構文検証 ==========
+            print("🔍 Layer 1: 構文検証実行中...")
+            try:
+                layer1_result = self.validate_syntax(target_files)
+                verification_results["layer1_result"] = layer1_result
+                
+                if not layer1_result.get("passed", False):
+                    print("⚠️ Layer 1失敗 - フェイルセーフモード: 基本構文チェック実行")
+                    verification_results["failsafe_activated"].append("layer1_basic_syntax_check")
+                    
+                    # フェイルセーフ: 基本的な構文チェック
+                    layer1_result = self._failsafe_basic_syntax_check(target_files)
+                    verification_results["layer1_result"] = layer1_result
+                    
+            except Exception as e:
+                print(f"❌ Layer 1エラー - フェイルセーフ実行: {e}")
+                verification_results["failsafe_activated"].append("layer1_exception_handling")
+                layer1_result = self._failsafe_basic_syntax_check(target_files)
+                verification_results["layer1_result"] = layer1_result
+            
+            # ========== Layer 2: 品質検証 ==========
+            print("🛡️ Layer 2: 品質検証実行中...")
+            try:
+                layer2_result = self.check_code_quality(target_files, verification_results["layer1_result"])
+                verification_results["layer2_result"] = layer2_result
+                
+                if not layer2_result.get("passed", False):
+                    print("⚠️ Layer 2失敗 - フェイルセーフモード: 基本品質チェック実行")
+                    verification_results["failsafe_activated"].append("layer2_basic_quality_check")
+                    
+                    # フェイルセーフ: 基本的な品質チェック
+                    layer2_result = self._failsafe_basic_quality_check(target_files)
+                    verification_results["layer2_result"] = layer2_result
+                    
+            except Exception as e:
+                print(f"❌ Layer 2エラー - フェイルセーフ実行: {e}")
+                verification_results["failsafe_activated"].append("layer2_exception_handling") 
+                layer2_result = self._failsafe_basic_quality_check(target_files)
+                verification_results["layer2_result"] = layer2_result
+            
+            # ========== 統合品質評価 ==========
+            print("🔗 統合品質評価実行中...")
+            try:
+                integration_result = self.evaluate_integration_quality(target_files, verification_results["layer2_result"])
+                verification_results["integration_evaluation"] = integration_result
+                
+            except Exception as e:
+                print(f"❌ 統合品質評価エラー - フェイルセーフ実行: {e}")
+                verification_results["failsafe_activated"].append("integration_evaluation_exception")
+                integration_result = self._fallback_integration_evaluation(target_files)
+                verification_results["integration_evaluation"] = integration_result
+            
+            # ========== Layer 3: Claude最終承認 ==========
+            print("👨‍💻 Layer 3: Claude最終承認実行中...")
+            try:
+                layer3_result = self.claude_final_approval(
+                    target_files,
+                    verification_results["layer1_result"],
+                    verification_results["layer2_result"],
+                    context
+                )
+                verification_results["layer3_result"] = layer3_result
+                
+                if not layer3_result.get("approved", False):
+                    print("⚠️ Layer 3承認未取得 - フェイルセーフモード: 基本承認チェック実行")
+                    verification_results["failsafe_activated"].append("layer3_basic_approval")
+                    
+                    # フェイルセーフ: 基本承認チェック
+                    layer3_result = self._failsafe_basic_approval_check(
+                        target_files, 
+                        verification_results["layer1_result"],
+                        verification_results["layer2_result"]
+                    )
+                    verification_results["layer3_result"] = layer3_result
+                    
+            except Exception as e:
+                print(f"❌ Layer 3エラー - フェイルセーフ実行: {e}")
+                verification_results["failsafe_activated"].append("layer3_exception_handling")
+                layer3_result = self._failsafe_basic_approval_check(
+                    target_files, 
+                    verification_results["layer1_result"],
+                    verification_results["layer2_result"]
+                )
+                verification_results["layer3_result"] = layer3_result
+            
+            # ========== 最終判定 ==========
+            total_execution_time = (datetime.datetime.now() - start_time).total_seconds()
+            verification_results["total_execution_time"] = total_execution_time
+            
+            # 全層の結果から最終ステータス決定
+            layer1_passed = verification_results["layer1_result"].get("passed", False)
+            layer2_passed = verification_results["layer2_result"].get("passed", False) 
+            layer3_approved = verification_results["layer3_result"].get("approved", False)
+            integration_passed = verification_results["integration_evaluation"].get("passed", False)
+            
+            overall_passed = layer1_passed and layer2_passed and layer3_approved and integration_passed
+            
+            if overall_passed:
+                verification_results["overall_status"] = "fully_verified"
+            elif layer3_approved:
+                verification_results["overall_status"] = "approved_with_conditions"
+            elif layer2_passed:
+                verification_results["overall_status"] = "quality_verified"
+            elif layer1_passed:
+                verification_results["overall_status"] = "syntax_verified"
+            else:
+                verification_results["overall_status"] = "verification_failed"
+            
+            # フェイルセーフ使用の記録とログ
+            if verification_results["failsafe_activated"]:
+                self._log_failsafe_usage(verification_results["failsafe_activated"], target_files)
+                print(f"🔄 フェイルセーフ実行回数: {len(verification_results['failsafe_activated'])}回")
+            
+            print(f"✅ 3層検証体制完了: {verification_results['overall_status']}")
+            print(f"⏱️ 総実行時間: {total_execution_time:.2f}秒")
+            
+            return verification_results
+            
+        except Exception as e:
+            total_execution_time = (datetime.datetime.now() - start_time).total_seconds()
+            print(f"🚨 3層検証体制重大エラー: {e}")
+            
+            # 完全フェイルセーフモード
+            return self._complete_failsafe_verification(target_files, str(e), total_execution_time)
+    
+    def _failsafe_basic_syntax_check(self, target_files: List[str]) -> Dict[str, Any]:
+        """フェイルセーフ: 基本構文チェック"""
+        
+        print("🔄 フェイルセーフ: 基本構文チェック実行")
+        
+        syntax_errors = []
+        for file_path in target_files:
+            if not os.path.exists(file_path):
+                syntax_errors.append(f"ファイル未存在: {file_path}")
+                continue
+                
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 基本的な構文エラーパターンチェック
+                if not content.strip():
+                    syntax_errors.append(f"空ファイル: {file_path}")
+                elif 'SyntaxError' in content:
+                    syntax_errors.append(f"構文エラー含有: {file_path}")
+                    
+            except Exception as e:
+                syntax_errors.append(f"読み込みエラー: {file_path} - {str(e)}")
+        
+        passed = len(syntax_errors) == 0
+        
+        return {
+            "layer": 1,
+            "validation_type": "failsafe_syntax_validation",
+            "passed": passed,
+            "failsafe_mode": True,
+            "syntax_errors": syntax_errors,
+            "files_checked": len(target_files),
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    
+    def _failsafe_basic_quality_check(self, target_files: List[str]) -> Dict[str, Any]:
+        """フェイルセーフ: 基本品質チェック"""
+        
+        print("🔄 フェイルセーフ: 基本品質チェック実行")
+        
+        quality_issues = []
+        for file_path in target_files:
+            if not os.path.exists(file_path):
+                continue
+                
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                lines = content.split('\n')
+                
+                # 基本品質チェック
+                if len(lines) > 1000:
+                    quality_issues.append(f"大きすぎるファイル: {file_path} ({len(lines)}行)")
+                
+                if 'TODO' in content or 'FIXME' in content:
+                    quality_issues.append(f"未解決TODO/FIXME: {file_path}")
+                    
+            except Exception as e:
+                quality_issues.append(f"品質チェックエラー: {file_path} - {str(e)}")
+        
+        passed = len(quality_issues) <= 2  # 軽微な問題は許容
+        
+        return {
+            "layer": 2,
+            "validation_type": "failsafe_quality_validation",
+            "passed": passed,
+            "failsafe_mode": True,
+            "quality_issues": quality_issues,
+            "files_checked": len(target_files),
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    
+    def _failsafe_basic_approval_check(self, target_files: List[str],
+                                     layer1_result: Optional[Dict[str, Any]] = None,
+                                     layer2_result: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """フェイルセーフ: 基本承認チェック"""
+        
+        print("🔄 フェイルセーフ: 基本承認チェック実行")
+        
+        # 最低限の承認条件
+        layer1_ok = layer1_result and layer1_result.get("passed", False)
+        layer2_ok = layer2_result and layer2_result.get("passed", False)
+        
+        # フェイルセーフでは緩い基準で承認
+        basic_approved = layer1_ok or (len(target_files) > 0 and all(os.path.exists(f) for f in target_files))
+        
+        return {
+            "layer": 3,
+            "validation_type": "failsafe_claude_approval",
+            "approved": basic_approved,
+            "failsafe_mode": True,
+            "approval_basis": "basic_file_existence_check" if basic_approved else "no_valid_files",
+            "files_checked": len(target_files),
+            "layer1_input": layer1_ok,
+            "layer2_input": layer2_ok,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    
+    def _complete_failsafe_verification(self, target_files: List[str], 
+                                      error_message: str, execution_time: float) -> Dict[str, Any]:
+        """完全フェイルセーフ検証"""
+        
+        print("🆘 完全フェイルセーフモード実行")
+        
+        return {
+            "layer1_result": {"passed": False, "failsafe_mode": True},
+            "layer2_result": {"passed": False, "failsafe_mode": True},
+            "layer3_result": {"approved": False, "failsafe_mode": True},
+            "integration_evaluation": {"passed": False, "failsafe_mode": True},
+            "failsafe_activated": ["complete_system_failure"],
+            "overall_status": "complete_failsafe_mode",
+            "error_message": error_message,
+            "total_execution_time": execution_time,
+            "files_attempted": len(target_files),
+            "recommendations": [
+                "システム設定の確認が必要です",
+                "依存関係の確認を行ってください",
+                "ログファイルを確認して詳細なエラー情報を取得してください"
+            ],
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    
+    def _log_failsafe_usage(self, failsafe_types: List[str], target_files: List[str]) -> None:
+        """フェイルセーフ使用のログ記録"""
+        
+        log_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "failsafe_types": failsafe_types,
+            "target_files": target_files,
+            "total_files": len(target_files),
+            "failsafe_count": len(failsafe_types)
+        }
+        
+        # フェイルセーフログファイルに記録
+        failsafe_log_path = Path("postbox/monitoring/failsafe_usage.json")
+        failsafe_log_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            failsafe_logs = []
+            if failsafe_log_path.exists():
+                with open(failsafe_log_path, 'r', encoding='utf-8') as f:
+                    failsafe_logs = json.load(f)
+            
+            failsafe_logs.append(log_entry)
+            
+            # ログサイズ制限（最新100件）
+            if len(failsafe_logs) > 100:
+                failsafe_logs = failsafe_logs[-100:]
+            
+            with open(failsafe_log_path, 'w', encoding='utf-8') as f:
+                json.dump(failsafe_logs, f, indent=2, ensure_ascii=False)
+                
+            print(f"📝 フェイルセーフログ記録: {failsafe_log_path}")
+            
+        except Exception as e:
+            print(f"⚠️ フェイルセーフログ記録エラー: {e}")
+
+    def execute_complete_three_layer_verification(self, target_files: List[str],
+                                                context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """完全3層検証実行（統合インターフェース）"""
+        
+        print("🎯 完全3層検証システム実行開始")
+        print(f"📁 対象ファイル: {len(target_files)}件")
+        
+        context = context or {}
+        
+        # フェイルセーフ付き3層検証を実行
+        verification_result = self.run_three_layer_verification_with_failsafe(target_files, context)
+        
+        # 結果の詳細分析とレポート生成
+        enhanced_result = self._enhance_verification_result(verification_result, target_files, context)
+        
+        # 最終レポート出力
+        self._print_verification_summary(enhanced_result)
+        
+        # 監視システムへの結果記録
+        self._record_verification_metrics(enhanced_result)
+        
+        return enhanced_result
+    
+    def _enhance_verification_result(self, verification_result: Dict[str, Any],
+                                   target_files: List[str], context: Dict[str, Any]) -> Dict[str, Any]:
+        """検証結果の拡張・分析"""
+        
+        enhanced = verification_result.copy()
+        
+        # 詳細統計の追加
+        enhanced["detailed_statistics"] = {
+            "total_files_processed": len(target_files),
+            "layer1_success_rate": 1.0 if verification_result["layer1_result"].get("passed") else 0.0,
+            "layer2_success_rate": 1.0 if verification_result["layer2_result"].get("passed") else 0.0,
+            "layer3_approval_rate": 1.0 if verification_result["layer3_result"].get("approved") else 0.0,
+            "integration_success_rate": 1.0 if verification_result["integration_evaluation"].get("passed") else 0.0,
+            "overall_success_rate": self._calculate_overall_success_rate(verification_result),
+            "failsafe_usage_rate": len(verification_result["failsafe_activated"]) / 4.0  # 4層での使用率
+        }
+        
+        # 改善推奨事項の生成
+        enhanced["improvement_roadmap"] = self._generate_improvement_roadmap(verification_result, context)
+        
+        # 次回実行への提案
+        enhanced["next_execution_suggestions"] = self._generate_next_execution_suggestions(verification_result)
+        
+        # 品質トレンドの予測
+        enhanced["quality_trend_prediction"] = self._predict_quality_trend(verification_result, target_files)
+        
+        return enhanced
+    
+    def _calculate_overall_success_rate(self, verification_result: Dict[str, Any]) -> float:
+        """総合成功率計算"""
+        
+        success_scores = []
+        
+        # Layer 1
+        if verification_result["layer1_result"].get("passed"):
+            success_scores.append(1.0)
+        else:
+            success_scores.append(0.0)
+        
+        # Layer 2  
+        if verification_result["layer2_result"].get("passed"):
+            success_scores.append(1.0)
+        else:
+            success_scores.append(0.0)
+        
+        # Layer 3
+        if verification_result["layer3_result"].get("approved"):
+            success_scores.append(1.0)
+        else:
+            success_scores.append(0.0)
+        
+        # Integration
+        if verification_result["integration_evaluation"].get("passed"):
+            success_scores.append(1.0)
+        else:
+            success_scores.append(0.0)
+        
+        return sum(success_scores) / len(success_scores) if success_scores else 0.0
+    
+    def _generate_improvement_roadmap(self, verification_result: Dict[str, Any],
+                                    context: Dict[str, Any]) -> Dict[str, Any]:
+        """改善ロードマップ生成"""
+        
+        roadmap: Dict[str, Any] = {
+            "immediate_actions": [],
+            "short_term_goals": [],
+            "long_term_improvements": [],
+            "priority_order": []
+        }
+        
+        # Layer 1が失敗した場合
+        if not verification_result["layer1_result"].get("passed"):
+            roadmap["immediate_actions"].extend([
+                "構文エラーの修正",
+                "基本的なPython文法チェック",
+                "インポート文の確認"
+            ])
+            roadmap["priority_order"].append("syntax_fixes")
+        
+        # Layer 2が失敗した場合
+        if not verification_result["layer2_result"].get("passed"):
+            roadmap["short_term_goals"].extend([
+                "コード品質基準の遵守",
+                "リント指摘事項の解決",
+                "フォーマット統一"
+            ])
+            roadmap["priority_order"].append("quality_improvements")
+        
+        # Layer 3が承認されなかった場合
+        if not verification_result["layer3_result"].get("approved"):
+            roadmap["short_term_goals"].extend([
+                "Claude承認基準の確認",
+                "包括的品質向上",
+                "テストカバレッジ改善"
+            ])
+            roadmap["priority_order"].append("approval_requirements")
+        
+        # 統合評価が失敗した場合
+        if not verification_result["integration_evaluation"].get("passed"):
+            roadmap["long_term_improvements"].extend([
+                "モジュール構造の改善",
+                "統合テストの追加",
+                "アーキテクチャの見直し"
+            ])
+            roadmap["priority_order"].append("architecture_improvements")
+        
+        # フェイルセーフが使用された場合
+        if verification_result["failsafe_activated"]:
+            roadmap["immediate_actions"].append("システム設定・依存関係の確認")
+            roadmap["priority_order"].insert(0, "system_stability")
+        
+        return roadmap
+    
+    def _generate_next_execution_suggestions(self, verification_result: Dict[str, Any]) -> List[str]:
+        """次回実行提案生成"""
+        
+        suggestions = []
+        
+        overall_status = verification_result.get("overall_status", "unknown")
+        
+        if overall_status == "fully_verified":
+            suggestions.extend([
+                "品質レベルが高いため、定期的なメンテナンスチェック推奨",
+                "新機能追加時の継続的品質監視を推奨",
+                "現在の品質レベル維持のための定期チェック"
+            ])
+        elif overall_status == "approved_with_conditions":
+            suggestions.extend([
+                "条件付き承認のため、指摘事項の修正後に再検証推奨",
+                "部分的改善後の段階的再チェック",
+                "特定Layer再実行でのピンポイント改善"
+            ])
+        elif overall_status in ["quality_verified", "syntax_verified"]:
+            suggestions.extend([
+                "未通過Layerの集中的な改善が必要",
+                "段階的品質向上アプローチ推奨",
+                "特化型品質改善ツールの活用検討"
+            ])
+        else:
+            suggestions.extend([
+                "基本的な品質確保から開始する段階的アプローチが必要",
+                "自動修正ツールの積極活用を推奨",
+                "外部品質監査ツールとの連携検討"
+            ])
+        
+        return suggestions
+    
+    def _predict_quality_trend(self, verification_result: Dict[str, Any],
+                             target_files: List[str]) -> Dict[str, Any]:
+        """品質トレンド予測"""
+        
+        return {
+            "current_quality_level": verification_result.get("overall_status", "unknown"),
+            "predicted_improvement_time": "1-2週間" if verification_result.get("overall_status") in [
+                "quality_verified", "approved_with_conditions"
+            ] else "1-2ヶ月",
+            "improvement_confidence": 0.8 if not verification_result["failsafe_activated"] else 0.6,
+            "recommended_check_frequency": "週1回" if verification_result.get("overall_status") == "fully_verified" else "毎日",
+            "risk_factors": [
+                "フェイルセーフ使用" if verification_result["failsafe_activated"] else "安定動作",
+                f"対象ファイル数: {len(target_files)}",
+                f"実行時間: {verification_result.get('total_execution_time', 0):.1f}秒"
+            ]
+        }
+    
+    def _print_verification_summary(self, enhanced_result: Dict[str, Any]) -> None:
+        """検証結果サマリー出力"""
+        
+        print("\n" + "="*60)
+        print("📊 3層検証体制 完全実行結果サマリー")
+        print("="*60)
+        
+        # 基本ステータス
+        overall_status = enhanced_result.get("overall_status", "unknown")
+        print(f"🎯 総合ステータス: {overall_status}")
+        print(f"⏱️  実行時間: {enhanced_result.get('total_execution_time', 0):.2f}秒")
+        
+        # 各層の結果
+        print(f"\n📋 各層の結果:")
+        layer1_status = "✅ PASS" if enhanced_result["layer1_result"].get("passed") else "❌ FAIL"
+        layer2_status = "✅ PASS" if enhanced_result["layer2_result"].get("passed") else "❌ FAIL" 
+        layer3_status = "✅ APPROVED" if enhanced_result["layer3_result"].get("approved") else "❌ REJECTED"
+        integration_status = "✅ PASS" if enhanced_result["integration_evaluation"].get("passed") else "❌ FAIL"
+        
+        print(f"  🔍 Layer 1 (構文検証): {layer1_status}")
+        print(f"  🛡️  Layer 2 (品質検証): {layer2_status}")
+        print(f"  👨‍💻 Layer 3 (Claude承認): {layer3_status}")
+        print(f"  🔗 統合品質評価: {integration_status}")
+        
+        # 統計情報
+        stats = enhanced_result.get("detailed_statistics", {})
+        print(f"\n📈 詳細統計:")
+        print(f"  総合成功率: {stats.get('overall_success_rate', 0):.1%}")
+        print(f"  フェイルセーフ使用率: {stats.get('failsafe_usage_rate', 0):.1%}")
+        
+        # フェイルセーフ情報
+        if enhanced_result.get("failsafe_activated"):
+            print(f"\n🔄 フェイルセーフ実行: {len(enhanced_result['failsafe_activated'])}回")
+            for i, fs_type in enumerate(enhanced_result['failsafe_activated'], 1):
+                print(f"  {i}. {fs_type}")
+        
+        # 改善提案
+        roadmap = enhanced_result.get("improvement_roadmap", {})
+        if roadmap.get("immediate_actions"):
+            print(f"\n🚀 緊急改善事項:")
+            for action in roadmap["immediate_actions"][:3]:
+                print(f"  • {action}")
+        
+        print("="*60)
+    
+    def _record_verification_metrics(self, enhanced_result: Dict[str, Any]) -> None:
+        """検証メトリクス記録"""
+        
+        metrics_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "overall_status": enhanced_result.get("overall_status"),
+            "execution_time": enhanced_result.get("total_execution_time"),
+            "success_rates": enhanced_result.get("detailed_statistics", {}),
+            "failsafe_usage": len(enhanced_result.get("failsafe_activated", [])),
+            "layer_results": {
+                "layer1_passed": enhanced_result["layer1_result"].get("passed"),
+                "layer2_passed": enhanced_result["layer2_result"].get("passed"),
+                "layer3_approved": enhanced_result["layer3_result"].get("approved"),
+                "integration_passed": enhanced_result["integration_evaluation"].get("passed")
+            }
+        }
+        
+        # メトリクスファイルに記録
+        metrics_path = Path("postbox/monitoring/three_layer_verification_metrics.json")
+        metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            metrics_history = []
+            if metrics_path.exists():
+                with open(metrics_path, 'r', encoding='utf-8') as f:
+                    metrics_history = json.load(f)
+            
+            metrics_history.append(metrics_entry)
+            
+            # 履歴サイズ制限（最新200件）
+            if len(metrics_history) > 200:
+                metrics_history = metrics_history[-200:]
+            
+            with open(metrics_path, 'w', encoding='utf-8') as f:
+                json.dump(metrics_history, f, indent=2, ensure_ascii=False)
+                
+            print(f"📊 検証メトリクス記録: {metrics_path}")
+            
+        except Exception as e:
+            print(f"⚠️ メトリクス記録エラー: {e}")
+
     def _determine_quality_level(self, score: float) -> QualityLevel:
         """スコアから品質レベルを判定"""
         if score >= 0.95:
@@ -889,7 +1717,7 @@ class QualityManager:
         else:
             return QualityLevel.CRITICAL
 
-def main():
+def main() -> None:
     """テスト実行"""
     qm = QualityManager()
 

@@ -150,12 +150,12 @@ class HyperparameterOptimizer:
             self.logger.error(f"Objective function failed: {e}")
             return float("inf")  # 最悪のスコアを返す
 
-    def _create_model_with_trial_params(self, trial: Trial, model_type: str) -> None:
+    def _create_model_with_trial_params(self, trial: Trial, model_type: str) -> Any:
         """試行パラメータでモデル作成"""
         try:
             if model_type == "lightgbm":
                 try:
-                    import lightgbm as lgb  # type: ignore
+                    import lightgbm as lgb
 
                     return lgb.LGBMRegressor(
                         n_estimators=trial.suggest_int("n_estimators", 50, 200),
@@ -173,7 +173,7 @@ class HyperparameterOptimizer:
 
             elif model_type == "xgboost":
                 try:
-                    import xgboost as xgb  # type: ignore
+                    import xgboost as xgb
 
                     return xgb.XGBRegressor(
                         n_estimators=trial.suggest_int("n_estimators", 50, 200),

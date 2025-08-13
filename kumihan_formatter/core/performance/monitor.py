@@ -10,7 +10,7 @@ from collections import deque
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import psutil
 
@@ -482,8 +482,18 @@ class PerformanceContext:
         self.monitor.stop_monitoring()
 
 
-def monitor_performance(func: Callable[..., Any]) -> Callable[..., Any]:
-    """パフォーマンス監視デコレーター"""
+def monitor_performance(
+    arg: Union[str, Callable[..., Any]],
+) -> Union[PerformanceContextManager, Callable[..., Any]]:
+    """パフォーマンス監視デコレーター または コンテキストマネージャー生成"""
+
+    # 文字列が渡された場合はコンテキストマネージャーを返す
+    if isinstance(arg, str):
+        monitor = PerformanceMonitor()
+        return PerformanceContextManager(monitor, stage_name=arg)
+
+    # 関数が渡された場合はデコレーターとして動作
+    func = arg
 
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         monitor = PerformanceMonitor()

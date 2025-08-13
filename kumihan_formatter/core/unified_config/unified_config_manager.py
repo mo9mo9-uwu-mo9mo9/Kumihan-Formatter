@@ -385,6 +385,13 @@ class UnifiedConfigManager:
         if self._reload_thread and self._reload_thread.is_alive():
             return  # 既に実行中
 
+        # リロードスレッド開始
+        self._reload_thread = threading.Thread(
+            target=self._auto_reload_worker, daemon=True, name="ConfigAutoReload"
+        )
+        self._reload_thread.start()
+        self.logger.debug("設定ファイル自動リロード開始")
+
     def _auto_reload_worker(self) -> None:
         """ホットリロードワーカー"""
         while not self._shutdown_event.is_set():

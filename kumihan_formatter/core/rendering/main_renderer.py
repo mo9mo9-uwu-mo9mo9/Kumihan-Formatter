@@ -205,7 +205,7 @@ class HTMLRenderer:
         renderer_method = self._get_cached_renderer_method(node.type)
         return cast(str, renderer_method(node))
 
-    def _get_cached_renderer_method(self, node_type: str) -> None:
+    def _get_cached_renderer_method(self, node_type: str) -> Any:
         """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
 
         # レンダラーメソッドキャッシュが未初期化なら作成

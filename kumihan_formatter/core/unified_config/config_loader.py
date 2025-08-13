@@ -18,7 +18,7 @@ except ImportError:
     HAS_YAML = False
 
 try:
-    import tomli  # type: ignore
+    import tomli
 
     HAS_TOML = True
 except ImportError:

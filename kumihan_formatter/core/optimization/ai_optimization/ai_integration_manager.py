@@ -223,21 +223,104 @@ class AIIntegrationManager:
         self.logger.info("Health monitoring started")
 
     def _verify_system_integration(self) -> None:
-        """システム統合検証（スタブ実装）"""
-        # TODO: 実装予定 - システム統合の検証ロジック
-        self.logger.debug("System integration verification - stub implementation")
+        """システム統合検証の実装"""
+        # Phase B基盤システムの動作確認
+        if not self._check_phase_b_health():
+            raise RuntimeError("Phase B systems are not healthy")
+
+        # 統合動作テスト実行
+        if not self._test_integrated_operations():
+            raise RuntimeError("Integrated operations test failed")
+
+        # データ整合性検証
+        if not self._verify_data_consistency():
+            raise RuntimeError("Data consistency verification failed")
+
+        # 統合状態更新
+        self.integration_status.integration_health = 100.0
+        self.integration_status.last_sync_time = time.time()
+
+        self.logger.info("System integration verification completed successfully")
 
     def _test_integrated_operations(self) -> bool:
-        """統合動作テスト（スタブ実装）"""
-        # TODO: 実装予定 - 統合動作のテストロジック
-        self.logger.debug("Integrated operations test - stub implementation")
-        return True
+        """統合動作テストの実装"""
+        try:
+            # テスト用の協調最適化実行
+            test_context = {
+                "operation_type": "integration_test",
+                "content_size": 100,
+                "complexity_score": 0.5,
+                "test_mode": True,
+            }
+
+            # Phase B最適化テスト
+            phase_b_result = self._execute_phase_b_optimization(test_context)
+            if not phase_b_result.get("success", False):
+                self.logger.error("Phase B optimization test failed")
+                return False
+
+            # AI最適化テスト
+            ai_result = self._execute_ai_optimization(test_context)
+            # AIは失敗してもOK（フェイルセーフ動作）
+
+            # 結果統合テスト
+            merged_result = self._merge_optimization_results(phase_b_result, ai_result)
+            if not merged_result.get("success", False):
+                self.logger.error("Result merging test failed")
+                return False
+
+            self.logger.info("Integrated operations test completed successfully")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Integrated operations test failed: {e}")
+            return False
 
     def _verify_data_consistency(self) -> bool:
-        """データ整合性検証（スタブ実装）"""
-        # TODO: 実装予定 - データ整合性検証ロジック
-        self.logger.debug("Data consistency verification - stub implementation")
-        return True
+        """データ整合性検証の実装"""
+        try:
+            # 統合状態の整合性確認
+            if self.integration_status.phase_b_operational != (
+                self.phase_b_integrator is not None
+            ):
+                self.logger.error("Phase B operational status inconsistency")
+                return False
+
+            # Phase B設定と AdaptiveSettings の整合性確認
+            if self.phase_b_integrator and self.adaptive_settings:
+                # 基本設定の整合性チェック
+                phase_b_config = getattr(self.phase_b_integrator, "config", {})
+                adaptive_config = getattr(
+                    self.adaptive_settings, "current_settings", {}
+                )
+
+                # 重要な設定項目の一致確認
+                critical_keys = ["ai_integration_enabled", "coordination_mode"]
+                for key in critical_keys:
+                    if key in phase_b_config and key in adaptive_config:
+                        if phase_b_config[key] != adaptive_config[key]:
+                            self.logger.warning(f"Configuration mismatch for {key}")
+
+            # メトリクス整合性確認
+            if (
+                self.integration_metrics["successful_integrations"]
+                > self.integration_metrics["total_coordinations"]
+            ):
+                self.logger.error("Metrics inconsistency: successful > total")
+                return False
+
+            # エラー履歴の整合性確認
+            if len(self.error_history) != self.integration_status.error_count:
+                self.logger.warning("Error history count mismatch")
+                # 自動修正
+                self.integration_status.error_count = len(self.error_history)
+
+            self.logger.info("Data consistency verification completed successfully")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Data consistency verification failed: {e}")
+            return False
 
     def integrate_with_phase_b(self) -> bool:
         """Phase B基盤完全統合"""
@@ -253,8 +336,17 @@ class AIIntegrationManager:
                     if not self._recover_phase_b_systems():
                         return False
 
-                # 統合処理実行（簡略化）
-                # TODO: 実際の統合ロジック実装
+                # 実際の統合ロジック実装
+                integration_success = self._execute_phase_b_integration()
+                if not integration_success:
+                    self.logger.error("Phase B integration execution failed")
+                    return False
+
+                # 統合検証
+                verification_success = self._verify_integration_success()
+                if not verification_success:
+                    self.logger.error("Phase B integration verification failed")
+                    return False
 
                 self.logger.info(
                     f"Phase B integration completed successfully in "

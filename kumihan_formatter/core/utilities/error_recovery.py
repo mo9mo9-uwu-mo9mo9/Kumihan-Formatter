@@ -4,6 +4,7 @@ Issue #694 改善対応 - 詳細なエラー分類と回復戦略
 """
 
 import re
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -363,7 +364,8 @@ class AdvancedErrorRecoverySystem:
     ) -> None:
         """回復履歴を記録"""
         record = {
-            "timestamp": __import__("time").time(),
+            # セキュリティ修正: __import__を通常のimportに置換
+            "timestamp": time.time(),
             "error_type": error_context.error_type.value,
             "severity": error_context.severity.value,
             "line_number": error_context.line_number,

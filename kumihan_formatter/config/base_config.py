@@ -94,8 +94,39 @@ class BaseConfig:
         if not isinstance(self._config, dict):
             return False
 
-        # 追加の検証ロジックをここに追加可能
-        # 現在は基本的な型チェックのみ
+        # 詳細な設定値検証
+        try:
+            # 必須設定項目の確認
+            required_keys = ["output_dir", "template_dir"]
+            for key in required_keys:
+                if key not in self._config:
+                    return False
+
+            # 出力ディレクトリの妥当性確認
+            output_dir = self._config.get("output_dir")
+            if output_dir and not isinstance(output_dir, str):
+                return False
+
+            # テンプレートディレクトリの妥当性確認
+            template_dir = self._config.get("template_dir")
+            if template_dir and not isinstance(template_dir, str):
+                return False
+
+            # HTML設定の妥当性確認
+            if "html" in self._config:
+                html_config = self._config["html"]
+                if not isinstance(html_config, dict):
+                    return False
+
+            # CSS設定の妥当性確認
+            if "css" in self._config:
+                css_config = self._config["css"]
+                if not isinstance(css_config, dict):
+                    return False
+
+        except Exception:
+            return False
+
         return True
 
     def to_dict(self) -> dict[str, Any]:
