@@ -284,5 +284,287 @@
         "test": 0.0
       }
     }
+  },
+  {
+    "timestamp": "2025-08-13T13:40:44.517186",
+    "ai_agent": "claude",
+    "execution_time": 0.484757,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9500000000000001,
+      "quality_level": "excellent",
+      "error_count": 0,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 1.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T13:41:23.280213",
+    "ai_agent": "claude",
+    "execution_time": 0.443759,
+    "target_files": [
+      "non_existent_file.py"
+    ],
+    "metrics": {
+      "overall_score": 0.2,
+      "quality_level": "critical",
+      "error_count": 4,
+      "warning_count": 2,
+      "scores": {
+        "syntax": 0.0,
+        "type_check": 0.0,
+        "lint": 0.0,
+        "format": 0.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T13:41:23.281040",
+    "ai_agent": "claude",
+    "execution_time": 2.7e-05,
+    "target_files": [],
+    "metrics": {
+      "overall_score": 0.75,
+      "quality_level": "acceptable",
+      "error_count": 0,
+      "warning_count": 0,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 1.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T13:41:23.621483",
+    "ai_agent": "claude",
+    "execution_time": 0.339996,
+    "target_files": [
+      "/invalid/path/file.py",
+      null,
+      ""
+    ],
+    "metrics": {
+      "overall_score": 0.0,
+      "quality_level": "critical",
+      "error_count": 10,
+      "warning_count": 0,
+      "scores": {
+        "syntax": 0.0,
+        "type_check": 0.0,
+        "lint": 0.0,
+        "format": 0.0,
+        "security": 0.0,
+        "performance": 0.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T14:05:56.155461",
+    "ai_agent": "claude",
+    "execution_time": 0.000113,
+    "target_files": [],
+    "metrics": {
+      "overall_score": 0.75,
+      "quality_level": "acceptable",
+      "error_count": 0,
+      "warning_count": 0,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 1.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T14:07:15.046136",
+    "ai_agent": "claude",
+    "execution_time": 0.000226,
+    "target_files": [],
+    "metrics": {
+      "overall_score": 0.75,
+      "quality_level": "acceptable",
+      "error_count": 0,
+      "warning_count": 0,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 1.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T14:08:42.506181",
+    "ai_agent": "claude",
+    "execution_time": 0.000239,
+    "target_files": [],
+    "metrics": {
+      "overall_score": 0.75,
+      "quality_level": "acceptable",
+      "error_count": 0,
+      "warning_count": 0,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.0,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 1.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:14:20.429529",
+    "ai_agent": "claude",
+    "execution_time": 1.928417,
+    "target_files": [
+      "postbox/workflow/dual_agent_coordinator.py"
+    ],
+    "metrics": {
+      "overall_score": 0.590925925925926,
+      "quality_level": "poor",
+      "error_count": 278,
+      "warning_count": 117,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.9637037037037037,
+        "lint": 0.0,
+        "format": 0.0,
+        "security": 1.0,
+        "performance": 0.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:27:23.242261",
+    "ai_agent": "claude",
+    "execution_time": 0.858905,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py",
+      "kumihan_formatter/config/base_config.py"
+    ],
+    "metrics": {
+      "overall_score": 0.8949874686716792,
+      "quality_level": "good",
+      "error_count": 9,
+      "warning_count": 12,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.9799498746867168,
+        "lint": 1.0,
+        "format": 0.5,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:27:25.038924",
+    "ai_agent": "claude",
+    "execution_time": 0.85889,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py",
+      "kumihan_formatter/config/base_config.py"
+    ],
+    "metrics": {
+      "overall_score": 0.8949874686716792,
+      "quality_level": "good",
+      "error_count": 9,
+      "warning_count": 12,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.9799498746867168,
+        "lint": 1.0,
+        "format": 0.5,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:27:26.830895",
+    "ai_agent": "claude",
+    "execution_time": 0.861084,
+    "target_files": [
+      "kumihan_formatter/core/utilities/logger.py",
+      "kumihan_formatter/config/base_config.py"
+    ],
+    "metrics": {
+      "overall_score": 0.8949874686716792,
+      "quality_level": "good",
+      "error_count": 9,
+      "warning_count": 12,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.9799498746867168,
+        "lint": 1.0,
+        "format": 0.5,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:28:01.218235",
+    "ai_agent": "claude",
+    "execution_time": 12.066492,
+    "target_files": [
+      "kumihan_formatter/gui_controllers/file_controller.py",
+      "kumihan_formatter/gui_controllers/gui_controller.py",
+      "kumihan_formatter/gui_controllers/__init__.py",
+      "kumihan_formatter/gui_controllers/main_controller.py",
+      "kumihan_formatter/gui_controllers/conversion_threads.py",
+      "kumihan_formatter/gui_controllers/conversion_controller.py",
+      "kumihan_formatter/ui/console_operations.py",
+      "kumihan_formatter/ui/console_ui.py",
+      "kumihan_formatter/ui/__init__.py",
+      "kumihan_formatter/ui/console_factory.py"
+    ],
+    "metrics": {
+      "overall_score": 0.9115692554043235,
+      "quality_level": "good",
+      "error_count": 192,
+      "warning_count": 17,
+      "scores": {
+        "syntax": 1.0,
+        "type_check": 0.8462770216172939,
+        "lint": 1.0,
+        "format": 1.0,
+        "security": 1.0,
+        "performance": 1.0,
+        "test": 0.0
+      }
+    }
   }
 ]

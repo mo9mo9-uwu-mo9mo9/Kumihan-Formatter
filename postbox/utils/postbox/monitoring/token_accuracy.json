@@ -1,0 +1,15 @@
+{
+  "records": [
+    {
+      "estimated_tokens": 1500,
+      "actual_tokens": 1801,
+      "accuracy_ratio": 1.2006666666666668,
+      "precision": 0.7993333333333332,
+      "cost_difference": -0.0013380000000000002,
+      "model": "gemini-2.5-flash",
+      "timestamp": "2025-08-13T19:45:52.164547"
+    }
+  ],
+  "last_update": "2025-08-13T19:45:52.164557",
+  "version": "1.0"
+}
