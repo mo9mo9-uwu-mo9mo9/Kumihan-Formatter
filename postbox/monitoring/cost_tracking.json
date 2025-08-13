@@ -1,45 +1,101 @@
 {
-  "total_cost": 0.0098,
+  "total_cost": 0.01118,
   "tasks": [
     {
       "task_id": "task_20250812_131804",
       "timestamp": "2025-08-12T13:18:05.350771",
       "token_usage": {
-        "input_tokens": 1500,
-        "output_tokens": 800,
+        "input_tokens": 700,
+        "output_tokens": 450,
         "model": "gemini-2.5-flash"
       },
-      "estimated_cost": 0.00245
+      "estimated_cost": 0.001335,
+      "measurement_method": "dynamic_estimation_updated",
+      "update_timestamp": "2025-08-13T19:29:43.846958"
     },
     {
       "task_id": "task_20250812_133055",
       "timestamp": "2025-08-12T13:31:01.826553",
       "token_usage": {
-        "input_tokens": 1500,
-        "output_tokens": 800,
+        "input_tokens": 770,
+        "output_tokens": 517,
         "model": "gemini-2.5-flash"
       },
-      "estimated_cost": 0.00245
+      "estimated_cost": 0.001524,
+      "measurement_method": "dynamic_estimation_updated",
+      "update_timestamp": "2025-08-13T19:29:43.846968"
     },
     {
       "task_id": "task_20250812_133207",
       "timestamp": "2025-08-12T13:32:08.694342",
       "token_usage": {
-        "input_tokens": 1500,
-        "output_tokens": 800,
+        "input_tokens": 840,
+        "output_tokens": 585,
         "model": "gemini-2.5-flash"
       },
-      "estimated_cost": 0.00245
+      "estimated_cost": 0.001715,
+      "measurement_method": "dynamic_estimation_updated",
+      "update_timestamp": "2025-08-13T19:29:43.846973"
     },
     {
       "task_id": "task_20250812_140323",
       "timestamp": "2025-08-12T14:03:24.280089",
       "token_usage": {
-        "input_tokens": 1500,
-        "output_tokens": 800,
+        "input_tokens": 700,
+        "output_tokens": 652,
         "model": "gemini-2.5-flash"
       },
-      "estimated_cost": 0.00245
+      "estimated_cost": 0.00184,
+      "measurement_method": "dynamic_estimation_updated",
+      "update_timestamp": "2025-08-13T19:29:43.846978"
+    },
+    {
+      "task_id": "task_20250812_140454",
+      "timestamp": "2025-08-13T13:36:11.839793",
+      "token_usage": {
+        "input_tokens": 770,
+        "output_tokens": 450,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.001356,
+      "measurement_method": "dynamic_estimation_updated",
+      "update_timestamp": "2025-08-13T19:29:43.846982"
+    },
+    {
+      "task_id": "test_integration",
+      "timestamp": "2025-08-13T19:30:48.499933",
+      "token_usage": {
+        "input_tokens": 800,
+        "output_tokens": 400,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.00124,
+      "measurement_method": "actual_api_response"
+    },
+    {
+      "task_id": "test_workflow_001",
+      "timestamp": "2025-08-13T19:30:48.510130",
+      "token_usage": {
+        "input_tokens": 650,
+        "output_tokens": 320,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.000995,
+      "measurement_method": "actual_api_response"
+    },
+    {
+      "task_id": "test_coordinator_001",
+      "timestamp": "2025-08-13T19:30:48.553957",
+      "token_usage": {
+        "input_tokens": 750,
+        "output_tokens": 380,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.001175,
+      "measurement_method": "actual_api_response"
     }
-  ]
+  ],
+  "last_update": "2025-08-13T19:29:43.846984",
+  "update_method": "dynamic_measurement_system",
+  "version": "2.0"
 }

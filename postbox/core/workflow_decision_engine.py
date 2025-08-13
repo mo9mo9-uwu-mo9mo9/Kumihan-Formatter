@@ -13,6 +13,13 @@ from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 
+# TokenMeasurementSystem統合
+try:
+    from postbox.utils.token_measurement import TokenMeasurementSystem
+except ImportError:
+    print("⚠️ TokenMeasurementSystemのインポートに失敗しました")
+    TokenMeasurementSystem = None
+
 class AutomationLevel(Enum):
     """自動化レベル設定"""
     MANUAL_ONLY = "manual_only"          # 手動のみ
@@ -58,6 +65,9 @@ class WorkflowDecisionEngine:
         self.history_path = Path("postbox/monitoring/decision_history.json")
         self.token_accuracy_path = Path("postbox/monitoring/token_accuracy.json")
         self.history_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # TokenMeasurementSystem初期化
+        self.token_measurement = TokenMeasurementSystem() if TokenMeasurementSystem else None
 
         # 判断基準設定
         self.thresholds = {
@@ -378,9 +388,42 @@ class WorkflowDecisionEngine:
             "efficiency": 0.7
         }.get(component, 1.0))
 
-    def record_actual_usage(self, task_id: str, estimated_tokens: int, actual_tokens: int,
+    def record_actual_usage(self, task_id: str, estimated_tokens: int, actual_usage_data: Dict,
                            task_description: str, file_analysis: Dict) -> None:
-        """実際のToken使用量を記録して精度改善"""
+        """実際のToken使用量を記録して精度改善（TokenMeasurementSystem連携）"""
+
+        # 新しいTokenMeasurementSystemを使用
+        if self.token_measurement:
+            try:
+                from postbox.utils.token_measurement import TokenUsage
+
+                # TokenUsageオブジェクト作成
+                actual_usage = TokenUsage(
+                    input_tokens=actual_usage_data.get("input_tokens", 0),
+                    output_tokens=actual_usage_data.get("output_tokens", 0),
+                    total_tokens=actual_usage_data.get("total_tokens", 0),
+                    cost=actual_usage_data.get("cost", 0.0),
+                    model=actual_usage_data.get("model", "gemini-2.5-flash"),
+                    timestamp=datetime.datetime.now().isoformat(),
+                    task_id=task_id
+                )
+
+                # 効率性追跡
+                efficiency = self.token_measurement.track_efficiency(estimated_tokens, actual_usage)
+
+                # コスト追跡更新
+                self.token_measurement.update_cost_tracking(task_id, actual_usage)
+
+                print(f"📊 新Token測定システム: 精度={efficiency['precision']:.1%}, "
+                      f"実測比={efficiency['accuracy_ratio']:.2f}")
+
+                return
+
+            except Exception as e:
+                print(f"⚠️ TokenMeasurementSystem連携エラー: {e}")
+
+        # フォールバック: 従来の方式
+        actual_tokens = actual_usage_data.get("total_tokens", 0)
 
         if actual_tokens <= 0:
             return  # 無効なデータは記録しない
@@ -417,6 +460,38 @@ class WorkflowDecisionEngine:
 
         print(f"📊 Token精度記録: 見積もり={estimated_tokens}, 実際={actual_tokens}, "
               f"精度={accuracy_ratio:.2f}, 全体精度={self._get_current_accuracy():.1%}")
+
+    def measure_tokens_from_api(self, api_response: Dict[str, Any],
+                               model: str = "gemini-2.5-flash") -> Dict[str, Any]:
+        """API応答から実際のToken使用量を測定（TokenMeasurementSystem使用）"""
+
+        if self.token_measurement:
+            try:
+                usage = self.token_measurement.measure_actual_tokens(api_response, model)
+
+                return {
+                    "input_tokens": usage.input_tokens,
+                    "output_tokens": usage.output_tokens,
+                    "total_tokens": usage.total_tokens,
+                    "cost": usage.cost,
+                    "model": usage.model,
+                    "timestamp": usage.timestamp,
+                    "measurement_method": "api_response"
+                }
+
+            except Exception as e:
+                print(f"⚠️ API Token測定エラー: {e}")
+
+        # フォールバック: 従来の推定方式
+        return {
+            "input_tokens": 1000,
+            "output_tokens": 500,
+            "total_tokens": 1500,
+            "cost": 0.00245,
+            "model": model,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "measurement_method": "fallback_estimation"
+        }
 
     def _update_accuracy_multipliers(self) -> None:
         """精度倍率の更新"""

@@ -27,6 +27,13 @@ from quality.quality_manager import QualityManager
 from monitoring.quality_monitor import QualityMonitor
 from reporting.quality_reporter import QualityReporter
 
+# TokenMeasurementSystem統合
+try:
+    from utils.token_measurement import TokenMeasurementSystem
+except ImportError:
+    print("⚠️ TokenMeasurementSystemのインポートに失敗しました")
+    TokenMeasurementSystem = None
+
 # Issue #844: ハイブリッド実装フロー統合
 from workflow.hybrid_implementation_flow import HybridImplementationFlow, HybridImplementationSpec
 from phases.phase_a_architecture import PhaseAArchitecture
@@ -48,6 +55,9 @@ class DualAgentCoordinator:
         self.decision_engine = WorkflowDecisionEngine()
         self.quality_manager = QualityManager()
         self.quality_monitor = QualityMonitor()
+
+        # TokenMeasurementSystem初期化
+        self.token_measurement = TokenMeasurementSystem() if TokenMeasurementSystem else None
         self.quality_reporter = QualityReporter()
         self.session_id = f"session_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -497,7 +507,7 @@ class DualAgentCoordinator:
             task_analysis = TaskAnalysis(
                 complexity=TaskComplexity.MODERATE,
                 estimated_time=60,
-                estimated_tokens=1500,
+                estimated_tokens=self._estimate_task_tokens(task_description, target_files),
                 estimated_cost=0.005,
                 risk_level="medium",
                 gemini_benefit_score=0.7,
@@ -1624,12 +1634,10 @@ class DualAgentCoordinator:
             print("🛡️ 構文検証・品質保証開始...")
             quality_assured_result = self._apply_quality_assurance(raw_result, task_data)
 
-            # 実際のToken使用量でコスト追跡
-            actual_token_usage = quality_assured_result.get("token_usage", {
-                "input_tokens": 1500,  # フォールバック値
-                "output_tokens": 800,   # フォールバック値
-                "model": "gemini-2.5-flash"
-            })
+            # 実際のToken使用量でコスト追跡（動的測定）
+            actual_token_usage = self._measure_actual_token_usage(
+                quality_assured_result, task_id, "gemini-2.5-flash"
+            )
 
             self.task_manager.track_cost(task_data["task_id"], actual_token_usage)
 
@@ -2164,6 +2172,80 @@ class DualAgentCoordinator:
         print(f"  完了: {progress_report['task_summary']['completed']}件")
         print(f"  残り: {progress_report['task_summary']['pending']}件")
         print(f"  エラー修正: {progress_report['quality_metrics']['total_errors_fixed']}件")
+
+    def _estimate_task_tokens(self, task_description: str, target_files: List[str]) -> int:
+        """タスクのToken数を動的推定"""
+
+        if self.token_measurement:
+            # TokenMeasurementSystemを使用した推定
+            try:
+                # 簡易推定（実際のAPI呼び出しは後で測定）
+                base_tokens = 500
+                description_tokens = len(task_description.split()) * 2
+                file_tokens = len(target_files) * 200
+
+                estimated_total = base_tokens + description_tokens + file_tokens
+                return max(estimated_total, 600)  # 最小600トークン
+
+            except Exception as e:
+                print(f"⚠️ Token推定エラー: {e}")
+
+        # フォールバック: 従来の推定
+        return max(len(task_description) * 3 + len(target_files) * 300, 800)
+
+    def _measure_actual_token_usage(self, result: Dict[str, Any], task_id: str, model: str) -> Dict[str, Any]:
+        """実際のToken使用量を測定"""
+
+        if self.token_measurement:
+            try:
+                # API応答からToken情報を取得（もしあれば）
+                api_response = result.get("api_response", {})
+
+                if api_response:
+                    # 実測定
+                    usage = self.token_measurement.measure_actual_tokens(api_response, model)
+
+                    # コスト追跡更新
+                    self.token_measurement.update_cost_tracking(task_id, usage)
+
+                    return {
+                        "input_tokens": usage.input_tokens,
+                        "output_tokens": usage.output_tokens,
+                        "total_tokens": usage.total_tokens,
+                        "cost": usage.cost,
+                        "model": usage.model,
+                        "measurement_method": "api_response"
+                    }
+                else:
+                    # 結果から推定測定
+                    modifications = result.get("modifications", {})
+                    files_count = len(modifications.get("files_modified", [])) + len(modifications.get("files_created", []))
+
+                    estimated_input = max(600, files_count * 150)
+                    estimated_output = max(400, files_count * 100)
+                    cost = self.token_measurement.calculate_real_cost(estimated_input, estimated_output, model)
+
+                    return {
+                        "input_tokens": estimated_input,
+                        "output_tokens": estimated_output,
+                        "total_tokens": estimated_input + estimated_output,
+                        "cost": cost,
+                        "model": model,
+                        "measurement_method": "result_estimation"
+                    }
+
+            except Exception as e:
+                print(f"⚠️ Token測定エラー: {e}")
+
+        # フォールバック: 基本推定
+        return {
+            "input_tokens": 800,
+            "output_tokens": 500,
+            "total_tokens": 1300,
+            "cost": 0.00225,
+            "model": model,
+            "measurement_method": "fallback"
+        }
         print(f"  総コスト: ${progress_report['cost_metrics']['total_cost']:.4f}")
 
         print("\n🎉 Dual-Agent Workflow セッション完了!")

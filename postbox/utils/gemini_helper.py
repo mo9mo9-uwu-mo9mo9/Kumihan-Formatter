@@ -13,6 +13,13 @@ import ast
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 
+# TokenMeasurementSystem統合
+try:
+    from postbox.utils.token_measurement import TokenMeasurementSystem
+except ImportError:
+    print("⚠️ TokenMeasurementSystemのインポートに失敗しました")
+    TokenMeasurementSystem = None
+
 class GeminiHelper:
     """Gemini CLI側の作業支援ツール"""
 
@@ -21,6 +28,9 @@ class GeminiHelper:
         self.todo_dir = self.postbox_dir / "todo"
         self.completed_dir = self.postbox_dir / "completed"
         self.monitoring_dir = self.postbox_dir / "monitoring"
+
+        # TokenMeasurementSystem初期化
+        self.token_measurement = TokenMeasurementSystem() if TokenMeasurementSystem else None
 
         # サポートされるタスクタイプ（Issue #842対応）
         self.SUPPORTED_TASK_TYPES = [
@@ -123,8 +133,8 @@ class GeminiHelper:
             end_time = datetime.datetime.now()
             execution_time = str(end_time - start_time)
 
-            # Token使用量測定
-            token_usage = self._measure_token_usage(task_data, result, execution_time)
+            # Token使用量測定（動的）
+            token_usage = self._measure_token_usage_dynamic(task_data, result, execution_time)
 
             # 結果レポート作成
             result_data = {
@@ -1553,8 +1563,67 @@ class GeminiHelper:
 
         return content
 
-    def _measure_token_usage(self, task_data: Dict[str, Any], result: Dict[str, Any], execution_time: str) -> Dict[str, Any]:
-        """Token使用量測定（動的計算）"""
+    def _measure_token_usage_dynamic(self, task_data: Dict[str, Any], result: Dict[str, Any],
+                                   execution_time: str, api_response: Optional[Dict] = None) -> Dict[str, Any]:
+        """Token使用量動的測定（TokenMeasurementSystem使用）"""
+
+        task_id = task_data.get("task_id", "unknown")
+
+        # TokenMeasurementSystemを使用した実測定
+        if self.token_measurement and api_response:
+            try:
+                # API応答から実Token数を測定
+                usage = self.token_measurement.measure_actual_tokens(api_response)
+
+                # コスト追跡更新
+                self.token_measurement.update_cost_tracking(task_id, usage)
+
+                print(f"📊 実測Token使用量:")
+                print(f"   入力Token: {usage.input_tokens}")
+                print(f"   出力Token: {usage.output_tokens}")
+                print(f"   実際のコスト: ${usage.cost:.4f}")
+                print(f"   測定方法: API応答実測")
+
+                return {
+                    "input_tokens": usage.input_tokens,
+                    "output_tokens": usage.output_tokens,
+                    "model": usage.model,
+                    "execution_time": execution_time,
+                    "actual_cost": usage.cost,
+                    "measurement_method": "api_response_actual"
+                }
+
+            except Exception as e:
+                print(f"⚠️ 実測定失敗: {e}")
+
+        # フォールバック: 改良された動的推定
+        input_tokens, output_tokens = self._calculate_enhanced_token_estimate(task_data, result, execution_time)
+
+        # TokenMeasurementSystemでコスト計算
+        if self.token_measurement:
+            cost = self.token_measurement.calculate_real_cost(input_tokens, output_tokens)
+        else:
+            # 従来のコスト計算
+            cost = (input_tokens / 1_000_000) * 0.30 + (output_tokens / 1_000_000) * 2.50
+
+        print(f"📊 推定Token使用量:")
+        print(f"   入力Token: {input_tokens}")
+        print(f"   出力Token: {output_tokens}")
+        print(f"   推定コスト: ${cost:.4f}")
+        print(f"   測定方法: 改良推定")
+
+        return {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "model": "gemini-2.5-flash",
+            "execution_time": execution_time,
+            "estimated_cost": cost,
+            "measurement_method": "enhanced_estimation"
+        }
+
+    def _calculate_enhanced_token_estimate(self, task_data: Dict[str, Any], result: Dict[str, Any],
+                                         execution_time: str) -> tuple[int, int]:
+        """改良されたToken推定計算"""
 
         # 基本パラメータ
         task_type = task_data.get("type", "unknown")
@@ -1562,34 +1631,96 @@ class GeminiHelper:
         description = task_data.get("description", "")
         requirements = task_data.get("requirements", {})
 
-        # 入力Token数計算（動的）
-        input_tokens = self._calculate_input_tokens(task_data, target_files, description, requirements)
+        # 入力Token数計算（改良版）
+        input_tokens = self._calculate_input_tokens_enhanced(task_data, target_files, description, requirements)
 
-        # 出力Token数計算（動的）
-        output_tokens = self._calculate_output_tokens(result, task_type)
+        # 出力Token数計算（改良版）
+        output_tokens = self._calculate_output_tokens_enhanced(result, task_type)
 
-        # 実行時間に基づく補正
+        # 実行時間に基づく複雑度補正
         execution_minutes = self._parse_execution_time_minutes(execution_time)
-        complexity_factor = min(execution_minutes / 60.0, 2.0)  # 最大2倍まで
+        complexity_factor = min(execution_minutes / 60.0, 2.0)
 
         # 最終Token数（複雑度補正適用）
         final_input_tokens = int(input_tokens * (1 + complexity_factor * 0.1))
         final_output_tokens = int(output_tokens * (1 + complexity_factor * 0.15))
 
-        print(f"📊 Token使用量測定結果:")
-        print(f"   入力Token: {final_input_tokens}")
-        print(f"   出力Token: {final_output_tokens}")
-        print(f"   実行時間: {execution_time}")
-        print(f"   複雑度補正: {complexity_factor:.2f}")
+        return final_input_tokens, final_output_tokens
 
-        return {
-            "input_tokens": final_input_tokens,
-            "output_tokens": final_output_tokens,
-            "model": "gemini-2.5-flash",
-            "execution_time": execution_time,
-            "complexity_factor": complexity_factor,
-            "measurement_method": "dynamic_calculation"
-        }
+    def _calculate_input_tokens_enhanced(self, task_data: Dict[str, Any], target_files: List[str],
+                                       description: str, requirements: Dict[str, Any]) -> int:
+        """改良版入力Token数計算"""
+
+        base_tokens = 300  # 基本システムプロンプト（削減）
+
+        # タスク説明（日本語対応改良）
+        description_tokens = len(description.split()) * 1.5  # 日本語文字の重み調整
+
+        # 要件仕様
+        requirements_tokens = len(str(requirements)) * 1.0  # 改良版重み
+
+        # ファイル内容（実際のサイズ基準）
+        file_content_tokens = 0
+        for file_path in target_files:
+            if os.path.exists(file_path):
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # より正確なToken換算（約1.3文字=1Token）
+                    file_content_tokens += len(content) / 1.3
+                except:
+                    file_content_tokens += 200  # 推定値
+            else:
+                file_content_tokens += 80  # 新規ファイル用推定
+
+        # タスクタイプ別調整（改良版）
+        task_type = task_data.get("type", "")
+        type_multiplier = {
+            "new_implementation": 1.3,      # 削減
+            "hybrid_implementation": 1.5,   # 削減
+            "new_feature_development": 1.7, # 削減
+            "code_modification": 1.1,       # 削減
+            "micro_code_modification": 0.9  # 削減
+        }.get(task_type, 1.2)
+
+        total_tokens = int((base_tokens + description_tokens + requirements_tokens + file_content_tokens) * type_multiplier)
+
+        return max(total_tokens, 400)  # 最小400トークン
+
+    def _calculate_output_tokens_enhanced(self, result: Dict[str, Any], task_type: str) -> int:
+        """改良版出力Token数計算"""
+
+        modifications = result.get("modifications", {})
+        report = result.get("report", {})
+
+        # 修正ファイル数に基づく基本Token数（改良版）
+        files_modified = len(modifications.get("files_modified", []))
+        files_created = len(modifications.get("files_created", []))
+
+        base_output_tokens = (files_modified * 150) + (files_created * 300)  # 削減
+
+        # レポート内容（改良版）
+        report_tokens = len(str(report)) * 0.6
+
+        # 実装行数（改良版）
+        total_lines = modifications.get("total_lines_implemented", 0)
+        if total_lines > 0:
+            code_tokens = total_lines * 6  # 1行あたり約6トークン（削減）
+        else:
+            code_tokens = files_created * 100  # 新規ファイル推定（削減）
+
+        # タスクタイプ別調整（改良版）
+        type_multiplier = {
+            "new_implementation": 1.5,      # 削減
+            "hybrid_implementation": 1.4,   # 削減
+            "new_feature_development": 1.8, # 削減
+            "code_modification": 1.1,       # 削減
+            "micro_code_modification": 0.8  # 削減
+        }.get(task_type, 1.2)
+
+        total_output_tokens = int((base_output_tokens + report_tokens + code_tokens) * type_multiplier)
+
+        return max(total_output_tokens, 200)  # 最小200トークン
 
     def _calculate_input_tokens(self, task_data: Dict[str, Any], target_files: List[str],
                                description: str, requirements: Dict[str, Any]) -> int:

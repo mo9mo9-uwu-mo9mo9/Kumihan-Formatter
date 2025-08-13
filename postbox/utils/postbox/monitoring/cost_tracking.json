@@ -1,0 +1,16 @@
+{
+  "total_cost": 0.001788,
+  "tasks": [
+    {
+      "task_id": "test_task_001",
+      "timestamp": "2025-08-13T19:45:52.164547",
+      "token_usage": {
+        "input_tokens": 1234,
+        "output_tokens": 567,
+        "model": "gemini-2.5-flash"
+      },
+      "estimated_cost": 0.001788,
+      "measurement_method": "actual_api_response"
+    }
+  ]
+}
