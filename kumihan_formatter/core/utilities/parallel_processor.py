@@ -165,7 +165,7 @@ class ParallelChunkProcessor:
             def record_item_processed(self) -> None:
                 self.items_processed += 1
 
-            def __enter__(self) -> None:
+            def __enter__(self) -> "SimplePerformanceMonitor":
                 return self
 
             def __exit__(

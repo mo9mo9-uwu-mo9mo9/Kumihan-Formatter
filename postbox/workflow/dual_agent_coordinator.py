@@ -54,8 +54,8 @@ class DualAgentCoordinator:
         # Issue #844: 3段階ハイブリッド実装フローシステム
         self.hybrid_flow = HybridImplementationFlow()
         self.phase_a = PhaseAArchitecture()
-        self.phase_b = PhaseBImplementation()
-        self.phase_c = PhaseCIntegration()
+        self.phase_b = PhaseBImplementation(self.hybrid_flow.success_criteria)
+        self.phase_c = PhaseCIntegration(self.hybrid_flow.success_criteria)
         self.success_monitor = SuccessRateMonitor()
 
         # 成功率監視開始

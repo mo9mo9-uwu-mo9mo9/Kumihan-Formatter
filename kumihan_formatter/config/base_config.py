@@ -94,6 +94,8 @@ class BaseConfig:
         if not isinstance(self._config, dict):
             return False
 
+        # 追加の検証ロジックをここに追加可能
+        # 現在は基本的な型チェックのみ
         return True
 
     def to_dict(self) -> dict[str, Any]:

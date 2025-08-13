@@ -57,7 +57,7 @@ class ImplementationResult:
 class PhaseBImplementation:
     """Phase B: Gemini 具体的実装システム"""
 
-    def __init__(self):
+    def __init__(self, success_criteria: Dict[str, Any] = None):
         self.implementation_templates = self._initialize_implementation_templates()
         self.quality_standards = self._initialize_quality_standards()
         self.gemini_prompts = self._initialize_gemini_prompts()
@@ -67,8 +67,8 @@ class PhaseBImplementation:
         self.execution_history: List[ImplementationResult] = []
         self.quality_tracker = {}
 
-        # 成功基準 (Issue #844)
-        self.success_criteria = {
+        # 成功基準 (Issue #844) - Issue #848対応: HybridImplementationFlowから取得
+        self.success_criteria = success_criteria or {
             "minimum_quality_score": 0.80,
             "maximum_error_rate": 0.10,
             "minimum_test_coverage": 0.80,

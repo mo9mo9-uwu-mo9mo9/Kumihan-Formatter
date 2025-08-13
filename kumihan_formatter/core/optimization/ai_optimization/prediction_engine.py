@@ -53,8 +53,8 @@ class AdvancedFeatureEngineering:
 
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.feature_scalers = {}
-        self.feature_encoders = {}
+        self.feature_scalers: dict[str, Any] = {}
+        self.feature_encoders: dict[str, Any] = {}
 
     def extract_advanced_features(
         self, optimization_data: Dict[str, Any]

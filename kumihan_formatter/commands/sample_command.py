@@ -115,7 +115,7 @@ class SampleCommand:
         return html
 
 
-def create_sample_command() -> None:
+def create_sample_command() -> Any:
     """Create the sample generation click command"""
 
     @click.command()

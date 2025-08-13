@@ -58,7 +58,7 @@ class QualityAssuranceResult:
 class PhaseCIntegration:
     """Phase C: Claude 統合・品質保証システム"""
 
-    def __init__(self):
+    def __init__(self, success_criteria: Dict[str, Any] = None):
         self.integration_standards = self._initialize_integration_standards()
         self.quality_gates = self._initialize_quality_gates()
         self.optimization_patterns = self._initialize_optimization_patterns()
@@ -69,8 +69,8 @@ class PhaseCIntegration:
         self.quality_assessments: List[QualityAssuranceResult] = []
         self.optimization_log: List[Dict[str, Any]] = []
 
-        # 成功基準 (Issue #844)
-        self.success_criteria = {
+        # 成功基準 (Issue #844) - Issue #848対応: HybridImplementationFlowから取得
+        self.success_criteria = success_criteria or {
             "minimum_integration_quality": 0.95,  # 95%以上統合成功率
             "minimum_overall_quality": 0.80,     # 80%以上品質スコア
             "maximum_critical_issues": 0,        # 重大問題0件

@@ -24,7 +24,7 @@ class SIMDOptimizer:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self._numpy_available = self._check_numpy_availability()
-        self._regex_cache = {}
+        self._regex_cache: dict[str, Any] = {}
 
         if self._numpy_available:
             import numpy as np

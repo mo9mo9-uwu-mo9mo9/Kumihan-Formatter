@@ -376,7 +376,7 @@ class AIOptimizerCore:
                 prediction = self._basic_efficiency_estimation(features)
 
             # 予測値正規化（0-100%範囲）
-            return max(0.0, min(100.0, prediction))  # type: ignore[no-any-return]
+            return max(0.0, min(100.0, prediction))
         except Exception as e:
             self.logger.error(f"Efficiency prediction failed: {e}")
             return 0.0

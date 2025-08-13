@@ -169,9 +169,7 @@ class ContentParser(BaseParser):
         # All validations passed
         return True
 
-    def _validate_footnote_structure(
-        self, footnotes: List[Dict[str, Any]]
-    ) -> List[str]:
+    def _validate_footnote_structure(self, footnotes: Any) -> List[str]:
         """Validate footnote structure and content.
 
         Args:

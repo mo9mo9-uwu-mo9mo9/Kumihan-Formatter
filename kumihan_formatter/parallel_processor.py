@@ -218,7 +218,7 @@ class ParallelProcessorHandler:
             self.logger.error(f"Memory monitoring error in parallel processing: {e}")
             raise Exception(f"Failed to monitor memory during parallel processing: {e}")
 
-    def _init_enhanced_memory_monitor(self) -> None:
+    def _init_enhanced_memory_monitor(self) -> Any:
         """拡張メモリ監視システムの初期化"""
 
         class EnhancedMemoryMonitor:
