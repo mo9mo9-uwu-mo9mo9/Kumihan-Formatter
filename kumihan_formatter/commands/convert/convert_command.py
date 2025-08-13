@@ -164,7 +164,7 @@ class ConvertCommand:
         continue_on_error: bool,
         no_suggestions: bool,
         no_statistics: bool,
-    ) -> None:
+    ) -> Any:
         """エラー処理設定の初期化"""
         from pathlib import Path
 
@@ -185,7 +185,7 @@ class ConvertCommand:
 
         return error_config_manager
 
-    def _validate_input_file(self, input_file: str | None) -> None:
+    def _validate_input_file(self, input_file: str | None) -> Any:
         """入力ファイルの検証"""
         self.logger.debug("Validating input file")
         input_path = self.validator.validate_input_file(input_file)  # type: ignore

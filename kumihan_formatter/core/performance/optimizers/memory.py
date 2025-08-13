@@ -242,7 +242,7 @@ class MemoryOptimizer:
             for result in processing_func(batch):
                 yield result
 
-    def force_garbage_collection(self) -> None:
+    def force_garbage_collection(self) -> int:
         """強制ガベージコレクション実行"""
         import gc
 

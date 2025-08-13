@@ -674,7 +674,7 @@ class AIIntegrationManager:
             synergy_effect = base_synergy * quality_multiplier
 
             self.logger.debug(f"Synergy effect calculated: {synergy_effect:.3f}%")
-            return synergy_effect  # type: ignore[no-any-return]
+            return synergy_effect
         except Exception as e:
             self.logger.error(f"Synergy effect calculation failed: {e}")
             return 0.0
@@ -743,7 +743,7 @@ class AIIntegrationManager:
             }
 
             test_result = self._execute_phase_b_optimization(test_context)
-            return test_result.get("success", False)  # type: ignore[no-any-return]
+            return test_result.get("success", False)
         except Exception as e:
             self.logger.error(f"Phase B operations verification failed: {e}")
             return False

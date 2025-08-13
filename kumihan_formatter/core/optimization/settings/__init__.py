@@ -124,7 +124,7 @@ def create_full_optimization_stack(config: Any) -> Any:
 
 
 # モジュール情報
-def get_module_info() -> None:
+def get_module_info() -> dict[str, Any]:
     """モジュール情報を取得"""
     return {
         "name": "adaptive_settings",

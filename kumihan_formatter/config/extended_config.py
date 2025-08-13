@@ -164,7 +164,7 @@ class ExtendedConfig(BaseConfig):
         Returns:
             str: テーマID
         """
-        return self._current_theme  # type: ignore
+        return self._current_theme
 
     def get_theme_name(self) -> str:
         """現在のテーマ名を取得
@@ -194,6 +194,9 @@ class ExtendedConfig(BaseConfig):
         """
         if not isinstance(other_config, dict):
             return
+
+        # TODO: Implement config merging logic
+        pass
 
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得

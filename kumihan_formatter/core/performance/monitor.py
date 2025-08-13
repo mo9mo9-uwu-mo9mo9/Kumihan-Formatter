@@ -469,7 +469,7 @@ class PerformanceContext:
         self.total_items = total_items
         self.stage = stage
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> "PerformanceMonitor":
         self.monitor.start_monitoring(self.total_items, self.stage)
         return self.monitor
 

@@ -606,7 +606,7 @@ class FootnoteManager:
     """
 
     def __init__(self) -> None:
-        self.footnotes = {}  # footnote_id -> footnote_data
+        self.footnotes: dict[str, dict[str, Any]] = {}  # footnote_id -> footnote_data
         self.footnote_counter = 0
 
     def add_footnote(self, footnote_data: dict[str, Any]) -> str:

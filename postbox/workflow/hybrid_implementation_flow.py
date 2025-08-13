@@ -73,12 +73,28 @@ class HybridImplementationFlow:
         self.current_implementations: Dict[str, Dict[str, Any]] = {}
         self.flow_history: List[Dict[str, Any]] = []
 
-        # 成功基準 (Issue #844要求)
+        # 成功基準 (Issue #844要求) - Issue #848対応: キー統一・拡張
         self.success_criteria = {
+            # 全体的な成功基準
             "new_implementation_success_rate": 0.70,  # 70%以上
             "token_savings_rate": 0.90,              # 90%以上維持
             "implementation_quality_score": 0.80,    # 0.80以上
-            "integration_success_rate": 0.95         # 95%以上
+            "integration_success_rate": 0.95,        # 95%以上
+
+            # Phase B Implementation 基準
+            "minimum_quality_score": 0.80,           # 品質スコア最低基準
+            "maximum_error_rate": 0.10,              # エラー率上限
+            "minimum_test_coverage": 0.80,           # テストカバレッジ最低基準
+            "maximum_retry_count": 3,                # 最大リトライ回数
+
+            # Phase C Integration 基準
+            "minimum_integration_quality": 0.95,     # 統合品質最低基準
+            "minimum_overall_quality": 0.80,         # 全体品質最低基準
+            "maximum_critical_issues": 0,            # 重大問題上限
+            "deployment_readiness_required": True,   # デプロイ準備要求
+
+            # Issue #848対応: implementation_threshold -> implementation_quality_score
+            "implementation_threshold": 0.80,        # 後方互換性のため
         }
 
         # ディレクトリ設定
@@ -88,6 +104,58 @@ class HybridImplementationFlow:
         print(f"🏗️ Hybrid Implementation Flow Controller 初期化完了")
         print(f"🎯 成功基準: 実装成功率≥70%, Token節約≥90%, 品質≥0.80, 統合≥95%")
         print(f"📁 フロー管理ディレクトリ: {self.flows_dir}")
+
+    # Issue #848対応: 安全なキーアクセス用アクセサーメソッド群
+    def get_success_criterion(self, key: str, default: Any = None) -> Any:
+        """安全な成功基準アクセス"""
+        return self.success_criteria.get(key, default)
+
+    def get_implementation_quality_score(self) -> float:
+        """実装品質スコア閾値取得"""
+        return self.get_success_criterion("implementation_quality_score", 0.80)
+
+    def get_implementation_threshold(self) -> float:
+        """実装閾値取得（後方互換性）"""
+        return self.get_success_criterion("implementation_threshold",
+                                         self.get_implementation_quality_score())
+
+    def get_minimum_quality_score(self) -> float:
+        """最低品質スコア取得（Phase B用）"""
+        return self.get_success_criterion("minimum_quality_score", 0.80)
+
+    def get_integration_success_rate(self) -> float:
+        """統合成功率閾値取得"""
+        return self.get_success_criterion("integration_success_rate", 0.95)
+
+    def get_minimum_integration_quality(self) -> float:
+        """最低統合品質取得（Phase C用）"""
+        return self.get_success_criterion("minimum_integration_quality", 0.95)
+
+    def get_all_criteria_status(self) -> Dict[str, Any]:
+        """全成功基準の現在状況取得"""
+        return {
+            "available_keys": list(self.success_criteria.keys()),
+            "critical_thresholds": {
+                "implementation_quality": self.get_implementation_quality_score(),
+                "integration_success": self.get_integration_success_rate(),
+                "minimum_quality": self.get_minimum_quality_score(),
+                "implementation_threshold": self.get_implementation_threshold()
+            },
+            "phase_specific": {
+                "phase_b": {
+                    "minimum_quality_score": self.get_minimum_quality_score(),
+                    "maximum_error_rate": self.get_success_criterion("maximum_error_rate", 0.10),
+                    "minimum_test_coverage": self.get_success_criterion("minimum_test_coverage", 0.80),
+                    "maximum_retry_count": self.get_success_criterion("maximum_retry_count", 3)
+                },
+                "phase_c": {
+                    "minimum_integration_quality": self.get_minimum_integration_quality(),
+                    "minimum_overall_quality": self.get_success_criterion("minimum_overall_quality", 0.80),
+                    "maximum_critical_issues": self.get_success_criterion("maximum_critical_issues", 0),
+                    "deployment_readiness_required": self.get_success_criterion("deployment_readiness_required", True)
+                }
+            }
+        }
 
     def start_hybrid_implementation(self,
                                   implementation_spec: HybridImplementationSpec,

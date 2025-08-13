@@ -222,7 +222,7 @@ class Parser:
         )
 
     @property
-    def _thread_local_storage(self) -> None:
+    def _thread_local_storage(self) -> Any:
         """スレッドローカルストレージへの統一アクセス"""
         return self._thread_local
 
