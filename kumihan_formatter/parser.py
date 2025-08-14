@@ -282,8 +282,12 @@ class Parser:
 
         # パフォーマンス監視開始
         from .core.performance import monitor_performance
+        from typing import cast
+        from .core.performance.monitor import PerformanceContext
 
-        with monitor_performance("optimized_parse") as perf_monitor:
+        with cast(
+            PerformanceContext, monitor_performance("optimized_parse")
+        ) as perf_monitor:
             # パターンキャッシュ初期化
             pattern_cache: dict[str, Any] = {}
             line_type_cache: dict[str, str] = {}
@@ -302,7 +306,8 @@ class Parser:
 
                 if node:
                     nodes.append(node)
-                    perf_monitor.record_item_processed()
+                    if hasattr(perf_monitor, "record_item_processed"):
+                        perf_monitor.record_item_processed()
 
                 # 進捗チェック（最適化）
                 if self.current == previous_current:

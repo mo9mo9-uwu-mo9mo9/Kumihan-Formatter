@@ -90,9 +90,6 @@ class BaseConfig:
         Returns:
             bool: 設定が有効な場合True
         """
-        # 基本的な型チェック
-        if not isinstance(self._config, dict):
-            return False
 
         # 詳細な設定値検証
         try:

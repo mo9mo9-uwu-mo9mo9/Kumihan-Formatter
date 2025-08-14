@@ -104,10 +104,10 @@ class SystemMonitor:
         self.config = config
 
         # 監視データ
-        self.metrics_history: deque[Dict[str, Any]] = deque(
+        self.metrics_history: deque[SystemMetrics] = deque(
             maxlen=config.get("metrics_history_size", 10000)
         )
-        self.anomaly_history: deque[Dict[str, Any]] = deque(
+        self.anomaly_history: deque[AnomalyEvent] = deque(
             maxlen=config.get("anomaly_history_size", 1000)
         )
 

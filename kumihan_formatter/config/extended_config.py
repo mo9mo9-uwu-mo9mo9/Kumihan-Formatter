@@ -192,8 +192,6 @@ class ExtendedConfig(BaseConfig):
         Args:
             other_config: マージする設定辞書
         """
-        if not isinstance(other_config, dict):
-            return
 
         # 設定のマージ実装
         for key, value in other_config.items():
