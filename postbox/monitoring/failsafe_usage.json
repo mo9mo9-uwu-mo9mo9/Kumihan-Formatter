@@ -52,5 +52,54 @@
     ],
     "total_files": 2,
     "failsafe_count": 3
+  },
+  {
+    "timestamp": "2025-08-14T11:27:57.392998",
+    "failsafe_types": [
+      "layer2_basic_quality_check",
+      "layer3_basic_approval"
+    ],
+    "target_files": [
+      "tmp/test_simple_annotation.py"
+    ],
+    "total_files": 1,
+    "failsafe_count": 2
+  },
+  {
+    "timestamp": "2025-08-14T11:58:37.572701",
+    "failsafe_types": [
+      "layer1_basic_syntax_check",
+      "layer2_basic_quality_check",
+      "layer3_basic_approval"
+    ],
+    "target_files": [
+      "test_file.py"
+    ],
+    "total_files": 1,
+    "failsafe_count": 3
+  },
+  {
+    "timestamp": "2025-08-14T12:06:34.516797",
+    "failsafe_types": [
+      "layer2_basic_quality_check",
+      "layer3_basic_approval"
+    ],
+    "target_files": [
+      "postbox/quality/quality_manager.py"
+    ],
+    "total_files": 1,
+    "failsafe_count": 2
+  },
+  {
+    "timestamp": "2025-08-14T12:11:07.110478",
+    "failsafe_types": [
+      "layer2_basic_quality_check",
+      "layer3_basic_approval"
+    ],
+    "target_files": [
+      "postbox/quality/quality_manager.py"
+    ],
+    "total_files": 1,
+    "failsafe_count": 2
   }
 ]

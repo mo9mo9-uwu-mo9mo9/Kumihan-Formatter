@@ -15,18 +15,19 @@
     },
     "status": "passed",
     "score": 1.0,
-    "execution_time": 0.022957801818847656,
+    "execution_time": 1.1244959831237793,
     "details": {
-      "total_tests": 0,
-      "passed_tests": 0,
-      "functions_tested": 0,
-      "classes_tested": 0
+      "total_tests": 27,
+      "passed_tests": 27,
+      "functions_tested": 47,
+      "classes_tested": 5
     },
     "findings": [],
     "recommendations": [
-      "基本的なテストは通過しています"
+      "基本的なテストは通過しています",
+      "関数が多数あります。単体テストの作成を検討してください"
     ],
-    "timestamp": "2025-08-13T17:27:27.184707",
+    "timestamp": "2025-08-14T12:16:51.094488",
     "metrics": {
       "test_coverage": 1.0
     },
@@ -49,18 +50,20 @@
     },
     "status": "passed",
     "score": 1.0,
-    "execution_time": 0.02192997932434082,
+    "execution_time": 2.0545918941497803,
     "details": {
-      "total_tests": 0,
-      "passed_tests": 0,
-      "functions_tested": 0,
-      "classes_tested": 0
+      "total_tests": 61,
+      "passed_tests": 61,
+      "functions_tested": 32,
+      "classes_tested": 9
     },
     "findings": [],
     "recommendations": [
-      "基本的なテストは通過しています"
+      "基本的なテストは通過しています",
+      "関数が多数あります。単体テストの作成を検討してください",
+      "クラスが多数あります。統合テストの詳細化を検討してください"
     ],
-    "timestamp": "2025-08-13T17:27:27.206672",
+    "timestamp": "2025-08-14T12:16:53.149139",
     "metrics": {
       "test_coverage": 1.0
     },

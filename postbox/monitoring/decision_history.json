@@ -433,5 +433,20 @@
       "benefit_score": 0.30000000000000004,
       "confidence": 0.95
     }
+  },
+  {
+    "timestamp": "2025-08-14T11:27:32.535999",
+    "decision": {
+      "use_gemini": true,
+      "automation_level": "approval_required",
+      "reasoning": "Gemini使用推奨: 大量Token使用予測(10880), 高複雑度タスク(moderate), 高効果期待(0.80)"
+    },
+    "analysis": {
+      "complexity": "moderate",
+      "estimated_time": 120,
+      "estimated_cost": 0.011424,
+      "benefit_score": 0.7999999999999999,
+      "confidence": 0.95
+    }
   }
 ]
