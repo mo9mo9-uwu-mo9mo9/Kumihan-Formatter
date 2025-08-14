@@ -5,7 +5,6 @@
 
 import logging
 import re
-from typing import Any, Dict
 
 
 class SecureLogFormatter(logging.Formatter):

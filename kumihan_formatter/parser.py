@@ -530,13 +530,10 @@ class Parser:
 
         except Exception as e:
             # エラー回復位置追跡情報を含むログ
-            error_info = {
-                "original_position": original_position,
-                "original_line": original_line.strip(),
-                "current_position": self.current,
-                "error_type": type(e).__name__,
-                "error_message": str(e),
-            }
+            self.logger.debug(
+                f"Error recovery info: pos={original_position}->{self.current}, "
+                f"line='{original_line.strip()}', error={type(e).__name__}: {e}"
+            )
 
             self.logger.warning(
                 f"Parsing error at line {original_position}: {e} "
