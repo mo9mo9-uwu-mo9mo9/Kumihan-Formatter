@@ -188,4 +188,7 @@ postbox/monitoring/decision_history.json
 gemini_reports/*.md
 !gemini_reports/README.md
 !gemini_reports/TEMPLATE.md
+!gemini_reports/TEMPLATE_*.md
+!gemini_reports/SAMPLE_*.md
+!gemini_reports/TOKEN_*.md
 !gemini_reports/generate_report.py

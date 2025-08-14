@@ -1,0 +1,18 @@
+[
+  {
+    "timestamp": "2025-08-14T23:34:42.793850",
+    "task": "MyPy Strictモードエラー修正（5件のno-any-return）",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 1500,
+    "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-14T23:34:47.316660",
+    "task": "Black自動フォーマット（8ファイル整形）",
+    "gemini_recommended": true,
+    "confidence": 1.0,
+    "estimated_tokens": 1300,
+    "cost_savings_potential": "96%"
+  }
+]
