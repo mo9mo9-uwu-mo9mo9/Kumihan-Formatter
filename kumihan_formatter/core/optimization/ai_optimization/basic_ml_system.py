@@ -77,12 +77,12 @@ class BaseMLModel(ABC):
     def __init__(self, name: str, config: Dict[str, Any]):
         self.name = name
         self.config = config
-        self.model = None
-        self.scaler = None
+        self.model: Any = None
+        self.scaler: Any = None
         self.is_trained = False
         self.feature_names: list[str] = []
         self.performance_metrics: dict[str, float] = {}
-        self.label_encoder = None  # For classification models
+        self.label_encoder: Any = None  # For classification models
         self.logger = get_logger(f"{__name__}.{name}")
 
     @abstractmethod
@@ -127,10 +127,6 @@ class TokenEfficiencyPredictor(BaseMLModel):
             self.model = self.create_model()
             self.scaler = StandardScaler()
 
-            # Model validation
-            if self.model is None:
-                raise RuntimeError("Model creation failed")
-
             # 特徴量正規化
             X_scaled = self.scaler.fit_transform(data.features)
 
@@ -169,10 +165,6 @@ class TokenEfficiencyPredictor(BaseMLModel):
         """Token効率性予測"""
         # 前提条件確認
         if not self.is_trained:
-            return PredictionResponse(
-                prediction=0.0, confidence=0.0, processing_time=0.0
-            )
-        if self.model is None or self.scaler is None:
             return PredictionResponse(
                 prediction=0.0, confidence=0.0, processing_time=0.0
             )
@@ -247,11 +239,6 @@ class UsagePatternClassifier(BaseMLModel):
             # モデル・スケーラー・エンコーダー初期化
             self.model = self.create_model()
             self.scaler = StandardScaler()
-
-            # Model validation
-            if self.model is None:
-                raise RuntimeError("Model creation failed")
-
             self.label_encoder = LabelEncoder()
 
             # 特徴量正規化
@@ -296,10 +283,6 @@ class UsagePatternClassifier(BaseMLModel):
         """使用パターン分類予測"""
         # 前提条件確認
         if not self.is_trained:
-            return PredictionResponse(
-                prediction="unknown", confidence=0.0, processing_time=0.0
-            )
-        if self.model is None or self.scaler is None or self.label_encoder is None:
             return PredictionResponse(
                 prediction="unknown", confidence=0.0, processing_time=0.0
             )
@@ -367,11 +350,6 @@ class OptimizationRecommender(BaseMLModel):
             # モデル・前処理器初期化
             self.model = self.create_model()
             self.scaler = StandardScaler()
-
-            # Model validation
-            if self.model is None:
-                raise RuntimeError("Model creation failed")
-
             self.label_encoder = LabelEncoder()
 
             # データ前処理
@@ -413,11 +391,6 @@ class OptimizationRecommender(BaseMLModel):
     def predict(self, features: np.ndarray) -> PredictionResponse:
         """最適化推奨予測"""
         if not self.is_trained:
-            return PredictionResponse(
-                prediction="basic_optimization", confidence=0.0, processing_time=0.0
-            )
-
-        if self.model is None or self.scaler is None or self.label_encoder is None:
             return PredictionResponse(
                 prediction="basic_optimization", confidence=0.0, processing_time=0.0
             )

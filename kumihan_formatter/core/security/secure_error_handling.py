@@ -3,9 +3,8 @@
 詳細なエラー情報の漏洩を防ぐ
 """
 
-import sys
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 
 class SecureErrorHandler:
@@ -76,7 +75,6 @@ _global_error_handler = SecureErrorHandler(debug_mode=False)
 
 def set_debug_mode(enabled: bool) -> None:
     """デバッグモードの設定"""
-    global _global_error_handler
     _global_error_handler.debug_mode = enabled
 
 

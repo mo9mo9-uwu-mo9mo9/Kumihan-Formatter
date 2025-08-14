@@ -7,7 +7,7 @@ import hashlib
 import os
 import re
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Optional, Union
 from urllib.parse import urlparse
 
 
@@ -121,7 +121,7 @@ class SecureConfigManager:
 
     def __init__(self) -> None:
         self.secrets_loaded = False
-        self._secrets = {}
+        self._secrets: dict[str, str] = {}
 
     def load_secrets_from_env(self) -> None:
         """環境変数からシークレットを安全に読み込み"""

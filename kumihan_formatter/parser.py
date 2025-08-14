@@ -281,9 +281,14 @@ class Parser:
         nodes = []
 
         # パフォーマンス監視開始
-        from .core.performance import monitor_performance
+        from typing import cast
 
-        with monitor_performance("optimized_parse") as perf_monitor:
+        from .core.performance import monitor_performance
+        from .core.performance.monitor import PerformanceContext
+
+        with cast(
+            PerformanceContext, monitor_performance("optimized_parse")
+        ) as perf_monitor:
             # パターンキャッシュ初期化
             pattern_cache: dict[str, Any] = {}
             line_type_cache: dict[str, str] = {}
@@ -302,7 +307,8 @@ class Parser:
 
                 if node:
                     nodes.append(node)
-                    perf_monitor.record_item_processed()
+                    if hasattr(perf_monitor, "record_item_processed"):
+                        perf_monitor.record_item_processed()
 
                 # 進捗チェック（最適化）
                 if self.current == previous_current:
@@ -394,11 +400,10 @@ class Parser:
 
                         # ストリーミング出力
                         for node in chunk_nodes:
-                            if not self._cancelled:
-                                yield node
-                                processed_nodes += 1
-                            else:
+                            if self._cancelled:
                                 break
+                            yield node
+                            processed_nodes += 1
 
                     except Exception as e:
                         self.logger.warning(
@@ -530,13 +535,10 @@ class Parser:
 
         except Exception as e:
             # エラー回復位置追跡情報を含むログ
-            error_info = {
-                "original_position": original_position,
-                "original_line": original_line.strip(),
-                "current_position": self.current,
-                "error_type": type(e).__name__,
-                "error_message": str(e),
-            }
+            self.logger.debug(
+                f"Error recovery info: pos={original_position}->{self.current}, "
+                f"line='{original_line.strip()}', error={type(e).__name__}: {e}"
+            )
 
             self.logger.warning(
                 f"Parsing error at line {original_position}: {e} "

@@ -35,7 +35,7 @@ class PerformanceMonitor:
         self.config = config
 
         # 性能履歴
-        self.integration_metrics_history: deque[Dict[str, Any]] = deque(
+        self.integration_metrics_history: deque[IntegrationMetrics] = deque(
             maxlen=config.get("metrics_history_size", 5000)
         )
         self.deletion_rate_history: deque[Dict[str, Any]] = deque(

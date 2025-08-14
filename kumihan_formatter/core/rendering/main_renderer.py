@@ -172,9 +172,14 @@ class HTMLRenderer:
             str: Generated HTML (optimized)
         """
         # パフォーマンス監視開始
-        from ..performance import monitor_performance
+        from typing import cast
 
-        with monitor_performance("optimized_html_rendering") as perf_monitor:
+        from ..performance import monitor_performance
+        from ..performance.monitor import PerformanceContext
+
+        with cast(
+            PerformanceContext, monitor_performance("optimized_html_rendering")
+        ) as perf_monitor:
             # Issue #700: graceful errors対応
             if self.graceful_errors and self.embed_errors_in_html:
                 return self.render_nodes_with_errors_optimized(nodes)
@@ -185,7 +190,8 @@ class HTMLRenderer:
                 html = self.render_node(node)
                 html_parts_append(html)
                 # パフォーマンス監視にアイテム処理を記録
-                perf_monitor.record_item_processed()
+                if hasattr(perf_monitor, "record_item_processed"):
+                    perf_monitor.record_item_processed()
 
             # 高速文字列結合（join最適化）
             return "\n".join(html_parts)

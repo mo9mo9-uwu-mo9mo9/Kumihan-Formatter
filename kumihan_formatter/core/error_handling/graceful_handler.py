@@ -72,7 +72,8 @@ class GracefulErrorHandler:
 
         # 復旧戦略レジストリ
         self.recovery_strategies: Dict[
-            ErrorCategory, Callable[[KumihanError, GracefulErrorRecord], Optional[Dict[str, Any]]]
+            ErrorCategory,
+            Callable[[KumihanError, GracefulErrorRecord], Optional[Dict[str, Any]]],
         ] = {
             ErrorCategory.SYNTAX: self._recover_syntax_error,
             ErrorCategory.FILE_SYSTEM: self._recover_file_error,

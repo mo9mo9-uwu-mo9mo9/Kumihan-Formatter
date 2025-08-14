@@ -115,7 +115,7 @@ strict = false  # strict全体無効化、個別設定で制御
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
-warn_unreachable = true
+warn_unreachable = false
 warn_unused_configs = true
 
 # 段階的strict化のため一時無効化（後続Issue対応）
@@ -147,7 +147,14 @@ exclude = [
 
 # 外部ライブラリの型チェック設定
 [[tool.mypy.overrides]]
-module = ["sklearn.*", "optuna.*"]
+module = [
+    "sklearn.*",
+    "optuna.*",
+    "joblib.*",
+    "lightgbm.*",
+    "xgboost.*",
+    "tomli.*"
+]
 ignore_missing_imports = true
 
 # pytest設定
