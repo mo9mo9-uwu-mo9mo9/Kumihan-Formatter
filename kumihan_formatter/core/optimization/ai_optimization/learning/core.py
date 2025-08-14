@@ -42,7 +42,7 @@ class DataQualityManager:
         self.config = config
 
         # 品質履歴
-        self.quality_history: deque = deque(maxlen=1000)
+        self.quality_history: deque[Dict[str, Any]] = deque(maxlen=1000)
 
         # 異常検出閾値
         self.outlier_threshold = config.get("outlier_threshold", 3.0)

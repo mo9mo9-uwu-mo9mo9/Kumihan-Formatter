@@ -57,7 +57,7 @@ class ParallelChunkProcessor:
         self,
         chunks: List[ChunkInfo],
         processing_func: Callable[[ChunkInfo], Iterator[Any]],
-        progress_callback: Optional[Callable] = None,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Iterator[Any]:
         """
         チャンクリストを並列処理
@@ -122,7 +122,7 @@ class ParallelChunkProcessor:
         self,
         chunks: List[ChunkInfo],
         processing_func: Callable[[ChunkInfo], Iterator[Any]],
-        progress_callback: Optional[Callable] = None,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Iterator[Any]:
         """
         最適化されたチャンクリスト並列処理（Issue #727 パフォーマンス最適化対応）
@@ -496,7 +496,9 @@ class ParallelStreamingParser:
         )
 
     def parse_file_parallel(
-        self, file_path: Path, progress_callback: Optional[Callable] = None
+        self,
+        file_path: Path,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Iterator[Any]:
         """
         ファイルを並列ストリーミング解析（スレッド安全版）
@@ -523,7 +525,9 @@ class ParallelStreamingParser:
             self._cleanup_thread_resources()
 
     def parse_text_parallel(
-        self, text: str, progress_callback: Optional[Callable] = None
+        self,
+        text: str,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Iterator[Any]:
         """
         テキストを並列ストリーミング解析（スレッド安全版）

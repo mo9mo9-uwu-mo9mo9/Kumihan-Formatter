@@ -16,7 +16,7 @@ class ParseResult:
         errors: List of parsing errors
     """
 
-    markers: List[tuple] = field(default_factory=list[Any])
+    markers: List[tuple[int, int, str]] = field(default_factory=list)
     content: str = ""
     keywords: List[str] = field(default_factory=list)
     attributes: Dict[str, Any] = field(default_factory=dict)

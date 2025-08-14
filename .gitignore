@@ -183,3 +183,8 @@ postbox/todo/*.json
 postbox/monitoring/session_*.json
 postbox/monitoring/cost_tracking.json
 postbox/monitoring/decision_history.json
+
+# Gemini協業レポート（外部非公開）
+gemini_reports/*.md
+!gemini_reports/README.md
+!gemini_reports/TEMPLATE.md

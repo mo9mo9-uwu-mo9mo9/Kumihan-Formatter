@@ -71,7 +71,9 @@ class GracefulErrorHandler:
         self.error_counts: Dict[str, int] = {}
 
         # 復旧戦略レジストリ
-        self.recovery_strategies: Dict[ErrorCategory, Callable] = {
+        self.recovery_strategies: Dict[
+            ErrorCategory, Callable[[KumihanError, GracefulErrorRecord], Dict[str, Any]]
+        ] = {
             ErrorCategory.SYNTAX: self._recover_syntax_error,
             ErrorCategory.FILE_SYSTEM: self._recover_file_error,
             ErrorCategory.VALIDATION: self._recover_validation_error,

@@ -70,7 +70,7 @@ class OptimizationIntegrator:
 
         # 統合制御状態
         self.is_running = False
-        self.integration_tasks: List[asyncio.Task] = []
+        self.integration_tasks: List[asyncio.Task[Any]] = []
         self.executor = ThreadPoolExecutor(
             max_workers=4, thread_name_prefix="OptimizationIntegrator"
         )

@@ -41,7 +41,7 @@ class AutoRecoveryEngine:
         self.recovery_actions = self._define_recovery_actions()
 
         # 復旧履歴
-        self.recovery_history: deque = deque(
+        self.recovery_history: deque[Dict[str, Any]] = deque(
             maxlen=config.get("recovery_history_size", 500)
         )
 

@@ -41,7 +41,7 @@ class HyperparameterOptimizer:
         self.config = config
 
         # 最適化履歴
-        self.optimization_history: Dict[str, List[Dict]] = defaultdict(list[Any])
+        self.optimization_history: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
         # 最適化設定
         self.n_trials = config.get("n_trials", 50)
@@ -263,7 +263,9 @@ class OnlineLearningEngine:
         self.config = config
 
         # 学習バッファ
-        self.learning_buffer: deque = deque(maxlen=config.get("buffer_size", 1000))
+        self.learning_buffer: deque[Dict[str, Any]] = deque(
+            maxlen=config.get("buffer_size", 1000)
+        )
         self.batch_size = config.get("batch_size", 50)
 
         # 学習履歴

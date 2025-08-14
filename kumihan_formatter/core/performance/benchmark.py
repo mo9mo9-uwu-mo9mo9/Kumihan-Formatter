@@ -57,7 +57,7 @@ class PerformanceBenchmark:
     def run_benchmark(
         self,
         benchmark_name: str,
-        benchmark_func: Callable,
+        benchmark_func: Callable[..., Any],
         category: str = "general",
         iterations: int = 5,
         warmup_iterations: int = 1,

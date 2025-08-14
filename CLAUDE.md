@@ -27,11 +27,12 @@
 - **日本語使用**: コメント・レビュー・ドキュメントは日本語
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
 
-### 🤖 Gemini活用指針
+### 🤖 Gemini活用指針（**必須実行**）
 - **自動判定優先**: 1000トークン以上・定型作業はGemini実行
 - **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
 - **フェイルセーフ活用**: Gemini失敗時は即座にClaude代替
 - **学習・改善**: 実行結果を蓄積し継続的品質向上
+- **📋 作業レポート**: `gemini_reports/` に自動記録（外部非公開）
 
 ---
 
@@ -225,8 +226,10 @@ except Exception as e:
 - ✅ tmp/ 配下での一時ファイル管理
 - ✅ 適切なラベル付きIssue作成
 - ✅ 品質チェック（lint/typecheck）の実行
+- ✅ **🤖 Gemini協業の必須実行**（コスト削減目標99%）
 - ✅ **Gemini実行時3層検証**（構文→品質→Claude承認）
 - ✅ **Token使用量1000以上時Gemini検討**（コスト効率優先）
+- ✅ **📋 協業レポート自動生成**（gemini_reports/ 格納）
 
 ### 🤖 Gemini協業時の特別注意事項
 - **品質責任**: 部下成果物でもClaude最終責任

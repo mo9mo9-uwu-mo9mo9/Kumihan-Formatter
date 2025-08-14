@@ -90,7 +90,7 @@ class AlphaBetaCoordinator:
         self.coordination_mode = IntegrationMode.ALPHA_ONLY
 
         # 協調履歴
-        self.coordination_history: deque = deque(
+        self.coordination_history: deque[Dict[str, Any]] = deque(
             maxlen=config.get("history_size", 1000)
         )
 

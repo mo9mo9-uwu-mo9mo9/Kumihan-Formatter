@@ -381,7 +381,7 @@ class HTMLRenderer:
             str: Generated HTML for the node
         """
         if not isinstance(node, Node):
-            return escape(str(node))
+            raise TypeError(f"Expected Node instance, got {type(node)}")
 
         # Delegateメソッドを動的に検索して呼び出し
         method_name = f"_render_{node.type}"

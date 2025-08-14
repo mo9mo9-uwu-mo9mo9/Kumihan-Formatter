@@ -66,7 +66,7 @@ class AutonomousController:
         self.autonomous_mode = self.config.get("autonomous_mode", True)
 
         # 制御履歴
-        self.control_history: deque = deque(
+        self.control_history: deque[Dict[str, Any]] = deque(
             maxlen=self.config.get("control_history_size", 1000)
         )
 
