@@ -4,7 +4,6 @@ This module provides the main HTMLRenderer class that coordinates
 all specialized renderers and maintains backward compatibility.
 """
 
-from html import escape
 from typing import Any, List, cast
 
 from ..ast_nodes import Node

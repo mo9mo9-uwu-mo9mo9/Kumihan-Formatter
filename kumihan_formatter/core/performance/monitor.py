@@ -484,13 +484,13 @@ class PerformanceContext:
 
 def monitor_performance(
     arg: Union[str, Callable[..., Any]],
-) -> Union[PerformanceContextManager, Callable[..., Any]]:
+) -> Union[PerformanceContext, Callable[..., Any]]:
     """パフォーマンス監視デコレーター または コンテキストマネージャー生成"""
 
     # 文字列が渡された場合はコンテキストマネージャーを返す
     if isinstance(arg, str):
         monitor = PerformanceMonitor()
-        return PerformanceContextManager(monitor, stage_name=arg)
+        return PerformanceContext(monitor, total_items=1, stage=arg)
 
     # 関数が渡された場合はデコレーターとして動作
     func = arg
