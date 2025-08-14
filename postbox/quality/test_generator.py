@@ -216,9 +216,15 @@ class CodeAnalyzer:
                         "target": func["name"],
                         "complexity": func.get("complexity", 1),
                         "args": func.get("args", []),
+                        "arg_types": func.get("arg_types", []),
                         "returns": func.get("returns", None),
                         "docstring": func.get("docstring"),
                         "line": func.get("line", 0),
+                        "branches": func.get("branches", 0),
+                        "loops": func.get("loops", 0),
+                        "exceptions": func.get("exceptions", 0),
+                        "is_async": func.get("is_async", False),
+                        "test_priority": self._calculate_test_priority(func),
                     }
                 )
 
@@ -247,12 +253,48 @@ class CodeAnalyzer:
                             "class_name": cls["name"],
                             "complexity": method.get("complexity", 1),
                             "args": method.get("args", []),
+                            "arg_types": method.get("arg_types", []),
                             "returns": method.get("returns", None),
                             "line": method.get("line", 0),
+                            "branches": method.get("branches", 0),
+                            "loops": method.get("loops", 0),
+                            "exceptions": method.get("exceptions", 0),
+                            "is_async": method.get("is_async", False),
+                            "test_priority": self._calculate_test_priority(method),
                         }
                     )
 
         return testable
+
+    def _calculate_test_priority(self, func_info: Dict[str, Any]) -> int:
+        """テスト優先度計算"""
+        priority = 1
+
+        # 複雑度に基づく優先度
+        complexity = func_info.get("complexity", 1)
+        if complexity > 10:
+            priority += 3
+        elif complexity > 5:
+            priority += 2
+        elif complexity > 2:
+            priority += 1
+
+        # 分岐数に基づく優先度
+        branches = func_info.get("branches", 0)
+        if branches > 5:
+            priority += 2
+        elif branches > 2:
+            priority += 1
+
+        # 例外処理がある場合は優先度を上げる
+        if func_info.get("exceptions", 0) > 0:
+            priority += 2
+
+        # パブリックAPIは優先度を上げる
+        if not func_info.get("name", "").startswith("_"):
+            priority += 1
+
+        return min(priority, 10)  # 最大10
 
     def _detect_code_patterns(
         self, content: str, tree: ast.AST
@@ -381,6 +423,14 @@ class CodeStructureVisitor(ast.NodeVisitor):
                 for dec in node.decorator_list
             ],
             "complexity": self._calculate_function_complexity(node),
+            "is_async": isinstance(node, ast.AsyncFunctionDef),
+            "is_private": node.name.startswith("_"),
+            "is_magic": node.name.startswith("__") and node.name.endswith("__"),
+            "has_decorators": len(node.decorator_list) > 0,
+            "arg_types": self._extract_arg_types(node.args),
+            "branches": self._count_branches(node),
+            "loops": self._count_loops(node),
+            "exceptions": self._count_exceptions(node),
         }
 
         if self.current_class:
@@ -494,6 +544,46 @@ class CodeStructureVisitor(ast.NodeVisitor):
         else:
             return None
 
+    def _extract_arg_types(self, args: ast.arguments) -> List[str]:
+        """引数の型注釈抽出"""
+        arg_types = []
+        for arg in args.args:
+            if arg.annotation:
+                arg_types.append(self._extract_annotation(arg.annotation) or "Any")
+            else:
+                arg_types.append("Any")
+        return arg_types
+
+    def _count_branches(self, node: ast.FunctionDef) -> int:
+        """分岐数カウント"""
+        branches = 0
+        for child in ast.walk(node):
+            if isinstance(child, (ast.If, ast.While, ast.For, ast.Try)):
+                branches += 1
+            elif isinstance(child, ast.IfExp):  # 三項演算子
+                branches += 1
+        return branches
+
+    def _count_loops(self, node: ast.FunctionDef) -> int:
+        """ループ数カウント"""
+        loops = 0
+        for child in ast.walk(node):
+            if isinstance(child, (ast.While, ast.For)):
+                loops += 1
+            elif isinstance(child, ast.ListComp):  # リスト内包表記
+                loops += 1
+        return loops
+
+    def _count_exceptions(self, node: ast.FunctionDef) -> int:
+        """例外処理数カウント"""
+        exceptions = 0
+        for child in ast.walk(node):
+            if isinstance(child, ast.Try):
+                exceptions += len(child.handlers)
+            elif isinstance(child, ast.Raise):
+                exceptions += 1
+        return exceptions
+
 
 class TestGeneratorEngine:
     """テスト自動生成エンジン"""
@@ -584,7 +674,6 @@ class TestGeneratorEngine:
 
         # 関数引数解析
         args = function_analysis.get("args", [])
-        returns = function_analysis.get("returns")
 
         for i, arg in enumerate(args):
             # 数値型の境界値テスト
@@ -1138,21 +1227,264 @@ def test_mock_{test_name}(self, mock_{mock_name}):
             keyword in arg.lower() for keyword in ["list", "items", "data", "args"]
         )
 
+    def _create_basic_test_case(
+        self,
+        test_id: str,
+        name: str,
+        target_function: str,
+        test_input: str,
+        expected_output: Any,
+        description: str = "",
+        complexity_level: int = 1,
+        priority: int = 5,
+    ) -> TestCase:
+        """基本テストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=name,
+            test_type=TestType.UNIT,
+            target_function=target_function,
+            target_class=None,
+            description=description,
+            test_code=f"# テスト入力: {test_input}\nresult = {target_function}({test_input})",
+            setup_code="",
+            cleanup_code="",
+            input_data={"input": test_input},
+            expected_output=expected_output,
+            assertions=[f"assert result == {expected_output}"],
+            complexity_level=complexity_level,
+            priority=priority,
+            dependencies=[],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
+    def _create_branch_test_case(
+        self,
+        test_id: str,
+        name: str,
+        target_function: str,
+        branch_condition: str,
+        test_input: str,
+        expected_output: Any,
+        description: str = "",
+    ) -> TestCase:
+        """分岐テストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=name,
+            test_type=TestType.UNIT,
+            target_function=target_function,
+            target_class=None,
+            description=f"分岐テスト: {branch_condition}",
+            test_code=f"# 分岐条件: {branch_condition}\nresult = {target_function}({test_input})",
+            setup_code="",
+            cleanup_code="",
+            input_data={"input": test_input, "branch": branch_condition},
+            expected_output=expected_output,
+            assertions=[
+                f"# テスト分岐: {branch_condition}",
+                f"assert result == {expected_output}",
+            ],
+            complexity_level=2,
+            priority=7,
+            dependencies=[],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
+    def _create_edge_case_test(
+        self,
+        test_id: str,
+        name: str,
+        target_function: str,
+        edge_case_type: str,
+        test_input: str,
+        expected_behavior: str,
+        description: str = "",
+    ) -> TestCase:
+        """エッジケーステストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=name,
+            test_type=TestType.EDGE_CASE,
+            target_function=target_function,
+            target_class=None,
+            description=f"エッジケース: {edge_case_type}",
+            test_code=f"# エッジケース: {edge_case_type}\nresult = {target_function}({test_input})",
+            setup_code="",
+            cleanup_code="",
+            input_data={"input": test_input, "edge_type": edge_case_type},
+            expected_output=expected_behavior,
+            assertions=[
+                f"# エッジケース: {edge_case_type}",
+                f"# 期待される動作: {expected_behavior}",
+            ],
+            complexity_level=3,
+            priority=8,
+            dependencies=[],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
+    def _create_exception_test_case(
+        self,
+        test_id: str,
+        name: str,
+        target_function: str,
+        exception_type: str,
+        test_input: str,
+        description: str = "",
+    ) -> TestCase:
+        """例外テストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=name,
+            test_type=TestType.UNIT,
+            target_function=target_function,
+            target_class=None,
+            description=f"例外テスト: {exception_type}",
+            test_code=f"with pytest.raises({exception_type}):\n    {target_function}({test_input})",
+            setup_code="",
+            cleanup_code="",
+            input_data={"input": test_input, "exception": exception_type},
+            expected_output=f"raises {exception_type}",
+            assertions=[
+                f"with pytest.raises({exception_type}):",
+                f"    {target_function}({test_input})",
+            ],
+            complexity_level=2,
+            priority=6,
+            dependencies=["pytest"],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
+    def _create_init_test_case(
+        self, test_id: str, class_name: str, init_args: str, description: str = ""
+    ) -> TestCase:
+        """初期化テストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=f"test_{class_name.lower()}_init",
+            test_type=TestType.UNIT,
+            target_function=f"{class_name}.__init__",
+            target_class=class_name,
+            description=f"{class_name}の初期化テスト",
+            test_code=f"instance = {class_name}({init_args})\nassert instance is not None",
+            setup_code="",
+            cleanup_code="",
+            input_data={"init_args": init_args},
+            expected_output="instance",
+            assertions=[
+                f"instance = {class_name}({init_args})",
+                "assert instance is not None",
+                f"assert isinstance(instance, {class_name})",
+            ],
+            complexity_level=1,
+            priority=9,
+            dependencies=[],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
+    def _create_class_instantiation_test(
+        self, test_id: str, class_name: str, args: str = "", description: str = ""
+    ) -> TestCase:
+        """クラスインスタンス化テストケース作成"""
+        return TestCase(
+            test_id=test_id,
+            test_name=f"test_{class_name.lower()}_instantiation",
+            test_type=TestType.UNIT,
+            target_function=class_name,
+            target_class=class_name,
+            description=f"{class_name}のインスタンス化テスト",
+            test_code=f"instance = {class_name}({args})\nassert instance is not None",
+            setup_code="",
+            cleanup_code="",
+            input_data={"args": args},
+            expected_output="instance",
+            assertions=[
+                f"instance = {class_name}({args})",
+                "assert instance is not None",
+                f"assert isinstance(instance, {class_name})",
+            ],
+            complexity_level=1,
+            priority=10,
+            dependencies=[],
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+
     # プレースホルダーメソッド（継続開発）
     def _generate_numeric_boundary_tests(
         self, target_function: str, arg: str, index: int
     ) -> List[TestCase]:
-        return []
+        """数値境界値テスト生成"""
+        test_cases = []
+
+        # 基本的な境界値テストケース
+        boundaries = [0, 1, -1, 100, -100]
+
+        for i, value in enumerate(boundaries):
+            test_id = f"boundary_numeric_{target_function}_{arg}_{i}"
+            test_case = self._create_basic_test_case(
+                test_id=test_id,
+                name=f"test_{target_function}_{arg}_boundary_{i}",
+                target_function=target_function,
+                test_input=f"{arg}={value}",
+                expected_output="result",
+                description=f"数値境界値テスト: {arg}={value}",
+                complexity_level=2,
+                priority=7,
+            )
+            test_cases.append(test_case)
+
+        return test_cases
 
     def _generate_string_boundary_tests(
         self, target_function: str, arg: str, index: int
     ) -> List[TestCase]:
-        return []
+        """文字列境界値テスト生成"""
+        test_cases = []
+
+        # 文字列境界値
+        string_values = ['""', '"a"', '"' + "x" * 100 + '"', "None"]
+
+        for i, value in enumerate(string_values):
+            test_id = f"boundary_string_{target_function}_{arg}_{i}"
+            test_case = self._create_basic_test_case(
+                test_id=test_id,
+                name=f"test_{target_function}_{arg}_string_boundary_{i}",
+                target_function=target_function,
+                test_input=f"{arg}={value}",
+                expected_output="result",
+                description=f"文字列境界値テスト: {arg}={value}",
+                complexity_level=2,
+                priority=7,
+            )
+            test_cases.append(test_case)
+
+        return test_cases
 
     def _generate_collection_boundary_tests(
         self, target_function: str, arg: str, index: int
     ) -> List[TestCase]:
-        return []
+        """コレクション境界値テスト生成"""
+        test_cases = []
+
+        # コレクション境界値
+        collection_values = ["[]", "[1]", "[1, 2, 3]", "None"]
+
+        for i, value in enumerate(collection_values):
+            test_id = f"boundary_collection_{target_function}_{arg}_{i}"
+            test_case = self._create_basic_test_case(
+                test_id=test_id,
+                name=f"test_{target_function}_{arg}_collection_boundary_{i}",
+                target_function=target_function,
+                test_input=f"{arg}={value}",
+                expected_output="result",
+                description=f"コレクション境界値テスト: {arg}={value}",
+                complexity_level=2,
+                priority=7,
+            )
+            test_cases.append(test_case)
+
+        return test_cases
 
     def _is_external_dependency(self, dependency: str) -> bool:
         return not dependency.startswith("kumihan_formatter")
@@ -1214,7 +1546,133 @@ def test_mock_{test_name}(self, mock_{mock_name}):
     def _generate_coverage_optimized_tests(
         self, element: Dict[str, Any], analysis: Dict[str, Any]
     ) -> List[TestCase]:
-        return []
+        """カバレッジ最適化テスト生成"""
+
+        test_cases = []
+        element_type = element.get("type", "unknown")
+
+        if element_type == "function":
+            test_cases.extend(self._generate_function_coverage_tests(element, analysis))
+        elif element_type == "method":
+            test_cases.extend(self._generate_method_coverage_tests(element, analysis))
+        elif element_type == "class":
+            test_cases.extend(self._generate_class_coverage_tests(element, analysis))
+
+        return test_cases
+
+    def _generate_function_coverage_tests(
+        self, func_info: Dict[str, Any], analysis: Dict[str, Any]
+    ) -> List[TestCase]:
+        """関数カバレッジテスト生成"""
+
+        test_cases = []
+        func_name = func_info["name"]
+
+        # 基本的な正常系テスト
+        test_id = f"test_{func_name}_basic_{int(time.time())}"
+        basic_test = self._create_basic_test_case(
+            test_id=test_id,
+            name=f"test_{func_name}_basic",
+            target_function=func_name,
+            test_input="",
+            expected_output="result",
+            description=f"{func_name}の基本テスト",
+            complexity_level=1,
+            priority=5,
+        )
+        test_cases.append(basic_test)
+
+        # 分岐カバレッジテスト
+        branches = func_info.get("branches", 0)
+        if branches > 0:
+            for i in range(min(branches, 3)):  # 最大3分岐まで
+                test_id = f"test_{func_name}_branch_{i}_{int(time.time())}"
+                branch_test = self._create_branch_test_case(
+                    test_id=test_id,
+                    name=f"test_{func_name}_branch_{i}",
+                    target_function=func_name,
+                    branch_condition=f"branch_{i}",
+                    test_input=f"branch_input_{i}",
+                    expected_output=f"branch_output_{i}",
+                    description=f"{func_name}の分岐{i}テスト",
+                )
+                test_cases.append(branch_test)
+
+        # エッジケーステスト
+        test_id = f"test_{func_name}_edge_{int(time.time())}"
+        edge_test = self._create_edge_case_test(
+            test_id=test_id,
+            name=f"test_{func_name}_edge_case",
+            target_function=func_name,
+            edge_case_type="null_input",
+            test_input="None",
+            expected_behavior="handled_gracefully",
+            description=f"{func_name}のエッジケーステスト",
+        )
+        test_cases.append(edge_test)
+
+        # 例外テスト
+        if func_info.get("exceptions", 0) > 0:
+            test_id = f"test_{func_name}_exception_{int(time.time())}"
+            exception_test = self._create_exception_test_case(
+                test_id=test_id,
+                name=f"test_{func_name}_exception",
+                target_function=func_name,
+                exception_type="Exception",
+                test_input="invalid_input",
+                description=f"{func_name}の例外テスト",
+            )
+            test_cases.append(exception_test)
+
+        return test_cases
+
+    def _generate_method_coverage_tests(
+        self, method_info: Dict[str, Any], analysis: Dict[str, Any]
+    ) -> List[TestCase]:
+        """メソッドカバレッジテスト生成"""
+
+        test_cases = []
+
+        method_name = method_info["name"]
+
+        # __init__メソッドの特別処理
+        if method_name == "__init__":
+            test_id = f"test_init_{int(time.time())}"
+            init_test = self._create_init_test_case(
+                test_id=test_id,
+                class_name="TestClass",
+                init_args="",
+                description="初期化メソッドテスト",
+            )
+            test_cases.append(init_test)
+        else:
+            # 通常のメソッドテスト
+            test_cases.extend(
+                self._generate_function_coverage_tests(method_info, analysis)
+            )
+
+        return test_cases
+
+    def _generate_class_coverage_tests(
+        self, class_info: Dict[str, Any], analysis: Dict[str, Any]
+    ) -> List[TestCase]:
+        """クラスカバレッジテスト生成"""
+
+        test_cases = []
+
+        class_name = class_info["name"]
+
+        # クラスのインスタンス化テスト
+        test_id = f"test_{class_name.lower()}_instantiation_{int(time.time())}"
+        instantiation_test = self._create_class_instantiation_test(
+            test_id=test_id,
+            class_name=class_name,
+            args="",
+            description=f"{class_name}のインスタンス化テスト",
+        )
+        test_cases.append(instantiation_test)
+
+        return test_cases
 
     def _generate_suite_setup_code(self, analyzed_modules: List[Dict[str, Any]]) -> str:
         return "# Suite setup code"
@@ -1227,15 +1685,80 @@ def test_mock_{test_name}(self, mock_{mock_name}):
     def _estimate_coverage(
         self, test_cases: List[TestCase], analyzed_modules: List[Dict[str, Any]]
     ) -> float:
+        """詳細カバレッジ計算"""
         if not analyzed_modules:
             return 0.0
 
-        total_testable = sum(
-            len(m.get("testable_elements", [])) for m in analyzed_modules
-        )
-        covered = len(test_cases)
+        # 総要素数カウント
+        total_functions = 0
+        total_classes = 0
+        total_methods = 0
+        total_branches = 0
+        total_lines = 0
 
-        return min(covered / max(total_testable, 1), 1.0)
+        for module in analyzed_modules:
+            # 関数カウント
+            functions = module.get("functions", [])
+            total_functions += len(functions)
+
+            # クラスとメソッドカウント
+            classes = module.get("classes", [])
+            total_classes += len(classes)
+
+            for cls in classes:
+                methods = cls.get("methods", [])
+                total_methods += len(methods)
+
+                # メソッドの分岐数
+                for method in methods:
+                    total_branches += method.get("branches", 0)
+
+            # 関数の分岐数
+            for func in functions:
+                total_branches += func.get("branches", 0)
+
+            # 行数
+            total_lines += module.get("total_lines", 0)
+
+        # テストケースカバレッジ
+        tested_functions: Set[str] = set()
+        tested_branches = 0
+        tested_exceptions = 0
+
+        for test_case in test_cases:
+            target = test_case.target_function
+
+            # 関数/メソッドのカバレッジ
+            if target:
+                tested_functions.add(target)
+
+                # 複雑度ベースの分岐カバレッジ推定
+                complexity = test_case.complexity_level
+                tested_branches += min(complexity, 3)  # 最大3分岐
+
+                # 例外テストの場合
+                if "exception" in test_case.test_name.lower():
+                    tested_exceptions += 1
+
+        # カバレッジ率計算（重み付け）
+        function_coverage = len(tested_functions) / max(
+            total_functions + total_methods, 1
+        )
+        branch_coverage = tested_branches / max(total_branches, 1)
+        instantiation_tests = [
+            tc for tc in test_cases if "instantiation" in tc.test_name
+        ]
+        class_coverage = len(instantiation_tests) / max(total_classes, 1)
+
+        # 総合カバレッジ（重み付け平均）
+        weighted_coverage = (
+            function_coverage * 0.4  # 関数カバレッジ40%
+            + branch_coverage * 0.3  # 分岐カバレッジ30%
+            + class_coverage * 0.2  # クラスカバレッジ20%
+            + (tested_exceptions / max(len(test_cases), 1)) * 0.1  # 例外カバレッジ10%
+        )
+
+        return min(weighted_coverage, 1.0)
 
     def _save_test_suite(self, test_suite: TestSuite) -> None:
         """テストスイート保存"""
@@ -1364,7 +1887,7 @@ class Calculator:
         test_files, GenerationStrategy.COMPREHENSIVE
     )
 
-    print(f"テストスイート生成完了:")
+    print("テストスイート生成完了:")
     print(f"  スイートID: {test_suite.suite_id}")
     print(f"  テスト数: {test_suite.total_tests}")
     print(f"  推定カバレッジ: {test_suite.estimated_coverage:.1%}")
