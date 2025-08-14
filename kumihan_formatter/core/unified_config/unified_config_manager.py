@@ -80,7 +80,7 @@ class UnifiedConfigManager:
         self._load_initial_config(config_file)
 
         # ホットリロード開始
-        if self._auto_reload and self._config_file_path:
+        if self._auto_reload and self._config_file_path is not None:
             self._start_auto_reload()
 
     def _load_initial_config(self, config_file: Optional[Union[str, Path]]) -> None:

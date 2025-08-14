@@ -281,8 +281,9 @@ class Parser:
         nodes = []
 
         # パフォーマンス監視開始
-        from .core.performance import monitor_performance
         from typing import cast
+
+        from .core.performance import monitor_performance
         from .core.performance.monitor import PerformanceContext
 
         with cast(
@@ -399,11 +400,10 @@ class Parser:
 
                         # ストリーミング出力
                         for node in chunk_nodes:
-                            if not self._cancelled:
-                                yield node
-                                processed_nodes += 1
-                            else:
+                            if self._cancelled:
                                 break
+                            yield node
+                            processed_nodes += 1
 
                     except Exception as e:
                         self.logger.warning(

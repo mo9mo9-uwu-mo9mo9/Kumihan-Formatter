@@ -97,7 +97,7 @@ class ParallelConfig(BaseModel):
 
     @field_validator("max_chunk_size")
     @classmethod
-    def validate_chunk_sizes(cls, v: Any, info: Any) -> None:
+    def validate_chunk_sizes(cls, v: Any, info: Any) -> Any:
         """チャンクサイズの整合性チェック"""
         if (
             hasattr(info, "data")
@@ -109,7 +109,7 @@ class ParallelConfig(BaseModel):
 
     @field_validator("memory_critical_threshold_mb")
     @classmethod
-    def validate_memory_thresholds(cls, v: Any, info: Any) -> None:
+    def validate_memory_thresholds(cls, v: Any, info: Any) -> Any:
         """メモリしきい値の整合性チェック"""
         if (
             hasattr(info, "data")
@@ -278,7 +278,7 @@ class KumihanConfig(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_config_consistency(cls, values: Any) -> None:
+    def validate_config_consistency(cls, values: Any) -> Any:
         """設定間の整合性チェック"""
         # ログレベルとデバッグモードの整合性
         if values.get("debug_mode") and values.get("logging"):

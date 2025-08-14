@@ -76,7 +76,8 @@ class ConfigManager:
     def get_markers(self) -> dict[str, dict[str, Any]]:
         """マーカー定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_markers"):
-            return self._config.get_markers()
+            result = self._config.get_markers()
+            return result if isinstance(result, dict) else {}
         return {}
 
     def add_marker(self, name: str, definition: dict[str, Any]) -> None:
@@ -93,7 +94,8 @@ class ConfigManager:
     def get_themes(self) -> dict[str, dict[str, Any]]:
         """テーマ定義を取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_themes"):
-            return self._config.get_themes()
+            result = self._config.get_themes()
+            return result if isinstance(result, dict) else {}
         return {}
 
     def add_theme(self, theme_id: str, theme_data: dict[str, Any]) -> None:

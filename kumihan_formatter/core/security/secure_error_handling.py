@@ -75,7 +75,6 @@ _global_error_handler = SecureErrorHandler(debug_mode=False)
 
 def set_debug_mode(enabled: bool) -> None:
     """デバッグモードの設定"""
-    global _global_error_handler
     _global_error_handler.debug_mode = enabled
 
 

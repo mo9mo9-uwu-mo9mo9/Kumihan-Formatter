@@ -6,6 +6,7 @@ better maintainability and reduced complexity.
 """
 
 import sys
+from typing import Any
 
 import click
 
@@ -312,19 +313,83 @@ def main() -> None:
         sys.exit(1)
 
 
-def interactive_repl() -> None:
-    """対話型変換REPL - ダブルクリック実行用"""
+def _handle_special_command(user_input: str, history: list[tuple[str, str]]) -> bool:
+    """特殊コマンドの処理"""
+    if user_input.lower() in ["exit", "quit"]:
+        print("👋 終了します")
+        return True
+    elif user_input.lower() == "help":
+        _show_help()
+        return False
+    elif user_input.lower() == "clear":
+        _clear_screen()
+        return False
+    elif user_input.lower() == "history":
+        _show_history(history)
+        return False
+    return False
+
+
+def _show_help() -> None:
+    """ヘルプ表示"""
+    print("\n📖 ヘルプ:")
+    print("  - Kumihan記法を入力するとHTML変換されます")
+    print("  - 例: # 太字 #テスト## → <strong>テスト</strong>")
+    print("  - 'history' で履歴表示")
+    print("  - 'clear' で画面クリア")
+    print("  - 'exit' で終了")
+
+
+def _clear_screen() -> None:
+    """画面クリア"""
     import os
     import subprocess
+
+    clear_cmd = ["clear"] if os.name == "posix" else ["cls"]
+    try:
+        subprocess.run(clear_cmd, shell=False, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("\n" * 50)
+
+
+def _show_history(history: list[tuple[str, str]]) -> None:
+    """履歴表示"""
+    print("\n📚 変換履歴:")
+    for i, (input_text, output_html) in enumerate(history[-10:], 1):
+        print(f"  {i}. 入力: {input_text[:50]}...")
+        print(f"     出力: {output_html[:100]}...")
+
+
+def _process_kumihan_input(
+    user_input: str, history: list[tuple[str, str]], logger: Any
+) -> None:
+    """Kumihan記法の処理"""
+    try:
+        from kumihan_formatter.parser import parse_with_error_config
+        from kumihan_formatter.renderer import render
+
+        result = parse_with_error_config(user_input)
+        html_content = render(result)
+
+        print("\n✅ 変換成功:")
+        print(f"📄 HTML: {html_content}")
+
+        history.append((user_input, html_content))
+
+    except Exception as parse_error:
+        print(f"\n❌ 変換エラー: {parse_error}")
+        logger.error(f"Parse error: {parse_error}")
+
+
+def interactive_repl() -> None:
+    """対話型変換REPL - ダブルクリック実行用"""
     import sys
     from pathlib import Path
 
-    # プロジェクトルートをPythonパスに追加
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
 
     try:
-        # Unused import removed: from kumihan_formatter.parser import KumihanParser
         from kumihan_formatter.core.utilities.logger import get_logger
     except ImportError as e:
         print(f"❌ インポートエラー: {e}")
@@ -332,8 +397,6 @@ def interactive_repl() -> None:
         return
 
     logger = get_logger(__name__)
-
-    # エンコーディング設定
     setup_encoding()
 
     print("🚀 Kumihan-Formatter 対話型変換ツール")
@@ -344,71 +407,18 @@ def interactive_repl() -> None:
     print("💡 'clear' で画面クリア")
     print("-" * 50)
 
-    # parser = KumihanParser() # No longer needed
-    # renderer = HTMLRenderer() # No longer needed
-
     history: list[tuple[str, str]] = []
 
     while True:
         try:
-            # プロンプト表示
             user_input = input("\n📝 Kumihan記法: ").strip()
-
             if not user_input:
                 continue
 
-            # 特殊コマンド処理
-            if user_input.lower() in ["exit", "quit"]:
-                print("👋 終了します")
+            if _handle_special_command(user_input, history):
                 break
-            elif user_input.lower() == "help":
-                print("\n📖 ヘルプ:")
-                print("  - Kumihan記法を入力するとHTML変換されます")
-                print("  - 例: # 太字 #テスト## → <strong>テスト</strong>")
-                print("  - 'history' で履歴表示")
-                print("  - 'clear' で画面クリア")
-                print("  - 'exit' で終了")
-                continue
-            elif user_input.lower() == "clear":
-                # セキュリティ修正: os.system()をsubprocess.run()に置換
-                clear_cmd = ["clear"] if os.name == "posix" else ["cls"]
-                try:
-                    subprocess.run(clear_cmd, shell=False, check=True)
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    # クリアコマンドが失敗した場合は単純に改行で代替
-                    print("\n" * 50)
-                continue
-            elif user_input.lower() == "history":
-                print("\n📚 変換履歴:")
-                for i, (input_text, output_html) in enumerate(history[-10:], 1):
-                    print(f"  {i}. 入力: {input_text[:50]}...")
-                    print(f"     出力: {output_html[:100]}...")
-                continue
 
-            # Kumihan記法の変換実行
-            try:
-                # Import here to avoid circular dependencies and for lazy loading
-                from kumihan_formatter.parser import parse_with_error_config
-                from kumihan_formatter.renderer import render
-
-                # パース処理
-                result = parse_with_error_config(
-                    user_input
-                )  # Use the top-level function
-
-                # HTML生成
-                html_content = render(result)  # Use the top-level function
-
-                # 結果表示
-                print("\n✅ 変換成功:")
-                print(f"📄 HTML: {html_content}")
-
-                # 履歴に追加
-                history.append((user_input, html_content))
-
-            except Exception as parse_error:
-                print(f"\n❌ 変換エラー: {parse_error}")
-                logger.error(f"Parse error: {parse_error}")
+            _process_kumihan_input(user_input, history, logger)
 
         except KeyboardInterrupt:
             print("\n\n👋 Ctrl+C で終了します")
