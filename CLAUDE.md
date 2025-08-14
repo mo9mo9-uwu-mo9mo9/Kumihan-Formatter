@@ -28,11 +28,23 @@
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
 
 ### 🤖 Gemini活用指針（**必須実行**）
+- **⚠️ 作業開始前チェック**: `python gemini_reports/gemini_collaboration_checker.py "作業内容"` で判定実行
 - **自動判定優先**: 1000トークン以上・定型作業はGemini実行
 - **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
 - **フェイルセーフ活用**: Gemini失敗時は即座にClaude代替
 - **学習・改善**: 実行結果を蓄積し継続的品質向上
 - **📋 作業レポート**: `gemini_reports/` に自動記録（外部非公開）
+
+#### 🚨 Gemini協業必須パターン（Issue #876反省改善）
+```python
+GEMINI_REQUIRED_PATTERNS = [
+    "MyPy型注釈修正",     # no-any-return, strict mode等
+    "Flake8エラー修正",    # F401, E501等の定型修正
+    "Black/isort整形",     # コードフォーマット統一
+    "複数ファイル一括処理",  # 3ファイル以上の同時修正
+    "定型作業（5件以上）"   # 同じ修正の繰り返し
+]
+```
 
 ---
 
@@ -90,15 +102,38 @@ make test       # pytest
 
 ## 🤖 協業システム実行指針
 
-### Gemini推奨ケース（自動実行）
+### 📋 作業開始時フローチャート（Issue #876反省改善）
+```bash
+1. 作業内容確認
+   ↓
+2. 🚨 必須チェック実行
+   python gemini_reports/gemini_collaboration_checker.py "作業内容"
+   ↓
+3a. ✅ Gemini推奨 → gemini_reports/指示書生成・Gemini実行
+3b. ❌ Claude専任 → 直接実行
+   ↓
+4. 品質保証（3層検証）
+   ↓
+5. 最終確認・マージ
+```
+
+### Gemini推奨ケース（自動判定）
 ```python
 # 型注釈修正（no-untyped-def等）
-def function(param) -> None:          # ❌ 修正前
+def function(param) -> None:          # ❌ 修正前  
 def function(param: Any) -> None:     # ✅ 修正後
 
 # 単純バグ修正・コード整形
-make gemini-mypy TARGET_FILES="*.py"  # 一括処理
+python3 -m mypy kumihan_formatter --strict  # MyPy修正
+python3 -m flake8 kumihan_formatter         # Lint修正
+python3 -m black kumihan_formatter          # フォーマット
 ```
+
+### ⚠️ Issue #876で見落とした判定基準
+- **Token推定量**: 1000トークン以上（MyPy5件修正≈3000トークン）
+- **ファイル数**: 3ファイル以上（13ファイル同時修正）
+- **作業パターン**: 定型作業（同じ型修正の繰り返し）
+- **コスト削減**: 87%以上の削減可能性
 
 ### Claude専任ケース（直接実行）  
 - **新機能設計・実装** - アーキテクチャレベル判断
@@ -106,10 +141,10 @@ make gemini-mypy TARGET_FILES="*.py"  # 一括処理
 - **ユーザー要求対応** - コミュニケーション・戦略判断
 
 ### 自動化レベル設定
-- **FULL_AUTO**: simple + 低リスク → 即座自動実行
-- **SEMI_AUTO**: moderate + 中リスク → 承認後実行  
-- **APPROVAL_REQUIRED**: complex + 高リスク → 事前承認必須
-- **MANUAL_ONLY**: critical + 最高リスク → Claude専任
+- **FULL_AUTO**: simple + 低リスク + 信頼度80%以上 → 即座自動実行
+- **SEMI_AUTO**: moderate + 中リスク + 信頼度60%以上 → 承認後実行  
+- **APPROVAL_REQUIRED**: complex + 高リスク + 信頼度40%以上 → 事前承認必須
+- **MANUAL_ONLY**: critical + 最高リスク + 信頼度40%未満 → Claude専任
 
 **詳細ガイド**: [docs/claude/gemini-collaboration.md](docs/claude/gemini-collaboration.md)
 
