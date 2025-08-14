@@ -119,7 +119,9 @@ class AdaptiveSettingsManager:
             self.concurrent_limiter = ConcurrentToolCallLimiter(config_adapter)
             self.token_analyzer = TokenUsageAnalyzer(config_adapter)
 
-    def _initialize_adjustment_rules(self) -> Dict[str, Callable]:
+    def _initialize_adjustment_rules(
+        self,
+    ) -> Dict[str, Callable[[WorkContext, Dict[str, Any]], Optional[ConfigAdjustment]]]:
         """設定調整ルールを初期化"""
         return {
             "max_answer_chars": self._adjust_max_answer_chars,

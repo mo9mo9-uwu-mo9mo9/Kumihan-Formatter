@@ -210,7 +210,8 @@ class EnhancedConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """設定を辞書として取得"""
-        return self.loader._deep_copy(self.config)
+        result = self.loader._deep_copy(self.config)
+        return result if isinstance(result, dict) else {}
 
     def get_config_source(self, key: str) -> str:
         """設定値のソースを取得"""

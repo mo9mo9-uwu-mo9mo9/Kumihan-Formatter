@@ -164,7 +164,7 @@ class ExtendedConfig(BaseConfig):
         Returns:
             str: テーマID
         """
-        return self._current_theme
+        return str(self._current_theme)
 
     def get_theme_name(self) -> str:
         """現在のテーマ名を取得

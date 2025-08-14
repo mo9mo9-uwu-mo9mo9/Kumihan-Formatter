@@ -87,7 +87,7 @@ class ConfigManager:
     def remove_marker(self, name: str) -> bool:
         """マーカーを削除（ExtendedConfigのみ）"""
         if hasattr(self._config, "remove_marker"):
-            return self._config.remove_marker(name)
+            return bool(self._config.remove_marker(name))
         return False
 
     def get_themes(self) -> dict[str, dict[str, Any]]:
@@ -104,13 +104,13 @@ class ConfigManager:
     def set_theme(self, theme_id: str) -> bool:
         """テーマを設定（ExtendedConfigのみ）"""
         if hasattr(self._config, "set_theme"):
-            return self._config.set_theme(theme_id)
+            return bool(self._config.set_theme(theme_id))
         return False
 
     def get_current_theme(self) -> str:
         """現在のテーマIDを取得（ExtendedConfigのみ）"""
         if hasattr(self._config, "get_current_theme"):
-            return self._config.get_current_theme()
+            return str(self._config.get_current_theme())
         return "default"
 
     def load_config(self, config_path: str) -> bool:

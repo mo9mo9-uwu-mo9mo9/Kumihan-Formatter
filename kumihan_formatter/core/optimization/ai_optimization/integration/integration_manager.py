@@ -35,10 +35,10 @@ class PerformanceMonitor:
         self.config = config
 
         # 性能履歴
-        self.integration_metrics_history: deque = deque(
+        self.integration_metrics_history: deque[Dict[str, Any]] = deque(
             maxlen=config.get("metrics_history_size", 5000)
         )
-        self.deletion_rate_history: deque = deque(
+        self.deletion_rate_history: deque[Dict[str, Any]] = deque(
             maxlen=config.get("deletion_history_size", 1000)
         )
 
@@ -272,7 +272,7 @@ class PhaseB4BetaIntegrator:
         self.integration_mode = IntegrationMode.ALPHA_ONLY
 
         # 統合履歴
-        self.integration_history: deque = deque(
+        self.integration_history: deque[Dict[str, Any]] = deque(
             maxlen=self.config.get("integration_history_size", 2000)
         )
 

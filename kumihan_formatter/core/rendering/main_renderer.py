@@ -4,7 +4,6 @@ This module provides the main HTMLRenderer class that coordinates
 all specialized renderers and maintains backward compatibility.
 """
 
-from html import escape
 from typing import Any, List, cast
 
 from ..ast_nodes import Node
@@ -381,7 +380,7 @@ class HTMLRenderer:
             str: Generated HTML for the node
         """
         if not isinstance(node, Node):
-            return escape(str(node))
+            raise TypeError(f"Expected Node instance, got {type(node)}")
 
         # Delegateメソッドを動的に検索して呼び出し
         method_name = f"_render_{node.type}"

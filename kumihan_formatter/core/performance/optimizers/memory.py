@@ -79,7 +79,7 @@ class MemoryOptimizer:
 
         self.logger.info(f"Object pool '{pool_name}' created with max size: {max_size}")
 
-    def get_pooled_object(self, pool_name: str) -> None:
+    def get_pooled_object(self, pool_name: str) -> Any:
         """プールからオブジェクトを取得"""
         if pool_name not in self._object_pools:
             raise ValueError(f"Object pool '{pool_name}' not found")
@@ -203,7 +203,7 @@ class MemoryOptimizer:
     def batch_process_with_memory_limit(
         self,
         data_generator: Iterator[Any],
-        processing_func: Callable,
+        processing_func: Callable[[List[Any]], Iterator[Any]],
         memory_limit_mb: int = 100,
     ) -> Iterator[Any]:
         """
@@ -428,9 +428,9 @@ class MemoryOptimizer:
     def create_advanced_resource_pool(
         self,
         pool_name: str,
-        factory_func: Callable,
+        factory_func: Callable[[], Any],
         max_size: int = 100,
-        cleanup_func: Optional[Callable] = None,
+        cleanup_func: Optional[Callable[[Any], None]] = None,
         auto_cleanup_interval: int = 300,
     ) -> None:
         """

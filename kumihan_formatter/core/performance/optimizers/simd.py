@@ -123,7 +123,7 @@ class SIMDOptimizer:
     def parallel_chunk_simd_processing(
         self,
         chunks: List[Any],
-        processing_func: Callable,
+        processing_func: Callable[[Any], Any],
         max_workers: Optional[int] = None,
     ) -> List[Any]:
         """
