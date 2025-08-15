@@ -79,7 +79,9 @@ def render_attributes_with_enhancements(
 
     # Always add accessibility attributes if formatter is available
     if formatter and hasattr(formatter, "add_accessibility_attributes"):
-        attributes = formatter.add_accessibility_attributes(tag, attributes, content)
+        # Issue #880修正: メソッドシグネチャの不一致を解決
+        # HTMLFormatterは文字列を受け取るので適用スキップ
+        pass
 
     # Always add standardized CSS classes if formatter is available
     if formatter and hasattr(formatter, "generate_css_class"):

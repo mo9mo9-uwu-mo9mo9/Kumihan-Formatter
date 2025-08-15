@@ -96,7 +96,10 @@ class Renderer:
 
         # Generate table of contents
         toc_data = self.toc_generator.generate_toc(ast)
-        should_show_toc = toc_data["has_toc"]
+        # Issue #880修正: TOCデータ構造の安全な取得
+        should_show_toc = (
+            toc_data.get("has_toc", False) if isinstance(toc_data, dict) else False
+        )
 
         # Select template
         template_name = self.template_manager.select_template_name(
@@ -109,7 +112,7 @@ class Renderer:
             RenderContext()
             .title(title or "Document")
             .body_content(body_content)
-            .toc_html(toc_data["html"])
+            .toc_html(toc_data.get("html", "") if isinstance(toc_data, dict) else "")
             .has_toc(should_show_toc)
             .css_vars(simple_config.get_css_variables())
         )
@@ -197,7 +200,7 @@ class Renderer:
         context = (
             RenderContext()
             .body_content(body_content)
-            .toc_html(toc_data["html"])
+            .toc_html(toc_data.get("html", "") if isinstance(toc_data, dict) else "")
             .has_toc(toc_data["has_toc"])
         )
 
