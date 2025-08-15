@@ -18,11 +18,7 @@
 
 ## 🚀 クイックスタート
 
-**GUI版**:
-1. [リリースページ](https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter/releases)からダウンロード
-2. `.txtファイル`をドラッグ&ドロップで変換完了！
-
-**開発者向け**:
+**CLIツール**:
 ```bash
 # 開発環境セットアップ
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
@@ -181,12 +177,9 @@ Kumihan-Formatter/
 ## 🔧 開発者向け機能
 
 ### デバッグ機能
-GUIアプリケーションやCLI版で問題が発生した場合、詳細なデバッグ機能を利用できます：
+CLIツールで問題が発生した場合、詳細なデバッグ機能を利用できます：
 
 ```bash
-# GUIデバッグモード
-KUMIHAN_GUI_DEBUG=true python3 -m kumihan_formatter.gui_launcher
-
 # CLI開発ログ
 KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
 ```
