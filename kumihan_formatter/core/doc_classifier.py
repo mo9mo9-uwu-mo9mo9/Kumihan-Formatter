@@ -80,9 +80,10 @@ class DocumentClassifier:
         self, file_path: Path, base_path: Path, patterns: list[str]
     ) -> bool:
         """除外パターンによるチェック"""
-        from ..core.file_ops import FileOperations
+        # 統合モジュール経由で実行
+        from .file_path_utilities import FilePathUtilities
 
-        return FileOperations.should_exclude(file_path, patterns, base_path)
+        return FilePathUtilities.should_exclude(file_path, patterns, base_path)
 
     def get_conversion_strategy(self, doc_type: DocumentType) -> tuple[str, str]:
         """文書タイプに対する変換戦略を取得

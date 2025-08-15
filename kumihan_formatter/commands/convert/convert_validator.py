@@ -36,7 +36,10 @@ class ConvertValidator:
             )
             sys.exit(1)
 
-        return self.path_validator.validate_input_file(input_file)
+        # Pathオブジェクトに変換してから検証
+        path_obj = Path(input_file) if isinstance(input_file, str) else input_file
+        is_valid = self.path_validator.validate_input_file(path_obj)
+        return path_obj if is_valid else Path()
 
     def check_file_size(self, input_path: Path) -> bool:
         """ファイルサイズをチェックし、必要に応じて警告を表示"""

@@ -47,6 +47,18 @@ class Node:
             self.attributes = {}
         self.attributes[key] = value
 
+    @property
+    def metadata(self) -> dict[str, Any]:
+        """属性をmetadataとしてアクセスする（統一パーサーシステム互換）"""
+        if self.attributes is None:
+            self.attributes = {}
+        return self.attributes
+
+    @property
+    def node_type(self) -> str:
+        """ノードタイプをnode_typeとしてアクセスする（統一パーサーシステム互換）"""
+        return self.type
+
     def get_attribute(self, key: str, default: Any = None) -> Any:
         """Get an attribute value"""
         if self.attributes is None:

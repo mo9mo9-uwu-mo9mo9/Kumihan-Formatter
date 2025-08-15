@@ -7,6 +7,10 @@ including compound keywords and error suggestions.
 - keyword_parsing/definitions.py: キーワード定義
 - keyword_parsing/marker_parser.py: マーカー解析
 - keyword_parsing/validator.py: キーワード検証
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
+このKeywordParserは非推奨です。新しい統一パーサーシステムをご利用ください:
+from kumihan_formatter.core.parsing import UnifiedKeywordParser, get_global_coordinator
 """
 
 from typing import Any, Union, cast
