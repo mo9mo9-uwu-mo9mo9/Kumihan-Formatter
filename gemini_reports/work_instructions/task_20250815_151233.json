@@ -1,0 +1,28 @@
+{
+  "task_id": "task_20250815_151233",
+  "title": "kumihan_formatter全体のMyPy strict mode 型注釈修正を実行。現在73件のエラーがあるため、全ファイルを順次修正してください。優先度: 1) no-untyped-def",
+  "complexity": "simple",
+  "requirements": "kumihan_formatter全体のMyPy strict mode 型注釈修正を実行。現在73件のエラーがあるため、全ファイルを順次修正してください。優先度: 1) no-untyped-def, 2) no-any-return, 3) その他のエラー",
+  "implementation_details": [
+    "指定されたツールを実行してください",
+    "エラーが発生した場合は自動修正してください",
+    "全ファイルが品質基準を満たすまで繰り返してください"
+  ],
+  "quality_criteria": [
+    "MyPy strict mode 全通過",
+    "Flake8 エラー0件",
+    "Black/isort 適用済み"
+  ],
+  "prohibited_actions": [
+    "独自判断での仕様変更",
+    "品質基準の緩和",
+    "未承認ツールの使用"
+  ],
+  "expected_files": [
+    "修正対象ファイルのみ"
+  ],
+  "dependencies": [],
+  "estimated_time": 15,
+  "created_by": "Claude",
+  "created_at": "2025-08-15T15:12:33.553872"
+}
