@@ -2,6 +2,10 @@
 
 This module handles the parsing of basic block-level elements.
 新記法 #キーワード# 対応 - Issue #665
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
+このBlockParserは非推奨です。新しい統一パーサーシステムをご利用ください:
+from kumihan_formatter.core.parsing import get_global_coordinator, register_default_parsers
 """
 
 import re
@@ -28,7 +32,20 @@ class BlockParser:
 
         Args:
             keyword_parser: Optional keyword parser instance
+
+        ⚠️  DEPRECATION WARNING:
+        BlockParser is deprecated. Use kumihan_formatter.core.parsing instead.
         """
+        # 非推奨警告
+        import warnings
+
+        warnings.warn(
+            "BlockParser is deprecated and will be removed in v3.0. "
+            "Use kumihan_formatter.core.parsing.get_global_coordinator() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         from kumihan_formatter.core.utilities.logger import get_logger
 
         from .base_parser import BaseBlockParser

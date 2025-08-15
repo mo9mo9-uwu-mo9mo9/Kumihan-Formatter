@@ -28,10 +28,25 @@ from .config_models import (
     UIConfig,
 )
 from .config_validator import ConfigValidator
-from .unified_config_manager import UnifiedConfigManager
+from .unified_config_manager import UnifiedConfigManager, get_unified_config_manager
+
+
+# 便利関数のエクスポート
+def get_global_config_manager() -> UnifiedConfigManager:
+    """グローバル統一設定マネージャーを取得（旧API互換性）"""
+    return get_unified_config_manager()
+
+
+def create_unified_config() -> UnifiedConfigManager:
+    """統一設定を作成（旧API互換性）"""
+    return UnifiedConfigManager()
+
 
 __all__ = [
     "UnifiedConfigManager",
+    "get_unified_config_manager",
+    "get_global_config_manager",
+    "create_unified_config",
     "KumihanConfig",
     "ParallelConfig",
     "LoggingConfig",

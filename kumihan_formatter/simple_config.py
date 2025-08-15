@@ -2,7 +2,13 @@
 
 初心者向けに簡素化されたKumihan-Formatterの設定管理。
 統合設定システムの基本設定を使用し、互換性を維持します。
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 3:
+このモジュールは非推奨です。新しい統一設定システムをご利用ください:
+from kumihan_formatter.core.unified_config import get_unified_config_manager
 """
+
+import warnings
 
 from .config import create_config_manager
 
@@ -28,6 +34,12 @@ class SimpleConfig:
 
     def __init__(self) -> None:
         """簡素化された設定を初期化（統合設定システムを使用）"""
+        warnings.warn(
+            "SimpleConfigは非推奨です。"
+            "kumihan_formatter.core.unified_config.get_unified_config_manager()を使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         # 統合設定管理システムの基本設定を使用
         self._manager = create_config_manager(config_type="base")
 

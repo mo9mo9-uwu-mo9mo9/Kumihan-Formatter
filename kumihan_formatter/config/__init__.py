@@ -2,8 +2,13 @@
 
 設定管理の統合リファクタリングで作成された統合API。
 全ての設定機能を一元的に提供し、既存コードとの互換性を維持する。
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 3:
+この設定システムは非推奨です。新しい統一設定システムをご利用ください:
+from kumihan_formatter.core.unified_config import UnifiedConfigManager, get_unified_config_manager
 """
 
+import warnings
 from typing import cast
 
 from .base_config import BaseConfig
@@ -34,6 +39,12 @@ def create_simple_config() -> ConfigManager:
     Returns:
         ConfigManager: 基本設定を使用した設定管理オブジェクト
     """
+    warnings.warn(
+        "create_simple_config()は非推奨です。"
+        "kumihan_formatter.core.unified_config.get_unified_config_manager()を使用してください。",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     return create_config_manager(config_type="base")
 
 
@@ -43,6 +54,12 @@ def get_default_config() -> ConfigManager:
     Returns:
         ConfigManager: デフォルト設定管理オブジェクト
     """
+    warnings.warn(
+        "get_default_config()は非推奨です。"
+        "kumihan_formatter.core.unified_config.get_unified_config_manager()を使用してください。",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     global _default_config
     if _default_config is None:
         _default_config = create_config_manager()

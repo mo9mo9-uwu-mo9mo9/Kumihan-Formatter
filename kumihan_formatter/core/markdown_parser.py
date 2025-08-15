@@ -3,9 +3,14 @@
 
 マークダウン構文解析・パターンマッチング機能
 Issue #492 Phase 5A - markdown_converter.py分割
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
+このMarkdownParserは非推奨です。新しい統一パーサーシステムをご利用ください:
+from kumihan_formatter.core.parsing import UnifiedMarkdownParser, get_global_coordinator
 """
 
 import re
+import warnings
 from typing import Any, Pattern
 
 
@@ -18,6 +23,11 @@ class MarkdownParser:
 
     def __init__(self) -> None:
         """Initialize parser with compiled patterns"""
+        warnings.warn(
+            "MarkdownParserは非推奨です。kumihan_formatter.core.parsing.UnifiedMarkdownParserを使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.patterns = self._compile_patterns()
 
     def _compile_patterns(self) -> dict[str, Pattern[str]]:
