@@ -132,8 +132,8 @@ class ClaudeGeminiOrchestrator:
         """
         task_id = f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-        # 複雑度別テンプレート選択
-        template = self._get_instruction_template(analysis["complexity"])
+        # タスクタイプ別テンプレート選択（改良版）
+        template = self._get_enhanced_instruction_template(analysis)
 
         instruction = WorkInstruction(
             task_id=task_id,
@@ -538,6 +538,133 @@ class ClaudeGeminiOrchestrator:
         }
 
         return templates.get(complexity, templates[TaskComplexity.MODERATE.value])
+
+    def _get_enhanced_instruction_template(self, analysis: Dict[str, Any]) -> Dict[str, List[str]]:
+        """タスク内容に基づく強化されたテンプレート選択
+
+        Args:
+            analysis: 要件分析結果
+
+        Returns:
+            適切なテンプレート
+        """
+        request = analysis["original_request"].lower()
+        task_type = analysis.get("task_type", "")
+
+        # MyPy修正専用テンプレート
+        if any(keyword in request for keyword in ['mypy', '型注釈', 'type annotation', 'エラー修正']):
+            return self._get_mypy_fix_template(analysis)
+
+        # Lint修正専用テンプレート
+        if any(keyword in request for keyword in ['flake8', 'lint', 'black', 'isort']):
+            return self._get_lint_fix_template(analysis)
+
+        # 既存ファイル修正テンプレート
+        if any(keyword in request for keyword in ['修正', 'fix', '改修', 'バグ']) and \
+           any(dir_name in request for dir_name in ['gemini_reports/', 'kumihan_formatter/', 'core/']):
+            return self._get_file_modification_template(analysis)
+
+        # デフォルトテンプレート（従来の方式）
+        return self._get_instruction_template(analysis["complexity"])
+
+    def _get_mypy_fix_template(self, analysis: Dict[str, Any]) -> Dict[str, List[str]]:
+        """MyPy修正専用テンプレート"""
+        request = analysis["original_request"]
+
+        # 対象ディレクトリを特定
+        target_dir = "gemini_reports/"
+        if "kumihan_formatter" in request:
+            target_dir = "kumihan_formatter/"
+        elif "core/" in request:
+            target_dir = "kumihan_formatter/core/"
+
+        return {
+            "implementation_details": [
+                f"対象ディレクトリ: {target_dir}",
+                "以下の形式で既存ファイルを修正してください:",
+                "",
+                "# ファイル: 実際のファイルパス（例: gemini_reports/api_config.py）",
+                "```python",
+                "修正後の完全なファイル内容",
+                "```",
+                "",
+                "主要な修正パターン:",
+                "- 関数・メソッドに型注釈追加: def func(param: int) -> str:",
+                "- 変数の型注釈: variable: Optional[str] = None",
+                "- import文の最適化: from typing import Optional, Dict, List",
+                "- Any型の具体的型への変更",
+                "- Noneチェックの追加: if value is not None:",
+                "",
+                "⚠️ 重要: 新規ファイル作成ではなく、既存ファイルの直接修正を行ってください"
+            ],
+            "quality_criteria": [
+                "MyPy strict mode 完全通過",
+                "全関数・メソッドに適切な型注釈",
+                "typing importの最適化完了",
+                "既存機能の動作保証"
+            ],
+            "prohibited_actions": [
+                "新規ファイルの作成",
+                "tmp/配下への保存",
+                "機能の削除・変更",
+                "APIの破壊的変更"
+            ],
+            "expected_files": [
+                f"{target_dir}内の既存Pythonファイル",
+                "修正対象ファイルのみ（新規作成不可）"
+            ],
+            "dependencies": [
+                "typing モジュール",
+                "既存コードとの互換性維持"
+            ]
+        }
+
+    def _get_lint_fix_template(self, analysis: Dict[str, Any]) -> Dict[str, List[str]]:
+        """Lint修正専用テンプレート"""
+        return {
+            "implementation_details": [
+                "Black/isort/flake8エラーの修正を実行:",
+                "- コードフォーマット統一",
+                "- import文の整理",
+                "- 行長制限の遵守",
+                "- 未使用import削除",
+                "既存ファイルを直接修正してください"
+            ],
+            "quality_criteria": [
+                "Black通過: 行長88文字",
+                "isort通過: import順序正規化",
+                "Flake8通過: エラー0件"
+            ],
+            "prohibited_actions": [
+                "機能の変更",
+                "新規ファイル作成"
+            ],
+            "expected_files": ["修正対象ファイルのみ"],
+            "dependencies": []
+        }
+
+    def _get_file_modification_template(self, analysis: Dict[str, Any]) -> Dict[str, List[str]]:
+        """既存ファイル修正テンプレート"""
+        return {
+            "implementation_details": [
+                "既存ファイルの修正・改良を実行",
+                "現在の機能を維持しつつ改善",
+                "適切な形式でファイルパスを指定",
+                "バックアップ不要（Git管理下）"
+            ],
+            "quality_criteria": [
+                "既存機能の動作保証",
+                "コード品質の向上",
+                "適切なエラーハンドリング"
+            ],
+            "prohibited_actions": [
+                "機能の削除",
+                "API仕様の変更",
+                "新規ファイル作成"
+            ],
+            "expected_files": ["修正対象ファイルのみ"],
+            "dependencies": ["既存システムとの整合性"]
+        }
 
     def _save_work_instruction(self, instruction: WorkInstruction) -> None:
         """作業指示書保存"""

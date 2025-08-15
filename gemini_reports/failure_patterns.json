@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-08-15T17:14:21.295544",
+    "instruction_type": "creation",
+    "instruction_length": 505,
+    "failure_reasons": [
+      "MyPyエラー (tmp/realtime_dashboard/data_generator.py): tmp/realtime_dashboard/data_generator.py:5: error: Library stubs not installed for \"pandas\"  [import-untyped]\ntmp/realtime_dashboard/data_generator.py:5: note: Hint: \"python3 -m pip install pandas-stubs\"\ntmp/realtime_dashboard/data_generator.py:5: note: (or run \"mypy --install-types\" to install all missing stub packages)\ntmp/realtime_dashboard/data_generator.py:5: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\nFound 1 error in 1 file (checked 1 source file)\n",
+      "MyPyエラー (tmp/realtime_dashboard/analytics_engine.py): tmp/realtime_dashboard/analytics_engine.py:1: error: Library stubs not installed for \"pandas\"  [import-untyped]\ntmp/realtime_dashboard/analytics_engine.py:1: note: Hint: \"python3 -m pip install pandas-stubs\"\ntmp/realtime_dashboard/analytics_engine.py:1: note: (or run \"mypy --install-types\" to install all missing stub packages)\ntmp/realtime_dashboard/analytics_engine.py:1: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\nFound 1 error in 1 file (checked 1 source file)\n",
+      "MyPyエラー (tmp/realtime_dashboard/dashboard.py): tmp/realtime_dashboard/analytics_engine.py:1: error: Library stubs not installed for \"pandas\"  [import-untyped]\ntmp/realtime_dashboard/data_generator.py:5: error: Library stubs not installed for \"pandas\"  [import-untyped]\ntmp/realtime_dashboard/dashboard.py:2: error: Library stubs not installed for \"pandas\"  [import-untyped]\ntmp/realtime_dashboard/dashboard.py:2: note: Hint: \"python3 -m pip install pandas-stubs\"\ntmp/realtime_dashboard/dashboard.py:2: note: (or run \"mypy --install-types\" to install all missing stub packages)\ntmp/realtime_dashboard/dashboard.py:3: error: Cannot find implementation or library stub for module named \"plotly.express\"  [import-not-found]\ntmp/realtime_dashboard/dashboard.py:3: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\ntmp/realtime_dashboard/dashboard.py:3: error: Cannot find implementation or library stub for module named \"plotly\"  [import-not-found]\ntmp/realtime_dashboard/dashboard.py:11: error: Function is missing a return type annotation  [no-untyped-def]\ntmp/realtime_dashboard/dashboard.py:11: note: Use \"-> None\" if function does not return a value\ntmp/realtime_dashboard/dashboard.py:83: error: Call to untyped function \"main\" in typed context  [no-untyped-call]\nFound 7 errors in 3 files (checked 1 source file)\n"
+    ],
+    "improvement_suggestions": [
+      "型注釈修正時はより具体的な型指定例を提供する",
+      "型注釈修正時はより具体的な型指定例を提供する",
+      "型注釈修正時はより具体的な型指定例を提供する"
+    ],
+    "quality_checks": {
+      "syntax_pass": true,
+      "mypy_pass": false,
+      "flake8_pass": true,
+      "file_location_correct": true
+    }
+  },
+  {
+    "timestamp": "2025-08-15T17:15:45.103967",
+    "instruction_type": "modification",
+    "instruction_length": 799,
+    "failure_reasons": [
+      "MyPyエラー (kumihan_formatter/streaming_parser.py): kumihan_formatter/streaming_parser.py:5: error: Cannot find implementation or library stub for module named \"kumihan_formatter.parser_utils\"  [import-not-found]\nkumihan_formatter/streaming_parser.py:5: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\nFound 1 error in 1 file (checked 1 source file)\n",
+      "MyPyエラー (kumihan_formatter/parser.py): kumihan_formatter/parser.py:6: error: Cannot find implementation or library stub for module named \"kumihan_formatter.parser_utils\"  [import-not-found]\nkumihan_formatter/parser.py:6: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\nFound 1 error in 1 file (checked 1 source file)\n"
+    ],
+    "improvement_suggestions": [
+      "型注釈修正時はより具体的な型指定例を提供する",
+      "型注釈修正時はより具体的な型指定例を提供する"
+    ],
+    "quality_checks": {
+      "syntax_pass": true,
+      "mypy_pass": false,
+      "flake8_pass": true,
+      "file_location_correct": true
+    }
+  }
+]

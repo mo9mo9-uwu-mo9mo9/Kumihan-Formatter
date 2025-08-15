@@ -14,13 +14,12 @@ import os
 import re
 import subprocess
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 
 try:
-    import google.generativeai as genai  # type: ignore
+    import google.generativeai as genai
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
@@ -48,9 +47,9 @@ class GeminiAPIExecutor:
             raise ValueError("Gemini API key is required. Set GEMINI_API_KEY environment variable or pass api_key parameter")
 
         # Gemini API設定
-        genai.configure(api_key=self.api_key)
+        genai.configure(api_key=self.api_key)  # type: ignore
         model_name = self.config["gemini_api"]["model_name"]
-        self.model = genai.GenerativeModel(model_name)
+        self.model = genai.GenerativeModel(model_name)  # type: ignore
 
         # 設定から読み込み
         self.generation_config = self.config["gemini_api"]["generation_config"]
@@ -104,7 +103,8 @@ class GeminiAPIExecutor:
 
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                config_data: Dict[str, Any] = json.load(f)
+                return config_data
         except FileNotFoundError:
             # logger未初期化のため直接print
             print(f"⚠️ 設定ファイルが見つかりません: {config_path}. デフォルト設定を使用します。")
@@ -175,6 +175,48 @@ class GeminiAPIExecutor:
         if context:
             self.logger.debug(f"Error context: {context}")
 
+    def _determine_task_type(self, work_instruction: str) -> str:
+        """作業指示書からタスクタイプを自動判定
+
+        Args:
+            work_instruction: 作業指示書の内容
+
+        Returns:
+            タスクタイプ ('modification', 'creation', 'enhancement')
+        """
+        instruction_lower = work_instruction.lower()
+
+        # 修正タスクのキーワード
+        modification_keywords = [
+            '修正', 'fix', 'error', 'エラー', 'mypy', 'flake8', 'lint',
+            '型注釈', 'type annotation', 'バグ', 'bug', '改修'
+        ]
+
+        # 新規作成タスクのキーワード
+        creation_keywords = [
+            'tmp/', '新規', '作成', 'create', '実装', 'implement',
+            'システム', 'dashboard', 'ダッシュボード'
+        ]
+
+        # ファイル修正の明示的指定チェック
+        if any(keyword in instruction_lower for keyword in modification_keywords):
+            # 既存ファイルディレクトリの言及をチェック
+            existing_dirs = ['gemini_reports/', 'kumihan_formatter/', 'docs/', 'core/']
+            if any(dir_name in work_instruction for dir_name in existing_dirs):
+                return 'modification'
+
+        # 明示的にtmp/指定やシステム作成
+        if any(keyword in instruction_lower for keyword in creation_keywords):
+            return 'creation'
+
+        # 機能追加・拡張
+        enhancement_keywords = ['追加', 'add', '機能', 'feature', '拡張', 'extend']
+        if any(keyword in instruction_lower for keyword in enhancement_keywords):
+            return 'enhancement'
+
+        # デフォルトは新規作成（安全側）
+        return 'creation'
+
     async def execute_task(self, work_instruction: str, task_id: str) -> Dict[str, Any]:
         """Gemini APIを使用してタスクを実行
 
@@ -189,7 +231,10 @@ class GeminiAPIExecutor:
 
         start_time = datetime.now()
 
-        result = {
+        # タスクタイプ自動判定
+        task_type = self._determine_task_type(work_instruction)
+
+        result: Dict[str, Any] = {
             "task_id": task_id,
             "status": "failed",
             "implemented_files": [],
@@ -219,13 +264,29 @@ class GeminiAPIExecutor:
 
             if extracted_code:
                 # ファイル作成・修正実行
-                implemented_files = await self._implement_code(extracted_code, task_id)
+                implemented_files = await self._implement_code(extracted_code, task_id, task_type)
                 result["implemented_files"] = implemented_files
                 result["modified_lines"] = self._count_total_lines(implemented_files)
-                result["status"] = "completed"
 
-                print(f"✅ Gemini実装完了: {len(implemented_files)}ファイル")
-                self.execution_stats["successful_requests"] += 1
+                # Phase 4: 品質検証・フィードバック強化
+                quality_check_result = await self._perform_quality_verification(
+                    implemented_files, task_id, work_instruction
+                )
+                result["quality_checks"] = quality_check_result["checks"]
+                result["quality_feedback"] = quality_check_result["feedback"]
+
+                # 品質検証結果に基づく状態判定
+                if quality_check_result["overall_pass"]:
+                    result["status"] = "completed"
+                    print(f"✅ Gemini実装完了: {len(implemented_files)}ファイル")
+                    self.execution_stats["successful_requests"] += 1
+                else:
+                    result["status"] = "quality_failed"
+                    result["errors"].extend(quality_check_result["errors"])
+                    print(f"⚠️ Gemini実装品質不適合: {quality_check_result['errors']}")
+                    self.execution_stats["failed_requests"] += 1
+                    # 学習データに記録
+                    await self._record_failure_pattern(work_instruction, quality_check_result)
             else:
                 error_msg = "Geminiレスポンスからコードを抽出できませんでした"
                 result["errors"].append(error_msg)
@@ -420,22 +481,85 @@ class GeminiAPIExecutor:
         self.logger.info(f"コードブロック抽出完了: {len(extracted_code)}ファイル")
         return extracted_code
 
-    async def _implement_code(self, extracted_code: Dict[str, str], task_id: str) -> List[str]:
-        """抽出したコードを実際のファイルに実装"""
+    def _resolve_file_path(self, file_path: str, task_type: str) -> str:
+        """タスクタイプに基づいてファイルパスを解決
+
+        Args:
+            file_path: 元のファイルパス
+            task_type: タスクタイプ
+
+        Returns:
+            解決されたファイルパス
+        """
+        # 絶対パスの場合
+        if file_path.startswith('/'):
+            return file_path.lstrip('/')
+
+        # 既に適切なプレフィックスがある場合
+        if file_path.startswith(('kumihan_formatter/', 'tmp/', 'docs/', 'gemini_reports/')):
+            return file_path
+
+        # タスクタイプ別の処理
+        if task_type == 'modification':
+            # 修正タスクの場合：既存ファイル構造を推定
+
+            # gemini_reportsディレクトリのファイル修正
+            if any(hint in file_path.lower() for hint in ['gemini', 'api', 'orchestrator', 'config']):
+                return f"gemini_reports/{file_path}"
+
+            # kumihan_formatterディレクトリのファイル修正
+            if any(hint in file_path.lower() for hint in ['core', 'parser', 'formatter', 'cli']):
+                return f"kumihan_formatter/{file_path}"
+
+            # docsディレクトリのファイル修正
+            if any(hint in file_path.lower() for hint in ['doc', 'guide', 'readme', 'md']):
+                return f"docs/{file_path}"
+
+            # 既存ファイルが存在するかチェック
+            import os
+            possible_paths = [
+                f"gemini_reports/{file_path}",
+                f"kumihan_formatter/{file_path}",
+                f"docs/{file_path}",
+                file_path  # 現在のディレクトリ直下
+            ]
+
+            for path in possible_paths:
+                if os.path.exists(path):
+                    self.logger.info(f"既存ファイル発見: {path}")
+                    return path
+
+            # 既存ファイルが見つからない場合は警告してtmp/配下に
+            self.logger.warning(f"修正対象ファイルが見つかりません: {file_path}, tmp/配下に作成します")
+            return f"tmp/{file_path}"
+
+        elif task_type == 'enhancement':
+            # 機能追加の場合：既存プロジェクト構造に追加
+            if 'gemini' in file_path.lower():
+                return f"gemini_reports/{file_path}"
+            else:
+                return f"kumihan_formatter/{file_path}"
+
+        else:  # task_type == 'creation' or default
+            # 新規作成の場合：tmp/配下に作成
+            return f"tmp/{file_path}"
+
+    async def _implement_code(self, extracted_code: Dict[str, str], task_id: str, task_type: str = 'creation') -> List[str]:
+        """抽出したコードを実際のファイルに実装
+
+        Args:
+            extracted_code: 抽出されたコード辞書
+            task_id: タスクID
+            task_type: タスクタイプ ('modification', 'creation', 'enhancement')
+        """
         implemented_files = []
 
         for file_path, code in extracted_code.items():
             try:
-                # ファイルパス正規化
-                if not file_path.startswith('/'):
-                    if file_path.startswith('kumihan_formatter/'):
-                        full_path = file_path
-                    elif file_path.startswith('tmp/'):
-                        full_path = file_path
-                    else:
-                        full_path = f"tmp/{file_path}"
-                else:
-                    full_path = file_path.lstrip('/')
+                # ファイルパス正規化（タスクタイプ考慮）
+                full_path = self._resolve_file_path(file_path, task_type)
+
+                self.logger.info(f"📁 ファイル実装開始: {file_path} → {full_path} (type: {task_type})")
 
                 # ディレクトリ作成
                 Path(full_path).parent.mkdir(parents=True, exist_ok=True)
@@ -481,6 +605,179 @@ class GeminiAPIExecutor:
             except Exception:
                 pass
         return total_lines
+
+    async def _perform_quality_verification(self, implemented_files: List[str], task_id: str, work_instruction: str) -> Dict[str, Any]:
+        """品質検証・フィードバック強化システム
+
+        Args:
+            implemented_files: 実装済みファイル一覧
+            task_id: タスクID
+            work_instruction: 元の作業指示書
+
+        Returns:
+            品質検証結果とフィードバック
+        """
+        self.logger.info(f"🔍 品質検証開始: {task_id}")
+
+        verification_result: Dict[str, Any] = {
+            "checks": {
+                "syntax_pass": True,
+                "mypy_pass": True,
+                "flake8_pass": True,
+                "file_location_correct": True
+            },
+            "feedback": [],
+            "errors": [],
+            "overall_pass": True
+        }
+
+        try:
+            # 1. ファイル配置確認（重要な改善点）
+            location_check = await self._verify_file_locations(implemented_files, work_instruction)
+            verification_result["checks"]["file_location_correct"] = location_check["correct"]
+            if not location_check["correct"]:
+                verification_result["errors"].extend(location_check["errors"])
+                verification_result["feedback"].append("修正ファイルがtmp/配下に保存されました。既存ファイル修正の場合は元の場所に保存すべきです。")
+
+            # 2. MyPy型注釈修正の実効性確認
+            if "mypy" in work_instruction.lower() or "型注釈" in work_instruction:
+                mypy_check = await self._verify_mypy_fixes(implemented_files)
+                verification_result["checks"]["mypy_pass"] = mypy_check["pass"]
+                if not mypy_check["pass"]:
+                    verification_result["errors"].extend(mypy_check["errors"])
+                    verification_result["feedback"].append("MyPy修正が不完全です。再修正が必要です。")
+
+            # 3. 構文チェック強化
+            for file_path in implemented_files:
+                if file_path.endswith('.py'):
+                    syntax_ok = await self._enhanced_syntax_check(file_path)
+                    if not syntax_ok:
+                        verification_result["checks"]["syntax_pass"] = False
+                        verification_result["errors"].append(f"構文エラー: {file_path}")
+
+            # 4. 総合判定
+            verification_result["overall_pass"] = all(verification_result["checks"].values())
+
+            # 5. 改善提案生成
+            if not verification_result["overall_pass"]:
+                improvement_suggestions = await self._generate_improvement_suggestions(
+                    verification_result["errors"], work_instruction
+                )
+                verification_result["improvement_suggestions"] = improvement_suggestions
+
+        except Exception as e:
+            self.logger.error(f"品質検証中にエラー: {e}")
+            verification_result["errors"].append(f"品質検証システムエラー: {str(e)}")
+            verification_result["overall_pass"] = False
+
+        self.logger.info(f"品質検証完了: {task_id} (合格: {verification_result['overall_pass']})")
+        return verification_result
+
+    async def _verify_file_locations(self, implemented_files: List[str], work_instruction: str) -> Dict[str, Any]:
+        """ファイル配置の正確性を検証"""
+        result: Dict[str, Any] = {"correct": True, "errors": []}
+
+        # 修正タスクかどうかを判定
+        is_modification_task = any(
+            keyword in work_instruction.lower()
+            for keyword in ['修正', 'fix', 'error', 'エラー', 'mypy', 'flake8']
+        )
+
+        if is_modification_task:
+            for file_path in implemented_files:
+                if file_path.startswith('tmp/') and not 'tmp/' in work_instruction:
+                    result["correct"] = False
+                    result["errors"].append(f"修正対象ファイルがtmp/配下に保存: {file_path}")
+
+        return result
+
+    async def _verify_mypy_fixes(self, implemented_files: List[str]) -> Dict[str, Any]:
+        """MyPy修正の実効性を検証"""
+        result: Dict[str, Any] = {"pass": True, "errors": []}
+
+        try:
+            for file_path in implemented_files:
+                if file_path.endswith('.py'):
+                    # MyPyチェック実行
+                    mypy_result = subprocess.run(
+                        [sys.executable, "-m", "mypy", file_path, "--strict"],
+                        capture_output=True,
+                        text=True,
+                        timeout=60
+                    )
+
+                    if mypy_result.returncode != 0:
+                        result["pass"] = False
+                        result["errors"].append(f"MyPyエラー ({file_path}): {mypy_result.stdout}")
+
+        except Exception as e:
+            result["pass"] = False
+            result["errors"].append(f"MyPy検証エラー: {str(e)}")
+
+        return result
+
+    async def _enhanced_syntax_check(self, file_path: str) -> bool:
+        """強化された構文チェック"""
+        try:
+            # 基本構文チェック
+            result = subprocess.run(
+                [sys.executable, "-c", f"import ast; ast.parse(open('{file_path}').read())"],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    async def _generate_improvement_suggestions(self, errors: List[str], work_instruction: str) -> List[str]:
+        """品質改善提案を生成"""
+        suggestions = []
+
+        # エラーパターン別の改善提案
+        for error in errors:
+            if "tmp/配下に保存" in error:
+                suggestions.append("指示書にファイル修正の場合は '既存ファイルの直接修正' を明記する")
+            elif "MyPyエラー" in error:
+                suggestions.append("型注釈修正時はより具体的な型指定例を提供する")
+            elif "構文エラー" in error:
+                suggestions.append("完全なファイル実装を要求し、コード片の提供を禁止する")
+
+        return suggestions
+
+    async def _record_failure_pattern(self, work_instruction: str, quality_result: Dict[str, Any]) -> None:
+        """失敗パターンを学習データとして記録"""
+        try:
+            failure_pattern = {
+                "timestamp": datetime.now().isoformat(),
+                "instruction_type": self._determine_task_type(work_instruction),
+                "instruction_length": len(work_instruction),
+                "failure_reasons": quality_result["errors"],
+                "improvement_suggestions": quality_result.get("improvement_suggestions", []),
+                "quality_checks": quality_result["checks"]
+            }
+
+            # 学習データファイルに追記
+            learning_file = Path("gemini_reports/failure_patterns.json")
+            if learning_file.exists():
+                with open(learning_file, 'r', encoding='utf-8') as f:
+                    patterns = json.load(f)
+            else:
+                patterns = []
+
+            patterns.append(failure_pattern)
+
+            # 最新100件のみ保持
+            if len(patterns) > 100:
+                patterns = patterns[-100:]
+
+            with open(learning_file, 'w', encoding='utf-8') as f:
+                json.dump(patterns, f, indent=2, ensure_ascii=False)
+
+            self.logger.info(f"失敗パターンを記録: {learning_file}")
+
+        except Exception as e:
+            self.logger.error(f"失敗パターン記録エラー: {e}")
 
     def get_execution_stats(self) -> Dict[str, Any]:
         """実行統計を取得"""
