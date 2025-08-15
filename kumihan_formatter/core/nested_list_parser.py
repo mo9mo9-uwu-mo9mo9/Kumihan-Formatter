@@ -3,8 +3,13 @@
 
 階層構造を持つリストの解析機能
 Issue #492 Phase 5A - list_parser.py分割
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
+このNestedListParserは非推奨です。新しい統一パーサーシステムをご利用ください:
+from kumihan_formatter.core.parsing import UnifiedListParser, get_global_coordinator
 """
 
+import warnings
 from typing import Dict, List, Optional, Tuple
 
 from .ast_nodes import Node
@@ -15,6 +20,11 @@ class NestedListParser:
     """Parser for nested list structures"""
 
     def __init__(self, list_parser: ListParserCore):
+        warnings.warn(
+            "NestedListParserは非推奨です。kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.list_parser = list_parser
 
     def parse_nested_lists(

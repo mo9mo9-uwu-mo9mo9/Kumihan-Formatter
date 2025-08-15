@@ -3,9 +3,14 @@
 
 基本的なリスト解析機能（順序付き・順序なしリスト）
 Issue #492 Phase 5A - list_parser.py分割
+
+⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
+このListParserCoreは非推奨です。新しい統一パーサーシステムをご利用ください:
+from kumihan_formatter.core.parsing import UnifiedListParser, get_global_coordinator
 """
 
 import logging
+import warnings
 from typing import Tuple
 
 from .ast_nodes import Node, list_item, ordered_list, unordered_list
@@ -27,6 +32,11 @@ class ListParserCore:
     """
 
     def __init__(self, keyword_parser: KeywordParser):
+        warnings.warn(
+            "ListParserCoreは非推奨です。kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.keyword_parser = keyword_parser
 
     def parse_list_block(self, lines: list[str], start_index: int) -> Tuple[Node, int]:
