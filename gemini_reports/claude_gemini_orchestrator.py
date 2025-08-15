@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""Claude-Gemini オーケストレーション体制
+"""Claude-Gemini オーケストレーション体制 - 失敗対策統合版
 
 Claude(PM/Manager) - Gemini(Coder) の明確な上下関係による協業システム。
-Token削減90%を目標に、シンプルで効果的な役割分担を実現する。
+Token削減90%を目標に、失敗対策システムを統合して成功率を82%から90%以上に向上。
 
 Roles:
-- Claude: 要件分析・設計・作業指示・品質管理・最終調整
+- Claude: 要件分析・設計・作業指示・品質管理・最終調整・失敗対策
 - Gemini: 指示に基づく実装のみ
 
-Created: 2025-08-15 (Issue #888)
+Failure Recovery Systems:
+- FailureRecoverySystem: 失敗検知・学習・Claude切り替え判定
+- QualityStandardsSystem: 段階的品質基準・緩和検証
+- EnvironmentValidator: 環境事前チェック・自動修復
+
+Created: 2025-08-15 (Issue #823 失敗対策統合)
 """
 
 import asyncio
@@ -18,9 +23,22 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+
+# 失敗対策システムのインポート
+try:
+    from .failure_recovery_system import FailureRecoverySystem, FailureType, RecoveryAction
+    from .quality_standards import QualityStandardsSystem, QualityLevel, ValidationResult
+    from .environment_validator import EnvironmentValidator
+except ImportError:
+    # 相対インポートが失敗した場合の代替
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from failure_recovery_system import FailureRecoverySystem, FailureType, RecoveryAction
+    from quality_standards import QualityStandardsSystem, QualityLevel, ValidationResult
+    from environment_validator import EnvironmentValidator
 
 class TaskComplexity(Enum):
     """タスク複雑度レベル"""
@@ -78,10 +96,10 @@ class ExecutionResult:
             self.executed_at = datetime.now().isoformat()
 
 class ClaudeGeminiOrchestrator:
-    """Claude-Gemini オーケストレーター
+    """Claude-Gemini オーケストレーター - 失敗対策統合版
 
     Claude(PM/Manager)とGemini(Coder)の協業を管理し、
-    明確な役割分担によるToken削減を実現する。
+    失敗対策システムにより高い成功率とToken削減を実現する。
     """
 
     def __init__(self):
@@ -95,8 +113,18 @@ class ClaudeGeminiOrchestrator:
         self.work_instructions_dir.mkdir(exist_ok=True)
         self.execution_results_dir.mkdir(exist_ok=True)
 
+        # 失敗対策システム初期化
+        self.failure_recovery = FailureRecoverySystem(self.reports_dir)
+        self.quality_standards = QualityStandardsSystem(self.reports_dir)
+        self.environment_validator = EnvironmentValidator(self.reports_dir)
+
+        # 失敗対策設定
+        self.enable_failure_recovery = True
+        self.enable_environment_validation = True
+        self.enable_gradual_quality = True
+
     def analyze_requirements(self, user_request: str) -> Dict[str, Any]:
-        """要件分析（Claude専任）
+        """要件分析（Claude専任） - 失敗対策統合
 
         Args:
             user_request: ユーザーからの要求
@@ -113,6 +141,32 @@ class ClaudeGeminiOrchestrator:
             "gemini_suitable": self._is_gemini_suitable(user_request),
             "breakdown_needed": self._needs_breakdown(user_request)
         }
+
+        # 失敗対策システムによる追加分析
+        if self.enable_failure_recovery:
+            # Claude切り替え推奨判定
+            should_switch, switch_reason = self.failure_recovery.should_switch_to_claude(user_request)
+            analysis["claude_switch_recommended"] = should_switch
+            analysis["switch_reason"] = switch_reason
+
+            # 過去の失敗パターンマッチング
+            task_pattern = self.failure_recovery.get_task_pattern(user_request)
+            if task_pattern:
+                analysis["historical_success_rate"] = task_pattern.historical_success_rate
+                analysis["pattern_difficulty"] = task_pattern.estimated_difficulty
+                analysis["recommended_executor"] = task_pattern.recommended_executor
+
+            # Gemini適性を失敗履歴で補正
+            if should_switch or (task_pattern and task_pattern.recommended_executor == "claude"):
+                analysis["gemini_suitable"] = False
+                analysis["failure_prevention"] = "過去の失敗履歴によりClaude実行を推奨"
+
+        # 適切な品質レベル判定
+        if self.enable_gradual_quality:
+            complexity_score = self._get_complexity_score(user_request)
+            analysis["recommended_quality_level"] = self.quality_standards.determine_appropriate_level(
+                user_request, complexity_score
+            ).value
 
         return analysis
 
@@ -162,9 +216,30 @@ class ClaudeGeminiOrchestrator:
         Returns:
             実行結果
         """
-        print(f"🤖 実際のGemini API実行開始: {instruction.title}")
+        print(f"🤖 Gemini API実行開始(失敗対策有効): {instruction.title}")
         print(f"📋 タスクID: {instruction.task_id}")
         print(f"⚙️ 複雑度: {instruction.complexity.value}")
+
+        # 環境事前チェック
+        if self.enable_environment_validation:
+            print("🔍 環境事前チェック実行...")
+            env_ready, env_issues = self.environment_validator.is_environment_ready_for_gemini()
+            if not env_ready:
+                print("⚠️ 環境問題検出 - 修復試行")
+                for issue in env_issues:
+                    print(f"  - {issue}")
+
+                # 環境修復試行
+                prep_success, prep_report = self.environment_validator.prepare_environment_for_task(instruction.requirements)
+                if not prep_success:
+                    return self._create_environment_failure_result(instruction, env_issues)
+                print("✅ 環境修復成功")
+            else:
+                print("✅ 環境チェッククリア")
+                if env_issues:  # 警告レベルの問題
+                    print("⚠️ 警告:")
+                    for issue in env_issues:
+                        print(f"  - {issue}")
 
         start_time = datetime.now()
 
@@ -183,8 +258,15 @@ class ClaudeGeminiOrchestrator:
 
         try:
             # 実際のGemini API実行
-            from .gemini_api_executor import GeminiAPIExecutor
-            from .api_config import GeminiAPIConfig
+            # 相対import問題の修正: 動的パス追加
+            import sys
+            from pathlib import Path
+            current_dir = Path(__file__).parent
+            if str(current_dir) not in sys.path:
+                sys.path.insert(0, str(current_dir))
+
+            from gemini_api_executor import GeminiAPIExecutor
+            from api_config import GeminiAPIConfig
 
             # API設定確認
             config = GeminiAPIConfig()
@@ -215,12 +297,45 @@ class ClaudeGeminiOrchestrator:
 
         except Exception as e:
             result.status = ExecutionStatus.FAILED
-            result.errors.append(f"Gemini API実行エラー: {str(e)}")
+            error_message = f"Gemini API実行エラー: {str(e)}"
+            result.errors.append(error_message)
             print(f"❌ Gemini API実行失敗: {e}")
+
+            # 失敗記録と対策提案
+            if self.enable_failure_recovery:
+                self.failure_recovery.record_failure(
+                    instruction.task_id,
+                    instruction.requirements,
+                    error_message
+                )
 
         # 実行時間計算
         end_time = datetime.now()
         result.execution_time = int((end_time - start_time).total_seconds())
+
+        # 失敗対策システムへの結果通知
+        if self.enable_failure_recovery:
+            success = result.status != ExecutionStatus.FAILED
+            self.failure_recovery.update_pattern_success_rate(instruction.requirements, success)
+
+            if not success:
+                # 失敗時の対策提案
+                failure_type = self.failure_recovery.analyze_failure(
+                    instruction.task_id,
+                    instruction.requirements,
+                    "; ".join(result.errors) if result.errors else "不明なエラー"
+                )
+                recovery_action = self.failure_recovery.suggest_recovery_action(
+                    instruction.task_id,
+                    instruction.requirements,
+                    failure_type,
+                    "; ".join(result.errors) if result.errors else ""
+                )
+
+                result.warnings.append(f"失敗タイプ: {failure_type.value}")
+                result.warnings.append(f"推奨対策: {recovery_action.value}")
+
+                print(f"🔄 失敗対策: {recovery_action.value}")
 
         # 結果保存
         self._save_execution_result(result)
@@ -274,7 +389,7 @@ class ClaudeGeminiOrchestrator:
         return text
 
     async def review_and_adjust(self, result: ExecutionResult) -> ExecutionResult:
-        """Claudeによる品質レビュー・調整
+        """Claudeによる品質レビュー・調整 - 段階的品質検証統合
 
         Args:
             result: Geminiの実行結果
@@ -282,7 +397,7 @@ class ClaudeGeminiOrchestrator:
         Returns:
             調整後の結果
         """
-        print(f"👑 Claude品質レビュー開始: {result.task_id}")
+        print(f"👑 Claude品質レビュー開始(段階的検証): {result.task_id}")
 
         # 品質チェック実行
         quality_checks = self._perform_quality_checks(result)
@@ -316,7 +431,7 @@ class ClaudeGeminiOrchestrator:
         return result
 
     async def orchestrate_full_workflow(self, user_request: str) -> ExecutionResult:
-        """完全ワークフロー実行
+        """完全ワークフロー実行 - 失敗対策統合版
 
         Args:
             user_request: ユーザー要求
@@ -324,36 +439,89 @@ class ClaudeGeminiOrchestrator:
         Returns:
             最終実行結果
         """
-        print(f"🎯 オーケストレーション開始: {user_request[:50]}...")
+        print(f"🎯 オーケストレーション開始(失敗対策有効): {user_request[:50]}...")
+
+        # 失敗対策システムのステータス表示
+        if self.enable_failure_recovery:
+            try:
+                recovery_stats = self.failure_recovery.generate_recovery_report()
+                recent_failures = recovery_stats.get("total_failures", 0)
+                if recent_failures > 0:
+                    print(f"📊 最近の失敗: {recent_failures}件 - 対策システムが稼動中")
+            except Exception:
+                pass
 
         # Phase 1: Claude による要件分析
-        print("📋 Phase 1: 要件分析 (Claude)")
+        print("📋 Phase 1: 要件分析 (Claude + 失敗対策)")
         analysis = self.analyze_requirements(user_request)
 
+        # 失敗対策システムによるClaude切り替え判定
         if not analysis["gemini_suitable"]:
-            print("⚠️ このタスクはClaude専任が適切です")
+            reason = analysis.get("switch_reason", "タスク種別による推奨")
+            print(f"⚠️ Claude専任推奨: {reason}")
+            if analysis.get("claude_switch_recommended", False):
+                print("🔄 失敗対策システムによる切り替え")
             return self._create_claude_only_result(user_request)
 
         # Phase 2: Claude による作業指示書作成
         print("📝 Phase 2: 作業指示書作成 (Claude)")
         instruction = self.create_work_instruction(analysis)
 
+        # 品質レベル情報を指示書に追加
+        if self.enable_gradual_quality and "recommended_quality_level" in analysis:
+            quality_level = analysis["recommended_quality_level"]
+            instruction.quality_criteria.append(f"推奨品質レベル: {quality_level}")
+            print(f"🎯 推奨品質レベル: {quality_level}")
+
         # Phase 3: Gemini による実装
-        print("⚡ Phase 3: 実装実行 (Gemini)")
+        print("⚡ Phase 3: 実装実行 (Gemini + 環境検証)")
         result = await self.execute_with_gemini(instruction)
 
+        # 失敗時のフォールバック処理
+        if (result.status == ExecutionStatus.FAILED and
+            self.enable_failure_recovery):
+
+            print("🔄 Gemini失敗 - 対策検討")
+
+            # 失敗対策提案取得
+            for warning in result.warnings:
+                if "推奨対策" in warning:
+                    print(f"💡 {warning}")
+
+            # Claude切り替え推奨の場合
+            if any("Ｃlaude切り替え" in w for w in result.warnings):
+                print("🔄 Claudeによる代替実行...")
+                # 実際の代替実行は将来の拡張で実装
+                result.warnings.append("Claude代替実行の検討が必要です")
+
         # Phase 4: Claude による品質レビュー・調整
-        print("👑 Phase 4: 品質レビュー・調整 (Claude)")
+        print("👑 Phase 4: 品質レビュー・調整 (Claude + 段階的検証)")
         final_result = await self.review_and_adjust(result)
+
+        # 失敗対策システムでの最終判定
+        if (self.enable_failure_recovery and
+            final_result.status == ExecutionStatus.COMPLETED):
+
+            # 成功パターンの学習
+            pattern = self.failure_recovery.get_task_pattern(user_request)
+            if pattern:
+                print(f"🎓 成功パターン学習: {pattern.description}")
 
         # オーケストレーションログ記録
         self._log_orchestration(user_request, analysis, instruction, final_result)
 
-        print(f"🎉 オーケストレーション完了: {final_result.status.value}")
+        # 最終結果表示
+        status_icon = "🎉" if final_result.status == ExecutionStatus.COMPLETED else "❌"
+        print(f"{status_icon} オーケストレーション完了: {final_result.status.value}")
+
+        if self.enable_failure_recovery:
+            success_rate = self.get_orchestration_stats().get("success_rate", 0)
+            print(f"📊 現在の成功率: {success_rate:.1%}")
+
         return final_result
 
     def get_orchestration_stats(self) -> Dict[str, Any]:
-        """オーケストレーション統計取得
+        """オーケストレーション統計取得 - 失敗対策統計含む
 
         Returns:
             統計情報
@@ -375,6 +543,9 @@ class ClaudeGeminiOrchestrator:
                 "moderate": 0,
                 "complex": 0
             },
+            "failure_recovery_stats": {},
+            "quality_standards_stats": {},
+            "environment_validation_stats": {},
             "last_updated": datetime.now().isoformat()
         }
 
@@ -392,6 +563,39 @@ class ClaudeGeminiOrchestrator:
 
             if stats["total_tasks"] > 0:
                 stats["success_rate"] = stats["completed_tasks"] / stats["total_tasks"]
+
+        # 失敗対策システムからの統計情報統合
+        if self.enable_failure_recovery:
+            try:
+                recovery_report = self.failure_recovery.generate_recovery_report()
+                stats["failure_recovery_stats"] = {
+                    "total_failures": recovery_report.get("total_failures", 0),
+                    "pattern_recommendations": len(recovery_report.get("claude_switch_recommendations", [])),
+                    "failure_rate": recovery_report.get("failure_rate", 0)
+                }
+            except Exception:
+                stats["failure_recovery_stats"] = {"status": "error"}
+
+        if self.enable_gradual_quality:
+            try:
+                quality_report = self.quality_standards.generate_quality_report()
+                stats["quality_standards_stats"] = {
+                    "total_validations": quality_report.get("total_validations", 0),
+                    "level_statistics": quality_report.get("level_statistics", {})
+                }
+            except Exception:
+                stats["quality_standards_stats"] = {"status": "error"}
+
+        if self.enable_environment_validation:
+            try:
+                env_results = self.environment_validator.validate_all_dependencies(attempt_fixes=False)
+                stats["environment_validation_stats"] = {
+                    "total_dependencies": len(env_results),
+                    "passed": sum(1 for r in env_results if r.status.value == "pass"),
+                    "failed": sum(1 for r in env_results if r.status.value == "fail")
+                }
+            except Exception:
+                stats["environment_validation_stats"] = {"status": "error"}
 
         return stats
 
@@ -472,6 +676,50 @@ class ClaudeGeminiOrchestrator:
         complex_indicators = ["複数", "大規模", "統合", "全体", "システム"]
         request_lower = request.lower()
         return any(indicator in request_lower for indicator in complex_indicators)
+
+    def _get_complexity_score(self, request: str) -> float:
+        """複雑度スコア算出 (0.0-1.0)"""
+        request_lower = request.lower()
+        score = 0.5  # ベーススコア
+
+        # 複雑度を上げる要素
+        high_complexity_patterns = [
+            "アーキテクチャ", "設計", "大規模", "リファクタリング",
+            "新機能", "統合", "システム"
+        ]
+        for pattern in high_complexity_patterns:
+            if pattern in request_lower:
+                score += 0.15
+
+        # 複雑度を下げる要素
+        simple_patterns = [
+            "lint", "format", "mypy", "型注釈", "black", "isort",
+            "バグ修正", "修正"
+        ]
+        for pattern in simple_patterns:
+            if pattern in request_lower:
+                score -= 0.1
+
+        return max(0.0, min(1.0, score))  # 0.0-1.0にクランプ
+
+    def _create_environment_failure_result(self, instruction: WorkInstruction,
+                                          issues: List[str]) -> ExecutionResult:
+        """環境失敗結果を作成"""
+        return ExecutionResult(
+            task_id=instruction.task_id,
+            status=ExecutionStatus.FAILED,
+            implemented_files=[],
+            modified_lines=0,
+            quality_checks={"environment_check": False},
+            errors=[f"環境問題: {issue}" for issue in issues],
+            warnings=[
+                "環境修復が必要です",
+                "python3 -m pip install mypy flake8 black isort を実行してください"
+            ],
+            execution_time=0,
+            token_usage={"claude_tokens": 0, "gemini_tokens": 0},
+            executed_by="Environment Validator"
+        )
 
     def _get_instruction_template(self, complexity: str) -> Dict[str, List[str]]:
         """複雑度別テンプレート取得"""

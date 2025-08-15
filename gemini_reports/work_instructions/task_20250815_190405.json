@@ -1,0 +1,47 @@
+{
+  "task_id": "task_20250815_190405",
+  "title": "scripts/tech_debt_monitor.py を完全実装してください。\n\n# 実装仕様書\n\n## ファイル: scripts/tech_debt_monitor.py\n\n技術的負債・コード",
+  "complexity": "simple",
+  "requirements": "scripts/tech_debt_monitor.py を完全実装してください。\n\n# 実装仕様書\n\n## ファイル: scripts/tech_debt_monitor.py\n\n技術的負債・コード品質監視システム (Issue #823)\nMakefileから呼び出される高度な技術的負債監視ツール\n\n### 必須機能:\n1. Cognitive Complexity測定 (radon使用)\n2. Maintainability Index計算 (radon使用) \n3. 重複コード検出 (duplicated使用)\n4. デッドコード検出 (vulture使用)\n5. HTML/JSON/コンソールレポート生成\n6. CI/CD品質ゲート機能\n\n### 必須クラス・メソッド:\n- TechDebtMonitor クラス\n- measure_cognitive_complexity() -> Dict[str, float]\n- calculate_maintainability_index() -> Dict[str, float]\n- detect_code_duplication() -> List[Dict]\n- detect_dead_code() -> List[str]\n- generate_html_report(output_path: str) -> str\n- generate_json_report(output_path: str) -> Dict\n- run_ci_validation() -> bool\n\n### CLI引数対応:\n- --format: console/html/json\n- --output: 出力ファイルパス\n- --ci: CI/CDモード（品質ゲート）\n\n### 出力要件:\n- 必須: 全ファイルは tmp/ 配下出力\n- HTML: Bootstrap使用、チャート表示\n- JSON: 構造化データ\n- Console: カラー出力、進捗表示\n\n### エラーハンドリング:\nfrom kumihan_formatter.core.utilities.logger import get_logger\nlogger = get_logger(__name__)\n\n### Makefileとの整合性:\n- make tech-debt-check: console出力\n- make tech-debt-report: HTML → tmp/tech_debt_report.html\n- make tech-debt-json: JSON → tmp/tech_debt_report.json  \n- make tech-debt-ci: CI/CDチェック（exit code 0/1）\n\n型注釈必須、mypy strict mode対応で完全実装してください。",
+  "implementation_details": [
+    "対象ディレクトリ: kumihan_formatter/",
+    "以下の形式で既存ファイルを修正してください:",
+    "",
+    "# ファイル: 実際のファイルパス（例: gemini_reports/api_config.py）",
+    "```python",
+    "修正後の完全なファイル内容",
+    "```",
+    "",
+    "主要な修正パターン:",
+    "- 関数・メソッドに型注釈追加: def func(param: int) -> str:",
+    "- 変数の型注釈: variable: Optional[str] = None",
+    "- import文の最適化: from typing import Optional, Dict, List",
+    "- Any型の具体的型への変更",
+    "- Noneチェックの追加: if value is not None:",
+    "",
+    "⚠️ 重要: 新規ファイル作成ではなく、既存ファイルの直接修正を行ってください"
+  ],
+  "quality_criteria": [
+    "MyPy strict mode 完全通過",
+    "全関数・メソッドに適切な型注釈",
+    "typing importの最適化完了",
+    "既存機能の動作保証"
+  ],
+  "prohibited_actions": [
+    "新規ファイルの作成",
+    "tmp/配下への保存",
+    "機能の削除・変更",
+    "APIの破壊的変更"
+  ],
+  "expected_files": [
+    "kumihan_formatter/内の既存Pythonファイル",
+    "修正対象ファイルのみ（新規作成不可）"
+  ],
+  "dependencies": [
+    "typing モジュール",
+    "既存コードとの互換性維持"
+  ],
+  "estimated_time": 15,
+  "created_by": "Claude",
+  "created_at": "2025-08-15T19:04:05.657388"
+}

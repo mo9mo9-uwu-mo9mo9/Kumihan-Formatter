@@ -1,66 +1,184 @@
-from typing import Any, Optional
+import os
+import datetime
+from typing import List, Dict, Tuple, Optional
+from gemini_reports.code_analyzer import analyze_code, list_python_files
+from gemini_reports.quality_checker import load_threshold_config, check_quality_thresholds
+import argparse
+import logging
+from gemini_reports.halstead import calculate_halstead_metrics
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-class ReportGenerator:
+def generate_enhanced_html_dashboard(directory: str, threshold_config_path: Optional[str] = None) -> None:
     """
-    Generates various reports based on processed data.
+    Generates an enhanced HTML dashboard report for Python code quality.
 
-    This class handles loading data and generating different formats of reports,
-    such as text reports, and provides functionality to save them.
+    Args:
+        directory (str): The directory to analyze.
+        threshold_config_path (Optional[str]): Path to the threshold configuration file.
+    """
+    try:
+        logging.info(f"Starting enhanced report generation for directory: {directory}")
+        python_files = list_python_files(directory)
+        logging.info(f"Found {len(python_files)} Python files.")
+
+        threshold_config = load_threshold_config(threshold_config_path)
+        logging.info(f"Loaded threshold configuration: {threshold_config}")
+
+        report_data: List[Dict[str, str]] = []
+        for filepath in python_files:
+            try:
+                n1, n2, N1, N2, vocabulary, length, calculated_length, volume, difficulty, effort, time, bugs = analyze_code(filepath)
+                metrics = {
+                    "volume": volume,
+                    "difficulty": difficulty,
+                    "effort": effort,
+                    "time": time,
+                    "bugs": bugs
+                }
+                threshold_results = check_quality_thresholds(metrics, threshold_config)
+
+                report_data.append({
+                    "filepath": filepath,
+                    "n1": str(n1),
+                    "n2": str(n2),
+                    "N1": str(N1),
+                    "N2": str(N2),
+                    "vocabulary": str(vocabulary),
+                    "length": str(length),
+                    "calculated_length": str(calculated_length),
+                    "volume": str(volume),
+                    "difficulty": str(difficulty),
+                    "effort": str(effort),
+                    "time": str(time),
+                    "bugs": str(bugs),
+                    "volume_exceeds": str(threshold_results["volume"]),
+                    "difficulty_exceeds": str(threshold_results["difficulty"]),
+                    "effort_exceeds": str(threshold_results["effort"]),
+                    "time_exceeds": str(threshold_results["time"]),
+                    "bugs_exceeds": str(threshold_results["bugs"]),
+                })
+            except Exception as e:
+                logging.error(f"Error processing file {filepath}: {e}")
+
+        # Generate HTML report
+        html_content = generate_html(report_data)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_filename = f"quality_report_{timestamp}.html"
+        report_path = os.path.join(directory, report_filename)
+
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        logging.info(f"Enhanced report generated at: {report_path}")
+
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+
+
+def generate_html(report_data: List[Dict[str, str]]) -> str:
+    """
+    Generates an HTML report from the report data.
+
+    Args:
+        report_data (List[Dict[str, str]]): A list of dictionaries containing the report data.
+
+    Returns:
+        str: The HTML content of the report.
+    """
+    html_template = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Code Quality Report</title>
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .exceeds-true {
+                background-color: #ffcccc; /* Light red */
+            }
+            .exceeds-false {
+                background-color: #ccffcc; /* Light green */
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Code Quality Report</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Filepath</th>
+                    <th>n1</th>
+                    <th>n2</th>
+                    <th>N1</th>
+                    <th>N2</th>
+                    <th>Vocabulary</th>
+                    <th>Length</th>
+                    <th>Calculated Length</th>
+                    <th>Volume</th>
+                    <th>Difficulty</th>
+                    <th>Effort</th>
+                    <th>Time</th>
+                    <th>Bugs</th>
+                    <th>Volume Exceeds</th>
+                    <th>Difficulty Exceeds</th>
+                    <th>Effort Exceeds</th>
+                    <th>Time Exceeds</th>
+                    <th>Bugs Exceeds</th>
+                </tr>
+            </thead>
+            <tbody>
+                {table_rows}
+            </tbody>
+        </table>
+    </body>
+    </html>
     """
 
-    def __init__(self, template_path: str) -> None:
+    table_rows = ""
+    for data in report_data:
+        table_rows += f"""
+        <tr>
+            <td>{data["filepath"]}</td>
+            <td>{data["n1"]}</td>
+            <td>{data["n2"]}</td>
+            <td>{data["N1"]}</td>
+            <td>{data["N2"]}</td>
+            <td>{data["vocabulary"]}</td>
+            <td>{data["length"]}</td>
+            <td>{data["calculated_length"]}</td>
+            <td>{data["volume"]}</td>
+            <td>{data["difficulty"]}</td>
+            <td>{data["effort"]}</td>
+            <td>{data["time"]}</td>
+            <td>{data["bugs"]}</td>
+            <td class="exceeds-{str(data["volume_exceeds"]).lower()}">{data["volume_exceeds"]}</td>
+            <td class="exceeds-{str(data["difficulty_exceeds"]).lower()}">{data["difficulty_exceeds"]}</td>
+            <td class="exceeds-{str(data["effort_exceeds"]).lower()}">{data["effort_exceeds"]}</td>
+            <td class="exceeds-{str(data["time_exceeds"]).lower()}">{data["time_exceeds"]}</td>
+            <td class="exceeds-{str(data["bugs_exceeds"]).lower()}">{data["bugs_exceeds"]}</td>
+        </tr>
         """
-        Initializes the ReportGenerator with a template path.
 
-        Args:
-            template_path: The file path to the report template.
-        """
-        self.template_path: str = template_path
-        self.report_data: Optional[dict[str, Any]] = None
+    return html_template.format(table_rows=table_rows)
 
-    def load_data(self, data: dict[str, Any]) -> None:
-        """
-        Loads data into the generator for report generation.
 
-        Args:
-            data: A dictionary containing data for the report.
-        """
-        self.report_data = data
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate code quality reports.")
+    parser.add_argument("directory", help="The directory to analyze.")
+    parser.add_argument("--threshold-config", help="Path to the threshold configuration file.", required=False)
+    args = parser.parse_args()
 
-    def generate_text_report(self) -> str:
-        """
-        Generates a simple text report from the loaded data.
-
-        Returns:
-            A string containing the generated text report.
-
-        Raises:
-            ValueError: If no data has been loaded using `load_data()` method.
-        """
-        if self.report_data is None:
-            raise ValueError("No data loaded. Call load_data() first.")
-
-        report_lines: list[str] = [f"--- Report from {self.template_path} ---"]
-        for key, value in self.report_data.items():
-            report_lines.append(f"{key}: {value}")
-        report_lines.append("--- End of Report ---")
-        return "\n".join(report_lines)
-
-    def save_report(self, report_content: str, output_path: str) -> None:
-        """
-        Saves the generated report content to a specified file.
-
-        Args:
-            report_content: The content of the report as a string.
-            output_path: The file path where the report will be saved.
-
-        Raises:
-            IOError: If there is an error writing the report to the file.
-        """
-        try:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(report_content)
-        except IOError as e:
-            print(f"Error saving report to {output_path}: {e}")
-            raise
+    generate_enhanced_html_dashboard(args.directory, args.threshold_config)

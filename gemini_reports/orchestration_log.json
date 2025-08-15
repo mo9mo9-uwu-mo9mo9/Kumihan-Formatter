@@ -190,5 +190,221 @@
         "gemini_tokens": 0
       }
     }
+  },
+  {
+    "timestamp": "2025-08-15T18:24:54.463157",
+    "user_request": "MyPyエラーを修正してください",
+    "analysis": {
+      "original_request": "MyPyエラーを修正してください",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": false
+    },
+    "instruction_id": "task_20250815_182440",
+    "final_result": {
+      "task_id": "task_20250815_182440",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T18:27:17.490541",
+    "user_request": "MyPyエラーを修正してください",
+    "analysis": {
+      "original_request": "MyPyエラーを修正してください",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": false
+    },
+    "instruction_id": "task_20250815_182711",
+    "final_result": {
+      "task_id": "task_20250815_182711",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T18:37:18.963106",
+    "user_request": "MyPy型注釈エラーを修正してください",
+    "analysis": {
+      "original_request": "MyPy型注釈エラーを修正してください",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": false
+    },
+    "instruction_id": "task_20250815_183712",
+    "final_result": {
+      "task_id": "task_20250815_183712",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:01:06.696516",
+    "user_request": "scripts/tech_debt_monitor.py 実装 - Issue #823技術的負債監視システム。radon/vulture/duplicatedライブラリ使用、HTML/JSON/コンソール出力、CI/CD品質ゲート機能、tmp/配下出力、型注釈完全対応で実装",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py 実装 - Issue #823技術的負債監視システム。radon/vulture/duplicatedライブラリ使用、HTML/JSON/コンソール出力、CI/CD品質ゲート機能、tmp/配下出力、型注釈完全対応で実装",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_190100",
+    "final_result": {
+      "task_id": "task_20250815_190100",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:04:24.630868",
+    "user_request": "scripts/tech_debt_monitor.py を完全実装してください。\n\n# 実装仕様書\n\n## ファイル: scripts/tech_debt_monitor.py\n\n技術的負債・コード品質監視システム (Issue #823)\nMakefileから呼び出される高度な技術的負債監視ツール\n\n### 必須機能:\n1. Cognitive Complexity測定 (radon使用)\n2. Maintainability Index計算 (radon使用) \n3. 重複コード検出 (duplicated使用)\n4. デッドコード検出 (vulture使用)\n5. HTML/JSON/コンソールレポート生成\n6. CI/CD品質ゲート機能\n\n### 必須クラス・メソッド:\n- TechDebtMonitor クラス\n- measure_cognitive_complexity() -> Dict[str, float]\n- calculate_maintainability_index() -> Dict[str, float]\n- detect_code_duplication() -> List[Dict]\n- detect_dead_code() -> List[str]\n- generate_html_report(output_path: str) -> str\n- generate_json_report(output_path: str) -> Dict\n- run_ci_validation() -> bool\n\n### CLI引数対応:\n- --format: console/html/json\n- --output: 出力ファイルパス\n- --ci: CI/CDモード（品質ゲート）\n\n### 出力要件:\n- 必須: 全ファイルは tmp/ 配下出力\n- HTML: Bootstrap使用、チャート表示\n- JSON: 構造化データ\n- Console: カラー出力、進捗表示\n\n### エラーハンドリング:\nfrom kumihan_formatter.core.utilities.logger import get_logger\nlogger = get_logger(__name__)\n\n### Makefileとの整合性:\n- make tech-debt-check: console出力\n- make tech-debt-report: HTML → tmp/tech_debt_report.html\n- make tech-debt-json: JSON → tmp/tech_debt_report.json  \n- make tech-debt-ci: CI/CDチェック（exit code 0/1）\n\n型注釈必須、mypy strict mode対応で完全実装してください。",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py を完全実装してください。\n\n# 実装仕様書\n\n## ファイル: scripts/tech_debt_monitor.py\n\n技術的負債・コード品質監視システム (Issue #823)\nMakefileから呼び出される高度な技術的負債監視ツール\n\n### 必須機能:\n1. Cognitive Complexity測定 (radon使用)\n2. Maintainability Index計算 (radon使用) \n3. 重複コード検出 (duplicated使用)\n4. デッドコード検出 (vulture使用)\n5. HTML/JSON/コンソールレポート生成\n6. CI/CD品質ゲート機能\n\n### 必須クラス・メソッド:\n- TechDebtMonitor クラス\n- measure_cognitive_complexity() -> Dict[str, float]\n- calculate_maintainability_index() -> Dict[str, float]\n- detect_code_duplication() -> List[Dict]\n- detect_dead_code() -> List[str]\n- generate_html_report(output_path: str) -> str\n- generate_json_report(output_path: str) -> Dict\n- run_ci_validation() -> bool\n\n### CLI引数対応:\n- --format: console/html/json\n- --output: 出力ファイルパス\n- --ci: CI/CDモード（品質ゲート）\n\n### 出力要件:\n- 必須: 全ファイルは tmp/ 配下出力\n- HTML: Bootstrap使用、チャート表示\n- JSON: 構造化データ\n- Console: カラー出力、進捗表示\n\n### エラーハンドリング:\nfrom kumihan_formatter.core.utilities.logger import get_logger\nlogger = get_logger(__name__)\n\n### Makefileとの整合性:\n- make tech-debt-check: console出力\n- make tech-debt-report: HTML → tmp/tech_debt_report.html\n- make tech-debt-json: JSON → tmp/tech_debt_report.json  \n- make tech-debt-ci: CI/CDチェック（exit code 0/1）\n\n型注釈必須、mypy strict mode対応で完全実装してください。",
+      "complexity": "simple",
+      "task_type": "formatting",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_190405",
+    "final_result": {
+      "task_id": "task_20250815_190405",
+      "status": "failed",
+      "success": false,
+      "execution_time": 12,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:16:17.046869",
+    "user_request": "scripts/tech_debt_monitor.py の高度監視システム強化を実装してください。\n\n# Phase 2 実装仕様書\n\n## 追加機能要件:\n\n### 1. Halstead Metrics実装\n\n\n### 2. 品質しきい値システム強化\n\n\n### 3. HTMLダッシュボード強化  \n\n\n## 実装要求:\n- 既存の generate_html_report を generate_enhanced_html_dashboard に置き換え\n- Halstead Metrics を全レポート出力に統合\n- 品質しきい値チェックを CI/CD モードに統合\n- エラーハンドリング・ログ出力完備\n- MyPy strict mode 完全対応\n\n## CLI引数拡張:\n--threshold-config: カスタムしきい値設定ファイル指定（オプション）\n\nすべて型注釈完備、高品質コードで実装してください。",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py の高度監視システム強化を実装してください。\n\n# Phase 2 実装仕様書\n\n## 追加機能要件:\n\n### 1. Halstead Metrics実装\n\n\n### 2. 品質しきい値システム強化\n\n\n### 3. HTMLダッシュボード強化  \n\n\n## 実装要求:\n- 既存の generate_html_report を generate_enhanced_html_dashboard に置き換え\n- Halstead Metrics を全レポート出力に統合\n- 品質しきい値チェックを CI/CD モードに統合\n- エラーハンドリング・ログ出力完備\n- MyPy strict mode 完全対応\n\n## CLI引数拡張:\n--threshold-config: カスタムしきい値設定ファイル指定（オプション）\n\nすべて型注釈完備、高品質コードで実装してください。",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_191544",
+    "final_result": {
+      "task_id": "task_20250815_191544",
+      "status": "failed",
+      "success": false,
+      "execution_time": 26,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:18:54.327505",
+    "user_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n\n\n### 2. TechDebtMonitor への統合\n\n\n### 3. CLI 拡張\n\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n## 改善提案の例:\n- \"parallel_processor.py:36 parse_parallel_streaming()は複雑度15で高い。メソッド分割推奨 (優先度:高)\"\n- \"config.py: Halstead difficulty 3.4は適正範囲。維持推奨 (優先度:低)\"\n\n型注釈完備、高品質実装をお願いします。",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n\n\n### 2. TechDebtMonitor への統合\n\n\n### 3. CLI 拡張\n\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n## 改善提案の例:\n- \"parallel_processor.py:36 parse_parallel_streaming()は複雑度15で高い。メソッド分割推奨 (優先度:高)\"\n- \"config.py: Halstead difficulty 3.4は適正範囲。維持推奨 (優先度:低)\"\n\n型注釈完備、高品質実装をお願いします。",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_191847",
+    "final_result": {
+      "task_id": "task_20250815_191847",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:19:22.758457",
+    "user_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n- analyze_code_issues(): 品質問題を分析し改善可能な項目を特定\n- generate_improvement_suggestions(): 具体的な改善提案を生成  \n- calculate_roi_priority(): ROI ベースで優先度付け\n- create_action_plan(): 統合的なアクションプランをMarkdown形式で生成\n\n### 2. TechDebtMonitor への統合\n- generate_improvement_report(): 改善提案レポートをHTMLまたはMarkdown形式で出力\n- get_quality_score(): 総合的な品質スコア (0-100) を算出\n\n### 3. CLI 拡張\n- --improvement: 改善提案レポート生成モード\n- --action-plan: アクションプラン生成モード  \n- --quality-score: 品質スコア表示のみ\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n型注釈完備、高品質実装をお願いします。",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n- analyze_code_issues(): 品質問題を分析し改善可能な項目を特定\n- generate_improvement_suggestions(): 具体的な改善提案を生成  \n- calculate_roi_priority(): ROI ベースで優先度付け\n- create_action_plan(): 統合的なアクションプランをMarkdown形式で生成\n\n### 2. TechDebtMonitor への統合\n- generate_improvement_report(): 改善提案レポートをHTMLまたはMarkdown形式で出力\n- get_quality_score(): 総合的な品質スコア (0-100) を算出\n\n### 3. CLI 拡張\n- --improvement: 改善提案レポート生成モード\n- --action-plan: アクションプラン生成モード  \n- --quality-score: 品質スコア表示のみ\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n型注釈完備、高品質実装をお願いします。",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_191916",
+    "final_result": {
+      "task_id": "task_20250815_191916",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T19:23:59.505987",
+    "user_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n- analyze_code_issues(): 品質問題を分析し改善可能な項目を特定\n- generate_improvement_suggestions(): 具体的な改善提案を生成  \n- calculate_roi_priority(): ROI ベースで優先度付け\n- create_action_plan(): 統合的なアクションプランをMarkdown形式で生成\n\n### 2. TechDebtMonitor への統合\n- generate_improvement_report(): 改善提案レポートをHTMLまたはMarkdown形式で出力\n- get_quality_score(): 総合的な品質スコア (0-100) を算出\n\n### 3. CLI 拡張\n- --improvement: 改善提案レポート生成モード\n- --action-plan: アクションプラン生成モード  \n- --quality-score: 品質スコア表示のみ\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n型注釈完備、高品質実装をお願いします。",
+    "analysis": {
+      "original_request": "scripts/tech_debt_monitor.py に Phase 3 自動改善提案システムを実装してください。\n\n# Phase 3 実装仕様書\n\n## 追加機能要件:\n\n### 1. QualityImprovementEngine クラス実装\n- analyze_code_issues(): 品質問題を分析し改善可能な項目を特定\n- generate_improvement_suggestions(): 具体的な改善提案を生成  \n- calculate_roi_priority(): ROI ベースで優先度付け\n- create_action_plan(): 統合的なアクションプランをMarkdown形式で生成\n\n### 2. TechDebtMonitor への統合\n- generate_improvement_report(): 改善提案レポートをHTMLまたはMarkdown形式で出力\n- get_quality_score(): 総合的な品質スコア (0-100) を算出\n\n### 3. CLI 拡張\n- --improvement: 改善提案レポート生成モード\n- --action-plan: アクションプラン生成モード  \n- --quality-score: 品質スコア表示のみ\n\n## 実装要求:\n- 既存コードとの完全統合\n- 全メトリクス (cognitive complexity, maintainability, halstead, dead code) を活用\n- 具体的・実践的な改善提案の生成\n- ROIベースの優先度計算\n- HTML/Markdown両対応のレポート出力\n- MyPy strict mode 完全対応\n\n型注釈完備、高品質実装をお願いします。",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_192336",
+    "final_result": {
+      "task_id": "task_20250815_192336",
+      "status": "failed",
+      "success": false,
+      "execution_time": 16,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
   }
 ]

@@ -52,6 +52,11 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",
+    # 技術的負債監視ライブラリ (Issue #823)
+    "radon>=6.0",        # cognitive complexity, maintainability index
+    "xenon>=0.9",        # 複雑度測定
+    "duplicated>=2.0",   # 重複コード検出
+    "vulture>=2.0",      # デッドコード検出
 ]
 performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
