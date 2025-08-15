@@ -26,19 +26,16 @@
 - **一時ファイル**: 全て `tmp/` 配下に出力（絶対遵守）
 - **日本語使用**: コメント・レビュー・ドキュメントは日本語
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
-- **🤖 オーケストレーション優先**: `claude_gemini_orchestrator.py` でシステマティックな協業実行
-
-### 🤖 Gemini活用指針（**強制実行**）
-- **🚨 必須実行チェック**: `python gemini_reports/gemini_executor.py --check "作業内容"` で強制判定
-- **⛔ Claude直接実行禁止**: 必須パターン検出時はGemini実行以外不可
-- **自動委譲**: `python gemini_reports/gemini_executor.py --task "作業内容"` で自動実行
+### 🤖 Gemini活用指針
+- **明示的協業**: ユーザーが「Geminiと協業して」と指定すると自動実行
+- **オーケストレーション**: `python gemini_reports/claude_gemini_orchestrator.py` で協業実行
 - **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
-- **Token節約目標**: 96%以上（Claude使用を最小限に）
-- **📊 実行統計**: `python gemini_reports/gemini_executor.py --status` で確認
+- **Token節約目標**: 90%以上（Claude使用を最小限に）
+- **📊 実行統計**: orchestration_log.json で履歴確認
 
-#### 🤖 オーケストレーション対象パターン
+#### 🤖 協業対象パターン
 ```python
-ORCHESTRATION_PATTERNS = {
+PATTERNS = {
     "SIMPLE": ["mypy", "flake8", "black", "isort", "lint", "型注釈"],
     "MODERATE": ["機能追加", "バグ修正", "テスト実装"],
     "COMPLEX": ["アーキテクチャ", "大規模リファクタリング"]
@@ -103,7 +100,7 @@ make test       # pytest
 
 ## 🤖 オーケストレーションシステム実行指針
 
-### 📋 新作業フロー（Issue #888）
+### 📋 新作業フロー
 ```bash
 1. ユーザー要求受付
    ↓
@@ -118,37 +115,6 @@ make test       # pytest
    ↓
 6. 完成
 ```
-
-### Gemini推奨ケース（自動判定）
-```python
-# 型注釈修正（no-untyped-def等）
-def function(param) -> None:          # ❌ 修正前  
-def function(param: Any) -> None:     # ✅ 修正後
-
-# 単純バグ修正・コード整形
-python3 -m mypy kumihan_formatter --strict  # MyPy修正
-python3 -m flake8 kumihan_formatter         # Lint修正
-python3 -m black kumihan_formatter          # フォーマット
-```
-
-### ⚠️ Issue #876で見落とした判定基準
-- **Token推定量**: 1000トークン以上（MyPy5件修正≈3000トークン）
-- **ファイル数**: 3ファイル以上（13ファイル同時修正）
-- **作業パターン**: 定型作業（同じ型修正の繰り返し）
-- **コスト削減**: 87%以上の削減可能性
-
-### Claude専任ケース（直接実行）  
-- **新機能設計・実装** - アーキテクチャレベル判断
-- **複雑デバッグ・問題解決** - 高度な分析・推論
-- **ユーザー要求対応** - コミュニケーション・戦略判断
-
-### 自動化レベル設定
-- **FULL_AUTO**: simple + 低リスク + 信頼度80%以上 → 即座自動実行
-- **SEMI_AUTO**: moderate + 中リスク + 信頼度60%以上 → 承認後実行  
-- **APPROVAL_REQUIRED**: complex + 高リスク + 信頼度40%以上 → 事前承認必須
-- **MANUAL_ONLY**: critical + 最高リスク + 信頼度40%未満 → Claude専任
-
-**詳細ガイド**: [docs/claude/gemini-collaboration.md](docs/claude/gemini-collaboration.md)
 
 ---
 
@@ -256,22 +222,21 @@ except Exception as e:
 - ❌ 英語でのレビュー・コメント
 - ❌ 未承認でのファイル作成・変更
 - ❌ **Gemini品質基準未達成でのマージ**（3層検証必須）
-- ❌ **自動判定システムの無視**（Token節約機会の逸失）
 
 ### 必須事項
 - ✅ 作業前の計画報告
 - ✅ tmp/ 配下での一時ファイル管理
 - ✅ 適切なラベル付きIssue作成
 - ✅ 品質チェック（lint/typecheck）の実行
-- ✅ **🤖 Gemini協業の必須実行**（コスト削減目標99%）
-- ✅ **Gemini実行時3層検証**（構文→品質→Claude承認）
-- ✅ **Token使用量1000以上時Gemini検討**（コスト効率優先）
-- ✅ **📋 協業レポート自動生成**（gemini_reports/ 格納）
+- ✅ **🤖 Gemini協業の明示実行**（「協業して」で自動起動）
+- ✅ **3層品質検証**: 構文→品質→Claude最終承認
+- ✅ **Token節約1000以上時Gemini検討**（コスト効率優先）
 
 ### 🤖 Gemini協業時の特別注意事項
 - **品質責任**: 部下成果物でもClaude最終責任
 - **フェイルセーフ**: 実行失敗時は即座代替実行
 - **継続改善**: 結果蓄積・学習データ化・品質向上
+
 
 ---
 
