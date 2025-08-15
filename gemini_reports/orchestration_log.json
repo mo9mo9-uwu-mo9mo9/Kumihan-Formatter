@@ -1,0 +1,170 @@
+[
+  {
+    "timestamp": "2025-08-15T14:57:49.870751",
+    "user_request": "統合ログ解析・可視化システム実装 - 全モジュールのログを統合収集し、リアルタイム解析・アラート機能、Web UI付きダッシュボード、パフォーマンス異常検知、自動レポート生成機能を含む高度なシステム",
+    "analysis": {
+      "original_request": "統合ログ解析・可視化システム実装 - 全モジュールのログを統合収集し、リアルタイム解析・アラート機能、Web UI付きダッシュボード、パフォーマンス異常検知、自動レポート生成機能を含む高度なシステム",
+      "complexity": "moderate",
+      "task_type": "feature",
+      "estimated_effort": 60,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_145748",
+    "final_result": {
+      "task_id": "task_20250815_145748",
+      "status": "failed",
+      "success": false,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T14:58:07.227880",
+    "user_request": "統合ログ解析・可視化システム実装 - 全モジュールのログを統合収集し、リアルタイム解析・アラート機能、Web UI付きダッシュボード、パフォーマンス異常検知、自動レポート生成機能を含む高度なシステム",
+    "analysis": {
+      "original_request": "統合ログ解析・可視化システム実装 - 全モジュールのログを統合収集し、リアルタイム解析・アラート機能、Web UI付きダッシュボード、パフォーマンス異常検知、自動レポート生成機能を含む高度なシステム",
+      "complexity": "moderate",
+      "task_type": "feature",
+      "estimated_effort": 60,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_145755",
+    "final_result": {
+      "task_id": "task_20250815_145755",
+      "status": "completed",
+      "success": true,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T15:12:35.052439",
+    "user_request": "kumihan_formatter全体のMyPy strict mode 型注釈修正を実行。現在73件のエラーがあるため、全ファイルを順次修正してください。優先度: 1) no-untyped-def, 2) no-any-return, 3) その他のエラー",
+    "analysis": {
+      "original_request": "kumihan_formatter全体のMyPy strict mode 型注釈修正を実行。現在73件のエラーがあるため、全ファイルを順次修正してください。優先度: 1) no-untyped-def, 2) no-any-return, 3) その他のエラー",
+      "complexity": "simple",
+      "task_type": "formatting",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_151233",
+    "final_result": {
+      "task_id": "task_20250815_151233",
+      "status": "completed",
+      "success": true,
+      "execution_time": 0,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T15:19:01.183750",
+    "user_request": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。要件: 1) リアルタイムデータストリーミング(時系列データ生成), 2) pandas/numpy活用の統計分析エンジン, 3) matplotlib/plotlyによる動的可視化, 4) Streamlitベースの Webダッシュボード UI, 5) 複数チャート同時表示・更新機能",
+    "analysis": {
+      "original_request": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。要件: 1) リアルタイムデータストリーミング(時系列データ生成), 2) pandas/numpy活用の統計分析エンジン, 3) matplotlib/plotlyによる動的可視化, 4) Streamlitベースの Webダッシュボード UI, 5) 複数チャート同時表示・更新機能",
+      "complexity": "complex",
+      "task_type": "feature",
+      "estimated_effort": 240,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_151818",
+    "final_result": {
+      "task_id": "task_20250815_151818",
+      "status": "completed",
+      "success": true,
+      "execution_time": 40,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T15:20:05.892970",
+    "user_request": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。構成: 1) data_generator.py(時系列データ生成), 2) analytics_engine.py(pandas/numpy分析), 3) dashboard.py(Streamlit UI), 4) requirements.txt(依存ライブラリ). 機能: リアルタイム更新・複数チャート表示",
+    "analysis": {
+      "original_request": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。構成: 1) data_generator.py(時系列データ生成), 2) analytics_engine.py(pandas/numpy分析), 3) dashboard.py(Streamlit UI), 4) requirements.txt(依存ライブラリ). 機能: リアルタイム更新・複数チャート表示",
+      "complexity": "moderate",
+      "task_type": "feature",
+      "estimated_effort": 60,
+      "risk_level": "medium",
+      "gemini_suitable": true,
+      "breakdown_needed": true
+    },
+    "instruction_id": "task_20250815_151931",
+    "final_result": {
+      "task_id": "task_20250815_151931",
+      "status": "completed",
+      "success": true,
+      "execution_time": 32,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T16:02:31.407129",
+    "user_request": "gemini_reports/内の全Pythonファイルの型注釈完全化: 1) 全メソッドの引数・戻り値型注釈, 2) MyPy strict mode完全対応, 3) typing import最適化, 4) docstring型情報と一致確認",
+    "analysis": {
+      "original_request": "gemini_reports/内の全Pythonファイルの型注釈完全化: 1) 全メソッドの引数・戻り値型注釈, 2) MyPy strict mode完全対応, 3) typing import最適化, 4) docstring型情報と一致確認",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": false
+    },
+    "instruction_id": "task_20250815_160152",
+    "final_result": {
+      "task_id": "task_20250815_160152",
+      "status": "completed",
+      "success": true,
+      "execution_time": 28,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2025-08-15T16:07:50.356064",
+    "user_request": "gemini_reports/内の全ファイルのMyPy型注釈エラー75件を修正。no-untyped-def、operator、attr-defined、import-not-found等を重点的に修正",
+    "analysis": {
+      "original_request": "gemini_reports/内の全ファイルのMyPy型注釈エラー75件を修正。no-untyped-def、operator、attr-defined、import-not-found等を重点的に修正",
+      "complexity": "simple",
+      "task_type": "type_annotation",
+      "estimated_effort": 15,
+      "risk_level": "low",
+      "gemini_suitable": true,
+      "breakdown_needed": false
+    },
+    "instruction_id": "task_20250815_160734",
+    "final_result": {
+      "task_id": "task_20250815_160734",
+      "status": "completed",
+      "success": true,
+      "execution_time": 8,
+      "token_usage": {
+        "claude_tokens": 0,
+        "gemini_tokens": 0
+      }
+    }
+  }
+]

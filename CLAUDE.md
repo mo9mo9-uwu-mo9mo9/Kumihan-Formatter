@@ -26,24 +26,25 @@
 - **一時ファイル**: 全て `tmp/` 配下に出力（絶対遵守）
 - **日本語使用**: コメント・レビュー・ドキュメントは日本語
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
+- **🤖 オーケストレーション優先**: `claude_gemini_orchestrator.py` でシステマティックな協業実行
 
-### 🤖 Gemini活用指針（**必須実行**）
-- **⚠️ 作業開始前チェック**: `python gemini_reports/gemini_collaboration_checker.py "作業内容"` で判定実行
-- **自動判定優先**: 1000トークン以上・定型作業はGemini実行
+### 🤖 Gemini活用指針（**強制実行**）
+- **🚨 必須実行チェック**: `python gemini_reports/gemini_executor.py --check "作業内容"` で強制判定
+- **⛔ Claude直接実行禁止**: 必須パターン検出時はGemini実行以外不可
+- **自動委譲**: `python gemini_reports/gemini_executor.py --task "作業内容"` で自動実行
 - **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
-- **フェイルセーフ活用**: Gemini失敗時は即座にClaude代替
-- **学習・改善**: 実行結果を蓄積し継続的品質向上
-- **📋 作業レポート**: `gemini_reports/` に自動記録（外部非公開）
+- **Token節約目標**: 96%以上（Claude使用を最小限に）
+- **📊 実行統計**: `python gemini_reports/gemini_executor.py --status` で確認
 
-#### 🚨 Gemini協業必須パターン（Issue #876反省改善）
+#### 🤖 オーケストレーション対象パターン
 ```python
-GEMINI_REQUIRED_PATTERNS = [
-    "MyPy型注釈修正",     # no-any-return, strict mode等
-    "Flake8エラー修正",    # F401, E501等の定型修正
-    "Black/isort整形",     # コードフォーマット統一
-    "複数ファイル一括処理",  # 3ファイル以上の同時修正
-    "定型作業（5件以上）"   # 同じ修正の繰り返し
-]
+ORCHESTRATION_PATTERNS = {
+    "SIMPLE": ["mypy", "flake8", "black", "isort", "lint", "型注釈"],
+    "MODERATE": ["機能追加", "バグ修正", "テスト実装"],
+    "COMPLEX": ["アーキテクチャ", "大規模リファクタリング"]
+}
+# 👑 Claude: 要件分析・設計・指示書作成・品質レビュー
+# 🤖 Gemini: 指示書に従った実装のみ
 ```
 
 ---
@@ -79,42 +80,43 @@ make test       # pytest
 
 ---
 
-## 👑 Claude-Gemini 役割分担体制
+## 👑 Claude-Gemini オーケストレーション体制
 
-> **上司Claude・部下Gemini** - 明確な責任分担によるToken節約とコスト効率化
+> **Claude(PM/Manager) - Gemini(Coder)** - 明確な上下関係による90%Token削減
 
-### Claude（上司・管理者）責任範囲
-- **🎯 戦略・設計**: プロジェクト全体アーキテクチャ・新機能設計・要求解析
-- **🛡️ 品質保証**: コードレビュー・最終承認・複雑なデバッグ・品質責任  
-- **👥 コミュニケーション**: ユーザー対話・進捗報告・意思決定・問題解決
+### Claude(PM/Manager)責任範囲
+- **📋 要件分析・設計**: ユーザー要求の分析・アーキテクチャ設計・細かい作業指示書作成
+- **👀 監督・レビュー**: Gemini成果物の品質チェック・最終調整・品質責任
+- **👥 コミュニケーション**: ユーザー対話・意思決定・問題解決
 
-### Gemini（部下・実装者）責任範囲  
-- **⚡ 実装作業**: 具体的コード修正・型注釈追加・定型バグ修正・コード整形
-- **📦 大量処理**: 複数ファイル一括処理・テンプレート生成・繰り返し作業
-- **✅ 品質準拠**: Claude指示厳格遵守・品質基準通過・構文エラー防止
+### Gemini(Coder)責任範囲
+- **👤 指示待ち**: Claudeの作業指示書を受け取り、忽実に実行のみ
+- **⚡ 実装作業**: コード修正・型注釈・バグ修正・コード整形・テスト実行
+- **🚫 判断禁止**: 独自判断・仕様変更・品質基準の変更は禁止
 
-### 💰 Token節約戦略（目標: 99%削減）
-- **自動判定**: 1000トークン以上 + simple/moderate → Gemini優先
-- **コスト効率**: Claude($15/$75) → Gemini($0.30/$2.50) = **99%削減目標**
-- **品質保証**: 3層検証（構文→品質→Claude承認）でリスク管理
+### 💰 Token節約戦略（目標: 90%削減）
+- **ロール分擅**: Claude 3,000 Token vs 従来 30,000 Token
+- **コスト効率**: 実際に割り当てることで真のコスト削減
+- **品質維持**: Claude最終責任で品質保証
 
 ---
 
-## 🤖 協業システム実行指針
+## 🤖 オーケストレーションシステム実行指針
 
-### 📋 作業開始時フローチャート（Issue #876反省改善）
+### 📋 新作業フロー（Issue #888）
 ```bash
-1. 作業内容確認
+1. ユーザー要求受付
    ↓
-2. 🚨 必須チェック実行
-   python gemini_reports/gemini_collaboration_checker.py "作業内容"
+2. 👑 Claude: 要件分析・設計
+   python gemini_reports/claude_gemini_orchestrator.py --analyze "作業内容"
    ↓
-3a. ✅ Gemini推奨 → gemini_reports/指示書生成・Gemini実行
-3b. ❌ Claude専任 → 直接実行
+3. 👑 Claude: 詳細作業指示書作成
    ↓
-4. 品質保証（3層検証）
+4. 🤖 Gemini: 指示書に従って実装のみ
    ↓
-5. 最終確認・マージ
+5. 👑 Claude: 品質レビュー・最終調整
+   ↓
+6. 完成
 ```
 
 ### Gemini推奨ケース（自動判定）
