@@ -10,6 +10,24 @@ from .node import Node
 from .node_builder import NodeBuilder
 
 
+def create_node(node_type: str, content: Any = "", **kwargs: Any) -> Node:
+    """汎用ノード作成関数 - 統一パーサーシステム用"""
+    builder = NodeBuilder(node_type).content(content)
+
+    # メタデータの設定
+    if "metadata" in kwargs:
+        metadata = kwargs.pop("metadata")
+        if isinstance(metadata, dict):
+            for key, value in metadata.items():
+                builder.attribute(key, value)
+
+    # 直接属性の設定
+    for key, value in kwargs.items():
+        builder.attribute(key, value)
+
+    return builder.build()
+
+
 def paragraph(
     content: Union[str, list[Any]], attributes: dict[str, Any] | None = None
 ) -> Node:

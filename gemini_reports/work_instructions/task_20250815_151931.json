@@ -1,0 +1,33 @@
+{
+  "task_id": "task_20250815_151931",
+  "title": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。構成: 1) data_generator.py(時系列データ生成), 2) analytics_e",
+  "complexity": "moderate",
+  "requirements": "リアルタイム分析ダッシュボードシステムをtmp/real_time_dashboard/配下に実装。構成: 1) data_generator.py(時系列データ生成), 2) analytics_engine.py(pandas/numpy分析), 3) dashboard.py(Streamlit UI), 4) requirements.txt(依存ライブラリ). 機能: リアルタイム更新・複数チャート表示",
+  "implementation_details": [
+    "要件に従って機能を実装してください",
+    "既存コードとの整合性を保ってください",
+    "適切なテストを追加してください"
+  ],
+  "quality_criteria": [
+    "機能要件を100%満たす",
+    "既存テストが全通過",
+    "新規テストのカバレッジ80%以上",
+    "コーディング標準準拠"
+  ],
+  "prohibited_actions": [
+    "要件にない機能の追加",
+    "既存APIの破壊的変更",
+    "セキュリティ基準の緩和"
+  ],
+  "expected_files": [
+    "実装ファイル",
+    "テストファイル",
+    "ドキュメント"
+  ],
+  "dependencies": [
+    "既存システムとの整合性確認"
+  ],
+  "estimated_time": 60,
+  "created_by": "Claude",
+  "created_at": "2025-08-15T15:19:31.622452"
+}

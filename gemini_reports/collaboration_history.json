@@ -16,6 +16,54 @@
     "cost_savings_potential": "96%"
   },
   {
+    "timestamp": "2025-08-15T09:56:41.384284",
+    "task": "Phase 2C: 移行・互換性 - 既存パーサーファイルへの後方互換性ラッパー・非推奨警告追加",
+    "gemini_recommended": false,
+    "confidence": 0.0,
+    "estimated_tokens": 500,
+    "cost_savings_potential": "0%"
+  },
+  {
+    "timestamp": "2025-08-15T10:04:47.585371",
+    "task": "MyPy型注釈修正 - 42件のエラー修正（ __init__メソッド戻り値型、children属性None安全性、型注釈追加等）",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 8900,
+    "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-15T10:05:13.318423",
+    "task": "Phase 3: 設定管理一本化 - 3システム15ファイルの設定管理統合（config/, settings/, .env系を一本化）",
+    "gemini_recommended": true,
+    "confidence": 0.3,
+    "estimated_tokens": 500,
+    "cost_savings_potential": "0%"
+  },
+  {
+    "timestamp": "2025-08-15T10:10:02.793897",
+    "task": "Issue #880対応漏れ確認 - GitHub Issue要求仕様vs実装済み内容の差分分析、エラーハンドリング統合未実装の可能性確認",
+    "gemini_recommended": false,
+    "confidence": 0.0,
+    "estimated_tokens": 800,
+    "cost_savings_potential": "0%"
+  },
+  {
+    "timestamp": "2025-08-15T10:11:30.838828",
+    "task": "Phase 4: エラーハンドリング統合 - core/common/, core/error_handling/, utilities/ の分散エラーハンドリングを統一インターフェース化",
+    "gemini_recommended": false,
+    "confidence": 0.0,
+    "estimated_tokens": 500,
+    "cost_savings_potential": "0%"
+  },
+  {
+    "timestamp": "2025-08-15T10:12:02.496587",
+    "task": "Phase 5: MyPy型注釈修正 - specialized パーサー群42件のMyPy型注釈エラー修正（__init__戻り値型、None安全性、変数型注釈等）",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 8900,
+    "cost_savings_potential": "96%"
+  },
+  {
     "timestamp": "2025-08-15T10:21:31.259456",
     "task": "Issue #880完了後の最終品質チェック - MyPy strict mode確認、lint修正、テスト実行",
     "gemini_recommended": true,
@@ -30,5 +78,21 @@
     "confidence": 0.0,
     "estimated_tokens": 700,
     "cost_savings_potential": "0%"
+  },
+  {
+    "timestamp": "2025-08-15T16:07:30.031326",
+    "task": "gemini_reports/内の全ファイルのMyPy型注釈エラー75件を修正。no-untyped-def、operator、attr-defined、import-not-found等を重点的に修正",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 15500,
+    "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-15T17:32:05.495758",
+    "task": "MyPy型注釈エラー3件の修正",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 1100,
+    "cost_savings_potential": "96%"
   }
 ]

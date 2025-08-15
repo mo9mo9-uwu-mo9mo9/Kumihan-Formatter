@@ -9,6 +9,7 @@ all classes and functions from the original ast_nodes.py module.
 
 # Factory functions
 from .factories import (
+    create_node,
     details,
     div_box,
     emphasis,
@@ -40,6 +41,7 @@ __all__ = [
     "Node",
     "NodeBuilder",
     # Factory functions
+    "create_node",
     "paragraph",
     "heading",
     "strong",
