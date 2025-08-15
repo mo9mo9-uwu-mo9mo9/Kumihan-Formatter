@@ -1,0 +1,36 @@
+{
+  "task_id": "task_20250815_191544",
+  "status": "failed",
+  "implemented_files": [
+    "gemini_reports/halstead.py",
+    "gemini_reports/api_config.py",
+    "gemini_reports/code_analyzer.py",
+    "gemini_reports/quality_checker.py",
+    "gemini_reports/report_generator.py",
+    "gemini_reports/tech_debt_monitor.py"
+  ],
+  "modified_lines": 434,
+  "quality_checks": {
+    "mypy_pass": false,
+    "flake8_pass": false,
+    "black_pass": true
+  },
+  "errors": [
+    "MyPyエラー (gemini_reports/halstead.py): gemini_reports/halstead.py:37: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:41: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:45: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:50: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:54: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:57: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:60: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:63: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:89: error: Incompatible return value type (got tuple[int, int, ... <10 more items>], expected tuple[int, int, int, int, float, float, float, float, float])  [return-value]\nFound 9 errors in 1 file (checked 1 source file)\n",
+    "MyPyエラー (gemini_reports/code_analyzer.py): gemini_reports/halstead.py:37: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:41: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:45: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:50: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:54: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:57: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:60: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:63: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:89: error: Incompatible return value type (got tuple[int, int, ... <10 more items>], expected tuple[int, int, int, int, float, float, float, float, float])  [return-value]\nFound 9 errors in 1 file (checked 1 source file)\n",
+    "MyPyエラー (gemini_reports/quality_checker.py): gemini_reports/quality_checker.py:28: error: Returning Any from function declared to return \"dict[str, float]\"  [no-any-return]\nFound 1 error in 1 file (checked 1 source file)\n",
+    "MyPyエラー (gemini_reports/report_generator.py): gemini_reports/halstead.py:37: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:41: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:45: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:50: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:54: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:57: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:60: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:63: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:89: error: Incompatible return value type (got tuple[int, int, ... <10 more items>], expected tuple[int, int, int, int, float, float, float, float, float])  [return-value]\ngemini_reports/quality_checker.py:28: error: Returning Any from function declared to return \"dict[str, float]\"  [no-any-return]\ngemini_reports/report_generator.py:33: error: Need more than 9 values to unpack (12 expected)  [misc]\nFound 11 errors in 3 files (checked 1 source file)\n",
+    "MyPyエラー (gemini_reports/tech_debt_monitor.py): gemini_reports/halstead.py:37: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:41: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:45: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:50: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:54: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:57: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:60: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:63: error: Function is missing a type annotation  [no-untyped-def]\ngemini_reports/halstead.py:89: error: Incompatible return value type (got tuple[int, int, ... <10 more items>], expected tuple[int, int, int, int, float, float, float, float, float])  [return-value]\ngemini_reports/quality_checker.py:28: error: Returning Any from function declared to return \"dict[str, float]\"  [no-any-return]\ngemini_reports/report_generator.py:33: error: Need more than 9 values to unpack (12 expected)  [misc]\nFound 11 errors in 3 files (checked 1 source file)\n",
+    "品質基準を満たせませんでした"
+  ],
+  "warnings": [
+    "Flake8エラーの手動確認が必要"
+  ],
+  "execution_time": 26,
+  "token_usage": {
+    "claude_tokens": 0,
+    "gemini_tokens": 0
+  },
+  "executed_by": "Gemini API",
+  "executed_at": "2025-08-15T19:15:44.933402"
+}

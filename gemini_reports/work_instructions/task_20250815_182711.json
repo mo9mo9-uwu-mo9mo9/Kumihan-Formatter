@@ -1,0 +1,47 @@
+{
+  "task_id": "task_20250815_182711",
+  "title": "MyPyエラーを修正してください",
+  "complexity": "simple",
+  "requirements": "MyPyエラーを修正してください",
+  "implementation_details": [
+    "対象ディレクトリ: gemini_reports/",
+    "以下の形式で既存ファイルを修正してください:",
+    "",
+    "# ファイル: 実際のファイルパス（例: gemini_reports/api_config.py）",
+    "```python",
+    "修正後の完全なファイル内容",
+    "```",
+    "",
+    "主要な修正パターン:",
+    "- 関数・メソッドに型注釈追加: def func(param: int) -> str:",
+    "- 変数の型注釈: variable: Optional[str] = None",
+    "- import文の最適化: from typing import Optional, Dict, List",
+    "- Any型の具体的型への変更",
+    "- Noneチェックの追加: if value is not None:",
+    "",
+    "⚠️ 重要: 新規ファイル作成ではなく、既存ファイルの直接修正を行ってください"
+  ],
+  "quality_criteria": [
+    "MyPy strict mode 完全通過",
+    "全関数・メソッドに適切な型注釈",
+    "typing importの最適化完了",
+    "既存機能の動作保証"
+  ],
+  "prohibited_actions": [
+    "新規ファイルの作成",
+    "tmp/配下への保存",
+    "機能の削除・変更",
+    "APIの破壊的変更"
+  ],
+  "expected_files": [
+    "gemini_reports/内の既存Pythonファイル",
+    "修正対象ファイルのみ（新規作成不可）"
+  ],
+  "dependencies": [
+    "typing モジュール",
+    "既存コードとの互換性維持"
+  ],
+  "estimated_time": 15,
+  "created_by": "Claude",
+  "created_at": "2025-08-15T18:27:11.449426"
+}

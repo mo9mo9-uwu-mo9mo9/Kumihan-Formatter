@@ -1,0 +1,48 @@
+{
+  "report_generated": "2025-08-15T19:48:25.474804",
+  "period": "24時間",
+  "total_failures": 3,
+  "failure_rate": 1.0,
+  "failure_by_type": {
+    "quality_validation": 1,
+    "environment_issue": 1,
+    "execution_error": 1
+  },
+  "pattern_statistics": {
+    "mypy_type_annotation": {
+      "description": "MyPy型注釈修正",
+      "recent_failures": 1,
+      "success_rate": 0.3,
+      "recommended_executor": "claude"
+    },
+    "lint_formatting": {
+      "description": "リント・フォーマット修正",
+      "recent_failures": 1,
+      "success_rate": 0.7,
+      "recommended_executor": "gemini"
+    },
+    "external_library_deps": {
+      "description": "外部ライブラリ依存関係",
+      "recent_failures": 0,
+      "success_rate": 0.2,
+      "recommended_executor": "claude"
+    },
+    "complex_refactoring": {
+      "description": "複雑なリファクタリング",
+      "recent_failures": 0,
+      "success_rate": 0.1,
+      "recommended_executor": "claude"
+    },
+    "simple_bug_fix": {
+      "description": "単純なバグ修正",
+      "recent_failures": 0,
+      "success_rate": 0.6,
+      "recommended_executor": "gemini"
+    }
+  },
+  "claude_switch_recommendations": [
+    "mypy_type_annotation",
+    "external_library_deps",
+    "complex_refactoring"
+  ]
+}

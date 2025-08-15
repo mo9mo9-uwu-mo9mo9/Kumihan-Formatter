@@ -1,0 +1,27 @@
+{
+  "task_id": "task_20250815_190405",
+  "status": "failed",
+  "implemented_files": [
+    "tmp/scripts/tech_debt_monitor.py"
+  ],
+  "modified_lines": 243,
+  "quality_checks": {
+    "mypy_pass": false,
+    "flake8_pass": false,
+    "black_pass": true
+  },
+  "errors": [
+    "MyPyエラー (tmp/scripts/tech_debt_monitor.py): tmp/scripts/tech_debt_monitor.py:40: error: Returning Any from function declared to return \"dict[str, float]\"  [no-any-return]\ntmp/scripts/tech_debt_monitor.py:59: error: Returning Any from function declared to return \"dict[str, float]\"  [no-any-return]\ntmp/scripts/tech_debt_monitor.py:64: error: Missing type parameters for generic type \"Dict\"  [type-arg]\ntmp/scripts/tech_debt_monitor.py:78: error: Returning Any from function declared to return \"list[dict[Any, Any]]\"  [no-any-return]\ntmp/scripts/tech_debt_monitor.py:135: error: Missing type parameters for generic type \"Dict\"  [type-arg]\ntmp/scripts/tech_debt_monitor.py:192: error: Function is missing a return type annotation  [no-untyped-def]\ntmp/scripts/tech_debt_monitor.py:192: note: Use \"-> None\" if function does not return a value\ntmp/scripts/tech_debt_monitor.py:243: error: Call to untyped function \"main\" in typed context  [no-untyped-call]\nFound 7 errors in 1 file (checked 1 source file)\n",
+    "品質基準を満たせませんでした"
+  ],
+  "warnings": [
+    "Flake8エラーの手動確認が必要"
+  ],
+  "execution_time": 12,
+  "token_usage": {
+    "claude_tokens": 0,
+    "gemini_tokens": 0
+  },
+  "executed_by": "Gemini API",
+  "executed_at": "2025-08-15T19:04:05.657800"
+}

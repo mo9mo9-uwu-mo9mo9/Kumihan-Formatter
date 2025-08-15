@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2025-08-15T19:48:09.711645",
+    "task_id": "test_basic",
+    "quality_level": "basic",
+    "result": "warning",
+    "metrics": {
+      "total_files": 1,
+      "syntax_errors": 0,
+      "flake8_issues": 3,
+      "mypy_issues": 0,
+      "total_issues": 3
+    },
+    "next_level_ready": false
+  },
+  {
+    "timestamp": "2025-08-15T19:48:09.944911",
+    "task_id": "test_intermediate",
+    "quality_level": "intermediate",
+    "result": "warning",
+    "metrics": {
+      "total_files": 1,
+      "syntax_errors": 0,
+      "flake8_issues": 3,
+      "mypy_issues": 0,
+      "total_issues": 3
+    },
+    "next_level_ready": false
+  },
+  {
+    "timestamp": "2025-08-15T19:48:10.688588",
+    "task_id": "test_strict",
+    "quality_level": "strict",
+    "result": "warning",
+    "metrics": {
+      "total_files": 1,
+      "syntax_errors": 0,
+      "flake8_issues": 3,
+      "mypy_issues": 3,
+      "total_issues": 6
+    },
+    "next_level_ready": false
+  }
+]
