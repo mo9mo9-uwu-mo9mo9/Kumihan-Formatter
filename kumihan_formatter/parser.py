@@ -491,10 +491,11 @@ class Parser:
         if self.current >= len(self.lines):
             return None
 
-        # 基本的な行処理
-        _ = self.lines[self.current].strip()  # 現在は使用しないが取得
-        self.current += 1
-        return None  # 基本実装は空
+        # Issue #880修正: graceful error handlingの設定に応じて適切な処理を選択
+        if self.graceful_errors:
+            return self._parse_line_with_graceful_errors()
+        else:
+            return self._parse_line_traditional()
 
     def _parse_line_traditional(self) -> Node | None:
         """従来のパース処理（エラー時に例外をスロー）"""
@@ -509,6 +510,45 @@ class Parser:
             self.current = next_index
             return node
 
+        # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
+        if hasattr(self, "block_handler") and self.block_handler:
+            result, next_index = self.block_handler.parse_line_fallback(
+                self.lines, self.current
+            )
+            if result:
+                self.current = next_index
+                return result
+
+        # フォールバック: インライン記法処理を含むテキストノード作成
+        if line:
+            # Issue #880修正: キーワード記法の処理を追加
+            if hasattr(self, "keyword_parser") and self.keyword_parser:
+                # キーワード記法（脚注等）の解析を試行
+                try:
+                    keywords, metadata, patterns = (
+                        self.keyword_parser.parse_marker_keywords(line)
+                    )
+                    if keywords or metadata:
+                        from .core.ast_nodes import Node
+
+                        content_node = Node(
+                            type="keyword", content=line, attributes=metadata
+                        )
+                        self.current += 1
+                        return content_node
+                except Exception:
+                    # パース失敗時は通常のテキスト処理に続行
+                    pass
+
+            # 基本的なテキストノード作成
+            from .core.ast_nodes import Node
+
+            text_node = Node(type="text", content=line)
+            self.current += 1
+            return text_node
+
+        # 空行の場合は次に進む
+        self.current += 1
         return None
 
     def _parse_line_with_graceful_errors(self) -> Node | None:
@@ -530,7 +570,45 @@ class Parser:
                 self.current = next_index
                 return node
 
-            # Parse other content as needed
+            # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
+            if hasattr(self, "block_handler") and self.block_handler:
+                result, next_index = self.block_handler.parse_line_fallback(
+                    self.lines, self.current
+                )
+                if result:
+                    self.current = next_index
+                    return result
+
+            # フォールバック: インライン記法処理を含むテキストノード作成
+            if line:
+                # Issue #880修正: キーワード記法の処理を追加
+                if hasattr(self, "keyword_parser") and self.keyword_parser:
+                    # キーワード記法（脚注等）の解析を試行
+                    try:
+                        keywords, metadata, patterns = (
+                            self.keyword_parser.parse_marker_keywords(line)
+                        )
+                        if keywords or metadata:
+                            from .core.ast_nodes import Node
+
+                            content_node = Node(
+                                type="keyword", content=line, attributes=metadata
+                            )
+                            self.current += 1
+                            return content_node
+                    except Exception:
+                        # パース失敗時は通常のテキスト処理に続行
+                        pass
+
+                # 基本的なテキストノード作成
+                from .core.ast_nodes import Node
+
+                text_node = Node(type="text", content=line)
+                self.current += 1
+                return text_node
+
+            # 空行の場合は次に進む
+            self.current += 1
             return None
 
         except Exception as e:

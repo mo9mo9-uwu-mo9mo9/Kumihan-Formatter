@@ -14,5 +14,21 @@
     "confidence": 1.0,
     "estimated_tokens": 1300,
     "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-15T10:21:31.259456",
+    "task": "Issue #880完了後の最終品質チェック - MyPy strict mode確認、lint修正、テスト実行",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 1900,
+    "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-15T10:24:57.811238",
+    "task": "Issue #880大規模リファクタリングの最終品質チェックとテスト結果分析",
+    "gemini_recommended": false,
+    "confidence": 0.0,
+    "estimated_tokens": 700,
+    "cost_savings_potential": "0%"
   }
 ]
