@@ -70,5 +70,13 @@
     "confidence": 0.7,
     "estimated_tokens": 15500,
     "cost_savings_potential": "96%"
+  },
+  {
+    "timestamp": "2025-08-15T17:32:05.495758",
+    "task": "MyPy型注釈エラー3件の修正",
+    "gemini_recommended": true,
+    "confidence": 0.7,
+    "estimated_tokens": 1100,
+    "cost_savings_potential": "96%"
   }
 ]
