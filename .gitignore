@@ -1,3 +1,6 @@
+# Claude-Gemini Workflow Engine (subproject)
+claude-gemini-workflow-engine/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -178,17 +181,42 @@ venv*/
 # .claude/ already covered in external tools section
 .mcp.json*
 
-# postbox関連の動的生成ファイル
-postbox/todo/*.json
-postbox/monitoring/session_*.json
-postbox/monitoring/cost_tracking.json
-postbox/monitoring/decision_history.json
+# AI collaboration関連の動的生成ファイル（旧postbox）
+ai_collaboration/todo/*.json
+ai_collaboration/monitoring/session_*.json
+ai_collaboration/monitoring/cost_tracking.json
+ai_collaboration/monitoring/decision_history.json
+ai_collaboration/monitoring/*.json
+ai_collaboration/completed/*.json
 
-# Gemini協業レポート（外部非公開）
-gemini_reports/*.md
-!gemini_reports/README.md
-!gemini_reports/TEMPLATE.md
-!gemini_reports/TEMPLATE_*.md
-!gemini_reports/SAMPLE_*.md
-!gemini_reports/TOKEN_*.md
-!gemini_reports/generate_report.py
+# Gemini協業履歴（旧gemini_reports）
+.gemini_history/
+gemini_history/
+
+# HTMLカバレッジレポート（自動生成）
+htmlcov/
+.coverage
+.coverage.*
+
+# データベースファイル
+*.db
+*.sqlite
+*.sqlite3
+
+# 一時ファイル・ディレクトリ
+tmp/**/*.pyc
+tmp/**/__pycache__/
+tmp/**/*.log
+tmp/**/*.db
+!tmp/**/workflow*.py
+!tmp/**/workflow*.db
+!tmp/**/dashboard*.py
+!tmp/**/realtime_dashboard/
+
+# ログファイル（拡張）
+logs/*.log
+logs/*.log.*
+*.log.[0-9]*
+
+# Claude-Gemini Workflow Engine（外部プロジェクト）
+claude-gemini-workflow-engine/

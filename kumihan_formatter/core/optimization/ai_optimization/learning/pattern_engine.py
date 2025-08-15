@@ -20,7 +20,8 @@ from sklearn.model_selection import cross_val_score
 from kumihan_formatter.core.utilities.logger import get_logger
 
 from ..basic_ml_system import TrainingData
-from ..prediction_engine import EnsemblePredictionModel
+
+# from ..prediction_engine import EnsemblePredictionModel  # 削除: 軽量化により除去
 
 warnings.filterwarnings("ignore")
 
@@ -311,7 +312,7 @@ class OnlineLearningEngine:
             return {"sample_added": False, "error": str(e)}
 
     def execute_incremental_learning(
-        self, models: Dict[str, EnsemblePredictionModel]
+        self, models: Dict[str, Any]  # EnsemblePredictionModel削除済み
     ) -> Dict[str, Any]:
         """増分学習実行"""
         try:
@@ -422,7 +423,10 @@ class OnlineLearningEngine:
             return None
 
     def _incremental_train_model(
-        self, model_name: str, model: EnsemblePredictionModel, batch_data: TrainingData
+        self,
+        model_name: str,
+        model: Any,
+        batch_data: TrainingData,  # EnsemblePredictionModel削除済み
     ) -> Dict[str, Any]:
         """モデル増分学習"""
         try:

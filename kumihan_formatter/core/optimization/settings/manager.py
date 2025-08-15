@@ -130,11 +130,11 @@ class AdaptiveSettingsManager:
             "monitoring_interval": self._adjust_monitoring_interval,
         }
 
-    def adjust_for_context(self, context: WorkContext) -> List[ConfigAdjustment]:
+    def adjust_for_context(self, context: WorkContext) -> List[Any]:
         """コンテキストに応じた設定調整（Issue #804 AI最適化統合版）"""
         with self._lock:
             self._initialize_components()
-            adjustments = []
+            adjustments: List[Any] = []
 
             # Issue #804: AI駆動型最適化システム統合処理
             ai_optimizations_applied = self._apply_ai_optimizations(context)
@@ -178,7 +178,7 @@ class AdaptiveSettingsManager:
             )
             return adjustments
 
-    def _apply_ai_optimizations(self, context: WorkContext) -> List[ConfigAdjustment]:
+    def _apply_ai_optimizations(self, context: WorkContext) -> List[Any]:
         """
         AI駆動型最適化システムを適用 - Issue #804 中核実装
 
@@ -188,7 +188,7 @@ class AdaptiveSettingsManager:
         Returns:
             適用された最適化調整のリスト
         """
-        ai_adjustments = []
+        ai_adjustments: List[Any] = []
 
         # 1. ファイルサイズ制限最適化
         file_size_adjustments = self._apply_file_size_optimizations(context)
@@ -204,7 +204,9 @@ class AdaptiveSettingsManager:
 
         # 統合効果レポート
         if ai_adjustments:
-            total_expected_benefit = sum(adj.expected_benefit for adj in ai_adjustments)
+            total_expected_benefit = sum(
+                getattr(adj, "expected_benefit", 0.0) for adj in ai_adjustments
+            )
             self.logger.info(
                 f"AI optimizations applied: {len(ai_adjustments)} adjustments, "
                 f"expected total benefit: {total_expected_benefit:.1%}"
@@ -212,47 +214,23 @@ class AdaptiveSettingsManager:
 
         return ai_adjustments
 
-    def _apply_file_size_optimizations(
-        self, context: WorkContext
-    ) -> List[ConfigAdjustment]:
+    def _apply_file_size_optimizations(self, context: WorkContext) -> List[Any]:
         """ファイルサイズ制限最適化を適用"""
-        adjustments = []
+        adjustments: List[Any] = []
 
         # 動的サイズ制限調整
         if (
             self.file_size_optimizer
             and self.file_size_optimizer.adjust_limits_dynamically(context)
         ):
-            # サイズ制限が調整された場合、関連する設定も更新
-            current_max_chars = self.config.get("serena.max_answer_chars", 25000)
-            optimized_stats = self.file_size_optimizer.get_optimization_statistics()
-
-            # 統計に基づく最適化
-            if optimized_stats["effectiveness_score"] > 0.7:  # 高効果の場合
-                if context.content_size > 50000:
-                    new_max_chars = min(current_max_chars, 35000)
-                    if new_max_chars != current_max_chars:
-                        adjustment = ConfigAdjustment(
-                            key="serena.max_answer_chars",
-                            old_value=current_max_chars,
-                            new_value=new_max_chars,
-                            context=f"ai_file_size_optimization_{context.operation_type}",
-                            timestamp=time.time(),
-                            reason=(
-                                f"File size optimization with "
-                                f"{optimized_stats['effectiveness_score']:.1%} effectiveness"
-                            ),
-                            expected_benefit=0.18,  # FileSizeLimitOptimizer目標削減率
-                        )
-                        adjustments.append(adjustment)
+            # サイズ制限が調整された場合、関連する設定も更新（Serena削除により無効化）
+            pass  # 削除: Serena未使用のため処理なし
 
         return adjustments
 
-    def _apply_concurrent_optimizations(
-        self, context: WorkContext
-    ) -> List[ConfigAdjustment]:
+    def _apply_concurrent_optimizations(self, context: WorkContext) -> List[Any]:
         """並列処理制限最適化を適用"""
-        adjustments = []
+        adjustments: List[Any] = []
 
         # リアルタイム性能指標を取得（簡易版）
         if not self.concurrent_limiter:
@@ -294,11 +272,9 @@ class AdaptiveSettingsManager:
 
         return adjustments
 
-    def _apply_token_optimizations(
-        self, context: WorkContext
-    ) -> List[ConfigAdjustment]:
+    def _apply_token_optimizations(self, context: WorkContext) -> List[Any]:
         """Token使用量最適化を適用"""
-        adjustments = []
+        adjustments: List[Any] = []
 
         # コンテキストに基づくToken使用量の記録と分析
         estimated_input_tokens = int(context.content_size * 0.25)  # 概算
@@ -326,25 +302,8 @@ class AdaptiveSettingsManager:
                     # 高優先度で15%以上の削減期待値がある場合に適用
                     for action in suggestion["actions"]:
                         if action["action"] == "apply_file_size_limits":
-                            # max_answer_charsをより厳格に設定
-                            current_chars = self.config.get(
-                                "serena.max_answer_chars", 25000
-                            )
-                            optimized_chars = int(
-                                current_chars * (1 - action["expected_reduction"])
-                            )
-
-                            if optimized_chars < current_chars:
-                                adjustment = ConfigAdjustment(
-                                    key="serena.max_answer_chars",
-                                    old_value=current_chars,
-                                    new_value=optimized_chars,
-                                    context=f"ai_token_optimization_{context.operation_type}",
-                                    timestamp=time.time(),
-                                    reason=f"Token usage optimization: {suggestion['title']}",
-                                    expected_benefit=action["expected_reduction"],
-                                )
-                                adjustments.append(adjustment)
+                            # max_answer_charsをより厳格に設定（Serena削除により無効化）
+                            pass  # 削除: Serena未使用のため処理なし
 
         # 効率性スコアが低い場合の追加最適化
         efficiency_score = analysis_result.get("efficiency_score", 1.0)
@@ -579,31 +538,9 @@ class AdaptiveSettingsManager:
     def _adjust_max_answer_chars(
         self, context: WorkContext, pattern: Dict[str, Any]
     ) -> Optional[ConfigAdjustment]:
-        """max_answer_charsを調整"""
-        current_value = self.config.get("serena.max_answer_chars", 25000)
-
-        # コンテンツサイズに基づく調整
-        if context.content_size > 75000:
-            new_value = min(current_value, 35000)  # 大きなコンテンツは制限
-        elif context.content_size < 5000 and context.complexity_score < 0.3:
-            new_value = max(current_value, 20000)  # 小さく簡単なコンテンツは制限緩和
-        else:
-            return None
-
-        if new_value != current_value:
-            return ConfigAdjustment(
-                key="serena.max_answer_chars",
-                old_value=current_value,
-                new_value=new_value,
-                context=f"auto_adjust_{context.operation_type}",
-                timestamp=time.time(),
-                reason=(
-                    f"Content size: {context.content_size}, "
-                    f"complexity: {context.complexity_score:.2f}"
-                ),
-                expected_benefit=abs(new_value - current_value) / current_value * 0.15,
-            )
-        return None
+        """max_answer_charsを調整（Serena削除により無効化）"""
+        # current_value = self.config.get("serena.max_answer_chars", 25000)  # 削除: Serena未使用
+        return None  # Serena削除により常にNoneを返す
 
     def _adjust_recursion_depth(
         self, context: WorkContext, pattern: Dict[str, Any]
@@ -864,9 +801,9 @@ class AdaptiveSettingsManager:
         efficiency = base_efficiency * 0.4 + size_factor * 0.3 + complexity_factor * 0.3
         return cast(float, max(0.0, min(1.0, efficiency)))
 
-    def apply_learned_optimizations(self) -> List[ConfigAdjustment]:
+    def apply_learned_optimizations(self) -> List[Any]:
         """学習した最適化を適用"""
-        applied_adjustments = []
+        applied_adjustments: List[Any] = []
 
         learning_summary = self.learn_usage_patterns()
 
@@ -885,23 +822,23 @@ class AdaptiveSettingsManager:
     def _create_learned_adjustment(
         self, pattern: str, recommendation: Dict[str, Any]
     ) -> Optional[ConfigAdjustment]:
-        """学習基づく調整を作成"""
-        if recommendation["type"] == "max_answer_chars_reduction":
-            current_value = self.config.get("serena.max_answer_chars", 25000)
-            reduction_rate = min(recommendation["expected_improvement"], 0.3)
-            new_value = max(15000, int(current_value * (1 - reduction_rate)))
+        """学習基づく調整を作成（Serena削除により無効化）"""
+        # if recommendation["type"] == "max_answer_chars_reduction":
+        #     current_value = self.config.get("serena.max_answer_chars", 25000)  # 削除: Serena未使用
+        #     reduction_rate = min(recommendation["expected_improvement"], 0.3)
+        #     new_value = max(15000, int(current_value * (1 - reduction_rate)))
 
-            if new_value != current_value:
-                return ConfigAdjustment(
-                    key="serena.max_answer_chars",
-                    old_value=current_value,
-                    new_value=new_value,
-                    context=f"learned_optimization_{pattern}",
-                    timestamp=time.time(),
-                    reason=f"Pattern learning: {pattern}",
-                    expected_benefit=recommendation["expected_improvement"],
-                )
-        return None
+        #     if new_value != current_value:
+        #         return ConfigAdjustment(
+        #             key="serena.max_answer_chars",
+        #             old_value=current_value,
+        #             new_value=new_value,
+        #             context=f"learned_optimization_{pattern}",
+        #             timestamp=time.time(),
+        #             reason=f"Pattern learning: {pattern}",
+        #             expected_benefit=recommendation["expected_improvement"],
+        #         )
+        return None  # Serena削除により常にNoneを返す
 
     def get_learning_status(self) -> Dict[str, Any]:
         """学習システムの状況を取得"""

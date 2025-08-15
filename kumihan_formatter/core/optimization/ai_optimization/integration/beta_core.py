@@ -18,10 +18,11 @@ import numpy as np
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from ..autonomous.controller import AutonomousController
+# from ..autonomous.controller import AutonomousController  # 削除: 軽量化により除去
 from ..basic_ml_system import BasicMLSystem
 from ..learning.system import LearningSystem
-from ..prediction_engine import PredictionEngine
+
+# from ..prediction_engine import PredictionEngine  # 削除: 軽量化により除去
 
 warnings.filterwarnings("ignore")
 
@@ -81,9 +82,9 @@ class AlphaBetaCoordinator:
         self.alpha_system: Optional[BasicMLSystem] = None
 
         # Beta拡張参照
-        self.prediction_engine: Optional[PredictionEngine] = None
+        # self.prediction_engine: Optional[PredictionEngine] = None  # 削除: 軽量化により除去
         self.learning_system: Optional[LearningSystem] = None
-        self.autonomous_controller: Optional[AutonomousController] = None
+        self.autonomous_controller: Optional[Any] = None  # AutonomousController削除済み
 
         # 協調状態
         self.coordination_active = False
@@ -100,18 +101,18 @@ class AlphaBetaCoordinator:
     def initialize_systems(
         self,
         alpha_system: BasicMLSystem,
-        prediction_engine: Optional[PredictionEngine] = None,
+        # prediction_engine: Optional[PredictionEngine] = None,  # 削除: 軽量化により除去
         learning_system: Optional[LearningSystem] = None,
-        autonomous_controller: Optional[AutonomousController] = None,
+        autonomous_controller: Optional[Any] = None,  # AutonomousController削除済み
     ) -> None:
         """システム初期化"""
         try:
             # Alpha基盤設定
             self.alpha_system = alpha_system
 
-            # Beta拡張設定
-            if prediction_engine:
-                self.prediction_engine = prediction_engine
+            # Beta拡張設定（prediction_engine削除済み）
+            # if prediction_engine:
+            #     self.prediction_engine = prediction_engine
             if learning_system:
                 self.learning_system = learning_system
             if autonomous_controller:
@@ -133,7 +134,7 @@ class AlphaBetaCoordinator:
         try:
             # 利用可能システム確認
             alpha_available = self.alpha_system is not None
-            prediction_available = self.prediction_engine is not None
+            prediction_available = False  # prediction_engine削除済み
             learning_available = self.learning_system is not None
             autonomous_available = self.autonomous_controller is not None
 

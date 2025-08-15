@@ -18,7 +18,8 @@ from sklearn.model_selection import cross_val_score
 from kumihan_formatter.core.utilities.logger import get_logger
 
 from ..basic_ml_system import TrainingData
-from ..prediction_engine import EnsemblePredictionModel
+
+# from ..prediction_engine import EnsemblePredictionModel  # 削除: 軽量化により除去
 from .core import DataQualityManager
 from .pattern_engine import HyperparameterOptimizer, OnlineLearningEngine
 
@@ -64,7 +65,7 @@ class LearningSystem:
 
     def train_models_incrementally(
         self,
-        models: Dict[str, EnsemblePredictionModel],
+        models: Dict[str, Any],  # EnsemblePredictionModel削除済み
         new_training_data: TrainingData,
     ) -> Dict[str, Any]:
         """高度増分学習（リアルタイムモデル更新・学習効率最適化）"""
@@ -146,7 +147,9 @@ class LearningSystem:
             return {"training_success": False, "error": str(e)}
 
     def evaluate_model_performance(
-        self, models: Dict[str, EnsemblePredictionModel], validation_data: TrainingData
+        self,
+        models: Dict[str, Any],
+        validation_data: TrainingData,  # EnsemblePredictionModel削除済み
     ) -> Dict[str, Any]:
         """モデル性能高度評価（交差検証・統計的検定・過学習検出）"""
         try:
@@ -209,7 +212,7 @@ class LearningSystem:
 
     def optimize_hyperparameters(
         self,
-        models: Dict[str, EnsemblePredictionModel],
+        models: Dict[str, Any],  # EnsemblePredictionModel削除済み
         training_data: TrainingData,
         validation_data: Optional[TrainingData] = None,
     ) -> Dict[str, Any]:
@@ -273,7 +276,7 @@ class LearningSystem:
     def _evaluate_single_model(
         self,
         model_name: str,
-        model: EnsemblePredictionModel,
+        model: Any,  # EnsemblePredictionModel削除済み
         validation_data: TrainingData,
     ) -> Dict[str, Any]:
         """単一モデル評価"""
@@ -459,7 +462,7 @@ class LearningSystem:
 
     def _execute_automatic_adjustment(
         self,
-        models: Dict[str, EnsemblePredictionModel],
+        models: Dict[str, Any],  # EnsemblePredictionModel削除済み
         learning_result: Dict[str, Any],
     ) -> Dict[str, Any]:
         """自動調整実行"""
@@ -536,7 +539,7 @@ class LearningSystem:
 
     def _apply_optimized_hyperparameters(
         self,
-        models: Dict[str, EnsemblePredictionModel],
+        models: Dict[str, Any],  # EnsemblePredictionModel削除済み
         optimization_results: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Any]:
         """最適化ハイパーパラメータ適用"""

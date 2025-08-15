@@ -18,10 +18,11 @@ import numpy as np
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from ..autonomous.controller import AutonomousController
+# from ..autonomous.controller import AutonomousController  # 削除: 軽量化により除去
 from ..basic_ml_system import BasicMLSystem
 from ..learning.system import LearningSystem
-from ..prediction_engine import PredictionEngine
+
+# from ..prediction_engine import PredictionEngine  # 削除: 軽量化により除去
 from .beta_core import AlphaBetaCoordinator, IntegrationMetrics, IntegrationMode
 
 warnings.filterwarnings("ignore")
@@ -263,9 +264,9 @@ class PhaseB4BetaIntegrator:
 
         # システム参照
         self.alpha_system: Optional[BasicMLSystem] = None
-        self.prediction_engine: Optional[PredictionEngine] = None
+        # self.prediction_engine: Optional[PredictionEngine] = None  # 削除: 軽量化により除去
         self.learning_system: Optional[LearningSystem] = None
-        self.autonomous_controller: Optional[AutonomousController] = None
+        self.autonomous_controller: Optional[Any] = None  # AutonomousController削除済み
 
         # 統合状態
         self.integration_active = False
@@ -283,21 +284,24 @@ class PhaseB4BetaIntegrator:
     def initialize_systems(
         self,
         alpha_system: BasicMLSystem,
-        prediction_engine: Optional[PredictionEngine] = None,
+        # prediction_engine: Optional[PredictionEngine] = None,  # 削除: 軽量化により除去
         learning_system: Optional[LearningSystem] = None,
-        autonomous_controller: Optional[AutonomousController] = None,
+        autonomous_controller: Optional[Any] = None,  # AutonomousController削除済み
     ) -> None:
         """統合システム初期化"""
         try:
             # システム設定
             self.alpha_system = alpha_system
-            self.prediction_engine = prediction_engine
+            # self.prediction_engine = prediction_engine  # 削除: 軽量化により除去
             self.learning_system = learning_system
             self.autonomous_controller = autonomous_controller
 
             # 協調制御初期化
             self.alpha_beta_coordinator.initialize_systems(
-                alpha_system, prediction_engine, learning_system, autonomous_controller
+                alpha_system,
+                None,
+                learning_system,
+                autonomous_controller,  # prediction_engine=None
             )
 
             # 統合モード設定
