@@ -21,7 +21,7 @@ from kumihan_formatter.core.config.config_manager import EnhancedConfig
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
-    from .manager import AdaptiveSettingsManager, ConfigAdjustment
+    from .manager import AdaptiveSettingsManager
     from .optimizers import ContextAwareOptimizer, RealTimeConfigAdjuster
 
 
@@ -371,65 +371,47 @@ class LearningBasedOptimizer:
 
     def _apply_automatic_optimizations(
         self, proposals: List[Dict[str, Any]]
-    ) -> List["ConfigAdjustment"]:
+    ) -> List[Any]:  # ConfigAdjustment削除済み
         """自動最適化適用"""
-        from .manager import ConfigAdjustment
+        # from .manager import ConfigAdjustment  # 削除: Serena関連無効化
 
-        applied = []
+        applied: List[Any] = []
 
         for proposal in proposals:
             if proposal["auto_apply"] and proposal["confidence"] > 0.6:
 
-                # max_answer_chars調整
+                # max_answer_chars調整（Serena削除により無効化）
                 if proposal["type"] == "max_answer_chars_reduction":
-                    current_value = self.config.get("serena.max_answer_chars", 25000)
-                    new_value = max(15000, int(current_value * 0.8))  # 20%削減
-
-                    adjustment = ConfigAdjustment(
-                        key="serena.max_answer_chars",
-                        old_value=current_value,
-                        new_value=new_value,
-                        context=f"learning_based_auto_{proposal['pattern']}",
-                        timestamp=time.time(),
-                        reason=(
-                            f"LearningBasedOptimizer auto-optimization: "
-                            f"{proposal['expected_improvement']:.1%} expected"
-                        ),
-                        expected_benefit=proposal["expected_improvement"],
-                    )
-
-                    if self.adaptive_manager is not None:
-                        self.adaptive_manager._apply_adjustment(adjustment)
-                        applied.append(adjustment)
+                    pass  # 削除: Serena未使用のため処理なし
 
         return applied
 
     def _setup_ab_tests(self, proposals: List[Dict[str, Any]]) -> List[str]:
         """A/Bテスト設定"""
-        started_tests = []
+        started_tests: List[str] = []
 
-        for proposal in proposals:
-            if proposal["ab_test_candidate"] and self.ab_testing_enabled:
-                parameter = "serena.max_answer_chars"  # 簡易版では固定
+        # for proposal in proposals:
+        #     if proposal["ab_test_candidate"] and self.ab_testing_enabled:
+        #         parameter = "serena.max_answer_chars"  # 削除: Serena未使用
 
-                if proposal["type"] == "max_answer_chars_reduction":
-                    current_value = self.config.get(parameter, 25000)
-                    test_values = [
-                        current_value,
-                        int(current_value * 0.9),  # 10%削減
-                        int(current_value * 0.8),  # 20%削減
-                    ]
+        #         if proposal["type"] == "max_answer_chars_reduction":
+        #             current_value = self.config.get(parameter, 25000)
+        #             test_values = [
+        #                 current_value,
+        #                 int(current_value * 0.9),  # 10%削減
+        #                 int(current_value * 0.8),  # 20%削減
+        #             ]
 
-                    test_started = (
-                        self.adaptive_manager.run_simple_ab_test(
-                            parameter, test_values, sample_size=8
-                        )
-                        if self.adaptive_manager is not None
-                        else None
-                    )
+        #             test_started = (
+        #                 self.adaptive_manager.run_simple_ab_test(
+        #                     parameter, test_values, sample_size=8
+        #                 )
+        #                 if self.adaptive_manager is not None
+        #                 else None
+        #             )
 
-                    if test_started is not None:
-                        started_tests.append(parameter)
+        #             if test_started is not None:
+        #                 started_tests.append(parameter)
 
         return started_tests
 

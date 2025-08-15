@@ -28,7 +28,7 @@
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
 ### 🤖 Gemini活用指針
 - **明示的協業**: ユーザーが「Geminiと協業して」と指定すると自動実行
-- **オーケストレーション**: `python gemini_reports/claude_gemini_orchestrator.py` で協業実行
+- **オーケストレーション**: `claude-gemini-workflow-engine/` で協業実行
 - **品質保証徹底**: 3層検証（構文→品質→Claude承認）必須
 - **Token節約目標**: 90%以上（Claude使用を最小限に）
 - **📊 実行統計**: orchestration_log.json で履歴確認
@@ -105,7 +105,7 @@ make test       # pytest
 1. ユーザー要求受付
    ↓
 2. 👑 Claude: 要件分析・設計
-   python gemini_reports/claude_gemini_orchestrator.py --analyze "作業内容"
+   cd claude-gemini-workflow-engine && python src/workflow_engine/api/workflow_engine_api.py --analyze "作業内容"
    ↓
 3. 👑 Claude: 詳細作業指示書作成
    ↓

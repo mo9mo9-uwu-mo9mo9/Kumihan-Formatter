@@ -2,8 +2,7 @@
 Parser utility functions for JSON path processing and string manipulation.
 """
 
-import re
-from typing import List, Optional, Tuple
+from typing import List
 
 
 def extract_json_path(json_path: str) -> List[str]:

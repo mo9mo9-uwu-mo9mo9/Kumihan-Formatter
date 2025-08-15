@@ -1,12 +1,8 @@
-import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Union
 
-from kumihan_formatter.core.list_parser import ListParser, find_outermost_list
+from kumihan_formatter.core.list_parser import ListParser
 from kumihan_formatter.parser_utils import (
     extract_json_path,
-    find_closing_brace,
-    find_matching_quote,
-    is_valid_json_path_character,
     remove_quotes,
 )
 
@@ -250,7 +246,8 @@ class StreamingParser:
             if self.list_level == 0:
                 self.list_end = index
                 self._debug_print(
-                    f"Parsing list: {self.list_buffer}, start: {self.list_start}, end: {self.list_end}"
+                    f"Parsing list: {self.list_buffer}, "
+                    f"start: {self.list_start}, end: {self.list_end}"
                 )
 
                 if self._path_matches():
