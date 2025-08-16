@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-規則遵守原則絶対遵守システム - 心理的行動制御
-Claude's行動制御・心理的条件付け・監視システム（心理制御部分）
+行動制御・心理的条件付けシステム
+学習パターン・フィードバックループ・条件付け機能
 
-Created: 2025-08-04
-Updated: 2025-08-07 (Issue #813対応: monitoring.py分割)
-Purpose: CLAUDE.md 規則遵守原則の技術的強制実装（心理制御機能）
+Created: 2025-08-16 (分割元: rule_enforcement_system.py)
+Purpose: 行動制御メカニズムの分離・モジュール化
 Status: Production Ready
 """
 
@@ -13,10 +12,10 @@ import json
 import random
 import logging
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, TYPE_CHECKING
 
-# コア機能をインポート
-from .core import RuleEnforcementSystem
+if TYPE_CHECKING:
+    from .core_enforcement import RuleEnforcementSystem
 
 logger = logging.getLogger("RULE_COMPLIANCE_ENFORCEMENT")
 
@@ -27,7 +26,7 @@ class BehavioralControlLayer:
     規則遵守原則の完全内在化とserena-expert使用の心理的優位性確立
     """
 
-    def __init__(self, enforcement_system: RuleEnforcementSystem):
+    def __init__(self, enforcement_system: 'RuleEnforcementSystem'):
         self.enforcement = enforcement_system
         self.conditioning_patterns = self._init_conditioning_patterns()
         self.memory_patterns = self._init_memory_patterns()
@@ -310,3 +309,199 @@ class BehavioralControlLayer:
         base_impact = 25.0
         conditioning_bonus = self.behavioral_metrics['conditioning_strength'] * 0.3
         return min(100.0, base_impact + conditioning_bonus)
+
+
+class RuntimeBehaviorModifier:
+    """ランタイム行動修正システム
+
+    Claude実行時の動的行動パターン調整
+    """
+
+    def __init__(self, behavioral_control: BehavioralControlLayer):
+        self.behavioral_control = behavioral_control
+        self.active_modifications = {}
+        self.behavior_hooks = self._init_behavior_hooks()
+
+        logger.info("🔄 RuntimeBehaviorModifier: 動的行動修正システム初期化完了")
+
+    def _init_behavior_hooks(self) -> Dict[str, Any]:
+        """行動フック初期化"""
+        return {
+            'pre_tool_selection': [],
+            'post_tool_execution': [],
+            'decision_point_intervention': [],
+            'preference_adjustment': []
+        }
+
+    def install_behavior_modification(self, modification_type: str, parameters: Dict[str, Any]):
+        """行動修正インストール"""
+
+        modification_id = f"{modification_type}_{datetime.now().strftime('%H%M%S')}"
+
+        self.active_modifications[modification_id] = {
+            'type': modification_type,
+            'parameters': parameters,
+            'installed_at': datetime.now(),
+            'effectiveness': 0.0,
+            'activation_count': 0
+        }
+
+        logger.info(f"🔧 行動修正インストール: {modification_id}")
+        return modification_id
+
+    def apply_runtime_conditioning(self, tool_context: Dict[str, Any]) -> Dict[str, Any]:
+        """ランタイム条件付け適用"""
+
+        tool_name = tool_context.get('tool_name', '')
+        context = tool_context.get('context', '')
+
+        # 心理的処理実行
+        psychological_response = self.behavioral_control.process_tool_selection_psychology(
+            tool_name, context
+        )
+
+        # サブリミナル環境生成
+        subliminal_env = self.behavioral_control.generate_subliminal_environment()
+
+        # 動的修正適用
+        runtime_modifications = self._apply_active_modifications(tool_context)
+
+        combined_response = {
+            'psychological_conditioning': psychological_response,
+            'subliminal_environment': subliminal_env,
+            'runtime_modifications': runtime_modifications,
+            'behavioral_adjustment': self._calculate_behavioral_adjustment(psychological_response)
+        }
+
+        return combined_response
+
+    def _apply_active_modifications(self, tool_context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """アクティブ修正適用"""
+
+        applied_modifications = []
+
+        for mod_id, modification in self.active_modifications.items():
+            if self._should_apply_modification(modification, tool_context):
+                result = self._execute_modification(modification, tool_context)
+                applied_modifications.append({
+                    'modification_id': mod_id,
+                    'result': result
+                })
+
+                # 使用統計更新
+                modification['activation_count'] += 1
+                modification['effectiveness'] = self._calculate_modification_effectiveness(modification)
+
+        return applied_modifications
+
+    def _should_apply_modification(self, modification: Dict[str, Any], context: Dict[str, Any]) -> bool:
+        """修正適用判定"""
+
+        # 基本的な適用条件チェック
+        mod_type = modification['type']
+        tool_name = context.get('tool_name', '')
+
+        if mod_type == 'serena_preference_boost':
+            return not tool_name.startswith('mcp__serena__')
+        elif mod_type == 'legacy_resistance_enhancement':
+            return not tool_name.startswith('mcp__serena__')
+        elif mod_type == 'habit_reinforcement':
+            return True
+
+        return False
+
+    def _execute_modification(self, modification: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """修正実行"""
+
+        mod_type = modification['type']
+        parameters = modification['parameters']
+
+        if mod_type == 'serena_preference_boost':
+            return self._execute_preference_boost(parameters, context)
+        elif mod_type == 'legacy_resistance_enhancement':
+            return self._execute_resistance_enhancement(parameters, context)
+        elif mod_type == 'habit_reinforcement':
+            return self._execute_habit_reinforcement(parameters, context)
+
+        return {'status': 'unknown_modification_type'}
+
+    def _execute_preference_boost(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """選択傾向ブースト実行"""
+
+        boost_factor = parameters.get('boost_factor', 1.5)
+
+        # serena-expertツールへの心理的誘導強化
+        guidance_message = f"🎯 より効率的な手法として serena-expert ツールの使用を強く推奨します"
+
+        return {
+            'status': 'preference_boosted',
+            'boost_factor': boost_factor,
+            'guidance_message': guidance_message,
+            'psychological_impact': 'HIGH'
+        }
+
+    def _execute_resistance_enhancement(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """抵抗強化実行"""
+
+        resistance_factor = parameters.get('resistance_factor', 2.0)
+
+        # legacy toolに対する心理的抵抗強化
+        resistance_message = f"⚠️ この選択は開発品質基準に適合しない可能性があります"
+
+        return {
+            'status': 'resistance_enhanced',
+            'resistance_factor': resistance_factor,
+            'resistance_message': resistance_message,
+            'psychological_impact': 'HIGH'
+        }
+
+    def _execute_habit_reinforcement(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """習慣強化実行"""
+
+        reinforcement_strength = parameters.get('reinforcement_strength', 1.2)
+
+        return {
+            'status': 'habit_reinforced',
+            'reinforcement_strength': reinforcement_strength,
+            'habit_message': "この選択パターンが定着しています",
+            'psychological_impact': 'MEDIUM'
+        }
+
+    def _calculate_behavioral_adjustment(self, psychological_response: Dict[str, Any]) -> Dict[str, Any]:
+        """行動調整計算"""
+
+        psychological_state = psychological_response.get('psychological_state', 'NEUTRAL')
+
+        if psychological_state == 'POSITIVE_REINFORCED':
+            return {
+                'preference_adjustment': +15.0,
+                'confidence_boost': +10.0,
+                'satisfaction_increase': +20.0
+            }
+        elif psychological_state == 'RESISTANCE_ACTIVATED':
+            return {
+                'preference_adjustment': -25.0,
+                'discomfort_increase': +30.0,
+                'alternative_seeking': +40.0
+            }
+
+        return {
+            'preference_adjustment': 0.0,
+            'confidence_boost': 0.0,
+            'satisfaction_increase': 0.0
+        }
+
+    def _calculate_modification_effectiveness(self, modification: Dict[str, Any]) -> float:
+        """修正効果算出"""
+
+        activation_count = modification['activation_count']
+
+        # 基本効果は使用回数に比例
+        base_effectiveness = min(100.0, activation_count * 5.0)
+
+        # 時間減衰考慮
+        installed_at = modification['installed_at']
+        hours_since_install = (datetime.now() - installed_at).total_seconds() / 3600
+        time_decay = max(0.5, 1.0 - (hours_since_install * 0.01))
+
+        return base_effectiveness * time_decay
