@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-規則遵守原則絶対遵守システム - コア機能
-Claude's行動制御・ツール検証・自動是正システム（コア部分）
+規則遵守原則コアシステム
+基本的なツール検証・統計・違反記録機能
 
-Created: 2025-08-04
-Updated: 2025-08-07 (Issue #813対応: ファイル分割)
-Purpose: CLAUDE.md 規則遵守原則の技術的強制実装（コア機能）
+Created: 2025-08-16 (分割元: rule_enforcement_system.py)
+Purpose: コアな規則遵守機能の分離・モジュール化
 Status: Production Ready
 """
 
@@ -30,7 +29,7 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
-logger = logging.getLogger("RULE_COMPLIANCE_ENFORCEMENT")
+logger = logging.getLogger("RULE_ENFORCEMENT")
 
 
 class ViolationLevel(Enum):
@@ -184,10 +183,10 @@ class RuleEnforcementSystem:
         """
         logger.info(f"ツール使用検証開始: {tool_name}")
 
-        # serenaツールは常に許可
+        # serenaツールは基本推奨
         if tool_name in self.serena_tools:
             self._record_serena_usage(tool_name)
-            return True, f"✅ serena-expert使用：規則遵守原則完全遵守", None
+            return True, f"✅ serenaコマンド使用：効率的な構造化操作", None
 
         # 禁止ツールチェック
         if tool_name in self.forbidden_tools:
@@ -199,15 +198,19 @@ class RuleEnforcementSystem:
             # 置換提案
             suggested = self.replacement_mapping.get(tool_name)
             if suggested:
-                message = f"❌ 規則違反検出: {tool_name} → {suggested} に置換必須"
+                message = f"🚨 規則遵守原則違反検出！'{tool_name}'は禁止されています。'{suggested}'を使用してください"
+                logger.error(message)
                 return False, message, suggested
             else:
-                message = f"❌ 重大規則違反: {tool_name} 使用絶対禁止"
+                message = f"⛔ 規則遵守原則違反：'{tool_name}'は禁止されています。適切なツールを選択してください"
+                logger.error(message)
                 return False, message, None
 
-        # その他は警告付き許可
-        logger.warning(f"⚠️ 未分類ツール使用: {tool_name}")
-        return True, f"⚠️ 未分類ツール: {tool_name} (要注意)", None
+        # その他のツールは理由明記が推奨
+        logger.info(
+            f"ℹ️  '{tool_name}'使用：効率性または技術制約による選択を推奨（理由明記）"
+        )
+        return True, f"✅ '{tool_name}'使用許可（理由明記推奨）", None
 
     def _create_violation_event(
         self, tool_name: str, level: ViolationLevel, context: str
@@ -219,109 +222,117 @@ class RuleEnforcementSystem:
             violation_level=level,
             context=context,
             auto_corrected=False,
-            user_notified=False,
+            user_notified=True,
         )
 
     def _record_serena_usage(self, tool_name: str):
         """serena使用記録"""
         self.stats.serena_usage_count += 1
-        logger.info(f"✅ serena使用記録: {tool_name} (累計: {self.stats.serena_usage_count})")
         self._update_compliance_score()
+        logger.info(
+            f"✅ serena使用記録: {tool_name} (累計: {self.stats.serena_usage_count})"
+        )
 
     def _update_compliance_score(self):
         """コンプライアンススコア更新"""
-        total_attempts = self.stats.serena_usage_count + self.stats.forbidden_tool_attempts
+        total_attempts = (
+            self.stats.serena_usage_count + self.stats.forbidden_tool_attempts
+        )
         if total_attempts > 0:
-            compliance = (self.stats.serena_usage_count / total_attempts) * 100
-            self.stats.compliance_score = round(compliance, 2)
+            self.stats.compliance_score = (
+                self.stats.serena_usage_count / total_attempts
+            ) * 100.0
+        logger.info(f"📊 コンプライアンススコア: {self.stats.compliance_score:.1f}%")
 
-    def attempt_auto_correction(self, tool_name: str) -> Tuple[bool, str]:
+    def attempt_auto_correction(
+        self, forbidden_tool: str, context: str = ""
+    ) -> Tuple[bool, str, Optional[str]]:
         """自動是正試行"""
-        if not self.config.get("automatic_tool_replacement", {}).get("enabled", False):
-            return False, "自動是正機能が無効"
+        if (
+            not self.config.get("violation_response", {})
+            .get("auto_correction", {})
+            .get("enabled", False)
+        ):
+            return False, "自動是正は無効です", None
 
-        suggested = self.replacement_mapping.get(tool_name)
-        if suggested:
-            logger.info(f"🔄 自動是正実行: {tool_name} → {suggested}")
+        suggested_tool = self.replacement_mapping.get(forbidden_tool)
+        if suggested_tool:
             self.stats.auto_corrections += 1
-            return True, f"自動是正完了: {suggested} を使用してください"
-        return False, f"置換可能なserenaツールが見つかりません: {tool_name}"
+            correction_msg = f"🔄 自動是正実行: '{forbidden_tool}' → '{suggested_tool}'"
+            logger.info(correction_msg)
+            return True, correction_msg, suggested_tool
+
+        return False, f"'{forbidden_tool}'の自動是正ができません", None
 
     def generate_compliance_report(self) -> Dict[str, Any]:
         """コンプライアンスレポート生成"""
-        total_violations = len(self.violation_history)
-        recent_violations = [
-            v for v in self.violation_history
-            if (datetime.now() - v.timestamp).days <= 7
-        ]
-
         report = {
-            "generation_time": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),
             "compliance_score": self.stats.compliance_score,
             "statistics": {
                 "serena_usage_count": self.stats.serena_usage_count,
                 "forbidden_attempts": self.stats.forbidden_tool_attempts,
                 "auto_corrections": self.stats.auto_corrections,
-                "total_violations": total_violations,
-                "recent_violations": len(recent_violations),
+                "total_violations": len(self.violation_history),
             },
-            "violations": [
+            "recent_violations": [
                 {
                     "timestamp": v.timestamp.isoformat(),
-                    "tool": v.tool_name,
+                    "tool_name": v.tool_name,
                     "level": v.violation_level.value,
                     "context": v.context,
                 }
-                for v in recent_violations
+                for v in self.violation_history[-10:]  # 最新10件
             ],
             "recommendations": self._generate_recommendations(),
         }
 
-        logger.info(f"📊 コンプライアンスレポート生成完了 (スコア: {self.stats.compliance_score}%)")
+        logger.info("📋 コンプライアンスレポート生成完了")
         return report
 
     def _generate_recommendations(self) -> List[str]:
-        """改善提案生成"""
+        """改善推奨事項生成"""
         recommendations = []
 
-        if self.stats.compliance_score < 90:
-            recommendations.append(
-                "💡 コンプライアンススコアが低下しています。serena-expertツールの使用を推奨します"
-            )
+        if self.stats.compliance_score < 90.0:
+            recommendations.append("serenaコマンドの効率的活用と適切な理由明記を心がけてください")
 
-        if self.stats.forbidden_tool_attempts > 5:
-            recommendations.append(
-                "⚠️ 禁止ツール使用が多発しています。ツール選択の見直しが必要です"
-            )
+        if self.stats.forbidden_tool_attempts > 0:
+            recommendations.append("禁止ツールの使用を完全に停止してください")
 
-        if self.stats.serena_usage_count == 0:
-            recommendations.append(
-                "🚨 serenaツールが未使用です。規則遵守原則遵守のため即座に移行してください"
-            )
+        if len(self.violation_history) > 5:
+            recommendations.append("規則遵守原則の理解を深め、習慣化を図ってください")
+
+        if not recommendations:
+            recommendations.append("素晴らしい！規則遵守原則を完全に遵守しています")
 
         return recommendations
 
-    def save_report(self, report: Dict[str, Any], output_path: str = "tmp/rule_compliance_report.json"):
+    def save_report(self, report: Dict[str, Any], filename: str = None) -> str:
         """レポート保存"""
-        try:
-            # tmp/ディレクトリ作成
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"rule_compliance_report_{timestamp}.json"
 
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(report, f, indent=2, ensure_ascii=False)
-            logger.info(f"📁 コンプライアンスレポート保存完了: {output_path}")
-        except Exception as e:
-            logger.error(f"レポート保存エラー: {e}")
+        filepath = Path(filename)
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+
+        logger.info(f"📄 レポート保存完了: {filepath}")
+        return str(filepath)
 
     def display_startup_message(self):
         """起動メッセージ表示"""
-        print("\n" + "="*60)
-        print("🚨 規則遵守原則絶対遵守システム - アクティブ 🚨")
-        print("="*60)
-        print(f"📊 現在のコンプライアンススコア: {self.stats.compliance_score}%")
-        print(f"✅ serena使用回数: {self.stats.serena_usage_count}")
-        print(f"❌ 違反回数: {len(self.violation_history)}")
-        print(f"🔧 自動是正回数: {self.stats.auto_corrections}")
-        print("="*60)
-        print("💡 規則遵守原則: 全ての開発作業でserena-expertツールを使用すること")
-        print("="*60 + "\n")
+        startup_config = self.config.get("startup_message", "")
+        if startup_config:
+            print("\n" + "=" * 60)
+            print(startup_config)
+            print("=" * 60 + "\n")
+
+        # システム状態表示
+        print(f"🔧 システム状態:")
+        print(f"   - 禁止ツール監視: {len(self.forbidden_tools)}個")
+        print(f"   - serenaツール登録: {len(self.serena_tools)}個")
+        print(f"   - 自動置換マッピング: {len(self.replacement_mapping)}個")
+        print(f"   - コンプライアンススコア: {self.stats.compliance_score:.1f}%")
+        print()

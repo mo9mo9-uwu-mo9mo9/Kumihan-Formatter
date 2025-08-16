@@ -4,34 +4,38 @@
 Claude's行動制御・ツール検証・自動是正システム（統合インポート）
 
 Created: 2025-08-04
-Updated: 2025-08-07 (Issue #813対応: ファイル分割・統合インポート)
+Updated: 2025-08-16 (Issue #898対応: rule_enforcement_system.py 分割・リファクタリング)
 Purpose: CLAUDE.md 規則遵守原則の技術的強制実装（統合パッケージ）
 Status: Production Ready
 
 このパッケージは1417行のrule_enforcement_system.pyを以下に分割：
-- core.py: 規則遵守エンフォースメント本体（基本クラス・コア制御）
-- monitoring.py: 規則遵守監視・制御システム（行動制御・監視・レポート）
+- core_enforcement.py: 規則遵守エンフォースメント本体（基本クラス・コア制御）
+- behavioral_control.py: 行動制御・心理的条件付けシステム
+- integrated_system.py: 統合管理・レポート生成システム
 - __init__.py: 統合インポート（後方互換性維持）
 """
 
 # === コア機能インポート ===
-from .core import (
+from .core_enforcement import (
     # データクラスとEnum
     ViolationLevel,
     ToolCategory,
     ViolationEvent,
     ToolUsageStats,
     # メインシステム
-    RuleEnforcementSystem,
-    # ロガー
-    logger
+    RuleEnforcementSystem
 )
 
-# === 監視・制御機能インポート ===
-from .monitoring import (
+# === 行動制御機能インポート ===
+from .behavioral_control import (
     # 行動制御システム
     BehavioralControlLayer,
-    RuntimeBehaviorModifier,
+    RuntimeBehaviorModifier
+)
+
+# === 統合システム機能インポート ===
+from .integrated_system import (
+    # 統合システム
     IntegratedBehavioralControlSystem,
     BehavioralControlReportGenerator,
     # メイン実行関数
@@ -110,9 +114,10 @@ def show_system_info():
     print(f"👨‍💻 開発者: {__author__}")
     print("")
     print("📁 分割構成:")
-    print("  ├── core.py          - 規則遵守エンフォースメント本体")
-    print("  ├── monitoring.py    - 監視・制御システム")
-    print("  └── __init__.py      - 統合インポート")
+    print("  ├── core_enforcement.py  - 規則遵守エンフォースメント本体")
+    print("  ├── behavioral_control.py - 行動制御・心理的条件付けシステム")
+    print("  ├── integrated_system.py  - 統合管理・レポート生成システム")
+    print("  └── __init__.py           - 統合インポート")
     print("")
     print("🎯 使用例:")
     print("  from rule_enforcement import create_integrated_system")
