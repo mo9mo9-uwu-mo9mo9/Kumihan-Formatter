@@ -14,6 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 class PerformanceDemo:
     """パフォーマンス最適化のデモンストレーション"""
 
@@ -61,7 +62,7 @@ class PerformanceDemo:
 
         # ストリーミング処理シミュレーション
         chunk_size = 500
-        chunks = len(test_text.split('\n')) // chunk_size + 1
+        chunks = len(test_text.split("\n")) // chunk_size + 1
         chunk_memory = chunk_size * 100 / 1024 / 1024  # 推定
 
         print(f"ストリーミング処理:")
@@ -89,14 +90,16 @@ class PerformanceDemo:
         for size in sizes:
             # O(n²) vs O(n) のシミュレーション
             traditional_time = (size / 1000) ** 2 * 0.01  # O(n²)
-            optimized_time = (size / 1000) * 0.01          # O(n)
+            optimized_time = (size / 1000) * 0.01  # O(n)
 
             if optimized_time > 0:
                 improvement = traditional_time / optimized_time
             else:
                 improvement = 1
 
-            print(f"{size:,}\t{traditional_time:.2f}s\t\t{optimized_time:.2f}s\t\t{improvement:.1f}x")
+            print(
+                f"{size:,}\t{traditional_time:.2f}s\t\t{optimized_time:.2f}s\t\t{improvement:.1f}x"
+            )
 
         return improvement
 
@@ -112,7 +115,7 @@ class PerformanceDemo:
         traditional_ops = node_count * 2  # 文字列結合操作数
 
         # 最適化方式（リスト蓄積 + join）
-        optimized_ops = node_count + 1    # append操作 + 1回のjoin
+        optimized_ops = node_count + 1  # append操作 + 1回のjoin
 
         print(f"ノード数: {node_count:,}")
         print(f"従来方式操作数: {traditional_ops:,}")
@@ -131,6 +134,7 @@ class PerformanceDemo:
         print("=" * 50)
 
         import os
+
         cpu_count = os.cpu_count() or 4
 
         # シーケンシャル vs 並列の処理時間比較
@@ -170,7 +174,9 @@ class PerformanceDemo:
         print()
         print("ユーザー体験:")
         print(f"  最初の結果表示: {first_output_time}s")
-        print(f"  段階的更新間隔: {total_process_time / (total_nodes // buffer_size):.1f}s")
+        print(
+            f"  段階的更新間隔: {total_process_time / (total_nodes // buffer_size):.1f}s"
+        )
         print(f"  従来方式（一括表示）: {total_process_time}s 後")
 
         ux_improvement = total_process_time / first_output_time
@@ -197,7 +203,9 @@ class PerformanceDemo:
 
         # 10K行ファイル15秒以内目標の検証
         baseline_10k_time = 60.0  # 秒（従来）
-        optimized_10k_time = baseline_10k_time / complexity_improvement / parallel_improvement
+        optimized_10k_time = (
+            baseline_10k_time / complexity_improvement / parallel_improvement
+        )
 
         goal_15s = optimized_10k_time <= 15.0
         print(f"10K行ファイル処理時間:")
@@ -206,7 +214,7 @@ class PerformanceDemo:
         print(f"  15秒以内目標: {'✅ 達成' if goal_15s else '❌ 未達成'}")
 
         # メモリ66%削減目標
-        memory_reduction_percent = (1 - 1/memory_improvement) * 100
+        memory_reduction_percent = (1 - 1 / memory_improvement) * 100
         memory_goal = memory_reduction_percent >= 66.0
         print(f"\nメモリ使用量削減:")
         print(f"  削減率: {memory_reduction_percent:.1f}%")
@@ -242,7 +250,9 @@ class PerformanceDemo:
         print(f"  ⚡ アルゴリズム最適化: 計算複雑度 {complexity_improvement:.1f}x 改善")
         print(f"  🎨 HTML生成最適化: GC負荷 {html_improvement:.1f}x 軽減")
         print(f"  🚀 並列処理: 処理速度 {parallel_improvement:.1f}x 向上")
-        print(f"  📊 プログレッシブ出力: ユーザー体験 {progressive_improvement:.1f}x 改善")
+        print(
+            f"  📊 プログレッシブ出力: ユーザー体験 {progressive_improvement:.1f}x 改善"
+        )
 
         return {
             "memory_improvement": memory_improvement,
@@ -251,8 +261,9 @@ class PerformanceDemo:
             "parallel_improvement": parallel_improvement,
             "progressive_improvement": progressive_improvement,
             "goals_achieved": achieved_goals,
-            "total_goals": total_goals
+            "total_goals": total_goals,
         }
+
 
 def main():
     """メインデモ実行"""
@@ -264,12 +275,15 @@ def main():
     print(f"    • kumihan_formatter/parser.py - StreamingParser最適化")
     print(f"    • kumihan_formatter/core/rendering/main_renderer.py - HTML最適化")
     print(f"    • kumihan_formatter/core/utilities/parallel_processor.py - 並列処理")
-    print(f"    • kumihan_formatter/core/utilities/performance_metrics.py - 監視システム")
+    print(
+        f"    • kumihan_formatter/core/utilities/performance_metrics.py - 監視システム"
+    )
     print(f"  テストスクリプト:")
     print(f"    • scripts/performance_benchmark.py - 包括的ベンチマーク")
     print(f"    • scripts/test_performance_optimizations.py - 統合テスト")
 
     return 0 if results["goals_achieved"] == results["total_goals"] else 1
+
 
 if __name__ == "__main__":
     exit(main())

@@ -31,7 +31,9 @@ class RealisticContentGenerator:
 
     def generate_realistic_content(self) -> str:
         """実用的なKumihan記法30万文字コンテンツを生成"""
-        self.logger.info(f"Generating realistic content: target {self.target_chars} characters")
+        self.logger.info(
+            f"Generating realistic content: target {self.target_chars} characters"
+        )
 
         # 実用的なコンテンツテンプレート
         content_blocks = [
@@ -234,7 +236,9 @@ class FairPerformanceBenchmark:
         """現在のメモリ使用量を取得（MB）"""
         return self.process.memory_info().rss / 1024 / 1024
 
-    def benchmark_streaming_parser_optimized(self, content: str, runs: int = 5) -> Dict[str, Any]:
+    def benchmark_streaming_parser_optimized(
+        self, content: str, runs: int = 5
+    ) -> Dict[str, Any]:
         """StreamingParser最適化ベンチマーク"""
         self.logger.info(f"Benchmarking Optimized StreamingParser: {runs} runs")
 
@@ -274,7 +278,9 @@ class FairPerformanceBenchmark:
                 "characters_per_second": len(content) / duration if duration > 0 else 0,
                 "nodes_per_second": node_count / duration if duration > 0 else 0,
                 "memory_growth_mb": final_memory - initial_memory,
-                "error_count": len(parser.get_errors()) if hasattr(parser, "get_errors") else 0,
+                "error_count": (
+                    len(parser.get_errors()) if hasattr(parser, "get_errors") else 0
+                ),
             }
 
             results.append(run_result)
@@ -303,14 +309,18 @@ class FairPerformanceBenchmark:
             "median_duration": statistics.median(durations),
             "avg_chars_per_second": statistics.mean(char_rates),
             "avg_node_count": statistics.mean(node_counts),
-            "avg_memory_growth_mb": statistics.mean([r["memory_growth_mb"] for r in warm_results]),
+            "avg_memory_growth_mb": statistics.mean(
+                [r["memory_growth_mb"] for r in warm_results]
+            ),
             "total_errors": sum(r["error_count"] for r in results),
             "detailed_results": results,
         }
 
         return summary
 
-    def benchmark_traditional_parser(self, content: str, runs: int = 5) -> Dict[str, Any]:
+    def benchmark_traditional_parser(
+        self, content: str, runs: int = 5
+    ) -> Dict[str, Any]:
         """従来Parser公正ベンチマーク"""
         self.logger.info(f"Benchmarking Traditional Parser: {runs} runs")
 
@@ -374,7 +384,9 @@ class FairPerformanceBenchmark:
             "median_duration": statistics.median(durations),
             "avg_chars_per_second": statistics.mean(char_rates),
             "avg_node_count": statistics.mean(node_counts),
-            "avg_memory_growth_mb": statistics.mean([r["memory_growth_mb"] for r in warm_results]),
+            "avg_memory_growth_mb": statistics.mean(
+                [r["memory_growth_mb"] for r in warm_results]
+            ),
             "total_errors": 0,
             "detailed_results": results,
         }
@@ -386,7 +398,11 @@ class FairPerformanceBenchmark:
         self.logger.info("Simulating large file processing scenario")
 
         # 複数ファイル同時処理のシミュレーション
-        file_sizes = [len(content) // 4, len(content) // 2, len(content)]  # 異なるサイズ
+        file_sizes = [
+            len(content) // 4,
+            len(content) // 2,
+            len(content),
+        ]  # 異なるサイズ
         scenario_results = {}
 
         for i, size in enumerate(file_sizes):
@@ -413,7 +429,9 @@ class FairPerformanceBenchmark:
                 "streaming_nodes": len(streaming_nodes),
                 "traditional_nodes": len(traditional_nodes) if traditional_nodes else 0,
                 "speedup_ratio": (
-                    traditional_duration / streaming_duration if streaming_duration > 0 else 0
+                    traditional_duration / streaming_duration
+                    if streaming_duration > 0
+                    else 0
                 ),
             }
 
@@ -449,11 +467,15 @@ def main():
 
         # StreamingParserテスト
         print("\n🔄 StreamingParser 最適化ベンチマーク実行中...")
-        streaming_results = benchmark.benchmark_streaming_parser_optimized(test_content, runs=5)
+        streaming_results = benchmark.benchmark_streaming_parser_optimized(
+            test_content, runs=5
+        )
 
         # 従来Parserテスト
         print("\n🔄 Traditional Parser ベンチマーク実行中...")
-        traditional_results = benchmark.benchmark_traditional_parser(test_content, runs=5)
+        traditional_results = benchmark.benchmark_traditional_parser(
+            test_content, runs=5
+        )
 
         # シナリオテスト
         print("\n🔄 大容量ファイルシナリオテスト実行中...")
@@ -482,12 +504,16 @@ def main():
         print(f"  平均メモリ増加: {traditional_results['avg_memory_growth_mb']:.1f}MB")
 
         # 比較分析
-        speedup = traditional_results["avg_duration"] / streaming_results["avg_duration"]
+        speedup = (
+            traditional_results["avg_duration"] / streaming_results["avg_duration"]
+        )
         throughput_ratio = (
-            streaming_results["avg_chars_per_second"] / traditional_results["avg_chars_per_second"]
+            streaming_results["avg_chars_per_second"]
+            / traditional_results["avg_chars_per_second"]
         )
         memory_efficiency = (
-            traditional_results["avg_memory_growth_mb"] / streaming_results["avg_memory_growth_mb"]
+            traditional_results["avg_memory_growth_mb"]
+            / streaming_results["avg_memory_growth_mb"]
             if streaming_results["avg_memory_growth_mb"] > 0
             else 1.0
         )
@@ -508,7 +534,9 @@ def main():
         print(f"  総行数: {lines_count:,} 行")
         print(f"  1000行処理時間: {time_per_1000_lines:.3f}秒")
         print(f"  目標時間: {target_time}秒以内")
-        print(f"  要求達成: {'✅ 達成' if time_per_1000_lines <= target_time else '❌ 未達成'}")
+        print(
+            f"  要求達成: {'✅ 達成' if time_per_1000_lines <= target_time else '❌ 未達成'}"
+        )
 
         if time_per_1000_lines <= target_time:
             performance_factor = target_time / time_per_1000_lines
@@ -532,7 +560,9 @@ def main():
         print(f"\n🏅 総合評価: {'🌟 完全成功' if requirements_met else '⚠️ 部分成功'}")
 
         if requirements_met:
-            print("✅ Issue #694 大容量ファイル処理パフォーマンス最適化要件を満たしています。")
+            print(
+                "✅ Issue #694 大容量ファイル処理パフォーマンス最適化要件を満たしています。"
+            )
             print("✅ StreamingParserは実用レベルの性能を実現しています。")
         else:
             print("⚠️ 一部要件で改善の余地があります。")

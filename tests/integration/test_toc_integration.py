@@ -187,7 +187,9 @@ Conclusion section."""
 
         try:
             # Create temporary output file
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as tmp_output:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".html", delete=False
+            ) as tmp_output:
                 output_path = tmp_output.name
 
             # Process file
@@ -347,7 +349,9 @@ def example():
         for i in range(1, 51):  # 50 main sections
             large_text += f"# 見出し1 #Section {i}##\n\nContent for section {i}.\n\n"
             for j in range(1, 6):  # 5 subsections each
-                large_text += f"# 見出し2 #{i}.{j} Subsection##\n\nSubsection content.\n\n"
+                large_text += (
+                    f"# 見出し2 #{i}.{j} Subsection##\n\nSubsection content.\n\n"
+                )
 
         ast = self.parser.parse_text(large_text)
 

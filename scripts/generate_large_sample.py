@@ -10,26 +10,93 @@ from pathlib import Path
 
 # Kumihan記法の全キーワード（α-dev 対応）
 KEYWORDS = [
-    "太字", "イタリック", "下線", "取り消し線", "コード", "引用", "枠線", "ハイライト",
-    "見出し1", "見出し2", "見出し3", "見出し4", "見出し5",
-    "折りたたみ", "ネタバレ", "中央寄せ", "注意", "情報", "コードブロック"
+    "太字",
+    "イタリック",
+    "下線",
+    "取り消し線",
+    "コード",
+    "引用",
+    "枠線",
+    "ハイライト",
+    "見出し1",
+    "見出し2",
+    "見出し3",
+    "見出し4",
+    "見出し5",
+    "折りたたみ",
+    "ネタバレ",
+    "中央寄せ",
+    "注意",
+    "情報",
+    "コードブロック",
 ]
 
 # 色名（英単語30種）
 COLOR_NAMES = [
-    "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
-    "black", "white", "gray", "cyan", "magenta", "lime", "navy", "olive",
-    "maroon", "teal", "silver", "gold", "indigo", "violet", "coral", "salmon",
-    "khaki", "crimson", "azure", "beige", "turquoise", "lavender"
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "orange",
+    "purple",
+    "pink",
+    "brown",
+    "black",
+    "white",
+    "gray",
+    "cyan",
+    "magenta",
+    "lime",
+    "navy",
+    "olive",
+    "maroon",
+    "teal",
+    "silver",
+    "gold",
+    "indigo",
+    "violet",
+    "coral",
+    "salmon",
+    "khaki",
+    "crimson",
+    "azure",
+    "beige",
+    "turquoise",
+    "lavender",
 ]
 
 # 16進数カラーコード例
 HEX_COLORS = [
-    "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff",
-    "#ffa500", "#800080", "#ffc0cb", "#a52a2a", "#808080", "#000080",
-    "#008000", "#800000", "#008080", "#ffd700", "#4b0082", "#ee82ee",
-    "#ff7f50", "#fa8072", "#f0e68c", "#dc143c", "#f0ffff", "#f5f5dc",
-    "#40e0d0", "#e6e6fa", "#ffe4e1", "#dda0dd", "#98fb98", "#f0f8ff"
+    "#ff0000",
+    "#00ff00",
+    "#0000ff",
+    "#ffff00",
+    "#ff00ff",
+    "#00ffff",
+    "#ffa500",
+    "#800080",
+    "#ffc0cb",
+    "#a52a2a",
+    "#808080",
+    "#000080",
+    "#008000",
+    "#800000",
+    "#008080",
+    "#ffd700",
+    "#4b0082",
+    "#ee82ee",
+    "#ff7f50",
+    "#fa8072",
+    "#f0e68c",
+    "#dc143c",
+    "#f0ffff",
+    "#f5f5dc",
+    "#40e0d0",
+    "#e6e6fa",
+    "#ffe4e1",
+    "#dda0dd",
+    "#98fb98",
+    "#f0f8ff",
 ]
 
 # マーカー（半角・全角）
@@ -42,30 +109,31 @@ SAMPLE_TEXTS = {
         "データベースのインデックス戦略は、クエリパフォーマンスに直接影響します。",
         "マイクロサービスアーキテクチャでは、サービス間通信の最適化が鍵となります。",
         "クラウドネイティブな開発では、コンテナオーケストレーションの理解が必須です。",
-        "機械学習モデルのデプロイには、継続的インテグレーションが不可欠です。"
+        "機械学習モデルのデプロイには、継続的インテグレーションが不可欠です。",
     ],
     "trpg": [
         "古代遺跡の奥深くで、冒険者たちは光る宝石を発見した。",
         "ドラゴンの咆哮が響き渡り、パーティーは戦闘態勢に入る。",
         "謎めいた魔法使いが現れ、重要な情報を提供する。",
         "トラップが作動し、ダンジェンの構造が変化した。",
-        "最終ボスとの決戦が迫り、運命の時が訪れる。"
+        "最終ボスとの決戦が迫り、運命の時が訪れる。",
     ],
     "documentation": [
         "このマニュアルでは、基本的な操作方法について説明します。",
         "システム要件を満たしていることを事前に確認してください。",
         "設定ファイルの編集には管理者権限が必要です。",
         "トラブルシューティングガイドを参照して問題を解決してください。",
-        "定期的なバックアップの実行を強く推奨します。"
+        "定期的なバックアップの実行を強く推奨します。",
     ],
     "general": [
         "今日は良い天気ですね。散歩に出かけたくなります。",
         "新しい技術を学ぶことは、常に刺激的な体験です。",
         "チームワークの重要性は、どんなプロジェクトでも変わりません。",
         "創造性と論理性のバランスが、良いソリューションを生み出します。",
-        "継続的な改善こそが、成功への鍵だと考えています。"
-    ]
+        "継続的な改善こそが、成功への鍵だと考えています。",
+    ],
 }
+
 
 def get_random_color():
     """ランダムな色（英単語または16進数）を取得"""
@@ -74,10 +142,12 @@ def get_random_color():
     else:
         return random.choice(HEX_COLORS)
 
+
 def generate_inline_notation(keyword, content, use_color=False):
     """α-dev: インライン記法は廃止 - ブロック記法に統一"""
     # α-devではインライン記法は廃止、ブロック記法のみ使用
     return generate_block_notation(keyword, content, use_color)
+
 
 def generate_block_notation(keyword, content, use_color=False):
     """ブロック記法を生成"""
@@ -89,9 +159,12 @@ def generate_block_notation(keyword, content, use_color=False):
     else:
         return f"{marker}{keyword}{marker}\n{content}\n{marker}{marker}"
 
+
 def generate_complex_notation():
     """複雑な組み合わせ記法を生成"""
-    base_keywords = random.sample(KEYWORDS[:8], random.randint(2, 3))  # 装飾系キーワードから2-3個選択
+    base_keywords = random.sample(
+        KEYWORDS[:8], random.randint(2, 3)
+    )  # 装飾系キーワードから2-3個選択
     combined = "+".join(base_keywords)
     marker = random.choice(MARKERS)
     content = random.choice(SAMPLE_TEXTS["general"])
@@ -103,6 +176,7 @@ def generate_complex_notation():
     else:
         return f"{marker}{combined}{marker} {content}"
 
+
 def generate_table_of_contents():
     """目次セクションを生成"""
     sections = []
@@ -111,22 +185,31 @@ def generate_table_of_contents():
 
     for i in range(1, random.randint(8, 15)):
         level = random.randint(1, 3)
-        title = f"第{i}章 " + random.choice([
-            "システム概要", "基本操作", "応用機能", "トラブルシューティング",
-            "設定方法", "API リファレンス", "パフォーマンス最適化", "セキュリティ"
-        ])
+        title = f"第{i}章 " + random.choice(
+            [
+                "システム概要",
+                "基本操作",
+                "応用機能",
+                "トラブルシューティング",
+                "設定方法",
+                "API リファレンス",
+                "パフォーマンス最適化",
+                "セキュリティ",
+            ]
+        )
         marker = random.choice(MARKERS)
         sections.append(f"{marker}見出し{level}{marker} {title}")
 
         # サブセクション
         for j in range(1, random.randint(3, 6)):
-            sub_title = random.choice([
-                "概要", "詳細", "例", "注意事項", "設定", "使用方法"
-            ])
+            sub_title = random.choice(
+                ["概要", "詳細", "例", "注意事項", "設定", "使用方法"]
+            )
             sections.append(f"  {i}.{j} {sub_title}")
 
     sections.append("")
     return "\n".join(sections)
+
 
 def generate_trpg_scenario():
     """TRPGシナリオセクションを生成"""
@@ -138,7 +221,9 @@ def generate_trpg_scenario():
     sections.append("")
 
     # シナリオ概要
-    sections.append(f"{marker2}見出し2+ハイライト color={get_random_color()}{marker2} シナリオ概要")
+    sections.append(
+        f"{marker2}見出し2+ハイライト color={get_random_color()}{marker2} シナリオ概要"
+    )
     sections.append(f"{marker2}枠線{marker2}")
     sections.append("古代文明の遺跡で発見された謎の石版。")
     sections.append("それは世界の運命を左右する秘密を秘めていた。")
@@ -147,28 +232,37 @@ def generate_trpg_scenario():
 
     # キャラクター情報
     sections.append(f"{marker1}見出し2{marker1} 登場キャラクター")
-    for i, char in enumerate(["エリア（魔法使い）", "ガレス（戦士）", "リン（盗賊）"], 1):
+    for i, char in enumerate(
+        ["エリア（魔法使い）", "ガレス（戦士）", "リン（盗賊）"], 1
+    ):
         sections.append(f"{marker2}見出し3+太字{marker2} {char}")
         sections.append(f"- {marker2}太字{marker2} HP: {random.randint(80, 120)}")
-        sections.append(f"- {marker2}イタリック{marker2} 特技: {random.choice(['魔法詠唱', '剣術', '隠密'])}")
-        sections.append(f"- {marker2}ハイライト color={get_random_color()}{marker2} 装備: {random.choice(['魔法の杖', '銀の剣', '影の短剣'])}")
+        sections.append(
+            f"- {marker2}イタリック{marker2} 特技: {random.choice(['魔法詠唱', '剣術', '隠密'])}"
+        )
+        sections.append(
+            f"- {marker2}ハイライト color={get_random_color()}{marker2} 装備: {random.choice(['魔法の杖', '銀の剣', '影の短剣'])}"
+        )
         sections.append("")
 
     # イベント
     sections.append(f"{marker1}見出し2+枠線{marker1} 主要イベント")
     for i in range(1, 6):
-        event_title = random.choice([
-            "遺跡の入口", "謎解きの間", "モンスター遭遇", "宝物庫", "最終決戦"
-        ])
+        event_title = random.choice(
+            ["遺跡の入口", "謎解きの間", "モンスター遭遇", "宝物庫", "最終決戦"]
+        )
         sections.append(f"{marker2}見出し3{marker2} イベント{i}: {event_title}")
         sections.append(random.choice(SAMPLE_TEXTS["trpg"]))
 
         # ランダムで特殊効果を追加
         if random.choice([True, False]):
-            sections.append(f"{marker2}注意+ハイライト color=#ffe6e6{marker2} 判定が必要です！")
+            sections.append(
+                f"{marker2}注意+ハイライト color=#ffe6e6{marker2} 判定が必要です！"
+            )
         sections.append("")
 
     return "\n".join(sections)
+
 
 def generate_code_documentation():
     """コードドキュメントセクションを生成"""
@@ -203,7 +297,9 @@ def generate_code_documentation():
         sections.append("")
 
         # レスポンス例
-        sections.append(f"{marker}見出し4+ハイライト color={get_random_color()}{marker} レスポンス例")
+        sections.append(
+            f"{marker}見出し4+ハイライト color={get_random_color()}{marker} レスポンス例"
+        )
         sections.append(f"{marker}コードブロック{marker}")
         sections.append("{")
         sections.append('  "id": 1,')
@@ -215,12 +311,15 @@ def generate_code_documentation():
 
     return "\n".join(sections)
 
+
 def generate_mixed_content_section():
     """混在コンテンツセクションを生成"""
     sections = []
     marker = random.choice(MARKERS)
 
-    sections.append(f"{marker}見出し2+枠線+ハイライト color={get_random_color()}{marker} 混在記法の例")
+    sections.append(
+        f"{marker}見出し2+枠線+ハイライト color={get_random_color()}{marker} 混在記法の例"
+    )
     sections.append("")
 
     # 各種記法を混在させる
@@ -249,12 +348,15 @@ def generate_mixed_content_section():
 
     return "\n".join(sections)
 
+
 def generate_performance_test_patterns():
     """パフォーマンステスト特化パターンを生成"""
     sections = []
     marker = random.choice(MARKERS)
 
-    sections.append(f"{marker}見出し1+太字+ハイライト color=#f0f8ff{marker} パフォーマンステストパターン")
+    sections.append(
+        f"{marker}見出し1+太字+ハイライト color=#f0f8ff{marker} パフォーマンステストパターン"
+    )
     sections.append("")
 
     # 大量の短い記法
@@ -270,7 +372,7 @@ def generate_performance_test_patterns():
     sections.append(f"{marker}見出し2{marker} ネストパターン")
     for i in range(20):
         outer_keyword = random.choice(KEYWORDS[6:8])  # 枠線、ハイライト
-        inner_keyword = random.choice(KEYWORDS[:5])   # 装飾系
+        inner_keyword = random.choice(KEYWORDS[:5])  # 装飾系
         content = f"ネストテスト{i+1}: " + random.choice(SAMPLE_TEXTS["general"])
 
         sections.append(f"{marker}{outer_keyword}{marker}")
@@ -284,12 +386,13 @@ def generate_performance_test_patterns():
         content = f"色テスト: {color}"
         sections.append(f"{marker}ハイライト color={color}{marker} {content}")
 
-    for color in HEX_COLORS[:15]:   # 半分の16進数色
+    for color in HEX_COLORS[:15]:  # 半分の16進数色
         content = f"色テスト: {color}"
         sections.append(f"{marker}ハイライト color={color}{marker} {content}")
 
     sections.append("")
     return "\n".join(sections)
+
 
 def generate_large_sample_file():
     """大規模サンプルファイルを生成"""
@@ -309,7 +412,7 @@ def generate_large_sample_file():
         ("TRPGシナリオ", generate_trpg_scenario),
         ("技術ドキュメント", generate_code_documentation),
         ("混在コンテンツ", generate_mixed_content_section),
-        ("パフォーマンステストパターン", generate_performance_test_patterns)
+        ("パフォーマンステストパターン", generate_performance_test_patterns),
     ]
 
     # 各セクションを複数回生成して行数を稼ぐ
@@ -327,17 +430,19 @@ def generate_large_sample_file():
             content_sections.append("")  # セクション間の空行
 
             # 行数をカウント
-            current_lines += section_content.count('\n') + 2
+            current_lines += section_content.count("\n") + 2
 
             # プログレス表示用のコメント
             if current_lines % 1000 < 100:
                 marker = random.choice(MARKERS)
-                content_sections.append(f"{marker}情報{marker} 進行状況: 約{current_lines}行生成済み")
+                content_sections.append(
+                    f"{marker}情報{marker} 進行状況: 約{current_lines}行生成済み"
+                )
                 content_sections.append("")
 
     # 最終的な統計情報
     final_content = "\n".join(content_sections)
-    actual_lines = final_content.count('\n') + 1
+    actual_lines = final_content.count("\n") + 1
 
     # 統計情報を追加
     stats_section = f"""
@@ -355,12 +460,15 @@ def generate_large_sample_file():
 
     return final_content + stats_section
 
+
 def main():
     """メイン実行関数"""
     print("🚀 Kumihan記法 大規模サンプルファイル生成を開始...")
 
     # 出力ディレクトリを確保
-    output_dir = Path("/Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/performance")
+    output_dir = Path(
+        "/Users/m2_macbookair_3911/GitHub/Kumihan-Formatter/samples/performance"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # ファイル生成
@@ -371,12 +479,12 @@ def main():
     output_file = output_dir / "10_large_document_10k.txt"
     print(f"💾 ファイル保存中: {output_file}")
 
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(sample_content)
 
     # 結果報告
-    actual_lines = sample_content.count('\n') + 1
-    file_size = len(sample_content.encode('utf-8'))
+    actual_lines = sample_content.count("\n") + 1
+    file_size = len(sample_content.encode("utf-8"))
 
     print(f"✅ 生成完了!")
     print(f"📊 統計情報:")
@@ -386,6 +494,7 @@ def main():
     print(f"   - 使用キーワード: {len(KEYWORDS)}種類")
     print(f"   - 色パターン: {len(COLOR_NAMES + HEX_COLORS)}種類")
     print("🎯 パフォーマンステスト準備完了!")
+
 
 if __name__ == "__main__":
     main()

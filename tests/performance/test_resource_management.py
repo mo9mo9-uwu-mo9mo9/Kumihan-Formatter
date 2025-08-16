@@ -96,7 +96,9 @@ class ResourceManagementTest:
         total_requests = pool_stats["created_count"] + pool_stats["reused_count"]
 
         results["reuse_rate"] = (
-            (pool_stats["reused_count"] / total_requests * 100) if total_requests > 0 else 0
+            (pool_stats["reused_count"] / total_requests * 100)
+            if total_requests > 0
+            else 0
         )
         results["avg_operation_time_ms"] = (
             sum(operation_times) / len(operation_times) if operation_times else 0
@@ -113,7 +115,9 @@ class ResourceManagementTest:
         )
         return results
 
-    def test_resource_lifecycle_management(self, lifecycle_cycles: int = 100) -> Dict[str, Any]:
+    def test_resource_lifecycle_management(
+        self, lifecycle_cycles: int = 100
+    ) -> Dict[str, Any]:
         """
         リソースライフサイクル管理テスト
 
@@ -166,7 +170,11 @@ class ResourceManagementTest:
             # 状態チェック
             if resource.state not in ["created", "reset"]:
                 results["lifecycle_violations"].append(
-                    {"cycle": cycle, "resource_id": resource.id, "unexpected_state": resource.state}
+                    {
+                        "cycle": cycle,
+                        "resource_id": resource.id,
+                        "unexpected_state": resource.state,
+                    }
                 )
 
             # リソース使用
@@ -190,7 +198,9 @@ class ResourceManagementTest:
         )
         return results
 
-    def test_memory_pressure_response(self, memory_pressure_mb: float = 50.0) -> Dict[str, Any]:
+    def test_memory_pressure_response(
+        self, memory_pressure_mb: float = 50.0
+    ) -> Dict[str, Any]:
         """
         メモリ圧迫時の応答テスト
 
@@ -226,16 +236,24 @@ class ResourceManagementTest:
                 memory_consumers.append(data_chunk)
 
                 # メモリ状況記録
-                current_memory = self.memory_optimizer.get_memory_stats()["process_memory_mb"]
+                current_memory = self.memory_optimizer.get_memory_stats()[
+                    "process_memory_mb"
+                ]
                 memory_growth = current_memory - initial_memory
 
                 results["memory_samples"].append(
-                    {"step": step, "memory_mb": current_memory, "growth_mb": memory_growth}
+                    {
+                        "step": step,
+                        "memory_mb": current_memory,
+                        "growth_mb": memory_growth,
+                    }
                 )
 
                 # メモリ圧迫閾値チェック
                 if memory_growth >= memory_pressure_mb:
-                    self.logger.info(f"Memory pressure threshold reached at step {step}")
+                    self.logger.info(
+                        f"Memory pressure threshold reached at step {step}"
+                    )
 
                     # プロアクティブGC実行
                     gc_result = self.memory_optimizer.proactive_gc_strategy(
@@ -248,7 +266,9 @@ class ResourceManagementTest:
                                 "step": step,
                                 "pre_gc_memory_mb": current_memory,
                                 "memory_freed_mb": gc_result.get("memory_freed_mb", 0),
-                                "execution_time_ms": gc_result.get("execution_time_ms", 0),
+                                "execution_time_ms": gc_result.get(
+                                    "execution_time_ms", 0
+                                ),
                             }
                         )
 
@@ -262,7 +282,9 @@ class ResourceManagementTest:
         # 応答効果性計算
         if results["gc_triggers"]:
             total_freed = sum(gc["memory_freed_mb"] for gc in results["gc_triggers"])
-            total_pressure = max(sample["growth_mb"] for sample in results["memory_samples"])
+            total_pressure = max(
+                sample["growth_mb"] for sample in results["memory_samples"]
+            )
             results["response_effectiveness"] = (
                 (total_freed / total_pressure * 100) if total_pressure > 0 else 0
             )
@@ -360,7 +382,11 @@ class ResourceManagementTest:
                 except Exception as e:
                     thread_results["errors"] += 1
                     results["race_conditions"].append(
-                        {"thread_id": thread_id, "access_number": access, "error": str(e)}
+                        {
+                            "thread_id": thread_id,
+                            "access_number": access,
+                            "error": str(e),
+                        }
                     )
 
             results["thread_results"][thread_id] = thread_results
@@ -378,11 +404,13 @@ class ResourceManagementTest:
 
         # 結果集計
         results["total_accesses"] = sum(
-            thread_result["accesses"] for thread_result in results["thread_results"].values()
+            thread_result["accesses"]
+            for thread_result in results["thread_results"].values()
         )
 
         total_errors = sum(
-            thread_result["errors"] for thread_result in results["thread_results"].values()
+            thread_result["errors"]
+            for thread_result in results["thread_results"].values()
         )
 
         # 一貫性チェック
@@ -407,7 +435,9 @@ class TestResourceManagement:
     @pytest.mark.performance
     def test_resource_pool_basic_efficiency(self):
         """基本的なリソースプール効率性テスト"""
-        result = self.test_suite.test_resource_pool_efficiency(pool_size=10, operations=100)
+        result = self.test_suite.test_resource_pool_efficiency(
+            pool_size=10, operations=100
+        )
 
         # 検証条件
         assert result["reuse_rate"] > 50.0, "リソース再利用率が50%を下回りました"
@@ -420,7 +450,9 @@ class TestResourceManagement:
         result = self.test_suite.test_resource_lifecycle_management(lifecycle_cycles=50)
 
         # 検証条件
-        assert len(result["lifecycle_violations"]) == 0, "ライフサイクル違反が検出されました"
+        assert (
+            len(result["lifecycle_violations"]) == 0
+        ), "ライフサイクル違反が検出されました"
         assert result["resources_created"] > 0, "リソースが作成されていません"
 
     @pytest.mark.performance
@@ -466,7 +498,9 @@ if __name__ == "__main__":
     results.append(result3)
 
     print("4. 並行アクセス安全性テスト...")
-    result4 = test_suite.test_concurrent_resource_access_safety(thread_count=6, access_count=200)
+    result4 = test_suite.test_concurrent_resource_access_safety(
+        thread_count=6, access_count=200
+    )
     results.append(result4)
 
     # 結果サマリー

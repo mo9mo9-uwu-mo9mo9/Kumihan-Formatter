@@ -15,6 +15,7 @@ from typing import Generator, Any, Dict, List
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 class UltraLargeProcessor:
     """超大容量ファイル専用プロセッサー"""
 
@@ -49,11 +50,13 @@ class UltraLargeProcessor:
             end_time = time.time()
             final_memory = process.memory_info().rss / 1024 / 1024
 
-            result.update({
-                "processing_time": end_time - start_time,
-                "memory_used": final_memory - initial_memory,
-                "file_size_mb": file_size_mb
-            })
+            result.update(
+                {
+                    "processing_time": end_time - start_time,
+                    "memory_used": final_memory - initial_memory,
+                    "file_size_mb": file_size_mb,
+                }
+            )
 
             return result
 
@@ -67,7 +70,7 @@ class UltraLargeProcessor:
             ("ファイル読み込み", self._stage_file_reading),
             ("ストリーミング解析", self._stage_streaming_parse),
             ("最適化処理", self._stage_optimized_processing),
-            ("結果集約", self._stage_result_aggregation)
+            ("結果集約", self._stage_result_aggregation),
         ]
 
         context = {"file_path": file_path}
@@ -99,7 +102,7 @@ class UltraLargeProcessor:
 
         # ファイルの行数カウント（メモリ効率的）
         line_count = 0
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             for line in f:
                 line_count += 1
                 if line_count % 10000 == 0:
@@ -107,10 +110,7 @@ class UltraLargeProcessor:
 
         print(f"  総行数: {line_count:,}")
 
-        return {
-            "total_lines": line_count,
-            "file_reading_completed": True
-        }
+        return {"total_lines": line_count, "file_reading_completed": True}
 
     def _stage_streaming_parse(self, context: Dict) -> Dict[str, Any]:
         """ステージ2: ストリーミング解析"""
@@ -133,11 +133,13 @@ class UltraLargeProcessor:
                 processed_nodes += 1
                 if processed_nodes % 1000 == 0:
                     percent = (processed_nodes / total_lines) * 100
-                    print(f"  解析進捗: {processed_nodes:,}/{total_lines:,} ({percent:.1f}%)")
+                    print(
+                        f"  解析進捗: {processed_nodes:,}/{total_lines:,} ({percent:.1f}%)"
+                    )
 
             # チャンク単位でストリーミング処理
             chunk_count = 0
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 chunk_lines = []
 
                 for line_num, line in enumerate(f, 1):
@@ -145,15 +147,19 @@ class UltraLargeProcessor:
 
                     if len(chunk_lines) >= self.chunk_size or line_num == total_lines:
                         # チャンク処理
-                        chunk_text = ''.join(chunk_lines)
+                        chunk_text = "".join(chunk_lines)
 
                         try:
-                            chunk_nodes = list(parser.parse_streaming_from_text(chunk_text))
-                            parsed_chunks.append({
-                                "chunk_id": chunk_count,
-                                "nodes_count": len(chunk_nodes),
-                                "lines_count": len(chunk_lines)
-                            })
+                            chunk_nodes = list(
+                                parser.parse_streaming_from_text(chunk_text)
+                            )
+                            parsed_chunks.append(
+                                {
+                                    "chunk_id": chunk_count,
+                                    "nodes_count": len(chunk_nodes),
+                                    "lines_count": len(chunk_lines),
+                                }
+                            )
 
                         except Exception as e:
                             print(f"    チャンク{chunk_count}エラー: {str(e)}")
@@ -174,7 +180,7 @@ class UltraLargeProcessor:
                 "streaming_completed": True,
                 "total_chunks": len(parsed_chunks),
                 "total_nodes": total_nodes,
-                "parsed_chunks": parsed_chunks
+                "parsed_chunks": parsed_chunks,
             }
 
         except Exception as e:
@@ -195,13 +201,13 @@ class UltraLargeProcessor:
 
             # サンプルテキスト読み込み
             sample_lines = []
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 for i, line in enumerate(f):
                     if i >= sample_size:
                         break
                     sample_lines.append(line)
 
-            sample_text = ''.join(sample_lines)
+            sample_text = "".join(sample_lines)
 
             # 最適化パーサーテスト
             parser = Parser()
@@ -212,7 +218,7 @@ class UltraLargeProcessor:
             return {
                 "optimized_completed": True,
                 "sample_nodes": len(nodes),
-                "sample_size": sample_size
+                "sample_size": sample_size,
             }
 
         except Exception as e:
@@ -239,8 +245,9 @@ class UltraLargeProcessor:
             "aggregation_completed": True,
             "success_stages": success_stages,
             "success_rate": success_rate,
-            "processing_successful": success_stages >= 2  # 2段階以上成功で成功とみなす
+            "processing_successful": success_stages >= 2,  # 2段階以上成功で成功とみなす
         }
+
 
 def test_all_ultra_large_files():
     """全超大容量ファイルのテスト"""
@@ -254,7 +261,7 @@ def test_all_ultra_large_files():
     ultra_large_dir = project_root / "samples" / "ultra_large"
     test_files = [
         ultra_large_dir / "40_ultra_large_200k.txt",
-        ultra_large_dir / "41_ultra_large_300k.txt"
+        ultra_large_dir / "41_ultra_large_300k.txt",
     ]
 
     results = []
@@ -271,7 +278,7 @@ def test_all_ultra_large_files():
             print(f"❌ エラー: {result['error']}")
         else:
             print(f"✅ 処理完了: {result.get('processing_time', 0):.1f}秒")
-            if result.get('processing_successful'):
+            if result.get("processing_successful"):
                 print(f"🎉 処理成功: {result.get('success_rate', 0):.1f}%")
             else:
                 print(f"⚠️  部分成功: {result.get('success_rate', 0):.1f}%")
@@ -280,7 +287,7 @@ def test_all_ultra_large_files():
     print(f"\n🎯 総合評価")
     print("=" * 60)
 
-    successful_files = [r for r in results if r.get('processing_successful', False)]
+    successful_files = [r for r in results if r.get("processing_successful", False)]
 
     print(f"✅ 成功ファイル数: {len(successful_files)}/{len(results)}")
 
@@ -291,6 +298,7 @@ def test_all_ultra_large_files():
         print("⚠️  一部のファイルで課題が残っています")
         return False
 
+
 def main():
     """メイン実行"""
 
@@ -299,6 +307,7 @@ def main():
     print(f"\n🏁 超大容量ファイル処理テスト完了")
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

@@ -295,7 +295,9 @@ class TestAdaptiveSettingsManager:
         high_frequency_pattern = {"count": 15}
         manager.mock_config.get.return_value = False
 
-        adjustment = manager._adjust_template_caching(work_context, high_frequency_pattern)
+        adjustment = manager._adjust_template_caching(
+            work_context, high_frequency_pattern
+        )
 
         assert adjustment is not None
         assert adjustment.key == "cache.templates"
@@ -303,7 +305,9 @@ class TestAdaptiveSettingsManager:
 
         # 低頻度パターン - 調整なし
         low_frequency_pattern = {"count": 3}
-        adjustment = manager._adjust_template_caching(work_context, low_frequency_pattern)
+        adjustment = manager._adjust_template_caching(
+            work_context, low_frequency_pattern
+        )
 
         assert adjustment is None
 
@@ -476,7 +480,9 @@ class TestAdaptiveSettingsManager:
             ("optimization", 4),  # 全調整ルール適用
         ],
     )
-    def test_context_based_adjustments(self, manager, operation_type, expected_adjustments):
+    def test_context_based_adjustments(
+        self, manager, operation_type, expected_adjustments
+    ):
         """コンテキスト別調整テスト"""
         context = WorkContext(
             operation_type=operation_type,
@@ -663,7 +669,9 @@ class TestAdaptiveSettingsManagerIntegration:
         mock_token_analyzer = Mock()
 
         mock_file_optimizer.adjust_limits_dynamically.return_value = True
-        mock_file_optimizer.get_optimization_statistics.return_value = {"effectiveness_score": 0.8}
+        mock_file_optimizer.get_optimization_statistics.return_value = {
+            "effectiveness_score": 0.8
+        }
 
         mock_concurrent_limiter.get_concurrency_statistics.return_value = {
             "max_concurrent_calls": 5

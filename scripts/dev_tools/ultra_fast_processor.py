@@ -14,6 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def ultra_fast_test(file_path: Path) -> dict:
     """超高速テスト実行"""
 
@@ -30,7 +31,7 @@ def ultra_fast_test(file_path: Path) -> dict:
     # Step 1: 高速行数カウント
     print("📊 行数カウント中...")
     line_count = 0
-    with open(file_path, 'rb') as f:
+    with open(file_path, "rb") as f:
         for line in f:
             line_count += 1
 
@@ -42,13 +43,13 @@ def ultra_fast_test(file_path: Path) -> dict:
     sample_start = time.time()
 
     sample_lines = []
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             if i >= 1000:
                 break
             sample_lines.append(line)
 
-    sample_text = ''.join(sample_lines)
+    sample_text = "".join(sample_lines)
     sample_time = time.time() - sample_start
     print(f"  サンプル: {len(sample_lines)} 行読み込み ({sample_time:.3f}秒)")
 
@@ -84,15 +85,16 @@ def ultra_fast_test(file_path: Path) -> dict:
             "total_time": total_time,
             "memory_mb": current_memory,
             "estimated_full_time": estimated_full_time,
-            "processing_rate": line_count / total_time if total_time > 0 else 0
+            "processing_rate": line_count / total_time if total_time > 0 else 0,
         }
 
     except Exception as e:
         return {
             "error": f"解析エラー: {str(e)}",
             "file_size_mb": file_size_mb,
-            "line_count": line_count
+            "line_count": line_count,
         }
+
 
 def test_all_samples():
     """全サンプルファイルの高速テスト"""
@@ -105,7 +107,7 @@ def test_all_samples():
         ("基本", project_root / "samples" / "basic"),
         ("実用", project_root / "samples" / "practical"),
         ("パフォーマンス", project_root / "samples" / "performance"),
-        ("超大容量", project_root / "samples" / "ultra_large")
+        ("超大容量", project_root / "samples" / "ultra_large"),
     ]
 
     all_results = []
@@ -134,8 +136,10 @@ def test_all_samples():
             if "error" in result:
                 print(f"❌ {file_path.name}: {result['error']}")
             else:
-                print(f"✅ {file_path.name}: {result['line_count']:,}行 ({result['total_time']:.2f}秒)")
-                if result.get('estimated_full_time', 0) > 0:
+                print(
+                    f"✅ {file_path.name}: {result['line_count']:,}行 ({result['total_time']:.2f}秒)"
+                )
+                if result.get("estimated_full_time", 0) > 0:
                     print(f"   推定全体処理時間: {result['estimated_full_time']:.1f}秒")
 
         # カテゴリ間でメモリクリーンアップ
@@ -145,22 +149,22 @@ def test_all_samples():
     print(f"\n🎯 総合評価")
     print("=" * 60)
 
-    successful = [r for r in all_results if r.get('success', False)]
-    failed = [r for r in all_results if not r.get('success', False)]
+    successful = [r for r in all_results if r.get("success", False)]
+    failed = [r for r in all_results if not r.get("success", False)]
 
     print(f"✅ 成功: {len(successful)}/{len(all_results)} ファイル")
     print(f"❌ 失敗: {len(failed)} ファイル")
 
     if successful:
         # 超大容量ファイルの評価
-        ultra_large = [r for r in successful if r['category'] == '超大容量']
+        ultra_large = [r for r in successful if r["category"] == "超大容量"]
 
         if ultra_large:
             print(f"\n🔥 超大容量ファイル処理結果:")
             for result in ultra_large:
-                lines = result['line_count']
-                est_time = result.get('estimated_full_time', 0)
-                rate = result.get('processing_rate', 0)
+                lines = result["line_count"]
+                est_time = result.get("estimated_full_time", 0)
+                rate = result.get("processing_rate", 0)
 
                 print(f"  {result['file_name']}: {lines:,}行")
                 print(f"    推定処理時間: {est_time:.1f}秒")
@@ -175,7 +179,9 @@ def test_all_samples():
                     print(f"    評価: ❌ 非実用的")
 
         # 処理可能ファイル率
-        ultra_large_ok = len([r for r in ultra_large if r.get('estimated_full_time', 0) < 600])
+        ultra_large_ok = len(
+            [r for r in ultra_large if r.get("estimated_full_time", 0) < 600]
+        )
 
         print(f"\n📊 超大容量ファイル処理可能率:")
         print(f"  10分以内処理可能: {ultra_large_ok}/{len(ultra_large)} ファイル")
@@ -191,6 +197,7 @@ def test_all_samples():
         print("❌ 処理可能なファイルがありませんでした")
         return False
 
+
 def main():
     """メイン実行"""
 
@@ -199,6 +206,7 @@ def main():
     print(f"\n🏁 全サンプルファイル処理テスト完了")
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

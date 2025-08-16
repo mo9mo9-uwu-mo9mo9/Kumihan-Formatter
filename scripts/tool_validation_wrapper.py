@@ -95,7 +95,9 @@ class ToolInterceptor:
             self.violation_count += 1
             alternative = self.replacement_mapping.get(tool_name)
 
-            violation_msg = f"🚨 規則遵守原則違反検出！'{tool_name}'の使用は禁止されています"
+            violation_msg = (
+                f"🚨 規則遵守原則違反検出！'{tool_name}'の使用は禁止されています"
+            )
 
             if alternative:
                 suggestion_msg = f"代替ツール: '{alternative}' を使用してください"
@@ -160,7 +162,9 @@ class ToolInterceptor:
         if self.violation_count == 0:
             recommendations.append("素晴らしい！規則遵守原則を完全に遵守しました")
         elif self.violation_count <= 2:
-            recommendations.append("良好です。小さな改善で規則遵守原則完全遵守を達成できます")
+            recommendations.append(
+                "良好です。小さな改善で規則遵守原則完全遵守を達成できます"
+            )
         else:
             recommendations.append(
                 "規則遵守原則の理解を深め、serena-expertツールの習慣化を図ってください"

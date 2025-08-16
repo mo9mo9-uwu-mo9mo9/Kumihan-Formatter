@@ -14,6 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def sample_optimized_parsing():
     """最適化パーサーの使用例"""
     print("📝 最適化パーサーの使用例")
@@ -79,6 +80,7 @@ print(f"エラー数: {stats['errors_count']}")
 
     return sample_text
 
+
 def sample_streaming_processing():
     """ストリーミング処理の使用例"""
     print("\n🌊 ストリーミング処理の使用例")
@@ -123,6 +125,7 @@ print(f"メモリ使用量: {metrics['memory_usage_mb']:.1f}MB")
     print("  • リアルタイムプログレス表示")
     print("  • キャンセル機能付き")
 
+
 def sample_optimized_html_rendering():
     """最適化HTML生成の使用例"""
     print("\n🎨 最適化HTML生成の使用例")
@@ -160,6 +163,7 @@ print(f"エラー数: {metrics['graceful_errors_count']}")
     print("  • StringBuilder パターン適用")
     print("  • メソッドキャッシュによる高速化")
     print("  • エラー情報の効率的埋め込み")
+
 
 def sample_parallel_processing():
     """並列処理の使用例"""
@@ -212,6 +216,7 @@ print(f"CPUコア数: {metrics['cpu_count']}")
     print("  • 順序保証付き結果出力")
     print("  • エラー耐性強化")
 
+
 def sample_progressive_output():
     """プログレッシブ出力の使用例"""
     print("\n📊 プログレッシブ出力の使用例")
@@ -262,6 +267,7 @@ with ProgressiveOutputSystem(output_path, buffer_size) as progressive:
     print("  • 段階的HTML生成")
     print("  • 大容量ファイル処理の可視化")
     print("  • バッファ制御によるメモリ効率")
+
 
 def sample_performance_monitoring():
     """パフォーマンス監視の使用例"""
@@ -318,6 +324,7 @@ monitor.save_metrics_to_file(Path("performance_metrics.json"))
     print("  • エラー・警告件数")
     print("  • パフォーマンス履歴")
 
+
 def sample_benchmark_usage():
     """ベンチマークシステムの使用例"""
     print("\n🔬 ベンチマークシステムの使用例")
@@ -365,6 +372,7 @@ for test_name, test_data in results['tests'].items():
     print("  • Issue #727 目標達成評価")
     print("  • 詳細レポート生成")
 
+
 def main():
     """メインサンプル実行"""
     print("🚀 Kumihan-Formatter パフォーマンス最適化機能 使用例サンプル")
@@ -404,6 +412,7 @@ def main():
     print("4. 必要に応じて並列処理・プログレッシブ出力を活用")
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())

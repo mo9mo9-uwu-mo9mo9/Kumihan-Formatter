@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from ..basic_ml_system import TrainingData
+from ..ml_models import TrainingData
 
 warnings.filterwarnings("ignore")
 

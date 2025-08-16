@@ -1,7 +1,10 @@
 """Unit tests for Kumihan-Formatter footnote rendering system."""
 
 import pytest
-from kumihan_formatter.core.rendering.html_formatter import HTMLFormatter, FootnoteManager
+from kumihan_formatter.core.rendering.html_formatter import (
+    HTMLFormatter,
+    FootnoteManager,
+)
 from kumihan_formatter.core.utilities.logger import get_logger
 
 
@@ -133,7 +136,9 @@ class TestFootnoteManager:
 
         # 無効なデータ
         invalid_footnotes = [{"content": ""}]  # 空のコンテンツ
-        is_valid, errors = self.footnote_manager.validate_footnote_data(invalid_footnotes)
+        is_valid, errors = self.footnote_manager.validate_footnote_data(
+            invalid_footnotes
+        )
         assert not is_valid
         assert len(errors) > 0
 
@@ -221,7 +226,9 @@ class TestFootnoteErrorHandling:
         """エラーがある場合の安全なHTML生成テスト"""
         invalid_footnotes = [{"content": ""}]  # 無効なデータ
 
-        html, errors = self.footnote_manager.safe_generate_footnote_html(invalid_footnotes)
+        html, errors = self.footnote_manager.safe_generate_footnote_html(
+            invalid_footnotes
+        )
 
         assert html == ""  # エラー時は空文字列
         assert len(errors) > 0

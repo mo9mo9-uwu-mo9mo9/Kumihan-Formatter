@@ -25,7 +25,9 @@ class LongRunningMemoryTest:
         self.memory_optimizer = MemoryOptimizer(enable_gc_optimization=True)
         self.test_results: List[Dict[str, Any]] = []
 
-    def test_memory_stability_continuous(self, duration_minutes: int = 30) -> Dict[str, Any]:
+    def test_memory_stability_continuous(
+        self, duration_minutes: int = 30
+    ) -> Dict[str, Any]:
         """
         継続的メモリ安定性テスト
 
@@ -92,7 +94,9 @@ class LongRunningMemoryTest:
                     )
 
                 # プロアクティブGC実行
-                gc_result = self.memory_optimizer.proactive_gc_strategy(memory_threshold_mb=80.0)
+                gc_result = self.memory_optimizer.proactive_gc_strategy(
+                    memory_threshold_mb=80.0
+                )
                 if gc_result["gc_executed"]:
                     results["gc_runs"].append(
                         {
@@ -141,7 +145,9 @@ class LongRunningMemoryTest:
         Returns:
             Dict[str, Any]: テスト結果
         """
-        self.logger.info(f"Starting cyclic processing stability test for {cycles} cycles")
+        self.logger.info(
+            f"Starting cyclic processing stability test for {cycles} cycles"
+        )
 
         results = {
             "test_name": "cyclic_processing_stability",
@@ -183,7 +189,9 @@ class LongRunningMemoryTest:
 
             # 定期的なメモリチェック（100サイクルごと）
             if cycle % 100 == 0:
-                current_memory = self.memory_optimizer.get_memory_stats()["process_memory_mb"]
+                current_memory = self.memory_optimizer.get_memory_stats()[
+                    "process_memory_mb"
+                ]
                 memory_growth = current_memory - initial_memory
 
                 cycle_result = {
@@ -199,7 +207,9 @@ class LongRunningMemoryTest:
 
                 # メモリリーク検出
                 if memory_growth > 10.0:  # 10MB以上の増加
-                    leak_info = self.memory_optimizer.detect_memory_leaks(threshold_mb=5.0)
+                    leak_info = self.memory_optimizer.detect_memory_leaks(
+                        threshold_mb=5.0
+                    )
                     if leak_info["leak_detected"]:
                         results["memory_leak_detected"] = True
                         self.logger.warning(f"Memory leak detected at cycle {cycle}")
@@ -209,7 +219,9 @@ class LongRunningMemoryTest:
                 )
 
         # 平均サイクル時間計算
-        results["avg_cycle_time_ms"] = sum(cycle_times) / len(cycle_times) if cycle_times else 0
+        results["avg_cycle_time_ms"] = (
+            sum(cycle_times) / len(cycle_times) if cycle_times else 0
+        )
 
         self.logger.info(
             f"Cyclic processing test completed. Max memory growth: {results['max_memory_growth_mb']:.2f} MB"
@@ -278,7 +290,11 @@ class LongRunningMemoryTest:
                 except Exception as e:
                     errors += 1
                     results["errors"].append(
-                        {"thread_id": thread_id, "error": str(e), "timestamp": time.time()}
+                        {
+                            "thread_id": thread_id,
+                            "error": str(e),
+                            "timestamp": time.time(),
+                        }
                     )
 
             thread_results[thread_id] = {"operations": operations, "errors": errors}
@@ -372,11 +388,17 @@ class LongRunningMemoryTest:
 
             # テスト結果の成功/失敗判定
             if test_name == "continuous_memory_stability":
-                status_class = "pass" if test_result.get("stability_score", 0) > 70 else "warning"
-                status_text = f"安定性スコア: {test_result.get('stability_score', 0):.1f}"
+                status_class = (
+                    "pass" if test_result.get("stability_score", 0) > 70 else "warning"
+                )
+                status_text = (
+                    f"安定性スコア: {test_result.get('stability_score', 0):.1f}"
+                )
             elif test_name == "cyclic_processing_stability":
                 status_class = (
-                    "pass" if not test_result.get("memory_leak_detected", False) else "fail"
+                    "pass"
+                    if not test_result.get("memory_leak_detected", False)
+                    else "fail"
                 )
                 status_text = (
                     "メモリリーク検出なし"

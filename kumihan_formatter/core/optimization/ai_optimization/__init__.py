@@ -30,14 +30,16 @@ from .ai_optimizer_core import (
     OptimizationResult,
     PredictionResult,
 )
-from .basic_ml_system import (
-    BasicMLSystem,
-    FeatureEngineering,
+from .feature_engineering import FeatureEngineering
+from .ml_models import (
     ModelPerformance,
     PredictionRequest,
     PredictionResponse,
     TrainingData,
 )
+
+# 分割されたモジュールからインポート
+from .system import BasicMLSystem
 
 __all__ = [
     # Core AI Engine

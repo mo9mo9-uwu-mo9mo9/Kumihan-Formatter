@@ -225,12 +225,16 @@ class RuleEnforcementSystem:
     def _record_serena_usage(self, tool_name: str):
         """serena使用記録"""
         self.stats.serena_usage_count += 1
-        logger.info(f"✅ serena使用記録: {tool_name} (累計: {self.stats.serena_usage_count})")
+        logger.info(
+            f"✅ serena使用記録: {tool_name} (累計: {self.stats.serena_usage_count})"
+        )
         self._update_compliance_score()
 
     def _update_compliance_score(self):
         """コンプライアンススコア更新"""
-        total_attempts = self.stats.serena_usage_count + self.stats.forbidden_tool_attempts
+        total_attempts = (
+            self.stats.serena_usage_count + self.stats.forbidden_tool_attempts
+        )
         if total_attempts > 0:
             compliance = (self.stats.serena_usage_count / total_attempts) * 100
             self.stats.compliance_score = round(compliance, 2)
@@ -251,7 +255,8 @@ class RuleEnforcementSystem:
         """コンプライアンスレポート生成"""
         total_violations = len(self.violation_history)
         recent_violations = [
-            v for v in self.violation_history
+            v
+            for v in self.violation_history
             if (datetime.now() - v.timestamp).days <= 7
         ]
 
@@ -277,7 +282,9 @@ class RuleEnforcementSystem:
             "recommendations": self._generate_recommendations(),
         }
 
-        logger.info(f"📊 コンプライアンスレポート生成完了 (スコア: {self.stats.compliance_score}%)")
+        logger.info(
+            f"📊 コンプライアンスレポート生成完了 (スコア: {self.stats.compliance_score}%)"
+        )
         return report
 
     def _generate_recommendations(self) -> List[str]:
@@ -301,7 +308,11 @@ class RuleEnforcementSystem:
 
         return recommendations
 
-    def save_report(self, report: Dict[str, Any], output_path: str = "tmp/rule_compliance_report.json"):
+    def save_report(
+        self,
+        report: Dict[str, Any],
+        output_path: str = "tmp/rule_compliance_report.json",
+    ):
         """レポート保存"""
         try:
             # tmp/ディレクトリ作成
@@ -315,13 +326,13 @@ class RuleEnforcementSystem:
 
     def display_startup_message(self):
         """起動メッセージ表示"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🚨 規則遵守原則絶対遵守システム - アクティブ 🚨")
-        print("="*60)
+        print("=" * 60)
         print(f"📊 現在のコンプライアンススコア: {self.stats.compliance_score}%")
         print(f"✅ serena使用回数: {self.stats.serena_usage_count}")
         print(f"❌ 違反回数: {len(self.violation_history)}")
         print(f"🔧 自動是正回数: {self.stats.auto_corrections}")
-        print("="*60)
+        print("=" * 60)
         print("💡 規則遵守原則: 全ての開発作業でserena-expertツールを使用すること")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")

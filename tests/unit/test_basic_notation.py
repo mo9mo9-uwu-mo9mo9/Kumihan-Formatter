@@ -27,7 +27,11 @@ class TestBasicNotation:
     def test_inline_notation_deprecated_error(self):
         """Test that inline notation parsing works correctly in current implementation."""
         # 純粋なインライン記法のテスト（文中に埋め込まれたものではなく）
-        pure_inline_texts = ["#太字 コンテンツ#", "#見出し1 タイトル#", "#下線 強調テキスト#"]
+        pure_inline_texts = [
+            "#太字 コンテンツ#",
+            "#見出し1 タイトル#",
+            "#下線 強調テキスト#",
+        ]
 
         for text in pure_inline_texts:
             # 純粋なインライン記法は現在正常に動作することをテスト
@@ -35,7 +39,9 @@ class TestBasicNotation:
             is_new_format = self.parser.is_new_marker_format(text)
 
             # 現在の実装では両方ともTrueになるべき
-            assert is_new_format, f"インライン記法 '{text}' は現在サポートされているべきです"
+            assert (
+                is_new_format
+            ), f"インライン記法 '{text}' は現在サポートされているべきです"
             # インライン記法の場合、コンテンツが抽出される
             if inline_content:
                 assert (

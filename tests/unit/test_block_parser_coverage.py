@@ -21,7 +21,9 @@ from kumihan_formatter.core.block_parser.special_block_parser import SpecialBloc
 
 @pytest.mark.unit
 @pytest.mark.parser
-@pytest.mark.skipif(True, reason="BlockParser tests causing CI failures - skip for stable coverage")
+@pytest.mark.skipif(
+    True, reason="BlockParser tests causing CI failures - skip for stable coverage"
+)
 class TestBlockParserCoverage:
     """Block parser comprehensive coverage tests."""
 
@@ -150,7 +152,8 @@ class TestBlockParserCoverage:
 @pytest.mark.unit
 @pytest.mark.parser
 @pytest.mark.skipif(
-    True, reason="SpecialBlockParser tests causing CI failures - skip for stable coverage"
+    True,
+    reason="SpecialBlockParser tests causing CI failures - skip for stable coverage",
 )
 class TestSpecialBlockParserCoverage:
     """SpecialBlockParser coverage tests."""
@@ -231,7 +234,8 @@ class TestImageBlockParserCoverage:
 @pytest.mark.unit
 @pytest.mark.parser
 @pytest.mark.skipif(
-    True, reason="BlockParserEdgeCases tests causing CI failures - skip for stable coverage"
+    True,
+    reason="BlockParserEdgeCases tests causing CI failures - skip for stable coverage",
 )
 class TestBlockParserEdgeCases:
     """Block parser edge case tests."""

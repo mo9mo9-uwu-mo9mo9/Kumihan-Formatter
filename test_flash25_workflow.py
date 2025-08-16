@@ -12,6 +12,7 @@ sys.path.append(str(Path(__file__).parent / "postbox"))
 
 from workflow.dual_agent_coordinator import DualAgentCoordinator
 
+
 def test_flash25_system():
     """Flash 2.5対応システムの実証テスト"""
 
@@ -33,7 +34,7 @@ def test_flash25_system():
         target_files=[test_file],
         error_type="no-untyped-def",
         priority="high",
-        use_micro_tasks=True
+        use_micro_tasks=True,
     )
 
     print(f"✅ 作成されたタスク: {len(task_ids)}件")
@@ -57,9 +58,15 @@ def test_flash25_system():
 
     if claude_review.get("detailed_assessment"):
         assessment = claude_review["detailed_assessment"]
-        print(f"🔧 コード品質: {assessment.get('code_quality', {}).get('level', 'unknown')}")
-        print(f"📊 完了度: {assessment.get('completeness', {}).get('level', 'unknown')}")
-        print(f"⚠️ リスクレベル: {assessment.get('risk_evaluation', {}).get('level', 'unknown')}")
+        print(
+            f"🔧 コード品質: {assessment.get('code_quality', {}).get('level', 'unknown')}"
+        )
+        print(
+            f"📊 完了度: {assessment.get('completeness', {}).get('level', 'unknown')}"
+        )
+        print(
+            f"⚠️ リスクレベル: {assessment.get('risk_evaluation', {}).get('level', 'unknown')}"
+        )
 
     # 5. 推奨アクション表示
     if claude_review.get("recommendations"):
@@ -88,10 +95,13 @@ def test_flash25_system():
     # コスト追跡ファイルから最新のコスト情報を取得
     try:
         import json
+
         with open("postbox/monitoring/cost_tracking.json", "r") as f:
             cost_data = json.load(f)
 
-        latest_cost = cost_data["tasks"][-1]["estimated_cost"] if cost_data["tasks"] else 0
+        latest_cost = (
+            cost_data["tasks"][-1]["estimated_cost"] if cost_data["tasks"] else 0
+        )
         total_cost = cost_data["total_cost"]
 
         print(f"📊 今回のコスト: ${latest_cost:.4f}")
@@ -118,6 +128,7 @@ def test_flash25_system():
         print("🚨 システム改善が必要")
 
     return result
+
 
 if __name__ == "__main__":
     result = test_flash25_system()

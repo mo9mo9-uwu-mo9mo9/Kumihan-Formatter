@@ -20,6 +20,7 @@ import yaml
 @dataclass
 class ToolUsageRecord:
     """ツール使用記録"""
+
     timestamp: str
     tool_name: str
     tool_type: str  # 'serena', 'legacy', 'forbidden'
@@ -31,6 +32,7 @@ class ToolUsageRecord:
 @dataclass
 class ViolationAlert:
     """違反アラート"""
+
     timestamp: str
     tool_used: str
     expected_tool: str
@@ -51,11 +53,11 @@ class SerenaMonitoringSystem:
         # ログ設定
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[
                 logging.FileHandler(self.log_file),
-                logging.StreamHandler(sys.stdout)
-            ]
+                logging.StreamHandler(sys.stdout),
+            ],
         )
         self.logger = logging.getLogger("SerenaMonitor")
 
@@ -64,25 +66,47 @@ class SerenaMonitoringSystem:
 
         # 監視対象ツール定義
         self.serena_tools = {
-            'mcp__serena__find_symbol',
-            'mcp__serena__replace_symbol_body',
-            'mcp__serena__insert_after_symbol',
-            'mcp__serena__search_for_pattern',
-            'mcp__serena__get_symbols_overview',
-            'mcp__serena__replace_regex',
-            'mcp__serena__list_dir',
-            'mcp__serena__find_file'
+            "mcp__serena__find_symbol",
+            "mcp__serena__replace_symbol_body",
+            "mcp__serena__insert_after_symbol",
+            "mcp__serena__search_for_pattern",
+            "mcp__serena__get_symbols_overview",
+            "mcp__serena__replace_regex",
+            "mcp__serena__list_dir",
+            "mcp__serena__find_file",
         }
 
         self.forbidden_tools = {
-            'Edit', 'MultiEdit', 'Read', 'Write', 'Bash', 'Glob', 'Grep'
+            "Edit",
+            "MultiEdit",
+            "Read",
+            "Write",
+            "Bash",
+            "Glob",
+            "Grep",
         }
 
         # 開発タスク識別キーワード
         self.development_keywords = {
-            'implement', 'create', 'build', 'develop', 'code', 'component',
-            'function', 'class', 'method', 'api', 'endpoint', 'feature',
-            '実装', '作成', '開発', 'コンポーネント', '機能', 'クラス', 'メソッド'
+            "implement",
+            "create",
+            "build",
+            "develop",
+            "code",
+            "component",
+            "function",
+            "class",
+            "method",
+            "api",
+            "endpoint",
+            "feature",
+            "実装",
+            "作成",
+            "開発",
+            "コンポーネント",
+            "機能",
+            "クラス",
+            "メソッド",
         }
 
     def _load_config(self) -> Dict:
@@ -92,7 +116,7 @@ class SerenaMonitoringSystem:
             return self._default_config()
 
         try:
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, "r", encoding="utf-8") as f:
                 result = yaml.safe_load(f)
                 return result if result is not None else {}
         except Exception as e:
@@ -102,8 +126,8 @@ class SerenaMonitoringSystem:
     def _default_config(self) -> Dict:
         """デフォルト設定"""
         return {
-            'enforcement': {'level': 'strict', 'monitoring': True},
-            'mandatory_tools': {'development_tasks': 'serena-expert'}
+            "enforcement": {"level": "strict", "monitoring": True},
+            "mandatory_tools": {"development_tasks": "serena-expert"},
         }
 
     def is_development_task(self, context: str) -> bool:
@@ -114,28 +138,30 @@ class SerenaMonitoringSystem:
     def classify_tool(self, tool_name: str) -> str:
         """ツール分類"""
         if tool_name in self.serena_tools:
-            return 'serena'
+            return "serena"
         elif tool_name in self.forbidden_tools:
-            return 'forbidden'
+            return "forbidden"
         else:
-            return 'legacy'
+            return "legacy"
 
-    def check_tool_usage(self, tool_name: str, context: str = "") -> Tuple[bool, Optional[ViolationAlert]]:
+    def check_tool_usage(
+        self, tool_name: str, context: str = ""
+    ) -> Tuple[bool, Optional[ViolationAlert]]:
         """ツール使用チェック"""
         is_dev_task = self.is_development_task(context)
         tool_type = self.classify_tool(tool_name)
 
         # 開発タスクでserena以外のツール使用は違反
-        if is_dev_task and tool_type != 'serena':
-            severity = 'critical' if tool_type == 'forbidden' else 'warning'
+        if is_dev_task and tool_type != "serena":
+            severity = "critical" if tool_type == "forbidden" else "warning"
 
             violation = ViolationAlert(
                 timestamp=datetime.datetime.now().isoformat(),
                 tool_used=tool_name,
-                expected_tool='serena-expert (mcp__serena__*)',
+                expected_tool="serena-expert (mcp__serena__*)",
                 severity=severity,
                 message=f"🚨 規則遵守原則違反: 開発タスクでserena-expert以外のツール使用を検出",
-                auto_corrected=False
+                auto_corrected=False,
             )
 
             return True, violation
@@ -152,18 +178,20 @@ class SerenaMonitoringSystem:
             tool_type=self.classify_tool(tool_name),
             task_type=task_type,
             violation=is_violation,
-            context=context
+            context=context,
         )
 
         # 通常ログ
-        self.logger.info(f"Tool Usage: {tool_name} | Type: {record.tool_type} | Violation: {is_violation}")
+        self.logger.info(
+            f"Tool Usage: {tool_name} | Type: {record.tool_type} | Violation: {is_violation}"
+        )
 
         # 違反ログ
         if is_violation and violation_alert:
             self._log_violation(violation_alert)
 
             # 厳格モードでは即座に停止
-            if self.config.get('enforcement', {}).get('level') == 'strict':
+            if self.config.get("enforcement", {}).get("level") == "strict":
                 self._handle_strict_violation(violation_alert)
 
         return record
@@ -171,8 +199,8 @@ class SerenaMonitoringSystem:
     def _log_violation(self, violation: ViolationAlert):
         """違反ログ記録"""
         try:
-            with open(self.violation_log, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(asdict(violation), ensure_ascii=False) + '\n')
+            with open(self.violation_log, "a", encoding="utf-8") as f:
+                f.write(json.dumps(asdict(violation), ensure_ascii=False) + "\n")
 
             self.logger.error(f"🚨 VIOLATION: {violation.message}")
             self.logger.error(f"使用ツール: {violation.tool_used}")
@@ -183,9 +211,9 @@ class SerenaMonitoringSystem:
 
     def _handle_strict_violation(self, violation: ViolationAlert):
         """厳格違反処理"""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("🚨 CLAUDE.md 規則遵守原則違反検出 - 強制停止 🚨")
-        print("="*80)
+        print("=" * 80)
         print(f"違反ツール: {violation.tool_used}")
         print(f"期待ツール: {violation.expected_tool}")
         print(f"メッセージ: {violation.message}")
@@ -193,22 +221,22 @@ class SerenaMonitoringSystem:
         print("1. 現在の作業を中止")
         print("2. serena-expertツール (mcp__serena__*) に切り替え")
         print("3. CLAUDE.md 規則遵守原則を再確認")
-        print("="*80)
+        print("=" * 80)
 
         # 自動是正が有効な場合の提案
-        if self.config.get('enforcement', {}).get('auto_correction'):
+        if self.config.get("enforcement", {}).get("auto_correction"):
             print("\n🔧 推奨serena-expertツール:")
             self._suggest_serena_alternative(violation.tool_used)
 
     def _suggest_serena_alternative(self, used_tool: str):
         """Serena代替ツール提案"""
         suggestions = {
-            'Read': 'mcp__serena__find_symbol または mcp__serena__get_symbols_overview',
-            'Edit': 'mcp__serena__replace_symbol_body',
-            'MultiEdit': 'mcp__serena__replace_regex',
-            'Write': 'mcp__serena__insert_after_symbol',
-            'Grep': 'mcp__serena__search_for_pattern',
-            'Glob': 'mcp__serena__find_file'
+            "Read": "mcp__serena__find_symbol または mcp__serena__get_symbols_overview",
+            "Edit": "mcp__serena__replace_symbol_body",
+            "MultiEdit": "mcp__serena__replace_regex",
+            "Write": "mcp__serena__insert_after_symbol",
+            "Grep": "mcp__serena__search_for_pattern",
+            "Glob": "mcp__serena__find_file",
         }
 
         if used_tool in suggestions:
@@ -227,7 +255,9 @@ class SerenaMonitoringSystem:
             "config_file": str(self.config_file),
             "log_file": str(self.log_file),
             "violation_log": str(self.violation_log),
-            "enforcement_level": self.config.get('enforcement', {}).get('level', 'unknown')
+            "enforcement_level": self.config.get("enforcement", {}).get(
+                "level", "unknown"
+            ),
         }
 
 

@@ -454,7 +454,12 @@ class TestTokenUsageAnalyzer:
 
         # セッション最適化推奨が含まれることを確認
         session_rec = next(
-            (rec for rec in recommendations if rec["category"] == "session_optimization"), None
+            (
+                rec
+                for rec in recommendations
+                if rec["category"] == "session_optimization"
+            ),
+            None,
         )
         assert session_rec is not None
         assert session_rec["priority"] == "high"

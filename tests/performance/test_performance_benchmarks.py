@@ -151,11 +151,17 @@ class TestParsingPerformance:
 
         # Verify memory usage doesn't grow exponentially
         for i in range(1, len(memory_usage)):
-            ratio = memory_usage[i]["memory_delta"] / max(memory_usage[i - 1]["memory_delta"], 1)
-            size_ratio = memory_usage[i]["size_factor"] / memory_usage[i - 1]["size_factor"]
+            ratio = memory_usage[i]["memory_delta"] / max(
+                memory_usage[i - 1]["memory_delta"], 1
+            )
+            size_ratio = (
+                memory_usage[i]["size_factor"] / memory_usage[i - 1]["size_factor"]
+            )
 
             # Memory growth should be roughly linear with content size
-            assert ratio < size_ratio * 2, f"Memory usage growing too fast: {ratio} vs {size_ratio}"
+            assert (
+                ratio < size_ratio * 2
+            ), f"Memory usage growing too fast: {ratio} vs {size_ratio}"
 
     def test_parsing_time_complexity(self):
         """Test parsing time complexity."""
@@ -179,13 +185,21 @@ class TestParsingPerformance:
 
             avg_time = total_time / iterations
             timing_results.append(
-                {"size_factor": factor, "content_length": len(content), "avg_time": avg_time}
+                {
+                    "size_factor": factor,
+                    "content_length": len(content),
+                    "avg_time": avg_time,
+                }
             )
 
         # Verify time complexity is reasonable (should be roughly linear)
         for i in range(1, len(timing_results)):
-            time_ratio = timing_results[i]["avg_time"] / timing_results[i - 1]["avg_time"]
-            size_ratio = timing_results[i]["size_factor"] / timing_results[i - 1]["size_factor"]
+            time_ratio = (
+                timing_results[i]["avg_time"] / timing_results[i - 1]["avg_time"]
+            )
+            size_ratio = (
+                timing_results[i]["size_factor"] / timing_results[i - 1]["size_factor"]
+            )
 
             # Time should scale roughly linearly
             assert (
@@ -279,10 +293,14 @@ class TestValidationPerformance:
         assert isinstance(results, (list, dict))
 
         # Should complete within reasonable time (adjust threshold as needed)
-        assert metrics["duration"] < 30.0, f"Batch validation too slow: {metrics['duration']}s"
+        assert (
+            metrics["duration"] < 30.0
+        ), f"Batch validation too slow: {metrics['duration']}s"
 
         # Memory usage should be reasonable
-        assert metrics["memory_delta"] < 100 * 1024 * 1024, "Memory usage too high"  # 100MB limit
+        assert (
+            metrics["memory_delta"] < 100 * 1024 * 1024
+        ), "Memory usage too high"  # 100MB limit
 
     def test_concurrent_validation_simulation(self, temp_dir):
         """Simulate concurrent validation scenarios."""
@@ -361,7 +379,9 @@ class TestMemoryEfficiency:
 
         for i in range(1000):
             # Vary content slightly to prevent caching
-            varied_content = test_content.replace("メモリリークテスト", f"メモリリークテスト{i}")
+            varied_content = test_content.replace(
+                "メモリリークテスト", f"メモリリークテスト{i}"
+            )
 
             result = self.parser.parse(varied_content)
             errors = self.validator.validate_text(varied_content)
@@ -445,7 +465,9 @@ class TestScalabilityLimits:
 
             assert isinstance(errors, list)
             # Should complete within reasonable time even with deep nesting
-            assert processing_time < 10.0, f"Deep nesting processing too slow: {processing_time}s"
+            assert (
+                processing_time < 10.0
+            ), f"Deep nesting processing too slow: {processing_time}s"
 
         except RecursionError:
             pytest.fail("Stack overflow with nested structures")
@@ -478,7 +500,9 @@ class TestScalabilityLimits:
             processing_time = end_time - start_time
 
             # Should handle large content (allow generous time limit)
-            assert processing_time < 60.0, f"Large content processing too slow: {processing_time}s"
+            assert (
+                processing_time < 60.0
+            ), f"Large content processing too slow: {processing_time}s"
 
         except MemoryError:
             pytest.skip("Insufficient memory for large content test")
@@ -506,8 +530,12 @@ class TestScalabilityLimits:
 
         assert isinstance(errors, list)
         # Should handle many small notations efficiently
-        assert processing_time < 20.0, f"Many notations processing too slow: {processing_time}s"
+        assert (
+            processing_time < 20.0
+        ), f"Many notations processing too slow: {processing_time}s"
 
         # Time per notation should be reasonable
         time_per_notation = processing_time / notation_count
-        assert time_per_notation < 0.01, f"Time per notation too high: {time_per_notation}s"
+        assert (
+            time_per_notation < 0.01
+        ), f"Time per notation too high: {time_per_notation}s"

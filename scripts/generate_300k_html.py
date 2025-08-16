@@ -13,6 +13,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def generate_300k_html():
     """300K行ファイルのHTML生成"""
 
@@ -29,7 +30,7 @@ def generate_300k_html():
 
     # ファイル情報
     file_size_mb = file_path.stat().st_size / 1024 / 1024
-    with open(file_path, 'rb') as f:
+    with open(file_path, "rb") as f:
         line_count = sum(1 for _ in f)
 
     print(f"📄 ファイル情報:")
@@ -53,7 +54,7 @@ def generate_300k_html():
 
         # ファイル読み込み
         print("📖 ファイル読み込み中...")
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         read_time = time.time() - start_time
@@ -88,17 +89,17 @@ def generate_300k_html():
         # テンプレートマネージャーで完全なHTMLドキュメント生成
         template_manager = TemplateManager()
         html_content = template_manager.render_template(
-            'base.html.j2',
+            "base.html.j2",
             {
-                'title': '300K行ファイル出力',
-                'body_content': body_content,
-                'has_toc': False,
-                'css_vars': {},
-                'metadata': {
-                    'source_file': file_path.name,
-                    'generation_time': time.strftime('%Y-%m-%d %H:%M:%S')
-                }
-            }
+                "title": "300K行ファイル出力",
+                "body_content": body_content,
+                "has_toc": False,
+                "css_vars": {},
+                "metadata": {
+                    "source_file": file_path.name,
+                    "generation_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+                },
+            },
         )
 
         render_time = time.time() - render_start
@@ -110,7 +111,7 @@ def generate_300k_html():
 
         # HTML保存
         print("💾 HTMLファイル保存中...")
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         output_size_mb = output_path.stat().st_size / 1024 / 1024
@@ -134,6 +135,7 @@ def generate_300k_html():
         print(f"❌ 処理エラー: {str(e)}")
         return False
 
+
 def main():
     """メイン実行"""
 
@@ -142,6 +144,7 @@ def main():
     print(f"\n🏁 300K行ファイルHTML生成完了")
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

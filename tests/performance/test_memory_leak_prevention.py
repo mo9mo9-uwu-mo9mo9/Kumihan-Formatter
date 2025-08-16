@@ -66,7 +66,10 @@ class MemoryLeakDetector:
             growth_trend = self._calculate_memory_trend(recent_samples)
 
             if memory_growth > tolerance_mb:
-                return True, f"メモリ増加: {memory_growth:.1f}MB (許容値: {tolerance_mb}MB)"
+                return (
+                    True,
+                    f"メモリ増加: {memory_growth:.1f}MB (許容値: {tolerance_mb}MB)",
+                )
             elif growth_trend > 1.0:  # 1MB/sample以上の増加傾向
                 return True, f"メモリ増加傾向検出: {growth_trend:.2f}MB/iteration"
 
@@ -224,7 +227,9 @@ def test_long_running_processing():
         # メモリ記録
         memory_mb = detector.record_memory_usage(f"{size_kb}KB_file")
 
-        print(f"  完了: {len(nodes)}ノード, {end_time - start_time:.2f}秒, {memory_mb:.1f}MB")
+        print(
+            f"  完了: {len(nodes)}ノード, {end_time - start_time:.2f}秒, {memory_mb:.1f}MB"
+        )
 
         # リソースクリーンアップ
         del parser, nodes, test_content
@@ -344,7 +349,9 @@ def main():
             print(f"{test_name:12}: {status}")
             all_passed = all_passed and passed
 
-        print(f"\n総合結果: {'✅ 全テスト合格' if all_passed else '❌ 一部テスト不合格'}")
+        print(
+            f"\n総合結果: {'✅ 全テスト合格' if all_passed else '❌ 一部テスト不合格'}"
+        )
 
         if all_passed:
             print("Issue #694 メモリリーク防止要件を満たしています。")
