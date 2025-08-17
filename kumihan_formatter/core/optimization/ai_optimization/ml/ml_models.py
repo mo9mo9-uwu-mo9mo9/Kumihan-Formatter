@@ -1,6 +1,7 @@
 """具体的MLモデル実装"""
 
 import time
+from typing import Any
 
 import numpy as np
 
@@ -10,7 +11,7 @@ from .ml_base import BaseMLModel, PredictionResponse, TrainingData
 class TokenEfficiencyPredictor(BaseMLModel):
     """Token効率性予測モデル"""
 
-    def create_model(self) -> "RandomForestRegressor":
+    def create_model(self) -> Any:
         """RandomForest回帰モデル作成"""
         from sklearn.ensemble import RandomForestRegressor
 
@@ -123,7 +124,7 @@ class TokenEfficiencyPredictor(BaseMLModel):
 class UsagePatternClassifier(BaseMLModel):
     """使用パターン分類モデル"""
 
-    def create_model(self) -> "RandomForestClassifier":
+    def create_model(self) -> Any:
         """RandomForest分類モデル作成"""
         from sklearn.ensemble import RandomForestClassifier
 
@@ -234,7 +235,7 @@ class UsagePatternClassifier(BaseMLModel):
 class OptimizationRecommender(BaseMLModel):
     """最適化推奨システム"""
 
-    def create_model(self) -> "RandomForestClassifier":
+    def create_model(self) -> Any:
         """最適化推奨分類モデル作成"""
         from sklearn.ensemble import RandomForestClassifier
 
