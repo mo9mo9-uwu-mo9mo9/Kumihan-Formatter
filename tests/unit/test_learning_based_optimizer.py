@@ -22,7 +22,7 @@ from collections import deque
 from unittest.mock import Mock, patch, MagicMock
 from typing import Any, Dict, List
 
-from kumihan_formatter.core.optimization.settings.settings_optimizers import LearningBasedOptimizer
+from kumihan_formatter.core.config.optimization.settings_optimizers import LearningBasedOptimizer
 from kumihan_formatter.core.config.config_manager import EnhancedConfig
 
 
@@ -49,7 +49,7 @@ def mock_config():
 @pytest.fixture
 def mock_adaptive_manager():
     """モックされた AdaptiveSettingsManager"""
-    from kumihan_formatter.core.optimization.settings.manager import (
+    from kumihan_formatter.core.config.optimization.manager import (
         AdaptiveSettingsManager,
         ConfigAdjustment,
     )
@@ -224,7 +224,7 @@ class TestLearningBasedOptimizerLearningCycle:
             mock_integrate.return_value = {"integrated": "data"}
             mock_generate.return_value = [{"pattern": "test", "expected_improvement": 0.05}]
 
-            from kumihan_formatter.core.optimization.settings.manager import ConfigAdjustment
+            from kumihan_formatter.core.config.optimization.manager import ConfigAdjustment
 
             mock_adjustment = ConfigAdjustment(
                 key="test.key",
@@ -534,7 +534,7 @@ class TestLearningBasedOptimizerAutomaticOptimizations:
         with patch(
             "kumihan_formatter.core.optimization.settings.manager.ConfigAdjustment"
         ) as mock_config_adjustment_class:
-            from kumihan_formatter.core.optimization.settings.manager import ConfigAdjustment
+            from kumihan_formatter.core.config.optimization.manager import ConfigAdjustment
 
             mock_adjustment = ConfigAdjustment(
                 key="serena.max_answer_chars",
@@ -1065,7 +1065,7 @@ class TestLearningBasedOptimizerIntegration:
         with patch(
             "kumihan_formatter.core.optimization.settings.manager.ConfigAdjustment"
         ) as mock_adjustment:
-            from kumihan_formatter.core.optimization.settings.manager import ConfigAdjustment
+            from kumihan_formatter.core.config.optimization.manager import ConfigAdjustment
 
             mock_adj_instance = ConfigAdjustment(
                 key="serena.max_answer_chars",
@@ -1116,7 +1116,7 @@ class TestLearningBasedOptimizerIntegration:
         with patch(
             "kumihan_formatter.core.optimization.settings.manager.ConfigAdjustment"
         ) as mock_adjustment:
-            from kumihan_formatter.core.optimization.settings.manager import ConfigAdjustment
+            from kumihan_formatter.core.config.optimization.manager import ConfigAdjustment
 
             for i in range(3):
                 mock_adj_instance = ConfigAdjustment(

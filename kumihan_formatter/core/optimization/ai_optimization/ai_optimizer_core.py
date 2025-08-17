@@ -14,8 +14,8 @@ from typing import Any, Dict, List, Optional
 import joblib
 import numpy as np
 
+from kumihan_formatter.core.config.optimization.manager import AdaptiveSettingsManager
 from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
-from kumihan_formatter.core.optimization.settings.manager import AdaptiveSettingsManager
 
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger

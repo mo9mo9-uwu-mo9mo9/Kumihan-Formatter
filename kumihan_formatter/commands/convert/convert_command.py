@@ -168,7 +168,7 @@ class ConvertCommand:
         """エラー処理設定の初期化"""
         from pathlib import Path
 
-        from ...core.error_analysis.error_config import ErrorConfigManager
+        from ...core.error_handling.analysis.error_config import ErrorConfigManager
 
         error_config_manager = ErrorConfigManager(
             config_dir=Path(input_file).parent if input_file else Path.cwd()

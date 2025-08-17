@@ -8,11 +8,11 @@ from unittest.mock import Mock, patch
 import pytest
 
 from kumihan_formatter.core.common.error_base import GracefulSyntaxError
-from kumihan_formatter.core.error_analysis.correction_engine import (
+from kumihan_formatter.core.error_handling.analysis.correction_engine import (
     CorrectionEngine,
     CorrectionRule,
 )
-from kumihan_formatter.core.error_analysis.statistics_generator import (
+from kumihan_formatter.core.error_handling.analysis.statistics_generator import (
     ErrorStatistics,
     StatisticsGenerator,
 )
@@ -430,8 +430,8 @@ def sample_errors():
 
 def test_complete_advanced_error_workflow(sample_errors):
     """高度なエラーハンドリングの完全なワークフローテスト"""
-    from kumihan_formatter.core.error_analysis.correction_engine import CorrectionEngine
-    from kumihan_formatter.core.error_analysis.statistics_generator import (
+    from kumihan_formatter.core.error_handling.analysis.correction_engine import CorrectionEngine
+    from kumihan_formatter.core.error_handling.analysis.statistics_generator import (
         StatisticsGenerator,
     )
 

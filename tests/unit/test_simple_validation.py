@@ -112,10 +112,10 @@ class TestBasicInfrastructure:
 
     def test_imports_work(self):
         """Test that basic imports work."""
-        from kumihan_formatter.core.keyword_parsing.definitions import (
+        from kumihan_formatter.core.parsing.keyword.definitions import (
             KeywordDefinitions,
         )
-        from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+        from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 
         # Test basic instantiation
         definitions = KeywordDefinitions()
@@ -130,10 +130,10 @@ class TestBasicInfrastructure:
 
     def test_basic_method_availability(self):
         """Test that basic methods are available on key classes."""
-        from kumihan_formatter.core.keyword_parsing.definitions import (
+        from kumihan_formatter.core.parsing.keyword.definitions import (
             KeywordDefinitions,
         )
-        from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+        from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 
         definitions = KeywordDefinitions()
         parser = MarkerParser(definitions)

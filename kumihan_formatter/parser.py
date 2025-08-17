@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 # Import specialized handlers
 from .block_handler import BlockHandler
 from .core.ast_nodes import Node, error_node
-from .core.block_parser import BlockParser
 from .core.keyword_parser import KeywordParser
 from .core.list_parser import ListParser
+from .core.parsing.block import BlockParser
 from .core.utilities.logger import get_logger
 from .inline_handler import InlineHandler
 from .parallel_processor import ParallelProcessorHandler
@@ -176,7 +176,7 @@ class Parser:
 
         # 修正提案エンジン
         if graceful_errors:
-            from .core.error_analysis.correction_engine import CorrectionEngine
+            from .core.error_handling.analysis.correction_engine import CorrectionEngine
 
             self.correction_engine = CorrectionEngine()
             self.logger.info(

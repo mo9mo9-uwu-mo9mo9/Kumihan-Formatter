@@ -8,10 +8,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
-from kumihan_formatter.core.keyword_parsing.keyword_registry import KeywordRegistry
-from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
-from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
+from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+from kumihan_formatter.core.parsing.keyword.keyword_registry import KeywordRegistry
+from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
+from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
 
 
 # mypy: ignore-errors

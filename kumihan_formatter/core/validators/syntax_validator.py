@@ -6,10 +6,10 @@ and basic text structure.
 
 from typing import Any, Union
 
-from ..block_parser import BlockParser, BlockValidator
 from ..keyword_parser import KeywordParser
-from ..keyword_parsing.validator import KeywordValidator
 from ..list_parser import ListParser, ListValidator
+from ..parsing.block import BlockParser, BlockValidator
+from ..parsing.keyword.validator import KeywordValidator
 from .validation_issue import ValidationIssue
 
 
@@ -24,7 +24,7 @@ class SyntaxValidator:
         self.block_parser = BlockParser(self.keyword_parser)
 
         # Initialize specialized validators
-        from ..keyword_parsing.definitions import KeywordDefinitions
+        from ..parsing.keyword.definitions import KeywordDefinitions
 
         definitions = KeywordDefinitions()
         self.marker_validator = KeywordValidator(definitions)

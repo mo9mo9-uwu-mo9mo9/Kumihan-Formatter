@@ -106,7 +106,7 @@ class ElementRenderer:
 
         if keyword:
             # KeywordDefinitionsから設定を取得
-            from kumihan_formatter.core.keyword_parsing.definitions import (
+            from kumihan_formatter.core.parsing.keyword.definitions import (
                 KeywordDefinitions,
             )
 
@@ -316,7 +316,7 @@ class ElementRenderer:
         keyword = node.get_attribute("keyword")
         if keyword:
             # KeywordDefinitionsからspecial_handlerを確認
-            from kumihan_formatter.core.keyword_parsing.definitions import (
+            from kumihan_formatter.core.parsing.keyword.definitions import (
                 KeywordDefinitions,
             )
 

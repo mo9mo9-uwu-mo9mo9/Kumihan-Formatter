@@ -20,12 +20,12 @@ from collections import deque, defaultdict
 from typing import Any, Dict, List, Optional
 from statistics import mean
 
-from kumihan_formatter.core.optimization.settings.analyzers import (
+from kumihan_formatter.core.config.optimization.analyzers import (
     TokenUsageAnalyzer,
     ComplexityAnalyzer,
 )
 from kumihan_formatter.core.config.config_manager import EnhancedConfig
-from kumihan_formatter.core.optimization.settings.manager import WorkContext
+from kumihan_formatter.core.config.optimization.manager import WorkContext
 from kumihan_formatter.core.utilities.logger import get_logger
 
 

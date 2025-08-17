@@ -92,7 +92,7 @@ ui:
 ### 基本的な使用例
 
 ```python
-from kumihan_formatter.core.unified_config import get_unified_config_manager
+from kumihan_formatter.core.config.unified import get_unified_config_manager
 
 # 統一設定マネージャーの取得
 manager = get_unified_config_manager(
@@ -143,18 +143,18 @@ from kumihan_formatter.parser import ParallelProcessingConfig
 config = ParallelProcessingConfig()
 
 # 新コード（推奨）
-from kumihan_formatter.core.unified_config import get_unified_config_manager
+from kumihan_formatter.core.config.unified import get_unified_config_manager
 config = get_unified_config_manager().get_parallel_config()
 ```
 
 #### ErrorConfigManager
 ```python
 # 旧コード（非推奨）
-from kumihan_formatter.core.error_analysis.error_config import ErrorConfigManager
+from kumihan_formatter.core.error_handling.analysis.error_config import ErrorConfigManager
 manager = ErrorConfigManager()
 
 # 新コード（推奨）
-from kumihan_formatter.core.unified_config import get_unified_config_manager
+from kumihan_formatter.core.config.unified import get_unified_config_manager
 config = get_unified_config_manager().get_error_config()
 ```
 
@@ -165,7 +165,7 @@ from kumihan_formatter.config.base_config import BaseConfig
 config = BaseConfig()
 
 # 新コード（推奨）
-from kumihan_formatter.core.unified_config import get_unified_config_manager
+from kumihan_formatter.core.config.unified import get_unified_config_manager
 config = get_unified_config_manager().get_rendering_config()
 ```
 
