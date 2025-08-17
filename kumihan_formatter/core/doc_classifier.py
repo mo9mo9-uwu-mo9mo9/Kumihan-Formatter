@@ -28,7 +28,24 @@ class DocumentClassifier:
         Returns:
             DocumentType: 分類結果
         """
-        # TODO: implement path-based classification rules
+        # パスベース分類ルール実装
+        import os
+
+        ext = os.path.splitext(file_path.name)[1].lower()
+        # 拡張子による分類
+        if ext in [".md", ".markdown"]:
+            return (
+                DocumentType.MARKDOWN
+                if hasattr(DocumentType, "MARKDOWN")
+                else DocumentType.GENERAL
+            )
+        elif ext in [".txt"]:
+            return (
+                DocumentType.TEXT
+                if hasattr(DocumentType, "TEXT")
+                else DocumentType.GENERAL
+            )
+
         filename = file_path.name.lower()
         # ファイル名による直接マッチング（最高優先度）
         for doc_type, rules in self.classification_rules.items():

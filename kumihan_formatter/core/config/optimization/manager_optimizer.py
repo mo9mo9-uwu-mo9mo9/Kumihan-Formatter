@@ -462,7 +462,9 @@ class AdaptiveSettingsManagerOptimizer:
     ) -> Optional["ConfigAdjustment"]:
         """学習基づく調整を作成（Serena削除により無効化）"""
         # if recommendation["type"] == "max_answer_chars_reduction":
-        #     current_value = self.core.config.get("serena.max_answer_chars", 25000)  # 削除: Serena未使用
+        #     current_value = self.core.config.get(
+        #         "serena.max_answer_chars", 25000
+        #     )  # 削除: Serena未使用
         #     reduction_rate = min(recommendation["expected_improvement"], 0.3)
         #     new_value = max(15000, int(current_value * (1 - reduction_rate)))
 

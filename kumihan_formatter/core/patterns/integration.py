@@ -1,6 +1,6 @@
 """Pattern Integration System"""
 
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, Optional
 
 from .command import CommandProcessor
 from .decorator import DecoratorChain

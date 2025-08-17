@@ -4,9 +4,7 @@
 全Parser/Rendererが実装すべき統一プロトコルとエラーハンドリングを定義
 """
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -561,7 +559,8 @@ def create_parse_context(
     context = ParseContext(
         source_file=source_file, line_number=line_number, column_number=column_number
     )
-    context.config.update(kwargs)
+    if context.config is not None:
+        context.config.update(kwargs)
     return context
 
 

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple
 
-# 統一プロトコルインポート
+# 統一プロトコルインポート（重複定義を避けるため、純粋にtry-except分岐）
 try:
     from .parsing.base.parser_protocols import BaseParserProtocol as BaseProtocol
     from .parsing.base.parser_protocols import ListParserProtocol as ListProtocol
@@ -14,13 +14,13 @@ except ImportError:
     from dataclasses import dataclass
     from typing import Protocol
 
-    class BaseProtocol(Protocol):
+    class BaseProtocol(Protocol):  # type: ignore[no-redef]
         def parse(self, content: str, context: Any = None) -> Any: ...
         def validate(self, content: str, context: Any = None) -> List[str]: ...
         def get_parser_info(self) -> Dict[str, Any]: ...
         def supports_format(self, format_hint: str) -> bool: ...
 
-    class ListProtocol(Protocol):
+    class ListProtocol(Protocol):  # type: ignore[no-redef]
         def parse_list_items(self, content: str, context: Any = None) -> List[Any]: ...
 
         def parse_nested_list(
@@ -30,7 +30,7 @@ except ImportError:
         def get_list_nesting_level(self, line: str) -> int: ...
 
     @dataclass
-    class ParseResult:
+    class ParseResult:  # type: ignore[no-redef]
         success: bool
         nodes: List[Any]
         errors: List[str]
@@ -38,14 +38,14 @@ except ImportError:
         metadata: Dict[str, Any]
 
     @dataclass
-    class ParseContext:
+    class ParseContext:  # type: ignore[no-redef]
         source_file: Optional[str] = None
         line_number: int = 1
         column_number: int = 1
         parser_state: Optional[Dict[str, Any]] = None
         config: Optional[Dict[str, Any]] = None
 
-    class ParseError(Exception):
+    class ParseError(Exception):  # type: ignore[no-redef]
         pass
 
 
@@ -57,7 +57,7 @@ except ImportError:
         from .ast_nodes import Node
     except ImportError:
         # フォールバック実装
-        class Node:
+        class Node:  # type: ignore[no-redef]
             def __init__(
                 self,
                 type: str,
@@ -186,7 +186,7 @@ class ListParser:
                 )
             else:
                 # フォールバック: 辞書で返却
-                return {
+                return {  # type: ignore
                     "success": True,
                     "nodes": nodes,
                     "errors": [],
@@ -207,7 +207,7 @@ class ListParser:
                     metadata={"parser": "ListParser"},
                 )
             else:
-                return {
+                return {  # type: ignore
                     "success": False,
                     "nodes": [],
                     "errors": [f"List parsing failed: {str(e)}"],
@@ -494,7 +494,7 @@ def parse_list_string(input_string: str) -> List[Any]:
         List[Any]: 解析結果のリスト。
     """
     parser = ListParser()
-    return parser.parse(input_string)
+    return parser.parse(input_string)  # type: ignore
 
 
 def find_outermost_list(input_string: str) -> Tuple[int, int]:
@@ -525,7 +525,10 @@ def find_outermost_list(input_string: str) -> Tuple[int, int]:
 
     return start_index, end_index
 
-    # === 統一プロトコル実装: BaseParserProtocol ===
+
+# === 統一プロトコル実装: BaseParserProtocol ===
+class ListParserProtocol(ListParser):
+    """統一プロトコル対応ListParser"""
 
     def parse(
         self, content: str, context: Optional[ParseContext] = None
@@ -561,7 +564,7 @@ def find_outermost_list(input_string: str) -> Tuple[int, int]:
                 )
             else:
                 # フォールバック: 辞書で返却
-                return {
+                return {  # type: ignore
                     "success": True,
                     "nodes": nodes,
                     "errors": [],
@@ -582,7 +585,7 @@ def find_outermost_list(input_string: str) -> Tuple[int, int]:
                     metadata={"parser": "ListParser"},
                 )
             else:
-                return {
+                return {  # type: ignore
                     "success": False,
                     "nodes": [],
                     "errors": [f"List parsing failed: {str(e)}"],

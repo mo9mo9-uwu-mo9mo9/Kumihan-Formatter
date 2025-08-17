@@ -27,7 +27,11 @@ class ContentParser(BaseParser):
 
         # Basic footnote parsing implementation
         footnotes: List[Dict[str, Any]] = []
-        # TODO: Implement footnote parsing logic
+        # 脚注解析ロジック実装
+        footnote_pattern = re.compile(r"\[\^([^\]]+)\]")
+        matches = footnote_pattern.findall(text)
+        for match in matches:
+            footnotes.append({"id": match, "content": ""})
         return footnotes
 
     def extract_footnotes_from_text(self, text: Any) -> List[Dict[str, Any]]:
@@ -227,5 +231,8 @@ class ContentParser(BaseParser):
 
         # Basic sanitization
         sanitized = content.strip()
-        # TODO: Add more sophisticated sanitization if needed
+        # サニタイゼーション強化 - HTMLエスケープ追加
+        import html
+
+        sanitized = html.escape(sanitized, quote=True)
         return sanitized

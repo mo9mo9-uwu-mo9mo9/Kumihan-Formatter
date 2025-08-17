@@ -4,11 +4,11 @@ Issue #914: 既存ファクトリーファイルを新DIシステムに統合
 後方互換性を維持しながら段階的な移行を支援
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Optional, TypeVar
 
 from ..utilities.logger import get_logger
 from .dependency_injection import DIContainer, get_container
-from .factories import ServiceFactory, get_service_factory
+from .factories import get_service_factory
 
 logger = get_logger(__name__)
 
@@ -55,7 +55,6 @@ class LegacyFactoryAdapter:
                 create_file_path_utilities,
             )
             from ..file_path_utilities import FilePathUtilities
-            from ..file_protocol import UIProtocol
 
             # ファクトリー関数を使用してDIコンテナに登録
             def file_operations_factory(container: DIContainer) -> FileOperationsCore:
@@ -94,7 +93,7 @@ class LegacyFactoryAdapter:
     def _register_markdown_services(self) -> None:
         """マークダウン関連サービスの登録"""
         try:
-            from ..markdown_factory import MarkdownFactory, create_markdown_converter
+            from ..markdown_factory import MarkdownFactory
             from ..markdown_parser import MarkdownParser
             from ..markdown_processor import MarkdownProcessor
             from ..markdown_renderer import MarkdownRenderer
@@ -126,7 +125,6 @@ class LegacyFactoryAdapter:
     def _register_list_parser_services(self) -> None:
         """リストパーサー関連サービスの登録"""
         try:
-            from ..keyword_parser import KeywordParser
             from ..list_parser_core import ListParserCore
             from ..list_parser_factory import (
                 ListParserComponents,
@@ -136,6 +134,7 @@ class LegacyFactoryAdapter:
             )
             from ..list_validator import ListValidator
             from ..nested_list_parser import NestedListParser
+            from ..parsing.keyword.keyword_parser import KeywordParser
 
             # 依存関係を考慮したファクトリー関数
             def list_parser_factory(container: DIContainer) -> ListParserCore:

@@ -34,9 +34,9 @@ class RenderContext:
     """統一レンダリングコンテキスト - 全レンダラー共通入力情報"""
 
     output_format: str = "html"
-    options: Dict[str, Any] = None
+    options: Dict[str, Any] = None  # type: ignore
     theme: Optional[str] = None
-    metadata: Dict[str, Any] = None
+    metadata: Dict[str, Any] = None  # type: ignore
 
     def __post_init__(self) -> None:
         """初期化後処理 - デフォルト値設定"""
@@ -54,6 +54,7 @@ class RenderResult:
     content: str
     metadata: Dict[str, Any]
     warnings: List[str]
+    errors: Optional[List[str]] = None
 
     def __post_init__(self) -> None:
         """初期化後処理 - デフォルト値設定"""
@@ -61,10 +62,18 @@ class RenderResult:
             self.metadata = {}
         if self.warnings is None:
             self.warnings = []
+        if self.errors is None:
+            self.errors = []
 
     def add_warning(self, warning: str) -> None:
         """警告を追加"""
         self.warnings.append(warning)
+
+    def add_error(self, error: str) -> None:
+        """エラーを追加"""
+        if self.errors is not None:
+            self.errors.append(error)
+        self.success = False
 
     def has_warnings(self) -> bool:
         """警告があるかチェック"""

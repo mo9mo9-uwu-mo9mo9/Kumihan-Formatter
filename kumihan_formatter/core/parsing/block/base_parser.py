@@ -16,6 +16,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
     from ..base.parser_protocols import KeywordParserProtocol
+    from ..keyword.keyword_parser import KeywordParser
 else:
     try:
         from ..base.parser_protocols import KeywordParserProtocol

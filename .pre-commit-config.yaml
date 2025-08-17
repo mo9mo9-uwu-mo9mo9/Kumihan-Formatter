@@ -33,6 +33,14 @@ repos:
         pass_filenames: true
         description: "Automatically fix common flake8 errors (E501, E226, F401, E704, E702)"
 
+      - id: smart-memory-cleanup
+        name: Smart Memory Cleanup
+        entry: ./scripts/smart_cleanup.sh --quiet
+        language: system
+        files: '\.py$|\.md$|\.json$'
+        pass_filenames: false
+        description: "Smart memory cleanup with threshold check"
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

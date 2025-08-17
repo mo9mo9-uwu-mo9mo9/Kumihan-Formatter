@@ -16,9 +16,14 @@ from .operations import FileOperations
 from .protocols import FileProtocol, PathProtocol
 from .validators import FileValidator, PathValidator
 
-# Distribution機能 (Issue #913 移行)
+# Distribution機能 (Issue #913 移行) - 明示的インポートに変更
 try:
-    from .distribution import *
+    from .distribution import (
+        DistributionConverter,
+        DistributionManager,
+        DistributionProcessor,
+        DistributionStructure,
+    )
 except ImportError:
     pass
 
@@ -29,4 +34,9 @@ __all__ = [
     "PathProtocol",
     "FileValidator",
     "PathValidator",
+    # Distribution機能
+    "DistributionStructure",
+    "DistributionConverter",
+    "DistributionProcessor",
+    "DistributionManager",
 ]

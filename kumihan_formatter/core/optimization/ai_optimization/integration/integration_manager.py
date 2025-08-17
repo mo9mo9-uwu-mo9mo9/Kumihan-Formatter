@@ -265,7 +265,7 @@ class PhaseB4BetaIntegrator:
 
         # システム参照
         self.alpha_system: Optional[BasicMLSystem] = None
-        # self.prediction_engine: Optional[PredictionEngine] = None  # 削除: 軽量化により除去
+        self.prediction_engine: Optional[Any] = None  # 軽量化により型をAnyに変更
         self.learning_system: Optional[LearningSystem] = None
         self.autonomous_controller: Optional[Any] = None  # AutonomousController削除済み
 

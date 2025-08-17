@@ -220,7 +220,7 @@ def show_migration_guide() -> None:
 
 【旧システム】
 from kumihan_formatter.core.parsing.block import BlockParser
-from kumihan_formatter.core.keyword_parser import KeywordParser
+from kumihan_formatter.core.parsing.keyword.keyword_parser import KeywordParser
 
 【新システム】
 from kumihan_formatter.core.parsing import (

@@ -5,7 +5,7 @@ Issue #914 Phase 3: パーサー・レンダラー共通のイベント発行機
 
 import functools
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from ..patterns.event_bus import ExtendedEventType, get_event_bus, publish_event
 from ..utilities.logger import get_logger

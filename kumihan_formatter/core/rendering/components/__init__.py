@@ -1,0 +1,15 @@
+"""MainRenderer委譲コンポーネント群
+
+Issue #912 Renderer系統合リファクタリング対応
+main_renderer.py巨大ファイル分割による委譲コンポーネント
+"""
+
+from .content_processor_delegate import ContentProcessorDelegate
+from .element_renderer_delegate import ElementRendererDelegate
+from .output_formatter_delegate import OutputFormatterDelegate
+
+__all__ = [
+    "ElementRendererDelegate",
+    "ContentProcessorDelegate",
+    "OutputFormatterDelegate",
+]

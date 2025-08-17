@@ -6,7 +6,7 @@ including block validation, keyword validation, and line-by-line checking.
 
 from pathlib import Path
 
-from ..error_analysis.error_config import ErrorHandlingLevel
+from ..error_handling.analysis.error_config import ErrorHandlingLevel
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
 
 # from .syntax_rules import SyntaxRules  # 下部で再定義されているため削除

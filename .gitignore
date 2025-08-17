@@ -216,4 +216,3 @@ tmp/**/*.db
 logs/*.log
 logs/*.log.*
 *.log.[0-9]*
-

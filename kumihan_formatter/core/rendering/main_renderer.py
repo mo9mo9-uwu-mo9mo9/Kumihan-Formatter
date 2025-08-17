@@ -7,7 +7,7 @@ Renderer系統合版：全体統括レンダラー
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
@@ -22,6 +22,11 @@ from .base.renderer_protocols import (
     RenderResult,
     create_render_result,
 )
+from .components.content_processor_delegate import ContentProcessorDelegate
+
+# 委譲コンポーネントのインポート
+from .components.element_renderer_delegate import ElementRendererDelegate
+from .components.output_formatter_delegate import OutputFormatterDelegate
 from .compound_renderer import CompoundElementRenderer
 from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
@@ -134,6 +139,11 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
         # Inject this main renderer into element renderer for content processing
         self.element_renderer.set_main_renderer(self)
+
+        # 委譲コンポーネントの初期化
+        self._element_delegate = ElementRendererDelegate(self)
+        self._content_delegate = ContentProcessorDelegate(self)
+        self._output_delegate = OutputFormatterDelegate(self)
 
         # Issue #700: graceful error handling support
         self.graceful_errors: List[Any] = []
@@ -398,18 +408,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         Returns:
             str: Generated HTML (optimized)
         """
-        # Issue #700: graceful errors対応
-        if self.graceful_errors and self.embed_errors_in_html:
-            return self.render_nodes_with_errors_optimized(nodes)
-
-        html_parts: list[str] = []
-        html_parts_append = html_parts.append
-        for node in nodes:
-            html = self.render_node(node)
-            html_parts_append(html)
-
-        # 高速文字列結合（join最適化）
-        return "\n".join(html_parts)
+        return self._content_delegate.render_nodes_optimized(nodes)
 
     def render_node_optimized(self, node: Node) -> str:
         """
@@ -421,174 +420,33 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         Returns:
             str: Generated HTML for the node (optimized)
         """
-        # 最適化: メソッド動的検索を避けるため事前キャッシュ
-        renderer_method = self._get_cached_renderer_method(node.type)
-        return cast(str, renderer_method(node))
-
-    def _get_cached_renderer_method(self, node_type: str) -> Any:
-        """レンダラーメソッドのキャッシュ取得（メソッド検索最適化）"""
-
-        # レンダラーメソッドキャッシュが未初期化なら作成
-        if not hasattr(self, "_renderer_method_cache"):
-            self._renderer_method_cache: dict[str, Any] = {}
-
-        # キャッシュから取得
-        if node_type not in self._renderer_method_cache:
-            method_name = f"_render_{node_type}"
-            self._renderer_method_cache[node_type] = getattr(
-                self, method_name, self._render_generic
-            )
-
-        return self._renderer_method_cache[node_type]
+        return self._element_delegate.render_node_optimized(node)
 
     def render_nodes_with_errors_optimized(self, nodes: list[Node]) -> str:
         """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
-
-        # StringBuilder パターン
-        html_parts: list[str] = []
-        html_parts_append = html_parts.append
-
-        for node in nodes:
-            html = self.render_node_optimized(node)
-            if html:
-                html_parts_append(html)
-
-        # エラー情報をHTML前に効率的に挿入
-        if self.embed_errors_in_html and self.graceful_errors:
-            error_summary_html = self._render_error_summary_optimized()
-            html_parts.insert(0, error_summary_html)
-
-            # 効率的なエラーマーカー埋め込み
-            html_with_markers = self._embed_error_markers_optimized(
-                "\n".join(html_parts)
-            )
-            return html_with_markers
-
-        return "\n".join(html_parts)
+        return self._content_delegate.render_nodes_with_errors_optimized(nodes)
 
     def _render_error_summary_optimized(self) -> str:
         """最適化されたエラーサマリーHTML生成"""
-        if not self.graceful_errors:
-            return ""
-
-        error_count = 0
-        warning_count = 0
-
-        for error in self.graceful_errors:
-            if error.severity == "error":
-                error_count += 1
-            elif error.severity == "warning":
-                warning_count += 1
-
-        total_count = len(self.graceful_errors)
-
-        # StringBuilder パターンでHTML構築
-        html_parts = [
-            '<div class="kumihan-error-summary" id="error-summary">',
-            "    <h3>🔍 記法エラーレポート</h3>",
-            '    <div class="error-stats">',
-            f'        <span class="error-count">❌ エラー: {error_count}件</span>',
-            f'        <span class="warning-count">⚠️ 警告: {warning_count}件</span>',
-            f'        <span class="total-count">📊 合計: {total_count}件</span>',
-            "    </div>",
-            '    <details class="error-details">',
-            "        <summary>詳細を表示</summary>",
-            '        <div class="error-list">',
-        ]
-
-        # 各エラーの詳細を効率的に追加
-        for i, error in enumerate(self.graceful_errors, 1):
-            error_html = self._render_single_error_optimized(error, i)
-            html_parts.append(error_html)
-
-        html_parts.extend(["        </div>", "    </details>", "</div>"])
-
-        return "\n".join(html_parts)
+        return self._content_delegate._render_error_summary_optimized()
 
     def _render_single_error_optimized(self, error: Any, error_number: int) -> str:
         """単一エラーの最適化レンダリング"""
-        from .html_escaping import escape_html
-
-        # XSS対策: エラー情報のエスケープ処理（最適化）
-        safe_title = escape_html(error.display_title)
-        safe_severity = escape_html(error.severity.upper())
-        safe_content = error.html_content  # 既にエスケープ済み
-
-        # 文字列テンプレート最適化
-        return f"""
-            <div class="error-item {error.html_class}" data-line="{error.line_number}">
-                <div class="error-header">
-                    <span class="error-number">#{error_number}</span>
-                    <span class="error-title">{safe_title}</span>
-                    <span class="error-severity">{safe_severity}</span>
-                </div>
-                <div class="error-content">
-                    {safe_content}
-                </div>
-            </div>"""
+        return self._content_delegate._render_single_error_optimized(
+            error, error_number
+        )
 
     def _embed_error_markers_optimized(self, html: str) -> str:
         """最適化されたエラーマーカー埋め込み"""
-        if not self.graceful_errors:
-            return html
-
-        lines = html.split("\n")
-        error_by_line: dict[int, list[Any]] = {}
-        modified_lines = []
-
-        # エラーを行番号でグループ化
-        for error in self.graceful_errors:
-            line_no = getattr(error, "line_number", 1)
-            if line_no not in error_by_line:
-                error_by_line[line_no] = []
-            error_by_line[line_no].append(error)
-
-        # 効率的な行処理
-        for line_no, line in enumerate(lines, 1):
-            modified_lines.append(line)
-
-            # エラーマーカー挿入（最適化）
-            if line_no in error_by_line:
-                for error in error_by_line[line_no]:
-                    error_marker = self._create_error_marker_optimized(error)
-                    modified_lines.append(error_marker)
-
-        return "\n".join(modified_lines)
+        return self._content_delegate._embed_error_markers_optimized(html)
 
     def _create_error_marker_optimized(self, error: Any) -> str:
         """最適化されたエラーマーカー作成"""
-        from .html_escaping import escape_html
-
-        safe_message = escape_html(error.message)
-        safe_suggestion = escape_html(error.suggestion) if error.suggestion else ""
-        error_icon = "❌" if error.severity == "error" else "⚠️"
-
-        # f-string最適化
-        suggestion_html = (
-            f'<div class="error-suggestion">💡 {safe_suggestion}</div>'
-            if safe_suggestion
-            else ""
-        )
-
-        return (
-            f"""<div class="kumihan-error-marker {error.html_class}" """
-            f"""data-line="{error.line_number}">
-    <div class="error-indicator">
-        <span class="error-icon">{error_icon}</span>
-        <span class="error-message">{safe_message}</span>
-        {suggestion_html}
-    </div>
-</div>"""
-        )
+        return self._content_delegate._create_error_marker_optimized(error)
 
     def get_rendering_metrics(self) -> dict[str, Any]:
         """レンダリングメトリクスを取得"""
-        return {
-            "renderer_cache_size": len(getattr(self, "_renderer_method_cache", {})),
-            "graceful_errors_count": len(self.graceful_errors),
-            "embed_errors_enabled": self.embed_errors_in_html,
-            "heading_counter": self.heading_counter,
-        }
+        return self._output_delegate.get_rendering_metrics()
 
     def render_node(self, node: Node) -> str:
         """
@@ -600,109 +458,107 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         Returns:
             str: Generated HTML for the node
         """
-        if not isinstance(node, Node):
-            raise TypeError(f"Expected Node instance, got {type(node)}")
+        return self._element_delegate.render_node(node)
 
-        # Delegateメソッドを動的に検索して呼び出し
-        method_name = f"_render_{node.type}"
-        renderer_method = getattr(self, method_name, self._render_generic)
-        return renderer_method(node)
+    # ==========================================
+    # 委譲メソッド（要素レンダリング）
+    # ==========================================
 
     def _render_generic(self, node: Node) -> str:
         """Generic node renderer"""
-        return self.element_renderer.render_generic(node)
+        return self._element_delegate._render_generic(node)
 
     def _render_p(self, node: Node) -> str:
         """Render paragraph node"""
-        return self.element_renderer.render_paragraph(node)
+        return self._element_delegate._render_p(node)
 
     def _render_strong(self, node: Node) -> str:
         """Render strong (bold) node"""
-        return self.element_renderer.render_strong(node)
+        return self._element_delegate._render_strong(node)
 
     def _render_em(self, node: Node) -> str:
         """Render emphasis (italic) node"""
-        return self.element_renderer.render_emphasis(node)
+        return self._element_delegate._render_em(node)
 
     def _render_div(self, node: Node) -> str:
         """Render div node"""
-        return self.element_renderer.render_div(node)
+        return self._element_delegate._render_div(node)
 
     def _render_h1(self, node: Node) -> str:
         """Render h1 heading"""
-        return self.element_renderer.render_heading(node, 1)
+        return self._element_delegate._render_h1(node)
 
     def _render_h2(self, node: Node) -> str:
         """Render h2 heading"""
-        return self.element_renderer.render_heading(node, 2)
+        return self._element_delegate._render_h2(node)
 
     def _render_h3(self, node: Node) -> str:
         """Render h3 heading"""
-        return self.element_renderer.render_heading(node, 3)
+        return self._element_delegate._render_h3(node)
 
     def _render_h4(self, node: Node) -> str:
         """Render h4 heading"""
-        return self.element_renderer.render_heading(node, 4)
+        return self._element_delegate._render_h4(node)
 
     def _render_h5(self, node: Node) -> str:
         """Render h5 heading"""
-        return self.element_renderer.render_heading(node, 5)
+        return self._element_delegate._render_h5(node)
 
     def _render_heading(self, node: Node, level: int) -> str:
         """Render heading with ID"""
-        return self.element_renderer.render_heading(node, level)
+        return self._element_delegate._render_heading(node, level)
 
     def _render_ul(self, node: Node) -> str:
         """Render unordered list"""
-        return self.element_renderer.render_unordered_list(node)
+        return self._element_delegate._render_ul(node)
 
     def _render_ol(self, node: Node) -> str:
         """Render ordered list"""
-        return self.element_renderer.render_ordered_list(node)
+        return self._element_delegate._render_ol(node)
 
     def _render_li(self, node: Node) -> str:
         """Render list item"""
-        return self.element_renderer.render_list_item(node)
+        return self._element_delegate._render_li(node)
 
     def _render_details(self, node: Node) -> str:
         """Render details/summary element"""
-        return self.element_renderer.render_details(node)
+        return self._element_delegate._render_details(node)
 
     def _render_pre(self, node: Node) -> str:
         """Render preformatted text"""
-        return self.element_renderer.render_preformatted(node)
+        return self._element_delegate._render_pre(node)
 
     def _render_code(self, node: Node) -> str:
         """Render inline code"""
-        return self.element_renderer.render_code(node)
+        return self._element_delegate._render_code(node)
 
     def _render_image(self, node: Node) -> str:
         """Render image element"""
-        return self.element_renderer.render_image(node)
+        return self._element_delegate._render_image(node)
 
     def _render_error(self, node: Node) -> str:
         """Render error node"""
-        return self.element_renderer.render_error(node)
+        return self._element_delegate._render_error(node)
 
     def _render_toc(self, node: Node) -> str:
         """Render table of contents marker"""
-        return self.element_renderer.render_toc_placeholder(node)
+        return self._element_delegate._render_toc(node)
 
     def _render_ruby(self, node: Node) -> str:
         """Render ruby (ルビ) element"""
-        return self.element_renderer.render_ruby(node)
+        return self._element_delegate._render_ruby(node)
 
     def _render_content(self, content: Any, depth: int = 0) -> str:
         """Render node content (recursive)"""
-        return self.content_processor.render_content(content, depth)
+        return self._element_delegate._render_content(content, depth)
 
     def _render_node_with_depth(self, node: Node, depth: int = 0) -> str:
         """Render a single node with depth tracking"""
-        return self.content_processor.render_node_with_depth(node, depth)
+        return self._element_delegate._render_node_with_depth(node, depth)
 
     def _render_generic_with_depth(self, node: Node, depth: int = 0) -> str:
         """Generic node renderer with depth tracking"""
-        return self.element_renderer.render_generic(node)
+        return self._element_delegate._render_generic_with_depth(node, depth)
 
     def _process_text_content(self, text: str) -> str:
         """Process text content - delegate to html_utils"""
@@ -761,111 +617,15 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def render_nodes_with_errors(self, nodes: list[Node]) -> str:
         """Issue #700: エラー情報を埋め込みながらノードをレンダリング"""
-        html_parts = []
-
-        for node in nodes:
-            html = self.render_node(node)
-            if html:
-                html_parts.append(html)
-
-        # エラー情報をHTMLに埋め込み
-        if self.embed_errors_in_html and self.graceful_errors:
-            error_summary_html = self._render_error_summary()
-            html_parts.insert(0, error_summary_html)
-
-            # 各エラー箇所にマーカーを挿入
-            html_with_markers = self._embed_error_markers("\n".join(html_parts))
-            return html_with_markers
-
-        return "\n".join(html_parts)
+        return self._output_delegate.render_nodes_with_errors(nodes)
 
     def _render_error_summary(self) -> str:
         """エラーサマリーをHTMLで生成"""
-        if not self.graceful_errors:
-            return ""
-
-        # エラーサマリーのヘッダー部分
-        error_count = len(self.graceful_errors)
-        summary_html = f"""
-<div class="kumihan-error-summary">
-    <details open>
-        <summary class="error-summary-header">
-            <span class="error-count-badge">{error_count}</span>
-            <span class="error-summary-title">構文エラー・警告一覧</span>
-        </summary>
-        <div class="error-list">
-"""
-
-        # 各エラーの詳細を追加
-        for i, error in enumerate(self.graceful_errors, 1):
-            from .html_escaping import escape_html
-
-            # XSS対策: エラー情報のエスケープ処理
-            safe_title = escape_html(error.display_title)
-            safe_severity = escape_html(error.severity.upper())
-            safe_content = (
-                error.html_content
-            )  # html_contentプロパティ内で既にエスケープ済み
-
-            # ハイライト付きコンテキストと修正提案を追加
-            highlighted_context = error.get_highlighted_context()
-            correction_suggestions_html = error.get_correction_suggestions_html()
-
-            error_html = f"""
-            <div class="error-item {error.html_class}" data-line="{error.line_number}">
-                <div class="error-header">
-                    <span class="error-number">#{i}</span>
-                    <span class="error-title">{safe_title}</span>
-                    <span class="error-severity">{safe_severity}</span>
-                </div>
-                <div class="error-content">
-                    {safe_content}
-                    {(f'<div class="error-context-highlighted">{highlighted_context}</div>'
-                      if highlighted_context != error.context else '')}
-                    {correction_suggestions_html
-                     and f'<div class="correction-suggestions">'
-                         f'<h4>修正提案:</h4>{correction_suggestions_html}</div>' or ''}
-                </div>
-            </div>
-"""
-            summary_html += error_html
-
-        summary_html += """
-        </div>
-    </details>
-</div>
-"""
-        return summary_html
+        return self._output_delegate._render_error_summary()
 
     def _embed_error_markers(self, html: str) -> str:
         """HTML内のエラー発生箇所にマーカーを埋め込み"""
-        if not self.graceful_errors:
-            return html
-
-        modified_lines = html.split("\n")
-
-        for error in self.graceful_errors:
-            if error.line_number and error.line_number <= len(modified_lines):
-                from .html_escaping import escape_html
-
-                # XSS対策: エラー情報のエスケープ処理
-                safe_message = escape_html(error.message)
-                safe_suggestion = (
-                    escape_html(error.suggestion) if error.suggestion else ""
-                )
-                error_icon = "❌" if error.severity == "error" else "⚠️"
-
-                error_marker = f"""
-<div class="kumihan-error-marker {error.html_class}" data-line="{error.line_number}">
-    <div class="error-indicator">
-        <span class="error-icon">{error_icon}</span>
-        <span class="error-message">{safe_message}</span>
-        {f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''}
-    </div>
-</div>"""
-                modified_lines.insert(error.line_number - 1, error_marker)
-
-        return "\n".join(modified_lines)
+        return self._output_delegate._embed_error_markers(html)
 
     # ==========================================
     # プロトコル準拠メソッド（BaseRendererProtocol実装）

@@ -18,6 +18,8 @@ Issue #912: Parser系統合リファクタリング完了
 - 後方互換性維持
 """
 
+import warnings
+
 # 基底クラス・プロトコル
 from .base import (
     CachingMixin,
@@ -58,7 +60,6 @@ from .protocols import (
     CoordinatorProtocol,
     FormatterProtocol,
     ParseResult,
-    ParserProtocol,
     ParserType,
     ProcessorProtocol,
     ValidatorProtocol,
@@ -96,7 +97,6 @@ __all__ = [
     "UnifiedMarkdownParser",  # Markdown解析（2重複統合）
     "UnifiedContentParser",  # コンテンツ解析
     # === プロトコル・型定義 ===
-    "ParserProtocol",  # 基本プロトコル
     "KeywordParserProtocol",  # キーワード専用
     "ListParserProtocol",  # リスト専用
     "BlockParserProtocol",  # ブロック専用
@@ -178,7 +178,6 @@ def get_migration_info() -> dict:
 
 
 # 後方互換性のための警告
-import warnings
 
 
 def _show_migration_success() -> None:

@@ -14,8 +14,6 @@ else:
             KeywordParserProtocol,
             ParseContext,
             ParseResult,
-            create_parse_context,
-            create_parse_result,
         )
     except ImportError:
         # フォールバックインポート

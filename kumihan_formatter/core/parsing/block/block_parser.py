@@ -60,6 +60,7 @@ except ImportError:
 
 if TYPE_CHECKING:
     from ..base.parser_protocols import KeywordParserProtocol
+    from ..keyword.keyword_parser import KeywordParser
 else:
     try:
         from ..base.parser_protocols import KeywordParserProtocol
@@ -457,7 +458,9 @@ class BlockParser:
             ],
             "description": "Block-level element parser for Kumihan-Formatter",
             "author": "Kumihan-Formatter Project",
-            "deprecation_notice": "This parser is deprecated. Use kumihan_formatter.core.parsing instead.",
+            "deprecation_notice": (
+                "This parser is deprecated. Use kumihan_formatter.core.parsing instead."
+            ),
         }
 
     def supports_format(self, format_hint: str) -> bool:

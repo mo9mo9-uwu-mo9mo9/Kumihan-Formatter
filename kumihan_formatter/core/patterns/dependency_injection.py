@@ -18,7 +18,6 @@ from typing import (
     TypeVar,
     Union,
     cast,
-    get_type_hints,
 )
 
 from ..utilities.logger import get_logger
@@ -342,8 +341,6 @@ def register_services(container: DIContainer) -> None:
     """標準サービス登録"""
     try:
         # 基本プロトコルのインポートを試行
-        from ..parsing.base.parser_protocols import BaseParserProtocol
-        from ..rendering.base.renderer_protocols import BaseRendererProtocol
 
         logger.info("Standard services registration completed")
 
