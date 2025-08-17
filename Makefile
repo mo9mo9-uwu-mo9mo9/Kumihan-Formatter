@@ -47,9 +47,10 @@ help:
 	@echo "  make gemini-integrated-workflow - 品質統合ワークフロー実行"
 	@echo ""
 	@echo "🛠️ Gemini協業品質保証 (Issue #920改善):"
-	@echo "  make gemini-quality-check    - Gemini協業後統合品質チェック"
-	@echo "  make gemini-post-review      - Gemini協業後総合レビュー"
-	@echo "  make gemini-validation-full  - 完全バリデーション（3層検証）"
+	@echo "  make gemini-quality-check     - Gemini協業後統合品質チェック（新システム）"
+	@echo "  make gemini-post-review       - Gemini協業後総合レビュー"
+	@echo "  make gemini-validation-full   - 完全バリデーション（3層検証）"
+	@echo "  make gemini-quality-check-legacy - 従来の品質チェック（参考）"
 	@echo ""
 	@echo "🚀 品質保証強化システム (Issue #845):"
 	@echo "  make quality-realtime-start  - リアルタイム品質監視開始"
@@ -240,8 +241,8 @@ tech-debt-ci:
 	@echo "✅ 技術的負債CI/CDチェック完了"
 
 # 🤖 Claude ↔ Gemini協業システム
-# 🔍 品質管理統合コマンド
-gemini-quality-check:
+# 🔍 品質管理統合コマンド (従来システム)
+gemini-quality-check-legacy:
 	@echo "🔍 統合品質チェック実行..."
 	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
 	from workflow.dual_agent_coordinator import DualAgentCoordinator; \
