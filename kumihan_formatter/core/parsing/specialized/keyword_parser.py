@@ -28,11 +28,16 @@ from ...ast_nodes import (
     strong,
 )
 from ..base import CompositeMixin, UnifiedParserBase
-from ..base.parser_protocols import KeywordParserProtocol
+from ..base.parser_protocols import (
+    KeywordParserProtocol,
+    ParseContext,
+    ParseResult,
+    create_parse_result,
+)
 from ..protocols import ParserType
 
 
-class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
+class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProtocol):
     """統一キーワードパーサー
 
     3つの重複KeywordParserを統合:
@@ -474,7 +479,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
 
     def _setup_legacy_compatibility(self) -> None:
         """core/keyword_parser.py からの後方互換性機能"""
-        # DEFAULT_BLOCK_KEYWORDS の統合
+        # DEFAULT_BLOCK_KEYWORDS の統合（core/keyword_parser.pyから）
         self.DEFAULT_BLOCK_KEYWORDS = {
             "太字": {"tag": "strong"},
             "イタリック": {"tag": "em"},
@@ -496,6 +501,20 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
 
         # 後方互換性プロパティ
         self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS
+
+        # core/keyword_parser.pyからの設定とメソッドを統合
+        from ...keyword import KeywordDefinitions, KeywordValidator, MarkerParser
+
+        # 分割されたコンポーネントを初期化（後方互換性のため）
+        try:
+            self.definitions = KeywordDefinitions(None)
+            self.marker_parser = MarkerParser(self.definitions)
+            self.validator = KeywordValidator(self.definitions)
+        except Exception:
+            # フォールバック：基本的な実装を使用
+            self.definitions = None
+            self.marker_parser = None
+            self.validator = None
 
     def _setup_inline_mapping(self) -> None:
         """インライン記法マッピングの設定"""
@@ -622,13 +641,6 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
 
         return keywords
 
-    def validate_keyword(self, keyword: str) -> bool:
-        """キーワードの妥当性を検証
-
-        KeywordParserProtocol の実装
-        """
-        return self._is_valid_keyword(keyword)
-
     def _is_valid_keyword(self, keyword: str) -> bool:
         """キーワードの有効性チェック"""
         if not keyword or not isinstance(keyword, str):
@@ -681,8 +693,194 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
 
         return marker_content.strip()
 
+    # ==========================================
+    # core/keyword_parser.py からの統合メソッド群
+    # ==========================================
+
+    def create_single_block(
+        self, keyword: str, content: str, attributes: Dict[str, Any]
+    ) -> Node:
+        """単一ブロックノードの作成（core/keyword_parser.pyから統合）"""
+        if keyword not in self.BLOCK_KEYWORDS:
+            return error_node(f"不明なキーワード: {keyword}")
+
+        # Create builder for the block
+        builder = NodeBuilder(node_type=self.BLOCK_KEYWORDS[keyword]["tag"]).content(
+            content
+        )
+
+        # Add attributes if provided
+        if attributes:
+            for key, value in attributes.items():
+                builder.attribute(key, value)
+
+        return builder.build()
+
+    def create_compound_block(
+        self, keywords: List[str], content: str, attributes: Dict[str, Any]
+    ) -> Node:
+        """複合ブロック構造の作成（core/keyword_parser.pyから統合）"""
+        if not keywords:
+            return error_node("キーワードが指定されていません")
+
+        # Sort keywords by nesting order
+        sorted_keywords = self._sort_keywords_by_nesting_order(keywords)
+
+        root_node = None
+        current_node = None
+
+        # Build nested structure from outer to inner
+        for i, keyword in enumerate(sorted_keywords):
+            if keyword not in self.BLOCK_KEYWORDS:
+                return error_node(f"不明なキーワード: {keyword}")
+
+            block_def = self.BLOCK_KEYWORDS[keyword]
+            builder = NodeBuilder(block_def["tag"])
+
+            # Add CSS class if specified
+            if "class" in block_def:
+                builder.css_class(block_def["class"])
+
+            # Add summary for details elements
+            if "summary" in block_def:
+                builder.attribute("summary", block_def["summary"])
+
+            # Handle special attributes for the outermost element
+            if i == 0:
+                # Handle color attribute for highlight
+                if keyword == "ハイライト" and "color" in attributes:
+                    color = attributes["color"]
+                    color = self._normalize_color_value(color)
+                    builder.style(f"background-color:{color}")
+
+                # Add other attributes
+                for key, value in attributes.items():
+                    if key not in ["color"]:
+                        builder.attribute(key, value)
+
+            # Set content for the innermost element
+            if i == len(sorted_keywords) - 1:
+                parsed_content = self._parse_block_content(content)
+                builder.content(parsed_content)
+            else:
+                # This will be set when we build the nested structure
+                builder.content([""])
+
+            # Build the node
+            node = builder.build()
+
+            if root_node is None:
+                root_node = node
+                current_node = node
+            else:
+                # Find the content and replace it with the new node
+                if (
+                    current_node
+                    and hasattr(current_node, "content")
+                    and current_node.content
+                ):
+                    current_node.content = [node]
+                current_node = node
+
+        return root_node or error_node("ノード作成に失敗しました")
+
+    def _parse_block_content(self, content: str) -> List[Any]:
+        """ブロックコンテンツの解析（core/keyword_parser.pyから統合）"""
+        if not content.strip():
+            return [""]
+
+        # ブロックコンテンツの解析を実装
+        return [content]
+
+    def _normalize_color_value(self, color: str) -> str:
+        """色値を正規化（core/keyword_parser.pyから統合）"""
+        # 既に16進数形式の場合はそのまま返す
+        if color.startswith("#"):
+            return color
+
+        # その他の場合はそのまま返す（将来の拡張のため）
+        return color
+
+    def _sort_keywords_by_nesting_order(self, keywords: List[str]) -> List[str]:
+        """ネスト順序でキーワードをソート（core/keyword_parser.pyから統合）"""
+        # Map keywords to their tags
+        keyword_tags = {}
+        for keyword in keywords:
+            if keyword in self.BLOCK_KEYWORDS:
+                tag = self.BLOCK_KEYWORDS[keyword]["tag"]
+                keyword_tags[keyword] = tag
+
+        # Sort by nesting order
+        def get_nesting_index(keyword: str) -> int:
+            tag = keyword_tags.get(keyword)
+            if tag in self.NESTING_ORDER:
+                return self.NESTING_ORDER.index(tag)
+            return 999  # 不明なタグは最後に
+
+        return sorted(keywords, key=get_nesting_index)
+
+    def parse_new_format(self, line: str) -> Dict[str, Any]:
+        """新形式マーカーの解析（後方互換用）"""
+        # 基本的な解析結果を返す
+        return {"keywords": [], "content": line, "attributes": {}}
+
+    def get_node_factory(self, keywords: Union[str, Tuple[Any, ...]]) -> Any:
+        """ノードファクトリーの取得（後方互換用）"""
+        # NodeBuilderインスタンスを返す
+        return NodeBuilder(node_type="div")
+
+    # ==========================================
+    # プロトコル準拠メソッド（KeywordParserProtocol実装）
+    # ==========================================
+
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース（プロトコル準拠）"""
+        try:
+            # 既存の parse_keywords ロジックを活用
+            keywords = self.parse_keywords(content)
+            nodes = [self._create_keyword_node_from_text(kw) for kw in keywords]
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"キーワードパース失敗: {e}")
+            return result
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            keywords = self.parse_keywords(content)
+            for keyword in keywords:
+                if not self.validate_keyword(keyword):
+                    errors.append(f"無効なキーワード: {keyword}")
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "UnifiedKeywordParser",
+            "version": "2.0.0",
+            "supported_formats": ["kumihan", "keyword"],
+            "capabilities": ["keyword_extraction", "attribute_parsing"],
+            "parser_type": self.parser_type,
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["kumihan", "keyword", "text"]
+
+    def _create_keyword_node_from_text(self, keyword: str) -> Node:
+        """テキストからキーワードノードを作成"""
+        return create_node("keyword", content=keyword, metadata={"keyword": keyword})
+
     # 後方互換性エイリアス
-    def parse(self, text: str) -> List[Node]:
-        """parse メソッドのエイリアス"""
+    def parse_legacy(self, text: str) -> List[Node]:
+        """レガシーparse メソッドのエイリアス"""
         result = self._parse_implementation(text)
         return [result] if isinstance(result, Node) else result

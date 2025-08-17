@@ -1,5 +1,4 @@
-# Claude-Gemini Workflow Engine (subproject)
-claude-gemini-workflow-engine/
+# 旧プロジェクト（削除済み）
 
 # Python
 __pycache__/
@@ -218,5 +217,3 @@ logs/*.log
 logs/*.log.*
 *.log.[0-9]*
 
-# Claude-Gemini Workflow Engine（外部プロジェクト）
-claude-gemini-workflow-engine/

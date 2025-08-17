@@ -15,20 +15,40 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
-    from ...keyword_parser import KeywordParser
+    from ..base.parser_protocols import KeywordParserProtocol
+else:
+    try:
+        from ..base.parser_protocols import KeywordParserProtocol
+    except ImportError:
+        from typing import Protocol
+
+        KeywordParserProtocol = Protocol
 
 
 class BaseBlockParser:
-    """Base class for block parsers with common functionality."""
+    """Base class for block parsers with common functionality.
 
-    def __init__(self, keyword_parser: Optional["KeywordParser"] = None) -> None:
+    Issue #914 Phase 2: 循環参照解消
+    - KeywordParser直接依存から依存関係注入パターンに変更
+    - プロトコルベースのインターフェース使用
+    """
+
+    def __init__(
+        self, keyword_parser: Optional["KeywordParserProtocol"] = None
+    ) -> None:
         """Initialize base block parser.
 
         Args:
-            keyword_parser: Optional keyword parser instance
+            keyword_parser: Optional keyword parser instance (protocol-based)
         """
         self.logger = get_logger(__name__)
-        self.keyword_parser = keyword_parser
+
+        # 依存関係注入: KeywordParserをDIコンテナから取得
+        if keyword_parser is None:
+            self.keyword_parser = self._get_keyword_parser()
+        else:
+            self.keyword_parser = keyword_parser
+
         self.heading_counter = 0
 
         # Performance optimization caches
@@ -45,6 +65,30 @@ class BaseBlockParser:
 
         # Parser reference
         self.parser_ref = None
+
+    def _get_keyword_parser(self) -> Optional["KeywordParserProtocol"]:
+        """DIコンテナからKeywordParserを取得
+
+        Issue #914 Phase 2: 依存関係注入パターン
+
+        Returns:
+            KeywordParserProtocol instance or None
+        """
+        try:
+            from ...patterns.dependency_injection import get_container
+
+            container = get_container()
+            return container.resolve(KeywordParserProtocol)
+        except Exception as e:
+            self.logger.warning(f"KeywordParser取得失敗、フォールバック使用: {e}")
+            # フォールバック: specialized/keyword_parser.pyから直接インポート
+            try:
+                from ..specialized.keyword_parser import UnifiedKeywordParser
+
+                return UnifiedKeywordParser()
+            except Exception as fallback_error:
+                self.logger.error(f"フォールバックも失敗: {fallback_error}")
+                return None
 
     def _is_marker_internal(self, line: str) -> bool:
         """Internal marker detection."""

@@ -23,11 +23,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ...ast_nodes import Node, create_node, list_item, ordered_list, unordered_list
 from ..base import CompositeMixin, UnifiedParserBase
-from ..base.parser_protocols import ListParserProtocol
+from ..base.parser_protocols import (
+    ListParserProtocol,
+    ParseContext,
+    ParseResult,
+    create_parse_result,
+)
 from ..protocols import ParserType
 
 
-class UnifiedListParser(UnifiedParserBase, CompositeMixin):
+class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
     """統一リストパーサー
 
     重複ListParserを統合した包括的リスト解析機能:
@@ -352,7 +357,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
             return create_node("list", content="")
 
         # ネスト構造の構築
-        nested_structure = self._build_nested_structure(items)
+        nested_structure = self._build_nested_structure_list(items)
 
         # リストタイプの決定
         primary_type = self._determine_primary_list_type(items)
@@ -371,8 +376,8 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
 
         return list_node
 
-    def _build_nested_structure(self, items: List[Node]) -> List[Node]:
-        """ネスト構造の構築"""
+    def _build_nested_structure_list(self, items: List[Node]) -> List[Node]:
+        """ネスト構造の構築（リスト版）"""
         if not items:
             return []
 
@@ -807,8 +812,66 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
 
         return line.strip()
 
+    # ==========================================
+    # プロトコル準拠メソッド（ListParserProtocol実装）
+    # ==========================================
+
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース（プロトコル準拠）"""
+        try:
+            result = self._parse_implementation(content)
+            nodes = [result] if isinstance(result, Node) else result
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"リストパース失敗: {e}")
+            return result
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            lines = content.split("\n")
+            for i, line in enumerate(lines):
+                if line.strip() and not self._is_valid_list_item(line):
+                    errors.append(f"行{i+1}: 無効なリスト項目形式")
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "UnifiedListParser",
+            "version": "2.0.0",
+            "supported_formats": ["list", "ordered", "unordered", "checklist"],
+            "capabilities": ["nested_lists", "block_format", "character_parsing"],
+            "parser_type": self.parser_type,
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in [
+            "list",
+            "ordered",
+            "unordered",
+            "checklist",
+            "definition",
+        ]
+
+    def _is_valid_list_item(self, line: str) -> bool:
+        """リスト項目の有効性チェック"""
+        for pattern in self.list_patterns.values():
+            if pattern.match(line):
+                return True
+        return False
+
     # 後方互換性エイリアス
-    def parse(self, text: str) -> List[Node]:
-        """parse メソッドのエイリアス"""
+    def parse_legacy(self, text: str) -> List[Node]:
+        """レガシーparse メソッドのエイリアス"""
         result = self._parse_implementation(text)
         return [result] if isinstance(result, Node) else result

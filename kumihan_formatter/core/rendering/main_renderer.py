@@ -7,10 +7,21 @@ Renderer系統合版：全体統括レンダラー
 """
 
 from pathlib import Path
-from typing import Any, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+
+if TYPE_CHECKING:
+    from ..patterns.dependency_injection import DIContainer
+    from ..patterns.factories import RendererFactory
 
 from ..ast_nodes import Node
+from ..mixins.event_mixin import EventEmitterMixin, with_events
 from ..utilities.logger import get_logger
+from .base.renderer_protocols import (
+    BaseRendererProtocol,
+    RenderContext,
+    RenderResult,
+    create_render_result,
+)
 from .compound_renderer import CompoundElementRenderer
 from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
@@ -23,7 +34,7 @@ from .html_formatter import HTMLFormatter
 from .html_utils import process_text_content
 
 
-class MainRenderer:
+class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
     """統合メインレンダラー（全Rendererシステム統括）
 
     Issue #912 Renderer系統合リファクタリング対応
@@ -67,18 +78,50 @@ class MainRenderer:
         "em",  # イタリック
     ]
 
-    def __init__(self, config: Optional[Any] = None) -> None:
+    def __init__(
+        self, config: Optional[Any] = None, container: Optional["DIContainer"] = None
+    ) -> None:
         """統合メインレンダラーを初期化
 
         Args:
             config: 設定オブジェクト（オプショナル）
+            container: DIコンテナ（オプショナル）- Issue #914 Phase 2
         """
         self.logger = get_logger(__name__)
         self.config = config
 
-        # 統合フォーマッター
-        self.html_formatter = HtmlFormatter(config)
-        self.markdown_formatter = MarkdownFormatter(config)
+        # EventEmitterMixin初期化
+        self._source_name = self.__class__.__name__
+
+        # DIコンテナ設定（Issue #914 Phase 2）
+        self.container = container
+        if self.container is None:
+            try:
+                from ..patterns.dependency_injection import get_container
+
+                self.container = get_container()
+                self.logger.debug("Using global DI container")
+            except ImportError:
+                self.logger.debug(
+                    "DI container not available, using direct instantiation"
+                )
+                self.container = None
+
+        # ファクトリー設定（Issue #914 Phase 2）
+        self.renderer_factory: Optional["RendererFactory"] = None
+        if self.container is not None:
+            try:
+                from ..patterns.factories import get_renderer_factory
+
+                self.renderer_factory = get_renderer_factory()
+                self.logger.debug("Renderer factory initialized with DI support")
+            except ImportError:
+                self.logger.debug(
+                    "Renderer factory not available, falling back to direct instantiation"
+                )
+
+        # レンダラーの初期化
+        self._initialize_renderers()
 
         # 既存コンポーネント（後方互換性のため維持）
         self.element_renderer = ElementRenderer()
@@ -101,8 +144,127 @@ class MainRenderer:
 
         self.logger.debug("MainRenderer initialized with config support")
 
-    def render(self, nodes: List[Node], format: str = "html") -> str:
-        """メインレンダリング処理（統合版）
+    def _initialize_renderers(self) -> None:
+        """レンダラーの初期化（DI対応 - Issue #914 Phase 2）"""
+        try:
+            # DIパターンによる初期化を試行
+            if self.renderer_factory is not None and self.container is not None:
+                self.logger.debug("Initializing renderers using DI pattern")
+                self.html_formatter = self._create_renderer_with_fallback("html")
+                self.markdown_formatter = self._create_renderer_with_fallback(
+                    "markdown"
+                )
+            else:
+                # 従来の直接インスタンス化（フォールバック）
+                self.logger.debug("Initializing renderers using direct instantiation")
+                self.html_formatter = HtmlFormatter(self.config)
+                self.markdown_formatter = MarkdownFormatter(self.config)
+
+            self.logger.info("All specialized renderers initialized successfully")
+
+        except Exception as e:
+            self.logger.error(f"Failed to initialize renderers: {e}")
+            # フォールバック: 直接インスタンス化
+            self._initialize_fallback_renderers()
+
+    def _create_renderer_with_fallback(self, renderer_type: str) -> Any:
+        """DI失敗時のフォールバック付きレンダラー生成（Issue #914 Phase 2）"""
+        try:
+            # 1. DIコンテナ経由で解決を試行
+            if self.container is not None:
+                try:
+                    # 型マッピング
+                    renderer_class_map = {
+                        "html": HtmlFormatter,
+                        "markdown": MarkdownFormatter,
+                    }
+
+                    if renderer_type in renderer_class_map:
+                        renderer_class = renderer_class_map[renderer_type]
+                        instance = self.container.resolve(renderer_class)
+                        self.logger.debug(
+                            f"DI resolution successful for {renderer_type}"
+                        )
+                        return instance
+                except Exception as di_error:
+                    self.logger.warning(
+                        f"DI creation failed for {renderer_type}: {di_error}"
+                    )
+
+            # 2. ファクトリー経由での生成を試行
+            if self.renderer_factory is not None:
+                try:
+                    instance = self.renderer_factory.create(
+                        renderer_type, config=self.config
+                    )
+                    self.logger.debug(
+                        f"Factory creation successful for {renderer_type}"
+                    )
+                    return instance
+                except Exception as factory_error:
+                    self.logger.warning(
+                        f"Factory creation failed for {renderer_type}: {factory_error}"
+                    )
+
+            # 3. 直接インスタンス化（最終フォールバック）
+            return self._create_direct_renderer_instance(renderer_type)
+
+        except Exception as e:
+            self.logger.error(
+                f"All renderer creation methods failed for {renderer_type}: {e}"
+            )
+            return self._create_direct_renderer_instance(renderer_type)
+
+    def _create_direct_renderer_instance(self, renderer_type: str) -> Any:
+        """直接レンダラーインスタンス化（最終フォールバック）"""
+        try:
+            renderer_class_map = {
+                "html": HtmlFormatter,
+                "markdown": MarkdownFormatter,
+            }
+
+            if renderer_type in renderer_class_map:
+                renderer_class = renderer_class_map[renderer_type]
+                instance = renderer_class(self.config)
+                self.logger.debug(
+                    f"Direct instantiation successful for {renderer_type}"
+                )
+                return instance
+            else:
+                raise ValueError(f"Unknown renderer type: {renderer_type}")
+
+        except Exception as e:
+            self.logger.error(f"Direct instantiation failed for {renderer_type}: {e}")
+            # 最小限の汎用レンダラーを返す
+            return self._create_minimal_renderer()
+
+    def _create_minimal_renderer(self) -> Any:
+        """最小限の汎用レンダラー生成"""
+
+        class MinimalRenderer:
+            def format(self, nodes: List[Node]) -> str:
+                if not nodes:
+                    return ""
+                return "\n".join(
+                    str(node.content) for node in nodes if hasattr(node, "content")
+                )
+
+        return MinimalRenderer()
+
+    def _initialize_fallback_renderers(self) -> None:
+        """フォールバック用レンダラー初期化"""
+        self.logger.warning("Using fallback renderer initialization")
+        try:
+            self.html_formatter = HtmlFormatter(self.config)
+            self.markdown_formatter = MarkdownFormatter(self.config)
+        except Exception as e:
+            self.logger.error(f"Fallback renderer initialization failed: {e}")
+            self.html_formatter = self._create_minimal_renderer()
+            self.markdown_formatter = self._create_minimal_renderer()
+
+    @with_events("main_render")
+    def render_nodes(self, nodes: List[Node], format: str = "html") -> str:
+        """ノードリストレンダリング処理（統合版）- 名前変更
 
         Args:
             nodes: レンダリングするASTノードリスト
@@ -131,7 +293,7 @@ class MainRenderer:
             format: 出力形式 ("html" または "markdown")
         """
         output_path = Path(output_path)
-        content = self.render(nodes, format)
+        content = self.render_nodes(nodes, format)
 
         # 出力ディレクトリが存在しない場合は作成
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -157,9 +319,9 @@ class MainRenderer:
             self.logger.error(f"Failed to set footnote data: {e}")
             self.footnotes_data = None
 
-    def render_nodes(self, nodes: list[Node]) -> str:
+    def render_nodes_to_html(self, nodes: list[Node]) -> str:
         """
-        Render a list of nodes to HTML
+        Render a list of nodes to HTML (旧render_nodesメソッド)
 
         Args:
             nodes: List of AST nodes to render
@@ -704,6 +866,94 @@ class MainRenderer:
                 modified_lines.insert(error.line_number - 1, error_marker)
 
         return "\n".join(modified_lines)
+
+    # ==========================================
+    # プロトコル準拠メソッド（BaseRendererProtocol実装）
+    # ==========================================
+
+    def render_to_html(self, nodes: List[Node]) -> str:
+        """HTMLレンダリング（互換性メソッド）"""
+        return self.render_nodes(nodes, format="html")
+
+    def render_to_markdown(self, nodes: List[Node]) -> str:
+        """Markdownレンダリング（互換性メソッド）"""
+        return self.render_nodes(nodes, format="markdown")
+
+    def render_node_protocol(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> RenderResult:
+        """プロトコル準拠レンダリングインターフェース"""
+        try:
+            # デフォルトでHTML形式でレンダリング
+            output_format = (
+                context.output_format
+                if context and hasattr(context, "output_format")
+                else "html"
+            )
+
+            if output_format == "html":
+                html_content = self.render([node], format="html")
+                return create_render_result(content=html_content, success=True)
+            elif output_format == "markdown":
+                md_content = self.render([node], format="markdown")
+                return create_render_result(content=md_content, success=True)
+            else:
+                result = create_render_result(success=False)
+                result.add_error(f"未対応の出力形式: {output_format}")
+                return result
+
+        except Exception as e:
+            result = create_render_result(success=False)
+            result.add_error(f"レンダリング失敗: {e}")
+            return result
+
+    def validate(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # ノードの基本検証
+            if not node:
+                errors.append("ノードが空です")
+            elif not hasattr(node, "node_type"):
+                errors.append("ノードタイプが設定されていません")
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_renderer_info(self) -> Dict[str, Any]:
+        """レンダラー情報（プロトコル準拠）"""
+        return {
+            "name": "MainRenderer",
+            "version": "2.0.0",
+            "supported_formats": ["html", "markdown"],
+            "capabilities": ["html_rendering", "markdown_rendering", "error_recovery"],
+            "formatters": ["html", "markdown"],
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["html", "markdown", "text"]
+
+    # プロトコル準拠のためのエイリアス
+    def render(
+        self,
+        node_or_nodes: Union[Node, List[Node]],
+        context: Optional[RenderContext] = None,
+        format: str = "html",
+    ) -> Union[str, RenderResult]:
+        """プロトコル準拠および既存API互換レンダリング"""
+        if isinstance(node_or_nodes, Node):
+            # プロトコル準拠モード：単一ノード -> RenderResult
+            return self.render_node_protocol(node_or_nodes, context)
+        else:
+            # 既存API互換モード：ノードリスト -> str
+            return self._render_original(node_or_nodes, format)
+
+    def _render_original(self, nodes: List[Node], format: str = "html") -> str:
+        """元のrenderメソッド実装（統合版）"""
+        return self.render_nodes(nodes, format)
 
 
 # 後方互換性：既存の HTMLRenderer エイリアス

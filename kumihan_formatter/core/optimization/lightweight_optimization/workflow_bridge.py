@@ -1,7 +1,7 @@
 """
 ワークフロー連携ブリッジ - Workflow Bridge
 
-claude-gemini-workflow-engineとの統合インターface
+外部ワークフローエンジンとの統合インターface
 軽量なローカル最適化と高度な外部処理の連携実現
 
 Target: 200行以内・JSON通信・フェイルセーフ機能
@@ -44,7 +44,7 @@ class WorkflowResponse:
 class WorkflowBridge:
     """ワークフロー連携ブリッジ
 
-    claude-gemini-workflow-engineとのファイルベース通信
+    外部ワークフローエンジンとのファイルベース通信
     - JSON形式でのリクエスト/レスポンス
     - フェイルセーフとローカルフォールバック
     - 軽量非同期処理

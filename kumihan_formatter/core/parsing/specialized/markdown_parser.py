@@ -18,10 +18,16 @@ from typing import Any, Dict, List, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
+from ..base.parser_protocols import (
+    MarkdownParserProtocol,
+    ParseContext,
+    ParseResult,
+    create_parse_result,
+)
 from ..protocols import ParserType
 
 
-class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin):
+class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserProtocol):
     """統一Markdownパーサー
 
     標準Markdown記法の解析:
@@ -517,3 +523,71 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin):
             }
         )
         return stats
+
+    # ==========================================
+    # プロトコル準拠メソッド（MarkdownParserProtocol実装）
+    # ==========================================
+
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース（プロトコル準拠）"""
+        try:
+            result = self._parse_implementation(content)
+            nodes = [result] if isinstance(result, Node) else result
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"Markdownパース失敗: {e}")
+            return result
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # 基本的なMarkdown構文チェック
+            lines = content.split("\n")
+            for i, line in enumerate(lines):
+                if line.strip():
+                    # 見出しレベルチェック
+                    heading_match = self.markdown_patterns["heading"].match(line)
+                    if heading_match and len(heading_match.group(1)) > 6:
+                        errors.append(f"行{i+1}: 見出しレベルは6まで")
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "UnifiedMarkdownParser",
+            "version": "2.0.0",
+            "supported_formats": ["markdown", "md"],
+            "capabilities": ["standard_markdown", "tables", "code_blocks", "footnotes"],
+            "parser_type": self.parser_type,
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["markdown", "md", "text"]
+
+    def parse_markdown(self, content: str) -> Node:
+        """Markdown固有パースメソッド（プロトコル準拠）"""
+        return self._parse_implementation(content)
+
+    def to_kumihan(self, markdown_content: str) -> str:
+        """MarkdownからKumihan記法に変換（プロトコル準拠）"""
+        # 簡単な変換実装（実際にはより詳細な実装が必要）
+        content = markdown_content
+
+        # 見出し変換: # Title -> # 見出し1 #Title##
+        content = re.sub(r"^# (.+)$", r"# 見出し1 #\1##", content, flags=re.MULTILINE)
+        content = re.sub(r"^## (.+)$", r"# 見出し2 #\1##", content, flags=re.MULTILINE)
+
+        # 強調変換: **text** -> # 太字 #text##
+        content = re.sub(r"\*\*([^*]+)\*\*", r"# 太字 #\1##", content)
+        content = re.sub(r"\*([^*]+)\*", r"# イタリック #\1##", content)
+
+        return content

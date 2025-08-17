@@ -6,13 +6,19 @@ Markdown出力に特化した統合フォーマッタークラス
 
 import re
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ...ast_nodes import Node
 from ...utilities.logger import get_logger
+from ..base.renderer_protocols import (
+    MarkdownRendererProtocol,
+    RenderContext,
+    RenderResult,
+    create_render_result,
+)
 
 
-class MarkdownFormatter:
+class MarkdownFormatter(MarkdownRendererProtocol):
     """Markdown出力専用フォーマッター
 
     統合された機能:
@@ -473,3 +479,72 @@ class MarkdownFormatter:
                 result.append(para_text)
 
         return "\n\n".join(result)
+
+    # ==========================================
+    # プロトコル準拠メソッド（MarkdownRendererProtocol実装）
+    # ==========================================
+
+    def render(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> RenderResult:
+        """統一レンダリングインターフェース（プロトコル準拠）"""
+        try:
+            markdown_content = self.format_node(node)
+            return create_render_result(content=markdown_content, success=True)
+        except Exception as e:
+            result = create_render_result(success=False)
+            result.add_error(f"Markdownレンダリング失敗: {e}")
+            return result
+
+    def validate(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # Markdown特有の検証
+            if not node:
+                errors.append("ノードが空です")
+            elif not hasattr(node, "node_type"):
+                errors.append("ノードタイプが設定されていません")
+            # Markdownレンダリング可能性の確認
+            elif not hasattr(node, "content"):
+                errors.append("ノードにコンテンツが設定されていません")
+        except Exception as e:
+            errors.append(f"Markdownバリデーションエラー: {e}")
+        return errors
+
+    def get_renderer_info(self) -> Dict[str, Any]:
+        """レンダラー情報（プロトコル準拠）"""
+        return {
+            "name": "MarkdownFormatter",
+            "version": "2.0.0",
+            "supported_formats": ["markdown"],
+            "capabilities": ["markdown_formatting", "html_to_markdown_conversion"],
+            "output_format": "markdown",
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["markdown", "md", "text"]
+
+    def render_markdown(
+        self, node: Node, options: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Markdown固有レンダリングメソッド（プロトコル準拠）"""
+        return self.format_node(node)
+
+    def to_html(self, markdown_content: str) -> str:
+        """MarkdownからHTMLに変換（プロトコル準拠）"""
+        # 簡単な変換実装（実際にはより詳細な実装が必要）
+        content = markdown_content
+
+        # 見出し変換: # Title -> <h1>Title</h1>
+        content = re.sub(r"^# (.+)$", r"<h1>\1</h1>", content, flags=re.MULTILINE)
+        content = re.sub(r"^## (.+)$", r"<h2>\1</h2>", content, flags=re.MULTILINE)
+
+        # 強調変換: **text** -> <strong>text</strong>
+        content = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", content)
+        content = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", content)
+
+        return content
