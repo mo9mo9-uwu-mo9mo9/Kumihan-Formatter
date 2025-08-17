@@ -240,8 +240,8 @@ tech-debt-ci:
 	@echo "✅ 技術的負債CI/CDチェック完了"
 
 # 🤖 Claude ↔ Gemini協業システム
-# 🔍 品質管理統合コマンド
-gemini-quality-check:
+# 🔍 品質管理統合コマンド (従来システム)
+gemini-quality-check-legacy:
 	@echo "🔍 統合品質チェック実行..."
 	@$(PYTHON) -c "import sys; sys.path.append('postbox'); \
 	from workflow.dual_agent_coordinator import DualAgentCoordinator; \
