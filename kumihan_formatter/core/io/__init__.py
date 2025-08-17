@@ -16,6 +16,12 @@ from .operations import FileOperations
 from .protocols import FileProtocol, PathProtocol
 from .validators import FileValidator, PathValidator
 
+# Distribution機能 (Issue #913 移行)
+try:
+    from .distribution import *
+except ImportError:
+    pass
+
 __all__ = [
     "FileManager",
     "FileOperations",

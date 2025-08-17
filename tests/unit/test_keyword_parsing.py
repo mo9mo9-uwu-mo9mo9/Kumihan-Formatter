@@ -8,16 +8,16 @@ from pathlib import Path
 
 import pytest
 
-from kumihan_formatter.core.keyword_parsing.definitions import (
+from kumihan_formatter.core.parsing.keyword.definitions import (
     DEFAULT_BLOCK_KEYWORDS,
     NESTING_ORDER,
     KeywordDefinitions,
 )
-from kumihan_formatter.core.keyword_parsing.marker_parser import (
+from kumihan_formatter.core.parsing.keyword.marker_parser import (
     MarkerParser,
     ParseResult,
 )
-from kumihan_formatter.core.keyword_parsing.validator import KeywordValidator
+from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
 
 
 @pytest.mark.unit

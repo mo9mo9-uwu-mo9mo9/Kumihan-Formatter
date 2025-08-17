@@ -15,21 +15,21 @@ from unittest.mock import Mock, patch, MagicMock
 from collections import deque
 from typing import Any, Dict, List
 
-from kumihan_formatter.core.optimization.settings.manager import (
+from kumihan_formatter.core.config.optimization.manager import (
     AdaptiveSettingsManager,
     ConfigAdjustment,
     WorkContext,
 )
-from kumihan_formatter.core.optimization.settings.analyzers import (
+from kumihan_formatter.core.config.optimization.analyzers import (
     TokenUsageAnalyzer,
     ComplexityAnalyzer,
 )
-from kumihan_formatter.core.optimization.settings.ab_testing import (
+from kumihan_formatter.core.config.optimization.ab_testing import (
     StatisticalTestingEngine,
     ABTestConfig,
     ABTestResult,
 )
-from kumihan_formatter.core.optimization.settings.optimizers import (
+from kumihan_formatter.core.config.optimization.optimizers import (
     FileSizeLimitOptimizer,
     ConcurrentToolCallLimiter,
 )

@@ -77,13 +77,14 @@ CLI Interface → Parser Core → Renderer Core
 Kumihan-Formatter/
 ├── kumihan_formatter/          # メインパッケージ
 │   ├── core/                   # コア機能
-│   │   ├── keyword_parsing/    # 新記法パーサー（Issue #665）
-│   │   │   ├── keyword_parser.py      # キーワード解析
-│   │   │   ├── marker_parser.py       # マーカー構文解析
-│   │   │   └── validator.py           # 構文検証
-│   │   ├── block_parser/       # ブロック処理
-│   │   │   ├── block_parser.py        # ブロック解析
-│   │   │   └── syntax_validator.py    # 構文検証
+│   │   ├── parsing/            # パーサー系統合
+│   │   │   ├── keyword/              # 新記法パーサー（Issue #665）
+│   │   │   │   ├── keyword_parser.py      # キーワード解析
+│   │   │   │   ├── marker_parser.py       # マーカー構文解析
+│   │   │   │   └── validator.py           # 構文検証
+│   │   │   └── block/                # ブロック処理
+│   │   │       ├── block_parser.py        # ブロック解析
+│   │   │       └── syntax_validator.py    # 構文検証
 │   │   ├── renderer/          # レンダリング（拡張済み）
 │   │   │   ├── html_renderer.py       # HTML出力
 │   │   │   ├── template_renderer.py   # テンプレート処理
@@ -103,8 +104,8 @@ Kumihan-Formatter/
 ```
 
 ### 主要な構造変更（Issue #665）
-- **keyword_parsing/**: 新記法専用パーサーモジュール追加
-- **block_parser/**: ブロック処理の独立モジュール化
+- **parsing/keyword/**: 新記法専用パーサーモジュール追加
+- **parsing/block/**: ブロック処理の独立モジュール化
 - **renderer/**: キーワード専用レンダラー追加
 
 ## クラス設計（Issue #665対応後）

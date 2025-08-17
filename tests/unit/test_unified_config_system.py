@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
-from kumihan_formatter.core.unified_config import (
+from kumihan_formatter.core.config.unified import (
     BaseConfigAdapter,
     ConfigLoader,
     ConfigValidator,
@@ -31,7 +31,7 @@ from kumihan_formatter.core.unified_config import (
     UIConfig,
     UnifiedConfigManager,
 )
-from kumihan_formatter.core.unified_config.config_models import (
+from kumihan_formatter.core.config.unified.config_models import (
     ConfigFormat,
     ErrorHandlingLevel,
     LogLevel,
@@ -609,7 +609,7 @@ class TestIntegration:
                 },
             ):
                 # グローバル状態をリセットして新しい設定で初期化
-                from kumihan_formatter.core.unified_config.unified_config_manager import (
+                from kumihan_formatter.core.config.unified.unified_config_manager import (
                     get_unified_config_manager,
                 )
 

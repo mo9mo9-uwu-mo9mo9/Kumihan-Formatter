@@ -7,7 +7,7 @@ and complex nesting logic.
 # from html import escape  # Removed: unused import
 from typing import Any
 
-from ..keyword_parsing.definitions import KeywordDefinitions
+from ..parsing.keyword.definitions import KeywordDefinitions
 from .html_utils import process_text_content, sort_keywords_by_nesting_order
 
 

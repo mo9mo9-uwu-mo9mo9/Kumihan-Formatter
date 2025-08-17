@@ -16,7 +16,7 @@ from kumihan_formatter.core.parsing import UnifiedKeywordParser, get_global_coor
 from typing import Any, Union, cast
 
 from .ast_nodes import Node, NodeBuilder, emphasis, error_node, highlight, strong
-from .keyword_parsing import KeywordDefinitions, KeywordValidator, MarkerParser
+from .parsing.keyword import KeywordDefinitions, KeywordValidator, MarkerParser
 
 
 class KeywordParser:

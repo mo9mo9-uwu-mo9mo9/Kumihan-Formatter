@@ -22,7 +22,7 @@ from unittest.mock import Mock, patch, MagicMock
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from kumihan_formatter.core.optimization.settings.manager import (
+from kumihan_formatter.core.config.optimization.manager import (
     AdaptiveSettingsManager,
     ConfigAdjustment,
     WorkContext,

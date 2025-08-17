@@ -10,20 +10,9 @@ from typing import Any, Dict, Optional
 
 from ..common.error_base import KumihanError
 from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
-from ..error_analysis.error_config import ErrorConfigManager
 from ..utilities.logger import get_logger
-
-
-@dataclass
-class ErrorHandleResult:
-    """エラー処理結果"""
-
-    should_continue: bool
-    user_message: str
-    logged: bool
-    graceful_handled: bool
-    original_error: Exception
-    kumihan_error: KumihanError
+from .analysis.error_config import ErrorConfigManager
+from .log_formatter import ErrorHandleResult
 
 
 class UnifiedErrorHandler:

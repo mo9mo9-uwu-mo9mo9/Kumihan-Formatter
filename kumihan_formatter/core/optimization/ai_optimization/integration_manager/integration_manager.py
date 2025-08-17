@@ -8,7 +8,7 @@ import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
 
-from kumihan_formatter.core.optimization.settings.manager import AdaptiveSettingsManager
+from kumihan_formatter.core.config.optimization.manager import AdaptiveSettingsManager
 from kumihan_formatter.core.utilities.logger import get_logger
 
 from .coordinator import OptimizationCoordinator

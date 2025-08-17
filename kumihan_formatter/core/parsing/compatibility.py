@@ -219,7 +219,7 @@ def show_migration_guide() -> None:
 新しい統一パーサーシステムへの移行をお願いします:
 
 【旧システム】
-from kumihan_formatter.core.block_parser import BlockParser
+from kumihan_formatter.core.parsing.block import BlockParser
 from kumihan_formatter.core.keyword_parser import KeywordParser
 
 【新システム】

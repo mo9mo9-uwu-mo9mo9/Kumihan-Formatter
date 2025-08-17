@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
-from kumihan_formatter.core.keyword_parsing.marker_parser import MarkerParser
+from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
 

@@ -1,7 +1,7 @@
 """Unit tests for Kumihan-Formatter footnote keyword system."""
 
 import pytest
-from kumihan_formatter.core.keyword_parsing.definitions import KeywordDefinitions
+from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
 from kumihan_formatter.core.utilities.logger import get_logger
 
 
