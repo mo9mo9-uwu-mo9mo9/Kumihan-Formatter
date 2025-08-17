@@ -1,15 +1,21 @@
-"""Main HTML renderer for Kumihan-Formatter
+"""統合メインレンダラー - Issue #912 Renderer系統合リファクタリング
 
-This module provides the main HTMLRenderer class that coordinates
-all specialized renderers and maintains backward compatibility.
+Renderer系統合版：全体統括レンダラー
+- 元々のHTMLRenderer機能を統合
+- HtmlFormatter、MarkdownFormatterを統括
+- 既存API完全互換性維持
 """
 
-from typing import Any, List, cast
+from pathlib import Path
+from typing import Any, List, Optional, Union, cast
 
 from ..ast_nodes import Node
+from ..utilities.logger import get_logger
 from .compound_renderer import CompoundElementRenderer
 from .content_processor import ContentProcessor
 from .element_renderer import ElementRenderer
+from .formatters.html_formatter import HtmlFormatter
+from .formatters.markdown_formatter import MarkdownFormatter
 from .heading_collector import HeadingCollector
 
 # HeadingRenderer is now part of ElementRenderer
@@ -17,9 +23,16 @@ from .html_formatter import HTMLFormatter
 from .html_utils import process_text_content
 
 
-class HTMLRenderer:
-    """
-    HTML出力のメインレンダラー（特化レンダラーを統括）
+class MainRenderer:
+    """統合メインレンダラー（全Rendererシステム統括）
+
+    Issue #912 Renderer系統合リファクタリング対応
+
+    統合された機能:
+    - HTML出力（HtmlFormatter統括）
+    - Markdown出力（MarkdownFormatter統括）
+    - 既存HTMLRenderer機能完全継承
+    - 後方互換性完全維持
 
     設計ドキュメント:
     - 記法仕様: /SPEC.md#Kumihan記法基本構文
@@ -27,17 +40,18 @@ class HTMLRenderer:
     - 依存関係: /docs/CLASS_DEPENDENCY_MAP.md
 
     関連クラス:
+    - HtmlFormatter: HTML出力専用フォーマッター
+    - MarkdownFormatter: Markdown出力専用フォーマッター
     - ElementRenderer: 基本要素のレンダリング
     - CompoundElementRenderer: 複合要素のレンダリング
-    - HTMLFormatter: HTML出力フォーマット調整
+    - HTMLFormatter: HTML出力フォーマット調整（既存）
     - Node: 入力となるASTノード
-    - Renderer: このクラスを使用する上位レンダラー
 
     責務:
-    - NodeからHTMLへの変換統括
-    - ネスト順序の制御（NESTING_ORDER準拠）
-    - 特化レンダラーの調整
-    - HTMLエスケープとセキュリティ対応
+    - 全出力形式の統括管理
+    - フォーマット選択と処理委譲
+    - 既存API完全互換性維持
+    - セキュリティ・エラーハンドリング統括
     """
 
     # Maintain the original nesting order for backward compatibility
@@ -53,11 +67,20 @@ class HTMLRenderer:
         "em",  # イタリック
     ]
 
-    def __init__(self) -> None:
-        """Initialize HTML renderer with specialized renderers"""
-        from ...core.utilities.logger import get_logger
+    def __init__(self, config: Optional[Any] = None) -> None:
+        """統合メインレンダラーを初期化
 
+        Args:
+            config: 設定オブジェクト（オプショナル）
+        """
         self.logger = get_logger(__name__)
+        self.config = config
+
+        # 統合フォーマッター
+        self.html_formatter = HtmlFormatter(config)
+        self.markdown_formatter = MarkdownFormatter(config)
+
+        # 既存コンポーネント（後方互換性のため維持）
         self.element_renderer = ElementRenderer()
         self.compound_renderer = CompoundElementRenderer()
         self.formatter = HTMLFormatter()
@@ -70,11 +93,53 @@ class HTMLRenderer:
         self.element_renderer.set_main_renderer(self)
 
         # Issue #700: graceful error handling support
-        self.graceful_errors: list[Any] = []
+        self.graceful_errors: List[Any] = []
         self.embed_errors_in_html = False
 
         # Footnote integration support
-        self.footnotes_data: dict[str, Any] | None = None
+        self.footnotes_data: Optional[dict[str, Any]] = None
+
+        self.logger.debug("MainRenderer initialized with config support")
+
+    def render(self, nodes: List[Node], format: str = "html") -> str:
+        """メインレンダリング処理（統合版）
+
+        Args:
+            nodes: レンダリングするASTノードリスト
+            format: 出力形式 ("html" または "markdown")
+
+        Returns:
+            str: 指定形式でレンダリングされた出力
+        """
+        self.logger.debug(f"Rendering {len(nodes)} nodes to {format}")
+
+        if format.lower() == "html":
+            return self.html_formatter.format(nodes)
+        elif format.lower() == "markdown":
+            return self.markdown_formatter.format(nodes)
+        else:
+            raise ValueError(f"Unsupported format: {format}")
+
+    def render_to_file(
+        self, nodes: List[Node], output_path: Union[str, Path], format: str = "html"
+    ) -> None:
+        """ファイル出力
+
+        Args:
+            nodes: レンダリングするASTノードリスト
+            output_path: 出力ファイルパス
+            format: 出力形式 ("html" または "markdown")
+        """
+        output_path = Path(output_path)
+        content = self.render(nodes, format)
+
+        # 出力ディレクトリが存在しない場合は作成
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        self.logger.info(f"Rendered content saved to {output_path}")
 
     def set_footnote_data(self, footnotes_data: dict[str, Any]) -> None:
         """
@@ -639,6 +704,10 @@ class HTMLRenderer:
                 modified_lines.insert(error.line_number - 1, error_marker)
 
         return "\n".join(modified_lines)
+
+
+# 後方互換性：既存の HTMLRenderer エイリアス
+HTMLRenderer = MainRenderer
 
 
 def render_single_node(node: Node, depth: int = 0) -> str:
