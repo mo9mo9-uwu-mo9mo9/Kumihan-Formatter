@@ -1,28 +1,51 @@
 """統一キーワードパーサー
 
-Issue #880 Phase 2B: 既存のKeywordParser系統を統合
-- core/keyword_parser.py
-- core/keyword_parsing/parsers/keyword_parser.py
-- core/keyword_parsing/marker_parser.py
-の機能を統合・整理
+Issue #912: Parser系統合リファクタリング
+3つの重複KeywordParserを完全統合:
+- core/keyword_parser.py (518行、DEFAULT_BLOCK_KEYWORDS、非推奨マーク)
+- core/keyword_parsing/parsers/keyword_parser.py (基本実装、マーカー解析)
+- core/parsing/specialized/keyword_parser.py (統一実装、最も完全)
+
+統合機能:
+- キーワード定義・検証
+- マーカー解析・属性解析
+- 複合キーワード分割
+- ルビ記法処理
+- インライン記法マッピング
+- 後方互換性維持
 """
 
 import re
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from ...ast_nodes import Node, create_node
+from ...ast_nodes import (
+    Node,
+    NodeBuilder,
+    create_node,
+    emphasis,
+    error_node,
+    highlight,
+    strong,
+)
 from ..base import CompositeMixin, UnifiedParserBase
+from ..base.parser_protocols import KeywordParserProtocol
 from ..protocols import ParserType
 
 
 class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
     """統一キーワードパーサー
 
-    Kumihan記法のキーワード解析:
+    3つの重複KeywordParserを統合:
+    - DEFAULT_BLOCK_KEYWORDS (core/keyword_parser.py から)
+    - マーカー解析機能 (keyword_parsing/parsers/ から)
+    - 統一パーサー機能 (existing implementation)
+
+    機能:
     - キーワード定義・検証
-    - マーカー解析
-    - 属性解析
-    - キーワードレジストリ管理
+    - マーカー解析・属性解析
+    - 複合キーワード分割・ネスト構造構築
+    - ルビ記法・インライン記法処理
+    - 後方互換性維持
     """
 
     def __init__(self) -> None:
@@ -32,6 +55,11 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
         self._setup_keyword_registry()
         self._setup_keyword_patterns()
         self._setup_attribute_handlers()
+
+        # 統合機能: core/keyword_parser.py からの機能
+        self._setup_legacy_compatibility()
+        self._setup_inline_mapping()
+        self._setup_nesting_order()
 
     def _setup_keyword_registry(self) -> None:
         """キーワードレジストリの設定"""
@@ -439,3 +467,222 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
             }
         )
         return stats
+
+    # ==========================================
+    # 統合機能: 3つのKeywordParserからの機能統合
+    # ==========================================
+
+    def _setup_legacy_compatibility(self) -> None:
+        """core/keyword_parser.py からの後方互換性機能"""
+        # DEFAULT_BLOCK_KEYWORDS の統合
+        self.DEFAULT_BLOCK_KEYWORDS = {
+            "太字": {"tag": "strong"},
+            "イタリック": {"tag": "em"},
+            "枠線": {"tag": "div", "class": "box"},
+            "ハイライト": {"tag": "div", "class": "highlight"},
+            "見出し1": {"tag": "h1"},
+            "見出し2": {"tag": "h2"},
+            "見出し3": {"tag": "h3"},
+            "見出し4": {"tag": "h4"},
+            "見出し5": {"tag": "h5"},
+            "折りたたみ": {"tag": "details", "summary": "詳細を表示"},
+            "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
+        }
+
+        # 既存のdefault_keywordsとマージ
+        for keyword, definition in self.DEFAULT_BLOCK_KEYWORDS.items():
+            if keyword not in self.default_keywords:
+                self.default_keywords[keyword] = {"type": "legacy_block", **definition}
+
+        # 後方互換性プロパティ
+        self.BLOCK_KEYWORDS = self.DEFAULT_BLOCK_KEYWORDS
+
+    def _setup_inline_mapping(self) -> None:
+        """インライン記法マッピングの設定"""
+        self._inline_pattern = re.compile(r"#\s*([^#]+?)\s*#([^#]+?)##")
+        self._inline_keyword_mapping = {
+            "太字": strong,
+            "イタリック": emphasis,
+            "ハイライト": highlight,
+            "下線": lambda text: NodeBuilder("u").content(text).build(),
+            "コード": lambda text: NodeBuilder("code").content(text).build(),
+            "取り消し線": lambda text: NodeBuilder("del").content(text).build(),
+            "ルビ": self._create_ruby_node,
+        }
+
+    def _setup_nesting_order(self) -> None:
+        """キーワードネスト順序の設定"""
+        self.NESTING_ORDER = [
+            "details",  # 折りたたみ, ネタバレ
+            "div",  # 枠線, ハイライト
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",  # 見出し
+            "strong",  # 太字
+            "em",  # イタリック
+        ]
+
+    def parse_marker_keywords(
+        self, marker_content: str
+    ) -> Tuple[List[str], Dict[str, Any], List[str]]:
+        """マーカーからキーワードと属性を解析
+
+        keyword_parsing/parsers/keyword_parser.py からの統合機能
+
+        Args:
+            marker_content: マーカーコンテンツ
+
+        Returns:
+            (キーワードリスト, 属性辞書, エラーリスト)
+        """
+        if not isinstance(marker_content, str):
+            return [], {}, ["Invalid marker content type"]
+
+        keywords: List[str] = []
+        attributes: Dict[str, Any] = {}
+        errors: List[str] = []
+
+        marker_content = marker_content.strip()
+        if not marker_content:
+            return keywords, attributes, errors
+
+        try:
+            # ルビ記法の特別処理
+            if marker_content.startswith("ルビ "):
+                ruby_content = marker_content[3:].strip()
+                ruby_result = self._parse_ruby_content(ruby_content)
+                if ruby_result:
+                    attributes["ruby"] = ruby_result
+                    return keywords, attributes, errors
+
+            # 複合キーワードの処理
+            if "+" in marker_content or "＋" in marker_content:
+                compound_keywords = self.split_compound_keywords(marker_content)
+                for part in compound_keywords:
+                    if part and self._is_valid_keyword(part):
+                        keywords.append(part)
+            else:
+                # 単一キーワード
+                keyword = marker_content.strip()
+                if keyword and self._is_valid_keyword(keyword):
+                    keywords.append(keyword)
+
+        except Exception as e:
+            errors.append(f"マーカー解析エラー: {str(e)}")
+
+        return keywords, attributes, errors
+
+    def split_compound_keywords(self, keyword_content: str) -> List[str]:
+        """複合キーワードを個別のキーワードに分割
+
+        Args:
+            keyword_content: 分割対象のキーワード文字列
+
+        Returns:
+            個別キーワードのリスト
+        """
+        if not isinstance(keyword_content, str):
+            return []
+
+        keywords: List[str] = []
+
+        # 複合キーワード記号での分割
+        if "+" in keyword_content or "＋" in keyword_content:
+            parts = re.split(r"[+＋]", keyword_content)
+            for part in parts:
+                part = part.strip()
+                if part and self._is_valid_keyword(part):
+                    keywords.append(part)
+        else:
+            # 単一キーワード
+            keyword = keyword_content.strip()
+            if keyword and self._is_valid_keyword(keyword):
+                keywords.append(keyword)
+
+        return keywords
+
+    def parse_keywords(self, content: str) -> List[str]:
+        """コンテンツからキーワードを抽出
+
+        KeywordParserProtocol の実装
+        """
+        if not content:
+            return []
+
+        keywords = []
+
+        # ブロック記法からのキーワード抽出
+        block_matches = re.finditer(r"#([^#]+)#[^#]*##", content)
+        for match in block_matches:
+            keyword_text = match.group(1).strip()
+            if self._is_valid_keyword(keyword_text):
+                keywords.append(keyword_text)
+
+        return keywords
+
+    def validate_keyword(self, keyword: str) -> bool:
+        """キーワードの妥当性を検証
+
+        KeywordParserProtocol の実装
+        """
+        return self._is_valid_keyword(keyword)
+
+    def _is_valid_keyword(self, keyword: str) -> bool:
+        """キーワードの有効性チェック"""
+        if not keyword or not isinstance(keyword, str):
+            return False
+
+        keyword = keyword.strip()
+
+        # デフォルトキーワードまたはカスタムキーワードに存在するか
+        return (
+            keyword in self.default_keywords
+            or keyword in self.custom_keywords
+            or keyword in self.DEFAULT_BLOCK_KEYWORDS
+        )
+
+    def _parse_ruby_content(self, ruby_content: str) -> Optional[Dict[str, str]]:
+        """ルビ記法の解析"""
+        if not ruby_content:
+            return None
+
+        # ルビ記法: base|ruby 形式
+        if "|" in ruby_content:
+            parts = ruby_content.split("|", 1)
+            if len(parts) == 2:
+                return {"base": parts[0].strip(), "ruby": parts[1].strip()}
+
+        # 単純なルビ
+        return {"base": ruby_content, "ruby": ""}
+
+    def _create_ruby_node(self, text: str) -> Node:
+        """ルビノードの作成"""
+        ruby_info = self._parse_ruby_content(text)
+        if ruby_info:
+            return (
+                NodeBuilder("ruby")
+                .content(ruby_info["base"])
+                .attribute("data-ruby", ruby_info["ruby"])
+                .build()
+            )
+        else:
+            return NodeBuilder("span").content(text).build()
+
+    def _normalize_marker_syntax(self, marker_content: str) -> str:
+        """マーカー記法の正規化（レガシー機能）"""
+        if not marker_content:
+            return ""
+
+        # 記号の正規化
+        marker_content = marker_content.replace("＋", "+")
+        marker_content = marker_content.replace("－", "-")
+
+        return marker_content.strip()
+
+    # 後方互換性エイリアス
+    def parse(self, text: str) -> List[Node]:
+        """parse メソッドのエイリアス"""
+        result = self._parse_implementation(text)
+        return [result] if isinstance(result, Node) else result

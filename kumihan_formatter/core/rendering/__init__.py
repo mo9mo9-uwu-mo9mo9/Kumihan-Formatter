@@ -1,16 +1,23 @@
-"""Rendering module for Kumihan-Formatter
+"""統合Renderingシステム - Issue #912 Renderer系統合リファクタリング
 
-This module provides HTML rendering capabilities through specialized renderers:
-- ElementRenderer: Basic HTML elements (paragraphs, headings, lists)
-- CompoundElementRenderer: Complex elements with multiple keywords
-- HTMLFormatter: HTML formatting and pretty-printing utilities
-- HTMLRenderer: Main renderer that coordinates all specialized renderers
+統合された機能:
+- MainRenderer: 全出力形式統括レンダラー（HTML/Markdown対応）
+- HtmlFormatter: HTML出力専用フォーマッター
+- MarkdownFormatter: Markdown出力専用フォーマッター
+- ElementRenderer: 基本HTML要素（段落、見出し、リスト）
+- CompoundElementRenderer: 複合要素（複数キーワード）
+- HTMLFormatter: HTMLフォーマット・整形ユーティリティ
 
-Backward compatibility is maintained with the original html_renderer module.
+後方互換性は完全に維持されています。
 """
 
+# 既存コンポーネント（後方互換性）
 from .compound_renderer import CompoundElementRenderer as CompoundRenderer
 from .element_renderer import ElementRenderer
+
+# メイン機能
+from .formatters.html_formatter import HtmlFormatter
+from .formatters.markdown_formatter import MarkdownFormatter
 from .html_formatter import HTMLFormatter
 from .html_utils import (
     NESTING_ORDER,
@@ -22,14 +29,25 @@ from .html_utils import (
     render_attributes,
     sort_keywords_by_nesting_order,
 )
-from .main_renderer import HTMLRenderer
+from .main_renderer import HTMLRenderer, MainRenderer
+
+# 後方互換性エイリアス
+Renderer = MainRenderer  # kumihan_formatter.renderer.Renderer の代替
+CompoundElementRenderer = CompoundRenderer
 
 __all__ = [
+    # 統合メイン機能
+    "MainRenderer",
+    "HtmlFormatter",
+    "MarkdownFormatter",
+    # 後方互換性
     "HTMLRenderer",
+    "Renderer",
     "CompoundElementRenderer",
     "ElementRenderer",
     "CompoundRenderer",
     "HTMLFormatter",
+    # ユーティリティ
     "escape_html",
     "render_attributes",
     "process_text_content",

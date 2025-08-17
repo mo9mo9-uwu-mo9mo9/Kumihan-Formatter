@@ -1,10 +1,16 @@
 """統一Markdownパーサー
 
-Issue #880 Phase 2B: 既存のMarkdownParser系統を統合
-- core/markdown_parser.py
-- core/markdown_converter.py
-- core/markdown_processor.py
-の機能を統合・整理
+Issue #912: Parser系統合リファクタリング
+重複MarkdownParserを統合:
+- core/markdown_parser.py (149行、基本Markdown機能)
+- core/parsing/specialized/markdown_parser.py (513行、統一実装、最も完全)
+
+統合機能:
+- 標準Markdown記法フルサポート
+- Kumihanとの相互変換
+- コードブロック・テーブル解析
+- メタデータ処理
+- 後方互換性維持
 """
 
 import re

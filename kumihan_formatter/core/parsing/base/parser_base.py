@@ -5,11 +5,12 @@ Issue #880 Phase 2: すべてのパーサーの共通基盤
 """
 
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from ...ast_nodes import Node, error_node
 from ...utilities.logger import get_logger
 from ..protocols import ParseResult
+from .parser_protocols import ParserProtocol
 
 
 class UnifiedParserBase:
@@ -210,3 +211,76 @@ class UnifiedParserBase:
             errors=self.get_errors(),
             warnings=self.get_warnings(),
         )
+
+
+class CommonParserMixin:
+    """共通パーサー機能ミックスイン
+
+    Issue #912: パーサー統合で共通化される機能
+    """
+
+    def _validate_input(self, text: str) -> bool:
+        """入力検証"""
+        return isinstance(text, str) and bool(text.strip())
+
+    def _handle_error(self, error: Exception, context: str) -> Node:
+        """統一エラーハンドリング"""
+        error_msg = f"Error in {context}: {error}"
+        if hasattr(self, "logger"):
+            self.logger.error(error_msg)
+        if hasattr(self, "add_error"):
+            self.add_error(error_msg)
+        return error_node(error_msg)
+
+    def _normalize_content(self, content: str) -> str:
+        """コンテンツの正規化"""
+        if not isinstance(content, str):
+            return ""
+
+        # 改行の統一
+        content = content.replace("\r\n", "\n").replace("\r", "\n")
+
+        # 余分な空白の削除
+        lines = content.split("\n")
+        normalized_lines = []
+        for line in lines:
+            normalized_lines.append(line.rstrip())
+
+        return "\n".join(normalized_lines)
+
+    def _is_empty_content(self, content: str) -> bool:
+        """空コンテンツの判定"""
+        return not content or not content.strip()
+
+    def _extract_attributes(self, content: str) -> Tuple[str, Dict[str, str]]:
+        """属性の抽出（共通ロジック）
+
+        Returns:
+            (属性を除いたコンテンツ, 属性辞書)
+        """
+        import re
+
+        attributes = {}
+
+        # color属性の抽出
+        color_pattern = re.compile(r"\[color:([#a-zA-Z0-9]+)\]")
+        color_matches = color_pattern.findall(content)
+        if color_matches:
+            attributes["color"] = color_matches[0]
+            content = color_pattern.sub("", content)
+
+        # style属性の抽出
+        style_pattern = re.compile(r"\[style:([^]]+)\]")
+        style_matches = style_pattern.findall(content)
+        if style_matches:
+            attributes["style"] = style_matches[0]
+            content = style_pattern.sub("", content)
+
+        # class属性の抽出
+        class_pattern = re.compile(r"\[class:([^]]+)\]")
+        class_matches = class_pattern.findall(content)
+        if class_matches:
+            attributes["class"] = class_matches[0]
+            content = class_pattern.sub("", content)
+
+        return content.strip(), attributes

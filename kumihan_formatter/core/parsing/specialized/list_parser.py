@@ -1,30 +1,60 @@
 """統一リストパーサー
 
-Issue #880 Phase 2B: 既存のListParser系統を統合
-- core/list_parser.py
-- core/list_parser_core.py
-- core/nested_list_parser.py
-- core/list_parser_factory.py
-の機能を統合・整理
+Issue #912: Parser系統合リファクタリング
+重複ListParserを完全統合:
+- core/list_parser.py (126行、基本リスト解析)
+- core/list_parser_core.py (363行、新記法ブロック形式)
+- core/nested_list_parser.py (69行、ネスト構造)
+- core/list_parser_factory.py (61行、ファクトリーパターン)
+- core/parsing/specialized/list_parser.py (統一実装、最も完全)
+
+統合機能:
+- 順序付き・順序なしリスト解析
+- ネストリスト構造（最大3レベル）
+- 定義リスト・チェックリスト
+- # リスト # ブロック形式
+- 文字単位解析（スタック）
+- ファクトリーパターン
+- 後方互換性維持
 """
 
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from ...ast_nodes import Node, create_node
+from ...ast_nodes import Node, create_node, list_item, ordered_list, unordered_list
 from ..base import CompositeMixin, UnifiedParserBase
+from ..base.parser_protocols import ListParserProtocol
 from ..protocols import ParserType
 
 
 class UnifiedListParser(UnifiedParserBase, CompositeMixin):
     """統一リストパーサー
 
-    各種リスト形式の解析:
+    重複ListParserを統合した包括的リスト解析機能:
+
+    基本リスト形式:
     - 順序なしリスト: -, *, +
     - 順序付きリスト: 1., 2., 3.
-    - ネストしたリスト
-    - 定義リスト
-    - チェックリスト
+    - 定義リスト: term :: definition
+    - チェックリスト: - [ ] item, - [x] item
+    - アルファベット・ローマ数字リスト
+
+    ネストリスト:
+    - 最大3レベルのインデント
+    - スペース・タブ混在対応
+    - 動的ネスト構造構築
+
+    新記法ブロック:
+    - # リスト # ～ ## 形式
+    - ネスト対応（スペース1個で1レベル下）
+
+    文字単位解析:
+    - スタックベース解析
+    - [,] 区切り文字対応
+
+    ファクトリーパターン:
+    - リストタイプ自動判定
+    - 適切なパーサー選択
     """
 
     def __init__(self) -> None:
@@ -33,6 +63,11 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
         # リスト解析の設定
         self._setup_list_patterns()
         self._setup_list_handlers()
+
+        # 統合機能: 重複ListParserからの機能
+        self._setup_stack_parser()
+        self._setup_block_parser()
+        self._setup_factory_methods()
 
     def _setup_list_patterns(self) -> None:
         """リスト解析パターンの設定"""
@@ -485,3 +520,295 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
             }
         )
         return stats
+
+    # ==========================================
+    # 統合機能: 重複ListParserからの機能統合
+    # ==========================================
+
+    def _setup_stack_parser(self) -> None:
+        """スタックベース解析器の設定（core/list_parser.py から）"""
+        self.stack: List[List[Any]] = [[]]
+        self.current_string: str = ""
+
+    def _setup_block_parser(self) -> None:
+        """ブロック形式解析器の設定（core/list_parser_core.py から）"""
+        # ブロック形式解析用パターン
+        self.block_patterns = {
+            "list_header": re.compile(r"^#\s*リスト\s*#\s*$"),
+            "list_end": re.compile(r"^##\s*$"),
+            "nested_item": re.compile(r"^(\s*)(.+)$"),
+        }
+
+    def _setup_factory_methods(self) -> None:
+        """ファクトリーメソッドの設定（core/list_parser_factory.py から）"""
+        # パーサー選択ルール
+        self.parser_selection_rules = {
+            "block_format": self._should_use_block_parser,
+            "nested_format": self._should_use_nested_parser,
+            "stack_format": self._should_use_stack_parser,
+        }
+
+    def parse_char(self, char: str) -> None:
+        """文字単位解析（core/list_parser.py から統合）
+
+        Args:
+            char: 解析する文字
+        """
+        if char == "[":
+            self.start_list()
+        elif char == "]":
+            self.end_list()
+        elif char == ",":
+            self.add_string()
+        else:
+            self.current_string += char
+
+    def start_list(self) -> None:
+        """新しいリストを開始"""
+        self.add_string()
+        new_list: List[Any] = []
+        self.stack[-1].append(new_list)
+        self.stack.append(new_list)
+
+    def end_list(self) -> None:
+        """現在のリストを終了"""
+        self.add_string()
+        if len(self.stack) > 1:
+            self.stack.pop()
+        else:
+            raise ValueError("Unmatched closing bracket ]")
+
+    def add_string(self) -> None:
+        """現在の文字列をリストに追加"""
+        if self.current_string:
+            self.stack[-1].append(self.current_string.strip())
+            self.current_string = ""
+
+    def get_result(self) -> List[Any]:
+        """解析結果を取得"""
+        self.add_string()
+        return self.stack[0] if self.stack else []
+
+    def parse_list_block(self, lines: List[str], start_index: int) -> Tuple[Node, int]:
+        """# リスト # ブロック形式の解析（core/list_parser_core.py から統合）
+
+        Args:
+            lines: 全行リスト
+            start_index: 開始インデックス
+
+        Returns:
+            (解析されたノード, 次のインデックス)
+        """
+        current_index = start_index + 1  # # リスト # 行をスキップ
+        list_items = []
+
+        while current_index < len(lines):
+            line = lines[current_index]
+
+            # 終了マーカーをチェック
+            if self.block_patterns["list_end"].match(line):
+                break
+
+            # 空行はスキップ
+            if not line.strip():
+                current_index += 1
+                continue
+
+            # ネストレベルと内容を解析
+            match = self.block_patterns["nested_item"].match(line)
+            if match:
+                indent = match.group(1)
+                content = match.group(2)
+
+                # インデントレベルを計算（スペース1個 = レベル1）
+                nest_level = len(indent)
+
+                # リストアイテムノードを作成
+                item_node = list_item(content)
+                item_node.metadata["nest_level"] = nest_level
+                item_node.metadata["indent"] = indent
+
+                list_items.append(item_node)
+
+            current_index += 1
+
+        # ネスト構造を構築
+        root_node = self._build_nested_structure(list_items)
+
+        return root_node, current_index + 1
+
+    def parse_nested_list(self, content: str, level: int = 0) -> List[Node]:
+        """ネストリストをパース（ListParserProtocol実装）
+
+        Args:
+            content: ネストリストコンテンツ
+            level: ネストレベル
+
+        Returns:
+            パースされたネストリストのノードリスト
+        """
+        if level > 3:  # 最大3レベル制限
+            self.add_warning(f"ネストレベル{level}は制限を超えています（最大3レベル）")
+            return []
+
+        lines = content.split("\n")
+        nodes = []
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            # インデントでネストレベルを判定
+            indent_match = self.list_patterns["indent"].match(line)
+            if indent_match:
+                current_indent = len(indent_match.group(1))
+                expected_indent = level * 2  # 2スペース = 1レベル
+
+                if current_indent == expected_indent:
+                    # 現在のレベルのアイテム
+                    list_type = self.detect_list_type(line.strip())
+                    if list_type:
+                        node = self._create_list_item_node(
+                            line.strip(), list_type, level
+                        )
+                        nodes.append(node)
+                elif current_indent > expected_indent:
+                    # より深いネストは再帰処理
+                    nested_nodes = self.parse_nested_list(line, level + 1)
+                    nodes.extend(nested_nodes)
+
+        return nodes
+
+    def parse_list_items(self, content: str) -> List[Node]:
+        """リストアイテムをパース（ListParserProtocol実装）
+
+        Args:
+            content: リストコンテンツ
+
+        Returns:
+            パースされたリストアイテムのノードリスト
+        """
+        lines = content.split("\n")
+        items = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            list_type = self.detect_list_type(line)
+            if list_type:
+                item_node = self._create_list_item_node(line, list_type, 0)
+                items.append(item_node)
+
+        return items
+
+    def detect_list_type(self, line: str) -> Optional[str]:
+        """リストタイプを検出（ListParserProtocol実装）
+
+        Args:
+            line: 検査対象の行
+
+        Returns:
+            検出されたリストタイプ
+        """
+        return self._detect_list_type(line)
+
+    def _should_use_block_parser(self, content: str) -> bool:
+        """ブロック形式パーサーを使用すべきか判定"""
+        return bool(self.block_patterns["list_header"].search(content))
+
+    def _should_use_nested_parser(self, content: str) -> bool:
+        """ネスト形式パーサーを使用すべきか判定"""
+        lines = content.split("\n")
+        indent_levels = set()
+
+        for line in lines:
+            if line.strip() and self._detect_list_type(line):
+                indent_match = self.list_patterns["indent"].match(line)
+                if indent_match:
+                    indent_levels.add(len(indent_match.group(1)))
+
+        return len(indent_levels) > 1  # 複数のインデントレベルがある
+
+    def _should_use_stack_parser(self, content: str) -> bool:
+        """スタック形式パーサーを使用すべきか判定"""
+        return "[" in content and "]" in content and "," in content
+
+    def _build_nested_structure(self, items: List[Node]) -> Node:
+        """フラットなアイテムリストからネスト構造を構築"""
+        if not items:
+            return unordered_list([])
+
+        root_items = []
+        stack = []
+
+        for item in items:
+            level = item.metadata.get("nest_level", 0)
+
+            # スタックを現在のレベルに調整
+            while len(stack) > level:
+                stack.pop()
+
+            if level == 0:
+                # ルートレベル
+                root_items.append(item)
+                stack = [item]
+            else:
+                # ネストレベル
+                if stack:
+                    parent = stack[-1]
+                    if "children" not in parent.metadata:
+                        parent.metadata["children"] = []
+                    parent.metadata["children"].append(item)
+                    stack.append(item)
+
+        return unordered_list(root_items)
+
+    def _create_list_item_node(self, line: str, list_type: str, level: int) -> Node:
+        """リストアイテムノードを作成"""
+        content = self._extract_item_content(line, list_type)
+
+        if list_type == "checklist":
+            # チェックリストの特別処理
+            checked = "[x]" in line.lower() or "[✓]" in line
+            node = list_item(content)
+            node.metadata.update(
+                {"type": "checklist_item", "checked": checked, "level": level}
+            )
+        else:
+            # 通常のリストアイテム
+            node = list_item(content)
+            node.metadata.update({"type": list_type, "level": level})
+
+        return node
+
+    def _extract_item_content(self, line: str, list_type: str) -> str:
+        """リストアイテムからコンテンツを抽出"""
+        for pattern in self.list_patterns.values():
+            if pattern == self.list_patterns["indent"]:
+                continue
+
+            match = pattern.match(line)
+            if match:
+                # パターンによって内容の位置が異なる
+                if list_type == "ordered":
+                    return (
+                        match.group(3) if len(match.groups()) >= 3 else match.group(2)
+                    )
+                elif list_type == "checklist":
+                    return (
+                        match.group(3) if len(match.groups()) >= 3 else match.group(2)
+                    )
+                else:
+                    return (
+                        match.group(2) if len(match.groups()) >= 2 else match.group(1)
+                    )
+
+        return line.strip()
+
+    # 後方互換性エイリアス
+    def parse(self, text: str) -> List[Node]:
+        """parse メソッドのエイリアス"""
+        result = self._parse_implementation(text)
+        return [result] if isinstance(result, Node) else result
