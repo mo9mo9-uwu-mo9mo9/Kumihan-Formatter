@@ -19,7 +19,7 @@ from sklearn.model_selection import cross_val_score
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from ..basic_ml_system import TrainingData
+from ..ml import TrainingData
 
 # from ..prediction_engine import EnsemblePredictionModel  # 削除: 軽量化により除去
 

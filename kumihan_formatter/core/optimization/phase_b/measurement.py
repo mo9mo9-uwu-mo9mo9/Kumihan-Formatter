@@ -12,10 +12,11 @@ from datetime import datetime
 from threading import Lock
 from typing import Any, Dict, List
 
-from ...performance import (
-    PatternDetector,
-    TokenEfficiencyAnalyzer,
-)
+# パフォーマンス分析機能は削除されました
+# from ...performance import (
+#     PatternDetector,
+#     TokenEfficiencyAnalyzer,
+# )
 from ...utilities.logger import get_logger
 from ..settings import WorkContext
 from .config import EffectMeasurementResult, PhaseBIntegrationConfig
@@ -27,8 +28,9 @@ class EffectMeasurementSystem:
     def __init__(self, config: PhaseBIntegrationConfig):
         self.config = config
         self.logger = get_logger(self.__class__.__name__)
-        self.efficiency_analyzer = TokenEfficiencyAnalyzer()
-        self.pattern_detector = PatternDetector()
+        # efficiency_analyzer と pattern_detector は削除されました
+        # self.efficiency_analyzer = TokenEfficiencyAnalyzer()
+        # self.pattern_detector = PatternDetector()
         self.measurement_history: List[EffectMeasurementResult] = []
         self.measurement_lock = Lock()
 

@@ -171,30 +171,18 @@ class HTMLRenderer:
         Returns:
             str: Generated HTML (optimized)
         """
-        # パフォーマンス監視開始
-        from typing import cast
+        # Issue #700: graceful errors対応
+        if self.graceful_errors and self.embed_errors_in_html:
+            return self.render_nodes_with_errors_optimized(nodes)
 
-        from ..performance import monitor_performance
-        from ..performance.monitor import PerformanceContext
+        html_parts: list[str] = []
+        html_parts_append = html_parts.append
+        for node in nodes:
+            html = self.render_node(node)
+            html_parts_append(html)
 
-        with cast(
-            PerformanceContext, monitor_performance("optimized_html_rendering")
-        ) as perf_monitor:
-            # Issue #700: graceful errors対応
-            if self.graceful_errors and self.embed_errors_in_html:
-                return self.render_nodes_with_errors_optimized(nodes)
-
-            html_parts: list[str] = []
-            html_parts_append = html_parts.append
-            for node in nodes:
-                html = self.render_node(node)
-                html_parts_append(html)
-                # パフォーマンス監視にアイテム処理を記録
-                if hasattr(perf_monitor, "record_item_processed"):
-                    perf_monitor.record_item_processed()
-
-            # 高速文字列結合（join最適化）
-            return "\n".join(html_parts)
+        # 高速文字列結合（join最適化）
+        return "\n".join(html_parts)
 
     def render_node_optimized(self, node: Node) -> str:
         """

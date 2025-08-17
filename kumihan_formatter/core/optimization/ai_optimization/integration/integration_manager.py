@@ -18,9 +18,10 @@ import numpy as np
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-# from ..autonomous.controller import AutonomousController  # 削除: 軽量化により除去
-from ..basic_ml_system import BasicMLSystem
 from ..learning.system import LearningSystem
+
+# from ..autonomous.controller import AutonomousController  # 削除: 軽量化により除去
+from ..ml import BasicMLSystem
 
 # from ..prediction_engine import PredictionEngine  # 削除: 軽量化により除去
 from .beta_core import AlphaBetaCoordinator, IntegrationMetrics, IntegrationMode
