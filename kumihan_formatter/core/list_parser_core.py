@@ -14,7 +14,7 @@ import warnings
 from typing import Tuple
 
 from .ast_nodes import Node, list_item, ordered_list, unordered_list
-from .keyword_parser import KeywordParser
+from .parsing.keyword.keyword_parser import KeywordParser
 
 
 class ListParserCore:
@@ -283,13 +283,20 @@ class ListParserCore:
 
         タブ文字は0を返す（タブは禁止）
         """
-        # TODO: implement indentation handling
+        # インデント処理実装（スペース・タブ混在対応）
+        spaces = 0
+        tabs = 0
         for char in line:
-            if char == "\t":  # タブ文字検出
-                return -1  # エラー値
+            if char == " ":
+                spaces += 1
+            elif char == "\t":
+                tabs += 1
+            else:
+                break
 
-        # スペース数でインデントレベルを計算
-        return len(line) - len(line.lstrip(" "))
+        # タブ1つ = スペース4つとして正規化
+        normalized_indent = spaces + (tabs * 4)
+        return normalized_indent // 4
 
     def _find_block_end(self, lines: list[str], start_index: int) -> int:
         """ブロック終了位置を検索"""

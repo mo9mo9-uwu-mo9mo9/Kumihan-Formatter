@@ -5,11 +5,8 @@ Issue #914 Phase 3: 動的プラグインシステム
 
 import importlib
 import importlib.util
-import sys
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Type
+from typing import Any, Dict, List, Optional, Protocol
 
 from ..patterns.dependency_injection import DIContainer, get_container
 from ..patterns.event_bus import ExtendedEventType, get_event_bus, publish_event

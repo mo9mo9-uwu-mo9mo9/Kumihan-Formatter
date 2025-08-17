@@ -178,77 +178,99 @@ class ConfigManager:
             # デフォルト設定で初期化
             self._config = self._create_default_config()
 
+    def _collect_configs(self) -> List[Dict[str, Any]]:
+        """各ソースから設定を収集"""
+        configs_to_merge = []
+
+        # デフォルト設定
+        configs_to_merge.append(self.DEFAULT_CONFIG)
+
+        # ファイル設定
+        if self._config_file_path and self._config_file_path.exists():
+            try:
+                file_config = self.loader.load_from_file(self._config_file_path)
+                configs_to_merge.append(file_config)
+
+                # ファイル更新時刻を記録
+                self._last_modified = self._config_file_path.stat().st_mtime
+
+            except ConfigLoadError as e:
+                self.logger.error(f"設定ファイル読み込みエラー: {e}")
+
+        # 環境変数設定
+        env_config = self.loader.load_from_environment()
+        if env_config:
+            configs_to_merge.append(env_config)
+
+        # 設定レベル別設定の統合
+        for level in [
+            ConfigLevel.DEFAULT,
+            ConfigLevel.SYSTEM,
+            ConfigLevel.USER,
+            ConfigLevel.PROJECT,
+            ConfigLevel.ENVIRONMENT,
+        ]:
+            if level in self._config_levels:
+                configs_to_merge.append(self._config_levels[level])
+
+        return configs_to_merge
+
+    def _create_new_config(self, merged_config: Dict[str, Any]) -> KumihanConfig:
+        """新設定オブジェクト作成"""
+        try:
+            return KumihanConfig(**merged_config)
+        except Exception as e:
+            self.logger.warning(f"KumihanConfig作成失敗、デフォルト設定を使用: {e}")
+            return self._create_default_config()
+
+    def _validate_and_fix_config(
+        self, merged_config: Dict[str, Any], new_config: KumihanConfig
+    ) -> KumihanConfig:
+        """設定検証と修正"""
+        if self.validator:
+            result = self.validator.validate_config(merged_config, auto_fix=True)
+
+            if not result.is_valid:
+                self.logger.warning(
+                    f"設定検証で問題発見: {len(result.errors)}エラー, "
+                    f"{len(result.warnings)}警告"
+                )
+
+                # 修正済み設定があれば使用
+                if result.fixed_config:
+                    return result.fixed_config
+
+        return new_config
+
+    def _apply_config_update(self, new_config: KumihanConfig) -> None:
+        """設定更新と後処理"""
+        old_config = self._config
+        self._config = new_config
+
+        # 更新時刻設定
+        self._config.last_updated = datetime.now().isoformat()
+
+        # リロードコールバック実行
+        if old_config != new_config:
+            self._notify_reload_callbacks()
+
     def _reload_config(self) -> None:
         """設定を再読み込み"""
         try:
             # 1. 各ソースから設定読み込み
-            configs_to_merge = []
-
-            # デフォルト設定
-            configs_to_merge.append(self.DEFAULT_CONFIG)
-
-            # ファイル設定
-            if self._config_file_path and self._config_file_path.exists():
-                try:
-                    file_config = self.loader.load_from_file(self._config_file_path)
-                    configs_to_merge.append(file_config)
-
-                    # ファイル更新時刻を記録
-                    self._last_modified = self._config_file_path.stat().st_mtime
-
-                except ConfigLoadError as e:
-                    self.logger.error(f"設定ファイル読み込みエラー: {e}")
-
-            # 環境変数設定
-            env_config = self.loader.load_from_environment()
-            if env_config:
-                configs_to_merge.append(env_config)
-
-            # 設定レベル別設定の統合
-            for level in [
-                ConfigLevel.DEFAULT,
-                ConfigLevel.SYSTEM,
-                ConfigLevel.USER,
-                ConfigLevel.PROJECT,
-                ConfigLevel.ENVIRONMENT,
-            ]:
-                if level in self._config_levels:
-                    configs_to_merge.append(self._config_levels[level])
+            configs_to_merge = self._collect_configs()
 
             # 2. 設定マージ
             merged_config = self.loader.merge_configs(*configs_to_merge)
 
             # 3. 新設定として統一Configオブジェクト作成
-            try:
-                new_config = KumihanConfig(**merged_config)
-            except Exception as e:
-                self.logger.warning(f"KumihanConfig作成失敗、デフォルト設定を使用: {e}")
-                new_config = self._create_default_config()
+            new_config = self._create_new_config(merged_config)
 
             # 4. 設定検証
-            if self.validator:
-                result = self.validator.validate_config(merged_config, auto_fix=True)
+            new_config = self._validate_and_fix_config(merged_config, new_config)
 
-                if not result.is_valid:
-                    self.logger.warning(
-                        f"設定検証で問題発見: {len(result.errors)}エラー, "
-                        f"{len(result.warnings)}警告"
-                    )
-
-                    # 修正済み設定があれば使用
-                    if result.fixed_config:
-                        new_config = result.fixed_config
-
-            # 5. 設定更新
-            old_config = self._config
-            self._config = new_config
-
-            # 6. 更新時刻設定
-            self._config.last_updated = datetime.now().isoformat()
-
-            # 7. リロードコールバック実行
-            if old_config != new_config:
-                self._notify_reload_callbacks()
+            # 5. 設定更新と後処理
+            self._apply_config_update(new_config)
 
             self.logger.info("設定読み込み完了")
 

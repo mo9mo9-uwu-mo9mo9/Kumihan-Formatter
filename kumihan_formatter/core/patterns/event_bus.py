@@ -4,14 +4,12 @@ Issue #914 Phase 3: イベント駆動アーキテクチャの中核
 既存observer.pyを拡張・統合した高性能イベントシステム
 """
 
-import asyncio
 import threading
-import uuid
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from ..utilities.logger import get_logger
 from .dependency_injection import DIContainer, get_container

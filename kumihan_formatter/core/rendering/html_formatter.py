@@ -649,7 +649,8 @@ class FootnoteManager:
 
         footnote_items = []
         for footnote_id, footnote_data in self.footnotes.items():
-            # TODO: implement footnote numbering
+            # TODO: 脚注番号付けシステムの実装 (Issue #921で対応予定)
+            # 複雑な脚注システム全体の設計が必要なため、別途Issue化して対応
             content = footnote_data["content"]
             footnote_item = (
                 f'<li id="{footnote_id}">'

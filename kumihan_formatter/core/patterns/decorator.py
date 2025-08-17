@@ -1,9 +1,8 @@
 """Decorator Pattern Implementation"""
 
-import inspect
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Type, TypeVar
 
 T = TypeVar("T")
 P = TypeVar("P")

@@ -7,10 +7,10 @@ Issue #492 Phase 5A - list_parser.py分割
 
 from typing import Optional
 
-from .keyword_parser import KeywordParser
 from .list_parser_core import ListParserCore
 from .list_validator import ListValidator
 from .nested_list_parser import NestedListParser
+from .parsing.keyword.keyword_parser import KeywordParser
 
 
 def create_list_parser(keyword_parser: KeywordParser) -> ListParserCore:

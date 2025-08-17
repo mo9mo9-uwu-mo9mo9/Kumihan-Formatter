@@ -221,7 +221,8 @@ class AIIntegrationManager:
                         test_context
                     )
                     ai_test_passed = prediction.efficiency_prediction >= 0.0
-                except:
+                except (AttributeError, ValueError, TypeError) as e:
+                    self.logger.error(f"AI予測システムエラー: {e}")
                     ai_test_passed = False
 
             # 統合テスト結果
@@ -548,7 +549,8 @@ class AIIntegrationManager:
         """自動復旧機能確認"""
         try:
             return len(self.recovery_strategies) > 0
-        except:
+        except (AttributeError, KeyError) as e:
+            self.logger.error(f"自動復旧機能確認エラー: {e}")
             return False
 
     def get_system_health(self) -> SystemHealth:
@@ -617,7 +619,8 @@ class AIIntegrationManager:
                 return "統合システムの最適化が推奨されます"
             else:
                 return "システムは健全に動作しています"
-        except:
+        except Exception as e:
+            self.logger.error(f"推奨事項生成エラー: {e}")
             return "推奨事項生成に失敗しました"
 
     def _update_coordination_metrics(self, result: CoordinatedResult) -> None:
@@ -704,7 +707,8 @@ class AIIntegrationManager:
                     # 簡易復旧テスト
                     test_result = self._optimization_integrator.execute_integration({})
                     integrator_recovered = test_result.get("success", False)
-            except:
+            except (ImportError, ModuleNotFoundError, AttributeError) as e:
+                self.logger.warning(f"統合システム復旧テストエラー（許容）: {e}")
                 integrator_recovered = True  # オプションのため失敗を許容
 
             # 復旧成功判定
@@ -737,7 +741,8 @@ class AIIntegrationManager:
                         test_context
                     )
                     ai_recovered = prediction.efficiency_prediction >= 0.0
-            except:
+            except Exception as e:
+                self.logger.warning(f"AIシステム復旧テストエラー（許容）: {e}")
                 ai_recovered = True  # オプションのため失敗を許容
 
             if ai_recovered:

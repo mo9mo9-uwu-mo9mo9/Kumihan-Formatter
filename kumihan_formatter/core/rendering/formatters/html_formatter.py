@@ -19,7 +19,6 @@ from ..content_processor import ContentProcessor
 from ..element_renderer import ElementRenderer
 from ..heading_collector import HeadingCollector
 from ..html_formatter import HTMLFormatter as BaseHTMLFormatter
-from ..html_utils import process_text_content
 
 
 class HtmlFormatter(HtmlRendererProtocol):

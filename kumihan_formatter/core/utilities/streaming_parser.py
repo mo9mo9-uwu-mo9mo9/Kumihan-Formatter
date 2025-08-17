@@ -196,7 +196,8 @@ class ParallelStreamingParser:
                 return cast(dict[str, Any], self._thread_local.parser_components)
 
             # 新しいコンポーネントを作成
-            # TODO: クラス循環参照解決後に実装予定
+            # TODO: クラス循環参照解決後に実装予定 (Issue #922で対応予定)
+            # 現在のアーキテクチャでは循環参照のリスクがあるため、構造改善後に実装
             components = {
                 "parser": None,  # KumihanParser(),
                 "block_handler": None,  # BlockHandler(),

@@ -26,7 +26,17 @@ class AttributeParser(BaseParser):
             return "", marker_content
 
         # Basic color extraction implementation
-        # TODO: Implement color extraction logic
+        # 色抽出ロジック実装
+        import re
+
+        color_patterns = [
+            r"#[0-9a-fA-F]{6}",  # hex
+            r"rgb\(\d+,\s*\d+,\s*\d+\)",  # rgb
+            r"rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)",  # rgba
+        ]
+        for pattern in color_patterns:
+            if re.match(pattern, marker_content):
+                return marker_content, ""
         return "", marker_content
 
     def parse_attributes_from_content(self, content: Any) -> Dict[str, Any]:
@@ -43,7 +53,13 @@ class AttributeParser(BaseParser):
 
         # Basic attribute parsing implementation
         attributes: Dict[str, Any] = {}
-        # TODO: Implement attribute parsing logic
+        # 属性解析ロジック実装
+        import re
+
+        attr_pattern = r'(\w+)=(["\']?)([^"\'>\s]+)\2'
+        matches = re.findall(attr_pattern, content)
+        for key, _, value in matches:
+            attributes[key] = value
         return attributes
 
     def _extract_size_attributes(self, content: Any) -> Dict[str, Any]:

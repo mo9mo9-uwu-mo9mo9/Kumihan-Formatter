@@ -3,6 +3,14 @@
 Issue #914 Phase 2: 既存コードが動作し続けるための互換レイヤー
 """
 
+from .parsing.main_parser import MainParser
+from .parsing.specialized.block_parser import UnifiedBlockParser as BlockParser
+from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
+from .parsing.specialized.list_parser import UnifiedListParser as ListParser
+from .rendering.formatters.html_formatter import HtmlFormatter
+from .rendering.formatters.markdown_formatter import MarkdownFormatter
+from .rendering.main_renderer import MainRenderer as HTMLRenderer
+
 
 # 旧ファクトリー関数の互換版
 def create_keyword_parser(**kwargs):
@@ -31,16 +39,6 @@ def create_markdown_parser(**kwargs):
     from .patterns.factories import create_parser
 
     return create_parser("markdown", **kwargs)
-
-
-# モジュールレベルインポートは削除して遅延インポートに変更
-from .parsing.main_parser import MainParser
-from .parsing.specialized.block_parser import UnifiedBlockParser as BlockParser
-from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
-from .parsing.specialized.list_parser import UnifiedListParser as ListParser
-from .rendering.formatters.html_formatter import HtmlFormatter
-from .rendering.formatters.markdown_formatter import MarkdownFormatter
-from .rendering.main_renderer import MainRenderer as HTMLRenderer
 
 
 def create_html_renderer(**kwargs):

@@ -8,18 +8,7 @@ from typing import TYPE_CHECKING
 from .dependency_injection import DIContainer, ServiceLifetime
 
 if TYPE_CHECKING:
-    from ..parsing.base.parser_protocols import (
-        BaseParserProtocol,
-        BlockParserProtocol,
-        KeywordParserProtocol,
-        ListParserProtocol,
-        MarkdownParserProtocol,
-    )
-    from ..rendering.base.renderer_protocols import (
-        BaseRendererProtocol,
-        HtmlRendererProtocol,
-        MarkdownRendererProtocol,
-    )
+    pass
 
 
 def register_default_services(container: DIContainer) -> None:

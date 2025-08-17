@@ -1,8 +1,7 @@
 """Strategy Pattern Implementation"""
 
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Type, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable

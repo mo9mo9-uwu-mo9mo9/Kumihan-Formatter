@@ -3,6 +3,7 @@
 import time
 
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from .ml_base import BaseMLModel, PredictionResponse, TrainingData
 

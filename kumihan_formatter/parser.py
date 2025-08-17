@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 # Import specialized handlers
 from .block_handler import BlockHandler
 from .core.ast_nodes import Node, error_node
-from .core.keyword_parser import KeywordParser
 from .core.list_parser import ListParser
 from .core.parsing.block import BlockParser
+from .core.parsing.keyword.keyword_parser import KeywordParser
 from .core.utilities.logger import get_logger
 from .inline_handler import InlineHandler
 from .parallel_processor import ParallelProcessorHandler

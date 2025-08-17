@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Tuple, Union
 from ...ast_nodes import Node, error_node
 from ...utilities.logger import get_logger
 from ..protocols import ParseResult
-from .parser_protocols import ParserProtocol
 
 
 class UnifiedParserBase:

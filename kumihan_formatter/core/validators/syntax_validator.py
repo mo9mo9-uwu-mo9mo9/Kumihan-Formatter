@@ -6,9 +6,10 @@ and basic text structure.
 
 from typing import Any, Union
 
-from ..keyword_parser import KeywordParser
-from ..list_parser import ListParser, ListValidator
+from ..list_parser import ListParser
+from ..list_validator import ListValidator
 from ..parsing.block import BlockParser, BlockValidator
+from ..parsing.keyword.keyword_parser import KeywordParser
 from ..parsing.keyword.validator import KeywordValidator
 from .validation_issue import ValidationIssue
 

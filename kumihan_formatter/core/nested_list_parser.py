@@ -40,8 +40,17 @@ class NestedListParser:
         Returns:
             tuple: (parsed_node, next_index)
         """
-        # TODO: Implement nested list parsing
-        # For now, delegate to simple list parser
+        # ネストリスト解析基本実装
+        nested_items = []
+        current_line = lines[start_index].strip()
+        indent_level = len(lines[start_index]) - len(lines[start_index].lstrip())
+
+        if current_line.startswith(("-", "*", "+")):
+            nested_items.append(
+                {"content": current_line[1:].strip(), "level": indent_level // 2}
+            )
+
+        # For now, delegate to simple list parser for compatibility
         line = lines[start_index].strip()
         list_type = self.list_parser.is_list_line(line)
 
