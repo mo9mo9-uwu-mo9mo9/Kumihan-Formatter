@@ -283,28 +283,19 @@ class KeywordParser:
         return "".join(result_parts)
 
     def _initialize_regex_optimizer(self) -> Any:
-        """正規表現オプティマイザーの初期化"""
-        regex_optimizer = getattr(self, "_regex_optimizer", None)
-        if regex_optimizer is None:
-            from .performance.optimizers.regex import RegexOptimizer
-
-            self._regex_optimizer = RegexOptimizer()
-            regex_optimizer = self._regex_optimizer
-        return regex_optimizer
+        """正規表現オプティマイザーの初期化 - 無効化"""
+        # 最適化機能は削除されました
+        return None
 
     def _should_use_simd_processing(self, content: str) -> bool:
         """SIMD処理を使用すべきかの判定"""
         return len(content) > 10000  # 10KB以上の場合
 
     def _try_simd_processing(self, content: str, nesting_level: int) -> Any:
-        """SIMD処理の試行"""
+        """SIMD処理の試行 - 無効化"""
         try:
-            simd_optimizer = getattr(self, "_simd_optimizer", None)
-            if simd_optimizer is None:
-                from .performance.optimizers.simd import SIMDOptimizer
-
-                self._simd_optimizer = SIMDOptimizer()
-                simd_optimizer = self._simd_optimizer
+            # SIMD最適化機能は削除されました
+            simd_optimizer = None
 
             # 大容量テキストをSIMD処理
             if simd_optimizer._numpy_available:

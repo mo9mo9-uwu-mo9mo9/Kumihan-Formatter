@@ -281,45 +281,37 @@ class Parser:
         nodes = []
 
         # パフォーマンス監視開始
-        from typing import cast
 
-        from .core.performance import monitor_performance
-        from .core.performance.monitor import PerformanceContext
+        # パフォーマンス監視機能は削除されました
+        # パターンキャッシュ初期化
+        pattern_cache: dict[str, Any] = {}
+        line_type_cache: dict[str, str] = {}
 
-        with cast(
-            PerformanceContext, monitor_performance("optimized_parse")
-        ) as perf_monitor:
-            # パターンキャッシュ初期化
-            pattern_cache: dict[str, Any] = {}
-            line_type_cache: dict[str, str] = {}
+        # 最適化: 事前にラインタイプを一括解析
+        line_types = self.block_handler.analyze_line_types_batch(self.lines)
 
-            # 最適化: 事前にラインタイプを一括解析
-            line_types = self.block_handler.analyze_line_types_batch(self.lines)
+        # メインパースループ（最適化版）
+        while self.current < len(self.lines):
+            previous_current = self.current
 
-            # メインパースループ（最適化版）
-            while self.current < len(self.lines):
-                previous_current = self.current
-
-                # 最適化されたライン解析（ハンドラー委譲）
-                node = self.block_handler.parse_line_optimized(
-                    line_types, pattern_cache, line_type_cache, self.current
-                )
-
-                if node:
-                    nodes.append(node)
-                    if hasattr(perf_monitor, "record_item_processed"):
-                        perf_monitor.record_item_processed()
-
-                # 進捗チェック（最適化）
-                if self.current == previous_current:
-                    self.logger.warning(
-                        f"Parser stuck at line {self.current}, forcing advance"
-                    )
-                    self.current += 1
-
-            self.logger.info(
-                f"Optimized parse complete: {len(nodes)} nodes, {len(self.errors)} errors"
+            # 最適化されたライン解析（ハンドラー委譲）
+            node = self.block_handler.parse_line_optimized(
+                line_types, pattern_cache, line_type_cache, self.current
             )
+
+            if node:
+                nodes.append(node)
+
+            # 進捗チェック（最適化）
+            if self.current == previous_current:
+                self.logger.warning(
+                    f"Parser stuck at line {self.current}, forcing advance"
+                )
+                self.current += 1
+
+        self.logger.info(
+            f"Optimized parse complete: {len(nodes)} nodes, {len(self.errors)} errors"
+        )
 
         return nodes
 

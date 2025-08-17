@@ -21,12 +21,14 @@ import click
 
 # 主要クラスのインポート
 from .auto_fixer import Flake8AutoFixer
+from .auto_fixer_core import Flake8AutoFixerCore
 
 # エラー解析関数
 from .error_analyzer import parse_error_types, run_flake8_check
 
 # ファイル処理関数
 from .file_processor import get_target_files, process_files
+from .fix_strategies import Flake8FixStrategies
 
 # ログ設定関数
 from .logger_setup import setup_logger
@@ -105,6 +107,8 @@ def lint_command(
 # 後方互換性エクスポート
 __all__ = [
     "Flake8AutoFixer",
+    "Flake8AutoFixerCore",
+    "Flake8FixStrategies",
     "get_target_files",
     "process_files",
     "run_flake8_check",

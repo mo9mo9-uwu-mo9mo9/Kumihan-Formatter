@@ -4,11 +4,13 @@ This package contains utility functions organized by functionality.
 All utilities maintain the same API as the original utils.py for compatibility.
 """
 
-from .converters import chunks, safe_bool, safe_float, safe_int
-from .data_structures import DataStructureHelper
-from .file_system import FileSystemHelper
-from .logging import LogHelper
-from .string_similarity import StringSimilarity
+from .parallel_processor import (
+    ChunkInfo,
+    ParallelChunkProcessor,
+    ParallelStreamingParser,
+)
+from .processor_core import ParallelChunkProcessor as ParallelChunkProcessorCore
+from .streaming_parser import ParallelStreamingParser as ParallelStreamingParserCore
 
 # Import all utility classes and functions for backward compatibility
 from .text_processor import TextProcessor
@@ -16,12 +18,9 @@ from .text_processor import TextProcessor
 # Make everything available at package level for easy importing
 __all__ = [
     "TextProcessor",
-    "FileSystemHelper",
-    "DataStructureHelper",
-    "StringSimilarity",
-    "LogHelper",
-    "safe_int",
-    "safe_float",
-    "safe_bool",
-    "chunks",
+    "ChunkInfo",
+    "ParallelChunkProcessor",
+    "ParallelStreamingParser",
+    "ParallelChunkProcessorCore",
+    "ParallelStreamingParserCore",
 ]

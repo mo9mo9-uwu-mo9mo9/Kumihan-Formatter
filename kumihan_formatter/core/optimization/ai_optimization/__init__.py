@@ -11,26 +11,26 @@ Components:
 - AIEffectMeasurement: AI効果測定・検証システム
 """
 
-from .ai_effect_measurement import (
-    AIEffectMeasurement,
-    EffectReport,
-    MeasurementResult,
-    QualityMetrics,
-    StabilityAssessment,
-)
-from .ai_integration_manager import (
-    AIIntegrationManager,
-    CoordinatedResult,
-    IntegrationStatus,
-    SystemHealth,
-)
 from .ai_optimizer_core import (
     AIOptimizerCore,
     OptimizationContext,
     OptimizationResult,
     PredictionResult,
 )
-from .basic_ml_system import (
+from .integration_manager import (
+    AIIntegrationManager,
+    CoordinatedResult,
+    IntegrationStatus,
+    SystemHealth,
+)
+from .measurement import (
+    AIEffectMeasurement,
+    EffectReport,
+    MeasurementResult,
+    QualityMetrics,
+    StabilityAssessment,
+)
+from .ml import (
     BasicMLSystem,
     FeatureEngineering,
     ModelPerformance,
