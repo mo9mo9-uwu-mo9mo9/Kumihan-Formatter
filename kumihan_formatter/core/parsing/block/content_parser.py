@@ -16,17 +16,30 @@ from .base_parser import BaseBlockParser
 if TYPE_CHECKING:
     from kumihan_formatter.core.ast_nodes import Node
 
-    from ...keyword_parser import KeywordParser
+    from ..base.parser_protocols import KeywordParserProtocol
+else:
+    try:
+        from ..base.parser_protocols import KeywordParserProtocol
+    except ImportError:
+        from typing import Protocol
+
+        KeywordParserProtocol = Protocol
 
 
 class ContentParser(BaseBlockParser):
-    """Specialized parser for content processing and error recovery."""
+    """Specialized parser for content processing and error recovery.
 
-    def __init__(self, keyword_parser: Optional["KeywordParser"] = None) -> None:
+    Issue #914 Phase 2: 循環参照解消
+    - KeywordParser直接依存から依存関係注入パターンに変更
+    """
+
+    def __init__(
+        self, keyword_parser: Optional["KeywordParserProtocol"] = None
+    ) -> None:
         """Initialize content parser.
 
         Args:
-            keyword_parser: Optional keyword parser instance
+            keyword_parser: Optional keyword parser instance (protocol-based)
         """
         super().__init__(keyword_parser)
 

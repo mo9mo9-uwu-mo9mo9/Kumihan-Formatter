@@ -14,7 +14,7 @@ Critical問題解決: 988行 → 機能別モジュール分割による可読�
 """
 
 # kumihan_formatter.commands.lintディレクトリから必要な関数をインポート
-from kumihan_formatter.commands.lint import lint_command
+from .lint import lint_command
 
 # 既存のCLIコマンドとして動作
 if __name__ == "__main__":

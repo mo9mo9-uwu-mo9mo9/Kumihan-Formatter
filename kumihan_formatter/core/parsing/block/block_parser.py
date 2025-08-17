@@ -12,10 +12,61 @@ import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ...ast_nodes import Node
-from ...keyword_parser import KeywordParser
+
+# 統一プロトコルインポート
+try:
+    from ..base.parser_protocols import BaseParserProtocol as BaseProtocol
+    from ..base.parser_protocols import BlockParserProtocol as BlockProtocol
+    from ..base.parser_protocols import (
+        ParseContext,
+        ParseError,
+        ParseResult,
+    )
+except ImportError:
+    # フォールバック: 型安全性のため
+    from dataclasses import dataclass
+    from typing import Protocol
+
+    class BaseProtocol(Protocol):
+        def parse(self, content: str, context: Any = None) -> Any: ...
+        def validate(self, content: str, context: Any = None) -> List[str]: ...
+        def get_parser_info(self) -> Dict[str, Any]: ...
+        def supports_format(self, format_hint: str) -> bool: ...
+
+    class BlockProtocol(Protocol):
+        def parse_block(self, block: str, context: Any = None) -> Any: ...
+        def extract_blocks(self, text: str, context: Any = None) -> List[str]: ...
+        def detect_block_type(self, block: str) -> Optional[str]: ...
+
+    @dataclass
+    class ParseResult:
+        success: bool
+        nodes: List[Any]
+        errors: List[str]
+        warnings: List[str]
+        metadata: Dict[str, Any]
+
+    @dataclass
+    class ParseContext:
+        source_file: Optional[str] = None
+        line_number: int = 1
+        column_number: int = 1
+        parser_state: Optional[Dict[str, Any]] = None
+        config: Optional[Dict[str, Any]] = None
+
+    class ParseError(Exception):
+        pass
+
 
 if TYPE_CHECKING:
-    pass
+    from ..base.parser_protocols import KeywordParserProtocol
+else:
+    try:
+        from ..base.parser_protocols import KeywordParserProtocol
+    except ImportError:
+        from typing import Protocol
+
+        KeywordParserProtocol = Protocol
 
 
 class BlockParser:
@@ -25,13 +76,16 @@ class BlockParser:
     to specialized parser components for better maintainability.
 
     Refactored: 2025-08-10 (Error問題修正 - 711行から軽量化)
+    Issue #914 Phase 2: 循環参照解消 - KeywordParser直接依存を削除
     """
 
-    def __init__(self, keyword_parser: Optional["KeywordParser"] = None) -> None:
+    def __init__(
+        self, keyword_parser: Optional["KeywordParserProtocol"] = None
+    ) -> None:
         """Initialize block parser with specialized components.
 
         Args:
-            keyword_parser: Optional keyword parser instance
+            keyword_parser: Optional keyword parser instance (protocol-based)
 
         ⚠️  DEPRECATION WARNING:
         BlockParser is deprecated. Use kumihan_formatter.core.parsing instead.
@@ -54,7 +108,13 @@ class BlockParser:
         from .text_parser import TextBlockParser
 
         self.logger = get_logger(__name__)
-        self.keyword_parser = keyword_parser
+
+        # 依存関係注入: KeywordParserをDIコンテナから取得
+        if keyword_parser is None:
+            self.keyword_parser = self._get_keyword_parser()
+        else:
+            self.keyword_parser = keyword_parser
+
         self.heading_counter = 0
 
         # Initialize specialized parsers
@@ -74,6 +134,33 @@ class BlockParser:
         self._is_marker_cache: Dict[str, bool] = {}
         self._is_list_cache: Dict[str, bool] = {}
         self.parser_ref = None
+
+        # Issue #914: 統一プロトコル対応用キャッシュ
+        self._processed_content_cache: Dict[str, ParseResult] = {}
+
+    def _get_keyword_parser(self) -> Optional["KeywordParserProtocol"]:
+        """DIコンテナからKeywordParserを取得
+
+        Issue #914 Phase 2: 依存関係注入パターン
+
+        Returns:
+            KeywordParserProtocol instance or None
+        """
+        try:
+            from ...patterns.dependency_injection import get_container
+
+            container = get_container()
+            return container.resolve(KeywordParserProtocol)
+        except Exception as e:
+            self.logger.warning(f"KeywordParser取得失敗、フォールバック使用: {e}")
+            # フォールバック: specialized/keyword_parser.pyから直接インポート
+            try:
+                from ..specialized.keyword_parser import UnifiedKeywordParser
+
+                return UnifiedKeywordParser()
+            except Exception as fallback_error:
+                self.logger.error(f"フォールバックも失敗: {fallback_error}")
+                return None
 
     def _setup_parser_references(self) -> None:
         """Setup cross-references between parser components."""
@@ -244,3 +331,278 @@ class BlockParser:
     def _is_comment_line(self, line: str) -> bool:
         """Check if line is a comment line."""
         return self.base_parser._is_comment_line(line)
+
+    # === 統一プロトコル実装: BaseParserProtocol ===
+
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース
+
+        Args:
+            content: パース対象のコンテンツ
+            context: パースコンテキスト（オプション）
+
+        Returns:
+            ParseResult: 統一パース結果
+        """
+        try:
+            # キャッシュ確認
+            cache_key = f"{hash(content)}_{id(context) if context else 0}"
+            if cache_key in self._processed_content_cache:
+                return self._processed_content_cache[cache_key]
+
+            # ブロック抽出・パース
+            blocks = self.extract_blocks(content, context)
+            nodes = []
+
+            for block in blocks:
+                try:
+                    node = self.parse_block(block, context)
+                    if node:
+                        nodes.append(node)
+                except Exception as e:
+                    self.logger.warning(f"ブロックパース失敗: {e}")
+                    # エラーノードを作成
+                    error_node = Node(
+                        type="error_block", content=block, attributes={"error": str(e)}
+                    )
+                    nodes.append(error_node)
+
+            # ParseResult作成
+            result = ParseResult(
+                success=len(nodes) > 0,
+                nodes=nodes,
+                errors=[],
+                warnings=[],
+                metadata={
+                    "parser": "BlockParser",
+                    "block_count": len(blocks),
+                    "node_count": len(nodes),
+                },
+            )
+
+            # キャッシュ保存
+            self._processed_content_cache[cache_key] = result
+            return result
+
+        except Exception as e:
+            return ParseResult(
+                success=False,
+                nodes=[],
+                errors=[f"Block parsing failed: {str(e)}"],
+                warnings=[],
+                metadata={"parser": "BlockParser"},
+            )
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション - ブロック構文チェック
+
+        Args:
+            content: 検証対象のコンテンツ
+            context: 検証コンテキスト（オプション）
+
+        Returns:
+            List[str]: エラーメッセージリスト（空リストは成功）
+        """
+        errors = []
+
+        if not isinstance(content, str):
+            errors.append("Content must be a string")
+            return errors
+
+        if not content.strip():
+            errors.append("Empty content provided")
+            return errors
+
+        try:
+            # ブロック抽出試行
+            blocks = self.extract_blocks(content, context)
+
+            # 各ブロックの妥当性検証
+            for i, block in enumerate(blocks):
+                block_type = self.detect_block_type(block)
+                if block_type is None:
+                    errors.append(f"Block {i+1}: Unknown block type")
+
+                # マーカー整合性チェック
+                if self.is_opening_marker(
+                    block
+                ) and not self._has_matching_closing_marker(block):
+                    errors.append(f"Block {i+1}: Missing closing marker")
+
+        except Exception as e:
+            errors.append(f"Block validation failed: {str(e)}")
+
+        return errors
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報取得
+
+        Returns:
+            Dict[str, Any]: パーサーメタデータ
+        """
+        return {
+            "name": "BlockParser",
+            "version": "2.0",
+            "supported_formats": ["kumihan_block", "marker_block", "text_block"],
+            "capabilities": [
+                "block_parsing",
+                "marker_detection",
+                "text_processing",
+                "nested_blocks",
+                "validation",
+            ],
+            "description": "Block-level element parser for Kumihan-Formatter",
+            "author": "Kumihan-Formatter Project",
+            "deprecation_notice": "This parser is deprecated. Use kumihan_formatter.core.parsing instead.",
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """対応フォーマット判定
+
+        Args:
+            format_hint: フォーマットヒント文字列
+
+        Returns:
+            bool: 対応可能かどうか
+        """
+        supported = {"kumihan_block", "marker_block", "text_block", "block"}
+        return format_hint.lower() in supported
+
+    # === 統一プロトコル実装: BlockParserProtocol ===
+
+    def parse_block(self, block: str, context: Optional[ParseContext] = None) -> Node:
+        """単一ブロックをパース
+
+        Args:
+            block: パース対象のブロック
+            context: パースコンテキスト（オプション）
+
+        Returns:
+            Node: パース結果のノード
+
+        Raises:
+            ParseError: ブロックパース中のエラー
+        """
+        try:
+            lines = block.split("\n")
+
+            # ブロックタイプ検出
+            block_type = self.detect_block_type(block)
+
+            if block_type == "marker_block":
+                # マーカーブロック処理
+                node, _ = self.parse_block_marker(lines, 0)
+                return node
+            elif block_type == "text_block":
+                # テキストブロック処理
+                node, _ = self.parse_paragraph(lines, 0)
+                return node
+            else:
+                # 汎用ブロック処理
+                return Node(
+                    type="generic_block",
+                    content=block.strip(),
+                    attributes={"block_type": block_type or "unknown"},
+                )
+
+        except Exception as e:
+            raise ParseError(f"Failed to parse block: {str(e)}")
+
+    def extract_blocks(
+        self, text: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """テキストからブロックを抽出
+
+        Args:
+            text: 抽出対象のテキスト
+            context: 抽出コンテキスト（オプション）
+
+        Returns:
+            List[str]: 抽出されたブロックのリスト
+        """
+        blocks = []
+        lines = text.split("\n")
+        current_block = []
+        in_block = False
+
+        for line in lines:
+            if self.is_opening_marker(line):
+                # 新しいブロック開始
+                if current_block:
+                    blocks.append("\n".join(current_block))
+                current_block = [line]
+                in_block = True
+            elif self.is_closing_marker(line):
+                # ブロック終了
+                current_block.append(line)
+                blocks.append("\n".join(current_block))
+                current_block = []
+                in_block = False
+            elif in_block:
+                # ブロック内容
+                current_block.append(line)
+            else:
+                # 通常テキスト
+                if line.strip():  # 空行でない場合
+                    if current_block:
+                        current_block.append(line)
+                    else:
+                        current_block = [line]
+                else:
+                    # 空行でブロック区切り
+                    if current_block:
+                        blocks.append("\n".join(current_block))
+                        current_block = []
+
+        # 最後のブロック処理
+        if current_block:
+            blocks.append("\n".join(current_block))
+
+        return [block for block in blocks if block.strip()]
+
+    def detect_block_type(self, block: str) -> Optional[str]:
+        """ブロックタイプを検出
+
+        Args:
+            block: 検査対象のブロック
+
+        Returns:
+            Optional[str]: 検出されたブロックタイプ（None=未検出）
+        """
+        lines = block.split("\n")
+        if not lines:
+            return None
+
+        first_line = lines[0].strip()
+
+        # マーカーブロック判定
+        if self.is_block_marker_line(first_line):
+            return "marker_block"
+
+        # 新形式マーカー判定
+        if self._is_new_format_marker(first_line):
+            return "new_format_marker"
+
+        # リストブロック判定
+        if self._is_list_internal(first_line):
+            return "list_block"
+
+        # テキストブロック（デフォルト）
+        return "text_block"
+
+    # === ヘルパーメソッド ===
+
+    def _has_matching_closing_marker(self, block: str) -> bool:
+        """対応する閉じマーカーがあるかチェック"""
+        lines = block.split("\n")
+        opening_count = sum(1 for line in lines if self.is_opening_marker(line))
+        closing_count = sum(1 for line in lines if self.is_closing_marker(line))
+        return opening_count == closing_count
+
+    def _is_new_format_marker(self, line: str) -> bool:
+        """新形式マーカー判定"""
+        return line.startswith("#") and line.endswith("#") and len(line) > 2

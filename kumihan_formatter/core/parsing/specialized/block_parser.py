@@ -12,10 +12,16 @@ from typing import Any, Dict, List, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
+from ..base.parser_protocols import (
+    BlockParserProtocol,
+    ParseContext,
+    ParseResult,
+    create_parse_result,
+)
 from ..protocols import ParserType
 
 
-class UnifiedBlockParser(UnifiedParserBase, CompositeMixin):
+class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol):
     """統一ブロックパーサー
 
     Kumihan記法のブロック構文を解析:
@@ -380,3 +386,72 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin):
             }
         )
         return stats
+
+    # ==========================================
+    # プロトコル準拠メソッド（BlockParserProtocol実装）
+    # ==========================================
+
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース（プロトコル準拠）"""
+        try:
+            result = self._parse_implementation(content)
+            nodes = [result] if isinstance(result, Node) else result
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"ブロックパース失敗: {e}")
+            return result
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # ブロック構文の基本チェック
+            lines = content.split("\n")
+            open_blocks = 0
+            for i, line in enumerate(lines):
+                if self.block_patterns["start"].match(line):
+                    open_blocks += 1
+                elif self.block_patterns["end"].match(line):
+                    open_blocks -= 1
+                    if open_blocks < 0:
+                        errors.append(
+                            f"行{i+1}: 対応するブロック開始がない終了マーカー"
+                        )
+
+            if open_blocks > 0:
+                errors.append(f"未閉じのブロックが{open_blocks}個あります")
+
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "UnifiedBlockParser",
+            "version": "2.0.0",
+            "supported_formats": ["kumihan", "block"],
+            "capabilities": [
+                "inline_blocks",
+                "multiline_blocks",
+                "special_blocks",
+                "attributes",
+            ],
+            "parser_type": self.parser_type,
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["kumihan", "block", "text"]
+
+    def parse_block(self, content: str, keyword: Optional[str] = None) -> Node:
+        """ブロック固有パースメソッド（プロトコル準拠）"""
+        if keyword:
+            return self.parse_block_content(content, keyword)
+        else:
+            return self._parse_implementation(content)

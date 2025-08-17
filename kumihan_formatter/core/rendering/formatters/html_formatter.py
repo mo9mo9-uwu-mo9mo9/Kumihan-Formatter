@@ -4,10 +4,16 @@ Issue #912 Renderer系統合リファクタリング対応
 HTML出力に特化した統合フォーマッタークラス
 """
 
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ...ast_nodes import Node
 from ...utilities.logger import get_logger
+from ..base.renderer_protocols import (
+    HtmlRendererProtocol,
+    RenderContext,
+    RenderResult,
+    create_render_result,
+)
 from ..compound_renderer import CompoundElementRenderer
 from ..content_processor import ContentProcessor
 from ..element_renderer import ElementRenderer
@@ -16,7 +22,7 @@ from ..html_formatter import HTMLFormatter as BaseHTMLFormatter
 from ..html_utils import process_text_content
 
 
-class HtmlFormatter:
+class HtmlFormatter(HtmlRendererProtocol):
     """HTML出力専用フォーマッター
 
     統合された機能:
@@ -426,3 +432,55 @@ class HtmlFormatter:
         """見出しカウンターを設定"""
         self.element_renderer.heading_counter = value
         self.heading_collector.heading_counter = value
+
+    # ==========================================
+    # プロトコル準拠メソッド（HtmlRendererProtocol実装）
+    # ==========================================
+
+    def render(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> RenderResult:
+        """統一レンダリングインターフェース（プロトコル準拠）"""
+        try:
+            html_content = self.format_node(node)
+            return create_render_result(content=html_content, success=True)
+        except Exception as e:
+            result = create_render_result(success=False)
+            result.add_error(f"HTMLレンダリング失敗: {e}")
+            return result
+
+    def validate(
+        self, node: Node, context: Optional[RenderContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # HTML特有の検証
+            if not node:
+                errors.append("ノードが空です")
+            elif not hasattr(node, "node_type"):
+                errors.append("ノードタイプが設定されていません")
+            # HTMLレンダリング可能性の確認
+            elif not hasattr(node, "content"):
+                errors.append("ノードにコンテンツが設定されていません")
+        except Exception as e:
+            errors.append(f"HTMLバリデーションエラー: {e}")
+        return errors
+
+    def get_renderer_info(self) -> Dict[str, Any]:
+        """レンダラー情報（プロトコル準拠）"""
+        return {
+            "name": "HtmlFormatter",
+            "version": "2.0.0",
+            "supported_formats": ["html"],
+            "capabilities": ["html_formatting", "error_embedding", "graceful_errors"],
+            "output_format": "html",
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["html", "text"]
+
+    def render_html(self, node: Node, options: Optional[Dict[str, Any]] = None) -> str:
+        """HTML固有レンダリングメソッド（プロトコル準拠）"""
+        return self.format_node(node)

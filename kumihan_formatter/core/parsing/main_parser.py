@@ -18,15 +18,23 @@ Issue #912: Parser系統合リファクタリング
 
 import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-from typing import Any, Callable, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
+
+if TYPE_CHECKING:
+    from ..patterns.dependency_injection import DIContainer
+    from ..patterns.factories import ParserFactory
 
 from ..ast_nodes import Node, create_node, error_node
+from ..mixins.event_mixin import EventEmitterMixin, with_events
 from ..utilities.logger import get_logger
 from .base import UnifiedParserBase
 from .base.parser_protocols import (
     CompositeParserProtocol,
+    ParseContext,
+    ParseResult,
     ParserProtocol,
     StreamingParserProtocol,
+    create_parse_result,
 )
 from .specialized import (
     UnifiedBlockParser,
@@ -36,7 +44,12 @@ from .specialized import (
 )
 
 
-class MainParser(UnifiedParserBase):
+class MainParser(
+    UnifiedParserBase,
+    EventEmitterMixin,
+    CompositeParserProtocol,
+    StreamingParserProtocol,
+):
     """統合メインパーサー
 
     全ての専門パーサーを統括し、効率的な解析を提供:
@@ -47,11 +60,43 @@ class MainParser(UnifiedParserBase):
     - エラー耐性
     """
 
-    def __init__(self, config: Optional[Any] = None) -> None:
+    def __init__(
+        self, config: Optional[Any] = None, container: Optional["DIContainer"] = None
+    ) -> None:
         super().__init__(parser_type="main")
 
         self.config = config
         self.logger = get_logger(self.__class__.__name__)
+
+        # EventEmitterMixin初期化
+        self._source_name = self.__class__.__name__
+
+        # DIコンテナ設定（Issue #914 Phase 2）
+        self.container = container
+        if self.container is None:
+            try:
+                from ..patterns.dependency_injection import get_container
+
+                self.container = get_container()
+                self.logger.debug("Using global DI container")
+            except ImportError:
+                self.logger.debug(
+                    "DI container not available, using direct instantiation"
+                )
+                self.container = None
+
+        # ファクトリー設定（Issue #914 Phase 2）
+        self.parser_factory: Optional["ParserFactory"] = None
+        if self.container is not None:
+            try:
+                from ..patterns.factories import get_parser_factory
+
+                self.parser_factory = get_parser_factory()
+                self.logger.debug("Parser factory initialized with DI support")
+            except ImportError:
+                self.logger.debug(
+                    "Parser factory not available, falling back to direct instantiation"
+                )
 
         # 専門パーサーの初期化
         self._initialize_parsers()
@@ -66,12 +111,22 @@ class MainParser(UnifiedParserBase):
         self._setup_performance_monitoring()
 
     def _initialize_parsers(self) -> None:
-        """専門パーサーの初期化"""
+        """専門パーサーの初期化（DI対応 - Issue #914 Phase 2）"""
         try:
-            self.keyword_parser = UnifiedKeywordParser()
-            self.list_parser = UnifiedListParser()
-            self.block_parser = UnifiedBlockParser()
-            self.markdown_parser = UnifiedMarkdownParser()
+            # DIパターンによる初期化を試行
+            if self.parser_factory is not None and self.container is not None:
+                self.logger.debug("Initializing parsers using DI pattern")
+                self.keyword_parser = self._create_parser_with_fallback("keyword")
+                self.list_parser = self._create_parser_with_fallback("list")
+                self.block_parser = self._create_parser_with_fallback("block")
+                self.markdown_parser = self._create_parser_with_fallback("markdown")
+            else:
+                # 従来の直接インスタンス化（フォールバック）
+                self.logger.debug("Initializing parsers using direct instantiation")
+                self.keyword_parser = UnifiedKeywordParser()
+                self.list_parser = UnifiedListParser()
+                self.block_parser = UnifiedBlockParser()
+                self.markdown_parser = UnifiedMarkdownParser()
 
             # パーサー管理
             self.parsers = {
@@ -87,6 +142,85 @@ class MainParser(UnifiedParserBase):
             self.logger.error(f"Failed to initialize parsers: {e}")
             # フォールバック: 最小限のパーサー
             self._initialize_fallback_parsers()
+
+    def _create_parser_with_fallback(self, parser_type: str) -> Any:
+        """DI失敗時のフォールバック付きパーサー生成（Issue #914 Phase 2）"""
+        try:
+            # 1. DIコンテナ経由で解決を試行
+            if self.container is not None:
+                try:
+                    # 型マッピング
+                    parser_class_map = {
+                        "keyword": UnifiedKeywordParser,
+                        "list": UnifiedListParser,
+                        "block": UnifiedBlockParser,
+                        "markdown": UnifiedMarkdownParser,
+                    }
+
+                    if parser_type in parser_class_map:
+                        parser_class = parser_class_map[parser_type]
+                        instance = self.container.resolve(parser_class)
+                        self.logger.debug(f"DI resolution successful for {parser_type}")
+                        return instance
+                except Exception as di_error:
+                    self.logger.warning(
+                        f"DI creation failed for {parser_type}: {di_error}"
+                    )
+
+            # 2. ファクトリー経由での生成を試行
+            if self.parser_factory is not None:
+                try:
+                    instance = self.parser_factory.create(parser_type)
+                    self.logger.debug(f"Factory creation successful for {parser_type}")
+                    return instance
+                except Exception as factory_error:
+                    self.logger.warning(
+                        f"Factory creation failed for {parser_type}: {factory_error}"
+                    )
+
+            # 3. 直接インスタンス化（最終フォールバック）
+            return self._create_direct_instance(parser_type)
+
+        except Exception as e:
+            self.logger.error(
+                f"All parser creation methods failed for {parser_type}: {e}"
+            )
+            return self._create_direct_instance(parser_type)
+
+    def _create_direct_instance(self, parser_type: str) -> Any:
+        """直接インスタンス化（最終フォールバック）"""
+        try:
+            parser_class_map = {
+                "keyword": UnifiedKeywordParser,
+                "list": UnifiedListParser,
+                "block": UnifiedBlockParser,
+                "markdown": UnifiedMarkdownParser,
+            }
+
+            if parser_type in parser_class_map:
+                parser_class = parser_class_map[parser_type]
+                instance = parser_class()
+                self.logger.debug(f"Direct instantiation successful for {parser_type}")
+                return instance
+            else:
+                raise ValueError(f"Unknown parser type: {parser_type}")
+
+        except Exception as e:
+            self.logger.error(f"Direct instantiation failed for {parser_type}: {e}")
+            # 最小限の汎用パーサーを返す
+            return self._create_minimal_parser()
+
+    def _create_minimal_parser(self) -> Any:
+        """最小限の汎用パーサー生成"""
+
+        class MinimalParser:
+            def can_parse(self, text: str) -> bool:
+                return False
+
+            def parse(self, text: str) -> List[Node]:
+                return [create_node("text", content=text)]
+
+        return MinimalParser()
 
     def _initialize_fallback_parsers(self) -> None:
         """フォールバック用最小限パーサー"""
@@ -122,6 +256,7 @@ class MainParser(UnifiedParserBase):
             "streaming_parses": 0,
         }
 
+    @with_events("main_parse")
     def parse(self, text: str, **kwargs: Any) -> List[Node]:
         """メインパース処理
 
@@ -404,6 +539,82 @@ class MainParser(UnifiedParserBase):
             "streaming_parses": 0,
         }
         self.parallel_errors.clear()
+
+    # ==========================================
+    # プロトコル準拠メソッド（CompositeParserProtocol & StreamingParserProtocol実装）
+    # ==========================================
+
+    def parse_protocol(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """統一パースインターフェース（プロトコル準拠）"""
+        try:
+            # 既存のparseメソッドを使用
+            nodes = self.parse(content)
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"メインパース失敗: {e}")
+            return result
+
+    def validate(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """バリデーション実装（プロトコル準拠）"""
+        errors = []
+        try:
+            # 各専門パーサーでバリデーション実行
+            for name, parser in self.parsers.items():
+                if hasattr(parser, "validate"):
+                    parser_errors = parser.validate(content, context)
+                    for error in parser_errors:
+                        errors.append(f"{name}: {error}")
+        except Exception as e:
+            errors.append(f"バリデーションエラー: {e}")
+        return errors
+
+    def get_parser_info_protocol(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "MainParser",
+            "version": "2.0.0",
+            "supported_formats": ["kumihan", "markdown", "text"],
+            "capabilities": ["composite_parsing", "parallel_processing", "streaming"],
+            "specialized_parsers": list(self.parsers.keys()),
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応判定（プロトコル準拠）"""
+        return format_hint in ["kumihan", "markdown", "text", "auto"]
+
+    def get_parsers(self) -> List[ParserProtocol]:
+        """登録されているパーサー一覧を取得（プロトコル準拠）"""
+        return list(self.parsers.values())
+
+    def register_parser(self, name: str, parser: ParserProtocol) -> None:
+        """パーサーの登録（プロトコル準拠）"""
+        self.parsers[name] = parser
+        self.logger.info(f"Registered parser: {name}")
+
+    def unregister_parser(self, name: str) -> bool:
+        """パーサーの登録解除（プロトコル準拠）"""
+        if name in self.parsers:
+            del self.parsers[name]
+            self.logger.info(f"Unregistered parser: {name}")
+            return True
+        return False
+
+    def parse_streaming_protocol(
+        self, stream: Iterator[str], context: Optional[ParseContext] = None
+    ) -> Iterator[ParseResult]:
+        """ストリーミングパース（プロトコル準拠）"""
+        try:
+            for chunk in stream:
+                yield self.parse_protocol(chunk, context)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"ストリーミングパース失敗: {e}")
+            yield result
 
 
 # 後方互換性エイリアス

@@ -4,7 +4,6 @@ Issue #770対応: 分散したエラー処理を統一し、
 一貫性のあるエラーハンドリングとログ出力を提供
 """
 
-from dataclasses import dataclass
 from logging import Logger
 from typing import Any, Dict, Optional
 
