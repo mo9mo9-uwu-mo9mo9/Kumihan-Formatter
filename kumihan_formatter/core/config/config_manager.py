@@ -427,6 +427,78 @@ class ConfigManager:
         """設定を手動でリロード"""
         self._reload_config()
 
+    def get(self, key: str, default: Any = None) -> Any:
+        """設定値を取得
+
+        Args:
+            key: 設定キー（ドット記法対応）
+            default: デフォルト値
+
+        Returns:
+            設定値またはデフォルト値
+        """
+        if not self._config:
+            return default
+
+        # ドット記法対応（例: "css.max_width"）
+        keys = key.split(".")
+        value: Any = self._config.model_dump()
+
+        for k in keys:
+            if isinstance(value, dict):
+                value = value.get(k)
+                if value is None:
+                    return default
+            else:
+                return default
+
+        return value
+
+    def set(self, key: str, value: Any, source: Optional[str] = None) -> None:
+        """設定値を設定
+
+        Args:
+            key: 設定キー（ドット記法対応）
+            value: 設定値
+            source: 設定のソース（オプション、ログ用）
+        """
+        if not self._config:
+            self._config = self._create_default_config()
+
+        # 現在の設定を辞書に変換
+        config_dict = self._config.model_dump()
+
+        # ドット記法対応（例: "css.max_width"）
+        keys = key.split(".")
+        target = config_dict
+
+        # 最後のキー以外を辿る
+        for k in keys[:-1]:
+            if k not in target:
+                target[k] = {}
+            target = target[k]
+
+        # 最後のキーに値を設定
+        target[keys[-1]] = value
+
+        # ソース情報をログに記録
+        if source:
+            self.logger.debug(f"設定を更新: {key}={value} (source: {source})")
+
+        # 新しい設定を作成して適用
+        new_config = self._create_new_config(config_dict)
+        self._apply_config_update(new_config)
+
+    def get_all(self) -> Dict[str, Any]:
+        """全設定を取得
+
+        Returns:
+            設定の辞書形式
+        """
+        if not self._config:
+            self._config = self._create_default_config()
+        return self._config.model_dump()
+
     def shutdown(self) -> None:
         """マネージャーをシャットダウン"""
         if self._auto_reload and self._reload_thread:
