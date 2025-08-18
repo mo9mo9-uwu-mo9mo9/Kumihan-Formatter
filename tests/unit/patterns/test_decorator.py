@@ -78,7 +78,7 @@ class SlowParser(MockParser):
 
 
 # テスト用具象デコレーター
-class TestParserDecorator(ParserDecorator):
+class MockParserDecorator(ParserDecorator):
     """テスト用パーサーデコレーター"""
 
     def __init__(self, wrapped_parser: Any, prefix: str = "decorated"):
@@ -91,7 +91,7 @@ class TestParserDecorator(ParserDecorator):
         return f"{self.prefix}:{original_result}"
 
 
-class TestRendererDecorator(RendererDecorator):
+class MockRendererDecorator(RendererDecorator):
     """テスト用レンダラーデコレーター"""
 
     def __init__(self, wrapped_renderer: Any, suffix: str = "decorated"):
@@ -110,7 +110,7 @@ class TestParserDecoratorBase:
     def setup_method(self):
         """各テストメソッド実行前の初期化"""
         self.base_parser = MockParser("base")
-        self.decorator = TestParserDecorator(self.base_parser, "test")
+        self.decorator = MockParserDecorator(self.base_parser, "test")
 
     def test_正常系_デコレート済みパース(self):
         """正常系: デコレート済みパース処理の確認"""
@@ -149,7 +149,7 @@ class TestRendererDecoratorBase:
     def setup_method(self):
         """各テストメソッド実行前の初期化"""
         self.base_renderer = MockRenderer("base")
-        self.decorator = TestRendererDecorator(self.base_renderer, "test")
+        self.decorator = MockRendererDecorator(self.base_renderer, "test")
 
     def test_正常系_デコレート済みレンダリング(self):
         """正常系: デコレート済みレンダリング処理の確認"""
@@ -208,7 +208,7 @@ class TestCachingParserDecorator:
         # Given: 一度パースしたコンテンツ
         content = "cached_content"
         context = {"option": "value"}
-        
+
         # 初回実行（キャッシュ作成）
         result1 = self.cached_parser.parse(content, context)
         initial_call_count = self.base_parser.call_count
@@ -421,7 +421,7 @@ class TestDecoratorChain:
         chain = DecoratorChain(self.base_parser)
 
         # When: デコレーターを追加
-        result_chain = chain.add_decorator(lambda obj: TestParserDecorator(obj, "first"))
+        result_chain = chain.add_decorator(lambda obj: MockParserDecorator(obj, "first"))
 
         # Then: チェーンが返され、デコレーターが追加される
         assert result_chain is chain
@@ -433,9 +433,9 @@ class TestDecoratorChain:
         chain = DecoratorChain(self.base_parser)
 
         # When: 複数のデコレーターを追加
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "first"))
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "second"))
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "third"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "first"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "second"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "third"))
 
         # Then: 全てのデコレーターが追加される
         assert len(chain._decorators) == 3
@@ -444,7 +444,7 @@ class TestDecoratorChain:
         """正常系: 単一デコレーターでのチェーン構築確認"""
         # Given: 単一デコレーターのチェーン
         chain = DecoratorChain(self.base_parser)
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "decorated"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "decorated"))
 
         # When: チェーンを構築
         decorated_parser = chain.build()
@@ -457,9 +457,9 @@ class TestDecoratorChain:
         """正常系: 複数デコレーターでのチェーン構築確認"""
         # Given: 複数デコレーターのチェーン
         chain = DecoratorChain(self.base_parser)
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "first"))
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "second"))
-        chain.add_decorator(lambda obj: TestParserDecorator(obj, "third"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "first"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "second"))
+        chain.add_decorator(lambda obj: MockParserDecorator(obj, "third"))
 
         # When: チェーンを構築
         decorated_parser = chain.build()
@@ -484,8 +484,8 @@ class TestDecoratorChain:
         # Given: デコレーターチェーン
         # When: メソッドチェーンでデコレーターを追加
         decorated_parser = (DecoratorChain(self.base_parser)
-                          .add_decorator(lambda obj: TestParserDecorator(obj, "first"))
-                          .add_decorator(lambda obj: TestParserDecorator(obj, "second"))
+                          .add_decorator(lambda obj: MockParserDecorator(obj, "first"))
+                          .add_decorator(lambda obj: MockParserDecorator(obj, "second"))
                           .build())
 
         # Then: メソッドチェーンが正常に動作する
@@ -512,7 +512,7 @@ class TestDecoratorFunctions:
 
         # Then: キャッシュデコレーターでラップされたインスタンスが返される
         assert isinstance(cached_parser, CachingParserDecorator)
-        
+
         # キャッシュ機能確認
         result1 = cached_parser.parse("content", {})
         result2 = cached_parser.parse("content", {})
@@ -534,7 +534,7 @@ class TestDecoratorFunctions:
 
         # Then: ログデコレーターでラップされたインスタンスが返される
         assert isinstance(logged_parser, LoggingDecorator)
-        
+
         # ラップされたオブジェクトのメソッド呼び出し確認
         result = logged_parser.parse("content")
         assert result == "parsed_logged:content"
@@ -556,7 +556,7 @@ class TestDecoratorFunctions:
 
         # Then: 両方のデコレーターが適用される
         assert isinstance(combined_parser, LoggingDecorator)
-        
+
         # 内部にキャッシュデコレーターがある
         wrapped_parser = combined_parser._wrapped_object
         assert isinstance(wrapped_parser, CachingParserDecorator)
@@ -569,18 +569,18 @@ class TestIntegration:
         """統合: 完全なデコレーターワークフローの確認"""
         # Given: ベースパーサーと複数のデコレーター
         base_parser = SlowParser()
-        
+
         # デコレーターチェーンを構築
         enhanced_parser = (DecoratorChain(base_parser)
                          .add_decorator(lambda obj: CachingParserDecorator(obj, cache_size=2))
                          .add_decorator(lambda obj: LoggingDecorator(obj, "enhanced"))
-                         .add_decorator(lambda obj: TestParserDecorator(obj, "final"))
+                         .add_decorator(lambda obj: MockParserDecorator(obj, "final"))
                          .build())
 
         # When: 複数回のパース実行
         content = "test_content"
         context = {"format": "test"}
-        
+
         result1 = enhanced_parser.parse(content, context)
         result2 = enhanced_parser.parse(content, context)  # キャッシュヒット
         result3 = enhanced_parser.parse("different", context)  # 新しいコンテンツ
@@ -590,21 +590,21 @@ class TestIntegration:
         assert "parsed_slow_parser:" in result1
         assert result1 == result2  # キャッシュ効果で同じ結果
         assert result3 != result1  # 異なるコンテンツには異なる結果
-        
+
         # ベースパーサーの呼び出し回数確認（キャッシュ効果）
         assert base_parser.call_count == 2  # content と different の2回のみ
 
     def test_統合_パフォーマンス改善確認(self):
         """統合: キャッシュによるパフォーマンス改善確認"""
         import time
-        
+
         # Given: 遅いベースパーサー
         slow_parser = SlowParser()
         cached_parser = CachingParserDecorator(slow_parser, cache_size=5)
 
         # When: キャッシュなしとキャッシュありで実行時間を計測
         content = "performance_test"
-        
+
         # キャッシュなし（初回）
         start_time = time.time()
         result1 = cached_parser.parse(content, {})
@@ -634,7 +634,7 @@ class TestIntegration:
 
         # When: 正常ケースとエラーケースを実行
         normal_result = logged_parser.parse("normal_content", {})
-        
+
         with pytest.raises(ValueError, match="Parse error occurred"):
             logged_parser.parse("error_content", {})
 
@@ -646,10 +646,10 @@ class TestIntegration:
         # Given: 大量のデコレーターチェーン
         base_parser = MockParser("base")
         chain = DecoratorChain(base_parser)
-        
+
         # 50個のデコレーターを追加
         for i in range(50):
-            chain.add_decorator(lambda obj, i=i: TestParserDecorator(obj, f"layer_{i}"))
+            chain.add_decorator(lambda obj, i=i: MockParserDecorator(obj, f"layer_{i}"))
 
         # When: チェーンを構築して実行
         mega_decorated_parser = chain.build()
@@ -664,11 +664,11 @@ class TestIntegration:
         """境界値: 再帰的デコレーター構造の確認"""
         # Given: 自己参照的なデコレーター構造
         base_parser = MockParser("recursive")
-        
+
         # 複数レベルのキャッシュデコレーター
         level1_cached = CachingParserDecorator(base_parser, cache_size=2)
         level2_cached = CachingParserDecorator(level1_cached, cache_size=3)
-        final_decorated = TestParserDecorator(level2_cached, "outer")
+        final_decorated = MockParserDecorator(level2_cached, "outer")
 
         # When: 複雑なデコレーター構造で実行
         result = final_decorated.parse("recursive_content", {})

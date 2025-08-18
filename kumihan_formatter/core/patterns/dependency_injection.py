@@ -274,7 +274,7 @@ def injectable(cls: Type[T]) -> Type[T]:
     original_init = cls.__init__
 
     @wraps(original_init)
-    def new_init(self, *args: Any, **kwargs: Any) -> None:
+    def new_init(self: Any, *args: Any, **kwargs: Any) -> None:
         # 依存関係自動注入ロジック
         try:
             container = get_container()
@@ -299,7 +299,7 @@ def injectable(cls: Type[T]) -> Type[T]:
             logger.warning(f"DI injection failed for {cls.__name__}: {e}")
             original_init(self, *args, **kwargs)
 
-    cls.__init__ = new_init
+    setattr(cls, "__init__", new_init)
     return cls
 
 

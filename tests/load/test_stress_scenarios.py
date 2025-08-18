@@ -36,7 +36,7 @@ class TestStressScenarios:
             for i in range(50):
                 content += "  " * i + f"- レベル{i}アイテム\n"
             return content
-            
+
         elif pattern_type == "many_markers":
             # 大量のマーカー
             content = []
@@ -45,7 +45,7 @@ class TestStressScenarios:
                 marker = random.choice(markers)
                 content.append(f"# {marker} #テキスト{i}##")
             return " ".join(content)
-            
+
         elif pattern_type == "complex_mix":
             # 複雑な混合パターン
             content = []
@@ -53,7 +53,7 @@ class TestStressScenarios:
                 pattern = random.choice(self.complex_patterns)
                 content.append(pattern.format(i))
             return "\n".join(content)
-            
+
         elif pattern_type == "edge_cases":
             # エッジケース集
             return """
@@ -72,11 +72,11 @@ class TestStressScenarios:
     def stress_test_parser(self, content: str) -> Dict[str, Any]:
         """パーサーのストレステスト"""
         from kumihan_formatter.core.parsing.main_parser import MainParser
-        
+
         start_time = time.time()
         errors = []
         result = None
-        
+
         try:
             parser = MainParser()
             result = parser.parse(content)
@@ -84,9 +84,9 @@ class TestStressScenarios:
         except Exception as e:
             errors.append(str(e))
             success = False
-        
+
         elapsed = time.time() - start_time
-        
+
         return {
             "success": success,
             "elapsed": elapsed,
@@ -98,41 +98,41 @@ class TestStressScenarios:
         """深いネスト構造の処理"""
         content = self.generate_stress_content("deep_nesting")
         result = self.stress_test_parser(content)
-        
+
         assert result["success"], f"深いネスト処理失敗: {result['errors']}"
         assert result["elapsed"] < 5.0, f"処理時間超過: {result['elapsed']:.2f}秒"
-        
+
         logger.info(f"深いネスト処理: {result['elapsed']:.3f}秒")
 
     def test_大量マーカー処理(self) -> None:
         """大量のマーカー処理"""
         content = self.generate_stress_content("many_markers")
         result = self.stress_test_parser(content)
-        
+
         assert result["success"], f"大量マーカー処理失敗: {result['errors']}"
         assert result["elapsed"] < 3.0, f"処理時間超過: {result['elapsed']:.2f}秒"
-        
+
         logger.info(f"大量マーカー処理: {result['elapsed']:.3f}秒")
 
     def test_複雑パターン混合(self) -> None:
         """複雑なパターンの混合処理"""
         content = self.generate_stress_content("complex_mix")
         result = self.stress_test_parser(content)
-        
+
         assert result["success"], f"複雑パターン処理失敗: {result['errors']}"
         assert result["elapsed"] < 5.0, f"処理時間超過: {result['elapsed']:.2f}秒"
-        
+
         logger.info(f"複雑パターン処理: {result['elapsed']:.3f}秒")
 
     def test_エッジケース集(self) -> None:
         """エッジケースの処理"""
         content = self.generate_stress_content("edge_cases")
         result = self.stress_test_parser(content)
-        
+
         # エッジケースでもクラッシュしないこと
         assert result["success"] or len(result["errors"]) > 0, "エッジケース処理が不明な状態"
         assert result["elapsed"] < 1.0, f"処理時間超過: {result['elapsed']:.2f}秒"
-        
+
         if result["errors"]:
             logger.info(f"期待されるエラー: {result['errors']}")
 
@@ -144,9 +144,9 @@ class TestStressScenarios:
             ("complex_mix", 5),
             ("edge_cases", 5),
         ]
-        
+
         results: List[Dict[str, Any]] = []
-        
+
         with ThreadPoolExecutor(max_workers=4) as executor:
             futures = []
             for pattern_type, count in test_cases:
@@ -154,23 +154,23 @@ class TestStressScenarios:
                     content = self.generate_stress_content(pattern_type)
                     future = executor.submit(self.stress_test_parser, content)
                     futures.append((pattern_type, future))
-            
+
             for pattern_type, future in futures:
                 result = future.result()
                 result["pattern"] = pattern_type
                 results.append(result)
-        
+
         # 統計
         total = len(results)
         success_count = sum(1 for r in results if r["success"])
         avg_time = sum(r["elapsed"] for r in results) / total
-        
+
         logger.info(
             f"並行ストレステスト: "
             f"成功 {success_count}/{total}, "
             f"平均時間 {avg_time:.3f}秒"
         )
-        
+
         # 90%以上成功すること
         assert success_count >= total * 0.9, f"成功率が低い: {success_count}/{total}"
 
@@ -178,42 +178,42 @@ class TestStressScenarios:
         """メモリストレステスト"""
         import gc
         import tracemalloc
-        
+
         tracemalloc.start()
-        
+
         # 初期状態
         gc.collect()
         snapshot1 = tracemalloc.take_snapshot()
-        
+
         # ストレス処理を繰り返し実行
         for i in range(10):
             for pattern in ["deep_nesting", "many_markers", "complex_mix"]:
                 content = self.generate_stress_content(pattern)
                 result = self.stress_test_parser(content)
-                
+
                 # 結果を破棄してメモリ解放を促す
                 del result
                 del content
-            
+
             # 定期的にGC実行
             if i % 3 == 0:
                 gc.collect()
-        
+
         # 最終状態
         gc.collect()
         snapshot2 = tracemalloc.take_snapshot()
-        
+
         # メモリ増加量確認
         top_stats = snapshot2.compare_to(snapshot1, 'lineno')
         total_diff = sum(stat.size_diff for stat in top_stats if stat.size_diff > 0)
-        
+
         tracemalloc.stop()
-        
+
         # メモリリークがないこと（増加量が5MB以下）
         assert total_diff < 5 * 1024 * 1024, (
             f"メモリ増加量が多すぎます: {total_diff/1024/1024:.2f}MB"
         )
-        
+
         logger.info(f"メモリストレステスト完了: 増加量 {total_diff/1024:.1f}KB")
 
     def test_エラー回復性(self) -> None:
@@ -229,10 +229,10 @@ class TestStressScenarios:
             "# " * 1000,  # 大量の開始タグ
             "正常なテキスト4",
         ]
-        
+
         success_count = 0
         error_count = 0
-        
+
         for i, content in enumerate(test_contents):
             try:
                 if content is not None:
@@ -246,7 +246,7 @@ class TestStressScenarios:
             except Exception as e:
                 error_count += 1
                 logger.debug(f"ケース{i}でエラー: {e}")
-        
+
         # エラーが発生しても後続の処理が継続できること
         assert success_count >= 4, f"正常処理が少なすぎます: {success_count}"
         logger.info(f"エラー回復性: 成功 {success_count}, エラー {error_count}")

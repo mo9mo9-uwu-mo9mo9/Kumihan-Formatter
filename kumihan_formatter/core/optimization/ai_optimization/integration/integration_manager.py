@@ -300,9 +300,8 @@ class PhaseB4BetaIntegrator:
             # 協調制御初期化
             self.alpha_beta_coordinator.initialize_systems(
                 alpha_system,
-                None,
                 learning_system,
-                autonomous_controller,  # prediction_engine=None
+                autonomous_controller,
             )
 
             # 統合モード設定

@@ -4,23 +4,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 # ノードインポート
-try:
-    from .....ast_nodes.node import Node
-except ImportError:
-    try:
-        from .....ast_nodes import Node
-    except ImportError:
-        # フォールバック実装
-        class Node:  # type: ignore[no-redef]
-            def __init__(
-                self,
-                type: str,
-                content: Any,
-                attributes: Optional[Dict[str, Any]] = None,
-            ):
-                self.type = type
-                self.content = content
-                self.attributes = attributes or {}
+from kumihan_formatter.core.ast_nodes import Node
 
 
 class UnorderedListParser:

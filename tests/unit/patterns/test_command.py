@@ -61,10 +61,12 @@ class MockRenderer:
         return f"rendered_{self.name}:{data}"
 
 
-class TestCommand(Command):
+class MockCommand(Command):
     """テスト用コマンド"""
 
-    def __init__(self, action: str = "test", should_fail: bool = False, execution_time: float = 0.0):
+    def __init__(
+        self, action: str = "test", should_fail: bool = False, execution_time: float = 0.0
+    ):
         super().__init__()
         self.action = action
         self.should_fail = should_fail
@@ -107,7 +109,7 @@ class TestCommand(Command):
             )
 
 
-class UndoableTestCommand(TestCommand):
+class UndoableMockCommand(MockCommand):
     """アンドゥ可能なテスト用コマンド"""
 
     def __init__(self, action: str = "undoable", should_fail: bool = False):
@@ -193,7 +195,7 @@ class TestCommandBase:
         """正常系: コマンド初期化の確認"""
         # Given: コマンドクラス
         # When: コマンドを初期化
-        command = TestCommand("init_test")
+        command = MockCommand("init_test")
 
         # Then: 正しく初期化される
         assert command.status == CommandStatus.PENDING
@@ -209,7 +211,7 @@ class TestCommandBase:
         custom_id = "custom_command_123"
 
         # When: カスタムIDでコマンドを作成
-        command = TestCommand("action")
+        command = MockCommand("action")
         command.command_id = custom_id
 
         # Then: カスタムIDが設定される
@@ -218,19 +220,19 @@ class TestCommandBase:
     def test_正常系_コマンド説明取得(self):
         """正常系: コマンド説明取得の確認"""
         # Given: コマンド
-        command = TestCommand("description_test")
+        command = MockCommand("description_test")
 
         # When: 説明を取得
         description = command.get_description()
 
         # Then: 適切な説明が返される
-        assert "TestCommand" in description
+        assert "MockCommand" in description
         assert command.command_id[:8] in description
 
     def test_正常系_成功実行(self):
         """正常系: 成功実行の確認"""
         # Given: 正常なコマンド
-        command = TestCommand("success")
+        command = MockCommand("success")
 
         # When: コマンドを実行
         result = command.execute()
@@ -246,7 +248,7 @@ class TestCommandBase:
     def test_正常系_失敗実行(self):
         """正常系: 失敗実行の確認"""
         # Given: 失敗するコマンド
-        command = TestCommand("failure", should_fail=True)
+        command = MockCommand("failure", should_fail=True)
 
         # When: コマンドを実行
         result = command.execute()
@@ -261,7 +263,7 @@ class TestCommandBase:
     def test_正常系_アンドゥ不可判定(self):
         """正常系: アンドゥ不可判定の確認"""
         # Given: 基本コマンド
-        command = TestCommand("no_undo")
+        command = MockCommand("no_undo")
 
         # When: アンドゥ可能性を確認
         can_undo = command.can_undo()
@@ -272,7 +274,7 @@ class TestCommandBase:
     def test_異常系_アンドゥ実行エラー(self):
         """異常系: アンドゥ実行エラーの確認"""
         # Given: アンドゥ不対応のコマンド
-        command = TestCommand("no_undo")
+        command = MockCommand("no_undo")
 
         # When: アンドゥを実行しようとする
         # Then: NotImplementedErrorが発生
@@ -418,7 +420,7 @@ class TestCommandProcessor:
     def test_正常系_コマンド実行(self):
         """正常系: コマンド実行の確認"""
         # Given: テストコマンド
-        command = TestCommand("processor_test")
+        command = MockCommand("processor_test")
 
         # When: プロセッサーでコマンドを実行
         result = self.processor.execute_command(command)
@@ -426,7 +428,7 @@ class TestCommandProcessor:
         # Then: コマンドが実行され、履歴に記録される
         assert result.success is True
         assert result.result == "executed_processor_test"
-        
+
         history = self.processor.get_command_history()
         assert len(history) == 1
         assert history[0] is command
@@ -435,9 +437,9 @@ class TestCommandProcessor:
         """正常系: 複数コマンド実行の確認"""
         # Given: 複数のテストコマンド
         commands = [
-            TestCommand("first"),
-            TestCommand("second"),
-            TestCommand("third")
+            MockCommand("first"),
+            MockCommand("second"),
+            MockCommand("third")
         ]
 
         # When: 複数のコマンドを実行
@@ -449,7 +451,7 @@ class TestCommandProcessor:
         # Then: 全てのコマンドが実行され、履歴に記録される
         assert len(results) == 3
         assert all(result.success for result in results)
-        
+
         history = self.processor.get_command_history()
         assert len(history) == 3
         for i, command in enumerate(commands):
@@ -459,9 +461,9 @@ class TestCommandProcessor:
         """正常系: バッチ実行の確認"""
         # Given: バッチ実行用コマンド
         commands = [
-            TestCommand("batch1"),
-            TestCommand("batch2"),
-            TestCommand("batch3")
+            MockCommand("batch1"),
+            MockCommand("batch2"),
+            MockCommand("batch3")
         ]
 
         # When: バッチでコマンドを実行
@@ -470,7 +472,7 @@ class TestCommandProcessor:
         # Then: 全てのコマンドが実行される
         assert len(results) == 3
         assert all(result.success for result in results)
-        
+
         # 履歴確認
         history = self.processor.get_command_history()
         assert len(history) == 3
@@ -479,9 +481,9 @@ class TestCommandProcessor:
         """正常系: バッチ実行での一部失敗処理確認"""
         # Given: 成功・失敗混在のコマンド
         commands = [
-            TestCommand("batch_success1"),
-            TestCommand("batch_failure", should_fail=True),
-            TestCommand("batch_success2")
+            MockCommand("batch_success1"),
+            MockCommand("batch_failure", should_fail=True),
+            MockCommand("batch_success2")
         ]
 
         # When: バッチでコマンドを実行
@@ -496,7 +498,7 @@ class TestCommandProcessor:
     def test_正常系_アンドゥ実行(self):
         """正常系: アンドゥ実行の確認"""
         # Given: アンドゥ可能なコマンド
-        command = UndoableTestCommand("undoable")
+        command = UndoableMockCommand("undoable")
         self.processor.execute_command(command)
 
         # When: アンドゥを実行
@@ -511,7 +513,7 @@ class TestCommandProcessor:
     def test_正常系_アンドゥ対象なし(self):
         """正常系: アンドゥ対象がない場合の確認"""
         # Given: アンドゥ不可のコマンドのみ
-        command = TestCommand("not_undoable")
+        command = MockCommand("not_undoable")
         self.processor.execute_command(command)
 
         # When: アンドゥを実行
@@ -524,7 +526,7 @@ class TestCommandProcessor:
         """正常系: 履歴取得の制限機能確認"""
         # Given: 複数のコマンド実行
         for i in range(10):
-            command = TestCommand(f"history_{i}")
+            command = MockCommand(f"history_{i}")
             self.processor.execute_command(command)
 
         # When: 制限付きで履歴を取得
@@ -539,7 +541,7 @@ class TestCommandProcessor:
     def test_正常系_履歴クリア(self):
         """正常系: 履歴クリアの確認"""
         # Given: 履歴のあるプロセッサー
-        command = TestCommand("to_be_cleared")
+        command = MockCommand("to_be_cleared")
         self.processor.execute_command(command)
         assert len(self.processor.get_command_history()) == 1
 
@@ -557,7 +559,7 @@ class TestCommandProcessor:
         # When: 最大数を超えるコマンドを実行
         commands = []
         for i in range(5):
-            command = TestCommand(f"max_history_{i}")
+            command = MockCommand(f"max_history_{i}")
             commands.append(command)
             self.processor.execute_command(command)
 
@@ -591,7 +593,7 @@ class TestCommandQueue:
     def test_正常系_コマンドキューイング(self):
         """正常系: コマンドキューイングの確認"""
         # Given: テストコマンド
-        command = TestCommand("queued")
+        command = MockCommand("queued")
 
         # When: コマンドをキューに追加
         self.queue.enqueue(command)
@@ -603,12 +605,12 @@ class TestCommandQueue:
     def test_正常系_キュー処理_単一コマンド(self):
         """正常系: 単一コマンドのキュー処理確認"""
         # Given: キューに追加されたコマンド
-        command = TestCommand("queue_process", execution_time=0.01)
+        command = MockCommand("queue_process", execution_time=0.01)
         self.queue.enqueue(command)
 
         # When: キューを処理
         self.queue.process_queue()
-        
+
         # 処理完了を待機
         time.sleep(0.05)
 
@@ -620,17 +622,17 @@ class TestCommandQueue:
         """正常系: 複数コマンドのキュー処理確認"""
         # Given: 複数のコマンド
         commands = [
-            TestCommand("queue1", execution_time=0.01),
-            TestCommand("queue2", execution_time=0.01),
-            TestCommand("queue3", execution_time=0.01)
+            MockCommand("queue1", execution_time=0.01),
+            MockCommand("queue2", execution_time=0.01),
+            MockCommand("queue3", execution_time=0.01)
         ]
-        
+
         for command in commands:
             self.queue.enqueue(command)
 
         # When: キューを処理
         self.queue.process_queue()
-        
+
         # 処理完了を待機
         time.sleep(0.1)
 
@@ -642,14 +644,14 @@ class TestCommandQueue:
     def test_境界値_最大ワーカー数制限(self):
         """境界値: 最大ワーカー数制限の確認"""
         # Given: 多数のコマンドとワーカー数制限
-        commands = [TestCommand(f"worker_{i}", execution_time=0.02) for i in range(5)]
-        
+        commands = [MockCommand(f"worker_{i}", execution_time=0.02) for i in range(5)]
+
         for command in commands:
             self.queue.enqueue(command)
 
         # When: キュー処理開始
         self.queue.process_queue()
-        
+
         # 少し待機して実行状況確認
         time.sleep(0.01)
 
@@ -682,10 +684,10 @@ class TestThreadSafety:
             """スレッド内でコマンド実行"""
             thread_results = []
             for i in range(5):
-                command = TestCommand(f"thread_{thread_id}_cmd_{i}")
+                command = MockCommand(f"thread_{thread_id}_cmd_{i}")
                 result = processor.execute_command(command)
                 thread_results.append(result)
-            
+
             with results_lock:
                 results.extend(thread_results)
 
@@ -703,7 +705,7 @@ class TestThreadSafety:
         # Then: 全てのコマンドが正常に実行される
         assert len(results) == 15  # 3スレッド × 5コマンド
         assert all(result.success for result in results)
-        
+
         # 履歴も正しく記録される
         history = processor.get_command_history()
         assert len(history) == 15
@@ -718,7 +720,7 @@ class TestThreadSafety:
         def add_commands(thread_id: int):
             """スレッド内でコマンド追加"""
             for i in range(10):
-                command = TestCommand(f"concurrent_{thread_id}_{i}")
+                command = MockCommand(f"concurrent_{thread_id}_{i}")
                 queue.enqueue(command)
                 with add_lock:
                     commands_added.append(command)
@@ -761,7 +763,7 @@ class TestIntegration:
         assert render_result.success is True
         assert "parsed_workflow_parser" in parse_result.result
         assert "rendered_workflow_renderer" in render_result.result
-        
+
         # 履歴確認
         history = processor.get_command_history()
         assert len(history) == 2
@@ -790,7 +792,7 @@ class TestIntegration:
         first_command = ParseCommand("retry content", flakey_parser)
         first_result = processor.execute_command(first_command)
 
-        second_command = ParseCommand("retry content", flakey_parser)  
+        second_command = ParseCommand("retry content", flakey_parser)
         second_result = processor.execute_command(second_command)
 
         # Then: 最初は失敗、2回目は成功
@@ -802,14 +804,14 @@ class TestIntegration:
         """統合: 複雑なコマンドチェーンの確認"""
         # Given: 複数段階の処理チェーン
         processor = CommandProcessor()
-        
+
         # 段階的な処理を行うコマンド群
         commands = [
-            TestCommand("step1"),
-            TestCommand("step2"),  
-            TestCommand("step3"),
-            UndoableTestCommand("step4_undoable"),
-            TestCommand("step5")
+            MockCommand("step1"),
+            MockCommand("step2"),
+            MockCommand("step3"),
+            UndoableMockCommand("step4_undoable"),
+            MockCommand("step5")
         ]
 
         # When: 段階的にコマンドを実行
@@ -825,7 +827,7 @@ class TestIntegration:
         assert all(result.success for result in results)
         assert undo_result is not None
         assert undo_result.success is True
-        
+
         # 履歴とアンドゥ確認
         history = processor.get_command_history()
         assert len(history) == 5
@@ -835,7 +837,7 @@ class TestIntegration:
         """境界値: 大量コマンド処理の確認"""
         # Given: 大量のコマンド
         processor = CommandProcessor()
-        commands = [TestCommand(f"mass_{i}") for i in range(1000)]
+        commands = [MockCommand(f"mass_{i}") for i in range(1000)]
 
         # When: バッチで大量コマンドを実行
         results = processor.execute_batch(commands)
@@ -843,7 +845,7 @@ class TestIntegration:
         # Then: 全てのコマンドが処理される
         assert len(results) == 1000
         assert all(result.success for result in results)
-        
+
         # 履歴サイズ制限確認
         history = processor.get_command_history()
         assert len(history) == 1000  # デフォルト最大履歴数内

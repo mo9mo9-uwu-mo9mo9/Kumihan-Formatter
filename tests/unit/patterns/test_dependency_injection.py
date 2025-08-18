@@ -25,14 +25,14 @@ logger = get_logger(__name__)
 
 
 # テスト用プロトコルとクラス
-class ITestService(Protocol):
+class IMockService(Protocol):
     """テスト用サービスプロトコル"""
 
     def get_value(self) -> str:
         ...
 
 
-class TestService:
+class MockService:
     """テスト用サービス実装"""
 
     def __init__(self, value: str = "test"):
@@ -45,7 +45,7 @@ class TestService:
 class DependentService:
     """依存関係を持つサービス"""
 
-    def __init__(self, dependency: ITestService):
+    def __init__(self, dependency: IMockService):
         self.dependency = dependency
 
     def get_dependent_value(self) -> str:
@@ -77,75 +77,75 @@ class TestDIContainer:
         """正常系: サービス登録の確認"""
         # Given: DIコンテナとテストサービス
         # When: サービスを登録
-        self.container.register(ITestService, TestService)
+        self.container.register(IMockService, MockService)
 
         # Then: サービスが正しく登録される
-        assert ITestService in self.container._services
-        descriptor = self.container._services[ITestService]
-        assert descriptor.interface == ITestService
-        assert descriptor.implementation == TestService
+        assert IMockService in self.container._services
+        descriptor = self.container._services[IMockService]
+        assert descriptor.interface == IMockService
+        assert descriptor.implementation == MockService
         assert descriptor.lifetime == ServiceLifetime.SINGLETON
 
     def test_正常系_シングルトン登録(self):
         """正常系: シングルトンインスタンス直接登録の確認"""
         # Given: 作成済みインスタンス
-        instance = TestService("singleton_test")
+        instance = MockService("singleton_test")
 
         # When: シングルトンとして登録
-        self.container.register_singleton(ITestService, instance)
+        self.container.register_singleton(IMockService, instance)
 
         # Then: シングルトンが正しく登録される
-        resolved = self.container.resolve(ITestService)
+        resolved = self.container.resolve(IMockService)
         assert resolved is instance
         assert resolved.get_value() == "singleton_test"
 
     def test_正常系_ファクトリー登録(self):
         """正常系: ファクトリー関数登録の確認"""
         # Given: ファクトリー関数
-        def factory(container: DIContainer) -> TestService:
-            return TestService("factory_created")
+        def factory(container: DIContainer) -> MockService:
+            return MockService("factory_created")
 
         # When: ファクトリーを登録
         self.container.register_factory(
-            ITestService, factory, ServiceLifetime.TRANSIENT
+            IMockService, factory, ServiceLifetime.TRANSIENT
         )
 
         # Then: ファクトリー経由でインスタンスが生成される
-        resolved = self.container.resolve(ITestService)
-        assert isinstance(resolved, TestService)
+        resolved = self.container.resolve(IMockService)
+        assert isinstance(resolved, MockService)
         assert resolved.get_value() == "factory_created"
 
     def test_正常系_サービス解決_シングルトン(self):
         """正常系: シングルトンサービス解決の確認"""
         # Given: シングルトンサービス登録
-        self.container.register(ITestService, TestService, ServiceLifetime.SINGLETON)
+        self.container.register(IMockService, MockService, ServiceLifetime.SINGLETON)
 
         # When: 複数回解決
-        resolved1 = self.container.resolve(ITestService)
-        resolved2 = self.container.resolve(ITestService)
+        resolved1 = self.container.resolve(IMockService)
+        resolved2 = self.container.resolve(IMockService)
 
         # Then: 同じインスタンスが返される
         assert resolved1 is resolved2
-        assert isinstance(resolved1, TestService)
+        assert isinstance(resolved1, MockService)
 
     def test_正常系_サービス解決_トランジエント(self):
         """正常系: トランジエントサービス解決の確認"""
         # Given: トランジエントサービス登録
-        self.container.register(ITestService, TestService, ServiceLifetime.TRANSIENT)
+        self.container.register(IMockService, MockService, ServiceLifetime.TRANSIENT)
 
         # When: 複数回解決
-        resolved1 = self.container.resolve(ITestService)
-        resolved2 = self.container.resolve(ITestService)
+        resolved1 = self.container.resolve(IMockService)
+        resolved2 = self.container.resolve(IMockService)
 
         # Then: 異なるインスタンスが返される
         assert resolved1 is not resolved2
-        assert isinstance(resolved1, TestService)
-        assert isinstance(resolved2, TestService)
+        assert isinstance(resolved1, MockService)
+        assert isinstance(resolved2, MockService)
 
     def test_正常系_依存関係自動解決(self):
         """正常系: 依存関係の自動解決確認"""
         # Given: 依存関係のあるサービス登録
-        self.container.register(ITestService, TestService)
+        self.container.register(IMockService, MockService)
         self.container.register(DependentService, DependentService)
 
         # When: 依存サービスを解決
@@ -153,7 +153,7 @@ class TestDIContainer:
 
         # Then: 依存関係が自動的に解決される
         assert isinstance(resolved, DependentService)
-        assert isinstance(resolved.dependency, TestService)
+        assert isinstance(resolved.dependency, MockService)
         assert resolved.get_dependent_value() == "dependent:test"
 
     def test_正常系_スコープ作成(self):
@@ -172,7 +172,7 @@ class TestDIContainer:
         # When: 未登録サービスを解決しようとする
         # Then: ServiceNotFoundErrorが発生
         with pytest.raises(ServiceNotFoundError, match="Service not registered"):
-            self.container.resolve(ITestService)
+            self.container.resolve(IMockService)
 
     def test_異常系_循環参照検出(self):
         """異常系: 循環参照の検出確認"""
@@ -235,7 +235,7 @@ class TestDIContainer:
         assert resolved.level2.level1.level == 1
 
 
-class TestServiceScope:
+class MockServiceScope:
     """サービススコープのテスト"""
 
     def setup_method(self):
@@ -246,30 +246,30 @@ class TestServiceScope:
     def test_正常系_スコープ内サービス解決(self):
         """正常系: スコープ内でのサービス解決確認"""
         # Given: スコープドサービス登録
-        self.container.register(ITestService, TestService, ServiceLifetime.SCOPED)
+        self.container.register(IMockService, MockService, ServiceLifetime.SCOPED)
 
         # When: スコープ内でサービスを解決
-        resolved1 = self.scope.resolve(ITestService)
-        resolved2 = self.scope.resolve(ITestService)
+        resolved1 = self.scope.resolve(IMockService)
+        resolved2 = self.scope.resolve(IMockService)
 
         # Then: 同一スコープ内では同じインスタンスが返される
         assert resolved1 is resolved2
-        assert isinstance(resolved1, TestService)
+        assert isinstance(resolved1, MockService)
 
     def test_正常系_異なるスコープでの独立性(self):
         """正常系: 異なるスコープ間での独立性確認"""
         # Given: スコープドサービス登録と別スコープ
-        self.container.register(ITestService, TestService, ServiceLifetime.SCOPED)
+        self.container.register(IMockService, MockService, ServiceLifetime.SCOPED)
         scope2 = self.container.create_scope()
 
         # When: 異なるスコープでサービスを解決
-        resolved1 = self.scope.resolve(ITestService)
-        resolved2 = scope2.resolve(ITestService)
+        resolved1 = self.scope.resolve(IMockService)
+        resolved2 = scope2.resolve(IMockService)
 
         # Then: 異なるインスタンスが返される
         assert resolved1 is not resolved2
-        assert isinstance(resolved1, TestService)
-        assert isinstance(resolved2, TestService)
+        assert isinstance(resolved1, MockService)
+        assert isinstance(resolved2, MockService)
 
     def test_異常系_スコープ内未登録サービス(self):
         """異常系: スコープ内での未登録サービス解決エラー"""
@@ -277,7 +277,7 @@ class TestServiceScope:
         # When: 未登録サービスをスコープで解決しようとする
         # Then: ServiceNotFoundErrorが発生
         with pytest.raises(ServiceNotFoundError):
-            self.scope.resolve(ITestService)
+            self.scope.resolve(IMockService)
 
 
 class TestDecorators:
@@ -290,33 +290,33 @@ class TestDecorators:
     def test_正常系_injectableデコレーター(self):
         """正常系: @injectableデコレーターの動作確認"""
         # Given: 依存関係とinjectableクラス
-        self.container.register(ITestService, TestService)
+        self.container.register(IMockService, MockService)
 
         @injectable
         class DecoratedService:
-            def __init__(self, service: ITestService):
+            def __init__(self, service: IMockService):
                 self.service = service
 
         # When: グローバルコンテナにアクセス可能な状態でインスタンス作成
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container', 
+        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
                   return_value=self.container):
             instance = DecoratedService()
 
         # Then: 依存関係が自動注入される
         assert hasattr(instance, 'service')
-        assert isinstance(instance.service, TestService)
+        assert isinstance(instance.service, MockService)
 
     def test_正常系_injectデコレーター(self):
         """正常系: @injectデコレーターの動作確認"""
         # Given: 依存関係とinjectデコレーター付き関数
-        self.container.register(ITestService, TestService)
+        self.container.register(IMockService, MockService)
 
-        @inject(service=ITestService)
-        def decorated_function(service: ITestService) -> str:
+        @inject(service=IMockService)
+        def decorated_function(service: IMockService) -> str:
             return service.get_value()
 
         # When: グローバルコンテナにアクセス可能な状態で関数実行
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container', 
+        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
                   return_value=self.container):
             result = decorated_function()
 
@@ -328,12 +328,12 @@ class TestDecorators:
         # Given: 未登録の依存関係を持つクラス
         @injectable
         class FailingService:
-            def __init__(self, missing_service: ITestService):
+            def __init__(self, missing_service: IMockService):
                 self.missing_service = missing_service
 
         # When: DIが失敗する状況でインスタンス作成を試行
         # Then: エラーが発生するが適切に処理される
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container', 
+        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
                   return_value=self.container):
             with pytest.raises(TypeError):  # 引数不足でTypeError
                 FailingService()
@@ -372,7 +372,7 @@ class TestGlobalContainer:
         try:
             # 実際にはregisterは例外を発生させないが、
             # 内部でエラーが発生した場合のシミュレーション
-            container.register(ITestService, TestService)
+            container.register(IMockService, MockService)
             # 強制的にエラーログを呼び出し
             mock_logger.error("Test error message")
         except Exception:

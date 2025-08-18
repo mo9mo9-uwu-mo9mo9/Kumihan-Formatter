@@ -18,12 +18,12 @@ logger = get_logger(__name__)
 def temp_dir():
     """一時ディレクトリを提供するフィクスチャ"""
     import shutil
-    
+
     temp_path = Path(tempfile.mkdtemp())
     logger.debug(f"一時ディレクトリ作成: {temp_path}")
-    
+
     yield temp_path
-    
+
     # クリーンアップ
     try:
         if temp_path.exists():
@@ -166,38 +166,38 @@ def mock_logger(monkeypatch):
     class MockLogger:
         def __init__(self):
             self.messages: List[Dict[str, Any]] = []
-        
+
         def debug(self, msg: str, *args, **kwargs):
             self.messages.append({"level": "DEBUG", "msg": msg})
-        
+
         def info(self, msg: str, *args, **kwargs):
             self.messages.append({"level": "INFO", "msg": msg})
-        
+
         def warning(self, msg: str, *args, **kwargs):
             self.messages.append({"level": "WARNING", "msg": msg})
-        
+
         def error(self, msg: str, *args, **kwargs):
             self.messages.append({"level": "ERROR", "msg": msg})
-        
+
         def clear(self):
             self.messages.clear()
-        
+
         def get_messages(self, level: str = None) -> List[str]:
             if level:
                 return [m["msg"] for m in self.messages if m["level"] == level]
             return [m["msg"] for m in self.messages]
-    
+
     mock = MockLogger()
-    
+
     # get_loggerをモック化
     def mock_get_logger(name: str):
         return mock
-    
+
     monkeypatch.setattr(
         "kumihan_formatter.core.utilities.logger.get_logger",
         mock_get_logger
     )
-    
+
     return mock
 
 
@@ -205,15 +205,15 @@ def mock_logger(monkeypatch):
 def performance_monitor():
     """パフォーマンス監視用フィクスチャ"""
     import time
-    
+
     class PerformanceMonitor:
         def __init__(self):
             self.measurements: Dict[str, List[float]] = {}
-        
+
         def start(self, name: str) -> float:
             """計測開始"""
             return time.time()
-        
+
         def end(self, name: str, start_time: float) -> float:
             """計測終了"""
             elapsed = time.time() - start_time
@@ -221,18 +221,18 @@ def performance_monitor():
                 self.measurements[name] = []
             self.measurements[name].append(elapsed)
             return elapsed
-        
+
         def get_average(self, name: str) -> float:
             """平均時間取得"""
             if name in self.measurements and self.measurements[name]:
                 return sum(self.measurements[name]) / len(self.measurements[name])
             return 0.0
-        
+
         def get_stats(self, name: str) -> Dict[str, float]:
             """統計情報取得"""
             if name not in self.measurements or not self.measurements[name]:
                 return {"count": 0, "avg": 0, "min": 0, "max": 0}
-            
+
             times = self.measurements[name]
             return {
                 "count": len(times),
@@ -240,7 +240,7 @@ def performance_monitor():
                 "min": min(times),
                 "max": max(times),
             }
-    
+
     return PerformanceMonitor()
 
 
@@ -248,13 +248,13 @@ def performance_monitor():
 def generate_test_content(lines: int = 100, complexity: str = "simple") -> str:
     """テスト用コンテンツを生成"""
     import random
-    
+
     content = []
-    
+
     if complexity == "simple":
         for i in range(lines):
             content.append(f"Line {i}: This is a simple test line.")
-    
+
     elif complexity == "moderate":
         patterns = [
             "# 太字 #テキスト{}##",
@@ -265,7 +265,7 @@ def generate_test_content(lines: int = 100, complexity: str = "simple") -> str:
         for i in range(lines):
             pattern = random.choice(patterns)
             content.append(pattern.format(i))
-    
+
     elif complexity == "complex":
         patterns = [
             "# 太字 ## イタリック #複合{}## ##",
@@ -276,5 +276,5 @@ def generate_test_content(lines: int = 100, complexity: str = "simple") -> str:
         for i in range(lines):
             pattern = random.choice(patterns)
             content.append(pattern.format(i, i+1))
-    
+
     return "\n".join(content)
