@@ -175,8 +175,12 @@ class EnterpriseChecker:
                                          details={"component": "audit_system"})
 
             # 認証監査ログテスト
-            audit_logger.log_authentication_event("enterprise_test", "login", "SUCCESS", "127.0.0.1",
-                                                 details={"test": "authentication_check"})
+            audit_logger.log_authentication_event(
+                user_id="enterprise_test",
+                result="SUCCESS",
+                source_ip="127.0.0.1",
+                details={"test": "authentication_check"}
+            )
 
             return {
                 "status": "PASSED",

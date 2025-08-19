@@ -54,8 +54,16 @@ class SecureInputValidator:
     @classmethod
     def sanitize_filename(cls, filename: str) -> str:
         """ファイル名のサニタイズ"""
+        # HTMLタグとスクリプトを完全除去
+        sanitized = re.sub(r'<[^>]*>', "", filename)
+
         # 危険な文字を除去
-        sanitized = re.sub(r'[<>:"/\\|?*]', "", filename)
+        sanitized = re.sub(r'[<>:"/\\|?*]', "", sanitized)
+
+        # JavaScript関連キーワードを除去
+        dangerous_keywords = ['script', 'javascript', 'vbscript', 'onload', 'onerror']
+        for keyword in dangerous_keywords:
+            sanitized = re.sub(re.escape(keyword), "", sanitized, flags=re.IGNORECASE)
 
         # ドットで始まるファイル名を回避
         if sanitized.startswith("."):

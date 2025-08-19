@@ -320,9 +320,14 @@ class DataSanitizer:
             サニタイズされたJSONデータ
         """
         try:
+            # シークレット検出パターン
+            secret_patterns = ['password', 'secret', 'api_key', 'access_key', 'token', 'key']
 
-            def sanitize_value(value: Any) -> Any:
+            def sanitize_value(key: str, value: Any) -> Any:
                 if isinstance(value, str):
+                    # シークレットキーの場合はマスク
+                    if any(pattern in key.lower() for pattern in secret_patterns):
+                        return "***MASKED***"
                     # 文字列値のサニタイズ
                     if self.javascript_pattern.search(value.lower()):
                         return self.escape_html_entities(value)
@@ -332,13 +337,13 @@ class DataSanitizer:
                         else value
                     )
                 elif isinstance(value, dict):
-                    return {k: sanitize_value(v) for k, v in value.items()}
+                    return {k: sanitize_value(k, v) for k, v in value.items()}
                 elif isinstance(value, list):
-                    return [sanitize_value(item) for item in value]
+                    return [sanitize_value("", item) if not isinstance(item, dict) else sanitize_value("", item) for item in value]
                 else:
                     return value
 
-            sanitized = sanitize_value(json_data)
+            sanitized = {k: sanitize_value(k, v) for k, v in json_data.items()} if isinstance(json_data, dict) else sanitize_value("", json_data)
             self._log_sanitization("JSON", len(str(json_data)), len(str(sanitized)))
             return sanitized
 
