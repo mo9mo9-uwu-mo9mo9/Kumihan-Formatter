@@ -61,7 +61,7 @@ class ListUtilities:
 
         # 最も多いタイプを返す
         if type_counts:
-            return max(type_counts, key=type_counts.get)
+            return max(type_counts, key=lambda k: type_counts[k])
 
         return "unordered"
 
@@ -84,16 +84,17 @@ class ListUtilities:
         new_list.metadata["type"] = target_type
 
         # 子項目のタイプを変更
-        for child in list_node.children:
-            if child.node_type == "list_item":
-                child.metadata["type"] = target_type
-                # タイプ固有のメタデータを更新
-                if target_type == "ordered":
-                    child.metadata["number"] = child.metadata.get("number", 1)
-                elif target_type == "alpha":
-                    child.metadata["letter"] = chr(
-                        ord("a") + child.metadata.get("number", 1) - 1
-                    )
+        if list_node.children:
+            for child in list_node.children:
+                if child.node_type == "list_item":
+                    child.metadata["type"] = target_type
+                    # タイプ固有のメタデータを更新
+                    if target_type == "ordered":
+                        child.metadata["number"] = child.metadata.get("number", 1)
+                    elif target_type == "alpha":
+                        child.metadata["letter"] = chr(
+                            ord("a") + child.metadata.get("number", 1) - 1
+                        )
 
         new_list.children = list_node.children
         return new_list
@@ -107,7 +108,7 @@ class ListUtilities:
         total_items = 0
         checked_items = 0
 
-        def count_items(node: Node):
+        def count_items(node: Node) -> None:
             nonlocal total_items, checked_items
 
             if node.node_type == "checklist_item":
@@ -116,8 +117,9 @@ class ListUtilities:
                     checked_items += 1
 
             # 子項目も再帰的にカウント
-            for child in node.children:
-                count_items(child)
+            if node.children:
+                for child in node.children:
+                    count_items(child)
 
         count_items(list_node)
 
@@ -175,21 +177,27 @@ class ListUtilities:
 
             content_lengths = []
 
-            def traverse(n: Node, d: int):
+            def traverse(n: Node, d: int) -> None:
                 if n.node_type in ["list_item", "checklist_item", "definition_item"]:
-                    stats["total_items"] += 1
-                    stats["max_depth"] = max(stats["max_depth"], d)
+                    total_items = stats.get("total_items", 0)
+                    if isinstance(total_items, int):
+                        stats["total_items"] = total_items + 1
+                    max_depth = stats.get("max_depth", 0)
+                    if isinstance(max_depth, int):
+                        stats["max_depth"] = max(max_depth, d)
 
                     item_type = n.metadata.get("type", "unknown")
-                    stats["type_counts"][item_type] = (
-                        stats["type_counts"].get(item_type, 0) + 1
-                    )
+                    type_counts = stats.get("type_counts", {})
+                    if isinstance(type_counts, dict):
+                        type_counts[item_type] = type_counts.get(item_type, 0) + 1
+                        stats["type_counts"] = type_counts
 
                     if n.content:
                         content_lengths.append(len(str(n.content)))
 
-                for child in n.children:
-                    traverse(child, d + 1)
+                if n.children:
+                    for child in n.children:
+                        traverse(child, d + 1)
 
             traverse(node, depth)
 

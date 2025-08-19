@@ -83,7 +83,7 @@ class AlphaBetaCoordinator:
         self.alpha_system: Optional[BasicMLSystem] = None
 
         # Beta拡張参照
-        # self.prediction_engine: Optional[PredictionEngine] = None  # 削除: 軽量化により除去
+        self.prediction_engine: Optional[Any] = None  # 削除: 軽量化により除去
         self.learning_system: Optional[LearningSystem] = None
         self.autonomous_controller: Optional[Any] = None  # AutonomousController削除済み
 

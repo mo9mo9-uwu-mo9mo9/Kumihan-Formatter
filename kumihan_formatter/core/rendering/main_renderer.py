@@ -715,6 +715,31 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         """元のrenderメソッド実装（統合版）"""
         return self.render_nodes(nodes, format)
 
+    def get_supported_formats(self) -> List[str]:
+        """サポートする出力形式のリストを返す（抽象メソッド実装）"""
+        return ["html", "markdown"]
+
+    def validate_options(self, options: Dict[str, Any]) -> bool:
+        """オプションの妥当性をチェック（抽象メソッド実装）"""
+        if not isinstance(options, dict):
+            return False
+
+        # 有効なオプションキーの定義
+        valid_keys = {
+            "title",
+            "template",
+            "include_toc",
+            "source_text",
+            "source_filename",
+            "navigation_html",
+            "graceful_errors",
+            "embed_errors_in_html",
+            "format",
+        }
+
+        # 不明なキーがないかチェック
+        return all(key in valid_keys for key in options.keys())
+
 
 # 後方互換性：既存の HTMLRenderer エイリアス
 HTMLRenderer = MainRenderer

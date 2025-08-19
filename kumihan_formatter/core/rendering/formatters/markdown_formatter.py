@@ -548,3 +548,31 @@ class MarkdownFormatter(MarkdownRendererProtocol):
         content = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", content)
 
         return content
+
+    def convert_from_kumihan(self, kumihan_content: str) -> str:
+        """Kumihan記法からMarkdownに変換（抽象メソッド実装）"""
+        # 基本的な変換実装
+        return self._convert_from_html(kumihan_content)
+
+    def get_markdown_extensions(self) -> List[str]:
+        """サポートするMarkdown拡張機能のリストを返す（抽象メソッド実装）"""
+        return ["tables", "fenced_code", "toc", "strikethrough"]
+
+    def validate_options(self, options: Dict[str, Any]) -> bool:
+        """オプションの妥当性をチェック（抽象メソッド実装）"""
+        # 基本的な検証実装
+        if not isinstance(options, dict):
+            return False
+
+        # 有効なオプションキーの定義
+        valid_keys = {
+            "include_title",
+            "include_metadata",
+            "table_of_contents",
+            "code_highlight",
+            "strict_mode",
+            "extensions",
+        }
+
+        # 不明なキーがないかチェック
+        return all(key in valid_keys for key in options.keys())
