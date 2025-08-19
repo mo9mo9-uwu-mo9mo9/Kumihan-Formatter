@@ -1,0 +1,184 @@
+# Kumihan-Formatter パフォーマンス基準設定
+# Phase 4最適化目標に基づく包括的パフォーマンス管理
+
+project:
+  name: "Kumihan-Formatter"
+  optimization_phase: "Phase 4"
+  target_improvements:
+    startup_time: 50  # 50%短縮目標
+    memory_usage: 30  # 30%削減目標
+
+startup_performance:
+  # 起動時間ベンチマーク
+  current_baseline_ms: 1200
+  target_ms: 600  # 50%短縮目標
+
+  thresholds:
+    excellent: 400
+    good: 600
+    warning: 800
+    critical: 1000
+
+  measurements:
+    - metric: "import_time"
+      baseline: 300
+      target: 150
+
+    - metric: "initialization_time"
+      baseline: 500
+      target: 250
+
+    - metric: "first_parse_time"
+      baseline: 400
+      target: 200
+
+memory_performance:
+  # メモリ使用量ベンチマーク
+  current_baseline_mb: 45
+  target_mb: 32  # 30%削減目標
+
+  thresholds:
+    excellent: 25
+    good: 32
+    warning: 40
+    critical: 50
+
+  measurements:
+    - metric: "base_memory"
+      baseline: 15
+      target: 12
+
+    - metric: "peak_memory"
+      baseline: 45
+      target: 32
+
+    - metric: "memory_leak_rate"
+      baseline: 0.1
+      target: 0.05
+
+processing_performance:
+  # 処理速度ベンチマーク
+  file_sizes:
+    small:  # ~1KB
+      baseline_ms: 10
+      target_ms: 5
+
+    medium:  # ~10KB
+      baseline_ms: 50
+      target_ms: 30
+
+    large:  # ~100KB
+      baseline_ms: 300
+      target_ms: 150
+
+    xlarge:  # ~1MB
+      baseline_ms: 2000
+      target_ms: 1000
+
+parallel_processing:
+  # 並行処理性能
+  single_thread:
+    baseline_ops_per_sec: 100
+    target_ops_per_sec: 150
+
+  multi_thread:
+    baseline_ops_per_sec: 300
+    target_ops_per_sec: 500
+
+  multicore_efficiency:
+    target_utilization: 80
+    baseline_utilization: 50
+
+io_performance:
+  # I/O性能ベンチマーク
+  file_read:
+    baseline_mb_per_sec: 50
+    target_mb_per_sec: 80
+
+  file_write:
+    baseline_mb_per_sec: 30
+    target_mb_per_sec: 50
+
+  network_io:
+    baseline_requests_per_sec: 100
+    target_requests_per_sec: 150
+
+cache_performance:
+  # キャッシュ効率
+  hit_rate:
+    baseline_percent: 70
+    target_percent: 90
+
+  cache_size:
+    max_mb: 10
+    target_mb: 8
+
+  eviction_rate:
+    baseline_percent: 20
+    target_percent: 10
+
+regression_tests:
+  # パフォーマンス回帰テスト
+  scenarios:
+    - name: "basic_parsing"
+      input_size: "1KB"
+      max_time_ms: 20
+      max_memory_mb: 5
+
+    - name: "complex_document"
+      input_size: "50KB"
+      max_time_ms: 200
+      max_memory_mb: 15
+
+    - name: "batch_processing"
+      input_count: 100
+      max_time_ms: 1000
+      max_memory_mb: 25
+
+    - name: "concurrent_processing"
+      thread_count: 4
+      max_time_ms: 500
+      max_memory_mb: 40
+
+monitoring:
+  # パフォーマンス監視
+  continuous_monitoring: true
+  alert_thresholds:
+    performance_degradation: 20  # 20%以上の劣化で警告
+    memory_increase: 15  # 15%以上のメモリ増加で警告
+
+  reporting:
+    frequency: "daily"
+    formats: ["json", "html", "csv"]
+    retention_days: 30
+
+  dashboards:
+    real_time: true
+    historical_trends: true
+    comparison_charts: true
+
+quality_gates:
+  # パフォーマンス品質ゲート
+  pr_requirements:
+    max_regression: 10  # 10%以上の劣化でブロック
+
+  release_requirements:
+    max_regression: 5   # 5%以上の劣化でブロック
+    min_improvement: 0  # 改善必須
+
+  hotfix_requirements:
+    max_regression: 15  # 緊急修正時は緩和
+
+optimization_targets:
+  # Phase 4最適化具体目標
+  phase_4_4:  # 起動時間最適化
+    startup_time_reduction: 50
+    import_optimization: 40
+
+  phase_4_5:  # メモリ最適化
+    memory_reduction: 30
+    object_pooling_efficiency: 80
+
+  phase_4_6:  # 処理速度最適化
+    parallel_processing_gain: 200
+    algorithm_optimization: 25

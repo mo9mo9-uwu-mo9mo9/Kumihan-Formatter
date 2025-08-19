@@ -1,0 +1,93 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [ main, develop, 'feat/**', 'fix/**' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality_check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.12, 3.13]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Load quality rules
+      run: |
+        echo "Loading quality configuration..."
+        cat .github/quality/quality_rules.yml
+
+    - name: Pre-commit hook validation
+      run: |
+        python3 -m tools.automation.pre_commit_hooks --validate
+
+    - name: Automated quality check
+      run: |
+        python3 -m tools.automation.quality_checker --path kumihan_formatter --output quality_report.json
+
+    - name: Auto-formatting diff check
+      run: |
+        python3 -m tools.automation.auto_formatter --diff --path kumihan_formatter
+
+    - name: Code formatting check
+      run: |
+        black --check --diff .
+        isort --check-only --diff .
+
+    - name: Lint check
+      run: |
+        flake8 kumihan_formatter tests
+
+    - name: Type check
+      run: |
+        mypy kumihan_formatter --strict
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ \
+          --cov=kumihan_formatter \
+          --cov-report=xml \
+          --cov-report=term-missing \
+          --cov-fail-under=70 \
+          --tb=short \
+          -v
+
+    - name: Comprehensive quality gate evaluation
+      run: |
+        python3 -m tools.automation.quality_checker --path kumihan_formatter --output tmp/comprehensive_quality.json
+        echo "Quality gate evaluation completed"
+
+    - name: Upload quality reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: quality-reports-${{ matrix.python-version }}
+        path: |
+          tmp/quality_report.json
+          tmp/comprehensive_quality.json
+          tmp/formatting_report.json
+
+    - name: Quality gate summary
+      run: |
+        echo "✅ Quality gate passed"
+        echo "- Pre-commit hooks: Validated"
+        echo "- Automated quality check: Completed"
+        echo "- Code formatting: OK"
+        echo "- Lint check: OK"
+        echo "- Type check: OK"
+        echo "- Test coverage: ≥70%"
+        echo "- Comprehensive evaluation: Passed"
