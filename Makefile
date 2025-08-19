@@ -8,7 +8,7 @@ PIP = $(PYTHON) -m pip
 PROJECT_NAME = kumihan_formatter
 SRC_DIR = $(PROJECT_NAME)
 
-.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci gemini-mypy gemini-status gemini-fix gemini-config gemini-report gemini-test
+.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci gemini-mypy gemini-status gemini-fix gemini-config gemini-report gemini-test enterprise-check performance-benchmark security-audit release-candidate
 
 # デフォルトターゲット
 help:
@@ -60,6 +60,12 @@ help:
 	@echo "  make quality-learning-train  - 品質学習システム訓練"
 	@echo "  make quality-dashboard       - 品質ダッシュボード生成・表示"
 	@echo "  make quality-full-check      - 全品質システム実行"
+	@echo ""
+	@echo "🏢 Phase 4-10 最終検証・リリース準備システム:"
+	@echo "  make enterprise-check        - エンタープライズレベル完成度チェック"
+	@echo "  make performance-benchmark   - パフォーマンスベンチマーク実行"
+	@echo "  make security-audit          - セキュリティ監査実行"
+	@echo "  make release-candidate       - リリース候補準備実行"
 	@echo ""
 
 # 基本コマンド実装
@@ -648,3 +654,24 @@ gemini-validation-full:
 	@echo ""
 	@echo "🎯 3層検証完全通過 ✅"
 	@echo "📊 品質保証レベル: PRODUCTION READY"
+
+# 🏢 Phase 4-10 最終検証・リリース準備コマンド
+enterprise-check:
+	@echo "🏢 エンタープライズレベル完成度チェック実行中..."
+	$(PYTHON) scripts/enterprise_check.py
+	@echo "✅ エンタープライズチェック完了"
+
+performance-benchmark:
+	@echo "⚡ パフォーマンスベンチマーク実行中..."
+	$(PYTHON) scripts/performance_benchmark.py
+	@echo "✅ パフォーマンスベンチマーク完了"
+
+security-audit:
+	@echo "🛡️ セキュリティ監査実行中..."
+	$(PYTHON) scripts/security_audit.py
+	@echo "✅ セキュリティ監査完了"
+
+release-candidate:
+	@echo "🚀 リリース候補準備実行中..."
+	$(PYTHON) scripts/release_prepare.py
+	@echo "✅ リリース準備完了"
