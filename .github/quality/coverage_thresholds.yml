@@ -1,0 +1,128 @@
+# Kumihan-Formatter カバレッジ閾値設定
+# Phase 3テスト拡充完了後の70%基準を維持・向上
+
+project:
+  name: "Kumihan-Formatter"
+  current_coverage: 73
+  target_coverage: 80
+
+global_thresholds:
+  # 全体カバレッジ基準
+  minimum: 70
+  target: 80
+  excellent: 90
+
+  # 許容される低下
+  max_drop: 3
+  warning_threshold: 75
+
+module_thresholds:
+  # コアモジュール（高水準要求）
+  "kumihan_formatter/core/":
+    minimum: 80
+    target: 90
+    current: 85
+
+  "kumihan_formatter/core/parser/":
+    minimum: 85
+    target: 95
+    current: 90
+
+  # レンダリング（中水準要求）
+  "kumihan_formatter/core/rendering/":
+    minimum: 75
+    target: 85
+    current: 78
+
+  # CLI（標準水準要求）
+  "kumihan_formatter/cli/":
+    minimum: 70
+    target: 80
+    current: 72
+
+  # 設定管理（標準水準要求）
+  "kumihan_formatter/config/":
+    minimum: 70
+    target: 80
+    current: 74
+
+test_type_requirements:
+  # テスト種別カバレッジ要求
+  unit_tests:
+    minimum: 85
+    target: 95
+
+  integration_tests:
+    minimum: 60
+    target: 75
+
+  performance_tests:
+    minimum: 40
+    target: 60
+
+coverage_progression:
+  # 段階的向上計画
+  phase_4_1:
+    target: 73
+    deadline: "2025-08-20"
+
+  phase_4_5:
+    target: 76
+    deadline: "2025-08-25"
+
+  phase_4_10:
+    target: 80
+    deadline: "2025-08-30"
+
+reporting:
+  # レポート設定
+  formats:
+    - xml
+    - html
+    - term-missing
+
+  output_paths:
+    xml: "tmp/coverage.xml"
+    html: "tmp/htmlcov/"
+
+  fail_under: 70
+  precision: 2
+
+exclusions:
+  # カバレッジ除外パターン
+  patterns:
+    - "*/tests/*"
+    - "*/test_*"
+    - "*/__init__.py"
+    - "*/tmp/*"
+    - "*/build/*"
+    - "*/.tox/*"
+
+  files:
+    - "setup.py"
+    - "conftest.py"
+
+quality_gates:
+  # カバレッジ品質ゲート
+  pr_requirements:
+    min_coverage: 70
+    max_drop: 3
+
+  release_requirements:
+    min_coverage: 75
+    max_drop: 1
+
+  hotfix_requirements:
+    min_coverage: 65  # 緊急修正時は緩和
+    max_drop: 5
+
+monitoring:
+  # 継続監視
+  trend_analysis: true
+  alert_on_drop: 5
+  weekly_reports: true
+
+  dashboard:
+    enabled: true
+    update_frequency: "daily"
+    retention_days: 90

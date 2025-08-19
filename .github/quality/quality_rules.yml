@@ -1,0 +1,113 @@
+# Kumihan-Formatter 品質ルール定義
+# Enterprise級品質基準に基づく総合的な品質管理設定
+
+project:
+  name: "Kumihan-Formatter"
+  version: "2025.1"
+  quality_level: "Enterprise"
+
+code_quality:
+  # 複雑度管理
+  complexity:
+    max_cyclomatic_complexity: 10
+    max_cognitive_complexity: 15
+    max_function_length: 50
+    max_class_length: 300
+
+  # コード重複
+  duplication:
+    max_duplicate_lines: 20
+    min_tokens_for_duplication: 50
+
+  # メンテナビリティ
+  maintainability:
+    min_maintainability_index: 20
+    max_nesting_depth: 4
+    max_parameters: 7
+
+formatting:
+  # Black設定
+  line_length: 88
+  target_versions: ['py312', 'py313']
+
+  # isort設定
+  multi_line_output: 3
+  include_trailing_comma: true
+  force_grid_wrap: 0
+  combine_as_imports: true
+
+linting:
+  # flake8設定
+  max_line_length: 88
+  ignore:
+    - E203  # Black compatibility
+    - W503  # Black compatibility
+
+  # mypy設定
+  strict_mode: true
+  disallow_untyped_defs: true
+  warn_return_any: true
+
+testing:
+  # テスト品質基準
+  min_coverage: 70
+  max_coverage_drop: 5
+  test_timeout: 300
+
+  # テスト種別要求
+  required_test_types:
+    - unit
+    - integration
+    - performance
+
+documentation:
+  # ドキュメント要求
+  min_docstring_coverage: 80
+  require_module_docstrings: true
+  require_class_docstrings: true
+  require_function_docstrings: true
+
+security:
+  # セキュリティ基準
+  max_security_hotspots: 0
+  require_bandit_check: true
+  require_safety_check: true
+
+  prohibited_patterns:
+    - "password.*="
+    - "secret.*="
+    - "token.*="
+    - "api_key.*="
+
+performance:
+  # パフォーマンス基準
+  max_startup_time_ms: 1000
+  max_memory_usage_mb: 100
+  max_processing_time_ms: 5000
+
+quality_gates:
+  # 品質ゲート条件
+  blocking_conditions:
+    - "coverage < 70"
+    - "security_issues > 0"
+    - "cyclomatic_complexity > 10"
+    - "test_failures > 0"
+    - "lint_errors > 0"
+    - "type_errors > 0"
+
+  warning_conditions:
+    - "coverage < 80"
+    - "cognitive_complexity > 10"
+    - "duplicate_lines > 10"
+
+enforcement:
+  # 適用レベル
+  strict_mode: true
+  fail_on_warning: false
+  auto_fix: true
+
+  # 適用範囲
+  apply_to:
+    - pull_requests
+    - main_branch
+    - release_branches
