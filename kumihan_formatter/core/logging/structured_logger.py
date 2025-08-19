@@ -7,7 +7,7 @@ JSON形式でのログ出力、コンテキスト情報付与、パフォーマ�
 
 import json
 import logging
-import psutil
+import re
 import threading
 import time
 import uuid
@@ -16,12 +16,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import psutil
+
 from kumihan_formatter.core.security.secure_logging import (
     SecureLogFilter,
     SecureLogFormatter,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
-import re
 
 
 class LogContext:

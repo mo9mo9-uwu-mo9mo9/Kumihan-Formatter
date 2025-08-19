@@ -57,7 +57,9 @@ class CustomCollector:
 class PrometheusMetricsHandler(BaseHTTPRequestHandler):
     """Prometheusメトリクス配信HTTPハンドラ"""
 
-    def __init__(self, exporter: "PrometheusExporter", *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, exporter: "PrometheusExporter", *args: Any, **kwargs: Any
+    ) -> None:
         self.exporter = exporter
         super().__init__(*args, **kwargs)
 
@@ -619,7 +621,7 @@ class PrometheusExporter:
 
             # 標準生成
             metrics_data_bytes = generate_latest(self.registry)
-            metrics_data = metrics_data_bytes.decode('utf-8')
+            metrics_data = metrics_data_bytes.decode("utf-8")
 
             # フィルタ適用
             if name_filter:

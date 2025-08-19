@@ -581,7 +581,9 @@ class MetricsCollector:
                 for metric_name in key_metrics:
                     agg = self.aggregate_metrics(metric_name, time_range_hours)
                     if agg:
-                        aggregated_metrics = cast(Dict[str, Any], summary["aggregated_metrics"])
+                        aggregated_metrics = cast(
+                            Dict[str, Any], summary["aggregated_metrics"]
+                        )
                         aggregated_metrics[metric_name] = asdict(agg)
 
                 # トップメトリクス（データポイント数順）
@@ -642,9 +644,7 @@ class MetricsCollector:
 
                     if filtered_metrics:
                         metrics_dict = cast(Dict[str, Any], export_data["metrics"])
-                        metrics_dict[name] = [
-                            asdict(m) for m in filtered_metrics
-                        ]
+                        metrics_dict[name] = [asdict(m) for m in filtered_metrics]
 
             # JSON出力
             with open(output_file, "w", encoding="utf-8") as f:

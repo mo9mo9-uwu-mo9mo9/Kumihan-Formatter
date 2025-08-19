@@ -13,21 +13,22 @@ OWASP Top 10完全対応 入力検証強化システム
 """
 
 import hashlib
-import re
 import json
-import time
+import re
 import threading
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Pattern, Callable
+import time
+import unicodedata
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
-import unicodedata
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Pattern, Union
+
+from kumihan_formatter.core.logging.audit_logger import get_audit_logger
 
 # プロジェクト内インポート
 from kumihan_formatter.core.logging.structured_logger import get_structured_logger
-from kumihan_formatter.core.logging.audit_logger import get_audit_logger
 from kumihan_formatter.core.utilities.logger import get_logger
 
 

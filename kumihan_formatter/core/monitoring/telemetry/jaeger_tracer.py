@@ -448,7 +448,9 @@ class JaegerTracer:
 
             # アクティブスパンが残っている場合はまだ完了していない
             active_spans_in_trace = [
-                span for span in self.active_spans.values() if hasattr(span, 'trace_id') and span.trace_id == trace_id
+                span
+                for span in self.active_spans.values()
+                if hasattr(span, "trace_id") and span.trace_id == trace_id
             ]
 
             if active_spans_in_trace:
@@ -667,9 +669,7 @@ class JaegerTracer:
                             asdict(span) for span in self.completed_traces[trace_id]
                         ]
                     if trace_id in self.trace_analyses:
-                        analyses_dict[trace_id] = asdict(
-                            self.trace_analyses[trace_id]
-                        )
+                        analyses_dict[trace_id] = asdict(self.trace_analyses[trace_id])
                 else:
                     # 全トレース
                     traces_dict = cast(Dict[str, Any], export_data["traces"])

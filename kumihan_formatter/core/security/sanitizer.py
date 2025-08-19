@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from xml.sax.saxutils import escape as xml_escape
 
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -112,8 +112,8 @@ class SafeHTMLParser(HTMLParser):
         super().__init__()
         self.allowed_tags = allowed_tags
         self.allowed_attrs = allowed_attrs
-        self.result = []
-        self.current_tag = None
+        self.result: List[str] = []
+        self.current_tag: Optional[str] = None
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         if tag.lower() in self.allowed_tags:
@@ -178,7 +178,8 @@ class DataSanitizer:
             r"<script[^>]*>.*?</script>|<script[^>]*/>", re.IGNORECASE | re.DOTALL
         )
         self.dangerous_tags_pattern = re.compile(
-            r"<(?:object|embed|iframe|frame|frameset|meta|link)[^>]*>.*?</(?:object|embed|iframe|frame|frameset|meta|link)>|"
+            r"<(?:object|embed|iframe|frame|frameset|meta|link)[^>]*>.*?"
+            r"</(?:object|embed|iframe|frame|frameset|meta|link)>|"
             r"<(?:object|embed|iframe|frame|frameset|meta|link)[^>]*/>",
             re.IGNORECASE | re.DOTALL,
         )
@@ -321,7 +322,14 @@ class DataSanitizer:
         """
         try:
             # シークレット検出パターン
-            secret_patterns = ['password', 'secret', 'api_key', 'access_key', 'token', 'key']
+            secret_patterns = [
+                "password",
+                "secret",
+                "api_key",
+                "access_key",
+                "token",
+                "key",
+            ]
 
             def sanitize_value(key: str, value: Any) -> Any:
                 if isinstance(value, str):
@@ -339,11 +347,22 @@ class DataSanitizer:
                 elif isinstance(value, dict):
                     return {k: sanitize_value(k, v) for k, v in value.items()}
                 elif isinstance(value, list):
-                    return [sanitize_value("", item) if not isinstance(item, dict) else sanitize_value("", item) for item in value]
+                    return [
+                        (
+                            sanitize_value("", item)
+                            if not isinstance(item, dict)
+                            else sanitize_value("", item)
+                        )
+                        for item in value
+                    ]
                 else:
                     return value
 
-            sanitized = {k: sanitize_value(k, v) for k, v in json_data.items()} if isinstance(json_data, dict) else sanitize_value("", json_data)
+            sanitized = (
+                {k: sanitize_value(k, v) for k, v in json_data.items()}
+                if isinstance(json_data, dict)
+                else sanitize_value("", json_data)
+            )
             self._log_sanitization("JSON", len(str(json_data)), len(str(sanitized)))
             return sanitized
 
@@ -481,7 +500,7 @@ class ContextualSanitizer:
         Returns:
             コンテキスト最適化されたサニタイズ結果
         """
-        context_handlers = {
+        context_handlers: Dict[ContextType, Callable[[str], str]] = {
             ContextType.HTML: self.sanitizer.sanitize_html,
             ContextType.URL: self.sanitizer.sanitize_url,
             ContextType.JSON: lambda x: json.dumps(
@@ -520,7 +539,7 @@ class HTMLCleaner:
         """
         if strict_mode:
             # 厳密モード用のより制限的な許可タグ
-            allowed_tags = {"p", "br", "strong", "em", "b", "i"}
+            allowed_tags = ["p", "br", "strong", "em", "b", "i"]
         else:
             allowed_tags = list(self.config.allowed_html_tags)
 
@@ -530,7 +549,7 @@ class HTMLCleaner:
 class SafetyChecker:
     """サニタイズ後の安全性検証システム"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dangerous_patterns = [
             re.compile(r"<script", re.IGNORECASE),
             re.compile(r"javascript:", re.IGNORECASE),
@@ -649,7 +668,7 @@ if __name__ == "__main__":
     sanitizer = DataSanitizer()
     test_html = '<script>alert("xss")</script><p onclick="evil()">Test</p>'
     sanitized = sanitizer.sanitize_html(test_html)
-    print(f"\n🧪 機能テスト:")
+    print("\n🧪 機能テスト:")
     print(f"元のHTML: {test_html}")
     print(f"サニタイズ後: {sanitized}")
 

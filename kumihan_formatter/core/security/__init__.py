@@ -17,14 +17,14 @@ from .secure_error_handling import (
 )
 from .secure_logging import SecureLogFilter, SecureLogFormatter, setup_secure_logging
 from .vulnerability_scanner import (
+    CodePatternScanner,
     CVEDatabase,
     CVERecord,
-    CodePatternScanner,
     DependencyScanner,
     RiskLevel,
     RuntimeMonitor,
-    ScanResult,
     ScannerConfig,
+    ScanResult,
     SecurityReport,
     VulnerabilityScanner,
     VulnerabilityType,

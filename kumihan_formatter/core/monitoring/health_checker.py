@@ -414,7 +414,9 @@ class HealthChecker:
             current_version = str(platform.python_version())
             details["python_version"] = current_version
 
-            python_version_deps = cast(Dict[str, Any], self.dependencies["python_version"])
+            python_version_deps = cast(
+                Dict[str, Any], self.dependencies["python_version"]
+            )
             min_version = str(python_version_deps["min_version"])
             max_version = str(python_version_deps["max_version"])
 

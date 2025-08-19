@@ -302,7 +302,9 @@ class OpenTelemetrySetup:
         return self.meter
 
     @contextmanager
-    def trace_span(self, span_name: str, attributes: Optional[Dict[str, Any]] = None) -> Any:
+    def trace_span(
+        self, span_name: str, attributes: Optional[Dict[str, Any]] = None
+    ) -> Any:
         """トレーススパンコンテキストマネージャ
 
         Args:
