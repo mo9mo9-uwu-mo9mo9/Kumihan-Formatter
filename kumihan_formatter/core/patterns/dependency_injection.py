@@ -152,7 +152,7 @@ class DIContainer:
             # ライフタイムに応じたインスタンス生成/取得
             if descriptor.lifetime == ServiceLifetime.SINGLETON:
                 if interface in self._singletons:
-                    return self._singletons[interface]
+                    return cast(T, self._singletons[interface])
 
                 self._resolving.append(interface)
                 try:
@@ -198,7 +198,7 @@ class DIContainer:
         try:
             # インスタンスがすでに生成済みの場合は返す
             if not inspect.isclass(service_type):
-                return service_type
+                return cast(T, service_type)
 
             # コンストラクタ引数取得
             init_signature = inspect.signature(service_type.__init__)
@@ -253,7 +253,7 @@ class ServiceScope:
 
             if descriptor.lifetime == ServiceLifetime.SCOPED:
                 if interface in self._scoped_instances:
-                    return self._scoped_instances[interface]
+                    return cast(T, self._scoped_instances[interface])
 
                 instance = self.container.resolve(interface)
                 self._scoped_instances[interface] = instance

@@ -6,7 +6,7 @@ Markdown出力に特化した統合フォーマッタークラス
 
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ...ast_nodes import Node
 from ...utilities.logger import get_logger
@@ -552,7 +552,7 @@ class MarkdownFormatter(MarkdownRendererProtocol):
     def convert_from_kumihan(self, kumihan_content: str) -> str:
         """Kumihan記法からMarkdownに変換（抽象メソッド実装）"""
         # 基本的な変換実装
-        return self._convert_from_html(kumihan_content)
+        return cast(str, self._convert_from_html(kumihan_content))
 
     def get_markdown_extensions(self) -> List[str]:
         """サポートするMarkdown拡張機能のリストを返す（抽象メソッド実装）"""

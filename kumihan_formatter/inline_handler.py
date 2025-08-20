@@ -4,7 +4,7 @@ This module contains inline notation parsing logic extracted from the monolithic
 Handles list processing and other inline elements.
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple, cast
 
 if TYPE_CHECKING:
     from .parser import Parser
@@ -44,9 +44,15 @@ class InlineHandler:
 
         if list_type:
             if list_type == "unordered":
-                return self.parser.list_parser.parse_unordered_list(lines, current)
+                return cast(
+                    Tuple[Optional[Node], int],
+                    self.parser.list_parser.parse_unordered_list(lines, current),
+                )
             else:
-                return self.parser.list_parser.parse_ordered_list(lines, current)
+                return cast(
+                    Tuple[Optional[Node], int],
+                    self.parser.list_parser.parse_ordered_list(lines, current),
+                )
 
         return None, current + 1
 
@@ -65,7 +71,7 @@ class InlineHandler:
             )
 
         self.parser.current = next_index
-        return node
+        return cast(Optional[Node], node)
 
     def is_list_line(self, line: str) -> str | None:
         """リスト行判定の委譲メソッド"""

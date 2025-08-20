@@ -7,7 +7,7 @@ Renderer系統合版：全体統括レンダラー
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
@@ -286,9 +286,9 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         self.logger.debug(f"Rendering {len(nodes)} nodes to {format}")
 
         if format.lower() == "html":
-            return self.html_formatter.format(nodes)
+            return cast(str, self.html_formatter.format(nodes))
         elif format.lower() == "markdown":
-            return self.markdown_formatter.format(nodes)
+            return cast(str, self.markdown_formatter.format(nodes))
         else:
             raise ValueError(f"Unsupported format: {format}")
 
@@ -633,11 +633,11 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def render_to_html(self, nodes: List[Node]) -> str:
         """HTMLレンダリング（互換性メソッド）"""
-        return self.render_nodes(nodes, format="html")
+        return cast(str, self.render_nodes(nodes, format="html"))
 
     def render_to_markdown(self, nodes: List[Node]) -> str:
         """Markdownレンダリング（互換性メソッド）"""
-        return self.render_nodes(nodes, format="markdown")
+        return cast(str, self.render_nodes(nodes, format="markdown"))
 
     def render_node_protocol(
         self, node: Node, context: Optional[RenderContext] = None
@@ -713,7 +713,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def _render_original(self, nodes: List[Node], format: str = "html") -> str:
         """元のrenderメソッド実装（統合版）"""
-        return self.render_nodes(nodes, format)
+        return cast(str, self.render_nodes(nodes, format))
 
     def get_supported_formats(self) -> List[str]:
         """サポートする出力形式のリストを返す（抽象メソッド実装）"""

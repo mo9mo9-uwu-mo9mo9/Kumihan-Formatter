@@ -10,7 +10,7 @@ Target: 200行以内・高効率・軽量
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -93,7 +93,7 @@ class OptimizationUtils:
             import psutil
 
             process = psutil.Process()
-            return process.memory_info().rss / 1024 / 1024  # MB
+            return cast(float, process.memory_info().rss / 1024 / 1024)  # MB
         except ImportError:
             # psutilが利用できない場合のフォールバック
             return 0.0
@@ -112,7 +112,7 @@ class OptimizationUtils:
 
     def _get_context_file_size(self, context: Dict[str, Any]) -> int:
         """コンテキストからファイルサイズ取得"""
-        return context.get("file_size", 0)
+        return cast(int, context.get("file_size", 0))
 
     def _calculate_complexity_score(self, result: Any) -> float:
         """複雑度スコア計算"""

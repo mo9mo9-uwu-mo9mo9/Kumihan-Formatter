@@ -7,7 +7,7 @@ import asyncio
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar, cast
 
 from ..patterns.event_bus import ExtendedEventType, get_event_bus, publish_event
 from ..utilities.logger import get_logger
@@ -75,7 +75,7 @@ class AsyncCoordinator:
                 {"task_id": task_id, "success": True},
             )
 
-            return result
+            return cast(T, result)
 
         except Exception as e:
             # エラーイベント

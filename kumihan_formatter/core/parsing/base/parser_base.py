@@ -5,7 +5,7 @@ Issue #880 Phase 2: すべてのパーサーの共通基盤
 """
 
 import re
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, cast
 
 from ...ast_nodes import Node, error_node
 from ...utilities.logger import get_logger
@@ -95,7 +95,7 @@ class UnifiedParserBase:
                 cache_key = f"{self.parser_type}:{hash(content)}"
                 if cache_key in self._cache:
                     self.logger.debug(f"Cache hit for {self.parser_type} parser")
-                    return self._cache[cache_key]
+                    return cast(Node, self._cache[cache_key])
 
             # 前処理
             processed_content = self._preprocess_content(content)

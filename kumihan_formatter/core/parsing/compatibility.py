@@ -5,7 +5,7 @@ Issue #880 Phase 2C: 既存パーサーから新統一パーサーへの移行�
 """
 
 import warnings
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..ast_nodes import Node
 from ..utilities.logger import get_logger
@@ -91,7 +91,7 @@ class LegacyKeywordParser(LegacyParserWrapper):
             keyword_parser = coordinator._parsers["keyword"]
             if hasattr(keyword_parser, "validate_keyword"):
                 result = keyword_parser.validate_keyword(keyword)
-                return result.get("valid", False)
+                return cast(bool, result.get("valid", False))
         return False
 
 

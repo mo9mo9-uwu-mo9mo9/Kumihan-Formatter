@@ -5,7 +5,7 @@ Phase B + AI協調最適化の実行管理
 """
 
 import time
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -273,7 +273,7 @@ class OptimizationCoordinator:
                 efficiency_quality * 0.5 + synergy_quality * 0.3 + success_quality * 0.2
             )
 
-            return max(0.0, min(1.0, coordination_quality))
+            return cast(float, max(0.0, min(1.0, coordination_quality)))
         except Exception as e:
             self.logger.error(f"Coordination quality assessment failed: {e}")
             return 0.5  # 中性的品質スコア
@@ -289,7 +289,7 @@ class OptimizationCoordinator:
             expected_sum = phase_b_efficiency + ai_improvement
             actual_synergy = total_efficiency - expected_sum
 
-            return max(0.0, actual_synergy)  # 負の相乗効果は0とする
+            return cast(float, max(0.0, actual_synergy))  # 負の相乗効果は0とする
         except Exception as e:
             self.logger.error(f"Synergy effect calculation failed: {e}")
             return 0.0
@@ -316,7 +316,7 @@ class OptimizationCoordinator:
             context_factor = context.get("synergy_context", 1.0)
             final_synergy = base_synergy * context_factor
 
-            return max(0.5, min(2.0, final_synergy))  # 0.5-2.0の範囲に制限
+            return cast(float, max(0.5, min(2.0, final_synergy)))  # 0.5-2.0の範囲に制限
         except Exception as e:
             self.logger.error(f"Synergy factor calculation failed: {e}")
             return 1.0  # 中性的係数

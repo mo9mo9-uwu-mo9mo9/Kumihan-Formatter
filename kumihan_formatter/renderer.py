@@ -6,7 +6,7 @@ renderer.py file. Each rendering responsibility is now handled by specialized mo
 
 import time
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, cast
 
 from .core.ast_nodes import Node
 from .core.rendering import HTMLRenderer
@@ -172,7 +172,7 @@ class Renderer:
             str: HTML content without template
         """
         self.logger.debug(f"Rendering {len(nodes)} nodes without template")
-        return self.html_renderer.render_nodes(nodes)
+        return cast(str, self.html_renderer.render_nodes(nodes))
 
     def render_with_custom_context(
         self, ast: list[Node], template_name: str, custom_context: dict[str, Any]
