@@ -4,7 +4,7 @@ Issue #914: 既存ファクトリーの統合と拡張
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, cast
 
 from ..parsing.base.parser_protocols import BaseParserProtocol
 from ..rendering.base.renderer_protocols import BaseRendererProtocol
@@ -86,7 +86,9 @@ class ParserFactory(AbstractFactory):
             # DIコンテナ経由で生成（依存関係自動解決）
             if self.container:
                 try:
-                    return self.container.resolve(parser_class)
+                    return cast(
+                        BaseParserProtocol, self.container.resolve(parser_class)
+                    )
                 except Exception as e:
                     logger.warning(
                         f"DI resolution failed for {parser_type}, "
@@ -94,7 +96,7 @@ class ParserFactory(AbstractFactory):
                     )
 
             # 直接生成
-            return parser_class(**kwargs)
+            return cast(BaseParserProtocol, parser_class(**kwargs))
 
         except Exception as e:
             logger.error(f"Parser creation failed: {parser_type}, error: {e}")
@@ -193,7 +195,9 @@ class RendererFactory(AbstractFactory):
             # DIコンテナ経由で生成
             if self.container:
                 try:
-                    return self.container.resolve(renderer_class)
+                    return cast(
+                        BaseRendererProtocol, self.container.resolve(renderer_class)
+                    )
                 except Exception as e:
                     logger.warning(
                         f"DI resolution failed for {format_type}, "
@@ -201,7 +205,7 @@ class RendererFactory(AbstractFactory):
                     )
 
             # 直接生成
-            return renderer_class(**kwargs)
+            return cast(BaseRendererProtocol, renderer_class(**kwargs))
 
         except Exception as e:
             logger.error(f"Renderer creation failed: {format_type}, error: {e}")
@@ -303,7 +307,9 @@ def get_service_factory() -> ServiceFactory:
 def create_parser(parser_type: str, **kwargs: Any) -> BaseParserProtocol:
     """パーサー生成ショートカット"""
     try:
-        return _service_factory.create("parser", parser_type, **kwargs)
+        return cast(
+            BaseParserProtocol, _service_factory.create("parser", parser_type, **kwargs)
+        )
     except Exception as e:
         logger.error(f"Parser creation shortcut failed: {parser_type}, error: {e}")
         raise
@@ -312,7 +318,10 @@ def create_parser(parser_type: str, **kwargs: Any) -> BaseParserProtocol:
 def create_renderer(format_type: str, **kwargs: Any) -> BaseRendererProtocol:
     """レンダラー生成ショートカット"""
     try:
-        return _service_factory.create("renderer", format_type, **kwargs)
+        return cast(
+            BaseRendererProtocol,
+            _service_factory.create("renderer", format_type, **kwargs),
+        )
     except Exception as e:
         logger.error(f"Renderer creation shortcut failed: {format_type}, error: {e}")
         raise

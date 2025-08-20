@@ -14,7 +14,7 @@ import tracemalloc
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional, cast
 
 import psutil
 
@@ -244,7 +244,7 @@ class StartupProfiler:
     def _get_memory_usage(self) -> float:
         """メモリ使用量取得（MB）"""
         try:
-            return self.process.memory_info().rss / 1024 / 1024
+            return cast(float, self.process.memory_info().rss / 1024 / 1024)
         except Exception:
             return 0.0
 

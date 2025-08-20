@@ -13,7 +13,7 @@ Issue #914: アーキテクチャ最適化リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from ....ast_nodes import (
     Node,
@@ -287,7 +287,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             + stats["extension_keywords"]
         )
 
-        return stats
+        return cast(Dict[str, Any], stats)
 
     # ==========================================
     # プロトコル準拠メソッド（KeywordParserProtocol実装）

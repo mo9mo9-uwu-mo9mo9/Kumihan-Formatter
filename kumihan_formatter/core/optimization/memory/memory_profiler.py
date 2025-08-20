@@ -20,7 +20,7 @@ import tracemalloc
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from threading import Lock, RLock
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import psutil
 
@@ -1210,7 +1210,7 @@ class OptimizationEffectReporter:
             # 総合スコア
             total_score = memory_score * 0.7 + frag_score * 0.3
 
-            return max(0.0, min(total_score, 1.0))
+            return cast(float, max(0.0, min(total_score, 1.0)))
 
         except Exception as e:
             logger.error(f"効果スコア計算エラー: {str(e)}")

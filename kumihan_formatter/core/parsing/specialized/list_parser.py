@@ -18,7 +18,7 @@ Issue #920: 大型ファイル分割リファクタリング
 - 後方互換性維持
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -157,7 +157,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         """個別のリスト項目を解析"""
         handler = self.list_handlers.get(list_type)
         if handler:
-            return handler(line)
+            return cast(Optional[Node], handler(line))
 
         # デフォルトハンドラー
         return create_node("list_item", content=line.strip())

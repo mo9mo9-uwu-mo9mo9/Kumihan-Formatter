@@ -5,7 +5,8 @@ Issue #880 Phase 2: 再利用可能な機能コンポーネント
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+import time
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from ...utilities.logger import get_logger
 
@@ -264,19 +265,16 @@ class PerformanceMixin:
 
     def _start_timer(self, operation: str) -> None:
         """タイマー開始"""
-        import time
-
         self._performance_stats[f"{operation}_start"] = time.time()
 
     def _end_timer(self, operation: str) -> float:
         """タイマー終了して経過時間を返す"""
-        import time
 
         start_key = f"{operation}_start"
         if start_key in self._performance_stats:
             elapsed = time.time() - self._performance_stats[start_key]
             self._performance_stats[f"{operation}_elapsed"] = elapsed
-            return elapsed
+            return cast(float, elapsed)
         return 0.0
 
     def _get_performance_stats(self) -> Dict[str, Any]:

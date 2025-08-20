@@ -11,7 +11,7 @@ import sys
 import threading
 import time
 from collections import defaultdict, deque
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -82,7 +82,7 @@ class ObjectRecycler:
                 self.stats["objects_reused"] += 1
                 logger.debug(f"Reused {obj_type.__name__} object (ID: {obj_id})")
 
-                return obj
+                return cast(T, obj)
 
             # 新規作成
             if factory:
@@ -164,7 +164,7 @@ class ObjectRecycler:
         if obj_type in self._type_configs:
             size_calc = self._type_configs[obj_type]["size_calculator"]
             try:
-                return size_calc(obj)
+                return cast(int, size_calc(obj))
             except Exception as e:
                 logger.warning(f"Size calculation failed for {obj_type.__name__}: {e}")
 
@@ -427,7 +427,7 @@ class RecycleEffectMeasurer:
         try:
             import psutil
 
-            return psutil.Process().memory_info().rss
+            return cast(float, psutil.Process().memory_info().rss)
         except ImportError:
             return 0.0
 

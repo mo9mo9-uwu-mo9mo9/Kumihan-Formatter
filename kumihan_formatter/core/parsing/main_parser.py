@@ -18,7 +18,7 @@ Issue #912: Parser系統合リファクタリング
 
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, cast
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
@@ -626,7 +626,7 @@ StreamingParser = MainParser  # ストリーミング機能は統合済み
 def parse_text(text: str, config: Optional[Any] = None) -> List[Node]:
     """テキストを解析する便利関数"""
     parser = MainParser(config)
-    return parser.parse(text)
+    return cast(List[Node], parser.parse(text))
 
 
 def parse_file(file_path: str, config: Optional[Any] = None) -> List[Node]:

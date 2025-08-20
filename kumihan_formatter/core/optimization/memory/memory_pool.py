@@ -9,7 +9,7 @@ import os
 import threading
 import time
 from collections import deque
-from typing import Any, Callable, Dict, Generic, List, Optional, Set, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Optional, Set, TypeVar, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -261,25 +261,25 @@ class PoolManager:
 
             return self._object_pools[obj_type]
 
-    def acquire_list(self) -> List:
+    def acquire_list(self) -> List[Any]:
         """リスト取得"""
-        return self._list_pool.acquire()
+        return cast(List[Any], self._list_pool.acquire())
 
     def release_list(self, lst: List) -> None:
         """リスト返却"""
         self._list_pool.release(lst)
 
-    def acquire_dict(self) -> Dict:
+    def acquire_dict(self) -> Dict[Any, Any]:
         """辞書取得"""
-        return self._dict_pool.acquire()
+        return cast(Dict[Any, Any], self._dict_pool.acquire())
 
     def release_dict(self, dct: Dict) -> None:
         """辞書返却"""
         self._dict_pool.release(dct)
 
-    def acquire_string_buffer(self) -> List:
+    def acquire_string_buffer(self) -> List[Any]:
         """文字列バッファ取得"""
-        return self._string_pool.acquire()
+        return cast(List[Any], self._string_pool.acquire())
 
     def release_string_buffer(self, buffer: List) -> None:
         """文字列バッファ返却"""
