@@ -189,7 +189,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
     def _determine_primary_list_type(self, items: List[Node]) -> str:
         """主要なリストタイプを決定"""
-        type_counts = {}
+        type_counts: Dict[str, int] = {}
         for item in items:
             item_type = item.metadata.get("type", "unordered")
             type_counts[item_type] = type_counts.get(item_type, 0) + 1

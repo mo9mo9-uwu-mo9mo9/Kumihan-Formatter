@@ -8,7 +8,7 @@
 """
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ....ast_nodes import Node, create_node
 
@@ -77,7 +77,7 @@ class AdvancedListHandler:
     def parse_nested_structure(self, lines: List[str]) -> List[Node]:
         """ネスト構造の解析"""
         result = []
-        stack = []
+        stack: List[Tuple[Node, int]] = []
 
         for line in lines:
             if not line.strip():

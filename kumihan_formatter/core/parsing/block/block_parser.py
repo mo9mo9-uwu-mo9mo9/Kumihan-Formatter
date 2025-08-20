@@ -529,7 +529,7 @@ class BlockParser:
         """
         blocks = []
         lines = text.split("\n")
-        current_block = []
+        current_block: List[str] = []
         in_block = False
 
         for line in lines:

@@ -347,9 +347,9 @@ class CircularReferenceDetector:
             検出された循環参照パス
         """
         try:
-            visited = set()
-            path = []
-            cycles = []
+            visited: Set[int] = set()
+            path: List[Any] = []
+            cycles: List[List[Any]] = []
 
             self._dfs_detect(obj, visited, path, cycles, max_depth)
 
@@ -831,7 +831,7 @@ if __name__ == "__main__":
     class Node:
         def __init__(self, name: str) -> None:
             self.name = name
-            self.children = []
+            self.children: List["Node"] = []
             self.parent = None
 
         def add_child(self, child: "Node") -> None:
@@ -886,7 +886,7 @@ if __name__ == "__main__":
         cleanup_system = get_auto_cleanup_system()
 
         # キャッシュ登録
-        test_cache = {}
+        test_cache: Dict[str, Any] = {}
         cleanup_system.register_cache("test_cache", test_cache)
 
         # クリーンアップ開始

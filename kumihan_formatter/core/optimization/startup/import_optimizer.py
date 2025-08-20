@@ -213,7 +213,7 @@ class ImportAnalyzer:
         if file_patterns is None:
             file_patterns = ["**/*.py"]
 
-        all_files = []
+        all_files: List[Path] = []
         for pattern in file_patterns:
             all_files.extend(self.project_root.glob(pattern))
 

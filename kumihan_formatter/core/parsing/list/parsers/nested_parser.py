@@ -89,7 +89,7 @@ class NestedListParser:
             return unordered_list([])
 
         root_items = []
-        stack = []
+        stack: List[Node] = []
 
         for item in items:
             level = item.metadata.get("nest_level", 0)
@@ -194,7 +194,7 @@ class NestedListParser:
 
     def get_nesting_statistics(self, items: List[Node]) -> Dict[str, Any]:
         """ネスト構造の統計情報を取得"""
-        level_counts = {}
+        level_counts: Dict[int, int] = {}
         max_level = 0
 
         for item in items:

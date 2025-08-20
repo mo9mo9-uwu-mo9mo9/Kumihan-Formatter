@@ -133,7 +133,7 @@ class CustomKeywordParser:
         Returns:
             検証結果辞書
         """
-        result = {
+        result: Dict[str, Any] = {
             "valid": False,
             "type": None,
             "definition": None,
