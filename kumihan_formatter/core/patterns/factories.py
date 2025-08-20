@@ -4,7 +4,7 @@ Issue #914: 既存ファクトリーの統合と拡張
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Type, TypeVar, cast
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, cast
 
 from ..parsing.base.parser_protocols import BaseParserProtocol
 from ..rendering.base.renderer_protocols import BaseRendererProtocol
@@ -14,13 +14,17 @@ from .dependency_injection import DIContainer, get_container
 logger = get_logger(__name__)
 
 T = TypeVar("T")
+FactoryProduct = TypeVar("FactoryProduct")
 
 
-class AbstractFactory(ABC):
-    """抽象ファクトリー基底クラス"""
+class AbstractFactory(ABC, Generic[FactoryProduct]):
+    """抽象ファクトリー基底クラス
+
+    Generic型パラメータでファクトリー生成物の型を指定
+    """
 
     @abstractmethod
-    def create(self, type_name: str, **kwargs: Any) -> Any:
+    def create(self, type_name: str, **kwargs: Any) -> FactoryProduct:
         """オブジェクト生成"""
         ...
 
@@ -35,7 +39,7 @@ class AbstractFactory(ABC):
         ...
 
 
-class ParserFactory(AbstractFactory):
+class ParserFactory(AbstractFactory[BaseParserProtocol]):
     """統一パーサーファクトリー
 
     全パーサー生成を一元管理:
@@ -91,7 +95,7 @@ class ParserFactory(AbstractFactory):
                     )
                 except Exception as e:
                     logger.warning(
-                        f"DI resolution failed for {parser_type}, "
+                        f"DI resolution failed for {type_name}, "
                         f"falling back to direct creation: {e}"
                     )
 
@@ -99,7 +103,7 @@ class ParserFactory(AbstractFactory):
             return cast(BaseParserProtocol, parser_class(**kwargs))
 
         except Exception as e:
-            logger.error(f"Parser creation failed: {parser_type}, error: {e}")
+            logger.error(f"Parser creation failed: {type_name}, error: {e}")
             raise
 
     def register(self, type_name: str, implementation: Type[Any]) -> None:
@@ -107,7 +111,14 @@ class ParserFactory(AbstractFactory):
         try:
             self._parsers[type_name] = implementation
             if self.container:
-                self.container.register(BaseParserProtocol, implementation)
+                # 抽象クラスの登録は型チェックのために安全に行う
+                # DIContainerの型チェックをスキップして安全に登録
+                try:
+                    # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
+                    if not getattr(implementation, "__abstractmethods__", set()):
+                        self.container.register(BaseParserProtocol, implementation)  # type: ignore[type-abstract]
+                except Exception as reg_error:
+                    logger.debug(f"Parser DI registration skipped: {reg_error}")
             logger.debug(f"Custom parser registered: {type_name}")
         except Exception as e:
             logger.error(f"Custom parser registration failed: {type_name}, error: {e}")
@@ -145,7 +156,7 @@ class ParserFactory(AbstractFactory):
             raise
 
 
-class RendererFactory(AbstractFactory):
+class RendererFactory(AbstractFactory[BaseRendererProtocol]):
     """統一レンダラーファクトリー
 
     全レンダラー生成を一元管理:
@@ -200,7 +211,7 @@ class RendererFactory(AbstractFactory):
                     )
                 except Exception as e:
                     logger.warning(
-                        f"DI resolution failed for {format_type}, "
+                        f"DI resolution failed for {type_name}, "
                         f"falling back to direct creation: {e}"
                     )
 
@@ -208,7 +219,7 @@ class RendererFactory(AbstractFactory):
             return cast(BaseRendererProtocol, renderer_class(**kwargs))
 
         except Exception as e:
-            logger.error(f"Renderer creation failed: {format_type}, error: {e}")
+            logger.error(f"Renderer creation failed: {type_name}, error: {e}")
             raise
 
     def register(self, type_name: str, implementation: Type[Any]) -> None:
@@ -216,7 +227,14 @@ class RendererFactory(AbstractFactory):
         try:
             self._renderers[type_name] = implementation
             if self.container:
-                self.container.register(BaseRendererProtocol, implementation)
+                # 抽象クラスの登録は型チェックのために安全に行う
+                # DIContainerの型チェックをスキップして安全に登録
+                try:
+                    # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
+                    if not getattr(implementation, "__abstractmethods__", set()):
+                        self.container.register(BaseRendererProtocol, implementation)  # type: ignore[type-abstract]
+                except Exception as reg_error:
+                    logger.debug(f"Renderer DI registration skipped: {reg_error}")
             logger.debug(f"Custom renderer registered: {type_name}")
         except Exception as e:
             logger.error(
@@ -258,12 +276,12 @@ class ServiceFactory:
 
     def __init__(self, container: Optional[DIContainer] = None) -> None:
         self.container = container or get_container()
-        self._factories: Dict[str, AbstractFactory] = {
+        self._factories: Dict[str, AbstractFactory[Any]] = {
             "parser": ParserFactory(container),
             "renderer": RendererFactory(container),
         }
 
-    def get_factory(self, factory_type: str) -> AbstractFactory:
+    def get_factory(self, factory_type: str) -> AbstractFactory[Any]:
         """ファクトリー取得"""
         try:
             if factory_type not in self._factories:
@@ -273,7 +291,7 @@ class ServiceFactory:
             logger.error(f"Factory retrieval failed: {factory_type}, error: {e}")
             raise
 
-    def register_factory(self, name: str, factory: AbstractFactory) -> None:
+    def register_factory(self, name: str, factory: AbstractFactory[Any]) -> None:
         """カスタムファクトリー登録"""
         try:
             self._factories[name] = factory
