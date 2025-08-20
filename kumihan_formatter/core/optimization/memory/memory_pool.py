@@ -383,11 +383,6 @@ class PoolManager:
 _global_pool_manager = PoolManager()
 
 
-def get_pool_manager() -> PoolManager:
-    """グローバルプールマネージャー取得"""
-    return _global_pool_manager
-
-
 def benchmark_pool_performance(iterations: int = 1000) -> dict[str, Any]:
     """プールパフォーマンスベンチマーク"""
     manager = get_pool_manager()

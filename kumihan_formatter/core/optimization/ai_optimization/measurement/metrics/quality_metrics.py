@@ -176,7 +176,7 @@ class QualityMetrics:
 
     def _calculate_quality_metrics(
         self, system_metrics: Dict[str, float]
-    ) -> QualityMetrics:
+    ) -> QualityMetricsData:
         """品質指標計算"""
         try:
             # 品質指標抽出
@@ -190,10 +190,6 @@ class QualityMetrics:
 
             # 品質評価
             quality_score = (accuracy + precision + recall) / 3
-            performance_score = (
-                min(1.0, (1.0 / response_time) * 0.1) if response_time > 0 else 0
-            )
-            reliability_score = (1.0 - error_rate) * availability
 
             quality_metrics = QualityMetricsData(
                 accuracy=accuracy,

@@ -50,6 +50,7 @@ dev = [
     "types-toml",
     "types-requests",
     "pytest>=7.0",
+    "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",
     # 技術的負債監視ライブラリ (Issue #823)
@@ -178,6 +179,7 @@ addopts = [
 ]
 anyio_backends = ["asyncio"]
 anyio_default_backend = "asyncio"
+asyncio_mode = "auto"
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",

@@ -15,10 +15,10 @@ from kumihan_formatter.core.utilities.logger import get_logger
 try:
     # OpenTelemetry core imports
     from opentelemetry import metrics, trace  # type: ignore[import-not-found]
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (  # type: ignore[import-not-found]
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (  # type: ignore[import-not-found]  # noqa: E501
         OTLPMetricExporter,
     )
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import-not-found]
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import-not-found]  # noqa: E501
         OTLPSpanExporter,
     )
     from opentelemetry.instrumentation.logging import (  # type: ignore[import-not-found]
