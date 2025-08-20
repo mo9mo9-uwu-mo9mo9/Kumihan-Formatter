@@ -37,6 +37,16 @@ except ImportError as e:
     PROMETHEUS_AVAILABLE = False
     IMPORT_ERROR = str(e)
 
+    # フォールバック実装（型チェック対応）
+    CONTENT_TYPE_LATEST = "text/plain; version=0.0.4; charset=utf-8"
+    REGISTRY = None  # type: ignore
+    CollectorRegistry = None  # type: ignore
+    Counter = None  # type: ignore
+    Gauge = None  # type: ignore
+    Histogram = None  # type: ignore
+    Info = None  # type: ignore
+    generate_latest = None  # type: ignore
+
 
 class CustomCollector:
     """カスタムメトリクスコレクター"""
@@ -160,7 +170,7 @@ class PrometheusExporter:
         host: str = "0.0.0.0",
         prefix: str = "kumihan_formatter",
         enable_builtin_metrics: bool = True,
-        registry: Optional[CollectorRegistry] = None,
+        registry: Optional[Any] = None,
     ):
         """Prometheusエクスポーター初期化
 
@@ -261,7 +271,7 @@ class PrometheusExporter:
 
     def create_counter(
         self, name: str, description: str = "", labelnames: Optional[List[str]] = None
-    ) -> Optional[Counter]:
+    ) -> Optional[Any]:
         """Counter作成
 
         Args:
@@ -298,7 +308,7 @@ class PrometheusExporter:
 
     def create_gauge(
         self, name: str, description: str = "", labelnames: Optional[List[str]] = None
-    ) -> Optional[Gauge]:
+    ) -> Optional[Any]:
         """Gauge作成
 
         Args:
@@ -339,7 +349,7 @@ class PrometheusExporter:
         description: str = "",
         labelnames: Optional[List[str]] = None,
         buckets: Optional[List[float]] = None,
-    ) -> Optional[Histogram]:
+    ) -> Optional[Any]:
         """Histogram作成
 
         Args:
@@ -405,7 +415,7 @@ class PrometheusExporter:
 
         try:
             metric = self.metrics.get(name)
-            if not metric or not isinstance(metric, Counter):
+            if not metric or Counter is None:
                 return False
 
             if labels:
@@ -436,7 +446,7 @@ class PrometheusExporter:
 
         try:
             metric = self.metrics.get(name)
-            if not metric or not isinstance(metric, Gauge):
+            if not metric or Gauge is None:
                 return False
 
             if labels:
@@ -467,7 +477,7 @@ class PrometheusExporter:
 
         try:
             metric = self.metrics.get(name)
-            if not metric or not isinstance(metric, Histogram):
+            if not metric or Histogram is None:
                 return False
 
             if labels:

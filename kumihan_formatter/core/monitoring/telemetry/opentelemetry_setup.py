@@ -18,29 +18,29 @@ try:
     from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (  # type: ignore[import-not-found]
         OTLPMetricExporter,
     )
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
-        OTLPSpanExporter,  # type: ignore[import-not-found]
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import-not-found]
+        OTLPSpanExporter,
     )
-    from opentelemetry.instrumentation.logging import (
-        LoggingInstrumentor,  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.logging import (  # type: ignore[import-not-found]
+        LoggingInstrumentor,
     )
-    from opentelemetry.instrumentation.psutil import (
-        PsutilInstrumentor,  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.psutil import (  # type: ignore[import-not-found]
+        PsutilInstrumentor,
     )
-    from opentelemetry.instrumentation.threading import (
-        ThreadingInstrumentor,  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.threading import (  # type: ignore[import-not-found]
+        ThreadingInstrumentor,
     )
-    from opentelemetry.propagate import (
-        set_global_textmap,  # type: ignore[import-not-found]
+    from opentelemetry.propagate import (  # type: ignore[import-not-found]
+        set_global_textmap,
     )
-    from opentelemetry.propagators.b3 import (
-        B3MultiFormat,  # type: ignore[import-not-found]
+    from opentelemetry.propagators.b3 import (  # type: ignore[import-not-found]
+        B3MultiFormat,
     )
-    from opentelemetry.sdk.metrics import (
-        MeterProvider,  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics import (  # type: ignore[import-not-found]
+        MeterProvider,
     )
-    from opentelemetry.sdk.metrics.export import (
-        PeriodicExportingMetricReader,  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics.export import (  # type: ignore[import-not-found]
+        PeriodicExportingMetricReader,
     )
     from opentelemetry.sdk.resources import (  # type: ignore[import-not-found]
         SERVICE_NAME,
@@ -59,6 +59,25 @@ try:
 except ImportError as e:
     OPENTELEMETRY_AVAILABLE = False
     IMPORT_ERROR = str(e)
+
+    # フォールバック実装（型チェック対応）
+    metrics = None  # type: ignore
+    trace = None  # type: ignore
+    OTLPMetricExporter = None  # type: ignore
+    OTLPSpanExporter = None  # type: ignore
+    LoggingInstrumentor = None  # type: ignore
+    PsutilInstrumentor = None  # type: ignore
+    ThreadingInstrumentor = None  # type: ignore
+    set_global_textmap = None  # type: ignore
+    B3MultiFormat = None  # type: ignore
+    MeterProvider = None  # type: ignore
+    PeriodicExportingMetricReader = None  # type: ignore
+    SERVICE_NAME = "service.name"
+    SERVICE_VERSION = "service.version"
+    Resource = None  # type: ignore
+    TracerProvider = None  # type: ignore
+    BatchSpanProcessor = None  # type: ignore
+    SimpleSpanProcessor = None  # type: ignore
 
 
 class OpenTelemetrySetup:
@@ -99,10 +118,10 @@ class OpenTelemetrySetup:
 
         # 初期化状態管理
         self.initialized = False
-        self.tracer_provider: Optional[TracerProvider] = None
-        self.meter_provider: Optional[MeterProvider] = None
-        self.tracer: Optional[trace.Tracer] = None
-        self.meter: Optional[metrics.Meter] = None
+        self.tracer_provider: Optional[Any] = None
+        self.meter_provider: Optional[Any] = None
+        self.tracer: Optional[Any] = None
+        self.meter: Optional[Any] = None
         self.instrumentors: List[Any] = []
         self.setup_lock = threading.Lock()
 
@@ -157,7 +176,7 @@ class OpenTelemetrySetup:
                 self.logger.error(f"OpenTelemetry初期化エラー: {e}")
                 return False
 
-    def _create_resource(self) -> Resource:
+    def _create_resource(self) -> Any:
         """OpenTelemetryリソース作成
 
         Returns:
@@ -174,7 +193,7 @@ class OpenTelemetrySetup:
 
         return Resource.create(attributes)
 
-    def _setup_tracing(self, resource: Resource) -> None:
+    def _setup_tracing(self, resource: Any) -> None:
         """トレーシング設定
 
         Args:
@@ -214,7 +233,7 @@ class OpenTelemetrySetup:
 
         self.logger.info("トレーシング設定完了")
 
-    def _setup_metrics(self, resource: Resource) -> None:
+    def _setup_metrics(self, resource: Any) -> None:
         """メトリクス設定
 
         Args:
@@ -290,7 +309,7 @@ class OpenTelemetrySetup:
         except Exception as e:
             self.logger.error(f"自動インストルメンテーション設定エラー: {e}")
 
-    def get_tracer(self, name: Optional[str] = None) -> Optional[trace.Tracer]:
+    def get_tracer(self, name: Optional[str] = None) -> Optional[Any]:
         """Tracer取得
 
         Args:
@@ -307,7 +326,7 @@ class OpenTelemetrySetup:
             return trace.get_tracer(name)
         return self.tracer
 
-    def get_meter(self, name: Optional[str] = None) -> Optional[metrics.Meter]:
+    def get_meter(self, name: Optional[str] = None) -> Optional[Any]:
         """Meter取得
 
         Args:
