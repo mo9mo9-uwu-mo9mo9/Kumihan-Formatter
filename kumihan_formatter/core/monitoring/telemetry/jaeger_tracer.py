@@ -20,8 +20,8 @@ from kumihan_formatter.core.utilities.logger import get_logger
 try:
     # Jaeger/OpenTelemetry imports
     from opentelemetry import trace  # type: ignore[import-not-found]
-    from opentelemetry.exporter.jaeger.thrift import (
-        JaegerExporter,  # type: ignore[import-not-found]
+    from opentelemetry.exporter.jaeger.thrift import (  # type: ignore[import-not-found]
+        JaegerExporter,
     )
     from opentelemetry.sdk.resources import (  # type: ignore[import-not-found]
         SERVICE_NAME,
@@ -29,8 +29,8 @@ try:
         Resource,
     )
     from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import-not-found]
-    from opentelemetry.sdk.trace.export import (
-        BatchSpanProcessor,  # type: ignore[import-not-found]
+    from opentelemetry.sdk.trace.export import (  # type: ignore[import-not-found]
+        BatchSpanProcessor,
     )
 
     # from opentelemetry.trace import SpanKind, Status, StatusCode
@@ -40,6 +40,15 @@ try:
 except ImportError as e:
     JAEGER_AVAILABLE = False
     IMPORT_ERROR = str(e)
+
+    # フォールバック実装（型チェック対応）
+    trace = None  # type: ignore
+    JaegerExporter = None  # type: ignore
+    SERVICE_NAME = "service.name"
+    SERVICE_VERSION = "service.version"
+    Resource = None  # type: ignore
+    TracerProvider = None  # type: ignore
+    BatchSpanProcessor = None  # type: ignore
 
 
 @dataclass
@@ -108,6 +117,11 @@ class JaegerTracer:
         self.enable_performance_analysis = enable_performance_analysis
         self.max_trace_retention = max_trace_retention
 
+        # トレーシング設定（利用可能性に関係なく初期化）
+        self.tracer_provider: Optional[Any] = None
+        self.tracer: Optional[Any] = None
+        self.initialized = False
+
         # Jaeger利用可能性確認
         if not JAEGER_AVAILABLE:
             self.logger.warning(f"Jaegerクライアント利用不可: {IMPORT_ERROR}")
@@ -115,14 +129,8 @@ class JaegerTracer:
                 "pip install opentelemetry-exporter-jaeger で利用可能になります"
             )
             self.available = False
-            return
-
-        self.available = True
-
-        # トレーシング設定
-        self.tracer_provider: Optional[TracerProvider] = None
-        self.tracer: Optional[trace.Tracer] = None
-        self.initialized = False
+        else:
+            self.available = True
 
         # スパンデータ管理
         self.active_spans: Dict[str, SpanData] = {}
