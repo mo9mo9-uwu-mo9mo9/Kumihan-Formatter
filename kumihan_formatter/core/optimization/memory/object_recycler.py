@@ -336,7 +336,7 @@ class RecycleEffectMeasurer:
 
     def __init__(self, recycler: ObjectRecycler):
         self.recycler = recycler
-        self.baseline_measurements = {}
+        self.baseline_measurements: Dict[Type, Dict[str, Any]] = {}
 
     def measure_baseline(
         self, obj_type: Type, operations: int = 1000

@@ -212,7 +212,7 @@ class MemoryProfiler:
     def _get_object_counts(self) -> Dict[str, int]:
         """オブジェクト数統計を取得します。"""
         try:
-            object_counts = defaultdict(int)
+            object_counts: Dict[str, int] = defaultdict(int)
 
             for obj in gc.get_objects():
                 obj_type = type(obj).__name__
@@ -401,7 +401,7 @@ class MemoryProfiler:
     def _generate_optimization_recommendations(self) -> List[str]:
         """最適化推奨事項を生成します。"""
         try:
-            recommendations = []
+            recommendations: List[str] = []
 
             if not self._snapshots:
                 return recommendations
@@ -980,7 +980,7 @@ class MemoryUsageAnalyzer:
     ) -> List[str]:
         """最適化機会を特定"""
         try:
-            opportunities = []
+            opportunities: List[str] = []
 
             if not snapshots:
                 return opportunities

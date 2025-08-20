@@ -238,7 +238,7 @@ class MainParser(
         self.chunk_size = 1000
 
         # エラートラッキング
-        self.parallel_errors = []
+        self.parallel_errors: List[Dict[str, str]] = []
 
     def _setup_streaming(self) -> None:
         """ストリーミング処理の設定"""
@@ -296,7 +296,7 @@ class MainParser(
 
     def _parse_sequential(self, text: str, **kwargs: Any) -> List[Node]:
         """順次パース処理"""
-        results = []
+        results: List[Node] = []
 
         # 適切なパーサーを選択して実行
         selected_parsers = self._select_parsers(text)
@@ -430,7 +430,7 @@ class MainParser(
         lines = text.split("\n")
         chunks = []
 
-        current_chunk = []
+        current_chunk: List[str] = []
         current_size = 0
 
         for line in lines:
