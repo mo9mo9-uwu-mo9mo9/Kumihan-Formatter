@@ -72,75 +72,98 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         self, content: Union[str, List[str]], **kwargs: Any
     ) -> Node:
         """基底クラス用の解析実装（UnifiedParserBase準拠）"""
-        # List[str]が渡された場合は結合する
-        if isinstance(content, list):
-            text = "\n".join(str(line) for line in content)
-        else:
-            text = str(content)
+        text = self._normalize_content(content)
 
         try:
             lines = text.strip().split("\n")
             if not lines or not any(line.strip() for line in lines):
                 return create_node("list", content=[])
 
-            # ブロック形式の検出
-            if text.strip().startswith("# リスト #"):
-                block_items = self.advanced_handler.parse_block_format(text)
-                if block_items:
-                    return self.utilities.create_list_node(block_items, "block")
-
-            # 文字区切り形式の検出
-            if text.strip().startswith("[") and text.strip().endswith("]"):
-                char_items = self.advanced_handler.parse_character_delimited(text)
-                if char_items:
-                    return self.utilities.create_list_node(
-                        char_items, "character_delimited"
-                    )
+            # 特別な形式の検出と処理
+            special_result = self._try_parse_special_formats(text)
+            if special_result:
+                return special_result
 
             # 通常のリスト解析
-            list_items = []
-            current_indent_level = None
-
-            for line in lines:
-                if not line.strip():
-                    continue
-
-                # リストタイプの検出
-                list_type = self._detect_list_type(line)
-                if not list_type:
-                    continue
-
-                # 最初の項目のインデントレベルを設定
-                if current_indent_level is None:
-                    import re
-
-                    indent_match = re.match(r"^(\s*)", line)
-                    current_indent_level = (
-                        len(indent_match.group(1)) if indent_match else 0
-                    )
-
-                # リスト項目の解析
-                item_node = self._parse_list_item(line, list_type)
-                if item_node:
-                    list_items.append(item_node)
+            list_items = self._parse_regular_list_items(lines)
 
             if list_items:
-                # ネスト構造の解析
-                if self.utilities.has_nested_items(list_items):
-                    nested_items = self.advanced_handler.parse_nested_structure(
-                        [item.content for item in list_items]
-                    )
-                    list_items = nested_items
-
-                # リストタイプの決定
-                primary_type = self.utilities.determine_primary_list_type(list_items)
-                return self.utilities.create_list_node(list_items, primary_type)
+                return self._finalize_list_parsing(list_items)
 
             return create_node("list", content=[])
 
         except Exception as e:
             self.logger.error(f"List parsing failed: {e}")
             return create_node("error", content=f"List parsing failed: {e}")
+
+    def _normalize_content(self, content: Union[str, List[str]]) -> str:
+        """コンテンツを正規化して文字列として返す"""
+        if isinstance(content, list):
+            return "\n".join(str(line) for line in content)
+        return str(content)
+
+    def _try_parse_special_formats(self, text: str) -> Optional[Node]:
+        """特別な形式の解析を試行"""
+        # ブロック形式の検出
+        if text.strip().startswith("# リスト #"):
+            block_items = self.advanced_handler.parse_block_format(text)
+            if block_items:
+                return self.utilities.create_list_node(block_items, "block")
+
+        # 文字区切り形式の検出
+        if text.strip().startswith("[") and text.strip().endswith("]"):
+            char_items = self.advanced_handler.parse_character_delimited(text)
+            if char_items:
+                return self.utilities.create_list_node(
+                    char_items, "character_delimited"
+                )
+
+        return None
+
+    def _parse_regular_list_items(self, lines: List[str]) -> List[Node]:
+        """通常のリスト項目を解析"""
+        list_items = []
+        current_indent_level = None
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            # リストタイプの検出
+            list_type = self._detect_list_type(line)
+            if not list_type:
+                continue
+
+            # 最初の項目のインデントレベルを設定
+            if current_indent_level is None:
+                current_indent_level = self._get_indent_level(line)
+
+            # リスト項目の解析
+            item_node = self._parse_list_item(line, list_type)
+            if item_node:
+                list_items.append(item_node)
+
+        return list_items
+
+    def _get_indent_level(self, line: str) -> int:
+        """行のインデントレベルを取得"""
+        import re
+
+        indent_match = re.match(r"^(\s*)", line)
+        return len(indent_match.group(1)) if indent_match else 0
+
+    def _finalize_list_parsing(self, list_items: List[Node]) -> Node:
+        """リスト解析の最終処理"""
+        # ネスト構造の解析
+        if self.utilities.has_nested_items(list_items):
+            nested_items = self.advanced_handler.parse_nested_structure(
+                [item.content for item in list_items]
+            )
+            list_items = nested_items
+
+        # リストタイプの決定
+        primary_type = self.utilities.determine_primary_list_type(list_items)
+        return self.utilities.create_list_node(list_items, primary_type)
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

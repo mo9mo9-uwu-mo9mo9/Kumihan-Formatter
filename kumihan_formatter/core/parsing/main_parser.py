@@ -20,8 +20,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Any, Iterator, Optional, cast
 
-from .base.parser_protocols import ParseContext
-
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
     from ..patterns.factories import ParserFactory

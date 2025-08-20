@@ -116,7 +116,9 @@ class ParserFactory(AbstractFactory[BaseParserProtocol]):
                 try:
                     # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
                     if not getattr(implementation, "__abstractmethods__", set()):
-                        self.container.register(BaseParserProtocol, implementation)  # type: ignore[type-abstract]
+                        self.container.register(  # type: ignore[type-abstract]
+                            BaseParserProtocol, implementation
+                        )
                 except Exception as reg_error:
                     logger.debug(f"Parser DI registration skipped: {reg_error}")
             logger.debug(f"Custom parser registered: {type_name}")
@@ -232,7 +234,9 @@ class RendererFactory(AbstractFactory[BaseRendererProtocol]):
                 try:
                     # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
                     if not getattr(implementation, "__abstractmethods__", set()):
-                        self.container.register(BaseRendererProtocol, implementation)  # type: ignore[type-abstract]
+                        self.container.register(  # type: ignore[type-abstract]
+                            BaseRendererProtocol, implementation
+                        )
                 except Exception as reg_error:
                     logger.debug(f"Renderer DI registration skipped: {reg_error}")
             logger.debug(f"Custom renderer registered: {type_name}")

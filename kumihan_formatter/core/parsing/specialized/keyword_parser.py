@@ -317,34 +317,6 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
     # プロトコル準拠メソッド（KeywordParserProtocol実装）
     # ==========================================
 
-    def _parse_implementation(
-        self, content: Union[str, List[str]], **kwargs: Any
-    ) -> Node:
-        """基底クラス用の解析実装（UnifiedParserBase準拠）"""
-        # List[str]が渡された場合は結合する
-        if isinstance(content, list):
-            text = "\n".join(str(line) for line in content)
-        else:
-            text = str(content)
-
-        try:
-            # 既存の parse_keywords ロジックを活用
-            keywords = self.parse_keywords(text)
-            if keywords:
-                # 複数のキーワードがある場合は最初のものを使用
-                primary_keyword = keywords[0]
-                node = self._create_keyword_node_from_text(primary_keyword)
-                # 残りのキーワードをメタデータに追加
-                if len(keywords) > 1:
-                    node.metadata["additional_keywords"] = keywords[1:]
-                return node
-            else:
-                # キーワードが見つからない場合は空のキーワードノードを作成
-                return create_node("keyword", content="", keywords=[])
-        except Exception as e:
-            self.logger.error(f"Keyword parsing failed: {e}")
-            return create_node("error", content=f"Keyword parsing failed: {e}")
-
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None

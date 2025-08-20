@@ -4,12 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # 統一プロトコルインポート（重複定義を避けるため、純粋にtry-except分岐）
 try:
-    from ..base.parser_protocols import (
-        BaseParserProtocol as BaseProtocol,
-    )
-    from ..base.parser_protocols import (
-        ListParserProtocol as ListProtocol,
-    )
+    from ..base.parser_protocols import BaseParserProtocol as BaseProtocol
+    from ..base.parser_protocols import ListParserProtocol as ListProtocol
     from ..base.parser_protocols import (
         ParseContext,
         ParseError,
