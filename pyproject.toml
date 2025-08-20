@@ -59,7 +59,7 @@ dev = [
     # 技術的負債監視ライブラリ (Issue #823)
     "radon>=6.0",        # cognitive complexity, maintainability index
     "xenon>=0.9",        # 複雑度測定
-    "duplicated>=2.0",   # 重複コード検出
+    # "duplicated>=2.0",   # 重複コード検出 (パッケージが存在しないため無効化)
     "vulture>=2.0",      # デッドコード検出
 ]
 performance = [
