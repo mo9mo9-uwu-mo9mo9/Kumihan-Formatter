@@ -75,15 +75,15 @@ class InlineHandler:
 
     def is_list_line(self, line: str) -> str | None:
         """リスト行判定の委譲メソッド"""
-        return self.parser.list_parser.is_list_line(line)
+        return cast(Optional[str], self.parser.list_parser.is_list_line(line))
 
     def parse_unordered_list(self, lines: list[str], current: int) -> tuple[Node, int]:
         """順序なしリスト解析の委譲メソッド"""
-        return self.parser.list_parser.parse_unordered_list(lines, current)
+        return cast(Tuple[Node, int], self.parser.list_parser.parse_unordered_list(lines, current))
 
     def parse_ordered_list(self, lines: list[str], current: int) -> tuple[Node, int]:
         """順序付きリスト解析の委譲メソッド"""
-        return self.parser.list_parser.parse_ordered_list(lines, current)
+        return cast(Tuple[Node, int], self.parser.list_parser.parse_ordered_list(lines, current))
 
     def handle_list_with_graceful_errors(
         self, line: str, current: int

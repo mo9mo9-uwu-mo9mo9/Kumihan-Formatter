@@ -7,7 +7,7 @@ AI専用効果分離測定・Phase B基盤保護確認・2.0%削減達成検証
 
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -292,7 +292,7 @@ class AIEffectMeasurement:
 
     def evaluate_quality(self, results: Any) -> Dict[str, Any]:
         """品質評価委譲"""
-        return self.quality_metrics.evaluate_quality(results)
+        return cast(Dict[str, Any], self.quality_metrics.evaluate_quality(results))
 
     def analyze_trend(self, metric_name: str, days: int = 7) -> Dict[str, Any]:
         """トレンド分析委譲"""
