@@ -9,7 +9,7 @@ import importlib
 import sys
 import time
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Optional, TypeVar
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -227,7 +227,7 @@ def main():
         start_time = time.time()
 
         for module_name in test_modules:
-            lazy_module = manager.register_lazy_module(
+            manager.register_lazy_module(
                 f"lazy_{module_name.replace('.', '_')}", module_name
             )
 

@@ -178,8 +178,8 @@ class MemoryOptimizationManager:
             optimization_results["garbage_collection"] = gc_result
 
             # 循環参照検出・解決
-            circular_detector = get_circular_detector()
             # 注意: 実際の循環参照検出は特定のオブジェクトに対して実行
+            get_circular_detector()
 
             # リーク検出
             leak_detector = get_leak_detector()

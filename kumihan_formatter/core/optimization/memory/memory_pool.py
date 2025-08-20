@@ -8,8 +8,7 @@ import gc
 import os
 import threading
 import time
-import weakref
-from collections import defaultdict, deque
+from collections import deque
 from typing import Any, Callable, Dict, Generic, List, Optional, Set, TypeVar
 
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -320,7 +319,6 @@ class PoolManager:
     def force_gc(self) -> Dict[str, int]:
         """強制ガベージコレクション"""
         before_objects = len(gc.get_objects())
-        before_collections = gc.get_stats()
 
         # 全プールクリア
         self.clear_all()
@@ -329,7 +327,6 @@ class PoolManager:
         collected = gc.collect()
 
         after_objects = len(gc.get_objects())
-        after_collections = gc.get_stats()
 
         result = {
             "objects_before": before_objects,
@@ -426,7 +423,7 @@ def main():
         with open(benchmark_path, "w") as f:
             json.dump(results, f, indent=2)
 
-        print(f"Benchmark completed:")
+        print("Benchmark completed:")
         print(f"  Normal creation time: {results['normal_creation_time']:.4f}s")
         print(f"  Pool usage time: {results['pool_usage_time']:.4f}s")
         print(f"  Improvement ratio: {results['improvement_ratio']:.2f}x")
@@ -457,7 +454,7 @@ def main():
         with open(gc_path, "w") as f:
             json.dump(gc_results, f, indent=2)
 
-        print(f"GC completed:")
+        print("GC completed:")
         print(f"  Objects freed: {gc_results['objects_freed']}")
         print(f"  Objects collected: {gc_results['objects_collected']}")
         print(f"Results saved: {gc_path}")

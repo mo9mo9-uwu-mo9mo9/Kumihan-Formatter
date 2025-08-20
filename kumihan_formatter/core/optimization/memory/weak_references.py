@@ -16,10 +16,10 @@ import os
 import threading
 import time
 import weakref
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
+from collections import defaultdict
+from dataclasses import dataclass
 from threading import Lock, RLock
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from weakref import WeakKeyDictionary, WeakSet, WeakValueDictionary
 
 from kumihan_formatter.core.utilities.logger import get_logger

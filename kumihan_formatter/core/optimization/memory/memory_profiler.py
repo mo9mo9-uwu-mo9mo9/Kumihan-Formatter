@@ -14,14 +14,13 @@ Classes:
 
 import gc
 import os
-import sys
 import threading
 import time
 import tracemalloc
 from collections import defaultdict, deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from threading import Lock, RLock
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import psutil
 
@@ -412,13 +411,16 @@ class MemoryProfiler:
             # メモリ使用量チェック
             if latest.process_memory_mb > self._config.memory_threshold_mb:
                 recommendations.append(
-                    f"メモリ使用量が閾値を超過しています ({latest.process_memory_mb:.1f}MB > {self._config.memory_threshold_mb}MB)"
+                    f"メモリ使用量が閾値を超過しています "
+                    f"({latest.process_memory_mb:.1f}MB > {self._config.memory_threshold_mb}MB)"
                 )
 
             # 断片化チェック
             if latest.fragmentation_ratio > self._config.fragmentation_threshold:
+                ratio = latest.fragmentation_ratio
+                threshold = self._config.fragmentation_threshold
                 recommendations.append(
-                    f"メモリ断片化が深刻です ({latest.fragmentation_ratio:.1%} > {self._config.fragmentation_threshold:.1%})"
+                    f"メモリ断片化が深刻です ({ratio:.1%} > {threshold:.1%})"
                 )
 
             # リークチェック
@@ -1356,7 +1358,7 @@ if __name__ == "__main__":
 
         for cycle in range(3):
             # メモリ使用量増加
-            temp_objects = [list(range(200)) for _ in range(300)]
+            temp_objects = [list(range(200)) for _ in range(300)]  # noqa: F841
             time.sleep(1)
 
             # メモリ解放
