@@ -5,7 +5,7 @@ Issue #914 Phase 3: パーサー・レンダラー共通のイベント発行機
 
 import functools
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from ..patterns.event_bus import ExtendedEventType, get_event_bus, publish_event
 from ..utilities.logger import get_logger
@@ -85,12 +85,14 @@ class EventEmitterMixin:
         logger.error(f"{self._source_name}: {operation} エラー - {error}")
 
 
-def with_events(operation_name: str):
+def with_events(
+    operation_name: str,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """デコレーター: メソッドに自動イベント発行を追加"""
 
-    def decorator(func):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             if hasattr(self, "emit_started"):
                 self.emit_started(operation_name, {"args_count": len(args)})
 

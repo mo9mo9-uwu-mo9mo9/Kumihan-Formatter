@@ -16,7 +16,7 @@ from ....ast_nodes import Node, create_node
 class AdvancedListHandler:
     """高度リスト処理ハンドラー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._setup_advanced_patterns()
 
     def _setup_advanced_patterns(self) -> None:

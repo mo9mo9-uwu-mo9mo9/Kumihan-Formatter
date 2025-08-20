@@ -370,7 +370,7 @@ class UnifiedContentParser(UnifiedParserBase, CompositeMixin):
             "classification": node.metadata.get("classification", {}),
         }
 
-        def count_from_node(n: Node):
+        def count_from_node(n: Node) -> None:
             if hasattr(n, "content") and isinstance(n.content, str):
                 summary["total_characters"] += len(n.content)
                 summary["total_words"] += len(n.content.split())

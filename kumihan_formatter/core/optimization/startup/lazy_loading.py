@@ -21,7 +21,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 class LazyImporter:
     """遅延インポート管理クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._module_cache: Dict[str, Any] = {}
         self._import_times: Dict[str, float] = {}
 
@@ -110,7 +110,7 @@ def lazy_import(
 class LazyLoadManager:
     """遅延ロード統合管理"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.importer = LazyImporter()
         self._lazy_modules: Dict[str, LazyModule] = {}
 
@@ -195,7 +195,7 @@ def benchmark_import_time(module_name: str, iterations: int = 10) -> Dict[str, f
     }
 
 
-def main():
+def main() -> None:
     """CLI エントリーポイント"""
     import argparse
     import json

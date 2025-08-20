@@ -214,7 +214,7 @@ class ObjectPool:
 class PoolManager:
     """複数プール統合管理"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._object_pools: Dict[type, ObjectPool] = {}
         self._string_pool: Optional[MemoryPool] = None
         self._list_pool: Optional[MemoryPool] = None
@@ -393,7 +393,7 @@ def benchmark_pool_performance(iterations: int = 1000) -> Dict[str, Any]:
     }
 
 
-def main():
+def main() -> None:
     """CLI エントリーポイント"""
     import argparse
     import json

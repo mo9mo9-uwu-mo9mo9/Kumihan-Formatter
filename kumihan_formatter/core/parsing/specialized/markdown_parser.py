@@ -14,7 +14,7 @@ Issue #912: Parser系統合リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Match, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -441,7 +441,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
     def _process_links(self, content: str) -> str:
         """リンクの処理"""
 
-        def replace_link(match):
+        def replace_link(match: Match[str]) -> str:
             text = match.group(1)
             url = match.group(2)
             title = match.group(3) if match.group(3) else ""
@@ -453,7 +453,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
     def _process_images(self, content: str) -> str:
         """画像の処理"""
 
-        def replace_image(match):
+        def replace_image(match: Match[str]) -> str:
             alt = match.group(1)
             src = match.group(2)
             title = match.group(3) if match.group(3) else ""
@@ -489,7 +489,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
         """見出し構造の抽出"""
         headings = []
 
-        def extract_from_node(n: Node):
+        def extract_from_node(n: Node) -> None:
             if n.node_type == "heading":
                 headings.append(
                     {

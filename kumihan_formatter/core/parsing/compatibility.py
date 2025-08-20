@@ -76,7 +76,7 @@ class LegacyBlockParser(LegacyParserWrapper):
 class LegacyKeywordParser(LegacyParserWrapper):
     """KeywordParser後方互換ラッパー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("keyword", "KeywordParser")
 
     def parse_keywords(self, content: str, **kwargs: Any) -> Node:
@@ -98,7 +98,7 @@ class LegacyKeywordParser(LegacyParserWrapper):
 class LegacyListParser(LegacyParserWrapper):
     """ListParser後方互換ラッパー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("list", "ListParser")
 
     def parse_list(self, content: Union[str, List[str]], **kwargs: Any) -> Node:
@@ -114,7 +114,7 @@ class LegacyListParser(LegacyParserWrapper):
 class LegacyMarkdownParser(LegacyParserWrapper):
     """MarkdownParser後方互換ラッパー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("markdown", "MarkdownParser")
 
     def parse_markdown(self, content: str, **kwargs: Any) -> Node:
@@ -131,7 +131,7 @@ class LegacyMarkdownParser(LegacyParserWrapper):
 class LegacySpecialBlockParser(LegacyParserWrapper):
     """SpecialBlockParser後方互換ラッパー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("block", "SpecialBlockParser")
 
     def parse_special_block(self, content: str, block_type: str, **kwargs: Any) -> Node:

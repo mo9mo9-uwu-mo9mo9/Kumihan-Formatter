@@ -298,7 +298,7 @@ class AIEffectMeasurement:
         """トレンド分析委譲"""
         return self.performance_metrics.analyze_trend(metric_name, days)
 
-    def export_measurements(self, output_path=None) -> bool:
+    def export_measurements(self, output_path: Optional[str] = None) -> bool:
         """測定データエクスポート委譲"""
         return self.business_metrics.export_measurements(output_path)
 

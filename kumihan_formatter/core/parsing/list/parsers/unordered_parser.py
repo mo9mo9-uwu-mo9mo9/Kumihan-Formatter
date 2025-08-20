@@ -118,7 +118,7 @@ class UnorderedListParser:
         total_items = 0
         checked_items = 0
 
-        def count_items(node: Node):
+        def count_items(node: Node) -> None:
             nonlocal total_items, checked_items
 
             if node.node_type == "checklist_item":

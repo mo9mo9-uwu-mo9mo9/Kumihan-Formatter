@@ -110,7 +110,7 @@ class WeakReferenceManager:
         try:
             with self._lock:
                 # 弱参照作成
-                def cleanup_callback(ref):
+                def cleanup_callback(ref: weakref.ref[Any]) -> None:
                     self._cleanup_reference(ref)
                     if callback:
                         callback(ref)

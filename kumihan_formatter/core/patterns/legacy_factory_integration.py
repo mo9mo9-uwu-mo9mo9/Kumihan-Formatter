@@ -4,7 +4,7 @@ Issue #914: 既存ファクトリーファイルを新DIシステムに統合
 後方互換性を維持しながら段階的な移行を支援
 """
 
-from typing import Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 from ..utilities.logger import get_logger
 from .dependency_injection import DIContainer, get_container
@@ -174,7 +174,7 @@ class LegacyFactoryAdapter:
 
 
 # 後方互換性のための便利関数
-def create_legacy_file_operations(ui=None):
+def create_legacy_file_operations(ui: Any = None) -> Any:
     """レガシー互換: ファイル操作コンポーネント作成"""
     try:
         adapter = LegacyFactoryAdapter()
@@ -190,7 +190,7 @@ def create_legacy_file_operations(ui=None):
         return create_file_operations(ui)
 
 
-def create_legacy_markdown_converter():
+def create_legacy_markdown_converter() -> Any:
     """レガシー互換: マークダウンコンバーター作成"""
     try:
         adapter = LegacyFactoryAdapter()
@@ -212,7 +212,7 @@ def create_legacy_markdown_converter():
         return create_markdown_converter()
 
 
-def create_legacy_list_parser(keyword_parser):
+def create_legacy_list_parser(keyword_parser: Any) -> Any:
     """レガシー互換: リストパーサー作成"""
     try:
         adapter = LegacyFactoryAdapter()
