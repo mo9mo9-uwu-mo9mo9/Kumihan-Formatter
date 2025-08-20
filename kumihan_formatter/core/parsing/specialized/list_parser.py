@@ -18,7 +18,7 @@ Issue #920: 大型ファイル分割リファクタリング
 - 後方互換性維持
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -68,28 +68,34 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         self.list_handlers.update(self.basic_handler.get_handlers())
         self.list_handlers.update(self.advanced_handler.get_handlers())
 
-    def parse(self, text: str, context: Optional[ParseContext] = None) -> ParseResult:
-        """テキストからリスト構造を解析"""
+    def _parse_implementation(
+        self, content: Union[str, List[str]], **kwargs: Any
+    ) -> Node:
+        """基底クラス用の解析実装（UnifiedParserBase準拠）"""
+        # List[str]が渡された場合は結合する
+        if isinstance(content, list):
+            text = "\n".join(str(line) for line in content)
+        else:
+            text = str(content)
+
         try:
             lines = text.strip().split("\n")
             if not lines or not any(line.strip() for line in lines):
-                return create_parse_result(success=True, nodes=[])
+                return create_node("list", [], {})
 
             # ブロック形式の検出
             if text.strip().startswith("# リスト #"):
                 block_items = self.advanced_handler.parse_block_format(text)
                 if block_items:
-                    list_node = self.utilities.create_list_node(block_items, "block")
-                    return create_parse_result(success=True, nodes=[list_node])
+                    return self.utilities.create_list_node(block_items, "block")
 
             # 文字区切り形式の検出
             if text.strip().startswith("[") and text.strip().endswith("]"):
                 char_items = self.advanced_handler.parse_character_delimited(text)
                 if char_items:
-                    list_node = self.utilities.create_list_node(
+                    return self.utilities.create_list_node(
                         char_items, "character_delimited"
                     )
-                    return create_parse_result(success=True, nodes=[list_node])
 
             # 通常のリスト解析
             list_items = []
@@ -128,12 +134,23 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
                 # リストタイプの決定
                 primary_type = self.utilities.determine_primary_list_type(list_items)
-                list_node = self.utilities.create_list_node(list_items, primary_type)
+                return self.utilities.create_list_node(list_items, primary_type)
 
-                return create_parse_result(success=True, nodes=[list_node])
+            return create_node("list", [], {})
 
-            return create_parse_result(success=True, nodes=[])
+        except Exception as e:
+            self.logger.error(f"List parsing failed: {e}")
+            return create_node("error", f"List parsing failed: {e}", {})
 
+    # ParseResultを返すプロトコル用のエイリアスメソッド
+    def parse_with_result(
+        self, text: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """ParseResultを返す解析インターフェース（プロトコル準拠）"""
+        try:
+            # 基底クラスのparseメソッドを使用
+            result = super().parse(text)
+            return create_parse_result(nodes=[result], success=True)
         except Exception as e:
             result = create_parse_result(success=False)
             result.add_error(f"List parsing failed: {e}")
