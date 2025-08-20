@@ -11,6 +11,11 @@ on:
       - 'CLAUDE.md'
   workflow_dispatch:
 
+# 同時実行制御
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   claude-md-check:
     runs-on: ubuntu-latest

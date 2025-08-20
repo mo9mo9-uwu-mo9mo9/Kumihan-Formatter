@@ -1,16 +1,24 @@
 name: Quality Gate
 
 on:
-  push:
-    branches: [ main, develop, 'feat/**', 'fix/**' ]
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+
+# 同時実行制御
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality_check:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         python-version: [3.12, 3.13]
 
