@@ -81,7 +81,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         try:
             lines = text.strip().split("\n")
             if not lines or not any(line.strip() for line in lines):
-                return create_node("list", [], {})
+                return create_node("list", content=[])
 
             # ブロック形式の検出
             if text.strip().startswith("# リスト #"):
@@ -136,11 +136,11 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
                 primary_type = self.utilities.determine_primary_list_type(list_items)
                 return self.utilities.create_list_node(list_items, primary_type)
 
-            return create_node("list", [], {})
+            return create_node("list", content=[])
 
         except Exception as e:
             self.logger.error(f"List parsing failed: {e}")
-            return create_node("error", f"List parsing failed: {e}", {})
+            return create_node("error", content=f"List parsing failed: {e}")
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
