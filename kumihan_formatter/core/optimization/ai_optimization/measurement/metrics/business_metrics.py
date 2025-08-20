@@ -8,7 +8,7 @@ ROI計算・コスト分析・ビジネス価値測定・投資対効果評価
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -81,7 +81,7 @@ class BusinessMetrics:
             if statistical_validity:
                 success = success and statistical_validity
 
-            return success
+            return cast(bool, success)
         except Exception as e:
             self.logger.error(f"Success criteria evaluation failed: {e}")
             return False

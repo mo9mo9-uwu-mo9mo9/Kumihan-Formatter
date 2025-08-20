@@ -6,7 +6,7 @@ Phase B + AI統合管理・健全性監視・回復処理
 
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 from kumihan_formatter.core.config.config_manager import ConfigManager
 from kumihan_formatter.core.config.optimization.manager import AdaptiveSettingsManager
@@ -308,7 +308,7 @@ class AIIntegrationManager:
 
             # 健全性判定
             efficiency = result.get("efficiency", 0.0)
-            return efficiency >= 60.0  # 最低健全性基準
+            return cast(bool, efficiency >= 60.0)  # 最低健全性基準
 
         except Exception as e:
             self.logger.error(f"Phase B health check failed: {e}")
@@ -363,7 +363,7 @@ class AIIntegrationManager:
             else:
                 self.logger.warning("AdaptiveSettings integration below threshold")
 
-            return success
+            return cast(bool, success)
 
         except Exception as e:
             self.logger.error(f"AdaptiveSettings integration failed: {e}")
@@ -443,7 +443,7 @@ class AIIntegrationManager:
                 self.integration_metrics["phase_b_preservation_rate"] = 0.0
                 self.logger.error(f"Baseline at risk: {baseline_efficiency:.1f}%")
 
-            return preserved
+            return cast(bool, preserved)
 
         except Exception as e:
             self.logger.error(f"Baseline preservation verification failed: {e}")
@@ -520,7 +520,7 @@ class AIIntegrationManager:
 
             test_context = {"compatibility_test": True}
             result = self._adaptive_settings_manager.optimize_settings(test_context, [])
-            return result.get("efficiency", 0.0) > 0.0
+            return cast(bool, result.get("efficiency", 0.0) > 0.0)
 
         except Exception as e:
             self.logger.error(f"Phase B operations verification failed: {e}")
