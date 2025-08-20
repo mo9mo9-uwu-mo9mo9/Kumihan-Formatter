@@ -18,7 +18,7 @@ Issue #912: Parser系統合リファクタリング
 
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Iterator, Optional, cast
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
@@ -217,7 +217,7 @@ class MainParser(
             def can_parse(self, text: str) -> bool:
                 return False
 
-            def parse(self, text: str) -> List[Node]:
+            def parse(self, text: str) -> list[Node]:
                 return [create_node("text", content=text)]
 
         return MinimalParser()
@@ -238,7 +238,7 @@ class MainParser(
         self.chunk_size = 1000
 
         # エラートラッキング
-        self.parallel_errors: List[Dict[str, str]] = []
+        self.parallel_errors: list[dict[str, str]] = []
 
     def _setup_streaming(self) -> None:
         """ストリーミング処理の設定"""
@@ -257,7 +257,7 @@ class MainParser(
         }
 
     @with_events("main_parse")
-    def parse(self, text: str, **kwargs: Any) -> List[Node]:
+    def parse(self, text: str, **kwargs: Any) -> list[Node]:
         """メインパース処理
 
         Args:
@@ -294,9 +294,9 @@ class MainParser(
             self.logger.error(f"Parse error: {e}")
             return [error_node(f"Parse error: {e}")]
 
-    def _parse_sequential(self, text: str, **kwargs: Any) -> List[Node]:
+    def _parse_sequential(self, text: str, **kwargs: Any) -> list[Node]:
         """順次パース処理"""
-        results: List[Node] = []
+        results: list[Node] = []
 
         # 適切なパーサーを選択して実行
         selected_parsers = self._select_parsers(text)
@@ -316,7 +316,7 @@ class MainParser(
 
         return results if results else [create_node("document", content=text)]
 
-    def _parse_parallel(self, text: str, **kwargs: Any) -> List[Node]:
+    def _parse_parallel(self, text: str, **kwargs: Any) -> list[Node]:
         """並列パース処理"""
         try:
             # テキストをチャンクに分割
@@ -354,7 +354,7 @@ class MainParser(
             # フォールバック: 順次処理
             return self._parse_sequential(text, **kwargs)
 
-    def _parse_chunk(self, chunk: str, **kwargs: Any) -> List[Node]:
+    def _parse_chunk(self, chunk: str, **kwargs: Any) -> list[Node]:
         """チャンク単位のパース処理"""
         return self._parse_sequential(chunk, **kwargs)
 
@@ -399,7 +399,7 @@ class MainParser(
             self.logger.error(f"Streaming parse error: {e}")
             yield error_node(f"Streaming parse error: {e}")
 
-    def _select_parsers(self, text: str) -> List[tuple[str, ParserProtocol]]:
+    def _select_parsers(self, text: str) -> list[tuple[str, ParserProtocol]]:
         """テキストに適したパーサーを選択"""
         selected = []
 
@@ -425,12 +425,12 @@ class MainParser(
             or char_count >= self.parallel_threshold_chars
         )
 
-    def _split_into_chunks(self, text: str) -> List[str]:
+    def _split_into_chunks(self, text: str) -> list[str]:
         """テキストをチャンクに分割"""
         lines = text.split("\n")
         chunks = []
 
-        current_chunk: List[str] = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for line in lines:
@@ -449,7 +449,7 @@ class MainParser(
 
         return chunks
 
-    def _extract_complete_elements(self, buffer: str) -> tuple[List[str], str]:
+    def _extract_complete_elements(self, buffer: str) -> tuple[list[str], str]:
         """バッファから完全な構文要素を抽出"""
         elements = []
 
@@ -491,11 +491,11 @@ class MainParser(
         """入力の妥当性を検証"""
         return isinstance(text, str) and bool(text.strip())
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """パフォーマンス統計を取得"""
         return self.performance_stats.copy()
 
-    def get_parser_info(self) -> Dict[str, Any]:
+    def get_parser_info(self) -> dict[str, Any]:
         """パーサー情報を取得"""
         info = {
             "main_parser": {
@@ -559,7 +559,7 @@ class MainParser(
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
-    ) -> List[str]:
+    ) -> list[str]:
         """バリデーション実装（プロトコル準拠）"""
         errors = []
         try:
@@ -573,7 +573,7 @@ class MainParser(
             errors.append(f"バリデーションエラー: {e}")
         return errors
 
-    def get_parser_info_protocol(self) -> Dict[str, Any]:
+    def get_parser_info_protocol(self) -> dict[str, Any]:
         """パーサー情報（プロトコル準拠）"""
         return {
             "name": "MainParser",
@@ -587,7 +587,7 @@ class MainParser(
         """フォーマット対応判定（プロトコル準拠）"""
         return format_hint in ["kumihan", "markdown", "text", "auto"]
 
-    def get_parsers(self) -> List[ParserProtocol]:
+    def get_parsers(self) -> list[ParserProtocol]:
         """登録されているパーサー一覧を取得（プロトコル準拠）"""
         return list(self.parsers.values())
 
@@ -623,13 +623,13 @@ StreamingParser = MainParser  # ストリーミング機能は統合済み
 
 
 # ユーティリティ関数（parser_utils.py からの統合）
-def parse_text(text: str, config: Optional[Any] = None) -> List[Node]:
+def parse_text(text: str, config: Optional[Any] = None) -> list[Node]:
     """テキストを解析する便利関数"""
     parser = MainParser(config)
-    return cast(List[Node], parser.parse(text))
+    return cast(list[Node], parser.parse(text))
 
 
-def parse_file(file_path: str, config: Optional[Any] = None) -> List[Node]:
+def parse_file(file_path: str, config: Optional[Any] = None) -> list[Node]:
     """ファイルを解析する便利関数"""
     try:
         with open(file_path, "r", encoding="utf-8") as f:

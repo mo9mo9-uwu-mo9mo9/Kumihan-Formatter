@@ -182,3 +182,28 @@ class Node:
             for item in self.content:
                 if isinstance(item, Node):
                     yield from item.walk()
+
+    def add_error(self, error_message: str) -> None:
+        """エラーメッセージをノードに追加（パーサーエラーハンドリング用）"""
+        if self.attributes is None:
+            self.attributes = {}
+
+        # errorsキーが存在しない場合は初期化
+        if "errors" not in self.attributes:
+            self.attributes["errors"] = []
+
+        # エラーメッセージを追加
+        self.attributes["errors"].append(error_message)
+
+    def has_errors(self) -> bool:
+        """エラーがあるかチェック"""
+        if self.attributes is None:
+            return False
+        errors = self.attributes.get("errors", [])
+        return len(errors) > 0
+
+    def get_errors(self) -> list[str]:
+        """エラーメッセージのリストを取得"""
+        if self.attributes is None:
+            return []
+        return self.attributes.get("errors", [])

@@ -9,7 +9,7 @@ import threading
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Generic, Optional, Protocol, TypeVar
+from typing import Any, Generic, Optional, Protocol, TypeVar
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -79,7 +79,7 @@ class CacheStorage(Generic[K, T]):
     """キャッシュストレージ"""
 
     def __init__(self) -> None:
-        self._data: Dict[K, CacheEntry[T]] = {}
+        self._data: dict[K, CacheEntry[T]] = {}
         self._lock = threading.Lock()
 
     def get(self, key: K) -> Optional[CacheEntry[T]]:

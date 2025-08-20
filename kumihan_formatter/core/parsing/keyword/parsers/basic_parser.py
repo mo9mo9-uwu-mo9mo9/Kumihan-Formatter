@@ -147,7 +147,10 @@ class BasicKeywordParser:
 
             result["keyword"] = primary
             if separator == "+":
-                result["modifiers"].append(secondary)
+                if isinstance(result["modifiers"], list):
+                    result["modifiers"].append(secondary)
+                else:
+                    result["modifiers"] = [secondary]
             elif separator == "-":
                 result["exclusions"] = [secondary]
         else:

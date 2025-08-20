@@ -4,9 +4,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # 統一プロトコルインポート（重複定義を避けるため、純粋にtry-except分岐）
 try:
-    from ...base.parser_protocols import BaseParserProtocol as BaseProtocol
-    from ...base.parser_protocols import ListParserProtocol as ListProtocol
     from ...base.parser_protocols import (
+        BaseParserProtocol as BaseProtocol,  # type: ignore[import-not-found]
+    )
+    from ...base.parser_protocols import (
+        ListParserProtocol as ListProtocol,  # type: ignore[import-not-found]
+    )
+    from ...base.parser_protocols import (  # type: ignore[import-not-found]
         ParseContext,
         ParseError,
         ParseResult,
@@ -53,10 +57,10 @@ except ImportError:
 
 # ノードインポート
 try:
-    from ....ast_nodes.node import Node
+    from ....ast_nodes.node import Node  # type: ignore[import-not-found]
 except ImportError:
     try:
-        from ....ast_nodes import Node
+        from ....ast_nodes import Node  # type: ignore[import-not-found]
     except ImportError:
         # フォールバック実装
         class Node:  # type: ignore[no-redef]

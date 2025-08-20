@@ -209,7 +209,9 @@ class UnorderedListParser:
 
             if node.type == "checklist_item":
                 total += 1
-                if node.attributes.get("checked", False):
+                if node.attributes is not None and node.attributes.get(
+                    "checked", False
+                ):
                     checked += 1
 
             if node.children:
@@ -243,11 +245,16 @@ class UnorderedListParser:
         new_node = Node(
             type=node.type,
             content=node.content,
-            attributes=node.attributes.copy(),
+            attributes=node.attributes.copy() if node.attributes is not None else {},
         )
 
-        current_checked = new_node.attributes.get("checked", False)
-        new_node.attributes["checked"] = not current_checked
+        current_checked = (
+            new_node.attributes.get("checked", False)
+            if new_node.attributes is not None
+            else False
+        )
+        if new_node.attributes is not None:
+            new_node.attributes["checked"] = not current_checked
 
         return new_node
 
@@ -267,18 +274,19 @@ class UnorderedListParser:
         new_node = Node(
             type="list_item",
             content=node.content,
-            attributes=node.attributes.copy(),
+            attributes=node.attributes.copy() if node.attributes is not None else {},
         )
 
-        new_node.attributes.update(
-            {
-                "marker": bullet_marker,
-                "marker_type": "bullet",
-            }
-        )
+        if new_node.attributes is not None:
+            new_node.attributes.update(
+                {
+                    "marker": bullet_marker,
+                    "marker_type": "bullet",
+                }
+            )
 
-        # チェック状態関連の属性を削除
-        new_node.attributes.pop("checked", None)
+            # チェック状態関連の属性を削除
+            new_node.attributes.pop("checked", None)
 
         return new_node
 

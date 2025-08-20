@@ -287,9 +287,14 @@ class NestedListParser:
                 flat_node = Node(
                     type=current_node.type,
                     content=current_node.content,
-                    attributes=current_node.attributes.copy(),
+                    attributes=(
+                        current_node.attributes.copy()
+                        if current_node.attributes is not None
+                        else {}
+                    ),
                 )
-                flat_node.attributes["original_level"] = level
+                if flat_node.attributes is not None:
+                    flat_node.attributes["original_level"] = level
                 flattened.append(flat_node)
 
             # 子ノードを再帰的に処理

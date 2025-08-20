@@ -330,6 +330,31 @@ class TypeBasedRecycler:
         """セット返却"""
         self.recycler.release_object(st)
 
+    def get_all_metrics(self) -> Dict[str, Any]:
+        """全メトリクス取得"""
+        return {
+            "recycler_stats": self.recycler.stats,
+            "type_configs": self.recycler._type_configs,
+            "recycled_objects_count": sum(
+                len(deque_obj) for deque_obj in self.recycler._recycled_objects.values()
+            ),
+            "in_use_objects_count": sum(
+                len(obj_set) for obj_set in self.recycler._in_use_objects.values()
+            ),
+        }
+
+    def recycle(self, obj: Any) -> bool:
+        """オブジェクトをリサイクル（recycleメソッドのエイリアス）"""
+        return self.recycle_object(obj)
+
+    def recycle_object(self, obj: Any) -> bool:
+        """オブジェクトをリサイクル"""
+        try:
+            self.recycler.release_object(obj)
+            return True
+        except Exception:
+            return False
+
 
 class RecycleEffectMeasurer:
     """リサイクル効果測定"""
@@ -550,6 +575,34 @@ def main() -> None:
         return 1
 
     return 0
+
+
+# グローバル関数（__init__.pyでの互換性用）
+_global_type_recycler: Optional["TypeBasedRecycler"] = None
+_global_effect_measurer: Optional["RecycleEffectMeasurer"] = None
+
+
+def get_global_recycler() -> "TypeBasedRecycler":
+    """グローバルリサイクラー取得"""
+    global _global_type_recycler
+    if _global_type_recycler is None:
+        _global_type_recycler = TypeBasedRecycler()
+    return _global_type_recycler
+
+
+def get_effect_measurer() -> "RecycleEffectMeasurer":
+    """エフェクト測定器取得"""
+    global _global_effect_measurer
+    if _global_effect_measurer is None:
+        recycler = get_global_recycler()
+        _global_effect_measurer = RecycleEffectMeasurer(recycler)
+    return _global_effect_measurer
+
+
+def recycle_object(obj: Any) -> bool:
+    """オブジェクトをリサイクルに回す"""
+    recycler = get_global_recycler()
+    return recycler.recycle_object(obj)
 
 
 if __name__ == "__main__":

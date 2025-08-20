@@ -324,3 +324,21 @@ class StreamingParser:
             self._add_result(value)
 
         return self.results
+
+    def parse_streaming_from_text(self, text: str) -> List[Any]:
+        """テキストからストリーミング解析を実行（parser.py用）
+
+        Args:
+            text: 解析対象のテキスト
+
+        Returns:
+            解析結果のリスト
+        """
+        # リセットしてからストリーミング解析を実行
+        self.reset()
+
+        # テキストをparseメソッドで処理
+        self.parse(text)
+
+        # 解析を完了して結果を返す
+        return self.finish()

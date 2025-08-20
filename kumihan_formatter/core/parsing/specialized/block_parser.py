@@ -132,7 +132,7 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
                 inline_match = self.block_patterns["inline"].match(line)
                 if inline_match:
                     block_node = self._parse_inline_block(line, inline_match)
-                    if block_node:
+                    if block_node and root_node.children is not None:
                         root_node.children.append(block_node)
                     i += 1
                     continue
@@ -141,14 +141,15 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
                 start_match = self.block_patterns["start"].match(line)
                 if start_match:
                     block_node, consumed_lines = self._parse_multiline_block(lines[i:])
-                    if block_node:
+                    if block_node and root_node.children is not None:
                         root_node.children.append(block_node)
                     i += consumed_lines
                     continue
 
                 # 通常のテキスト行として処理
                 text_node = create_node("text", content=line)
-                root_node.children.append(text_node)
+                if root_node.children is not None:
+                    root_node.children.append(text_node)
                 i += 1
 
             self._end_timer("block_parsing")

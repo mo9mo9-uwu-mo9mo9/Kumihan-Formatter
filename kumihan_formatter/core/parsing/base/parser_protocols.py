@@ -268,6 +268,25 @@ class KeywordParserProtocol(BaseParserProtocol, Protocol):
         """
         ...
 
+    def parse_new_format(self, content: str) -> Any:
+        """新フォーマット解析（marker_parser.py/content_parser.py用）
+
+        Args:
+            content: 解析対象のコンテンツ
+
+        Returns:
+            解析結果
+        """
+        ...
+
+    def get_node_factory(self) -> Any:
+        """ノードファクトリー取得（marker_parser.py/content_parser.py用）
+
+        Returns:
+            ノードファクトリーインスタンス
+        """
+        ...
+
     def split_compound_keywords(self, keyword_content: str) -> List[str]:
         """複合キーワードを個別キーワードに分割
 

@@ -155,7 +155,7 @@ class MemoryOptimizationManager:
         try:
             return {
                 "pool_manager": self._pool_manager.get_global_statistics(),
-                "object_recycler": self._recycler.get_metrics(),
+                "object_recycler": self._recycler.get_all_metrics(),
                 "type_recycler": self._type_recycler.get_all_metrics(),
                 "weak_references": self._weak_ref_manager.get_statistics(),
                 "memory_profiler": self._profiler.get_current_stats(),
