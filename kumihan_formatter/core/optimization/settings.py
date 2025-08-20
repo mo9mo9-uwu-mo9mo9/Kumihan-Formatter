@@ -103,6 +103,15 @@ class WorkContext:
     priority: int = 1
     metadata: Optional[Dict[str, Any]] = None
 
+    # phase_b/integrator.pyで使用される追加フィールド
+    operation_type: str = ""
+    content_size: int = 0
+    complexity_score: float = 0.0
+    complexity_level: str = ""
+    cache_hit_rate: float = 0.0
+    adjustment_effectiveness: float = 0.0
+    monitoring_optimization_score: float = 0.0
+
     def __post_init__(self) -> None:
         if self.metadata is None:
             self.metadata = {}
@@ -150,8 +159,14 @@ class ConfigAdjustment:
 class AdaptiveSettingsManager(SettingsManager):
     """適応的設定管理（SettingsManagerの拡張）"""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional[Any] = None) -> None:
+        """初期化
+
+        Args:
+            config: 設定オブジェクト（EnhancedConfig等）
+        """
         super().__init__()
+        self.config = config
         self.adaptations: list[ConfigAdjustment] = []
 
     def adapt_setting(self, adjustment: ConfigAdjustment) -> None:
@@ -176,7 +191,13 @@ class ContextAwareOptimizer:
 class IntegratedSettingsOptimizer:
     """統合設定最適化器"""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional[Any] = None) -> None:
+        """初期化
+
+        Args:
+            config: 設定オブジェクト（EnhancedConfig等）
+        """
+        self.config = config
         self.manager = AdaptiveSettingsManager()
         self.context: Optional[WorkContext] = None
 
@@ -188,7 +209,17 @@ class IntegratedSettingsOptimizer:
 class LearningBasedOptimizer:
     """学習ベース最適化器"""
 
-    def __init__(self) -> None:
+    def __init__(
+        self, config: Optional[Any] = None, adaptive_settings: Optional[Any] = None
+    ) -> None:
+        """初期化
+
+        Args:
+            config: 設定オブジェクト（EnhancedConfig等）
+            adaptive_settings: 適応設定マネージャー（AdaptiveSettingsManager等）
+        """
+        self.config = config
+        self.adaptive_settings = adaptive_settings
         self.learning_rate = 0.1
         self.history: list[Dict[str, Any]] = []
 
