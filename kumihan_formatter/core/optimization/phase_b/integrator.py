@@ -17,11 +17,11 @@ from typing import Any, Dict, List, Optional
 
 from ...utilities.logger import get_logger
 from ..settings import (
+    AdaptiveSettingsManager,
     IntegratedSettingsOptimizer,
     LearningBasedOptimizer,
     WorkContext,
 )
-from ..settings.manager import AdaptiveSettingsManager
 from .config import PhaseBIntegrationConfig
 from .measurement import EffectMeasurementSystem
 from .validation import PhaseBReportGenerator, StabilityValidator

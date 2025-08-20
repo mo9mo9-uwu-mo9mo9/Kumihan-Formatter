@@ -62,12 +62,22 @@ class QualityMetrics:
 class StabilityAssessment:
     """安定性評価"""
 
-    uptime_percentage: float
-    error_frequency: float
-    performance_variance: float
-    recovery_time: float
-    resilience_score: float
-    stability_trend: str
+    # 既存フィールド（後方互換性のため保持）
+    uptime_percentage: float = 0.0
+    error_frequency: float = 0.0
+    performance_variance: float = 0.0
+    recovery_time: float = 0.0
+    resilience_score: float = 0.0
+    stability_trend: str = ""
+
+    # quality_metrics.pyで使用される新フィールド
+    consistency_score: float = 0.0
+    predictability_score: float = 0.0
+    variance_score: float = 0.0
+    drift_score: float = 0.0
+    overall_stability: float = 0.0
+    stability_level: str = ""
+    timestamp: float = 0.0
 
 
 class BaselineMeasurement:
