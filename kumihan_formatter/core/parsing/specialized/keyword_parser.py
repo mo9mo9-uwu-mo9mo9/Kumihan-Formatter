@@ -86,7 +86,11 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ...keyword import KeywordDefinitions, KeywordValidator, MarkerParser
+            from ...keyword import (  # type: ignore[import-not-found]
+                KeywordDefinitions,
+                KeywordValidator,
+                MarkerParser,
+            )
 
             # 分割されたコンポーネントを初期化（後方互換性のため）
             self.definitions = KeywordDefinitions(None)
@@ -141,7 +145,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
             for keyword_info in keywords_found:
                 keyword_node = self.basic_parser.create_keyword_node(keyword_info)
-                root_node.children.append(keyword_node)
+                if root_node.children is not None:
+                    root_node.children.append(keyword_node)
 
             self._end_timer("keyword_parsing")
             return root_node

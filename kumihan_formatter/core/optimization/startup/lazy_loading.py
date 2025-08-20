@@ -9,7 +9,7 @@ import importlib
 import sys
 import time
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -22,8 +22,8 @@ class LazyImporter:
     """遅延インポート管理クラス"""
 
     def __init__(self) -> None:
-        self._module_cache: Dict[str, Any] = {}
-        self._import_times: Dict[str, float] = {}
+        self._module_cache: dict[str, Any] = {}
+        self._import_times: dict[str, float] = {}
 
     def import_module(self, module_name: str) -> Any:
         """モジュールの遅延インポート"""
@@ -45,7 +45,7 @@ class LazyImporter:
             logger.error(f"Failed to lazy import {module_name}: {e}")
             raise
 
-    def get_import_stats(self) -> Dict[str, float]:
+    def get_import_stats(self) -> dict[str, float]:
         """インポート統計取得"""
         return self._import_times.copy()
 
@@ -112,7 +112,7 @@ class LazyLoadManager:
 
     def __init__(self) -> None:
         self.importer = LazyImporter()
-        self._lazy_modules: Dict[str, LazyModule] = {}
+        self._lazy_modules: dict[str, LazyModule] = {}
 
     def register_lazy_module(self, name: str, module_name: str) -> LazyModule:
         """遅延モジュール登録"""
@@ -134,7 +134,7 @@ class LazyLoadManager:
             except ImportError as e:
                 logger.warning(f"Failed to preload {module_name}: {e}")
 
-    def get_performance_report(self) -> Dict[str, Any]:
+    def get_performance_report(self) -> dict[str, Any]:
         """パフォーマンスレポート生成"""
         import_stats = self.importer.get_import_stats()
         total_time = sum(import_stats.values())
@@ -161,7 +161,7 @@ def get_lazy_manager() -> LazyLoadManager:
     return _global_lazy_manager
 
 
-def benchmark_import_time(module_name: str, iterations: int = 10) -> Dict[str, float]:
+def benchmark_import_time(module_name: str, iterations: int = 10) -> dict[str, Any]:
     """インポート時間ベンチマーク"""
     import gc
     import statistics
@@ -182,7 +182,7 @@ def benchmark_import_time(module_name: str, iterations: int = 10) -> Dict[str, f
             times.append(import_time)
         except ImportError as e:
             logger.error(f"Import benchmark failed for {module_name}: {e}")
-            return {"error": str(e)}
+            return {"module": module_name, "error": str(e)}
 
     return {
         "module": module_name,

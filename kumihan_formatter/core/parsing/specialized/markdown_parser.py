@@ -83,11 +83,11 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
         self.element_handlers = {
             "heading": self._handle_heading,
             "hr": self._handle_horizontal_rule,
-            "blockquote": self._handle_blockquote,
-            "code_block": self._handle_code_block,
-            "table": self._handle_table,
-            "list": self._handle_list,
-            "paragraph": self._handle_paragraph,
+            "blockquote": self._handle_blockquote_block,
+            "code_block": self._handle_code_block_multiline,
+            "table": self._handle_table_block,
+            "list": self._handle_list_block,
+            "paragraph": self._handle_paragraph_block,
         }
 
     def can_parse(self, content: Union[str, List[str]]) -> bool:

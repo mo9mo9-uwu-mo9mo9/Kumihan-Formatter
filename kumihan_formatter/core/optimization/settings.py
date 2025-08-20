@@ -91,3 +91,124 @@ class SettingsManager:
 
 # デフォルト設定インスタンス
 default_settings = OptimizationSettings()
+
+
+# __init__.pyでの互換性用クラス（基本実装）
+@dataclass
+class WorkContext:
+    """作業コンテキスト"""
+
+    task_id: str = ""
+    task_type: str = ""
+    priority: int = 1
+    metadata: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self) -> None:
+        if self.metadata is None:
+            self.metadata = {}
+
+
+@dataclass
+class ABTestConfig:
+    """A/Bテスト設定"""
+
+    test_id: str = ""
+    variant_a: Optional[Dict[str, Any]] = None
+    variant_b: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self) -> None:
+        if self.variant_a is None:
+            self.variant_a = {}
+        if self.variant_b is None:
+            self.variant_b = {}
+
+
+@dataclass
+class ABTestResult:
+    """A/Bテスト結果"""
+
+    test_id: str = ""
+    winner: str = ""
+    confidence: float = 0.0
+    metrics: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self) -> None:
+        if self.metrics is None:
+            self.metrics = {}
+
+
+@dataclass
+class ConfigAdjustment:
+    """設定調整"""
+
+    key: str = ""
+    old_value: Any = None
+    new_value: Any = None
+    reason: str = ""
+
+
+class AdaptiveSettingsManager(SettingsManager):
+    """適応的設定管理（SettingsManagerの拡張）"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.adaptations: list[ConfigAdjustment] = []
+
+    def adapt_setting(self, adjustment: ConfigAdjustment) -> None:
+        """設定を適応的に調整"""
+        self.adaptations.append(adjustment)
+        self.update_setting(adjustment.key, adjustment.new_value)
+
+
+class ContextAwareOptimizer:
+    """コンテキスト認識最適化器"""
+
+    def __init__(self, context: WorkContext) -> None:
+        self.context = context
+        self.settings = SettingsManager()
+
+    def optimize(self, data: Any) -> Any:
+        """最適化実行"""
+        logger.info(f"Optimizing with context: {self.context.task_id}")
+        return data
+
+
+class IntegratedSettingsOptimizer:
+    """統合設定最適化器"""
+
+    def __init__(self) -> None:
+        self.manager = AdaptiveSettingsManager()
+        self.context: Optional[WorkContext] = None
+
+    def set_context(self, context: WorkContext) -> None:
+        """コンテキスト設定"""
+        self.context = context
+
+
+class LearningBasedOptimizer:
+    """学習ベース最適化器"""
+
+    def __init__(self) -> None:
+        self.learning_rate = 0.1
+        self.history: list[Dict[str, Any]] = []
+
+    def learn(self, data: Dict[str, Any]) -> None:
+        """学習実行"""
+        self.history.append(data)
+
+
+class RealTimeConfigAdjuster:
+    """リアルタイム設定調整器"""
+
+    def __init__(self) -> None:
+        self.manager = AdaptiveSettingsManager()
+        self.adjustments: list[ConfigAdjustment] = []
+
+    def adjust_realtime(self, key: str, value: Any, reason: str = "") -> None:
+        """リアルタイム調整"""
+        old_value = getattr(self.manager.settings, key, None)
+        adjustment = ConfigAdjustment(
+            key=key, old_value=old_value, new_value=value, reason=reason
+        )
+        self.adjustments.append(adjustment)
+        self.manager.adapt_setting(adjustment)

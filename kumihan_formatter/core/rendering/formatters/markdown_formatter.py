@@ -485,12 +485,21 @@ class MarkdownFormatter(MarkdownRendererProtocol):
     # ==========================================
 
     def render(
-        self, node: Node, context: Optional[RenderContext] = None
+        self, nodes: List[Node], context: Optional[RenderContext] = None
     ) -> RenderResult:
         """統一レンダリングインターフェース（プロトコル準拠）"""
         try:
-            markdown_content = self.format_node(node)
-            return create_render_result(content=markdown_content, success=True)
+            if not nodes:
+                return create_render_result(content="", success=True)
+
+            # 複数ノードを順次処理
+            markdown_parts = []
+            for node in nodes:
+                markdown_content = self.format_node(node)
+                markdown_parts.append(markdown_content)
+
+            combined_content = "\n\n".join(markdown_parts)
+            return create_render_result(content=combined_content, success=True)
         except Exception as e:
             result = create_render_result(success=False)
             result.add_error(f"Markdownレンダリング失敗: {e}")
@@ -529,10 +538,19 @@ class MarkdownFormatter(MarkdownRendererProtocol):
         return format_hint in ["markdown", "md", "text"]
 
     def render_markdown(
-        self, node: Node, options: Optional[Dict[str, Any]] = None
+        self, nodes: List[Node], context: Optional[RenderContext] = None
     ) -> str:
         """Markdown固有レンダリングメソッド（プロトコル準拠）"""
-        return self.format_node(node)
+        if not nodes:
+            return ""
+
+        # 複数ノードを順次処理
+        markdown_parts = []
+        for node in nodes:
+            markdown_content = self.format_node(node)
+            markdown_parts.append(markdown_content)
+
+        return "\n\n".join(markdown_parts)
 
     def to_html(self, markdown_content: str) -> str:
         """MarkdownからHTMLに変換（プロトコル準拠）"""
@@ -549,20 +567,42 @@ class MarkdownFormatter(MarkdownRendererProtocol):
 
         return content
 
-    def convert_from_kumihan(self, kumihan_content: str) -> str:
-        """Kumihan記法からMarkdownに変換（抽象メソッド実装）"""
+    def convert_from_kumihan(
+        self, kumihan_text: str, context: Optional[RenderContext] = None
+    ) -> str:
+        """Kumihan記法からMarkdownに変換（プロトコル準拠）"""
         # 基本的な変換実装
-        return cast(str, self._convert_from_html(kumihan_content))
+        return cast(str, self._convert_from_html(kumihan_text))
+
+    def _convert_from_html(self, html_content: str) -> str:
+        """HTMLからMarkdownに変換（内部メソッド）"""
+        # 基本的なHTML→Markdown変換
+        # より複雑な変換が必要な場合は外部ライブラリ（html2text等）を使用
+        content = html_content
+
+        # 簡単なHTML要素をMarkdownに変換
+        content = content.replace("<strong>", "**").replace("</strong>", "**")
+        content = content.replace("<em>", "*").replace("</em>", "*")
+        content = content.replace("<br>", "\n").replace("<br/>", "\n")
+        content = content.replace("<p>", "").replace("</p>", "\n\n")
+        content = content.replace("<h1>", "# ").replace("</h1>", "\n")
+        content = content.replace("<h2>", "## ").replace("</h2>", "\n")
+        content = content.replace("<h3>", "### ").replace("</h3>", "\n")
+
+        return content.strip()
 
     def get_markdown_extensions(self) -> List[str]:
         """サポートするMarkdown拡張機能のリストを返す（抽象メソッド実装）"""
         return ["tables", "fenced_code", "toc", "strikethrough"]
 
-    def validate_options(self, options: Dict[str, Any]) -> bool:
-        """オプションの妥当性をチェック（抽象メソッド実装）"""
+    def validate_options(self, options: Dict[str, Any]) -> List[str]:
+        """オプションの妥当性をチェック（プロトコル準拠）"""
+        errors = []
+
         # 基本的な検証実装
         if not isinstance(options, dict):
-            return False
+            errors.append("オプションは辞書形式で指定してください")
+            return errors
 
         # 有効なオプションキーの定義
         valid_keys = {
@@ -575,4 +615,38 @@ class MarkdownFormatter(MarkdownRendererProtocol):
         }
 
         # 不明なキーがないかチェック
-        return all(key in valid_keys for key in options.keys())
+        for key in options.keys():
+            if key not in valid_keys:
+                errors.append(f"不明なオプションキー: {key}")
+
+        return errors
+
+    def render_node(self, node: Node, context: Optional[RenderContext] = None) -> str:
+        """単一ノードレンダリング（BaseRendererProtocol準拠）"""
+        return self.format_node(node)
+
+    def get_supported_formats(self) -> List[str]:
+        """対応フォーマット一覧を取得（BaseRendererProtocol準拠）"""
+        return ["markdown", "md", "text"]
+
+    def validate_markdown_syntax(self, markdown: str) -> List[str]:
+        """Markdown構文検証（MarkdownRendererProtocol準拠）"""
+        errors = []
+        try:
+            # 基本的なMarkdown構文チェック
+            lines = markdown.split("\n")
+            for i, line in enumerate(lines, 1):
+                # 見出し形式チェック
+                if line.startswith("#"):
+                    if not line.startswith("# ") and len(line) > 1:
+                        errors.append(f"行 {i}: 見出し記号の後にスペースが必要です")
+
+                # リスト形式チェック
+                if line.strip().startswith("-") or line.strip().startswith("*"):
+                    stripped = line.strip()
+                    if len(stripped) > 1 and not stripped[1] == " ":
+                        errors.append(f"行 {i}: リスト記号の後にスペースが必要です")
+        except Exception as e:
+            errors.append(f"Markdown構文検証エラー: {e}")
+
+        return errors

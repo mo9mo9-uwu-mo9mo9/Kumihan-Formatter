@@ -87,6 +87,30 @@ class KeywordParser(BaseParser):
 
         return keywords, attributes, errors
 
+    def _process_inline_keywords(self, content: str) -> str:
+        """インラインキーワード処理（list_parser_core.py用）
+
+        Args:
+            content: 処理対象のコンテンツ文字列
+
+        Returns:
+            処理されたコンテンツ文字列
+        """
+        if not isinstance(content, str):
+            return str(content) if content is not None else ""
+
+        # 基本的なインラインキーワード処理
+        # 必要に応じて複雑な処理を追加可能
+        processed_content = content.strip()
+
+        # キーワードマーカーの基本処理
+        if "# " in processed_content and " ##" in processed_content:
+            # Kumihanフォーマットの基本処理
+            # より複雑な処理が必要な場合は後で拡張
+            pass
+
+        return processed_content
+
     def split_compound_keywords(self, keyword_content: Any) -> List[str]:
         """複合キーワードを個別のキーワードに分割
 
@@ -128,6 +152,34 @@ class KeywordParser(BaseParser):
             return False
 
         return self.definitions.is_valid_keyword(keyword) if self.definitions else True
+
+    def parse_new_format(self, content: str) -> Any:
+        """新フォーマット解析（KeywordParserProtocol用）
+
+        Args:
+            content: 解析対象のコンテンツ
+
+        Returns:
+            解析結果
+        """
+        # 基本実装：既存のparse_marker_keywordsを活用
+        keywords, attributes, errors = self.parse_marker_keywords(content)
+        return {"keywords": keywords, "attributes": attributes, "errors": errors}
+
+    def get_node_factory(self) -> Any:
+        """ノードファクトリー取得（KeywordParserProtocol用）
+
+        Returns:
+            ノードファクトリーインスタンス
+        """
+        # 基本実装：必要に応じて具体的なファクトリーを返す
+        from ...ast_nodes.node import Node
+
+        class SimpleNodeFactory:
+            def create_node(self, node_type: str, content: str = "", **kwargs) -> Node:
+                return Node(type=node_type, content=content, **kwargs)
+
+        return SimpleNodeFactory()
 
     def _parse_ruby_content(self, content: Any) -> Dict[str, str]:
         """Parse ruby content for Japanese text formatting.

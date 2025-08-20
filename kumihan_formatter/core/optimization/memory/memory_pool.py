@@ -9,7 +9,7 @@ import os
 import threading
 import time
 from collections import deque
-from typing import Any, Callable, Dict, Generic, List, Optional, Set, TypeVar, cast
+from typing import Any, Callable, Generic, Optional, TypeVar, cast
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -33,9 +33,9 @@ class MemoryPool(Generic[T]):
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
 
-        self._pool: deque = deque()
-        self._in_use: Set[int] = set()
-        self._creation_times: Dict[int, float] = {}
+        self._pool: deque[T] = deque()
+        self._in_use: set[int] = set()
+        self._creation_times: dict[int, float] = {}
         self._lock = threading.Lock()
 
         # 統計情報
@@ -155,7 +155,7 @@ class MemoryPool(Generic[T]):
             self._creation_times.clear()
             logger.info("Memory pool cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """統計情報取得"""
         with self._lock:
             return {
@@ -178,7 +178,7 @@ class ObjectPool:
     def __init__(self, obj_type: type, max_size: int = 50):
         self.obj_type = obj_type
         self.max_size = max_size
-        self._pools: Dict[str, MemoryPool] = {}
+        self._pools: dict[str, MemoryPool[Any]] = {}
         self._lock = threading.Lock()
 
     def get_pool(self, pool_key: str = "default") -> MemoryPool:
@@ -215,7 +215,7 @@ class PoolManager:
     """複数プール統合管理"""
 
     def __init__(self) -> None:
-        self._object_pools: Dict[type, ObjectPool] = {}
+        self._object_pools: dict[type, ObjectPool] = {}
         self._string_pool: Optional[MemoryPool] = None
         self._list_pool: Optional[MemoryPool] = None
         self._dict_pool: Optional[MemoryPool] = None
@@ -261,37 +261,60 @@ class PoolManager:
 
             return self._object_pools[obj_type]
 
-    def acquire_list(self) -> List[Any]:
+    def acquire_list(self) -> list[Any]:
         """リスト取得"""
-        return cast(List[Any], self._list_pool.acquire())
+        if self._list_pool is not None:
+            return cast(list[Any], self._list_pool.acquire())
+        raise RuntimeError("List pool not initialized")
 
-    def release_list(self, lst: List) -> None:
+    def release_list(self, lst: list[Any]) -> None:
         """リスト返却"""
-        self._list_pool.release(lst)
+        if self._list_pool is not None:
+            self._list_pool.release(lst)
+        else:
+            logger.warning("List pool not initialized, cannot release")
 
-    def acquire_dict(self) -> Dict[Any, Any]:
+    def acquire_dict(self) -> dict[Any, Any]:
         """辞書取得"""
-        return cast(Dict[Any, Any], self._dict_pool.acquire())
+        if self._dict_pool is not None:
+            return cast(dict[Any, Any], self._dict_pool.acquire())
+        raise RuntimeError("Dict pool not initialized")
 
-    def release_dict(self, dct: Dict) -> None:
+    def release_dict(self, dct: dict[Any, Any]) -> None:
         """辞書返却"""
-        self._dict_pool.release(dct)
+        if self._dict_pool is not None:
+            self._dict_pool.release(dct)
+        else:
+            logger.warning("Dict pool not initialized, cannot release")
 
-    def acquire_string_buffer(self) -> List[Any]:
+    def acquire_string_buffer(self) -> list[Any]:
         """文字列バッファ取得"""
-        return cast(List[Any], self._string_pool.acquire())
+        if self._string_pool is not None:
+            return cast(list[Any], self._string_pool.acquire())
+        raise RuntimeError("String pool not initialized")
 
-    def release_string_buffer(self, buffer: List) -> None:
+    def release_string_buffer(self, buffer: list[Any]) -> None:
         """文字列バッファ返却"""
-        self._string_pool.release(buffer)
+        if self._string_pool is not None:
+            self._string_pool.release(buffer)
+        else:
+            logger.warning("String pool not initialized, cannot release")
 
-    def get_all_stats(self) -> Dict[str, Any]:
+    def get_all_stats(self) -> dict[str, Any]:
         """全プール統計取得"""
         stats = {
             "common_pools": {
-                "string_pool": self._string_pool.get_stats(),
-                "list_pool": self._list_pool.get_stats(),
-                "dict_pool": self._dict_pool.get_stats(),
+                "string_pool": (
+                    self._string_pool.get_stats()
+                    if self._string_pool is not None
+                    else {}
+                ),
+                "list_pool": (
+                    self._list_pool.get_stats() if self._list_pool is not None else {}
+                ),
+                "dict_pool": (
+                    self._dict_pool.get_stats() if self._dict_pool is not None else {}
+                ),
             },
             "object_pools": {},
         }
@@ -307,16 +330,19 @@ class PoolManager:
     def clear_all(self) -> None:
         """全プールクリア"""
         with self._lock:
-            self._string_pool.clear()
-            self._list_pool.clear()
-            self._dict_pool.clear()
+            if self._string_pool is not None:
+                self._string_pool.clear()
+            if self._list_pool is not None:
+                self._list_pool.clear()
+            if self._dict_pool is not None:
+                self._dict_pool.clear()
 
             for pool in self._object_pools.values():
                 pool.clear_all()
 
             logger.info("All pools cleared")
 
-    def force_gc(self) -> Dict[str, int]:
+    def force_gc(self) -> dict[str, int]:
         """強制ガベージコレクション"""
         before_objects = len(gc.get_objects())
 
@@ -338,6 +364,20 @@ class PoolManager:
         logger.info(f"Forced GC completed: {result}")
         return result
 
+    def start_monitoring(self) -> None:
+        """プール監視を開始"""
+        logger.info("Pool monitoring started")
+        # 監視ロジックは必要に応じて実装
+
+    def stop_monitoring(self) -> None:
+        """プール監視を停止"""
+        logger.info("Pool monitoring stopped")
+        # 監視停止ロジックは必要に応じて実装
+
+    def get_global_statistics(self) -> dict[str, Any]:
+        """グローバル統計情報取得"""
+        return self.get_all_stats()
+
 
 # グローバルプールマネージャー
 _global_pool_manager = PoolManager()
@@ -348,7 +388,7 @@ def get_pool_manager() -> PoolManager:
     return _global_pool_manager
 
 
-def benchmark_pool_performance(iterations: int = 1000) -> Dict[str, Any]:
+def benchmark_pool_performance(iterations: int = 1000) -> dict[str, Any]:
     """プールパフォーマンスベンチマーク"""
     manager = get_pool_manager()
 
@@ -464,6 +504,29 @@ def main() -> None:
         return 1
 
     return 0
+
+
+# グローバル関数（__init__.pyでの互換性用）
+def create_memory_pool(factory: Callable[[], T], max_size: int = 100) -> MemoryPool[T]:
+    """メモリプール作成のファクトリ関数"""
+    return MemoryPool(factory=factory, max_size=max_size)
+
+
+def create_object_pool(obj_type: type, max_size: int = 100) -> ObjectPool:
+    """オブジェクトプール作成のファクトリ関数"""
+    return ObjectPool(obj_type=obj_type, max_size=max_size)
+
+
+# グローバルインスタンス
+_global_pool_manager: Optional[PoolManager] = None
+
+
+def get_pool_manager() -> PoolManager:
+    """グローバルプールマネージャー取得"""
+    global _global_pool_manager
+    if _global_pool_manager is None:
+        _global_pool_manager = PoolManager()
+    return _global_pool_manager
 
 
 if __name__ == "__main__":

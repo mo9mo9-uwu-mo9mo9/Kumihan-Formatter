@@ -207,23 +207,27 @@ class OrderedListParser:
         Returns:
             Node: 変換されたノード
         """
-        if node.attributes.get("marker_type") == "numeric":
+        if (
+            node.attributes is not None
+            and node.attributes.get("marker_type") == "numeric"
+        ):
             return node
 
         new_node = Node(
             type=node.type,
             content=node.content,
-            attributes=node.attributes.copy(),
+            attributes=node.attributes.copy() if node.attributes is not None else {},
         )
 
         # 数値マーカーに変換
-        index = node.attributes.get("index", 0)
-        new_node.attributes.update(
-            {
-                "marker": str(index + 1),
-                "marker_type": "numeric",
-            }
-        )
+        index = node.attributes.get("index", 0) if node.attributes is not None else 0
+        if new_node.attributes is not None:
+            new_node.attributes.update(
+                {
+                    "marker": str(index + 1),
+                    "marker_type": "numeric",
+                }
+            )
 
         return new_node
 

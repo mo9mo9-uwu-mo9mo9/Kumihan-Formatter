@@ -321,3 +321,64 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         """レガシーparse メソッドのエイリアス"""
         result = self._parse_implementation(text)
         return [result] if isinstance(result, Node) else result
+
+    # inline_handler.py互換性メソッド
+    def is_list_line(self, line: str) -> Optional[str]:
+        """リスト行判定 - inline_handler.py互換"""
+        return self._detect_list_type(line.strip())
+
+    def parse_unordered_list(
+        self, lines: List[str], current: int
+    ) -> Tuple[Optional[Node], int]:
+        """順序なしリスト解析 - inline_handler.py互換"""
+        if current >= len(lines):
+            return None, current + 1
+
+        # 順序なしリストを検出して解析
+        start_line = lines[current].strip()
+        if not self.list_patterns["unordered"].match(start_line):
+            return None, current + 1
+
+        # リストブロック全体を取得
+        end_index = current + 1
+        while end_index < len(lines):
+            line = lines[end_index].strip()
+            if not line or not self._detect_list_type(line):
+                break
+            end_index += 1
+
+        # リストブロックを解析
+        list_content = "\n".join(lines[current:end_index])
+        try:
+            list_node = self.unordered_parser.handle_unordered_list(list_content)
+            return list_node, end_index
+        except Exception:
+            return None, current + 1
+
+    def parse_ordered_list(
+        self, lines: List[str], current: int
+    ) -> Tuple[Optional[Node], int]:
+        """順序付きリスト解析 - inline_handler.py互換"""
+        if current >= len(lines):
+            return None, current + 1
+
+        # 順序付きリストを検出して解析
+        start_line = lines[current].strip()
+        if not self.list_patterns["ordered"].match(start_line):
+            return None, current + 1
+
+        # リストブロック全体を取得
+        end_index = current + 1
+        while end_index < len(lines):
+            line = lines[end_index].strip()
+            if not line or not self._detect_list_type(line):
+                break
+            end_index += 1
+
+        # リストブロックを解析
+        list_content = "\n".join(lines[current:end_index])
+        try:
+            list_node = self.ordered_parser.handle_ordered_list(list_content)
+            return list_node, end_index
+        except Exception:
+            return None, current + 1

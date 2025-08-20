@@ -10,7 +10,9 @@ from typing import Any, Dict, List, Optional
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
-from ..measurement_core import MeasurementResult, QualityMetrics, StabilityAssessment
+from ..measurement_core import MeasurementResult
+from ..measurement_core import QualityMetrics as QualityMetricsData
+from ..measurement_core import StabilityAssessment
 from ..statistical_analyzer import StatisticalAnalyzer
 
 
@@ -27,6 +29,19 @@ class QualityMetrics:
         self.config = config or {}
         self.statistical_analyzer = StatisticalAnalyzer()
 
+        # 品質測定用属性（エラー対応）
+        self.timestamp: float = time.time()
+        self.quality_score: float = 0.0
+
+        # effect_measurement.py用の追加属性
+        self.accuracy: float = 0.0
+        self.precision: float = 0.0
+        self.recall: float = 0.0
+        self.response_time: float = 0.0
+        self.throughput: float = 0.0
+        self.error_rate: float = 0.0
+        self.availability: float = 0.0
+
         # 品質測定基準
         self.quality_thresholds = self.config.get(
             "quality_thresholds",
@@ -41,7 +56,7 @@ class QualityMetrics:
         )
 
         # 品質履歴
-        self.quality_history: List[QualityMetrics] = []
+        self.quality_history: List[QualityMetricsData] = []
         self.stability_assessments: List[StabilityAssessment] = []
 
     def measure_integrated_effects(
@@ -180,7 +195,7 @@ class QualityMetrics:
             )
             reliability_score = (1.0 - error_rate) * availability
 
-            quality_metrics = QualityMetrics(
+            quality_metrics = QualityMetricsData(
                 accuracy=accuracy,
                 precision=precision,
                 recall=recall,
@@ -188,9 +203,8 @@ class QualityMetrics:
                 throughput=throughput,
                 error_rate=error_rate,
                 availability=availability,
+                consistency=0.0,  # デフォルト値
                 quality_score=quality_score,
-                performance_score=performance_score,
-                reliability_score=reliability_score,
                 timestamp=time.time(),
             )
 
@@ -202,7 +216,7 @@ class QualityMetrics:
             return quality_metrics
         except Exception as e:
             self.logger.error(f"Quality metrics calculation failed: {e}")
-            return QualityMetrics(
+            return QualityMetricsData(
                 accuracy=0.0,
                 precision=0.0,
                 recall=0.0,
@@ -210,9 +224,8 @@ class QualityMetrics:
                 throughput=0.0,
                 error_rate=1.0,
                 availability=0.0,
+                consistency=0.0,  # 必須フィールド
                 quality_score=0.0,
-                performance_score=0.0,
-                reliability_score=0.0,
                 timestamp=time.time(),
             )
 

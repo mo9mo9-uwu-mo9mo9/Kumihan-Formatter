@@ -409,8 +409,8 @@ class HtmlFormatter(HtmlRendererProtocol):
 
     # === メインレンダラー互換性メソッド ===
 
-    def render_node(self, node: Node) -> str:
-        """render_node互換性メソッド"""
+    def render_node(self, node: Node, context: Optional[RenderContext] = None) -> str:
+        """単一ノードレンダリング（BaseRendererProtocol準拠）"""
         return self.format_node(node)
 
     def _render_node_with_depth(self, node: Node, depth: int = 0) -> str:
@@ -437,12 +437,21 @@ class HtmlFormatter(HtmlRendererProtocol):
     # ==========================================
 
     def render(
-        self, node: Node, context: Optional[RenderContext] = None
+        self, nodes: List[Node], context: Optional[RenderContext] = None
     ) -> RenderResult:
         """統一レンダリングインターフェース（プロトコル準拠）"""
         try:
-            html_content = self.format_node(node)
-            return create_render_result(content=html_content, success=True)
+            if not nodes:
+                return create_render_result(content="", success=True)
+
+            # 複数ノードを順次処理
+            html_parts = []
+            for node in nodes:
+                html_content = self.format_node(node)
+                html_parts.append(html_content)
+
+            combined_content = "\n".join(html_parts)
+            return create_render_result(content=combined_content, success=True)
         except Exception as e:
             result = create_render_result(success=False)
             result.add_error(f"HTMLレンダリング失敗: {e}")
@@ -480,6 +489,94 @@ class HtmlFormatter(HtmlRendererProtocol):
         """フォーマット対応判定（プロトコル準拠）"""
         return format_hint in ["html", "text"]
 
-    def render_html(self, node: Node, options: Optional[Dict[str, Any]] = None) -> str:
+    def render_html(
+        self, nodes: List[Node], context: Optional[RenderContext] = None
+    ) -> str:
         """HTML固有レンダリングメソッド（プロトコル準拠）"""
-        return self.format_node(node)
+        if not nodes:
+            return ""
+
+        # 複数ノードを順次処理
+        html_parts = []
+        for node in nodes:
+            html_content = self.format_node(node)
+            html_parts.append(html_content)
+
+        return "\n".join(html_parts)
+
+    def get_supported_formats(self) -> List[str]:
+        """対応フォーマット一覧を取得（BaseRendererProtocol準拠）"""
+        return ["html", "text"]
+
+    def validate_options(self, options: Dict[str, Any]) -> List[str]:
+        """オプション検証（BaseRendererProtocol準拠）"""
+        errors = []
+
+        if not isinstance(options, dict):
+            errors.append("オプションは辞書形式で指定してください")
+            return errors
+
+        # 有効なオプションキーの定義
+        valid_keys = {
+            "include_css",
+            "include_js",
+            "template_path",
+            "theme",
+            "custom_classes",
+            "meta_tags",
+            "lang",
+            "charset",
+        }
+
+        # 不明なキーがないかチェック
+        for key in options.keys():
+            if key not in valid_keys:
+                errors.append(f"不明なオプションキー: {key}")
+
+        return errors
+
+    def render_with_template(
+        self,
+        nodes: List[Node],
+        template_path: str,
+        context: Optional[RenderContext] = None,
+    ) -> str:
+        """テンプレート使用レンダリング（HtmlRendererProtocol準拠）"""
+        # 基本実装：テンプレート機能を簡単に実装
+        if not nodes:
+            return ""
+
+        # まずはテンプレートなしでレンダリング
+        content = self.render_html(nodes, context)
+
+        # 簡単なHTMLテンプレート適用
+        template = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Kumihan Formatter Output</title>
+</head>
+<body>
+{content}
+</body>
+</html>"""
+        return template
+
+    def get_css_classes(self) -> Dict[str, str]:
+        """使用可能なCSSクラス一覧を取得（HtmlRendererProtocol準拠）"""
+        return {
+            "header": "ヘッダー要素",
+            "content": "メインコンテンツ",
+            "footer": "フッター要素",
+            "heading": "見出し要素",
+            "paragraph": "段落要素",
+            "list": "リスト要素",
+            "code": "コード要素",
+            "quote": "引用要素",
+        }
+
+    def escape_html(self, text: str) -> str:
+        """HTMLエスケープ処理（HtmlRendererProtocol準拠）"""
+        import html
+
+        return html.escape(text)

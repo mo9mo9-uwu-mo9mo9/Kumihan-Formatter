@@ -146,7 +146,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         self._output_delegate = OutputFormatterDelegate(self)
 
         # Issue #700: graceful error handling support
-        self.graceful_errors: List[Any] = []
+        self.graceful_errors: list[Any] = []
         self.embed_errors_in_html = False
 
         # Footnote integration support
@@ -252,7 +252,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         """最小限の汎用レンダラー生成"""
 
         class MinimalRenderer:
-            def format(self, nodes: List[Node]) -> str:
+            def format(self, nodes: list[Node]) -> str:
                 if not nodes:
                     return ""
                 return "\n".join(
@@ -273,7 +273,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
             self.markdown_formatter = self._create_minimal_renderer()
 
     @with_events("main_render")
-    def render_nodes(self, nodes: List[Node], format: str = "html") -> str:
+    def render_nodes(self, nodes: list[Node], format: str = "html") -> str:
         """ノードリストレンダリング処理（統合版）- 名前変更
 
         Args:
@@ -293,7 +293,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
             raise ValueError(f"Unsupported format: {format}")
 
     def render_to_file(
-        self, nodes: List[Node], output_path: Union[str, Path], format: str = "html"
+        self, nodes: list[Node], output_path: Union[str, Path], format: str = "html"
     ) -> None:
         """ファイル出力
 
@@ -448,12 +448,13 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         """レンダリングメトリクスを取得"""
         return self._output_delegate.get_rendering_metrics()
 
-    def render_node(self, node: Node) -> str:
+    def render_node(self, node: Node, context: Optional[RenderContext] = None) -> str:
         """
-        Render a single node to HTML
+        Render a single node to HTML (BaseRendererProtocol準拠)
 
         Args:
             node: AST node to render
+            context: レンダリングコンテキスト（オプション）
 
         Returns:
             str: Generated HTML for the node
@@ -578,7 +579,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def collect_headings(
         self, nodes: list[Node], depth: int = 0
-    ) -> List[dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Collect all headings from nodes for TOC generation
 
@@ -631,11 +632,11 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
     # プロトコル準拠メソッド（BaseRendererProtocol実装）
     # ==========================================
 
-    def render_to_html(self, nodes: List[Node]) -> str:
+    def render_to_html(self, nodes: list[Node]) -> str:
         """HTMLレンダリング（互換性メソッド）"""
         return cast(str, self.render_nodes(nodes, format="html"))
 
-    def render_to_markdown(self, nodes: List[Node]) -> str:
+    def render_to_markdown(self, nodes: list[Node]) -> str:
         """Markdownレンダリング（互換性メソッド）"""
         return cast(str, self.render_nodes(nodes, format="markdown"))
 
@@ -652,11 +653,11 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
             )
 
             if output_format == "html":
-                html_content = self.render([node], format="html")
-                return create_render_result(content=html_content, success=True)
+                context = create_render_context(output_format="html")
+                return self.render([node], context)
             elif output_format == "markdown":
-                md_content = self.render([node], format="markdown")
-                return create_render_result(content=md_content, success=True)
+                context = create_render_context(output_format="markdown")
+                return self.render([node], context)
             else:
                 result = create_render_result(success=False)
                 result.add_error(f"未対応の出力形式: {output_format}")
@@ -669,7 +670,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def validate(
         self, node: Node, context: Optional[RenderContext] = None
-    ) -> List[str]:
+    ) -> list[str]:
         """バリデーション実装（プロトコル準拠）"""
         errors = []
         try:
@@ -682,7 +683,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
             errors.append(f"バリデーションエラー: {e}")
         return errors
 
-    def get_renderer_info(self) -> Dict[str, Any]:
+    def get_renderer_info(self) -> dict[str, Any]:
         """レンダラー情報（プロトコル準拠）"""
         return {
             "name": "MainRenderer",
@@ -698,31 +699,37 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     # プロトコル準拠のためのエイリアス
     def render(
-        self,
-        node_or_nodes: Union[Node, List[Node]],
-        context: Optional[RenderContext] = None,
-        format: str = "html",
-    ) -> Union[str, RenderResult]:
-        """プロトコル準拠および既存API互換レンダリング"""
-        if isinstance(node_or_nodes, Node):
-            # プロトコル準拠モード：単一ノード -> RenderResult
-            return self.render_node_protocol(node_or_nodes, context)
-        else:
-            # 既存API互換モード：ノードリスト -> str
-            return self._render_original(node_or_nodes, format)
+        self, nodes: List[Node], context: Optional[RenderContext] = None
+    ) -> RenderResult:
+        """統一レンダリングインターフェース（BaseRendererProtocol準拠）"""
+        try:
+            if not nodes:
+                return create_render_result(content="", success=True)
 
-    def _render_original(self, nodes: List[Node], format: str = "html") -> str:
+            # 複数ノードを順次処理
+            output_format = context.output_format if context else "html"
+            result_content = self.render_nodes(nodes, output_format)
+            return create_render_result(content=result_content, success=True)
+        except Exception as e:
+            result = create_render_result(success=False)
+            result.add_error(f"レンダリング失敗: {e}")
+            return result
+
+    def _render_original(self, nodes: list[Node], format: str = "html") -> str:
         """元のrenderメソッド実装（統合版）"""
         return cast(str, self.render_nodes(nodes, format))
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """サポートする出力形式のリストを返す（抽象メソッド実装）"""
         return ["html", "markdown"]
 
-    def validate_options(self, options: Dict[str, Any]) -> bool:
-        """オプションの妥当性をチェック（抽象メソッド実装）"""
+    def validate_options(self, options: Dict[str, Any]) -> List[str]:
+        """オプションの妥当性をチェック（BaseRendererProtocol準拠）"""
+        errors = []
+
         if not isinstance(options, dict):
-            return False
+            errors.append("オプションは辞書形式で指定してください")
+            return errors
 
         # 有効なオプションキーの定義
         valid_keys = {
@@ -738,7 +745,11 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         }
 
         # 不明なキーがないかチェック
-        return all(key in valid_keys for key in options.keys())
+        for key in options.keys():
+            if key not in valid_keys:
+                errors.append(f"不明なオプションキー: {key}")
+
+        return errors
 
 
 # 後方互換性：既存の HTMLRenderer エイリアス

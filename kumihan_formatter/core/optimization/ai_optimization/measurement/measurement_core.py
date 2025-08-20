@@ -54,6 +54,8 @@ class QualityMetrics:
     error_rate: float
     availability: float
     consistency: float
+    timestamp: float = 0.0
+    quality_score: float = 0.0
 
 
 @dataclass
@@ -129,6 +131,20 @@ class BaselineMeasurement:
     def get_baseline(self, metric_name: str) -> Optional[float]:
         """ベースライン取得"""
         return self.baselines.get(metric_name)
+
+    def set_baseline(self, metric_name: str, value: float) -> None:
+        """ベースライン設定（単一値）"""
+        self.baselines[metric_name] = value
+        self.measurement_metadata[metric_name] = {
+            "sample_count": 1,
+            "mean": value,
+            "median": value,
+            "std_dev": 0.0,
+            "min": value,
+            "max": value,
+            "established_at": time.time(),
+        }
+        self.logger.info(f"Baseline set for {metric_name}: {value:.3f}")
 
     def get_baseline_metadata(self, metric_name: str) -> Dict[str, Any]:
         """ベースラインメタデータ取得"""

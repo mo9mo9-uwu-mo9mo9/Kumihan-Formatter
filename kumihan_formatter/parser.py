@@ -185,7 +185,10 @@ class Parser:
 
         # Initialize specialized parsers
         self.keyword_parser = KeywordParser()
-        self.list_parser = ListParser(self.keyword_parser)
+        # Issue #947: UnifiedListParserを使用してinline_handler.py互換性を確保
+        from .core.parsing.list.list_parser import UnifiedListParser
+
+        self.list_parser = UnifiedListParser(self.keyword_parser)
         self.block_parser = BlockParser(self.keyword_parser)
 
         # Issue #700: graceful error handling対応

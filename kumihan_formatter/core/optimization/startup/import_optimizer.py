@@ -34,7 +34,7 @@ class ImportAnalyzer:
 
             tree = ast.parse(source, filename=str(file_path))
 
-            analysis = {
+            analysis: Dict[str, Any] = {
                 "file_path": str(file_path),
                 "imports": self._extract_imports(tree),
                 "used_names": self._extract_used_names(tree),
