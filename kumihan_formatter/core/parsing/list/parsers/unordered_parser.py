@@ -35,9 +35,9 @@ class UnorderedListParser:
 
     def can_handle(self, line: str, list_type: str) -> bool:
         """指定された行とリストタイプを処理可能か判定"""
-        return list_type in ["unordered", "definition", "checklist"] and self.patterns[
-            list_type
-        ].match(line)
+        return list_type in ["unordered", "definition", "checklist"] and bool(
+            self.patterns[list_type].match(line)
+        )
 
     def handle_unordered_list(self, line: str) -> Node:
         """順序なしリストの処理"""
