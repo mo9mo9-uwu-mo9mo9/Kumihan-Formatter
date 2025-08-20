@@ -10,7 +10,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -336,12 +336,12 @@ class ImportAnalyzer:
                     script_content.append(f"def optimize_{hash(file_path) % 10000}():")
                     script_content.append(f'    """Optimize {file_path}"""')
                     script_content.append(f'    file_path = Path("{file_path}")')
-                    script_content.append(f"    if not file_path.exists():")
-                    script_content.append(f"        return")
-                    script_content.append(f"    ")
-                    script_content.append(f'    with open(file_path, "r") as f:')
-                    script_content.append(f"        content = f.read()")
-                    script_content.append(f"    ")
+                    script_content.append("    if not file_path.exists():")
+                    script_content.append("        return")
+                    script_content.append("    ")
+                    script_content.append('    with open(file_path, "r") as f:')
+                    script_content.append("        content = f.read()")
+                    script_content.append("    ")
 
                     for unused in unused_imports:
                         # エスケープ処理
@@ -353,13 +353,14 @@ class ImportAnalyzer:
                             .replace(".", "\\.")
                         )
                         script_content.append(
-                            f'    content = re.sub(r"^{pattern}\\n", "", content, flags=re.MULTILINE)'
+                            f'    content = re.sub(r"^{pattern}\\n", "", content, '
+                            f"flags=re.MULTILINE)"
                         )
 
-                    script_content.append(f"    ")
-                    script_content.append(f'    with open(file_path, "w") as f:')
-                    script_content.append(f"        f.write(content)")
-                    script_content.append(f'    print(f"Optimized {{file_path}}")')
+                    script_content.append("    ")
+                    script_content.append('    with open(file_path, "w") as f:')
+                    script_content.append("        f.write(content)")
+                    script_content.append('    print(f"Optimized {file_path}")')
                     script_content.append("")
 
             script_content.append("def main():")
@@ -461,7 +462,8 @@ def main():
         print(f"Total imports: {results['total_imports']}")
         print(f"Unused imports: {results['total_unused_imports']}")
         print(
-            f"Estimated improvement: {results['optimization_potential']['estimated_startup_improvement']}"
+            f"Estimated improvement: "
+            f"{results['optimization_potential']['estimated_startup_improvement']}"
         )
 
         if args.generate_script:

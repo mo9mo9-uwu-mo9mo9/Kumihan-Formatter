@@ -10,9 +10,8 @@ import os
 import sys
 import threading
 import time
-import weakref
 from collections import defaultdict, deque
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -541,7 +540,7 @@ def main():
         with open(cleanup_path, "w") as f:
             json.dump(cleanup_results, f, indent=2)
 
-        print(f"Cleanup completed:")
+        print("Cleanup completed:")
         print(f"  Objects freed: {cleanup_results['objects_freed']}")
         print(f"  GC collected: {cleanup_results['gc_collected']}")
         print(f"Results saved: {cleanup_path}")
