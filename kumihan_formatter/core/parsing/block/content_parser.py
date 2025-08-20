@@ -222,7 +222,7 @@ class ContentParser(BaseBlockParser):
 
         try:
             # Get node factory for keyword
-            factory_func = self.keyword_parser.get_node_factory(keyword)
+            factory_func = self.keyword_parser.get_node_factory()
             if factory_func:
                 return cast("Node | None", factory_func(content))
 

@@ -221,11 +221,8 @@ class MarkerBlockParser(BaseBlockParser):
 
         if keyword in keyword_mapping:
             # Get factory function for the keyword
-            keywords_tuple = tuple([keyword])
             factory_func = (
-                self.keyword_parser.get_node_factory(keywords_tuple)
-                if self.keyword_parser
-                else None
+                self.keyword_parser.get_node_factory() if self.keyword_parser else None
             )
 
             if factory_func:

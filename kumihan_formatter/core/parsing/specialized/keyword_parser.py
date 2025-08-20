@@ -340,10 +340,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
                 return node
             else:
                 # キーワードが見つからない場合は空のキーワードノードを作成
-                return create_node("keyword", "", {"keywords": []})
+                return create_node("keyword", content="", keywords=[])
         except Exception as e:
             self.logger.error(f"Keyword parsing failed: {e}")
-            return create_node("error", f"Keyword parsing failed: {e}", {})
+            return create_node("error", content=f"Keyword parsing failed: {e}")
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

@@ -184,11 +184,14 @@ class Parser:
             )
 
         # Initialize specialized parsers
-        self.keyword_parser = KeywordParser()
+        from .core.parsing.keyword.definitions import KeywordDefinitions
+
+        definitions = KeywordDefinitions()
+        self.keyword_parser = KeywordParser(definitions)
         # Issue #947: UnifiedListParserを使用してinline_handler.py互換性を確保
         from .core.parsing.list.list_parser import UnifiedListParser
 
-        self.list_parser = UnifiedListParser(self.keyword_parser)
+        self.list_parser = UnifiedListParser()
         self.block_parser = BlockParser(self.keyword_parser)
 
         # Issue #700: graceful error handling対応
@@ -741,7 +744,7 @@ def parse_with_error_config(
         use_streaming = size_mb > 1.0
 
     if use_streaming:
-        streaming_parser = StreamingParser(config=config)
+        streaming_parser = StreamingParser(json_path="")
         nodes = list(streaming_parser.parse_streaming_from_text(text))
         return nodes
     else:

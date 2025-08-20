@@ -20,14 +20,14 @@ class SyntaxValidator:
     def __init__(self, config: Union[dict[str, Any], None] = None) -> None:
         """Initialize syntax validator"""
         self.config = config
-        self.keyword_parser = KeywordParser(config)
-        self.list_parser = ListParser(self.keyword_parser)
-        self.block_parser = BlockParser(self.keyword_parser)
 
         # Initialize specialized validators
         from ..parsing.keyword.definitions import KeywordDefinitions
 
         definitions = KeywordDefinitions()
+        self.keyword_parser = KeywordParser(definitions)
+        self.list_parser = ListParser()
+        self.block_parser = BlockParser(self.keyword_parser)
         self.marker_validator = KeywordValidator(definitions)
         self.list_validator = ListValidator(self.list_parser)
         self.block_validator = BlockValidator(self.block_parser)
