@@ -37,9 +37,9 @@ class OrderedListParser:
 
     def can_handle(self, line: str, list_type: str) -> bool:
         """指定された行とリストタイプを処理可能か判定"""
-        return list_type in ["ordered", "alpha", "roman"] and self.patterns[
-            list_type
-        ].match(line)
+        return list_type in ["ordered", "alpha", "roman"] and bool(
+            self.patterns[list_type].match(line)
+        )
 
     def handle_ordered_list(self, line: str) -> Node:
         """順序付きリストの処理"""
