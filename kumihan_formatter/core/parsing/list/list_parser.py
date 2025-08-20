@@ -243,14 +243,16 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         return stats
 
     # プロトコル準拠メソッド
-    def parse(
+    # UnifiedParserBase.parseメソッドを使用（オーバーライドしない）
+    # ParseResultを返すプロトコル用のエイリアスメソッド
+    def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
     ) -> ParseResult:
-        """統一パースインターフェース"""
+        """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
-            result = self._parse_implementation(content)
-            nodes = [result] if isinstance(result, Node) else result
-            return create_parse_result(nodes=nodes, success=True)
+            # 基底クラスのparseメソッドを使用
+            result = super().parse(content)
+            return create_parse_result(nodes=[result], success=True)
         except Exception as e:
             result = create_parse_result(success=False)
             result.add_error(f"リストパース失敗: {e}")
@@ -297,13 +299,17 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
                 return True
         return False
 
-    # 継続互換性メソッド
-    def parse_nested_list(self, content: str, level: int = 0) -> List[Node]:
-        """ネストリストをパース"""
+    # 継続互換性メソッド（プロトコル準拠のシグネチャに変更）
+    def parse_nested_list(
+        self, content: str, level: int = 0, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """ネストリストをパース（プロトコル準拠）"""
         return self.nested_parser.parse_nested_list(content, level)
 
-    def parse_list_items(self, content: str) -> List[Node]:
-        """リストアイテムをパース"""
+    def parse_list_items(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """リストアイテムをパース（プロトコル準拠）"""
         lines = content.split("\n")
         items = []
         for line in lines:

@@ -202,8 +202,25 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         custom_suggestions = self.custom_parser.get_keyword_suggestions(partial)
         return sorted(set(basic_suggestions + custom_suggestions))
 
-    def validate_keyword(self, keyword: str) -> Dict[str, Any]:
-        """キーワードの妥当性を検証"""
+    def validate_keyword(
+        self, keyword: str, context: Optional[ParseContext] = None
+    ) -> bool:
+        """キーワードの妥当性を検証（プロトコル準拠）"""
+        # 基本キーワードを先にチェック
+        definition = self.basic_parser.get_keyword_definition(keyword)
+        if definition:
+            return True
+
+        # カスタムキーワードをチェック
+        custom_result = self.custom_parser.validate_keyword(keyword)
+        return (
+            custom_result.get("valid", False)
+            if isinstance(custom_result, dict)
+            else bool(custom_result)
+        )
+
+    def validate_keyword_detailed(self, keyword: str) -> Dict[str, Any]:
+        """キーワードの詳細妥当性検証（レガシー互換用）"""
         # 基本キーワードを先にチェック
         definition = self.basic_parser.get_keyword_definition(keyword)
         if definition:
@@ -219,17 +236,19 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         return self.custom_parser.validate_keyword(keyword)
 
     def parse_marker_keywords(
-        self, marker_content: str
+        self, marker_content: str, context: Optional[ParseContext] = None
     ) -> Tuple[List[str], Dict[str, Any], List[str]]:
-        """マーカーからキーワードと属性を解析"""
+        """マーカーからキーワードと属性を解析（プロトコル準拠）"""
         return self.advanced_parser.parse_marker_keywords(marker_content)
 
     def split_compound_keywords(self, keyword_content: str) -> List[str]:
         """複合キーワードを個別のキーワードに分割"""
         return self.advanced_parser.split_compound_keywords(keyword_content)
 
-    def parse_keywords(self, content: str) -> List[str]:
-        """コンテンツからキーワードを抽出"""
+    def parse_keywords(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """コンテンツからキーワードを抽出（プロトコル準拠）"""
         if not content:
             return []
 
@@ -298,15 +317,43 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
     # プロトコル準拠メソッド（KeywordParserProtocol実装）
     # ==========================================
 
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult:
-        """統一パースインターフェース（プロトコル準拠）"""
+    def _parse_implementation(
+        self, content: Union[str, List[str]], **kwargs: Any
+    ) -> Node:
+        """基底クラス用の解析実装（UnifiedParserBase準拠）"""
+        # List[str]が渡された場合は結合する
+        if isinstance(content, list):
+            text = "\n".join(str(line) for line in content)
+        else:
+            text = str(content)
+
         try:
             # 既存の parse_keywords ロジックを活用
-            keywords = self.parse_keywords(content)
-            nodes = [self._create_keyword_node_from_text(kw) for kw in keywords]
-            return create_parse_result(nodes=nodes, success=True)
+            keywords = self.parse_keywords(text)
+            if keywords:
+                # 複数のキーワードがある場合は最初のものを使用
+                primary_keyword = keywords[0]
+                node = self._create_keyword_node_from_text(primary_keyword)
+                # 残りのキーワードをメタデータに追加
+                if len(keywords) > 1:
+                    node.metadata["additional_keywords"] = keywords[1:]
+                return node
+            else:
+                # キーワードが見つからない場合は空のキーワードノードを作成
+                return create_node("keyword", "", {"keywords": []})
+        except Exception as e:
+            self.logger.error(f"Keyword parsing failed: {e}")
+            return create_node("error", f"Keyword parsing failed: {e}", {})
+
+    # ParseResultを返すプロトコル用のエイリアスメソッド
+    def parse_with_result(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """ParseResultを返す解析インターフェース（プロトコル準拠）"""
+        try:
+            # 基底クラスのparseメソッドを使用
+            result = super().parse(content)
+            return create_parse_result(nodes=[result], success=True)
         except Exception as e:
             result = create_parse_result(success=False)
             result.add_error(f"キーワードパース失敗: {e}")
@@ -354,8 +401,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """新形式マーカーの解析（後方互換用）"""
         return {"keywords": [], "content": line, "attributes": {}}
 
-    def get_node_factory(self, keywords: Union[str, Tuple[Any, ...]]) -> Any:
-        """ノードファクトリーの取得（後方互換用）"""
+    def get_node_factory(self) -> Any:
+        """ノードファクトリーの取得（プロトコル準拠）"""
         return NodeBuilder(node_type="div")
 
     def parse_legacy(self, text: str) -> List[Node]:

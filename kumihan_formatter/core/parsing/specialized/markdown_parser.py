@@ -528,14 +528,16 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
     # プロトコル準拠メソッド（MarkdownParserProtocol実装）
     # ==========================================
 
-    def parse(
+    # UnifiedParserBase.parseメソッドを使用（オーバーライドしない）
+    # ParseResultを返すプロトコル用のエイリアスメソッド
+    def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
     ) -> ParseResult:
-        """統一パースインターフェース（プロトコル準拠）"""
+        """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
-            result = self._parse_implementation(content)
-            nodes = [result] if isinstance(result, Node) else result
-            return create_parse_result(nodes=nodes, success=True)
+            # 基底クラスのparseメソッドを使用
+            result = super().parse(content)
+            return create_parse_result(nodes=[result], success=True)
         except Exception as e:
             result = create_parse_result(success=False)
             result.add_error(f"Markdownパース失敗: {e}")

@@ -75,13 +75,13 @@ class ParserFactory(AbstractFactory):
         except Exception as e:
             logger.error(f"Failed to register default parsers: {e}")
 
-    def create(self, parser_type: str, **kwargs: Any) -> BaseParserProtocol:
+    def create(self, type_name: str, **kwargs: Any) -> BaseParserProtocol:
         """パーサー生成"""
         try:
-            if parser_type not in self._parsers:
-                raise ValueError(f"Unknown parser type: {parser_type}")
+            if type_name not in self._parsers:
+                raise ValueError(f"Unknown parser type: {type_name}")
 
-            parser_class = self._parsers[parser_type]
+            parser_class = self._parsers[type_name]
 
             # DIコンテナ経由で生成（依存関係自動解決）
             if self.container:
@@ -184,13 +184,13 @@ class RendererFactory(AbstractFactory):
         except Exception as e:
             logger.error(f"Failed to register default renderers: {e}")
 
-    def create(self, format_type: str, **kwargs: Any) -> BaseRendererProtocol:
+    def create(self, type_name: str, **kwargs: Any) -> BaseRendererProtocol:
         """レンダラー生成"""
         try:
-            if format_type not in self._renderers:
-                raise ValueError(f"Unknown format type: {format_type}")
+            if type_name not in self._renderers:
+                raise ValueError(f"Unknown format type: {type_name}")
 
-            renderer_class = self._renderers[format_type]
+            renderer_class = self._renderers[type_name]
 
             # DIコンテナ経由で生成
             if self.container:

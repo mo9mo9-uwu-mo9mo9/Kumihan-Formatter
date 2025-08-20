@@ -394,14 +394,16 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
     # プロトコル準拠メソッド（BlockParserProtocol実装）
     # ==========================================
 
-    def parse(
+    # UnifiedParserBase.parseメソッドを使用（オーバーライドしない）
+    # ParseResultを返すプロトコル用のエイリアスメソッド
+    def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
     ) -> ParseResult:
-        """統一パースインターフェース（プロトコル準拠）"""
+        """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
-            result = self._parse_implementation(content)
-            nodes = [result] if isinstance(result, Node) else result
-            return create_parse_result(nodes=nodes, success=True)
+            # 基底クラスのparseメソッドを使用
+            result = super().parse(content)
+            return create_parse_result(nodes=[result], success=True)
         except Exception as e:
             result = create_parse_result(success=False)
             result.add_error(f"ブロックパース失敗: {e}")
@@ -452,9 +454,6 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         """フォーマット対応判定（プロトコル準拠）"""
         return format_hint in ["kumihan", "block", "text"]
 
-    def parse_block(self, content: str, keyword: Optional[str] = None) -> Node:
+    def parse_block(self, block: str, context: Optional[ParseContext] = None) -> Node:
         """ブロック固有パースメソッド（プロトコル準拠）"""
-        if keyword:
-            return self.parse_block_content(content, keyword)
-        else:
-            return self._parse_implementation(content)
+        return self._parse_implementation(block)
