@@ -177,9 +177,6 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov"
 ]
-anyio_backends = ["asyncio"]
-anyio_default_backend = "asyncio"
-asyncio_mode = "auto"
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
