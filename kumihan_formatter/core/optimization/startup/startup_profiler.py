@@ -14,7 +14,7 @@ import tracemalloc
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional
 
 import psutil
 
@@ -81,7 +81,7 @@ class StartupProfiler:
     @contextmanager
     def measure_section(
         self, section_name: str, details: Optional[Dict[str, Any]] = None
-    ):
+    ) -> Generator[None, None, None]:
         """セクション計測コンテキストマネージャー"""
         start_time = time.time()
         start_memory = self._get_memory_usage()
@@ -139,7 +139,11 @@ class StartupProfiler:
             raise
 
     def measure_function_call(
-        self, func_name: str, func_callable, *args, **kwargs
+        self,
+        func_name: str,
+        func_callable: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """関数呼び出し計測"""
         start_time = time.time()
@@ -466,7 +470,7 @@ def profile_application_startup(app_entry_point: str) -> StartupProfile:
         raise
 
 
-def main():
+def main() -> None:
     """CLI エントリーポイント"""
     import argparse
 

@@ -270,7 +270,7 @@ class ObjectRecycler:
 class TypeBasedRecycler:
     """型別リサイクル戦略"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.recycler = ObjectRecycler()
         self._setup_common_types()
 
@@ -473,7 +473,7 @@ def benchmark_recycling_performance(iterations: int = 5000) -> Dict[str, Any]:
     return results
 
 
-def main():
+def main() -> None:
     """CLI エントリーポイント"""
     import argparse
     import json

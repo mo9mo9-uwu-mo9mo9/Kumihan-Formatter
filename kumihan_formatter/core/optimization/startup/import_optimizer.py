@@ -414,7 +414,7 @@ def benchmark_import_performance(module_names: List[str]) -> Dict[str, Any]:
     return results
 
 
-def main():
+def main() -> None:
     """CLI エントリーポイント"""
     import argparse
     import json

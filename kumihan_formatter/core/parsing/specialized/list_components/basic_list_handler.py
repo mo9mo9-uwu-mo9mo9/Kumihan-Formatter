@@ -16,7 +16,7 @@ from ....ast_nodes import Node, create_node
 class BasicListHandler:
     """基本リスト処理ハンドラー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._setup_patterns()
 
     def _setup_patterns(self) -> None:

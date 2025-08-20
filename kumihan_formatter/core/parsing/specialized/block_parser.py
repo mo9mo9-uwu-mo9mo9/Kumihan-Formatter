@@ -8,7 +8,7 @@ Issue #880 Phase 2B: 既存のBlockParser系統を統合
 """
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -371,7 +371,9 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         """サポートされているキーワード一覧を取得"""
         return list(self.special_handlers.keys())
 
-    def register_special_handler(self, keyword: str, handler) -> None:
+    def register_special_handler(
+        self, keyword: str, handler: Callable[..., Any]
+    ) -> None:
         """カスタム特殊ブロックハンドラーを登録"""
         self.special_handlers[keyword.lower()] = handler
         self.logger.info(f"Registered special handler for keyword: {keyword}")
