@@ -185,6 +185,9 @@ addopts = [
     "-n=auto",                  # CPU数に応じた並列実行
     "--dist=worksteal"          # 効率的な並列分散
 ]
+# xdist追加設定
+xdist_auto = true               # 自動ワーカー数調整
+xdist_min_workers = 2           # 最小ワーカー数
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
