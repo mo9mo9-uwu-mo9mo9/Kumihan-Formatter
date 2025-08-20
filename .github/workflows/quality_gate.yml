@@ -10,6 +10,7 @@ jobs:
   quality_check:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.12, 3.13]
 
@@ -21,7 +22,16 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
     - name: Install dependencies
+      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
@@ -32,41 +42,55 @@ jobs:
         cat .github/quality/quality_rules.yml
 
     - name: Pre-commit hook validation
+      timeout-minutes: 5
       run: |
         python3 -m tools.automation.pre_commit_hooks --validate
 
     - name: Automated quality check
+      timeout-minutes: 10
       run: |
         python3 -m tools.automation.quality_checker --path kumihan_formatter --output quality_report.json
 
     - name: Auto-formatting diff check
+      timeout-minutes: 5
       run: |
         python3 -m tools.automation.auto_formatter --diff --path kumihan_formatter
 
     - name: Code formatting check
+      timeout-minutes: 5
       run: |
         black --check --diff .
         isort --check-only --diff .
 
     - name: Lint check
+      timeout-minutes: 5
       run: |
         flake8 kumihan_formatter tests
 
     - name: Type check
+      timeout-minutes: 10
       run: |
         mypy kumihan_formatter --strict
 
     - name: Run tests with coverage
+      timeout-minutes: 20
+      continue-on-error: false
       run: |
         pytest tests/ \
           --cov=kumihan_formatter \
           --cov-report=xml \
           --cov-report=term-missing \
           --cov-fail-under=70 \
+          --maxfail=5 \
+          --timeout=300 \
+          --durations=10 \
           --tb=short \
+          -n=auto \
+          --dist=worksteal \
           -v
 
     - name: Comprehensive quality gate evaluation
+      timeout-minutes: 10
       run: |
         python3 -m tools.automation.quality_checker --path kumihan_formatter --output tmp/comprehensive_quality.json
         echo "Quality gate evaluation completed"

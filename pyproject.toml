@@ -53,6 +53,9 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",
+    "pytest-xdist>=3.0",      # 並列テスト実行
+    "pytest-timeout>=2.1",    # テストタイムアウト制御
+    "pytest-sugar>=0.9",      # テスト出力の改善
     # 技術的負債監視ライブラリ (Issue #823)
     "radon>=6.0",        # cognitive complexity, maintainability index
     "xenon>=0.9",        # 複雑度測定
@@ -175,7 +178,12 @@ addopts = [
     "--strict-markers",
     "--cov=kumihan_formatter",
     "--cov-report=term-missing",
-    "--cov-report=html:htmlcov"
+    "--cov-report=html:htmlcov",
+    "--maxfail=5",              # 5回失敗で停止
+    "--timeout=300",            # 各テスト300秒でタイムアウト
+    "--durations=10",           # 最も遅い10テストを表示
+    "-n=auto",                  # CPU数に応じた並列実行
+    "--dist=worksteal"          # 効率的な並列分散
 ]
 markers = [
     "unit: Unit tests",
