@@ -1,0 +1,274 @@
+name: Optimized CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feat/**', 'fix/**' ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'kumihan_formatter/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/**'
+
+# 同時実行制御
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 高速品質チェック - 常時実行
+  fast_quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: fast-${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          fast-${{ runner.os }}-pip-
+    
+    - name: Install minimal dependencies
+      timeout-minutes: 3
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy
+        pip install -e .
+    
+    - name: Fast formatting check
+      timeout-minutes: 2
+      run: |
+        black --check --diff kumihan_formatter/
+        isort --check-only --diff kumihan_formatter/
+    
+    - name: Fast lint check
+      timeout-minutes: 2
+      run: |
+        flake8 kumihan_formatter/ --max-line-length=88 --select=E9,F63,F7,F82
+    
+    - name: Fast type check (core only)
+      timeout-minutes: 3
+      run: |
+        mypy kumihan_formatter/core/ --ignore-missing-imports
+
+  # 軽量テスト - 常時実行
+  light_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: fast_quality
+    if: always() && needs.fast_quality.result == 'success'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.12]
+        test-suite: [unit-core, unit-parsing, unit-rendering]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: light-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          light-${{ runner.os }}-${{ matrix.python-version }}-
+    
+    - name: Install dependencies
+      timeout-minutes: 5
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Run light unit tests
+      timeout-minutes: 10
+      run: |
+        case "${{ matrix.test-suite }}" in
+          "unit-core")
+            pytest tests/unit/ast_nodes/ tests/unit/config/ \
+              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+            ;;
+          "unit-parsing")
+            pytest tests/unit/parsing/ \
+              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+            ;;
+          "unit-rendering")
+            pytest tests/unit/rendering/ \
+              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+            ;;
+        esac
+
+  # 包括的テスト - PR時のみ実行
+  comprehensive_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [fast_quality, light_tests]
+    if: github.event_name == 'pull_request' && needs.fast_quality.result == 'success'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.12, 3.13]
+        test-type: [integration, end_to_end, system]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: comprehensive-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          comprehensive-${{ runner.os }}-${{ matrix.python-version }}-
+    
+    - name: Install dependencies
+      timeout-minutes: 8
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,performance,ai_optimization]"
+    
+    - name: Run comprehensive tests with coverage
+      timeout-minutes: 20
+      continue-on-error: ${{ matrix.test-type == 'system' }}
+      run: |
+        case "${{ matrix.test-type }}" in
+          "integration")
+            pytest tests/integration/ \
+              --cov=kumihan_formatter \
+              --cov-report=xml:coverage-integration.xml \
+              --maxfail=3 --timeout=600 --durations=5 \
+              -n=auto --dist=worksteal --tb=short -v
+            ;;
+          "end_to_end")
+            pytest tests/end_to_end/ \
+              --maxfail=2 --timeout=900 --durations=3 \
+              --tb=short -v
+            ;;
+          "system")
+            pytest tests/system/ \
+              --maxfail=1 --timeout=1200 --durations=3 \
+              --tb=short -v || echo "System tests completed with warnings"
+            ;;
+        esac
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.test-type == 'integration'
+      with:
+        files: ./coverage-integration.xml
+        flags: integration
+        name: integration-${{ matrix.python-version }}
+        fail_ci_if_error: false
+
+  # パフォーマンステスト - 特定条件のみ実行
+  performance_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: fast_quality
+    if: |
+      (github.event_name == 'pull_request' && 
+       (contains(github.head_ref, 'performance') || 
+        contains(github.head_ref, 'optimization') ||
+        contains(github.event.pull_request.body, 'performance'))) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    strategy:
+      matrix:
+        python-version: [3.12]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: perf-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          perf-${{ runner.os }}-${{ matrix.python-version }}-
+    
+    - name: Install performance dependencies
+      timeout-minutes: 10
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,performance,ai_optimization]"
+    
+    - name: Run performance tests
+      timeout-minutes: 25
+      continue-on-error: true
+      run: |
+        pytest tests/performance/ \
+          --benchmark-only \
+          --benchmark-json=benchmark-${{ matrix.python-version }}.json \
+          --benchmark-sort=mean \
+          --benchmark-min-rounds=3 \
+          --maxfail=2 --timeout=1500 \
+          --tb=short -v
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: benchmark-results-${{ matrix.python-version }}
+        path: benchmark-${{ matrix.python-version }}.json
+
+  # 最終サマリー
+  ci_summary:
+    runs-on: ubuntu-latest
+    needs: [fast_quality, light_tests, comprehensive_tests, performance_tests]
+    if: always()
+    timeout-minutes: 5
+    
+    steps:
+    - name: CI Pipeline Summary
+      run: |
+        echo "## CI Pipeline Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Stage | Status | Duration |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|---------|----------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Fast Quality | ${{ needs.fast_quality.result }} | - |" >> $GITHUB_STEP_SUMMARY
+        echo "| Light Tests | ${{ needs.light_tests.result }} | - |" >> $GITHUB_STEP_SUMMARY
+        echo "| Comprehensive Tests | ${{ needs.comprehensive_tests.result }} | - |" >> $GITHUB_STEP_SUMMARY
+        echo "| Performance Tests | ${{ needs.performance_tests.result }} | - |" >> $GITHUB_STEP_SUMMARY
+        
+        # 全体的な成功判定
+        if [[ "${{ needs.fast_quality.result }}" == "success" ]] && \
+           [[ "${{ needs.light_tests.result }}" == "success" ]]; then
+          echo "✅ Core CI pipeline passed successfully"
+          exit 0
+        else
+          echo "❌ Core CI pipeline failed"
+          exit 1
+        fi

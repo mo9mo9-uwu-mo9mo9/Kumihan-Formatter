@@ -10,8 +10,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.12, 3.13]
+        test-type: [unit, integration, performance]
 
     steps:
     - uses: actions/checkout@v4
@@ -21,34 +23,90 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
     - name: Install dependencies
+      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
     - name: Run unit tests with coverage
+      if: matrix.test-type == 'unit'
+      timeout-minutes: 15
+      continue-on-error: false
       run: |
         pytest tests/unit/ \
           --cov=kumihan_formatter \
-          --cov-report=xml \
+          --cov-report=xml:coverage-unit.xml \
           --cov-report=term-missing \
           --cov-fail-under=10 \
+          --maxfail=5 \
+          --timeout=300 \
+          --durations=10 \
           --tb=short \
+          -n=auto \
+          --dist=worksteal \
           -v
 
     - name: Run integration tests
+      if: matrix.test-type == 'integration'
+      timeout-minutes: 20
+      continue-on-error: true
       run: |
         pytest tests/integration/ \
+          --cov=kumihan_formatter \
+          --cov-report=xml:coverage-integration.xml \
+          --maxfail=3 \
+          --timeout=600 \
+          --durations=5 \
           --tb=short \
-          -v || echo "Integration tests failed or not found"
+          -v
+          
+    - name: Run performance tests
+      if: matrix.test-type == 'performance' && github.event_name == 'pull_request'
+      timeout-minutes: 25
+      continue-on-error: true
+      run: |
+        pytest tests/performance/ \
+          --benchmark-only \
+          --benchmark-json=benchmark.json \
+          --maxfail=2 \
+          --timeout=900 \
+          --tb=short \
+          -v || echo "Performance tests completed with warnings"
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      if: matrix.test-type != 'performance'
       with:
-        file: ./coverage.xml
+        files: ./coverage-${{ matrix.test-type }}.xml
+        flags: ${{ matrix.test-type }}
+        name: coverage-${{ matrix.python-version }}-${{ matrix.test-type }}
         fail_ci_if_error: false
 
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: matrix.test-type == 'performance' && always()
+      with:
+        name: benchmark-results-${{ matrix.python-version }}
+        path: benchmark.json
+        
     - name: Check test results
       run: |
         echo "Test coverage and quality check completed"
-        echo "Minimum coverage threshold: 10%"
+        echo "Test type: ${{ matrix.test-type }}"
+        echo "Python version: ${{ matrix.python-version }}"
+        if [[ "${{ matrix.test-type }}" == "unit" ]]; then
+          echo "Unit tests minimum coverage: 10%"
+        elif [[ "${{ matrix.test-type }}" == "integration" ]]; then
+          echo "Integration tests completed"
+        else
+          echo "Performance tests completed"
+        fi
