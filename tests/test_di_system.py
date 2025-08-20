@@ -8,35 +8,53 @@ from typing import Any, Protocol
 from unittest.mock import MagicMock
 
 from kumihan_formatter.core.patterns.dependency_injection import (
-    DIContainer, ServiceLifetime, ServiceDescriptor,
-    CircularDependencyError, ServiceNotFoundError,
-    injectable, get_container
+    DIContainer,
+    ServiceLifetime,
+    ServiceDescriptor,
+    CircularDependencyError,
+    ServiceNotFoundError,
+    injectable,
+    get_container,
 )
 from kumihan_formatter.core.patterns.factories import (
-    ParserFactory, RendererFactory, ServiceFactory,
-    create_parser, create_renderer, get_service_factory
+    ParserFactory,
+    RendererFactory,
+    ServiceFactory,
+    create_parser,
+    create_renderer,
+    get_service_factory,
 )
 
 
-# テスト用プロトコル・クラス
-class TestServiceProtocol(Protocol):
-    def do_something(self) -> str:
-        ...
+# テスト用プロトコル・クラス（pytest収集対象外の命名）
+class MockServiceProtocol(Protocol):
+    """DIシステムテスト用のモックサービスプロトコル"""
 
-class TestService:
+    def do_something(self) -> str: ...
+
+
+class MockService:
+    """DIシステムテスト用の基本モックサービス"""
+
     def do_something(self) -> str:
         return "test service"
 
-class TestDependentService:
-    def __init__(self, dependency: TestService) -> None:
+
+class MockDependentService:
+    """DIシステムテスト用の依存関係を持つモックサービス"""
+
+    def __init__(self, dependency: MockService) -> None:
         self.dependency = dependency
 
     def do_work(self) -> str:
         return f"work with {self.dependency.do_something()}"
 
+
 @injectable
-class TestInjectableService:
-    def __init__(self, dependency: TestService) -> None:
+class MockInjectableService:
+    """DIシステムテスト用のinjectableデコレータ付きモックサービス"""
+
+    def __init__(self, dependency: MockService) -> None:
         self.dependency = dependency
 
     def get_result(self) -> str:
@@ -51,66 +69,68 @@ class TestDIContainer(unittest.TestCase):
 
     def test_register_and_resolve_singleton(self) -> None:
         """シングルトンサービスの登録と解決"""
-        self.container.register(TestService, TestService, ServiceLifetime.SINGLETON)
+        self.container.register(MockService, MockService, ServiceLifetime.SINGLETON)
 
-        service1 = self.container.resolve(TestService)
-        service2 = self.container.resolve(TestService)
+        service1 = self.container.resolve(MockService)
+        service2 = self.container.resolve(MockService)
 
-        self.assertIsInstance(service1, TestService)
+        self.assertIsInstance(service1, MockService)
         self.assertIs(service1, service2)  # 同一インスタンス
 
     def test_register_and_resolve_transient(self) -> None:
         """トランジェントサービスの登録と解決"""
-        self.container.register(TestService, TestService, ServiceLifetime.TRANSIENT)
+        self.container.register(MockService, MockService, ServiceLifetime.TRANSIENT)
 
-        service1 = self.container.resolve(TestService)
-        service2 = self.container.resolve(TestService)
+        service1 = self.container.resolve(MockService)
+        service2 = self.container.resolve(MockService)
 
-        self.assertIsInstance(service1, TestService)
-        self.assertIsInstance(service2, TestService)
+        self.assertIsInstance(service1, MockService)
+        self.assertIsInstance(service2, MockService)
         self.assertIsNot(service1, service2)  # 異なるインスタンス
 
     def test_dependency_injection(self) -> None:
         """依存関係の自動注入"""
-        self.container.register(TestService, TestService)
-        self.container.register(TestDependentService, TestDependentService)
+        self.container.register(MockService, MockService)
+        self.container.register(MockDependentService, MockDependentService)
 
-        dependent_service = self.container.resolve(TestDependentService)
+        dependent_service = self.container.resolve(MockDependentService)
 
-        self.assertIsInstance(dependent_service, TestDependentService)
-        self.assertIsInstance(dependent_service.dependency, TestService)
+        self.assertIsInstance(dependent_service, MockDependentService)
+        self.assertIsInstance(dependent_service.dependency, MockService)
         self.assertEqual(dependent_service.do_work(), "work with test service")
 
     def test_register_singleton_instance(self) -> None:
         """シングルトンインスタンスの直接登録"""
-        instance = TestService()
-        self.container.register_singleton(TestService, instance)
+        instance = MockService()
+        self.container.register_singleton(MockService, instance)
 
-        resolved = self.container.resolve(TestService)
+        resolved = self.container.resolve(MockService)
 
         self.assertIs(resolved, instance)
 
     def test_register_factory(self) -> None:
         """ファクトリー関数の登録"""
-        def test_factory(container: DIContainer) -> TestService:
-            return TestService()
 
-        self.container.register_factory(TestService, test_factory)
+        def test_factory(container: DIContainer) -> MockService:
+            return MockService()
 
-        service = self.container.resolve(TestService)
+        self.container.register_factory(MockService, test_factory)
 
-        self.assertIsInstance(service, TestService)
+        service = self.container.resolve(MockService)
+
+        self.assertIsInstance(service, MockService)
 
     def test_service_not_found_error(self) -> None:
         """未登録サービスの解決でエラー"""
         with self.assertRaises(ServiceNotFoundError):
-            self.container.resolve(TestService)
+            self.container.resolve(MockService)
 
     def test_circular_dependency_detection(self) -> None:
         """循環参照の検出"""
+
         # 循環参照を作るためのテストクラス
         class ServiceA:
-            def __init__(self, b: 'ServiceB') -> None:
+            def __init__(self, b: "ServiceB") -> None:
                 self.b = b
 
         class ServiceB:
@@ -133,13 +153,13 @@ class TestServiceFactory(unittest.TestCase):
 
     def test_get_parser_factory(self) -> None:
         """パーサーファクトリーの取得"""
-        parser_factory = self.service_factory.get_factory('parser')
+        parser_factory = self.service_factory.get_factory("parser")
 
         self.assertIsInstance(parser_factory, ParserFactory)
 
     def test_get_renderer_factory(self) -> None:
         """レンダラーファクトリーの取得"""
-        renderer_factory = self.service_factory.get_factory('renderer')
+        renderer_factory = self.service_factory.get_factory("renderer")
 
         self.assertIsInstance(renderer_factory, RendererFactory)
 
@@ -147,15 +167,15 @@ class TestServiceFactory(unittest.TestCase):
         """カスタムファクトリーの登録"""
         mock_factory = MagicMock()
 
-        self.service_factory.register_factory('custom', mock_factory)
-        retrieved_factory = self.service_factory.get_factory('custom')
+        self.service_factory.register_factory("custom", mock_factory)
+        retrieved_factory = self.service_factory.get_factory("custom")
 
         self.assertIs(retrieved_factory, mock_factory)
 
     def test_unknown_factory_error(self) -> None:
         """未知のファクトリータイプでエラー"""
         with self.assertRaises(ValueError):
-            self.service_factory.get_factory('unknown')
+            self.service_factory.get_factory("unknown")
 
 
 class TestParserFactory(unittest.TestCase):
@@ -224,10 +244,10 @@ class TestIntegration(unittest.TestCase):
         service_factory = ServiceFactory(container)
 
         # テストサービスを登録
-        container.register(TestService, TestService)
+        container.register(MockService, MockService)
 
         # ファクトリー経由でアクセス
-        parser_factory = service_factory.get_factory('parser')
+        parser_factory = service_factory.get_factory("parser")
         self.assertIsNotNone(parser_factory)
 
     def test_shortcut_functions(self) -> None:
@@ -236,11 +256,11 @@ class TestIntegration(unittest.TestCase):
         # エラーハンドリングのテストのみ実行
 
         with self.assertRaises((ValueError, ImportError, AttributeError)):
-            create_parser('nonexistent_parser')
+            create_parser("nonexistent_parser")
 
         with self.assertRaises((ValueError, ImportError, AttributeError)):
-            create_renderer('nonexistent_renderer')
+            create_renderer("nonexistent_renderer")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
