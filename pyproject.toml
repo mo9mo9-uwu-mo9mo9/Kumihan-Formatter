@@ -182,9 +182,8 @@ addopts = [
     "--maxfail=5",              # 5回失敗で停止
     "--timeout=300",            # 各テスト300秒でタイムアウト
     "--durations=10",           # 最も遅い10テストを表示
-    "-n=auto",                  # CPU数に応じた並列実行
-    "--dist=worksteal"          # 効率的な並列分散
-    # Issue #1004: benchmark無効化設定はconftest.pyで動的に適用
+    # Issue #1049: xdist設定はconftest.pyで環境に応じて動的制御
+    # "-n=auto" と "--dist=worksteal" はconftest.pyで適用される
 ]
 # Issue #1005: xdist設定項目は未対応のため削除
 # xdist設定は addopts の -n=auto と --dist=worksteal で対応
