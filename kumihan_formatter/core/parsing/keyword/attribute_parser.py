@@ -56,9 +56,17 @@ class AttributeParser(BaseParser):
         # 属性解析ロジック実装
         import re
 
-        attr_pattern = r'(\w+)=(["\']?)([^"\'>\s]+)\2'
+        # 引用符で囲まれた属性と引用符なし属性の両方に対応
+        attr_pattern = r'(\w+)=(?:["\']([^"\']*)["\']|([^\s>]+))'
         matches = re.findall(attr_pattern, content)
-        for key, _, value in matches:
+        for key, quoted_value, unquoted_value in matches:
+            # 引用符ありの値を優先、なければ引用符なしの値を使用
+            value = quoted_value if quoted_value else unquoted_value
+
+            # class属性の場合は最初のクラス名のみを取得
+            if key.lower() == "class" and value:
+                value = value.split()[0]
+
             attributes[key] = value
         return attributes
 
