@@ -10,7 +10,7 @@ Issue #914: アーキテクチャ最適化 - keyword_parser.py分割
 """
 
 import re
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from ....ast_nodes import (
     Node,
@@ -44,7 +44,7 @@ class BasicKeywordParser:
     def _setup_keyword_registry(self) -> None:
         """キーワードレジストリの設定"""
         # デフォルトキーワード定義
-        self.default_keywords = {
+        self.default_keywords: Dict[str, Dict[str, Any]] = {
             # 基本装飾
             "太字": {"type": "decoration", "html_tag": "strong"},
             "斜体": {"type": "decoration", "html_tag": "em"},
@@ -111,7 +111,7 @@ class BasicKeywordParser:
         Returns:
             解析結果辞書
         """
-        result = {
+        result: Dict[str, Union[str, Dict[str, Any], List[Any], int, bool, None]] = {
             "keyword": "",
             "attributes": {},
             "modifiers": [],
