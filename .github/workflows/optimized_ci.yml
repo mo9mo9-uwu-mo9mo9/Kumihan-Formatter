@@ -274,11 +274,45 @@ jobs:
         echo "| Performance Tests | ${{ needs.performance_tests.result }} | - |" >> $GITHUB_STEP_SUMMARY
 
         # 全体的な成功判定
-        if [[ "${{ needs.fast_quality.result }}" == "success" ]] && \
-           [[ "${{ needs.light_tests.result }}" == "success" ]]; then
-          echo "✅ Core CI pipeline passed successfully"
-          exit 0
+        # 必須ジョブ: fast_quality, light_tests は必ず成功が必要
+        # 条件付きジョブ: comprehensive_tests, performance_tests は success または skipped で成功扱い
+
+        FAST_QUALITY="${{ needs.fast_quality.result }}"
+        LIGHT_TESTS="${{ needs.light_tests.result }}"
+        COMPREHENSIVE="${{ needs.comprehensive_tests.result }}"
+        PERFORMANCE="${{ needs.performance_tests.result }}"
+
+        echo "### Detailed Results:" >> $GITHUB_STEP_SUMMARY
+        echo "- Fast Quality: ${FAST_QUALITY}" >> $GITHUB_STEP_SUMMARY
+        echo "- Light Tests: ${LIGHT_TESTS}" >> $GITHUB_STEP_SUMMARY
+        echo "- Comprehensive Tests: ${COMPREHENSIVE} (conditional)" >> $GITHUB_STEP_SUMMARY
+        echo "- Performance Tests: ${PERFORMANCE} (conditional)" >> $GITHUB_STEP_SUMMARY
+
+        # 必須ジョブの成功確認
+        if [[ "${FAST_QUALITY}" == "success" ]] && [[ "${LIGHT_TESTS}" == "success" ]]; then
+          # 条件付きジョブの適切な状態判定 (success または skipped を成功扱い)
+          COMPREHENSIVE_OK=false
+          PERFORMANCE_OK=false
+
+          if [[ "${COMPREHENSIVE}" == "success" ]] || [[ "${COMPREHENSIVE}" == "skipped" ]]; then
+            COMPREHENSIVE_OK=true
+          fi
+
+          if [[ "${PERFORMANCE}" == "success" ]] || [[ "${PERFORMANCE}" == "skipped" ]]; then
+            PERFORMANCE_OK=true
+          fi
+
+          if [[ "${COMPREHENSIVE_OK}" == "true" ]] && [[ "${PERFORMANCE_OK}" == "true" ]]; then
+            echo "✅ All CI pipeline stages completed successfully (including conditional jobs)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Core CI pipeline passed successfully"
+            exit 0
+          else
+            echo "❌ Some conditional jobs failed" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Conditional CI pipeline failed"
+            exit 1
+          fi
         else
+          echo "❌ Required jobs failed" >> $GITHUB_STEP_SUMMARY
           echo "❌ Core CI pipeline failed"
           exit 1
         fi
