@@ -71,7 +71,9 @@ class BasicKeywordParser:
         }
 
         # カスタムキーワード（ユーザー定義）
-        self.custom_keywords: Dict[str, Dict[str, Any]] = {}
+        self.custom_keywords: Dict[str, Dict[str, Any]] = self.config.get(
+            "custom_keywords", {}
+        )
 
         # 非推奨キーワード
         self.deprecated_keywords: Set[str] = set()
@@ -249,9 +251,11 @@ class BasicKeywordParser:
             キーワード定義、見つからない場合はNone
         """
         if keyword in self.custom_keywords:
-            return self.custom_keywords[keyword]
+            result = self.custom_keywords[keyword]
+            return result if isinstance(result, dict) else None
         elif keyword in self.default_keywords:
-            return self.default_keywords[keyword]
+            result = self.default_keywords[keyword]
+            return result if isinstance(result, dict) else None
         else:
             return None
 
