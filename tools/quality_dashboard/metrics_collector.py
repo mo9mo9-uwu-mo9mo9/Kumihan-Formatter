@@ -5,6 +5,7 @@
 包括的品質指標を収集・管理する
 """
 
+import ast
 import json
 import os
 import subprocess
@@ -151,64 +152,187 @@ class MetricsCollector:
             return "other"
 
     def collect_complexity_metrics(self) -> Dict[str, Any]:
-        """複雑度メトリクス収集"""
+        """複雑度メトリクス収集（強化されたエラーハンドリング付き）"""
         try:
+            logger.info("複雑度メトリクス収集を開始")
+
             # radonを使用して複雑度測定
+            logger.debug("radon複雑度解析を実行")
             result = subprocess.run(
                 ["python3", "-m", "radon", "cc", "kumihan_formatter", "--json"],
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
+                timeout=120,
             )
 
+            # radon実行結果の詳細ログ
+            logger.debug(f"radon実行完了: return_code={result.returncode}")
+            if result.stderr:
+                logger.warning(f"radon stderr: {result.stderr}")
+
             if result.returncode == 0 and result.stdout:
-                complexity_data = json.loads(result.stdout)
+                try:
+                    complexity_data = json.loads(result.stdout)
+                    logger.debug(f"radonから{len(complexity_data)}ファイルのデータを取得")
 
-                # 複雑度統計計算
-                total_functions = 0
-                complexity_sum = 0
-                high_complexity_count = 0
-                max_complexity = (
-                    self.quality_rules.get("code_quality", {})
-                    .get("complexity", {})
-                    .get("max_cyclomatic_complexity", 10)
-                )
+                    # 複雑度統計計算
+                    total_functions = 0
+                    complexity_sum = 0
+                    high_complexity_count = 0
+                    max_complexity = (
+                        self.quality_rules.get("code_quality", {})
+                        .get("complexity", {})
+                        .get("max_cyclomatic_complexity", 10)
+                    )
 
-                for file_path, functions in complexity_data.items():
-                    for func_data in functions:
-                        if isinstance(func_data, dict) and "complexity" in func_data:
-                            complexity = func_data["complexity"]
+                    for file_path, functions in complexity_data.items():
+                        for func_data in functions:
+                            if isinstance(func_data, dict) and "complexity" in func_data:
+                                complexity = func_data["complexity"]
+                                total_functions += 1
+                                complexity_sum += complexity
+                                if complexity > max_complexity:
+                                    high_complexity_count += 1
+
+                    average_complexity = (
+                        complexity_sum / total_functions if total_functions > 0 else 0
+                    )
+
+                    logger.info(f"radon複雑度解析成功: {total_functions}関数を解析")
+                    return {
+                        "timestamp": datetime.now().isoformat(),
+                        "average_complexity": average_complexity,
+                        "total_functions": total_functions,
+                        "high_complexity_count": high_complexity_count,
+                        "max_complexity_threshold": max_complexity,
+                        "complexity_ratio": (
+                            high_complexity_count / total_functions
+                            if total_functions > 0
+                            else 0
+                        ),
+                        "status": "PASS" if high_complexity_count == 0 else "WARNING",
+                        "tool_used": "radon",
+                    }
+
+                except json.JSONDecodeError as e:
+                    logger.error(f"radon JSON解析失敗: {e}")
+                    logger.warning("内蔵AST解析にフォールバック")
+                    return self._fallback_complexity_analysis()
+            else:
+                if result.returncode != 0:
+                    logger.error(f"radon実行失敗: return_code={result.returncode}")
+                    logger.error(f"radon error output: {result.stderr}")
+                else:
+                    logger.warning("radon出力が空")
+
+                logger.warning("内蔵AST解析にフォールバック")
+                return self._fallback_complexity_analysis()
+
+        except subprocess.TimeoutExpired:
+            logger.error("radon実行がタイムアウト（120秒）")
+            logger.warning("内蔵AST解析にフォールバック")
+            return self._fallback_complexity_analysis()
+
+        except FileNotFoundError:
+            logger.error("radonが見つからない（未インストール）")
+            logger.warning("内蔵AST解析にフォールバック")
+            return self._fallback_complexity_analysis()
+
+        except Exception as e:
+            logger.error(f"radon実行中の予期しないエラー: {e}")
+            logger.warning("内蔵AST解析にフォールバック")
+            return self._fallback_complexity_analysis()
+
+    def _fallback_complexity_analysis(self) -> Dict[str, Any]:
+        """radon失敗時の内蔵AST解析フォールバック"""
+        logger.info("内蔵AST複雑度解析を開始")
+
+        try:
+            import ast
+            from pathlib import Path
+
+            total_functions = 0
+            complexity_sum = 0
+            high_complexity_count = 0
+            max_complexity = (
+                self.quality_rules.get("code_quality", {})
+                .get("complexity", {})
+                .get("max_cyclomatic_complexity", 10)
+            )
+
+            # kumihan_formatterディレクトリ内のPythonファイルを走査
+            python_files = list(Path(self.project_root / "kumihan_formatter").rglob("*.py"))
+            logger.debug(f"{len(python_files)}個のPythonファイルをAST解析")
+
+            for py_file in python_files:
+                try:
+                    with open(py_file, "r", encoding="utf-8") as f:
+                        source = f.read()
+
+                    tree = ast.parse(source)
+
+                    for node in ast.walk(tree):
+                        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            complexity = self._calculate_cyclomatic_complexity_ast(node)
                             total_functions += 1
                             complexity_sum += complexity
                             if complexity > max_complexity:
                                 high_complexity_count += 1
 
-                average_complexity = (
-                    complexity_sum / total_functions if total_functions > 0 else 0
-                )
+                except (SyntaxError, UnicodeDecodeError) as e:
+                    logger.warning(f"ファイル解析スキップ {py_file}: {e}")
+                    continue
+                except Exception as e:
+                    logger.error(f"ファイル解析エラー {py_file}: {e}")
+                    continue
 
-                return {
-                    "timestamp": datetime.now().isoformat(),
-                    "average_complexity": average_complexity,
-                    "total_functions": total_functions,
-                    "high_complexity_count": high_complexity_count,
-                    "max_complexity_threshold": max_complexity,
-                    "complexity_ratio": (
-                        high_complexity_count / total_functions
-                        if total_functions > 0
-                        else 0
-                    ),
-                    "status": "PASS" if high_complexity_count == 0 else "WARNING",
-                }
+            average_complexity = (
+                complexity_sum / total_functions if total_functions > 0 else 0
+            )
+
+            logger.info(f"内蔵AST解析完了: {total_functions}関数を解析")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "average_complexity": average_complexity,
+                "total_functions": total_functions,
+                "high_complexity_count": high_complexity_count,
+                "max_complexity_threshold": max_complexity,
+                "complexity_ratio": (
+                    high_complexity_count / total_functions
+                    if total_functions > 0
+                    else 0
+                ),
+                "status": "PASS" if high_complexity_count == 0 else "WARNING",
+                "tool_used": "ast_fallback",
+                "note": "radon利用不可のため内蔵AST解析を使用",
+            }
 
         except Exception as e:
-            logger.error(f"Failed to collect complexity metrics: {e}")
+            logger.error(f"内蔵AST解析も失敗: {e}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "status": "ERROR",
+                "error": "複雑度データの収集に完全に失敗",
+                "fallback_attempted": True,
+                "tool_used": "none",
+            }
 
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "status": "ERROR",
-            "error": "Failed to collect complexity data",
-        }
+    def _calculate_cyclomatic_complexity_ast(self, node: ast.AST) -> int:
+        """AST解析による循環的複雑度計算"""
+        complexity = 1  # ベース複雑度
+
+        for child in ast.walk(node):
+            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)):
+                complexity += 1
+            elif isinstance(child, ast.ExceptHandler):
+                complexity += 1
+            elif isinstance(child, (ast.And, ast.Or)):
+                complexity += 1
+            elif isinstance(child, ast.comprehension):
+                complexity += 1
+
+        return complexity
 
     def collect_performance_metrics(self) -> Dict[str, Any]:
         """パフォーマンスメトリクス収集"""
