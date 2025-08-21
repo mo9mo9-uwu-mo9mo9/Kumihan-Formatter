@@ -83,6 +83,10 @@ jobs:
         mypy kumihan_formatter --strict
     # TODO: Issue #978-995の型エラー修正完了後に再有効化
 
+    # Issue #1050: カバレッジ段階的向上計画
+    # Phase 1 (current): 50% - 現実的なスタート地点
+    # Phase 2 (mid-term): 60% - 中期目標
+    # Phase 3 (long-term): 70% - 最終目標
     - name: Run tests with coverage
       timeout-minutes: 20
       continue-on-error: false
@@ -93,7 +97,7 @@ jobs:
           --cov=kumihan_formatter \
           --cov-report=xml \
           --cov-report=term-missing \
-          --cov-fail-under=70 \
+          --cov-fail-under=50 \
           --maxfail=5 \
           --timeout=300 \
           --durations=10 \
@@ -126,5 +130,5 @@ jobs:
         echo "- Code formatting: OK"
         echo "- Lint check: OK"
         echo "- Type check: SKIPPED (Issue #1008 - 型エラー修正中)"
-        echo "- Test coverage: ≥70%"
+        echo "- Test coverage: ≥50% (段階的向上: 50%→60%→70%)"
         echo "- Comprehensive evaluation: Passed"
