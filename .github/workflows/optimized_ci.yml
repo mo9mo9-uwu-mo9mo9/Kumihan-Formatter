@@ -108,20 +108,21 @@ jobs:
     - name: Run light unit tests
       timeout-minutes: 10
       env:
-        PYTEST_XDIST_WORKER_COUNT: auto
+        GITHUB_ACTIONS: true
+        PYTEST_XDIST_WORKER_COUNT: 2
       run: |
         case "${{ matrix.test-suite }}" in
           "unit-core")
             pytest tests/unit/ast_nodes/ tests/unit/config/ \
-              --maxfail=10 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 --tb=short -v
             ;;
           "unit-parsing")
             pytest tests/unit/parsing/ \
-              --maxfail=10 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 --tb=short -v
             ;;
           "unit-rendering")
             pytest tests/unit/rendering/ \
-              --maxfail=10 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 --tb=short -v
             ;;
         esac
 
@@ -166,7 +167,8 @@ jobs:
       timeout-minutes: 25
       continue-on-error: ${{ matrix.test-type == 'system' }}
       env:
-        PYTEST_XDIST_WORKER_COUNT: auto
+        GITHUB_ACTIONS: true
+        PYTEST_XDIST_WORKER_COUNT: 2
       run: |
         case "${{ matrix.test-type }}" in
           "integration")
@@ -174,7 +176,7 @@ jobs:
               --cov=kumihan_formatter \
               --cov-report=xml:coverage-integration.xml \
               --maxfail=3 --timeout=600 --durations=5 \
-              -n=auto --dist=worksteal --tb=short -v
+              --tb=short -v
             ;;
           "end_to_end")
             pytest tests/end_to_end/ \
@@ -239,6 +241,9 @@ jobs:
     - name: Run performance tests
       timeout-minutes: 25
       continue-on-error: true
+      env:
+        GITHUB_ACTIONS: true
+        PYTEST_XDIST_WORKER_COUNT: 1  # パフォーマンステストは単一ワーカー
       run: |
         pytest tests/performance/ \
           --benchmark-only \
