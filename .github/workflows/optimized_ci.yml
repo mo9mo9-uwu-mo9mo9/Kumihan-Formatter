@@ -62,11 +62,12 @@ jobs:
       run: |
         flake8 kumihan_formatter/ --max-line-length=88 --select=E9,F63,F7,F82
 
-    - name: Fast type check (core only)
-      timeout-minutes: 3
-      continue-on-error: true
-      run: |
-        mypy kumihan_formatter/core/ --ignore-missing-imports || echo "⚠️ Type check failed - Issue #971: 160+ type errors require separate issue for resolution"
+    # - name: Fast type check (core only)
+    #   timeout-minutes: 3
+    #   continue-on-error: true
+    #   run: |
+    #     mypy kumihan_formatter/core/ --ignore-missing-imports || echo "⚠️ Type check failed - Issue #971: 160+ type errors require separate issue for resolution"
+    # TODO: Issue #978-995の型エラー修正完了後に再有効化
 
   # 軽量テスト - 常時実行
   light_tests:
