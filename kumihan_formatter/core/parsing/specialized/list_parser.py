@@ -165,19 +165,100 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         primary_type = self.utilities.determine_primary_list_type(list_items)
         return self.utilities.create_list_node(list_items, primary_type)
 
+    def parse(  # type: ignore[override]
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """BaseParserProtocol準拠の統一パースインターフェース"""
+        try:
+            self._clear_errors_warnings()
+            
+            # 既存のparse_list_from_textメソッドを活用
+            node = self.parse_list_from_text(content)
+            
+            return ParseResult(
+                success=True,
+                nodes=[node] if node else [],
+                errors=self.get_errors(),
+                warnings=self.get_warnings(),
+                metadata={"parser_type": "list"}
+            )
+        except Exception as e:
+            return ParseResult(
+                success=False,
+                nodes=[],
+                errors=[str(e)],
+                warnings=[],
+                metadata={"parser_type": "list"}
+            )
+
+    def get_errors(self) -> List[str]:
+        """エラー一覧取得"""
+        return getattr(self, '_errors', [])
+
+    def get_warnings(self) -> List[str]:
+        """警告一覧取得"""
+        return getattr(self, '_warnings', [])
+
+    def detect_list_type(self, content: str) -> str:
+        """リストタイプ検出（抽象メソッド実装）"""
+        lines = content.strip().split('\n')
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith(('- ', '* ', '+ ')):
+                return 'unordered'
+            elif stripped and stripped[0].isdigit() and '. ' in stripped:
+                return 'ordered'
+        return 'unordered'
+
+    def get_list_nesting_level(self, line: str) -> int:
+        """リストネストレベル取得（抽象メソッド実装）"""
+        return len(line) - len(line.lstrip())
+
+    def parse_list_items(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """リストアイテム解析（抽象メソッド実装）"""
+        try:
+            node = self.parse_list_from_text(content)
+            return [node] if node else []
+        except Exception:
+            return []
+
+    def parse_nested_list(
+        self, content: str, level: int = 0, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """ネストリスト解析（抽象メソッド実装）"""
+        try:
+            node = self.parse_list_from_text(content)
+            return [node] if node else []
+        except Exception:
+            return []
+
+    def supports_format(self, content: str) -> bool:
+        """フォーマットサポート確認（抽象メソッド実装）"""
+        lines = content.strip().split('\n')
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith(('- ', '* ', '+ ')) or (stripped and stripped[0].isdigit() and '. ' in stripped):
+                return True
+        return False
+
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
         self, text: str, context: Optional[ParseContext] = None
     ) -> ParseResult:
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
-            # 基底クラスのparseメソッドを使用
-            result = super().parse(text)
-            return create_parse_result(nodes=[result], success=True)
+            # 新しいparseメソッドを使用
+            return self.parse(text, context)
         except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"List parsing failed: {e}")
-            return result
+            return ParseResult(
+                success=False,
+                nodes=[],
+                errors=[f"List parsing failed: {e}"],
+                warnings=[],
+                metadata={"parser_type": "list"}
+            )
 
     def _detect_list_type(self, line: str) -> Optional[str]:
         """行からリストタイプを検出"""
