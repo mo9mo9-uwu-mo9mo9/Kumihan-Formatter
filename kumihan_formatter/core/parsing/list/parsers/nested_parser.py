@@ -198,7 +198,11 @@ class NestedListParser:
         max_level = 0
 
         for item in items:
-            level = item.metadata.get("relative_level", 0)
+            # relative_level, nest_level, level の順で確認
+            level = item.metadata.get(
+                "relative_level",
+                item.metadata.get("nest_level", item.metadata.get("level", 0)),
+            )
             level_counts[level] = level_counts.get(level, 0) + 1
             max_level = max(max_level, level)
 
