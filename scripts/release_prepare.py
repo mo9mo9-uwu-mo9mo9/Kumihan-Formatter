@@ -47,7 +47,7 @@ class ReleasePreparationManager:
             "version": "unknown",
             "build_date": datetime.now().isoformat(),
             "git_commit": "unknown",
-            "git_branch": "unknown"
+            "git_branch": "unknown",
         }
 
         self.results: Dict[str, Any] = {
@@ -63,15 +63,17 @@ class ReleasePreparationManager:
                 "warning_steps": 0,
                 "failed_steps": 0,
                 "release_ready": False,
-                "overall_readiness_score": 0.0
-            }
+                "overall_readiness_score": 0.0,
+            },
         }
 
     def prepare_release(self) -> Dict[str, Any]:
         """リリース準備実行"""
         self.logger.info("🚀 Starting Release Preparation Process...")
-        self.structured_logger.info("Release preparation initiated",
-                                   extra={"phase": "4-10", "type": "release_preparation"})
+        self.structured_logger.info(
+            "Release preparation initiated",
+            extra={"phase": "4-10", "type": "release_preparation"},
+        )
 
         # リリース準備ステップ
         preparation_steps = [
@@ -86,7 +88,7 @@ class ReleasePreparationManager:
             ("packaging_verification", self._verify_packaging),
             ("changelog_generation", self._generate_changelog),
             ("release_notes_creation", self._create_release_notes),
-            ("final_integration_test", self._run_final_integration_test)
+            ("final_integration_test", self._run_final_integration_test),
         ]
 
         for step_name, step_method in preparation_steps:
@@ -105,11 +107,13 @@ class ReleasePreparationManager:
                     self.results["summary"]["failed_steps"] += 1
 
             except Exception as e:
-                self.logger.error(f"❌ Release preparation step {step_name} failed: {e}")
+                self.logger.error(
+                    f"❌ Release preparation step {step_name} failed: {e}"
+                )
                 self.results["preparation_steps"][step_name] = {
                     "status": "FAILED",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
                 self.results["summary"]["total_steps"] += 1
                 self.results["summary"]["failed_steps"] += 1
@@ -133,27 +137,33 @@ class ReleasePreparationManager:
             # pyproject.toml からバージョン取得
             pyproject_file = project_root / "pyproject.toml"
             if pyproject_file.exists():
-                with open(pyproject_file, 'r', encoding='utf-8') as f:
+                with open(pyproject_file, "r", encoding="utf-8") as f:
                     content = f.read()
-                    version_match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
+                    version_match = re.search(
+                        r'version\s*=\s*["\']([^"\']+)["\']', content
+                    )
                     if version_match:
                         version_sources["pyproject"] = version_match.group(1)
 
             # __init__.py からバージョン取得
             init_file = project_root / "kumihan_formatter" / "__init__.py"
             if init_file.exists():
-                with open(init_file, 'r', encoding='utf-8') as f:
+                with open(init_file, "r", encoding="utf-8") as f:
                     content = f.read()
-                    version_match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
+                    version_match = re.search(
+                        r'__version__\s*=\s*["\']([^"\']+)["\']', content
+                    )
                     if version_match:
                         version_sources["__init__"] = version_match.group(1)
 
             # setup.py からバージョン取得（存在する場合）
             setup_file = project_root / "setup.py"
             if setup_file.exists():
-                with open(setup_file, 'r', encoding='utf-8') as f:
+                with open(setup_file, "r", encoding="utf-8") as f:
                     content = f.read()
-                    version_match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
+                    version_match = re.search(
+                        r'version\s*=\s*["\']([^"\']+)["\']', content
+                    )
                     if version_match:
                         version_sources["setup"] = version_match.group(1)
 
@@ -165,19 +175,17 @@ class ReleasePreparationManager:
                 self.release_info["version"] = list(version_sources.values())[0]
 
             return {
-                "status": "COMPLETED" if version_consistent and version_sources else "WARNING",
+                "status": (
+                    "COMPLETED" if version_consistent and version_sources else "WARNING"
+                ),
                 "version_sources": version_sources,
                 "version_consistent": version_consistent,
                 "current_version": self.release_info["version"],
-                "sources_found": len(version_sources)
+                "sources_found": len(version_sources),
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "version_sources": {}
-            }
+            return {"status": "FAILED", "error": str(e), "version_sources": {}}
 
     def _check_git_status(self) -> Dict[str, Any]:
         """Git状態確認"""
@@ -189,7 +197,7 @@ class ReleasePreparationManager:
                 ["git", "branch", "--show-current"],
                 cwd=project_root,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if branch_result.returncode == 0:
                 git_info["current_branch"] = branch_result.stdout.strip()
@@ -200,7 +208,7 @@ class ReleasePreparationManager:
                 ["git", "rev-parse", "HEAD"],
                 cwd=project_root,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if commit_result.returncode == 0:
                 git_info["commit_hash"] = commit_result.stdout.strip()[:8]  # 短縮版
@@ -211,23 +219,35 @@ class ReleasePreparationManager:
                 ["git", "status", "--porcelain"],
                 cwd=project_root,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if status_result.returncode == 0:
-                uncommitted_files = status_result.stdout.strip().split('\n') if status_result.stdout.strip() else []
+                uncommitted_files = (
+                    status_result.stdout.strip().split("\n")
+                    if status_result.stdout.strip()
+                    else []
+                )
                 git_info["uncommitted_changes"] = len(uncommitted_files)
-                git_info["uncommitted_files"] = uncommitted_files[:5]  # 最初の5ファイルのみ
+                git_info["uncommitted_files"] = uncommitted_files[
+                    :5
+                ]  # 最初の5ファイルのみ
 
             # リモートとの同期状態確認
             try:
                 ahead_behind_result = subprocess.run(
-                    ["git", "rev-list", "--left-right", "--count", "HEAD...origin/main"],
+                    [
+                        "git",
+                        "rev-list",
+                        "--left-right",
+                        "--count",
+                        "HEAD...origin/main",
+                    ],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 if ahead_behind_result.returncode == 0:
-                    counts = ahead_behind_result.stdout.strip().split('\t')
+                    counts = ahead_behind_result.stdout.strip().split("\t")
                     if len(counts) == 2:
                         git_info["commits_ahead"] = int(counts[0])
                         git_info["commits_behind"] = int(counts[1])
@@ -240,7 +260,7 @@ class ReleasePreparationManager:
                 ["git", "describe", "--tags", "--abbrev=0"],
                 cwd=project_root,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if tag_result.returncode == 0:
                 git_info["latest_tag"] = tag_result.stdout.strip()
@@ -250,21 +270,21 @@ class ReleasePreparationManager:
             is_main_branch = git_info.get("current_branch") == "main"
             is_synced = git_info.get("commits_behind", 0) == 0
 
-            status = "COMPLETED" if not has_uncommitted and is_main_branch and is_synced else "WARNING"
+            status = (
+                "COMPLETED"
+                if not has_uncommitted and is_main_branch and is_synced
+                else "WARNING"
+            )
 
             return {
                 "status": status,
                 "git_info": git_info,
                 "release_ready_git": status == "COMPLETED",
-                "recommendations": self._get_git_recommendations(git_info)
+                "recommendations": self._get_git_recommendations(git_info),
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "git_info": {}
-            }
+            return {"status": "FAILED", "error": str(e), "git_info": {}}
 
     def _get_git_recommendations(self, git_info: Dict[str, Any]) -> List[str]:
         """Git状態に基づく推奨事項"""
@@ -295,17 +315,21 @@ class ReleasePreparationManager:
             # requirements.txt 確認
             req_files = [
                 ("requirements.txt", project_root / "requirements.txt"),
-                ("requirements-dev.txt", project_root / "requirements-dev.txt")
+                ("requirements-dev.txt", project_root / "requirements-dev.txt"),
             ]
 
             for req_name, req_path in req_files:
                 if req_path.exists():
-                    with open(req_path, 'r', encoding='utf-8') as f:
-                        requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+                    with open(req_path, "r", encoding="utf-8") as f:
+                        requirements = [
+                            line.strip()
+                            for line in f
+                            if line.strip() and not line.startswith("#")
+                        ]
                         dep_info[req_name] = {
                             "exists": True,
                             "count": len(requirements),
-                            "requirements": requirements[:5]  # 最初の5つのみ
+                            "requirements": requirements[:5],  # 最初の5つのみ
                         }
                 else:
                     dep_info[req_name] = {"exists": False}
@@ -313,16 +337,18 @@ class ReleasePreparationManager:
             # pyproject.toml 依存関係確認
             pyproject_file = project_root / "pyproject.toml"
             if pyproject_file.exists():
-                with open(pyproject_file, 'r', encoding='utf-8') as f:
+                with open(pyproject_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                     # dependencies セクション抽出
-                    dep_match = re.search(r'dependencies\s*=\s*\[(.*?)\]', content, re.DOTALL)
+                    dep_match = re.search(
+                        r"dependencies\s*=\s*\[(.*?)\]", content, re.DOTALL
+                    )
                     if dep_match:
                         deps = re.findall(r'["\']([^"\']+)["\']', dep_match.group(1))
                         dep_info["pyproject_dependencies"] = {
                             "count": len(deps),
-                            "dependencies": deps[:5]
+                            "dependencies": deps[:5],
                         }
 
             # pip freeze で現在の環境確認
@@ -330,36 +356,39 @@ class ReleasePreparationManager:
                 freeze_result = subprocess.run(
                     [sys.executable, "-m", "pip", "freeze"],
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 if freeze_result.returncode == 0:
-                    installed = freeze_result.stdout.strip().split('\n')
+                    installed = freeze_result.stdout.strip().split("\n")
                     dep_info["installed_packages"] = {
                         "count": len(installed),
-                        "sample": installed[:10]
+                        "sample": installed[:10],
                     }
             except:
-                dep_info["installed_packages"] = {"count": 0, "error": "Could not get pip freeze"}
+                dep_info["installed_packages"] = {
+                    "count": 0,
+                    "error": "Could not get pip freeze",
+                }
 
             # 依存関係の整合性チェック（簡易版）
             has_requirements = dep_info.get("requirements.txt", {}).get("exists", False)
             has_pyproject = "pyproject_dependencies" in dep_info
             has_installed = dep_info.get("installed_packages", {}).get("count", 0) > 0
 
-            status = "COMPLETED" if (has_requirements or has_pyproject) and has_installed else "WARNING"
+            status = (
+                "COMPLETED"
+                if (has_requirements or has_pyproject) and has_installed
+                else "WARNING"
+            )
 
             return {
                 "status": status,
                 "dependency_info": dep_info,
-                "dependency_management_ok": status == "COMPLETED"
+                "dependency_management_ok": status == "COMPLETED",
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "dependency_info": {}
-            }
+            return {"status": "FAILED", "error": str(e), "dependency_info": {}}
 
     def _run_code_quality_checks(self) -> Dict[str, Any]:
         """コード品質チェック実行"""
@@ -372,29 +401,41 @@ class ReleasePreparationManager:
                     [sys.executable, "-m", "black", "--check", "kumihan_formatter/"],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 quality_results["black"] = {
                     "passed": black_result.returncode == 0,
-                    "output": black_result.stdout[:500] if black_result.stdout else ""
+                    "output": black_result.stdout[:500] if black_result.stdout else "",
                 }
             except:
-                quality_results["black"] = {"passed": False, "error": "Black not available"}
+                quality_results["black"] = {
+                    "passed": False,
+                    "error": "Black not available",
+                }
 
             # isort インポートチェック
             try:
                 isort_result = subprocess.run(
-                    [sys.executable, "-m", "isort", "--check-only", "kumihan_formatter/"],
+                    [
+                        sys.executable,
+                        "-m",
+                        "isort",
+                        "--check-only",
+                        "kumihan_formatter/",
+                    ],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 quality_results["isort"] = {
                     "passed": isort_result.returncode == 0,
-                    "output": isort_result.stdout[:500] if isort_result.stdout else ""
+                    "output": isort_result.stdout[:500] if isort_result.stdout else "",
                 }
             except:
-                quality_results["isort"] = {"passed": False, "error": "isort not available"}
+                quality_results["isort"] = {
+                    "passed": False,
+                    "error": "isort not available",
+                }
 
             # flake8 linting
             try:
@@ -402,14 +443,19 @@ class ReleasePreparationManager:
                     [sys.executable, "-m", "flake8", "kumihan_formatter/"],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 quality_results["flake8"] = {
                     "passed": flake8_result.returncode == 0,
-                    "output": flake8_result.stdout[:500] if flake8_result.stdout else ""
+                    "output": (
+                        flake8_result.stdout[:500] if flake8_result.stdout else ""
+                    ),
                 }
             except:
-                quality_results["flake8"] = {"passed": False, "error": "flake8 not available"}
+                quality_results["flake8"] = {
+                    "passed": False,
+                    "error": "flake8 not available",
+                }
 
             # mypy 型チェック
             try:
@@ -417,37 +463,42 @@ class ReleasePreparationManager:
                     [sys.executable, "-m", "mypy", "kumihan_formatter/"],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 # mypy は警告があっても重要ではないのでより緩い判定
                 quality_results["mypy"] = {
                     "passed": True,  # エラーがあっても通す（リリース準備では厳密すぎる）
                     "output": mypy_result.stdout[:500] if mypy_result.stdout else "",
-                    "returncode": mypy_result.returncode
+                    "returncode": mypy_result.returncode,
                 }
             except:
-                quality_results["mypy"] = {"passed": True, "error": "mypy not available"}
+                quality_results["mypy"] = {
+                    "passed": True,
+                    "error": "mypy not available",
+                }
 
             # 品質評価
-            passed_tools = sum(1 for result in quality_results.values() if result.get("passed", False))
+            passed_tools = sum(
+                1 for result in quality_results.values() if result.get("passed", False)
+            )
             total_tools = len(quality_results)
 
-            status = "COMPLETED" if passed_tools >= total_tools * 0.75 else "WARNING"  # 75%通過で OK
+            status = (
+                "COMPLETED" if passed_tools >= total_tools * 0.75 else "WARNING"
+            )  # 75%通過で OK
 
             return {
                 "status": status,
                 "quality_results": quality_results,
                 "passed_tools": passed_tools,
                 "total_tools": total_tools,
-                "quality_score": round(passed_tools / total_tools, 3) if total_tools > 0 else 0
+                "quality_score": (
+                    round(passed_tools / total_tools, 3) if total_tools > 0 else 0
+                ),
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "quality_results": {}
-            }
+            return {"status": "FAILED", "error": str(e), "quality_results": {}}
 
     def _execute_test_suite(self) -> Dict[str, Any]:
         """テストスイート実行"""
@@ -461,11 +512,13 @@ class ReleasePreparationManager:
                     cwd=project_root,
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5分でタイムアウト
+                    timeout=300,  # 5分でタイムアウト
                 )
 
                 # テスト結果解析
-                output_lines = pytest_result.stdout.split('\n') if pytest_result.stdout else []
+                output_lines = (
+                    pytest_result.stdout.split("\n") if pytest_result.stdout else []
+                )
 
                 # 統計情報抽出
                 stats_line = ""
@@ -478,39 +531,47 @@ class ReleasePreparationManager:
                     "returncode": pytest_result.returncode,
                     "passed": pytest_result.returncode == 0,
                     "stats": stats_line,
-                    "output_sample": '\n'.join(output_lines[-10:])  # 最後の10行
+                    "output_sample": "\n".join(output_lines[-10:]),  # 最後の10行
                 }
 
             except subprocess.TimeoutExpired:
                 test_results["pytest"] = {
                     "passed": False,
                     "error": "Test execution timed out (5 minutes)",
-                    "returncode": -1
+                    "returncode": -1,
                 }
             except:
                 test_results["pytest"] = {
                     "passed": False,
                     "error": "pytest not available or failed to run",
-                    "returncode": -1
+                    "returncode": -1,
                 }
 
             # カバレッジテスト（オプション）
             try:
                 coverage_result = subprocess.run(
-                    [sys.executable, "-m", "pytest", "--cov=kumihan_formatter", "--cov-report=term-missing"],
+                    [
+                        sys.executable,
+                        "-m",
+                        "pytest",
+                        "--cov=kumihan_formatter",
+                        "--cov-report=term-missing",
+                    ],
                     cwd=project_root,
                     capture_output=True,
                     text=True,
-                    timeout=180  # 3分でタイムアウト
+                    timeout=180,  # 3分でタイムアウト
                 )
 
                 # カバレッジ率抽出
-                coverage_lines = coverage_result.stdout.split('\n') if coverage_result.stdout else []
+                coverage_lines = (
+                    coverage_result.stdout.split("\n") if coverage_result.stdout else []
+                )
                 coverage_percentage = 0
 
                 for line in coverage_lines:
                     if "TOTAL" in line and "%" in line:
-                        match = re.search(r'(\d+)%', line)
+                        match = re.search(r"(\d+)%", line)
                         if match:
                             coverage_percentage = int(match.group(1))
                             break
@@ -518,17 +579,25 @@ class ReleasePreparationManager:
                 test_results["coverage"] = {
                     "passed": coverage_result.returncode == 0,
                     "coverage_percentage": coverage_percentage,
-                    "output_sample": '\n'.join(coverage_lines[-5:])
+                    "output_sample": "\n".join(coverage_lines[-5:]),
                 }
 
             except subprocess.TimeoutExpired:
-                test_results["coverage"] = {"passed": False, "error": "Coverage test timed out"}
+                test_results["coverage"] = {
+                    "passed": False,
+                    "error": "Coverage test timed out",
+                }
             except:
-                test_results["coverage"] = {"passed": False, "error": "Coverage test not available"}
+                test_results["coverage"] = {
+                    "passed": False,
+                    "error": "Coverage test not available",
+                }
 
             # テスト評価
             pytest_passed = test_results.get("pytest", {}).get("passed", False)
-            coverage_passed = test_results.get("coverage", {}).get("passed", True)  # オプションなので失敗してもOK
+            coverage_passed = test_results.get("coverage", {}).get(
+                "passed", True
+            )  # オプションなので失敗してもOK
 
             status = "COMPLETED" if pytest_passed else "FAILED"
 
@@ -536,15 +605,11 @@ class ReleasePreparationManager:
                 "status": status,
                 "test_results": test_results,
                 "main_tests_passed": pytest_passed,
-                "coverage_available": coverage_passed
+                "coverage_available": coverage_passed,
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "test_results": {}
-            }
+            return {"status": "FAILED", "error": str(e), "test_results": {}}
 
     def _generate_documentation(self) -> Dict[str, Any]:
         """ドキュメント生成"""
@@ -556,14 +621,18 @@ class ReleasePreparationManager:
                 ("README.md", project_root / "README.md"),
                 ("CLAUDE.md", project_root / "CLAUDE.md"),
                 ("CHANGELOG.md", project_root / "CHANGELOG.md"),
-                ("CONTRIBUTING.md", project_root / "CONTRIBUTING.md")
+                ("CONTRIBUTING.md", project_root / "CONTRIBUTING.md"),
             ]
 
             for doc_name, doc_path in important_docs:
                 doc_status[doc_name] = {
                     "exists": doc_path.exists(),
                     "size_bytes": doc_path.stat().st_size if doc_path.exists() else 0,
-                    "last_modified": datetime.fromtimestamp(doc_path.stat().st_mtime).isoformat() if doc_path.exists() else None
+                    "last_modified": (
+                        datetime.fromtimestamp(doc_path.stat().st_mtime).isoformat()
+                        if doc_path.exists()
+                        else None
+                    ),
                 }
 
             # API ドキュメント生成（簡易版）
@@ -572,34 +641,50 @@ class ReleasePreparationManager:
                 main_modules = [
                     project_root / "kumihan_formatter" / "__init__.py",
                     project_root / "kumihan_formatter" / "parser.py",
-                    project_root / "kumihan_formatter" / "cli.py"
+                    project_root / "kumihan_formatter" / "cli.py",
                 ]
 
                 docstring_coverage = []
                 for module_path in main_modules:
                     if module_path.exists():
-                        with open(module_path, 'r', encoding='utf-8') as f:
+                        with open(module_path, "r", encoding="utf-8") as f:
                             content = f.read()
 
                             # クラスと関数の docstring チェック
-                            class_matches = re.findall(r'class\s+\w+.*?:', content)
-                            function_matches = re.findall(r'def\s+\w+.*?:', content)
-                            docstring_matches = re.findall(r'""".*?"""', content, re.DOTALL)
+                            class_matches = re.findall(r"class\s+\w+.*?:", content)
+                            function_matches = re.findall(r"def\s+\w+.*?:", content)
+                            docstring_matches = re.findall(
+                                r'""".*?"""', content, re.DOTALL
+                            )
 
-                            total_definitions = len(class_matches) + len(function_matches)
-                            estimated_coverage = min(len(docstring_matches) / max(total_definitions, 1), 1.0)
+                            total_definitions = len(class_matches) + len(
+                                function_matches
+                            )
+                            estimated_coverage = min(
+                                len(docstring_matches) / max(total_definitions, 1), 1.0
+                            )
 
-                            docstring_coverage.append({
-                                "module": module_path.name,
-                                "coverage": round(estimated_coverage, 2),
-                                "definitions": total_definitions,
-                                "docstrings": len(docstring_matches)
-                            })
+                            docstring_coverage.append(
+                                {
+                                    "module": module_path.name,
+                                    "coverage": round(estimated_coverage, 2),
+                                    "definitions": total_definitions,
+                                    "docstrings": len(docstring_matches),
+                                }
+                            )
 
                 doc_status["api_documentation"] = {
                     "modules_checked": len(docstring_coverage),
                     "coverage_details": docstring_coverage,
-                    "average_coverage": round(sum(c["coverage"] for c in docstring_coverage) / len(docstring_coverage), 2) if docstring_coverage else 0
+                    "average_coverage": (
+                        round(
+                            sum(c["coverage"] for c in docstring_coverage)
+                            / len(docstring_coverage),
+                            2,
+                        )
+                        if docstring_coverage
+                        else 0
+                    ),
                 }
 
             except Exception as e:
@@ -607,26 +692,33 @@ class ReleasePreparationManager:
 
             # ドキュメント評価
             essential_docs = ["README.md", "CLAUDE.md"]
-            essential_exist = all(doc_status.get(doc, {}).get("exists", False) for doc in essential_docs)
-            essential_sized = all(doc_status.get(doc, {}).get("size_bytes", 0) > 100 for doc in essential_docs)
+            essential_exist = all(
+                doc_status.get(doc, {}).get("exists", False) for doc in essential_docs
+            )
+            essential_sized = all(
+                doc_status.get(doc, {}).get("size_bytes", 0) > 100
+                for doc in essential_docs
+            )
 
-            api_coverage = doc_status.get("api_documentation", {}).get("average_coverage", 0)
+            api_coverage = doc_status.get("api_documentation", {}).get(
+                "average_coverage", 0
+            )
 
-            status = "COMPLETED" if essential_exist and essential_sized and api_coverage > 0.3 else "WARNING"
+            status = (
+                "COMPLETED"
+                if essential_exist and essential_sized and api_coverage > 0.3
+                else "WARNING"
+            )
 
             return {
                 "status": status,
                 "documentation_status": doc_status,
                 "essential_docs_ready": essential_exist and essential_sized,
-                "api_doc_coverage": api_coverage
+                "api_doc_coverage": api_coverage,
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "documentation_status": {}
-            }
+            return {"status": "FAILED", "error": str(e), "documentation_status": {}}
 
     def _run_security_checks(self) -> Dict[str, Any]:
         """セキュリティ最終チェック"""
@@ -640,40 +732,44 @@ class ReleasePreparationManager:
                     cwd=project_root,
                     capture_output=True,
                     text=True,
-                    timeout=120  # 2分でタイムアウト
+                    timeout=120,  # 2分でタイムアウト
                 )
 
                 # セキュリティレポート読み込み
-                security_report_path = project_root / "tmp" / "security_audit_report.json"
+                security_report_path = (
+                    project_root / "tmp" / "security_audit_report.json"
+                )
                 security_summary = {}
 
                 if security_report_path.exists():
                     try:
-                        with open(security_report_path, 'r', encoding='utf-8') as f:
+                        with open(security_report_path, "r", encoding="utf-8") as f:
                             security_data = json.load(f)
                             security_summary = security_data.get("summary", {})
                     except:
                         pass
 
                 return {
-                    "status": "COMPLETED" if security_result.returncode == 0 else "WARNING",
+                    "status": (
+                        "COMPLETED" if security_result.returncode == 0 else "WARNING"
+                    ),
                     "security_script_executed": True,
                     "security_summary": security_summary,
-                    "exit_code": security_result.returncode
+                    "exit_code": security_result.returncode,
                 }
             else:
                 # セキュリティスクリプトが存在しない場合の基本チェック
                 return {
                     "status": "WARNING",
                     "security_script_executed": False,
-                    "message": "Security audit script not found, basic security assumed"
+                    "message": "Security audit script not found, basic security assumed",
                 }
 
         except Exception as e:
             return {
                 "status": "WARNING",
                 "error": str(e),
-                "security_script_executed": False
+                "security_script_executed": False,
             }
 
     def _validate_performance(self) -> Dict[str, Any]:
@@ -688,16 +784,18 @@ class ReleasePreparationManager:
                     cwd=project_root,
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5分でタイムアウト
+                    timeout=300,  # 5分でタイムアウト
                 )
 
                 # パフォーマンスレポート読み込み
-                perf_report_path = project_root / "tmp" / "performance_benchmark_report.json"
+                perf_report_path = (
+                    project_root / "tmp" / "performance_benchmark_report.json"
+                )
                 perf_summary = {}
 
                 if perf_report_path.exists():
                     try:
-                        with open(perf_report_path, 'r', encoding='utf-8') as f:
+                        with open(perf_report_path, "r", encoding="utf-8") as f:
                             perf_data = json.load(f)
                             perf_summary = perf_data.get("summary", {})
                     except:
@@ -707,20 +805,20 @@ class ReleasePreparationManager:
                     "status": "COMPLETED" if perf_result.returncode == 0 else "WARNING",
                     "performance_script_executed": True,
                     "performance_summary": perf_summary,
-                    "exit_code": perf_result.returncode
+                    "exit_code": perf_result.returncode,
                 }
             else:
                 return {
                     "status": "WARNING",
                     "performance_script_executed": False,
-                    "message": "Performance benchmark script not found"
+                    "message": "Performance benchmark script not found",
                 }
 
         except Exception as e:
             return {
                 "status": "WARNING",
                 "error": str(e),
-                "performance_script_executed": False
+                "performance_script_executed": False,
             }
 
     def _verify_packaging(self) -> Dict[str, Any]:
@@ -756,7 +854,7 @@ class ReleasePreparationManager:
                     build_result = subprocess.run(
                         [sys.executable, "-c", "import build"],
                         capture_output=True,
-                        text=True
+                        text=True,
                     )
                     packaging_info["build_available"] = build_result.returncode == 0
 
@@ -771,7 +869,10 @@ class ReleasePreparationManager:
                     packaging_info["ready_for_build"] = False
 
             # パッケージング準備度評価
-            has_config = packaging_info["pyproject_toml_exists"] or packaging_info["setup_py_exists"]
+            has_config = (
+                packaging_info["pyproject_toml_exists"]
+                or packaging_info["setup_py_exists"]
+            )
             build_ready = packaging_info.get("ready_for_build", False)
 
             status = "COMPLETED" if has_config and build_ready else "WARNING"
@@ -779,15 +880,11 @@ class ReleasePreparationManager:
             return {
                 "status": status,
                 "packaging_info": packaging_info,
-                "packaging_ready": status == "COMPLETED"
+                "packaging_ready": status == "COMPLETED",
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "packaging_info": {}
-            }
+            return {"status": "FAILED", "error": str(e), "packaging_info": {}}
 
     def _generate_changelog(self) -> Dict[str, Any]:
         """変更履歴生成"""
@@ -799,10 +896,12 @@ class ReleasePreparationManager:
             changelog_info["changelog_exists"] = changelog_file.exists()
 
             if changelog_file.exists():
-                with open(changelog_file, 'r', encoding='utf-8') as f:
+                with open(changelog_file, "r", encoding="utf-8") as f:
                     content = f.read()
                     changelog_info["current_size"] = len(content)
-                    changelog_info["version_entries"] = len(re.findall(r'##?\s*\[?\d+\.\d+', content))
+                    changelog_info["version_entries"] = len(
+                        re.findall(r"##?\s*\[?\d+\.\d+", content)
+                    )
 
             # Git ログから最近の変更を取得
             try:
@@ -811,11 +910,11 @@ class ReleasePreparationManager:
                     ["git", "log", "--oneline", "-20"],
                     cwd=project_root,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
 
                 if log_result.returncode == 0:
-                    recent_commits = log_result.stdout.strip().split('\n')
+                    recent_commits = log_result.stdout.strip().split("\n")
                     changelog_info["recent_commits"] = len(recent_commits)
                     changelog_info["commit_sample"] = recent_commits[:5]
 
@@ -839,15 +938,11 @@ class ReleasePreparationManager:
             return {
                 "status": status,
                 "changelog_info": changelog_info,
-                "changelog_ready": status == "COMPLETED"
+                "changelog_ready": status == "COMPLETED",
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "changelog_info": {}
-            }
+            return {"status": "FAILED", "error": str(e), "changelog_info": {}}
 
     def _create_release_notes(self) -> Dict[str, Any]:
         """リリースノート作成"""
@@ -858,8 +953,8 @@ class ReleasePreparationManager:
                 "git_commit": self.release_info["git_commit"],
                 "build_info": {
                     "branch": self.release_info["git_branch"],
-                    "timestamp": self.release_info["build_date"]
-                }
+                    "timestamp": self.release_info["build_date"],
+                },
             }
 
             # 主要な改善点をサマライズ（Phase 4 成果）
@@ -869,7 +964,7 @@ class ReleasePreparationManager:
                 "⚡ Performance benchmarking and optimization",
                 "📊 Structured logging with audit trail",
                 "🔒 OWASP Top 10 compliance implementation",
-                "🎯 Automated release preparation workflow"
+                "🎯 Automated release preparation workflow",
             ]
 
             release_notes["major_features"] = major_features
@@ -878,7 +973,7 @@ class ReleasePreparationManager:
             release_notes["system_requirements"] = {
                 "python_version": "3.12+",
                 "key_dependencies": ["psutil", "pathlib"],
-                "optional_dependencies": ["pytest", "black", "mypy"]
+                "optional_dependencies": ["pytest", "black", "mypy"],
             }
 
             # 品質メトリクス（他のスクリプトから取得）
@@ -888,9 +983,11 @@ class ReleasePreparationManager:
             enterprise_report = project_root / "tmp" / "enterprise_check_report.json"
             if enterprise_report.exists():
                 try:
-                    with open(enterprise_report, 'r', encoding='utf-8') as f:
+                    with open(enterprise_report, "r", encoding="utf-8") as f:
                         enterprise_data = json.load(f)
-                        quality_metrics["enterprise_score"] = enterprise_data.get("summary", {}).get("overall_score", 0)
+                        quality_metrics["enterprise_score"] = enterprise_data.get(
+                            "summary", {}
+                        ).get("overall_score", 0)
                 except:
                     pass
 
@@ -898,10 +995,14 @@ class ReleasePreparationManager:
             security_report = project_root / "tmp" / "security_audit_report.json"
             if security_report.exists():
                 try:
-                    with open(security_report, 'r', encoding='utf-8') as f:
+                    with open(security_report, "r", encoding="utf-8") as f:
                         security_data = json.load(f)
-                        quality_metrics["security_score"] = security_data.get("summary", {}).get("security_score", 0)
-                        quality_metrics["owasp_compliance"] = security_data.get("summary", {}).get("owasp_compliance_rate", 0)
+                        quality_metrics["security_score"] = security_data.get(
+                            "summary", {}
+                        ).get("security_score", 0)
+                        quality_metrics["owasp_compliance"] = security_data.get(
+                            "summary", {}
+                        ).get("owasp_compliance_rate", 0)
                 except:
                     pass
 
@@ -909,58 +1010,70 @@ class ReleasePreparationManager:
             perf_report = project_root / "tmp" / "performance_benchmark_report.json"
             if perf_report.exists():
                 try:
-                    with open(perf_report, 'r', encoding='utf-8') as f:
+                    with open(perf_report, "r", encoding="utf-8") as f:
                         perf_data = json.load(f)
-                        quality_metrics["performance_score"] = perf_data.get("summary", {}).get("overall_performance_score", 0)
+                        quality_metrics["performance_score"] = perf_data.get(
+                            "summary", {}
+                        ).get("overall_performance_score", 0)
                 except:
                     pass
 
             release_notes["quality_metrics"] = quality_metrics
 
             # リリースノートファイル保存
-            release_notes_file = project_root / "tmp" / f"release_notes_{self.release_info['version']}.md"
+            release_notes_file = (
+                project_root
+                / "tmp"
+                / f"release_notes_{self.release_info['version']}.md"
+            )
             self._write_release_notes_markdown(release_notes, release_notes_file)
 
             return {
                 "status": "COMPLETED",
                 "release_notes": release_notes,
                 "notes_file": str(release_notes_file),
-                "quality_metrics_included": len(quality_metrics) > 0
+                "quality_metrics_included": len(quality_metrics) > 0,
             }
 
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "release_notes": {}
-            }
+            return {"status": "FAILED", "error": str(e), "release_notes": {}}
 
     def _write_release_notes_markdown(self, notes: Dict[str, Any], file_path: Path):
         """リリースノートをMarkdown形式で保存"""
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(f"# Kumihan-Formatter Release {notes['version']}\n\n")
             f.write(f"**Release Date**: {notes['date']}\n")
-            f.write(f"**Build**: {notes['git_commit']} ({notes['build_info']['branch']})\n\n")
+            f.write(
+                f"**Build**: {notes['git_commit']} ({notes['build_info']['branch']})\n\n"
+            )
 
             f.write("## Major Features\n\n")
-            for feature in notes['major_features']:
+            for feature in notes["major_features"]:
                 f.write(f"- {feature}\n")
 
             f.write("\n## Quality Metrics\n\n")
-            quality = notes.get('quality_metrics', {})
+            quality = notes.get("quality_metrics", {})
             if quality:
-                f.write(f"- Enterprise Score: {quality.get('enterprise_score', 0):.1%}\n")
+                f.write(
+                    f"- Enterprise Score: {quality.get('enterprise_score', 0):.1%}\n"
+                )
                 f.write(f"- Security Score: {quality.get('security_score', 0):.1%}\n")
-                f.write(f"- OWASP Compliance: {quality.get('owasp_compliance', 0):.1%}\n")
-                f.write(f"- Performance Score: {quality.get('performance_score', 0):.1%}\n")
+                f.write(
+                    f"- OWASP Compliance: {quality.get('owasp_compliance', 0):.1%}\n"
+                )
+                f.write(
+                    f"- Performance Score: {quality.get('performance_score', 0):.1%}\n"
+                )
             else:
                 f.write("Quality metrics will be updated upon release.\n")
 
             f.write("\n## System Requirements\n\n")
-            req = notes['system_requirements']
+            req = notes["system_requirements"]
             f.write(f"- Python: {req['python_version']}\n")
             f.write(f"- Key Dependencies: {', '.join(req['key_dependencies'])}\n")
-            f.write(f"- Development Dependencies: {', '.join(req['optional_dependencies'])}\n")
+            f.write(
+                f"- Development Dependencies: {', '.join(req['optional_dependencies'])}\n"
+            )
 
             f.write("\n---\n")
             f.write("*Generated by automated release preparation system*\n")
@@ -977,39 +1090,43 @@ class ReleasePreparationManager:
                     cwd=project_root,
                     capture_output=True,
                     text=True,
-                    timeout=180  # 3分でタイムアウト
+                    timeout=180,  # 3分でタイムアウト
                 )
 
                 # エンタープライズチェックレポート読み込み
-                enterprise_report_path = project_root / "tmp" / "enterprise_check_report.json"
+                enterprise_report_path = (
+                    project_root / "tmp" / "enterprise_check_report.json"
+                )
                 enterprise_summary = {}
 
                 if enterprise_report_path.exists():
                     try:
-                        with open(enterprise_report_path, 'r', encoding='utf-8') as f:
+                        with open(enterprise_report_path, "r", encoding="utf-8") as f:
                             enterprise_data = json.load(f)
                             enterprise_summary = enterprise_data.get("summary", {})
                     except:
                         pass
 
                 return {
-                    "status": "COMPLETED" if enterprise_result.returncode == 0 else "WARNING",
+                    "status": (
+                        "COMPLETED" if enterprise_result.returncode == 0 else "WARNING"
+                    ),
                     "integration_test_executed": True,
                     "enterprise_summary": enterprise_summary,
-                    "exit_code": enterprise_result.returncode
+                    "exit_code": enterprise_result.returncode,
                 }
             else:
                 return {
                     "status": "WARNING",
                     "integration_test_executed": False,
-                    "message": "Enterprise check script not found"
+                    "message": "Enterprise check script not found",
                 }
 
         except Exception as e:
             return {
                 "status": "WARNING",
                 "error": str(e),
-                "integration_test_executed": False
+                "integration_test_executed": False,
             }
 
     def _execute_quality_gates(self):
@@ -1019,7 +1136,7 @@ class ReleasePreparationManager:
             "test_coverage": self._gate_test_coverage(),
             "security_compliance": self._gate_security_compliance(),
             "performance_baseline": self._gate_performance_baseline(),
-            "documentation_completeness": self._gate_documentation_completeness()
+            "documentation_completeness": self._gate_documentation_completeness(),
         }
 
         self.results["quality_gates"] = gates
@@ -1032,7 +1149,7 @@ class ReleasePreparationManager:
         return {
             "passed": consistent,
             "gate_type": "version_consistency",
-            "requirement": "All version sources must be consistent"
+            "requirement": "All version sources must be consistent",
         }
 
     def _gate_test_coverage(self) -> Dict[str, Any]:
@@ -1043,18 +1160,20 @@ class ReleasePreparationManager:
         return {
             "passed": tests_passed,
             "gate_type": "test_coverage",
-            "requirement": "Main test suite must pass"
+            "requirement": "Main test suite must pass",
         }
 
     def _gate_security_compliance(self) -> Dict[str, Any]:
         """セキュリティコンプライアンスゲート"""
-        security_step = self.results["preparation_steps"].get("security_final_check", {})
+        security_step = self.results["preparation_steps"].get(
+            "security_final_check", {}
+        )
         security_ok = security_step.get("status") in ["COMPLETED", "WARNING"]
 
         return {
             "passed": security_ok,
             "gate_type": "security_compliance",
-            "requirement": "Security audit must pass or have acceptable warnings"
+            "requirement": "Security audit must pass or have acceptable warnings",
         }
 
     def _gate_performance_baseline(self) -> Dict[str, Any]:
@@ -1065,7 +1184,7 @@ class ReleasePreparationManager:
         return {
             "passed": perf_ok,
             "gate_type": "performance_baseline",
-            "requirement": "Performance benchmarks must meet baseline requirements"
+            "requirement": "Performance benchmarks must meet baseline requirements",
         }
 
     def _gate_documentation_completeness(self) -> Dict[str, Any]:
@@ -1076,7 +1195,7 @@ class ReleasePreparationManager:
         return {
             "passed": docs_ready,
             "gate_type": "documentation_completeness",
-            "requirement": "Essential documentation must be present and adequate"
+            "requirement": "Essential documentation must be present and adequate",
         }
 
     def _assess_release_readiness(self):
@@ -1093,16 +1212,20 @@ class ReleasePreparationManager:
 
         # 品質ゲートスコア
         quality_gates = self.results["quality_gates"]
-        passed_gates = sum(1 for gate in quality_gates.values() if gate.get("passed", False))
+        passed_gates = sum(
+            1 for gate in quality_gates.values() if gate.get("passed", False)
+        )
         total_gates = len(quality_gates)
 
         gate_score = passed_gates / total_gates if total_gates > 0 else 0
 
         # 総合準備度スコア
-        overall_score = (basic_score * 0.7 + gate_score * 0.3)
+        overall_score = basic_score * 0.7 + gate_score * 0.3
 
         self.results["summary"]["overall_readiness_score"] = round(overall_score, 3)
-        self.results["summary"]["release_ready"] = overall_score >= 0.8  # 80%以上で準備完了
+        self.results["summary"]["release_ready"] = (
+            overall_score >= 0.8
+        )  # 80%以上で準備完了
 
     def _save_results(self):
         """結果をJSONファイルに保存"""
@@ -1113,14 +1236,14 @@ class ReleasePreparationManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_file = output_dir / f"release_preparation_report_{timestamp}.json"
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"🚀 Release preparation report saved: {output_file}")
 
             # 最新レポートとしてもコピー保存
             latest_file = output_dir / "release_preparation_report.json"
-            with open(latest_file, 'w', encoding='utf-8') as f:
+            with open(latest_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
@@ -1132,9 +1255,9 @@ class ReleasePreparationManager:
         readiness_score = summary["overall_readiness_score"]
         release_ready = summary["release_ready"]
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🚀 RELEASE PREPARATION REPORT")
-        print("="*60)
+        print("=" * 60)
         print(f"📦 Version: {self.release_info['version']}")
         print(f"🌿 Branch: {self.release_info['git_branch']}")
         print(f"📝 Commit: {self.release_info['git_commit']}")
@@ -1160,14 +1283,16 @@ class ReleasePreparationManager:
             ("test_suite_execution", "Test Suite"),
             ("code_quality_check", "Code Quality"),
             ("security_final_check", "Security Check"),
-            ("performance_validation", "Performance Validation")
+            ("performance_validation", "Performance Validation"),
         ]
 
         for step_key, step_name in key_steps:
             if step_key in self.results["preparation_steps"]:
                 result = self.results["preparation_steps"][step_key]
                 status = result.get("status", "UNKNOWN")
-                status_icon = {"COMPLETED": "✅", "WARNING": "⚠️", "FAILED": "❌"}.get(status, "❓")
+                status_icon = {"COMPLETED": "✅", "WARNING": "⚠️", "FAILED": "❌"}.get(
+                    status, "❓"
+                )
                 print(f"{status_icon} {step_name}: {status}")
 
         # リリース準備度判定
@@ -1195,7 +1320,7 @@ class ReleasePreparationManager:
             print("   2. Address quality gate failures")
             print("   3. Re-run release preparation when ready")
 
-        print("="*60)
+        print("=" * 60)
 
 
 def main():

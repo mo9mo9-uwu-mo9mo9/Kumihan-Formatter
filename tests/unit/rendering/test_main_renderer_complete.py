@@ -14,15 +14,17 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
+
 from kumihan_formatter.core.ast_nodes.node import Node
-from kumihan_formatter.core.rendering.main_renderer import MainRenderer, HTMLRenderer
 from kumihan_formatter.core.rendering.base.renderer_protocols import (
     BaseRendererProtocol,
     RenderContext,
     create_render_result,
 )
+from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer, MainRenderer
 
 
 class TestMainRendererInitialization:

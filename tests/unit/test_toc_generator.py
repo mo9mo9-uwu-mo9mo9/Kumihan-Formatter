@@ -3,8 +3,9 @@
 Tests for Issue #799: 目次完全自動生成機能実装
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from kumihan_formatter.core.ast_nodes import Node, NodeBuilder, heading
 from kumihan_formatter.core.toc_generator_main import TOCGenerator
@@ -139,7 +140,10 @@ class TestTOCGenerator:
 
     def test_heading_id_generation(self):
         """Test proper ID generation for headings"""
-        nodes = [heading(1, "Special Characters: 日本語 & symbols!"), heading(2, "Another Title")]
+        nodes = [
+            heading(1, "Special Characters: 日本語 & symbols!"),
+            heading(2, "Another Title"),
+        ]
 
         result = self.toc_generator.generate_toc(nodes)
         entries = result["entries"]
@@ -188,7 +192,11 @@ class TestTOCGenerator:
     def test_empty_heading_text(self):
         """Test handling of headings with empty text"""
         empty_heading = heading(1, "")
-        nodes = [heading(1, "Valid Heading"), empty_heading, heading(2, "Another Heading")]
+        nodes = [
+            heading(1, "Valid Heading"),
+            empty_heading,
+            heading(2, "Another Heading"),
+        ]
 
         result = self.toc_generator.generate_toc(nodes)
 
@@ -277,7 +285,9 @@ class TestTOCGenerator:
 
         # Title should be truncated
         first_entry = result["entries"][0]
-        assert len(first_entry.title) <= self.toc_generator.MAX_TITLE_LENGTH + 3  # +3 for "..."
+        assert (
+            len(first_entry.title) <= self.toc_generator.MAX_TITLE_LENGTH + 3
+        )  # +3 for "..."
         assert first_entry.title.endswith("...")
 
     def test_deep_recursion_limit(self):
@@ -355,7 +365,9 @@ class TestTOCGenerator:
             # Check specific log messages
             info_calls = [call.args[0] for call in mock_info.call_args_list]
             assert any("TOC generation started" in msg for msg in info_calls)
-            assert any("TOC generation completed successfully" in msg for msg in info_calls)
+            assert any(
+                "TOC generation completed successfully" in msg for msg in info_calls
+            )
 
     def test_toc_statistics_error_handling(self):
         """Test error handling in TOC statistics generation"""
@@ -367,7 +379,9 @@ class TestTOCGenerator:
         error_entry.children = []
 
         # Make accessing level raise an exception during analysis
-        with mock.patch.object(error_entry, "level", side_effect=Exception("Stats error")):
+        with mock.patch.object(
+            error_entry, "level", side_effect=Exception("Stats error")
+        ):
             entries = [error_entry]
 
             # Should handle error gracefully

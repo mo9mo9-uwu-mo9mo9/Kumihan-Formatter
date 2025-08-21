@@ -1,17 +1,30 @@
 """Design Patterns Unit Tests"""
 
-import pytest
 import asyncio
 import threading
 import time
-from unittest.mock import Mock, MagicMock
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock
+
+import pytest
 
 from kumihan_formatter.core.patterns import (
-    EventBus, Event, EventType, Observer,
-    StrategyManager, ParsingStrategy, RenderingStrategy, StrategyPriority,
-    DecoratorChain, CachingParserDecorator, LoggingDecorator,
-    Command, CommandProcessor, CommandStatus, ParseCommand, RenderCommand
+    CachingParserDecorator,
+    Command,
+    CommandProcessor,
+    CommandStatus,
+    DecoratorChain,
+    Event,
+    EventBus,
+    EventType,
+    LoggingDecorator,
+    Observer,
+    ParseCommand,
+    ParsingStrategy,
+    RenderCommand,
+    RenderingStrategy,
+    StrategyManager,
+    StrategyPriority,
 )
 
 
@@ -23,7 +36,7 @@ class TestObserverPattern:
         event = Event(
             event_type=EventType.PARSING_STARTED,
             source="test_parser",
-            data={"content_length": 100}
+            data={"content_length": 100},
         )
 
         assert event.event_type == EventType.PARSING_STARTED
@@ -106,6 +119,7 @@ class TestObserverPattern:
 
     def test_async_event_handling(self):
         """非同期イベント処理テスト"""
+
         async def async_test():
             event_bus = EventBus()
             async_observer = Mock()
@@ -166,7 +180,9 @@ class TestStrategyPattern:
         manager = StrategyManager()
 
         html_strategy = Mock(spec=RenderingStrategy)
-        html_strategy.supports_format = Mock(side_effect=lambda fmt: fmt.lower() == "html")
+        html_strategy.supports_format = Mock(
+            side_effect=lambda fmt: fmt.lower() == "html"
+        )
 
         manager.register_rendering_strategy("html", html_strategy)
 
@@ -182,10 +198,18 @@ class TestStrategyPattern:
 
         # 異なる対応度を持つ戦略を登録
         kumihan_strategy = Mock(spec=ParsingStrategy)
-        kumihan_strategy.supports_content = Mock(side_effect=lambda content: 0.9 if "# " in content and "##" in content else 0.1)
+        kumihan_strategy.supports_content = Mock(
+            side_effect=lambda content: (
+                0.9 if "# " in content and "##" in content else 0.1
+            )
+        )
 
         markdown_strategy = Mock(spec=ParsingStrategy)
-        markdown_strategy.supports_content = Mock(side_effect=lambda content: 0.8 if "##" in content and "# " not in content else 0.2)
+        markdown_strategy.supports_content = Mock(
+            side_effect=lambda content: (
+                0.8 if "##" in content and "# " not in content else 0.2
+            )
+        )
 
         manager.register_parsing_strategy("kumihan", kumihan_strategy)
         manager.register_parsing_strategy("markdown", markdown_strategy)
@@ -382,9 +406,7 @@ class TestPatternIntegration:
 
         # イベント発行
         manager.publish_event(
-            EventType.PARSING_STARTED,
-            "test_parser",
-            {"content_length": 100}
+            EventType.PARSING_STARTED, "test_parser", {"content_length": 100}
         )
 
         observer.handle_event.assert_called_once()

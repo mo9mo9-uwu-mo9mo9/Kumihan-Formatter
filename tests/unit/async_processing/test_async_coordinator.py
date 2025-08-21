@@ -16,12 +16,14 @@ import pytest
 # trio利用可能性チェック
 try:
     import trio
+
     trio_available = True
 except ImportError:
     trio_available = False
 
 # pytestプラグイン設定
 pytest_plugins = ["anyio"]
+
 
 # trioバックエンドのスキップ設定
 def pytest_generate_tests(metafunc):
@@ -31,6 +33,7 @@ def pytest_generate_tests(metafunc):
             metafunc.parametrize("anyio_backend", ["asyncio", "trio"])
         else:
             metafunc.parametrize("anyio_backend", ["asyncio"])
+
 
 from kumihan_formatter.core.async_processing.async_coordinator import (
     AsyncCoordinator,

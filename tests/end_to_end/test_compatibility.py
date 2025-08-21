@@ -34,8 +34,9 @@ class TestCompatibility:
         except Exception as e:
             logger.warning(f"一時ディレクトリの削除に失敗: {e}")
 
-    def process_with_compatibility_check(self, content: str,
-                                       version: str = "current") -> Dict[str, Any]:
+    def process_with_compatibility_check(
+        self, content: str, version: str = "current"
+    ) -> Dict[str, Any]:
         """互換性チェック付きの処理実行"""
         try:
             # バージョン別の処理ルール
@@ -51,7 +52,7 @@ class TestCompatibility:
 
             # 出力ファイル作成
             output_file = self.temp_dir / f"output_{version}.html"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(rendered_output)
 
             return {
@@ -61,20 +62,16 @@ class TestCompatibility:
                 "output_file": output_file,
                 "features_detected": parsed_data["features"],
                 "compatibility_warnings": parsed_data.get("warnings", []),
-                "migration_suggestions": parsed_data.get("suggestions", [])
+                "migration_suggestions": parsed_data.get("suggestions", []),
             }
 
         except Exception as e:
             logger.error(f"互換性処理エラー ({version}): {e}")
-            return {
-                "success": False,
-                "version": version,
-                "error": str(e)
-            }
+            return {"success": False, "version": version, "error": str(e)}
 
     def _legacy_parse(self, content: str) -> Dict[str, Any]:
         """レガシー記法のパース（Phase 1以前の記法）"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         features = []
         warnings = []
         suggestions = []
@@ -97,21 +94,21 @@ class TestCompatibility:
             "warnings": warnings,
             "suggestions": suggestions,
             "content": content,
-            "processing_mode": "legacy"
+            "processing_mode": "legacy",
         }
 
     def _current_parse(self, content: str) -> Dict[str, Any]:
         """現在の記法のパース"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         features = []
         warnings = []
 
         for i, line in enumerate(lines):
             # 現行記法の検出
-            if line.startswith('#') and line.endswith('#') and len(line) > 2:
+            if line.startswith("#") and line.endswith("#") and len(line) > 2:
                 features.append("current_inline")
 
-            if line.startswith('#') and not line.endswith('#'):
+            if line.startswith("#") and not line.endswith("#"):
                 features.append("current_block_start")
 
             if line.strip() == "##":
@@ -126,12 +123,12 @@ class TestCompatibility:
             "warnings": warnings,
             "suggestions": [],
             "content": content,
-            "processing_mode": "current"
+            "processing_mode": "current",
         }
 
     def _hybrid_parse(self, content: str) -> Dict[str, Any]:
         """ハイブリッド記法のパース（新旧混在対応）"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         features = []
         warnings = []
         suggestions = []
@@ -159,10 +156,10 @@ class TestCompatibility:
                 warnings.append(f"行{i+1}: 旧ブロック終了を新記法に変換")
 
             # 現行記法の検出
-            elif line.startswith('#') and line.endswith('#') and len(line) > 2:
+            elif line.startswith("#") and line.endswith("#") and len(line) > 2:
                 features.append("current_inline")
 
-            elif line.startswith('#') and not line.endswith('#'):
+            elif line.startswith("#") and not line.endswith("#"):
                 features.append("current_block_start")
 
             elif line.strip() == "##":
@@ -174,13 +171,12 @@ class TestCompatibility:
             "features": features,
             "warnings": warnings,
             "suggestions": suggestions,
-            "content": '\n'.join(converted_lines),
+            "content": "\n".join(converted_lines),
             "original_content": content,
-            "processing_mode": "hybrid"
+            "processing_mode": "hybrid",
         }
 
-    def _compatibility_render(self, parsed_data: Dict[str, Any],
-                            version: str) -> str:
+    def _compatibility_render(self, parsed_data: Dict[str, Any], version: str) -> str:
         """互換性を考慮したレンダリング"""
         html_parts = [
             "<!DOCTYPE html>",
@@ -196,63 +192,60 @@ class TestCompatibility:
             "</style>",
             "</head>",
             "<body>",
-            f"<h1>互換性テスト結果 - {version.upper()}モード</h1>"
+            f"<h1>互換性テスト結果 - {version.upper()}モード</h1>",
         ]
 
         # 互換性情報
         html_parts.append('<div class="compatibility-info">')
         html_parts.append(f'<h2>処理モード: {parsed_data["processing_mode"]}</h2>')
         html_parts.append(f'<p>検出された機能: {len(parsed_data["features"])}件</p>')
-        html_parts.append('<ul>')
+        html_parts.append("<ul>")
         for feature in parsed_data["features"]:
-            html_parts.append(f'<li>{feature}</li>')
-        html_parts.append('</ul>')
-        html_parts.append('</div>')
+            html_parts.append(f"<li>{feature}</li>")
+        html_parts.append("</ul>")
+        html_parts.append("</div>")
 
         # 警告
         if parsed_data.get("warnings"):
             html_parts.append('<div class="warning">')
-            html_parts.append('<h3>互換性警告</h3>')
-            html_parts.append('<ul>')
+            html_parts.append("<h3>互換性警告</h3>")
+            html_parts.append("<ul>")
             for warning in parsed_data["warnings"]:
-                html_parts.append(f'<li>{warning}</li>')
-            html_parts.append('</ul>')
-            html_parts.append('</div>')
+                html_parts.append(f"<li>{warning}</li>")
+            html_parts.append("</ul>")
+            html_parts.append("</div>")
 
         # 移行提案（常に表示するようにハイブリッドモードで対応）
         if parsed_data.get("suggestions") or parsed_data["processing_mode"] == "hybrid":
             html_parts.append('<div class="suggestion">')
-            html_parts.append('<h3>移行提案</h3>')
+            html_parts.append("<h3>移行提案</h3>")
             if parsed_data.get("suggestions"):
-                html_parts.append('<ul>')
+                html_parts.append("<ul>")
                 for suggestion in parsed_data["suggestions"]:
-                    html_parts.append(f'<li>{suggestion}</li>')
-                html_parts.append('</ul>')
+                    html_parts.append(f"<li>{suggestion}</li>")
+                html_parts.append("</ul>")
             else:
-                html_parts.append('<p>現在利用可能な移行提案はありません。</p>')
-            html_parts.append('</div>')
+                html_parts.append("<p>現在利用可能な移行提案はありません。</p>")
+            html_parts.append("</div>")
 
         # 処理された内容
-        html_parts.append('<h3>処理された内容</h3>')
+        html_parts.append("<h3>処理された内容</h3>")
         html_parts.append('<div class="converted">')
-        html_parts.append('<pre>')
+        html_parts.append("<pre>")
         html_parts.append(parsed_data["content"])
-        html_parts.append('</pre>')
-        html_parts.append('</div>')
+        html_parts.append("</pre>")
+        html_parts.append("</div>")
 
         # 元の内容（ハイブリッドモードの場合）
         if "original_content" in parsed_data:
-            html_parts.append('<h3>元の内容</h3>')
-            html_parts.append('<pre>')
+            html_parts.append("<h3>元の内容</h3>")
+            html_parts.append("<pre>")
             html_parts.append(parsed_data["original_content"])
-            html_parts.append('</pre>')
+            html_parts.append("</pre>")
 
-        html_parts.extend([
-            "</body>",
-            "</html>"
-        ])
+        html_parts.extend(["</body>", "</html>"])
 
-        return '\n'.join(html_parts)
+        return "\n".join(html_parts)
 
     def create_legacy_test_content(self) -> str:
         """レガシーテストコンテンツを作成"""
@@ -331,7 +324,9 @@ class TestCompatibility:
 
         # Then: レガシー処理の確認
         assert result["success"], f"レガシー記法処理が失敗: {result.get('error')}"
-        assert "legacy_inline" in result["features_detected"], "レガシーインライン記法が検出されていない"
+        assert (
+            "legacy_inline" in result["features_detected"]
+        ), "レガシーインライン記法が検出されていない"
         assert len(result["compatibility_warnings"]) > 0, "互換性警告が出力されていない"
         assert len(result["migration_suggestions"]) > 0, "移行提案が出力されていない"
 
@@ -351,8 +346,12 @@ class TestCompatibility:
 
         # Then: 現在記法処理の確認
         assert result["success"], f"現在記法処理が失敗: {result.get('error')}"
-        assert "current_inline" in result["features_detected"], "現在インライン記法が検出されていない"
-        assert "current_block_start" in result["features_detected"], "現在ブロック記法が検出されていない"
+        assert (
+            "current_inline" in result["features_detected"]
+        ), "現在インライン記法が検出されていない"
+        assert (
+            "current_block_start" in result["features_detected"]
+        ), "現在ブロック記法が検出されていない"
 
         # 警告が少ないことを確認
         assert len(result["compatibility_warnings"]) == 0, "現在記法で不要な警告が発生"
@@ -373,17 +372,23 @@ class TestCompatibility:
 
         # 自動変換機能の確認
         detected_features = result["features_detected"]
-        assert "auto_converted_inline" in detected_features or "auto_converted_block" in detected_features, \
-               "自動変換が実行されていない"
+        assert (
+            "auto_converted_inline" in detected_features
+            or "auto_converted_block" in detected_features
+        ), "自動変換が実行されていない"
 
         # 変換警告の確認
         assert len(result["compatibility_warnings"]) > 0, "変換警告が出力されていない"
 
         # 出力内容の確認
         output_content = result["output"]
-        assert "auto_converted" in output_content or "変換" in output_content, "自動変換情報が出力されていない"
+        assert (
+            "auto_converted" in output_content or "変換" in output_content
+        ), "自動変換情報が出力されていない"
 
-        logger.info(f"混在記法処理完了: {len(detected_features)}機能、{len(result['compatibility_warnings'])}警告")
+        logger.info(
+            f"混在記法処理完了: {len(detected_features)}機能、{len(result['compatibility_warnings'])}警告"
+        )
 
     @pytest.mark.e2e
     def test_後方互換性_バージョン間比較(self) -> None:
@@ -406,16 +411,25 @@ class TestCompatibility:
         current_features = len(current_result["features_detected"])
         hybrid_features = len(hybrid_result["features_detected"])
 
-        assert hybrid_features >= max(legacy_features, current_features), \
-               "ハイブリッドモードの機能検出数が不足"
+        assert hybrid_features >= max(
+            legacy_features, current_features
+        ), "ハイブリッドモードの機能検出数が不足"
 
         # 出力ファイルの存在確認
-        assert legacy_result["output_file"].exists(), "レガシー出力ファイルが作成されていない"
-        assert current_result["output_file"].exists(), "現在出力ファイルが作成されていない"
-        assert hybrid_result["output_file"].exists(), "ハイブリッド出力ファイルが作成されていない"
+        assert legacy_result[
+            "output_file"
+        ].exists(), "レガシー出力ファイルが作成されていない"
+        assert current_result[
+            "output_file"
+        ].exists(), "現在出力ファイルが作成されていない"
+        assert hybrid_result[
+            "output_file"
+        ].exists(), "ハイブリッド出力ファイルが作成されていない"
 
-        logger.info(f"バージョン間比較完了 - レガシー:{legacy_features}, "
-                   f"現在:{current_features}, ハイブリッド:{hybrid_features}機能")
+        logger.info(
+            f"バージョン間比較完了 - レガシー:{legacy_features}, "
+            f"現在:{current_features}, ハイブリッド:{hybrid_features}機能"
+        )
 
     @pytest.mark.e2e
     def test_後方互換性_移行支援機能(self) -> None:
@@ -437,23 +451,31 @@ class TestCompatibility:
         # Then: 移行支援機能の確認
         assert result["success"], "移行支援処理が失敗"
         # 移行提案は警告として出力される場合もある
-        migration_info_available = (len(result.get("migration_suggestions", [])) > 0 or
-                                   len(result.get("compatibility_warnings", [])) > 0)
+        migration_info_available = (
+            len(result.get("migration_suggestions", [])) > 0
+            or len(result.get("compatibility_warnings", [])) > 0
+        )
         assert migration_info_available, "移行情報が生成されていない"
 
         # 自動変換の確認
-        auto_converted = [f for f in result["features_detected"] if "auto_converted" in f]
+        auto_converted = [
+            f for f in result["features_detected"] if "auto_converted" in f
+        ]
         assert len(auto_converted) > 0, "自動変換が実行されていない"
 
         # 出力内容の移行情報確認
         output_content = result["output"]
         assert "移行提案" in output_content, "移行提案セクションが出力されていない"
         # 「変換」または「auto_converted」があることを確認
-        has_conversion_info = ("変換" in output_content or "auto_converted" in output_content)
+        has_conversion_info = (
+            "変換" in output_content or "auto_converted" in output_content
+        )
         assert has_conversion_info, "変換情報が出力されていない"
 
-        logger.info(f"移行支援機能確認完了: {len(result['migration_suggestions'])}提案、"
-                   f"{len(auto_converted)}自動変換")
+        logger.info(
+            f"移行支援機能確認完了: {len(result['migration_suggestions'])}提案、"
+            f"{len(auto_converted)}自動変換"
+        )
 
     @pytest.mark.e2e
     def test_後方互換性_エラー耐性(self) -> None:
@@ -471,17 +493,25 @@ class TestCompatibility:
 """
 
         # When: 各モードで処理
-        legacy_result = self.process_with_compatibility_check(problematic_content, "legacy")
-        current_result = self.process_with_compatibility_check(problematic_content, "current")
-        hybrid_result = self.process_with_compatibility_check(problematic_content, "hybrid")
+        legacy_result = self.process_with_compatibility_check(
+            problematic_content, "legacy"
+        )
+        current_result = self.process_with_compatibility_check(
+            problematic_content, "current"
+        )
+        hybrid_result = self.process_with_compatibility_check(
+            problematic_content, "hybrid"
+        )
 
         # Then: エラー耐性の確認
         # 少なくとも1つのモードは成功すべき
-        success_count = sum([
-            legacy_result["success"],
-            current_result["success"],
-            hybrid_result["success"]
-        ])
+        success_count = sum(
+            [
+                legacy_result["success"],
+                current_result["success"],
+                hybrid_result["success"],
+            ]
+        )
         assert success_count >= 1, "全てのモードが失敗している"
 
         # ハイブリッドモードは最も堅牢であるべき
@@ -534,5 +564,7 @@ class TestCompatibility:
         assert current_time < 10.0, f"現在モード処理時間超過: {current_time}秒"
         assert hybrid_time < 15.0, f"ハイブリッドモード処理時間超過: {hybrid_time}秒"
 
-        logger.info(f"パフォーマンス比較完了 - レガシー:{legacy_time:.3f}s, "
-                   f"現在:{current_time:.3f}s, ハイブリッド:{hybrid_time:.3f}s")
+        logger.info(
+            f"パフォーマンス比較完了 - レガシー:{legacy_time:.3f}s, "
+            f"現在:{current_time:.3f}s, ハイブリッド:{hybrid_time:.3f}s"
+        )

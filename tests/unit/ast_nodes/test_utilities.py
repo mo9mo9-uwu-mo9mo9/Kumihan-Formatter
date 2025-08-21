@@ -4,16 +4,17 @@ This module provides comprehensive testing for AST utility functions
 in the utilities module, covering all scenarios and edge cases.
 """
 
-import pytest
 from typing import Any
 from unittest.mock import Mock
 
+import pytest
+
 from kumihan_formatter.core.ast_nodes.node import Node
 from kumihan_formatter.core.ast_nodes.utilities import (
-    flatten_text_nodes,
     count_nodes_by_type,
     find_all_headings,
-    validate_ast
+    flatten_text_nodes,
+    validate_ast,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -117,7 +118,7 @@ class TestCountNodesByType:
             Node(type="h1", content="heading"),
             Node(type="p", content="para2"),
             Node(type="div", content="division"),
-            Node(type="span", content="span1")
+            Node(type="span", content="span1"),
         ]
         result = count_nodes_by_type(nodes)
 
@@ -133,7 +134,7 @@ class TestCountNodesByType:
             Node(type="li", content="item1"),
             Node(type="li", content="item2"),
             Node(type="li", content="item3"),
-            Node(type="li", content="item4")
+            Node(type="li", content="item4"),
         ]
         result = count_nodes_by_type(nodes)
 
@@ -146,12 +147,7 @@ class TestCountNodesByType:
         assert count_nodes_by_type([]) == {}
 
         # Node以外の要素（関数内でisinstance(node, Node)チェックで除外）
-        mixed_list = [
-            "not a node",
-            42,
-            None,
-            {"type": "fake"}
-        ]
+        mixed_list = ["not a node", 42, None, {"type": "fake"}]
         result = count_nodes_by_type(mixed_list)
         assert result == {}
 
@@ -162,7 +158,7 @@ class TestCountNodesByType:
             "string element",
             Node(type="div", content="division"),
             123,
-            Node(type="p", content="another para")
+            Node(type="p", content="another para"),
         ]
         result = count_nodes_by_type(nodes)
 
@@ -173,10 +169,7 @@ class TestCountNodesByType:
 
     def test_正常系_空タイプ処理(self):
         """正常系: 空のタイプを持つノードの処理確認"""
-        nodes = [
-            Node(type="", content="empty type"),
-            Node(type="p", content="normal")
-        ]
+        nodes = [Node(type="", content="empty type"), Node(type="p", content="normal")]
         result = count_nodes_by_type(nodes)
 
         # 空タイプも正常にカウント
@@ -194,7 +187,7 @@ class TestFindAllHeadings:
             Node(type="p", content="paragraph"),
             Node(type="h2", content="Subtitle"),
             Node(type="div", content="division"),
-            Node(type="h3", content="Sub-subtitle")
+            Node(type="h3", content="Sub-subtitle"),
         ]
         result = find_all_headings(nodes)
 
@@ -209,16 +202,12 @@ class TestFindAllHeadings:
     def test_正常系_再帰的検索(self):
         """正常系: ネストしたノード内の見出し検索確認"""
         nested_heading = Node(type="h2", content="Nested heading")
-        container = Node(type="div", content=[
-            "Some text",
-            nested_heading,
-            "More text"
-        ])
+        container = Node(type="div", content=["Some text", nested_heading, "More text"])
 
         nodes = [
             Node(type="h1", content="Top level"),
             container,
-            Node(type="p", content="paragraph")
+            Node(type="p", content="paragraph"),
         ]
         result = find_all_headings(nodes)
 
@@ -233,19 +222,16 @@ class TestFindAllHeadings:
         # 深いネスト構造を作成
         deep_heading = Node(type="h4", content="Deep heading")
         level3_container = Node(type="section", content=[deep_heading])
-        level2_container = Node(type="article", content=[
-            Node(type="h3", content="Level 3 heading"),
-            level3_container
-        ])
-        level1_container = Node(type="div", content=[
-            Node(type="h2", content="Level 2 heading"),
-            level2_container
-        ])
+        level2_container = Node(
+            type="article",
+            content=[Node(type="h3", content="Level 3 heading"), level3_container],
+        )
+        level1_container = Node(
+            type="div",
+            content=[Node(type="h2", content="Level 2 heading"), level2_container],
+        )
 
-        nodes = [
-            Node(type="h1", content="Root heading"),
-            level1_container
-        ]
+        nodes = [Node(type="h1", content="Root heading"), level1_container]
 
         result = find_all_headings(nodes)
 
@@ -260,7 +246,7 @@ class TestFindAllHeadings:
         nodes = [
             Node(type="p", content="paragraph"),
             Node(type="div", content="division"),
-            Node(type="span", content="span")
+            Node(type="span", content="span"),
         ]
         result = find_all_headings(nodes)
 
@@ -277,7 +263,7 @@ class TestFindAllHeadings:
             "not a node",
             Node(type="h1", content="Real heading"),
             42,
-            {"fake": "node"}
+            {"fake": "node"},
         ]
         result = find_all_headings(nodes)
 
@@ -287,10 +273,7 @@ class TestFindAllHeadings:
     def test_正常系_文字列コンテンツノード(self):
         """正常系: 文字列コンテンツを持つノード内検索"""
         node_with_string = Node(type="div", content="string content")
-        nodes = [
-            Node(type="h1", content="heading"),
-            node_with_string
-        ]
+        nodes = [Node(type="h1", content="heading"), node_with_string]
         result = find_all_headings(nodes)
 
         # 文字列コンテンツのノードは再帰検索されない
@@ -306,7 +289,7 @@ class TestValidateAST:
         nodes = [
             Node(type="h1", content="Title"),
             Node(type="p", content="Paragraph"),
-            Node(type="div", content=["Mixed", "content"])
+            Node(type="div", content=["Mixed", "content"]),
         ]
         issues = validate_ast(nodes)
 
@@ -319,7 +302,7 @@ class TestValidateAST:
             "string element",
             42,
             None,
-            {"fake": "node"}
+            {"fake": "node"},
         ]
         issues = validate_ast(nodes)
 
@@ -331,10 +314,7 @@ class TestValidateAST:
 
     def test_異常系_空タイプ(self):
         """異常系: 空のタイプを持つノードの検証確認"""
-        nodes = [
-            Node(type="", content="Empty type"),
-            Node(type="p", content="Normal")
-        ]
+        nodes = [Node(type="", content="Empty type"), Node(type="p", content="Normal")]
         issues = validate_ast(nodes)
 
         assert len(issues) == 1
@@ -342,10 +322,7 @@ class TestValidateAST:
 
     def test_異常系_Noneコンテンツ(self):
         """異常系: Noneコンテンツを持つノードの検証確認"""
-        nodes = [
-            Node(type="div", content=None),
-            Node(type="p", content="Normal")
-        ]
+        nodes = [Node(type="div", content=None), Node(type="p", content="Normal")]
         issues = validate_ast(nodes)
 
         assert len(issues) == 1
@@ -361,12 +338,12 @@ class TestValidateAST:
         # 実際の実装確認のため、見出しレベル6を持つカスタムノードを作成
         class CustomNode(Node):
             def is_heading(self):
-                return self.type in {'h1', 'h6'}  # h6も見出しとして認識
+                return self.type in {"h1", "h6"}  # h6も見出しとして認識
 
             def get_heading_level(self):
-                if self.type == 'h1':
+                if self.type == "h1":
                     return 1
-                elif self.type == 'h6':
+                elif self.type == "h6":
                     return 6  # 不正レベル
                 return super().get_heading_level()
 
@@ -386,7 +363,7 @@ class TestValidateAST:
             "not a node",  # 非Node要素
             Node(type="", content="Empty type"),  # 空タイプ
             Node(type="div", content=None),  # Noneコンテンツ
-            Node(type="p", content="Valid")  # 正常
+            Node(type="p", content="Valid"),  # 正常
         ]
         issues = validate_ast(nodes)
 
@@ -407,7 +384,7 @@ class TestValidateAST:
             Node(type="h2", content="H2"),
             Node(type="h3", content="H3"),
             Node(type="h4", content="H4"),
-            Node(type="h5", content="H5")
+            Node(type="h5", content="H5"),
         ]
         issues = validate_ast(nodes)
 
@@ -422,7 +399,9 @@ class TestUtilitiesIntegration:
         """統合: AST作成→検証→操作の完全フロー確認"""
         # 1. AST構造作成
         heading = Node(type="h1", content="Document Title")
-        paragraph = Node(type="p", content=["Text with ", Node(type="strong", content="formatting")])
+        paragraph = Node(
+            type="p", content=["Text with ", Node(type="strong", content="formatting")]
+        )
         container = Node(type="div", content=[heading, paragraph])
 
         ast_nodes = [container]
@@ -486,7 +465,7 @@ class TestUtilitiesIntegration:
             "not a node",
             Node(type="", content="empty type"),
             Node(type="h1", content="valid heading"),
-            Node(type="div", content=None)
+            Node(type="div", content=None),
         ]
 
         # 検証は問題を検出
@@ -532,7 +511,9 @@ class TestUtilitiesIntegration:
         # テストデータ作成
         nodes = []
         for i in range(50):
-            content = [f"Text part {j}" for j in range(5)]  # 各ノードに5個のテキスト要素
+            content = [
+                f"Text part {j}" for j in range(5)
+            ]  # 各ノードに5個のテキスト要素
             nodes.append(Node(type="p", content=content))
 
         start_time = time.time()

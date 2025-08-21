@@ -179,11 +179,15 @@ class TestEndToEndAdvanced:
         )
 
         # Test HTML format
-        result = self.runner.invoke(cli, ["convert", str(test_file), "--format", "html"])
+        result = self.runner.invoke(
+            cli, ["convert", str(test_file), "--format", "html"]
+        )
         assert result.exit_code in [0, 1, 2]
 
         # Test Markdown format
-        result = self.runner.invoke(cli, ["convert", str(test_file), "--format", "markdown"])
+        result = self.runner.invoke(
+            cli, ["convert", str(test_file), "--format", "markdown"]
+        )
         assert result.exit_code in [0, 1, 2]
 
 

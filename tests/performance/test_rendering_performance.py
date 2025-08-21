@@ -13,6 +13,7 @@ import pytest
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
@@ -32,113 +33,133 @@ class RenderingPerformanceTester:
     def cleanup(self) -> None:
         """リソースクリーンアップ"""
         import shutil
+
         try:
             if self.temp_dir.exists():
                 shutil.rmtree(self.temp_dir)
         except Exception as e:
             logger.warning(f"クリーンアップエラー: {e}")
 
-    def generate_parsed_data(self, element_count: int,
-                           complexity: str = "medium") -> Dict[str, Any]:
+    def generate_parsed_data(
+        self, element_count: int, complexity: str = "medium"
+    ) -> Dict[str, Any]:
         """パース済みデータ生成"""
         elements = []
 
         if complexity == "simple":
             # シンプルなテキスト要素のみ
             for i in range(element_count):
-                elements.append({
-                    "type": "text",
-                    "content": f"テキスト要素 {i}",
-                    "attributes": {}
-                })
+                elements.append(
+                    {"type": "text", "content": f"テキスト要素 {i}", "attributes": {}}
+                )
 
         elif complexity == "medium":
             # 中程度の複雑さ（様々な要素）
             for i in range(element_count):
                 if i % 10 == 0:
-                    elements.append({
-                        "type": "heading",
-                        "level": 1,
-                        "content": f"見出し {i}",
-                        "attributes": {"id": f"heading_{i}"}
-                    })
+                    elements.append(
+                        {
+                            "type": "heading",
+                            "level": 1,
+                            "content": f"見出し {i}",
+                            "attributes": {"id": f"heading_{i}"},
+                        }
+                    )
                 elif i % 5 == 0:
-                    elements.append({
-                        "type": "bold",
-                        "content": f"太字テキスト {i}",
-                        "attributes": {"class": "bold"}
-                    })
+                    elements.append(
+                        {
+                            "type": "bold",
+                            "content": f"太字テキスト {i}",
+                            "attributes": {"class": "bold"},
+                        }
+                    )
                 elif i % 3 == 0:
-                    elements.append({
-                        "type": "block",
-                        "content": f"ブロック内容 {i}",
-                        "attributes": {"class": "block-content"}
-                    })
+                    elements.append(
+                        {
+                            "type": "block",
+                            "content": f"ブロック内容 {i}",
+                            "attributes": {"class": "block-content"},
+                        }
+                    )
                 else:
-                    elements.append({
-                        "type": "text",
-                        "content": f"通常テキスト {i}",
-                        "attributes": {}
-                    })
+                    elements.append(
+                        {
+                            "type": "text",
+                            "content": f"通常テキスト {i}",
+                            "attributes": {},
+                        }
+                    )
 
         elif complexity == "complex":
             # 高度な複雑さ（ネスト、複合要素）
             for i in range(element_count):
                 if i % 20 == 0:
-                    elements.append({
-                        "type": "section",
-                        "content": f"セクション {i}",
-                        "children": [
-                            {
-                                "type": "heading",
-                                "level": 2,
-                                "content": f"サブ見出し {i}",
-                                "attributes": {"id": f"sub_heading_{i}"}
-                            },
-                            {
-                                "type": "paragraph",
-                                "content": f"段落内容 {i}",
-                                "attributes": {"class": "paragraph"}
-                            }
-                        ],
-                        "attributes": {"class": "section", "data-index": str(i)}
-                    })
+                    elements.append(
+                        {
+                            "type": "section",
+                            "content": f"セクション {i}",
+                            "children": [
+                                {
+                                    "type": "heading",
+                                    "level": 2,
+                                    "content": f"サブ見出し {i}",
+                                    "attributes": {"id": f"sub_heading_{i}"},
+                                },
+                                {
+                                    "type": "paragraph",
+                                    "content": f"段落内容 {i}",
+                                    "attributes": {"class": "paragraph"},
+                                },
+                            ],
+                            "attributes": {"class": "section", "data-index": str(i)},
+                        }
+                    )
                 elif i % 8 == 0:
-                    elements.append({
-                        "type": "list",
-                        "list_type": "unordered",
-                        "items": [
-                            {"content": f"項目 {i}-1", "type": "list_item"},
-                            {"content": f"項目 {i}-2", "type": "list_item"},
-                            {"content": f"項目 {i}-3", "type": "list_item"}
-                        ],
-                        "attributes": {"class": "list"}
-                    })
+                    elements.append(
+                        {
+                            "type": "list",
+                            "list_type": "unordered",
+                            "items": [
+                                {"content": f"項目 {i}-1", "type": "list_item"},
+                                {"content": f"項目 {i}-2", "type": "list_item"},
+                                {"content": f"項目 {i}-3", "type": "list_item"},
+                            ],
+                            "attributes": {"class": "list"},
+                        }
+                    )
                 elif i % 4 == 0:
-                    elements.append({
-                        "type": "composite",
-                        "content": f"複合要素 {i}",
-                        "inline_elements": [
-                            {"type": "bold", "content": "太字部分"},
-                            {"type": "italic", "content": "イタリック部分"},
-                            {"type": "link", "content": "リンク", "href": f"#link_{i}"}
-                        ],
-                        "attributes": {"class": "composite"}
-                    })
+                    elements.append(
+                        {
+                            "type": "composite",
+                            "content": f"複合要素 {i}",
+                            "inline_elements": [
+                                {"type": "bold", "content": "太字部分"},
+                                {"type": "italic", "content": "イタリック部分"},
+                                {
+                                    "type": "link",
+                                    "content": "リンク",
+                                    "href": f"#link_{i}",
+                                },
+                            ],
+                            "attributes": {"class": "composite"},
+                        }
+                    )
                 else:
-                    elements.append({
-                        "type": "text",
-                        "content": f"通常テキスト {i}",
-                        "attributes": {}
-                    })
+                    elements.append(
+                        {
+                            "type": "text",
+                            "content": f"通常テキスト {i}",
+                            "attributes": {},
+                        }
+                    )
 
         return {
             "elements": elements,
             "metadata": {
                 "element_count": len(elements),
                 "complexity": complexity,
-                "generated_at": time.time()
-            }
+                "generated_at": time.time(),
+            },
         }
 
     def mock_render_element(self, element: Dict[str, Any]) -> str:
@@ -198,7 +219,7 @@ class RenderingPerformanceTester:
 
         elif element_type == "link":
             href = element.get("href", "#")
-            return f"<a{attr_str} href=\"{href}\">{content}</a>"
+            return f'<a{attr_str} href="{href}">{content}</a>'
 
         else:
             return f"<span{attr_str}>{content}</span>"
@@ -228,7 +249,7 @@ class RenderingPerformanceTester:
             "</style>",
             "</head>",
             "<body>",
-            f'<h1>レンダリング結果 ({len(elements)}要素)</h1>'
+            f"<h1>レンダリング結果 ({len(elements)}要素)</h1>",
         ]
 
         # 要素のレンダリング
@@ -239,26 +260,25 @@ class RenderingPerformanceTester:
         rendering_time = time.time() - rendering_start
 
         # HTML終了タグ
-        html_parts.extend([
-            f'<p>レンダリング時間: {rendering_time:.4f}秒</p>',
-            "</body>",
-            "</html>"
-        ])
+        html_parts.extend(
+            [f"<p>レンダリング時間: {rendering_time:.4f}秒</p>", "</body>", "</html>"]
+        )
 
         total_time = time.time() - start_time
 
-        rendered_html = '\n'.join(html_parts)
+        rendered_html = "\n".join(html_parts)
 
         return {
             "html": rendered_html,
             "total_time": total_time,
             "rendering_time": rendering_time,
             "html_size": len(rendered_html),
-            "elements_rendered": len(elements)
+            "elements_rendered": len(elements),
         }
 
-    def measure_rendering_performance(self, parsed_data: Dict[str, Any],
-                                    iterations: int = 1) -> Dict[str, Any]:
+    def measure_rendering_performance(
+        self, parsed_data: Dict[str, Any], iterations: int = 1
+    ) -> Dict[str, Any]:
         """レンダリング性能測定"""
         start_memory = 0
         if PSUTIL_AVAILABLE:
@@ -273,11 +293,9 @@ class RenderingPerformanceTester:
             render_result = self.mock_render_full_document(parsed_data)
             iteration_time = time.time() - iteration_start
 
-            results.append({
-                "iteration": i,
-                "time": iteration_time,
-                "render_result": render_result
-            })
+            results.append(
+                {"iteration": i, "time": iteration_time, "render_result": render_result}
+            )
 
         total_time = time.time() - total_start_time
 
@@ -302,12 +320,15 @@ class RenderingPerformanceTester:
             "max_time": max_time,
             "average_html_size_kb": avg_html_size / 1024,
             "throughput_per_second": iterations / total_time if total_time > 0 else 0,
-            "memory_usage_mb": (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0,
-            "results": results
+            "memory_usage_mb": (
+                (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+            ),
+            "results": results,
         }
 
-    def run_scalability_test(self, base_element_count: int,
-                           scale_factors: List[int]) -> Dict[str, Any]:
+    def run_scalability_test(
+        self, base_element_count: int, scale_factors: List[int]
+    ) -> Dict[str, Any]:
         """スケーラビリティテスト実行"""
         scalability_results = []
 
@@ -317,19 +338,21 @@ class RenderingPerformanceTester:
 
             performance_result = self.measure_rendering_performance(parsed_data, 3)
 
-            scalability_results.append({
-                "scale_factor": factor,
-                "element_count": element_count,
-                "average_time": performance_result["average_time"],
-                "throughput": performance_result["throughput_per_second"],
-                "html_size_kb": performance_result["average_html_size_kb"],
-                "memory_usage_mb": performance_result["memory_usage_mb"]
-            })
+            scalability_results.append(
+                {
+                    "scale_factor": factor,
+                    "element_count": element_count,
+                    "average_time": performance_result["average_time"],
+                    "throughput": performance_result["throughput_per_second"],
+                    "html_size_kb": performance_result["average_html_size_kb"],
+                    "memory_usage_mb": performance_result["memory_usage_mb"],
+                }
+            )
 
         return {
             "base_element_count": base_element_count,
             "scale_factors": scale_factors,
-            "results": scalability_results
+            "results": scalability_results,
         }
 
 
@@ -356,13 +379,17 @@ class TestRenderingPerformance:
         result = self.tester.measure_rendering_performance(parsed_data, 10)
 
         # Then: 性能基準確認
-        assert result["average_time"] < 0.1, \
-               f"小規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
-        assert result["throughput_per_second"] > 50, \
-               f"小規模要素スループット不足: {result['throughput_per_second']:.1f}/秒"
+        assert (
+            result["average_time"] < 0.1
+        ), f"小規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["throughput_per_second"] > 50
+        ), f"小規模要素スループット不足: {result['throughput_per_second']:.1f}/秒"
 
-        logger.info(f"小規模要素性能: 平均{result['average_time']:.3f}秒, "
-                   f"HTML{result['average_html_size_kb']:.1f}KB")
+        logger.info(
+            f"小規模要素性能: 平均{result['average_time']:.3f}秒, "
+            f"HTML{result['average_html_size_kb']:.1f}KB"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_中規模要素(self) -> None:
@@ -374,17 +401,21 @@ class TestRenderingPerformance:
         result = self.tester.measure_rendering_performance(parsed_data, 5)
 
         # Then: 性能基準確認
-        assert result["average_time"] < 2.0, \
-               f"中規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
-        assert result["memory_usage_mb"] < 50, \
-               f"中規模要素メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
+        assert (
+            result["average_time"] < 2.0
+        ), f"中規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["memory_usage_mb"] < 50
+        ), f"中規模要素メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
 
         # HTML出力サイズの妥当性確認
         assert result["average_html_size_kb"] > 10, "HTML出力サイズが小さすぎる"
         assert result["average_html_size_kb"] < 1000, "HTML出力サイズが大きすぎる"
 
-        logger.info(f"中規模要素性能: 平均{result['average_time']:.3f}秒, "
-                   f"HTML{result['average_html_size_kb']:.1f}KB")
+        logger.info(
+            f"中規模要素性能: 平均{result['average_time']:.3f}秒, "
+            f"HTML{result['average_html_size_kb']:.1f}KB"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_大規模要素(self) -> None:
@@ -396,13 +427,17 @@ class TestRenderingPerformance:
         result = self.tester.measure_rendering_performance(parsed_data, 3)
 
         # Then: 性能基準確認
-        assert result["average_time"] < 10.0, \
-               f"大規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
-        assert result["memory_usage_mb"] < 100, \
-               f"大規模要素メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
+        assert (
+            result["average_time"] < 10.0
+        ), f"大規模要素レンダリング時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["memory_usage_mb"] < 100
+        ), f"大規模要素メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
 
-        logger.info(f"大規模要素性能: 平均{result['average_time']:.3f}秒, "
-                   f"HTML{result['average_html_size_kb']:.1f}KB")
+        logger.info(
+            f"大規模要素性能: 平均{result['average_time']:.3f}秒, "
+            f"HTML{result['average_html_size_kb']:.1f}KB"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_複雑度比較(self) -> None:
@@ -428,16 +463,17 @@ class TestRenderingPerformance:
         assert medium_time <= complex_time * 1.5, "中程度 > 複雑の処理時間関係が不正"
 
         # 最大複雑度でも妥当な時間内
-        assert complex_time < 5.0, \
-               f"複雑要素レンダリング時間超過: {complex_time:.3f}秒"
+        assert complex_time < 5.0, f"複雑要素レンダリング時間超過: {complex_time:.3f}秒"
 
         # HTML出力サイズも複雑度に応じて増加
         simple_size = complexity_results["simple"]["average_html_size_kb"]
         complex_size = complexity_results["complex"]["average_html_size_kb"]
         assert complex_size > simple_size, "複雑度に応じたHTML出力サイズ増加なし"
 
-        logger.info(f"複雑度性能比較: シンプル{simple_time:.3f}s, "
-                   f"中程度{medium_time:.3f}s, 複雑{complex_time:.3f}s")
+        logger.info(
+            f"複雑度性能比較: シンプル{simple_time:.3f}s, "
+            f"中程度{medium_time:.3f}s, 複雑{complex_time:.3f}s"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_HTML出力品質(self) -> None:
@@ -470,8 +506,9 @@ class TestRenderingPerformance:
         html_size_kb = len(html_output) / 1024
         assert html_size_kb > 5, f"HTML出力が小さすぎる: {html_size_kb:.1f}KB"
 
-        logger.info(f"HTML出力品質確認完了: {html_size_kb:.1f}KB, "
-                   f"文字数{len(html_output)}")
+        logger.info(
+            f"HTML出力品質確認完了: {html_size_kb:.1f}KB, " f"文字数{len(html_output)}"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_スケーラビリティ(self) -> None:
@@ -491,24 +528,28 @@ class TestRenderingPerformance:
         # 線形スケーラビリティの確認
         time_ratios = []
         for i in range(1, len(results)):
-            prev_time = results[i-1]["average_time"]
+            prev_time = results[i - 1]["average_time"]
             curr_time = results[i]["average_time"]
-            scale_ratio = results[i]["scale_factor"] / results[i-1]["scale_factor"]
-            time_ratio = curr_time / prev_time if prev_time > 0 else float('inf')
+            scale_ratio = results[i]["scale_factor"] / results[i - 1]["scale_factor"]
+            time_ratio = curr_time / prev_time if prev_time > 0 else float("inf")
             time_ratios.append(time_ratio / scale_ratio)
 
         # 時間増加率が妥当な範囲内
         avg_ratio = sum(time_ratios) / len(time_ratios) if time_ratios else 1.0
-        assert 0.5 <= avg_ratio <= 3.0, \
-               f"レンダリングスケーラビリティが非線形: 平均比{avg_ratio:.2f}"
+        assert (
+            0.5 <= avg_ratio <= 3.0
+        ), f"レンダリングスケーラビリティが非線形: 平均比{avg_ratio:.2f}"
 
         # 最大スケールでも妥当な性能
         max_scale_result = results[-1]
-        assert max_scale_result["average_time"] < 8.0, \
-               f"最大スケールレンダリング時間超過: {max_scale_result['average_time']:.3f}秒"
+        assert (
+            max_scale_result["average_time"] < 8.0
+        ), f"最大スケールレンダリング時間超過: {max_scale_result['average_time']:.3f}秒"
 
-        logger.info(f"レンダリングスケーラビリティ確認完了: {len(results)}ポイント, "
-                   f"平均比{avg_ratio:.2f}")
+        logger.info(
+            f"レンダリングスケーラビリティ確認完了: {len(results)}ポイント, "
+            f"平均比{avg_ratio:.2f}"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_メモリ効率性(self) -> None:
@@ -527,15 +568,17 @@ class TestRenderingPerformance:
         min_memory = min(memory_usage_history)
         memory_variance = max_memory - min_memory
 
-        assert memory_variance < 30, \
-               f"レンダリングメモリ使用量の変動が大きい: {memory_variance:.1f}MB"
+        assert (
+            memory_variance < 30
+        ), f"レンダリングメモリ使用量の変動が大きい: {memory_variance:.1f}MB"
 
         avg_memory = sum(memory_usage_history) / len(memory_usage_history)
-        assert avg_memory < 80, \
-               f"レンダリング平均メモリ使用量超過: {avg_memory:.1f}MB"
+        assert avg_memory < 80, f"レンダリング平均メモリ使用量超過: {avg_memory:.1f}MB"
 
-        logger.info(f"レンダリングメモリ効率性確認完了: 平均{avg_memory:.1f}MB, "
-                   f"変動{memory_variance:.1f}MB")
+        logger.info(
+            f"レンダリングメモリ効率性確認完了: 平均{avg_memory:.1f}MB, "
+            f"変動{memory_variance:.1f}MB"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_並列要素処理(self) -> None:
@@ -544,7 +587,7 @@ class TestRenderingPerformance:
         datasets = [
             self.tester.generate_parsed_data(200, "simple"),
             self.tester.generate_parsed_data(200, "medium"),
-            self.tester.generate_parsed_data(200, "complex")
+            self.tester.generate_parsed_data(200, "complex"),
         ]
 
         # When: 並列レンダリングシミュレート
@@ -553,32 +596,43 @@ class TestRenderingPerformance:
 
         for i, data in enumerate(datasets):
             result = self.tester.measure_rendering_performance(data, 1)
-            parallel_results.append({
-                "dataset_id": i,
-                "complexity": ["simple", "medium", "complex"][i],
-                "result": result
-            })
+            parallel_results.append(
+                {
+                    "dataset_id": i,
+                    "complexity": ["simple", "medium", "complex"][i],
+                    "result": result,
+                }
+            )
 
         total_parallel_time = time.time() - start_time
 
         # Then: 並列処理性能確認
-        total_processing_time = sum(r["result"]["average_time"] for r in parallel_results)
+        total_processing_time = sum(
+            r["result"]["average_time"] for r in parallel_results
+        )
 
         # 並列処理効率性確認
-        efficiency = total_processing_time / total_parallel_time if total_parallel_time > 0 else 0
+        efficiency = (
+            total_processing_time / total_parallel_time
+            if total_parallel_time > 0
+            else 0
+        )
         assert efficiency >= 0.7, f"並列レンダリング効率が低い: {efficiency:.2f}"
 
         # 全体の処理時間確認
-        assert total_parallel_time < 5.0, \
-               f"並列レンダリング時間超過: {total_parallel_time:.3f}秒"
+        assert (
+            total_parallel_time < 5.0
+        ), f"並列レンダリング時間超過: {total_parallel_time:.3f}秒"
 
         # HTML出力品質確認
         for result in parallel_results:
             html_size = result["result"]["average_html_size_kb"]
             assert html_size > 1, f"並列処理でHTML出力が小さすぎる: {html_size:.1f}KB"
 
-        logger.info(f"並列レンダリング性能確認完了: 効率{efficiency:.2f}, "
-                   f"総時間{total_parallel_time:.3f}秒")
+        logger.info(
+            f"並列レンダリング性能確認完了: 効率{efficiency:.2f}, "
+            f"総時間{total_parallel_time:.3f}秒"
+        )
 
     @pytest.mark.performance
     def test_レンダリング性能_出力最適化(self) -> None:
@@ -592,20 +646,28 @@ class TestRenderingPerformance:
 
         # Then: 出力最適化確認
         # HTML構造の効率性
-        tag_count = html_output.count('<')
+        tag_count = html_output.count("<")
         content_ratio = (len(html_output) - tag_count * 10) / len(html_output)  # 概算
-        assert content_ratio > 0.3, f"HTML構造効率が低い: コンテンツ比{content_ratio:.2f}"
+        assert (
+            content_ratio > 0.3
+        ), f"HTML構造効率が低い: コンテンツ比{content_ratio:.2f}"
 
         # 重複スタイルがないこと
-        style_section = html_output[html_output.find('<style>'):html_output.find('</style>')]
-        style_lines = style_section.split('\n')
+        style_section = html_output[
+            html_output.find("<style>") : html_output.find("</style>")
+        ]
+        style_lines = style_section.split("\n")
         unique_styles = set(line.strip() for line in style_lines if line.strip())
-        assert len(unique_styles) == len([line for line in style_lines if line.strip()]), \
-               "重複するスタイル定義がある"
+        assert len(unique_styles) == len(
+            [line for line in style_lines if line.strip()]
+        ), "重複するスタイル定義がある"
 
         # レンダリング速度
-        assert result["average_time"] < 3.0, \
-               f"最適化レンダリング時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["average_time"] < 3.0
+        ), f"最適化レンダリング時間超過: {result['average_time']:.3f}秒"
 
-        logger.info(f"出力最適化確認完了: コンテンツ比{content_ratio:.2f}, "
-                   f"時間{result['average_time']:.3f}秒")
+        logger.info(
+            f"出力最適化確認完了: コンテンツ比{content_ratio:.2f}, "
+            f"時間{result['average_time']:.3f}秒"
+        )

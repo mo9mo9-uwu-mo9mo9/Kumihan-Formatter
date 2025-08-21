@@ -35,8 +35,9 @@ class TestErrorScenarios:
         except Exception as e:
             logger.warning(f"一時ディレクトリの削除に失敗: {e}")
 
-    def process_with_error_handling(self, input_content: str,
-                                   simulate_error: Optional[str] = None) -> Dict[str, Any]:
+    def process_with_error_handling(
+        self, input_content: str, simulate_error: Optional[str] = None
+    ) -> Dict[str, Any]:
         """エラーハンドリング付きの処理実行"""
         try:
             # 1. 入力検証
@@ -49,7 +50,7 @@ class TestErrorScenarios:
                     "success": True,
                     "warning": "empty_input",
                     "output": self._generate_empty_output(),
-                    "recovery_applied": True
+                    "recovery_applied": True,
                 }
 
             # 2. パース処理
@@ -69,7 +70,7 @@ class TestErrorScenarios:
                 raise IOError("出力処理エラー")
 
             output_file = self.temp_dir / "output_with_error_handling.html"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(rendered_output)
 
             return {
@@ -77,7 +78,7 @@ class TestErrorScenarios:
                 "output": rendered_output,
                 "output_file": output_file,
                 "warnings": parsed_data.get("warnings", []),
-                "recovery_applied": parsed_data.get("recovery_applied", False)
+                "recovery_applied": parsed_data.get("recovery_applied", False),
             }
 
         except Exception as e:
@@ -85,9 +86,11 @@ class TestErrorScenarios:
 
             # エラー回復処理
             try:
-                recovery_output = self._generate_error_recovery_output(str(e), input_content)
+                recovery_output = self._generate_error_recovery_output(
+                    str(e), input_content
+                )
                 recovery_file = self.temp_dir / "recovery_output.html"
-                with open(recovery_file, 'w', encoding='utf-8') as f:
+                with open(recovery_file, "w", encoding="utf-8") as f:
                     f.write(recovery_output)
 
                 return {
@@ -95,7 +98,7 @@ class TestErrorScenarios:
                     "error": str(e),
                     "recovery_applied": True,
                     "recovery_output": recovery_output,
-                    "recovery_file": recovery_file
+                    "recovery_file": recovery_file,
                 }
             except Exception as recovery_error:
                 logger.error(f"回復処理も失敗: {recovery_error}")
@@ -103,12 +106,12 @@ class TestErrorScenarios:
                     "success": False,
                     "error": str(e),
                     "recovery_error": str(recovery_error),
-                    "recovery_applied": False
+                    "recovery_applied": False,
                 }
 
     def _mock_parse_with_recovery(self, content: str) -> Dict[str, Any]:
         """回復機能付きパース処理のモック"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         warnings = []
         recovery_applied = False
 
@@ -118,18 +121,22 @@ class TestErrorScenarios:
             corrected_line = line
 
             # 不完全なブロック記法の修正
-            if line.startswith('#') and not line.endswith('#') and not line.endswith('##'):
-                if '#' in line[1:]:  # インライン記法の可能性
-                    corrected_line = line + '#'
+            if (
+                line.startswith("#")
+                and not line.endswith("#")
+                and not line.endswith("##")
+            ):
+                if "#" in line[1:]:  # インライン記法の可能性
+                    corrected_line = line + "#"
                     warnings.append(f"行{i+1}: 不完全なインライン記法を修正")
                     recovery_applied = True
                 else:  # ブロック記法の可能性
-                    corrected_line = line + '\n内容が不明\n##'
+                    corrected_line = line + "\n内容が不明\n##"
                     warnings.append(f"行{i+1}: 不完全なブロック記法を修正")
                     recovery_applied = True
 
             # 閉じタグの不整合修正
-            if line.strip() == '#' and i > 0 and not lines[i-1].startswith('#'):
+            if line.strip() == "#" and i > 0 and not lines[i - 1].startswith("#"):
                 warnings.append(f"行{i+1}: 孤立した閉じタグを検出")
                 recovery_applied = True
 
@@ -137,10 +144,10 @@ class TestErrorScenarios:
 
         return {
             "line_count": len(lines),
-            "corrected_content": '\n'.join(corrected_lines),
+            "corrected_content": "\n".join(corrected_lines),
             "warnings": warnings,
             "recovery_applied": recovery_applied,
-            "error_count": len(warnings)
+            "error_count": len(warnings),
         }
 
     def _mock_render_with_recovery(self, parsed_data: Dict[str, Any]) -> str:
@@ -158,33 +165,37 @@ class TestErrorScenarios:
             "</style>",
             "</head>",
             "<body>",
-            "<h1>処理結果（エラー回復モード）</h1>"
+            "<h1>処理結果（エラー回復モード）</h1>",
         ]
 
         if parsed_data.get("recovery_applied"):
             html_parts.append('<div class="recovery">')
-            html_parts.append('<h2>回復処理が適用されました</h2>')
-            html_parts.append(f'<p>検出されたエラー数: {parsed_data.get("error_count", 0)}</p>')
-            html_parts.append('</div>')
+            html_parts.append("<h2>回復処理が適用されました</h2>")
+            html_parts.append(
+                f'<p>検出されたエラー数: {parsed_data.get("error_count", 0)}</p>'
+            )
+            html_parts.append("</div>")
 
         if parsed_data.get("warnings"):
             html_parts.append('<div class="warning">')
-            html_parts.append('<h3>警告</h3>')
-            html_parts.append('<ul>')
+            html_parts.append("<h3>警告</h3>")
+            html_parts.append("<ul>")
             for warning in parsed_data["warnings"]:
-                html_parts.append(f'<li>{warning}</li>')
-            html_parts.append('</ul>')
-            html_parts.append('</div>')
+                html_parts.append(f"<li>{warning}</li>")
+            html_parts.append("</ul>")
+            html_parts.append("</div>")
 
-        html_parts.extend([
-            f"<p>処理された行数: {parsed_data.get('line_count', 0)}</p>",
-            "<h3>修正された内容</h3>",
-            f"<pre>{parsed_data.get('corrected_content', '')}</pre>",
-            "</body>",
-            "</html>"
-        ])
+        html_parts.extend(
+            [
+                f"<p>処理された行数: {parsed_data.get('line_count', 0)}</p>",
+                "<h3>修正された内容</h3>",
+                f"<pre>{parsed_data.get('corrected_content', '')}</pre>",
+                "</body>",
+                "</html>",
+            ]
+        )
 
-        return '\n'.join(html_parts)
+        return "\n".join(html_parts)
 
     def _generate_empty_output(self) -> str:
         """空入力用の出力生成"""
@@ -200,8 +211,9 @@ class TestErrorScenarios:
 </body>
 </html>"""
 
-    def _generate_error_recovery_output(self, error_message: str,
-                                      original_content: str) -> str:
+    def _generate_error_recovery_output(
+        self, error_message: str, original_content: str
+    ) -> str:
         """エラー回復用の出力生成"""
         return f"""<!DOCTYPE html>
 <html lang='ja'>
@@ -273,8 +285,9 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: パースエラーをシミュレート
-        result = self.process_with_error_handling(normal_content,
-                                                simulate_error="parse_error")
+        result = self.process_with_error_handling(
+            normal_content, simulate_error="parse_error"
+        )
 
         # Then: エラー回復の確認
         assert not result["success"], "パースエラーが正しく検出されていない"
@@ -289,12 +302,15 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: レンダリングエラーをシミュレート
-        result = self.process_with_error_handling(normal_content,
-                                                simulate_error="render_error")
+        result = self.process_with_error_handling(
+            normal_content, simulate_error="render_error"
+        )
 
         # Then: エラー回復の確認
         assert not result["success"], "レンダリングエラーが正しく検出されていない"
-        assert result["recovery_applied"], "レンダリングエラー回復処理が適用されていない"
+        assert result[
+            "recovery_applied"
+        ], "レンダリングエラー回復処理が適用されていない"
         assert "レンダリング処理エラー" in result["error"], "エラーメッセージが不正"
 
     @pytest.mark.e2e
@@ -304,8 +320,9 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: 出力エラーをシミュレート
-        result = self.process_with_error_handling(normal_content,
-                                                simulate_error="output_error")
+        result = self.process_with_error_handling(
+            normal_content, simulate_error="output_error"
+        )
 
         # Then: エラー回復の確認
         assert not result["success"], "出力エラーが正しく検出されていない"
@@ -345,7 +362,9 @@ class TestErrorScenarios:
 
         # 出力内容の確認
         output_content = result["output"]
-        assert "回復処理が適用されました" in output_content, "回復処理通知が出力されていない"
+        assert (
+            "回復処理が適用されました" in output_content
+        ), "回復処理通知が出力されていない"
         assert "警告" in output_content, "警告セクションが出力されていない"
 
         logger.info(f"複数エラー回復完了: {len(result['warnings'])}件の警告")
@@ -390,8 +409,9 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: 無効入力エラーをシミュレート
-        result = self.process_with_error_handling(normal_content,
-                                                simulate_error="invalid_input")
+        result = self.process_with_error_handling(
+            normal_content, simulate_error="invalid_input"
+        )
 
         # Then: 無効入力エラー処理の確認
         assert not result["success"], "無効入力エラーが正しく検出されていない"

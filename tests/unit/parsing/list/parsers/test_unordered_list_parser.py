@@ -4,11 +4,14 @@ Kumihan-Formatter の core/parsing/list/parsers/unordered_list_parser.py モジ�
 拡張版の非順序リストパーサーの機能を詳細に検証
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.parsing.list.parsers.unordered_list_parser import UnorderedListParser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node
+from kumihan_formatter.core.parsing.list.parsers.unordered_list_parser import (
+    UnorderedListParser,
+)
 
 
 class TestUnorderedListParserExtended:
@@ -25,11 +28,7 @@ class TestUnorderedListParserExtended:
     def test_正常系_非順序タイプ検出_バレット(self):
         """正常系: バレット非順序リストタイプの検出"""
         # Given: バレット非順序リストの行
-        test_lines = [
-            "- ハイフン項目",
-            "* アスタリスク項目",
-            "+ プラス項目"
-        ]
+        test_lines = ["- ハイフン項目", "* アスタリスク項目", "+ プラス項目"]
 
         for line in test_lines:
             # When: 非順序タイプ検出
@@ -45,7 +44,7 @@ class TestUnorderedListParserExtended:
             "- [ ] 未チェック項目",
             "- [x] チェック済み項目",
             "* [ ] アスタリスク未チェック",
-            "+ [X] プラス大文字チェック"
+            "+ [X] プラス大文字チェック",
         ]
 
         for line in test_lines:
@@ -61,7 +60,7 @@ class TestUnorderedListParserExtended:
         test_lines = [
             "用語 :: 定義",
             "API :: Application Programming Interface",
-            "複雑な用語 :: 複雑な定義の説明"
+            "複雑な用語 :: 複雑な定義の説明",
         ]
 
         for line in test_lines:
@@ -74,12 +73,7 @@ class TestUnorderedListParserExtended:
     def test_正常系_非順序タイプ検出_非対応(self):
         """正常系: 非対応形式の検出"""
         # Given: 非対応形式の行
-        test_lines = [
-            "1. 順序付き項目",
-            "通常のテキスト",
-            "- 不完全なチェック [",
-            ""
-        ]
+        test_lines = ["1. 順序付き項目", "通常のテキスト", "- 不完全なチェック [", ""]
 
         for line in test_lines:
             # When: 非順序タイプ検出
@@ -91,11 +85,7 @@ class TestUnorderedListParserExtended:
     def test_正常系_非順序リスト解析(self):
         """正常系: 非順序リストの解析"""
         # Given: 非順序リストの行リスト
-        lines = [
-            "- 最初の項目",
-            "* 二番目の項目",
-            "+ 三番目の項目"
-        ]
+        lines = ["- 最初の項目", "* 二番目の項目", "+ 三番目の項目"]
 
         # When: 非順序リスト解析
         result = self.parser.parse_unordered_list(lines)
@@ -160,7 +150,7 @@ class TestUnorderedListParserExtended:
             ("- [x] チェック済み", True),
             ("- [X] 大文字チェック", True),
             ("* [ ] アスタリスク未チェック", False),
-            ("+ [x] プラスチェック済み", True)
+            ("+ [x] プラスチェック済み", True),
         ]
 
         for line, expected_checked in test_cases:
@@ -194,12 +184,26 @@ class TestUnorderedListParserExtended:
             type="list",
             content="",
             children=[
-                Node(type="checklist_item", content="完了1", attributes={"checked": True}),
-                Node(type="checklist_item", content="未完了1", attributes={"checked": False}),
-                Node(type="checklist_item", content="完了2", attributes={"checked": True}),
-                Node(type="checklist_item", content="未完了2", attributes={"checked": False}),
-                Node(type="checklist_item", content="完了3", attributes={"checked": True}),
-            ]
+                Node(
+                    type="checklist_item", content="完了1", attributes={"checked": True}
+                ),
+                Node(
+                    type="checklist_item",
+                    content="未完了1",
+                    attributes={"checked": False},
+                ),
+                Node(
+                    type="checklist_item", content="完了2", attributes={"checked": True}
+                ),
+                Node(
+                    type="checklist_item",
+                    content="未完了2",
+                    attributes={"checked": False},
+                ),
+                Node(
+                    type="checklist_item", content="完了3", attributes={"checked": True}
+                ),
+            ],
         )
 
         # When: 完了状況抽出
@@ -217,7 +221,7 @@ class TestUnorderedListParserExtended:
         unchecked_item = Node(
             type="checklist_item",
             content="切り替えテスト",
-            attributes={"checked": False}
+            attributes={"checked": False},
         )
 
         # When: チェック状態切り替え
@@ -238,7 +242,7 @@ class TestUnorderedListParserExtended:
         checklist_item = Node(
             type="checklist_item",
             content="変換テスト",
-            attributes={"checked": True, "marker_type": "checklist"}
+            attributes={"checked": True, "marker_type": "checklist"},
         )
 
         # When: バレットリスト変換
@@ -262,7 +266,7 @@ class TestUnorderedListParserExtended:
             ("* [ ] アスタリスクチェック", "*"),
             ("+ [X] プラスチェック", "+"),
             ("通常テキスト", None),
-            ("", None)
+            ("", None),
         ]
 
         for line, expected_marker in test_cases:
@@ -280,7 +284,7 @@ class TestUnorderedListParserExtended:
             "* アスタリスク項目",
             "+ プラス項目",
             "  - インデント項目",
-            "通常テキスト"
+            "通常テキスト",
         ]
 
         # When: マーカー正規化（全てアスタリスクに統一）
@@ -292,7 +296,7 @@ class TestUnorderedListParserExtended:
             "* アスタリスク項目",
             "* プラス項目",
             "  * インデント項目",
-            "通常テキスト"  # 非リスト項目は変更されない
+            "通常テキスト",  # 非リスト項目は変更されない
         ]
         assert normalized == expected
 
@@ -308,7 +312,7 @@ class TestUnorderedListParserExtended:
             "- ",  # 空のコンテンツ
             "- [ 不完全なチェックボックス",
             "用語のみ（定義なし）",
-            ""
+            "",
         ]
 
         for line in invalid_lines:
@@ -324,7 +328,7 @@ class TestUnorderedListParserExtended:
         regular_item = Node(
             type="list_item",
             content="通常項目",
-            attributes={"marker": "-", "marker_type": "bullet"}
+            attributes={"marker": "-", "marker_type": "bullet"},
         )
 
         # When: チェック状態切り替え試行
@@ -340,7 +344,7 @@ class TestUnorderedListParserExtended:
         definition_item = Node(
             type="definition_item",
             content="定義",
-            attributes={"term": "用語", "marker_type": "definition"}
+            attributes={"term": "用語", "marker_type": "definition"},
         )
 
         # When: バレットリスト変換試行
@@ -370,11 +374,7 @@ class TestUnorderedListParserExtended:
         invalid_lines = [
             None,  # Note: Noneは実際のリストには含まれないが、テストとして
         ]
-        valid_lines = [
-            "",
-            "   ",
-            "無効な形式の行"
-        ]
+        valid_lines = ["", "   ", "無効な形式の行"]
 
         # When: マーカー正規化
         normalized = self.parser.normalize_marker(valid_lines, "-")
@@ -432,14 +432,14 @@ class TestUnorderedListParserExtended:
         """境界値: 大量のチェックリスト項目"""
         # Given: 大量のチェックリスト項目
         large_checklist = Node(type="list", content="", children=[])
-        
+
         # 1000個のチェックリスト項目を作成
         for i in range(1000):
             checked = i % 3 == 0  # 1/3をチェック済みに
             item = Node(
                 type="checklist_item",
                 content=f"項目{i}",
-                attributes={"checked": checked}
+                attributes={"checked": checked},
             )
             large_checklist.children.append(item)
 
@@ -458,7 +458,7 @@ class TestUnorderedListParserExtended:
             "- **太字**項目",
             "* *イタリック*項目",
             "+ `コード`項目",
-            "- [x] **太字チェック**項目"
+            "- [x] **太字チェック**項目",
         ]
 
         for line in special_lines:
@@ -481,7 +481,7 @@ class TestUnorderedListParserExtended:
             "- [x] チェック済み項目",
             "用語 :: 定義",
             "* アスタリスク項目",
-            "- [ ] 未チェック項目"
+            "- [ ] 未チェック項目",
         ]
 
         results = []
@@ -495,7 +495,7 @@ class TestUnorderedListParserExtended:
                 result = self.parser.handle_definition_list(line)
             else:
                 result = None
-            
+
             if result:
                 results.append(result)
 
@@ -515,10 +515,10 @@ class TestUnorderedListParserExtended:
         # When: 一連の操作実行
         # 1. チェック状態切り替え
         checked_item = self.parser.toggle_checklist_item(checklist_item)
-        
+
         # 2. バレットリストに変換
         bullet_item = self.parser.convert_to_bullet_list(checked_item)
-        
+
         # 3. マーカー抽出
         original_marker = self.parser.get_marker_from_line(line)
 
@@ -537,26 +537,32 @@ class TestUnorderedListParserExtended:
             "  - [ ] サブタスク1-2（未完了）",
             "* メインタスク2",
             "  API :: Application Programming Interface",
-            "  REST :: Representational State Transfer"
+            "  REST :: Representational State Transfer",
         ]
 
         # When: 完全な処理ワークフロー
         all_results = []
         for line in lines:
             unordered_type = self.parser.detect_unordered_type(line)
-            
+
             if unordered_type:
                 result = self.parser.parse_unordered_item(line)
                 if result:
                     all_results.append(result)
 
         # マーカー正規化
-        normalized_lines = self.parser.normalize_marker(lines[:4], "-")  # 定義リスト以外
+        normalized_lines = self.parser.normalize_marker(
+            lines[:4], "-"
+        )  # 定義リスト以外
 
         # Then: 完全ワークフローが正常に動作することを検証
         assert len(all_results) == 6
         assert len(normalized_lines) == 4
-        assert all("- " in line or line.strip() == "" or "::" in line for line in normalized_lines if line.strip())
+        assert all(
+            "- " in line or line.strip() == "" or "::" in line
+            for line in normalized_lines
+            if line.strip()
+        )
 
     def test_統合_エラーハンドリング総合(self):
         """統合: エラーハンドリングの総合テスト"""
@@ -566,7 +572,7 @@ class TestUnorderedListParserExtended:
             "- [ 不完全チェック",
             "",
             "不正な形式",
-            "- [x] 正常チェック項目"
+            "- [x] 正常チェック項目",
         ]
 
         # When: 堅牢な処理実行
@@ -595,12 +601,12 @@ class TestUnorderedListParserExtended:
         japanese_lines = [
             "- これは日本語の項目です",
             "- [x] 完了した日本語タスク",
-            "専門用語 :: 日本語での詳細な説明文"
+            "専門用語 :: 日本語での詳細な説明文",
         ]
 
         for line in japanese_lines:
             unordered_type = self.parser.detect_unordered_type(line)
-            
+
             # When: 適切なハンドラーで処理
             if unordered_type == "bullet":
                 result = self.parser.handle_unordered_list(line)
@@ -611,7 +617,11 @@ class TestUnorderedListParserExtended:
 
             # Then: 日本語が正しく処理されることを検証
             assert result is not None
-            assert "日本語" in result.content or "完了" in result.content or "説明" in result.content
+            assert (
+                "日本語" in result.content
+                or "完了" in result.content
+                or "説明" in result.content
+            )
 
     def test_特殊_複雑な定義リスト(self):
         """特殊: 複雑な定義リストの処理"""
@@ -619,7 +629,7 @@ class TestUnorderedListParserExtended:
         complex_definitions = [
             "API (REST) :: RESTful Application Programming Interface",
             "複雑な用語 (略語) :: 括弧と特殊文字を含む定義",
-            "JSON :: JavaScript Object Notation (データ交換フォーマット)"
+            "JSON :: JavaScript Object Notation (データ交換フォーマット)",
         ]
 
         for line in complex_definitions:
@@ -635,10 +645,7 @@ class TestUnorderedListParserExtended:
     def test_特殊_統合ハンドラー使用(self):
         """特殊: 統合ハンドラーの使用"""
         # Given: 各種非順序リスト
-        test_lines = [
-            "- バレット項目",
-            "- [x] チェック項目"
-        ]
+        test_lines = ["- バレット項目", "- [x] チェック項目"]
 
         for line in test_lines:
             # When: 統合ハンドラー使用
@@ -660,7 +667,7 @@ class TestUnorderedListParserExtended:
         assert "bullet" in patterns
         assert "checklist" in patterns
         assert "definition" in patterns
-        assert all(hasattr(pattern, 'match') for pattern in patterns.values())
+        assert all(hasattr(pattern, "match") for pattern in patterns.values())
 
     def test_特殊_ネストチェックリスト処理(self):
         """特殊: ネストしたチェックリストの処理"""
@@ -669,17 +676,29 @@ class TestUnorderedListParserExtended:
             type="list",
             content="",
             children=[
-                Node(type="checklist_item", content="親タスク1", 
-                     attributes={"checked": False},
-                     children=[
-                         Node(type="checklist_item", content="子タスク1-1",
-                              attributes={"checked": True}),
-                         Node(type="checklist_item", content="子タスク1-2",
-                              attributes={"checked": False})
-                     ]),
-                Node(type="checklist_item", content="親タスク2",
-                     attributes={"checked": True})
-            ]
+                Node(
+                    type="checklist_item",
+                    content="親タスク1",
+                    attributes={"checked": False},
+                    children=[
+                        Node(
+                            type="checklist_item",
+                            content="子タスク1-1",
+                            attributes={"checked": True},
+                        ),
+                        Node(
+                            type="checklist_item",
+                            content="子タスク1-2",
+                            attributes={"checked": False},
+                        ),
+                    ],
+                ),
+                Node(
+                    type="checklist_item",
+                    content="親タスク2",
+                    attributes={"checked": True},
+                ),
+            ],
         )
 
         # When: ネストチェックリスト状況抽出

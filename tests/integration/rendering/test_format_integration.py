@@ -29,19 +29,23 @@ class TestFormatIntegration:
         self.integration_cases = {
             "kumihan_to_html": {
                 "input": "# 太字 #統合テスト## # イタリック #フォーマット##",
-                "expected_html_tags": ["統合テスト", "フォーマット", "kumihan-document"]
+                "expected_html_tags": [
+                    "統合テスト",
+                    "フォーマット",
+                    "kumihan-document",
+                ],
             },
             "mixed_content": {
                 "input": """# 見出し1 #統合テスト##
 - リスト項目1
 - リスト項目2
 # 太字 #重要なポイント##""",
-                "expected_elements": ["統合テスト", "リスト項目1", "重要なポイント"]
+                "expected_elements": ["統合テスト", "リスト項目1", "重要なポイント"],
             },
             "complex_nesting": {
                 "input": "# 枠線 ## 太字 #ネスト## と # イタリック #構造##",
-                "expected_nesting": ["ネスト", "構造", "kumihan-document"]
-            }
+                "expected_nesting": ["ネスト", "構造", "kumihan-document"],
+            },
         }
 
     def teardown_method(self) -> None:
@@ -54,7 +58,9 @@ class TestFormatIntegration:
         except Exception as e:
             logger.warning(f"クリーンアップエラー: {e}")
 
-    def process_format_integration(self, content: str, output_format: str = "html") -> Dict[str, Any]:
+    def process_format_integration(
+        self, content: str, output_format: str = "html"
+    ) -> Dict[str, Any]:
         """フォーマット統合処理を実行"""
         try:
             from kumihan_formatter.core.parsing.main_parser import MainParser
@@ -77,7 +83,7 @@ class TestFormatIntegration:
 
             # ファイル出力
             output_file = self.output_dir / f"integration_output{file_extension}"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(output)
 
             return {
@@ -86,16 +92,12 @@ class TestFormatIntegration:
                 "output": output,
                 "parsed": parsed_result,
                 "file_path": output_file,
-                "file_size": output_file.stat().st_size
+                "file_size": output_file.stat().st_size,
             }
 
         except Exception as e:
             logger.error(f"フォーマット統合エラー: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "format": output_format
-            }
+            return {"success": False, "error": str(e), "format": output_format}
 
     def test_Kumihan記法からHTML統合(self) -> None:
         """Kumihan記法からHTMLへの統合変換"""
@@ -106,7 +108,9 @@ class TestFormatIntegration:
 
         html_output = result["output"]
         for expected_tag in test_case["expected_html_tags"]:
-            assert expected_tag in html_output, f"期待されるHTMLタグが不足: {expected_tag}"
+            assert (
+                expected_tag in html_output
+            ), f"期待されるHTMLタグが不足: {expected_tag}"
 
         # ファイル統合確認
         assert result["file_path"].exists(), "統合出力ファイルが作成されていません"
@@ -121,7 +125,9 @@ class TestFormatIntegration:
 
         html_output = result["output"]
         for expected_element in test_case["expected_elements"]:
-            assert expected_element in html_output, f"混合要素が不足: {expected_element}"
+            assert (
+                expected_element in html_output
+            ), f"混合要素が不足: {expected_element}"
 
     def test_複雑なネスト統合(self) -> None:
         """複雑なネスト構造の統合"""
@@ -139,7 +145,7 @@ class TestFormatIntegration:
         test_contents = [
             "# 太字 #一貫性テスト1##",
             "# イタリック #一貫性テスト2##",
-            "# 下線 #一貫性テスト3##"
+            "# 下線 #一貫性テスト3##",
         ]
 
         results = []
@@ -151,7 +157,9 @@ class TestFormatIntegration:
         # 全ての出力が同様の構造を持つことを確認
         for i, result in enumerate(results):
             html = result["output"]
-            assert "<html>" in html or "<!DOCTYPE" in html or len(html) > 10, f"出力{i+1}の構造が不正"
+            assert (
+                "<html>" in html or "<!DOCTYPE" in html or len(html) > 10
+            ), f"出力{i+1}の構造が不正"
 
     def test_エラー統合処理(self) -> None:
         """エラーケースでの統合処理"""
@@ -189,6 +197,7 @@ class TestFormatIntegration:
         large_content = "\n".join(large_content_parts)
 
         import time
+
         start_time = time.time()
         result = self.process_format_integration(large_content)
         elapsed = time.time() - start_time
@@ -199,29 +208,32 @@ class TestFormatIntegration:
         # 出力サイズ確認
         assert result["file_size"] > 1000, "大規模統合出力が小さすぎます"
 
-        logger.info(f"大規模統合処理: {elapsed:.3f}秒, 出力 {result['file_size']/1024:.1f}KB")
+        logger.info(
+            f"大規模統合処理: {elapsed:.3f}秒, 出力 {result['file_size']/1024:.1f}KB"
+        )
 
     def test_並行フォーマット統合(self) -> None:
         """並行でのフォーマット統合処理"""
         from concurrent.futures import ThreadPoolExecutor
 
-        test_contents = [
-            f"# 並行テスト{i} #コンテンツ{i}##"
-            for i in range(10)
-        ]
+        test_contents = [f"# 並行テスト{i} #コンテンツ{i}##" for i in range(10)]
 
         def process_single(content: str) -> Dict[str, Any]:
             return self.process_format_integration(content)
 
         results = []
         with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(process_single, content) for content in test_contents]
+            futures = [
+                executor.submit(process_single, content) for content in test_contents
+            ]
             for future in futures:
                 results.append(future.result())
 
         # 全ての並行処理が成功すること
         success_count = sum(1 for r in results if r["success"])
-        assert success_count == len(test_contents), f"並行統合失敗: {success_count}/{len(test_contents)}"
+        assert success_count == len(
+            test_contents
+        ), f"並行統合失敗: {success_count}/{len(test_contents)}"
 
     def test_統合品質検証(self) -> None:
         """統合結果の品質検証"""
@@ -272,14 +284,14 @@ class TestFormatIntegration:
         snapshot2 = tracemalloc.take_snapshot()
 
         # メモリ使用量分析
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_increase = sum(stat.size_diff for stat in top_stats if stat.size_diff > 0)
 
         tracemalloc.stop()
 
         # メモリ増加が適切範囲内（3MB以下）
-        assert total_increase < 3 * 1024 * 1024, (
-            f"統合処理でメモリ増加過多: {total_increase/1024/1024:.2f}MB"
-        )
+        assert (
+            total_increase < 3 * 1024 * 1024
+        ), f"統合処理でメモリ増加過多: {total_increase/1024/1024:.2f}MB"
 
         logger.info(f"統合メモリ管理テスト完了: 増加 {total_increase/1024:.1f}KB")

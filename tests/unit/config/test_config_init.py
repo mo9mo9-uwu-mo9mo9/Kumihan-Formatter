@@ -5,17 +5,18 @@ Issue #929 Phase 3C: __init__.py テスト
 """
 
 import warnings
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # テスト対象のインポート
 from kumihan_formatter.config import (
     Config,
     ConfigManager,
+    __all__,
     create_simple_config,
     get_default_config,
     reset_default_config,
-    __all__
 )
 
 
@@ -50,9 +51,11 @@ class TestModuleImports:
 class TestCreateSimpleConfig:
     """create_simple_config 関数のテスト"""
 
-    @patch('kumihan_formatter.config.create_config_manager')
-    @patch('warnings.warn')
-    def test_正常系_create_simple_config_関数呼び出し(self, mock_warn, mock_create_config_manager):
+    @patch("kumihan_formatter.config.create_config_manager")
+    @patch("warnings.warn")
+    def test_正常系_create_simple_config_関数呼び出し(
+        self, mock_warn, mock_create_config_manager
+    ):
         """create_simple_config関数が適切に呼び出されることを確認"""
         # Given: モックされたcreate_config_manager
         mock_config = Mock()
@@ -65,9 +68,11 @@ class TestCreateSimpleConfig:
         mock_create_config_manager.assert_called_once_with(config_type="base")
         assert result == mock_config
 
-    @patch('kumihan_formatter.config.create_config_manager')
-    @patch('warnings.warn')
-    def test_正常系_create_simple_config_baseタイプ返却(self, mock_warn, mock_create_config_manager):
+    @patch("kumihan_formatter.config.create_config_manager")
+    @patch("warnings.warn")
+    def test_正常系_create_simple_config_baseタイプ返却(
+        self, mock_warn, mock_create_config_manager
+    ):
         """create_simple_configがbaseタイプの設定を返すことを確認"""
         # Given: モックされた設定オブジェクト
         mock_config = Mock()
@@ -80,8 +85,10 @@ class TestCreateSimpleConfig:
         mock_create_config_manager.assert_called_once_with(config_type="base")
         assert result == mock_config
 
-    @patch('kumihan_formatter.config.create_config_manager')
-    def test_正常系_create_simple_config_deprecation警告(self, mock_create_config_manager):
+    @patch("kumihan_formatter.config.create_config_manager")
+    def test_正常系_create_simple_config_deprecation警告(
+        self, mock_create_config_manager
+    ):
         """create_simple_config呼び出し時にdeprecation警告が出ることを確認"""
         # Given: モックされたcreate_config_manager
         mock_create_config_manager.return_value = Mock()
@@ -94,7 +101,9 @@ class TestCreateSimpleConfig:
             # Then: DeprecationWarningが出力される
             assert len(caught_warnings) == 1
             assert issubclass(caught_warnings[0].category, DeprecationWarning)
-            assert "create_simple_config()は非推奨です" in str(caught_warnings[0].message)
+            assert "create_simple_config()は非推奨です" in str(
+                caught_warnings[0].message
+            )
 
 
 class TestGetDefaultConfig:
@@ -105,7 +114,7 @@ class TestGetDefaultConfig:
         # デフォルト設定をリセット
         reset_default_config()
 
-    @patch('kumihan_formatter.config.create_config_manager')
+    @patch("kumihan_formatter.config.create_config_manager")
     def test_正常系_get_default_config_初回呼び出し(self, mock_create_config_manager):
         """初回呼び出し時に新しい設定が作成されることを確認"""
         # Given: モックされたcreate_config_manager
@@ -121,8 +130,10 @@ class TestGetDefaultConfig:
         mock_create_config_manager.assert_called_once()
         assert result == mock_config
 
-    @patch('kumihan_formatter.config.create_config_manager')
-    def test_正常系_get_default_config_2回目キャッシュ(self, mock_create_config_manager):
+    @patch("kumihan_formatter.config.create_config_manager")
+    def test_正常系_get_default_config_2回目キャッシュ(
+        self, mock_create_config_manager
+    ):
         """2回目の呼び出しでキャッシュされた設定が返されることを確認"""
         # Given: 初回呼び出し後の状態
         mock_config = Mock()
@@ -140,8 +151,10 @@ class TestGetDefaultConfig:
         assert first_call is second_call
         assert second_call == mock_config
 
-    @patch('kumihan_formatter.config.create_config_manager')
-    def test_正常系_get_default_config_deprecation警告(self, mock_create_config_manager):
+    @patch("kumihan_formatter.config.create_config_manager")
+    def test_正常系_get_default_config_deprecation警告(
+        self, mock_create_config_manager
+    ):
         """get_default_config呼び出し時にdeprecation警告が出ることを確認"""
         # Given: モックされたcreate_config_manager
         mock_create_config_manager.return_value = Mock()

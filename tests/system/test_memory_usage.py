@@ -16,6 +16,7 @@ import pytest
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
@@ -59,7 +60,7 @@ class MemoryMonitor:
             "traced_current": trace_current,
             "traced_peak": trace_peak,
             "memory_mb": current_memory / 1024 / 1024,
-            "delta_mb": (current_memory - (self.start_memory or 0)) / 1024 / 1024
+            "delta_mb": (current_memory - (self.start_memory or 0)) / 1024 / 1024,
         }
 
         self.snapshots.append((current_time, current_memory, trace_current))
@@ -79,7 +80,11 @@ class MemoryMonitor:
                 "peak_memory_mb": peak_memory / 1024 / 1024,
                 "memory_growth_mb": memory_growth / 1024 / 1024,
                 "snapshots": len(self.snapshots),
-                "duration": self.snapshots[-1][0] - self.snapshots[0][0] if len(self.snapshots) > 1 else 0
+                "duration": (
+                    self.snapshots[-1][0] - self.snapshots[0][0]
+                    if len(self.snapshots) > 1
+                    else 0
+                ),
             }
 
         return {"error": "No snapshots taken"}
@@ -102,13 +107,13 @@ class MemoryMonitor:
                     "vms": memory_info.vms,
                     "percent": memory_percent,
                     "rss_mb": memory_info.rss / 1024 / 1024,
-                    "vms_mb": memory_info.vms / 1024 / 1024
+                    "vms_mb": memory_info.vms / 1024 / 1024,
                 },
                 "system": {
                     "total_gb": system_memory.total / 1024 / 1024 / 1024,
                     "available_gb": system_memory.available / 1024 / 1024 / 1024,
-                    "percent_used": system_memory.percent
-                }
+                    "percent_used": system_memory.percent,
+                },
             }
         except Exception as e:
             return {"error": str(e)}
@@ -148,7 +153,9 @@ class TestMemoryUsage:
         size_bytes = int(size_mb * 1024 * 1024)
         return "x" * size_bytes
 
-    def simulate_file_processing(self, data: str, iterations: int = 1) -> Dict[str, Any]:
+    def simulate_file_processing(
+        self, data: str, iterations: int = 1
+    ) -> Dict[str, Any]:
         """ファイル処理のシミュレート"""
         results = []
 
@@ -156,15 +163,19 @@ class TestMemoryUsage:
             # データ処理シミュレート
             processed_data = data.upper()
             processed_data = processed_data.replace("X", "O")
-            processed_data = processed_data[:len(processed_data)//2]  # データサイズ削減
+            processed_data = processed_data[
+                : len(processed_data) // 2
+            ]  # データサイズ削減
 
             # メモリスナップショット
             snapshot = self.monitor.take_snapshot(f"iteration_{i}")
-            results.append({
-                "iteration": i,
-                "processed_size": len(processed_data),
-                "memory_snapshot": snapshot
-            })
+            results.append(
+                {
+                    "iteration": i,
+                    "processed_size": len(processed_data),
+                    "memory_snapshot": snapshot,
+                }
+            )
 
             # 短時間待機
             time.sleep(0.01)
@@ -172,7 +183,7 @@ class TestMemoryUsage:
         return {
             "iterations": iterations,
             "results": results,
-            "final_processed_size": len(processed_data) if results else 0
+            "final_processed_size": len(processed_data) if results else 0,
         }
 
     def simulate_memory_leak(self, leak_size_mb: float = 1.0) -> List[str]:
@@ -216,11 +227,14 @@ class TestMemoryUsage:
 
         # メモリ使用量の妥当性確認
         assert final_stats["final_memory_mb"] > 0, "メモリ使用量が0"
-        assert final_stats["peak_memory_mb"] >= final_stats["final_memory_mb"], \
-               "ピークメモリがファイナルメモリより小さい"
+        assert (
+            final_stats["peak_memory_mb"] >= final_stats["final_memory_mb"]
+        ), "ピークメモリがファイナルメモリより小さい"
 
-        logger.info(f"基本監視確認完了: 最終{final_stats['final_memory_mb']:.1f}MB, "
-                   f"ピーク{final_stats['peak_memory_mb']:.1f}MB")
+        logger.info(
+            f"基本監視確認完了: 最終{final_stats['final_memory_mb']:.1f}MB, "
+            f"ピーク{final_stats['peak_memory_mb']:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -236,13 +250,16 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # 小規模データ処理では大幅なメモリ増加はないはず
-        assert final_stats["memory_growth_mb"] < 50, \
-               f"小規模データ処理でメモリ使用量が増加しすぎ: {final_stats['memory_growth_mb']:.1f}MB"
+        assert (
+            final_stats["memory_growth_mb"] < 50
+        ), f"小規模データ処理でメモリ使用量が増加しすぎ: {final_stats['memory_growth_mb']:.1f}MB"
 
         # 処理が完了していることを確認
         assert processing_result["iterations"] == 10, "処理が完了していない"
 
-        logger.info(f"小規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
+        logger.info(
+            f"小規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -258,16 +275,20 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # 中規模データ処理での適度なメモリ使用
-        assert final_stats["memory_growth_mb"] < 100, \
-               f"中規模データ処理でメモリ使用量が多すぎ: {final_stats['memory_growth_mb']:.1f}MB"
+        assert (
+            final_stats["memory_growth_mb"] < 100
+        ), f"中規模データ処理でメモリ使用量が多すぎ: {final_stats['memory_growth_mb']:.1f}MB"
         assert final_stats["memory_growth_mb"] >= 0, "メモリ使用量が負の値"
 
         # ピークメモリの確認
-        assert final_stats["peak_memory_mb"] > final_stats["final_memory_mb"] * 0.9, \
-               "ピークメモリが異常に低い"
+        assert (
+            final_stats["peak_memory_mb"] > final_stats["final_memory_mb"] * 0.9
+        ), "ピークメモリが異常に低い"
 
-        logger.info(f"中規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB, "
-                   f"ピーク{final_stats['peak_memory_mb']:.1f}MB")
+        logger.info(
+            f"中規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB, "
+            f"ピーク{final_stats['peak_memory_mb']:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -283,13 +304,16 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # 大規模データ処理での妥当なメモリ使用（指示書基準: 100MB以内）
-        assert final_stats["memory_growth_mb"] < 100, \
-               f"大規模データ処理でメモリ使用量基準超過: {final_stats['memory_growth_mb']:.1f}MB"
+        assert (
+            final_stats["memory_growth_mb"] < 100
+        ), f"大規模データ処理でメモリ使用量基準超過: {final_stats['memory_growth_mb']:.1f}MB"
 
         # 処理完了確認
         assert processing_result["iterations"] == 2, "大規模データ処理が完了していない"
 
-        logger.info(f"大規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
+        logger.info(
+            f"大規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -311,19 +335,27 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # リークによるメモリ増加の検出
-        memory_increase = leak_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
-        assert memory_increase > 1, f"メモリリークが検出されていない: {memory_increase:.1f}MB"
+        memory_increase = (
+            leak_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
+        )
+        assert (
+            memory_increase > 1
+        ), f"メモリリークが検出されていない: {memory_increase:.1f}MB"
 
         # 継続的なメモリ保持の確認
-        retention_increase = retention_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
+        retention_increase = (
+            retention_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
+        )
         assert retention_increase > 1, "メモリリークが解放されている"
 
         # リークデータのクリーンアップ
         del leak_data
         gc.collect()
 
-        logger.info(f"メモリリーク検出完了: 増加{memory_increase:.1f}MB, "
-                   f"保持{retention_increase:.1f}MB")
+        logger.info(
+            f"メモリリーク検出完了: 増加{memory_increase:.1f}MB, "
+            f"保持{retention_increase:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -357,13 +389,16 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # 同時処理でのメモリ効率性確認
-        assert final_stats["memory_growth_mb"] < 80, \
-               f"並列処理でメモリ使用量が多すぎ: {final_stats['memory_growth_mb']:.1f}MB"
+        assert (
+            final_stats["memory_growth_mb"] < 80
+        ), f"並列処理でメモリ使用量が多すぎ: {final_stats['memory_growth_mb']:.1f}MB"
 
         # スナップショット数の確認
         assert final_stats["snapshots"] >= 6, "並列処理のスナップショットが不足"
 
-        logger.info(f"並列処理シミュレート完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
+        logger.info(
+            f"並列処理シミュレート完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -390,16 +425,19 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # メモリの安定性確認（大幅な増加がないこと）
-        assert final_stats["memory_growth_mb"] < 50, \
-               f"長時間処理でメモリが蓄積: {final_stats['memory_growth_mb']:.1f}MB"
+        assert (
+            final_stats["memory_growth_mb"] < 50
+        ), f"長時間処理でメモリが蓄積: {final_stats['memory_growth_mb']:.1f}MB"
 
         # 処理時間の確認
         assert final_stats["duration"] > 0.3, "処理時間が短すぎる"
         assert final_stats["duration"] < 10, "処理時間が長すぎる"
 
-        logger.info(f"長時間処理完了: {iterations}サイクル, "
-                   f"メモリ増加{final_stats['memory_growth_mb']:.1f}MB, "
-                   f"所要時間{final_stats['duration']:.1f}秒")
+        logger.info(
+            f"長時間処理完了: {iterations}サイクル, "
+            f"メモリ増加{final_stats['memory_growth_mb']:.1f}MB, "
+            f"所要時間{final_stats['duration']:.1f}秒"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -430,8 +468,10 @@ class TestMemoryUsage:
         assert system_stats["total_gb"] > 0, "システム総メモリが0"
         assert 0 <= system_stats["percent_used"] <= 100, "システムメモリ使用率が異常"
 
-        logger.info(f"システム統計確認完了: プロセス{process_stats['rss_mb']:.1f}MB, "
-                   f"システム使用率{system_stats['percent_used']:.1f}%")
+        logger.info(
+            f"システム統計確認完了: プロセス{process_stats['rss_mb']:.1f}MB, "
+            f"システム使用率{system_stats['percent_used']:.1f}%"
+        )
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -468,5 +508,7 @@ class TestMemoryUsage:
         assert gc_recovery > 0, f"GCによるメモリ回収が確認できない: {gc_recovery:.1f}MB"
         assert collected >= 0, "GCによる回収オブジェクト数が負の値"
 
-        logger.info(f"GC効果確認完了: 回収{gc_recovery:.1f}MB, "
-                   f"オブジェクト{collected}個回収")
+        logger.info(
+            f"GC効果確認完了: 回収{gc_recovery:.1f}MB, "
+            f"オブジェクト{collected}個回収"
+        )

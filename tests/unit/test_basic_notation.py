@@ -27,7 +27,11 @@ class TestBasicNotation:
     def test_inline_notation_deprecated_error(self):
         """Test inline notation parsing behavior in current implementation."""
         # インライン記法として意図された記法のテスト
-        inline_texts = ["#太字 コンテンツ#", "#見出し1 タイトル#", "#下線 強調テキスト#"]
+        inline_texts = [
+            "#太字 コンテンツ#",
+            "#見出し1 タイトル#",
+            "#下線 強調テキスト#",
+        ]
 
         for text in inline_texts:
             # 現在の実装での実際の動作をテスト
@@ -36,14 +40,20 @@ class TestBasicNotation:
             inline_content = self.parser.extract_inline_content(text)
 
             # パーサーは記法を認識してParseResultを返すべき
-            assert parse_result is not None, f"記法 '{text}' はパーサーによって処理されるべきです"
-            assert len(parse_result.keywords) > 0, f"記法 '{text}' からキーワードが抽出されるべきです"
-            
+            assert (
+                parse_result is not None
+            ), f"記法 '{text}' はパーサーによって処理されるべきです"
+            assert (
+                len(parse_result.keywords) > 0
+            ), f"記法 '{text}' からキーワードが抽出されるべきです"
+
             # 現在の実装では is_new_marker_format は False を返す
             assert not is_new_format, f"記法 '{text}' は新形式として認識されない"
-            
+
             # extract_inline_content は None を返す（現在の実装）
-            assert inline_content is None, f"記法 '{text}' からのインライン抽出は None を返す"
+            assert (
+                inline_content is None
+            ), f"記法 '{text}' からのインライン抽出は None を返す"
 
     def test_block_notation_basic_v3(self):
         """Test basic block notation parsing in v3.0.0."""

@@ -14,7 +14,6 @@ Phase 4-8で達成した性能指標の再検証:
 import gc
 import json
 import os
-import psutil
 import statistics
 import sys
 import threading
@@ -23,20 +22,22 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Callable, Dict, List, Optional
+
+import psutil
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from kumihan_formatter.core.logging.structured_logger import get_structured_logger
     from kumihan_formatter.core.logging.audit_logger import AuditLogger
+    from kumihan_formatter.core.logging.structured_logger import get_structured_logger
+    from kumihan_formatter.core.rendering.main_renderer import MainRenderer
     from kumihan_formatter.core.security.input_validation import SecureInputValidator
     from kumihan_formatter.core.security.sanitizer import DataSanitizer
     from kumihan_formatter.core.utilities.logger import get_logger
     from kumihan_formatter.parser import KumihanParser
-    from kumihan_formatter.core.rendering.main_renderer import MainRenderer
 except ImportError as e:
     print(f"❌ Critical: Failed to import required modules: {e}")
     sys.exit(1)
@@ -59,7 +60,7 @@ class PerformanceBenchmark:
             "parsing_chars_per_sec": 500000,
             "rendering_elements_per_sec": 10000,
             "memory_usage_limit_mb": 512,
-            "cpu_usage_limit_percent": 80
+            "cpu_usage_limit_percent": 80,
         }
 
         self.results: Dict[str, Any] = {
@@ -72,9 +73,9 @@ class PerformanceBenchmark:
                 "total_benchmarks": 0,
                 "passed_benchmarks": 0,
                 "failed_benchmarks": 0,
-                "overall_performance_score": 0.0
+                "overall_performance_score": 0.0,
             },
-            "system_info": self._collect_system_info()
+            "system_info": self._collect_system_info(),
         }
 
     def _collect_system_info(self) -> Dict[str, Any]:
@@ -91,7 +92,7 @@ class PerformanceBenchmark:
                 "available_memory_gb": round(memory.available / (1024**3), 2),
                 "memory_usage_percent": memory.percent,
                 "platform": sys.platform,
-                "python_version": sys.version.split()[0]
+                "python_version": sys.version.split()[0],
             }
         except Exception as e:
             return {"error": str(e)}
@@ -99,8 +100,10 @@ class PerformanceBenchmark:
     def run_all_benchmarks(self) -> Dict[str, Any]:
         """全ベンチマーク実行"""
         self.logger.info("⚡ Starting Performance Benchmark Suite...")
-        self.structured_logger.info("Performance benchmark initiated",
-                                   extra={"phase": "4-10", "benchmark_type": "comprehensive"})
+        self.structured_logger.info(
+            "Performance benchmark initiated",
+            extra={"phase": "4-10", "benchmark_type": "comprehensive"},
+        )
 
         benchmark_methods = [
             ("input_validation", self._benchmark_input_validation),
@@ -111,7 +114,7 @@ class PerformanceBenchmark:
             ("html_rendering", self._benchmark_html_rendering),
             ("memory_performance", self._benchmark_memory_performance),
             ("concurrent_operations", self._benchmark_concurrent_operations),
-            ("system_resources", self._benchmark_system_resources)
+            ("system_resources", self._benchmark_system_resources),
         ]
 
         for benchmark_name, benchmark_method in benchmark_methods:
@@ -136,7 +139,7 @@ class PerformanceBenchmark:
                 self.results["benchmarks"][benchmark_name] = {
                     "status": "FAILED",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
                 self.results["summary"]["total_benchmarks"] += 1
                 self.results["summary"]["failed_benchmarks"] += 1
@@ -155,13 +158,11 @@ class PerformanceBenchmark:
         target = self.performance_targets["input_validation_ops_per_sec"]
 
         # テストデータ準備
-        test_inputs = [
-            f"test_file_{i}.txt" for i in range(1000)
-        ] + [
-            f"path/to/file_{i}.log" for i in range(1000)
-        ] + [
-            f"../dangerous_path_{i}" for i in range(100)  # 危険なパス
-        ]
+        test_inputs = (
+            [f"test_file_{i}.txt" for i in range(1000)]
+            + [f"path/to/file_{i}.log" for i in range(1000)]
+            + [f"../dangerous_path_{i}" for i in range(100)]  # 危険なパス
+        )
 
         # ウォームアップ
         for i in range(100):
@@ -189,7 +190,7 @@ class PerformanceBenchmark:
             "duration_seconds": round(duration, 4),
             "iterations": iterations,
             "memory_delta_mb": round(memory_delta_mb, 2),
-            "efficiency_ratio": round(ops_per_sec / target, 3)
+            "efficiency_ratio": round(ops_per_sec / target, 3),
         }
 
     def _benchmark_data_sanitization(self) -> Dict[str, Any]:
@@ -198,18 +199,20 @@ class PerformanceBenchmark:
         target = self.performance_targets["data_sanitization_ops_per_sec"]
 
         # テストデータ準備
-        test_html = '<script>alert("xss")</script><p>Normal content</p><div>More content</div>'
+        test_html = (
+            '<script>alert("xss")</script><p>Normal content</p><div>More content</div>'
+        )
         test_sql = "'; DROP TABLE users; SELECT * FROM sensitive_data; --"
         test_json = {
             "password": "secret123",
             "api_key": "key_abc123",
-            "data": "normal content"
+            "data": "normal content",
         }
 
         test_data = [
             ("html", test_html),
             ("sql", test_sql),
-            ("json", test_json)
+            ("json", test_json),
         ] * 1000  # 3,000 operations total
 
         # ウォームアップ
@@ -245,7 +248,7 @@ class PerformanceBenchmark:
             "target_achieved": ops_per_sec >= target * 0.8,
             "duration_seconds": round(duration, 4),
             "iterations": iterations,
-            "efficiency_ratio": round(ops_per_sec / target, 3)
+            "efficiency_ratio": round(ops_per_sec / target, 3),
         }
 
     def _benchmark_audit_logging(self) -> Dict[str, Any]:
@@ -258,20 +261,26 @@ class PerformanceBenchmark:
             ("file_operation", f"test_file_{i}.txt", {"action": "read"}),
             ("security_event", f"auth_attempt_{i}", {"user": f"user_{i}"}),
             ("system_event", f"system_op_{i}", {"component": "test"}),
-            ("compliance_event", f"compliance_{i}", {"regulation": "test_reg"})
+            ("compliance_event", f"compliance_{i}", {"regulation": "test_reg"}),
         ] * 250  # 1,000 events total
 
         # ウォームアップ
         for i in range(50):
             event_type, event_name, details = test_events[i]
             if event_type == "file_operation":
-                audit_logger.log_file_operation(event_name, "read", success=True, metadata=details)
+                audit_logger.log_file_operation(
+                    event_name, "read", success=True, metadata=details
+                )
             elif event_type == "security_event":
-                audit_logger.log_security_event("test", event_name, success=True, details=details)
+                audit_logger.log_security_event(
+                    "test", event_name, success=True, details=details
+                )
             elif event_type == "system_event":
                 audit_logger.log_system_event("test", event_name, details=details)
             else:
-                audit_logger.log_compliance_event("test", event_name, success=True, details=details)
+                audit_logger.log_compliance_event(
+                    "test", event_name, success=True, details=details
+                )
 
         # 実際の計測
         iterations = len(test_events)
@@ -279,13 +288,19 @@ class PerformanceBenchmark:
 
         for event_type, event_name, details in test_events:
             if event_type == "file_operation":
-                audit_logger.log_file_operation(event_name, "read", success=True, metadata=details)
+                audit_logger.log_file_operation(
+                    event_name, "read", success=True, metadata=details
+                )
             elif event_type == "security_event":
-                audit_logger.log_security_event("test", event_name, success=True, details=details)
+                audit_logger.log_security_event(
+                    "test", event_name, success=True, details=details
+                )
             elif event_type == "system_event":
                 audit_logger.log_system_event("test", event_name, details=details)
             else:
-                audit_logger.log_compliance_event("test", event_name, success=True, details=details)
+                audit_logger.log_compliance_event(
+                    "test", event_name, success=True, details=details
+                )
 
         end_time = time.perf_counter()
 
@@ -298,7 +313,7 @@ class PerformanceBenchmark:
             "target_achieved": events_per_sec >= target * 0.8,
             "duration_seconds": round(duration, 4),
             "iterations": iterations,
-            "efficiency_ratio": round(events_per_sec / target, 3)
+            "efficiency_ratio": round(events_per_sec / target, 3),
         }
 
     def _benchmark_structured_logging(self) -> Dict[str, Any]:
@@ -318,7 +333,9 @@ class PerformanceBenchmark:
             if i % 4 == 0:
                 logger.info(f"Info message {i}", extra={"type": "info", "id": i})
             elif i % 4 == 1:
-                logger.warning(f"Warning message {i}", extra={"type": "warning", "id": i})
+                logger.warning(
+                    f"Warning message {i}", extra={"type": "warning", "id": i}
+                )
             elif i % 4 == 2:
                 logger.performance_log(f"operation_{i}", 0.1, extra={"perf_test": True})
             else:
@@ -335,7 +352,7 @@ class PerformanceBenchmark:
             "target_achieved": ops_per_sec >= target * 0.8,
             "duration_seconds": round(duration, 4),
             "iterations": iterations,
-            "efficiency_ratio": round(ops_per_sec / target, 3)
+            "efficiency_ratio": round(ops_per_sec / target, 3),
         }
 
     def _benchmark_kumihan_parsing(self) -> Dict[str, Any]:
@@ -397,15 +414,11 @@ def test_function():
                 "duration_seconds": round(duration, 4),
                 "total_chars_processed": total_chars_processed,
                 "iterations": iterations,
-                "efficiency_ratio": round(chars_per_sec / target, 3)
+                "efficiency_ratio": round(chars_per_sec / target, 3),
             }
 
         except Exception as e:
-            return {
-                "error": str(e),
-                "target_achieved": False,
-                "chars_per_sec": 0
-            }
+            return {"error": str(e), "target_achieved": False, "chars_per_sec": 0}
 
     def _benchmark_html_rendering(self) -> Dict[str, Any]:
         """HTMLレンダリングパフォーマンステスト"""
@@ -415,14 +428,17 @@ def test_function():
             target = self.performance_targets["rendering_elements_per_sec"]
 
             # パース済みコンテンツでレンダリングテスト
-            test_content = """
+            test_content = (
+                """
 # タイトル #見出し1##
 # 装飾 #太字##重要なテキスト
 # リスト #番号なし##
 - アイテム1
 - アイテム2
 - アイテム3
-            """ * 50  # より多くの要素
+            """
+                * 50
+            )  # より多くの要素
 
             parsed_content = parser.parse(test_content)
 
@@ -443,7 +459,7 @@ def test_function():
 
             duration = end_time - start_time
             # 要素数推定（簡易的に）
-            estimated_elements = len(parsed_content.split('\n')) * iterations
+            estimated_elements = len(parsed_content.split("\n")) * iterations
             elements_per_sec = estimated_elements / duration
 
             # レンダリング結果の品質チェック
@@ -458,15 +474,11 @@ def test_function():
                 "iterations": iterations,
                 "estimated_elements": estimated_elements,
                 "rendering_quality_ok": quality_ok,
-                "efficiency_ratio": round(elements_per_sec / target, 3)
+                "efficiency_ratio": round(elements_per_sec / target, 3),
             }
 
         except Exception as e:
-            return {
-                "error": str(e),
-                "target_achieved": False,
-                "elements_per_sec": 0
-            }
+            return {"error": str(e), "target_achieved": False, "elements_per_sec": 0}
 
     def _benchmark_memory_performance(self) -> Dict[str, Any]:
         """メモリ使用量パフォーマンステスト"""
@@ -486,7 +498,7 @@ def test_function():
             test_data = {
                 "content": "x" * 1000,  # 1KB of data
                 "metadata": {"id": i, "timestamp": time.time()},
-                "large_list": list(range(100))
+                "large_list": list(range(100)),
             }
             large_data.append(test_data)
 
@@ -514,12 +526,14 @@ def test_function():
             "memory_delta_mb": round(final_memory - baseline_memory, 2),
             "memory_leak_mb": round(memory_leak, 2),
             "target_limit_mb": target_limit_mb,
-            "target_achieved": peak_memory < target_limit_mb and memory_leak < 10,  # 10MB未満のリークは許容
-            "memory_efficient": memory_leak < 5  # 5MB未満なら効率的
+            "target_achieved": peak_memory < target_limit_mb
+            and memory_leak < 10,  # 10MB未満のリークは許容
+            "memory_efficient": memory_leak < 5,  # 5MB未満なら効率的
         }
 
     def _benchmark_concurrent_operations(self) -> Dict[str, Any]:
         """並行処理パフォーマンステスト"""
+
         def worker_task(task_id: int) -> Dict[str, Any]:
             """ワーカータスク"""
             logger = get_structured_logger(f"concurrent_worker_{task_id}")
@@ -548,7 +562,7 @@ def test_function():
                 "task_id": task_id,
                 "operations": operations,
                 "duration": duration,
-                "ops_per_sec": operations / duration
+                "ops_per_sec": operations / duration,
             }
 
         # 並行実行テスト
@@ -563,7 +577,9 @@ def test_function():
 
         # 結果集計
         total_operations = sum(r["operations"] for r in worker_results)
-        average_ops_per_sec = statistics.mean([r["ops_per_sec"] for r in worker_results])
+        average_ops_per_sec = statistics.mean(
+            [r["ops_per_sec"] for r in worker_results]
+        )
         overall_ops_per_sec = total_operations / total_duration
 
         return {
@@ -574,7 +590,7 @@ def test_function():
             "overall_ops_per_sec": round(overall_ops_per_sec, 2),
             "worker_results": worker_results,
             "target_achieved": overall_ops_per_sec > 1000,  # 1000 ops/sec以上を目標
-            "concurrency_effective": overall_ops_per_sec > average_ops_per_sec * 0.8
+            "concurrency_effective": overall_ops_per_sec > average_ops_per_sec * 0.8,
         }
 
     def _benchmark_system_resources(self) -> Dict[str, Any]:
@@ -589,7 +605,7 @@ def test_function():
 
         for i in range(50):
             # CPU集約的処理
-            result = sum(j ** 2 for j in range(1000))
+            result = sum(j**2 for j in range(1000))
 
             # サンプリング
             if i % 5 == 0:
@@ -613,16 +629,16 @@ def test_function():
             "cpu_usage": {
                 "average_percent": round(avg_cpu, 2),
                 "peak_percent": round(peak_cpu, 2),
-                "samples": len(cpu_samples)
+                "samples": len(cpu_samples),
             },
             "memory_usage": {
                 "average_mb": round(avg_memory, 2),
                 "peak_mb": round(peak_memory, 2),
-                "samples": len(memory_samples)
+                "samples": len(memory_samples),
             },
             "target_cpu_limit": target_cpu_limit,
             "target_achieved": peak_cpu < target_cpu_limit,
-            "resource_efficient": avg_cpu < target_cpu_limit * 0.7
+            "resource_efficient": avg_cpu < target_cpu_limit * 0.7,
         }
 
     def _calculate_overall_score(self):
@@ -638,7 +654,9 @@ def test_function():
             efficiency_ratios = []
             for benchmark in self.results["benchmarks"].values():
                 if isinstance(benchmark, dict) and "efficiency_ratio" in benchmark:
-                    efficiency_ratios.append(min(benchmark["efficiency_ratio"], 2.0))  # 2.0でキャップ
+                    efficiency_ratios.append(
+                        min(benchmark["efficiency_ratio"], 2.0)
+                    )  # 2.0でキャップ
 
             efficiency_bonus = 0
             if efficiency_ratios:
@@ -647,7 +665,9 @@ def test_function():
                     efficiency_bonus = (avg_efficiency - 1.0) * 0.2  # 最大20%ボーナス
 
             overall_score = min(basic_score + efficiency_bonus, 1.0)
-            self.results["summary"]["overall_performance_score"] = round(overall_score, 3)
+            self.results["summary"]["overall_performance_score"] = round(
+                overall_score, 3
+            )
         else:
             self.results["summary"]["overall_performance_score"] = 0.0
 
@@ -660,14 +680,14 @@ def test_function():
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_file = output_dir / f"performance_benchmark_report_{timestamp}.json"
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"⚡ Performance benchmark report saved: {output_file}")
 
             # 最新レポートとしてもコピー保存
             latest_file = output_dir / "performance_benchmark_report.json"
-            with open(latest_file, 'w', encoding='utf-8') as f:
+            with open(latest_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
@@ -678,9 +698,9 @@ def test_function():
         summary = self.results["summary"]
         score = summary["overall_performance_score"]
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("⚡ PERFORMANCE BENCHMARK REPORT")
-        print("="*60)
+        print("=" * 60)
         print(f"🎯 Overall Performance Score: {score:.1%}")
         print(f"✅ Passed Benchmarks: {summary['passed_benchmarks']}")
         print(f"❌ Failed Benchmarks: {summary['failed_benchmarks']}")
@@ -689,8 +709,12 @@ def test_function():
         # システム情報
         sys_info = self.results["system_info"]
         print(f"\n🖥️  System Info:")
-        print(f"   CPU Cores: {sys_info.get('cpu_physical_cores', 'N/A')} physical, {sys_info.get('cpu_logical_cores', 'N/A')} logical")
-        print(f"   Memory: {sys_info.get('total_memory_gb', 'N/A')}GB total, {sys_info.get('available_memory_gb', 'N/A')}GB available")
+        print(
+            f"   CPU Cores: {sys_info.get('cpu_physical_cores', 'N/A')} physical, {sys_info.get('cpu_logical_cores', 'N/A')} logical"
+        )
+        print(
+            f"   Memory: {sys_info.get('total_memory_gb', 'N/A')}GB total, {sys_info.get('available_memory_gb', 'N/A')}GB available"
+        )
         print(f"   Platform: {sys_info.get('platform', 'N/A')}")
 
         # 主要ベンチマーク結果
@@ -701,7 +725,7 @@ def test_function():
             ("input_validation", "Input Validation", "ops_per_sec"),
             ("data_sanitization", "Data Sanitization", "ops_per_sec"),
             ("audit_logging", "Audit Logging", "events_per_sec"),
-            ("structured_logging", "Structured Logging", "ops_per_sec")
+            ("structured_logging", "Structured Logging", "ops_per_sec"),
         ]
 
         for bench_key, bench_name, metric_key in key_benchmarks:
@@ -724,7 +748,7 @@ def test_function():
             level = "❌ PERFORMANCE ISSUES (Requires Attention)"
 
         print(f"\n🏆 Performance Level: {level}")
-        print("="*60)
+        print("=" * 60)
 
 
 def main():

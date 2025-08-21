@@ -4,15 +4,16 @@ integration.py モジュールの包括的なテスト。
 ArchitectureManagerとパターン統合機能の完全なテストカバレッジを提供。
 """
 
-import pytest
-from unittest.mock import Mock, patch, call, MagicMock
 from typing import Any, Dict, Optional
+from unittest.mock import MagicMock, Mock, call, patch
 
-from kumihan_formatter.core.patterns.integration import ArchitectureManager
-from kumihan_formatter.core.patterns.observer import Event, EventType, EventBus
-from kumihan_formatter.core.patterns.strategy import StrategyManager
+import pytest
+
 from kumihan_formatter.core.patterns.command import CommandProcessor
 from kumihan_formatter.core.patterns.decorator import DecoratorChain
+from kumihan_formatter.core.patterns.integration import ArchitectureManager
+from kumihan_formatter.core.patterns.observer import Event, EventBus, EventType
+from kumihan_formatter.core.patterns.strategy import StrategyManager
 from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
@@ -54,10 +55,13 @@ class TestArchitectureManager:
         mock_strategies_module.HTMLRenderingStrategy = Mock()
 
         # sys.modulesを直接パッチ
-        with patch.dict('sys.modules', {
-            'kumihan_formatter.core.patterns.observers': mock_observers_module,
-            'kumihan_formatter.core.patterns.strategies': mock_strategies_module
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "kumihan_formatter.core.patterns.observers": mock_observers_module,
+                "kumihan_formatter.core.patterns.strategies": mock_strategies_module,
+            },
+        ):
             # When: デフォルトパターン設定を実行
             self.manager.configure_default_patterns()
 
@@ -67,7 +71,7 @@ class TestArchitectureManager:
     def test_正常系_デフォルトパターン設定_ImportError処理(self):
         """正常系: ImportError時の適切な処理確認"""
         # Given: ImportErrorを発生させるモック
-        with patch('builtins.__import__', side_effect=ImportError("Module not found")):
+        with patch("builtins.__import__", side_effect=ImportError("Module not found")):
             # When: デフォルトパターン設定を実行
             # Then: 例外が発生せずに正常に処理される
             try:
@@ -154,9 +158,7 @@ class TestArchitectureManager:
 
         # When: イベント発行便利メソッドを呼び出し
         self.manager.publish_event(
-            EventType.PARSING_STARTED,
-            "test_source",
-            {"key": "value"}
+            EventType.PARSING_STARTED, "test_source", {"key": "value"}
         )
 
         # Then: イベントバスのpublishメソッドが正しく呼ばれる
@@ -315,9 +317,7 @@ class TestEventPublication:
 
         # When: 便利メソッドでイベント発行
         self.manager.publish_event(
-            EventType.PARSING_STARTED,
-            "convenience_test",
-            {"data": "test_value"}
+            EventType.PARSING_STARTED, "convenience_test", {"data": "test_value"}
         )
 
         # Then: イベントが正しく発行される
@@ -357,9 +357,7 @@ class TestEventPublication:
 
         # When: 大量データでイベント発行
         self.manager.publish_event(
-            EventType.PARSING_STARTED,
-            "large_data_test",
-            large_data
+            EventType.PARSING_STARTED, "large_data_test", large_data
         )
 
         # Then: 正常に処理される
@@ -378,12 +376,15 @@ class TestImportErrorHandling:
         mock_strategies_module.HTMLRenderingStrategy = Mock()
 
         # observers モジュールは存在しない状態をシミュレート
-        with patch.dict('sys.modules', {
-            'kumihan_formatter.core.patterns.strategies': mock_strategies_module
-        }):
+        with patch.dict(
+            "sys.modules",
+            {"kumihan_formatter.core.patterns.strategies": mock_strategies_module},
+        ):
             # observers モジュールが存在しない場合のテスト
-            if 'kumihan_formatter.core.patterns.observers' in __import__('sys').modules:
-                del __import__('sys').modules['kumihan_formatter.core.patterns.observers']
+            if "kumihan_formatter.core.patterns.observers" in __import__("sys").modules:
+                del __import__("sys").modules[
+                    "kumihan_formatter.core.patterns.observers"
+                ]
 
             # When: デフォルトパターン設定を実行
             manager = ArchitectureManager()
@@ -404,12 +405,18 @@ class TestImportErrorHandling:
         mock_observers_module.RenderingObserver = Mock()
 
         # strategies モジュールは存在しない状態をシミュレート
-        with patch.dict('sys.modules', {
-            'kumihan_formatter.core.patterns.observers': mock_observers_module
-        }):
+        with patch.dict(
+            "sys.modules",
+            {"kumihan_formatter.core.patterns.observers": mock_observers_module},
+        ):
             # strategies モジュールが存在しない場合のテスト
-            if 'kumihan_formatter.core.patterns.strategies' in __import__('sys').modules:
-                del __import__('sys').modules['kumihan_formatter.core.patterns.strategies']
+            if (
+                "kumihan_formatter.core.patterns.strategies"
+                in __import__("sys").modules
+            ):
+                del __import__("sys").modules[
+                    "kumihan_formatter.core.patterns.strategies"
+                ]
 
             # When: デフォルトパターン設定を実行
             manager = ArchitectureManager()
@@ -424,14 +431,14 @@ class TestImportErrorHandling:
     def test_異常系_部分的ImportError処理(self):
         """異常系: 一部のモジュールのみImportError発生時の処理確認"""
         # Given: observersのみImportErrorが発生
-        with patch('builtins.__import__') as mock_import:
+        with patch("builtins.__import__") as mock_import:
             original_import = __import__
 
             def selective_import_failure(name, *args, **kwargs):
-                if 'observers' in name:
+                if "observers" in name:
                     raise ImportError("observers module not found")
                 # strategies は正常に import される（モック）
-                if 'strategies' in name:
+                if "strategies" in name:
                     mock_module = Mock()
                     mock_module.KumihanParsingStrategy = Mock()
                     mock_module.HTMLRenderingStrategy = Mock()
@@ -458,10 +465,13 @@ class TestImportErrorHandling:
         mock_strategies.KumihanParsingStrategy = Mock()
         mock_strategies.HTMLRenderingStrategy = Mock()
 
-        with patch.dict('sys.modules', {
-            'kumihan_formatter.core.patterns.observers': mock_observers,
-            'kumihan_formatter.core.patterns.strategies': mock_strategies
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "kumihan_formatter.core.patterns.observers": mock_observers,
+                "kumihan_formatter.core.patterns.strategies": mock_strategies,
+            },
+        ):
             # When: デフォルトパターン設定を実行
             manager = ArchitectureManager()
             manager.configure_default_patterns()
@@ -523,7 +533,7 @@ class TestArchitectureManagerIntegration:
         manager = ArchitectureManager()
 
         # ImportError処理確認
-        with patch('builtins.__import__', side_effect=ImportError("Test error")):
+        with patch("builtins.__import__", side_effect=ImportError("Test error")):
             manager.configure_default_patterns()  # 正常に処理される
 
         # 不正なインスタンス処理

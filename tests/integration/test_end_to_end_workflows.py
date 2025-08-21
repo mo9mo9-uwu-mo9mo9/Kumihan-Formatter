@@ -16,7 +16,6 @@ from kumihan_formatter.core.parsing_coordinator import ParsingCoordinator
 from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
 from kumihan_formatter.core.syntax.syntax_validator import KumihanSyntaxValidator
 
-
 # mypy: ignore-errors
 # Integration test with mocking type issues - strategic ignore
 
@@ -40,10 +39,14 @@ class TestCompleteProcessingWorkflow:
 
         # Check if there are critical errors
         critical_errors = [
-            e for e in errors if hasattr(e, "severity") and "CRITICAL" in str(e.severity).upper()
+            e
+            for e in errors
+            if hasattr(e, "severity") and "CRITICAL" in str(e.severity).upper()
         ]
         if len(critical_errors) > 0:
-            pytest.skip("Input file has critical errors, cannot proceed with processing")
+            pytest.skip(
+                "Input file has critical errors, cannot proceed with processing"
+            )
 
         # Process file (if file operations are available)
         try:
@@ -236,7 +239,14 @@ class TestCLIIntegration:
         try:
             # Run convert command
             result = subprocess.run(
-                ["python", "-m", "kumihan_formatter", "convert", str(input_file), str(output_file)],
+                [
+                    "python",
+                    "-m",
+                    "kumihan_formatter",
+                    "convert",
+                    str(input_file),
+                    str(output_file),
+                ],
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -262,7 +272,13 @@ class TestCLIIntegration:
         try:
             # Try to process non-existent file
             result = subprocess.run(
-                ["python", "-m", "kumihan_formatter", "check-syntax", str(non_existent_file)],
+                [
+                    "python",
+                    "-m",
+                    "kumihan_formatter",
+                    "check-syntax",
+                    str(non_existent_file),
+                ],
                 capture_output=True,
                 text=True,
                 timeout=30,
@@ -335,7 +351,9 @@ class TestRenderingIntegration:
 
             for template in templates:
                 try:
-                    html_output = self.renderer.render_with_template(test_content, template)
+                    html_output = self.renderer.render_with_template(
+                        test_content, template
+                    )
 
                     assert isinstance(html_output, str)
                     assert len(html_output) > 0
@@ -518,4 +536,6 @@ class TestStressIntegration:
         assert len(results) + len(errors) == worker_count
 
         # Should not have too many errors
-        assert len(errors) < worker_count // 2, f"Too many concurrent processing errors: {errors}"
+        assert (
+            len(errors) < worker_count // 2
+        ), f"Too many concurrent processing errors: {errors}"

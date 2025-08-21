@@ -68,7 +68,9 @@ class TestHTMLRenderer:
             result = self.renderer.render_nodes([paragraph_node])
             assert isinstance(result, str)
             assert (
-                "paragraph" in result.lower() or "p>" in result.lower() or "段落テキスト" in result
+                "paragraph" in result.lower()
+                or "p>" in result.lower()
+                or "段落テキスト" in result
             )
         except Exception:
             # Graceful failure is acceptable
@@ -76,7 +78,9 @@ class TestHTMLRenderer:
 
     def test_render_heading_node(self):
         """Test rendering heading node."""
-        heading_node = Node(type="heading", content="見出しテキスト", attributes={"level": 1})
+        heading_node = Node(
+            type="heading", content="見出しテキスト", attributes={"level": 1}
+        )
 
         try:
             result = self.renderer.render_nodes([heading_node])

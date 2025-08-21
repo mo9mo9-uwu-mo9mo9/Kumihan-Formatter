@@ -29,20 +29,20 @@ class TestRenderingPipeline:
         self.test_cases = {
             "basic": {
                 "input": "# 太字 #基本テスト##",
-                "expected_tags": ["基本テスト", "kumihan-document"]
+                "expected_tags": ["基本テスト", "kumihan-document"],
             },
             "complex": {
                 "input": "# 見出し1 #メインタイトル## # 太字 #重要## # イタリック #強調##",
-                "expected_tags": ["メインタイトル", "重要", "強調"]
+                "expected_tags": ["メインタイトル", "重要", "強調"],
             },
             "nested": {
                 "input": "# 太字 ## イタリック #ネスト##",
-                "expected_tags": ["ネスト", "kumihan-document"]
+                "expected_tags": ["ネスト", "kumihan-document"],
             },
             "list": {
                 "input": "- アイテム1\n- アイテム2\n  - ネスト",
-                "expected_tags": ["アイテム1", "アイテム2"]
-            }
+                "expected_tags": ["アイテム1", "アイテム2"],
+            },
         }
 
     def teardown_method(self) -> None:
@@ -71,7 +71,7 @@ class TestRenderingPipeline:
 
             # Step 3: 出力検証
             output_file = self.output_dir / "pipeline_output.html"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(html_output)
 
             return {
@@ -79,17 +79,12 @@ class TestRenderingPipeline:
                 "parsed": parsed_result,
                 "html": html_output,
                 "output_file": output_file,
-                "file_size": output_file.stat().st_size
+                "file_size": output_file.stat().st_size,
             }
 
         except Exception as e:
             logger.error(f"パイプライン実行エラー: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "parsed": None,
-                "html": None
-            }
+            return {"success": False, "error": str(e), "parsed": None, "html": None}
 
     def test_基本的なパイプライン(self) -> None:
         """基本的なレンダリングパイプライン"""
@@ -105,7 +100,9 @@ class TestRenderingPipeline:
 
         # 期待されるタグの存在確認
         for expected_tag in test_case["expected_tags"]:
-            assert expected_tag in html, f"期待されるタグが見つかりません: {expected_tag}"
+            assert (
+                expected_tag in html
+            ), f"期待されるタグが見つかりません: {expected_tag}"
 
         # ファイル出力確認
         assert result["output_file"].exists(), "出力ファイルが作成されていません"
@@ -131,7 +128,9 @@ class TestRenderingPipeline:
 
         html = result["html"]
         # ネスト構造の正しい表現確認（実際のレンダラー出力形式に合わせて更新）
-        assert "# 太字 ## イタリック #ネスト##" in html, "ネスト構造が正しく表現されていません"
+        assert (
+            "# 太字 ## イタリック #ネスト##" in html
+        ), "ネスト構造が正しく表現されていません"
 
     def test_リスト構造パイプライン(self) -> None:
         """リスト構造でのパイプライン"""
@@ -170,10 +169,7 @@ class TestRenderingPipeline:
         import time
 
         # 中程度の複雑さのコンテンツ
-        content = "\n".join([
-            f"# 見出し{i} #セクション{i}##"
-            for i in range(50)
-        ])
+        content = "\n".join([f"# 見出し{i} #セクション{i}##" for i in range(50)])
 
         start_time = time.time()
         result = self.run_complete_pipeline(content)
@@ -210,15 +206,15 @@ class TestRenderingPipeline:
         snapshot2 = tracemalloc.take_snapshot()
 
         # メモリ増加量確認
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats if stat.size_diff > 0)
 
         tracemalloc.stop()
 
         # メモリ増加が適切な範囲内であること（2MB以下）
-        assert total_diff < 2 * 1024 * 1024, (
-            f"メモリ使用量が多すぎます: {total_diff/1024/1024:.2f}MB"
-        )
+        assert (
+            total_diff < 2 * 1024 * 1024
+        ), f"メモリ使用量が多すぎます: {total_diff/1024/1024:.2f}MB"
 
         logger.info(f"メモリ効率テスト完了: 増加量 {total_diff/1024:.1f}KB")
 
@@ -232,15 +228,19 @@ class TestRenderingPipeline:
 
         # 出力形式の検証（実際のレンダラー出力形式に合わせて更新）
         html = html_result["html"]
-        assert "# 太字 #マルチフォーマットテスト##" in html, "HTML形式が正しくありません"
+        assert (
+            "# 太字 #マルチフォーマットテスト##" in html
+        ), "HTML形式が正しくありません"
         assert "# イタリック #出力確認##" in html, "HTML形式が正しくありません"
 
         # ファイルサイズ適正性確認
         file_size = html_result["file_size"]
-        input_size = len(content.encode('utf-8'))
+        input_size = len(content.encode("utf-8"))
         ratio = file_size / input_size
 
         # 出力サイズが入力の2-200倍程度であること（完全HTML文書のため上限調整）
         assert 2.0 <= ratio <= 200.0, f"出力サイズ比が異常: {ratio:.2f}"
 
-        logger.info(f"マルチフォーマットテスト: 入力 {input_size}B, 出力 {file_size}B, 比率 {ratio:.2f}")
+        logger.info(
+            f"マルチフォーマットテスト: 入力 {input_size}B, 出力 {file_size}B, 比率 {ratio:.2f}"
+        )

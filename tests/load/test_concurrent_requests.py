@@ -54,7 +54,9 @@ class TestConcurrentRequests:
 
         # 検証
         success_count = sum(1 for _, _, success in results if success)
-        assert success_count == self.request_count, f"失敗したリクエスト: {self.request_count - success_count}"
+        assert (
+            success_count == self.request_count
+        ), f"失敗したリクエスト: {self.request_count - success_count}"
 
         # パフォーマンス統計
         times = [elapsed for _, elapsed, _ in results]
@@ -82,10 +84,7 @@ class TestConcurrentRequests:
         # 負荷テスト実行
         with ThreadPoolExecutor(max_workers=5) as executor:
             for batch in range(3):
-                futures = [
-                    executor.submit(self.process_request, i)
-                    for i in range(20)
-                ]
+                futures = [executor.submit(self.process_request, i) for i in range(20)]
                 for future in futures:
                     future.result()
                 gc.collect()
@@ -94,16 +93,19 @@ class TestConcurrentRequests:
         snapshot2 = tracemalloc.take_snapshot()
 
         # メモリ差分確認
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats)
 
         # 許容範囲内か確認（10MB以下）
-        assert total_diff < 10 * 1024 * 1024, f"メモリリークの可能性: {total_diff / 1024 / 1024:.2f}MB"
+        assert (
+            total_diff < 10 * 1024 * 1024
+        ), f"メモリリークの可能性: {total_diff / 1024 / 1024:.2f}MB"
 
         tracemalloc.stop()
 
     def test_非同期並行リクエスト(self) -> None:
         """非同期での並行リクエスト処理"""
+
         async def async_process(request_id: int) -> tuple[int, float, bool]:
             """非同期処理"""
             loop = asyncio.get_event_loop()
@@ -127,10 +129,7 @@ class TestConcurrentRequests:
 
         for workers in worker_counts:
             with ThreadPoolExecutor(max_workers=workers) as executor:
-                futures = [
-                    executor.submit(self.process_request, i)
-                    for i in range(20)
-                ]
+                futures = [executor.submit(self.process_request, i) for i in range(20)]
 
                 times = []
                 for future in futures:
@@ -144,7 +143,7 @@ class TestConcurrentRequests:
         # スケーラビリティの検証
         # ワーカー数が増えても極端にパフォーマンスが劣化しないこと
         for i in range(1, len(worker_counts)):
-            prev_avg = sum(results_by_workers[i-1]) / len(results_by_workers[i-1])
+            prev_avg = sum(results_by_workers[i - 1]) / len(results_by_workers[i - 1])
             curr_avg = sum(results_by_workers[i]) / len(results_by_workers[i])
 
             # 2倍以上遅くならないこと

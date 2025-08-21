@@ -43,7 +43,7 @@ class TestFullWorkflow:
             # 1. ファイル読み込み
             start_time = time.time()
 
-            with open(input_file, 'r', encoding='utf-8') as f:
+            with open(input_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             read_time = time.time() - start_time
@@ -61,7 +61,7 @@ class TestFullWorkflow:
             # 4. 出力ファイル作成
             output_start = time.time()
             output_file = self.temp_dir / "output.html"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(rendered_output)
             output_time = time.time() - output_start
 
@@ -76,7 +76,7 @@ class TestFullWorkflow:
                 "output_time": output_time,
                 "output_size": len(rendered_output),
                 "output_file": output_file,
-                "output_quality": self._calculate_quality_score(rendered_output)
+                "output_quality": self._calculate_quality_score(rendered_output),
             }
 
         except Exception as e:
@@ -85,18 +85,18 @@ class TestFullWorkflow:
                 "success": False,
                 "error": str(e),
                 "processing_time": 0.0,
-                "output_quality": 0.0
+                "output_quality": 0.0,
             }
 
     def _mock_parse(self, content: str) -> Dict[str, Any]:
         """パース処理のモック実装"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         return {
             "line_count": len(lines),
-            "has_headings": any(line.startswith('#') for line in lines),
-            "has_bold": any('#太字#' in line for line in lines),
-            "has_italic": any('#イタリック' in line for line in lines),
-            "content_blocks": len([line for line in lines if line.strip()])
+            "has_headings": any(line.startswith("#") for line in lines),
+            "has_bold": any("#太字#" in line for line in lines),
+            "has_italic": any("#イタリック" in line for line in lines),
+            "content_blocks": len([line for line in lines if line.strip()]),
         }
 
     def _mock_render(self, parsed_data: Dict[str, Any]) -> str:
@@ -116,9 +116,9 @@ class TestFullWorkflow:
             f"<p>イタリック: {'あり' if parsed_data['has_italic'] else 'なし'}</p>",
             f"<p>コンテンツブロック: {parsed_data['content_blocks']}</p>",
             "</body>",
-            "</html>"
+            "</html>",
         ]
-        return '\n'.join(html_parts)
+        return "\n".join(html_parts)
 
     def _calculate_quality_score(self, output: str) -> float:
         """出力品質スコアを計算"""
@@ -154,7 +154,7 @@ class TestFullWorkflow:
             else:
                 lines.append(f"通常のテキスト行 {i}")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     @pytest.mark.e2e
     def test_完全ワークフロー_基本(self) -> None:
@@ -173,12 +173,16 @@ class TestFullWorkflow:
         # Then: 結果検証
         assert result["success"], f"処理が失敗: {result.get('error', '不明')}"
         assert processing_time < 5.0, f"処理時間が長すぎます: {processing_time}秒"
-        assert result["output_quality"] > 0.9, f"出力品質が低い: {result['output_quality']}"
+        assert (
+            result["output_quality"] > 0.9
+        ), f"出力品質が低い: {result['output_quality']}"
 
         # 出力ファイルの存在確認
         assert result["output_file"].exists(), "出力ファイルが作成されていません"
 
-        logger.info(f"ワークフロー完了: {processing_time:.3f}秒, 品質: {result['output_quality']:.3f}")
+        logger.info(
+            f"ワークフロー完了: {processing_time:.3f}秒, 品質: {result['output_quality']:.3f}"
+        )
 
     @pytest.mark.e2e
     def test_完全ワークフロー_複合記法(self) -> None:
@@ -202,7 +206,7 @@ class TestFullWorkflow:
         """完全ワークフロー: 空ファイルの処理"""
         # Given: 空ファイル
         empty_file = self.temp_dir / "empty.txt"
-        empty_file.write_text("", encoding='utf-8')
+        empty_file.write_text("", encoding="utf-8")
 
         # When: 処理実行
         result = self.run_full_workflow(empty_file)
@@ -217,14 +221,16 @@ class TestFullWorkflow:
         # Given: 中規模テストデータ（1000行）
         large_content = self.generate_large_test_data(1000)
         large_file = self.temp_dir / "large_test.txt"
-        large_file.write_text(large_content, encoding='utf-8')
+        large_file.write_text(large_content, encoding="utf-8")
 
         # When: 処理実行
         result = self.run_full_workflow(large_file)
 
         # Then: パフォーマンス基準確認
         assert result["success"], f"中規模データ処理が失敗: {result.get('error')}"
-        assert result["processing_time"] < 5.0, f"中規模データ処理時間超過: {result['processing_time']}秒"
+        assert (
+            result["processing_time"] < 5.0
+        ), f"中規模データ処理時間超過: {result['processing_time']}秒"
         assert result["output_quality"] > 0.8, "中規模データ出力品質が低い"
 
         logger.info(f"中規模データ処理完了: {result['processing_time']:.3f}秒")
@@ -253,10 +259,12 @@ class TestFullWorkflow:
         # 出力サイズ確認
         assert result["output_size"] > 100, "出力サイズが小さすぎる"
 
-        logger.info(f"詳細メトリクス - 読込: {result['read_time']:.3f}s, "
-                   f"パース: {result['parse_time']:.3f}s, "
-                   f"レンダ: {result['render_time']:.3f}s, "
-                   f"出力: {result['output_time']:.3f}s")
+        logger.info(
+            f"詳細メトリクス - 読込: {result['read_time']:.3f}s, "
+            f"パース: {result['parse_time']:.3f}s, "
+            f"レンダ: {result['render_time']:.3f}s, "
+            f"出力: {result['output_time']:.3f}s"
+        )
 
     @pytest.mark.e2e
     def test_完全ワークフロー_エンコーディング確認(self) -> None:
@@ -273,7 +281,7 @@ class TestFullWorkflow:
 ##
 """
         japanese_file = self.temp_dir / "japanese_test.txt"
-        japanese_file.write_text(japanese_content, encoding='utf-8')
+        japanese_file.write_text(japanese_content, encoding="utf-8")
 
         # When: 処理実行
         result = self.run_full_workflow(japanese_file)
@@ -282,9 +290,11 @@ class TestFullWorkflow:
         assert result["success"], "日本語ファイル処理が失敗"
 
         # 出力ファイルのエンコーディング確認
-        output_content = result["output_file"].read_text(encoding='utf-8')
+        output_content = result["output_file"].read_text(encoding="utf-8")
         # 日本語文字が含まれているかを確認（ひらがな、カタカナ、漢字のいずれか）
-        japanese_found = any(char in output_content for char in "日本語あいうえおアイウエオ見出し内容")
+        japanese_found = any(
+            char in output_content for char in "日本語あいうえおアイウエオ見出し内容"
+        )
         assert japanese_found, "日本語が正しく出力されていない"
         assert "charset='UTF-8'" in output_content, "UTF-8エンコーディング指定がない"
 

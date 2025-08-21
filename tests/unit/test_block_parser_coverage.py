@@ -14,14 +14,15 @@ from kumihan_formatter.core.parsing.block.block_validator import BlockValidator
 from kumihan_formatter.core.parsing.block.image_block_parser import ImageBlockParser
 from kumihan_formatter.core.parsing.block.special_block_parser import SpecialBlockParser
 
-
 # mypy: ignore-errors
 # Large number of type errors due to test mocking - strategic ignore for rapid error reduction
 
 
 @pytest.mark.unit
 @pytest.mark.parser
-@pytest.mark.skipif(True, reason="BlockParser tests causing CI failures - skip for stable coverage")
+@pytest.mark.skipif(
+    True, reason="BlockParser tests causing CI failures - skip for stable coverage"
+)
 class TestBlockParserCoverage:
     """Block parser comprehensive coverage tests."""
 
@@ -150,7 +151,8 @@ class TestBlockParserCoverage:
 @pytest.mark.unit
 @pytest.mark.parser
 @pytest.mark.skipif(
-    True, reason="SpecialBlockParser tests causing CI failures - skip for stable coverage"
+    True,
+    reason="SpecialBlockParser tests causing CI failures - skip for stable coverage",
 )
 class TestSpecialBlockParserCoverage:
     """SpecialBlockParser coverage tests."""
@@ -231,7 +233,8 @@ class TestImageBlockParserCoverage:
 @pytest.mark.unit
 @pytest.mark.parser
 @pytest.mark.skipif(
-    True, reason="BlockParserEdgeCases tests causing CI failures - skip for stable coverage"
+    True,
+    reason="BlockParserEdgeCases tests causing CI failures - skip for stable coverage",
 )
 class TestBlockParserEdgeCases:
     """Block parser edge case tests."""

@@ -61,7 +61,9 @@ def test_function():
 
     def test_lint_with_dry_run(self):
         """--dry-runオプションでの実行テスト"""
-        result = self.runner.invoke(lint_command, [str(self.test_file), "--fix", "--dry-run"])
+        result = self.runner.invoke(
+            lint_command, [str(self.test_file), "--fix", "--dry-run"]
+        )
 
         assert result.exit_code == 0
         assert "Dry run completed" in result.output
@@ -117,7 +119,9 @@ class TestFlake8AutoFixer:
 
     def test_split_function_call(self):
         """関数呼び出し分割テスト"""
-        long_line = 'result = some_function(arg1="value1", arg2="value2", arg3="value3")'
+        long_line = (
+            'result = some_function(arg1="value1", arg2="value2", arg3="value3")'
+        )
         fixed_line = self.fixer._split_function_call(long_line)
 
         # 分割されているかチェック
@@ -228,7 +232,9 @@ class TestLintIntegration:
         )
 
         # dry-runで修正可能性確認
-        result1 = self.runner.invoke(lint_command, [str(problem_file), "--fix", "--dry-run"])
+        result1 = self.runner.invoke(
+            lint_command, [str(problem_file), "--fix", "--dry-run"]
+        )
         assert result1.exit_code == 0
 
         # 実際に修正実行

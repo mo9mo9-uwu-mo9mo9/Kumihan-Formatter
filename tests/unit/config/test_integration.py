@@ -9,6 +9,7 @@ import tempfile
 import warnings
 from pathlib import Path
 from unittest.mock import Mock, patch
+
 import pytest
 
 from kumihan_formatter.config import (
@@ -47,10 +48,10 @@ class TestConfigManagerIntegration:
         # Then
         assert manager.config_type == "extended"
         assert isinstance(manager._config, ExtendedConfig)
-        assert hasattr(manager, 'get_markers')
-        assert hasattr(manager, 'get_themes')
+        assert hasattr(manager, "get_markers")
+        assert hasattr(manager, "get_themes")
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_BACKGROUND': '#ffffff'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_BACKGROUND": "#ffffff"})
     def test_正常系_環境変数統合動作確認(self):
         """環境変数とConfigManagerの統合動作確認"""
         # Given & When: 環境変数が設定された状態でConfigManagerを作成
@@ -63,7 +64,7 @@ class TestConfigManagerIntegration:
     def test_正常系_ファイル読み込み統合確認(self):
         """設定ファイル読み込みの統合確認"""
         # Given: 一時設定ファイル作成
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             f.write('{"theme": "dark"}')
             config_path = f.name
 
@@ -128,7 +129,7 @@ class TestConfigManagerIntegration:
         manager = ConfigManager()
 
         # Then: ロガーが適切に設定される
-        assert hasattr(manager, 'logger')
+        assert hasattr(manager, "logger")
         assert manager.logger is not None
 
     def test_正常系_設定検証統合(self):
@@ -146,7 +147,7 @@ class TestConfigManagerIntegration:
 class TestConfigFlowIntegration:
     """設定フロー統合テスト（10ケース）"""
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_COLOR': '#000000'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_COLOR": "#000000"})
     def test_正常系_初期化環境変数統合フロー(self):
         """初期化→環境変数読み込みフローの確認"""
         # Given & When: 環境変数が設定された状態で初期化
@@ -317,7 +318,9 @@ class TestCompatibilityTests:
 
             # Then: 警告が出力される（create_simple_configで）
             assert len(w) >= 1
-            assert any(issubclass(warning.category, DeprecationWarning) for warning in w)
+            assert any(
+                issubclass(warning.category, DeprecationWarning) for warning in w
+            )
 
     def test_正常系_BaseConfig移行互換性(self):
         """BaseConfig移行互換性の確認"""

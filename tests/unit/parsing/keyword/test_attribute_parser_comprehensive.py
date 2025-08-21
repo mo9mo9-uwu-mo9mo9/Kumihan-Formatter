@@ -12,9 +12,10 @@ attribute_parser.py: 19% → 75%達成（56%向上目標）
 - Kumihan記法属性処理
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Any, Dict
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.parsing.keyword.attribute_parser import AttributeParser
 from kumihan_formatter.core.parsing.keyword.base_parser import BaseParser
@@ -65,7 +66,7 @@ class TestAttributeParserCore:
         assert attributes["class"] == "test"  # 最初のクラス値
 
         # 引用符なし属性
-        content = 'class=test id=sample'
+        content = "class=test id=sample"
         attributes = self.parser.parse_attributes_from_content(content)
         assert "class" in attributes
         assert "id" in attributes
@@ -78,7 +79,9 @@ class TestAttributeParserCore:
         assert "style" in attributes
 
         # 複雑なスタイル
-        content = 'style="background: linear-gradient(to right, red, blue); margin: 10px;"'
+        content = (
+            'style="background: linear-gradient(to right, red, blue); margin: 10px;"'
+        )
         attributes = self.parser.parse_attributes_from_content(content)
         assert "style" in attributes
 
@@ -169,7 +172,7 @@ class TestAttributeParserHTML:
     def test_boolean_attributes_handling(self):
         """ブール属性ハンドリングテスト"""
         # disabled (値なし)
-        content = 'disabled'
+        content = "disabled"
         attributes = self.parser.parse_attributes_from_content(content)
         # ブール属性の処理（実装に応じて調整）
 
@@ -327,9 +330,18 @@ class TestAttributeParserSizeAndStyle:
         """有効サイズ値判定テスト"""
         # 有効サイズ
         valid_sizes = [
-            "16px", "1.5em", "2rem", "100%", "12pt",
-            "50vh", "30vw", "small", "medium", "large",
-            "x-large", "xx-large"
+            "16px",
+            "1.5em",
+            "2rem",
+            "100%",
+            "12pt",
+            "50vh",
+            "30vw",
+            "small",
+            "medium",
+            "large",
+            "x-large",
+            "xx-large",
         ]
 
         for size in valid_sizes:
@@ -337,8 +349,14 @@ class TestAttributeParserSizeAndStyle:
 
         # 無効サイズ
         invalid_sizes = [
-            "16", "px", "1.5", "invalid", "100px px",
-            "", "16 px", "1.5em!"
+            "16",
+            "px",
+            "1.5",
+            "invalid",
+            "100px px",
+            "",
+            "16 px",
+            "1.5em!",
         ]
 
         for size in invalid_sizes:
@@ -352,8 +370,14 @@ class TestAttributeParserSizeAndStyle:
         """有効スタイル値判定テスト"""
         # 有効スタイル
         valid_styles = [
-            "normal", "italic", "bold", "underline",
-            "strikethrough", "uppercase", "lowercase", "capitalize"
+            "normal",
+            "italic",
+            "bold",
+            "underline",
+            "strikethrough",
+            "uppercase",
+            "lowercase",
+            "capitalize",
         ]
 
         for style in valid_styles:
@@ -363,8 +387,12 @@ class TestAttributeParserSizeAndStyle:
 
         # 無効スタイル
         invalid_styles = [
-            "invalid", "blink", "comic-sans", "",
-            "bold italic", "under_line"
+            "invalid",
+            "blink",
+            "comic-sans",
+            "",
+            "bold italic",
+            "under_line",
         ]
 
         for style in invalid_styles:
@@ -397,9 +425,22 @@ class TestAttributeParserColorSanitization:
         assert result == "red"  # 小文字変換
 
         # 有効色名（標準）
-        color_names = ["red", "green", "blue", "yellow", "orange",
-                      "purple", "pink", "brown", "black", "white",
-                      "gray", "grey", "cyan", "magenta"]
+        color_names = [
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
+            "black",
+            "white",
+            "gray",
+            "grey",
+            "cyan",
+            "magenta",
+        ]
 
         for color in color_names:
             result = self.parser._sanitize_color_attribute(color)
@@ -407,8 +448,13 @@ class TestAttributeParserColorSanitization:
 
         # 無効色値
         invalid_colors = [
-            "invalid", "#GGG", "#12345", "rgb(256,0,0)",
-            "", "javascript:alert()", "<script>"
+            "invalid",
+            "#GGG",
+            "#12345",
+            "rgb(256,0,0)",
+            "",
+            "javascript:alert()",
+            "<script>",
         ]
 
         for invalid in invalid_colors:
@@ -426,9 +472,20 @@ class TestAttributeParserColorSanitization:
         """16進色バリデーションテスト"""
         # 有効16進色
         valid_hex = [
-            "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF",
-            "#123456", "#ABCDEF", "#abcdef", "#123ABC",
-            "#000", "#FFF", "#F00", "#0F0", "#00F"
+            "#000000",
+            "#FFFFFF",
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#123456",
+            "#ABCDEF",
+            "#abcdef",
+            "#123ABC",
+            "#000",
+            "#FFF",
+            "#F00",
+            "#0F0",
+            "#00F",
         ]
 
         for hex_color in valid_hex:
@@ -437,8 +494,18 @@ class TestAttributeParserColorSanitization:
 
         # 無効16進色
         invalid_hex = [
-            "#", "#G", "#GG", "#GGG", "#GGGG", "#GGGGG", "#GGGGGGG",
-            "#12345", "#1234567", "000000", "FF0000", "#ZZ0000"
+            "#",
+            "#G",
+            "#GG",
+            "#GGG",
+            "#GGGG",
+            "#GGGGG",
+            "#GGGGGGG",
+            "#12345",
+            "#1234567",
+            "000000",
+            "FF0000",
+            "#ZZ0000",
         ]
 
         for hex_color in invalid_hex:
@@ -449,9 +516,20 @@ class TestAttributeParserColorSanitization:
         """色名バリデーションテスト"""
         # サポート色名
         supported_colors = {
-            "red", "green", "blue", "yellow", "orange", "purple",
-            "pink", "brown", "black", "white", "gray", "grey",
-            "cyan", "magenta"
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "orange",
+            "purple",
+            "pink",
+            "brown",
+            "black",
+            "white",
+            "gray",
+            "grey",
+            "cyan",
+            "magenta",
         }
 
         for color in supported_colors:
@@ -464,8 +542,15 @@ class TestAttributeParserColorSanitization:
 
         # 非サポート色名
         unsupported_colors = [
-            "crimson", "navy", "olive", "teal", "maroon",
-            "lime", "aqua", "fuchsia", "silver"
+            "crimson",
+            "navy",
+            "olive",
+            "teal",
+            "maroon",
+            "lime",
+            "aqua",
+            "fuchsia",
+            "silver",
         ]
 
         for color in unsupported_colors:
@@ -498,11 +583,11 @@ class TestAttributeParserEdgeCases:
         """不正属性からの回復テスト"""
         # 引用符不整合
         malformed_cases = [
-            'class="test',       # 終了引用符なし
-            'class=test"',       # 開始引用符なし
-            'class="test\'',     # 引用符混在
-            '="test"',           # 属性名なし
-            'class=',            # 値なし
+            'class="test',  # 終了引用符なし
+            'class=test"',  # 開始引用符なし
+            "class=\"test'",  # 引用符混在
+            '="test"',  # 属性名なし
+            "class=",  # 値なし
         ]
 
         for malformed in malformed_cases:

@@ -63,7 +63,7 @@ class TestLargeFileProcessing:
             for pattern in patterns:
                 line = pattern.format(line_count)
                 content_parts.append(line)
-                estimated_bytes += len(line.encode('utf-8'))
+                estimated_bytes += len(line.encode("utf-8"))
                 line_count += 1
 
                 if estimated_bytes >= target_bytes:
@@ -85,7 +85,7 @@ class TestLargeFileProcessing:
             from kumihan_formatter.core.parsing.main_parser import MainParser
             from kumihan_formatter.renderer import MainRenderer
 
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             parser = MainParser()
@@ -94,7 +94,7 @@ class TestLargeFileProcessing:
             renderer = MainRenderer()
             html = renderer.render(parsed)
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html)
 
             elapsed = time.time() - start_time
@@ -112,7 +112,7 @@ class TestLargeFileProcessing:
         # テストファイル生成
         content = self.generate_large_content(1)
         test_file = self.temp_dir / "test_1mb.txt"
-        test_file.write_text(content, encoding='utf-8')
+        test_file.write_text(content, encoding="utf-8")
 
         # 処理実行
         success, elapsed, output_size = self.process_file(test_file)
@@ -129,7 +129,7 @@ class TestLargeFileProcessing:
         # テストファイル生成
         content = self.generate_large_content(5)
         test_file = self.temp_dir / "test_5mb.txt"
-        test_file.write_text(content, encoding='utf-8')
+        test_file.write_text(content, encoding="utf-8")
 
         # 処理実行
         success, elapsed, output_size = self.process_file(test_file)
@@ -139,7 +139,9 @@ class TestLargeFileProcessing:
         assert elapsed < 30.0, f"処理時間が遅すぎます: {elapsed:.2f}秒"
         assert output_size > 0, "出力ファイルが空です"
 
-        logger.info(f"5MBファイル処理: {elapsed:.2f}秒, 出力: {output_size/1024/1024:.1f}MB")
+        logger.info(
+            f"5MBファイル処理: {elapsed:.2f}秒, 出力: {output_size/1024/1024:.1f}MB"
+        )
 
     @pytest.mark.slow
     def test_大型ファイル処理_10MB(self) -> None:
@@ -147,7 +149,7 @@ class TestLargeFileProcessing:
         # テストファイル生成
         content = self.generate_large_content(10)
         test_file = self.temp_dir / "test_10mb.txt"
-        test_file.write_text(content, encoding='utf-8')
+        test_file.write_text(content, encoding="utf-8")
 
         # 処理実行
         success, elapsed, output_size = self.process_file(test_file)
@@ -175,7 +177,7 @@ class TestLargeFileProcessing:
         # 5MBのファイルを準備
         content = self.generate_large_content(5)
         test_file = self.temp_dir / "test_memory.txt"
-        test_file.write_text(content, encoding='utf-8')
+        test_file.write_text(content, encoding="utf-8")
 
         # メモリ追跡開始
         tracemalloc.start()
@@ -186,10 +188,10 @@ class TestLargeFileProcessing:
 
         # メモリ使用量確認
         snapshot2 = tracemalloc.take_snapshot()
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
 
         # 最大メモリ使用量を計算
-        total_memory = sum(stat.size for stat in snapshot2.statistics('lineno'))
+        total_memory = sum(stat.size for stat in snapshot2.statistics("lineno"))
         peak_memory = tracemalloc.get_traced_memory()[1]
 
         tracemalloc.stop()

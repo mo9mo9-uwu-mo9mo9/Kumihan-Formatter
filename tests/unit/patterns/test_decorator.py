@@ -3,16 +3,17 @@
 機能拡張システムの包括的なテスト。
 """
 
-import pytest
-from unittest.mock import Mock, patch, call
 from typing import Any, Dict
+from unittest.mock import Mock, call, patch
+
+import pytest
 
 from kumihan_formatter.core.patterns.decorator import (
+    CachingParserDecorator,
+    DecoratorChain,
+    LoggingDecorator,
     ParserDecorator,
     RendererDecorator,
-    CachingParserDecorator,
-    LoggingDecorator,
-    DecoratorChain,
     with_caching,
     with_logging,
 )
@@ -72,6 +73,7 @@ class SlowParser(MockParser):
     def parse(self, content: str, context: Dict[str, Any]) -> str:
         """遅いパース処理"""
         import time
+
         time.sleep(0.01)  # 処理時間をシミュレート
         self.call_count += 1
         return super().parse(content, context)
@@ -367,8 +369,8 @@ class TestLoggingDecorator:
         # Then: 元の属性が返される
         assert name == "logged"
 
-    @patch.object(LoggingDecorator, '_log_method_call')
-    @patch.object(LoggingDecorator, '_log_method_success')
+    @patch.object(LoggingDecorator, "_log_method_call")
+    @patch.object(LoggingDecorator, "_log_method_success")
     def test_正常系_ログ呼び出し(self, mock_log_success, mock_log_call):
         """正常系: ログメソッド呼び出しの確認"""
         # Given: ログモックが設定されたデコレーター
@@ -380,8 +382,8 @@ class TestLoggingDecorator:
         mock_log_success.assert_called_once()
         assert result == "parsed_logged:test_content"
 
-    @patch.object(LoggingDecorator, '_log_method_call')
-    @patch.object(LoggingDecorator, '_log_method_error')
+    @patch.object(LoggingDecorator, "_log_method_call")
+    @patch.object(LoggingDecorator, "_log_method_error")
     def test_異常系_例外処理とログ(self, mock_log_error, mock_log_call):
         """異常系: 例外処理とエラーログの確認"""
         # Given: 例外を発生させるオブジェクト
@@ -421,7 +423,9 @@ class TestDecoratorChain:
         chain = DecoratorChain(self.base_parser)
 
         # When: デコレーターを追加
-        result_chain = chain.add_decorator(lambda obj: MockParserDecorator(obj, "first"))
+        result_chain = chain.add_decorator(
+            lambda obj: MockParserDecorator(obj, "first")
+        )
 
         # Then: チェーンが返され、デコレーターが追加される
         assert result_chain is chain
@@ -483,10 +487,12 @@ class TestDecoratorChain:
         """正常系: メソッドチェーンの確認"""
         # Given: デコレーターチェーン
         # When: メソッドチェーンでデコレーターを追加
-        decorated_parser = (DecoratorChain(self.base_parser)
-                          .add_decorator(lambda obj: MockParserDecorator(obj, "first"))
-                          .add_decorator(lambda obj: MockParserDecorator(obj, "second"))
-                          .build())
+        decorated_parser = (
+            DecoratorChain(self.base_parser)
+            .add_decorator(lambda obj: MockParserDecorator(obj, "first"))
+            .add_decorator(lambda obj: MockParserDecorator(obj, "second"))
+            .build()
+        )
 
         # Then: メソッドチェーンが正常に動作する
         result = decorated_parser.parse("content", {})
@@ -498,6 +504,7 @@ class TestDecoratorFunctions:
 
     def test_正常系_with_caching_デコレーター(self):
         """正常系: @with_cachingデコレーター関数の確認"""
+
         # Given: キャッシュデコレーター関数
         @with_caching(cache_size=2)
         class TestParser:
@@ -520,6 +527,7 @@ class TestDecoratorFunctions:
 
     def test_正常系_with_logging_デコレーター(self):
         """正常系: @with_loggingデコレーター関数の確認"""
+
         # Given: ログデコレーター関数
         @with_logging(logger_name="test_logger")
         class TestParser:
@@ -541,6 +549,7 @@ class TestDecoratorFunctions:
 
     def test_正常系_デコレーター関数組み合わせ(self):
         """正常系: 複数デコレーター関数の組み合わせ確認"""
+
         # Given: 複数のデコレーター関数
         @with_logging("combined_logger")
         @with_caching(cache_size=3)
@@ -571,11 +580,13 @@ class TestIntegration:
         base_parser = SlowParser()
 
         # デコレーターチェーンを構築
-        enhanced_parser = (DecoratorChain(base_parser)
-                         .add_decorator(lambda obj: CachingParserDecorator(obj, cache_size=2))
-                         .add_decorator(lambda obj: LoggingDecorator(obj, "enhanced"))
-                         .add_decorator(lambda obj: MockParserDecorator(obj, "final"))
-                         .build())
+        enhanced_parser = (
+            DecoratorChain(base_parser)
+            .add_decorator(lambda obj: CachingParserDecorator(obj, cache_size=2))
+            .add_decorator(lambda obj: LoggingDecorator(obj, "enhanced"))
+            .add_decorator(lambda obj: MockParserDecorator(obj, "final"))
+            .build()
+        )
 
         # When: 複数回のパース実行
         content = "test_content"
@@ -622,6 +633,7 @@ class TestIntegration:
 
     def test_統合_エラー処理とログ(self):
         """統合: エラー処理とログの確認"""
+
         # Given: エラーを発生させるパーサー
         class ErrorParser:
             def parse(self, content: str, context: Dict[str, Any]) -> str:

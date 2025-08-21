@@ -12,12 +12,13 @@ marker_parser.py: 12% → 75%達成（63%向上目標）
 - Kumihan記法特化処理
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
+import pytest
+
 from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 from kumihan_formatter.core.parsing.keyword.parse_result import ParseResult
 
 
@@ -105,8 +106,8 @@ class TestMarkerParserCore:
         invalid_cases = [
             "# 太字",  # 終了マーカーなし
             "太字 #",  # 開始マーカーなし
-            "# #",     # キーワードなし
-            "",        # 空文字
+            "# #",  # キーワードなし
+            "",  # 空文字
         ]
 
         for invalid_case in invalid_cases:

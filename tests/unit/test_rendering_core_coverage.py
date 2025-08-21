@@ -29,6 +29,7 @@ except ImportError:
 
 try:
     from kumihan_formatter.core.rendering.html_escaping import escape_html
+
     html_escaping_available = True
 except ImportError:
     html_escaping_available = False
@@ -92,7 +93,9 @@ class TestHTMLFormatterCoverage:
             # Metadata support might not be implemented
             pass
 
-    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
+    @pytest.mark.skipif(
+        True, reason="Node constructor API mismatch - skip for CI stability"
+    )
     def test_format_element_types(self):
         """Test formatting different element types."""
         elements = [
@@ -275,7 +278,9 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
+    @pytest.mark.skipif(
+        True, reason="Node constructor API mismatch - skip for CI stability"
+    )
     def test_render_elements_with_attributes(self):
         """Test rendering elements with attributes."""
         elements_with_attrs = [
@@ -292,7 +297,9 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
+    @pytest.mark.skipif(
+        True, reason="Node constructor API mismatch - skip for CI stability"
+    )
     def test_render_list_elements(self):
         """Test rendering list elements."""
         list_items = [
@@ -310,7 +317,9 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
+    @pytest.mark.skipif(
+        True, reason="Node constructor API mismatch - skip for CI stability"
+    )
     def test_render_nested_elements(self):
         """Test rendering nested elements."""
         inner_element = Node(type="strong", content="Bold")
@@ -339,13 +348,16 @@ class TestElementRendererCoverage:
 
 @pytest.mark.unit
 @pytest.mark.renderer
-@pytest.mark.skipif(not html_escaping_available, reason="html_escaping module not available")
+@pytest.mark.skipif(
+    not html_escaping_available, reason="html_escaping module not available"
+)
 class TestHTMLEscaperCoverage:
     """HTML escaper coverage tests."""
 
     def setup_method(self):
         """Set up test fixtures."""
         from kumihan_formatter.core.rendering.html_escaping import escape_html
+
         self.escape_html = escape_html
 
     def test_html_escaper_initialization(self):
@@ -409,7 +421,7 @@ class TestHTMLEscaperCoverage:
     def test_unescape_functionality(self):
         """Test HTML unescaping using standard library."""
         from html import unescape
-        
+
         test_cases = [
             ("&lt;script&gt;", "<script>"),
             ("A &amp; B", "A & B"),
@@ -423,15 +435,18 @@ class TestHTMLEscaperCoverage:
     def test_escaper_configuration(self):
         """Test escaper configuration options."""
         # Since we're using function-based approach, test available functions
-        from kumihan_formatter.core.rendering.html_escaping import render_attributes, contains_html_tags
-        
+        from kumihan_formatter.core.rendering.html_escaping import (
+            contains_html_tags,
+            render_attributes,
+        )
+
         # Test render_attributes function
         attributes = {"class": "test", "id": "example"}
         result = render_attributes(attributes)
         assert isinstance(result, str)
         assert "class" in result
         assert "test" in result
-        
+
         # Test contains_html_tags function
         assert contains_html_tags("<div>test</div>") is True
         assert contains_html_tags("plain text") is False
