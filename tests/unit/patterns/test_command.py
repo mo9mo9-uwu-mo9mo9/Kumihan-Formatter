@@ -3,21 +3,22 @@
 コマンド実行システムの包括的なテスト。
 """
 
-import pytest
 import threading
 import time
-from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 from typing import Any, Dict
+from unittest.mock import Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.patterns.command import (
     Command,
-    CommandStatus,
-    CommandResult,
-    ParseCommand,
-    RenderCommand,
     CommandProcessor,
     CommandQueue,
+    CommandResult,
+    CommandStatus,
+    ParseCommand,
+    RenderCommand,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -65,7 +66,10 @@ class MockCommand(Command):
     """テスト用コマンド"""
 
     def __init__(
-        self, action: str = "test", should_fail: bool = False, execution_time: float = 0.0
+        self,
+        action: str = "test",
+        should_fail: bool = False,
+        execution_time: float = 0.0,
     ):
         super().__init__()
         self.action = action
@@ -94,9 +98,7 @@ class MockCommand(Command):
             self.completed_at = datetime.now()
 
             return CommandResult(
-                success=True,
-                result=result,
-                execution_time=execution_time
+                success=True, result=result, execution_time=execution_time
             )
 
         except Exception as e:
@@ -105,7 +107,9 @@ class MockCommand(Command):
             return CommandResult(
                 success=False,
                 error=e,
-                execution_time=time.time() - start_time if hasattr(self, 'started_at') else 0.0
+                execution_time=(
+                    time.time() - start_time if hasattr(self, "started_at") else 0.0
+                ),
             )
 
 
@@ -126,7 +130,7 @@ class UndoableMockCommand(MockCommand):
         return CommandResult(
             success=True,
             result=f"undone_{self.action}",
-            metadata={"undo_count": self.undo_count}
+            metadata={"undo_count": self.undo_count},
         )
 
 
@@ -158,7 +162,7 @@ class TestCommandResult:
             success=True,
             result=result_data,
             execution_time=execution_time,
-            metadata=metadata
+            metadata=metadata,
         )
 
         # Then: 正しく作成される
@@ -176,9 +180,7 @@ class TestCommandResult:
 
         # When: 失敗結果を作成
         result = CommandResult(
-            success=False,
-            error=error,
-            execution_time=execution_time
+            success=False, error=error, execution_time=execution_time
         )
 
         # Then: 正しく作成される
@@ -436,11 +438,7 @@ class TestCommandProcessor:
     def test_正常系_複数コマンド実行(self):
         """正常系: 複数コマンド実行の確認"""
         # Given: 複数のテストコマンド
-        commands = [
-            MockCommand("first"),
-            MockCommand("second"),
-            MockCommand("third")
-        ]
+        commands = [MockCommand("first"), MockCommand("second"), MockCommand("third")]
 
         # When: 複数のコマンドを実行
         results = []
@@ -460,11 +458,7 @@ class TestCommandProcessor:
     def test_正常系_バッチ実行(self):
         """正常系: バッチ実行の確認"""
         # Given: バッチ実行用コマンド
-        commands = [
-            MockCommand("batch1"),
-            MockCommand("batch2"),
-            MockCommand("batch3")
-        ]
+        commands = [MockCommand("batch1"), MockCommand("batch2"), MockCommand("batch3")]
 
         # When: バッチでコマンドを実行
         results = self.processor.execute_batch(commands)
@@ -483,7 +477,7 @@ class TestCommandProcessor:
         commands = [
             MockCommand("batch_success1"),
             MockCommand("batch_failure", should_fail=True),
-            MockCommand("batch_success2")
+            MockCommand("batch_success2"),
         ]
 
         # When: バッチでコマンドを実行
@@ -624,7 +618,7 @@ class TestCommandQueue:
         commands = [
             MockCommand("queue1", execution_time=0.01),
             MockCommand("queue2", execution_time=0.01),
-            MockCommand("queue3", execution_time=0.01)
+            MockCommand("queue3", execution_time=0.01),
         ]
 
         for command in commands:
@@ -755,7 +749,9 @@ class TestIntegration:
         parse_command = ParseCommand("workflow content", parser, {"format": "test"})
         parse_result = processor.execute_command(parse_command)
 
-        render_command = RenderCommand(parse_result.result, renderer, {"format": "html"})
+        render_command = RenderCommand(
+            parse_result.result, renderer, {"format": "html"}
+        )
         render_result = processor.execute_command(render_command)
 
         # Then: 全ワークフローが正常に実行される
@@ -811,7 +807,7 @@ class TestIntegration:
             MockCommand("step2"),
             MockCommand("step3"),
             UndoableMockCommand("step4_undoable"),
-            MockCommand("step5")
+            MockCommand("step5"),
         ]
 
         # When: 段階的にコマンドを実行

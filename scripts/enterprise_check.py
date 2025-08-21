@@ -25,11 +25,16 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from kumihan_formatter.core.logging.structured_logger import get_structured_logger
     from kumihan_formatter.core.logging.audit_logger import AuditLogger
-    from kumihan_formatter.core.security.input_validation import SecureInputValidator, SecureConfigManager
+    from kumihan_formatter.core.logging.structured_logger import get_structured_logger
+    from kumihan_formatter.core.security.input_validation import (
+        SecureConfigManager,
+        SecureInputValidator,
+    )
     from kumihan_formatter.core.security.sanitizer import DataSanitizer
-    from kumihan_formatter.core.security.vulnerability_scanner import VulnerabilityScanner
+    from kumihan_formatter.core.security.vulnerability_scanner import (
+        VulnerabilityScanner,
+    )
     from kumihan_formatter.core.utilities.logger import get_logger
 except ImportError as e:
     print(f"❌ Critical: Failed to import required modules: {e}")
@@ -52,15 +57,17 @@ class EnterpriseChecker:
                 "passed_checks": 0,
                 "failed_checks": 0,
                 "warning_checks": 0,
-                "overall_score": 0.0
-            }
+                "overall_score": 0.0,
+            },
         }
 
     def run_all_checks(self) -> Dict[str, Any]:
         """全てのエンタープライズチェックを実行"""
         self.logger.info("🏢 Starting Enterprise Level Quality Check...")
-        self.structured_logger.info("Enterprise check initiated",
-                                   extra={"phase": "4-10", "check_type": "comprehensive"})
+        self.structured_logger.info(
+            "Enterprise check initiated",
+            extra={"phase": "4-10", "check_type": "comprehensive"},
+        )
 
         # 各チェック実行
         check_methods = [
@@ -71,7 +78,7 @@ class EnterpriseChecker:
             ("vulnerability_scanner", self._check_vulnerability_scanner),
             ("documentation_completeness", self._check_documentation_completeness),
             ("system_integration", self._check_system_integration),
-            ("performance_baseline", self._check_performance_baseline)
+            ("performance_baseline", self._check_performance_baseline),
         ]
 
         for check_name, check_method in check_methods:
@@ -94,7 +101,7 @@ class EnterpriseChecker:
                 self.results["checks"][check_name] = {
                     "status": "FAILED",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
                 self.results["summary"]["total_checks"] += 1
                 self.results["summary"]["failed_checks"] += 1
@@ -120,17 +127,21 @@ class EnterpriseChecker:
             test_logger = get_structured_logger("enterprise_test")
 
             # 基本ログテスト
-            test_logger.info("Enterprise check: Structured logging test",
-                           extra={"test_type": "basic", "component": "structured_logger"})
+            test_logger.info(
+                "Enterprise check: Structured logging test",
+                extra={"test_type": "basic", "component": "structured_logger"},
+            )
 
             # パフォーマンスログテスト
-            test_logger.performance_log("test_operation", 0.1, memory_usage=1024*1024)
+            test_logger.performance_log("test_operation", 0.1, memory_usage=1024 * 1024)
 
             # セキュリティイベントテスト
             test_logger.security_event("test_event", {"test_data": "safe_content"})
 
             # コンテキスト機能テスト
-            test_logger.set_context(session_id="test_session", user_id="enterprise_test")
+            test_logger.set_context(
+                session_id="test_session", user_id="enterprise_test"
+            )
             test_logger.info("Context test message")
             test_logger.clear_context()
 
@@ -146,15 +157,15 @@ class EnterpriseChecker:
                     "performance_logging": True,
                     "security_events": True,
                     "context_management": True,
-                    "performance_context": True
-                }
+                    "performance_context": True,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"Structured logging system failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_audit_logging(self) -> Dict[str, Any]:
@@ -163,23 +174,32 @@ class EnterpriseChecker:
             audit_logger = AuditLogger()
 
             # 基本アクセス監査ログテスト
-            audit_logger.log_access_event("enterprise_test.txt", "read", "enterprise_test", "SUCCESS",
-                                         details={"test": "enterprise_check"})
+            audit_logger.log_access_event(
+                "enterprise_test.txt",
+                "read",
+                "enterprise_test",
+                "SUCCESS",
+                details={"test": "enterprise_check"},
+            )
 
             # セキュリティ監査ログテスト
-            audit_logger.log_security_event("test_authentication", "enterprise_check",
-                                           details={"user": "enterprise_check"})
+            audit_logger.log_security_event(
+                "test_authentication",
+                "enterprise_check",
+                details={"user": "enterprise_check"},
+            )
 
             # システム監査ログテスト
-            audit_logger.log_system_event("enterprise_check", "system_test",
-                                         details={"component": "audit_system"})
+            audit_logger.log_system_event(
+                "enterprise_check", "system_test", details={"component": "audit_system"}
+            )
 
             # 認証監査ログテスト
             audit_logger.log_authentication_event(
                 user_id="enterprise_test",
                 result="SUCCESS",
                 source_ip="127.0.0.1",
-                details={"test": "authentication_check"}
+                details={"test": "authentication_check"},
             )
 
             return {
@@ -189,15 +209,15 @@ class EnterpriseChecker:
                     "access_events": True,
                     "security_events": True,
                     "system_events": True,
-                    "authentication_events": True
-                }
+                    "authentication_events": True,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"Audit logging system failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_input_validation(self) -> Dict[str, Any]:
@@ -236,30 +256,45 @@ class EnterpriseChecker:
 
             # 検証結果評価
             validation_success = (
-                safe_result and not dangerous_result and
-                "script" not in sanitized and
-                safe_text and not dangerous_text and
-                safe_url_result and not dangerous_url_result
+                safe_result
+                and not dangerous_result
+                and "script" not in sanitized
+                and safe_text
+                and not dangerous_text
+                and safe_url_result
+                and not dangerous_url_result
             )
 
             return {
                 "status": "PASSED" if validation_success else "FAILED",
-                "message": "Input validation system working correctly" if validation_success
-                          else "Input validation system has issues",
+                "message": (
+                    "Input validation system working correctly"
+                    if validation_success
+                    else "Input validation system has issues"
+                ),
                 "details": {
-                    "file_path_validation": {"safe": safe_result, "dangerous": dangerous_result},
-                    "filename_sanitization": {"original": dangerous_filename, "sanitized": sanitized},
+                    "file_path_validation": {
+                        "safe": safe_result,
+                        "dangerous": dangerous_result,
+                    },
+                    "filename_sanitization": {
+                        "original": dangerous_filename,
+                        "sanitized": sanitized,
+                    },
                     "text_validation": {"safe": safe_text, "dangerous": dangerous_text},
-                    "url_validation": {"safe": safe_url_result, "dangerous": dangerous_url_result},
-                    "config_management": config_manager.secrets_loaded
-                }
+                    "url_validation": {
+                        "safe": safe_url_result,
+                        "dangerous": dangerous_url_result,
+                    },
+                    "config_management": config_manager.secrets_loaded,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"Input validation system failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_data_sanitizer(self) -> Dict[str, Any]:
@@ -286,36 +321,47 @@ class EnterpriseChecker:
             dangerous_json = {
                 "password": "secret123",
                 "api_key": "key_12345",
-                "safe_data": "normal content"
+                "safe_data": "normal content",
             }
             sanitized_json = sanitizer.sanitize_json(dangerous_json)
 
             # 検証
             sanitization_success = (
-                "script" not in sanitized_html.lower() and
-                "drop table" not in sanitized_sql.lower() and
-                "javascript:" not in sanitized_url.lower() and
-                "secret123" not in str(sanitized_json) and
-                "key_12345" not in str(sanitized_json)
+                "script" not in sanitized_html.lower()
+                and "drop table" not in sanitized_sql.lower()
+                and "javascript:" not in sanitized_url.lower()
+                and "secret123" not in str(sanitized_json)
+                and "key_12345" not in str(sanitized_json)
             )
 
             return {
                 "status": "PASSED" if sanitization_success else "FAILED",
-                "message": "Data sanitizer working correctly" if sanitization_success
-                          else "Data sanitizer has issues",
+                "message": (
+                    "Data sanitizer working correctly"
+                    if sanitization_success
+                    else "Data sanitizer has issues"
+                ),
                 "details": {
-                    "html_sanitization": {"safe": "script" not in sanitized_html.lower()},
-                    "sql_sanitization": {"safe": "drop table" not in sanitized_sql.lower()},
-                    "url_sanitization": {"safe": "javascript:" not in sanitized_url.lower()},
-                    "json_sanitization": {"secrets_removed": "secret123" not in str(sanitized_json)}
-                }
+                    "html_sanitization": {
+                        "safe": "script" not in sanitized_html.lower()
+                    },
+                    "sql_sanitization": {
+                        "safe": "drop table" not in sanitized_sql.lower()
+                    },
+                    "url_sanitization": {
+                        "safe": "javascript:" not in sanitized_url.lower()
+                    },
+                    "json_sanitization": {
+                        "secrets_removed": "secret123" not in str(sanitized_json)
+                    },
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"Data sanitizer failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_vulnerability_scanner(self) -> Dict[str, Any]:
@@ -326,7 +372,7 @@ class EnterpriseChecker:
             # ファイルスキャンテスト（コードパターンスキャンで代替）
             test_files = [
                 project_root / "kumihan_formatter" / "core" / "security",
-                project_root / "scripts"
+                project_root / "scripts",
             ]
 
             scan_results = []
@@ -356,15 +402,15 @@ class EnterpriseChecker:
                     "file_scans": len(scan_results),
                     "code_pattern_scans": len(code_scan),
                     "dependency_scans": len(dependency_scan),
-                    "scanner_functional": True
-                }
+                    "scanner_functional": True,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "WARNING",  # スキャナーは補助機能のため警告レベル
                 "message": f"Vulnerability scanner issues: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_documentation_completeness(self) -> Dict[str, Any]:
@@ -381,7 +427,7 @@ class EnterpriseChecker:
                 ("CHANGELOG.md", project_root / "CHANGELOG.md"),
                 ("CONTRIBUTING.md", project_root / "CONTRIBUTING.md"),
                 ("LICENSE", project_root / "LICENSE"),
-                ("SPEC.md", project_root / "SPEC.md")
+                ("SPEC.md", project_root / "SPEC.md"),
             ]
 
             for doc_name, doc_path in important_docs:
@@ -391,29 +437,39 @@ class EnterpriseChecker:
                     docs_score += 1
 
             # ドキュメントサイズ確認（内容があるか）
-            if details.get("README.md") and (project_root / "README.md").stat().st_size > 100:
+            if (
+                details.get("README.md")
+                and (project_root / "README.md").stat().st_size > 100
+            ):
                 docs_score += 0.5
 
-            if details.get("CLAUDE.md") and (project_root / "CLAUDE.md").stat().st_size > 1000:
+            if (
+                details.get("CLAUDE.md")
+                and (project_root / "CLAUDE.md").stat().st_size > 1000
+            ):
                 docs_score += 0.5
 
             completion_rate = docs_score / max_score
 
             return {
-                "status": "PASSED" if completion_rate > 0.8 else "WARNING" if completion_rate > 0.5 else "FAILED",
+                "status": (
+                    "PASSED"
+                    if completion_rate > 0.8
+                    else "WARNING" if completion_rate > 0.5 else "FAILED"
+                ),
                 "message": f"Documentation completeness: {completion_rate:.1%}",
                 "details": {
                     "completion_rate": completion_rate,
                     "files_checked": details,
-                    "score": f"{docs_score}/{max_score}"
-                }
+                    "score": f"{docs_score}/{max_score}",
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"Documentation check failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_system_integration(self) -> Dict[str, Any]:
@@ -429,8 +485,11 @@ class EnterpriseChecker:
             # 同一イベントを両システムでログ
             test_event_id = f"integration_test_{int(time.time())}"
             structured_logger.info(f"Integration test event: {test_event_id}")
-            audit_logger.log_system_event("integration_test", test_event_id,
-                                         details={"test": "system_integration"})
+            audit_logger.log_system_event(
+                "integration_test",
+                test_event_id,
+                details={"test": "system_integration"},
+            )
             integration_tests.append("logging_integration")
 
             # 2. セキュリティシステム統合テスト
@@ -441,13 +500,18 @@ class EnterpriseChecker:
             test_input = "<script>alert('test')</script>normal content"
             # Note: validation may reject the input, so we proceed with sanitization anyway
             sanitized = sanitizer.sanitize_html(test_input)
-            structured_logger.info("Security systems integration successful",
-                                 extra={"sanitized_length": len(sanitized)})
+            structured_logger.info(
+                "Security systems integration successful",
+                extra={"sanitized_length": len(sanitized)},
+            )
             integration_tests.append("security_integration")
 
             # 3. 監査ログでのセキュリティイベント記録テスト
-            audit_logger.log_security_event("validation_check", "integration_test",
-                                           details={"input_validated": True, "sanitized": True})
+            audit_logger.log_security_event(
+                "validation_check",
+                "integration_test",
+                details={"input_validated": True, "sanitized": True},
+            )
             integration_tests.append("audit_security_integration")
 
             return {
@@ -456,15 +520,15 @@ class EnterpriseChecker:
                 "details": {
                     "completed_tests": integration_tests,
                     "integration_count": len(integration_tests),
-                    "all_systems_connected": len(integration_tests) >= 3
-                }
+                    "all_systems_connected": len(integration_tests) >= 3,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "FAILED",
                 "message": f"System integration failed: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _check_performance_baseline(self) -> Dict[str, Any]:
@@ -477,8 +541,10 @@ class EnterpriseChecker:
 
             start_time = time.perf_counter()
             for i in range(100):  # 100回のログ出力
-                logger.info(f"Performance test message {i}",
-                           extra={"iteration": i, "test": "baseline"})
+                logger.info(
+                    f"Performance test message {i}",
+                    extra={"iteration": i, "test": "baseline"},
+                )
             log_duration = time.perf_counter() - start_time
 
             performance_results["logging_ops_per_sec"] = round(100 / log_duration, 2)
@@ -492,7 +558,9 @@ class EnterpriseChecker:
                 validator.validate_file_path(test_input)
             validation_duration = time.perf_counter() - start_time
 
-            performance_results["validation_ops_per_sec"] = round(1000 / validation_duration, 2)
+            performance_results["validation_ops_per_sec"] = round(
+                1000 / validation_duration, 2
+            )
 
             # データサニタイゼーションのパフォーマンステスト
             sanitizer = DataSanitizer()
@@ -503,36 +571,40 @@ class EnterpriseChecker:
                 sanitizer.sanitize_html(test_data)
             sanitize_duration = time.perf_counter() - start_time
 
-            performance_results["sanitization_ops_per_sec"] = round(100 / sanitize_duration, 2)
+            performance_results["sanitization_ops_per_sec"] = round(
+                100 / sanitize_duration, 2
+            )
 
             # パフォーマンス目標との比較（Phase 4目標値）
             targets = {
-                "logging_ops_per_sec": 50,      # 最低50 ops/sec
+                "logging_ops_per_sec": 50,  # 最低50 ops/sec
                 "validation_ops_per_sec": 5000,  # 目標17,241に対して最低5,000
-                "sanitization_ops_per_sec": 100  # 最低100 ops/sec
+                "sanitization_ops_per_sec": 100,  # 最低100 ops/sec
             }
 
             all_targets_met = all(
-                performance_results[key] >= targets[key]
-                for key in targets.keys()
+                performance_results[key] >= targets[key] for key in targets.keys()
             )
 
             return {
                 "status": "PASSED" if all_targets_met else "WARNING",
-                "message": "Performance baseline established" if all_targets_met
-                          else "Performance below some targets",
+                "message": (
+                    "Performance baseline established"
+                    if all_targets_met
+                    else "Performance below some targets"
+                ),
                 "details": {
                     "performance_metrics": performance_results,
                     "targets": targets,
-                    "targets_met": all_targets_met
-                }
+                    "targets_met": all_targets_met,
+                },
             }
 
         except Exception as e:
             return {
                 "status": "WARNING",
                 "message": f"Performance baseline check issues: {e}",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _save_results(self):
@@ -544,14 +616,14 @@ class EnterpriseChecker:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_file = output_dir / f"enterprise_check_report_{timestamp}.json"
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"📊 Enterprise check report saved: {output_file}")
 
             # 最新レポートとしてもコピー保存
             latest_file = output_dir / "enterprise_check_report.json"
-            with open(latest_file, 'w', encoding='utf-8') as f:
+            with open(latest_file, "w", encoding="utf-8") as f:
                 json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
@@ -562,9 +634,9 @@ class EnterpriseChecker:
         summary = self.results["summary"]
         score = summary["overall_score"]
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🏢 ENTERPRISE LEVEL QUALITY CHECK REPORT")
-        print("="*60)
+        print("=" * 60)
         print(f"📊 Overall Score: {score:.1%}")
         print(f"✅ Passed: {summary['passed_checks']}")
         print(f"⚠️  Warning: {summary['warning_checks']}")
@@ -575,8 +647,12 @@ class EnterpriseChecker:
         print("\n📋 Detailed Results:")
         print("-" * 40)
         for check_name, result in self.results["checks"].items():
-            status_icon = {"PASSED": "✅", "WARNING": "⚠️", "FAILED": "❌"}.get(result["status"], "❓")
-            print(f"{status_icon} {check_name}: {result['status']} - {result['message']}")
+            status_icon = {"PASSED": "✅", "WARNING": "⚠️", "FAILED": "❌"}.get(
+                result["status"], "❓"
+            )
+            print(
+                f"{status_icon} {check_name}: {result['status']} - {result['message']}"
+            )
 
         # 品質レベル判定
         if score >= 0.9:
@@ -589,7 +665,7 @@ class EnterpriseChecker:
             level = "❌ QUALITY ISSUES (Major Problems)"
 
         print(f"\n🎭 Quality Level: {level}")
-        print("="*60)
+        print("=" * 60)
 
 
 def main():

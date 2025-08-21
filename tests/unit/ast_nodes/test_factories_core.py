@@ -5,15 +5,27 @@ in the factories module, covering all node creation patterns
 and NodeBuilder integration.
 """
 
-import pytest
 from typing import Any
 
-from kumihan_formatter.core.ast_nodes.node import Node
+import pytest
+
 from kumihan_formatter.core.ast_nodes.factories import (
-    create_node, paragraph, heading, strong, emphasis,
-    div_box, highlight, unordered_list, ordered_list, list_item,
-    details, error_node, image_node, toc_marker
+    create_node,
+    details,
+    div_box,
+    emphasis,
+    error_node,
+    heading,
+    highlight,
+    image_node,
+    list_item,
+    ordered_list,
+    paragraph,
+    strong,
+    toc_marker,
+    unordered_list,
 )
+from kumihan_formatter.core.ast_nodes.node import Node
 from kumihan_formatter.core.ast_nodes.node_builder import NodeBuilder
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -46,7 +58,7 @@ class TestCreateNode:
             "paragraph",
             id="test-id",
             style="color: red",
-            custom_attr="custom_value"
+            custom_attr="custom_value",
         )
 
         assert node.get_attribute("id") == "test-id"
@@ -61,7 +73,7 @@ class TestCreateNode:
             "content",
             metadata=metadata,
             id="combined-test",
-            data_source="kwargs"
+            data_source="kwargs",
         )
 
         # metadataからの属性
@@ -302,14 +314,14 @@ class TestFactoriesIntegration:
         list_items = [
             list_item("First point"),
             list_item(["Second point with ", emphasis("emphasis")]),
-            list_item("Third point")
+            list_item("Third point"),
         ]
         main_list = unordered_list(list_items)
 
         # 詳細セクション
         detail_content = [
             paragraph("Detailed explanation here."),
-            highlight("Important note", color="yellow")
+            highlight("Important note", color="yellow"),
         ]
         details_section = details("Click for details", detail_content)
 
@@ -332,11 +344,13 @@ class TestFactoriesIntegration:
     def test_統合_NodeBuilder連携(self):
         """統合: NodeBuilderとの連携確認"""
         # 手動でNodeBuilderを使用
-        manual_node = (NodeBuilder("div")
-                      .content("Manual content")
-                      .css_class("manual")
-                      .id("manual-id")
-                      .build())
+        manual_node = (
+            NodeBuilder("div")
+            .content("Manual content")
+            .css_class("manual")
+            .id("manual-id")
+            .build()
+        )
 
         # ファクトリー関数を使用
         factory_node = div_box("Factory content")
@@ -358,25 +372,28 @@ class TestFactoriesIntegration:
     def test_統合_ファクトリー間相互作用(self):
         """統合: 異なるファクトリー関数の組み合わせ"""
         # 段落内で複数のインライン要素を組み合わせ
-        complex_paragraph = paragraph([
-            "This is a ",
-            strong("very important"),
-            " message with ",
-            emphasis("emphasis"),
-            " and formatting."
-        ])
+        complex_paragraph = paragraph(
+            [
+                "This is a ",
+                strong("very important"),
+                " message with ",
+                emphasis("emphasis"),
+                " and formatting.",
+            ]
+        )
 
         # エラーノードを含む構造
-        error_with_context = div_box([
-            error_node("Validation failed", line_number=15),
-            paragraph("Please check the input and try again.")
-        ])
+        error_with_context = div_box(
+            [
+                error_node("Validation failed", line_number=15),
+                paragraph("Please check the input and try again."),
+            ]
+        )
 
         # 画像を含むリスト項目
-        image_item = list_item([
-            "See diagram: ",
-            image_node("workflow.png", alt_text="Workflow diagram")
-        ])
+        image_item = list_item(
+            ["See diagram: ", image_node("workflow.png", alt_text="Workflow diagram")]
+        )
 
         # すべてが正常に作成される
         assert complex_paragraph.type == "paragraph"
@@ -392,13 +409,9 @@ class TestFactoriesIntegration:
     def test_境界値_ファクトリー_型混在(self):
         """境界値: ファクトリー関数での型混在コンテンツ"""
         # 文字列とNodeを混在させたコンテンツ
-        mixed_content = paragraph([
-            "Start ",
-            strong("bold"),
-            " middle ",
-            42,  # 数値
-            " end"
-        ])
+        mixed_content = paragraph(
+            ["Start ", strong("bold"), " middle ", 42, " end"]  # 数値
+        )
 
         # ファクトリーは型チェックを行わず、そのまま格納
         assert len(mixed_content.content) == 5

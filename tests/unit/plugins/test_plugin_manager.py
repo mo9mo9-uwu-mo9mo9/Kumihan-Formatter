@@ -9,7 +9,7 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -98,7 +98,9 @@ class TestPluginManager:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -108,22 +110,22 @@ class TestPluginManager:
     def test_正常系_プラグインロード成功(self) -> None:
         """正常系: プラグインのロードが成功する"""
         # Given: 有効なプラグインファイル
-        plugin_content = '''
+        plugin_content = """
 class TestPlugin:
     @property
     def name(self):
         return "test_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content)
         plugin_info = PluginInfo(
             name="test_plugin",
@@ -133,7 +135,9 @@ class TestPlugin:
         )
 
         # When: プラグインをロード
-        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
+        with patch(
+            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
+        ) as mock_publish:
             result = self.manager.load_plugin(plugin_path, plugin_info)
 
         # Then: ロードが成功する
@@ -162,7 +166,9 @@ class TestPlugin:
         )
 
         # When: プラグインをアンロード
-        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
+        with patch(
+            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
+        ) as mock_publish:
             result = self.manager.unload_plugin("test_plugin")
 
         # Then: アンロードが成功する
@@ -194,10 +200,16 @@ class TestPlugin:
         """正常系: プラグイン一覧の取得が成功する"""
         # Given: 複数のプラグイン情報
         plugin_info1 = PluginInfo(
-            name="plugin1", version="1.0.0", description="プラグイン1", entry_point="Plugin1"
+            name="plugin1",
+            version="1.0.0",
+            description="プラグイン1",
+            entry_point="Plugin1",
         )
         plugin_info2 = PluginInfo(
-            name="plugin2", version="2.0.0", description="プラグイン2", entry_point="Plugin2"
+            name="plugin2",
+            version="2.0.0",
+            description="プラグイン2",
+            entry_point="Plugin2",
         )
         self.manager._plugin_info["plugin1"] = plugin_info1
         self.manager._plugin_info["plugin2"] = plugin_info2
@@ -267,11 +279,11 @@ class TestPlugin:
     def test_異常系_不正なプラグインファイル(self) -> None:
         """異常系: 不正なプラグインファイルの処理"""
         # Given: 構文エラーのあるプラグインファイル
-        plugin_content = '''
+        plugin_content = """
 class BrokenPlugin:
     def invalid_syntax(self:
         # 構文エラー
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "broken.py")
         plugin_info = PluginInfo(
             name="broken_plugin",
@@ -290,14 +302,14 @@ class BrokenPlugin:
     def test_異常系_プロトコル非適合プラグイン(self) -> None:
         """異常系: プラグインプロトコルに適合しないプラグイン"""
         # Given: プロトコル非適合のプラグインファイル
-        plugin_content = '''
+        plugin_content = """
 class InvalidPlugin:
     def __init__(self):
         self.name = "invalid"
         # version属性がない
         # initializeメソッドがない
         # cleanupメソッドがない
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "invalid.py")
         plugin_info = PluginInfo(
             name="invalid_plugin",
@@ -316,22 +328,22 @@ class InvalidPlugin:
     def test_異常系_初期化エラープラグイン(self) -> None:
         """異常系: 初期化時にエラーを発生するプラグイン"""
         # Given: 初期化エラーのプラグインファイル
-        plugin_content = '''
+        plugin_content = """
 class ErrorPlugin:
     @property
     def name(self):
         return "error_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         raise RuntimeError("初期化エラー")
-    
+
     def cleanup(self):
         pass
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "error.py")
         plugin_info = PluginInfo(
             name="error_plugin",
@@ -350,22 +362,22 @@ class ErrorPlugin:
     def test_異常系_依存関係未満足(self) -> None:
         """異常系: 依存関係が満たされていないプラグイン"""
         # Given: 依存プラグインが未ロードの状態
-        plugin_content = '''
+        plugin_content = """
 class DependentPlugin:
     @property
     def name(self):
         return "dependent_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         pass
-    
+
     def cleanup(self):
         pass
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "dependent.py")
         plugin_info = PluginInfo(
             name="dependent_plugin",
@@ -441,33 +453,49 @@ class DependentPlugin:
         # Given: 各種不正なプラグインインスタンス
         test_cases = [
             # name属性が文字列でない
-            type("BadPlugin", (), {
-                "name": 123,
-                "version": "1.0.0",
-                "initialize": lambda self, c: None,
-                "cleanup": lambda self: None,
-            })(),
+            type(
+                "BadPlugin",
+                (),
+                {
+                    "name": 123,
+                    "version": "1.0.0",
+                    "initialize": lambda self, c: None,
+                    "cleanup": lambda self: None,
+                },
+            )(),
             # version属性が文字列でない
-            type("BadPlugin", (), {
-                "name": "test",
-                "version": 123,
-                "initialize": lambda self, c: None,
-                "cleanup": lambda self: None,
-            })(),
+            type(
+                "BadPlugin",
+                (),
+                {
+                    "name": "test",
+                    "version": 123,
+                    "initialize": lambda self, c: None,
+                    "cleanup": lambda self: None,
+                },
+            )(),
             # initializeがcallableでない
-            type("BadPlugin", (), {
-                "name": "test",
-                "version": "1.0.0",
-                "initialize": "not_callable",
-                "cleanup": lambda self: None,
-            })(),
+            type(
+                "BadPlugin",
+                (),
+                {
+                    "name": "test",
+                    "version": "1.0.0",
+                    "initialize": "not_callable",
+                    "cleanup": lambda self: None,
+                },
+            )(),
             # cleanupがcallableでない
-            type("BadPlugin", (), {
-                "name": "test",
-                "version": "1.0.0",
-                "initialize": lambda self, c: None,
-                "cleanup": "not_callable",
-            })(),
+            type(
+                "BadPlugin",
+                (),
+                {
+                    "name": "test",
+                    "version": "1.0.0",
+                    "initialize": lambda self, c: None,
+                    "cleanup": "not_callable",
+                },
+            )(),
         ]
 
         for plugin_instance in test_cases:
@@ -479,6 +507,7 @@ class DependentPlugin:
 
     def test_境界値_プロトコルチェック属性エラー(self) -> None:
         """境界値: プロトコルチェック時の属性エラー"""
+
         # Given: 属性アクセス時にエラーを発生するプラグイン
         class ErrorPropPlugin:
             @property
@@ -506,26 +535,26 @@ class DependentPlugin:
     def test_統合_プラグインライフサイクル完全テスト(self) -> None:
         """統合: プラグインのライフサイクル完全テスト"""
         # Given: 有効なプラグインファイル
-        plugin_content = '''
+        plugin_content = """
 class LifecyclePlugin:
     def __init__(self):
         self.state = "created"
-    
+
     @property
     def name(self):
         return "lifecycle_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.state = "initialized"
         self.container = container
-    
+
     def cleanup(self):
         self.state = "cleaned_up"
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "lifecycle.py")
         plugin_info = PluginInfo(
             name="lifecycle_plugin",
@@ -562,40 +591,42 @@ class LifecyclePlugin:
     def test_統合_複数プラグイン依存関係テスト(self) -> None:
         """統合: 複数プラグインの依存関係テスト"""
         # Given: 依存関係を持つ複数のプラグインファイル
-        base_plugin_content = '''
+        base_plugin_content = """
 class BasePlugin:
     @property
     def name(self):
         return "base_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
-        dependent_plugin_content = '''
+"""
+        dependent_plugin_content = """
 class DependentPlugin:
     @property
     def name(self):
         return "dependent_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         base_path = self._create_plugin_file(base_plugin_content, "base.py")
-        dependent_path = self._create_plugin_file(dependent_plugin_content, "dependent.py")
+        dependent_path = self._create_plugin_file(
+            dependent_plugin_content, "dependent.py"
+        )
 
         base_info = PluginInfo(
             name="base_plugin",

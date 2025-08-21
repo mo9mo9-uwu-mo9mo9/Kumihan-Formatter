@@ -4,19 +4,20 @@ legacy_factory_integration.pyモジュールの包括的なテスト。
 Issue #929 Phase 2A対応 - Factory & Builder System テストカバレッジ向上
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Optional
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from kumihan_formatter.core.patterns.dependency_injection import DIContainer
 from kumihan_formatter.core.patterns.legacy_factory_integration import (
     LegacyFactoryAdapter,
     create_legacy_file_operations,
-    create_legacy_markdown_converter,
     create_legacy_list_parser,
+    create_legacy_markdown_converter,
     get_legacy_adapter,
     initialize_legacy_integration,
 )
-from kumihan_formatter.core.patterns.dependency_injection import DIContainer
 from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
@@ -49,10 +50,10 @@ class TestLegacyFactoryAdapter:
         assert adapter.container is not None
         assert adapter.service_factory is not None
 
-    @patch.object(LegacyFactoryAdapter, '_register_file_operations')
-    @patch.object(LegacyFactoryAdapter, '_register_markdown_services')
-    @patch.object(LegacyFactoryAdapter, '_register_list_parser_services')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
+    @patch.object(LegacyFactoryAdapter, "_register_file_operations")
+    @patch.object(LegacyFactoryAdapter, "_register_markdown_services")
+    @patch.object(LegacyFactoryAdapter, "_register_list_parser_services")
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
     def test_正常系_レガシーサービス登録成功(
         self, mock_logger, mock_list, mock_markdown, mock_file
     ):
@@ -65,10 +66,12 @@ class TestLegacyFactoryAdapter:
         mock_file.assert_called_once()
         mock_markdown.assert_called_once()
         mock_list.assert_called_once()
-        mock_logger.info.assert_called_with("Legacy factory services registered successfully")
+        mock_logger.info.assert_called_with(
+            "Legacy factory services registered successfully"
+        )
 
-    @patch.object(LegacyFactoryAdapter, '_register_file_operations')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
+    @patch.object(LegacyFactoryAdapter, "_register_file_operations")
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
     def test_異常系_レガシーサービス登録失敗(self, mock_logger, mock_file):
         """異常系: レガシーサービス登録失敗時のエラーハンドリング"""
         # Given: 登録失敗を起こすモック
@@ -82,7 +85,9 @@ class TestLegacyFactoryAdapter:
         # アダプター自体は初期化される（例外は握りつぶし）
         assert adapter.container is self.container
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory"
+    )
     def test_正常系_ファイル操作サービス登録(self, mock_register):
         """正常系: ファイル操作サービス登録の確認"""
         # Given: アダプター
@@ -95,13 +100,14 @@ class TestLegacyFactoryAdapter:
         # FileOperationsCore, FilePathUtilities, FileIOHandler, FileOperationsComponentsの4回
         assert mock_register.call_count >= 4
 
-    @patch('builtins.__import__')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
+    @patch("builtins.__import__")
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
     def test_異常系_ファイル操作サービス_ImportError(self, mock_logger, mock_import):
         """異常系: ファイル操作サービスImportError時の警告ログ確認"""
+
         # Given: ImportError を発生させるモック
         def import_side_effect(name, *args, **kwargs):
-            if 'file_io_handler' in name:
+            if "file_io_handler" in name:
                 raise ImportError("Module not found")
             return __import__(name, *args, **kwargs)
 
@@ -113,11 +119,16 @@ class TestLegacyFactoryAdapter:
 
         # Then: 警告ログが出力される
         mock_logger.warning.assert_called()
-        warning_calls = [call for call in mock_logger.warning.call_args_list
-                        if "Could not register file operations services" in str(call)]
+        warning_calls = [
+            call
+            for call in mock_logger.warning.call_args_list
+            if "Could not register file operations services" in str(call)
+        ]
         assert len(warning_calls) > 0
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory"
+    )
     def test_正常系_マークダウンサービス登録(self, mock_register):
         """正常系: マークダウンサービス登録の確認"""
         # Given: アダプター
@@ -130,13 +141,14 @@ class TestLegacyFactoryAdapter:
         # MarkdownParser, MarkdownProcessor, MarkdownRendererの3回
         assert mock_register.call_count >= 3
 
-    @patch('builtins.__import__')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
+    @patch("builtins.__import__")
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
     def test_異常系_マークダウンサービス_ImportError(self, mock_logger, mock_import):
         """異常系: マークダウンサービスImportError時の警告ログ確認"""
+
         # Given: ImportError を発生させるモック
         def import_side_effect(name, *args, **kwargs):
-            if 'markdown_factory' in name:
+            if "markdown_factory" in name:
                 raise ImportError("Module not found")
             return __import__(name, *args, **kwargs)
 
@@ -148,11 +160,16 @@ class TestLegacyFactoryAdapter:
 
         # Then: 警告ログが出力される
         mock_logger.warning.assert_called()
-        warning_calls = [call for call in mock_logger.warning.call_args_list
-                        if "Could not register markdown services" in str(call)]
+        warning_calls = [
+            call
+            for call in mock_logger.warning.call_args_list
+            if "Could not register markdown services" in str(call)
+        ]
         assert len(warning_calls) > 0
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.DIContainer.register_factory"
+    )
     def test_正常系_リストパーサーサービス登録(self, mock_register):
         """正常系: リストパーサーサービス登録の確認"""
         # Given: アダプター
@@ -165,13 +182,14 @@ class TestLegacyFactoryAdapter:
         # ListParserCore, NestedListParser, ListValidator, ListParserComponentsの4回
         assert mock_register.call_count >= 4
 
-    @patch('builtins.__import__')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
+    @patch("builtins.__import__")
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
     def test_異常系_リストパーサーサービス_ImportError(self, mock_logger, mock_import):
         """異常系: リストパーサーサービスImportError時の警告ログ確認"""
+
         # Given: ImportError を発生させるモック
         def import_side_effect(name, *args, **kwargs):
-            if 'list_parser_core' in name:
+            if "list_parser_core" in name:
                 raise ImportError("Module not found")
             return __import__(name, *args, **kwargs)
 
@@ -183,16 +201,27 @@ class TestLegacyFactoryAdapter:
 
         # Then: 警告ログが出力される
         mock_logger.warning.assert_called()
-        warning_calls = [call for call in mock_logger.warning.call_args_list
-                        if "Could not register list parser services" in str(call)]
+        warning_calls = [
+            call
+            for call in mock_logger.warning.call_args_list
+            if "Could not register list parser services" in str(call)
+        ]
         assert len(warning_calls) > 0
 
     def test_境界値_例外処理での継続実行(self):
         """境界値: 一部サービス登録失敗時の他サービス継続実行"""
         # Given: 一部で失敗するモック
-        with patch.object(LegacyFactoryAdapter, '_register_file_operations', side_effect=Exception("File error")):
-            with patch.object(LegacyFactoryAdapter, '_register_markdown_services') as mock_markdown:
-                with patch.object(LegacyFactoryAdapter, '_register_list_parser_services') as mock_list:
+        with patch.object(
+            LegacyFactoryAdapter,
+            "_register_file_operations",
+            side_effect=Exception("File error"),
+        ):
+            with patch.object(
+                LegacyFactoryAdapter, "_register_markdown_services"
+            ) as mock_markdown:
+                with patch.object(
+                    LegacyFactoryAdapter, "_register_list_parser_services"
+                ) as mock_list:
                     # When: アダプター初期化（例外により全体が失敗するが、オブジェクトは作成される）
                     adapter = LegacyFactoryAdapter(self.container)
 
@@ -205,7 +234,9 @@ class TestLegacyFactoryAdapter:
 class TestLegacyCompatibilityFunctions:
     """レガシー互換性関数のテスト"""
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+    )
     def test_正常系_create_legacy_file_operations(self, mock_adapter_class):
         """正常系: レガシーファイル操作作成"""
         # Given: モックアダプターとコンテナ
@@ -226,15 +257,21 @@ class TestLegacyCompatibilityFunctions:
     def test_異常系_create_legacy_file_operations_フォールバック(self):
         """異常系: ファイル操作作成失敗時のフォールバック処理確認"""
         # Given: container.resolveが失敗する状況
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter') as mock_adapter_class:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+        ) as mock_adapter_class:
             mock_adapter = Mock()
             mock_container = Mock()
             mock_container.resolve.side_effect = Exception("Resolve failed")
             mock_adapter.container = mock_container
             mock_adapter_class.return_value = mock_adapter
 
-            with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger') as mock_logger:
-                with patch('kumihan_formatter.core.file_operations_factory.create_file_operations') as mock_fallback:
+            with patch(
+                "kumihan_formatter.core.patterns.legacy_factory_integration.logger"
+            ) as mock_logger:
+                with patch(
+                    "kumihan_formatter.core.file_operations_factory.create_file_operations"
+                ) as mock_fallback:
                     mock_fallback_result = Mock()
                     mock_fallback.return_value = mock_fallback_result
 
@@ -246,7 +283,9 @@ class TestLegacyCompatibilityFunctions:
                     mock_fallback.assert_called_once_with("test_ui")
                     mock_logger.warning.assert_called()
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+    )
     def test_正常系_create_legacy_markdown_converter(self, mock_adapter_class):
         """正常系: レガシーマークダウンコンバーター作成"""
         # Given: モックアダプターとコンテナ
@@ -255,7 +294,11 @@ class TestLegacyCompatibilityFunctions:
         mock_parser = Mock()
         mock_processor = Mock()
         mock_renderer = Mock()
-        mock_container.resolve.side_effect = [mock_parser, mock_processor, mock_renderer]
+        mock_container.resolve.side_effect = [
+            mock_parser,
+            mock_processor,
+            mock_renderer,
+        ]
         mock_adapter.container = mock_container
         mock_adapter_class.return_value = mock_adapter
 
@@ -269,15 +312,21 @@ class TestLegacyCompatibilityFunctions:
     def test_異常系_create_legacy_markdown_converter_フォールバック(self):
         """異常系: マークダウンコンバーター作成失敗時のフォールバック処理確認"""
         # Given: container.resolveが失敗する状況
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter') as mock_adapter_class:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+        ) as mock_adapter_class:
             mock_adapter = Mock()
             mock_container = Mock()
             mock_container.resolve.side_effect = Exception("Resolve failed")
             mock_adapter.container = mock_container
             mock_adapter_class.return_value = mock_adapter
 
-            with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger') as mock_logger:
-                with patch('kumihan_formatter.core.markdown_factory.create_markdown_converter') as mock_fallback:
+            with patch(
+                "kumihan_formatter.core.patterns.legacy_factory_integration.logger"
+            ) as mock_logger:
+                with patch(
+                    "kumihan_formatter.core.markdown_factory.create_markdown_converter"
+                ) as mock_fallback:
                     mock_fallback_result = (Mock(), Mock(), Mock())
                     mock_fallback.return_value = mock_fallback_result
 
@@ -289,7 +338,9 @@ class TestLegacyCompatibilityFunctions:
                     mock_fallback.assert_called_once()
                     mock_logger.warning.assert_called()
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter')
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+    )
     def test_正常系_create_legacy_list_parser(self, mock_adapter_class):
         """正常系: レガシーリストパーサー作成"""
         # Given: モックアダプターとコンテナ
@@ -311,7 +362,9 @@ class TestLegacyCompatibilityFunctions:
     def test_異常系_create_legacy_list_parser_フォールバック(self):
         """異常系: リストパーサー作成失敗時のフォールバック処理確認"""
         # Given: container.resolveが失敗する状況
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter') as mock_adapter_class:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+        ) as mock_adapter_class:
             mock_adapter = Mock()
             mock_container = Mock()
             mock_container.resolve.side_effect = Exception("Resolve failed")
@@ -319,8 +372,12 @@ class TestLegacyCompatibilityFunctions:
             mock_adapter_class.return_value = mock_adapter
             mock_keyword_parser = Mock()
 
-            with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger') as mock_logger:
-                with patch('kumihan_formatter.core.list_parser_factory.create_list_parser') as mock_fallback:
+            with patch(
+                "kumihan_formatter.core.patterns.legacy_factory_integration.logger"
+            ) as mock_logger:
+                with patch(
+                    "kumihan_formatter.core.list_parser_factory.create_list_parser"
+                ) as mock_fallback:
                     mock_fallback_result = Mock()
                     mock_fallback.return_value = mock_fallback_result
 
@@ -340,6 +397,7 @@ class TestGlobalLegacyAdapter:
         """各テストメソッド実行前の初期化"""
         # グローバル状態をクリア
         import kumihan_formatter.core.patterns.legacy_factory_integration as module
+
         module._legacy_adapter = None
 
     def test_正常系_get_legacy_adapter_初回(self):
@@ -368,11 +426,15 @@ class TestGlobalLegacyAdapter:
         custom_container = DIContainer()
 
         # When: レガシー統合システムを初期化
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger') as mock_logger:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.logger"
+        ) as mock_logger:
             initialize_legacy_integration(custom_container)
 
             # Then: 成功ログが出力される
-            mock_logger.info.assert_called_with("Legacy integration system initialized successfully")
+            mock_logger.info.assert_called_with(
+                "Legacy integration system initialized successfully"
+            )
 
         # グローバルアダプターが設定される
         adapter = get_legacy_adapter()
@@ -382,15 +444,23 @@ class TestGlobalLegacyAdapter:
         """正常系: レガシー統合システムデフォルト初期化"""
         # Given: コンテナなし
         # When: レガシー統合システムを初期化
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger') as mock_logger:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.logger"
+        ) as mock_logger:
             initialize_legacy_integration()
 
             # Then: 成功ログが出力される
-            mock_logger.info.assert_called_with("Legacy integration system initialized successfully")
+            mock_logger.info.assert_called_with(
+                "Legacy integration system initialized successfully"
+            )
 
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter')
-    @patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger')
-    def test_異常系_initialize_legacy_integration_失敗(self, mock_logger, mock_adapter_class):
+    @patch(
+        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+    )
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
+    def test_異常系_initialize_legacy_integration_失敗(
+        self, mock_logger, mock_adapter_class
+    ):
         """異常系: レガシー統合システム初期化失敗"""
         # Given: 初期化失敗するアダプター
         mock_adapter_class.side_effect = Exception("Init failed")
@@ -424,6 +494,7 @@ class TestIntegration:
         """各テストメソッド実行前の初期化"""
         # グローバル状態をクリア
         import kumihan_formatter.core.patterns.legacy_factory_integration as module
+
         module._legacy_adapter = None
 
     def test_統合_完全なレガシー統合ワークフロー(self):
@@ -432,7 +503,7 @@ class TestIntegration:
         container = DIContainer()
 
         # When: レガシー統合システムを初期化し、各サービスを生成
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.logger'):
+        with patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger"):
             initialize_legacy_integration(container)
 
         # レガシー互換関数を呼び出し（実際のオブジェクトが返される）
@@ -449,7 +520,9 @@ class TestIntegration:
     def test_統合_エラー処理と復旧(self):
         """統合: エラー処理と復旧の確認"""
         # Given: 失敗する環境でフォールバック動作確認
-        with patch('kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter') as mock_adapter_class:
+        with patch(
+            "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
+        ) as mock_adapter_class:
             mock_adapter = Mock()
             mock_container = Mock()
             mock_container.resolve.side_effect = Exception("Resolve failed")
@@ -457,7 +530,9 @@ class TestIntegration:
             mock_adapter_class.return_value = mock_adapter
 
             # When: フォールバック処理が動作
-            with patch('kumihan_formatter.core.file_operations_factory.create_file_operations') as mock_fallback:
+            with patch(
+                "kumihan_formatter.core.file_operations_factory.create_file_operations"
+            ) as mock_fallback:
                 mock_fallback.return_value = Mock()
                 result1 = create_legacy_file_operations()  # フォールバック
 

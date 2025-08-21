@@ -12,14 +12,15 @@ definitions.py: 53% → 75%達成（22%向上目標）
 - 国際化・CSS要件・バリデーション
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.parsing.keyword.definitions import (
-    KeywordDefinitions,
     DEFAULT_BLOCK_KEYWORDS,
-    NESTING_ORDER
+    NESTING_ORDER,
+    KeywordDefinitions,
 )
 
 
@@ -358,8 +359,23 @@ class TestDefinitionsValidation:
         for tag in invalid_tags:
             definition = {"tag": tag}
             error = self.definitions._validate_keyword_definition(definition)
-            if tag not in {"strong", "em", "div", "h1", "h2", "h3", "h4", "h5",
-                          "details", "u", "code", "del", "ruby", "span", "p"}:
+            if tag not in {
+                "strong",
+                "em",
+                "div",
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "details",
+                "u",
+                "code",
+                "del",
+                "ruby",
+                "span",
+                "p",
+            }:
                 assert error is not None
 
 

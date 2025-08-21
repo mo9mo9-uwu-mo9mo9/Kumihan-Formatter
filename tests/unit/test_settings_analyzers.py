@@ -12,19 +12,20 @@ Settings Analyzers テストスイート - Issue #813 対応
 - パフォーマンス基本測定
 """
 
-import pytest
-import time
 import threading
-from unittest.mock import Mock, patch, MagicMock
-from collections import deque, defaultdict
-from typing import Any, Dict, List, Optional
+import time
+from collections import defaultdict, deque
 from statistics import mean
+from typing import Any, Dict, List, Optional
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.core.config.optimization.analyzers import (
-    TokenUsageAnalyzer,
-    ComplexityAnalyzer,
-)
+import pytest
+
 from kumihan_formatter.core.config.config_manager import EnhancedConfig
+from kumihan_formatter.core.config.optimization.analyzers import (
+    ComplexityAnalyzer,
+    TokenUsageAnalyzer,
+)
 from kumihan_formatter.core.config.optimization.manager import WorkContext
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -454,7 +455,12 @@ class TestTokenUsageAnalyzer:
 
         # セッション最適化推奨が含まれることを確認
         session_rec = next(
-            (rec for rec in recommendations if rec["category"] == "session_optimization"), None
+            (
+                rec
+                for rec in recommendations
+                if rec["category"] == "session_optimization"
+            ),
+            None,
         )
         assert session_rec is not None
         assert session_rec["priority"] == "high"

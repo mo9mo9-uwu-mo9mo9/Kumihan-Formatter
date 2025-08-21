@@ -363,7 +363,9 @@ class TestErrorHandlingIntegration:
         parser = Parser(graceful_errors=True)
 
         # エラー記録時にエンジンが呼ばれることをテスト
-        parser._record_graceful_error(1, 1, "test", "error", "test message", "test context")
+        parser._record_graceful_error(
+            1, 1, "test", "error", "test message", "test context"
+        )
 
         # enhance_error_with_suggestionsが呼ばれたことを確認
         mock_engine.enhance_error_with_suggestions.assert_called_once()
@@ -430,7 +432,9 @@ def sample_errors():
 
 def test_complete_advanced_error_workflow(sample_errors):
     """高度なエラーハンドリングの完全なワークフローテスト"""
-    from kumihan_formatter.core.error_handling.analysis.correction_engine import CorrectionEngine
+    from kumihan_formatter.core.error_handling.analysis.correction_engine import (
+        CorrectionEngine,
+    )
     from kumihan_formatter.core.error_handling.analysis.statistics_generator import (
         StatisticsGenerator,
     )

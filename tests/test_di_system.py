@@ -8,13 +8,13 @@ from typing import Any, Protocol
 from unittest.mock import MagicMock
 
 from kumihan_formatter.core.patterns.dependency_injection import (
-    DIContainer,
-    ServiceLifetime,
-    ServiceDescriptor,
     CircularDependencyError,
+    DIContainer,
+    ServiceDescriptor,
+    ServiceLifetime,
     ServiceNotFoundError,
-    injectable,
     get_container,
+    injectable,
 )
 from kumihan_formatter.core.patterns.factories import (
     ParserFactory,

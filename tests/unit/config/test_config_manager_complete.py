@@ -4,18 +4,19 @@ Issue #929 Phase 3B: Configuration Manager Core テスト
 50テストケースでconfig_manager.pyの70%カバレッジ達成
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
+import pytest
+
+from kumihan_formatter.config.base_config import BaseConfig
 from kumihan_formatter.config.config_manager import (
     ConfigManager,
     create_config_manager,
-    load_config
+    load_config,
 )
-from kumihan_formatter.config.base_config import BaseConfig
 from kumihan_formatter.config.extended_config import ExtendedConfig
 
 
@@ -25,8 +26,14 @@ class TestConfigManagerInitialization:
     def test_正常系_デフォルト初期化(self):
         """デフォルト設定での初期化テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
             mock_env_instance = Mock()
@@ -45,8 +52,14 @@ class TestConfigManagerInitialization:
     def test_正常系_base初期化(self):
         """baseタイプでの初期化テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
 
@@ -60,8 +73,14 @@ class TestConfigManagerInitialization:
     def test_正常系_extended初期化(self):
         """extendedタイプでの初期化テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
 
@@ -76,8 +95,14 @@ class TestConfigManagerInitialization:
         """config_path指定での初期化テスト"""
         # Given
         config_path = "/test/config.json"
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
 
@@ -91,8 +116,14 @@ class TestConfigManagerInitialization:
         """カスタムenv_prefixでの初期化テスト"""
         # Given
         custom_prefix = "CUSTOM_"
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
             mock_env_instance = Mock()
@@ -108,8 +139,14 @@ class TestConfigManagerInitialization:
     def test_異常系_無効config_type初期化(self):
         """無効なconfig_typeでの初期化テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
 
@@ -124,8 +161,14 @@ class TestConfigManagerInitialization:
         """存在しないconfig_pathでの初期化テスト"""
         # Given
         nonexistent_path = "/nonexistent/config.json"
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
 
@@ -138,8 +181,14 @@ class TestConfigManagerInitialization:
     def test_正常系_環境変数読み込み確認(self):
         """環境変数読み込み確認テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_instance') as mock_create, \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance"
+            ) as mock_create,
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             mock_config = Mock()
             mock_create.return_value = mock_config
             mock_env_instance = Mock()
@@ -158,8 +207,13 @@ class TestConfigManagerDelegation:
     def setup_method(self):
         """テストセットアップ"""
         self.mock_config = Mock()
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=self.mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=self.mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             self.manager = ConfigManager()
 
     def test_正常系_get_css_variables委譲(self):
@@ -277,8 +331,13 @@ class TestConfigManagerExtended:
         mock_config = Mock()
         mock_config.get_markers.return_value = expected_markers
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -293,8 +352,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -309,8 +373,13 @@ class TestConfigManagerExtended:
         mock_config = Mock()
         mock_config.get_markers.return_value = None  # Non-dict return
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -326,8 +395,13 @@ class TestConfigManagerExtended:
         marker_name = "test_marker"
         marker_def = {"color": "blue"}
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -341,8 +415,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -359,8 +438,13 @@ class TestConfigManagerExtended:
         mock_config.remove_marker.return_value = True
         marker_name = "test_marker"
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -377,8 +461,13 @@ class TestConfigManagerExtended:
         mock_config.remove_marker.return_value = False
         marker_name = "nonexistent_marker"
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -393,8 +482,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -410,8 +504,13 @@ class TestConfigManagerExtended:
         mock_config = Mock()
         mock_config.get_themes.return_value = expected_themes
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -426,8 +525,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -443,8 +547,13 @@ class TestConfigManagerExtended:
         theme_id = "custom_theme"
         theme_data = {"name": "Custom Theme", "colors": {}}
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -458,8 +567,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -476,8 +590,13 @@ class TestConfigManagerExtended:
         mock_config.set_theme.return_value = True
         theme_id = "dark_theme"
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -494,8 +613,13 @@ class TestConfigManagerExtended:
         mock_config.set_theme.return_value = False
         theme_id = "nonexistent_theme"
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -510,8 +634,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -527,8 +656,13 @@ class TestConfigManagerExtended:
         mock_config = Mock()
         mock_config.get_current_theme.return_value = expected_theme
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -543,8 +677,13 @@ class TestConfigManagerExtended:
         # Given
         mock_config = Mock(spec=[])  # hasattr check will fail
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -560,8 +699,15 @@ class TestConfigManagerFileOperations:
     def setup_method(self):
         """テストセットアップ"""
         self.mock_config = Mock()
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=self.mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler') as mock_env:
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=self.mock_config,
+            ),
+            patch(
+                "kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"
+            ) as mock_env,
+        ):
             self.mock_env_instance = Mock()
             mock_env.return_value = self.mock_env_instance
             self.manager = ConfigManager()
@@ -572,7 +718,10 @@ class TestConfigManagerFileOperations:
         config_path = "/test/config.json"
         new_config = Mock()
 
-        with patch('kumihan_formatter.config.config_manager.load_config_file', return_value=new_config) as mock_load:
+        with patch(
+            "kumihan_formatter.config.config_manager.load_config_file",
+            return_value=new_config,
+        ) as mock_load:
             # When
             result = self.manager.load_config(config_path)
 
@@ -587,7 +736,10 @@ class TestConfigManagerFileOperations:
         # Given
         config_path = "/test/nonexistent.json"
 
-        with patch('kumihan_formatter.config.config_manager.load_config_file', side_effect=Exception("File not found")) as mock_load:
+        with patch(
+            "kumihan_formatter.config.config_manager.load_config_file",
+            side_effect=Exception("File not found"),
+        ) as mock_load:
             # When
             result = self.manager.load_config(config_path)
 
@@ -601,7 +753,10 @@ class TestConfigManagerFileOperations:
         config_path = "/test/config.json"
         new_config = Mock()
 
-        with patch('kumihan_formatter.config.config_manager.load_config_file', return_value=new_config):
+        with patch(
+            "kumihan_formatter.config.config_manager.load_config_file",
+            return_value=new_config,
+        ):
             # When
             self.manager.load_config(config_path)
 
@@ -615,7 +770,9 @@ class TestConfigManagerFileOperations:
         # Given
         other_config = {"key1": "value1", "key2": "value2"}
 
-        with patch('kumihan_formatter.config.config_manager.merge_config_data') as mock_merge:
+        with patch(
+            "kumihan_formatter.config.config_manager.merge_config_data"
+        ) as mock_merge:
             # When
             self.manager.merge_config(other_config)
 
@@ -628,10 +785,12 @@ class TestConfigManagerFileOperations:
         complex_config = {
             "nested": {"deep": {"value": "test"}},
             "list": [1, 2, 3],
-            "bool": True
+            "bool": True,
         }
 
-        with patch('kumihan_formatter.config.config_manager.merge_config_data') as mock_merge:
+        with patch(
+            "kumihan_formatter.config.config_manager.merge_config_data"
+        ) as mock_merge:
             # When
             self.manager.merge_config(complex_config)
 
@@ -645,7 +804,9 @@ class TestConfigManagerFactory:
     def test_正常系_create_config_manager(self):
         """create_config_manager()でのインスタンス作成テスト"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.ConfigManager') as mock_manager_class:
+        with patch(
+            "kumihan_formatter.config.config_manager.ConfigManager"
+        ) as mock_manager_class:
             mock_instance = Mock()
             mock_manager_class.return_value = mock_instance
 
@@ -655,9 +816,7 @@ class TestConfigManagerFactory:
             # Then
             assert result == mock_instance
             mock_manager_class.assert_called_once_with(
-                config_type="extended",
-                config_path=None,
-                env_prefix="KUMIHAN_"
+                config_type="extended", config_path=None, env_prefix="KUMIHAN_"
             )
 
     def test_正常系_create_config_manager_パラメータ指定(self):
@@ -667,23 +826,21 @@ class TestConfigManagerFactory:
         config_path = "/custom/config.json"
         env_prefix = "CUSTOM_"
 
-        with patch('kumihan_formatter.config.config_manager.ConfigManager') as mock_manager_class:
+        with patch(
+            "kumihan_formatter.config.config_manager.ConfigManager"
+        ) as mock_manager_class:
             mock_instance = Mock()
             mock_manager_class.return_value = mock_instance
 
             # When
             result = create_config_manager(
-                config_type=config_type,
-                config_path=config_path,
-                env_prefix=env_prefix
+                config_type=config_type, config_path=config_path, env_prefix=env_prefix
             )
 
             # Then
             assert result == mock_instance
             mock_manager_class.assert_called_once_with(
-                config_type=config_type,
-                config_path=config_path,
-                env_prefix=env_prefix
+                config_type=config_type, config_path=config_path, env_prefix=env_prefix
             )
 
     def test_正常系_load_config_便利関数(self):
@@ -691,7 +848,9 @@ class TestConfigManagerFactory:
         # Given
         config_path = "/test/config.json"
 
-        with patch('kumihan_formatter.config.config_manager.create_config_manager') as mock_create:
+        with patch(
+            "kumihan_formatter.config.config_manager.create_config_manager"
+        ) as mock_create:
             mock_instance = Mock()
             mock_create.return_value = mock_instance
 
@@ -705,7 +864,9 @@ class TestConfigManagerFactory:
     def test_正常系_load_config_便利関数_config_pathなし(self):
         """load_config()便利関数テスト（config_pathなし）"""
         # Given
-        with patch('kumihan_formatter.config.config_manager.create_config_manager') as mock_create:
+        with patch(
+            "kumihan_formatter.config.config_manager.create_config_manager"
+        ) as mock_create:
             mock_instance = Mock()
             mock_create.return_value = mock_instance
 
@@ -725,8 +886,13 @@ class TestConfigManagerIntegration:
         # Given
         mock_config = Mock()
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When
@@ -741,8 +907,13 @@ class TestConfigManagerIntegration:
         base_config = Mock(spec=[])  # BaseConfig like
         extended_config = Mock()  # ExtendedConfig like with extended methods
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=base_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=base_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
             # When - 動的に設定を変更
@@ -758,11 +929,18 @@ class TestConfigManagerIntegration:
         large_config = {f"key_{i}": f"value_{i}" for i in range(1000)}
         mock_config = Mock()
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
-            with patch('kumihan_formatter.config.config_manager.merge_config_data') as mock_merge:
+            with patch(
+                "kumihan_formatter.config.config_manager.merge_config_data"
+            ) as mock_merge:
                 # When
                 manager.merge_config(large_config)
 
@@ -777,15 +955,22 @@ class TestConfigManagerIntegration:
             "special/chars\\path": "value with spaces and symbols!@#$%^&*()",
             "json_like": '{"nested": "json"}',
             "empty_string": "",
-            "null_like": None
+            "null_like": None,
         }
         mock_config = Mock()
 
-        with patch('kumihan_formatter.config.config_manager.create_config_instance', return_value=mock_config), \
-             patch('kumihan_formatter.config.config_manager.ConfigEnvironmentHandler'):
+        with (
+            patch(
+                "kumihan_formatter.config.config_manager.create_config_instance",
+                return_value=mock_config,
+            ),
+            patch("kumihan_formatter.config.config_manager.ConfigEnvironmentHandler"),
+        ):
             manager = ConfigManager()
 
-            with patch('kumihan_formatter.config.config_manager.merge_config_data') as mock_merge:
+            with patch(
+                "kumihan_formatter.config.config_manager.merge_config_data"
+            ) as mock_merge:
                 # When
                 manager.merge_config(special_config)
 

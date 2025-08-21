@@ -119,12 +119,17 @@ class TestConcurrentProcessing:
         logger.info(f"平均処理時間: {avg_time:.3f}秒")
 
         # 検証
-        assert success_count >= len(contents) * 0.8, f"成功率が低い: {success_count}/{len(contents)}"
-        assert len(thread_ids) <= max_workers, f"スレッド数が制限を超過: {len(thread_ids)}"
+        assert (
+            success_count >= len(contents) * 0.8
+        ), f"成功率が低い: {success_count}/{len(contents)}"
+        assert (
+            len(thread_ids) <= max_workers
+        ), f"スレッド数が制限を超過: {len(thread_ids)}"
 
     @pytest.mark.asyncio
     async def test_非同期並行処理(self) -> None:
         """asyncioを使用した非同期並行処理"""
+
         async def async_process(content: str, worker_id: int) -> Dict[str, Any]:
             """非同期処理ラッパー"""
             loop = asyncio.get_event_loop()
@@ -142,10 +147,7 @@ class TestConcurrentProcessing:
                     contents.append(pattern)
 
         # 非同期タスク作成
-        tasks = [
-            async_process(content, i)
-            for i, content in enumerate(contents)
-        ]
+        tasks = [async_process(content, i) for i, content in enumerate(contents)]
 
         # 並行実行
         start_time = time.time()
@@ -164,7 +166,9 @@ class TestConcurrentProcessing:
             else:
                 error_results.append(result)
 
-        logger.info(f"非同期並行処理: 成功 {len(success_results)}, エラー {len(error_results)}")
+        logger.info(
+            f"非同期並行処理: 成功 {len(success_results)}, エラー {len(error_results)}"
+        )
         logger.info(f"総処理時間: {total_time:.3f}秒")
 
         # 検証
@@ -206,12 +210,14 @@ class TestConcurrentProcessing:
 
         # 全て成功していることを確認
         success_count = sum(1 for r in shared_data["results"] if r["success"])
-        assert success_count == worker_count, f"失敗した処理: {worker_count - success_count}"
+        assert (
+            success_count == worker_count
+        ), f"失敗した処理: {worker_count - success_count}"
 
     def test_リソース競合回避(self) -> None:
         """リソース競合の回避テスト"""
-        import tempfile
         import os
+        import tempfile
         from pathlib import Path
 
         # 一時ディレクトリ作成
@@ -224,10 +230,10 @@ class TestConcurrentProcessing:
 
             try:
                 # ファイルに書き込み
-                temp_file.write_text(content, encoding='utf-8')
+                temp_file.write_text(content, encoding="utf-8")
 
                 # ファイルから読み込み
-                read_content = temp_file.read_text(encoding='utf-8')
+                read_content = temp_file.read_text(encoding="utf-8")
 
                 # 処理実行
                 result = self.process_content_sync(read_content, worker_id)
@@ -258,11 +264,14 @@ class TestConcurrentProcessing:
 
             # 結果検証
             success_count = sum(1 for r in results if r.get("success"))
-            assert success_count == len(contents), f"リソース競合で失敗: {len(contents) - success_count}"
+            assert success_count == len(
+                contents
+            ), f"リソース競合で失敗: {len(contents) - success_count}"
 
         finally:
             # クリーンアップ
             import shutil
+
             try:
                 shutil.rmtree(temp_dir)
             except:
@@ -270,8 +279,8 @@ class TestConcurrentProcessing:
 
     def test_デッドロック回避(self) -> None:
         """デッドロック回避のテスト"""
-        import threading
         import random
+        import threading
 
         # 複数のロックを使用
         lock1 = threading.Lock()
@@ -324,13 +333,17 @@ class TestConcurrentProcessing:
                     result = future.result(timeout=5.0)  # 5秒でタイムアウト
                     completed_results.append(result)
                 except Exception as e:
-                    completed_results.append({
-                        "success": False,
-                        "error": f"タイムアウトまたはエラー: {e}",
-                    })
+                    completed_results.append(
+                        {
+                            "success": False,
+                            "error": f"タイムアウトまたはエラー: {e}",
+                        }
+                    )
 
         # 検証
-        assert len(completed_results) == worker_count, "タイムアウトでデッドロックが疑われます"
+        assert (
+            len(completed_results) == worker_count
+        ), "タイムアウトでデッドロックが疑われます"
         assert len(results) == worker_count, "結果数が正しくない"
 
         success_count = sum(1 for r in results if r.get("success"))

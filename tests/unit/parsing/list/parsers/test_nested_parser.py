@@ -1,14 +1,20 @@
 """ネストリストパーサー（NestedListParser）の包括的テスト
 
-Kumihan-Formatter の core/parsing/list/parsers/nested_parser.py モジュールをテスト  
+Kumihan-Formatter の core/parsing/list/parsers/nested_parser.py モジュールをテスト
 ネストリスト構造の解析、インデント管理、動的構造構築を検証
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
+
+from kumihan_formatter.core.ast_nodes import (
+    Node,
+    create_node,
+    list_item,
+    unordered_list,
+)
 from kumihan_formatter.core.parsing.list.parsers.nested_parser import NestedListParser
-from kumihan_formatter.core.ast_nodes import Node, create_node, list_item, unordered_list
 
 
 class TestNestedListParser:
@@ -187,7 +193,9 @@ class TestNestedListParser:
         deep_content = "項目"
 
         # When: 制限を超えるレベルでの解析
-        result = self.parser.parse_nested_list(deep_content, level=4)  # max_nest_level=3を超える
+        result = self.parser.parse_nested_list(
+            deep_content, level=4
+        )  # max_nest_level=3を超える
 
         # Then: 空のリストが返されることを検証
         assert result == []
@@ -201,7 +209,9 @@ class TestNestedListParser:
         # Given: 急激なレベル変化のあるノードリスト
         items = [
             create_node("list_item", content="項目1", metadata={"relative_level": 0}),
-            create_node("list_item", content="急激ジャンプ", metadata={"relative_level": 3}),  # 3レベル急上昇
+            create_node(
+                "list_item", content="急激ジャンプ", metadata={"relative_level": 3}
+            ),  # 3レベル急上昇
         ]
 
         # When: ネスト構造検証
@@ -216,7 +226,9 @@ class TestNestedListParser:
         # Given: 最大レベルを超える深いネスト
         items = [
             create_node("list_item", content="項目1", metadata={"relative_level": 0}),
-            create_node("list_item", content="深すぎる", metadata={"relative_level": 5}),  # max_nest_level=3を超える
+            create_node(
+                "list_item", content="深すぎる", metadata={"relative_level": 5}
+            ),  # max_nest_level=3を超える
         ]
 
         # When: ネスト構造検証
@@ -247,12 +259,7 @@ class TestNestedListParser:
     def test_異常系_不正なコンテンツ形式(self):
         """異常系: 不正なコンテンツ形式の処理"""
         # Given: 不正なコンテンツ形式
-        invalid_contents = [
-            None,
-            "",
-            "   ",
-            "\n\n\n"
-        ]
+        invalid_contents = [None, "", "   ", "\n\n\n"]
 
         for content in invalid_contents:
             # When: ネスト処理可能判定
@@ -267,7 +274,9 @@ class TestNestedListParser:
         invalid_items = [
             create_node("list_item", content="項目1"),  # metadataなし
             create_node("list_item", content="項目2", metadata={}),  # 空のmetadata
-            create_node("list_item", content="項目3", metadata={"invalid_key": "value"}),  # 無関係なkey
+            create_node(
+                "list_item", content="項目3", metadata={"invalid_key": "value"}
+            ),  # 無関係なkey
         ]
 
         # When: 相対レベル計算
@@ -305,8 +314,12 @@ class TestNestedListParser:
         # Given: 極端なインデント値のノード
         extreme_items = [
             create_node("list_item", content="項目1", metadata={"indent": 0}),
-            create_node("list_item", content="項目2", metadata={"indent": 1000}),  # 極端に大きい
-            create_node("list_item", content="項目3", metadata={"indent": -5}),    # 負の値
+            create_node(
+                "list_item", content="項目2", metadata={"indent": 1000}
+            ),  # 極端に大きい
+            create_node(
+                "list_item", content="項目3", metadata={"indent": -5}
+            ),  # 負の値
         ]
 
         # When: 相対レベル計算
@@ -323,8 +336,9 @@ class TestNestedListParser:
         large_items = []
         for i in range(1000):
             level = i % 4  # 0-3のレベル循環
-            item = create_node("list_item", content=f"項目{i}", 
-                             metadata={"relative_level": level})
+            item = create_node(
+                "list_item", content=f"項目{i}", metadata={"relative_level": level}
+            )
             large_items.append(item)
 
         # When: 統計情報取得
@@ -340,7 +354,7 @@ class TestNestedListParser:
         # Given: 空文字列要素を含むコンテンツ
         content_with_empty = """項目1
 
-    
+
 項目2
     子項目"""
 
@@ -367,10 +381,10 @@ class TestNestedListParser:
         # When: 完全なワークフロー実行
         # 1. ネスト処理可能判定
         can_handle = self.parser.can_handle_nesting(content)
-        
+
         # 2. ネストリスト解析
         parsed_nodes = self.parser.parse_nested_list(content, level=0)
-        
+
         # 3. 統計情報取得
         if parsed_nodes:
             stats = self.parser.get_nesting_statistics(parsed_nodes)
@@ -384,12 +398,16 @@ class TestNestedListParser:
     def test_統合_ネスト構造構築から平坦化まで(self):
         """統合: ネスト構造構築から平坦化までの流れ"""
         # Given: ネスト構造のノード
-        nested_root = create_node("list", content="", metadata={
-            "children": [
-                create_node("list_item", content="項目1", metadata={"level": 0}),
-                create_node("list_item", content="子項目1", metadata={"level": 1}),
-            ]
-        })
+        nested_root = create_node(
+            "list",
+            content="",
+            metadata={
+                "children": [
+                    create_node("list_item", content="項目1", metadata={"level": 0}),
+                    create_node("list_item", content="子項目1", metadata={"level": 1}),
+                ]
+            },
+        )
 
         # When: 平坦化実行
         flattened = self.parser.flatten_nested_list(nested_root)
@@ -402,12 +420,24 @@ class TestNestedListParser:
         """統合: ネスト深度計算の総合テスト"""
         # Given: 複雑な階層構造
         items = [
-            create_node("list_item", content="レベル0", metadata={"children": [
-                create_node("list_item", content="レベル1", metadata={"children": [
-                    create_node("list_item", content="レベル2")
-                ]})
-            ]}),
-            create_node("list_item", content="レベル0-2")
+            create_node(
+                "list_item",
+                content="レベル0",
+                metadata={
+                    "children": [
+                        create_node(
+                            "list_item",
+                            content="レベル1",
+                            metadata={
+                                "children": [
+                                    create_node("list_item", content="レベル2")
+                                ]
+                            },
+                        )
+                    ]
+                },
+            ),
+            create_node("list_item", content="レベル0-2"),
         ]
 
         # When: ネスト深度計算
@@ -421,14 +451,16 @@ class TestNestedListParser:
         # Given: 不規則なインデントの行
         irregular_lines = [
             "項目1",
-            "  子項目1",      # 2スペース
+            "  子項目1",  # 2スペース
             "      子項目2",  # 6スペース
             "項目2",
-            "    子項目3"      # 4スペース
+            "    子項目3",  # 4スペース
         ]
 
         # When: インデント正規化（4スペース/レベル）
-        normalized = self.parser.normalize_indentation(irregular_lines, spaces_per_level=4)
+        normalized = self.parser.normalize_indentation(
+            irregular_lines, spaces_per_level=4
+        )
 
         # Then: インデントが正規化されることを検証
         assert len(normalized) == len(irregular_lines)
@@ -438,9 +470,15 @@ class TestNestedListParser:
         """統合: エラーハンドリングの総合テスト"""
         # Given: 様々な問題を含むノードリスト
         problematic_items = [
-            create_node("list_item", content="正常項目", metadata={"relative_level": 0}),
-            create_node("list_item", content="急激ジャンプ", metadata={"relative_level": 3}),
-            create_node("list_item", content="制限超過", metadata={"relative_level": 5}),
+            create_node(
+                "list_item", content="正常項目", metadata={"relative_level": 0}
+            ),
+            create_node(
+                "list_item", content="急激ジャンプ", metadata={"relative_level": 3}
+            ),
+            create_node(
+                "list_item", content="制限超過", metadata={"relative_level": 5}
+            ),
         ]
 
         # When: 検証とその他の処理
@@ -493,7 +531,7 @@ class TestNestedListParser:
             "* アスタリスク項目",
             "+ プラス項目",
             "1. 順序付き項目",
-            "通常テキスト（マーカーなし）"
+            "通常テキスト（マーカーなし）",
         ]
 
         for line in test_lines:
@@ -518,7 +556,7 @@ class TestNestedListParser:
         assert "indent" in patterns
         assert "nested_item" in patterns
         assert max_level == 3
-        assert all(hasattr(pattern, 'match') for pattern in patterns.values())
+        assert all(hasattr(pattern, "match") for pattern in patterns.values())
 
     def test_特殊_空コンテンツ各種処理(self):
         """特殊: 空コンテンツに対する各種処理"""
@@ -529,6 +567,6 @@ class TestNestedListParser:
             if content is not None:
                 # When: 各種処理実行
                 can_handle = self.parser.can_handle_nesting(content)
-                
+
                 # Then: 適切に処理されることを検証
                 assert can_handle is False  # 空コンテンツはネスト構造なし

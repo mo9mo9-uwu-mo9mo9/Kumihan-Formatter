@@ -8,12 +8,15 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 from kumihan_formatter.core.patterns.dependency_injection import DIContainer
-from kumihan_formatter.core.patterns.event_bus import IntegratedEventBus, ExtendedEventType
+from kumihan_formatter.core.patterns.event_bus import (
+    ExtendedEventType,
+    IntegratedEventBus,
+)
 from kumihan_formatter.core.plugins.plugin_manager import (
     PluginInfo,
     PluginManager,
@@ -40,7 +43,9 @@ class TestPluginEventIntegration:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -50,22 +55,22 @@ class TestPluginEventIntegration:
     def test_プラグインロード時イベント発行(self) -> None:
         """プラグインロード時にイベントが正しく発行される"""
         # Given: プラグインファイルとイベントリスナー
-        plugin_content = '''
+        plugin_content = """
 class EventPlugin:
     @property
     def name(self):
         return "event_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "event_plugin.py")
         plugin_info = PluginInfo(
             name="event_plugin",
@@ -80,7 +85,9 @@ class EventPlugin:
             events_captured.append((event_type, sender, data))
 
         # When: イベントリスナーを設定してプラグインをロード
-        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
+        with patch(
+            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
+        ) as mock_publish:
             mock_publish.side_effect = event_listener
             result = self.manager.load_plugin(plugin_path, plugin_info)
 
@@ -95,22 +102,22 @@ class EventPlugin:
     def test_プラグインアンロード時イベント発行(self) -> None:
         """プラグインアンロード時にイベントが正しく発行される"""
         # Given: ロード済みプラグイン
-        plugin_content = '''
+        plugin_content = """
 class UnloadEventPlugin:
     @property
     def name(self):
         return "unload_event_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "unload_event.py")
         plugin_info = PluginInfo(
             name="unload_event_plugin",
@@ -124,7 +131,9 @@ class UnloadEventPlugin:
             self.manager.load_plugin(plugin_path, plugin_info)
 
         # When: プラグインをアンロード
-        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
+        with patch(
+            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
+        ) as mock_publish:
             result = self.manager.unload_plugin("unload_event_plugin")
 
         # Then: アンロードが成功し、イベントが発行される
@@ -151,7 +160,9 @@ class TestPluginDIIntegration:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -161,23 +172,23 @@ class TestPluginDIIntegration:
     def test_プラグイン初期化時DIコンテナ渡し(self) -> None:
         """プラグイン初期化時にDIコンテナが正しく渡される"""
         # Given: シンプルなプラグイン
-        plugin_content = '''
+        plugin_content = """
 class DIPlugin:
     @property
     def name(self):
         return "di_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.container = container
         self.has_container = container is not None
-    
+
     def cleanup(self):
         pass
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "di_plugin.py")
         plugin_info = PluginInfo(
             name="di_plugin",
@@ -200,40 +211,40 @@ class DIPlugin:
     def test_複数プラグインのDI共有(self) -> None:
         """複数プラグイン間でDIコンテナが共有される"""
         # Given: 複数のプラグイン
-        plugin1_content = '''
+        plugin1_content = """
 class SharedPlugin1:
     @property
     def name(self):
         return "shared_plugin1"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.container = container
         self.container_id = id(container)
-    
+
     def cleanup(self):
         pass
-'''
-        plugin2_content = '''
+"""
+        plugin2_content = """
 class SharedPlugin2:
     @property
     def name(self):
         return "shared_plugin2"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.container = container
         self.container_id = id(container)
-    
+
     def cleanup(self):
         pass
-'''
+"""
         plugin1_path = self._create_plugin_file(plugin1_content, "shared1.py")
         plugin2_path = self._create_plugin_file(plugin2_content, "shared2.py")
 
@@ -258,7 +269,7 @@ class SharedPlugin2:
         # Then: 両方のロードが成功し、同じコンテナが共有される
         assert result1 is True
         assert result2 is True
-        
+
         plugin1 = self.manager.get_plugin("shared_plugin1")
         plugin2 = self.manager.get_plugin("shared_plugin2")
         assert plugin1 is not None
@@ -281,7 +292,9 @@ class TestPluginComplexScenarios:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -291,54 +304,54 @@ class TestPluginComplexScenarios:
     def test_プラグインチェーン依存関係(self) -> None:
         """プラグインのチェーン依存関係テスト（A→B→C）"""
         # Given: チェーン依存関係を持つ3つのプラグイン
-        plugin_a_content = '''
+        plugin_a_content = """
 class PluginA:
     @property
     def name(self):
         return "plugin_a"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
-        plugin_b_content = '''
+"""
+        plugin_b_content = """
 class PluginB:
     @property
     def name(self):
         return "plugin_b"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
-        plugin_c_content = '''
+"""
+        plugin_c_content = """
 class PluginC:
     @property
     def name(self):
         return "plugin_c"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_a_path = self._create_plugin_file(plugin_a_content, "plugin_a.py")
         plugin_b_path = self._create_plugin_file(plugin_b_content, "plugin_b.py")
         plugin_c_path = self._create_plugin_file(plugin_c_content, "plugin_c.py")
@@ -379,38 +392,38 @@ class PluginC:
     def test_プラグインチェーン依存関係_逆順ロード失敗(self) -> None:
         """プラグインのチェーン依存関係で逆順ロードが失敗する"""
         # Given: チェーン依存関係を持つ3つのプラグイン
-        plugin_a_content = '''
+        plugin_a_content = """
 class PluginA:
     @property
     def name(self):
         return "plugin_a"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
-        plugin_c_content = '''
+"""
+        plugin_c_content = """
 class PluginC:
     @property
     def name(self):
         return "plugin_c"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_a_path = self._create_plugin_file(plugin_a_content, "plugin_a2.py")
         plugin_c_path = self._create_plugin_file(plugin_c_content, "plugin_c2.py")
 
@@ -446,22 +459,22 @@ class PluginC:
         plugin_infos = []
 
         for i in range(plugin_count):
-            plugin_content = f'''
+            plugin_content = f"""
 class Plugin{i}:
     @property
     def name(self):
         return "plugin_{i}"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
             plugin_path = self._create_plugin_file(plugin_content, f"plugin_{i}.py")
             plugin_info = PluginInfo(
                 name=f"plugin_{i}",
@@ -491,22 +504,22 @@ class Plugin{i}:
         plugin_infos = []
 
         for i in range(5):
-            content = f'''
+            content = f"""
 class ConcurrentPlugin{i}:
     @property
     def name(self):
         return "concurrent_plugin_{i}"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
             path = self._create_plugin_file(content, f"concurrent_{i}.py")
             info = PluginInfo(
                 name=f"concurrent_plugin_{i}",
@@ -553,7 +566,9 @@ class TestPluginErrorRecovery:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -563,38 +578,38 @@ class TestPluginErrorRecovery:
     def test_エラープラグイン後の正常プラグインロード(self) -> None:
         """エラープラグインの後に正常プラグインがロードできる"""
         # Given: エラープラグインと正常プラグイン
-        error_plugin_content = '''
+        error_plugin_content = """
 class ErrorPlugin:
     @property
     def name(self):
         return "error_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         raise RuntimeError("初期化エラー")
-    
+
     def cleanup(self):
         pass
-'''
-        normal_plugin_content = '''
+"""
+        normal_plugin_content = """
 class NormalPlugin:
     @property
     def name(self):
         return "normal_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         error_path = self._create_plugin_file(error_plugin_content, "error.py")
         normal_path = self._create_plugin_file(normal_plugin_content, "normal.py")
 
@@ -628,22 +643,22 @@ class NormalPlugin:
         manager1 = PluginManager(DIContainer())
         manager2 = PluginManager(DIContainer())
 
-        plugin_content = '''
+        plugin_content = """
 class IsolationPlugin:
     @property
     def name(self):
         return "isolation_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         self.initialized = True
-    
+
     def cleanup(self):
         self.cleaned_up = True
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "isolation.py")
         plugin_info = PluginInfo(
             name="isolation_plugin",
@@ -682,7 +697,9 @@ class TestPluginProtocolValidation:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
+    def _create_plugin_file(
+        self, content: str, filename: str = "test_plugin.py"
+    ) -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -692,22 +709,22 @@ class TestPluginProtocolValidation:
     def test_プロトコル適合性_全属性存在(self) -> None:
         """プロトコル適合性: 全必須属性が存在する場合"""
         # Given: 完全なプラグイン
-        plugin_content = '''
+        plugin_content = """
 class CompletePlugin:
     @property
     def name(self):
         return "complete_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         pass
-    
+
     def cleanup(self):
         pass
-'''
+"""
         plugin_path = self._create_plugin_file(plugin_content, "complete.py")
         plugin_info = PluginInfo(
             name="complete_plugin",
@@ -728,59 +745,75 @@ class CompletePlugin:
         # Given: 各属性が欠損したプラグインのテストケース
         test_cases = [
             # name属性欠損
-            ('''
+            (
+                """
 class NoNamePlugin:
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         pass
-    
+
     def cleanup(self):
         pass
-''', "no_name.py", "NoNamePlugin"),
+""",
+                "no_name.py",
+                "NoNamePlugin",
+            ),
             # version属性欠損
-            ('''
+            (
+                """
 class NoVersionPlugin:
     @property
     def name(self):
         return "no_version_plugin"
-    
+
     def initialize(self, container):
         pass
-    
+
     def cleanup(self):
         pass
-''', "no_version.py", "NoVersionPlugin"),
+""",
+                "no_version.py",
+                "NoVersionPlugin",
+            ),
             # initializeメソッド欠損
-            ('''
+            (
+                """
 class NoInitPlugin:
     @property
     def name(self):
         return "no_init_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def cleanup(self):
         pass
-''', "no_init.py", "NoInitPlugin"),
+""",
+                "no_init.py",
+                "NoInitPlugin",
+            ),
             # cleanupメソッド欠損
-            ('''
+            (
+                """
 class NoCleanupPlugin:
     @property
     def name(self):
         return "no_cleanup_plugin"
-    
+
     @property
     def version(self):
         return "1.0.0"
-    
+
     def initialize(self, container):
         pass
-''', "no_cleanup.py", "NoCleanupPlugin"),
+""",
+                "no_cleanup.py",
+                "NoCleanupPlugin",
+            ),
         ]
 
         for plugin_content, filename, entry_point in test_cases:

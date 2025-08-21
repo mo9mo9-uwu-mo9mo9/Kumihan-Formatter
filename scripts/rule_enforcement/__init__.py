@@ -15,62 +15,59 @@ Status: Production Ready
 - __init__.py: 統合インポート（後方互換性維持）
 """
 
-# === コア機能インポート ===
-from .core_enforcement import (
-    # データクラスとEnum
-    ViolationLevel,
-    ToolCategory,
-    ViolationEvent,
-    ToolUsageStats,
-    # メインシステム
-    RuleEnforcementSystem
+# === 行動制御機能インポート ===
+from .behavioral_control import (  # 行動制御システム
+    BehavioralControlLayer,
+    RuntimeBehaviorModifier,
 )
 
-# === 行動制御機能インポート ===
-from .behavioral_control import (
-    # 行動制御システム
-    BehavioralControlLayer,
-    RuntimeBehaviorModifier
+# === コア機能インポート ===
+from .core_enforcement import (  # データクラスとEnum; メインシステム
+    RuleEnforcementSystem,
+    ToolCategory,
+    ToolUsageStats,
+    ViolationEvent,
+    ViolationLevel,
 )
 
 # === 統合システム機能インポート ===
-from .integrated_system import (
-    # 統合システム
-    IntegratedBehavioralControlSystem,
+from .integrated_system import (  # 統合システム; メイン実行関数
     BehavioralControlReportGenerator,
-    # メイン実行関数
-    main
+    IntegratedBehavioralControlSystem,
+    main,
 )
 
 # === 後方互換性のため全シンボルをエクスポート ===
 __all__ = [
     # データクラス・Enum
-    'ViolationLevel',
-    'ToolCategory',
-    'ViolationEvent',
-    'ToolUsageStats',
-
+    "ViolationLevel",
+    "ToolCategory",
+    "ViolationEvent",
+    "ToolUsageStats",
     # コアシステム
-    'RuleEnforcementSystem',
-
+    "RuleEnforcementSystem",
     # 監視・制御システム
-    'BehavioralControlLayer',
-    'RuntimeBehaviorModifier',
-    'IntegratedBehavioralControlSystem',
-    'BehavioralControlReportGenerator',
-
+    "BehavioralControlLayer",
+    "RuntimeBehaviorModifier",
+    "IntegratedBehavioralControlSystem",
+    "BehavioralControlReportGenerator",
     # ユーティリティ
-    'logger',
-    'main'
+    "logger",
+    "main",
 ]
 
 # === パッケージ情報 ===
 __version__ = "2.0.0"
 __author__ = "Claude Code - Kumihan-Formatter"
-__description__ = "規則遵守原則絶対遵守システム - 統合行動制御・監視・エンフォースメントパッケージ"
+__description__ = (
+    "規則遵守原則絶対遵守システム - 統合行動制御・監視・エンフォースメントパッケージ"
+)
+
 
 # === 統合システム初期化ヘルパー ===
-def create_integrated_system(config_path: str = ".claude-behavioral-control.json") -> IntegratedBehavioralControlSystem:
+def create_integrated_system(
+    config_path: str = ".claude-behavioral-control.json",
+) -> IntegratedBehavioralControlSystem:
     """統合行動制御システム作成ヘルパー
 
     Args:
@@ -81,7 +78,10 @@ def create_integrated_system(config_path: str = ".claude-behavioral-control.json
     """
     return IntegratedBehavioralControlSystem(config_path)
 
-def create_rule_enforcement_system(config_path: str = ".claude-system-override.yml") -> RuleEnforcementSystem:
+
+def create_rule_enforcement_system(
+    config_path: str = ".claude-system-override.yml",
+) -> RuleEnforcementSystem:
     """規則遵守エンフォースメントシステム作成ヘルパー
 
     Args:
@@ -92,7 +92,10 @@ def create_rule_enforcement_system(config_path: str = ".claude-system-override.y
     """
     return RuleEnforcementSystem(config_path)
 
-def create_report_generator(integrated_system: IntegratedBehavioralControlSystem) -> BehavioralControlReportGenerator:
+
+def create_report_generator(
+    integrated_system: IntegratedBehavioralControlSystem,
+) -> BehavioralControlReportGenerator:
     """レポート生成システム作成ヘルパー
 
     Args:
@@ -102,6 +105,7 @@ def create_report_generator(integrated_system: IntegratedBehavioralControlSystem
         BehavioralControlReportGenerator: レポート生成システムインスタンス
     """
     return BehavioralControlReportGenerator(integrated_system)
+
 
 # === システム情報表示 ===
 def show_system_info():
@@ -124,6 +128,7 @@ def show_system_info():
     print("  system = create_integrated_system()")
     print("  result = system.process_comprehensive_conditioning('tool_name')")
     print("=" * 60)
+
 
 # === パッケージ初期化時の情報表示 ===
 if __name__ == "__main__":

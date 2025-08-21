@@ -5,11 +5,12 @@ Issue #929 Phase 3C: ConfigEnvironmentHandler テスト
 """
 
 import os
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.config.config_manager_env import ConfigEnvironmentHandler
+import pytest
+
 from kumihan_formatter.config.base_config import BaseConfig
+from kumihan_formatter.config.config_manager_env import ConfigEnvironmentHandler
 from kumihan_formatter.config.extended_config import ExtendedConfig
 
 
@@ -45,17 +46,19 @@ class TestConfigEnvironmentHandlerInitialization:
         handler = ConfigEnvironmentHandler(env_prefix=prefix)
 
         # Then: 属性が適切に設定される
-        assert hasattr(handler, 'env_prefix')
+        assert hasattr(handler, "env_prefix")
         assert handler.env_prefix == prefix
-        assert hasattr(handler, 'load_from_env')
-        assert hasattr(handler, '_extract_env_config')
-        assert hasattr(handler, '_extract_css_vars')
+        assert hasattr(handler, "load_from_env")
+        assert hasattr(handler, "_extract_env_config")
+        assert hasattr(handler, "_extract_css_vars")
 
 
 class TestConfigEnvironmentHandlerLoadFromEnv:
     """load_from_env メソッドのテスト"""
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_BACKGROUND': '#ffffff', 'KUMIHAN_THEME': 'light'})
+    @patch.dict(
+        "os.environ", {"KUMIHAN_CSS_BACKGROUND": "#ffffff", "KUMIHAN_THEME": "light"}
+    )
     def test_正常系_load_from_env_merge_config持つ設定(self):
         """merge_configメソッドを持つ設定オブジェクトのテスト"""
         # Given: merge_configメソッドを持つ設定オブジェクト
@@ -69,12 +72,12 @@ class TestConfigEnvironmentHandlerLoadFromEnv:
         # Then: merge_configが呼び出される
         config.merge_config.assert_called_once()
         call_args = config.merge_config.call_args[0][0]
-        assert 'css' in call_args
-        assert 'theme' in call_args
-        assert call_args['css']['background'] == '#ffffff'
-        assert call_args['theme'] == 'light'
+        assert "css" in call_args
+        assert "theme" in call_args
+        assert call_args["css"]["background"] == "#ffffff"
+        assert call_args["theme"] == "light"
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_COLOR': '#000000'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_COLOR": "#000000"})
     def test_正常系_load_from_env_merge_config持たない設定(self):
         """merge_configメソッドを持たない設定オブジェクトのテスト"""
         # Given: merge_configメソッドを持たない設定オブジェクト
@@ -91,9 +94,9 @@ class TestConfigEnvironmentHandlerLoadFromEnv:
         config.set.assert_called()
         calls = config.set.call_args_list
         assert len(calls) == 1
-        assert calls[0][0] == ('css', {'color': '#000000'})
+        assert calls[0][0] == ("css", {"color": "#000000"})
 
-    @patch.dict('os.environ', {}, clear=True)
+    @patch.dict("os.environ", {}, clear=True)
     def test_境界値_load_from_env_空環境変数(self):
         """環境変数が空の場合のテスト"""
         # Given: 空の環境変数
@@ -107,7 +110,10 @@ class TestConfigEnvironmentHandlerLoadFromEnv:
         # Then: env_configが空のため何もメソッドが呼び出されない
         config.merge_config.assert_not_called()
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_BACKGROUND_COLOR': '#ff0000', 'KUMIHAN_THEME': 'dark'})
+    @patch.dict(
+        "os.environ",
+        {"KUMIHAN_CSS_BACKGROUND_COLOR": "#ff0000", "KUMIHAN_THEME": "dark"},
+    )
     def test_正常系_load_from_env_CSS_テーマ混在(self):
         """CSS・テーマ環境変数が混在した場合のテスト"""
         # Given: CSS・テーマ環境変数が設定された状態
@@ -124,17 +130,17 @@ class TestConfigEnvironmentHandlerLoadFromEnv:
         calls = config.set.call_args_list
         assert len(calls) == 2
         # CSS設定の確認
-        css_call = next(call for call in calls if call[0][0] == 'css')
-        assert css_call[0][1] == {'background_color': '#ff0000'}
+        css_call = next(call for call in calls if call[0][0] == "css")
+        assert css_call[0][1] == {"background_color": "#ff0000"}
         # テーマ設定の確認
-        theme_call = next(call for call in calls if call[0][0] == 'theme')
-        assert theme_call[0][1] == 'dark'
+        theme_call = next(call for call in calls if call[0][0] == "theme")
+        assert theme_call[0][1] == "dark"
 
 
 class TestConfigEnvironmentHandlerExtractEnvConfig:
     """_extract_env_config メソッドのテスト"""
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_COLOR': '#123456'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_COLOR": "#123456"})
     def test_正常系_extract_env_config_CSS変数のみ(self):
         """CSS変数のみが存在する場合のテスト"""
         # Given: CSS変数のみ設定された環境
@@ -144,11 +150,11 @@ class TestConfigEnvironmentHandlerExtractEnvConfig:
         result = handler._extract_env_config()
 
         # Then: CSS設定のみが返される
-        assert 'css' in result
-        assert result['css']['color'] == '#123456'
-        assert 'theme' not in result
+        assert "css" in result
+        assert result["css"]["color"] == "#123456"
+        assert "theme" not in result
 
-    @patch.dict('os.environ', {'KUMIHAN_THEME': 'custom'})
+    @patch.dict("os.environ", {"KUMIHAN_THEME": "custom"})
     def test_正常系_extract_env_config_テーマ変数のみ(self):
         """テーマ変数のみが存在する場合のテスト"""
         # Given: テーマ変数のみ設定された環境
@@ -158,11 +164,13 @@ class TestConfigEnvironmentHandlerExtractEnvConfig:
         result = handler._extract_env_config()
 
         # Then: テーマ設定のみが返される
-        assert 'theme' in result
-        assert result['theme'] == 'custom'
-        assert 'css' not in result
+        assert "theme" in result
+        assert result["theme"] == "custom"
+        assert "css" not in result
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_FONT_SIZE': '16px', 'KUMIHAN_THEME': 'dark'})
+    @patch.dict(
+        "os.environ", {"KUMIHAN_CSS_FONT_SIZE": "16px", "KUMIHAN_THEME": "dark"}
+    )
     def test_正常系_extract_env_config_CSS_テーマ混在(self):
         """CSS・テーマ変数が混在する場合のテスト"""
         # Given: CSS・テーマ変数が混在した環境
@@ -172,12 +180,12 @@ class TestConfigEnvironmentHandlerExtractEnvConfig:
         result = handler._extract_env_config()
 
         # Then: 両方の設定が返される
-        assert 'css' in result
-        assert 'theme' in result
-        assert result['css']['font_size'] == '16px'
-        assert result['theme'] == 'dark'
+        assert "css" in result
+        assert "theme" in result
+        assert result["css"]["font_size"] == "16px"
+        assert result["theme"] == "dark"
 
-    @patch.dict('os.environ', {}, clear=True)
+    @patch.dict("os.environ", {}, clear=True)
     def test_境界値_extract_env_config_変数なし(self):
         """関連環境変数が存在しない場合のテスト"""
         # Given: 関連環境変数が存在しない環境
@@ -193,7 +201,7 @@ class TestConfigEnvironmentHandlerExtractEnvConfig:
 class TestConfigEnvironmentHandlerExtractCssVars:
     """_extract_css_vars メソッドのテスト"""
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_MARGIN': '10px'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_MARGIN": "10px"})
     def test_正常系_extract_css_vars_プレフィックス抽出(self):
         """CSS環境変数のプレフィックスが適切に除去されることを確認"""
         # Given: CSS環境変数が設定された状態
@@ -203,14 +211,17 @@ class TestConfigEnvironmentHandlerExtractCssVars:
         result = handler._extract_css_vars()
 
         # Then: プレフィックスが除去され、小文字化される
-        assert 'margin' in result
-        assert result['margin'] == '10px'
+        assert "margin" in result
+        assert result["margin"] == "10px"
 
-    @patch.dict('os.environ', {
-        'KUMIHAN_CSS_FONT_SIZE': '14px',
-        'KUMIHAN_CSS_LINE_HEIGHT': '1.5',
-        'KUMIHAN_CSS_PADDING': '8px'
-    })
+    @patch.dict(
+        "os.environ",
+        {
+            "KUMIHAN_CSS_FONT_SIZE": "14px",
+            "KUMIHAN_CSS_LINE_HEIGHT": "1.5",
+            "KUMIHAN_CSS_PADDING": "8px",
+        },
+    )
     def test_正常系_extract_css_vars_複数CSS変数(self):
         """複数のCSS変数が存在する場合のテスト"""
         # Given: 複数のCSS環境変数が設定された状態
@@ -221,11 +232,11 @@ class TestConfigEnvironmentHandlerExtractCssVars:
 
         # Then: 全てのCSS変数が抽出される
         assert len(result) == 3
-        assert result['font_size'] == '14px'
-        assert result['line_height'] == '1.5'
-        assert result['padding'] == '8px'
+        assert result["font_size"] == "14px"
+        assert result["line_height"] == "1.5"
+        assert result["padding"] == "8px"
 
-    @patch.dict('os.environ', {'KUMIHAN_CSS_BACKGROUND_COLOR': '#FFFFFF'})
+    @patch.dict("os.environ", {"KUMIHAN_CSS_BACKGROUND_COLOR": "#FFFFFF"})
     def test_正常系_extract_css_vars_大文字小文字変換(self):
         """大文字の環境変数が小文字に変換されることを確認"""
         # Given: 大文字を含むCSS環境変数
@@ -235,10 +246,10 @@ class TestConfigEnvironmentHandlerExtractCssVars:
         result = handler._extract_css_vars()
 
         # Then: 変数名が小文字に変換される
-        assert 'background_color' in result
-        assert result['background_color'] == '#FFFFFF'
+        assert "background_color" in result
+        assert result["background_color"] == "#FFFFFF"
 
-    @patch.dict('os.environ', {'OTHER_VAR': 'value', 'KUMIHAN_THEME': 'dark'})
+    @patch.dict("os.environ", {"OTHER_VAR": "value", "KUMIHAN_THEME": "dark"})
     def test_境界値_extract_css_vars_CSS変数なし(self):
         """CSS変数が存在しない場合のテスト"""
         # Given: CSS以外の環境変数のみ設定された状態

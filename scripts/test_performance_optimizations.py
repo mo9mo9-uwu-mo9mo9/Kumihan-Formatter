@@ -17,6 +17,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def create_test_file(lines: int) -> str:
     """テスト用ファイル生成"""
 
@@ -45,12 +46,14 @@ def create_test_file(lines: int) -> str:
 
     return "\n".join(lines_content)
 
+
 def test_traditional_parser(text: str) -> dict:
     """従来パーサーのテスト（修正版）"""
 
     try:
-        from kumihan_formatter.parser import Parser
         import psutil
+
+        from kumihan_formatter.parser import Parser
 
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
@@ -66,7 +69,7 @@ def test_traditional_parser(text: str) -> dict:
             "parse_time": end_time - start_time,
             "memory_used": final_memory - initial_memory,
             "nodes_count": len(nodes),
-            "errors_count": len(parser.get_errors())
+            "errors_count": len(parser.get_errors()),
         }
     except Exception as e:
         return {
@@ -74,15 +77,17 @@ def test_traditional_parser(text: str) -> dict:
             "parse_time": 0,
             "memory_used": 0,
             "nodes_count": 0,
-            "errors_count": 0
+            "errors_count": 0,
         }
+
 
 def test_optimized_parser(text: str) -> dict:
     """最適化パーサーのテスト（修正版）"""
 
     try:
-        from kumihan_formatter.parser import Parser
         import psutil
+
+        from kumihan_formatter.parser import Parser
 
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
@@ -98,7 +103,7 @@ def test_optimized_parser(text: str) -> dict:
             "parse_time": end_time - start_time,
             "memory_used": final_memory - initial_memory,
             "nodes_count": len(nodes),
-            "errors_count": len(parser.get_errors())
+            "errors_count": len(parser.get_errors()),
         }
     except Exception as e:
         return {
@@ -106,15 +111,17 @@ def test_optimized_parser(text: str) -> dict:
             "parse_time": 0,
             "memory_used": 0,
             "nodes_count": 0,
-            "errors_count": 0
+            "errors_count": 0,
         }
+
 
 def test_streaming_parser(text: str) -> dict:
     """ストリーミングパーサーのテスト（修正版）"""
 
     try:
-        from kumihan_formatter.parser import StreamingParser
         import psutil
+
+        from kumihan_formatter.parser import StreamingParser
 
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
@@ -130,7 +137,7 @@ def test_streaming_parser(text: str) -> dict:
             "parse_time": end_time - start_time,
             "memory_used": final_memory - initial_memory,
             "nodes_count": len(nodes),
-            "errors_count": len(parser.get_errors())
+            "errors_count": len(parser.get_errors()),
         }
     except Exception as e:
         return {
@@ -138,14 +145,16 @@ def test_streaming_parser(text: str) -> dict:
             "parse_time": 0,
             "memory_used": 0,
             "nodes_count": 0,
-            "errors_count": 0
+            "errors_count": 0,
         }
+
 
 def test_html_rendering(nodes) -> dict:
     """HTML レンダリングのテスト"""
 
-    from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
     import psutil
+
+    from kumihan_formatter.core.rendering.main_renderer import HTMLRenderer
 
     process = psutil.Process()
     initial_memory = process.memory_info().rss / 1024 / 1024
@@ -168,14 +177,19 @@ def test_html_rendering(nodes) -> dict:
         "optimized_render_time": optimized_time,
         "html_length": len(html_optimized),
         "memory_used": final_memory - initial_memory,
-        "improvement_ratio": traditional_time / optimized_time if optimized_time > 0 else 1.0
+        "improvement_ratio": (
+            traditional_time / optimized_time if optimized_time > 0 else 1.0
+        ),
     }
+
 
 def main():
     """メインテスト実行"""
 
     parser = argparse.ArgumentParser(description="パフォーマンス最適化統合テスト")
-    parser.add_argument("--quick", action="store_true", help="クイックテスト（小規模データのみ）")
+    parser.add_argument(
+        "--quick", action="store_true", help="クイックテスト（小規模データのみ）"
+    )
     parser.add_argument("--lines", type=int, default=None, help="テスト行数の指定")
 
     args = parser.parse_args()
@@ -209,8 +223,10 @@ def main():
         print("従来パーサーテスト中...")
         try:
             results["traditional"] = test_traditional_parser(test_text)
-            print(f"  時間: {results['traditional']['parse_time']:.2f}s, "
-                  f"メモリ: {results['traditional']['memory_used']:.1f}MB")
+            print(
+                f"  時間: {results['traditional']['parse_time']:.2f}s, "
+                f"メモリ: {results['traditional']['memory_used']:.1f}MB"
+            )
         except Exception as e:
             print(f"  エラー: {e}")
             results["traditional"] = {"error": str(e)}
@@ -219,8 +235,10 @@ def main():
         print("最適化パーサーテスト中...")
         try:
             results["optimized"] = test_optimized_parser(test_text)
-            print(f"  時間: {results['optimized']['parse_time']:.2f}s, "
-                  f"メモリ: {results['optimized']['memory_used']:.1f}MB")
+            print(
+                f"  時間: {results['optimized']['parse_time']:.2f}s, "
+                f"メモリ: {results['optimized']['memory_used']:.1f}MB"
+            )
         except Exception as e:
             print(f"  エラー: {e}")
             results["optimized"] = {"error": str(e)}
@@ -229,20 +247,30 @@ def main():
         print("ストリーミングパーサーテスト中...")
         try:
             results["streaming"] = test_streaming_parser(test_text)
-            print(f"  時間: {results['streaming']['parse_time']:.2f}s, "
-                  f"メモリ: {results['streaming']['memory_used']:.1f}MB")
+            print(
+                f"  時間: {results['streaming']['parse_time']:.2f}s, "
+                f"メモリ: {results['streaming']['memory_used']:.1f}MB"
+            )
         except Exception as e:
             print(f"  エラー: {e}")
             results["streaming"] = {"error": str(e)}
 
         # 改善率計算
-        if ("traditional" in results and "optimized" in results and
-            "error" not in results["traditional"] and "error" not in results["optimized"]):
+        if (
+            "traditional" in results
+            and "optimized" in results
+            and "error" not in results["traditional"]
+            and "error" not in results["optimized"]
+        ):
 
-            speed_improvement = (results["traditional"]["parse_time"] /
-                               results["optimized"]["parse_time"])
-            memory_improvement = (results["traditional"]["memory_used"] /
-                                results["optimized"]["memory_used"])
+            speed_improvement = (
+                results["traditional"]["parse_time"]
+                / results["optimized"]["parse_time"]
+            )
+            memory_improvement = (
+                results["traditional"]["memory_used"]
+                / results["optimized"]["memory_used"]
+            )
 
             print(f"\n✨ 改善効果:")
             print(f"  速度向上: {speed_improvement:.1f}x")
@@ -250,7 +278,7 @@ def main():
 
             results["improvements"] = {
                 "speed_ratio": speed_improvement,
-                "memory_ratio": memory_improvement
+                "memory_ratio": memory_improvement,
             }
 
         overall_results.append(results)
@@ -261,20 +289,29 @@ def main():
 
     # 10K行テストの評価
     large_test = next((r for r in overall_results if r["line_count"] == 10000), None)
-    if large_test and "optimized" in large_test and "error" not in large_test["optimized"]:
+    if (
+        large_test
+        and "optimized" in large_test
+        and "error" not in large_test["optimized"]
+    ):
         opt_time = large_test["optimized"]["parse_time"]
         goal_15s = opt_time <= 15.0
-        print(f"10K行15秒以内目標: {'✅ 達成' if goal_15s else '❌ 未達成'} ({opt_time:.1f}s)")
+        print(
+            f"10K行15秒以内目標: {'✅ 達成' if goal_15s else '❌ 未達成'} ({opt_time:.1f}s)"
+        )
 
         if "improvements" in large_test:
             memory_ratio = large_test["improvements"]["memory_ratio"]
             memory_66_percent = memory_ratio >= 1.5  # 66%削減 = 1.5倍効率
-            print(f"メモリ66%削減目標: {'✅ 達成' if memory_66_percent else '❌ 未達成'} ({memory_ratio:.1f}x)")
+            print(
+                f"メモリ66%削減目標: {'✅ 達成' if memory_66_percent else '❌ 未達成'} ({memory_ratio:.1f}x)"
+            )
     else:
         print("10K行テストが実行されていないため評価不可")
 
     print("\n🏁 テスト完了")
     return 0
+
 
 if __name__ == "__main__":
     exit(main())

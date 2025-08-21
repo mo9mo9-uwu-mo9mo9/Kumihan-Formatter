@@ -11,7 +11,9 @@ CompoundElementRendererクラスの完全なテストカバレッジ（80%以上
 
 from typing import Any, Dict, List
 from unittest.mock import Mock
+
 import pytest
+
 from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
 from kumihan_formatter.core.rendering.compound_renderer import CompoundElementRenderer
 

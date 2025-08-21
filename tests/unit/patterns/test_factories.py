@@ -3,23 +3,24 @@
 統一ファクトリーシステムの包括的なテスト。
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Any, Dict, List, Type
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from kumihan_formatter.core.patterns.dependency_injection import DIContainer
 from kumihan_formatter.core.patterns.factories import (
     AbstractFactory,
     ParserFactory,
     RendererFactory,
     ServiceFactory,
-    get_service_factory,
     create_parser,
     create_renderer,
     get_parser_factory,
     get_renderer_factory,
+    get_service_factory,
     initialize_factories,
 )
-from kumihan_formatter.core.patterns.dependency_injection import DIContainer
 from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
@@ -110,7 +111,7 @@ class TestParserFactory:
         assert isinstance(parser, MockParser)
         assert parser.kwargs["test_param"] == "value"
 
-    @patch('kumihan_formatter.core.patterns.factories.logger')
+    @patch("kumihan_formatter.core.patterns.factories.logger")
     def test_正常系_パーサー生成_DI経由(self, mock_logger):
         """正常系: DI経由でのパーサー生成確認"""
         # Given: DIコンテナにパーサーを登録
@@ -125,6 +126,7 @@ class TestParserFactory:
 
     def test_正常系_複合パーサー生成(self):
         """正常系: 複合パーサー生成の確認"""
+
         # Given: mainパーサーとサブパーサーの登録
         class MainParserMock:
             def __init__(self, **kwargs):
@@ -165,6 +167,7 @@ class TestParserFactory:
 
     def test_境界値_空のパーサータイプリスト(self):
         """境界値: 空のパーサータイプリストでの複合パーサー生成"""
+
         # Given: mainパーサーのみ登録
         class MainParserMock:
             def __init__(self, **kwargs):
@@ -335,7 +338,7 @@ class TestGlobalFunctions:
         # Then: ServiceFactoryインスタンスが返される
         assert isinstance(factory, ServiceFactory)
 
-    @patch('kumihan_formatter.core.patterns.factories._service_factory')
+    @patch("kumihan_formatter.core.patterns.factories._service_factory")
     def test_正常系_create_parser_ショートカット(self, mock_factory):
         """正常系: create_parser()ショートカット関数の確認"""
         # Given: モックファクトリー
@@ -347,9 +350,11 @@ class TestGlobalFunctions:
 
         # Then: 正しくパーサーが生成される
         assert result is mock_parser
-        mock_factory.create.assert_called_once_with("parser", "test_type", param="value")
+        mock_factory.create.assert_called_once_with(
+            "parser", "test_type", param="value"
+        )
 
-    @patch('kumihan_formatter.core.patterns.factories._service_factory')
+    @patch("kumihan_formatter.core.patterns.factories._service_factory")
     def test_正常系_create_renderer_ショートカット(self, mock_factory):
         """正常系: create_renderer()ショートカット関数の確認"""
         # Given: モックファクトリー
@@ -381,7 +386,7 @@ class TestGlobalFunctions:
         # Then: RendererFactoryインスタンスが返される
         assert isinstance(factory, RendererFactory)
 
-    @patch('kumihan_formatter.core.patterns.factories.logger')
+    @patch("kumihan_formatter.core.patterns.factories.logger")
     def test_正常系_initialize_factories(self, mock_logger):
         """正常系: initialize_factories()の確認"""
         # Given: カスタムDIコンテナ
@@ -393,9 +398,11 @@ class TestGlobalFunctions:
         # Then: 成功ログが出力される
         mock_logger.info.assert_called_with("Factory system initialized successfully")
 
-    @patch('kumihan_formatter.core.patterns.factories.ServiceFactory')
-    @patch('kumihan_formatter.core.patterns.factories.logger')
-    def test_異常系_initialize_factories_失敗(self, mock_logger, mock_service_factory_class):
+    @patch("kumihan_formatter.core.patterns.factories.ServiceFactory")
+    @patch("kumihan_formatter.core.patterns.factories.logger")
+    def test_異常系_initialize_factories_失敗(
+        self, mock_logger, mock_service_factory_class
+    ):
         """異常系: initialize_factories()失敗時のエラー処理"""
         # Given: 初期化失敗するServiceFactory
         mock_service_factory_class.side_effect = Exception("Init failed")
@@ -404,7 +411,7 @@ class TestGlobalFunctions:
         # Then: エラーが再発生し、ログが出力される
         with pytest.raises(Exception, match="Init failed"):
             initialize_factories()
-        
+
         mock_logger.error.assert_called()
 
 
@@ -437,7 +444,7 @@ class TestIntegration:
         # Given: DIコンテナにサービス登録とファクトリー
         container = DIContainer()
         container.register(MockParser, MockParser)
-        
+
         parser_factory = ParserFactory(container)
         parser_factory.register("di_parser", MockParser)
 

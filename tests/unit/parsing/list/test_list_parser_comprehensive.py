@@ -4,17 +4,18 @@ Issue #929 - List系統合テスト実装によるカバレッジ向上(14-45% �
 Phase 1C: ListParser総合テスト - 基本機能・Kumihan記法・統合テスト
 """
 
-import pytest
 from typing import Any, Dict, List, Optional
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.core.parsing.list.list_parser import UnifiedListParser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node, create_node
 from kumihan_formatter.core.parsing.base.parser_protocols import (
     ParseContext,
     ParseResult,
     create_parse_result,
 )
+from kumihan_formatter.core.parsing.list.list_parser import UnifiedListParser
 
 
 class TestListParserCore:
@@ -28,21 +29,35 @@ class TestListParserCore:
         """パーサー初期化テスト"""
         # 基本初期化確認
         assert self.parser is not None
-        assert hasattr(self.parser, 'ordered_parser')
-        assert hasattr(self.parser, 'unordered_parser')
-        assert hasattr(self.parser, 'nested_parser')
+        assert hasattr(self.parser, "ordered_parser")
+        assert hasattr(self.parser, "unordered_parser")
+        assert hasattr(self.parser, "nested_parser")
 
         # パターン初期化確認
-        assert hasattr(self.parser, 'list_patterns')
-        assert hasattr(self.parser, 'list_handlers')
+        assert hasattr(self.parser, "list_patterns")
+        assert hasattr(self.parser, "list_handlers")
 
         # 必須パターン存在確認
-        expected_patterns = ['unordered', 'ordered', 'definition', 'checklist', 'alpha', 'roman']
+        expected_patterns = [
+            "unordered",
+            "ordered",
+            "definition",
+            "checklist",
+            "alpha",
+            "roman",
+        ]
         for pattern in expected_patterns:
             assert pattern in self.parser.list_patterns
 
         # ハンドラー対応確認
-        expected_handlers = ['unordered', 'ordered', 'definition', 'checklist', 'alpha', 'roman']
+        expected_handlers = [
+            "unordered",
+            "ordered",
+            "definition",
+            "checklist",
+            "alpha",
+            "roman",
+        ]
         for handler in expected_handlers:
             assert handler in self.parser.list_handlers
 
@@ -69,7 +84,7 @@ class TestListParserCore:
   - 子項目3
     - 孫項目1"""
 
-        result = self.parser.parse_nested_list(nested_content.split('\n'))
+        result = self.parser.parse_nested_list(nested_content.split("\n"))
         assert result is not None
         # ネスト構造が適切に処理されることを確認
 
@@ -118,7 +133,7 @@ class TestListParserKumihanNotation:
         test_cases = [
             "1. 項目1\n2. 項目2\n3. 項目3",
             "1) 項目A\n2) 項目B\n3) 項目C",
-            "a. 項目一\nb. 項目二\nc. 項目三"
+            "a. 項目一\nb. 項目二\nc. 項目三",
         ]
 
         for content in test_cases:
@@ -128,14 +143,14 @@ class TestListParserKumihanNotation:
             if result.children:
                 list_node = result.children[0]
                 # リストタイプが適切に判定されることを確認
-                assert hasattr(list_node, 'metadata')
+                assert hasattr(list_node, "metadata")
 
     def test_unordered_list_notation(self):
         """順序なしリスト記法テスト - -, *, • 形式"""
         test_cases = [
             "- リスト項目1\n- リスト項目2",
             "* リスト項目A\n* リスト項目B",
-            "+ リスト項目あ\n+ リスト項目い"
+            "+ リスト項目あ\n+ リスト項目い",
         ]
 
         for content in test_cases:
@@ -144,7 +159,7 @@ class TestListParserKumihanNotation:
             assert result.type == "document"
             if result.children:
                 list_node = result.children[0]
-                assert hasattr(list_node, 'metadata')
+                assert hasattr(list_node, "metadata")
 
     def test_nested_list_notation(self):
         """ネストリスト記法テスト - インデントによるネスト"""
@@ -156,7 +171,7 @@ class TestListParserKumihanNotation:
             """- 親項目
   - 子項目1
     - 孫項目
-  - 子項目2"""
+  - 子項目2""",
         ]
 
         for content in nested_cases:
@@ -234,7 +249,7 @@ class TestListParserIntegration:
         # レンダリング用メタデータの確認
         if result.children:
             list_node = result.children[0]
-            assert hasattr(list_node, 'metadata')
+            assert hasattr(list_node, "metadata")
 
 
 class TestListParserProtocols:
@@ -253,12 +268,12 @@ class TestListParserProtocols:
         assert isinstance(result, (ParseResult, dict))  # フォールバック対応
 
         # ParseResultの基本構造確認
-        if hasattr(result, 'success'):
+        if hasattr(result, "success"):
             assert result.success is True
             assert result.nodes is not None
         else:  # dict fallback
-            assert result['success'] is True
-            assert result['nodes'] is not None
+            assert result["success"] is True
+            assert result["nodes"] is not None
 
     def test_validate_protocol(self):
         """validateプロトコル実装テスト"""
@@ -279,19 +294,19 @@ class TestListParserProtocols:
         assert isinstance(info, dict)
 
         # 必要な情報が含まれていることを確認
-        expected_keys = ['name', 'version', 'supported_formats', 'capabilities']
+        expected_keys = ["name", "version", "supported_formats", "capabilities"]
         for key in expected_keys:
             assert key in info
 
     def test_supports_format_protocol(self):
         """フォーマット対応プロトコルテスト"""
         # サポート対象フォーマット
-        supported_formats = ['list', 'ordered', 'unordered', 'checklist', 'definition']
+        supported_formats = ["list", "ordered", "unordered", "checklist", "definition"]
         for format_hint in supported_formats:
             assert self.parser.supports_format(format_hint) is True
 
         # 非サポートフォーマット
-        unsupported_formats = ['markdown', 'html', 'json']
+        unsupported_formats = ["markdown", "html", "json"]
         for format_hint in unsupported_formats:
             assert self.parser.supports_format(format_hint) is False
 
@@ -335,9 +350,9 @@ class TestListParserEdgeCases:
         """不正なリスト構文テスト"""
         malformed_cases = [
             "-項目1\n-項目2",  # スペース欠落
-            "1項目1\n2項目2",   # ピリオド欠落
-            "- \n- 項目2",      # 空項目
-            "1. 項目1\na. 項目2"  # 混合番号体系
+            "1項目1\n2項目2",  # ピリオド欠落
+            "- \n- 項目2",  # 空項目
+            "1. 項目1\na. 項目2",  # 混合番号体系
         ]
 
         for content in malformed_cases:
@@ -350,7 +365,7 @@ class TestListParserEdgeCases:
         unicode_cases = [
             "- 日本語項目1\n- 日本語項目2",
             "- émojis 🎉\n- 特殊文字 ©®™",
-            "1. 中文项目1\n2. 한국어 항목2"
+            "1. 中文项目1\n2. 한국어 항목2",
         ]
 
         for content in unicode_cases:
@@ -375,7 +390,7 @@ class TestListParserMocking:
         """各テストメソッド前の初期化"""
         self.parser = UnifiedListParser()
 
-    @patch('kumihan_formatter.core.ast_nodes.create_node')
+    @patch("kumihan_formatter.core.ast_nodes.create_node")
     def test_node_creation_mocking(self, mock_create_node):
         """ノード作成のモッキングテスト"""
         mock_node = Mock(spec=Node)
@@ -393,8 +408,10 @@ class TestListParserMocking:
     def test_specialized_parser_integration(self):
         """専用パーサー統合テスト"""
         # OrderedListParserのモック
-        with patch.object(self.parser, 'ordered_parser') as mock_ordered:
-            mock_ordered.handle_ordered_list.return_value = create_node("list_item", "テスト")
+        with patch.object(self.parser, "ordered_parser") as mock_ordered:
+            mock_ordered.handle_ordered_list.return_value = create_node(
+                "list_item", "テスト"
+            )
 
             content = "1. テスト項目"
             result = self.parser._parse_implementation(content)
@@ -403,7 +420,7 @@ class TestListParserMocking:
     def test_error_propagation(self):
         """エラー伝播テスト"""
         # 専用パーサーからのエラー伝播
-        with patch.object(self.parser, 'unordered_parser') as mock_unordered:
+        with patch.object(self.parser, "unordered_parser") as mock_unordered:
             mock_unordered.handle_unordered_list.side_effect = Exception("テストエラー")
 
             content = "- エラーテスト"
@@ -411,7 +428,7 @@ class TestListParserMocking:
 
             # エラーが適切に処理されることを確認
             assert result is not None
-            assert result.type == "error" or hasattr(result, 'children')
+            assert result.type == "error" or hasattr(result, "children")
 
 
 class TestListParserPerformance:
@@ -460,6 +477,7 @@ class TestListParserPerformance:
 
 # === テストユーティリティ ===
 
+
 def create_test_list_content(type_name: str, count: int = 3) -> str:
     """テスト用リストコンテンツ生成"""
     if type_name == "unordered":
@@ -467,7 +485,9 @@ def create_test_list_content(type_name: str, count: int = 3) -> str:
     elif type_name == "ordered":
         return "\n".join([f"{i+1}. 項目{i+1}" for i in range(count)])
     elif type_name == "checklist":
-        return "\n".join([f"- [{'x' if i % 2 == 0 else ' '}] 項目{i+1}" for i in range(count)])
+        return "\n".join(
+            [f"- [{'x' if i % 2 == 0 else ' '}] 項目{i+1}" for i in range(count)]
+        )
     else:
         return f"- テスト項目"
 
@@ -475,21 +495,25 @@ def create_test_list_content(type_name: str, count: int = 3) -> str:
 def assert_valid_list_node(node: Node) -> None:
     """リストノードの妥当性検証"""
     assert node is not None
-    assert hasattr(node, 'type')
-    assert hasattr(node, 'metadata')
-    if hasattr(node, 'children') and node.children:
+    assert hasattr(node, "type")
+    assert hasattr(node, "metadata")
+    if hasattr(node, "children") and node.children:
         for child in node.children:
             assert child is not None
 
 
 # === パラメータ化テストケース ===
 
-@pytest.mark.parametrize("list_type,content", [
-    ("unordered", "- 項目1\n- 項目2"),
-    ("ordered", "1. 項目1\n2. 項目2"),
-    ("alpha", "a. 項目1\nb. 項目2"),
-    ("checklist", "- [ ] 項目1\n- [x] 項目2"),
-])
+
+@pytest.mark.parametrize(
+    "list_type,content",
+    [
+        ("unordered", "- 項目1\n- 項目2"),
+        ("ordered", "1. 項目1\n2. 項目2"),
+        ("alpha", "a. 項目1\nb. 項目2"),
+        ("checklist", "- [ ] 項目1\n- [x] 項目2"),
+    ],
+)
 def test_list_type_parsing_parametrized(list_type, content):
     """パラメータ化リストタイプ解析テスト"""
     parser = UnifiedListParser()
@@ -516,19 +540,20 @@ def test_nesting_levels_parametrized(nesting_level):
 
 # === フィクスチャー ===
 
+
 @pytest.fixture
 def sample_list_contents():
     """サンプルリストコンテンツフィクスチャ"""
     return {
-        'simple_unordered': "- 項目1\n- 項目2\n- 項目3",
-        'simple_ordered': "1. 項目1\n2. 項目2\n3. 項目3",
-        'nested': """- 親1
+        "simple_unordered": "- 項目1\n- 項目2\n- 項目3",
+        "simple_ordered": "1. 項目1\n2. 項目2\n3. 項目3",
+        "nested": """- 親1
   - 子1
   - 子2
 - 親2
   - 子3""",
-        'mixed': "- 順序なし\n1. 順序付き\n- 再び順序なし",
-        'checklist': "- [ ] 未完了\n- [x] 完了\n- [ ] 未完了2"
+        "mixed": "- 順序なし\n1. 順序付き\n- 再び順序なし",
+        "checklist": "- [ ] 未完了\n- [x] 完了\n- [ ] 未完了2",
     }
 
 

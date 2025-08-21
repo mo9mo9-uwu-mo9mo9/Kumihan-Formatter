@@ -55,7 +55,6 @@ class FileCleanup:
                 "huge_test_*",
                 "massive_test_*",
                 "benchmark_test_*",
-
                 # レポートファイル
                 "*_report_*.json",
                 "*_report_*.md",
@@ -67,7 +66,6 @@ class FileCleanup:
                 "behavioral_control_*.json",
                 "rule_compliance_*.json",
                 "token-usage-report.*",
-
                 # 一時実行ファイル
                 "temp_*",
                 "tmp_*",
@@ -77,42 +75,29 @@ class FileCleanup:
                 "performance_test_*",
                 "benchmark_output_*",
                 "debug_output_*",
-
                 # プロファイリングファイル
                 "*.prof",
                 "*.cprof",
                 "profiling_*",
                 "memory_profile_*",
-
                 # ログファイル（注意して削除）
                 "debug.log",
                 "test.log",
-
                 # キャッシュファイル
                 "cache_*",
                 "*.cache",
-
                 # バックアップファイル
                 "*.bak",
                 "*.backup",
                 "backup_*",
-
                 # 生成されたファイル
                 "generated_*",
                 "auto_generated_*",
                 "*.generated.*",
                 "output_*",
-                "result_*"
+                "result_*",
             ],
-
-            "cleanup_directories": [
-                ".temp",
-                ".tmp",
-                ".cache",
-                ".backup",
-                "logs"
-            ],
-
+            "cleanup_directories": [".temp", ".tmp", ".cache", ".backup", "logs"],
             "exclude_patterns": [
                 ".git/*",
                 ".github/*",
@@ -124,20 +109,21 @@ class FileCleanup:
                 "Makefile",
                 "pyproject.toml",
                 "*.yml",
-                "*.yaml"
+                "*.yaml",
             ],
-
             "safe_mode": True,
             "max_file_size_mb": 100,
-            "min_age_days": 1
+            "min_age_days": 1,
         }
 
         if not os.path.exists(self.config_path):
-            logger.info(f"設定ファイル {self.config_path} が見つからないため、デフォルト設定を使用")
+            logger.info(
+                f"設定ファイル {self.config_path} が見つからないため、デフォルト設定を使用"
+            )
             return default_config
 
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 user_config = yaml.safe_load(f)
                 # デフォルト設定にユーザー設定をマージ
                 default_config.update(user_config)
@@ -203,7 +189,7 @@ class FileCleanup:
 
     def _format_size(self, size_bytes: int) -> str:
         """ファイルサイズを人間が読みやすい形式に変換"""
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size_bytes < 1024.0:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024.0
@@ -228,7 +214,9 @@ class FileCleanup:
                 size = os.path.getsize(file_path)
                 age_days = self._get_file_age_days(file_path)
                 print(f"  📄 {file_path}")
-                print(f"      サイズ: {self._format_size(size)}, 作成: {age_days:.1f}日前")
+                print(
+                    f"      サイズ: {self._format_size(size)}, 作成: {age_days:.1f}日前"
+                )
 
     def interactive_cleanup(self) -> None:
         """対話的クリーンアップ"""
@@ -252,17 +240,19 @@ class FileCleanup:
 
             while True:
                 choice = input("削除しますか? [y/n/q]: ").lower().strip()
-                if choice == 'y':
+                if choice == "y":
                     self._delete_file(file_path)
                     break
-                elif choice == 'n':
+                elif choice == "n":
                     print("   スキップしました")
                     break
-                elif choice == 'q':
+                elif choice == "q":
                     print("🛑 クリーンアップを中断しました")
                     return
                 else:
-                    print("   'y' (削除), 'n' (スキップ), 'q' (終了) を入力してください")
+                    print(
+                        "   'y' (削除), 'n' (スキップ), 'q' (終了) を入力してください"
+                    )
 
     def _delete_file(self, file_path: str) -> bool:
         """ファイルを削除"""
@@ -311,7 +301,6 @@ class FileCleanup:
         else:
             print("📋 削除されたファイルはありませんでした")
 
-
     def _find_tmp_rule_violations(self) -> List[str]:
         """tmp/配下強制ルール違反ファイルを検出"""
         violations = []
@@ -330,7 +319,7 @@ class FileCleanup:
                 if os.path.isfile(match) and not self._should_exclude(match):
                     # tmp/配下にないファイルを違反として検出
                     relative_path = os.path.relpath(match, project_root)
-                    if not relative_path.startswith('tmp/'):
+                    if not relative_path.startswith("tmp/"):
                         violations.append(match)
 
         return violations
@@ -348,12 +337,16 @@ class FileCleanup:
         print(f"🚨 tmp/配下強制ルール違反検出: {len(violations)} ファイル")
 
         if violation_config.get("show_warning", True):
-            warning_msg = violation_config.get("warning_message", "⚠️ 一時ファイルがtmp/配下にありません")
+            warning_msg = violation_config.get(
+                "warning_message", "⚠️ 一時ファイルがtmp/配下にありません"
+            )
             print(f"{warning_msg}")
 
         print("違反ファイル:")
         for violation_file in violations:
-            size = os.path.getsize(violation_file) if os.path.exists(violation_file) else 0
+            size = (
+                os.path.getsize(violation_file) if os.path.exists(violation_file) else 0
+            )
             print(f"  📄 {violation_file} ({self._format_size(size)})")
 
         # ログ記録
@@ -372,9 +365,10 @@ class FileCleanup:
 
         try:
             import datetime
+
             timestamp = datetime.datetime.now().isoformat()
 
-            with open(log_file, 'a', encoding='utf-8') as f:
+            with open(log_file, "a", encoding="utf-8") as f:
                 f.write(f"[{timestamp}] tmp/配下強制ルール違反検出\n")
                 for violation in violations:
                     f.write(f"  - {violation}\n")
@@ -432,8 +426,12 @@ class FileCleanup:
 
             try:
                 if interactive:
-                    choice = input(f"📄 {file_path.name} をtmp/配下に移動しますか? [y/n]: ").lower().strip()
-                    if choice != 'y':
+                    choice = (
+                        input(f"📄 {file_path.name} をtmp/配下に移動しますか? [y/n]: ")
+                        .lower()
+                        .strip()
+                    )
+                    if choice != "y":
                         print("   スキップしました")
                         continue
 
@@ -446,7 +444,9 @@ class FileCleanup:
                 logger.error(f"tmp/配下移動失敗: {file_path} → {target_path} - {e}")
                 print(f"   ❌ 移動失敗: {e}")
 
-        print(f"✨ tmp/配下強制ルール適用完了: {moved_count}/{len(violations)} ファイル移動")
+        print(
+            f"✨ tmp/配下強制ルール適用完了: {moved_count}/{len(violations)} ファイル移動"
+        )
 
 
 def main():
@@ -460,43 +460,31 @@ def main():
   python scripts/cleanup.py --interactive    # 対話的削除
   python scripts/cleanup.py --auto          # 自動削除
   python scripts/cleanup.py --config custom.yml  # カスタム設定使用
-        """
+        """,
     )
 
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="削除せずにプレビューのみ表示"
+        "--dry-run", action="store_true", help="削除せずにプレビューのみ表示"
     )
-    parser.add_argument(
-        "--interactive",
-        action="store_true",
-        help="対話的に削除確認"
-    )
-    parser.add_argument(
-        "--auto",
-        action="store_true",
-        help="自動削除（確認なし）"
-    )
+    parser.add_argument("--interactive", action="store_true", help="対話的に削除確認")
+    parser.add_argument("--auto", action="store_true", help="自動削除（確認なし）")
     parser.add_argument(
         "--config",
         default=".cleanup.yml",
-        help="設定ファイルパス (デフォルト: .cleanup.yml)"
+        help="設定ファイルパス (デフォルト: .cleanup.yml)",
     )
     parser.add_argument(
-        "--check-tmp-rule",
-        action="store_true",
-        help="tmp/配下強制ルール違反チェック"
+        "--check-tmp-rule", action="store_true", help="tmp/配下強制ルール違反チェック"
     )
     parser.add_argument(
         "--enforce-tmp-rule",
         action="store_true",
-        help="tmp/配下強制ルール適用（ファイル移動）"
+        help="tmp/配下強制ルール適用（ファイル移動）",
     )
     parser.add_argument(
         "--enforce-tmp-rule-auto",
         action="store_true",
-        help="tmp/配下強制ルール適用（自動移動・確認なし）"
+        help="tmp/配下強制ルール適用（自動移動・確認なし）",
     )
 
     args = parser.parse_args()
@@ -519,7 +507,9 @@ def main():
             return
 
     if not any([args.dry_run, args.interactive, args.auto]):
-        print("エラー: --dry-run, --interactive, --auto, --check-tmp-rule, --enforce-tmp-rule, --enforce-tmp-rule-auto のいずれかを指定してください")
+        print(
+            "エラー: --dry-run, --interactive, --auto, --check-tmp-rule, --enforce-tmp-rule, --enforce-tmp-rule-auto のいずれかを指定してください"
+        )
         parser.print_help()
         sys.exit(1)
 

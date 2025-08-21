@@ -3,15 +3,16 @@
 戦略的な処理選択システムの包括的なテスト。
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from typing import Any, Dict
+from unittest.mock import Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.patterns.strategy import (
     ParsingStrategy,
     RenderingStrategy,
-    StrategyPriority,
     StrategyManager,
+    StrategyPriority,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -84,7 +85,7 @@ class AdvancedParsingStrategy(MockParsingStrategy):
             score += 0.9
         elif len(content) > 1000:  # 大きなコンテンツ
             score += 0.7
-        elif content.count('\n') > 50:  # 多行コンテンツ
+        elif content.count("\n") > 50:  # 多行コンテンツ
             score += 0.6
         else:
             score += 0.2
@@ -174,7 +175,9 @@ class TestStrategyManager:
         # Then: 戦略が正しく登録される
         assert "test" in self.manager._rendering_strategies
         assert self.manager._rendering_strategies["test"] is strategy
-        assert self.manager._strategy_priorities["test"] == StrategyPriority.NORMAL.value
+        assert (
+            self.manager._strategy_priorities["test"] == StrategyPriority.NORMAL.value
+        )
 
     def test_正常系_パーシング戦略選択_単一戦略(self):
         """正常系: 単一パーシング戦略選択の確認"""
@@ -193,9 +196,13 @@ class TestStrategyManager:
         # Given: 対応度の異なる複数戦略
         low_strategy = MockParsingStrategy("low", 0.2)
         high_strategy = MockParsingStrategy("high", 0.8)
-        
-        self.manager.register_parsing_strategy("low", low_strategy, StrategyPriority.NORMAL)
-        self.manager.register_parsing_strategy("high", high_strategy, StrategyPriority.NORMAL)
+
+        self.manager.register_parsing_strategy(
+            "low", low_strategy, StrategyPriority.NORMAL
+        )
+        self.manager.register_parsing_strategy(
+            "high", high_strategy, StrategyPriority.NORMAL
+        )
 
         # When: コンテンツに対して戦略を選択
         selected = self.manager.select_parsing_strategy("regular content")
@@ -208,9 +215,13 @@ class TestStrategyManager:
         # Given: 優先度の異なる戦略
         normal_strategy = MockParsingStrategy("normal", 0.6)
         high_priority_strategy = MockParsingStrategy("high_priority", 0.5)
-        
-        self.manager.register_parsing_strategy("normal", normal_strategy, StrategyPriority.NORMAL)
-        self.manager.register_parsing_strategy("high_priority", high_priority_strategy, StrategyPriority.HIGH)
+
+        self.manager.register_parsing_strategy(
+            "normal", normal_strategy, StrategyPriority.NORMAL
+        )
+        self.manager.register_parsing_strategy(
+            "high_priority", high_priority_strategy, StrategyPriority.HIGH
+        )
 
         # When: 戦略を選択
         selected = self.manager.select_parsing_strategy("test content")
@@ -224,7 +235,7 @@ class TestStrategyManager:
         # Given: コンテンツ特化戦略
         advanced = AdvancedParsingStrategy()
         basic = BasicParsingStrategy()
-        
+
         self.manager.register_parsing_strategy("advanced", advanced)
         self.manager.register_parsing_strategy("basic", basic)
 
@@ -245,7 +256,7 @@ class TestStrategyManager:
         # Given: フォーマット対応の異なる戦略
         html_strategy = MockRenderingStrategy("html", ["html", "htm"])
         pdf_strategy = MockRenderingStrategy("pdf", ["pdf"])
-        
+
         self.manager.register_rendering_strategy("html", html_strategy)
         self.manager.register_rendering_strategy("pdf", pdf_strategy)
 
@@ -264,7 +275,7 @@ class TestStrategyManager:
         # Given: 登録された戦略
         parsing_strategy = MockParsingStrategy("test_parser")
         rendering_strategy = MockRenderingStrategy("test_renderer")
-        
+
         self.manager.register_parsing_strategy("test_parse", parsing_strategy)
         self.manager.register_rendering_strategy("test_render", rendering_strategy)
 
@@ -282,7 +293,7 @@ class TestStrategyManager:
         parsing1 = MockParsingStrategy("parser1")
         parsing2 = MockParsingStrategy("parser2")
         rendering1 = MockRenderingStrategy("renderer1")
-        
+
         self.manager.register_parsing_strategy("parse1", parsing1)
         self.manager.register_parsing_strategy("parse2", parsing2)
         self.manager.register_rendering_strategy("render1", rendering1)
@@ -326,7 +337,7 @@ class TestStrategyManager:
         # Given: ゼロ対応度の戦略
         zero_strategy = MockParsingStrategy("zero", 0.0)
         normal_strategy = MockParsingStrategy("normal", 0.5)
-        
+
         self.manager.register_parsing_strategy("zero", zero_strategy)
         self.manager.register_parsing_strategy("normal", normal_strategy)
 
@@ -341,9 +352,13 @@ class TestStrategyManager:
         # Given: 同一対応度の戦略
         strategy1 = MockParsingStrategy("first", 0.5)
         strategy2 = MockParsingStrategy("second", 0.5)
-        
-        self.manager.register_parsing_strategy("first", strategy1, StrategyPriority.NORMAL)
-        self.manager.register_parsing_strategy("second", strategy2, StrategyPriority.NORMAL)
+
+        self.manager.register_parsing_strategy(
+            "first", strategy1, StrategyPriority.NORMAL
+        )
+        self.manager.register_parsing_strategy(
+            "second", strategy2, StrategyPriority.NORMAL
+        )
 
         # When: 戦略選択
         selected = self.manager.select_parsing_strategy("content")
@@ -381,10 +396,10 @@ class TestStrategyIntegration:
         """統合: 完全なパーシングワークフローの確認"""
         # Given: 戦略マネージャーと複数戦略
         manager = StrategyManager()
-        
+
         advanced = AdvancedParsingStrategy()
         basic = BasicParsingStrategy()
-        
+
         manager.register_parsing_strategy("advanced", advanced, StrategyPriority.HIGH)
         manager.register_parsing_strategy("basic", basic, StrategyPriority.NORMAL)
 
@@ -401,10 +416,10 @@ class TestStrategyIntegration:
         # Then: 適切な戦略が選択され、処理が実行される
         assert kumihan_strategy is advanced
         assert short_strategy is basic
-        
+
         assert "advanced_parsed" in kumihan_result
         assert "basic_parsed" in short_result
-        
+
         # 呼び出し履歴確認
         assert len(advanced.parse_calls) == 1
         assert len(basic.parse_calls) == 1
@@ -413,18 +428,22 @@ class TestStrategyIntegration:
         """統合: 完全なレンダリングワークフローの確認"""
         # Given: 戦略マネージャーとレンダリング戦略
         manager = StrategyManager()
-        
+
         html_strategy = MockRenderingStrategy("html", ["html", "htm"])
         pdf_strategy = MockRenderingStrategy("pdf", ["pdf"])
         markdown_strategy = MockRenderingStrategy("markdown", ["md", "markdown"])
-        
-        manager.register_rendering_strategy("html", html_strategy, StrategyPriority.NORMAL)
+
+        manager.register_rendering_strategy(
+            "html", html_strategy, StrategyPriority.NORMAL
+        )
         manager.register_rendering_strategy("pdf", pdf_strategy, StrategyPriority.HIGH)
-        manager.register_rendering_strategy("markdown", markdown_strategy, StrategyPriority.LOW)
+        manager.register_rendering_strategy(
+            "markdown", markdown_strategy, StrategyPriority.LOW
+        )
 
         # When: 異なるフォーマットでレンダリング実行
         data = {"title": "テストドキュメント", "content": "内容"}
-        
+
         html_renderer = manager.select_rendering_strategy("html")
         pdf_renderer = manager.select_rendering_strategy("pdf")
         markdown_renderer = manager.select_rendering_strategy("markdown")
@@ -437,7 +456,7 @@ class TestStrategyIntegration:
         assert html_renderer is html_strategy
         assert pdf_renderer is pdf_strategy
         assert markdown_renderer is markdown_strategy
-        
+
         assert "html_rendered" in html_result
         assert "pdf_rendered" in pdf_result
         assert "markdown_rendered" in markdown_result
@@ -446,7 +465,7 @@ class TestStrategyIntegration:
         """統合: 動的な戦略切り替えの確認"""
         # Given: 戦略マネージャー
         manager = StrategyManager()
-        
+
         # 初期戦略
         basic = BasicParsingStrategy()
         manager.register_parsing_strategy("basic", basic, StrategyPriority.NORMAL)
@@ -467,7 +486,7 @@ class TestStrategyIntegration:
         # Then: 戦略が動的に切り替わる
         assert initial_strategy is basic
         assert "basic_parsed" in initial_result
-        
+
         # 短いコンテンツなので basicが選ばれる可能性が高いが、
         # 優先度によってはadvancedが選ばれることもある
         assert updated_strategy in [basic, advanced]
@@ -476,30 +495,30 @@ class TestStrategyIntegration:
         """統合: コンテンツタイプ別最適化の確認"""
         # Given: コンテンツタイプ特化戦略
         manager = StrategyManager()
-        
+
         # Kumihan特化戦略
         class KumihanStrategy(MockParsingStrategy):
             def __init__(self):
                 super().__init__("kumihan", 0.4)
-            
+
             def supports_content(self, content: str) -> float:
                 if "# " in content and "##" in content:
                     return 0.95
                 return 0.1
-        
+
         # Markdown特化戦略
         class MarkdownStrategy(MockParsingStrategy):
             def __init__(self):
                 super().__init__("markdown", 0.4)
-            
+
             def supports_content(self, content: str) -> float:
                 if content.startswith("# ") or "## " in content:
                     return 0.85
                 return 0.1
-        
+
         kumihan_strategy = KumihanStrategy()
         markdown_strategy = MarkdownStrategy()
-        
+
         manager.register_parsing_strategy("kumihan", kumihan_strategy)
         manager.register_parsing_strategy("markdown", markdown_strategy)
 

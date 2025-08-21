@@ -5,8 +5,9 @@ covering initialization, attributes, children, classification,
 and content operations.
 """
 
-import pytest
 from typing import Any
+
+import pytest
 
 from kumihan_formatter.core.ast_nodes.node import Node
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -37,12 +38,7 @@ class TestNodeInitialization:
 
     def test_境界値_None値初期化(self):
         """境界値: attributes/children=Noneでの初期化"""
-        node = Node(
-            type="span",
-            content="",
-            attributes=None,
-            children=None
-        )
+        node = Node(type="span", content="", attributes=None, children=None)
 
         # None値が適切に初期化される
         assert isinstance(node.attributes, dict)
@@ -60,7 +56,7 @@ class TestNodeInitialization:
             type="div",
             content="parent content",
             attributes=attributes,
-            children=children
+            children=children,
         )
 
         assert node.type == "div"
@@ -194,8 +190,21 @@ class TestNodeClassification:
     def test_正常系_ブロック要素判定(self):
         """正常系: is_block_element()全パターン確認"""
         # ブロック要素
-        block_types = ["h1", "h2", "h3", "h4", "h5", "p", "div",
-                      "ul", "ol", "li", "blockquote", "pre", "details"]
+        block_types = [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "p",
+            "div",
+            "ul",
+            "ol",
+            "li",
+            "blockquote",
+            "pre",
+            "details",
+        ]
 
         for block_type in block_types:
             node = Node(type=block_type, content="")

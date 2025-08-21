@@ -45,7 +45,9 @@ class TestMainParser:
         # Empty text should still return some structure
         assert isinstance(results, list)
 
-    @pytest.mark.skip(reason="CI timeout issue - parser performance optimization needed")
+    @pytest.mark.skip(
+        reason="CI timeout issue - parser performance optimization needed"
+    )
     def test_block_notation_parsing(self):
         """Test basic block notation parsing."""
         text = """#太字#
@@ -59,7 +61,9 @@ class TestMainParser:
         found_bold = any("太字" in str(result) for result in results)
         assert found_bold, "Block notation should be recognized"
 
-    @pytest.mark.skip(reason="CI timeout issue - parser performance optimization needed")
+    @pytest.mark.skip(
+        reason="CI timeout issue - parser performance optimization needed"
+    )
     def test_multiline_text_parsing(self):
         """Test parsing multiline text."""
         text = """第一行
@@ -72,7 +76,9 @@ class TestMainParser:
         # Should handle multiple lines
         assert len(results) >= 3
 
-    @pytest.mark.skip(reason="CI timeout issue - parser performance optimization needed")
+    @pytest.mark.skip(
+        reason="CI timeout issue - parser performance optimization needed"
+    )
     def test_heading_parsing(self):
         """Test heading notation parsing."""
         text = """#見出し1#

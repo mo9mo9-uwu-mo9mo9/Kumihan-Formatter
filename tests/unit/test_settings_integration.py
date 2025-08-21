@@ -8,32 +8,33 @@ settingsモジュール全体の統合テスト
 - エンドツーエンドワークフロー
 """
 
-import pytest
-import time
 import threading
-from unittest.mock import Mock, patch, MagicMock
+import time
 from collections import deque
 from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from kumihan_formatter.core.config.config_manager import EnhancedConfig
+from kumihan_formatter.core.config.optimization.ab_testing import (
+    ABTestConfig,
+    ABTestResult,
+    StatisticalTestingEngine,
+)
+from kumihan_formatter.core.config.optimization.analyzers import (
+    ComplexityAnalyzer,
+    TokenUsageAnalyzer,
+)
 from kumihan_formatter.core.config.optimization.manager import (
     AdaptiveSettingsManager,
     ConfigAdjustment,
     WorkContext,
 )
-from kumihan_formatter.core.config.optimization.analyzers import (
-    TokenUsageAnalyzer,
-    ComplexityAnalyzer,
-)
-from kumihan_formatter.core.config.optimization.ab_testing import (
-    StatisticalTestingEngine,
-    ABTestConfig,
-    ABTestResult,
-)
 from kumihan_formatter.core.config.optimization.optimizers import (
-    FileSizeLimitOptimizer,
     ConcurrentToolCallLimiter,
+    FileSizeLimitOptimizer,
 )
-from kumihan_formatter.core.config.config_manager import EnhancedConfig
 from kumihan_formatter.core.utilities.logger import get_logger
 
 
@@ -111,14 +112,18 @@ class TestSettingsModuleIntegration:
     def test_end_to_end_optimization_workflow(self, integrated_manager, work_contexts):
         """エンドツーエンド最適化ワークフロー"""
         # モック設定
-        integrated_manager.file_size_optimizer.adjust_limits_dynamically.return_value = True
+        integrated_manager.file_size_optimizer.adjust_limits_dynamically.return_value = (
+            True
+        )
         integrated_manager.file_size_optimizer.get_optimization_statistics.return_value = {
             "effectiveness_score": 0.8
         }
         integrated_manager.concurrent_limiter.get_concurrency_statistics.return_value = {
             "max_concurrent_calls": 5
         }
-        integrated_manager.concurrent_limiter.adjust_limits_based_on_performance.return_value = None
+        integrated_manager.concurrent_limiter.adjust_limits_based_on_performance.return_value = (
+            None
+        )
         integrated_manager.token_analyzer.record_token_usage.return_value = {
             "efficiency_score": 0.85,
             "optimization_suggestions": [],
@@ -214,7 +219,9 @@ class TestSettingsModuleIntegration:
                 errors.append(e)
 
         # 複数スレッドでの並行実行
-        threads = [threading.Thread(target=optimization_worker, args=(i,)) for i in range(10)]
+        threads = [
+            threading.Thread(target=optimization_worker, args=(i,)) for i in range(10)
+        ]
 
         for thread in threads:
             thread.start()
@@ -245,7 +252,9 @@ class TestSettingsModuleIntegration:
         )
 
         # ファイル操作最適化実行
-        result = integrated_manager.optimize_for_file_operation("/test/path/file.py", "read")
+        result = integrated_manager.optimize_for_file_operation(
+            "/test/path/file.py", "read"
+        )
 
         assert result["original_file_size"] == 0  # ファイルが存在しないため
         assert "optimized_size" in result
@@ -262,10 +271,14 @@ class TestSettingsModuleIntegration:
             True,
             "permission_123",
         )
-        integrated_manager.concurrent_limiter.release_call_permission.return_value = None
+        integrated_manager.concurrent_limiter.release_call_permission.return_value = (
+            None
+        )
 
         # ツール許可取得
-        granted, permission_id = integrated_manager.acquire_tool_permission("test_tool", 0.7)
+        granted, permission_id = integrated_manager.acquire_tool_permission(
+            "test_tool", 0.7
+        )
 
         assert granted is True
         assert permission_id == "permission_123"
@@ -333,8 +346,8 @@ class TestSettingsModuleIntegration:
     def test_error_resilience_integration(self, integrated_manager):
         """エラー耐性統合テスト"""
         # コンポーネントエラーシミュレーション
-        integrated_manager.file_size_optimizer.adjust_limits_dynamically.side_effect = Exception(
-            "File optimizer error"
+        integrated_manager.file_size_optimizer.adjust_limits_dynamically.side_effect = (
+            Exception("File optimizer error")
         )
         integrated_manager.token_analyzer.record_token_usage.side_effect = Exception(
             "Token analyzer error"
@@ -458,7 +471,9 @@ class TestAnalyzersWithOptimizersIntegration:
 
         for file_path, file_size in large_files:
             # ファイルサイズ最適化
-            optimized_size, opt_info = file_size_optimizer.optimize_read_size(file_path, file_size)
+            optimized_size, opt_info = file_size_optimizer.optimize_read_size(
+                file_path, file_size
+            )
 
             # Token使用量記録
             estimated_tokens = int(optimized_size * 0.25)
@@ -530,7 +545,9 @@ class TestOptimizersAdvancedIntegration:
         ]
 
         for file_path, original_size, expected_type, expected_limit in test_cases:
-            optimized_size, opt_info = file_optimizer.optimize_read_size(file_path, original_size)
+            optimized_size, opt_info = file_optimizer.optimize_read_size(
+                file_path, original_size
+            )
 
             assert opt_info["file_type"] == expected_type
             if original_size > expected_limit:
@@ -647,7 +664,9 @@ class TestOptimizersAdvancedIntegration:
         for file_path, size, info in optimization_results:
             # ファイル処理のためのツール許可
             context = WorkContext("file_processing", size, 0.5)
-            granted, perm_id = concurrent_limiter.acquire_call_permission("file_processor", context)
+            granted, perm_id = concurrent_limiter.acquire_call_permission(
+                "file_processor", context
+            )
 
             if granted:
                 permissions.append(perm_id)
@@ -690,7 +709,9 @@ class TestABTestingIntegrationFlow:
         group_b = [0.5, 0.6, 0.45, 0.55, 0.58, 0.52]  # 低性能グループ
 
         # 統計テスト実行
-        test_result = statistical_engine.perform_statistical_test(group_a, group_b, "t_test")
+        test_result = statistical_engine.perform_statistical_test(
+            group_a, group_b, "t_test"
+        )
 
         assert test_result.test_type == "t_test"
         assert isinstance(test_result.p_value, float)
@@ -746,7 +767,9 @@ class TestABTestingIntegrationFlow:
     def test_simple_ab_test_integration(self, manager_with_ab):
         """シンプルA/Bテスト統合（Phase B.2用）"""
         # シンプルテスト実行
-        test_id = manager_with_ab.run_simple_ab_test("monitoring.interval", [15, 30, 45], 8)
+        test_id = manager_with_ab.run_simple_ab_test(
+            "monitoring.interval", [15, 30, 45], 8
+        )
 
         assert test_id is not None
         assert test_id in manager_with_ab.active_tests

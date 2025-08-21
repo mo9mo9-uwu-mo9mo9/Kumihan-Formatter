@@ -12,12 +12,13 @@ validator.py: 17% → 75%達成（58%向上目標）
 - サジェスト機能
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from typing import List, Tuple, Dict, Any
+from typing import Any, Dict, List, Tuple
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
+import pytest
+
 from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
 
 
 class TestValidatorCore:
@@ -56,8 +57,16 @@ class TestValidatorCore:
         """属性フォーマット検証完全テスト"""
         # 有効color属性
         valid_colors = [
-            "red", "blue", "green", "#FF0000", "#00F",
-            "yellow", "orange", "purple", "black", "white"
+            "red",
+            "blue",
+            "green",
+            "#FF0000",
+            "#00F",
+            "yellow",
+            "orange",
+            "purple",
+            "black",
+            "white",
         ]
 
         for color in valid_colors:
@@ -66,9 +75,7 @@ class TestValidatorCore:
             assert error is None
 
         # 無効color属性
-        invalid_colors = [
-            "invalid", "#GGG", "#12345", "", "javascript:alert()"
-        ]
+        invalid_colors = ["invalid", "#GGG", "#12345", "", "javascript:alert()"]
 
         for color in invalid_colors:
             is_valid, error = self.validator.validate_color_value(color)
@@ -92,7 +99,7 @@ class TestValidatorCore:
         # 問題のある組み合わせ
         problematic_combinations = [
             ["見出し1", "折りたたみ"],  # 見出し + details
-            ["見出し2", "ネタバレ"],   # 見出し + details
+            ["見出し2", "ネタバレ"],  # 見出し + details
         ]
 
         for combination in problematic_combinations:
@@ -139,12 +146,16 @@ class TestValidatorRules:
     def test_kumihan_notation_rules(self):
         """Kumihan記法ルールテスト"""
         # 新記法からのキーワード抽出
-        keywords = self.validator._extract_keywords_from_new_format("# 太字 #内容 # 下線 #追加")
+        keywords = self.validator._extract_keywords_from_new_format(
+            "# 太字 #内容 # 下線 #追加"
+        )
         assert "太字" in keywords
         assert "下線" in keywords
 
         # 全角記法
-        keywords = self.validator._extract_keywords_from_new_format("＃ イタリック ＃内容")
+        keywords = self.validator._extract_keywords_from_new_format(
+            "＃ イタリック ＃内容"
+        )
         assert "イタリック" in keywords
 
         # 混在記法
@@ -187,7 +198,7 @@ class TestValidatorRules:
         malicious_colors = [
             "javascript:alert('xss')",
             "data:text/html,<script>alert()</script>",
-            "vbscript:msgbox('xss')"
+            "vbscript:msgbox('xss')",
         ]
 
         for malicious in malicious_colors:
@@ -210,7 +221,9 @@ class TestValidatorRules:
 
         # 複雑な組み合わせ検証
         complex_combination = ["太字", "下線", "イタリック", "コード", "引用"]
-        is_valid, errors = self.validator.validate_keyword_combination(complex_combination)
+        is_valid, errors = self.validator.validate_keyword_combination(
+            complex_combination
+        )
         # 性能劣化なしの確認
 
 
@@ -261,7 +274,7 @@ class TestValidatorIntegration:
         test_elements = {
             "keywords": ["太字", "無効キーワード", "下線"],
             "attributes": {"color": "red", "alt": "説明"},
-            "combinations": ["太字", "下線"]
+            "combinations": ["太字", "下線"],
         }
 
         all_errors = []
@@ -275,7 +288,9 @@ class TestValidatorIntegration:
         all_errors.extend(attr_errors)
 
         # 組み合わせ検証
-        _, combination_errors = self.validator.validate_keyword_combination(test_elements["combinations"])
+        _, combination_errors = self.validator.validate_keyword_combination(
+            test_elements["combinations"]
+        )
         all_errors.extend(combination_errors)
 
         # 集約結果の確認
@@ -324,7 +339,9 @@ class TestValidatorSuggestions:
         suggestions = self.validator.get_keyword_suggestions("太文字")  # 太字の誤記
         assert "太字" in suggestions
 
-        suggestions = self.validator.get_keyword_suggestions("アンダーライン")  # 下線の英語
+        suggestions = self.validator.get_keyword_suggestions(
+            "アンダーライン"
+        )  # 下線の英語
         assert "下線" in suggestions
 
         suggestions = self.validator.get_keyword_suggestions("みだし1")  # ひらがな
@@ -333,14 +350,20 @@ class TestValidatorSuggestions:
     def test_suggestions_max_limit(self):
         """サジェスト最大数制限テスト"""
         # デフォルト最大3件
-        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=3)
+        suggestions = self.validator.get_keyword_suggestions(
+            "テスト", max_suggestions=3
+        )
         assert len(suggestions) <= 3
 
         # カスタム最大数
-        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=1)
+        suggestions = self.validator.get_keyword_suggestions(
+            "テスト", max_suggestions=1
+        )
         assert len(suggestions) <= 1
 
-        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=5)
+        suggestions = self.validator.get_keyword_suggestions(
+            "テスト", max_suggestions=5
+        )
         assert len(suggestions) <= 5
 
     def test_suggestions_cutoff_threshold(self):
@@ -408,16 +431,22 @@ class TestValidatorUtilityMethods:
         assert keywords == ["太字"]
 
         # 複数キーワード
-        keywords = self.validator._extract_keywords_from_new_format("# 太字 #内容1 # 下線 #内容2")
+        keywords = self.validator._extract_keywords_from_new_format(
+            "# 太字 #内容1 # 下線 #内容2"
+        )
         assert "太字" in keywords
         assert "下線" in keywords
 
         # 属性付きキーワード
-        keywords = self.validator._extract_keywords_from_new_format("# 太字 color=red #内容")
+        keywords = self.validator._extract_keywords_from_new_format(
+            "# 太字 color=red #内容"
+        )
         assert "太字" in keywords
 
         # 全角記法
-        keywords = self.validator._extract_keywords_from_new_format("＃ イタリック ＃内容")
+        keywords = self.validator._extract_keywords_from_new_format(
+            "＃ イタリック ＃内容"
+        )
         assert "イタリック" in keywords
 
         # 記法なし

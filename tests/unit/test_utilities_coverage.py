@@ -498,7 +498,8 @@ class TestErrorHandlerCoverage:
         # Should contain helpful suggestions
         suggestions_text = " ".join(result)
         assert any(
-            word in suggestions_text.lower() for word in ["check", "verify", "ensure", "try"]
+            word in suggestions_text.lower()
+            for word in ["check", "verify", "ensure", "try"]
         )
 
     def test_error_logging(self):

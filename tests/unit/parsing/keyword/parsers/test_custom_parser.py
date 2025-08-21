@@ -7,19 +7,20 @@
 - ユーザー定義キーワード
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.parsing.keyword.parsers.custom_parser import (
-    CustomKeywordParser,
-)
+import pytest
+
 from kumihan_formatter.core.ast_nodes import (
     Node,
     NodeBuilder,
     create_node,
-    strong,
     emphasis,
     highlight,
+    strong,
+)
+from kumihan_formatter.core.parsing.keyword.parsers.custom_parser import (
+    CustomKeywordParser,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
 

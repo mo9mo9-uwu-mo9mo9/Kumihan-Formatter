@@ -4,11 +4,12 @@ Kumihan-Formatter の core/parsing/list/parsers/ordered_parser.py モジュー�
 順序付きリスト、アルファベットリスト、ローマ数字リストの解析機能を検証
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.parsing.list.parsers.ordered_parser import OrderedListParser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node, create_node
+from kumihan_formatter.core.parsing.list.parsers.ordered_parser import OrderedListParser
 
 
 class TestOrderedListParser:
@@ -40,11 +41,7 @@ class TestOrderedListParser:
     def test_正常系_複数項目の順序付きリスト(self):
         """正常系: 複数項目の順序付きリスト"""
         # Given: 複数の順序付きリスト項目
-        lines = [
-            "1. 項目1",
-            "2. 項目2", 
-            "3. 項目3"
-        ]
+        lines = ["1. 項目1", "2. 項目2", "3. 項目3"]
 
         # When: 各行をパース
         results = []
@@ -140,12 +137,21 @@ class TestOrderedListParser:
         """正常系: 正常な連番の検証"""
         # Given: 正常な連番の順序付きリスト項目
         items = [
-            create_node("list_item", content="項目1", 
-                       metadata={"type": "ordered", "number": 1, "indent": 0}),
-            create_node("list_item", content="項目2",
-                       metadata={"type": "ordered", "number": 2, "indent": 0}),
-            create_node("list_item", content="項目3",
-                       metadata={"type": "ordered", "number": 3, "indent": 0}),
+            create_node(
+                "list_item",
+                content="項目1",
+                metadata={"type": "ordered", "number": 1, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="項目2",
+                metadata={"type": "ordered", "number": 2, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="項目3",
+                metadata={"type": "ordered", "number": 3, "indent": 0},
+            ),
         ]
 
         # When: 連番検証
@@ -171,10 +177,16 @@ class TestOrderedListParser:
         """異常系: 不正な順序番号の処理"""
         # Given: 不正な連番の順序付きリスト項目
         items = [
-            create_node("list_item", content="項目1",
-                       metadata={"type": "ordered", "number": 1, "indent": 0}),
-            create_node("list_item", content="項目3",  # 2をスキップ
-                       metadata={"type": "ordered", "number": 3, "indent": 0}),
+            create_node(
+                "list_item",
+                content="項目1",
+                metadata={"type": "ordered", "number": 1, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="項目3",  # 2をスキップ
+                metadata={"type": "ordered", "number": 3, "indent": 0},
+            ),
         ]
 
         # When: 連番検証
@@ -192,7 +204,7 @@ class TestOrderedListParser:
             "a 項目（ドットなし）",
             "項目のみ",
             "",
-            "1.    "  # 空のコンテンツ
+            "1.    ",  # 空のコンテンツ
         ]
 
         for line in invalid_lines:
@@ -278,7 +290,7 @@ class TestOrderedListParser:
             "a. 最初のアルファベット",
             "z. 最後のアルファベット",
             "A. 大文字最初",
-            "Z. 大文字最後"
+            "Z. 大文字最後",
         ]
 
         for line in test_cases:
@@ -296,7 +308,7 @@ class TestOrderedListParser:
             "i. 最小ローマ数字",
             "x. 最大ローマ数字",
             "iv. 中間ローマ数字",
-            "ix. 複雑ローマ数字"
+            "ix. 複雑ローマ数字",
         ]
 
         for line in test_cases:
@@ -315,12 +327,21 @@ class TestOrderedListParser:
         """統合: 混合リストタイプでの連番検証"""
         # Given: 異なるタイプの混合リスト
         items = [
-            create_node("list_item", content="順序1",
-                       metadata={"type": "ordered", "number": 1, "indent": 0}),
-            create_node("list_item", content="アルファa",
-                       metadata={"type": "alpha", "letter": "a", "indent": 4}),
-            create_node("list_item", content="順序2",
-                       metadata={"type": "ordered", "number": 2, "indent": 0}),
+            create_node(
+                "list_item",
+                content="順序1",
+                metadata={"type": "ordered", "number": 1, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="アルファa",
+                metadata={"type": "alpha", "letter": "a", "indent": 4},
+            ),
+            create_node(
+                "list_item",
+                content="順序2",
+                metadata={"type": "ordered", "number": 2, "indent": 0},
+            ),
         ]
 
         # When: 連番検証（順序付きリストのみ対象）
@@ -333,14 +354,26 @@ class TestOrderedListParser:
         """統合: 複数レベルのネスト構造での連番検証"""
         # Given: 複数レベルのネスト構造
         items = [
-            create_node("list_item", content="レベル0-1",
-                       metadata={"type": "ordered", "number": 1, "indent": 0}),
-            create_node("list_item", content="レベル1-1",
-                       metadata={"type": "ordered", "number": 1, "indent": 4}),
-            create_node("list_item", content="レベル1-2",
-                       metadata={"type": "ordered", "number": 2, "indent": 4}),
-            create_node("list_item", content="レベル0-2",
-                       metadata={"type": "ordered", "number": 2, "indent": 0}),
+            create_node(
+                "list_item",
+                content="レベル0-1",
+                metadata={"type": "ordered", "number": 1, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="レベル1-1",
+                metadata={"type": "ordered", "number": 1, "indent": 4},
+            ),
+            create_node(
+                "list_item",
+                content="レベル1-2",
+                metadata={"type": "ordered", "number": 2, "indent": 4},
+            ),
+            create_node(
+                "list_item",
+                content="レベル0-2",
+                metadata={"type": "ordered", "number": 2, "indent": 0},
+            ),
         ]
 
         # When: 連番検証
@@ -358,7 +391,7 @@ class TestOrderedListParser:
             "    b. ネストアルファベット2",
             "2. 順序付き項目2",
             "    i. ネストローマ数字",
-            "    ii. ネストローマ数字2"
+            "    ii. ネストローマ数字2",
         ]
 
         results = []
@@ -371,7 +404,7 @@ class TestOrderedListParser:
                 result = self.parser.handle_roman_list(line)
             else:
                 result = None
-            
+
             if result:
                 results.append(result)
 
@@ -383,12 +416,21 @@ class TestOrderedListParser:
         """統合: エラーハンドリングとの連携"""
         # Given: 部分的に不正な連番を含むリスト
         items = [
-            create_node("list_item", content="項目1",
-                       metadata={"type": "ordered", "number": 1, "indent": 0}),
-            create_node("list_item", content="項目3",  # 不正な順序
-                       metadata={"type": "ordered", "number": 3, "indent": 0}),
-            create_node("list_item", content="項目4",
-                       metadata={"type": "ordered", "number": 4, "indent": 0}),
+            create_node(
+                "list_item",
+                content="項目1",
+                metadata={"type": "ordered", "number": 1, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="項目3",  # 不正な順序
+                metadata={"type": "ordered", "number": 3, "indent": 0},
+            ),
+            create_node(
+                "list_item",
+                content="項目4",
+                metadata={"type": "ordered", "number": 4, "indent": 0},
+            ),
         ]
 
         # When: 連番検証と統計取得
@@ -409,7 +451,7 @@ class TestOrderedListParser:
         test_cases = [
             "1. これは日本語の項目です",
             "a. ひらがなとカタカナと漢字",
-            "i. 特殊文字：「」、。・"
+            "i. 特殊文字：「」、。・",
         ]
 
         for line in test_cases:
@@ -423,7 +465,11 @@ class TestOrderedListParser:
 
             # Then: 日本語が正しく処理されることを検証
             assert result is not None
-            assert "日本語" in result.content or "ひらがな" in result.content or "特殊文字" in result.content
+            assert (
+                "日本語" in result.content
+                or "ひらがな" in result.content
+                or "特殊文字" in result.content
+            )
 
     def test_特殊_特殊文字とマークアップ(self):
         """特殊: 特殊文字とマークアップの処理"""
@@ -449,6 +495,6 @@ class TestOrderedListParser:
 
         # Then: 期待されるパターンが設定されていることを検証
         assert "ordered" in patterns
-        assert "alpha" in patterns  
+        assert "alpha" in patterns
         assert "roman" in patterns
-        assert all(hasattr(pattern, 'match') for pattern in patterns.values())
+        assert all(hasattr(pattern, "match") for pattern in patterns.values())

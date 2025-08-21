@@ -66,7 +66,9 @@ class TestCLICommandsCoverage:
         """Test convert command watch mode."""
         # Mock watcher to avoid actual file watching
         with patch("kumihan_formatter.commands.convert.convert_command.ConvertWatcher"):
-            result = self.runner.invoke(cli, ["convert", str(self.test_file), "--watch"])
+            result = self.runner.invoke(
+                cli, ["convert", str(self.test_file), "--watch"]
+            )
             # Should start watch mode
             assert result.exit_code in [0, 1, 2]
 
@@ -97,7 +99,9 @@ class TestCLICommandsCoverage:
         test_file2 = Path(self.temp_dir) / "test2.kumihan"
         test_file2.write_text("#イタリック#\n強調\n##", encoding="utf-8")
 
-        result = self.runner.invoke(cli, ["check-syntax", str(self.test_file), str(test_file2)])
+        result = self.runner.invoke(
+            cli, ["check-syntax", str(self.test_file), str(test_file2)]
+        )
         assert result.exit_code in [0, 1, 2]
 
     def test_convert_command_error_handling(self):
@@ -108,7 +112,13 @@ class TestCLICommandsCoverage:
 
         # Invalid output directory
         result = self.runner.invoke(
-            cli, ["convert", str(self.test_file), "--output", "/invalid/path/that/does/not/exist"]
+            cli,
+            [
+                "convert",
+                str(self.test_file),
+                "--output",
+                "/invalid/path/that/does/not/exist",
+            ],
         )
         assert result.exit_code in [0, 1, 2]
 
@@ -203,7 +213,9 @@ class TestCheckSyntaxCommandCoverage:
 
             try:
                 # Execute command should not crash
-                result = cmd.execute(input_files=[tf.name], output_format="summary", config=None)
+                result = cmd.execute(
+                    input_files=[tf.name], output_format="summary", config=None
+                )
                 # Should complete without crashing
                 assert True  # If we get here, the method didn't crash
             except Exception as e:

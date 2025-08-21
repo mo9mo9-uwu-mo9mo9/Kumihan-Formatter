@@ -4,11 +4,14 @@ Kumihan-Formatter の core/parsing/list/parsers/nested_list_parser.py モジュ�
 拡張版のネストリストパーサーの機能を詳細に検証
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.parsing.list.parsers.nested_list_parser import NestedListParser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node
+from kumihan_formatter.core.parsing.list.parsers.nested_list_parser import (
+    NestedListParser,
+)
 
 
 class TestNestedListParserExtended:
@@ -41,12 +44,7 @@ class TestNestedListParserExtended:
     def test_正常系_ネストリスト解析_リスト入力(self):
         """正常系: リスト入力でのネストリスト解析"""
         # Given: ネストリストの行リスト
-        lines = [
-            "- 項目1",
-            "  - 子項目1", 
-            "  - 子項目2",
-            "- 項目2"
-        ]
+        lines = ["- 項目1", "  - 子項目1", "  - 子項目2", "- 項目2"]
 
         # When: ネストリスト解析
         result = self.parser.parse_nested_list(lines, level=0)
@@ -64,7 +62,7 @@ class TestNestedListParserExtended:
             "    - 孫項目1-1-1",
             "  - 子項目1-2",
             "- 親項目2",
-            "  - 子項目2-1"
+            "  - 子項目2-1",
         ]
 
         # When: ネスト構造構築
@@ -85,7 +83,7 @@ class TestNestedListParserExtended:
             ("    項目", 4),
             ("      項目", 6),
             ("\t項目", 1),  # タブは1文字
-            ("", 0)
+            ("", 0),
         ]
 
         for line, expected_level in test_cases:
@@ -99,7 +97,7 @@ class TestNestedListParserExtended:
         """正常系: リストのネストレベル取得"""
         # Given: 様々なインデントの行
         test_cases = [
-            ("項目", 0),      # 0スペース = レベル0
+            ("項目", 0),  # 0スペース = レベル0
             ("    項目", 1),  # 4スペース = レベル1
             ("        項目", 2),  # 8スペース = レベル2
             ("            項目", 3),  # 12スペース = レベル3
@@ -120,7 +118,7 @@ class TestNestedListParserExtended:
             "* アスタリスク項目",
             "+ プラス項目",
             "1. 順序付き項目",
-            "通常テキスト"
+            "通常テキスト",
         ]
 
         for line in test_lines:
@@ -137,11 +135,21 @@ class TestNestedListParserExtended:
         """正常系: インデントレベルでのグループ化"""
         # Given: 様々なレベルのノード
         items = [
-            Node(type="list_item", content="レベル0-1", attributes={"relative_level": 0}),
-            Node(type="list_item", content="レベル1-1", attributes={"relative_level": 1}),
-            Node(type="list_item", content="レベル1-2", attributes={"relative_level": 1}),
-            Node(type="list_item", content="レベル0-2", attributes={"relative_level": 0}),
-            Node(type="list_item", content="レベル2-1", attributes={"relative_level": 2}),
+            Node(
+                type="list_item", content="レベル0-1", attributes={"relative_level": 0}
+            ),
+            Node(
+                type="list_item", content="レベル1-1", attributes={"relative_level": 1}
+            ),
+            Node(
+                type="list_item", content="レベル1-2", attributes={"relative_level": 1}
+            ),
+            Node(
+                type="list_item", content="レベル0-2", attributes={"relative_level": 0}
+            ),
+            Node(
+                type="list_item", content="レベル2-1", attributes={"relative_level": 2}
+            ),
         ]
 
         # When: インデントレベルグループ化
@@ -161,12 +169,12 @@ class TestNestedListParserExtended:
         level_groups = {
             0: [
                 Node(type="list_item", content="親1", attributes={"index": 0}),
-                Node(type="list_item", content="親2", attributes={"index": 3})
+                Node(type="list_item", content="親2", attributes={"index": 3}),
             ],
             1: [
                 Node(type="list_item", content="子1", attributes={"index": 1}),
-                Node(type="list_item", content="子2", attributes={"index": 2})
-            ]
+                Node(type="list_item", content="子2", attributes={"index": 2}),
+            ],
         }
 
         # When: 階層構造構築
@@ -183,11 +191,9 @@ class TestNestedListParserExtended:
         level_groups = {
             1: [
                 Node(type="list_item", content="子1", attributes={"index": 1}),
-                Node(type="list_item", content="子2", attributes={"index": 2})
+                Node(type="list_item", content="子2", attributes={"index": 2}),
             ],
-            2: [
-                Node(type="list_item", content="孫1", attributes={"index": 3})
-            ]
+            2: [Node(type="list_item", content="孫1", attributes={"index": 3})],
         }
 
         # When: 子要素追加
@@ -195,7 +201,7 @@ class TestNestedListParserExtended:
 
         # Then: 子要素が追加されることを検証
         # 実装により children 属性の扱いが異なる可能性
-        if hasattr(parent_node, 'children') and parent_node.children:
+        if hasattr(parent_node, "children") and parent_node.children:
             assert len(parent_node.children) >= 0
 
     def test_正常系_ネスト項目存在チェック_詳細(self):
@@ -203,17 +209,39 @@ class TestNestedListParserExtended:
         # Given: 各種パターンのノードリスト
         test_cases = [
             # ネストあり
-            ([
-                Node(type="list_item", content="項目1", attributes={"relative_level": 0}),
-                Node(type="list_item", content="項目2", attributes={"relative_level": 1})
-            ], True),
+            (
+                [
+                    Node(
+                        type="list_item",
+                        content="項目1",
+                        attributes={"relative_level": 0},
+                    ),
+                    Node(
+                        type="list_item",
+                        content="項目2",
+                        attributes={"relative_level": 1},
+                    ),
+                ],
+                True,
+            ),
             # ネストなし
-            ([
-                Node(type="list_item", content="項目1", attributes={"relative_level": 0}),
-                Node(type="list_item", content="項目2", attributes={"relative_level": 0})
-            ], False),
+            (
+                [
+                    Node(
+                        type="list_item",
+                        content="項目1",
+                        attributes={"relative_level": 0},
+                    ),
+                    Node(
+                        type="list_item",
+                        content="項目2",
+                        attributes={"relative_level": 0},
+                    ),
+                ],
+                False,
+            ),
             # 空リスト
-            ([], False)
+            ([], False),
         ]
 
         for items, expected in test_cases:
@@ -231,11 +259,15 @@ class TestNestedListParserExtended:
             content="",
             children=[
                 Node(type="list_item", content="親1"),
-                Node(type="list_item", content="親2", children=[
-                    Node(type="list_item", content="子2-1"),
-                    Node(type="list_item", content="子2-2")
-                ])
-            ]
+                Node(
+                    type="list_item",
+                    content="親2",
+                    children=[
+                        Node(type="list_item", content="子2-1"),
+                        Node(type="list_item", content="子2-2"),
+                    ],
+                ),
+            ],
         )
 
         # When: 平坦化処理
@@ -250,12 +282,18 @@ class TestNestedListParserExtended:
         """正常系: ネスト深度の計算"""
         # Given: 異なる深度のノードリスト
         items = [
-            Node(type="list_item", content="レベル0", children=[
-                Node(type="list_item", content="レベル1", children=[
-                    Node(type="list_item", content="レベル2")
-                ])
-            ]),
-            Node(type="list_item", content="レベル0-2")
+            Node(
+                type="list_item",
+                content="レベル0",
+                children=[
+                    Node(
+                        type="list_item",
+                        content="レベル1",
+                        children=[Node(type="list_item", content="レベル2")],
+                    )
+                ],
+            ),
+            Node(type="list_item", content="レベル0-2"),
         ]
 
         # When: ネスト深度計算
@@ -270,10 +308,10 @@ class TestNestedListParserExtended:
         # Given: 不規則なインデントの行
         lines = [
             "項目1",
-            "  子項目1",      # 2スペース
-            "    孫項目1",    # 4スペース
-            "      曾孫項目1", # 6スペース
-            "項目2"
+            "  子項目1",  # 2スペース
+            "    孫項目1",  # 4スペース
+            "      曾孫項目1",  # 6スペース
+            "項目2",
         ]
 
         # When: インデント正規化（4スペース/レベル）
@@ -321,8 +359,8 @@ class TestNestedListParserExtended:
         invalid_lines = [
             "項目1",
             "     子項目（5スペース）",  # 不規則
-            "   子項目（3スペース）",    # 不規則
-            "項目2"
+            "   子項目（3スペース）",  # 不規則
+            "項目2",
         ]
 
         # When: ネスト構造構築
@@ -337,7 +375,9 @@ class TestNestedListParserExtended:
         invalid_items = [
             Node(type="list_item", content="項目1"),  # attributes なし
             Node(type="list_item", content="項目2", attributes={}),  # 空のattributes
-            Node(type="list_item", content="項目3", attributes={"invalid": "data"})  # 無関係なkey
+            Node(
+                type="list_item", content="項目3", attributes={"invalid": "data"}
+            ),  # 無関係なkey
         ]
 
         # When: レベル別グループ化
@@ -353,8 +393,11 @@ class TestNestedListParserExtended:
         # 注: 実装上循環参照が発生しにくい構造だが、テストとして実装
         problematic_items = []
         for i in range(10):
-            item = Node(type="list_item", content=f"項目{i}", 
-                       attributes={"relative_level": i % 3})
+            item = Node(
+                type="list_item",
+                content=f"項目{i}",
+                attributes={"relative_level": i % 3},
+            )
             problematic_items.append(item)
 
         # When: 階層構造構築
@@ -387,14 +430,16 @@ class TestNestedListParserExtended:
         """境界値: 極端なインデント値"""
         # Given: 極端なインデント
         extreme_lines = [
-            "",                    # 空行
+            "",  # 空行
             " " * 100 + "深い項目",  # 非常に深いインデント
-            "\t\t\t項目",          # 多重タブ
-            "項目"                 # インデントなし
+            "\t\t\t項目",  # 多重タブ
+            "項目",  # インデントなし
         ]
 
         # When: インデント正規化
-        normalized = self.parser.normalize_indentation(extreme_lines, spaces_per_level=4)
+        normalized = self.parser.normalize_indentation(
+            extreme_lines, spaces_per_level=4
+        )
 
         # Then: 極端な値が適切に処理されることを検証
         assert len(normalized) == len(extreme_lines)
@@ -408,9 +453,9 @@ class TestNestedListParserExtended:
         for i in range(1000):
             level = i % 4  # 0-3のレベル循環
             item = Node(
-                type="list_item", 
+                type="list_item",
                 content=f"項目{i}",
-                attributes={"relative_level": level, "index": i}
+                attributes={"relative_level": level, "index": i},
             )
             large_items.append(item)
 
@@ -441,7 +486,7 @@ class TestNestedListParserExtended:
         zero_level_items = [
             Node(type="list_item", content="項目1", attributes={"relative_level": 0}),
             Node(type="list_item", content="項目2", attributes={"relative_level": 0}),
-            Node(type="list_item", content="項目3", attributes={"relative_level": 0})
+            Node(type="list_item", content="項目3", attributes={"relative_level": 0}),
         ]
 
         # When: 各種処理実行
@@ -472,11 +517,11 @@ class TestNestedListParserExtended:
         # When: 完全ワークフロー実行
         # 1. ネスト解析
         parsed = self.parser.parse_nested_list(content, level=0)
-        
+
         # 2. 構造構築
         if parsed:
             built_structure = self.parser.build_nested_structure_list(parsed)
-        
+
         # 3. 深度計算
         if parsed:
             depth = self.parser.calculate_nesting_depth(parsed)
@@ -492,21 +537,23 @@ class TestNestedListParserExtended:
         # Given: 不規則なインデントの複雑な構造
         irregular_lines = [
             "項目1",
-            "  子項目1",        # 2スペース
-            "    孫項目1",      # 4スペース
+            "  子項目1",  # 2スペース
+            "    孫項目1",  # 4スペース
             "      曾孫項目1",  # 6スペース
-            "  子項目2",        # 2スペース
+            "  子項目2",  # 2スペース
             "項目2",
-            "\t子項目3"         # タブ
+            "\t子項目3",  # タブ
         ]
 
         # When: 統合的なインデント処理
         # 1. インデント正規化
-        normalized = self.parser.normalize_indentation(irregular_lines, spaces_per_level=4)
-        
+        normalized = self.parser.normalize_indentation(
+            irregular_lines, spaces_per_level=4
+        )
+
         # 2. 構造構築
         built = self.parser.build_nested_structure(normalized, base_level=0)
-        
+
         # 3. レベル取得テスト
         levels = [self.parser.get_list_nesting_level(line) for line in normalized]
 
@@ -523,14 +570,14 @@ class TestNestedListParserExtended:
             Node(type="list_item", content="子1", attributes={"relative_level": 1}),
             Node(type="list_item", content="孫1", attributes={"relative_level": 2}),
             Node(type="list_item", content="子2", attributes={"relative_level": 1}),
-            Node(type="list_item", content="親2", attributes={"relative_level": 0})
+            Node(type="list_item", content="親2", attributes={"relative_level": 0}),
         ]
 
         # When: 階層構築 → 平坦化の往復処理
         # 1. 階層構築
         groups = self.parser.group_by_indent_level(flat_items)
         hierarchy = self.parser.build_hierarchy_from_groups(groups)
-        
+
         # 2. 各階層ノードを平坦化（実装依存）
         all_flattened = []
         for root_node in hierarchy:
@@ -553,9 +600,13 @@ class TestNestedListParserExtended:
         # When: 堅牢な処理実行
         try:
             parsed = self.parser.parse_nested_list(problematic_input, level=0)
-            built = self.parser.build_nested_structure(problematic_input.split('\n'), base_level=0)
-            normalized = self.parser.normalize_indentation(problematic_input.split('\n'))
-            
+            built = self.parser.build_nested_structure(
+                problematic_input.split("\n"), base_level=0
+            )
+            normalized = self.parser.normalize_indentation(
+                problematic_input.split("\n")
+            )
+
             results = [parsed, built, normalized]
         except Exception as e:
             results = [[], [], []]
@@ -575,11 +626,11 @@ class TestNestedListParserExtended:
 
         # When: 各種処理の実行時間測定（簡易）
         import time
-        
+
         start = time.time()
         built = self.parser.build_nested_structure(medium_data, base_level=0)
         build_time = time.time() - start
-        
+
         start = time.time()
         normalized = self.parser.normalize_indentation(medium_data)
         normalize_time = time.time() - start
@@ -602,7 +653,7 @@ class TestNestedListParserExtended:
             "    日本語子項目１－１",
             "        日本語孫項目１－１－１",
             "    日本語子項目１－２",
-            "日本語メイン項目２"
+            "日本語メイン項目２",
         ]
 
         # When: 日本語コンテンツ処理
@@ -622,7 +673,7 @@ class TestNestedListParserExtended:
             "\t子項目1（タブ）",
             "    子項目2（4スペース）",
             "\t\t孫項目1（ダブルタブ）",
-            "        孫項目2（8スペース）"
+            "        孫項目2（8スペース）",
         ]
 
         # When: 混合インデント処理
@@ -643,7 +694,7 @@ class TestNestedListParserExtended:
             "",
             "        孫項目1",
             "",
-            "項目2"
+            "項目2",
         ]
 
         # When: 空行込み処理
@@ -679,7 +730,7 @@ class TestNestedListParserExtended:
 
         # Then: 期待される設定値を検証
         assert max_level == 3
-        assert hasattr(patterns, 'match')
+        assert hasattr(patterns, "match")
 
     def test_特殊_コンテキスト付きパース(self):
         """特殊: コンテキスト付きパース"""

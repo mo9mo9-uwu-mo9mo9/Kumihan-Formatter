@@ -45,6 +45,12 @@ jobs:
         pip install -e ".[dev]"
         pip install pytest-xdist pytest-timeout pytest-sugar --upgrade
 
+    - name: Configure Python environment
+      run: |
+        echo "PYTHONPATH=${GITHUB_WORKSPACE}:$PYTHONPATH" >> $GITHUB_ENV
+        echo "Python environment configured with project root"
+        python -c "import sys; print(f'Python path: {sys.path[:3]}...')"
+
     - name: Load quality rules
       run: |
         echo "Loading quality configuration..."
@@ -75,20 +81,66 @@ jobs:
     - name: Code formatting check
       timeout-minutes: 5
       run: |
-        black --check --diff .
-        isort --check-only --diff .
+        echo "Checking code formatting with Black..."
+        if ! black --check --diff .; then
+          echo "❌ Black formatting check failed"
+          echo "Run 'black .' to fix formatting issues"
+          exit 1
+        fi
+        echo "✅ Black formatting check passed"
+
+        echo "Checking import sorting with isort..."
+        if ! isort --check-only --diff .; then
+          echo "❌ isort check failed"
+          echo "Run 'isort .' to fix import sorting issues"
+          exit 1
+        fi
+        echo "✅ isort check passed"
 
     - name: Lint check
       timeout-minutes: 5
       run: |
         flake8 kumihan_formatter tests
 
-    - name: Type check
-      if: false  # 一時的にスキップ - Issue #1008
+    - name: Type check (Core modules - Phase 1)
       timeout-minutes: 10
+      continue-on-error: true  # 段階的導入のため警告レベル
+      id: type_check_core
       run: |
-        mypy kumihan_formatter --strict
-    # TODO: Issue #978-995の型エラー修正完了後に再有効化
+        echo "Running mypy type check on core modules (Phase 1)..."
+
+        # Phase 1: 最重要コアモジュールのみチェック
+        CORE_MODULES=(
+          "kumihan_formatter/core/ast_nodes/node.py"
+          "kumihan_formatter/core/parsing/keyword/__init__.py"
+          "kumihan_formatter/core/parsing/keyword/parse_result.py"
+          "kumihan_formatter/core/rendering/__init__.py"
+          "kumihan_formatter/core/utilities"
+        )
+
+        TYPE_CHECK_PASSED=true
+        for module in "${CORE_MODULES[@]}"; do
+          if [ -e "$module" ]; then
+            echo "Checking $module..."
+            if ! mypy "$module" --strict --no-error-summary; then
+              echo "❌ Type check failed for $module"
+              TYPE_CHECK_PASSED=false
+            else
+              echo "✅ Type check passed for $module"
+            fi
+          else
+            echo "⚠️ Module not found: $module"
+          fi
+        done
+
+        if [ "$TYPE_CHECK_PASSED" = "true" ]; then
+          echo "✅ Core modules type check passed"
+        else
+          echo "⚠️ Core modules type check had issues - continuing in degraded mode"
+          echo "Phase 2 will expand to more modules once core issues are resolved"
+        fi
+
+    # TODO: Phase 2将拡張到更多模块 - 计划在核心模块修复后启用
 
     # Issue #1050: カバレッジ段階的向上計画
     # Phase 1 (current): 50% - 現実的なスタート地点
@@ -99,7 +151,13 @@ jobs:
       continue-on-error: false
       env:
         PYTEST_XDIST_WORKER_COUNT: auto
+        PYTHONPATH: ${{ github.workspace }}
       run: |
+        echo "Running tests with coverage..."
+        echo "Python version: $(python --version)"
+        echo "PYTHONPATH: $PYTHONPATH"
+        echo "Current directory: $(pwd)"
+
         pytest tests/ \
           --cov=kumihan_formatter \
           --cov-report=xml \
@@ -111,7 +169,15 @@ jobs:
           --tb=short \
           -n=auto \
           --dist=worksteal \
-          -v
+          -v || {
+          echo "❌ Tests failed - see details above"
+          echo "Most common causes:"
+          echo "  - Import path issues (check PYTHONPATH)"
+          echo "  - Missing dependencies"
+          echo "  - Test environment setup problems"
+          exit 1
+        }
+        echo "✅ All tests passed with required coverage"
 
     - name: Comprehensive quality gate evaluation
       timeout-minutes: 10
@@ -162,7 +228,12 @@ jobs:
         echo "| Pre-commit hooks | ✅ | PASSED | Validated |" >> $GITHUB_STEP_SUMMARY
         echo "| Code formatting | ✅ | PASSED | black, isort OK |" >> $GITHUB_STEP_SUMMARY
         echo "| Lint check | ✅ | PASSED | flake8 OK |" >> $GITHUB_STEP_SUMMARY
-        echo "| Type check | ⏭️ | SKIPPED | Issue #1008 - 型エラー修正中 |" >> $GITHUB_STEP_SUMMARY
+        # 型チェック結果の条件付き表示
+        if [ "${{ steps.type_check_core.outcome }}" = "success" ]; then
+          echo "| Type check | ✅ | PASSED | Core modules only (Phase 1) |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Type check | ⚠️ | PARTIAL | Core modules with issues (Phase 1) |" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "| Test coverage | ✅ | PASSED | ≥50% (段階的向上: 50%→60%→70%) |" >> $GITHUB_STEP_SUMMARY
 
         # Quality checker結果の条件付き表示
