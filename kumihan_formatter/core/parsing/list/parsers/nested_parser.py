@@ -236,6 +236,39 @@ class NestedListParser:
 
         return flattened
 
+    def calculate_nesting_depth(self, items: List[Node]) -> int:
+        """ネストの深度を計算
+
+        Args:
+            items: 計算対象のノードリスト
+
+        Returns:
+            int: 最大ネスト深度
+        """
+        if not items:
+            return 0
+
+        max_depth = 0
+
+        def calculate_depth_recursive(node: Node, current_depth: int = 0) -> int:
+            """再帰的に深度を計算"""
+            depth = current_depth
+
+            # メタデータの children から子要素を取得
+            if "children" in node.metadata and node.metadata["children"]:
+                for child in node.metadata["children"]:
+                    child_depth = calculate_depth_recursive(child, current_depth + 1)
+                    depth = max(depth, child_depth)
+
+            return depth
+
+        # 各アイテムの深度を計算し、最大値を取得
+        for item in items:
+            item_depth = calculate_depth_recursive(item)
+            max_depth = max(max_depth, item_depth)
+
+        return max_depth
+
     def _create_list_item_node(self, content: str, level: int) -> Node:
         """リストアイテムノードを作成"""
         node = list_item(content)
