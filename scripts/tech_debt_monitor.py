@@ -69,7 +69,9 @@ class TechDebtMonitor:
 
             try:
                 result_data = json.loads(result.stdout)
-                complexity_dict = dict(result_data) if isinstance(result_data, dict) else {}
+                complexity_dict = (
+                    dict(result_data) if isinstance(result_data, dict) else {}
+                )
                 logger.info(f"認知複雑度測定成功: {len(complexity_dict)}ファイルを解析")
                 return complexity_dict
 
@@ -90,7 +92,11 @@ class TechDebtMonitor:
 
         except subprocess.CalledProcessError as e:
             logger.error(f"radon ccコマンド実行失敗: return_code={e.returncode}")
-            logger.error(f"stderr: {e.stderr}" if hasattr(e, 'stderr') and e.stderr else "stderrなし")
+            logger.error(
+                f"stderr: {e.stderr}"
+                if hasattr(e, "stderr") and e.stderr
+                else "stderrなし"
+            )
             logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
 
@@ -124,8 +130,12 @@ class TechDebtMonitor:
 
             try:
                 result_data = json.loads(result.stdout)
-                maintainability_dict = dict(result_data) if isinstance(result_data, dict) else {}
-                logger.info(f"保守性指標計算成功: {len(maintainability_dict)}ファイルを解析")
+                maintainability_dict = (
+                    dict(result_data) if isinstance(result_data, dict) else {}
+                )
+                logger.info(
+                    f"保守性指標計算成功: {len(maintainability_dict)}ファイルを解析"
+                )
                 return maintainability_dict
 
             except json.JSONDecodeError as e:
@@ -145,7 +155,11 @@ class TechDebtMonitor:
 
         except subprocess.CalledProcessError as e:
             logger.error(f"radon miコマンド実行失敗: return_code={e.returncode}")
-            logger.error(f"stderr: {e.stderr}" if hasattr(e, 'stderr') and e.stderr else "stderrなし")
+            logger.error(
+                f"stderr: {e.stderr}"
+                if hasattr(e, "stderr") and e.stderr
+                else "stderrなし"
+            )
             logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
 
@@ -210,7 +224,9 @@ class TechDebtMonitor:
             if result.stderr:
                 logger.warning(f"vulture stderr: {result.stderr}")
 
-            dead_code_lines = [line for line in result.stdout.splitlines() if line.strip()]
+            dead_code_lines = [
+                line for line in result.stdout.splitlines() if line.strip()
+            ]
             logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
             return dead_code_lines
 
@@ -227,8 +243,10 @@ class TechDebtMonitor:
         except subprocess.CalledProcessError as e:
             # vultureはデッドコードを発見した場合にreturn_codeが0以外になることがある
             logger.debug(f"vultureコマンド結果: return_code={e.returncode}")
-            if hasattr(e, 'stdout') and e.stdout:
-                dead_code_lines = [line for line in e.stdout.splitlines() if line.strip()]
+            if hasattr(e, "stdout") and e.stdout:
+                dead_code_lines = [
+                    line for line in e.stdout.splitlines() if line.strip()
+                ]
                 logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
                 return dead_code_lines
             else:

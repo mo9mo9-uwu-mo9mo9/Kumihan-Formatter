@@ -4,20 +4,21 @@ Issue完了フロー統合スクリプト
 Issue #686 Phase 3: 持続可能運用 - Issue完了時のCLAUDE.md自動最適化
 """
 
+import json
 import os
 import re
-import sys
-import json
 import subprocess
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional
+import sys
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
 
 @dataclass
 class IssueInfo:
     """Issue情報"""
+
     number: int
     title: str
     status: str
@@ -55,17 +56,26 @@ class TaskCompletionIntegrator:
             "status": "success",
             "issue": issue_info,
             "results": results,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _get_issue_info(self, issue_number: int) -> Optional[IssueInfo]:
         """GitHub CLI でIssue情報取得"""
         try:
             # gh コマンドでIssue情報取得
-            result = subprocess.run([
-                "gh", "issue", "view", str(issue_number),
-                "--json", "number,title,state,closedAt"
-            ], capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                [
+                    "gh",
+                    "issue",
+                    "view",
+                    str(issue_number),
+                    "--json",
+                    "number,title,state,closedAt",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             data = json.loads(result.stdout)
 
@@ -73,7 +83,7 @@ class TaskCompletionIntegrator:
                 number=data["number"],
                 title=data["title"],
                 status=data["state"],
-                completion_date=data.get("closedAt", datetime.now().isoformat())
+                completion_date=data.get("closedAt", datetime.now().isoformat()),
             )
         except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
             return None
@@ -83,7 +93,7 @@ class TaskCompletionIntegrator:
         if not os.path.exists(self.claude_md_path):
             return ["CLAUDE.md not found"]
 
-        with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+        with open(self.claude_md_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         changes = []
@@ -94,7 +104,7 @@ class TaskCompletionIntegrator:
             f"Issue #{issue_info.number}",
             f"Issue#{issue_info.number}",
             f"#Issue{issue_info.number}",
-            f"#{issue_info.number}"
+            f"#{issue_info.number}",
         ]
 
         for pattern in issue_patterns:
@@ -102,12 +112,19 @@ class TaskCompletionIntegrator:
             detailed_pattern = rf"{re.escape(pattern)}[^#]*?(?=\n|$)"
             if re.search(detailed_pattern, content, re.MULTILINE | re.DOTALL):
                 # 詳細説明を簡潔な完了記録に置換
-                completion_note = f"{pattern} ✅ 完了 ({issue_info.completion_date[:10]})"
-                content = re.sub(detailed_pattern, completion_note, content, flags=re.MULTILINE | re.DOTALL)
+                completion_note = (
+                    f"{pattern} ✅ 完了 ({issue_info.completion_date[:10]})"
+                )
+                content = re.sub(
+                    detailed_pattern,
+                    completion_note,
+                    content,
+                    flags=re.MULTILINE | re.DOTALL,
+                )
                 changes.append(f"Issue #{issue_info.number} 参照を簡潔化")
 
         if content != original_content:
-            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+            with open(self.claude_md_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         return changes
@@ -117,7 +134,7 @@ class TaskCompletionIntegrator:
         if not os.path.exists(self.claude_md_path):
             return ["CLAUDE.md not found"]
 
-        with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+        with open(self.claude_md_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         changes = []
@@ -127,7 +144,7 @@ class TaskCompletionIntegrator:
         phase_patterns = [
             r"Phase \d+[^#]*?完了",
             r"Phase \d+[^#]*?実装済み",
-            r"Phase \d+[^#]*?対応完了"
+            r"Phase \d+[^#]*?対応完了",
         ]
 
         for pattern in phase_patterns:
@@ -145,7 +162,7 @@ class TaskCompletionIntegrator:
                 changes.append(f"{match[:30]}... を履歴化")
 
         if content != original_content:
-            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+            with open(self.claude_md_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         return changes
@@ -155,7 +172,7 @@ class TaskCompletionIntegrator:
         if not os.path.exists(self.claude_md_path):
             return ["CLAUDE.md not found"]
 
-        with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+        with open(self.claude_md_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         changes = []
@@ -167,7 +184,7 @@ class TaskCompletionIntegrator:
             r"FIXME[^\n]*",
             r"実装予定[^\n]*",
             r"未実装[^\n]*",
-            r"検討中[^\n]*"
+            r"検討中[^\n]*",
         ]
 
         for pattern in cleanup_patterns:
@@ -177,10 +194,10 @@ class TaskCompletionIntegrator:
                 changes.extend([f"削除: {match[:30]}..." for match in matches])
 
         # 空行正規化
-        content = re.sub(r'\n{3,}', '\n\n', content)
+        content = re.sub(r"\n{3,}", "\n\n", content)
 
         if content != original_content:
-            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+            with open(self.claude_md_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             if not changes:
@@ -209,19 +226,21 @@ class TaskCompletionIntegrator:
         results = {
             "version": version,
             "timestamp": datetime.now().isoformat(),
-            "actions": []
+            "actions": [],
         }
 
         if not os.path.exists(self.claude_md_path):
             results["actions"].append("CLAUDE.md not found")
             return results
 
-        with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+        with open(self.claude_md_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # バージョン情報更新
         version_pattern = r"バージョン.*?\d+\.\d+\.\d+[^\n]*"
-        new_version_line = f"**バージョン**: {version} ({datetime.now().strftime('%Y-%m-%d')})"
+        new_version_line = (
+            f"**バージョン**: {version} ({datetime.now().strftime('%Y-%m-%d')})"
+        )
 
         if re.search(version_pattern, content):
             content = re.sub(version_pattern, new_version_line, content)
@@ -231,7 +250,7 @@ class TaskCompletionIntegrator:
         old_version_details = []
         # 実装のため簡略化: 具体的なバージョン履歴移動ロジックは省略
 
-        with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+        with open(self.claude_md_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         return results
@@ -288,7 +307,7 @@ def main():
             tmp_dir.mkdir(exist_ok=True)
             output_path = tmp_dir / Path(args.output).name
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(result, f, indent=2, ensure_ascii=False)
             print(f"📄 結果を {output_path} に保存しました")
 

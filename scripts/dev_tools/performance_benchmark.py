@@ -33,18 +33,12 @@ def main():
         "--test-size",
         choices=["small", "medium", "large", "extra_large", "all"],
         default="all",
-        help="テストサイズの指定"
+        help="テストサイズの指定",
     )
     parser.add_argument(
-        "--output-report",
-        type=str,
-        help="レポート出力ファイルパス (JSON形式)"
+        "--output-report", type=str, help="レポート出力ファイルパス (JSON形式)"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="詳細ログ出力"
-    )
+    parser.add_argument("--verbose", action="store_true", help="詳細ログ出力")
 
     args = parser.parse_args()
 
@@ -53,6 +47,7 @@ def main():
 
     if args.verbose:
         import logging
+
         logging.getLogger().setLevel(logging.DEBUG)
 
     logger.info("🚀 Kumihan-Formatter パフォーマンスベンチマーク開始")
@@ -76,7 +71,7 @@ def main():
             output_path = Path(args.output_report)
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(results, f, indent=2, ensure_ascii=False)
 
             logger.info(f"📄 ベンチマーク結果を保存: {output_path}")
@@ -93,7 +88,9 @@ def main():
             logger.info(f"✅ 性能目標の大部分を達成 ({achieved_count}/{total_count})")
             return 0
         else:
-            logger.warning(f"⚠️ 性能目標の達成率が低いです ({achieved_count}/{total_count})")
+            logger.warning(
+                f"⚠️ 性能目標の達成率が低いです ({achieved_count}/{total_count})"
+            )
             return 1
 
     except Exception as e:

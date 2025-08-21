@@ -40,58 +40,76 @@ class FileOrganizer:
             "documents": {
                 "extensions": [".md", ".txt", ".pdf", ".doc", ".docx", ".rtf"],
                 "patterns": ["README*", "CHANGELOG*", "LICENSE*", "CONTRIBUTING*"],
-                "target_dir": "docs/files"
+                "target_dir": "docs/files",
             },
             "test_files": {
                 "extensions": [".kumihan"],
                 "patterns": ["test_*", "*_test.*", "sample_*", "*_sample.*"],
-                "target_dir": "tests/sample_files"
+                "target_dir": "tests/sample_files",
             },
             "scripts": {
                 "extensions": [".py", ".sh", ".bat"],
                 "patterns": ["*script*", "*tool*"],
                 "exclude_dirs": ["kumihan_formatter", "tests"],
-                "target_dir": "scripts/utilities"
+                "target_dir": "scripts/utilities",
             },
             "reports": {
                 "extensions": [".json", ".html"],
                 "patterns": ["*_report_*", "*_Final_Report.*", "Issue_*_Complete_*"],
-                "target_dir": "reports"
+                "target_dir": "reports",
             },
             "data_files": {
                 "extensions": [".csv", ".json", ".xml", ".yaml", ".yml"],
                 "patterns": ["config_*", "data_*", "*_config.*", "*_data.*"],
-                "target_dir": "data"
+                "target_dir": "data",
             },
             "media": {
                 "extensions": [".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico"],
                 "patterns": ["screenshot_*", "diagram_*", "image_*"],
-                "target_dir": "assets/images"
+                "target_dir": "assets/images",
             },
             "archives": {
                 "extensions": [".zip", ".tar", ".gz", ".7z", ".rar"],
                 "patterns": ["backup_*", "archive_*"],
-                "target_dir": "archives"
+                "target_dir": "archives",
             },
             "temp_files": {
                 "extensions": [".tmp", ".cache", ".log"],
                 "patterns": ["temp_*", "tmp_*", "debug_*", "cache_*"],
-                "target_dir": "tmp"
-            }
+                "target_dir": "tmp",
+            },
         }
 
         # 除外ディレクトリ
         self.exclude_dirs = {
-            ".git", ".github", "node_modules", "venv", ".venv",
-            "__pycache__", ".pytest_cache", ".tox", "build", "dist",
-            "kumihan_formatter", "tests", "docs", "scripts"
+            ".git",
+            ".github",
+            "node_modules",
+            "venv",
+            ".venv",
+            "__pycache__",
+            ".pytest_cache",
+            ".tox",
+            "build",
+            "dist",
+            "kumihan_formatter",
+            "tests",
+            "docs",
+            "scripts",
         }
 
         # 除外ファイル
         self.exclude_files = {
-            "Makefile", "pyproject.toml", ".gitignore", "LICENSE",
-            "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SPEC.md",
-            ".flake8", ".pre-commit-config.yaml"
+            "Makefile",
+            "pyproject.toml",
+            ".gitignore",
+            "LICENSE",
+            "README.md",
+            "CHANGELOG.md",
+            "CONTRIBUTING.md",
+            "SPEC.md",
+            ".flake8",
+            ".pre-commit-config.yaml",
         }
 
     def _should_exclude_path(self, path: Path) -> bool:
@@ -106,7 +124,9 @@ class FileOrganizer:
             return True
 
         # 隠しファイル・ディレクトリ（.で始まる）はスキップ（設定ファイル以外）
-        if path.name.startswith('.') and not path.name.endswith(('.yml', '.yaml', '.json')):
+        if path.name.startswith(".") and not path.name.endswith(
+            (".yml", ".yaml", ".json")
+        ):
             return True
 
         return False
@@ -136,6 +156,7 @@ class FileOrganizer:
     def _match_pattern(self, filename: str, pattern: str) -> bool:
         """パターンマッチング（簡易版）"""
         import fnmatch
+
         return fnmatch.fnmatch(filename.lower(), pattern.lower())
 
     def _get_target_directory(self, category: str) -> Path:
@@ -163,7 +184,9 @@ class FileOrganizer:
             counter = 1
             while target_path.exists():
                 name_parts = source.stem, counter, source.suffix
-                target_path = target_dir / f"{name_parts[0]}_{name_parts[1]}{name_parts[2]}"
+                target_path = (
+                    target_dir / f"{name_parts[0]}_{name_parts[1]}{name_parts[2]}"
+                )
                 counter += 1
 
             shutil.move(str(source), str(target_path))
@@ -179,7 +202,7 @@ class FileOrganizer:
         """ファイルのハッシュ値を計算"""
         try:
             hasher = hashlib.md5()
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hasher.update(chunk)
             return hasher.hexdigest()
@@ -251,7 +274,9 @@ class FileOrganizer:
         total_duplicates = sum(len(files) - 1 for files in duplicates.values())
         total_wasted_space = 0
 
-        print(f"\n🔍 重複ファイル検出結果: {len(duplicates)} グループ、{total_duplicates} 個の重複")
+        print(
+            f"\n🔍 重複ファイル検出結果: {len(duplicates)} グループ、{total_duplicates} 個の重複"
+        )
 
         for i, (file_hash, file_list) in enumerate(duplicates.items(), 1):
             original_size = file_list[0].stat().st_size
@@ -268,7 +293,9 @@ class FileOrganizer:
 
         print(f"\n💾 総無駄容量: {self._format_size(total_wasted_space)}")
 
-    def organize_files_interactive(self, categorized_files: Dict[str, List[Path]]) -> None:
+    def organize_files_interactive(
+        self, categorized_files: Dict[str, List[Path]]
+    ) -> None:
         """対話的ファイル整理"""
         print("\n💬 対話的ファイル整理モード")
 
@@ -281,20 +308,26 @@ class FileOrganizer:
             print(f"移動先: {target_dir}")
 
             while True:
-                choice = input("このカテゴリのファイルを移動しますか? [y/n/s/q]: ").lower().strip()
-                if choice == 'y':
+                choice = (
+                    input("このカテゴリのファイルを移動しますか? [y/n/s/q]: ")
+                    .lower()
+                    .strip()
+                )
+                if choice == "y":
                     self._organize_category(category, files)
                     break
-                elif choice == 'n':
+                elif choice == "n":
                     print("   スキップしました")
                     break
-                elif choice == 's':
+                elif choice == "s":
                     self._show_files_in_category(files)
-                elif choice == 'q':
+                elif choice == "q":
                     print("🛑 整理を中断しました")
                     return
                 else:
-                    print("   'y' (移動), 'n' (スキップ), 's' (ファイル表示), 'q' (終了)")
+                    print(
+                        "   'y' (移動), 'n' (スキップ), 's' (ファイル表示), 'q' (終了)"
+                    )
 
     def organize_files_auto(self, categorized_files: Dict[str, List[Path]]) -> None:
         """自動ファイル整理"""
@@ -352,13 +385,13 @@ class FileOrganizer:
 
             while True:
                 choice = input("重複ファイルを削除しますか? [y/n/q]: ").lower().strip()
-                if choice == 'y':
+                if choice == "y":
                     self._remove_duplicates(file_list[1:])  # オリジナル以外を削除
                     break
-                elif choice == 'n':
+                elif choice == "n":
                     print("   スキップしました")
                     break
-                elif choice == 'q':
+                elif choice == "q":
                     print("🛑 重複処理を中断しました")
                     return
                 else:
@@ -379,7 +412,7 @@ class FileOrganizer:
 
     def _format_size(self, size_bytes: int) -> str:
         """ファイルサイズを人間が読みやすい形式に変換"""
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size_bytes < 1024.0:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024.0
@@ -391,13 +424,30 @@ class FileOrganizer:
 
         # 一時ファイルパターン（.cleanup.ymlと同様）
         temp_patterns = [
-            "temp_*", "tmp_*", "test_temp_*", "temp_test_*",
-            "test_output_*", "debug_output_*", "benchmark_output_*",
-            "performance_test_*", "output_*", "result_*",
-            "generated_*", "auto_generated_*", "*.generated.*",
-            "cache_*", "*.cache", "profiling_*", "memory_profile_*",
-            "*.prof", "*.cprof", "*_report_*.json", "*_report_*.txt",
-            "*_report_*.html", "behavioral_control_*.json", "rule_compliance_*.json"
+            "temp_*",
+            "tmp_*",
+            "test_temp_*",
+            "temp_test_*",
+            "test_output_*",
+            "debug_output_*",
+            "benchmark_output_*",
+            "performance_test_*",
+            "output_*",
+            "result_*",
+            "generated_*",
+            "auto_generated_*",
+            "*.generated.*",
+            "cache_*",
+            "*.cache",
+            "profiling_*",
+            "memory_profile_*",
+            "*.prof",
+            "*.cprof",
+            "*_report_*.json",
+            "*_report_*.txt",
+            "*_report_*.html",
+            "behavioral_control_*.json",
+            "rule_compliance_*.json",
         ]
 
         # プロジェクトルート直下の一時ファイルを検出
@@ -407,7 +457,7 @@ class FileOrganizer:
                 if match.is_file() and not self._should_exclude_path(match):
                     # tmp/配下にないファイルを違反として検出
                     relative_path = match.relative_to(self.project_root)
-                    if not str(relative_path).startswith('tmp/'):
+                    if not str(relative_path).startswith("tmp/"):
                         violations.append(match)
 
         return violations
@@ -436,15 +486,19 @@ class FileOrganizer:
             # 同名ファイル対応
             counter = 1
             while target_path.exists():
-                target_path = tmp_dir / f"{violation_file.stem}_{counter}{violation_file.suffix}"
+                target_path = (
+                    tmp_dir / f"{violation_file.stem}_{counter}{violation_file.suffix}"
+                )
                 counter += 1
 
             try:
                 if interactive:
                     print(f"\n📄 {violation_file.name}")
-                    print(f"   サイズ: {self._format_size(violation_file.stat().st_size)}")
+                    print(
+                        f"   サイズ: {self._format_size(violation_file.stat().st_size)}"
+                    )
                     choice = input("tmp/配下に移動しますか? [y/n]: ").lower().strip()
-                    if choice != 'y':
+                    if choice != "y":
                         print("   スキップしました")
                         continue
 
@@ -455,10 +509,14 @@ class FileOrganizer:
                 moved_count += 1
 
             except Exception as e:
-                logger.error(f"tmp/配下移動失敗: {violation_file} → {target_path} - {e}")
+                logger.error(
+                    f"tmp/配下移動失敗: {violation_file} → {target_path} - {e}"
+                )
                 print(f"   ❌ 移動失敗: {e}")
 
-        print(f"\n✨ tmp/配下強制ルール適用完了: {moved_count}/{len(violations)} ファイル移動")
+        print(
+            f"\n✨ tmp/配下強制ルール適用完了: {moved_count}/{len(violations)} ファイル移動"
+        )
 
 
 def main():
@@ -472,39 +530,35 @@ def main():
   python scripts/file-organizer.py --organize    # 自動ファイル整理
   python scripts/file-organizer.py --interactive # 対話的ファイル整理
   python scripts/file-organizer.py --duplicates  # 重複ファイル検出・処理
-        """
+        """,
     )
 
+    parser.add_argument("--scan", action="store_true", help="ファイルスキャンのみ実行")
+    parser.add_argument("--organize", action="store_true", help="自動ファイル整理")
+    parser.add_argument("--interactive", action="store_true", help="対話的ファイル整理")
     parser.add_argument(
-        "--scan",
-        action="store_true",
-        help="ファイルスキャンのみ実行"
-    )
-    parser.add_argument(
-        "--organize",
-        action="store_true",
-        help="自動ファイル整理"
-    )
-    parser.add_argument(
-        "--interactive",
-        action="store_true",
-        help="対話的ファイル整理"
-    )
-    parser.add_argument(
-        "--duplicates",
-        action="store_true",
-        help="重複ファイル検出・処理"
+        "--duplicates", action="store_true", help="重複ファイル検出・処理"
     )
     parser.add_argument(
         "--enforce-tmp-rule",
         action="store_true",
-        help="tmp/配下強制ルール適用（ファイル移動）"
+        help="tmp/配下強制ルール適用（ファイル移動）",
     )
 
     args = parser.parse_args()
 
-    if not any([args.scan, args.organize, args.interactive, args.duplicates, args.enforce_tmp_rule]):
-        print("エラー: --scan, --organize, --interactive, --duplicates, --enforce-tmp-rule のいずれかを指定してください")
+    if not any(
+        [
+            args.scan,
+            args.organize,
+            args.interactive,
+            args.duplicates,
+            args.enforce_tmp_rule,
+        ]
+    ):
+        print(
+            "エラー: --scan, --organize, --interactive, --duplicates, --enforce-tmp-rule のいずれかを指定してください"
+        )
         parser.print_help()
         sys.exit(1)
 
@@ -533,11 +587,15 @@ def main():
 
             if duplicates:
                 while True:
-                    choice = input("\n重複ファイルを対話的に処理しますか? [y/n]: ").lower().strip()
-                    if choice == 'y':
+                    choice = (
+                        input("\n重複ファイルを対話的に処理しますか? [y/n]: ")
+                        .lower()
+                        .strip()
+                    )
+                    if choice == "y":
                         organizer.handle_duplicates_interactive(duplicates)
                         break
-                    elif choice == 'n':
+                    elif choice == "n":
                         break
                     else:
                         print("'y' または 'n' を入力してください")

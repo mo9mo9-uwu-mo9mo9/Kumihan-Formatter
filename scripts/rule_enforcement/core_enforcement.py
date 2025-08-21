@@ -8,17 +8,18 @@ Purpose: コアな規則遵守機能の分離・モジュール化
 Status: Production Ready
 """
 
+import json
+import logging
 import os
 import sys
-import json
-import yaml
 import time
-import logging
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Set, Optional, Any, Tuple
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import yaml
 
 # ログ設定
 logging.basicConfig(
@@ -295,7 +296,9 @@ class RuleEnforcementSystem:
         recommendations = []
 
         if self.stats.compliance_score < 90.0:
-            recommendations.append("serenaコマンドの効率的活用と適切な理由明記を心がけてください")
+            recommendations.append(
+                "serenaコマンドの効率的活用と適切な理由明記を心がけてください"
+            )
 
         if self.stats.forbidden_tool_attempts > 0:
             recommendations.append("禁止ツールの使用を完全に停止してください")

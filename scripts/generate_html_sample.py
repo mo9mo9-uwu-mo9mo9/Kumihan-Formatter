@@ -11,6 +11,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def generate_sample_html():
     """最適化機能のデモ用HTML生成"""
 
@@ -457,6 +458,7 @@ html = renderer.render_nodes_optimized(nodes)  # 最適化版</code></pre>
 
     return html_content
 
+
 def main():
     """HTMLサンプル生成メイン"""
     print("📄 HTML出力サンプル生成中...")
@@ -466,7 +468,7 @@ def main():
 
     # ファイル保存
     output_path = Path("sample_output.html")
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)
 
     print(f"✅ HTMLサンプルを生成しました: {output_path.absolute()}")
@@ -476,13 +478,14 @@ def main():
     # HTMLの一部を表示
     print("\n📋 生成されたHTMLの一部:")
     print("=" * 50)
-    lines = html_content.split('\n')
+    lines = html_content.split("\n")
     for i, line in enumerate(lines[:30]):
         print(f"{i+1:2d}: {line}")
     if len(lines) > 30:
         print(f"... ({len(lines)} 行中 30行を表示)")
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())
