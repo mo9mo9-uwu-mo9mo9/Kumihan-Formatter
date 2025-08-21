@@ -2,13 +2,13 @@
 Test configuration and fixtures for Kumihan-Formatter test suite.
 """
 
+import multiprocessing
 import os
 import tempfile
-import multiprocessing
-import psutil
 from pathlib import Path
 from typing import Any, Dict, Generator
 
+import psutil
 import pytest
 
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -16,9 +16,11 @@ from kumihan_formatter.core.utilities.logger import get_logger
 # trio利用可能性チェック
 try:
     import trio
+
     trio_available = True
 except ImportError:
     trio_available = False
+
 
 def _get_optimal_worker_count() -> int:
     """
@@ -26,8 +28,8 @@ def _get_optimal_worker_count() -> int:
     Issue #1049: pytest-xdist並列実行設定最適化
     """
     # CI環境の判定
-    is_ci = os.getenv('GITHUB_ACTIONS', '').lower() == 'true'
-    is_ci_generic = os.getenv('CI', '').lower() == 'true'
+    is_ci = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
+    is_ci_generic = os.getenv("CI", "").lower() == "true"
 
     # CPU数とメモリ情報の取得
     cpu_count = multiprocessing.cpu_count()
@@ -40,25 +42,25 @@ def _get_optimal_worker_count() -> int:
         memory_gb = 8.0
 
     # テスト規模の推定（大雑把な分類）
-    test_markers = os.getenv('PYTEST_CURRENT_TEST', '')
+    test_markers = os.getenv("PYTEST_CURRENT_TEST", "")
 
     if is_ci or is_ci_generic:
         # GitHub Actions環境（2コア想定）での最適化
-        if 'performance' in test_markers or 'benchmark' in test_markers:
+        if "performance" in test_markers or "benchmark" in test_markers:
             return 1  # パフォーマンステストは単一ワーカー
-        elif 'system' in test_markers:
+        elif "system" in test_markers:
             return 1  # システムテストは慎重に
-        elif 'end_to_end' in test_markers:
+        elif "end_to_end" in test_markers:
             return min(2, cpu_count)  # E2Eテストは最大2
         else:
             return 2  # CI環境では固定2並列
     else:
         # ローカル環境での最適化
-        if 'performance' in test_markers or 'benchmark' in test_markers:
+        if "performance" in test_markers or "benchmark" in test_markers:
             return 1  # ベンチマークは単一実行
-        elif 'system' in test_markers:
+        elif "system" in test_markers:
             return 1  # システムテストは単一実行
-        elif 'end_to_end' in test_markers:
+        elif "end_to_end" in test_markers:
             return min(2, cpu_count)  # E2Eは最大2並列
         elif memory_gb < 4:
             return min(2, cpu_count)  # メモリ不足時は制限
@@ -72,16 +74,19 @@ def pytest_configure(config):
     logger = get_logger(__name__)
 
     # anyioバックエンド設定 - trioが利用できない場合はasyncioのみ
-    if hasattr(config.option, 'anyio_backends'):
+    if hasattr(config.option, "anyio_backends"):
         if not trio_available:
-            config.option.anyio_backends = ['asyncio']
+            config.option.anyio_backends = ["asyncio"]
         else:
-            config.option.anyio_backends = ['asyncio', 'trio']
+            config.option.anyio_backends = ["asyncio", "trio"]
 
     # Issue #1004: pytest-benchmarkとxdistの競合回避
     try:
         import pytest_benchmark
-        if config.getoption("--numprocesses", default=None) or getattr(config.option, "dist", None):
+
+        if config.getoption("--numprocesses", default=None) or getattr(
+            config.option, "dist", None
+        ):
             config.addinivalue_line("addopts", "--benchmark-disable")
             logger.debug("Benchmark disabled for parallel execution")
     except ImportError:
@@ -101,13 +106,17 @@ def pytest_configure(config):
         logger.info(f"Configured xdist with {optimal_workers} workers")
 
         # 環境情報のログ出力
-        is_ci = os.getenv('GITHUB_ACTIONS', '').lower() == 'true'
+        is_ci = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
         cpu_count = multiprocessing.cpu_count()
         try:
             memory_gb = psutil.virtual_memory().total / (1024**3)
-            logger.debug(f"Environment: CI={is_ci}, CPU={cpu_count}, Memory={memory_gb:.1f}GB, Workers={optimal_workers}")
+            logger.debug(
+                f"Environment: CI={is_ci}, CPU={cpu_count}, Memory={memory_gb:.1f}GB, Workers={optimal_workers}"
+            )
         except:
-            logger.debug(f"Environment: CI={is_ci}, CPU={cpu_count}, Workers={optimal_workers}")
+            logger.debug(
+                f"Environment: CI={is_ci}, CPU={cpu_count}, Workers={optimal_workers}"
+            )
     else:
         logger.info(f"Using explicitly specified worker count: {explicit_workers}")
 

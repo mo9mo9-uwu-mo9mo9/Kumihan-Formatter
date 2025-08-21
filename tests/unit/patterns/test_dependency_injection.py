@@ -3,20 +3,21 @@
 包括的なテストによりDIシステムの品質を保証する。
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from typing import Protocol
+from unittest.mock import Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.patterns.dependency_injection import (
+    CircularDependencyError,
     DIContainer,
     ServiceDescriptor,
     ServiceLifetime,
-    CircularDependencyError,
     ServiceNotFoundError,
     ServiceScope,
-    injectable,
-    inject,
     get_container,
+    inject,
+    injectable,
     register_services,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
@@ -28,8 +29,7 @@ logger = get_logger(__name__)
 class IMockService(Protocol):
     """テスト用サービスプロトコル"""
 
-    def get_value(self) -> str:
-        ...
+    def get_value(self) -> str: ...
 
 
 class MockService:
@@ -101,6 +101,7 @@ class TestDIContainer:
 
     def test_正常系_ファクトリー登録(self):
         """正常系: ファクトリー関数登録の確認"""
+
         # Given: ファクトリー関数
         def factory(container: DIContainer) -> MockService:
             return MockService("factory_created")
@@ -182,7 +183,9 @@ class TestDIContainer:
 
         # When: 循環参照状態でサービス解決を試行
         # Then: CircularDependencyErrorが発生
-        with pytest.raises(CircularDependencyError, match="Circular dependency detected"):
+        with pytest.raises(
+            CircularDependencyError, match="Circular dependency detected"
+        ):
             self.container.resolve(CircularDependencyA)
 
     def test_境界値_大量サービス登録(self):
@@ -191,7 +194,9 @@ class TestDIContainer:
         services = {}
         for i in range(100):
             class_name = f"Service{i}"
-            service_class = type(class_name, (), {"value": i, "get_value": lambda self: self.value})
+            service_class = type(
+                class_name, (), {"value": i, "get_value": lambda self: self.value}
+            )
             services[class_name] = service_class
             self.container.register(service_class, service_class)
 
@@ -207,6 +212,7 @@ class TestDIContainer:
 
     def test_境界値_ネストした依存関係(self):
         """境界値: 深くネストした依存関係の解決確認"""
+
         # Given: 多段階の依存関係を持つサービス
         class Level1Service:
             def __init__(self):
@@ -298,12 +304,14 @@ class TestDecorators:
                 self.service = service
 
         # When: グローバルコンテナにアクセス可能な状態でインスタンス作成
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
-                  return_value=self.container):
+        with patch(
+            "kumihan_formatter.core.patterns.dependency_injection.get_container",
+            return_value=self.container,
+        ):
             instance = DecoratedService()
 
         # Then: 依存関係が自動注入される
-        assert hasattr(instance, 'service')
+        assert hasattr(instance, "service")
         assert isinstance(instance.service, MockService)
 
     def test_正常系_injectデコレーター(self):
@@ -316,8 +324,10 @@ class TestDecorators:
             return service.get_value()
 
         # When: グローバルコンテナにアクセス可能な状態で関数実行
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
-                  return_value=self.container):
+        with patch(
+            "kumihan_formatter.core.patterns.dependency_injection.get_container",
+            return_value=self.container,
+        ):
             result = decorated_function()
 
         # Then: 依存関係が自動注入される
@@ -325,6 +335,7 @@ class TestDecorators:
 
     def test_異常系_デコレーター_DI失敗(self):
         """異常系: DI失敗時のグレースフル処理確認"""
+
         # Given: 未登録の依存関係を持つクラス
         @injectable
         class FailingService:
@@ -333,8 +344,10 @@ class TestDecorators:
 
         # When: DIが失敗する状況でインスタンス作成を試行
         # Then: エラーが発生するが適切に処理される
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container',
-                  return_value=self.container):
+        with patch(
+            "kumihan_formatter.core.patterns.dependency_injection.get_container",
+            return_value=self.container,
+        ):
             with pytest.raises(TypeError):  # 引数不足でTypeError
                 FailingService()
 
@@ -361,7 +374,7 @@ class TestGlobalContainer:
         register_services(container)
         # 現在の実装では警告ログが出力されるだけで例外は発生しない
 
-    @patch('kumihan_formatter.core.patterns.dependency_injection.logger')
+    @patch("kumihan_formatter.core.patterns.dependency_injection.logger")
     def test_異常系_サービス登録失敗(self, mock_logger):
         """異常系: サービス登録失敗時のログ出力確認"""
         # Given: DIコンテナ
@@ -432,8 +445,12 @@ class TestIntegration:
             def __init__(self, singleton: SingletonService):
                 self.singleton = singleton
 
-        container.register(SingletonService, SingletonService, ServiceLifetime.SINGLETON)
-        container.register(TransientService, TransientService, ServiceLifetime.TRANSIENT)
+        container.register(
+            SingletonService, SingletonService, ServiceLifetime.SINGLETON
+        )
+        container.register(
+            TransientService, TransientService, ServiceLifetime.TRANSIENT
+        )
 
         # When: 複数回解決
         transient1 = container.resolve(TransientService)

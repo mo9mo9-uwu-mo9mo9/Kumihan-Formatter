@@ -117,6 +117,7 @@ def edge_case_content():
 def parser_instance():
     """パーサーインスタンス"""
     from kumihan_formatter.core.parsing.main_parser import MainParser
+
     return MainParser()
 
 
@@ -124,6 +125,7 @@ def parser_instance():
 def renderer_instance():
     """レンダラーインスタンス"""
     from kumihan_formatter.renderer import MainRenderer
+
     return MainRenderer()
 
 
@@ -131,6 +133,7 @@ def renderer_instance():
 def config_manager():
     """設定マネージャーインスタンス"""
     from kumihan_formatter.core.config.config_manager import ConfigManager
+
     return ConfigManager()
 
 
@@ -163,6 +166,7 @@ def test_config():
 @pytest.fixture
 def mock_logger(monkeypatch):
     """ロガーのモック"""
+
     class MockLogger:
         def __init__(self):
             self.messages: List[Dict[str, Any]] = []
@@ -194,8 +198,7 @@ def mock_logger(monkeypatch):
         return mock
 
     monkeypatch.setattr(
-        "kumihan_formatter.core.utilities.logger.get_logger",
-        mock_get_logger
+        "kumihan_formatter.core.utilities.logger.get_logger", mock_get_logger
     )
 
     return mock
@@ -275,6 +278,6 @@ def generate_test_content(lines: int = 100, complexity: str = "simple") -> str:
         ]
         for i in range(lines):
             pattern = random.choice(patterns)
-            content.append(pattern.format(i, i+1))
+            content.append(pattern.format(i, i + 1))
 
     return "\n".join(content)

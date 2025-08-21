@@ -58,7 +58,9 @@ class TestNestedNotation:
 
             # Check for severe parsing errors
             severe_errors = [
-                e for e in errors if hasattr(e, "severity") and str(e.severity).upper() == "ERROR"
+                e
+                for e in errors
+                if hasattr(e, "severity") and str(e.severity).upper() == "ERROR"
             ]
             # Nested structures should be parseable (implementation-dependent)
 
@@ -310,9 +312,13 @@ class TestComplexNotationCombinations:
 
         # Check for any critical errors
         critical_errors = [
-            e for e in errors if hasattr(e, "severity") and "CRITICAL" in str(e.severity).upper()
+            e
+            for e in errors
+            if hasattr(e, "severity") and "CRITICAL" in str(e.severity).upper()
         ]
-        assert len(critical_errors) == 0, "Document structure should not have critical errors"
+        assert (
+            len(critical_errors) == 0
+        ), "Document structure should not have critical errors"
 
     def test_table_like_structure(self):
         """Test table-like structures with notations."""
@@ -390,7 +396,9 @@ print(f"結果: {result}")
         for i, section in enumerate(sections[:100]):  # Limit for performance
             if i % 3 == 0:
                 # Add nested notation every third section
-                modified_section = section.replace("重要な情報", "#太字 #下線 重要な情報##")
+                modified_section = section.replace(
+                    "重要な情報", "#太字 #下線 重要な情報##"
+                )
                 compound_sections.append(modified_section)
             else:
                 compound_sections.append(section)

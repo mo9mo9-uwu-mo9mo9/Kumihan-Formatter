@@ -4,14 +4,15 @@ Behavioral Pattern Tests - strategies.py モジュールの具体戦略実装テ
 KumihanParsingStrategy と HTMLRenderingStrategy の詳細テストを実装。
 """
 
-import pytest
 import re
-from unittest.mock import Mock, patch
 from typing import Any, Dict
+from unittest.mock import Mock, patch
+
+import pytest
 
 from kumihan_formatter.core.patterns.strategies import (
-    KumihanParsingStrategy,
     HTMLRenderingStrategy,
+    KumihanParsingStrategy,
 )
 from kumihan_formatter.core.patterns.strategy import (
     ParsingStrategy,
@@ -40,9 +41,9 @@ class TestKumihanParsingStrategy:
         # Then: 正しく初期化される
         assert strategy is not None
         assert isinstance(strategy, KumihanParsingStrategy)
-        assert hasattr(strategy, 'parse')
-        assert hasattr(strategy, 'get_strategy_name')
-        assert hasattr(strategy, 'supports_content')
+        assert hasattr(strategy, "parse")
+        assert hasattr(strategy, "get_strategy_name")
+        assert hasattr(strategy, "supports_content")
 
     def test_正常系_プロトコル準拠確認(self):
         """正常系: ParsingStrategyプロトコル準拠確認"""
@@ -50,9 +51,9 @@ class TestKumihanParsingStrategy:
         strategy = KumihanParsingStrategy()
 
         # When/Then: ParsingStrategyプロトコルメソッドが実装されている
-        assert hasattr(strategy, 'parse')
-        assert hasattr(strategy, 'get_strategy_name')
-        assert hasattr(strategy, 'supports_content')
+        assert hasattr(strategy, "parse")
+        assert hasattr(strategy, "get_strategy_name")
+        assert hasattr(strategy, "supports_content")
 
         # メソッドが呼び出し可能である
         assert callable(strategy.parse)
@@ -205,12 +206,12 @@ class TestKumihanParsingStrategy:
         """境界値: 不完全なKumihan記法での処理確認"""
         # Given: 不完全な記法パターン
         incomplete_patterns = [
-            "# 太字 #テスト#",      # 終了マーカー不完全
-            "# 太字 テスト##",       # 中間マーカー欠如
-            "太字 #テスト##",        # 開始マーカー欠如
-            "# #テスト##",           # 装飾名欠如
-            "# 太字 ###",            # 内容欠如
-            "## 太字 #テスト##",     # 開始マーカー不正
+            "# 太字 #テスト#",  # 終了マーカー不完全
+            "# 太字 テスト##",  # 中間マーカー欠如
+            "太字 #テスト##",  # 開始マーカー欠如
+            "# #テスト##",  # 装飾名欠如
+            "# 太字 ###",  # 内容欠如
+            "## 太字 #テスト##",  # 開始マーカー不正
         ]
 
         for content in incomplete_patterns:
@@ -275,7 +276,7 @@ class TestKumihanParsingStrategy:
                 # 正規表現パターンにマッチしない場合は空結果
                 assert len(result["blocks"]) == 0
 
-    @patch('kumihan_formatter.core.patterns.strategies.re.findall')
+    @patch("kumihan_formatter.core.patterns.strategies.re.findall")
     def test_正規表現_モック確認(self, mock_findall):
         """正規表現パターンマッチングのモック確認"""
         # Given: モックされた正規表現
@@ -345,9 +346,9 @@ class TestHTMLRenderingStrategy:
         # Then: 正しく初期化される
         assert strategy is not None
         assert isinstance(strategy, HTMLRenderingStrategy)
-        assert hasattr(strategy, 'render')
-        assert hasattr(strategy, 'get_strategy_name')
-        assert hasattr(strategy, 'supports_format')
+        assert hasattr(strategy, "render")
+        assert hasattr(strategy, "get_strategy_name")
+        assert hasattr(strategy, "supports_format")
 
     def test_正常系_プロトコル準拠確認(self):
         """正常系: RenderingStrategyプロトコル準拠確認"""
@@ -355,9 +356,9 @@ class TestHTMLRenderingStrategy:
         strategy = HTMLRenderingStrategy()
 
         # When/Then: RenderingStrategyプロトコルメソッドが実装されている
-        assert hasattr(strategy, 'render')
-        assert hasattr(strategy, 'get_strategy_name')
-        assert hasattr(strategy, 'supports_format')
+        assert hasattr(strategy, "render")
+        assert hasattr(strategy, "get_strategy_name")
+        assert hasattr(strategy, "supports_format")
 
         # メソッドが呼び出し可能である
         assert callable(strategy.render)
@@ -403,7 +404,7 @@ class TestHTMLRenderingStrategy:
                 {
                     "type": "kumihan_block",
                     "decoration": "太字",
-                    "content": "重要なテキスト"
+                    "content": "重要なテキスト",
                 }
             ]
         }
@@ -427,7 +428,11 @@ class TestHTMLRenderingStrategy:
             ("太字", "太字テキスト", "<strong>太字テキスト</strong>"),
             ("イタリック", "斜体テキスト", "<em>斜体テキスト</em>"),
             ("見出し", "メイン見出し", "<h2>メイン見出し</h2>"),
-            ("カスタム", "カスタムテキスト", "<span class='カスタム'>カスタムテキスト</span>"),
+            (
+                "カスタム",
+                "カスタムテキスト",
+                "<span class='カスタム'>カスタムテキスト</span>",
+            ),
         ]
 
         for decoration, content, expected_tag in decoration_tests:
@@ -436,7 +441,7 @@ class TestHTMLRenderingStrategy:
                     {
                         "type": "kumihan_block",
                         "decoration": decoration,
-                        "content": content
+                        "content": content,
                     }
                 ]
             }
@@ -452,21 +457,13 @@ class TestHTMLRenderingStrategy:
         # Given: 複数ブロックデータ
         data = {
             "blocks": [
-                {
-                    "type": "kumihan_block",
-                    "decoration": "見出し",
-                    "content": "第1章"
-                },
-                {
-                    "type": "kumihan_block",
-                    "decoration": "太字",
-                    "content": "重要事項"
-                },
+                {"type": "kumihan_block", "decoration": "見出し", "content": "第1章"},
+                {"type": "kumihan_block", "decoration": "太字", "content": "重要事項"},
                 {
                     "type": "kumihan_block",
                     "decoration": "イタリック",
-                    "content": "補足情報"
-                }
+                    "content": "補足情報",
+                },
             ]
         }
 
@@ -516,13 +513,13 @@ class TestHTMLRenderingStrategy:
                 {
                     "type": "kumihan_block",
                     "decoration": "太字",
-                    "content": "<script>alert('test')</script>"
+                    "content": "<script>alert('test')</script>",
                 },
                 {
                     "type": "kumihan_block",
                     "decoration": "見出し",
-                    "content": "A & B < C > D"
-                }
+                    "content": "A & B < C > D",
+                },
             ]
         }
 
@@ -545,7 +542,11 @@ class TestHTMLRenderingStrategy:
             {"invalid": "structure"},
             {"blocks": "not_a_list"},
             {"blocks": [{"invalid": "block"}]},
-            {"blocks": [{"type": "wrong_type", "decoration": "太字", "content": "テスト"}]},
+            {
+                "blocks": [
+                    {"type": "wrong_type", "decoration": "太字", "content": "テスト"}
+                ]
+            },
         ]
 
         for invalid_data in invalid_data_cases:
@@ -568,11 +569,13 @@ class TestHTMLRenderingStrategy:
         # Given: 大量のブロックデータ
         large_blocks = []
         for i in range(1000):
-            large_blocks.append({
-                "type": "kumihan_block",
-                "decoration": "太字" if i % 2 == 0 else "イタリック",
-                "content": f"ブロック内容{i}"
-            })
+            large_blocks.append(
+                {
+                    "type": "kumihan_block",
+                    "decoration": "太字" if i % 2 == 0 else "イタリック",
+                    "content": f"ブロック内容{i}",
+                }
+            )
 
         large_data = {"blocks": large_blocks}
 
@@ -610,11 +613,7 @@ class TestHTMLRenderingStrategy:
         invalid_contexts = [None, "string", 123, []]
         data = {
             "blocks": [
-                {
-                    "type": "kumihan_block",
-                    "decoration": "太字",
-                    "content": "テスト"
-                }
+                {"type": "kumihan_block", "decoration": "太字", "content": "テスト"}
             ]
         }
 
@@ -746,13 +745,13 @@ class TestStrategiesIntegration:
             {
                 "content": "# 見出し #第1章##",
                 "expected_blocks": 1,
-                "expected_html_tag": "<h2>第1章</h2>"
+                "expected_html_tag": "<h2>第1章</h2>",
             },
             {
                 "content": "# 太字 #重要## と # イタリック #補足##",
                 "expected_blocks": 2,
-                "expected_html_tags": ["<strong>重要</strong>", "<em>補足</em>"]
-            }
+                "expected_html_tags": ["<strong>重要</strong>", "<em>補足</em>"],
+            },
         ]
 
         for pattern in test_patterns:
@@ -775,13 +774,13 @@ class TestStrategiesIntegration:
         # When: 各戦略がプロトコルメソッドを適切に実装しているか確認
 
         # ParsingStrategy プロトコル準拠確認
-        parsing_methods = ['parse', 'get_strategy_name', 'supports_content']
+        parsing_methods = ["parse", "get_strategy_name", "supports_content"]
         for method in parsing_methods:
             assert hasattr(self.parsing_strategy, method)
             assert callable(getattr(self.parsing_strategy, method))
 
         # RenderingStrategy プロトコル準拠確認
-        rendering_methods = ['render', 'get_strategy_name', 'supports_format']
+        rendering_methods = ["render", "get_strategy_name", "supports_format"]
         for method in rendering_methods:
             assert hasattr(self.rendering_strategy, method)
             assert callable(getattr(self.rendering_strategy, method))

@@ -4,9 +4,10 @@ ExtendedConfig（224行）の全機能をカバーする55テストケースに�
 初期化、マーカー管理、テーマ管理、バリデーション、設定統合機能を検証。
 """
 
-from unittest.mock import patch, MagicMock
-import pytest
 from typing import Any
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from kumihan_formatter.config.extended_config import ExtendedConfig
 
@@ -22,7 +23,7 @@ class TestExtendedConfig初期化系:
 
         assert config is not None
         assert len(config.get_markers()) == 11  # DEFAULT_MARKERS
-        assert len(config.get_themes()) == 3    # DEFAULT_THEMES
+        assert len(config.get_themes()) == 3  # DEFAULT_THEMES
         assert config.get_current_theme() == "default"
 
     def test_正常系_カスタム設定辞書での初期化(self):
@@ -32,7 +33,7 @@ class TestExtendedConfig初期化系:
         custom_config = {
             "theme": "dark",
             "markers": {"カスタム": {"tag": "span"}},
-            "themes": {"custom": {"name": "カスタム", "css": {"color": "red"}}}
+            "themes": {"custom": {"name": "カスタム", "css": {"color": "red"}}},
         }
         config = ExtendedConfig(custom_config)
 
@@ -83,9 +84,9 @@ class TestExtendedConfig初期化系:
         Then: 親クラスの機能が利用可能"""
         config = ExtendedConfig()
 
-        assert hasattr(config, 'get_css_variables')
-        assert hasattr(config, 'get')
-        assert hasattr(config, 'set')
+        assert hasattr(config, "get_css_variables")
+        assert hasattr(config, "get")
+        assert hasattr(config, "set")
         css_vars = config.get_css_variables()
         assert isinstance(css_vars, dict)
 
@@ -226,7 +227,7 @@ class TestExtendedConfigマーカー管理:
             "class": "complex",
             "style": "color: red;",
             "attributes": {"data-test": "value"},
-            "summary": "詳細"
+            "summary": "詳細",
         }
         config.add_marker("複雑", complex_definition)
 
@@ -275,7 +276,7 @@ class TestExtendedConfigマーカー管理:
         markers["新規"] = {"tag": "span"}
         fresh_markers = config.get_markers()
         assert len(fresh_markers) == original_count  # 元の数と同じ
-        assert "新規" not in fresh_markers           # 新規キーは内部に影響しない
+        assert "新規" not in fresh_markers  # 新規キーは内部に影響しない
 
 
 class TestExtendedConfigテーマ管理:
@@ -313,7 +314,7 @@ class TestExtendedConfigテーマ管理:
         config = ExtendedConfig()
         theme_data = {
             "name": "新テーマ",
-            "css": {"background_color": "#ffffff", "text_color": "#000000"}
+            "css": {"background_color": "#ffffff", "text_color": "#000000"},
         }
         config.add_theme("new_theme", theme_data)
 
@@ -326,10 +327,7 @@ class TestExtendedConfigテーマ管理:
         When: 同IDテーマを追加
         Then: テーマが上書きされる"""
         config = ExtendedConfig()
-        new_theme_data = {
-            "name": "新ダーク",
-            "css": {"background_color": "#000000"}
-        }
+        new_theme_data = {"name": "新ダーク", "css": {"background_color": "#000000"}}
         config.add_theme("dark", new_theme_data)
 
         themes = config.get_themes()
@@ -386,7 +384,7 @@ class TestExtendedConfigテーマ管理:
         theme_name = config.get_theme_name()
         assert theme_name == "不明"
 
-    @patch.object(ExtendedConfig, '_apply_theme')
+    @patch.object(ExtendedConfig, "_apply_theme")
     def test_正常系_テーマ適用CSS反映確認(self, mock_apply_theme):
         """Given: 初期化されたExtendedConfig
         When: テーマを設定
@@ -437,7 +435,7 @@ class TestExtendedConfigテーマ管理:
         themes["新規"] = {"name": "新規テーマ"}
         fresh_themes = config.get_themes()
         assert len(fresh_themes) == original_count  # 元の数と同じ
-        assert "新規" not in fresh_themes           # 新規キーは内部に影響しない
+        assert "新規" not in fresh_themes  # 新規キーは内部に影響しない
 
     def test_正常系_初期化時テーマ適用確認(self):
         """Given: テーマ設定を含む設定データ
@@ -454,7 +452,7 @@ class TestExtendedConfigテーマ管理:
 class TestExtendedConfigバリデーション設定操作:
     """バリデーション・設定操作（5ケース）"""
 
-    @patch.object(ExtendedConfig.__bases__[0], 'validate', return_value=True)
+    @patch.object(ExtendedConfig.__bases__[0], "validate", return_value=True)
     def test_正常系_validate_親クラス継承確認(self, mock_parent_validate):
         """Given: 初期化されたExtendedConfig
         When: validateを呼び出し
@@ -465,7 +463,7 @@ class TestExtendedConfigバリデーション設定操作:
         mock_parent_validate.assert_called_once()
         assert result is True
 
-    @patch.object(ExtendedConfig.__bases__[0], 'validate', return_value=False)
+    @patch.object(ExtendedConfig.__bases__[0], "validate", return_value=False)
     def test_正常系_validate_拡張機能追加確認(self, mock_parent_validate):
         """Given: 親クラスvalidateがFalseを返すExtendedConfig
         When: validateを呼び出し
@@ -497,7 +495,7 @@ class TestExtendedConfigバリデーション設定操作:
         existing = config.get("existing")
         assert existing["key1"] == "value1"  # 保持
         assert existing["key2"] == "updated"  # 更新
-        assert existing["key3"] == "new"      # 追加
+        assert existing["key3"] == "new"  # 追加
 
     def test_境界値_merge_config_空辞書マージ(self):
         """Given: 初期化されたExtendedConfig
@@ -574,18 +572,15 @@ class TestExtendedConfig設定統合:
         """Given: 複雑な設定があるExtendedConfig
         When: 部分的な設定をマージ
         Then: 指定部分のみ更新される"""
-        original_config = {
-            "section1": {"a": 1, "b": 2},
-            "section2": {"c": 3, "d": 4}
-        }
+        original_config = {"section1": {"a": 1, "b": 2}, "section2": {"c": 3, "d": 4}}
         config = ExtendedConfig(original_config)
 
         other_config = {"section1": {"b": 999}}
         config.merge_config(other_config)
 
-        assert config.get("section1")["a"] == 1    # 保持
+        assert config.get("section1")["a"] == 1  # 保持
         assert config.get("section1")["b"] == 999  # 更新
-        assert config.get("section2")["c"] == 3    # 保持
+        assert config.get("section2")["c"] == 3  # 保持
 
     def test_異常系_merge_config_型不一致(self):
         """Given: 辞書設定があるExtendedConfig
@@ -601,21 +596,11 @@ class TestExtendedConfig設定統合:
         """Given: 深いネスト構造のExtendedConfig
         When: 深いネスト設定をマージ
         Then: 深い階層まで正しくマージされる"""
-        original_config = {
-            "level1": {
-                "level2": {
-                    "level3": {"key": "original"}
-                }
-            }
-        }
+        original_config = {"level1": {"level2": {"level3": {"key": "original"}}}}
         config = ExtendedConfig(original_config)
 
         other_config = {
-            "level1": {
-                "level2": {
-                    "level3": {"key": "updated", "new_key": "added"}
-                }
-            }
+            "level1": {"level2": {"level3": {"key": "updated", "new_key": "added"}}}
         }
         config.merge_config(other_config)
 

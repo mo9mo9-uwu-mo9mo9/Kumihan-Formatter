@@ -793,7 +793,11 @@ class TestMainParserErrorHandlingAdvanced:
             assert len(result) > 0
         except Exception as e:
             # メモリエラーが発生しても優雅に処理
-            assert "memory" in str(e).lower() or "resource" in str(e).lower() or "error" in str(e).lower()
+            assert (
+                "memory" in str(e).lower()
+                or "resource" in str(e).lower()
+                or "error" in str(e).lower()
+            )
 
     def test_parsing_timeout_with_retry(self):
         """パース・タイムアウト・リトライテスト"""
@@ -889,6 +893,7 @@ class TestMainParserIntegrationDeep:
 
         # 複数段階の依存解決
         resolution_calls = 0
+
         def mock_resolve(cls):
             nonlocal resolution_calls
             resolution_calls += 1
@@ -914,11 +919,14 @@ class TestMainParserIntegrationDeep:
         mock_factory = Mock()
 
         created_parsers = {}
+
         def mock_create(parser_type):
             if parser_type not in created_parsers:
                 mock_parser = Mock()
                 mock_parser.can_parse.return_value = True
-                mock_parser.parse.return_value = [create_node(parser_type, content=f"from_{parser_type}")]
+                mock_parser.parse.return_value = [
+                    create_node(parser_type, content=f"from_{parser_type}")
+                ]
                 created_parsers[parser_type] = mock_parser
             return created_parsers[parser_type]
 
@@ -944,9 +952,9 @@ class TestMainParserIntegrationDeep:
             events_received.append((event_name, data))
 
         # EventEmitter機能をテスト
-        if hasattr(self.parser, 'emit_event'):
-            self.parser.on('test_event', event_listener)
-            self.parser.emit_event('test_event', {'test': 'data'})
+        if hasattr(self.parser, "emit_event"):
+            self.parser.on("test_event", event_listener)
+            self.parser.emit_event("test_event", {"test": "data"})
             assert len(events_received) > 0
 
         # パース時のイベント発火確認
@@ -962,11 +970,17 @@ class TestMainParserIntegrationDeep:
 
         # 各パーサーの動作をログに記録
         for name, parser in self.parser.parsers.items():
-            original_parse = parser.parse if hasattr(parser, 'parse') else None
+            original_parse = parser.parse if hasattr(parser, "parse") else None
             if original_parse:
+
                 def logged_parse(text, parser_name=name, original=original_parse):
                     coordination_log.append(f"parsing_with_{parser_name}")
-                    return original(text) if callable(original) else [create_node("text", content=text)]
+                    return (
+                        original(text)
+                        if callable(original)
+                        else [create_node("text", content=text)]
+                    )
+
                 parser.parse = logged_parse
 
         # 複数パーサーが協調して処理する複雑なテキスト
@@ -1044,7 +1058,11 @@ class TestMainParserConcurrencyAdvanced:
             for thread_id, error in errors:
                 print(f"Thread {thread_id} error: {error}")
         # 大部分のスレッドが成功することを確認
-        success_rate = len(results) / (len(results) + len(errors)) if (len(results) + len(errors)) > 0 else 0
+        success_rate = (
+            len(results) / (len(results) + len(errors))
+            if (len(results) + len(errors)) > 0
+            else 0
+        )
         assert success_rate > 0.5, "成功率が50%を超える必要がある"
 
     def test_concurrent_parsing_isolation(self):
@@ -1071,6 +1089,7 @@ class TestMainParserConcurrencyAdvanced:
         """共有リソース競合テスト"""
         # 共有リソースへの並列アクセステスト
         import threading
+
         contention_count = 0
         lock = threading.Lock()
 
@@ -1242,24 +1261,26 @@ class TestMainParserProtocolsComplete:
         """CompositeParserProtocol完全テスト"""
         # プロトコルの全メソッド確認
         protocol_methods = [
-            'parse_protocol',
-            'validate',
-            'supports_format',
-            'get_parser_info_protocol',
-            'get_parsers',
-            'register_parser',
-            'unregister_parser'
+            "parse_protocol",
+            "validate",
+            "supports_format",
+            "get_parser_info_protocol",
+            "get_parsers",
+            "register_parser",
+            "unregister_parser",
         ]
 
         for method_name in protocol_methods:
-            assert hasattr(self.parser, method_name), f"メソッド {method_name} が存在しない"
+            assert hasattr(
+                self.parser, method_name
+            ), f"メソッド {method_name} が存在しない"
             method = getattr(self.parser, method_name)
             assert callable(method), f"メソッド {method_name} が呼び出し可能でない"
 
         # 各メソッドの動作テスト
         parse_result = self.parser.parse_protocol("プロトコルテスト")
-        assert hasattr(parse_result, 'success')
-        assert hasattr(parse_result, 'nodes')
+        assert hasattr(parse_result, "success")
+        assert hasattr(parse_result, "nodes")
 
         validation_errors = self.parser.validate("バリデーションテスト")
         assert isinstance(validation_errors, list)
@@ -1276,6 +1297,7 @@ class TestMainParserProtocolsComplete:
 
     def test_streaming_parser_protocol_edge_cases(self):
         """StreamingParserProtocolエッジケーステスト"""
+
         # ストリーミングプロトコルのエッジケース
         def error_stream():
             yield "正常データ"
@@ -1330,22 +1352,27 @@ class TestMainParserProtocolsComplete:
         # プロトコル仕様準拠の検証
 
         # CompositeParserProtocol準拠確認
-        composite_methods = ['parse_protocol', 'validate', 'supports_format', 'get_parser_info_protocol']
+        composite_methods = [
+            "parse_protocol",
+            "validate",
+            "supports_format",
+            "get_parser_info_protocol",
+        ]
         for method in composite_methods:
             assert hasattr(self.parser, method)
             assert callable(getattr(self.parser, method))
 
         # StreamingParserProtocol準拠確認
-        streaming_methods = ['parse_streaming_protocol']
+        streaming_methods = ["parse_streaming_protocol"]
         for method in streaming_methods:
             assert hasattr(self.parser, method)
             assert callable(getattr(self.parser, method))
 
         # 戻り値型の確認
         parse_result = self.parser.parse_protocol("型確認")
-        assert hasattr(parse_result, 'success')
-        assert hasattr(parse_result, 'nodes')
-        assert hasattr(parse_result, 'errors')
+        assert hasattr(parse_result, "success")
+        assert hasattr(parse_result, "nodes")
+        assert hasattr(parse_result, "errors")
 
         validation_result = self.parser.validate("バリデーション型確認")
         assert isinstance(validation_result, list)
@@ -1369,7 +1396,9 @@ class TestMainParserAdditionalCoverage:
     def test_di_container_import_error_path(self):
         """DI Container ImportError パステスト"""
         # DIコンテナのimport失敗をシミュレート
-        with patch('kumihan_formatter.core.patterns.dependency_injection.get_container') as mock_get_container:
+        with patch(
+            "kumihan_formatter.core.patterns.dependency_injection.get_container"
+        ) as mock_get_container:
             mock_get_container.side_effect = ImportError("DI module not found")
 
             # ImportErrorが発生してもNoneで初期化される
@@ -1381,7 +1410,9 @@ class TestMainParserAdditionalCoverage:
         """Parser Factory ImportError パステスト"""
         # パーサーファクトリーのimport失敗をシミュレート
         mock_container = Mock()
-        with patch('kumihan_formatter.core.patterns.factories.get_parser_factory') as mock_factory:
+        with patch(
+            "kumihan_formatter.core.patterns.factories.get_parser_factory"
+        ) as mock_factory:
             mock_factory.side_effect = ImportError("Factory module not found")
 
             parser = MainParser(container=mock_container)
@@ -1391,7 +1422,7 @@ class TestMainParserAdditionalCoverage:
     def test_parse_error_exception_handling(self):
         """パースエラー例外ハンドリングテスト"""
         # parseメソッドで例外が発生した場合のテスト
-        with patch.object(self.parser, '_validate_input') as mock_validate:
+        with patch.object(self.parser, "_validate_input") as mock_validate:
             mock_validate.side_effect = Exception("Validation error")
 
             result = self.parser.parse("テストテキスト")
@@ -1406,7 +1437,7 @@ class TestMainParserAdditionalCoverage:
         large_text = "大容量テスト\n" * 15000  # 並列処理閾値を超える
 
         # _parse_chunkでエラーを発生させる
-        with patch.object(self.parser, '_parse_chunk') as mock_chunk:
+        with patch.object(self.parser, "_parse_chunk") as mock_chunk:
             mock_chunk.side_effect = Exception("Chunk parse error")
 
             result = self.parser.parse(large_text)
@@ -1416,6 +1447,7 @@ class TestMainParserAdditionalCoverage:
 
     def test_streaming_parse_exception_handling(self):
         """ストリーミングパース例外ハンドリングテスト"""
+
         def error_generator():
             yield "正常データ"
             raise Exception("Stream processing error")
@@ -1423,7 +1455,9 @@ class TestMainParserAdditionalCoverage:
         results = list(self.parser.parse_streaming(error_generator()))
         # エラーが発生してもerror_nodeが生成される
         assert len(results) >= 1
-        error_found = any(hasattr(node, 'type') and node.type == 'error' for node in results)
+        error_found = any(
+            hasattr(node, "type") and node.type == "error" for node in results
+        )
         assert error_found
 
     def test_empty_parser_fallback_scenarios(self):
@@ -1440,8 +1474,8 @@ class TestMainParserAdditionalCoverage:
         minimal_parser = self.parser._create_minimal_parser()
 
         # MinimalParserの動作テスト
-        assert hasattr(minimal_parser, 'can_parse')
-        assert hasattr(minimal_parser, 'parse')
+        assert hasattr(minimal_parser, "can_parse")
+        assert hasattr(minimal_parser, "parse")
         assert minimal_parser.can_parse("テスト") is False
 
         result = minimal_parser.parse("テスト")
@@ -1455,18 +1489,18 @@ class TestMainParserAdditionalCoverage:
         result = self.parser._create_direct_instance("unknown_type")
 
         # 最小限パーサーが返される
-        assert hasattr(result, 'can_parse')
-        assert hasattr(result, 'parse')
+        assert hasattr(result, "can_parse")
+        assert hasattr(result, "parse")
         assert result.can_parse("テスト") is False
 
     def test_parse_protocol_exception_handling(self):
         """ParseProtocol例外ハンドリングテスト"""
         # parse_protocolでの例外処理
-        with patch.object(self.parser, 'parse') as mock_parse:
+        with patch.object(self.parser, "parse") as mock_parse:
             mock_parse.side_effect = Exception("Protocol parse error")
 
             result = self.parser.parse_protocol("テスト")
-            assert hasattr(result, 'success')
+            assert hasattr(result, "success")
             assert result.success is False
             assert len(result.errors) > 0
             assert "メインパース失敗" in result.errors[0]
@@ -1486,7 +1520,7 @@ class TestMainParserAdditionalCoverage:
     def test_get_cpu_count_exception(self):
         """CPU数取得例外テスト"""
         # os.cpu_count()で例外が発生した場合
-        with patch('os.cpu_count') as mock_cpu:
+        with patch("os.cpu_count") as mock_cpu:
             mock_cpu.side_effect = Exception("CPU count error")
 
             result = self.parser._get_cpu_count()
@@ -1504,15 +1538,15 @@ class TestMainParserAdditionalCoverage:
     def test_parser_initialization_fallback_sequence(self):
         """パーサー初期化フォールバックシーケンステスト"""
         # 初期化時の全面的エラーをシミュレート
-        with patch.object(MainParser, '_initialize_parsers') as mock_init:
+        with patch.object(MainParser, "_initialize_parsers") as mock_init:
             mock_init.side_effect = Exception("Parser initialization failed")
 
             # 例外が発生してもMainParserは初期化される
             try:
                 parser = MainParser()
                 # 最低限の属性は存在する
-                assert hasattr(parser, 'logger')
-                assert hasattr(parser, 'config')
+                assert hasattr(parser, "logger")
+                assert hasattr(parser, "config")
             except Exception:
                 # 初期化エラーの場合でも優雅に処理される
                 pass
@@ -1524,22 +1558,24 @@ class TestMainParserAdditionalCoverage:
 
         # 各チャンクでエラーを発生させる
         original_parse_chunk = self.parser._parse_chunk
+
         def error_parse_chunk(chunk, **kwargs):
             if "エラー" in chunk:
                 raise ValueError(f"Chunk error: {chunk[:20]}")
             return original_parse_chunk(chunk, **kwargs)
 
-        with patch.object(self.parser, '_parse_chunk', side_effect=error_parse_chunk):
+        with patch.object(self.parser, "_parse_chunk", side_effect=error_parse_chunk):
             result = self.parser.parse(large_text)
 
             # 並列エラーが記録される
             assert len(self.parser.parallel_errors) > 0
             error = self.parser.parallel_errors[0]
-            assert 'chunk' in error
-            assert 'error' in error
+            assert "chunk" in error
+            assert "error" in error
 
     def test_parse_streaming_protocol_exception_continuation(self):
         """ストリーミングプロトコル例外継続テスト"""
+
         def continuation_error_stream():
             yield "データ1"
             yield "データ2"
@@ -1553,14 +1589,17 @@ class TestMainParserAdditionalCoverage:
         # エラー発生前のデータは処理される
         assert len(results) >= 2
         for result in results:
-            assert hasattr(result, 'success')
+            assert hasattr(result, "success")
 
     def test_get_parser_info_with_statistics_collection(self):
         """統計収集付きパーサー情報取得テスト"""
         # 統計メソッドを持つモックパーサーをテスト
         mock_parser_with_stats = Mock()
         mock_parser_with_stats.parser_type = "test_with_stats"
-        mock_parser_with_stats.get_keyword_statistics.return_value = {"total": 10, "unique": 5}
+        mock_parser_with_stats.get_keyword_statistics.return_value = {
+            "total": 10,
+            "unique": 5,
+        }
 
         self.parser.parsers["test_stats"] = mock_parser_with_stats
 
@@ -1578,8 +1617,8 @@ class TestMainParserAdditionalCoverage:
         mock_list_parser.get_list_statistics.return_value = {"lists": 3, "items": 12}
 
         # get_keyword_statisticsがないことを確認
-        if hasattr(mock_list_parser, 'get_keyword_statistics'):
-            delattr(mock_list_parser, 'get_keyword_statistics')
+        if hasattr(mock_list_parser, "get_keyword_statistics"):
+            delattr(mock_list_parser, "get_keyword_statistics")
 
         self.parser.parsers["list_stats"] = mock_list_parser
 

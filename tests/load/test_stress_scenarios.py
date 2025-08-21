@@ -91,7 +91,7 @@ class TestStressScenarios:
             "success": success,
             "elapsed": elapsed,
             "errors": errors,
-            "result": result
+            "result": result,
         }
 
     def test_深いネスト構造(self) -> None:
@@ -130,7 +130,9 @@ class TestStressScenarios:
         result = self.stress_test_parser(content)
 
         # エッジケースでもクラッシュしないこと
-        assert result["success"] or len(result["errors"]) > 0, "エッジケース処理が不明な状態"
+        assert (
+            result["success"] or len(result["errors"]) > 0
+        ), "エッジケース処理が不明な状態"
         assert result["elapsed"] < 1.0, f"処理時間超過: {result['elapsed']:.2f}秒"
 
         if result["errors"]:
@@ -204,15 +206,15 @@ class TestStressScenarios:
         snapshot2 = tracemalloc.take_snapshot()
 
         # メモリ増加量確認
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats if stat.size_diff > 0)
 
         tracemalloc.stop()
 
         # メモリリークがないこと（増加量が5MB以下）
-        assert total_diff < 5 * 1024 * 1024, (
-            f"メモリ増加量が多すぎます: {total_diff/1024/1024:.2f}MB"
-        )
+        assert (
+            total_diff < 5 * 1024 * 1024
+        ), f"メモリ増加量が多すぎます: {total_diff/1024/1024:.2f}MB"
 
         logger.info(f"メモリストレステスト完了: 増加量 {total_diff/1024:.1f}KB")
 

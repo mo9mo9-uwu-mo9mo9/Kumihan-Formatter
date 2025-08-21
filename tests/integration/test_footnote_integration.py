@@ -1,11 +1,12 @@
 """Integration tests for Kumihan-Formatter footnote system."""
 
 import pytest
-from kumihan_formatter.parser import Parser
-from kumihan_formatter.renderer import Renderer
+
 from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
 from kumihan_formatter.core.rendering.html_formatter import FootnoteManager
 from kumihan_formatter.core.utilities.logger import get_logger
+from kumihan_formatter.parser import Parser
+from kumihan_formatter.renderer import Renderer
 
 
 class TestFootnoteIntegration:

@@ -13,7 +13,6 @@ from kumihan_formatter.core.parsing.keyword.keyword_registry import KeywordRegis
 from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
 
-
 # mypy: ignore-errors
 # Large number of type errors due to test mocking - strategic ignore for rapid error reduction
 

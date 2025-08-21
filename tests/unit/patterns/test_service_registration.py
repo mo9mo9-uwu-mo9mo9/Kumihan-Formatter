@@ -4,18 +4,19 @@ service_registration.py の包括的テストによりDI & Service System の品
 Issue #929 Phase 2A: DI & Service System Tests
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from typing import Protocol
+from unittest.mock import MagicMock, Mock, patch
 
-from kumihan_formatter.core.patterns.service_registration import (
-    register_default_services,
-    auto_register_services,
-)
+import pytest
+
 from kumihan_formatter.core.patterns.dependency_injection import (
     DIContainer,
     ServiceLifetime,
     get_container,
+)
+from kumihan_formatter.core.patterns.service_registration import (
+    auto_register_services,
+    register_default_services,
 )
 from kumihan_formatter.core.utilities.logger import get_logger
 

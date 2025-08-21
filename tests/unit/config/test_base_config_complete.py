@@ -6,9 +6,10 @@ Issue #929 Phase 3A: Base Configuration Module テスト
 
 import json
 import tempfile
-import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 from kumihan_formatter.config.base_config import BaseConfig
 
@@ -119,8 +120,12 @@ class TestBaseConfigCSS:
 
         # Then
         expected_keys = [
-            "max_width", "background_color", "container_background",
-            "text_color", "line_height", "font_family"
+            "max_width",
+            "background_color",
+            "container_background",
+            "text_color",
+            "line_height",
+            "font_family",
         ]
         for key in expected_keys:
             assert key in default_css
@@ -283,7 +288,7 @@ class TestBaseConfigValidation:
             "output_dir": "output",
             "template_dir": "templates",
             "html": {"title": "Test"},
-            "css": {"color": "blue"}
+            "css": {"color": "blue"},
         }
         config = BaseConfig(valid_config)
 
@@ -347,7 +352,7 @@ class TestBaseConfigValidation:
         invalid_config = {
             "output_dir": "output",
             "template_dir": "templates",
-            "html": "invalid_html_config"
+            "html": "invalid_html_config",
         }
         config = BaseConfig(invalid_config)
 
@@ -363,7 +368,7 @@ class TestBaseConfigValidation:
         invalid_config = {
             "output_dir": "output",
             "template_dir": "templates",
-            "css": ["invalid", "css", "config"]
+            "css": ["invalid", "css", "config"],
         }
         config = BaseConfig(invalid_config)
 
@@ -379,7 +384,7 @@ class TestBaseConfigValidation:
         valid_config = {
             "output_dir": "output",
             "template_dir": "templates",
-            "html": {"title": "Test Title", "lang": "ja"}
+            "html": {"title": "Test Title", "lang": "ja"},
         }
         config = BaseConfig(valid_config)
 
@@ -395,7 +400,7 @@ class TestBaseConfigValidation:
         valid_config = {
             "output_dir": "output",
             "template_dir": "templates",
-            "css": {"color": "red", "font-size": "14px"}
+            "css": {"color": "red", "font-size": "14px"},
         }
         config = BaseConfig(valid_config)
 
@@ -411,7 +416,7 @@ class TestBaseConfigValidation:
         config = BaseConfig()
 
         # When
-        with patch.object(config, '_config', side_effect=Exception("Test exception")):
+        with patch.object(config, "_config", side_effect=Exception("Test exception")):
             is_valid = config.validate()
 
         # Then
@@ -432,7 +437,9 @@ css:
   max_width: 900px
   color: red
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as f:
             f.write(yaml_content)
             yaml_file_path = f.name
 
@@ -455,9 +462,11 @@ css:
         json_data = {
             "output_dir": "json_output",
             "template_dir": "json_templates",
-            "css": {"background_color": "#000000"}
+            "css": {"background_color": "#000000"},
         }
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(json_data, f, ensure_ascii=False)
             json_file_path = f.name
 
@@ -487,7 +496,9 @@ css:
         """不正な形式のYAMLファイルテスト"""
         # Given
         invalid_yaml = "invalid: yaml: content: ["
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as f:
             f.write(invalid_yaml)
             invalid_yaml_path = f.name
 
@@ -504,7 +515,9 @@ css:
         """不正な形式のJSONファイルテスト"""
         # Given
         invalid_json = '{"invalid": json content'
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             f.write(invalid_json)
             invalid_json_path = f.name
 
@@ -520,7 +533,9 @@ css:
     def test_異常系_from_file_未対応拡張子(self):
         """未対応拡張子のファイルテスト"""
         # Given
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
             f.write("some content")
             txt_file_path = f.name
 
@@ -536,7 +551,9 @@ css:
     def test_異常系_from_file_空ファイル(self):
         """空ファイルの処理テスト"""
         # Given
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as f:
             f.write("")
             empty_file_path = f.name
 
@@ -553,7 +570,9 @@ css:
     def test_異常系_from_file_非辞書データ(self):
         """非辞書データのファイルテスト"""
         # Given
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(["list", "data"], f)
             list_file_path = f.name
 
@@ -570,7 +589,9 @@ css:
         """YML拡張子での読み込みテスト"""
         # Given
         yaml_content = "output_dir: yml_output\ntemplate_dir: yml_templates"
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False, encoding="utf-8"
+        ) as f:
             f.write(yaml_content)
             yml_file_path = f.name
 
@@ -612,7 +633,7 @@ class TestBaseConfigBoundaryAndError:
             "特殊キー": "日本語値",
             "emoji_key": "🎯📋🔧",
             "symbol_key": "!@#$%^&*()_+-=[]{}|;':\",./<>?",
-            "unicode_key": "\u2603\u26C4\u2744"
+            "unicode_key": "\u2603\u26c4\u2744",
         }
 
         # When
@@ -622,7 +643,7 @@ class TestBaseConfigBoundaryAndError:
         assert config.get("特殊キー") == "日本語値"
         assert config.get("emoji_key") == "🎯📋🔧"
         assert config.get("symbol_key") == "!@#$%^&*()_+-=[]{}|;':\",./<>?"
-        assert config.get("unicode_key") == "\u2603\u26C4\u2744"
+        assert config.get("unicode_key") == "\u2603\u26c4\u2744"
 
     def test_境界値_ネストした辞書構造(self):
         """深くネストした辞書構造のテスト"""
@@ -630,13 +651,7 @@ class TestBaseConfigBoundaryAndError:
         nested_config = {
             "output_dir": "output",
             "template_dir": "templates",
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "deep_value": "found"
-                    }
-                }
-            }
+            "level1": {"level2": {"level3": {"deep_value": "found"}}},
         }
 
         # When
@@ -649,11 +664,7 @@ class TestBaseConfigBoundaryAndError:
     def test_境界値_空文字列設定(self):
         """空文字列設定のテスト"""
         # Given
-        empty_string_config = {
-            "output_dir": "",
-            "template_dir": "",
-            "empty_value": ""
-        }
+        empty_string_config = {"output_dir": "", "template_dir": "", "empty_value": ""}
 
         # When
         config = BaseConfig(empty_string_config)
@@ -676,16 +687,12 @@ class TestBaseConfigIntegration:
             "output_dir": "dist",
             "template_dir": "src/templates",
             "theme_name": "完全テーマ",
-            "html": {
-                "title": "統合テスト",
-                "lang": "ja",
-                "charset": "UTF-8"
-            },
+            "html": {"title": "統合テスト", "lang": "ja", "charset": "UTF-8"},
             "css": {
                 "max_width": "1200px",
                 "background_color": "#f0f0f0",
-                "font_family": "ヒラギノ角ゴ ProN"
-            }
+                "font_family": "ヒラギノ角ゴ ProN",
+            },
         }
 
         # When
@@ -727,7 +734,9 @@ css:
   text_color: "#333333"
   line_height: "1.6"
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as f:
             f.write(yaml_content)
             integration_file_path = f.name
 

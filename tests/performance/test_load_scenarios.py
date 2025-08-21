@@ -16,6 +16,7 @@ import pytest
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
@@ -38,6 +39,7 @@ class LoadTestScenario:
     def cleanup(self) -> None:
         """リソースクリーンアップ"""
         import shutil
+
         try:
             if self.temp_dir.exists():
                 shutil.rmtree(self.temp_dir)
@@ -86,18 +88,19 @@ class LoadTestScenario:
                 else:
                     lines.append(f"テキスト {i} #インライン{i}#")
 
-        content = '\n'.join(lines)
+        content = "\n".join(lines)
 
         return {
             "content": content,
             "size": size,
             "line_count": line_count,
             "complexity": complexity,
-            "content_size_kb": len(content) / 1024
+            "content_size_kb": len(content) / 1024,
         }
 
-    def simulate_processing(self, workload: Dict[str, Any],
-                          task_id: int = 0) -> Dict[str, Any]:
+    def simulate_processing(
+        self, workload: Dict[str, Any], task_id: int = 0
+    ) -> Dict[str, Any]:
         """処理シミュレート"""
         start_time = time.time()
         content = workload["content"]
@@ -105,13 +108,13 @@ class LoadTestScenario:
         try:
             # ステップ1: パース処理シミュレート
             parse_start = time.time()
-            lines = content.split('\n')
+            lines = content.split("\n")
             parsed_elements = []
 
             for line in lines:
-                if line.startswith('#') and line.endswith('#') and len(line) > 2:
+                if line.startswith("#") and line.endswith("#") and len(line) > 2:
                     parsed_elements.append({"type": "inline", "content": line})
-                elif line.startswith('#'):
+                elif line.startswith("#"):
                     parsed_elements.append({"type": "block_start", "content": line})
                 elif line.strip() == "##":
                     parsed_elements.append({"type": "block_end", "content": line})
@@ -122,9 +125,15 @@ class LoadTestScenario:
 
             # ステップ2: レンダリング処理シミュレート
             render_start = time.time()
-            html_parts = ["<!DOCTYPE html>", "<html>", "<head>",
-                         "<meta charset='UTF-8'>", "<title>Test</title>",
-                         "</head>", "<body>"]
+            html_parts = [
+                "<!DOCTYPE html>",
+                "<html>",
+                "<head>",
+                "<meta charset='UTF-8'>",
+                "<title>Test</title>",
+                "</head>",
+                "<body>",
+            ]
 
             for element in parsed_elements:
                 if element["type"] == "inline":
@@ -135,13 +144,13 @@ class LoadTestScenario:
                     html_parts.append(element["content"])
 
             html_parts.extend(["</body>", "</html>"])
-            rendered_html = '\n'.join(html_parts)
+            rendered_html = "\n".join(html_parts)
             render_time = time.time() - render_start
 
             # ステップ3: 出力処理シミュレート
             output_start = time.time()
             output_file = self.temp_dir / f"output_{task_id}.html"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(rendered_html)
             output_time = time.time() - output_start
 
@@ -156,7 +165,7 @@ class LoadTestScenario:
                 "output_time": output_time,
                 "elements_processed": len(parsed_elements),
                 "output_size_kb": len(rendered_html) / 1024,
-                "output_file": str(output_file)
+                "output_file": str(output_file),
             }
 
             # スレッドセーフに結果を保存
@@ -170,7 +179,7 @@ class LoadTestScenario:
                 "task_id": task_id,
                 "success": False,
                 "error": str(e),
-                "total_time": time.time() - start_time
+                "total_time": time.time() - start_time,
             }
 
             with self.lock:
@@ -178,8 +187,9 @@ class LoadTestScenario:
 
             return error_result
 
-    def run_concurrent_load_test(self, workloads: List[Dict[str, Any]],
-                               max_workers: int = 5) -> Dict[str, Any]:
+    def run_concurrent_load_test(
+        self, workloads: List[Dict[str, Any]], max_workers: int = 5
+    ) -> Dict[str, Any]:
         """並行負荷テスト実行"""
         start_time = time.time()
 
@@ -224,7 +234,9 @@ class LoadTestScenario:
         # 統計計算
         successful_results = [r for r in completed_results if r["success"]]
         if successful_results:
-            avg_task_time = sum(r["total_time"] for r in successful_results) / len(successful_results)
+            avg_task_time = sum(r["total_time"] for r in successful_results) / len(
+                successful_results
+            )
             max_task_time = max(r["total_time"] for r in successful_results)
             min_task_time = min(r["total_time"] for r in successful_results)
             throughput = len(successful_results) / total_time if total_time > 0 else 0
@@ -235,19 +247,24 @@ class LoadTestScenario:
             "total_tasks": len(workloads),
             "successful_tasks": len(successful_results),
             "failed_tasks": failed_count,
-            "success_rate": len(successful_results) / len(workloads) if workloads else 0,
+            "success_rate": (
+                len(successful_results) / len(workloads) if workloads else 0
+            ),
             "total_time": total_time,
             "avg_task_time": avg_task_time,
             "max_task_time": max_task_time,
             "min_task_time": min_task_time,
             "throughput_per_second": throughput,
-            "memory_usage_mb": (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0,
+            "memory_usage_mb": (
+                (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+            ),
             "max_workers": max_workers,
-            "results": completed_results
+            "results": completed_results,
         }
 
-    def run_stress_test(self, duration_seconds: int = 30,
-                       workload_size: str = "medium") -> Dict[str, Any]:
+    def run_stress_test(
+        self, duration_seconds: int = 30, workload_size: str = "medium"
+    ) -> Dict[str, Any]:
         """ストレステスト実行"""
         start_time = time.time()
         end_time = start_time + duration_seconds
@@ -282,7 +299,9 @@ class LoadTestScenario:
         # 統計計算
         successful_iterations = [r for r in stress_results if r["success"]]
         if successful_iterations:
-            avg_iteration_time = sum(r["total_time"] for r in successful_iterations) / len(successful_iterations)
+            avg_iteration_time = sum(
+                r["total_time"] for r in successful_iterations
+            ) / len(successful_iterations)
             throughput = len(successful_iterations) / total_duration
         else:
             avg_iteration_time = throughput = 0
@@ -293,11 +312,15 @@ class LoadTestScenario:
             "total_iterations": iteration_count,
             "successful_iterations": len(successful_iterations),
             "failed_iterations": iteration_count - len(successful_iterations),
-            "success_rate": len(successful_iterations) / iteration_count if iteration_count > 0 else 0,
+            "success_rate": (
+                len(successful_iterations) / iteration_count
+                if iteration_count > 0
+                else 0
+            ),
             "avg_iteration_time": avg_iteration_time,
             "throughput_per_second": throughput,
             "memory_history": memory_history,
-            "workload_size": workload_size
+            "workload_size": workload_size,
         }
 
 
@@ -320,72 +343,76 @@ class TestLoadScenarios:
     def test_負荷シナリオ_並列処理基本(self) -> None:
         """負荷シナリオ: 基本的な並列処理"""
         # Given: 並列処理用ワークロード
-        workloads = [
-            self.scenario.generate_workload("small") for _ in range(5)
-        ]
+        workloads = [self.scenario.generate_workload("small") for _ in range(5)]
 
         # When: 並列負荷テスト実行
         result = self.scenario.run_concurrent_load_test(workloads, max_workers=3)
 
         # Then: 並列処理性能確認
-        assert result["success_rate"] >= 0.8, \
-               f"並列処理成功率が低い: {result['success_rate']:.2f}"
-        assert result["total_time"] < 10.0, \
-               f"並列処理時間超過: {result['total_time']:.3f}秒"
-        assert result["memory_usage_mb"] < 100, \
-               f"並列処理メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
+        assert (
+            result["success_rate"] >= 0.8
+        ), f"並列処理成功率が低い: {result['success_rate']:.2f}"
+        assert (
+            result["total_time"] < 10.0
+        ), f"並列処理時間超過: {result['total_time']:.3f}秒"
+        assert (
+            result["memory_usage_mb"] < 100
+        ), f"並列処理メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
 
         # スループット確認
-        assert result["throughput_per_second"] > 0.5, \
-               f"並列処理スループット不足: {result['throughput_per_second']:.2f}/秒"
+        assert (
+            result["throughput_per_second"] > 0.5
+        ), f"並列処理スループット不足: {result['throughput_per_second']:.2f}/秒"
 
-        logger.info(f"並列処理基本確認完了: 成功率{result['success_rate']:.2f}, "
-                   f"スループット{result['throughput_per_second']:.2f}/秒")
+        logger.info(
+            f"並列処理基本確認完了: 成功率{result['success_rate']:.2f}, "
+            f"スループット{result['throughput_per_second']:.2f}/秒"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_同時処理10(self) -> None:
         """負荷シナリオ: 10並列処理 - 指示書基準"""
         # Given: 10並列処理用ワークロード（指示書基準）
-        workloads = [
-            self.scenario.generate_workload("medium") for _ in range(10)
-        ]
+        workloads = [self.scenario.generate_workload("medium") for _ in range(10)]
 
         # When: 10並列負荷テスト実行
         result = self.scenario.run_concurrent_load_test(workloads, max_workers=10)
 
         # Then: 指示書基準確認（10並列処理の安定動作）
-        assert result["success_rate"] >= 0.9, \
-               f"10並列処理成功率基準未達: {result['success_rate']:.2f}"
-        assert result["total_time"] < 20.0, \
-               f"10並列処理時間超過: {result['total_time']:.3f}秒"
-        assert result["failed_tasks"] <= 1, \
-               f"10並列処理で過度な失敗: {result['failed_tasks']}件"
+        assert (
+            result["success_rate"] >= 0.9
+        ), f"10並列処理成功率基準未達: {result['success_rate']:.2f}"
+        assert (
+            result["total_time"] < 20.0
+        ), f"10並列処理時間超過: {result['total_time']:.3f}秒"
+        assert (
+            result["failed_tasks"] <= 1
+        ), f"10並列処理で過度な失敗: {result['failed_tasks']}件"
 
         # 平均タスク時間の妥当性
-        assert result["avg_task_time"] < 15.0, \
-               f"10並列処理の平均タスク時間超過: {result['avg_task_time']:.3f}秒"
+        assert (
+            result["avg_task_time"] < 15.0
+        ), f"10並列処理の平均タスク時間超過: {result['avg_task_time']:.3f}秒"
 
-        logger.info(f"10並列処理確認完了: 成功率{result['success_rate']:.2f}, "
-                   f"平均タスク時間{result['avg_task_time']:.3f}秒")
+        logger.info(
+            f"10並列処理確認完了: 成功率{result['success_rate']:.2f}, "
+            f"平均タスク時間{result['avg_task_time']:.3f}秒"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_1000ファイル連続処理(self) -> None:
         """負荷シナリオ: 1000ファイル連続処理 - 指示書基準"""
         # Given: 1000ファイル連続処理（指示書基準の負荷耐性）
         # 実際のテストでは現実的な数に調整（50ファイル）
-        workloads = [
-            self.scenario.generate_workload("small") for _ in range(50)
-        ]
+        workloads = [self.scenario.generate_workload("small") for _ in range(50)]
 
         # When: 連続処理実行（バッチサイズで分割）
         batch_size = 10
         batch_results = []
 
         for i in range(0, len(workloads), batch_size):
-            batch = workloads[i:i+batch_size]
-            batch_result = self.scenario.run_concurrent_load_test(
-                batch, max_workers=5
-            )
+            batch = workloads[i : i + batch_size]
+            batch_result = self.scenario.run_concurrent_load_test(batch, max_workers=5)
             batch_results.append(batch_result)
 
             # バッチ間で短時間待機（システム負荷軽減）
@@ -397,15 +424,16 @@ class TestLoadScenarios:
         total_time = sum(r["total_time"] for r in batch_results)
         overall_success_rate = total_successful / (total_successful + total_failed)
 
-        assert overall_success_rate >= 0.95, \
-               f"連続処理成功率基準未達: {overall_success_rate:.3f}"
-        assert total_time < 120.0, \
-               f"連続処理時間超過: {total_time:.1f}秒"
-        assert total_failed <= 2, \
-               f"連続処理で過度な失敗: {total_failed}件"
+        assert (
+            overall_success_rate >= 0.95
+        ), f"連続処理成功率基準未達: {overall_success_rate:.3f}"
+        assert total_time < 120.0, f"連続処理時間超過: {total_time:.1f}秒"
+        assert total_failed <= 2, f"連続処理で過度な失敗: {total_failed}件"
 
-        logger.info(f"連続処理確認完了: {len(workloads)}ファイル, "
-                   f"成功率{overall_success_rate:.3f}, 総時間{total_time:.1f}秒")
+        logger.info(
+            f"連続処理確認完了: {len(workloads)}ファイル, "
+            f"成功率{overall_success_rate:.3f}, 総時間{total_time:.1f}秒"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_ストレステスト(self) -> None:
@@ -417,30 +445,34 @@ class TestLoadScenarios:
         result = self.scenario.run_stress_test(duration, "medium")
 
         # Then: ストレステスト確認
-        assert result["success_rate"] >= 0.85, \
-               f"ストレステスト成功率が低い: {result['success_rate']:.2f}"
-        assert result["duration_seconds"] >= duration * 0.9, \
-               f"ストレステスト時間不足: {result['duration_seconds']:.1f}秒"
+        assert (
+            result["success_rate"] >= 0.85
+        ), f"ストレステスト成功率が低い: {result['success_rate']:.2f}"
+        assert (
+            result["duration_seconds"] >= duration * 0.9
+        ), f"ストレステスト時間不足: {result['duration_seconds']:.1f}秒"
 
         # スループット安定性確認
-        assert result["throughput_per_second"] > 1.0, \
-               f"ストレステストスループット不足: {result['throughput_per_second']:.2f}/秒"
+        assert (
+            result["throughput_per_second"] > 1.0
+        ), f"ストレステストスループット不足: {result['throughput_per_second']:.2f}/秒"
 
         # 最低限の処理回数確認
-        assert result["total_iterations"] >= 20, \
-               f"ストレステスト処理回数不足: {result['total_iterations']}回"
+        assert (
+            result["total_iterations"] >= 20
+        ), f"ストレステスト処理回数不足: {result['total_iterations']}回"
 
-        logger.info(f"ストレステスト確認完了: {result['total_iterations']}回, "
-                   f"成功率{result['success_rate']:.2f}")
+        logger.info(
+            f"ストレステスト確認完了: {result['total_iterations']}回, "
+            f"成功率{result['success_rate']:.2f}"
+        )
 
     @pytest.mark.performance
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
     def test_負荷シナリオ_メモリ安定性(self) -> None:
         """負荷シナリオ: メモリ安定性の確認"""
         # Given: メモリ安定性確認用負荷
-        workloads = [
-            self.scenario.generate_workload("large") for _ in range(8)
-        ]
+        workloads = [self.scenario.generate_workload("large") for _ in range(8)]
 
         # When: 負荷テスト実行とメモリ監視
         initial_memory = psutil.Process().memory_info().rss / 1024 / 1024
@@ -451,25 +483,26 @@ class TestLoadScenarios:
         memory_growth = final_memory - initial_memory
 
         # Then: メモリ安定性確認
-        assert memory_growth < 200, \
-               f"負荷テストでメモリ増加過多: {memory_growth:.1f}MB"
-        assert result["memory_usage_mb"] < 150, \
-               f"負荷テストメモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
+        assert memory_growth < 200, f"負荷テストでメモリ増加過多: {memory_growth:.1f}MB"
+        assert (
+            result["memory_usage_mb"] < 150
+        ), f"負荷テストメモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
 
         # 処理成功率も確認
-        assert result["success_rate"] >= 0.8, \
-               f"負荷テスト成功率が低い: {result['success_rate']:.2f}"
+        assert (
+            result["success_rate"] >= 0.8
+        ), f"負荷テスト成功率が低い: {result['success_rate']:.2f}"
 
-        logger.info(f"メモリ安定性確認完了: 増加{memory_growth:.1f}MB, "
-                   f"使用量{result['memory_usage_mb']:.1f}MB")
+        logger.info(
+            f"メモリ安定性確認完了: 増加{memory_growth:.1f}MB, "
+            f"使用量{result['memory_usage_mb']:.1f}MB"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_エラー回復力(self) -> None:
         """負荷シナリオ: エラー回復力の確認"""
         # Given: エラーを含むワークロード
-        normal_workloads = [
-            self.scenario.generate_workload("medium") for _ in range(6)
-        ]
+        normal_workloads = [self.scenario.generate_workload("medium") for _ in range(6)]
 
         # 意図的にエラーを含むワークロードを混入
         error_workloads = []
@@ -486,25 +519,28 @@ class TestLoadScenarios:
 
         # Then: エラー回復力確認
         # 一部エラーがあっても全体は成功するはず
-        assert result["success_rate"] >= 0.6, \
-               f"エラー回復力が不足: {result['success_rate']:.2f}"
-        assert result["successful_tasks"] >= len(normal_workloads) * 0.8, \
-               "正常ワークロードの処理失敗が多すぎる"
+        assert (
+            result["success_rate"] >= 0.6
+        ), f"エラー回復力が不足: {result['success_rate']:.2f}"
+        assert (
+            result["successful_tasks"] >= len(normal_workloads) * 0.8
+        ), "正常ワークロードの処理失敗が多すぎる"
 
         # 全体の処理時間は妥当な範囲内
-        assert result["total_time"] < 25.0, \
-               f"エラー処理込み時間超過: {result['total_time']:.3f}秒"
+        assert (
+            result["total_time"] < 25.0
+        ), f"エラー処理込み時間超過: {result['total_time']:.3f}秒"
 
-        logger.info(f"エラー回復力確認完了: 成功率{result['success_rate']:.2f}, "
-                   f"成功タスク{result['successful_tasks']}/{result['total_tasks']}")
+        logger.info(
+            f"エラー回復力確認完了: 成功率{result['success_rate']:.2f}, "
+            f"成功タスク{result['successful_tasks']}/{result['total_tasks']}"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_リソース制限下性能(self) -> None:
         """負荷シナリオ: リソース制限下での性能"""
         # Given: リソース制限シミュレート（少ない並列数）
-        workloads = [
-            self.scenario.generate_workload("medium") for _ in range(12)
-        ]
+        workloads = [self.scenario.generate_workload("medium") for _ in range(12)]
 
         # When: 制限された並列数での実行
         limited_result = self.scenario.run_concurrent_load_test(
@@ -518,39 +554,54 @@ class TestLoadScenarios:
 
         # Then: リソース制限下性能確認
         # 制限下でも一定の成功率を維持
-        assert limited_result["success_rate"] >= 0.8, \
-               f"リソース制限下成功率不足: {limited_result['success_rate']:.2f}"
+        assert (
+            limited_result["success_rate"] >= 0.8
+        ), f"リソース制限下成功率不足: {limited_result['success_rate']:.2f}"
 
         # 制限下でも妥当な時間内
-        assert limited_result["total_time"] < 60.0, \
-               f"リソース制限下時間超過: {limited_result['total_time']:.3f}秒"
+        assert (
+            limited_result["total_time"] < 60.0
+        ), f"リソース制限下時間超過: {limited_result['total_time']:.3f}秒"
 
         # 効率性の比較（完全な線形性は期待しない）
-        efficiency_ratio = (limited_result["throughput_per_second"] /
-                          normal_result["throughput_per_second"])
-        assert efficiency_ratio > 0.3, \
-               f"リソース制限下効率が低すぎる: {efficiency_ratio:.2f}"
+        efficiency_ratio = (
+            limited_result["throughput_per_second"]
+            / normal_result["throughput_per_second"]
+        )
+        assert (
+            efficiency_ratio > 0.3
+        ), f"リソース制限下効率が低すぎる: {efficiency_ratio:.2f}"
 
-        logger.info(f"リソース制限下性能確認完了: 成功率{limited_result['success_rate']:.2f}, "
-                   f"効率比{efficiency_ratio:.2f}")
+        logger.info(
+            f"リソース制限下性能確認完了: 成功率{limited_result['success_rate']:.2f}, "
+            f"効率比{efficiency_ratio:.2f}"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_混合ワークロード(self) -> None:
         """負荷シナリオ: 混合ワークロードでの性能"""
         # Given: 異なるサイズの混合ワークロード
         mixed_workloads = []
-        mixed_workloads.extend([self.scenario.generate_workload("small") for _ in range(4)])
-        mixed_workloads.extend([self.scenario.generate_workload("medium") for _ in range(4)])
-        mixed_workloads.extend([self.scenario.generate_workload("large") for _ in range(2)])
+        mixed_workloads.extend(
+            [self.scenario.generate_workload("small") for _ in range(4)]
+        )
+        mixed_workloads.extend(
+            [self.scenario.generate_workload("medium") for _ in range(4)]
+        )
+        mixed_workloads.extend(
+            [self.scenario.generate_workload("large") for _ in range(2)]
+        )
 
         # When: 混合ワークロード負荷テスト実行
         result = self.scenario.run_concurrent_load_test(mixed_workloads, max_workers=6)
 
         # Then: 混合ワークロード性能確認
-        assert result["success_rate"] >= 0.8, \
-               f"混合ワークロード成功率不足: {result['success_rate']:.2f}"
-        assert result["total_time"] < 30.0, \
-               f"混合ワークロード時間超過: {result['total_time']:.3f}秒"
+        assert (
+            result["success_rate"] >= 0.8
+        ), f"混合ワークロード成功率不足: {result['success_rate']:.2f}"
+        assert (
+            result["total_time"] < 30.0
+        ), f"混合ワークロード時間超過: {result['total_time']:.3f}秒"
 
         # タスク時間のばらつき確認
         successful_results = [r for r in result["results"] if r["success"]]
@@ -561,11 +612,14 @@ class TestLoadScenarios:
             time_variance = max_time - min_time
 
             # 妥当な時間ばらつき範囲内
-            assert time_variance < 20.0, \
-                   f"混合ワークロード時間ばらつき過大: {time_variance:.3f}秒"
+            assert (
+                time_variance < 20.0
+            ), f"混合ワークロード時間ばらつき過大: {time_variance:.3f}秒"
 
-        logger.info(f"混合ワークロード確認完了: 成功率{result['success_rate']:.2f}, "
-                   f"総時間{result['total_time']:.3f}秒")
+        logger.info(
+            f"混合ワークロード確認完了: 成功率{result['success_rate']:.2f}, "
+            f"総時間{result['total_time']:.3f}秒"
+        )
 
     @pytest.mark.performance
     def test_負荷シナリオ_長時間安定性(self) -> None:
@@ -577,22 +631,28 @@ class TestLoadScenarios:
         result = self.scenario.run_stress_test(duration, "small")
 
         # Then: 長時間安定性確認
-        assert result["success_rate"] >= 0.85, \
-               f"長時間安定性不足: {result['success_rate']:.2f}"
-        assert result["duration_seconds"] >= duration * 0.95, \
-               f"長時間テスト時間不足: {result['duration_seconds']:.1f}秒"
+        assert (
+            result["success_rate"] >= 0.85
+        ), f"長時間安定性不足: {result['success_rate']:.2f}"
+        assert (
+            result["duration_seconds"] >= duration * 0.95
+        ), f"長時間テスト時間不足: {result['duration_seconds']:.1f}秒"
 
         # 継続的なスループット確認
-        assert result["throughput_per_second"] > 0.8, \
-               f"長時間スループット不足: {result['throughput_per_second']:.2f}/秒"
+        assert (
+            result["throughput_per_second"] > 0.8
+        ), f"長時間スループット不足: {result['throughput_per_second']:.2f}/秒"
 
         # メモリ安定性確認（psutil利用可能時）
         if result["memory_history"]:
             memory_values = [m[1] for m in result["memory_history"]]
             memory_growth = max(memory_values) - min(memory_values)
-            assert memory_growth < 100, \
-                   f"長時間テストでメモリ増加過多: {memory_growth:.1f}MB"
+            assert (
+                memory_growth < 100
+            ), f"長時間テストでメモリ増加過多: {memory_growth:.1f}MB"
 
-        logger.info(f"長時間安定性確認完了: {result['total_iterations']}回, "
-                   f"成功率{result['success_rate']:.2f}, "
-                   f"継続時間{result['duration_seconds']:.1f}秒")
+        logger.info(
+            f"長時間安定性確認完了: {result['total_iterations']}回, "
+            f"成功率{result['success_rate']:.2f}, "
+            f"継続時間{result['duration_seconds']:.1f}秒"
+        )

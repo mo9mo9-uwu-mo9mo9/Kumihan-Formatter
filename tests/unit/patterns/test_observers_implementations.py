@@ -553,9 +553,9 @@ class TestObserversIntegration:
             # ログが出力される（フォーマットエラーで出力されない場合もある）
             # 少なくとも1回は何らかのログメソッドが呼ばれることを確認
             total_calls = (
-                mock_logger.info.call_count +
-                mock_logger.error.call_count +
-                mock_logger.warning.call_count +
-                mock_logger.debug.call_count
+                mock_logger.info.call_count
+                + mock_logger.error.call_count
+                + mock_logger.warning.call_count
+                + mock_logger.debug.call_count
             )
             assert total_calls >= 1  # 何らかのログが出力される

@@ -4,24 +4,27 @@ Issue #929 Phase 3C: ユーティリティ関数テスト
 15テストケースで設定ユーティリティ機能の70%カバレッジ達成
 """
 
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from kumihan_formatter.config.base_config import BaseConfig
 from kumihan_formatter.config.config_manager_utils import (
     create_config_instance,
+    load_config_file,
     merge_config_data,
-    load_config_file
 )
-from kumihan_formatter.config.base_config import BaseConfig
 from kumihan_formatter.config.extended_config import ExtendedConfig
 
 
 class TestCreateConfigInstance:
     """create_config_instance 関数のテスト"""
 
-    @patch('kumihan_formatter.config.config_manager_utils.ExtendedConfig')
-    def test_正常系_create_config_instance_extendedタイプ作成(self, mock_extended_config):
+    @patch("kumihan_formatter.config.config_manager_utils.ExtendedConfig")
+    def test_正常系_create_config_instance_extendedタイプ作成(
+        self, mock_extended_config
+    ):
         """extendedタイプの設定インスタンスが作成されることを確認"""
         # Given: extendedタイプとパス指定
         mock_instance = Mock()
@@ -36,7 +39,7 @@ class TestCreateConfigInstance:
         mock_extended_config.assert_called_once()
         assert result == mock_instance
 
-    @patch('kumihan_formatter.config.config_manager_utils.BaseConfig')
+    @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
     def test_正常系_create_config_instance_baseタイプ作成(self, mock_base_config):
         """baseタイプの設定インスタンスが作成されることを確認"""
         # Given: baseタイプとパス指定
@@ -52,9 +55,11 @@ class TestCreateConfigInstance:
         mock_base_config.assert_called_once()
         assert result == mock_instance
 
-    @patch('kumihan_formatter.config.config_manager_utils.Path')
-    @patch('kumihan_formatter.config.config_manager_utils.BaseConfig')
-    def test_正常系_create_config_instance_ファイルパス成功(self, mock_base_config, mock_path):
+    @patch("kumihan_formatter.config.config_manager_utils.Path")
+    @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
+    def test_正常系_create_config_instance_ファイルパス成功(
+        self, mock_base_config, mock_path
+    ):
         """ファイルパスからの設定読み込みが成功することを確認"""
         # Given: 存在するファイルパス
         config_path = "/path/to/config.json"
@@ -72,9 +77,11 @@ class TestCreateConfigInstance:
         mock_base_config.from_file.assert_called_once_with(config_path)
         assert result == mock_instance
 
-    @patch('kumihan_formatter.config.config_manager_utils.Path')
-    @patch('kumihan_formatter.config.config_manager_utils.BaseConfig')
-    def test_異常系_create_config_instance_ファイル読み込み失敗(self, mock_base_config, mock_path):
+    @patch("kumihan_formatter.config.config_manager_utils.Path")
+    @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
+    def test_異常系_create_config_instance_ファイル読み込み失敗(
+        self, mock_base_config, mock_path
+    ):
         """ファイル読み込み失敗時のフォールバック処理を確認"""
         # Given: 存在するが読み込みに失敗するファイル
         config_path = "/path/to/invalid.json"
@@ -93,9 +100,11 @@ class TestCreateConfigInstance:
         mock_base_config.assert_called_once()
         assert result == default_instance
 
-    @patch('kumihan_formatter.config.config_manager_utils.Path')
-    @patch('kumihan_formatter.config.config_manager_utils.BaseConfig')
-    def test_境界値_create_config_instance_ファイル存在しない(self, mock_base_config, mock_path):
+    @patch("kumihan_formatter.config.config_manager_utils.Path")
+    @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
+    def test_境界値_create_config_instance_ファイル存在しない(
+        self, mock_base_config, mock_path
+    ):
         """存在しないファイルパス指定時のテスト"""
         # Given: 存在しないファイルパス
         config_path = "/path/to/nonexistent.json"
@@ -114,7 +123,7 @@ class TestCreateConfigInstance:
         mock_base_config.assert_called_once()
         assert result == default_instance
 
-    @patch('kumihan_formatter.config.config_manager_utils.BaseConfig')
+    @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
     def test_境界値_create_config_instance_パスなし(self, mock_base_config):
         """config_pathがNoneの場合のテスト"""
         # Given: config_pathがNone
@@ -159,10 +168,7 @@ class TestMergeConfigData:
         merge_config_data(config, other_config)
 
         # Then: setメソッドが各項目で呼び出される
-        expected_calls = [
-            (("key1", "value1"),),
-            (("key2", "value2"),)
-        ]
+        expected_calls = [(("key1", "value1"),), (("key2", "value2"),)]
         config.set.assert_has_calls(expected_calls, any_order=True)
 
     def test_境界値_merge_config_data_空辞書(self):
@@ -188,7 +194,7 @@ class TestMergeConfigData:
         other_config = {
             "css": {"color": "#000000", "background": "#ffffff"},
             "theme": "dark",
-            "features": ["feature1", "feature2"]
+            "features": ["feature1", "feature2"],
         }
 
         # When: 複雑な構造をマージ
@@ -219,7 +225,7 @@ class TestMergeConfigData:
 class TestLoadConfigFile:
     """load_config_file 関数のテスト"""
 
-    @patch('kumihan_formatter.config.config_manager_utils.create_config_instance')
+    @patch("kumihan_formatter.config.config_manager_utils.create_config_instance")
     def test_正常系_load_config_file_読み込み成功(self, mock_create_config):
         """設定ファイルの読み込みが成功することを確認"""
         # Given: 設定ファイルパスと既存設定
@@ -240,14 +246,17 @@ class TestLoadConfigFile:
         new_config.merge_config.assert_called_once_with({"existing": "data"})
         assert result == new_config
 
-    @patch('kumihan_formatter.config.config_manager_utils.create_config_instance')
+    @patch("kumihan_formatter.config.config_manager_utils.create_config_instance")
     def test_正常系_load_config_file_既存設定統合(self, mock_create_config):
         """既存設定が新しい設定に統合されることを確認"""
         # Given: merge_config・to_dict両方を持つ設定
         config_type = "base"
         config_path = "/path/to/config.json"
         existing_config = Mock()
-        existing_config.to_dict.return_value = {"theme": "light", "css": {"color": "#000"}}
+        existing_config.to_dict.return_value = {
+            "theme": "light",
+            "css": {"color": "#000"},
+        }
 
         new_config = Mock()
         new_config.merge_config = Mock()
@@ -261,7 +270,7 @@ class TestLoadConfigFile:
         new_config.merge_config.assert_called_once_with(expected_data)
         assert result == new_config
 
-    @patch('kumihan_formatter.config.config_manager_utils.create_config_instance')
+    @patch("kumihan_formatter.config.config_manager_utils.create_config_instance")
     def test_正常系_load_config_file_merge_config_to_dict両方(self, mock_create_config):
         """merge_config・to_dict両方のメソッドが存在する場合のテスト"""
         # Given: 両方のメソッドを持つ設定オブジェクト
@@ -282,7 +291,7 @@ class TestLoadConfigFile:
         existing_config.to_dict.assert_called_once()
         assert result == new_config
 
-    @patch('kumihan_formatter.config.config_manager_utils.create_config_instance')
+    @patch("kumihan_formatter.config.config_manager_utils.create_config_instance")
     def test_境界値_load_config_file_メソッド欠落(self, mock_create_config):
         """merge_config または to_dict が欠落している場合のテスト"""
         # Given: to_dictメソッドを持たない既存設定

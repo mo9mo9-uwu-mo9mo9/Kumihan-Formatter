@@ -4,11 +4,14 @@ Kumihan-Formatter の core/parsing/list/parsers/ordered_list_parser.py モジュ
 拡張版の順序付きリストパーサーの機能を詳細に検証
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from kumihan_formatter.core.parsing.list.parsers.ordered_list_parser import OrderedListParser
+import pytest
+
 from kumihan_formatter.core.ast_nodes import Node
+from kumihan_formatter.core.parsing.list.parsers.ordered_list_parser import (
+    OrderedListParser,
+)
 
 
 class TestOrderedListParserExtended:
@@ -25,11 +28,7 @@ class TestOrderedListParserExtended:
     def test_正常系_順序タイプ検出_数値(self):
         """正常系: 数値順序リストタイプの検出"""
         # Given: 数値順序リストの行
-        test_lines = [
-            "1. 項目1",
-            "10. 項目10",
-            "999. 項目999"
-        ]
+        test_lines = ["1. 項目1", "10. 項目10", "999. 項目999"]
 
         for line in test_lines:
             # When: 順序タイプ検出
@@ -41,11 +40,7 @@ class TestOrderedListParserExtended:
     def test_正常系_順序タイプ検出_アルファベット(self):
         """正常系: アルファベット順序リストタイプの検出"""
         # Given: アルファベット順序リストの行
-        test_lines = [
-            "a. 項目a",
-            "b. 項目b",
-            "Z. 項目Z"
-        ]
+        test_lines = ["a. 項目a", "b. 項目b", "Z. 項目Z"]
 
         for line in test_lines:
             # When: 順序タイプ検出
@@ -57,12 +52,7 @@ class TestOrderedListParserExtended:
     def test_正常系_順序タイプ検出_ローマ数字(self):
         """正常系: ローマ数字順序リストタイプの検出"""
         # Given: ローマ数字順序リストの行
-        test_lines = [
-            "i. 項目i",
-            "ii. 項目ii",
-            "iv. 項目iv",
-            "x. 項目x"
-        ]
+        test_lines = ["i. 項目i", "ii. 項目ii", "iv. 項目iv", "x. 項目x"]
 
         for line in test_lines:
             # When: 順序タイプ検出
@@ -74,12 +64,7 @@ class TestOrderedListParserExtended:
     def test_正常系_順序タイプ検出_非対応(self):
         """正常系: 非対応形式の検出"""
         # Given: 非対応形式の行
-        test_lines = [
-            "- 非順序項目",
-            "項目のみ",
-            "1) 括弧形式",
-            ""
-        ]
+        test_lines = ["- 非順序項目", "項目のみ", "1) 括弧形式", ""]
 
         for line in test_lines:
             # When: 順序タイプ検出
@@ -91,11 +76,7 @@ class TestOrderedListParserExtended:
     def test_正常系_順序付きリスト解析(self):
         """正常系: 順序付きリストの解析"""
         # Given: 順序付きリストの行リスト
-        lines = [
-            "1. 最初の項目",
-            "2. 二番目の項目",
-            "3. 三番目の項目"
-        ]
+        lines = ["1. 最初の項目", "2. 二番目の項目", "3. 三番目の項目"]
 
         # When: 順序付きリスト解析
         result = self.parser.parse_ordered_list(lines)
@@ -157,11 +138,7 @@ class TestOrderedListParserExtended:
     def test_正常系_連続性検証_正常ケース(self):
         """正常系: 正常な連続性の検証"""
         # Given: 正常な順序の行リスト
-        lines = [
-            "1. 最初",
-            "2. 二番目",
-            "3. 三番目"
-        ]
+        lines = ["1. 最初", "2. 二番目", "3. 三番目"]
 
         # When: 連続性検証
         errors = self.parser.validate_sequence(lines)
@@ -175,11 +152,7 @@ class TestOrderedListParserExtended:
         alpha_node = Node(
             type="list_item",
             content="アルファベット項目",
-            attributes={
-                "marker": "b",
-                "marker_type": "alpha",
-                "index": 1
-            }
+            attributes={"marker": "b", "marker_type": "alpha", "index": 1},
         )
 
         # When: 数値変換
@@ -229,11 +202,7 @@ class TestOrderedListParserExtended:
     def test_異常系_不正な連続性(self):
         """異常系: 不正な連続性の検出"""
         # Given: 不正な順序の行リスト
-        lines = [
-            "1. 最初",
-            "3. 三番目（2を飛ばし）",
-            "4. 四番目"
-        ]
+        lines = ["1. 最初", "3. 三番目（2を飛ばし）", "4. 四番目"]
 
         # When: 連続性検証
         errors = self.parser.validate_sequence(lines)
@@ -245,10 +214,7 @@ class TestOrderedListParserExtended:
     def test_異常系_無効な数値マーカー(self):
         """異常系: 無効な数値マーカーの処理"""
         # Given: 無効な数値マーカーを含む行
-        lines = [
-            "1. 正常",
-            "abc. 無効な数値マーカー"
-        ]
+        lines = ["1. 正常", "abc. 無効な数値マーカー"]
 
         # When: 連続性検証
         errors = self.parser.validate_sequence(lines)
@@ -260,10 +226,7 @@ class TestOrderedListParserExtended:
     def test_異常系_不正アルファベット順序(self):
         """異常系: 不正なアルファベット順序"""
         # Given: 不正なアルファベット順序の行
-        lines = [
-            "a. 最初",
-            "c. 三番目（bを飛ばし）"
-        ]
+        lines = ["a. 最初", "c. 三番目（bを飛ばし）"]
 
         # When: 連続性検証（アルファベット用の検証ロジックを想定）
         errors = self.parser.validate_sequence(lines)
@@ -275,12 +238,7 @@ class TestOrderedListParserExtended:
     def test_異常系_空行とNone処理(self):
         """異常系: 空行とNoneの処理"""
         # Given: 空行やNoneを含む行リスト
-        lines = [
-            "1. 正常項目",
-            "",
-            "   ",
-            "2. 次の正常項目"
-        ]
+        lines = ["1. 正常項目", "", "   ", "2. 次の正常項目"]
 
         # When: 順序付きリスト解析
         result = self.parser.parse_ordered_list(lines)
@@ -296,7 +254,7 @@ class TestOrderedListParserExtended:
             "項目のみ（マーカーなし）",
             "1 ドットなし項目",
             "1.. ダブルドット",
-            ""
+            "",
         ]
 
         for line in invalid_lines:
@@ -310,9 +268,9 @@ class TestOrderedListParserExtended:
         """異常系: 次マーカー取得の境界超過"""
         # Given: 境界値のマーカー
         test_cases = [
-            ("alpha", "z", "a"),    # zの次はaに戻る
-            ("roman", "x", "i"),    # xの次はiに戻る
-            ("numeric", "abc", "1") # 無効な数値は1に戻る
+            ("alpha", "z", "a"),  # zの次はaに戻る
+            ("roman", "x", "i"),  # xの次はiに戻る
+            ("numeric", "abc", "1"),  # 無効な数値は1に戻る
         ]
 
         for marker_type, current, expected in test_cases:
@@ -345,7 +303,7 @@ class TestOrderedListParserExtended:
             "a. 最初のアルファベット",
             "z. 最後のアルファベット",
             "A. 大文字最初",
-            "Z. 大文字最後"
+            "Z. 大文字最後",
         ]
 
         for line in boundary_lines:
@@ -359,10 +317,7 @@ class TestOrderedListParserExtended:
     def test_境界値_ローマ数字境界(self):
         """境界値: ローマ数字の境界値"""
         # Given: ローマ数字の境界値
-        boundary_lines = [
-            "i. 最小ローマ数字",
-            "x. 最大ローマ数字"
-        ]
+        boundary_lines = ["i. 最小ローマ数字", "x. 最大ローマ数字"]
 
         for line in boundary_lines:
             # When: ローマ数字リストハンドラー
@@ -409,7 +364,7 @@ class TestOrderedListParserExtended:
             "1. 数値項目1",
             "a. アルファベット項目a",
             "i. ローマ数字項目i",
-            "2. 数値項目2"
+            "2. 数値項目2",
         ]
 
         results = []
@@ -423,7 +378,7 @@ class TestOrderedListParserExtended:
                 result = self.parser.handle_roman_list(line)
             else:
                 result = None
-            
+
             if result:
                 results.append(result)
 
@@ -438,17 +393,25 @@ class TestOrderedListParserExtended:
         """統合: 変換機能の連携テスト"""
         # Given: アルファベット順序のノードリスト
         alpha_nodes = [
-            Node(type="list_item", content="項目A", 
-                 attributes={"marker": "a", "marker_type": "alpha", "index": 0}),
-            Node(type="list_item", content="項目B",
-                 attributes={"marker": "b", "marker_type": "alpha", "index": 1}),
+            Node(
+                type="list_item",
+                content="項目A",
+                attributes={"marker": "a", "marker_type": "alpha", "index": 0},
+            ),
+            Node(
+                type="list_item",
+                content="項目B",
+                attributes={"marker": "b", "marker_type": "alpha", "index": 1},
+            ),
         ]
 
         # When: 全ノードを数値に変換
         numeric_nodes = [self.parser.convert_to_numeric(node) for node in alpha_nodes]
 
         # Then: 全て数値マーカーに変換されることを検証
-        assert all(node.attributes["marker_type"] == "numeric" for node in numeric_nodes)
+        assert all(
+            node.attributes["marker_type"] == "numeric" for node in numeric_nodes
+        )
         assert [node.attributes["marker"] for node in numeric_nodes] == ["1", "2"]
 
     def test_統合_次マーカー生成連鎖(self):
@@ -457,7 +420,7 @@ class TestOrderedListParserExtended:
         test_cases = [
             ("numeric", "1", ["2", "3", "4"]),
             ("alpha", "a", ["b", "c", "d"]),
-            ("roman", "i", ["ii", "iii", "iv"])
+            ("roman", "i", ["ii", "iii", "iv"]),
         ]
 
         for marker_type, start, expected_sequence in test_cases:
@@ -481,14 +444,14 @@ class TestOrderedListParserExtended:
             "  b. 2番目のネストアルファベット",
             "2. 二番目の項目",
             "  i. ネストしたローマ数字",
-            "  ii. 2番目のネストローマ数字"
+            "  ii. 2番目のネストローマ数字",
         ]
 
         # When: 完全な処理ワークフロー
         results = []
         for line in lines:
             order_type = self.parser.detect_ordered_type(line)
-            
+
             if order_type:
                 if order_type == "numeric":
                     result = self.parser.parse_ordered_item(line)
@@ -496,7 +459,7 @@ class TestOrderedListParserExtended:
                     result = self.parser.handle_alpha_list(line)
                 elif order_type == "roman":
                     result = self.parser.handle_roman_list(line)
-                
+
                 if result:
                     results.append(result)
 
@@ -518,7 +481,7 @@ class TestOrderedListParserExtended:
         test_lines = [
             "I. 大文字ローマ数字",
             "ii. 小文字ローマ数字",
-            "III. 大文字複合ローマ数字"
+            "III. 大文字複合ローマ数字",
         ]
 
         for line in test_lines:
@@ -537,12 +500,12 @@ class TestOrderedListParserExtended:
         japanese_lines = [
             "1. これは日本語の項目です",
             "a. ひらがなとカタカナと漢字",
-            "i. 特殊文字：「」、。・"
+            "i. 特殊文字：「」、。・",
         ]
 
         for line in japanese_lines:
             order_type = self.parser.detect_ordered_type(line)
-            
+
             # When: 適切なハンドラーで処理
             if order_type == "numeric":
                 result = self.parser.parse_ordered_item(line)
@@ -553,16 +516,16 @@ class TestOrderedListParserExtended:
 
             # Then: 日本語が正しく処理されることを検証
             assert result is not None
-            assert "日本語" in result.content or "ひらがな" in result.content or "特殊文字" in result.content
+            assert (
+                "日本語" in result.content
+                or "ひらがな" in result.content
+                or "特殊文字" in result.content
+            )
 
     def test_特殊_統合ハンドラー使用(self):
         """特殊: 統合ハンドラーの使用"""
         # Given: 各種順序付きリスト
-        test_lines = [
-            "1. 数値項目",
-            "a. アルファベット項目",
-            "i. ローマ数字項目"
-        ]
+        test_lines = ["1. 数値項目", "a. アルファベット項目", "i. ローマ数字項目"]
 
         for line in test_lines:
             # When: 統合ハンドラー使用（parse_ordered_itemは統合的に動作）
@@ -585,7 +548,7 @@ class TestOrderedListParserExtended:
         assert "numeric" in patterns
         assert "alpha" in patterns
         assert "roman" in patterns
-        assert all(hasattr(pattern, 'match') for pattern in patterns.values())
+        assert all(hasattr(pattern, "match") for pattern in patterns.values())
 
     def test_特殊_フォールバック動作(self):
         """特殊: フォールバック動作の確認"""
@@ -596,6 +559,6 @@ class TestOrderedListParserExtended:
             if invalid_input is not None:
                 # When: 各種処理実行
                 order_type = self.parser.detect_ordered_type(invalid_input)
-                
+
                 # Then: 適切なフォールバックが行われることを検証
                 assert order_type is None

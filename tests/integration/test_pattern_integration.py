@@ -1,17 +1,26 @@
 """Design Patterns Integration Tests"""
 
-import pytest
 import asyncio
 import time
+from typing import Any, Dict, List
 from unittest.mock import Mock, patch
-from typing import Dict, Any, List
+
+import pytest
 
 from kumihan_formatter.core.patterns import (
-    EventBus, Event, EventType, Observer,
-    StrategyManager, ParsingStrategy, RenderingStrategy,
-    DecoratorChain, CachingParserDecorator,
-    CommandProcessor, ParseCommand, RenderCommand,
-    ArchitectureManager
+    ArchitectureManager,
+    CachingParserDecorator,
+    CommandProcessor,
+    DecoratorChain,
+    Event,
+    EventBus,
+    EventType,
+    Observer,
+    ParseCommand,
+    ParsingStrategy,
+    RenderCommand,
+    RenderingStrategy,
+    StrategyManager,
 )
 
 
@@ -21,22 +30,21 @@ class MockKumihanParser:
     def parse(self, content: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Kumihan記法パース（簡易実装）"""
         import re
-        pattern = r'# (\w+) #([^#]+)##'
+
+        pattern = r"# (\w+) #([^#]+)##"
         matches = re.findall(pattern, content)
 
         blocks = []
         for decoration, text in matches:
-            blocks.append({
-                'type': 'kumihan_block',
-                'decoration': decoration,
-                'content': text.strip()
-            })
+            blocks.append(
+                {
+                    "type": "kumihan_block",
+                    "decoration": decoration,
+                    "content": text.strip(),
+                }
+            )
 
-        return {
-            'blocks': blocks,
-            'total_blocks': len(blocks),
-            'parser': 'mock_kumihan'
-        }
+        return {"blocks": blocks, "total_blocks": len(blocks), "parser": "mock_kumihan"}
 
 
 class MockHTMLRenderer:
@@ -44,21 +52,21 @@ class MockHTMLRenderer:
 
     def render(self, data: Dict[str, Any], context: Dict[str, Any]) -> str:
         """HTMLレンダリング（簡易実装）"""
-        if not isinstance(data, dict) or 'blocks' not in data:
+        if not isinstance(data, dict) or "blocks" not in data:
             return ""
 
         html_parts = ["<html><body>"]
 
-        for block in data['blocks']:
-            if block['type'] == 'kumihan_block':
-                decoration = block['decoration']
-                content = block['content']
+        for block in data["blocks"]:
+            if block["type"] == "kumihan_block":
+                decoration = block["decoration"]
+                content = block["content"]
 
-                if decoration == '太字':
+                if decoration == "太字":
                     html_parts.append(f"<strong>{content}</strong>")
-                elif decoration == 'イタリック':
+                elif decoration == "イタリック":
                     html_parts.append(f"<em>{content}</em>")
-                elif decoration == '見出し':
+                elif decoration == "見出し":
                     html_parts.append(f"<h2>{content}</h2>")
                 else:
                     html_parts.append(f"<span class='{decoration}'>{content}</span>")
@@ -104,7 +112,7 @@ class TestPatternIntegration:
         manager.publish_event(
             EventType.PARSING_STARTED,
             "integration_test",
-            {"content_length": len(content)}
+            {"content_length": len(content)},
         )
 
         # パーシングコマンド実行
@@ -117,15 +125,15 @@ class TestPatternIntegration:
             "integration_test",
             {
                 "duration": result.execution_time,
-                "blocks_count": len(result.result.get('blocks', []))
-            }
+                "blocks_count": len(result.result.get("blocks", [])),
+            },
         )
 
         # 結果検証
         assert result.success is True
-        assert len(result.result['blocks']) == 2
-        assert result.result['blocks'][0]['decoration'] == '見出し'
-        assert result.result['blocks'][1]['decoration'] == '太字'
+        assert len(result.result["blocks"]) == 2
+        assert result.result["blocks"][0]["decoration"] == "見出し"
+        assert result.result["blocks"][1]["decoration"] == "太字"
 
         # イベント発行確認
         assert len(collector.events) == 2
@@ -149,7 +157,7 @@ class TestPatternIntegration:
                 return "html_strategy"
 
             def supports_format(self, output_format):
-                return output_format.lower() in ['html', 'htm']
+                return output_format.lower() in ["html", "htm"]
 
         strategy_manager.register_rendering_strategy(
             "html", HTMLRenderingStrategy(), is_default=True
@@ -157,9 +165,17 @@ class TestPatternIntegration:
 
         # テストデータ準備
         parsed_data = {
-            'blocks': [
-                {'type': 'kumihan_block', 'decoration': '見出し', 'content': 'テストタイトル'},
-                {'type': 'kumihan_block', 'decoration': '太字', 'content': '重要な内容'}
+            "blocks": [
+                {
+                    "type": "kumihan_block",
+                    "decoration": "見出し",
+                    "content": "テストタイトル",
+                },
+                {
+                    "type": "kumihan_block",
+                    "decoration": "太字",
+                    "content": "重要な内容",
+                },
             ]
         }
 
@@ -168,9 +184,7 @@ class TestPatternIntegration:
         assert rendering_strategy is not None
 
         render_command = RenderCommand(
-            parsed_data,
-            rendering_strategy,
-            {"format": "html"}
+            parsed_data, rendering_strategy, {"format": "html"}
         )
         result = command_processor.execute_command(render_command)
 
@@ -207,8 +221,8 @@ class TestPatternIntegration:
 
         # 結果検証
         assert result1 == result2  # 同じ結果
-        assert len(result1['blocks']) == 1
-        assert result1['blocks'][0]['decoration'] == '見出し'
+        assert len(result1["blocks"]) == 1
+        assert result1["blocks"][0]["decoration"] == "見出し"
 
         # キャッシュ効果確認（二回目は高速）
         assert second_duration < first_duration * 0.5  # 50%以上高速化
@@ -262,47 +276,53 @@ class TestPatternIntegration:
         """
 
         # Step 1: パーシング処理
-        manager.publish_event(EventType.PARSING_STARTED, "pipeline_test", {
-            "content_length": len(content)
-        })
+        manager.publish_event(
+            EventType.PARSING_STARTED, "pipeline_test", {"content_length": len(content)}
+        )
 
         parsing_strategy = strategy_manager.select_parsing_strategy(content)
         parse_command = ParseCommand(content, parsing_strategy)
         parse_result = command_processor.execute_command(parse_command)
 
-        manager.publish_event(EventType.PARSING_COMPLETED, "pipeline_test", {
-            "duration": parse_result.execution_time,
-            "blocks_count": len(parse_result.result.get('blocks', []))
-        })
+        manager.publish_event(
+            EventType.PARSING_COMPLETED,
+            "pipeline_test",
+            {
+                "duration": parse_result.execution_time,
+                "blocks_count": len(parse_result.result.get("blocks", [])),
+            },
+        )
 
         # Step 2: レンダリング処理
-        manager.publish_event(EventType.RENDERING_STARTED, "pipeline_test", {
-            "format": "html"
-        })
+        manager.publish_event(
+            EventType.RENDERING_STARTED, "pipeline_test", {"format": "html"}
+        )
 
         rendering_strategy = strategy_manager.select_rendering_strategy("html")
         render_command = RenderCommand(
-            parse_result.result,
-            rendering_strategy,
-            {"format": "html"}
+            parse_result.result, rendering_strategy, {"format": "html"}
         )
         render_result = command_processor.execute_command(render_command)
 
-        manager.publish_event(EventType.RENDERING_COMPLETED, "pipeline_test", {
-            "duration": render_result.execution_time,
-            "output_size": len(render_result.result)
-        })
+        manager.publish_event(
+            EventType.RENDERING_COMPLETED,
+            "pipeline_test",
+            {
+                "duration": render_result.execution_time,
+                "output_size": len(render_result.result),
+            },
+        )
 
         # 結果検証
         assert parse_result.success is True
         assert render_result.success is True
 
         # パース結果確認
-        parsed_blocks = parse_result.result['blocks']
+        parsed_blocks = parse_result.result["blocks"]
         assert len(parsed_blocks) == 3
-        assert parsed_blocks[0]['decoration'] == '見出し'
-        assert parsed_blocks[1]['decoration'] == '太字'
-        assert parsed_blocks[2]['decoration'] == 'イタリック'
+        assert parsed_blocks[0]["decoration"] == "見出し"
+        assert parsed_blocks[1]["decoration"] == "太字"
+        assert parsed_blocks[2]["decoration"] == "イタリック"
 
         # レンダリング結果確認
         html_output = render_result.result
@@ -326,6 +346,7 @@ class TestPatternIntegration:
 
     def test_async_event_processing(self):
         """非同期イベント処理テスト"""
+
         async def async_test():
             manager = ArchitectureManager()
             event_bus = manager.get_event_bus()
@@ -372,9 +393,7 @@ class TestPatternIntegration:
 
         # エラーイベント発行
         error_event = Event(
-            EventType.PARSING_ERROR,
-            "error_test",
-            {"error": "Test error"}
+            EventType.PARSING_ERROR, "error_test", {"error": "Test error"}
         )
 
         # エラーが発生してもシステムが停止しないことを確認
@@ -406,11 +425,7 @@ class TestPatternIntegration:
         # イベント大量発行（性能測定）
         start_time = time.time()
         for i in range(1000):
-            event = Event(
-                EventType.PARSING_STARTED,
-                f"perf_test_{i}",
-                {"index": i}
-            )
+            event = Event(EventType.PARSING_STARTED, f"perf_test_{i}", {"index": i})
             event_bus.publish(event)
 
         event_processing_time = time.time() - start_time

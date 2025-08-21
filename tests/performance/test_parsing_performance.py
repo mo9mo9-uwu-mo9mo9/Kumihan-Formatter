@@ -13,6 +13,7 @@ import pytest
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
@@ -32,14 +33,14 @@ class ParsingPerformanceTester:
     def cleanup(self) -> None:
         """リソースクリーンアップ"""
         import shutil
+
         try:
             if self.temp_dir.exists():
                 shutil.rmtree(self.temp_dir)
         except Exception as e:
             logger.warning(f"クリーンアップエラー: {e}")
 
-    def generate_test_content(self, line_count: int,
-                            complexity: str = "medium") -> str:
+    def generate_test_content(self, line_count: int, complexity: str = "medium") -> str:
         """テストコンテンツ生成"""
         lines = []
 
@@ -83,29 +84,29 @@ class ParsingPerformanceTester:
                 else:
                     lines.append(f"通常のテキスト行 {i} #インライン{i}#")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def mock_parse_content(self, content: str) -> Dict[str, Any]:
         """コンテンツのモックパース処理"""
         start_time = time.time()
 
         # パース処理のシミュレート
-        lines = content.split('\n')
+        lines = content.split("\n")
         parse_result = {
             "line_count": len(lines),
             "total_chars": len(content),
             "blocks": 0,
             "inline_elements": 0,
             "headings": 0,
-            "processing_steps": []
+            "processing_steps": [],
         }
 
         # ステップ1: 行の分類
         step1_start = time.time()
         for line in lines:
-            if line.startswith('#') and line.endswith('#') and len(line) > 2:
+            if line.startswith("#") and line.endswith("#") and len(line) > 2:
                 parse_result["inline_elements"] += 1
-            elif line.startswith('#') and not line.endswith('#'):
+            elif line.startswith("#") and not line.endswith("#"):
                 parse_result["headings"] += 1
             elif line.strip() == "##":
                 parse_result["blocks"] += 1
@@ -116,7 +117,7 @@ class ParsingPerformanceTester:
         step2_start = time.time()
         block_depth = 0
         for line in lines:
-            if line.startswith('#') and not line.endswith('#'):
+            if line.startswith("#") and not line.endswith("#"):
                 block_depth += 1
             elif line.strip() == "##":
                 block_depth = max(0, block_depth - 1)
@@ -127,10 +128,12 @@ class ParsingPerformanceTester:
         step3_start = time.time()
         processed_content = []
         for line in lines:
-            if '#' in line:
+            if "#" in line:
                 # 記法処理のシミュレート
-                processed_line = line.replace('#太字', '<strong>').replace('#', '</strong>')
-                processed_line = processed_line.replace('##', '</div>')
+                processed_line = line.replace("#太字", "<strong>").replace(
+                    "#", "</strong>"
+                )
+                processed_line = processed_line.replace("##", "</div>")
                 processed_content.append(processed_line)
             else:
                 processed_content.append(line)
@@ -139,12 +142,13 @@ class ParsingPerformanceTester:
 
         total_time = time.time() - start_time
         parse_result["total_processing_time"] = total_time
-        parse_result["processed_content"] = '\n'.join(processed_content)
+        parse_result["processed_content"] = "\n".join(processed_content)
 
         return parse_result
 
-    def measure_parsing_performance(self, content: str,
-                                  iterations: int = 1) -> Dict[str, Any]:
+    def measure_parsing_performance(
+        self, content: str, iterations: int = 1
+    ) -> Dict[str, Any]:
         """パーシング性能測定"""
         start_memory = 0
         if PSUTIL_AVAILABLE:
@@ -159,11 +163,9 @@ class ParsingPerformanceTester:
             parse_result = self.mock_parse_content(content)
             iteration_time = time.time() - iteration_start
 
-            results.append({
-                "iteration": i,
-                "time": iteration_time,
-                "parse_result": parse_result
-            })
+            results.append(
+                {"iteration": i, "time": iteration_time, "parse_result": parse_result}
+            )
 
         total_time = time.time() - total_start_time
 
@@ -184,12 +186,15 @@ class ParsingPerformanceTester:
             "min_time": min_time,
             "max_time": max_time,
             "throughput_per_second": iterations / total_time if total_time > 0 else 0,
-            "memory_usage_mb": (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0,
-            "results": results
+            "memory_usage_mb": (
+                (end_memory - start_memory) / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+            ),
+            "results": results,
         }
 
-    def run_scalability_test(self, base_line_count: int,
-                           scale_factors: List[int]) -> Dict[str, Any]:
+    def run_scalability_test(
+        self, base_line_count: int, scale_factors: List[int]
+    ) -> Dict[str, Any]:
         """スケーラビリティテスト実行"""
         scalability_results = []
 
@@ -199,19 +204,21 @@ class ParsingPerformanceTester:
 
             performance_result = self.measure_parsing_performance(content, 3)
 
-            scalability_results.append({
-                "scale_factor": factor,
-                "line_count": line_count,
-                "content_size_kb": len(content) / 1024,
-                "average_time": performance_result["average_time"],
-                "throughput": performance_result["throughput_per_second"],
-                "memory_usage_mb": performance_result["memory_usage_mb"]
-            })
+            scalability_results.append(
+                {
+                    "scale_factor": factor,
+                    "line_count": line_count,
+                    "content_size_kb": len(content) / 1024,
+                    "average_time": performance_result["average_time"],
+                    "throughput": performance_result["throughput_per_second"],
+                    "memory_usage_mb": performance_result["memory_usage_mb"],
+                }
+            )
 
         return {
             "base_line_count": base_line_count,
             "scale_factors": scale_factors,
-            "results": scalability_results
+            "results": scalability_results,
         }
 
 
@@ -238,13 +245,17 @@ class TestParsingPerformance:
         result = self.tester.measure_parsing_performance(content, 10)
 
         # Then: 性能基準確認
-        assert result["average_time"] < 0.1, \
-               f"小規模データ処理時間超過: {result['average_time']:.3f}秒"
-        assert result["throughput_per_second"] > 50, \
-               f"小規模データスループット不足: {result['throughput_per_second']:.1f}/秒"
+        assert (
+            result["average_time"] < 0.1
+        ), f"小規模データ処理時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["throughput_per_second"] > 50
+        ), f"小規模データスループット不足: {result['throughput_per_second']:.1f}/秒"
 
-        logger.info(f"小規模データ性能: 平均{result['average_time']:.3f}秒, "
-                   f"スループット{result['throughput_per_second']:.1f}/秒")
+        logger.info(
+            f"小規模データ性能: 平均{result['average_time']:.3f}秒, "
+            f"スループット{result['throughput_per_second']:.1f}/秒"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_中規模データ(self) -> None:
@@ -256,17 +267,22 @@ class TestParsingPerformance:
         result = self.tester.measure_parsing_performance(content, 5)
 
         # Then: 指示書基準確認（5秒以内）
-        assert result["average_time"] < 5.0, \
-               f"中規模データ処理時間基準超過: {result['average_time']:.3f}秒"
-        assert result["memory_usage_mb"] < 100, \
-               f"中規模データメモリ使用量基準超過: {result['memory_usage_mb']:.1f}MB"
+        assert (
+            result["average_time"] < 5.0
+        ), f"中規模データ処理時間基準超過: {result['average_time']:.3f}秒"
+        assert (
+            result["memory_usage_mb"] < 100
+        ), f"中規模データメモリ使用量基準超過: {result['memory_usage_mb']:.1f}MB"
 
         # スループット確認
-        assert result["throughput_per_second"] > 1, \
-               f"中規模データスループット不足: {result['throughput_per_second']:.1f}/秒"
+        assert (
+            result["throughput_per_second"] > 1
+        ), f"中規模データスループット不足: {result['throughput_per_second']:.1f}/秒"
 
-        logger.info(f"中規模データ性能: 平均{result['average_time']:.3f}秒, "
-                   f"メモリ{result['memory_usage_mb']:.1f}MB")
+        logger.info(
+            f"中規模データ性能: 平均{result['average_time']:.3f}秒, "
+            f"メモリ{result['memory_usage_mb']:.1f}MB"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_大規模データ(self) -> None:
@@ -278,13 +294,17 @@ class TestParsingPerformance:
         result = self.tester.measure_parsing_performance(content, 3)
 
         # Then: 性能基準確認
-        assert result["average_time"] < 30.0, \
-               f"大規模データ処理時間超過: {result['average_time']:.3f}秒"
-        assert result["memory_usage_mb"] < 200, \
-               f"大規模データメモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
+        assert (
+            result["average_time"] < 30.0
+        ), f"大規模データ処理時間超過: {result['average_time']:.3f}秒"
+        assert (
+            result["memory_usage_mb"] < 200
+        ), f"大規模データメモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
 
-        logger.info(f"大規模データ性能: 平均{result['average_time']:.3f}秒, "
-                   f"メモリ{result['memory_usage_mb']:.1f}MB")
+        logger.info(
+            f"大規模データ性能: 平均{result['average_time']:.3f}秒, "
+            f"メモリ{result['memory_usage_mb']:.1f}MB"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_複雑度比較(self) -> None:
@@ -306,15 +326,17 @@ class TestParsingPerformance:
         complex_time = complexity_results["complex"]["average_time"]
 
         # 複雑度が上がると処理時間も増加するはず
-        assert simple_time <= medium_time <= complex_time, \
-               "複雑度と処理時間の関係が正しくない"
+        assert (
+            simple_time <= medium_time <= complex_time
+        ), "複雑度と処理時間の関係が正しくない"
 
         # 最大複雑度でも妥当な時間内
-        assert complex_time < 10.0, \
-               f"複雑データ処理時間超過: {complex_time:.3f}秒"
+        assert complex_time < 10.0, f"複雑データ処理時間超過: {complex_time:.3f}秒"
 
-        logger.info(f"複雑度性能比較: シンプル{simple_time:.3f}s, "
-                   f"中程度{medium_time:.3f}s, 複雑{complex_time:.3f}s")
+        logger.info(
+            f"複雑度性能比較: シンプル{simple_time:.3f}s, "
+            f"中程度{medium_time:.3f}s, 複雑{complex_time:.3f}s"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_スケーラビリティ(self) -> None:
@@ -334,24 +356,28 @@ class TestParsingPerformance:
         # 線形スケーラビリティの確認（時間が線形に増加）
         time_ratios = []
         for i in range(1, len(results)):
-            prev_time = results[i-1]["average_time"]
+            prev_time = results[i - 1]["average_time"]
             curr_time = results[i]["average_time"]
-            scale_ratio = results[i]["scale_factor"] / results[i-1]["scale_factor"]
-            time_ratio = curr_time / prev_time if prev_time > 0 else float('inf')
+            scale_ratio = results[i]["scale_factor"] / results[i - 1]["scale_factor"]
+            time_ratio = curr_time / prev_time if prev_time > 0 else float("inf")
             time_ratios.append(time_ratio / scale_ratio)
 
         # 時間増加率が妥当な範囲内（線形に近い）
         avg_ratio = sum(time_ratios) / len(time_ratios) if time_ratios else 1.0
-        assert 0.5 <= avg_ratio <= 3.0, \
-               f"スケーラビリティが非線形: 平均比{avg_ratio:.2f}"
+        assert (
+            0.5 <= avg_ratio <= 3.0
+        ), f"スケーラビリティが非線形: 平均比{avg_ratio:.2f}"
 
         # 最大スケールでも妥当な性能
         max_scale_result = results[-1]
-        assert max_scale_result["average_time"] < 15.0, \
-               f"最大スケール処理時間超過: {max_scale_result['average_time']:.3f}秒"
+        assert (
+            max_scale_result["average_time"] < 15.0
+        ), f"最大スケール処理時間超過: {max_scale_result['average_time']:.3f}秒"
 
-        logger.info(f"スケーラビリティ確認完了: {len(results)}ポイント, "
-                   f"平均比{avg_ratio:.2f}")
+        logger.info(
+            f"スケーラビリティ確認完了: {len(results)}ポイント, "
+            f"平均比{avg_ratio:.2f}"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_メモリ効率性(self) -> None:
@@ -371,16 +397,18 @@ class TestParsingPerformance:
         min_memory = min(memory_usage_history)
         memory_variance = max_memory - min_memory
 
-        assert memory_variance < 50, \
-               f"メモリ使用量の変動が大きい: {memory_variance:.1f}MB"
+        assert (
+            memory_variance < 50
+        ), f"メモリ使用量の変動が大きい: {memory_variance:.1f}MB"
 
         # 絶対的なメモリ使用量確認
         avg_memory = sum(memory_usage_history) / len(memory_usage_history)
-        assert avg_memory < 100, \
-               f"平均メモリ使用量が基準超過: {avg_memory:.1f}MB"
+        assert avg_memory < 100, f"平均メモリ使用量が基準超過: {avg_memory:.1f}MB"
 
-        logger.info(f"メモリ効率性確認完了: 平均{avg_memory:.1f}MB, "
-                   f"変動{memory_variance:.1f}MB")
+        logger.info(
+            f"メモリ効率性確認完了: 平均{avg_memory:.1f}MB, "
+            f"変動{memory_variance:.1f}MB"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_並列処理シミュレート(self) -> None:
@@ -389,7 +417,7 @@ class TestParsingPerformance:
         contents = [
             self.tester.generate_test_content(300, "simple"),
             self.tester.generate_test_content(300, "medium"),
-            self.tester.generate_test_content(300, "complex")
+            self.tester.generate_test_content(300, "complex"),
         ]
 
         # When: 同時処理シミュレート
@@ -398,27 +426,38 @@ class TestParsingPerformance:
 
         for i, content in enumerate(contents):
             result = self.tester.measure_parsing_performance(content, 1)
-            parallel_results.append({
-                "task_id": i,
-                "content_type": ["simple", "medium", "complex"][i],
-                "result": result
-            })
+            parallel_results.append(
+                {
+                    "task_id": i,
+                    "content_type": ["simple", "medium", "complex"][i],
+                    "result": result,
+                }
+            )
 
         total_parallel_time = time.time() - start_time
 
         # Then: 並列処理性能確認
-        total_processing_time = sum(r["result"]["average_time"] for r in parallel_results)
+        total_processing_time = sum(
+            r["result"]["average_time"] for r in parallel_results
+        )
 
         # 並列処理効率性確認（シーケンシャル処理との比較）
-        efficiency = total_processing_time / total_parallel_time if total_parallel_time > 0 else 0
+        efficiency = (
+            total_processing_time / total_parallel_time
+            if total_parallel_time > 0
+            else 0
+        )
         assert efficiency >= 0.8, f"並列処理効率が低い: {efficiency:.2f}"
 
         # 全体の処理時間確認
-        assert total_parallel_time < 10.0, \
-               f"並列処理時間超過: {total_parallel_time:.3f}秒"
+        assert (
+            total_parallel_time < 10.0
+        ), f"並列処理時間超過: {total_parallel_time:.3f}秒"
 
-        logger.info(f"並列処理性能確認完了: 効率{efficiency:.2f}, "
-                   f"総時間{total_parallel_time:.3f}秒")
+        logger.info(
+            f"並列処理性能確認完了: 効率{efficiency:.2f}, "
+            f"総時間{total_parallel_time:.3f}秒"
+        )
 
     @pytest.mark.performance
     def test_パーシング性能_エラー処理オーバーヘッド(self) -> None:
@@ -438,12 +477,16 @@ class TestParsingPerformance:
         overhead_ratio = error_result["average_time"] / normal_result["average_time"]
 
         # エラー処理オーバーヘッドが妥当な範囲内
-        assert overhead_ratio < 2.0, \
-               f"エラー処理オーバーヘッドが大きすぎる: {overhead_ratio:.2f}倍"
+        assert (
+            overhead_ratio < 2.0
+        ), f"エラー処理オーバーヘッドが大きすぎる: {overhead_ratio:.2f}倍"
 
         # エラーがあっても妥当な時間内
-        assert error_result["average_time"] < 8.0, \
-               f"エラー処理時間超過: {error_result['average_time']:.3f}秒"
+        assert (
+            error_result["average_time"] < 8.0
+        ), f"エラー処理時間超過: {error_result['average_time']:.3f}秒"
 
-        logger.info(f"エラー処理オーバーヘッド確認完了: {overhead_ratio:.2f}倍, "
-                   f"エラー処理時間{error_result['average_time']:.3f}秒")
+        logger.info(
+            f"エラー処理オーバーヘッド確認完了: {overhead_ratio:.2f}倍, "
+            f"エラー処理時間{error_result['average_time']:.3f}秒"
+        )

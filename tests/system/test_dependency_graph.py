@@ -42,7 +42,7 @@ class TestDependencyGraph:
     def extract_imports(self, file_path: Path) -> List[Dict[str, Any]]:
         """ファイルからインポート情報を抽出"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -51,21 +51,25 @@ class TestDependencyGraph:
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     for alias in node.names:
-                        imports.append({
-                            "type": "import",
-                            "module": alias.name,
-                            "alias": alias.asname,
-                            "line": node.lineno
-                        })
+                        imports.append(
+                            {
+                                "type": "import",
+                                "module": alias.name,
+                                "alias": alias.asname,
+                                "line": node.lineno,
+                            }
+                        )
 
                 elif isinstance(node, ast.ImportFrom):
-                    imports.append({
-                        "type": "from_import",
-                        "module": node.module,
-                        "names": [alias.name for alias in node.names],
-                        "level": node.level,
-                        "line": node.lineno
-                    })
+                    imports.append(
+                        {
+                            "type": "from_import",
+                            "module": node.module,
+                            "names": [alias.name for alias in node.names],
+                            "level": node.level,
+                            "line": node.lineno,
+                        }
+                    )
 
             return imports
 
@@ -75,12 +79,7 @@ class TestDependencyGraph:
 
     def build_dependency_graph(self, module_paths: List[Path]) -> Dict[str, Any]:
         """依存関係グラフを構築"""
-        graph = {
-            "nodes": {},
-            "edges": [],
-            "clusters": {},
-            "metrics": {}
-        }
+        graph = {"nodes": {}, "edges": [], "clusters": {}, "metrics": {}}
 
         # ノード情報収集
         for module_path in module_paths:
@@ -97,7 +96,7 @@ class TestDependencyGraph:
                 "path": str(module_path),
                 "imports": internal_imports,
                 "import_count": len(internal_imports),
-                "cluster": self._determine_cluster(module_path)
+                "cluster": self._determine_cluster(module_path),
             }
 
         # エッジ情報構築
@@ -105,12 +104,14 @@ class TestDependencyGraph:
             for imp in node_info["imports"]:
                 target_module = self._resolve_import_target(imp)
                 if target_module and target_module in graph["nodes"]:
-                    graph["edges"].append({
-                        "source": source_module,
-                        "target": target_module,
-                        "type": imp["type"],
-                        "line": imp.get("line", 0)
-                    })
+                    graph["edges"].append(
+                        {
+                            "source": source_module,
+                            "target": target_module,
+                            "type": imp["type"],
+                            "line": imp.get("line", 0),
+                        }
+                    )
 
         # クラスター情報構築
         graph["clusters"] = self._build_clusters(graph["nodes"])
@@ -202,13 +203,21 @@ class TestDependencyGraph:
             "density": density,
             "max_in_degree": max(in_degree.values()) if in_degree else 0,
             "max_out_degree": max(out_degree.values()) if out_degree else 0,
-            "avg_in_degree": sum(in_degree.values()) / node_count if node_count > 0 else 0,
-            "avg_out_degree": sum(out_degree.values()) / node_count if node_count > 0 else 0,
+            "avg_in_degree": (
+                sum(in_degree.values()) / node_count if node_count > 0 else 0
+            ),
+            "avg_out_degree": (
+                sum(out_degree.values()) / node_count if node_count > 0 else 0
+            ),
             "strongly_connected_components": len(strongly_connected),
-            "largest_scc_size": max(len(scc) for scc in strongly_connected) if strongly_connected else 0
+            "largest_scc_size": (
+                max(len(scc) for scc in strongly_connected) if strongly_connected else 0
+            ),
         }
 
-    def _find_strongly_connected_components(self, graph: Dict[str, Any]) -> List[List[str]]:
+    def _find_strongly_connected_components(
+        self, graph: Dict[str, Any]
+    ) -> List[List[str]]:
         """強結合成分を検出（Kosaraju's algorithm）"""
         nodes = list(graph["nodes"].keys())
         edges = graph["edges"]
@@ -298,7 +307,7 @@ class TestDependencyGraph:
             "intra_cluster_edges": intra_cluster_edges,
             "coupling_ratio": coupling_ratio,
             "cluster_connections": dict(cluster_connections),
-            "assessment": self._assess_coupling(coupling_ratio)
+            "assessment": self._assess_coupling(coupling_ratio),
         }
 
     def _assess_coupling(self, ratio: float) -> str:
@@ -310,8 +319,9 @@ class TestDependencyGraph:
         else:
             return "高結合（要注意）"
 
-    def export_graph_visualization(self, graph: Dict[str, Any],
-                                 output_path: Path) -> None:
+    def export_graph_visualization(
+        self, graph: Dict[str, Any], output_path: Path
+    ) -> None:
         """グラフ可視化用データをエクスポート"""
         # DOT形式でエクスポート
         dot_content = ["digraph DependencyGraph {"]
@@ -321,12 +331,12 @@ class TestDependencyGraph:
         # クラスター定義
         for cluster_name, modules in graph["clusters"].items():
             dot_content.append(f"  subgraph cluster_{cluster_name} {{")
-            dot_content.append(f"    label=\"{cluster_name}\";")
+            dot_content.append(f'    label="{cluster_name}";')
             dot_content.append(f"    color=lightgrey;")
             for module in modules:
                 module_id = module.replace(".", "_").replace("-", "_")
                 module_label = module.split(".")[-1]
-                dot_content.append(f"    {module_id} [label=\"{module_label}\"];")
+                dot_content.append(f'    {module_id} [label="{module_label}"];')
             dot_content.append("  }")
 
         # エッジ定義
@@ -339,12 +349,12 @@ class TestDependencyGraph:
 
         # DOTファイル出力
         dot_file = output_path / "dependency_graph.dot"
-        with open(dot_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(dot_content))
+        with open(dot_file, "w", encoding="utf-8") as f:
+            f.write("\n".join(dot_content))
 
         # JSONファイル出力
         json_file = output_path / "dependency_graph.json"
-        with open(json_file, 'w', encoding='utf-8') as f:
+        with open(json_file, "w", encoding="utf-8") as f:
             json.dump(graph, f, indent=2, default=str)
 
         logger.info(f"依存関係グラフを出力: {dot_file}, {json_file}")
@@ -354,14 +364,18 @@ class TestDependencyGraph:
         """依存関係グラフ: 基本構造の確認"""
         # Given: プロジェクトモジュール
         if not self.kumihan_root.exists():
-            pytest.skip(f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}")
+            pytest.skip(
+                f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}"
+            )
 
         # 主要モジュールを取得（パフォーマンス考慮で制限）
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 30):  # 最初の30モジュール
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 30
+            ):  # 最初の30モジュール
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -377,11 +391,15 @@ class TestDependencyGraph:
         # 基本的なクラスターの存在確認
         expected_clusters = ["core", "parsing", "rendering"]
         found_clusters = set(graph["clusters"].keys())
-        cluster_coverage = len(set(expected_clusters) & found_clusters) / len(expected_clusters)
+        cluster_coverage = len(set(expected_clusters) & found_clusters) / len(
+            expected_clusters
+        )
         assert cluster_coverage >= 0.5, f"必要なクラスターが不足: {found_clusters}"
 
-        logger.info(f"依存関係グラフ基本構造確認完了: {graph['metrics']['node_count']}ノード、"
-                   f"{len(graph['clusters'])}クラスター")
+        logger.info(
+            f"依存関係グラフ基本構造確認完了: {graph['metrics']['node_count']}ノード、"
+            f"{len(graph['clusters'])}クラスター"
+        )
 
     @pytest.mark.system
     def test_依存関係グラフ_循環依存検出(self) -> None:
@@ -389,9 +407,11 @@ class TestDependencyGraph:
         # Given: プロジェクトモジュール
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 25):
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 25
+            ):
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -404,8 +424,9 @@ class TestDependencyGraph:
         # Then: 循環依存確認
         # 循環依存は設計上問題であるが、完全にゼロを要求するのは現実的でない
         max_allowed_cycles = 3
-        assert len(circular_dependencies) <= max_allowed_cycles, \
-               f"循環依存が多すぎます: {len(circular_dependencies)}件"
+        assert (
+            len(circular_dependencies) <= max_allowed_cycles
+        ), f"循環依存が多すぎます: {len(circular_dependencies)}件"
 
         if circular_dependencies:
             logger.warning(f"循環依存検出: {len(circular_dependencies)}件")
@@ -420,9 +441,11 @@ class TestDependencyGraph:
         # Given: プロジェクトモジュール
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 30):
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 30
+            ):
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -434,7 +457,9 @@ class TestDependencyGraph:
 
         # Then: 結合度確認
         coupling_ratio = coupling_analysis["coupling_ratio"]
-        assert coupling_ratio < 0.8, f"クラスター間結合度が高すぎます: {coupling_ratio:.3f}"
+        assert (
+            coupling_ratio < 0.8
+        ), f"クラスター間結合度が高すぎます: {coupling_ratio:.3f}"
 
         # 主要クラスター間の適切な分離確認
         inter_cluster = coupling_analysis["inter_cluster_edges"]
@@ -442,10 +467,14 @@ class TestDependencyGraph:
 
         if inter_cluster + intra_cluster > 0:
             cohesion_ratio = intra_cluster / (inter_cluster + intra_cluster)
-            assert cohesion_ratio >= 0.3, f"クラスター凝集度が低い: {cohesion_ratio:.3f}"
+            assert (
+                cohesion_ratio >= 0.3
+            ), f"クラスター凝集度が低い: {cohesion_ratio:.3f}"
 
-        logger.info(f"クラスター結合度分析完了: 結合度{coupling_ratio:.3f}, "
-                   f"評価: {coupling_analysis['assessment']}")
+        logger.info(
+            f"クラスター結合度分析完了: 結合度{coupling_ratio:.3f}, "
+            f"評価: {coupling_analysis['assessment']}"
+        )
 
     @pytest.mark.system
     def test_依存関係グラフ_メトリクス確認(self) -> None:
@@ -453,9 +482,11 @@ class TestDependencyGraph:
         # Given: プロジェクトモジュール
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 25):
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 25
+            ):
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -467,22 +498,28 @@ class TestDependencyGraph:
 
         # Then: メトリクス確認
         # 密度チェック（適度な結合度）
-        assert 0.05 <= metrics["density"] <= 0.5, \
-               f"グラフ密度が異常: {metrics['density']:.3f}"
+        assert (
+            0.05 <= metrics["density"] <= 0.5
+        ), f"グラフ密度が異常: {metrics['density']:.3f}"
 
         # 入次数・出次数チェック
-        assert metrics["max_in_degree"] <= 10, \
-               f"最大入次数が高すぎます: {metrics['max_in_degree']}"
-        assert metrics["max_out_degree"] <= 15, \
-               f"最大出次数が高すぎます: {metrics['max_out_degree']}"
+        assert (
+            metrics["max_in_degree"] <= 10
+        ), f"最大入次数が高すぎます: {metrics['max_in_degree']}"
+        assert (
+            metrics["max_out_degree"] <= 15
+        ), f"最大出次数が高すぎます: {metrics['max_out_degree']}"
 
         # 強結合成分サイズチェック
-        assert metrics["largest_scc_size"] <= 5, \
-               f"最大強結合成分が大きすぎます: {metrics['largest_scc_size']}"
+        assert (
+            metrics["largest_scc_size"] <= 5
+        ), f"最大強結合成分が大きすぎます: {metrics['largest_scc_size']}"
 
-        logger.info(f"依存関係メトリクス確認完了: 密度{metrics['density']:.3f}, "
-                   f"最大入次数{metrics['max_in_degree']}, "
-                   f"最大出次数{metrics['max_out_degree']}")
+        logger.info(
+            f"依存関係メトリクス確認完了: 密度{metrics['density']:.3f}, "
+            f"最大入次数{metrics['max_in_degree']}, "
+            f"最大出次数{metrics['max_out_degree']}"
+        )
 
     @pytest.mark.system
     def test_依存関係グラフ_可視化出力(self) -> None:
@@ -490,9 +527,11 @@ class TestDependencyGraph:
         # Given: プロジェクトモジュール
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 20):
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 20
+            ):
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -510,12 +549,12 @@ class TestDependencyGraph:
         assert json_file.exists(), "JSONファイルが作成されていません"
 
         # DOTファイル内容確認
-        dot_content = dot_file.read_text(encoding='utf-8')
+        dot_content = dot_file.read_text(encoding="utf-8")
         assert "digraph DependencyGraph" in dot_content, "DOT形式が正しくない"
         assert "subgraph cluster_" in dot_content, "クラスター定義がない"
 
         # JSONファイル内容確認
-        json_content = json_file.read_text(encoding='utf-8')
+        json_content = json_file.read_text(encoding="utf-8")
         assert len(json_content) > 100, "JSON内容が少なすぎる"
 
         logger.info(f"依存関係グラフ可視化出力完了: {dot_file}, {json_file}")
@@ -526,9 +565,11 @@ class TestDependencyGraph:
         # Given: プロジェクトモジュール
         module_paths = []
         for py_file in self.kumihan_root.rglob("*.py"):
-            if (py_file.name != "__init__.py" and
-                not py_file.name.startswith("test_") and
-                len(module_paths) < 25):
+            if (
+                py_file.name != "__init__.py"
+                and not py_file.name.startswith("test_")
+                and len(module_paths) < 25
+            ):
                 module_paths.append(py_file)
 
         if not module_paths:
@@ -551,11 +592,16 @@ class TestDependencyGraph:
 
         # 最下位レベルに過度に集中していないか確認
         if hierarchy_levels:
-            bottom_level_ratio = level_distribution.get(max_level, 0) / len(hierarchy_levels)
-            assert bottom_level_ratio < 0.7, f"最下位レベルに集中しすぎ: {bottom_level_ratio:.3f}"
+            bottom_level_ratio = level_distribution.get(max_level, 0) / len(
+                hierarchy_levels
+            )
+            assert (
+                bottom_level_ratio < 0.7
+            ), f"最下位レベルに集中しすぎ: {bottom_level_ratio:.3f}"
 
-        logger.info(f"階層構造確認完了: {max_level}レベル階層、"
-                   f"分布: {level_distribution}")
+        logger.info(
+            f"階層構造確認完了: {max_level}レベル階層、" f"分布: {level_distribution}"
+        )
 
     def _calculate_hierarchy_levels(self, graph: Dict[str, Any]) -> Dict[str, int]:
         """階層レベルを計算"""
