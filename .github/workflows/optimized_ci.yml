@@ -118,8 +118,8 @@ jobs:
               --maxfail=10 --timeout=300 --tb=short -v
             ;;
           "unit-parsing-basic")
-            # 高速な基本機能テスト（keyword系）
-            pytest tests/unit/parsing/keyword/ \
+            # 高速な基本機能テスト（keyword系 + main parser）
+            pytest tests/unit/parsing/keyword/ tests/unit/parsing/test_main_parser_comprehensive.py \
               --maxfail=10 --timeout=300 --tb=short -v
             ;;
           "unit-parsing-complex")
