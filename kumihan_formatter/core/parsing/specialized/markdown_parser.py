@@ -27,7 +27,9 @@ from ..base.parser_protocols import (
 from ..protocols import ParserType
 
 
-class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin, MarkdownParserProtocol):
+class UnifiedMarkdownParser(
+    UnifiedParserBase, CompositeMixin, PerformanceMixin, MarkdownParserProtocol
+):
     """統一Markdownパーサー
 
     標準Markdown記法の解析:
@@ -41,7 +43,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
 
     def __init__(self) -> None:
         super().__init__(parser_type=ParserType.MARKDOWN)
-        
+
         # Mixinの初期化
         PerformanceMixin.__init__(self)
 
@@ -538,16 +540,16 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
         try:
             # エラー・警告をクリア
             self._clear_errors_warnings()
-            
+
             # 直接実装メソッドを使用してMarkdown解析を実行
             node = self._parse_implementation(content)
-            
+
             return ParseResult(
                 success=True,
                 nodes=[node] if node else [],
                 errors=self.get_errors(),
                 warnings=self.get_warnings(),
-                metadata={"parser_type": "markdown"}
+                metadata={"parser_type": "markdown"},
             )
         except Exception as e:
             return ParseResult(
@@ -555,7 +557,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
                 nodes=[],
                 errors=[str(e)],
                 warnings=[],
-                metadata={"parser_type": "markdown"}
+                metadata={"parser_type": "markdown"},
             )
 
     # BaseParserProtocolインターフェース実装
@@ -564,7 +566,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
     ) -> ParseResult:
         """BaseParserProtocol準拠のメインパースメソッド"""
         return self.parse_with_protocol(content, context)
-    
+
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
@@ -614,7 +616,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
         """Markdown要素をパース（プロトコル準拠）"""
         try:
             root_node = self.parse_markdown(text)
-            if root_node and hasattr(root_node, 'children') and root_node.children:
+            if root_node and hasattr(root_node, "children") and root_node.children:
                 return root_node.children
             return [root_node] if root_node else []
         except Exception as e:
@@ -630,7 +632,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
     def detect_markdown_elements(self, text: str) -> List[str]:
         """Markdown要素を検出（プロトコル準拠）"""
         detected_elements = []
-        
+
         # 各種パターンで検出
         if self.markdown_patterns["heading"].search(text):
             detected_elements.append("heading")
@@ -656,7 +658,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin,
             detected_elements.append("table")
         if self.markdown_patterns["hr"].search(text):
             detected_elements.append("horizontal_rule")
-            
+
         return detected_elements
 
     def to_kumihan(self, markdown_content: str) -> str:
