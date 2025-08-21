@@ -10,7 +10,7 @@ Issue #914: アーキテクチャ最適化 - keyword_parser.py分割
 """
 
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from ....ast_nodes import (
     Node,
@@ -59,7 +59,7 @@ class CustomKeywordParser:
     def _setup_inline_mapping(self) -> None:
         """インライン記法マッピングの設定"""
         self._inline_pattern = re.compile(r"#\s*([^#]+?)\s*#([^#]+?)##")
-        self._inline_keyword_mapping = {
+        self._inline_keyword_mapping: Dict[str, Callable[[str], Node]] = {
             "太字": strong,
             "イタリック": emphasis,
             "ハイライト": highlight,
@@ -194,8 +194,9 @@ class CustomKeywordParser:
 
             if keyword in self._inline_keyword_mapping:
                 handler = self._inline_keyword_mapping[keyword]
-                node = handler(content)
-                nodes.append(node)
+                if callable(handler):
+                    node = handler(content)
+                    nodes.append(node)
             else:
                 # 未知のキーワード
                 nodes.append(create_node("unknown_inline", content=match.group(0)))
