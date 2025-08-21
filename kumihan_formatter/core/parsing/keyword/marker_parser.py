@@ -120,6 +120,7 @@ class MarkerParser:
                             content = parts[1] if len(parts) > 1 else ""
 
                             # ルビ記法の特殊処理
+                            ruby_result = None
                             if keyword == "ルビ":
                                 ruby_result = self._parse_ruby_content(content)
                             if ruby_result:
