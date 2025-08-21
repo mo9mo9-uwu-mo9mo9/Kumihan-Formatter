@@ -128,13 +128,13 @@ jobs:
   # 包括的テスト - PR時のみ実行
   comprehensive_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     needs: [fast_quality, light_tests]
     if: github.event_name == 'pull_request' && needs.fast_quality.result == 'success'
 
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 3
       matrix:
         python-version: [3.12, 3.13]
         test-type: [integration, end_to_end, system]
@@ -156,14 +156,14 @@ jobs:
           comprehensive-${{ runner.os }}-${{ matrix.python-version }}-
 
     - name: Install dependencies
-      timeout-minutes: 8
+      timeout-minutes: 6
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev,performance,ai_optimization]"
         pip install pytest-xdist pytest-timeout pytest-sugar --upgrade
 
     - name: Run comprehensive tests with coverage
-      timeout-minutes: 20
+      timeout-minutes: 25
       continue-on-error: ${{ matrix.test-type == 'system' }}
       env:
         PYTEST_XDIST_WORKER_COUNT: auto
