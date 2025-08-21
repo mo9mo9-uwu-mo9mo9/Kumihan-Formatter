@@ -5,13 +5,13 @@ CI/CD統合テストスクリプト - Issue #971対応
 GitHub Actionsワークフローの動作確認と統計収集を行います。
 """
 
-import subprocess
 import json
+import subprocess
 import sys
 import time
-from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class CIIntegrationTester:
@@ -25,7 +25,7 @@ class CIIntegrationTester:
             "Test Coverage and Quality",
             "Security Scan",
             "Optimized CI Pipeline",
-            "CLAUDE.md Management System"
+            "CLAUDE.md Management System",
         ]
         self.results = {}
 
@@ -37,7 +37,7 @@ class CIIntegrationTester:
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode == 0 and result.stdout.strip():
@@ -54,11 +54,16 @@ class CIIntegrationTester:
         """最近のワークフロー実行履歴を取得"""
         print("📊 最近のワークフロー実行履歴を収集中...")
 
-        result = self.run_gh_command([
-            "run", "list",
-            "--limit", str(limit),
-            "--json", "status,conclusion,workflowName,createdAt,updatedAt,url,event"
-        ])
+        result = self.run_gh_command(
+            [
+                "run",
+                "list",
+                "--limit",
+                str(limit),
+                "--json",
+                "status,conclusion,workflowName,createdAt,updatedAt,url,event",
+            ]
+        )
 
         if not result["success"]:
             print(f"❌ ワークフロー履歴取得失敗: {result['error']}")
@@ -71,7 +76,9 @@ class CIIntegrationTester:
             print(f"❌ JSON解析エラー: {e}")
             return []
 
-    def analyze_workflow_performance(self, runs: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def analyze_workflow_performance(
+        self, runs: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """ワークフロー性能分析"""
         print("🔍 ワークフロー性能を分析中...")
 
@@ -81,7 +88,7 @@ class CIIntegrationTester:
             "failure_count": 0,
             "workflow_stats": {},
             "recent_24h": 0,
-            "avg_duration_minutes": 0
+            "avg_duration_minutes": 0,
         }
 
         successful_runs = 0
@@ -101,7 +108,7 @@ class CIIntegrationTester:
                     "total": 0,
                     "success": 0,
                     "failure": 0,
-                    "success_rate": 0
+                    "success_rate": 0,
                 }
 
             stats["workflow_stats"][workflow_name]["total"] += 1
@@ -116,7 +123,9 @@ class CIIntegrationTester:
 
             # 24時間以内の実行数
             try:
-                created_at = datetime.fromisoformat(run.get("createdAt", "").replace("Z", "+00:00"))
+                created_at = datetime.fromisoformat(
+                    run.get("createdAt", "").replace("Z", "+00:00")
+                )
                 if (now - created_at) < timedelta(hours=24):
                     stats["recent_24h"] += 1
             except:
@@ -124,8 +133,12 @@ class CIIntegrationTester:
 
             # 実行時間計算（概算）
             try:
-                created = datetime.fromisoformat(run.get("createdAt", "").replace("Z", "+00:00"))
-                updated = datetime.fromisoformat(run.get("updatedAt", "").replace("Z", "+00:00"))
+                created = datetime.fromisoformat(
+                    run.get("createdAt", "").replace("Z", "+00:00")
+                )
+                updated = datetime.fromisoformat(
+                    run.get("updatedAt", "").replace("Z", "+00:00")
+                )
                 duration = (updated - created).total_seconds() / 60  # 分単位
                 if duration > 0 and duration < 120:  # 異常値を除く（2時間以内）
                     total_duration += duration
@@ -141,7 +154,9 @@ class CIIntegrationTester:
         for workflow_name in stats["workflow_stats"]:
             workflow_stat = stats["workflow_stats"][workflow_name]
             if workflow_stat["total"] > 0:
-                workflow_stat["success_rate"] = (workflow_stat["success"] / workflow_stat["total"]) * 100
+                workflow_stat["success_rate"] = (
+                    workflow_stat["success"] / workflow_stat["total"]
+                ) * 100
 
         # 平均実行時間
         if duration_count > 0:
@@ -157,13 +172,15 @@ class CIIntegrationTester:
             "overall_status": "healthy",
             "issues": [],
             "recommendations": [],
-            "score": 100
+            "score": 100,
         }
 
         # 成功率チェック
         if stats["success_rate"] < 95:
             health["overall_status"] = "warning"
-            health["issues"].append(f"成功率低下: {stats['success_rate']:.1f}% (目標: >95%)")
+            health["issues"].append(
+                f"成功率低下: {stats['success_rate']:.1f}% (目標: >95%)"
+            )
             health["score"] -= 20
 
         if stats["success_rate"] < 80:
@@ -172,20 +189,28 @@ class CIIntegrationTester:
 
         # 24時間以内の実行数チェック
         if stats["recent_24h"] > 50:
-            health["issues"].append(f"24時間以内の実行数が多い: {stats['recent_24h']}回")
+            health["issues"].append(
+                f"24時間以内の実行数が多い: {stats['recent_24h']}回"
+            )
             health["recommendations"].append("不要なワークフロー実行を削減してください")
             health["score"] -= 10
 
         # 平均実行時間チェック
         if stats["avg_duration_minutes"] > 15:
-            health["issues"].append(f"平均実行時間が長い: {stats['avg_duration_minutes']:.1f}分")
-            health["recommendations"].append("ワークフロー並列化や最適化を検討してください")
+            health["issues"].append(
+                f"平均実行時間が長い: {stats['avg_duration_minutes']:.1f}分"
+            )
+            health["recommendations"].append(
+                "ワークフロー並列化や最適化を検討してください"
+            )
             health["score"] -= 15
 
         # ワークフロー別問題チェック
         for workflow_name, workflow_stat in stats["workflow_stats"].items():
             if workflow_stat["success_rate"] < 90 and workflow_stat["total"] >= 3:
-                health["issues"].append(f"{workflow_name}: 成功率 {workflow_stat['success_rate']:.1f}%")
+                health["issues"].append(
+                    f"{workflow_name}: 成功率 {workflow_stat['success_rate']:.1f}%"
+                )
                 health["score"] -= 10
 
         # スコア調整
@@ -196,10 +221,10 @@ class CIIntegrationTester:
     def generate_report(self, stats: Dict[str, Any], health: Dict[str, Any]) -> str:
         """統合レポート生成"""
         report = []
-        report.append("="*80)
+        report.append("=" * 80)
         report.append("📊 CI/CD統合テスト・モニタリングレポート")
         report.append(f"⏰ 生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        report.append("="*80)
+        report.append("=" * 80)
 
         # 全体サマリー
         report.append("\n🎯 全体サマリー")
@@ -226,9 +251,15 @@ class CIIntegrationTester:
         # ワークフロー別詳細
         report.append("\n📈 ワークフロー別統計:")
         for workflow_name, workflow_stat in stats["workflow_stats"].items():
-            status_icon = "✅" if workflow_stat["success_rate"] >= 90 else "⚠️" if workflow_stat["success_rate"] >= 70 else "❌"
+            status_icon = (
+                "✅"
+                if workflow_stat["success_rate"] >= 90
+                else "⚠️" if workflow_stat["success_rate"] >= 70 else "❌"
+            )
             report.append(f"   {status_icon} {workflow_name}:")
-            report.append(f"      実行数: {workflow_stat['total']}, 成功率: {workflow_stat['success_rate']:.1f}%")
+            report.append(
+                f"      実行数: {workflow_stat['total']}, 成功率: {workflow_stat['success_rate']:.1f}%"
+            )
 
         # Issue #967-970の改善効果
         report.append("\n🚀 Issue #967-970改善効果:")
@@ -242,7 +273,7 @@ class CIIntegrationTester:
         if stats["avg_duration_minutes"] <= 15:
             report.append("   ✅ 目標実行時間 (<15分) 達成!")
 
-        report.append("\n" + "="*80)
+        report.append("\n" + "=" * 80)
         report.append("🤖 Generated by CI Integration Tester")
 
         return "\n".join(report)
@@ -272,8 +303,12 @@ class CIIntegrationTester:
         print(report)
 
         # ファイル出力
-        report_path = self.project_root / "tmp" / f"ci_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        report_path.write_text(report, encoding='utf-8')
+        report_path = (
+            self.project_root
+            / "tmp"
+            / f"ci_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        )
+        report_path.write_text(report, encoding="utf-8")
         print(f"\n📄 詳細レポート: {report_path}")
 
         # 結果判定

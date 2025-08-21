@@ -5,12 +5,12 @@ CI/CDメトリクスダッシュボード生成 - Issue #971対応
 HTMLダッシュボード形式でCI/CDメトリクスを可視化します。
 """
 
-import subprocess
 import json
+import subprocess
 import sys
-from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class CIMetricsDashboard:
@@ -28,7 +28,7 @@ class CIMetricsDashboard:
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode == 0 and result.stdout.strip():
@@ -46,11 +46,16 @@ class CIMetricsDashboard:
         print("📊 ワークフローメトリクスを収集中...")
 
         # 最近30件の実行履歴を取得
-        result = self.run_gh_command([
-            "run", "list",
-            "--limit", "30",
-            "--json", "status,conclusion,workflowName,createdAt,updatedAt,url,event,headBranch"
-        ])
+        result = self.run_gh_command(
+            [
+                "run",
+                "list",
+                "--limit",
+                "30",
+                "--json",
+                "status,conclusion,workflowName,createdAt,updatedAt,url,event,headBranch",
+            ]
+        )
 
         if not result["success"]:
             print(f"❌ メトリクス取得失敗: {result['error']}")
@@ -68,7 +73,7 @@ class CIMetricsDashboard:
             "daily_stats": {},
             "success_trend": [],
             "execution_times": [],
-            "failure_patterns": {}
+            "failure_patterns": {},
         }
 
         now = datetime.now()
@@ -86,7 +91,7 @@ class CIMetricsDashboard:
                     "success": 0,
                     "failure": 0,
                     "success_rate": 0,
-                    "recent_runs": []
+                    "recent_runs": [],
                 }
 
             workflow_stat = metrics["workflows"][workflow_name]
@@ -98,20 +103,28 @@ class CIMetricsDashboard:
                 workflow_stat["failure"] += 1
 
             # 最近の実行記録
-            workflow_stat["recent_runs"].append({
-                "conclusion": conclusion,
-                "event": event,
-                "created_at": created_at_str,
-                "url": run.get("url", "")
-            })
+            workflow_stat["recent_runs"].append(
+                {
+                    "conclusion": conclusion,
+                    "event": event,
+                    "created_at": created_at_str,
+                    "url": run.get("url", ""),
+                }
+            )
 
             # 日別統計
             try:
-                created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+                created_at = datetime.fromisoformat(
+                    created_at_str.replace("Z", "+00:00")
+                )
                 date_key = created_at.strftime("%Y-%m-%d")
 
                 if date_key not in metrics["daily_stats"]:
-                    metrics["daily_stats"][date_key] = {"total": 0, "success": 0, "failure": 0}
+                    metrics["daily_stats"][date_key] = {
+                        "total": 0,
+                        "success": 0,
+                        "failure": 0,
+                    }
 
                 metrics["daily_stats"][date_key]["total"] += 1
                 if conclusion == "success":
@@ -134,7 +147,9 @@ class CIMetricsDashboard:
         for workflow_name in metrics["workflows"]:
             workflow_stat = metrics["workflows"][workflow_name]
             if workflow_stat["total"] > 0:
-                workflow_stat["success_rate"] = (workflow_stat["success"] / workflow_stat["total"]) * 100
+                workflow_stat["success_rate"] = (
+                    workflow_stat["success"] / workflow_stat["total"]
+                ) * 100
 
         return metrics
 
@@ -144,7 +159,11 @@ class CIMetricsDashboard:
         # ワークフロー別統計テーブル
         workflow_table_rows = ""
         for workflow_name, stats in metrics["workflows"].items():
-            status_class = "success" if stats["success_rate"] >= 90 else "warning" if stats["success_rate"] >= 70 else "danger"
+            status_class = (
+                "success"
+                if stats["success_rate"] >= 90
+                else "warning" if stats["success_rate"] >= 70 else "danger"
+            )
             workflow_table_rows += f"""
             <tr class="{status_class}">
                 <td>{workflow_name}</td>
@@ -178,7 +197,9 @@ class CIMetricsDashboard:
 
         # 失敗パターン分析
         failure_patterns_html = ""
-        top_failures = sorted(metrics["failure_patterns"].items(), key=lambda x: x[1], reverse=True)[:5]
+        top_failures = sorted(
+            metrics["failure_patterns"].items(), key=lambda x: x[1], reverse=True
+        )[:5]
         for pattern, count in top_failures:
             failure_patterns_html += f"""
             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -189,8 +210,12 @@ class CIMetricsDashboard:
         # 全体統計
         total_runs = metrics["total_runs"]
         total_success = sum(stats["success"] for stats in metrics["workflows"].values())
-        total_failures = sum(stats["failure"] for stats in metrics["workflows"].values())
-        overall_success_rate = (total_success / total_runs * 100) if total_runs > 0 else 0
+        total_failures = sum(
+            stats["failure"] for stats in metrics["workflows"].values()
+        )
+        overall_success_rate = (
+            (total_success / total_runs * 100) if total_runs > 0 else 0
+        )
 
         html_content = f"""
 <!DOCTYPE html>
@@ -413,8 +438,12 @@ class CIMetricsDashboard:
         html_content = self.generate_html_dashboard(metrics)
 
         # ファイル出力
-        dashboard_path = self.project_root / "tmp" / f"ci_dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
-        dashboard_path.write_text(html_content, encoding='utf-8')
+        dashboard_path = (
+            self.project_root
+            / "tmp"
+            / f"ci_dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        )
+        dashboard_path.write_text(html_content, encoding="utf-8")
 
         print(f"✅ ダッシュボード生成完了: {dashboard_path}")
         print(f"🌐 ブラウザで開いてください: file://{dashboard_path}")
@@ -422,7 +451,9 @@ class CIMetricsDashboard:
         # サマリー表示
         total_runs = metrics["total_runs"]
         total_success = sum(stats["success"] for stats in metrics["workflows"].values())
-        overall_success_rate = (total_success / total_runs * 100) if total_runs > 0 else 0
+        overall_success_rate = (
+            (total_success / total_runs * 100) if total_runs > 0 else 0
+        )
 
         print(f"\n📈 メトリクスサマリー:")
         print(f"   総実行数: {total_runs}")
