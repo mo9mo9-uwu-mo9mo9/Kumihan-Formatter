@@ -85,12 +85,12 @@ def pytest_configure(config):
         sys.path.insert(0, str(project_root))
 
     # 環境変数としてもPYTHONPATHを設定（xdistワーカー用）
-    current_pythonpath = os.environ.get('PYTHONPATH', '')
+    current_pythonpath = os.environ.get("PYTHONPATH", "")
     if str(project_root) not in current_pythonpath:
         if current_pythonpath:
-            os.environ['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
+            os.environ["PYTHONPATH"] = f"{project_root}:{current_pythonpath}"
         else:
-            os.environ['PYTHONPATH'] = str(project_root)
+            os.environ["PYTHONPATH"] = str(project_root)
 
     logger.debug(f"PYTHONPATH configured: {os.environ.get('PYTHONPATH', 'Not set')}")
 
