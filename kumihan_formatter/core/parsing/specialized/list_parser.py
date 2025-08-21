@@ -26,7 +26,6 @@ from ..base.parser_protocols import (
     ListParserProtocol,
     ParseContext,
     ParseResult,
-    create_parse_result,
 )
 from ..protocols import ParserType
 from .list_components import AdvancedListHandler, BasicListHandler, ListUtilities

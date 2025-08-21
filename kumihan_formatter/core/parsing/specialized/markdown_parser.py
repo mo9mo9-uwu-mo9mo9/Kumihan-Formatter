@@ -22,7 +22,6 @@ from ..base.parser_protocols import (
     MarkdownParserProtocol,
     ParseContext,
     ParseResult,
-    create_parse_result,
 )
 from ..protocols import ParserType
 
