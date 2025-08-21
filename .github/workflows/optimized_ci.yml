@@ -113,15 +113,15 @@ jobs:
         case "${{ matrix.test-suite }}" in
           "unit-core")
             pytest tests/unit/ast_nodes/ tests/unit/config/ \
-              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 -n=2 --tb=short -v
             ;;
           "unit-parsing")
             pytest tests/unit/parsing/ \
-              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 -n=2 --tb=short -v
             ;;
           "unit-rendering")
             pytest tests/unit/rendering/ \
-              --maxfail=3 --timeout=120 -n=2 --tb=short -v
+              --maxfail=10 --timeout=120 -n=2 --tb=short -v
             ;;
         esac
 
