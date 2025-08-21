@@ -13,8 +13,8 @@ class UnorderedListParser:
     def __init__(self) -> None:
         """初期化"""
         self.unordered_patterns = {
-            "bullet": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
-            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([x\s])\]\s*(.+)$"),
+            "bullet": re.compile(r"^(\s*)[-*+]\s+(?!\[)(.+)$"),  # チェックリストを除外
+            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([xX\s])\]\s*(.+)$"),
             "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
         }
 
