@@ -209,6 +209,33 @@ class NestedListParser:
             "has_nesting": max_level > 0,
         }
 
+    def flatten_nested_list(self, nested_root: Node) -> List[Node]:
+        """ネスト構造を平坦なリストに変換
+
+        Args:
+            nested_root: ネスト構造のルートノード（childrenメタデータを持つ）
+
+        Returns:
+            平坦化されたノードのリスト
+        """
+        flattened = []
+
+        def _flatten_recursive(node: Node) -> None:
+            """再帰的に平坦化"""
+            flattened.append(node)
+
+            # 子要素がある場合は再帰的に処理
+            if "children" in node.metadata:
+                for child in node.metadata["children"]:
+                    _flatten_recursive(child)
+
+        # ルートノードに子要素がある場合は処理
+        if "children" in nested_root.metadata:
+            for child in nested_root.metadata["children"]:
+                _flatten_recursive(child)
+
+        return flattened
+
     def _create_list_item_node(self, content: str, level: int) -> Node:
         """リストアイテムノードを作成"""
         node = list_item(content)
