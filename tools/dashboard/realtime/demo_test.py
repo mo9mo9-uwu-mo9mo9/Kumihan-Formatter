@@ -3,7 +3,6 @@
 
 import time
 
-from analytics_engine import AnalyticsEngine
 from data_generator import DataGenerator
 
 
@@ -16,7 +15,6 @@ def main():
     # システム初期化
     print("⚙️ システム初期化中...")
     gen = DataGenerator(num_series=3, data_points=20)
-    engine = AnalyticsEngine()
 
     print("✅ 初期化完了!")
     print()
@@ -37,7 +35,7 @@ def main():
         print(data.tail().round(3).to_string())
 
         # 基本統計（修正版）
-        print(f"\n📊 基本統計:")
+        print("\n📊 基本統計:")
         for col in data.columns:
             mean_val = data[col].mean()
             std_val = data[col].std()
@@ -47,7 +45,7 @@ def main():
             )
 
         # 簡単なトレンド分析（修正版）
-        print(f"\n📈 トレンド分析（直近10点）:")
+        print("\n📈 トレンド分析（直近10点）:")
         for col in data.columns:
             recent_data = data[col].tail(10)
             if len(recent_data) > 1:
