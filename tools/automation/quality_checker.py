@@ -485,14 +485,15 @@ class QualityChecker:
         )
 
     def run_comprehensive_check(
-        self, target_paths: Optional[List[Path]] = None
+        self, target_paths: Optional[List[Path]] = None, enable_external_tools: bool = False
     ) -> Dict[str, Any]:
-        """包括的品質チェック実行"""
+        """包括的品質チェック実行（外部ツール統合オプション付き）"""
         if target_paths is None:
             target_paths = [self.project_root / "kumihan_formatter"]
 
         all_issues = []
         metrics = []
+        external_results = {}
 
         # ファイル品質チェック
         logger.debug(f"Starting file quality check for paths: {target_paths}")
@@ -521,10 +522,28 @@ class QualityChecker:
         coverage_metric = self.check_coverage()
         metrics.append(coverage_metric)
 
+        # 外部ツール実行（オプション）
+        if enable_external_tools:
+            logger.info("外部品質ツールを実行")
+            external_results = self._run_external_tools()
+
+            # 外部ツール結果をメトリクスに追加
+            for tool_name, tool_result in external_results.items():
+                if tool_result.get("status") != "ERROR":
+                    if "complexity" in tool_result:
+                        metrics.append(
+                            QualityMetric(
+                                name=f"{tool_name}_complexity",
+                                value=tool_result["complexity"].get("average", 0),
+                                threshold=10.0,
+                                status="PASS" if tool_result["complexity"].get("average", 0) <= 10.0 else "WARN",
+                            )
+                        )
+
         # 品質ゲート判定
         quality_gate_status = self._evaluate_quality_gate(all_issues, metrics)
 
-        return {
+        result = {
             "summary": {
                 "total_issues": len(all_issues),
                 "error_count": len([i for i in all_issues if i.severity == "ERROR"]),
@@ -532,6 +551,7 @@ class QualityChecker:
                     [i for i in all_issues if i.severity == "WARNING"]
                 ),
                 "quality_gate_status": quality_gate_status,
+                "external_tools_enabled": enable_external_tools,
             },
             "issues": [
                 {
@@ -554,6 +574,12 @@ class QualityChecker:
                 for metric in metrics
             ],
         }
+
+        # 外部ツール結果を追加
+        if external_results:
+            result["external_tools"] = external_results
+
+        return result
 
     def _evaluate_quality_gate(
         self, issues: List[QualityIssue], metrics: List[QualityMetric]
@@ -599,6 +625,160 @@ class QualityChecker:
 
         return False
 
+    def _run_external_tools(self) -> Dict[str, Any]:
+        """外部品質ツール実行（radon、vulture、xenon）"""
+        results = {}
+
+        # radon複雑度チェック
+        results["radon"] = self._run_radon_check()
+
+        # vulture デッドコード検出
+        results["vulture"] = self._run_vulture_check()
+
+        # xenon 複雑度チェック（可能な場合）
+        results["xenon"] = self._run_xenon_check()
+
+        return results
+
+    def _run_radon_check(self) -> Dict[str, Any]:
+        """radon複雑度チェック実行"""
+        logger.debug("radon複雑度チェックを実行")
+
+        try:
+            # 複雑度チェック
+            result = subprocess.run(
+                ["python3", "-m", "radon", "cc", "kumihan_formatter", "--json"],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=self.project_root,
+            )
+
+            if result.returncode == 0 and result.stdout:
+                complexity_data = json.loads(result.stdout)
+
+                # 複雑度統計計算
+                total_functions = 0
+                complexity_sum = 0
+                high_complexity_files = []
+
+                for file_path, functions in complexity_data.items():
+                    for func_data in functions:
+                        if isinstance(func_data, dict) and "complexity" in func_data:
+                            complexity = func_data["complexity"]
+                            total_functions += 1
+                            complexity_sum += complexity
+                            if complexity > 10:
+                                high_complexity_files.append({
+                                    "file": file_path,
+                                    "function": func_data.get("name", "unknown"),
+                                    "complexity": complexity,
+                                })
+
+                average_complexity = complexity_sum / total_functions if total_functions > 0 else 0
+
+                return {
+                    "status": "SUCCESS",
+                    "complexity": {
+                        "average": average_complexity,
+                        "total_functions": total_functions,
+                        "high_complexity_count": len(high_complexity_files),
+                        "high_complexity_files": high_complexity_files[:10],  # 上位10件
+                    },
+                    "tool_version": "radon",
+                }
+            else:
+                logger.warning(f"radon実行失敗: return_code={result.returncode}")
+                if result.stderr:
+                    logger.warning(f"radon stderr: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            logger.error("radon実行がタイムアウト（60秒）")
+        except FileNotFoundError:
+            logger.error("radonコマンドが見つからない（未インストール）")
+        except json.JSONDecodeError as e:
+            logger.error(f"radon JSON解析失敗: {e}")
+        except Exception as e:
+            logger.error(f"radon実行中の予期しないエラー: {e}")
+
+        return {
+            "status": "ERROR",
+            "error": "radon実行に失敗",
+            "tool_version": "radon",
+        }
+
+    def _run_vulture_check(self) -> Dict[str, Any]:
+        """vulture デッドコード検出実行"""
+        logger.debug("vultureデッドコード検出を実行")
+
+        try:
+            result = subprocess.run(
+                ["vulture", "kumihan_formatter"],
+                capture_output=True,
+                text=True,
+                timeout=90,
+                cwd=self.project_root,
+            )
+
+            # vultureは見つかった場合にreturn_code != 0になることがある
+            dead_code_lines = [line for line in result.stdout.splitlines() if line.strip()]
+
+            return {
+                "status": "SUCCESS",
+                "dead_code": {
+                    "count": len(dead_code_lines),
+                    "issues": dead_code_lines[:20],  # 上位20件
+                },
+                "tool_version": "vulture",
+            }
+
+        except subprocess.TimeoutExpired:
+            logger.error("vulture実行がタイムアウト（90秒）")
+        except FileNotFoundError:
+            logger.error("vultureコマンドが見つからない（未インストール）")
+        except Exception as e:
+            logger.error(f"vulture実行中の予期しないエラー: {e}")
+
+        return {
+            "status": "ERROR",
+            "error": "vulture実行に失敗",
+            "tool_version": "vulture",
+        }
+
+    def _run_xenon_check(self) -> Dict[str, Any]:
+        """xenon 複雑度チェック実行"""
+        logger.debug("xenon複雑度チェックを実行")
+
+        try:
+            result = subprocess.run(
+                ["xenon", "--max-average", "A", "--max-modules", "A", "--max-absolute", "B", "kumihan_formatter"],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=self.project_root,
+            )
+
+            return {
+                "status": "SUCCESS",
+                "complexity_grade": "A" if result.returncode == 0 else "B+",
+                "return_code": result.returncode,
+                "output": result.stdout.strip() if result.stdout else "No output",
+                "tool_version": "xenon",
+            }
+
+        except subprocess.TimeoutExpired:
+            logger.error("xenon実行がタイムアウト（60秒）")
+        except FileNotFoundError:
+            logger.error("xenonコマンドが見つからない（未インストール）")
+        except Exception as e:
+            logger.error(f"xenon実行中の予期しないエラー: {e}")
+
+        return {
+            "status": "ERROR",
+            "error": "xenon実行に失敗",
+            "tool_version": "xenon",
+        }
+
 
 def main():
     """CLI エントリーポイント"""
@@ -616,6 +796,10 @@ def main():
         )
         parser.add_argument(
             "--debug", action="store_true", help="Enable debug mode for detailed logging"
+        )
+        parser.add_argument(
+            "--external-tools", action="store_true",
+            help="Enable external quality tools (radon, vulture, xenon)"
         )
 
         args = parser.parse_args()
@@ -635,8 +819,14 @@ def main():
             logger.debug(f"Target paths set to: {target_paths}")
 
         logger.debug("Running comprehensive quality check")
-        report = checker.run_comprehensive_check(target_paths)
+        report = checker.run_comprehensive_check(target_paths, enable_external_tools=args.external_tools)
         logger.debug(f"Quality check completed. Report summary: {report.get('summary', {})}")
+
+        if args.external_tools:
+            external_summary = {}
+            for tool, result in report.get("external_tools", {}).items():
+                external_summary[tool] = result.get("status", "UNKNOWN")
+            logger.info(f"External tools results: {external_summary}")
 
         if args.output:
             logger.debug(f"Writing report to output file: {args.output}")

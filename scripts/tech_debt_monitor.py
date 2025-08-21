@@ -46,42 +46,112 @@ class TechDebtMonitor:
 
     def measure_cognitive_complexity(self) -> Dict[str, float]:
         """
-        Cognitive Complexityを測定する。
+        Cognitive Complexityを測定する（強化されたエラーハンドリング付き）。
 
         Returns:
             Dict[str, float]: ファイル名とCognitive Complexityの辞書。
         """
+        logger.debug("認知複雑度測定を開始")
+
         try:
+            logger.debug(f"radon ccコマンドを実行: {self.target_directory}")
             result = subprocess.run(
                 ["radon", "cc", self.target_directory, "-j"],
                 capture_output=True,
                 text=True,
                 check=True,
+                timeout=60,  # 60秒タイムアウト
             )
-            result_data = json.loads(result.stdout)
-            return dict(result_data) if isinstance(result_data, dict) else {}
+
+            logger.debug(f"radon cc実行完了: return_code={result.returncode}")
+            if result.stderr:
+                logger.warning(f"radon cc stderr: {result.stderr}")
+
+            try:
+                result_data = json.loads(result.stdout)
+                complexity_dict = dict(result_data) if isinstance(result_data, dict) else {}
+                logger.info(f"認知複雑度測定成功: {len(complexity_dict)}ファイルを解析")
+                return complexity_dict
+
+            except json.JSONDecodeError as e:
+                logger.error(f"radon cc JSON解析失敗: {e}")
+                logger.warning("空の辞書を返して処理継続")
+                return {}
+
+        except subprocess.TimeoutExpired:
+            logger.error("radon ccコマンドがタイムアウト（60秒）")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
+        except FileNotFoundError:
+            logger.error("radonコマンドが見つからない（未インストール）")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
         except subprocess.CalledProcessError as e:
-            logger.error(f"Cognitive Complexityの測定に失敗しました: {e}")
+            logger.error(f"radon ccコマンド実行失敗: return_code={e.returncode}")
+            logger.error(f"stderr: {e.stderr}" if hasattr(e, 'stderr') and e.stderr else "stderrなし")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
+        except Exception as e:
+            logger.error(f"Cognitive Complexity測定中の予期しないエラー: {e}")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
 
     def calculate_maintainability_index(self) -> Dict[str, float]:
         """
-        Maintainability Indexを計算する。
+        Maintainability Indexを計算する（強化されたエラーハンドリング付き）。
 
         Returns:
             Dict[str, float]: ファイル名とMaintainability Indexの辞書。
         """
+        logger.debug("保守性指標計算を開始")
+
         try:
+            logger.debug(f"radon miコマンドを実行: {self.target_directory}")
             result = subprocess.run(
                 ["radon", "mi", self.target_directory, "-j"],
                 capture_output=True,
                 text=True,
                 check=True,
+                timeout=60,  # 60秒タイムアウト
             )
-            result_data = json.loads(result.stdout)
-            return dict(result_data) if isinstance(result_data, dict) else {}
+
+            logger.debug(f"radon mi実行完了: return_code={result.returncode}")
+            if result.stderr:
+                logger.warning(f"radon mi stderr: {result.stderr}")
+
+            try:
+                result_data = json.loads(result.stdout)
+                maintainability_dict = dict(result_data) if isinstance(result_data, dict) else {}
+                logger.info(f"保守性指標計算成功: {len(maintainability_dict)}ファイルを解析")
+                return maintainability_dict
+
+            except json.JSONDecodeError as e:
+                logger.error(f"radon mi JSON解析失敗: {e}")
+                logger.warning("空の辞書を返して処理継続")
+                return {}
+
+        except subprocess.TimeoutExpired:
+            logger.error("radon miコマンドがタイムアウト（60秒）")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
+        except FileNotFoundError:
+            logger.error("radonコマンドが見つからない（未インストール）")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
         except subprocess.CalledProcessError as e:
-            logger.error(f"Maintainability Indexの計算に失敗しました: {e}")
+            logger.error(f"radon miコマンド実行失敗: return_code={e.returncode}")
+            logger.error(f"stderr: {e.stderr}" if hasattr(e, 'stderr') and e.stderr else "stderrなし")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
+            return {}
+
+        except Exception as e:
+            logger.error(f"Maintainability Index計算中の予期しないエラー: {e}")
+            logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
 
     def detect_code_duplication(self) -> List[Dict[Any, Any]]:
@@ -119,21 +189,56 @@ class TechDebtMonitor:
 
     def detect_dead_code(self) -> List[str]:
         """
-        デッドコードを検出する。
+        デッドコードを検出する（強化されたエラーハンドリング付き）。
 
         Returns:
             List[str]: デッドコードのリスト。
         """
+        logger.debug("デッドコード検出を開始")
+
         try:
+            logger.debug(f"vultureコマンドを実行: {self.target_directory}")
             result = subprocess.run(
                 ["vulture", self.target_directory],
                 capture_output=True,
                 text=True,
-                check=True,
+                timeout=90,  # 90秒タイムアウト
             )
-            return [line for line in result.stdout.splitlines() if line.strip()]
+
+            # vultureはreturn_codeが0以外でも正常な出力をする場合がある
+            logger.debug(f"vulture実行完了: return_code={result.returncode}")
+            if result.stderr:
+                logger.warning(f"vulture stderr: {result.stderr}")
+
+            dead_code_lines = [line for line in result.stdout.splitlines() if line.strip()]
+            logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
+            return dead_code_lines
+
+        except subprocess.TimeoutExpired:
+            logger.error("vultureコマンドがタイムアウト（90秒）")
+            logger.warning("graceful degradation: 空のリストを返して処理継続")
+            return []
+
+        except FileNotFoundError:
+            logger.error("vultureコマンドが見つからない（未インストール）")
+            logger.warning("graceful degradation: 空のリストを返して処理継続")
+            return []
+
         except subprocess.CalledProcessError as e:
-            logger.error(f"デッドコードの検出に失敗しました: {e}")
+            # vultureはデッドコードを発見した場合にreturn_codeが0以外になることがある
+            logger.debug(f"vultureコマンド結果: return_code={e.returncode}")
+            if hasattr(e, 'stdout') and e.stdout:
+                dead_code_lines = [line for line in e.stdout.splitlines() if line.strip()]
+                logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
+                return dead_code_lines
+            else:
+                logger.warning(f"vultureコマンド実行失敗: {e}")
+                logger.warning("graceful degradation: 空のリストを返して処理継続")
+                return []
+
+        except Exception as e:
+            logger.error(f"デッドコード検出中の予期しないエラー: {e}")
+            logger.warning("graceful degradation: 空のリストを返して処理継続")
             return []
 
     def _load_threshold_config(self, config_path: Optional[str]) -> Dict[str, float]:
