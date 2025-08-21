@@ -43,9 +43,6 @@ class UnifiedMarkdownParser(
 
     def __init__(self) -> None:
         super().__init__(parser_type=ParserType.MARKDOWN)
-        
-        # Mixinの初期化
-        PerformanceMixin.__init__(self)
 
         # Mixinの初期化
         PerformanceMixin.__init__(self)
