@@ -57,7 +57,8 @@ class AttributeParser(BaseParser):
         import re
 
         # 引用符で囲まれた属性と引用符なし属性の両方に対応
-        attr_pattern = r'(\w+)=(?:["\']([^"\']*)["\']|([^\s>]+))'
+        # ハイフンを含む属性名（data-*など）にも対応
+        attr_pattern = r'([\w\-]+)=(?:["\']([^"\']*)["\']|([^\s>]+))'
         matches = re.findall(attr_pattern, content)
         for key, quoted_value, unquoted_value in matches:
             # 引用符ありの値を優先、なければ引用符なしの値を使用
