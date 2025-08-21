@@ -28,9 +28,10 @@ except ImportError:
     ElementRenderer = None
 
 try:
-    from kumihan_formatter.core.rendering.html_escaping import HTMLEscaper
+    from kumihan_formatter.core.rendering.html_escaping import escape_html
+    html_escaping_available = True
 except ImportError:
-    HTMLEscaper = None
+    html_escaping_available = False
 
 
 # mypy: ignore-errors
@@ -338,18 +339,19 @@ class TestElementRendererCoverage:
 
 @pytest.mark.unit
 @pytest.mark.renderer
-@pytest.mark.skipif(HTMLEscaper is None, reason="HTMLEscaper not available")
+@pytest.mark.skipif(not html_escaping_available, reason="html_escaping module not available")
 class TestHTMLEscaperCoverage:
     """HTML escaper coverage tests."""
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.escaper = HTMLEscaper()
+        from kumihan_formatter.core.rendering.html_escaping import escape_html
+        self.escape_html = escape_html
 
     def test_html_escaper_initialization(self):
         """Test HTML escaper initialization."""
-        assert self.escaper is not None
-        assert hasattr(self.escaper, "escape")
+        assert self.escape_html is not None
+        assert callable(self.escape_html)
 
     def test_escape_basic_html_entities(self):
         """Test escaping basic HTML entities."""
@@ -357,21 +359,18 @@ class TestHTMLEscaperCoverage:
             ("<script>", "&lt;script&gt;"),
             ("A & B", "A &amp; B"),
             ('"quoted"', "&quot;quoted&quot;"),
-            ("'single'", "&#x27;single&#x27;"),
         ]
 
-        for input_text, expected in test_cases:
-            try:
-                result = self.escaper.escape(input_text)
-                # Should escape HTML entities
-                assert "<script>" not in result
-                assert (
-                    "&amp;" in result
-                    or "&" not in result
-                    or result.count("&") <= input_text.count("&")
-                )
-            except Exception:
-                pass
+        for input_text, expected_contains in test_cases:
+            result = self.escape_html(input_text)
+            # Should escape HTML entities
+            assert "<script>" not in result
+            if "amp" in expected_contains:
+                assert "&amp;" in result
+            if "lt" in expected_contains:
+                assert "&lt;" in result
+            if "gt" in expected_contains:
+                assert "&gt;" in result
 
     def test_escape_unicode_characters(self):
         """Test escaping unicode characters."""
@@ -383,11 +382,11 @@ class TestHTMLEscaperCoverage:
         ]
 
         for text in unicode_texts:
-            try:
-                result = self.escaper.escape(text)
-                assert isinstance(result, str)
-            except Exception:
-                pass
+            result = self.escape_html(text)
+            assert isinstance(result, str)
+            # Ensure & characters are properly escaped in mixed content
+            if "&" in text and "Mixed:" in text:
+                assert "&amp;" in result
 
     def test_escape_edge_cases(self):
         """Test escaping edge cases."""
@@ -396,46 +395,46 @@ class TestHTMLEscaperCoverage:
             "   ",  # Whitespace only
             "<>&\"'",  # All special characters
             "Normal text",  # No special characters
-            None,  # None value
         ]
 
         for case in edge_cases:
-            try:
-                result = self.escaper.escape(case)
-                if case is not None:
-                    assert isinstance(result, str)
-            except (TypeError, AttributeError):
-                # None or invalid input should raise appropriate error
-                pass
+            result = self.escape_html(case)
+            assert isinstance(result, str)
+            # Verify special characters are escaped
+            if "<>&\"'" in case:
+                assert "&lt;" in result
+                assert "&gt;" in result
+                assert "&amp;" in result
 
     def test_unescape_functionality(self):
-        """Test HTML unescaping if available."""
-        if hasattr(self.escaper, "unescape"):
-            test_cases = [
-                ("&lt;script&gt;", "<script>"),
-                ("A &amp; B", "A & B"),
-                ("&quot;quoted&quot;", '"quoted"'),
-            ]
+        """Test HTML unescaping using standard library."""
+        from html import unescape
+        
+        test_cases = [
+            ("&lt;script&gt;", "<script>"),
+            ("A &amp; B", "A & B"),
+            ("&quot;quoted&quot;", '"quoted"'),
+        ]
 
-            for escaped, expected in test_cases:
-                try:
-                    result = self.escaper.unescape(escaped)
-                    assert result == expected
-                except Exception:
-                    pass
+        for escaped, expected in test_cases:
+            result = unescape(escaped)
+            assert result == expected
 
     def test_escaper_configuration(self):
         """Test escaper configuration options."""
-        config_methods = [
-            "set_quote_style",
-            "enable_unicode_escaping",
-            "configure_entity_map",
-        ]
-
-        for method_name in config_methods:
-            if hasattr(self.escaper, method_name):
-                method = getattr(self.escaper, method_name)
-                assert callable(method)
+        # Since we're using function-based approach, test available functions
+        from kumihan_formatter.core.rendering.html_escaping import render_attributes, contains_html_tags
+        
+        # Test render_attributes function
+        attributes = {"class": "test", "id": "example"}
+        result = render_attributes(attributes)
+        assert isinstance(result, str)
+        assert "class" in result
+        assert "test" in result
+        
+        # Test contains_html_tags function
+        assert contains_html_tags("<div>test</div>") is True
+        assert contains_html_tags("plain text") is False
 
 
 @pytest.mark.unit
