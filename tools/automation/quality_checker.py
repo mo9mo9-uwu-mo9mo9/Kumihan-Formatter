@@ -8,7 +8,9 @@ Enterprise級品質基準に基づく
 import ast
 import json
 import os
+import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional
@@ -48,6 +50,8 @@ class QualityChecker:
         self.project_root = project_root or Path.cwd()
         self.quality_rules = self._load_quality_rules()
         self.coverage_thresholds = self._load_coverage_thresholds()
+        # パス解決を絶対パスで統一
+        self.project_root = self.project_root.resolve()
 
     def _get_safe_line_number(self, node: ast.AST) -> int:
         """Python 3.13互換: ASTノードから安全に行番号を取得"""
@@ -116,7 +120,7 @@ class QualityChecker:
 
     def check_file_quality(self, file_path: Path) -> List[QualityIssue]:
         """ファイル品質チェック"""
-        issues = []
+        issues: List[QualityIssue] = []
 
         if not file_path.suffix == ".py":
             return issues
@@ -324,7 +328,9 @@ class QualityChecker:
             .get("max_nesting_depth", 4)
         )
 
-        def check_depth(node: ast.AST, current_depth: int = 0, func_name: str = ""):
+        def check_depth(
+            node: ast.AST, current_depth: int = 0, func_name: str = ""
+        ) -> None:
             if isinstance(
                 node,
                 (
@@ -430,7 +436,9 @@ class QualityChecker:
                 logger.debug(f"Coverage stderr: {result.stderr}")
 
             if result.returncode != 0:
-                logger.warning(f"pytest command failed with exit code {result.returncode}")
+                logger.warning(
+                    f"pytest command failed with exit code {result.returncode}"
+                )
                 logger.warning(f"stderr: {result.stderr}")
                 # pytest が失敗してもカバレッジファイルが作成される場合があるので続行
 
@@ -451,7 +459,9 @@ class QualityChecker:
                     "global_thresholds", {}
                 ).get("minimum", 70)
 
-                logger.debug(f"Total coverage: {total_coverage}%, threshold: {min_threshold}%")
+                logger.debug(
+                    f"Total coverage: {total_coverage}%, threshold: {min_threshold}%"
+                )
 
                 status = "PASS" if total_coverage >= min_threshold else "FAIL"
 
@@ -463,7 +473,10 @@ class QualityChecker:
                 )
             else:
                 logger.error(f"Coverage file not found: {coverage_file}")
-                logger.error("This may indicate that pytest failed to run or create coverage report")
+                logger.error(
+                    "This may indicate that pytest failed to run "
+                    "or create coverage report"
+                )
 
         except subprocess.SubprocessError as e:
             logger.error(f"Subprocess error during coverage check: {e}")
@@ -477,6 +490,7 @@ class QualityChecker:
         except Exception as e:
             logger.error(f"Unexpected error during coverage check: {e}")
             import traceback
+
             logger.error(f"Full traceback: {traceback.format_exc()}")
 
         logger.warning("Coverage check failed, returning default FAIL metric")
@@ -485,7 +499,9 @@ class QualityChecker:
         )
 
     def run_comprehensive_check(
-        self, target_paths: Optional[List[Path]] = None, enable_external_tools: bool = False
+        self,
+        target_paths: Optional[List[Path]] = None,
+        enable_external_tools: bool = False,
     ) -> Dict[str, Any]:
         """包括的品質チェック実行（外部ツール統合オプション付き）"""
         if target_paths is None:
@@ -512,7 +528,9 @@ class QualityChecker:
                             logger.debug(f"Checking file: {py_file}")
                             all_issues.extend(self.check_file_quality(py_file))
                         except Exception as e:
-                            logger.error(f"Failed to check file quality for {py_file}: {e}")
+                            logger.error(
+                                f"Failed to check file quality for {py_file}: {e}"
+                            )
                             # ファイル個別のエラーは記録するが処理は継続
             except Exception as e:
                 logger.error(f"Failed to process target path {target_path}: {e}")
@@ -536,7 +554,12 @@ class QualityChecker:
                                 name=f"{tool_name}_complexity",
                                 value=tool_result["complexity"].get("average", 0),
                                 threshold=10.0,
-                                status="PASS" if tool_result["complexity"].get("average", 0) <= 10.0 else "WARN",
+                                status=(
+                                    "PASS"
+                                    if tool_result["complexity"].get("average", 0)
+                                    <= 10.0
+                                    else "WARN"
+                                ),
                             )
                         )
 
@@ -669,13 +692,17 @@ class QualityChecker:
                             total_functions += 1
                             complexity_sum += complexity
                             if complexity > 10:
-                                high_complexity_files.append({
-                                    "file": file_path,
-                                    "function": func_data.get("name", "unknown"),
-                                    "complexity": complexity,
-                                })
+                                high_complexity_files.append(
+                                    {
+                                        "file": file_path,
+                                        "function": func_data.get("name", "unknown"),
+                                        "complexity": complexity,
+                                    }
+                                )
 
-                average_complexity = complexity_sum / total_functions if total_functions > 0 else 0
+                average_complexity = (
+                    complexity_sum / total_functions if total_functions > 0 else 0
+                )
 
                 return {
                     "status": "SUCCESS",
@@ -721,7 +748,9 @@ class QualityChecker:
             )
 
             # vultureは見つかった場合にreturn_code != 0になることがある
-            dead_code_lines = [line for line in result.stdout.splitlines() if line.strip()]
+            dead_code_lines = [
+                line for line in result.stdout.splitlines() if line.strip()
+            ]
 
             return {
                 "status": "SUCCESS",
@@ -751,7 +780,16 @@ class QualityChecker:
 
         try:
             result = subprocess.run(
-                ["xenon", "--max-average", "A", "--max-modules", "A", "--max-absolute", "B", "kumihan_formatter"],
+                [
+                    "xenon",
+                    "--max-average",
+                    "A",
+                    "--max-modules",
+                    "A",
+                    "--max-absolute",
+                    "B",
+                    "kumihan_formatter",
+                ],
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -779,14 +817,159 @@ class QualityChecker:
             "tool_version": "xenon",
         }
 
+    def _ensure_output_directory(self, dir_path: Path) -> bool:
+        """安全なディレクトリ作成・権限確認（CI環境対応）"""
+        try:
+            logger.debug(f"Ensuring output directory: {dir_path}")
 
-def main():
+            # CI環境検出
+            is_ci = any(
+                [
+                    os.getenv("CI") == "true",
+                    os.getenv("GITHUB_ACTIONS") == "true",
+                    os.getenv("CONTINUOUS_INTEGRATION") == "true",
+                ]
+            )
+            logger.debug(f"CI environment detected: {is_ci}")
+
+            # 親ディレクトリの確認
+            parent_dir = dir_path.parent
+            if not parent_dir.exists():
+                logger.error(f"Parent directory does not exist: {parent_dir}")
+                return False
+
+            # 書き込み権限確認（CI環境では緩いチェック）
+            if not os.access(parent_dir, os.W_OK):
+                if is_ci:
+                    logger.warning(
+                        f"Limited write permission in CI environment: {parent_dir}"
+                    )
+                    # CI環境では一度作成を試みる
+                    try:
+                        test_file = parent_dir / ".write_test"
+                        test_file.touch()
+                        test_file.unlink()
+                        logger.debug("Write test successful in CI environment")
+                    except Exception as write_test_e:
+                        logger.error(
+                            f"Write test failed in CI environment: {write_test_e}"
+                        )
+                        return False
+                else:
+                    logger.error(
+                        f"No write permission for parent directory: {parent_dir}"
+                    )
+                    return False
+
+            # ディスク容量確認（1MB以上の余裕があるかチェック）
+            try:
+                _, _, free = shutil.disk_usage(parent_dir)
+                if free < 1024 * 1024:  # 1MB
+                    if is_ci:
+                        logger.warning(
+                            f"Low disk space in CI environment: {free} bytes available"
+                        )
+                    else:
+                        logger.error(f"Insufficient disk space: {free} bytes available")
+                        return False
+                logger.debug(f"Disk space available: {free // (1024*1024)} MB")
+            except Exception as e:
+                logger.warning(f"Could not check disk usage: {e}")
+
+            # ディレクトリ作成
+            dir_path.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Successfully created/ensured directory: {dir_path}")
+
+            # 作成後の権限確認
+            if not os.access(dir_path, os.W_OK):
+                logger.error(f"Directory created but not writable: {dir_path}")
+                return False
+
+            return True
+
+        except PermissionError as e:
+            logger.error(f"Permission denied creating directory {dir_path}: {e}")
+            if is_ci:
+                logger.error("This may be a CI environment permission issue")
+            return False
+        except OSError as e:
+            logger.error(f"OS error creating directory {dir_path}: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error creating directory {dir_path}: {e}")
+            return False
+
+    def _can_write_file(self, file_path: Path) -> bool:
+        """ファイル書き込み可能性確認"""
+        try:
+            logger.debug(f"Checking write permissions for file: {file_path}")
+
+            # ファイルが既に存在する場合
+            if file_path.exists():
+                if not os.access(file_path, os.W_OK):
+                    logger.error(f"No write permission for existing file: {file_path}")
+                    return False
+                logger.debug(f"Existing file is writable: {file_path}")
+            else:
+                # 新規ファイルの場合は親ディレクトリの書き込み権限確認
+                parent_dir = file_path.parent
+                if not os.access(parent_dir, os.W_OK):
+                    logger.error(
+                        f"No write permission for parent directory: {parent_dir}"
+                    )
+                    return False
+                logger.debug(f"Parent directory is writable for new file: {file_path}")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Error checking file write permissions {file_path}: {e}")
+            return False
+
+    def _write_report_with_fallback(
+        self, report: Dict[str, Any], output_path: Path, format_type: str
+    ) -> bool:
+        """フォールバック付きレポート出力"""
+        try:
+            logger.debug(f"Writing report to {output_path} in {format_type} format")
+
+            if format_type == "json":
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(report, f, indent=2, ensure_ascii=False)
+            else:  # yaml
+                with open(output_path, "w", encoding="utf-8") as f:
+                    yaml.dump(report, f, default_flow_style=False, allow_unicode=True)
+
+            logger.info(f"Report successfully written to: {output_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to write report to file {output_path}: {e}")
+            logger.warning("Falling back to stdout output")
+
+            # フォールバック: stdout出力
+            try:
+                if format_type == "json":
+                    print(json.dumps(report, indent=2, ensure_ascii=False))
+                else:  # yaml
+                    print(
+                        yaml.dump(report, default_flow_style=False, allow_unicode=True)
+                    )
+                logger.info("Report output to stdout as fallback")
+                return False  # ファイル出力は失敗したが処理は成功
+            except Exception as fallback_e:
+                logger.error(f"Even stdout fallback failed: {fallback_e}")
+                return False
+
+
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
     import traceback
 
     try:
-        logger.debug("Starting quality checker main function")
+        logger.debug(f"Starting quality checker main function (Python {sys.version})")
+        logger.debug(f"Running in environment: {os.getenv('GITHUB_ACTIONS', 'local')}")
 
         parser = argparse.ArgumentParser(description="Quality checker")
         parser.add_argument("--path", type=str, help="Target path to check")
@@ -795,11 +978,14 @@ def main():
             "--format", choices=["json", "yaml"], default="json", help="Output format"
         )
         parser.add_argument(
-            "--debug", action="store_true", help="Enable debug mode for detailed logging"
+            "--debug",
+            action="store_true",
+            help="Enable debug mode for detailed logging",
         )
         parser.add_argument(
-            "--external-tools", action="store_true",
-            help="Enable external quality tools (radon, vulture, xenon)"
+            "--external-tools",
+            action="store_true",
+            help="Enable external quality tools (radon, vulture, xenon)",
         )
 
         args = parser.parse_args()
@@ -809,9 +995,16 @@ def main():
         if args.debug:
             logger.setLevel("DEBUG")
             logger.debug("Debug mode enabled")
+            logger.debug(f"System info: Python {sys.version}, OS: {os.name}")
+            logger.debug(f"Working directory: {os.getcwd()}")
+            logger.debug(
+                f"Environment variables: CI={os.getenv('CI')}, "
+                f"GITHUB_ACTIONS={os.getenv('GITHUB_ACTIONS')}"
+            )
 
         logger.debug("Initializing QualityChecker")
         checker = QualityChecker()
+        logger.debug(f"Project root resolved to: {checker.project_root}")
 
         target_paths = None
         if args.path:
@@ -819,8 +1012,12 @@ def main():
             logger.debug(f"Target paths set to: {target_paths}")
 
         logger.debug("Running comprehensive quality check")
-        report = checker.run_comprehensive_check(target_paths, enable_external_tools=args.external_tools)
-        logger.debug(f"Quality check completed. Report summary: {report.get('summary', {})}")
+        report: Dict[str, Any] = checker.run_comprehensive_check(
+            target_paths, enable_external_tools=args.external_tools
+        )
+        logger.debug(
+            f"Quality check completed. Report summary: {report.get('summary', {})}"
+        )
 
         if args.external_tools:
             external_summary = {}
@@ -830,26 +1027,85 @@ def main():
 
         if args.output:
             logger.debug(f"Writing report to output file: {args.output}")
-            os.makedirs("tmp", exist_ok=True)
-            output_path = Path("tmp") / args.output
 
-            if args.format == "json":
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(report, f, indent=2, ensure_ascii=False)
-                logger.debug(f"JSON report written to: {output_path}")
+            # 絶対パスでの安全なディレクトリ作成
+            tmp_dir = checker.project_root / "tmp"
+            logger.debug(f"Using absolute tmp directory: {tmp_dir}")
+
+            # 権限チェック付きディレクトリ作成
+            if not checker._ensure_output_directory(tmp_dir):
+                logger.warning(
+                    "Failed to create output directory, falling back to stdout"
+                )
+                # フォールバック: stdout出力
+                if args.format == "json":
+                    print(json.dumps(report, indent=2, ensure_ascii=False))
+                else:
+                    print(
+                        yaml.dump(report, default_flow_style=False, allow_unicode=True)
+                    )
+                logger.info("Report output to stdout due to directory creation failure")
             else:
-                with open(output_path, "w", encoding="utf-8") as f:
-                    yaml.dump(report, f, default_flow_style=False, allow_unicode=True)
-                logger.debug(f"YAML report written to: {output_path}")
+                output_path = tmp_dir / args.output
+                logger.debug(f"Target output path: {output_path}")
+
+                # ファイル作成前の最終チェック
+                if not checker._can_write_file(output_path):
+                    logger.warning(
+                        "Cannot write to target file, falling back to stdout"
+                    )
+                    # フォールバック: stdout出力
+                    if args.format == "json":
+                        print(json.dumps(report, indent=2, ensure_ascii=False))
+                    else:
+                        print(
+                            yaml.dump(
+                                report, default_flow_style=False, allow_unicode=True
+                            )
+                        )
+                    logger.info("Report output to stdout due to file permission issues")
+                else:
+                    # 安全なファイル書き込み（フォールバック付き）
+                    file_written = checker._write_report_with_fallback(
+                        report, output_path, args.format
+                    )
+                    if file_written:
+                        logger.debug(
+                            f"{args.format.upper()} report written to: {output_path}"
+                        )
+                    else:
+                        logger.debug("Report written via fallback mechanism")
         else:
-            logger.debug("Printing report to stdout")
-            if args.format == "json":
-                print(json.dumps(report, indent=2, ensure_ascii=False))
-            else:
-                print(yaml.dump(report, default_flow_style=False, allow_unicode=True))
+            logger.debug("No output file specified, printing report to stdout")
+            try:
+                if args.format == "json":
+                    print(json.dumps(report, indent=2, ensure_ascii=False))
+                else:
+                    print(
+                        yaml.dump(report, default_flow_style=False, allow_unicode=True)
+                    )
+                logger.debug("Report successfully output to stdout")
+            except Exception as e:
+                logger.error(f"Failed to output report to stdout: {e}")
+                # 最終手段としてシンプルなサマリを出力
+                status = report.get('summary', {}).get('quality_gate_status', 'UNKNOWN')
+                print(f"Quality check completed. Status: {status}")
+                print(
+                    f"Issues found: {report.get('summary', {}).get('total_issues', 0)}"
+                )
 
         exit_code = 0 if report["summary"]["quality_gate_status"] == "PASSED" else 1
         logger.info(f"Quality check completed with exit code: {exit_code}")
+        logger.debug(f"Final report summary: {report['summary']}")
+
+        # CI環境での追加ログ
+        if os.getenv("GITHUB_ACTIONS") == "true":
+            gate_status = report['summary']['quality_gate_status']
+            logger.info(f"GitHub Actions: Quality gate status = {gate_status}")
+            logger.info(
+                f"GitHub Actions: Total issues = {report['summary']['total_issues']}"
+            )
+
         return exit_code
 
     except Exception as e:
