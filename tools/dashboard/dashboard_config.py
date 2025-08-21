@@ -6,15 +6,16 @@
 """
 
 import os
-from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
-from pathlib import Path
 import secrets
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
 class DatabaseConfig:
     """データベース設定"""
+
     url: str = "sqlite:///workflow_logs.db"
     echo: bool = False
     pool_size: int = 20
@@ -25,6 +26,7 @@ class DatabaseConfig:
 @dataclass
 class SecurityConfig:
     """セキュリティ設定"""
+
     secret_key: str = secrets.token_urlsafe(32)
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
@@ -41,6 +43,7 @@ class SecurityConfig:
 @dataclass
 class DashboardConfig:
     """ダッシュボード設定"""
+
     title: str = "Kumihan Workflow Dashboard"
     theme: str = "light"
     auto_refresh_seconds: int = 30
@@ -51,14 +54,21 @@ class DashboardConfig:
     def __post_init__(self):
         if self.chart_colors is None:
             self.chart_colors = [
-                "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
-                "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"
+                "#1f77b4",
+                "#ff7f0e",
+                "#2ca02c",
+                "#d62728",
+                "#9467bd",
+                "#8c564b",
+                "#e377c2",
+                "#7f7f7f",
             ]
 
 
 @dataclass
 class APIConfig:
     """API設定"""
+
     host: str = "0.0.0.0"
     port: int = 8000
     debug: bool = False
@@ -72,6 +82,7 @@ class APIConfig:
 @dataclass
 class NotificationConfig:
     """通知設定"""
+
     enable_slack: bool = False
     slack_webhook_url: Optional[str] = None
     enable_email: bool = False
@@ -104,18 +115,12 @@ class EnvironmentConfig:
                 url=os.getenv("DATABASE_URL", "sqlite:///workflow_logs.db"),
                 echo=False,
                 pool_size=50,
-                max_overflow=100
+                max_overflow=100,
             )
         elif self.environment == "testing":
-            return DatabaseConfig(
-                url="sqlite:///:memory:",
-                echo=True
-            )
+            return DatabaseConfig(url="sqlite:///:memory:", echo=True)
         else:  # development
-            return DatabaseConfig(
-                url="sqlite:///tmp/workflow_logs_dev.db",
-                echo=True
-            )
+            return DatabaseConfig(url="sqlite:///tmp/workflow_logs_dev.db", echo=True)
 
     def _get_security_config(self) -> SecurityConfig:
         """環境別セキュリティ設定"""
@@ -154,22 +159,12 @@ class EnvironmentConfig:
                 debug=False,
                 workers=4,
                 log_level="warning",
-                enable_docs=False
+                enable_docs=False,
             )
         elif self.environment == "testing":
-            return APIConfig(
-                host="localhost",
-                port=8001,
-                debug=True,
-                log_level="debug"
-            )
+            return APIConfig(host="localhost", port=8001, debug=True, log_level="debug")
         else:  # development
-            return APIConfig(
-                host="localhost",
-                port=8000,
-                debug=True,
-                log_level="debug"
-            )
+            return APIConfig(host="localhost", port=8000, debug=True, log_level="debug")
 
     def _get_notification_config(self) -> NotificationConfig:
         """環境別通知設定"""
@@ -191,15 +186,17 @@ class EnvironmentConfig:
             "environment": self.environment,
             "database": self.database.__dict__,
             "security": {
-                k: v for k, v in self.security.__dict__.items()
+                k: v
+                for k, v in self.security.__dict__.items()
                 if k not in ["secret_key", "api_key_length"]  # 機密情報は除外
             },
             "dashboard": self.dashboard.__dict__,
             "api": self.api.__dict__,
             "notification": {
-                k: v for k, v in self.notification.__dict__.items()
+                k: v
+                for k, v in self.notification.__dict__.items()
                 if not k.endswith("password")  # パスワード除外
-            }
+            },
         }
 
 
@@ -216,7 +213,7 @@ class AlertConfig:
             "failure_rate": 300,  # 5分間隔
             "cost": 600,  # 10分間隔
             "response_time": 60,  # 1分間隔
-            "error_count": 30  # 30秒間隔
+            "error_count": 30,  # 30秒間隔
         }
 
 
@@ -232,7 +229,7 @@ class MetricsConfig:
             "success_rate": 0.95,  # 95%成功率目標
             "token_savings": 0.90,  # 90%Token削減目標
             "response_time": 10,  # 10秒以内目標
-            "cost_per_task": 100  # タスク当たり100Token目標
+            "cost_per_task": 100,  # タスク当たり100Token目標
         }
 
 
