@@ -17,7 +17,7 @@ import re
 from typing import Any, Dict, List, Match, Optional, Union
 
 from ...ast_nodes import Node, create_node
-from ..base import CompositeMixin, UnifiedParserBase
+from ..base import CompositeMixin, PerformanceMixin, UnifiedParserBase
 from ..base.parser_protocols import (
     MarkdownParserProtocol,
     ParseContext,
@@ -27,7 +27,7 @@ from ..base.parser_protocols import (
 from ..protocols import ParserType
 
 
-class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserProtocol):
+class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin, MarkdownParserProtocol):
     """統一Markdownパーサー
 
     標準Markdown記法の解析:
@@ -41,6 +41,9 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
 
     def __init__(self) -> None:
         super().__init__(parser_type=ParserType.MARKDOWN)
+        
+        # Mixinの初期化
+        PerformanceMixin.__init__(self)
 
         # Markdown解析の設定
         self._setup_markdown_patterns()
@@ -483,7 +486,7 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
 
     def parse_markdown_string(self, markdown_text: str) -> Node:
         """Markdown文字列の解析（外部API）"""
-        return self.parse(markdown_text)
+        return super().parse(markdown_text)
 
     def extract_headings(self, node: Node) -> List[Dict[str, Any]]:
         """見出し構造の抽出"""
@@ -528,20 +531,46 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
     # プロトコル準拠メソッド（MarkdownParserProtocol実装）
     # ==========================================
 
-    # UnifiedParserBase.parseメソッドを使用（オーバーライドしない）
+    def parse_with_protocol(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """BaseParserProtocol準拠の統一パースインターフェース"""
+        try:
+            # エラー・警告をクリア
+            self._clear_errors_warnings()
+            
+            # 直接実装メソッドを使用してMarkdown解析を実行
+            node = self._parse_implementation(content)
+            
+            return ParseResult(
+                success=True,
+                nodes=[node] if node else [],
+                errors=self.get_errors(),
+                warnings=self.get_warnings(),
+                metadata={"parser_type": "markdown"}
+            )
+        except Exception as e:
+            return ParseResult(
+                success=False,
+                nodes=[],
+                errors=[str(e)],
+                warnings=[],
+                metadata={"parser_type": "markdown"}
+            )
+
+    # BaseParserProtocolインターフェース実装
+    def parse(  # type: ignore[override]
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """BaseParserProtocol準拠のメインパースメソッド"""
+        return self.parse_with_protocol(content, context)
+    
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
     ) -> ParseResult:
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
-        try:
-            # 基底クラスのparseメソッドを使用
-            result = super().parse(content)
-            return create_parse_result(nodes=[result], success=True)
-        except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"Markdownパース失敗: {e}")
-            return result
+        return self.parse_with_protocol(content, context)
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
@@ -578,6 +607,57 @@ class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, MarkdownParserPro
     def parse_markdown(self, content: str) -> Node:
         """Markdown固有パースメソッド（プロトコル準拠）"""
         return self._parse_implementation(content)
+
+    def parse_markdown_elements(
+        self, text: str, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """Markdown要素をパース（プロトコル準拠）"""
+        try:
+            root_node = self.parse_markdown(text)
+            if root_node and hasattr(root_node, 'children') and root_node.children:
+                return root_node.children
+            return [root_node] if root_node else []
+        except Exception as e:
+            self.add_error(f"Markdown要素解析エラー: {e}")
+            return []
+
+    def convert_to_kumihan(
+        self, markdown_text: str, context: Optional[ParseContext] = None
+    ) -> str:
+        """MarkdownをKumihan記法に変換（プロトコル準拠）"""
+        return self.to_kumihan(markdown_text)
+
+    def detect_markdown_elements(self, text: str) -> List[str]:
+        """Markdown要素を検出（プロトコル準拠）"""
+        detected_elements = []
+        
+        # 各種パターンで検出
+        if self.markdown_patterns["heading"].search(text):
+            detected_elements.append("heading")
+        if self.markdown_patterns["bold"].search(text):
+            detected_elements.append("bold")
+        if self.markdown_patterns["italic"].search(text):
+            detected_elements.append("italic")
+        if self.markdown_patterns["link"].search(text):
+            detected_elements.append("link")
+        if self.markdown_patterns["image"].search(text):
+            detected_elements.append("image")
+        if self.markdown_patterns["inline_code"].search(text):
+            detected_elements.append("inline_code")
+        if self.markdown_patterns["code_block_start"].search(text):
+            detected_elements.append("code_block")
+        if self.markdown_patterns["blockquote"].search(text):
+            detected_elements.append("blockquote")
+        if self.markdown_patterns["unordered_list"].search(text):
+            detected_elements.append("unordered_list")
+        if self.markdown_patterns["ordered_list"].search(text):
+            detected_elements.append("ordered_list")
+        if self.markdown_patterns["table_row"].search(text):
+            detected_elements.append("table")
+        if self.markdown_patterns["hr"].search(text):
+            detected_elements.append("horizontal_rule")
+            
+        return detected_elements
 
     def to_kumihan(self, markdown_content: str) -> str:
         """MarkdownからKumihan記法に変換（プロトコル準拠）"""
