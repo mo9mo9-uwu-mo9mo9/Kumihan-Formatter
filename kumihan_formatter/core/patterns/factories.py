@@ -114,10 +114,9 @@ class ParserFactory(AbstractFactory[BaseParserProtocol]):
                 # 抽象クラスの登録は型チェックのために安全に行う
                 # DIContainerの型チェックをスキップして安全に登録
                 try:
-                    # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
                     if not getattr(implementation, "__abstractmethods__", set()):
-                        self.container.register(  # type: ignore[type-abstract]
-                            BaseParserProtocol, implementation
+                        self.container.register(
+                            cast(Any, BaseParserProtocol), implementation
                         )
                 except Exception as reg_error:
                     logger.debug(f"Parser DI registration skipped: {reg_error}")
@@ -232,10 +231,9 @@ class RendererFactory(AbstractFactory[BaseRendererProtocol]):
                 # 抽象クラスの登録は型チェックのために安全に行う
                 # DIContainerの型チェックをスキップして安全に登録
                 try:
-                    # mypy: ignore[type-abstract] - ランタイムでの具象性チェックを行う
                     if not getattr(implementation, "__abstractmethods__", set()):
-                        self.container.register(  # type: ignore[type-abstract]
-                            BaseRendererProtocol, implementation
+                        self.container.register(
+                            cast(Any, BaseRendererProtocol), implementation
                         )
                 except Exception as reg_error:
                     logger.debug(f"Renderer DI registration skipped: {reg_error}")
