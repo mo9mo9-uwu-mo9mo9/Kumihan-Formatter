@@ -49,6 +49,13 @@ class QualityChecker:
         self.quality_rules = self._load_quality_rules()
         self.coverage_thresholds = self._load_coverage_thresholds()
 
+    def _get_safe_line_number(self, node: ast.AST) -> int:
+        """Python 3.13互換: ASTノードから安全に行番号を取得"""
+        if hasattr(node, "lineno") and node.lineno is not None:
+            return node.lineno
+        # 親ノードから行番号を取得を試みる（AST nodeにはparent属性はないが、将来の拡張性のため）
+        return 0
+
     def _load_quality_rules(self) -> Dict[str, Any]:
         """品質ルール読み込み"""
         rules_path = self.project_root / ".github" / "quality" / "quality_rules.yml"
@@ -160,7 +167,7 @@ class QualityChecker:
                     issues.append(
                         QualityIssue(
                             file_path=str(file_path),
-                            line_number=node.lineno,
+                            line_number=self._get_safe_line_number(node),
                             issue_type="complexity",
                             severity=(
                                 "WARNING"
@@ -335,7 +342,7 @@ class QualityChecker:
                     issues.append(
                         QualityIssue(
                             file_path=str(file_path),
-                            line_number=getattr(node, "lineno", 0),
+                            line_number=self._get_safe_line_number(node),
                             issue_type="nesting",
                             severity=(
                                 "WARNING" if current_depth <= max_depth + 1 else "ERROR"
@@ -378,7 +385,7 @@ class QualityChecker:
                     issues.append(
                         QualityIssue(
                             file_path=str(file_path),
-                            line_number=node.lineno,
+                            line_number=self._get_safe_line_number(node),
                             issue_type="parameters",
                             severity=(
                                 "WARNING" if param_count <= max_params + 2 else "ERROR"
