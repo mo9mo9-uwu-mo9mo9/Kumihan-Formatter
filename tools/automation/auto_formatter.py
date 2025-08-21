@@ -118,9 +118,13 @@ class AutoFormatter:
                         file_path = line.split(" ", 1)[1]
                         files_changed.append(file_path)
 
+            # Blackでは差分がある場合にreturncode=1になるが、これは正常動作
+            # dry_runモードでは差分検出時のreturncode=1は成功として扱う
+            is_success = result.returncode == 0 or (dry_run and result.returncode == 1)
+
             return FormatterResult(
                 tool="black",
-                success=result.returncode == 0,
+                success=is_success,
                 files_changed=files_changed,
                 output=result.stdout,
                 error=result.stderr,
@@ -182,9 +186,13 @@ class AutoFormatter:
                         file_path = line.split("Fixing ")[1]
                         files_changed.append(file_path)
 
+            # isortでは差分がある場合にreturncode=1になるが、これは正常動作
+            # dry_runモードでは差分検出時のreturncode=1は成功として扱う
+            is_success = result.returncode == 0 or (dry_run and result.returncode == 1)
+
             return FormatterResult(
                 tool="isort",
-                success=result.returncode == 0,
+                success=is_success,
                 files_changed=files_changed,
                 output=result.stdout,
                 error=result.stderr,
@@ -339,22 +347,105 @@ class AutoFormatter:
     def generate_diff_report(self, target_paths: List[Path]) -> str:
         """差分レポート生成"""
         diff_output = []
+        has_any_diff = False
+        tool_results = {}
 
-        # Black での差分
-        black_result = self.format_with_black(target_paths, dry_run=True)
-        if black_result.success and black_result.output:
-            diff_output.append("=== Black Formatting Diff ===")
-            diff_output.append(black_result.output)
-            diff_output.append("")
+        try:
+            # Black での差分チェック
+            black_result = self.format_with_black(target_paths, dry_run=True)
+            tool_results["black"] = black_result
 
-        # isort での差分
-        isort_result = self.format_with_isort(target_paths, dry_run=True)
-        if isort_result.success and isort_result.output:
-            diff_output.append("=== isort Import Sorting Diff ===")
-            diff_output.append(isort_result.output)
-            diff_output.append("")
+            if black_result.success:
+                if black_result.output.strip():
+                    diff_output.append("=== Black Formatting Diff ===")
+                    diff_output.append(black_result.output)
+                    diff_output.append("")
+                    has_any_diff = True
+                    logger.info("Black formatting differences detected")
+                else:
+                    logger.info("Black formatting: no differences found")
+            else:
+                error_msg = f"⚠️  Black execution failed: {black_result.error}"
+                diff_output.append(error_msg)
+                logger.warning(error_msg)
 
-        return "\n".join(diff_output)
+            # isort での差分チェック
+            isort_result = self.format_with_isort(target_paths, dry_run=True)
+            tool_results["isort"] = isort_result
+
+            if isort_result.success:
+                # isortは差分をstdoutまたはstderrに出力する場合がある
+                isort_diff_content = isort_result.output.strip() or isort_result.error.strip()
+                if isort_diff_content and not isort_diff_content.startswith("ERROR:"):
+                    diff_output.append("=== isort Import Sorting Diff ===")
+                    diff_output.append(isort_diff_content)
+                    diff_output.append("")
+                    has_any_diff = True
+                    logger.info("isort formatting differences detected")
+                elif "Imports are incorrectly sorted" in isort_result.error:
+                    # isortが差分を検出したが実際の差分内容は--diffオプションが必要
+                    diff_output.append("=== isort Import Sorting Issues Detected ===")
+                    diff_output.append("isortが不正確にソートされたimportを検出しました。")
+                    diff_output.append("詳細な差分を表示するには以下を実行してください:")
+                    diff_output.append(f"python3 -m isort --diff {' '.join(str(p) for p in target_paths)}")
+                    diff_output.append("")
+                    has_any_diff = True
+                    logger.info("isort formatting issues detected")
+                else:
+                    logger.info("isort formatting: no differences found")
+            else:
+                error_msg = f"⚠️  isort execution failed: {isort_result.error}"
+                diff_output.append(error_msg)
+                logger.warning(error_msg)
+
+            # 結果サマリーを生成
+            summary_lines = []
+            summary_lines.append("=" * 60)
+            summary_lines.append("📊 フォーマット差分チェック結果")
+            summary_lines.append("=" * 60)
+
+            if has_any_diff:
+                summary_lines.append("❌ コードフォーマットの差分が検出されました")
+                summary_lines.append("")
+                summary_lines.append("詳細:")
+
+                for tool_name, result in tool_results.items():
+                    if result.success:
+                        if result.output.strip():
+                            summary_lines.append(f"  • {tool_name}: 差分あり")
+                        else:
+                            summary_lines.append(f"  • {tool_name}: 差分なし")
+                    else:
+                        summary_lines.append(f"  • {tool_name}: エラー発生")
+
+                summary_lines.append("")
+                summary_lines.append("💡 以下のコマンドで自動修正できます:")
+                summary_lines.append(f"   python3 tools/automation/auto_formatter.py --path {' '.join(str(p) for p in target_paths)}")
+            else:
+                summary_lines.append("✅ コードフォーマットは正常です")
+                summary_lines.append("")
+                summary_lines.append("全てのフォーマットツールで差分は検出されませんでした。")
+
+                for tool_name, result in tool_results.items():
+                    if result.success:
+                        summary_lines.append(f"  • {tool_name}: OK")
+                    else:
+                        summary_lines.append(f"  • {tool_name}: エラー")
+
+            summary_lines.append("=" * 60)
+
+            # サマリーを先頭に配置
+            if diff_output:
+                # 差分がある場合はサマリー + 詳細差分
+                return "\n".join(summary_lines) + "\n\n" + "\n".join(diff_output)
+            else:
+                # 差分がない場合はサマリーのみ
+                return "\n".join(summary_lines)
+
+        except Exception as e:
+            error_msg = f"❌ 差分レポート生成中にエラーが発生しました: {str(e)}"
+            logger.error(error_msg)
+            return error_msg
 
     def save_formatting_report(
         self, report: Dict[str, Any], output_path: Optional[Path] = None
@@ -401,9 +492,28 @@ def main():
         target_paths = [Path(args.path)]
 
     if args.diff:
-        diff_report = formatter.generate_diff_report(target_paths)
-        print(diff_report)
-        return 0
+        try:
+            # パスの存在確認
+            for path in target_paths:
+                if not path.exists():
+                    error_msg = f"❌ 指定されたパスが存在しません: {path}"
+                    print(error_msg)
+                    logger.error(error_msg)
+                    return 1
+
+            logger.info(f"Generating diff report for paths: {target_paths}")
+            diff_report = formatter.generate_diff_report(target_paths)
+            print(diff_report)
+
+            # 差分の有無に関わらず、差分チェック自体が成功した場合は0で終了
+            # （Quality Gateでは差分検出自体を正常動作として扱う）
+            return 0
+
+        except Exception as e:
+            error_msg = f"❌ 差分チェック実行中にエラーが発生しました: {str(e)}"
+            print(error_msg)
+            logger.error(error_msg)
+            return 1
 
     report = formatter.run_comprehensive_formatting(
         target_paths=target_paths, dry_run=args.dry_run, tools=args.tools
