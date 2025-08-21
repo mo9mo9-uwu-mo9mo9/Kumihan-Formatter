@@ -92,7 +92,7 @@ def pytest_configure(config):
         else:
             os.environ["PYTHONPATH"] = str(project_root)
 
-    logger.debug(f"PYTHONPATH configured: {os.environ.get('PYTHONPATH', 'Not set')}")
+    logger.debug(f'PYTHONPATH configured: {os.environ.get("PYTHONPATH", "Not set")}')
 
     # anyioバックエンド設定 - trioが利用できない場合はasyncioのみ
     if hasattr(config.option, "anyio_backends"):
