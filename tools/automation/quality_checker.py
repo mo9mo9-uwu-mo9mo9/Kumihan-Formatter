@@ -403,25 +403,46 @@ class QualityChecker:
     def check_coverage(self) -> QualityMetric:
         """テストカバレッジチェック"""
         try:
+            logger.debug("Starting coverage check")
+
             # カバレッジレポート実行
-            subprocess.run(
-                [
-                    "python3",
-                    "-m",
-                    "pytest",
-                    "--cov=kumihan_formatter",
-                    "--cov-report=json",
-                    "--quiet",
-                ],
+            cmd = [
+                "python3",
+                "-m",
+                "pytest",
+                "--cov=kumihan_formatter",
+                "--cov-report=json",
+                "--quiet",
+            ]
+            logger.debug(f"Running coverage command: {' '.join(cmd)}")
+
+            result = subprocess.run(
+                cmd,
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
             )
 
+            logger.debug(f"Coverage command exit code: {result.returncode}")
+            if result.stdout:
+                logger.debug(f"Coverage stdout: {result.stdout}")
+            if result.stderr:
+                logger.debug(f"Coverage stderr: {result.stderr}")
+
+            if result.returncode != 0:
+                logger.warning(f"pytest command failed with exit code {result.returncode}")
+                logger.warning(f"stderr: {result.stderr}")
+                # pytest が失敗してもカバレッジファイルが作成される場合があるので続行
+
             coverage_file = self.project_root / "coverage.json"
+            logger.debug(f"Looking for coverage file: {coverage_file}")
+
             if coverage_file.exists():
+                logger.debug("Coverage file found, parsing data")
                 with open(coverage_file, "r") as f:
                     coverage_data = json.load(f)
+
+                logger.debug(f"Coverage data keys: {list(coverage_data.keys())}")
 
                 total_coverage = coverage_data.get("totals", {}).get(
                     "percent_covered", 0
@@ -429,6 +450,8 @@ class QualityChecker:
                 min_threshold = self.coverage_thresholds.get(
                     "global_thresholds", {}
                 ).get("minimum", 70)
+
+                logger.debug(f"Total coverage: {total_coverage}%, threshold: {min_threshold}%")
 
                 status = "PASS" if total_coverage >= min_threshold else "FAIL"
 
@@ -438,10 +461,25 @@ class QualityChecker:
                     threshold=min_threshold,
                     status=status,
                 )
+            else:
+                logger.error(f"Coverage file not found: {coverage_file}")
+                logger.error("This may indicate that pytest failed to run or create coverage report")
 
+        except subprocess.SubprocessError as e:
+            logger.error(f"Subprocess error during coverage check: {e}")
+            logger.error("This may indicate pytest is not installed or not accessible")
+        except FileNotFoundError as e:
+            logger.error(f"File not found during coverage check: {e}")
+            logger.error("This may indicate python3 or pytest is not in PATH")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse coverage JSON file: {e}")
+            logger.error("Coverage file may be corrupted or incomplete")
         except Exception as e:
-            logger.error(f"Failed to check coverage: {e}")
+            logger.error(f"Unexpected error during coverage check: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
 
+        logger.warning("Coverage check failed, returning default FAIL metric")
         return QualityMetric(
             name="test_coverage", value=0.0, threshold=70.0, status="FAIL"
         )
@@ -457,12 +495,27 @@ class QualityChecker:
         metrics = []
 
         # ファイル品質チェック
+        logger.debug(f"Starting file quality check for paths: {target_paths}")
         for target_path in target_paths:
-            if target_path.is_file():
-                all_issues.extend(self.check_file_quality(target_path))
-            else:
-                for py_file in target_path.rglob("*.py"):
-                    all_issues.extend(self.check_file_quality(py_file))
+            try:
+                logger.debug(f"Processing target path: {target_path}")
+                if target_path.is_file():
+                    logger.debug(f"Checking single file: {target_path}")
+                    all_issues.extend(self.check_file_quality(target_path))
+                else:
+                    logger.debug(f"Scanning directory for Python files: {target_path}")
+                    py_files = list(target_path.rglob("*.py"))
+                    logger.debug(f"Found {len(py_files)} Python files")
+                    for py_file in py_files:
+                        try:
+                            logger.debug(f"Checking file: {py_file}")
+                            all_issues.extend(self.check_file_quality(py_file))
+                        except Exception as e:
+                            logger.error(f"Failed to check file quality for {py_file}: {e}")
+                            # ファイル個別のエラーは記録するが処理は継続
+            except Exception as e:
+                logger.error(f"Failed to process target path {target_path}: {e}")
+                # パス個別のエラーは記録するが処理は継続
 
         # カバレッジチェック
         coverage_metric = self.check_coverage()
@@ -550,43 +603,69 @@ class QualityChecker:
 def main():
     """CLI エントリーポイント"""
     import argparse
+    import traceback
 
-    parser = argparse.ArgumentParser(description="Quality checker")
-    parser.add_argument("--path", type=str, help="Target path to check")
-    parser.add_argument("--output", type=str, help="Output report file")
-    parser.add_argument(
-        "--format", choices=["json", "yaml"], default="json", help="Output format"
-    )
+    try:
+        logger.debug("Starting quality checker main function")
 
-    args = parser.parse_args()
+        parser = argparse.ArgumentParser(description="Quality checker")
+        parser.add_argument("--path", type=str, help="Target path to check")
+        parser.add_argument("--output", type=str, help="Output report file")
+        parser.add_argument(
+            "--format", choices=["json", "yaml"], default="json", help="Output format"
+        )
+        parser.add_argument(
+            "--debug", action="store_true", help="Enable debug mode for detailed logging"
+        )
 
-    checker = QualityChecker()
+        args = parser.parse_args()
+        logger.debug(f"Parsed arguments: {args}")
 
-    target_paths = None
-    if args.path:
-        target_paths = [Path(args.path)]
+        # デバッグモード時はログレベルをDEBUGに設定
+        if args.debug:
+            logger.setLevel("DEBUG")
+            logger.debug("Debug mode enabled")
 
-    report = checker.run_comprehensive_check(target_paths)
+        logger.debug("Initializing QualityChecker")
+        checker = QualityChecker()
 
-    if args.output:
-        os.makedirs("tmp", exist_ok=True)
-        output_path = Path("tmp") / args.output
+        target_paths = None
+        if args.path:
+            target_paths = [Path(args.path)]
+            logger.debug(f"Target paths set to: {target_paths}")
 
-        if args.format == "json":
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(report, f, indent=2, ensure_ascii=False)
+        logger.debug("Running comprehensive quality check")
+        report = checker.run_comprehensive_check(target_paths)
+        logger.debug(f"Quality check completed. Report summary: {report.get('summary', {})}")
+
+        if args.output:
+            logger.debug(f"Writing report to output file: {args.output}")
+            os.makedirs("tmp", exist_ok=True)
+            output_path = Path("tmp") / args.output
+
+            if args.format == "json":
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(report, f, indent=2, ensure_ascii=False)
+                logger.debug(f"JSON report written to: {output_path}")
+            else:
+                with open(output_path, "w", encoding="utf-8") as f:
+                    yaml.dump(report, f, default_flow_style=False, allow_unicode=True)
+                logger.debug(f"YAML report written to: {output_path}")
         else:
-            with open(output_path, "w", encoding="utf-8") as f:
-                yaml.dump(report, f, default_flow_style=False, allow_unicode=True)
-    else:
-        if args.format == "json":
-            print(json.dumps(report, indent=2, ensure_ascii=False))
-        else:
-            print(yaml.dump(report, default_flow_style=False, allow_unicode=True))
+            logger.debug("Printing report to stdout")
+            if args.format == "json":
+                print(json.dumps(report, indent=2, ensure_ascii=False))
+            else:
+                print(yaml.dump(report, default_flow_style=False, allow_unicode=True))
 
-    exit_code = 0 if report["summary"]["quality_gate_status"] == "PASSED" else 1
-    logger.info(f"Quality check completed with exit code: {exit_code}")
-    return exit_code
+        exit_code = 0 if report["summary"]["quality_gate_status"] == "PASSED" else 1
+        logger.info(f"Quality check completed with exit code: {exit_code}")
+        return exit_code
+
+    except Exception as e:
+        logger.error(f"Unexpected error in quality checker main function: {e}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return 1
 
 
 if __name__ == "__main__":

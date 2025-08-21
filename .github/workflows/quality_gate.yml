@@ -58,7 +58,8 @@ jobs:
     - name: Automated quality check
       timeout-minutes: 10
       run: |
-        python3 -m tools.automation.quality_checker --path kumihan_formatter --output quality_report.json
+        echo "Starting quality check with debug mode..."
+        python3 -m tools.automation.quality_checker --path kumihan_formatter --output quality_report.json --debug
 
     - name: Auto-formatting diff check
       timeout-minutes: 5
@@ -109,7 +110,8 @@ jobs:
     - name: Comprehensive quality gate evaluation
       timeout-minutes: 10
       run: |
-        python3 -m tools.automation.quality_checker --path kumihan_formatter --output tmp/comprehensive_quality.json
+        echo "Starting comprehensive quality gate evaluation with debug mode..."
+        python3 -m tools.automation.quality_checker --path kumihan_formatter --output tmp/comprehensive_quality.json --debug
         echo "Quality gate evaluation completed"
 
     - name: Upload quality reports
