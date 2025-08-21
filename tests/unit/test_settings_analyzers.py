@@ -526,14 +526,14 @@ class TestTokenUsageAnalyzerErrorHandling:
         assert result["recorded_usage"]["context_size"] == 0
         assert result["recorded_usage"]["complexity_score"] == 0.0
 
-    def test_extreme_values_handling(self, analyzer, work_context):
+    def test_extreme_values_handling(self, analyzer):
         """極端な値の処理"""
         # 極端に大きな値
         result_large = analyzer.record_token_usage(
             operation_type="test",
             input_tokens=1_000_000,  # 100万Token
             output_tokens=500_000,  # 50万Token
-            context=work_context,
+            context=None,
         )
 
         # 極端に小さな値
@@ -541,7 +541,7 @@ class TestTokenUsageAnalyzerErrorHandling:
             operation_type="test",
             input_tokens=0,
             output_tokens=0,
-            context=work_context,
+            context=None,
         )
 
         # 両方とも正常に処理されることを確認
