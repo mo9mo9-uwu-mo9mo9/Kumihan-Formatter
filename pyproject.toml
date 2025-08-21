@@ -184,6 +184,7 @@ addopts = [
     "--durations=10",           # 最も遅い10テストを表示
     "-n=auto",                  # CPU数に応じた並列実行
     "--dist=worksteal"          # 効率的な並列分散
+    # Issue #1004: benchmark無効化設定はconftest.pyで動的に適用
 ]
 # xdist追加設定
 xdist_auto = true               # 自動ワーカー数調整
@@ -215,4 +216,6 @@ markers = [
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning"
+    # pytest-benchmark警告は設定ファイルでは条件付き設定が困難なため、
+    # Issue #1004: --benchmark-disableオプションで対応
 ]

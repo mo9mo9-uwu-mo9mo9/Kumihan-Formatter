@@ -12,6 +12,19 @@ import pytest
 from kumihan_formatter.core.utilities.logger import get_logger
 
 
+def pytest_configure(config):
+    """Configure pytest with dynamic benchmark settings"""
+    # Issue #1004: pytest-benchmarkとxdistの競合回避
+    try:
+        import pytest_benchmark
+        # pytest-benchmarkが利用可能で、並列実行が有効な場合はベンチマークを無効化
+        if config.getoption("--numprocesses", default=None) or getattr(config.option, "dist", None):
+            config.addinivalue_line("addopts", "--benchmark-disable")
+    except ImportError:
+        # pytest-benchmarkがインストールされていない場合は何もしない
+        pass
+
+
 @pytest.fixture
 def logger():
     """Provide a logger instance for testing."""
