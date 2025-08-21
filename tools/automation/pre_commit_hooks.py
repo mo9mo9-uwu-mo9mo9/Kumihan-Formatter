@@ -41,6 +41,11 @@ class PreCommitHookManager:
         self.pre_commit_config_path = self.project_root / ".pre-commit-config.yaml"
         self.quality_rules = self._load_quality_rules()
 
+        # 初期化時にディレクトリとファイル権限をチェック
+        logger.debug(f"Project root: {self.project_root}")
+        logger.debug(f"Pre-commit config: {self.pre_commit_config_path}")
+        logger.debug(f"Quality rules: {self.quality_rules_path}")
+
     def _load_quality_rules(self) -> Dict[str, Any]:
         """品質ルール設定読み込み"""
         try:
@@ -54,35 +59,93 @@ class PreCommitHookManager:
             return {}
 
     def validate_pre_commit_config(self) -> bool:
-        """pre-commit設定ファイル検証"""
+        """pre-commit設定ファイル検証（強化版）"""
         try:
+            # 設定ファイルの存在確認
             if not self.pre_commit_config_path.exists():
-                logger.error("pre-commit config file not found")
+                logger.error(f"Pre-commit config file not found: {self.pre_commit_config_path}")
                 return False
 
-            with open(self.pre_commit_config_path, "r") as f:
-                config = yaml.safe_load(f)
+            # ファイル読み込み可能性チェック
+            try:
+                with open(self.pre_commit_config_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if not content.strip():
+                        logger.error("Pre-commit config file is empty")
+                        return False
+            except PermissionError:
+                logger.error(f"Permission denied reading: {self.pre_commit_config_path}")
+                return False
+            except UnicodeDecodeError as e:
+                logger.error(f"File encoding error: {e}")
+                return False
+
+            # YAML構文チェック
+            try:
+                with open(self.pre_commit_config_path, "r", encoding="utf-8") as f:
+                    config = yaml.safe_load(f)
+                    if config is None:
+                        logger.error("Pre-commit config file contains invalid YAML (null)")
+                        return False
+            except yaml.YAMLError as e:
+                logger.error(f"YAML syntax error in pre-commit config: {e}")
+                return False
+
+            # 基本構造チェック
+            if not isinstance(config, dict):
+                logger.error("Pre-commit config root must be a dictionary")
+                return False
+
+            repos = config.get("repos")
+            if not repos:
+                logger.error("Pre-commit config missing 'repos' section")
+                return False
+
+            if not isinstance(repos, list):
+                logger.error("Pre-commit config 'repos' must be a list")
+                return False
+
+            # フック収集
+            existing_hooks = []
+            for i, repo in enumerate(repos):
+                if not isinstance(repo, dict):
+                    logger.warning(f"Repository {i} is not a dictionary")
+                    continue
+
+                hooks = repo.get("hooks", [])
+                if not isinstance(hooks, list):
+                    logger.warning(f"Repository {i} 'hooks' is not a list")
+                    continue
+
+                for j, hook in enumerate(hooks):
+                    if not isinstance(hook, dict):
+                        logger.warning(f"Hook {j} in repository {i} is not a dictionary")
+                        continue
+
+                    hook_id = hook.get("id")
+                    if hook_id:
+                        existing_hooks.append(hook_id)
+                        logger.debug(f"Found hook: {hook_id}")
 
             # 必須フックの存在確認
             required_hooks = ["python-lint", "mypy-type-check", "claude-md-check"]
-            existing_hooks = []
-
-            for repo in config.get("repos", []):
-                for hook in repo.get("hooks", []):
-                    existing_hooks.append(hook.get("id"))
-
             missing_hooks = [
                 hook for hook in required_hooks if hook not in existing_hooks
             ]
 
             if missing_hooks:
-                logger.warning(f"Missing required hooks: {missing_hooks}")
+                logger.error(f"Missing required hooks: {missing_hooks}")
+                logger.error(f"Found hooks: {existing_hooks}")
                 return False
+
+            # 成功ログ
+            logger.info(f"Pre-commit config validation successful. Found {len(existing_hooks)} hooks.")
+            logger.debug(f"Required hooks verified: {required_hooks}")
 
             return True
 
         except Exception as e:
-            logger.error(f"Failed to validate pre-commit config: {e}")
+            logger.error(f"Unexpected error during pre-commit config validation: {type(e).__name__}: {e}")
             return False
 
     def run_quality_hooks(
@@ -251,7 +314,15 @@ def main():
 
     if args.validate:
         valid = manager.validate_pre_commit_config()
-        print(f"Pre-commit config validation: {'PASSED' if valid else 'FAILED'}")
+        status = 'PASSED' if valid else 'FAILED'
+        print(f"Pre-commit config validation: {status}")
+
+        # 詳細情報を追加で出力
+        if valid:
+            print("✅ All required hooks are present and configuration is valid.")
+        else:
+            print("❌ Pre-commit configuration validation failed. Check logs for details.")
+
         return 0 if valid else 1
 
     if args.run:

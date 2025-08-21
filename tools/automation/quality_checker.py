@@ -584,7 +584,9 @@ def main():
         else:
             print(yaml.dump(report, default_flow_style=False, allow_unicode=True))
 
-    return 0 if report["summary"]["quality_gate_status"] == "PASSED" else 1
+    exit_code = 0 if report["summary"]["quality_gate_status"] == "PASSED" else 1
+    logger.info(f"Quality check completed with exit code: {exit_code}")
+    return exit_code
 
 
 if __name__ == "__main__":
