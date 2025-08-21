@@ -11,6 +11,24 @@ import pytest
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
+# trio利用可能性チェック
+try:
+    import trio
+    trio_available = True
+except ImportError:
+    trio_available = False
+
+# anyioバックエンド設定 - trioが利用できない場合はasyncioのみ
+def pytest_configure(config):
+    """Configure pytest for anyio backends"""
+    if hasattr(config.option, 'anyio_backends'):
+        if not trio_available:
+            # trioが利用できない場合はasyncioのみ
+            config.option.anyio_backends = ['asyncio']
+        else:
+            # trioが利用可能な場合は両方
+            config.option.anyio_backends = ['asyncio', 'trio']
+
 
 @pytest.fixture
 def logger():

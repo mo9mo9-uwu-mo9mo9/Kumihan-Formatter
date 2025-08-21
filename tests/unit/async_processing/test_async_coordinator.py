@@ -13,6 +13,25 @@ from unittest.mock import AsyncMock, Mock, patch
 import anyio
 import pytest
 
+# trio利用可能性チェック
+try:
+    import trio
+    trio_available = True
+except ImportError:
+    trio_available = False
+
+# pytestプラグイン設定
+pytest_plugins = ["anyio"]
+
+# trioバックエンドのスキップ設定
+def pytest_generate_tests(metafunc):
+    """Customize test parametrization to skip trio when not available"""
+    if "anyio_backend" in metafunc.fixturenames:
+        if trio_available:
+            metafunc.parametrize("anyio_backend", ["asyncio", "trio"])
+        else:
+            metafunc.parametrize("anyio_backend", ["asyncio"])
+
 from kumihan_formatter.core.async_processing.async_coordinator import (
     AsyncCoordinator,
     AsyncTask,
