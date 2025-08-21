@@ -171,16 +171,16 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         """BaseParserProtocol準拠の統一パースインターフェース"""
         try:
             self._clear_errors_warnings()
-            
+
             # 既存のparse_list_from_textメソッドを活用
             node = self.parse_list_from_text(content)
-            
+
             return ParseResult(
                 success=True,
                 nodes=[node] if node else [],
                 errors=self.get_errors(),
                 warnings=self.get_warnings(),
-                metadata={"parser_type": "list"}
+                metadata={"parser_type": "list"},
             )
         except Exception as e:
             return ParseResult(
@@ -188,27 +188,27 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
                 nodes=[],
                 errors=[str(e)],
                 warnings=[],
-                metadata={"parser_type": "list"}
+                metadata={"parser_type": "list"},
             )
 
     def get_errors(self) -> List[str]:
         """エラー一覧取得"""
-        return getattr(self, '_errors', [])
+        return getattr(self, "_errors", [])
 
     def get_warnings(self) -> List[str]:
         """警告一覧取得"""
-        return getattr(self, '_warnings', [])
+        return getattr(self, "_warnings", [])
 
     def detect_list_type(self, content: str) -> str:
         """リストタイプ検出（抽象メソッド実装）"""
-        lines = content.strip().split('\n')
+        lines = content.strip().split("\n")
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith(('- ', '* ', '+ ')):
-                return 'unordered'
-            elif stripped and stripped[0].isdigit() and '. ' in stripped:
-                return 'ordered'
-        return 'unordered'
+            if stripped.startswith(("- ", "* ", "+ ")):
+                return "unordered"
+            elif stripped and stripped[0].isdigit() and ". " in stripped:
+                return "ordered"
+        return "unordered"
 
     def get_list_nesting_level(self, line: str) -> int:
         """リストネストレベル取得（抽象メソッド実装）"""
@@ -236,10 +236,12 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
     def supports_format(self, content: str) -> bool:
         """フォーマットサポート確認（抽象メソッド実装）"""
-        lines = content.strip().split('\n')
+        lines = content.strip().split("\n")
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith(('- ', '* ', '+ ')) or (stripped and stripped[0].isdigit() and '. ' in stripped):
+            if stripped.startswith(("- ", "* ", "+ ")) or (
+                stripped and stripped[0].isdigit() and ". " in stripped
+            ):
                 return True
         return False
 
@@ -257,7 +259,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
                 nodes=[],
                 errors=[f"List parsing failed: {e}"],
                 warnings=[],
-                metadata={"parser_type": "list"}
+                metadata={"parser_type": "list"},
             )
 
     def _detect_list_type(self, line: str) -> Optional[str]:
@@ -361,3 +363,25 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             "block",
             "character_delimited",
         ]
+
+    def get_parser_info(self) -> Dict[str, Any]:
+        """パーサー情報（プロトコル準拠）"""
+        return {
+            "name": "UnifiedListParser",
+            "version": "2.1.0",
+            "supported_formats": self.get_supported_formats(),
+            "capabilities": [
+                "ordered_lists",
+                "unordered_lists",
+                "definition_lists",
+                "checklist",
+                "alpha_lists",
+                "roman_lists",
+                "block_format",
+                "character_delimited",
+                "nested_structure",
+                "type_conversion",
+            ],
+            "parser_type": self.parser_type,
+            "architecture": "分割統合型",
+        }
