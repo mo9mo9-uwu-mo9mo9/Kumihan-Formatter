@@ -57,7 +57,7 @@ jobs:
           --cov=kumihan_formatter \
           --cov-report=xml:coverage-unit.xml \
           --cov-report=term-missing \
-          --cov-fail-under=10 \
+          --cov-fail-under=30 \
           --maxfail=5 \
           --timeout=300 \
           --durations=10 \
@@ -117,7 +117,7 @@ jobs:
         echo "Test type: ${{ matrix.test-type }}"
         echo "Python version: ${{ matrix.python-version }}"
         if [[ "${{ matrix.test-type }}" == "unit" ]]; then
-          echo "Unit tests minimum coverage: 10%"
+          echo "Unit tests minimum coverage: 30%"
         elif [[ "${{ matrix.test-type }}" == "integration" ]]; then
           echo "Integration tests completed"
         else
