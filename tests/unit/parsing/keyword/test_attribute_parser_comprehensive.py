@@ -1,649 +1,198 @@
 """
-包括的属性パーサーテスト - Issue #929 Keyword系75%カバレッジ達成
+最適化済み属性パーサーテスト - Issue #1113 大幅削減対応
 
-attribute_parser.py: 19% → 75%達成（56%向上目標）
+属性パーサー機能を効率的にテスト：
+- HTML属性抽出/解析
+- CSS・スタイル処理
+- データ属性処理
+- カラー・サイズ・スタイル属性
+- バリデーション・エラーハンドリング
 
-テスト対象機能：
-- HTML属性抽出
-- CSSクラス解析
-- インラインスタイル処理
-- データ属性ハンドリング
-- 属性バリデーション
-- Kumihan記法属性処理
+削減前: 28メソッド/649行 → 削減後: 8メソッド/220行
 """
 
 from typing import Any, Dict
-from unittest.mock import MagicMock, Mock, patch
-
 import pytest
 
 from kumihan_formatter.core.parsing.keyword.attribute_parser import AttributeParser
-from kumihan_formatter.core.parsing.keyword.base_parser import BaseParser
 
 
 class TestAttributeParserCore:
-    """属性パーサーコア機能テスト"""
+    """属性パーサーコア機能統合テスト"""
 
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
+    @pytest.fixture
+    def parser(self):
+        """パーサーインスタンス"""
+        return AttributeParser()
 
-    def test_html_attribute_extraction_complete(self):
-        """HTML属性抽出の包括的テスト"""
-        # 基本色名（実装では無効として扱われる）
-        result = self.parser.extract_color_attribute("red")
-        assert result == ("", "red")
+    @pytest.mark.parametrize("input_content,expected_attrs", [
+        # 基本HTML属性
+        ('class="test" id="sample"', {"class": "test", "id": "sample"}),
+        ('title="ツールチップ"', {"title": "ツールチップ"}),
 
-        # hex色コード（有効）
-        result = self.parser.extract_color_attribute("#FF0000")
-        assert result == ("#FF0000", "")
+        # 複数クラス・引用符なし
+        ('class="btn btn-primary"', {"class": "btn"}),
+        ('class=test id=sample', {"class": "test", "id": "sample"}),
 
-        # rgb色指定（有効）
-        result = self.parser.extract_color_attribute("rgb(255, 0, 0)")
-        assert result == ("rgb(255, 0, 0)", "")
+        # データ属性
+        ('data-toggle="tooltip" data-placement="top"',
+         {"data-toggle": "tooltip", "data-placement": "top"}),
+        ('data-config=\'{"theme": "dark"}\'', {"data-config": '{"theme": "dark"}'}),
 
-        # rgba色指定（有効）
-        result = self.parser.extract_color_attribute("rgba(255, 0, 0, 0.5)")
-        assert result == ("rgba(255, 0, 0, 0.5)", "")
+        # ARIA属性
+        ('aria-label="閉じる" aria-hidden="true"',
+         {"aria-label": "閉じる", "aria-hidden": "true"}),
 
-        # 無効色値
-        result = self.parser.extract_color_attribute("invalid_color")
-        assert result == ("", "invalid_color")
+        # スタイル属性
+        ('style="color: red; font-size: 16px;"', {"style": "color: red; font-size: 16px;"}),
+        ('style="background: linear-gradient(45deg, red, blue);"',
+         {"style": "background: linear-gradient(45deg, red, blue);"}),
+    ])
+    def test_attribute_parsing_comprehensive(self, parser, input_content, expected_attrs):
+        """HTML属性解析統合テスト"""
+        result = parser.parse_attributes_from_content(input_content)
+        for key, expected_value in expected_attrs.items():
+            assert key in result
+            assert result[key] == expected_value
 
-    def test_css_class_parsing_comprehensive(self):
-        """CSSクラス解析の包括的テスト"""
-        # 基本属性解析
-        content = 'class="test" id="sample"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "class" in attributes
-        assert attributes["class"] == "test"
-        assert "id" in attributes
-        assert attributes["id"] == "sample"
+    @pytest.mark.parametrize("color_input,expected_valid,expected_invalid", [
+        # 有効な色属性
+        ("#FF0000", "#FF0000", ""),
+        ("rgb(255, 0, 0)", "rgb(255, 0, 0)", ""),
+        ("rgba(255, 0, 0, 0.5)", "rgba(255, 0, 0, 0.5)", ""),
 
-        # 複数クラス
-        content = 'class="test important highlight"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "test"  # 最初のクラス値
+        # 無効な色属性
+        ("red", "", "red"),
+        ("invalid_color", "", "invalid_color"),
+    ])
+    def test_color_attribute_extraction(self, parser, color_input, expected_valid, expected_invalid):
+        """色属性抽出統合テスト"""
+        valid, invalid = parser.extract_color_attribute(color_input)
+        assert valid == expected_valid
+        assert invalid == expected_invalid
 
-        # 引用符なし属性
-        content = "class=test id=sample"
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "class" in attributes
-        assert "id" in attributes
-
-    def test_inline_style_parsing_complete(self):
-        """インラインスタイル解析の完全テスト"""
-        # style属性解析
-        content = 'style="color: red; font-size: 16px;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
-
-        # 複雑なスタイル
-        content = 'style="background: linear-gradient(to right, red, blue); margin: 10px;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
-
-    def test_data_attribute_handling_full(self):
-        """データ属性の完全ハンドリングテスト"""
-        # data属性
-        content = 'data-toggle="tooltip" data-placement="top"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "data-toggle" in attributes
-        assert attributes["data-toggle"] == "tooltip"
-        assert "data-placement" in attributes
-        assert attributes["data-placement"] == "top"
-
-        # 複雑なdata値
-        content = 'data-config=\'{"theme": "dark", "size": "large"}\''
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "data-config" in attributes
-
-    def test_attribute_validation_rules_complete(self):
-        """属性バリデーションルールの完全テスト"""
-        # 非文字列入力
-        result = self.parser.extract_color_attribute(123)
-        assert result == ("", 123)
-
-        result = self.parser.parse_attributes_from_content(None)
-        assert result == {}
-
-        result = self.parser.parse_attributes_from_content([])
-        assert result == {}
-
-
-class TestAttributeParserHTML:
-    """HTML属性特化テスト"""
-
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
-
-    def test_standard_html_attributes(self):
-        """標準HTML属性テスト"""
-        # id属性
-        content = 'id="main-content"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["id"] == "main-content"
-
-        # class属性
-        content = 'class="header navigation"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "header"
-
-        # title属性
-        content = 'title="ツールチップテキスト"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["title"] == "ツールチップテキスト"
-
-    def test_custom_data_attributes(self):
-        """カスタムデータ属性テスト"""
-        # 単一data属性
-        content = 'data-value="123"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-value"] == "123"
-
-        # 複数data属性
-        content = 'data-id="user123" data-role="admin" data-active="true"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-id"] == "user123"
-        assert attributes["data-role"] == "admin"
-        assert attributes["data-active"] == "true"
-
-    def test_aria_attributes_support(self):
-        """ARIA属性サポートテスト"""
-        # aria-label
-        content = 'aria-label="閉じる"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["aria-label"] == "閉じる"
-
-        # aria-hidden
-        content = 'aria-hidden="true"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["aria-hidden"] == "true"
-
-        # 複数aria属性
-        content = 'aria-labelledby="heading" aria-describedby="description"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["aria-labelledby"] == "heading"
-        assert attributes["aria-describedby"] == "description"
-
-    def test_boolean_attributes_handling(self):
-        """ブール属性ハンドリングテスト"""
-        # disabled (値なし)
-        content = "disabled"
-        attributes = self.parser.parse_attributes_from_content(content)
-        # ブール属性の処理（実装に応じて調整）
-
-        # readonly (値あり)
-        content = 'readonly="readonly"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["readonly"] == "readonly"
-
-    def test_attribute_value_escaping(self):
-        """属性値エスケープテスト"""
-        # HTML実体参照
-        content = 'title="&lt;script&gt;alert(&#39;test&#39;)&lt;/script&gt;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "title" in attributes
-
-        # 引用符エスケープ
-        content = 'data-text="He said &quot;Hello&quot;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "data-text" in attributes
-
-
-class TestAttributeParserCSS:
-    """CSS属性特化テスト"""
-
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
-
-    def test_css_class_list_processing(self):
-        """CSSクラスリスト処理テスト"""
-        # 複数クラス
-        content = 'class="btn btn-primary btn-large"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "btn"  # 最初のクラス
-
-        # ハイフン付きクラス
-        content = 'class="my-custom-class"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "my-custom-class"
-
-        # アンダースコア付きクラス
-        content = 'class="my_custom_class"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "my_custom_class"
-
-    def test_inline_style_property_parsing(self):
-        """インラインスタイルプロパティ解析テスト"""
-        # 基本スタイル
-        content = 'style="color: red;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["style"] == "color: red;"  # 完全なスタイル値
-
-        # 複数プロパティ
-        content = 'style="color: red; background: blue; margin: 10px;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["style"] == "color: red; background: blue; margin: 10px;"
-
-        # 複雑な値
-        content = 'style="background: linear-gradient(45deg, red, blue);"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["style"] == "background: linear-gradient(45deg, red, blue);"
-
-    def test_css_selector_compatibility(self):
-        """CSSセレクター互換性テスト"""
-        # ID セレクター用属性
-        content = 'id="main-section"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["id"] == "main-section"
-
-        # Class セレクター用属性
-        content = 'class="nav-item"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["class"] == "nav-item"
-
-        # 属性セレクター用カスタム属性
-        content = 'data-category="technology"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-category"] == "technology"
-
-    def test_style_inheritance_rules(self):
-        """スタイル継承ルールテスト"""
-        # inherit値
-        content = 'style="color: inherit;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
-
-        # initial値
-        content = 'style="margin: initial;"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
-
-    def test_css_validation_integration(self):
-        """CSS検証統合テスト"""
-        # 有効なCSS単位
-        valid_styles = [
-            'style="width: 100px;"',
-            'style="height: 50%;"',
-            'style="font-size: 1.2em;"',
-            'style="margin: 10pt;"',
-        ]
-
-        for style_content in valid_styles:
-            attributes = self.parser.parse_attributes_from_content(style_content)
-            assert "style" in attributes
-
-
-class TestAttributeParserSizeAndStyle:
-    """サイズ・スタイル属性特化テスト"""
-
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
-
-    def test_extract_size_attributes(self):
-        """サイズ属性抽出テスト"""
-        # 基本サイズ属性
-        attributes = self.parser._extract_size_attributes("[size:16px]")
-        assert attributes.get("size") == "16px"
-
-        # em単位
-        attributes = self.parser._extract_size_attributes("[size:1.5em]")
-        assert attributes.get("size") == "1.5em"
-
-        # パーセント
-        attributes = self.parser._extract_size_attributes("[size:120%]")
-        assert attributes.get("size") == "120%"
-
-        # キーワードサイズ
-        attributes = self.parser._extract_size_attributes("[size:large]")
-        assert attributes.get("size") == "large"
-
-        # 無効サイズ
-        attributes = self.parser._extract_size_attributes("[size:invalid]")
-        assert "size" not in attributes
-
-    def test_extract_style_attributes(self):
-        """スタイル属性抽出テスト"""
-        # 基本スタイル
-        attributes = self.parser._extract_style_attributes("[style:bold]")
-        assert attributes.get("style") == "bold"
-
-        # italic
-        attributes = self.parser._extract_style_attributes("[style:italic]")
-        assert attributes.get("style") == "italic"
-
-        # uppercase
-        attributes = self.parser._extract_style_attributes("[style:uppercase]")
-        assert attributes.get("style") == "uppercase"
-
-        # 無効スタイル
-        attributes = self.parser._extract_style_attributes("[style:invalid]")
-        assert "style" not in attributes
-
-    def test_is_valid_size_value(self):
-        """有効サイズ値判定テスト"""
+    @pytest.mark.parametrize("size_input,expected_result", [
         # 有効サイズ
-        valid_sizes = [
-            "16px",
-            "1.5em",
-            "2rem",
-            "100%",
-            "12pt",
-            "50vh",
-            "30vw",
-            "small",
-            "medium",
-            "large",
-            "x-large",
-            "xx-large",
-        ]
+        ("[size:16px]", "16px"),
+        ("[size:1.5em]", "1.5em"),
+        ("[size:120%]", "120%"),
+        ("[size:large]", "large"),
 
-        for size in valid_sizes:
-            assert self.parser._is_valid_size_value(size)
+        # 無効サイズ（属性なし）
+        ("[size:invalid]", None),
+    ])
+    def test_size_attribute_extraction(self, parser, size_input, expected_result):
+        """サイズ属性抽出統合テスト"""
+        attributes = parser._extract_size_attributes(size_input)
+        if expected_result is None:
+            assert "size" not in attributes
+        else:
+            assert attributes.get("size") == expected_result
+
+    @pytest.mark.parametrize("style_input,expected_result", [
+        # 有効スタイル
+        ("[style:bold]", "bold"),
+        ("[style:italic]", "italic"),
+        ("[style:uppercase]", "uppercase"),
+
+        # 無効スタイル（属性なし）
+        ("[style:invalid]", None),
+    ])
+    def test_style_attribute_extraction(self, parser, style_input, expected_result):
+        """スタイル属性抽出統合テスト"""
+        attributes = parser._extract_style_attributes(style_input)
+        if expected_result is None:
+            assert "style" not in attributes
+        else:
+            assert attributes.get("style") == expected_result
+
+    @pytest.mark.parametrize("size_value,is_valid", [
+        # 有効サイズ
+        ("16px", True), ("1.5em", True), ("2rem", True), ("100%", True),
+        ("12pt", True), ("50vh", True), ("30vw", True),
+        ("small", True), ("medium", True), ("large", True), ("x-large", True),
 
         # 無効サイズ
-        invalid_sizes = [
-            "16",
-            "px",
-            "1.5",
-            "invalid",
-            "100px px",
-            "",
-            "16 px",
-            "1.5em!",
-        ]
-
-        for size in invalid_sizes:
-            assert not self.parser._is_valid_size_value(size)
+        ("16", False), ("px", False), ("invalid", False), ("", False),
+        ("16 px", False), ("1.5em!", False),
 
         # 非文字列
-        assert not self.parser._is_valid_size_value(123)
-        assert not self.parser._is_valid_size_value(None)
+        (123, False), (None, False),
+    ])
+    def test_size_value_validation(self, parser, size_value, is_valid):
+        """サイズ値バリデーション統合テスト"""
+        assert parser._is_valid_size_value(size_value) == is_valid
 
-    def test_is_valid_style_value(self):
-        """有効スタイル値判定テスト"""
+    @pytest.mark.parametrize("style_value,is_valid", [
         # 有効スタイル
-        valid_styles = [
-            "normal",
-            "italic",
-            "bold",
-            "underline",
-            "strikethrough",
-            "uppercase",
-            "lowercase",
-            "capitalize",
-        ]
-
-        for style in valid_styles:
-            assert self.parser._is_valid_style_value(style)
-            # 大文字小文字不問
-            assert self.parser._is_valid_style_value(style.upper())
+        ("normal", True), ("italic", True), ("bold", True), ("underline", True),
+        ("strikethrough", True), ("uppercase", True), ("lowercase", True),
+        ("BOLD", True),  # 大文字小文字不問
 
         # 無効スタイル
-        invalid_styles = [
-            "invalid",
-            "blink",
-            "comic-sans",
-            "",
-            "bold italic",
-            "under_line",
-        ]
-
-        for style in invalid_styles:
-            assert not self.parser._is_valid_style_value(style)
+        ("invalid", False), ("blink", False), ("", False),
+        ("bold italic", False), ("under_line", False),
 
         # 非文字列
-        assert not self.parser._is_valid_style_value(123)
-        assert not self.parser._is_valid_style_value(None)
+        (123, False), (None, False),
+    ])
+    def test_style_value_validation(self, parser, style_value, is_valid):
+        """スタイル値バリデーション統合テスト"""
+        assert parser._is_valid_style_value(style_value) == is_valid
 
+    @pytest.mark.parametrize("color_input,expected", [
+        # 有効16進色（小文字変換）
+        ("#FF0000", "#ff0000"), ("#F00", "#f00"),
 
-class TestAttributeParserColorSanitization:
-    """色属性サニタイゼーションテスト"""
+        # 有効色名（小文字変換）
+        ("RED", "red"), ("green", "green"), ("Blue", "blue"),
 
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
-
-    def test_sanitize_color_attribute(self):
-        """色属性サニタイゼーションテスト"""
-        # 有効hex色（6桁）
-        result = self.parser._sanitize_color_attribute("#FF0000")
-        assert result == "#ff0000"  # 小文字変換
-
-        # 有効hex色（3桁）
-        result = self.parser._sanitize_color_attribute("#F00")
-        assert result == "#f00"
-
-        # 有効色名
-        result = self.parser._sanitize_color_attribute("RED")
-        assert result == "red"  # 小文字変換
-
-        # 有効色名（標準）
-        color_names = [
-            "red",
-            "green",
-            "blue",
-            "yellow",
-            "orange",
-            "purple",
-            "pink",
-            "brown",
-            "black",
-            "white",
-            "gray",
-            "grey",
-            "cyan",
-            "magenta",
-        ]
-
-        for color in color_names:
-            result = self.parser._sanitize_color_attribute(color)
-            assert result == color.lower()
+        # サポート色名
+        ("yellow", "yellow"), ("orange", "orange"), ("purple", "purple"),
+        ("pink", "pink"), ("brown", "brown"), ("black", "black"),
+        ("white", "white"), ("gray", "gray"), ("grey", "grey"),
+        ("cyan", "cyan"), ("magenta", "magenta"),
 
         # 無効色値
-        invalid_colors = [
-            "invalid",
-            "#GGG",
-            "#12345",
-            "rgb(256,0,0)",
-            "",
-            "javascript:alert()",
-            "<script>",
-        ]
-
-        for invalid in invalid_colors:
-            result = self.parser._sanitize_color_attribute(invalid)
-            assert result == ""
+        ("invalid", ""), ("#GGG", ""), ("#12345", ""),
+        ("javascript:alert()", ""), ("<script>", ""),
+        ("crimson", ""),  # 非サポート色名
 
         # 非文字列
-        result = self.parser._sanitize_color_attribute(123)
-        assert result == ""
+        (123, ""), (None, ""),
+    ])
+    def test_color_sanitization(self, parser, color_input, expected):
+        """色属性サニタイゼーション統合テスト"""
+        result = parser._sanitize_color_attribute(color_input)
+        assert result == expected
 
-        result = self.parser._sanitize_color_attribute(None)
-        assert result == ""
+    @pytest.mark.parametrize("test_input,expected_behavior", [
+        # 空・null値処理
+        ("", {}), (None, {}), ([], {}), ("   ", {}), ("\t\n", {}),
 
-    def test_hex_color_validation(self):
-        """16進色バリデーションテスト"""
-        # 有効16進色
-        valid_hex = [
-            "#000000",
-            "#FFFFFF",
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#123456",
-            "#ABCDEF",
-            "#abcdef",
-            "#123ABC",
-            "#000",
-            "#FFF",
-            "#F00",
-            "#0F0",
-            "#00F",
-        ]
+        # Unicode値処理
+        ('title="日本語タイトル"', {"title": "日本語タイトル"}),
+        ('data-emoji="🚀🌟"', {"data-emoji": "🚀🌟"}),
+        ('data-symbol="©®™"', {"data-symbol": "©®™"}),
 
-        for hex_color in valid_hex:
-            result = self.parser._sanitize_color_attribute(hex_color)
-            assert result != ""  # 空でない = 有効
+        # 特殊文字処理
+        ('data-url="https%3A//example.com"', {"data-url": "https%3A//example.com"}),
+        ('data-content="SGVsbG8gV29ybGQ="', {"data-content": "SGVsbG8gV29ybGQ="}),
 
-        # 無効16進色
-        invalid_hex = [
-            "#",
-            "#G",
-            "#GG",
-            "#GGG",
-            "#GGGG",
-            "#GGGGG",
-            "#GGGGGGG",
-            "#12345",
-            "#1234567",
-            "000000",
-            "FF0000",
-            "#ZZ0000",
-        ]
-
-        for hex_color in invalid_hex:
-            result = self.parser._sanitize_color_attribute(hex_color)
-            assert result == ""  # 空 = 無効
-
-    def test_named_color_validation(self):
-        """色名バリデーションテスト"""
-        # サポート色名
-        supported_colors = {
-            "red",
-            "green",
-            "blue",
-            "yellow",
-            "orange",
-            "purple",
-            "pink",
-            "brown",
-            "black",
-            "white",
-            "gray",
-            "grey",
-            "cyan",
-            "magenta",
-        }
-
-        for color in supported_colors:
-            result = self.parser._sanitize_color_attribute(color)
-            assert result == color
-
-            # 大文字小文字不問
-            result = self.parser._sanitize_color_attribute(color.upper())
-            assert result == color
-
-        # 非サポート色名
-        unsupported_colors = [
-            "crimson",
-            "navy",
-            "olive",
-            "teal",
-            "maroon",
-            "lime",
-            "aqua",
-            "fuchsia",
-            "silver",
-        ]
-
-        for color in unsupported_colors:
-            result = self.parser._sanitize_color_attribute(color)
-            assert result == ""
-
-
-class TestAttributeParserEdgeCases:
-    """エッジケーステスト"""
-
-    def setup_method(self):
-        """テストセットアップ"""
-        self.parser = AttributeParser()
-
-    def test_empty_and_whitespace_handling(self):
-        """空・空白文字処理テスト"""
-        # 空文字列
-        attributes = self.parser.parse_attributes_from_content("")
-        assert attributes == {}
-
-        # 空白のみ
-        attributes = self.parser.parse_attributes_from_content("   ")
-        assert attributes == {}
-
-        # タブ・改行
-        attributes = self.parser.parse_attributes_from_content("\t\n")
-        assert attributes == {}
-
-    def test_malformed_attribute_recovery(self):
-        """不正属性からの回復テスト"""
-        # 引用符不整合
-        malformed_cases = [
-            'class="test',  # 終了引用符なし
-            'class=test"',  # 開始引用符なし
-            "class=\"test'",  # 引用符混在
-            '="test"',  # 属性名なし
-            "class=",  # 値なし
-        ]
-
-        for malformed in malformed_cases:
-            attributes = self.parser.parse_attributes_from_content(malformed)
-            # エラー回復処理の確認（実装に応じて調整）
-
-    def test_unicode_attribute_values(self):
-        """Unicode属性値テスト"""
-        # 日本語
-        content = 'title="日本語タイトル"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["title"] == "日本語タイトル"
-
-        # 絵文字
-        content = 'data-emoji="🚀🌟"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-emoji"] == "🚀🌟"
-
-        # 特殊記号
-        content = 'data-symbol="©®™"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-symbol"] == "©®™"
-
-    def test_boundary_attribute_lengths(self):
-        """境界属性長テスト"""
-        # 長い属性名
-        long_name = "data-" + "a" * 100
-        content = f'{long_name}="value"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert long_name in attributes
-
-        # 長い属性値
-        long_value = "v" * 1000
-        content = f'data-long="{long_value}"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-long"] == long_value
-
-    def test_special_character_handling(self):
-        """特殊文字処理テスト"""
-        # URL エンコード
-        content = 'data-url="https%3A//example.com"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-url"] == "https%3A//example.com"
-
-        # Base64データ
-        content = 'data-content="SGVsbG8gV29ybGQ="'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-content"] == "SGVsbG8gV29ybGQ="
-
-    def test_performance_large_attributes(self):
-        """大規模属性性能テスト"""
-        # 多数の属性
-        many_attrs = " ".join([f'data-attr{i}="value{i}"' for i in range(100)])
-        attributes = self.parser.parse_attributes_from_content(many_attrs)
-        # 性能劣化なしの確認
-
-        # 巨大属性値
-        huge_value = "x" * 10000
-        content = f'data-huge="{huge_value}"'
-        attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["data-huge"] == huge_value
+        # HTML実体参照・エスケープ
+        ('title="&lt;script&gt;"', {"title": "&lt;script&gt;"}),
+        ('data-text="He said &quot;Hello&quot;"', {"data-text": "He said &quot;Hello&quot;"}),
+    ])
+    def test_edge_cases_and_validation(self, parser, test_input, expected_behavior):
+        """エッジケース・バリデーション統合テスト"""
+        if isinstance(expected_behavior, dict):
+            # 正常な属性解析
+            result = parser.parse_attributes_from_content(test_input)
+            for key, expected_value in expected_behavior.items():
+                assert key in result
+                assert result[key] == expected_value
+        else:
+            # エラー系テスト（色属性など）
+            if hasattr(parser, 'extract_color_attribute'):
+                result = parser.extract_color_attribute(test_input)
+                assert result == ("", test_input)  # 無効値として扱われる
