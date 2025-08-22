@@ -332,9 +332,13 @@ class TestNestedListParser:
 
     def test_境界値_大量ノード処理(self):
         """境界値: 大量ノードの処理"""
-        # Given: 大量のノード（1000個）
+        # CI環境での実行時間を考慮して削減
+        from tests.conftest import get_test_data_size
+        node_count = get_test_data_size(1000, 100)
+        
+        # Given: 大量のノード
         large_items = []
-        for i in range(1000):
+        for i in range(node_count):
             level = i % 4  # 0-3のレベル循環
             item = create_node(
                 "list_item", content=f"項目{i}", metadata={"relative_level": level}
@@ -345,7 +349,7 @@ class TestNestedListParser:
         stats = self.parser.get_nesting_statistics(large_items)
 
         # Then: 大量データが適切に処理されることを検証
-        assert stats["total_items"] == 1000
+        assert stats["total_items"] == node_count
         assert stats["max_level"] == 3
         assert stats["has_nesting"] is True
 

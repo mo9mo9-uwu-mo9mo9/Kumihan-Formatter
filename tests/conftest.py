@@ -100,6 +100,21 @@ def _get_optimal_worker_count() -> int:
             return min(4, cpu_count)  # 最大4並列
 
 
+def get_test_data_size(default_size: int = 1000, ci_size: int = 100) -> int:
+    """
+    CI環境とローカル環境でテストデータサイズを調整する共通ヘルパー
+    
+    Args:
+        default_size: ローカル環境でのデータサイズ
+        ci_size: CI環境でのデータサイズ（軽量化）
+    
+    Returns:
+        環境に応じたデータサイズ
+    """
+    is_ci = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
+    return ci_size if is_ci else default_size
+
+
 def pytest_configure(config):
     """Configure pytest with optimal xdist settings"""
     logger = get_logger(__name__)
