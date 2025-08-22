@@ -73,23 +73,15 @@ class IntegratedEventBus:
         self, event_type: Union[EventType, ExtendedEventType], observer: Observer
     ) -> None:
         """同期オブザーバー登録"""
-        # ExtendedEventType を EventType に変換
-        if isinstance(event_type, ExtendedEventType):
-            base_event_type = EventType(event_type.value)
-        else:
-            base_event_type = event_type
-        self._base_bus.subscribe(base_event_type, observer)
+        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
+        self._base_bus.subscribe(event_type, observer)
 
     def subscribe_async(
         self, event_type: Union[EventType, ExtendedEventType], observer: AsyncObserver
     ) -> None:
         """非同期オブザーバー登録"""
-        # ExtendedEventType を EventType に変換
-        if isinstance(event_type, ExtendedEventType):
-            base_event_type = EventType(event_type.value)
-        else:
-            base_event_type = event_type
-        self._base_bus.subscribe_async(base_event_type, observer)
+        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
+        self._base_bus.subscribe_async(event_type, observer)
 
     def subscribe_with_di(
         self,
@@ -182,12 +174,8 @@ def publish_event(
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利なイベント発行関数"""
-    # ExtendedEventType を EventType に変換
-    if isinstance(event_type, ExtendedEventType):
-        base_event_type = EventType(event_type.value)
-    else:
-        base_event_type = event_type
-    event = Event(event_type=base_event_type, source=source, data=data or {})
+    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
+    event = Event(event_type=event_type, source=source, data=data or {})
     _global_event_bus.publish(event)
 
 
@@ -197,10 +185,6 @@ async def publish_event_async(
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利な非同期イベント発行関数"""
-    # ExtendedEventType を EventType に変換
-    if isinstance(event_type, ExtendedEventType):
-        base_event_type = EventType(event_type.value)
-    else:
-        base_event_type = event_type
-    event = Event(event_type=base_event_type, source=source, data=data or {})
+    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
+    event = Event(event_type=event_type, source=source, data=data or {})
     await _global_event_bus.publish_async(event)

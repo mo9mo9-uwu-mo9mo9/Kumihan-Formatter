@@ -56,6 +56,7 @@ dev = [
     "pytest-xdist>=3.0",      # 並列テスト実行
     "pytest-timeout>=2.1",    # テストタイムアウト制御
     "pytest-sugar>=0.9",      # テスト出力の改善
+    "anyio>=4.0",            # 非同期テスト支援
     # 技術的負債監視ライブラリ (Issue #823)
     "radon>=6.0",        # cognitive complexity, maintainability index
     "xenon>=0.9",        # 複雑度測定

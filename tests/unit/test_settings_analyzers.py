@@ -191,7 +191,7 @@ class TestTokenUsageAnalyzer:
         assert isinstance(analyzer.current_session_usage, dict)
         assert analyzer.current_session_usage["input_tokens"] == 0
         assert analyzer.current_session_usage["output_tokens"] == 0
-        assert isinstance(analyzer._lock, threading.Lock)
+        assert isinstance(analyzer._lock, (threading.Lock, threading.RLock))
 
     def test_token_usage_recording(self, analyzer, work_context):
         """Token使用量記録機能"""

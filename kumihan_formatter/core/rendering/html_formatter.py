@@ -638,8 +638,8 @@ class FootnoteManager:
         """
         footnote_number = footnote_id.split("-")[-1]
         return (
-            f'<sup><a href="#{footnote_id}" id="ref-{footnote_id}">'
-            f"{footnote_number}</a></sup>"
+            f'<sup><a href="#{footnote_id}" class="footnote-ref">'
+            f"[{footnote_number}]</a></sup>"
         )
 
     def generate_footnote_list(self) -> str:

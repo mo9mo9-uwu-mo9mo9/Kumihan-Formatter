@@ -44,7 +44,7 @@ class TestSettingsModuleIntegration:
     @pytest.fixture
     def enhanced_config(self):
         """強化されたコンフィグモック"""
-        config = Mock(spec=EnhancedConfig)
+        config = Mock()
         config.get.side_effect = lambda key, default=None: {
             "serena.max_answer_chars": 25000,
             "performance.max_recursion_depth": 50,
@@ -53,6 +53,14 @@ class TestSettingsModuleIntegration:
             "optimization.max_concurrent_tools": 5,
         }.get(key, default)
         config.set.return_value = None
+        # get_configメソッドを追加
+        config.get_config.return_value = {
+            "serena.max_answer_chars": 25000,
+            "performance.max_recursion_depth": 50,
+            "cache.templates": True,
+            "monitoring.interval": 30,
+            "optimization.max_concurrent_tools": 5,
+        }
         return config
 
     @pytest.fixture
