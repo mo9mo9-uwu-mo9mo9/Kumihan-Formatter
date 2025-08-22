@@ -12,13 +12,29 @@ class OrderedListParser:
 
     def __init__(self) -> None:
         """初期化"""
-        self.ordered_patterns = {
-            "numeric": re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
-            "alpha": re.compile(r"^(\s*)([a-zA-Z])\.\s+(.+)$"),
-            "roman": re.compile(
-                r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x)\.\s+(.+)$", re.IGNORECASE
-            ),
-        }
+        # パターンの検証順序を制御するため、リストで定義
+        # より具体的なパターン（roman）を先に検証
+        self.ordered_patterns = [
+            ("numeric", re.compile(r"^(\s*)(\d+)\.\s+(.+)$")),
+            ("roman", re.compile(
+                r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x|xi{0,3}|xiv|xv|xvi{0,3}|xix|xx)\.\s+(.+)$", re.IGNORECASE
+            )),
+            ("alpha", re.compile(r"^(\s*)([a-zA-Z])\.\s+(.+)$")),
+        ]
+
+    def _get_pattern(self, pattern_type: str):
+        """パターンタイプに対応する正規表現パターンを取得
+        
+        Args:
+            pattern_type: パターンタイプ（numeric/alpha/roman）
+            
+        Returns:
+            対応するパターン、見つからない場合はNone
+        """
+        for ptype, pattern in self.ordered_patterns:
+            if ptype == pattern_type:
+                return pattern
+        return None
 
     def detect_ordered_type(self, line: str) -> Optional[str]:
         """順序リストタイプを検出
@@ -30,7 +46,7 @@ class OrderedListParser:
             Optional[str]: 検出されたタイプ（numeric/alpha/roman/None）
         """
         line = line.strip()
-        for pattern_type, pattern in self.ordered_patterns.items():
+        for pattern_type, pattern in self.ordered_patterns:
             if pattern.match(line):
                 return pattern_type
         return None
@@ -66,8 +82,9 @@ class OrderedListParser:
         if not ordered_type:
             return None
 
-        pattern = self.ordered_patterns[ordered_type]
-        match = pattern.match(line.strip())
+        # パターンタイプに対応するパターンを取得
+        pattern = self._get_pattern(ordered_type)
+        match = pattern.match(line)
         if not match:
             return None
 
@@ -107,8 +124,8 @@ class OrderedListParser:
         Returns:
             Optional[Node]: 処理されたノード
         """
-        pattern = self.ordered_patterns["alpha"]
-        match = pattern.match(line.strip())
+        pattern = self._get_pattern("alpha")
+        match = pattern.match(line)
         if not match:
             return None
 
@@ -134,8 +151,8 @@ class OrderedListParser:
         Returns:
             Optional[Node]: 処理されたノード
         """
-        pattern = self.ordered_patterns["roman"]
-        match = pattern.match(line.strip())
+        pattern = self._get_pattern("roman")
+        match = pattern.match(line)
         if not match:
             return None
 
@@ -170,8 +187,8 @@ class OrderedListParser:
             if not ordered_type:
                 continue
 
-            pattern = self.ordered_patterns[ordered_type]
-            match = pattern.match(line.strip())
+            pattern = self._get_pattern(ordered_type)
+            match = pattern.match(line)
             if not match:
                 continue
 
