@@ -131,7 +131,10 @@ backup_*
 generated_*
 auto_generated_*
 *.generated.*
-output_*
+# output_* - Issue #1082: output_formatter_delegate.py除外を回避
+output_*.txt
+output_*.json
+output_*.log
 result_*
 
 # tmp/配下強制ルール違反ログ

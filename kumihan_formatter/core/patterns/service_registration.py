@@ -21,6 +21,18 @@ def register_default_services(container: DIContainer) -> None:
     from ..parsing.specialized.list_parser import UnifiedListParser
     from ..parsing.specialized.markdown_parser import UnifiedMarkdownParser
 
+    # 具象クラス直接登録（Issue #1082: CI DI解決用）
+    container.register(
+        UnifiedKeywordParser, UnifiedKeywordParser, ServiceLifetime.SINGLETON
+    )
+    container.register(UnifiedListParser, UnifiedListParser, ServiceLifetime.SINGLETON)
+    container.register(
+        UnifiedBlockParser, UnifiedBlockParser, ServiceLifetime.SINGLETON
+    )
+    container.register(
+        UnifiedMarkdownParser, UnifiedMarkdownParser, ServiceLifetime.SINGLETON
+    )
+
     # プロトコル → 実装クラスの登録
     try:
         from ..parsing.base.parser_protocols import (
