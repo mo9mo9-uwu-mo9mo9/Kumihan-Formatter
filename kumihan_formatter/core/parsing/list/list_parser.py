@@ -296,7 +296,9 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             "definition",
         ]
 
-    def parse(self, content: str, context: Optional[ParseContext] = None) -> ParseResult:
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
         """統一パースインターフェース（BaseParserProtocol準拠）"""
         try:
             # 既存の実装を使用

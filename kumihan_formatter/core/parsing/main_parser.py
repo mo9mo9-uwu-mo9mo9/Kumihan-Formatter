@@ -18,7 +18,7 @@ Issue #912: Parser系統合リファクタリング
 
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING, Any, Iterator, Optional, cast
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, cast
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
