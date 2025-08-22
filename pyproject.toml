@@ -181,11 +181,12 @@ addopts = [
     "--cov=kumihan_formatter",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
-    "--maxfail=5",              # 5回失敗で停止
-    "--timeout=300",            # 各テスト300秒でタイムアウト
-    "--durations=10",           # 最も遅い10テストを表示
-    # Issue #1049: xdist設定はconftest.pyで環境に応じて動的制御
-    # "-n=auto" と "--dist=worksteal" はconftest.pyで適用される
+    "--maxfail=3",              # 3回失敗で停止（最適化）
+    "--timeout=60",             # 各テスト60秒でタイムアウト（最適化）
+    "--durations=5",            # 最も遅い5テストを表示（最適化）
+    # Issue #1118: 並列実行最適化 - CI時間短縮のため
+    "-n=auto",                  # 自動並列実行
+    "--dist=worksteal",         # 負荷分散最適化
 ]
 # Issue #1005: xdist設定項目は未対応のため削除
 # xdist設定は addopts の -n=auto と --dist=worksteal で対応

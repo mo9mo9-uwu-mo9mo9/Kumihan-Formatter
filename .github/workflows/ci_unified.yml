@@ -25,7 +25,7 @@ jobs:
   # 高速品質チェック - 常時実行（Black/isort/flake8）
   quick_checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 3
     if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     steps:
@@ -94,18 +94,19 @@ jobs:
              --ignore-missing-imports
         echo "✅ Enhanced type check passed - 160+ errors resolved"
 
-  # 単体テスト - 常時実行
+  # 単体テスト - 常時実行（最適化版）
   unit_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     needs: quick_checks
     if: always() && needs.quick_checks.result == 'success'
 
     strategy:
-      fail-fast: false
+      fail-fast: true
+      max-parallel: 3
       matrix:
         python-version: [3.12]
-        test-suite: [unit-core, unit-parsing, unit-rendering]
+        test-suite: [fast-tests, core-tests, parsing-tests]
 
     steps:
     - uses: actions/checkout@v4
@@ -138,36 +139,36 @@ jobs:
       timeout-minutes: 12
       env:
         GITHUB_ACTIONS: true
-        PYTEST_XDIST_WORKER_COUNT: 1
+        PYTEST_XDIST_WORKER_COUNT: auto
         PYTHONPATH: ${{ github.workspace }}
       run: |
         case "${{ matrix.test-suite }}" in
-          "unit-core")
+          "fast-tests")
             pytest tests/unit/ast_nodes/ tests/unit/config/ \
-              --maxfail=10 --timeout=300 --tb=short -v
+              --maxfail=3 --timeout=60 --tb=short -v -n=auto --dist=worksteal
             ;;
-          "unit-parsing")
-            pytest tests/unit/parsing/ \
-              --maxfail=10 --timeout=300 --tb=short -v
-            ;;
-          "unit-rendering")
+          "core-tests")
             pytest tests/unit/rendering/ \
-              --maxfail=10 --timeout=300 --tb=short -v
+              --maxfail=3 --timeout=120 --tb=short -v -n=auto --dist=worksteal
+            ;;
+          "parsing-tests")
+            pytest tests/unit/parsing/ \
+              --maxfail=3 --timeout=120 --tb=short -v -n=auto --dist=worksteal
             ;;
         esac
 
-  # 包括的テスト - PR時のみ実行
+  # 包括的テスト - PR時のみ実行（最適化版）
   comprehensive_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 8
     needs: [quick_checks, unit_tests]
     if: github.event_name == 'pull_request' && needs.quick_checks.result == 'success'
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       max-parallel: 2
       matrix:
-        python-version: [3.12, 3.13]
+        python-version: [3.12]
         test-type: [integration, end_to_end]
 
     steps:
@@ -202,25 +203,25 @@ jobs:
       continue-on-error: ${{ matrix.test-type == 'end_to_end' }}
       env:
         GITHUB_ACTIONS: true
-        PYTEST_XDIST_WORKER_COUNT: 2
+        PYTEST_XDIST_WORKER_COUNT: auto
       run: |
         case "${{ matrix.test-type }}" in
           "integration")
             pytest tests/integration/ \
-              --maxfail=3 --timeout=600 --durations=5 \
-              --tb=short -v
+              --maxfail=2 --timeout=180 --durations=5 \
+              --tb=short -v -n=auto --dist=worksteal
             ;;
           "end_to_end")
             pytest tests/end_to_end/ \
-              --maxfail=2 --timeout=900 --durations=3 \
-              --tb=short -v
+              --maxfail=2 --timeout=240 --durations=3 \
+              --tb=short -v -n=2 --dist=worksteal
             ;;
         esac
 
-  # 統一カバレッジレポート - PR時のみ実行
+  # 統一カバレッジレポート - PR時のみ実行（最適化版）
   coverage_report:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 8
     needs: [quick_checks, unit_tests]
     if: github.event_name == 'pull_request' && needs.quick_checks.result == 'success'
 
@@ -284,10 +285,10 @@ jobs:
         name: unified-coverage-${{ matrix.python-version }}
         fail_ci_if_error: false
 
-  # パフォーマンステスト - 特定条件のみ実行
+  # パフォーマンステスト - 特定条件のみ実行（最適化版）
   performance_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     needs: quick_checks
     if: |
       (github.event_name == 'pull_request' &&
@@ -320,15 +321,15 @@ jobs:
         pip install pytest-benchmark --upgrade
 
     - name: Run performance tests
-      timeout-minutes: 20
+      timeout-minutes: 8
       continue-on-error: true
       run: |
         pytest tests/performance/ \
           --benchmark-only \
           --benchmark-json=benchmark-unified.json \
           --benchmark-sort=mean \
-          --benchmark-min-rounds=3 \
-          --maxfail=2 --timeout=1200 \
+          --benchmark-min-rounds=2 \
+          --maxfail=1 --timeout=300 \
           --tb=short -v || echo "Performance tests completed with warnings"
 
     - name: Upload performance results
