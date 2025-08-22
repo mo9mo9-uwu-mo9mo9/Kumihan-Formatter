@@ -1,7 +1,7 @@
 """順序付きリスト専用パーサー"""
 
 import re
-from typing import List, Optional
+from typing import List, Optional, Pattern
 
 # ノードインポート
 from kumihan_formatter.core.ast_nodes import Node
@@ -16,18 +16,22 @@ class OrderedListParser:
         # より具体的なパターン（roman）を先に検証
         self.ordered_patterns = [
             ("numeric", re.compile(r"^(\s*)(\d+)\.\s+(.+)$")),
-            ("roman", re.compile(
-                r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x|xi{0,3}|xiv|xv|xvi{0,3}|xix|xx)\.\s+(.+)$", re.IGNORECASE
-            )),
+            (
+                "roman",
+                re.compile(
+                    r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x|xi{0,3}|xiv|xv|xvi{0,3}|xix|xx)\.\s+(.+)$",
+                    re.IGNORECASE,
+                ),
+            ),
             ("alpha", re.compile(r"^(\s*)([a-zA-Z])\.\s+(.+)$")),
         ]
 
-    def _get_pattern(self, pattern_type: str):
+    def _get_pattern(self, pattern_type: str) -> Optional[Pattern[str]]:
         """パターンタイプに対応する正規表現パターンを取得
-        
+
         Args:
             pattern_type: パターンタイプ（numeric/alpha/roman）
-            
+
         Returns:
             対応するパターン、見つからない場合はNone
         """
@@ -84,6 +88,8 @@ class OrderedListParser:
 
         # パターンタイプに対応するパターンを取得
         pattern = self._get_pattern(ordered_type)
+        if not pattern:
+            return None
         match = pattern.match(line)
         if not match:
             return None
@@ -125,6 +131,8 @@ class OrderedListParser:
             Optional[Node]: 処理されたノード
         """
         pattern = self._get_pattern("alpha")
+        if not pattern:
+            return None
         match = pattern.match(line)
         if not match:
             return None
@@ -152,6 +160,8 @@ class OrderedListParser:
             Optional[Node]: 処理されたノード
         """
         pattern = self._get_pattern("roman")
+        if not pattern:
+            return None
         match = pattern.match(line)
         if not match:
             return None
@@ -188,6 +198,8 @@ class OrderedListParser:
                 continue
 
             pattern = self._get_pattern(ordered_type)
+            if not pattern:
+                continue
             match = pattern.match(line)
             if not match:
                 continue
