@@ -105,7 +105,8 @@ class ConfigValidator:
                 self.logger.info("設定検証完了: 問題なし")
             else:
                 self.logger.warning(
-                    f"設定検証完了: {len(result.errors)}個のエラー、{len(result.warnings)}個の警告"
+                    f"設定検証完了: {len(result.errors)}個のエラー、"
+                    f"{len(result.warnings)}個の警告"
                 )
 
         except ValidationError as e:
@@ -152,11 +153,13 @@ class ConfigValidator:
             if config.target_chunks_per_core * cpu_count > max_reasonable_chunks:
                 result.add_warning(
                     f"チャンク数が多すぎる可能性があります "
-                    f"(CPU{cpu_count}コア, {config.target_chunks_per_core}チャンク/コア)"
+                    f"(CPU{cpu_count}コア, "
+                    f"{config.target_chunks_per_core}チャンク/コア)"
                 )
                 result.add_suggestion(
                     f"target_chunks_per_core を "
-                    f"{max_reasonable_chunks // cpu_count} 以下に設定することを推奨"
+                    f"{max_reasonable_chunks // cpu_count} "
+                    f"以下に設定することを推奨"
                 )
 
         except Exception:

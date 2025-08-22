@@ -153,7 +153,8 @@ class RuleEngine:
                 result = self._execute_single_rule(rule, context)
                 results.append(result)
 
-                # 重要なルールが発動した場合、低優先度ルールをスキップ
+                # 重要なルールが発動した場合、
+                # 低優先度ルールをスキップ
                 if result.triggered and rule.priority in [
                     RulePriority.CRITICAL,
                     RulePriority.HIGH,

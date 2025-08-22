@@ -20,7 +20,8 @@ from kumihan_formatter.core.optimization.phase_b import OptimizationIntegrator
 # Kumihan-Formatter基盤
 from kumihan_formatter.core.utilities.logger import get_logger
 
-# scikit-learn基盤機械学習は関数内でimportに変更（重複定義問題解決）
+# scikit-learn基盤機械学習は関数内でimportに変更
+# （重複定義問題解決）
 
 
 @dataclass
@@ -63,7 +64,8 @@ class OptimizationResult:
 class AIOptimizerCore:
     """Phase B.4 AIメイン最適化エンジン
 
-    Phase B基盤（66.8%削減）を完全活用し、AI/ML技術による2.0%追加削減で
+    Phase B基盤（66.8%削減）を完全活用し、
+    AI/ML技術による2.0%追加削減で
     68.8%総合削減を実現するメインエンジン
     """
 
@@ -281,7 +283,8 @@ class AIOptimizerCore:
             cache_key = self._generate_cache_key(context)
             if cache_key in self.prediction_cache:
                 cached_result = self.prediction_cache[cache_key]
-                # 【LRUキャッシュ】最近使用したアイテムを末尾に移動
+                # 【LRUキャッシュ】最近使用したアイテムを
+                # 末尾に移動
                 self.prediction_cache.move_to_end(cache_key)
                 self.logger.debug(f"Using cached prediction: {cache_key}")
                 return cached_result
@@ -593,7 +596,8 @@ class AIOptimizerCore:
 
             # 【改善】より積極的なサイズ制限
             if len(self.learning_data) > max_learning_data:
-                # 最新データの50%を保持（古いデータを積極的に削除）
+                # 最新データの50%を保持
+                # （古いデータを積極的に削除）
                 keep_size = max_learning_data // 2
                 self.learning_data = self.learning_data[-keep_size:]
                 self.logger.debug(f"Learning data trimmed to {keep_size} records")

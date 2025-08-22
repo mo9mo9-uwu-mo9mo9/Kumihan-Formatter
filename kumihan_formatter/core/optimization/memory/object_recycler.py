@@ -345,7 +345,10 @@ class TypeBasedRecycler:
         }
 
     def recycle(self, obj: Any) -> bool:
-        """オブジェクトをリサイクル（recycleメソッドのエイリアス）"""
+        """オブジェクトをリサイクル
+
+        recycleメソッドのエイリアス
+        """
         return self.recycle_object(obj)
 
     def recycle_object(self, obj: Any) -> bool:
