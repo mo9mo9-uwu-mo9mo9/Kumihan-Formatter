@@ -38,6 +38,13 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin):
         self._setup_block_patterns()
         self._setup_special_handlers()
 
+        # detect_block_typeメソッド用のパターン
+        self.inline_pattern = re.compile(r"^#[^#]+#[^#]*##\s*$")
+        self.multiline_pattern = re.compile(
+            r"^#[^#]+#\s*$.*?^##\s*$", re.MULTILINE | re.DOTALL
+        )
+        self.special_pattern = re.compile(r"^#(画像|コード|引用|重要|注意)#")
+
     def _setup_block_patterns(self) -> None:
         """ブロック解析パターンの設定"""
         # 基本ブロックパターン
@@ -417,12 +424,12 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin):
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
             # 基底クラスのparseメソッドを使用
-            result = super().parse(content)
-            return create_parse_result(nodes=[result], success=True)
+            node_result = super().parse(content)
+            return create_parse_result(nodes=[node_result], success=True)
         except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"ブロックパース失敗: {e}")
-            return result
+            parse_result = create_parse_result(success=False)
+            parse_result.add_error(f"ブロックパース失敗: {e}")
+            return parse_result
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
