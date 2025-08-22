@@ -171,9 +171,9 @@ class MainParser(
             # 2. ファクトリー経由での生成を試行
             if self.parser_factory is not None:
                 try:
-                    instance = self.parser_factory.create(parser_type)
+                    factory_instance = self.parser_factory.create(parser_type)
                     self.logger.debug(f"Factory creation successful for {parser_type}")
-                    return cast(ParserProtocol, instance)
+                    return factory_instance
                 except Exception as factory_error:
                     self.logger.warning(
                         f"Factory creation failed for {parser_type}: {factory_error}"

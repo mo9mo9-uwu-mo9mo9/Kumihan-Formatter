@@ -196,7 +196,9 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
                     if renderer_type in renderer_class_map:
                         renderer_class = renderer_class_map[renderer_type]
-                        instance = self.container.resolve(cast(type, renderer_class))
+                        instance: Any = self.container.resolve(
+                            cast(type, renderer_class)
+                        )
                         self.logger.debug(
                             f"DI resolution successful for {renderer_type}"
                         )

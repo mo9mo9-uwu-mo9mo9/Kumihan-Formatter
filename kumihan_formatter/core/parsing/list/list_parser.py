@@ -34,14 +34,14 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
     def _setup_patterns_and_handlers(self) -> None:
         """パターンとハンドラーの設定"""
         self.list_patterns = {
-            "unordered": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
-            "ordered": re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
-            "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
-            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([x\s])\]\s*(.+)$"),
+            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([ xX])\]\s*(.+)$"),
+            "ordered": re.compile(r"^(\s*)(\d+)[.)]\s+(.+)$"),
             "alpha": re.compile(r"^(\s*)([a-zA-Z])\.\s+(.+)$"),
             "roman": re.compile(
                 r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x)\.\s+(.+)$", re.IGNORECASE
             ),
+            "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
+            "unordered": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
             "indent": re.compile(r"^(\s*)"),
         }
 
@@ -65,7 +65,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
     def _detect_list_type(self, line: str) -> Optional[str]:
         """行のリストタイプを検出"""
-        if not line.strip():
+        if not line or not isinstance(line, str) or not line.strip():
             return None
 
         for list_type, pattern in self.list_patterns.items():
@@ -296,19 +296,8 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             "definition",
         ]
 
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult:
-        """統一パースインターフェース（BaseParserProtocol準拠）"""
-        try:
-            # 既存の実装を使用
-            result = self._parse_implementation(content)
-            nodes = [result] if isinstance(result, Node) else result
-            return create_parse_result(nodes=nodes, success=True)
-        except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"リストパースエラー: {e}")
-            return result
+    # BaseParserProtocol準拠が必要な場合はparse_with_resultを使用
+    # UnifiedParserBaseのparseメソッド（Node返却）を継承し、型競合を回避
 
     def _is_valid_list_item(self, line: str) -> bool:
         """リスト項目の有効性チェック"""
@@ -330,10 +319,17 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
     # 継続互換性メソッド（プロトコル準拠のシグネチャに変更）
     def parse_nested_list(
-        self, content: str, level: int = 0, context: Optional[ParseContext] = None
+        self,
+        content: Union[str, List[str]],
+        level: int = 0,
+        context: Optional[ParseContext] = None,
     ) -> List[Node]:
         """ネストリストをパース（プロトコル準拠）"""
-        return self.nested_parser.parse_nested_list(content, level)
+        if isinstance(content, list):
+            content_str = "\n".join(content)
+        else:
+            content_str = content
+        return self.nested_parser.parse_nested_list(content_str, level)
 
     def parse_list_items(
         self, content: str, context: Optional[ParseContext] = None
