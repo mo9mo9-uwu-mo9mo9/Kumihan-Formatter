@@ -27,6 +27,22 @@ try:
 except ImportError:
     trio_available = False
 
+# pytest-asyncio利用可能性チェック
+try:
+    import pytest_asyncio
+
+    pytest_asyncio_available = True
+except ImportError:
+    pytest_asyncio_available = False
+    # pytest-asyncioが使えない場合は警告を出力
+    import warnings
+
+    warnings.warn(
+        "pytest-asyncio is not installed. Async tests will be skipped.",
+        ImportWarning,
+        stacklevel=2,
+    )
+
 
 def _get_optimal_worker_count() -> int:
     """

@@ -172,6 +172,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+asyncio_mode = "auto"  # pytest-asyncioを自動モードで実行
 addopts = [
     "-v",
     "--tb=short",
