@@ -38,7 +38,8 @@ class FileOperations:
 
         # 非推奨警告（開発時のみ）
         warnings.warn(
-            "FileOperations is deprecated. Use kumihan_formatter.core.io.FileManager instead.",
+            "FileOperations is deprecated. "
+            "Use kumihan_formatter.core.io.FileManager instead.",
             DeprecationWarning,
             stacklevel=2,
         )

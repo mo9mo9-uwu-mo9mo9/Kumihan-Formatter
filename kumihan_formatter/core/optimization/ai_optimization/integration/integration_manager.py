@@ -311,7 +311,8 @@ class PhaseB4BetaIntegrator:
             self.performance_monitor.start_monitoring()
 
             self.logger.info(
-                f"Systems initialized with integration mode: {self.integration_mode.value}"
+                f"Systems initialized with integration mode: "
+                f"{self.integration_mode.value}"
             )
 
         except Exception as e:

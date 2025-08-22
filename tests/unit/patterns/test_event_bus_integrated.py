@@ -89,9 +89,7 @@ class TestEventMetrics:
         metrics.event_count = 5
         metrics.total_processing_time = 2.5
         metrics.error_count = 1
-        metrics.average_processing_time = (
-            metrics.total_processing_time / metrics.event_count
-        )
+        metrics.average_processing_time = metrics.total_processing_time / metrics.event_count
 
         # Then: 計算結果が正しい
         assert metrics.event_count == 5
@@ -107,9 +105,7 @@ class TestEventMetrics:
         metrics.error_count = 2
 
         # When: エラー率を計算
-        error_rate = (
-            metrics.error_count / metrics.event_count if metrics.event_count > 0 else 0
-        )
+        error_rate = metrics.error_count / metrics.event_count if metrics.event_count > 0 else 0
 
         # Then: エラー率が正しく計算される
         assert error_rate == 0.2  # 20%
@@ -148,9 +144,7 @@ class TestExtendedEventType:
     def test_正常系_拡張イベント値確認(self):
         """正常系: 拡張イベントの値確認"""
         # Given/When/Then: 各拡張イベントタイプの値が正しい
-        assert (
-            ExtendedEventType.PERFORMANCE_MEASUREMENT.value == "performance_measurement"
-        )
+        assert ExtendedEventType.PERFORMANCE_MEASUREMENT.value == "performance_measurement"
         assert ExtendedEventType.PLUGIN_LOADED.value == "plugin_loaded"
         assert ExtendedEventType.DEPENDENCY_RESOLVED.value == "dependency_resolved"
         assert ExtendedEventType.CACHE_HIT.value == "cache_hit"
@@ -201,10 +195,7 @@ class TestIntegratedEventBus:
         # Then: オブザーバーが正しく登録される
         # 基底EventBusのメソッドが呼ばれることを確認
         assert EventType.PARSING_STARTED in self.integrated_bus._base_bus._observers
-        assert (
-            observer
-            in self.integrated_bus._base_bus._observers[EventType.PARSING_STARTED]
-        )
+        assert observer in self.integrated_bus._base_bus._observers[EventType.PARSING_STARTED]
 
     def test_正常系_DI経由オブザーバー登録(self):
         """正常系: DI経由でのオブザーバー登録確認"""
@@ -218,8 +209,7 @@ class TestIntegratedEventBus:
         assert observer_class in self.mock_container.resolved_objects
         resolved_observer = self.mock_container.resolved_objects[observer_class]
         assert (
-            resolved_observer
-            in self.integrated_bus._base_bus._observers[EventType.PARSING_STARTED]
+            resolved_observer in self.integrated_bus._base_bus._observers[EventType.PARSING_STARTED]
         )
 
     def test_正常系_拡張イベント種別登録(self):
@@ -231,9 +221,7 @@ class TestIntegratedEventBus:
         self.integrated_bus.subscribe(ExtendedEventType.PLUGIN_LOADED, observer)
 
         # Then: 拡張イベント種別で正しく登録される
-        assert (
-            ExtendedEventType.PLUGIN_LOADED in self.integrated_bus._base_bus._observers
-        )
+        assert ExtendedEventType.PLUGIN_LOADED in self.integrated_bus._base_bus._observers
 
     @patch("kumihan_formatter.core.patterns.event_bus.logger")
     def test_正常系_メトリクス追跡(self, mock_logger):
@@ -385,9 +373,7 @@ class TestIntegratedEventBus:
         # When: 複数スレッドで同時にイベント発行
         def publish_events(thread_id):
             for i in range(10):
-                event = Event(
-                    EventType.PARSING_STARTED, f"thread_{thread_id}_event_{i}"
-                )
+                event = Event(EventType.PARSING_STARTED, f"thread_{thread_id}_event_{i}")
                 self.integrated_bus.publish(event)
 
         threads = []
@@ -459,9 +445,7 @@ class TestGlobalIntegratedEventBus:
 
         async def async_test():
             # Given: 非同期対応のモック
-            with patch(
-                "kumihan_formatter.core.patterns.event_bus._global_event_bus"
-            ) as mock_bus:
+            with patch("kumihan_formatter.core.patterns.event_bus._global_event_bus") as mock_bus:
                 mock_bus.publish_async = Mock(return_value=asyncio.Future())
                 mock_bus.publish_async.return_value.set_result(None)
 

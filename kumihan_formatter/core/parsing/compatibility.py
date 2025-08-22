@@ -39,7 +39,8 @@ class LegacyParserWrapper:
     def _show_deprecation_warning(self) -> None:
         """非推奨警告の表示"""
         warnings.warn(
-            f"{self.original_class_name} is deprecated and will be removed in a future version. "
+            f"{self.original_class_name} is deprecated "
+            f"and will be removed in a future version. "
             f"Use kumihan_formatter.core.parsing.UnifiedParsingCoordinator instead.",
             DeprecationWarning,
             stacklevel=3,

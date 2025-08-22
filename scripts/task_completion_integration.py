@@ -153,7 +153,9 @@ class TaskCompletionIntegrator:
                 # 詳細をhistoryセクションに移動（簡略化）
                 if "履歴" not in content and "history" not in content.lower():
                     # 履歴セクションがなければ作成
-                    history_section = f"\n\n## 📚 実装履歴\n\n- {match} ({datetime.now().strftime('%Y-%m-%d')})\n"
+                    history_section = (
+                        f"\n\n## 📚 実装履歴\n\n- {match} ({datetime.now().strftime('%Y-%m-%d')})\n"
+                    )
                     content += history_section
                     changes.append("実装履歴セクション作成")
 

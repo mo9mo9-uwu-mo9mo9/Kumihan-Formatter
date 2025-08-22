@@ -112,7 +112,10 @@ class QualityChecker:
 
             # AST関連の機能確認
             ast_features = {
-                'parse_optimize': hasattr(ast, 'optimize') or 'optimize' in ast.parse.__code__.co_varnames,
+                'parse_optimize': hasattr(
+                    ast,
+                    'optimize'
+{indent}) or 'optimize' in ast.parse.__code__.co_varnames,
                 'unparse': hasattr(ast, 'unparse'),
                 'dump': hasattr(ast, 'dump'),
                 'literal_eval': hasattr(ast, 'literal_eval')
@@ -124,10 +127,17 @@ class QualityChecker:
                 logger.debug("Python 3.13+ specific features available")
                 logger.debug(f"AST optimization support: {ast_features['parse_optimize']}")
             else:
-                logger.debug(f"Running on Python {sys.version_info}, some 3.13 features may be unavailable")
+                logger.debug(
+                    f"Running on Python {sys.version_info},
+                    some 3.13 features may be unavailable"
+{indent})
 
             # 警告システムの状態
-            active_filters = [f"{getattr(f[0], '__name__', str(f[0]))}:{f[1]}" for f in warnings.filters[:5]]
+            active_filters = [f"{getattr(
+                f[0],
+                '__name__',
+                str(f[0])
+{indent})}:{f[1]}" for f in warnings.filters[:5]]
             logger.debug(f"Active warning filters (top 5): {active_filters}")
 
             logger.debug("=== End System Info ===")
@@ -1079,7 +1089,11 @@ class QualityChecker:
                     tree = ast.parse(content, **parse_kwargs)
                     logger.debug("Fell back to non-optimized AST parsing")
             else:
-                tree = ast.parse(content, filename=parse_kwargs['filename'], mode=parse_kwargs['mode'])
+                tree = ast.parse(
+                    content,
+                    filename=parse_kwargs['filename'],
+                    mode=parse_kwargs['mode']
+{indent})
 
             # Python 3.13: AST Constructor validation
             if not isinstance(tree, ast.Module):
@@ -1100,7 +1114,10 @@ class QualityChecker:
             logger.error(f"Syntax error in {filename}: {e}")
             # Python 3.13: 詳細な構文エラー情報
             if hasattr(e, 'end_lineno') and hasattr(e, 'end_col_offset'):
-                logger.debug(f"Error location: line {e.lineno}-{e.end_lineno}, column {e.offset}-{e.end_col_offset}")
+                logger.debug(
+                    f"Error location: line {e.lineno}-{e.end_lineno},
+                    column {e.offset}-{e.end_col_offset}"
+{indent})
             raise  # 上位でキャッチして適切に処理
         except Exception as e:
             logger.error(f"Unexpected error parsing AST for {filename}: {e}")

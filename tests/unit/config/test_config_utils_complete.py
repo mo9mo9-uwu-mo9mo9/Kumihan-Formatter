@@ -22,9 +22,7 @@ class TestCreateConfigInstance:
     """create_config_instance 関数のテスト"""
 
     @patch("kumihan_formatter.config.config_manager_utils.ExtendedConfig")
-    def test_正常系_create_config_instance_extendedタイプ作成(
-        self, mock_extended_config
-    ):
+    def test_正常系_create_config_instance_extendedタイプ作成(self, mock_extended_config):
         """extendedタイプの設定インスタンスが作成されることを確認"""
         # Given: extendedタイプとパス指定
         mock_instance = Mock()
@@ -57,9 +55,7 @@ class TestCreateConfigInstance:
 
     @patch("kumihan_formatter.config.config_manager_utils.Path")
     @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
-    def test_正常系_create_config_instance_ファイルパス成功(
-        self, mock_base_config, mock_path
-    ):
+    def test_正常系_create_config_instance_ファイルパス成功(self, mock_base_config, mock_path):
         """ファイルパスからの設定読み込みが成功することを確認"""
         # Given: 存在するファイルパス
         config_path = "/path/to/config.json"
@@ -79,9 +75,7 @@ class TestCreateConfigInstance:
 
     @patch("kumihan_formatter.config.config_manager_utils.Path")
     @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
-    def test_異常系_create_config_instance_ファイル読み込み失敗(
-        self, mock_base_config, mock_path
-    ):
+    def test_異常系_create_config_instance_ファイル読み込み失敗(self, mock_base_config, mock_path):
         """ファイル読み込み失敗時のフォールバック処理を確認"""
         # Given: 存在するが読み込みに失敗するファイル
         config_path = "/path/to/invalid.json"
@@ -102,9 +96,7 @@ class TestCreateConfigInstance:
 
     @patch("kumihan_formatter.config.config_manager_utils.Path")
     @patch("kumihan_formatter.config.config_manager_utils.BaseConfig")
-    def test_境界値_create_config_instance_ファイル存在しない(
-        self, mock_base_config, mock_path
-    ):
+    def test_境界値_create_config_instance_ファイル存在しない(self, mock_base_config, mock_path):
         """存在しないファイルパス指定時のテスト"""
         # Given: 存在しないファイルパス
         config_path = "/path/to/nonexistent.json"

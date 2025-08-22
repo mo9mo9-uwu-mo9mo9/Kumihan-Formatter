@@ -197,9 +197,7 @@ def mock_logger(monkeypatch):
     def mock_get_logger(name: str):
         return mock
 
-    monkeypatch.setattr(
-        "kumihan_formatter.core.utilities.logger.get_logger", mock_get_logger
-    )
+    monkeypatch.setattr("kumihan_formatter.core.utilities.logger.get_logger", mock_get_logger)
 
     return mock
 

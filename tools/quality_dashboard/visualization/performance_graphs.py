@@ -76,12 +76,8 @@ class PerformanceGraphGenerator:
             )
 
             # 目標ライン
-            ax.axhline(
-                y=600, color="green", linestyle="--", alpha=0.7, label="目標 (600ms)"
-            )
-            ax.axhline(
-                y=1000, color="red", linestyle="--", alpha=0.7, label="限界 (1000ms)"
-            )
+            ax.axhline(y=600, color="green", linestyle="--", alpha=0.7, label="目標 (600ms)")
+            ax.axhline(y=1000, color="red", linestyle="--", alpha=0.7, label="限界 (1000ms)")
 
             # 範囲塗りつぶし
             ax.fill_between(df["date"], df["startup_time"], alpha=0.3, color="#8B5CF6")
@@ -158,12 +154,8 @@ class PerformanceGraphGenerator:
             ax.plot(df["date"], df["memory_usage"], color="#0891B2", linewidth=2)
 
             # 目標ライン
-            ax.axhline(
-                y=32, color="green", linestyle="--", alpha=0.7, label="目標 (32MB)"
-            )
-            ax.axhline(
-                y=50, color="red", linestyle="--", alpha=0.7, label="限界 (50MB)"
-            )
+            ax.axhline(y=32, color="green", linestyle="--", alpha=0.7, label="目標 (32MB)")
+            ax.axhline(y=50, color="red", linestyle="--", alpha=0.7, label="限界 (50MB)")
 
             # スタイリング
             ax.set_title("メモリ使用量推移", fontsize=16, fontweight="bold", pad=20)
@@ -194,9 +186,7 @@ class PerformanceGraphGenerator:
             logger.error(f"Failed to generate memory usage graph: {e}")
             return self._create_placeholder_graph("Memory Graph Error")
 
-    def generate_performance_comparison_chart(
-        self, current_metrics: Dict[str, Any]
-    ) -> Path:
+    def generate_performance_comparison_chart(self, current_metrics: Dict[str, Any]) -> Path:
         """パフォーマンス比較チャート生成"""
         try:
             performance = current_metrics.get("performance", {})
@@ -263,18 +253,14 @@ class PerformanceGraphGenerator:
                 )
 
             # スタイリング
-            ax.set_title(
-                "パフォーマンス目標との比較", fontsize=16, fontweight="bold", pad=20
-            )
+            ax.set_title("パフォーマンス目標との比較", fontsize=16, fontweight="bold", pad=20)
             ax.set_xlabel("パフォーマンス指標", fontsize=12)
             ax.set_ylabel("目標値に対する割合 (%)", fontsize=12)
             ax.set_xticks(x)
             ax.set_xticklabels(metrics)
 
             # 100%ライン
-            ax.axhline(
-                y=100, color="gray", linestyle="-", alpha=0.5, label="目標ライン"
-            )
+            ax.axhline(y=100, color="gray", linestyle="-", alpha=0.5, label="目標ライン")
 
             # グリッドと凡例
             ax.grid(True, alpha=0.3)
@@ -315,16 +301,10 @@ class PerformanceGraphGenerator:
             startup_score = max(
                 0, 100 - (performance.get("startup_time_ms", 1000) / 10)
             )  # 1000ms→0点
-            memory_score = max(
-                0, 100 - (performance.get("memory_usage_mb", 50) * 2)
-            )  # 50MB→0点
+            memory_score = max(0, 100 - (performance.get("memory_usage_mb", 50) * 2))  # 50MB→0点
             quality_score_val = quality_score.get("score", 0)
-            coverage_score = current_metrics.get("coverage", {}).get(
-                "total_coverage", 0
-            )
-            lint_score = max(
-                0, 100 - current_metrics.get("lint", {}).get("total_issues", 0) * 10
-            )
+            coverage_score = current_metrics.get("coverage", {}).get("total_coverage", 0)
+            lint_score = max(0, 100 - current_metrics.get("lint", {}).get("total_issues", 0) * 10)
 
             values = [
                 startup_score,
@@ -363,9 +343,7 @@ class PerformanceGraphGenerator:
             ax.set_ylim(0, 100)
 
             # スタイリング
-            ax.set_title(
-                "パフォーマンス総合評価", fontsize=16, fontweight="bold", pad=30
-            )
+            ax.set_title("パフォーマンス総合評価", fontsize=16, fontweight="bold", pad=30)
             ax.grid(True)
             ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.0))
 

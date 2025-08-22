@@ -315,9 +315,7 @@ class TestBasicKeywordParser:
         """性能: 複雑な属性解析の性能"""
         import time
 
-        complex_attrs = (
-            "[color:red][size:large][align:center][class:test][id:test-id]" * 10
-        )
+        complex_attrs = "[color:red][size:large][align:center][class:test][id:test-id]" * 10
 
         start_time = time.time()
         result = self.parser.parse_attributes(complex_attrs)

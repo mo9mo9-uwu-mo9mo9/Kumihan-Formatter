@@ -333,7 +333,8 @@ class AdaptiveSettingsManagerCore:
         self, context: WorkContext, pattern: Dict[str, Any]
     ) -> Optional[ConfigAdjustment]:
         """max_answer_charsを調整（Serena削除により無効化）"""
-        # current_value = self.config.get("serena.max_answer_chars", 25000)  # 削除: Serena未使用
+        # current_value = self.config.get("serena.max_answer_chars", 25000)
+        # 削除: Serena未使用
         return None  # Serena削除により常にNoneを返す
 
     def _adjust_recursion_depth(

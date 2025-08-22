@@ -137,7 +137,8 @@ class QualityMetrics:
 
             status = "TARGET_ACHIEVED" if target_achievement else "IN_PROGRESS"
             self.logger.info(
-                f"Integrated effects measured: {total_integrated_effect:.3f}% - {status}"
+                f"Integrated effects measured: {total_integrated_effect:.3f}% - "
+                f"{status}"
             )
 
             return integrated_measurement

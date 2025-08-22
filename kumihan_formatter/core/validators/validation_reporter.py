@@ -116,7 +116,8 @@ class ValidationReporter:
                     html_parts.append("<li>")
                     if issue.line_number:
                         html_parts.append(
-                            f'<span class="line-number">Line {issue.line_number}</span> '
+                            f'<span class="line-number">Line {issue.line_number}'
+                            f"</span> "
                         )
                     html_parts.append(f'<span class="message">{issue.message}</span>')
                     if issue.suggestion:
@@ -139,7 +140,8 @@ class ValidationReporter:
             print("✅ No validation issues found.")
         else:
             print(
-                f"Validation complete: {errors} errors, {warnings} warnings, {info} info"
+                f"Validation complete: {errors} errors, {warnings} warnings, "
+                f"{info} info"
             )
 
             if errors > 0:

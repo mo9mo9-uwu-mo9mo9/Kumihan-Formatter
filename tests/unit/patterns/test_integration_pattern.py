@@ -157,9 +157,7 @@ class TestArchitectureManager:
         self.manager._event_bus = mock_event_bus
 
         # When: イベント発行便利メソッドを呼び出し
-        self.manager.publish_event(
-            EventType.PARSING_STARTED, "test_source", {"key": "value"}
-        )
+        self.manager.publish_event(EventType.PARSING_STARTED, "test_source", {"key": "value"})
 
         # Then: イベントバスのpublishメソッドが正しく呼ばれる
         mock_event_bus.publish.assert_called_once()
@@ -356,9 +354,7 @@ class TestEventPublication:
         large_data = {"content": "x" * 10000, "metadata": list(range(1000))}
 
         # When: 大量データでイベント発行
-        self.manager.publish_event(
-            EventType.PARSING_STARTED, "large_data_test", large_data
-        )
+        self.manager.publish_event(EventType.PARSING_STARTED, "large_data_test", large_data)
 
         # Then: 正常に処理される
         assert True
@@ -382,9 +378,7 @@ class TestImportErrorHandling:
         ):
             # observers モジュールが存在しない場合のテスト
             if "kumihan_formatter.core.patterns.observers" in __import__("sys").modules:
-                del __import__("sys").modules[
-                    "kumihan_formatter.core.patterns.observers"
-                ]
+                del __import__("sys").modules["kumihan_formatter.core.patterns.observers"]
 
             # When: デフォルトパターン設定を実行
             manager = ArchitectureManager()
@@ -410,13 +404,8 @@ class TestImportErrorHandling:
             {"kumihan_formatter.core.patterns.observers": mock_observers_module},
         ):
             # strategies モジュールが存在しない場合のテスト
-            if (
-                "kumihan_formatter.core.patterns.strategies"
-                in __import__("sys").modules
-            ):
-                del __import__("sys").modules[
-                    "kumihan_formatter.core.patterns.strategies"
-                ]
+            if "kumihan_formatter.core.patterns.strategies" in __import__("sys").modules:
+                del __import__("sys").modules["kumihan_formatter.core.patterns.strategies"]
 
             # When: デフォルトパターン設定を実行
             manager = ArchitectureManager()

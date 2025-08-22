@@ -108,9 +108,7 @@ class TestFormatIntegration:
 
         html_output = result["output"]
         for expected_tag in test_case["expected_html_tags"]:
-            assert (
-                expected_tag in html_output
-            ), f"期待されるHTMLタグが不足: {expected_tag}"
+            assert expected_tag in html_output, f"期待されるHTMLタグが不足: {expected_tag}"
 
         # ファイル統合確認
         assert result["file_path"].exists(), "統合出力ファイルが作成されていません"
@@ -125,9 +123,7 @@ class TestFormatIntegration:
 
         html_output = result["output"]
         for expected_element in test_case["expected_elements"]:
-            assert (
-                expected_element in html_output
-            ), f"混合要素が不足: {expected_element}"
+            assert expected_element in html_output, f"混合要素が不足: {expected_element}"
 
     def test_複雑なネスト統合(self) -> None:
         """複雑なネスト構造の統合"""
@@ -208,9 +204,7 @@ class TestFormatIntegration:
         # 出力サイズ確認
         assert result["file_size"] > 1000, "大規模統合出力が小さすぎます"
 
-        logger.info(
-            f"大規模統合処理: {elapsed:.3f}秒, 出力 {result['file_size']/1024:.1f}KB"
-        )
+        logger.info(f"大規模統合処理: {elapsed:.3f}秒, 出力 {result['file_size']/1024:.1f}KB")
 
     def test_並行フォーマット統合(self) -> None:
         """並行でのフォーマット統合処理"""
@@ -223,9 +217,7 @@ class TestFormatIntegration:
 
         results = []
         with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [
-                executor.submit(process_single, content) for content in test_contents
-            ]
+            futures = [executor.submit(process_single, content) for content in test_contents]
             for future in futures:
                 results.append(future.result())
 

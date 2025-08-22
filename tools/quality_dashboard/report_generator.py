@@ -283,13 +283,27 @@ class ReportGenerator:
     <title>Kumihan-Formatter 品質レポート</title>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }}
+body {{ font-family: 'Arial',
+            sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }}
         .container {{ max-width: 1000px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; border-radius: 10px; margin-bottom: 30px; text-align: center; }}
+        .header {{ background: linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 100%
+{indent}); color: white; padding: 40px 20px; border-radius: 10px; margin-bottom: 30px; text-align: center; }}
         .header h1 {{ font-size: 2.5rem; margin-bottom: 10px; }}
         .header p {{ opacity: 0.9; font-size: 1.1rem; }}
-        .summary-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }}
-        .summary-card {{ background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+        .summary-grid {{ display: grid; grid-template-columns: repeat(
+            auto-fit,
+            minmax(250px,
+            1fr)
+{indent}); gap: 20px; margin-bottom: 30px; }}
+        .summary-card {{ background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(
+            0,
+            0,
+            0,
+            0.1
+{indent}); }}
         .summary-card h3 {{ color: #2c3e50; margin-bottom: 15px; font-size: 1.2rem; }}
         .score-display {{ font-size: 3rem; font-weight: bold; text-align: center; margin: 20px 0; }}
         .grade-a {{ color: #27ae60; }}
@@ -297,10 +311,16 @@ class ReportGenerator:
         .grade-c {{ color: #f39c12; }}
         .grade-d {{ color: #e74c3c; }}
         .grade-f {{ color: #c0392b; }}
-        .section {{ background: white; margin-bottom: 20px; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .section {{ background: white; margin-bottom: 20px; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(
+            0,
+            0,
+            0,
+            0.1
+{indent}); }}
         .section h2 {{ color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ecf0f1; }}
         .metrics-table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-        .metrics-table th, .metrics-table td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }}
+.metrics-table th,
+            .metrics-table td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }}
         .metrics-table th {{ background: #f8f9fa; font-weight: bold; }}
         .status-pass {{ color: #27ae60; font-weight: bold; }}
         .status-warning {{ color: #f39c12; font-weight: bold; }}
@@ -374,15 +394,31 @@ class ReportGenerator:
                 </tr>
                 <tr>
                     <td>品質スコア</td>
-                    <td>{summary['trend_analysis'].get('quality_score_trend', {}).get('change', 0):+.1f}</td>
+                    <td>{summary['trend_analysis'].get(
+                        'quality_score_trend',
+                        {}).get('change',
+                        0
+{indent}):+.1f}</td>
                     <td class="trend-indicator trend-{summary['trend_analysis'].get('quality_score_trend', {}).get('direction', 'stable')}">{summary['trend_analysis'].get('quality_score_trend', {}).get('direction', 'stable')}</td>
-                    <td>{summary['trend_analysis'].get('quality_score_trend', {}).get('percentage_change', 0):+.1f}%</td>
+                    <td>{summary['trend_analysis'].get(
+                        'quality_score_trend',
+                        {}).get('percentage_change',
+                        0
+{indent}):+.1f}%</td>
                 </tr>
                 <tr>
                     <td>カバレッジ</td>
-                    <td>{summary['trend_analysis'].get('coverage_trend', {}).get('change', 0):+.1f}%</td>
+                    <td>{summary['trend_analysis'].get(
+                        'coverage_trend',
+                        {}).get('change',
+                        0
+{indent}):+.1f}%</td>
                     <td class="trend-indicator trend-{summary['trend_analysis'].get('coverage_trend', {}).get('direction', 'stable')}">{summary['trend_analysis'].get('coverage_trend', {}).get('direction', 'stable')}</td>
-                    <td>{summary['trend_analysis'].get('coverage_trend', {}).get('percentage_change', 0):+.1f}%</td>
+                    <td>{summary['trend_analysis'].get(
+                        'coverage_trend',
+                        {}).get('percentage_change',
+                        0
+{indent}):+.1f}%</td>
                 </tr>
             </table>
         </div>

@@ -33,7 +33,8 @@ class ListParserCore:
 
     def __init__(self, keyword_parser: KeywordParser):
         warnings.warn(
-            "ListParserCoreは非推奨です。kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
+            "ListParserCoreは非推奨です。"
+            "kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
             DeprecationWarning,
             stacklevel=2,
         )

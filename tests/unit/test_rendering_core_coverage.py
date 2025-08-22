@@ -93,9 +93,7 @@ class TestHTMLFormatterCoverage:
             # Metadata support might not be implemented
             pass
 
-    @pytest.mark.skipif(
-        True, reason="Node constructor API mismatch - skip for CI stability"
-    )
+    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
     def test_format_element_types(self):
         """Test formatting different element types."""
         elements = [
@@ -278,9 +276,7 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(
-        True, reason="Node constructor API mismatch - skip for CI stability"
-    )
+    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
     def test_render_elements_with_attributes(self):
         """Test rendering elements with attributes."""
         elements_with_attrs = [
@@ -297,9 +293,7 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(
-        True, reason="Node constructor API mismatch - skip for CI stability"
-    )
+    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
     def test_render_list_elements(self):
         """Test rendering list elements."""
         list_items = [
@@ -317,9 +311,7 @@ class TestElementRendererCoverage:
             except Exception:
                 pass
 
-    @pytest.mark.skipif(
-        True, reason="Node constructor API mismatch - skip for CI stability"
-    )
+    @pytest.mark.skipif(True, reason="Node constructor API mismatch - skip for CI stability")
     def test_render_nested_elements(self):
         """Test rendering nested elements."""
         inner_element = Node(type="strong", content="Bold")
@@ -348,9 +340,7 @@ class TestElementRendererCoverage:
 
 @pytest.mark.unit
 @pytest.mark.renderer
-@pytest.mark.skipif(
-    not html_escaping_available, reason="html_escaping module not available"
-)
+@pytest.mark.skipif(not html_escaping_available, reason="html_escaping module not available")
 class TestHTMLEscaperCoverage:
     """HTML escaper coverage tests."""
 

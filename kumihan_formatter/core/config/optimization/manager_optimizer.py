@@ -188,7 +188,9 @@ class AdaptiveSettingsManagerOptimizer:
                     new_value=optimized_recursion,
                     context=f"ai_efficiency_optimization_{context.operation_type}",
                     timestamp=time.time(),
-                    reason=f"Low efficiency optimization (score: {efficiency_score:.2f})",
+                    reason=(
+                        f"Low efficiency optimization (score: {efficiency_score:.2f})"
+                    ),
                     expected_benefit=0.08,
                 )
                 adjustments.append(adjustment)
@@ -365,7 +367,8 @@ class AdaptiveSettingsManagerOptimizer:
         del self.active_tests[test_id]
 
         self.logger.info(
-            f"A/B test completed: {test_config.parameter}, winning value: {result.winning_value}"
+            f"A/B test completed: {test_config.parameter}, "
+            f"winning value: {result.winning_value}"
         )
 
     def run_simple_ab_test(

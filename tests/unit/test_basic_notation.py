@@ -40,9 +40,7 @@ class TestBasicNotation:
             inline_content = self.parser.extract_inline_content(text)
 
             # パーサーは記法を認識してParseResultを返すべき
-            assert (
-                parse_result is not None
-            ), f"記法 '{text}' はパーサーによって処理されるべきです"
+            assert parse_result is not None, f"記法 '{text}' はパーサーによって処理されるべきです"
             assert (
                 len(parse_result.keywords) > 0
             ), f"記法 '{text}' からキーワードが抽出されるべきです"
@@ -51,9 +49,7 @@ class TestBasicNotation:
             assert not is_new_format, f"記法 '{text}' は新形式として認識されない"
 
             # extract_inline_content は None を返す（現在の実装）
-            assert (
-                inline_content is None
-            ), f"記法 '{text}' からのインライン抽出は None を返す"
+            assert inline_content is None, f"記法 '{text}' からのインライン抽出は None を返す"
 
     def test_block_notation_basic_v3(self):
         """Test basic block notation parsing in v3.0.0."""

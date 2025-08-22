@@ -129,7 +129,8 @@ class AttributeParser(BaseParser):
 
         # Basic size validation (px, em, rem, %, etc.)
         size_pattern = re.compile(
-            r"^\d+(\.\d+)?(px|em|rem|%|pt|vh|vw)$|^(small|medium|large|x-large|xx-large)$"
+            r"^\d+(\.\d+)?(px|em|rem|%|pt|vh|vw)$|"
+            r"^(small|medium|large|x-large|xx-large)$"
         )
         return bool(size_pattern.match(size_value.strip().lower()))
 

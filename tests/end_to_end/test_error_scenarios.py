@@ -86,9 +86,7 @@ class TestErrorScenarios:
 
             # エラー回復処理
             try:
-                recovery_output = self._generate_error_recovery_output(
-                    str(e), input_content
-                )
+                recovery_output = self._generate_error_recovery_output(str(e), input_content)
                 recovery_file = self.temp_dir / "recovery_output.html"
                 with open(recovery_file, "w", encoding="utf-8") as f:
                     f.write(recovery_output)
@@ -121,11 +119,7 @@ class TestErrorScenarios:
             corrected_line = line
 
             # 不完全なブロック記法の修正
-            if (
-                line.startswith("#")
-                and not line.endswith("#")
-                and not line.endswith("##")
-            ):
+            if line.startswith("#") and not line.endswith("#") and not line.endswith("##"):
                 if "#" in line[1:]:  # インライン記法の可能性
                     corrected_line = line + "#"
                     warnings.append(f"行{i+1}: 不完全なインライン記法を修正")
@@ -171,9 +165,7 @@ class TestErrorScenarios:
         if parsed_data.get("recovery_applied"):
             html_parts.append('<div class="recovery">')
             html_parts.append("<h2>回復処理が適用されました</h2>")
-            html_parts.append(
-                f'<p>検出されたエラー数: {parsed_data.get("error_count", 0)}</p>'
-            )
+            html_parts.append(f'<p>検出されたエラー数: {parsed_data.get("error_count", 0)}</p>')
             html_parts.append("</div>")
 
         if parsed_data.get("warnings"):
@@ -211,9 +203,7 @@ class TestErrorScenarios:
 </body>
 </html>"""
 
-    def _generate_error_recovery_output(
-        self, error_message: str, original_content: str
-    ) -> str:
+    def _generate_error_recovery_output(self, error_message: str, original_content: str) -> str:
         """エラー回復用の出力生成"""
         return f"""<!DOCTYPE html>
 <html lang='ja'>
@@ -285,9 +275,7 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: パースエラーをシミュレート
-        result = self.process_with_error_handling(
-            normal_content, simulate_error="parse_error"
-        )
+        result = self.process_with_error_handling(normal_content, simulate_error="parse_error")
 
         # Then: エラー回復の確認
         assert not result["success"], "パースエラーが正しく検出されていない"
@@ -302,15 +290,11 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: レンダリングエラーをシミュレート
-        result = self.process_with_error_handling(
-            normal_content, simulate_error="render_error"
-        )
+        result = self.process_with_error_handling(normal_content, simulate_error="render_error")
 
         # Then: エラー回復の確認
         assert not result["success"], "レンダリングエラーが正しく検出されていない"
-        assert result[
-            "recovery_applied"
-        ], "レンダリングエラー回復処理が適用されていない"
+        assert result["recovery_applied"], "レンダリングエラー回復処理が適用されていない"
         assert "レンダリング処理エラー" in result["error"], "エラーメッセージが不正"
 
     @pytest.mark.e2e
@@ -320,9 +304,7 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: 出力エラーをシミュレート
-        result = self.process_with_error_handling(
-            normal_content, simulate_error="output_error"
-        )
+        result = self.process_with_error_handling(normal_content, simulate_error="output_error")
 
         # Then: エラー回復の確認
         assert not result["success"], "出力エラーが正しく検出されていない"
@@ -362,9 +344,7 @@ class TestErrorScenarios:
 
         # 出力内容の確認
         output_content = result["output"]
-        assert (
-            "回復処理が適用されました" in output_content
-        ), "回復処理通知が出力されていない"
+        assert "回復処理が適用されました" in output_content, "回復処理通知が出力されていない"
         assert "警告" in output_content, "警告セクションが出力されていない"
 
         logger.info(f"複数エラー回復完了: {len(result['warnings'])}件の警告")
@@ -409,9 +389,7 @@ class TestErrorScenarios:
         normal_content = "#見出し#\n通常のコンテンツ"
 
         # When: 無効入力エラーをシミュレート
-        result = self.process_with_error_handling(
-            normal_content, simulate_error="invalid_input"
-        )
+        result = self.process_with_error_handling(normal_content, simulate_error="invalid_input")
 
         # Then: 無効入力エラー処理の確認
         assert not result["success"], "無効入力エラーが正しく検出されていない"

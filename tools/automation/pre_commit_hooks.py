@@ -139,13 +139,17 @@ class PreCommitHookManager:
                 return False
 
             # 成功ログ
-            logger.info(f"Pre-commit config validation successful. Found {len(existing_hooks)} hooks.")
+            logger.info((
+                f"Pre-commit config validation successful. Found {len(existing_hooks)} hooks.")
+            )
             logger.debug(f"Required hooks verified: {required_hooks}")
 
             return True
 
         except Exception as e:
-            logger.error(f"Unexpected error during pre-commit config validation: {type(e).__name__}: {e}")
+            logger.error((
+                f"Unexpected error during pre-commit config validation: {type(e).__name__}: {e}")
+            )
             return False
 
     def run_quality_hooks(

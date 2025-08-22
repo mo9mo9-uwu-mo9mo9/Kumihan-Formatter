@@ -24,7 +24,8 @@ class MarkdownParser:
     def __init__(self) -> None:
         """Initialize parser with compiled patterns"""
         warnings.warn(
-            "MarkdownParserは非推奨です。kumihan_formatter.core.parsing.UnifiedMarkdownParserを使用してください。",
+            "MarkdownParserは非推奨です。"
+            "kumihan_formatter.core.parsing.UnifiedMarkdownParserを使用してください。",
             DeprecationWarning,
             stacklevel=2,
         )

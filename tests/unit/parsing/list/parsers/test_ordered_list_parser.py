@@ -409,9 +409,7 @@ class TestOrderedListParserExtended:
         numeric_nodes = [self.parser.convert_to_numeric(node) for node in alpha_nodes]
 
         # Then: 全て数値マーカーに変換されることを検証
-        assert all(
-            node.attributes["marker_type"] == "numeric" for node in numeric_nodes
-        )
+        assert all(node.attributes["marker_type"] == "numeric" for node in numeric_nodes)
         assert [node.attributes["marker"] for node in numeric_nodes] == ["1", "2"]
 
     def test_統合_次マーカー生成連鎖(self):

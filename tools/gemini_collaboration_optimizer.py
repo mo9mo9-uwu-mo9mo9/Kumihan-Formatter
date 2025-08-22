@@ -233,7 +233,9 @@ class GeminiCollaborationOptimizer:
         self.history.append(history_entry)
         self._save_history()
 
-        logger.info(f"Recorded collaboration history: {phase_name} - {'Success' if success else 'Failed'}")
+        logger.info((
+            f"Recorded collaboration history: {phase_name} - {'Success' if success else 'Failed'}")
+        )
 
     def get_statistics(self) -> Dict[str, Any]:
         """統計情報取得"""

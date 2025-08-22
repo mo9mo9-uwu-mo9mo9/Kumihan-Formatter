@@ -45,9 +45,7 @@ class MetricsCollector:
 
     def _load_coverage_thresholds(self) -> Dict[str, Any]:
         """カバレッジ閾値読み込み"""
-        coverage_path = (
-            self.project_root / ".github" / "quality" / "coverage_thresholds.yml"
-        )
+        coverage_path = self.project_root / ".github" / "quality" / "coverage_thresholds.yml"
         try:
             if coverage_path.exists():
                 with open(coverage_path, "r", encoding="utf-8") as f:
@@ -83,9 +81,7 @@ class MetricsCollector:
                     coverage_data = json.load(f)
 
                 # カバレッジメトリクス構築
-                total_coverage = coverage_data.get("totals", {}).get(
-                    "percent_covered", 0
-                )
+                total_coverage = coverage_data.get("totals", {}).get("percent_covered", 0)
 
                 # モジュール別カバレッジ
                 module_coverage = {}
@@ -101,14 +97,12 @@ class MetricsCollector:
                 # モジュール別平均計算
                 module_averages = {}
                 for module, coverages in module_coverage.items():
-                    module_averages[module] = (
-                        sum(coverages) / len(coverages) if coverages else 0
-                    )
+                    module_averages[module] = sum(coverages) / len(coverages) if coverages else 0
 
                 # 閾値との比較
-                global_threshold = self.coverage_thresholds.get(
-                    "global_thresholds", {}
-                ).get("minimum", 70)
+                global_threshold = self.coverage_thresholds.get("global_thresholds", {}).get(
+                    "minimum", 70
+                )
                 status = "PASS" if total_coverage >= global_threshold else "FAIL"
 
                 return {
@@ -118,12 +112,8 @@ class MetricsCollector:
                     "threshold": global_threshold,
                     "status": status,
                     "files_count": len(coverage_data.get("files", {})),
-                    "lines_covered": coverage_data.get("totals", {}).get(
-                        "covered_lines", 0
-                    ),
-                    "lines_total": coverage_data.get("totals", {}).get(
-                        "num_statements", 0
-                    ),
+                    "lines_covered": coverage_data.get("totals", {}).get("covered_lines", 0),
+                    "lines_total": coverage_data.get("totals", {}).get("num_statements", 0),
                 }
 
         except Exception as e:
@@ -207,9 +197,7 @@ class MetricsCollector:
                         "high_complexity_count": high_complexity_count,
                         "max_complexity_threshold": max_complexity,
                         "complexity_ratio": (
-                            high_complexity_count / total_functions
-                            if total_functions > 0
-                            else 0
+                            high_complexity_count / total_functions if total_functions > 0 else 0
                         ),
                         "status": "PASS" if high_complexity_count == 0 else "WARNING",
                         "tool_used": "radon",
@@ -287,9 +275,7 @@ class MetricsCollector:
                     logger.error(f"ファイル解析エラー {py_file}: {e}")
                     continue
 
-            average_complexity = (
-                complexity_sum / total_functions if total_functions > 0 else 0
-            )
+            average_complexity = complexity_sum / total_functions if total_functions > 0 else 0
 
             logger.info(f"内蔵AST解析完了: {total_functions}関数を解析")
             return {
@@ -299,9 +285,7 @@ class MetricsCollector:
                 "high_complexity_count": high_complexity_count,
                 "max_complexity_threshold": max_complexity,
                 "complexity_ratio": (
-                    high_complexity_count / total_functions
-                    if total_functions > 0
-                    else 0
+                    high_complexity_count / total_functions if total_functions > 0 else 0
                 ),
                 "status": "PASS" if high_complexity_count == 0 else "WARNING",
                 "tool_used": "ast_fallback",
@@ -357,9 +341,9 @@ class MetricsCollector:
 
             # パフォーマンス基準読み込み
             performance_benchmarks = self._load_performance_benchmarks()
-            startup_threshold = performance_benchmarks.get(
-                "startup_performance", {}
-            ).get("target_ms", 600)
+            startup_threshold = performance_benchmarks.get("startup_performance", {}).get(
+                "target_ms", 600
+            )
             memory_threshold = performance_benchmarks.get("memory_performance", {}).get(
                 "target_mb", 32
             )
@@ -372,16 +356,11 @@ class MetricsCollector:
                 "memory_usage_mb": current_memory_mb,
                 "startup_threshold_ms": startup_threshold,
                 "memory_threshold_mb": memory_threshold,
-                "startup_status": (
-                    "PASS" if import_time <= startup_threshold else "WARNING"
-                ),
-                "memory_status": (
-                    "PASS" if current_memory_mb <= memory_threshold else "WARNING"
-                ),
+                "startup_status": ("PASS" if import_time <= startup_threshold else "WARNING"),
+                "memory_status": ("PASS" if current_memory_mb <= memory_threshold else "WARNING"),
                 "overall_status": (
                     "PASS"
-                    if import_time <= startup_threshold
-                    and current_memory_mb <= memory_threshold
+                    if import_time <= startup_threshold and current_memory_mb <= memory_threshold
                     else "WARNING"
                 ),
             }
@@ -397,9 +376,7 @@ class MetricsCollector:
 
     def _load_performance_benchmarks(self) -> Dict[str, Any]:
         """パフォーマンス基準読み込み"""
-        benchmarks_path = (
-            self.project_root / ".github" / "quality" / "performance_benchmarks.yml"
-        )
+        benchmarks_path = self.project_root / ".github" / "quality" / "performance_benchmarks.yml"
         try:
             if benchmarks_path.exists():
                 with open(benchmarks_path, "r", encoding="utf-8") as f:
@@ -427,11 +404,7 @@ class MetricsCollector:
                     lint_issues = lint_data if isinstance(lint_data, list) else []
                 except json.JSONDecodeError:
                     # JSONでない場合は行数でカウント
-                    lint_issues = (
-                        result.stdout.strip().split("\n")
-                        if result.stdout.strip()
-                        else []
-                    )
+                    lint_issues = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
             # 問題の分類
             error_count = len(
@@ -449,9 +422,7 @@ class MetricsCollector:
                 "error_count": error_count,
                 "warning_count": warning_count,
                 "status": (
-                    "PASS"
-                    if len(lint_issues) == 0
-                    else "WARNING" if error_count == 0 else "FAIL"
+                    "PASS" if len(lint_issues) == 0 else "WARNING" if error_count == 0 else "FAIL"
                 ),
             }
 
@@ -519,11 +490,7 @@ class MetricsCollector:
         grade = (
             "A"
             if score >= 90
-            else (
-                "B"
-                if score >= 75
-                else "C" if score >= 60 else "D" if score >= 45 else "F"
-            )
+            else ("B" if score >= 75 else "C" if score >= 60 else "D" if score >= 45 else "F")
         )
 
         return {
@@ -554,8 +521,7 @@ class MetricsCollector:
             history = [
                 h
                 for h in history
-                if datetime.fromisoformat(h.get("collection_timestamp", "2020-01-01"))
-                > cutoff_date
+                if datetime.fromisoformat(h.get("collection_timestamp", "2020-01-01")) > cutoff_date
             ]
 
             with open(self.metrics_history_file, "w", encoding="utf-8") as f:
@@ -578,8 +544,7 @@ class MetricsCollector:
             filtered_history = [
                 h
                 for h in history
-                if datetime.fromisoformat(h.get("collection_timestamp", "2020-01-01"))
-                > cutoff_date
+                if datetime.fromisoformat(h.get("collection_timestamp", "2020-01-01")) > cutoff_date
             ]
 
             return filtered_history
@@ -620,15 +585,9 @@ class MetricsCollector:
                     writer.writerow(
                         {
                             "timestamp": entry.get("collection_timestamp", ""),
-                            "quality_score": entry.get("quality_score", {}).get(
-                                "score", 0
-                            ),
-                            "quality_grade": entry.get("quality_score", {}).get(
-                                "grade", "N/A"
-                            ),
-                            "coverage_total": entry.get("coverage", {}).get(
-                                "total_coverage", 0
-                            ),
+                            "quality_score": entry.get("quality_score", {}).get("score", 0),
+                            "quality_grade": entry.get("quality_score", {}).get("grade", "N/A"),
+                            "coverage_total": entry.get("coverage", {}).get("total_coverage", 0),
                             "complexity_avg": entry.get("complexity", {}).get(
                                 "average_complexity", 0
                             ),
@@ -655,15 +614,9 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Quality metrics collector")
-    parser.add_argument(
-        "--collect", action="store_true", help="Collect current metrics"
-    )
-    parser.add_argument(
-        "--history", type=int, default=7, help="Get metrics history (days)"
-    )
-    parser.add_argument(
-        "--export-csv", action="store_true", help="Export metrics to CSV"
-    )
+    parser.add_argument("--collect", action="store_true", help="Collect current metrics")
+    parser.add_argument("--history", type=int, default=7, help="Get metrics history (days)")
+    parser.add_argument("--export-csv", action="store_true", help="Export metrics to CSV")
     parser.add_argument("--output", type=str, help="Output file path")
 
     args = parser.parse_args()

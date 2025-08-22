@@ -159,13 +159,15 @@ class RuleEngine:
                     RulePriority.HIGH,
                 ]:
                     self.logger.info(
-                        f"High priority rule {rule.name} triggered, skipping lower priority rules"
+                        f"High priority rule {rule.name} triggered, "
+                        f"skipping lower priority rules"
                     )
                     break
 
             execution_time = time.time() - start_time
             self.logger.info(
-                f"Rule execution completed in {execution_time:.3f}s, {len(results)} rules processed"
+                f"Rule execution completed in {execution_time:.3f}s, "
+                f"{len(results)} rules processed"
             )
 
             return results

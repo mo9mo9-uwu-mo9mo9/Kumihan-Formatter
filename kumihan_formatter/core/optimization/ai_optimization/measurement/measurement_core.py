@@ -171,7 +171,8 @@ class BaselineMeasurement:
             new_baseline = self.establish_baseline(metric_name, new_measurements)
 
             self.logger.info(
-                f"Baseline updated for {metric_name}: {old_baseline:.3f} -> {new_baseline:.3f}"
+                f"Baseline updated for {metric_name}: "
+                f"{old_baseline:.3f} -> {new_baseline:.3f}"
             )
             return True
         except Exception as e:

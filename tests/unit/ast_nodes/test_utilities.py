@@ -511,9 +511,7 @@ class TestUtilitiesIntegration:
         # テストデータ作成
         nodes = []
         for i in range(50):
-            content = [
-                f"Text part {j}" for j in range(5)
-            ]  # 各ノードに5個のテキスト要素
+            content = [f"Text part {j}" for j in range(5)]  # 各ノードに5個のテキスト要素
             nodes.append(Node(type="p", content=content))
 
         start_time = time.time()

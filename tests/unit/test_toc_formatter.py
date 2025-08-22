@@ -55,9 +55,7 @@ class TestTOCFormatter:
             self.create_mock_toc_entry("Section 1.2", 2, "section-1-2"),
         ]
 
-        entries = [
-            self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)
-        ]
+        entries = [self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)]
 
         result = self.formatter.format_html(entries)
 
@@ -75,13 +73,9 @@ class TestTOCFormatter:
 
     def test_format_html_multiple_levels(self):
         """Test HTML formatting with multiple heading levels"""
-        subsection = [
-            self.create_mock_toc_entry("Subsection 1.1.1", 3, "subsection-1-1-1")
-        ]
+        subsection = [self.create_mock_toc_entry("Subsection 1.1.1", 3, "subsection-1-1-1")]
 
-        section = [
-            self.create_mock_toc_entry("Section 1.1", 2, "section-1-1", subsection)
-        ]
+        section = [self.create_mock_toc_entry("Section 1.1", 2, "section-1-1", subsection)]
 
         entries = [self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", section)]
 
@@ -97,9 +91,7 @@ class TestTOCFormatter:
     def test_format_html_special_characters(self):
         """Test HTML formatting with special characters in titles"""
         entries = [
-            self.create_mock_toc_entry(
-                "Chapter & Section: 日本語", 1, "chapter-section-japanese"
-            )
+            self.create_mock_toc_entry("Chapter & Section: 日本語", 1, "chapter-section-japanese")
         ]
 
         result = self.formatter.format_html(entries)
@@ -149,9 +141,7 @@ class TestTOCFormatter:
         """Test JSON formatting with nested entries"""
         child_entries = [self.create_mock_toc_entry("Section 1.1", 2, "section-1-1")]
 
-        entries = [
-            self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)
-        ]
+        entries = [self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)]
 
         result = self.formatter.format_json(entries)
         json_data = json.loads(result)
@@ -195,9 +185,7 @@ class TestTOCFormatter:
             self.create_mock_toc_entry("Section 1.2", 2, "section-1-2"),
         ]
 
-        entries = [
-            self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)
-        ]
+        entries = [self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)]
 
         result = self.formatter.format_plain_text(entries)
 
@@ -213,9 +201,9 @@ class TestTOCFormatter:
 
         # Sections should be more indented than chapter
         for section_line in section_lines:
-            assert len(section_line) - len(section_line.lstrip()) > len(
-                chapter_line
-            ) - len(chapter_line.lstrip())
+            assert len(section_line) - len(section_line.lstrip()) > len(chapter_line) - len(
+                chapter_line.lstrip()
+            )
 
     def test_format_markdown_empty_entries(self):
         """Test Markdown formatting with empty entries list"""
@@ -236,9 +224,7 @@ class TestTOCFormatter:
         """Test Markdown formatting with nested structure"""
         child_entries = [self.create_mock_toc_entry("Section 1.1", 2, "section-1-1")]
 
-        entries = [
-            self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)
-        ]
+        entries = [self.create_mock_toc_entry("Chapter 1", 1, "chapter-1", child_entries)]
 
         result = self.formatter.format_markdown(entries)
 
@@ -257,11 +243,7 @@ class TestTOCFormatter:
 
     def test_html_escaping(self):
         """Test proper HTML escaping in HTML output"""
-        entries = [
-            self.create_mock_toc_entry(
-                'Title with <tags> & "quotes"', 1, "title-with-tags"
-            )
-        ]
+        entries = [self.create_mock_toc_entry('Title with <tags> & "quotes"', 1, "title-with-tags")]
 
         result = self.formatter.format_html(entries)
 

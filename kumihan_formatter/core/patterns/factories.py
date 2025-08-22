@@ -59,8 +59,13 @@ class ParserFactory(AbstractFactory[BaseParserProtocol]):
         try:
             # 既存のパーサーを動的にインポートして登録
             parser_mappings = {
-                "keyword": "kumihan_formatter.core.parsing.keyword.keyword_parser.KeywordParser",
-                "block": "kumihan_formatter.core.parsing.block.block_parser.BlockParser",
+                "keyword": (
+                    "kumihan_formatter.core.parsing.keyword."
+                    "keyword_parser.KeywordParser"
+                ),
+                "block": (
+                    "kumihan_formatter.core.parsing.block.block_parser.BlockParser"
+                ),
                 "list": "kumihan_formatter.core.list_parser.ListParser",
                 "markdown": "kumihan_formatter.core.markdown_parser.MarkdownParser",
                 "main": "kumihan_formatter.core.parsing.main_parser.MainParser",

@@ -987,7 +987,14 @@ class SecurityAuditor:
             print(f"\n🔍 Vulnerability Scan:")
             print(f"   Files Scanned: {vuln_scan.get('files_scanned', 0)}")
             print(
-                f"   Vulnerabilities: {total_vulns} (High: {vuln_scan.get('high_severity', 0)}, Medium: {vuln_scan.get('medium_severity', 0)}, Low: {vuln_scan.get('low_severity', 0)})"
+                f"   Vulnerabilities: {total_vulns} (
+                    High: {vuln_scan.get('high_severity',
+                    0)},
+                    Medium: {vuln_scan.get('medium_severity',
+                    0)},
+                    Low: {vuln_scan.get('low_severity',
+                    0)}
+{indent})"
             )
 
         # セキュリティレベル判定

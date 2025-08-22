@@ -350,9 +350,7 @@ class TestGlobalFunctions:
 
         # Then: 正しくパーサーが生成される
         assert result is mock_parser
-        mock_factory.create.assert_called_once_with(
-            "parser", "test_type", param="value"
-        )
+        mock_factory.create.assert_called_once_with("parser", "test_type", param="value")
 
     @patch("kumihan_formatter.core.patterns.factories._service_factory")
     def test_正常系_create_renderer_ショートカット(self, mock_factory):
@@ -400,9 +398,7 @@ class TestGlobalFunctions:
 
     @patch("kumihan_formatter.core.patterns.factories.ServiceFactory")
     @patch("kumihan_formatter.core.patterns.factories.logger")
-    def test_異常系_initialize_factories_失敗(
-        self, mock_logger, mock_service_factory_class
-    ):
+    def test_異常系_initialize_factories_失敗(self, mock_logger, mock_service_factory_class):
         """異常系: initialize_factories()失敗時のエラー処理"""
         # Given: 初期化失敗するServiceFactory
         mock_service_factory_class.side_effect = Exception("Init failed")

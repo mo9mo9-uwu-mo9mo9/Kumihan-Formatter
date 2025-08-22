@@ -130,9 +130,7 @@ class ParsingPerformanceTester:
         for line in lines:
             if "#" in line:
                 # 記法処理のシミュレート
-                processed_line = line.replace("#太字", "<strong>").replace(
-                    "#", "</strong>"
-                )
+                processed_line = line.replace("#太字", "<strong>").replace("#", "</strong>")
                 processed_line = processed_line.replace("##", "</div>")
                 processed_content.append(processed_line)
             else:
@@ -146,9 +144,7 @@ class ParsingPerformanceTester:
 
         return parse_result
 
-    def measure_parsing_performance(
-        self, content: str, iterations: int = 1
-    ) -> Dict[str, Any]:
+    def measure_parsing_performance(self, content: str, iterations: int = 1) -> Dict[str, Any]:
         """パーシング性能測定"""
         start_memory = 0
         if PSUTIL_AVAILABLE:
@@ -163,9 +159,7 @@ class ParsingPerformanceTester:
             parse_result = self.mock_parse_content(content)
             iteration_time = time.time() - iteration_start
 
-            results.append(
-                {"iteration": i, "time": iteration_time, "parse_result": parse_result}
-            )
+            results.append({"iteration": i, "time": iteration_time, "parse_result": parse_result})
 
         total_time = time.time() - total_start_time
 
@@ -326,9 +320,7 @@ class TestParsingPerformance:
         complex_time = complexity_results["complex"]["average_time"]
 
         # 複雑度が上がると処理時間も増加するはず
-        assert (
-            simple_time <= medium_time <= complex_time
-        ), "複雑度と処理時間の関係が正しくない"
+        assert simple_time <= medium_time <= complex_time, "複雑度と処理時間の関係が正しくない"
 
         # 最大複雑度でも妥当な時間内
         assert complex_time < 10.0, f"複雑データ処理時間超過: {complex_time:.3f}秒"
@@ -346,9 +338,7 @@ class TestParsingPerformance:
         scale_factors = [1, 2, 5, 10]
 
         # When: スケーラビリティテスト実行
-        scalability_result = self.tester.run_scalability_test(
-            base_line_count, scale_factors
-        )
+        scalability_result = self.tester.run_scalability_test(base_line_count, scale_factors)
 
         # Then: スケーラビリティ確認
         results = scalability_result["results"]
@@ -364,9 +354,7 @@ class TestParsingPerformance:
 
         # 時間増加率が妥当な範囲内（線形に近い）
         avg_ratio = sum(time_ratios) / len(time_ratios) if time_ratios else 1.0
-        assert (
-            0.5 <= avg_ratio <= 3.0
-        ), f"スケーラビリティが非線形: 平均比{avg_ratio:.2f}"
+        assert 0.5 <= avg_ratio <= 3.0, f"スケーラビリティが非線形: 平均比{avg_ratio:.2f}"
 
         # 最大スケールでも妥当な性能
         max_scale_result = results[-1]
@@ -374,10 +362,7 @@ class TestParsingPerformance:
             max_scale_result["average_time"] < 15.0
         ), f"最大スケール処理時間超過: {max_scale_result['average_time']:.3f}秒"
 
-        logger.info(
-            f"スケーラビリティ確認完了: {len(results)}ポイント, "
-            f"平均比{avg_ratio:.2f}"
-        )
+        logger.info(f"スケーラビリティ確認完了: {len(results)}ポイント, " f"平均比{avg_ratio:.2f}")
 
     @pytest.mark.performance
     def test_パーシング性能_メモリ効率性(self) -> None:
@@ -397,17 +382,14 @@ class TestParsingPerformance:
         min_memory = min(memory_usage_history)
         memory_variance = max_memory - min_memory
 
-        assert (
-            memory_variance < 50
-        ), f"メモリ使用量の変動が大きい: {memory_variance:.1f}MB"
+        assert memory_variance < 50, f"メモリ使用量の変動が大きい: {memory_variance:.1f}MB"
 
         # 絶対的なメモリ使用量確認
         avg_memory = sum(memory_usage_history) / len(memory_usage_history)
         assert avg_memory < 100, f"平均メモリ使用量が基準超過: {avg_memory:.1f}MB"
 
         logger.info(
-            f"メモリ効率性確認完了: 平均{avg_memory:.1f}MB, "
-            f"変動{memory_variance:.1f}MB"
+            f"メモリ効率性確認完了: 平均{avg_memory:.1f}MB, " f"変動{memory_variance:.1f}MB"
         )
 
     @pytest.mark.performance
@@ -437,26 +419,17 @@ class TestParsingPerformance:
         total_parallel_time = time.time() - start_time
 
         # Then: 並列処理性能確認
-        total_processing_time = sum(
-            r["result"]["average_time"] for r in parallel_results
-        )
+        total_processing_time = sum(r["result"]["average_time"] for r in parallel_results)
 
         # 並列処理効率性確認（シーケンシャル処理との比較）
-        efficiency = (
-            total_processing_time / total_parallel_time
-            if total_parallel_time > 0
-            else 0
-        )
+        efficiency = total_processing_time / total_parallel_time if total_parallel_time > 0 else 0
         assert efficiency >= 0.8, f"並列処理効率が低い: {efficiency:.2f}"
 
         # 全体の処理時間確認
-        assert (
-            total_parallel_time < 10.0
-        ), f"並列処理時間超過: {total_parallel_time:.3f}秒"
+        assert total_parallel_time < 10.0, f"並列処理時間超過: {total_parallel_time:.3f}秒"
 
         logger.info(
-            f"並列処理性能確認完了: 効率{efficiency:.2f}, "
-            f"総時間{total_parallel_time:.3f}秒"
+            f"並列処理性能確認完了: 効率{efficiency:.2f}, " f"総時間{total_parallel_time:.3f}秒"
         )
 
     @pytest.mark.performance
@@ -477,9 +450,7 @@ class TestParsingPerformance:
         overhead_ratio = error_result["average_time"] / normal_result["average_time"]
 
         # エラー処理オーバーヘッドが妥当な範囲内
-        assert (
-            overhead_ratio < 2.0
-        ), f"エラー処理オーバーヘッドが大きすぎる: {overhead_ratio:.2f}倍"
+        assert overhead_ratio < 2.0, f"エラー処理オーバーヘッドが大きすぎる: {overhead_ratio:.2f}倍"
 
         # エラーがあっても妥当な時間内
         assert (

@@ -120,7 +120,11 @@ class SerenaMonitoringSystem:
         else:
             return 'legacy'
 
-    def check_tool_usage(self, tool_name: str, context: str = "") -> Tuple[bool, Optional[ViolationAlert]]:
+    def check_tool_usage(
+        self,
+        tool_name: str,
+        context: str = ""
+{indent}) -> Tuple[bool, Optional[ViolationAlert]]:
         """ツール使用チェック"""
         is_dev_task = self.is_development_task(context)
         tool_type = self.classify_tool(tool_name)

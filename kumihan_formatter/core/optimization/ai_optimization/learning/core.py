@@ -281,8 +281,9 @@ class DataQualityManager:
                             }
                         )
                     except Exception:
-                        distribution_analysis["normality"] = "unknown"  # type: ignore[assignment]
-
+                        distribution_analysis["normality"] = (
+                            "unknown"  # type: ignore[assignment]
+                        )
             # 特徴量分布サマリー
             if len(features) > 0:
                 feature_ranges = np.max(features, axis=0) - np.min(features, axis=0)

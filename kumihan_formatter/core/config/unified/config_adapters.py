@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union, cast
 
 from ...utilities.logger import get_logger
-from .config_models import (  # KumihanConfig, LoggingConfig - removed unused imports (F401)
+from .config_models import (
     ErrorConfig,
     ParallelConfig,
     RenderingConfig,
@@ -419,7 +419,10 @@ class BaseConfigAdapter:
         Returns:
             str: コンテナCSS文字列
         """
-        return f"background-color: {self.container_background}; max-width: {self.max_width};"
+        return (
+            f"background-color: {self.container_background}; "
+            f"max-width: {self.max_width};"
+        )
 
     def update_theme(self, theme_name: str, theme_settings: Dict[str, str]) -> None:
         """テーマ更新 (旧API互換)
@@ -488,7 +491,8 @@ def migrate_config_usage(old_config_type: str) -> str:
             "config = ParallelProcessingConfig()\n"
             "threshold = config.threshold_lines\n\n"
             "# 新コード:\n"
-            "from kumihan_formatter.core.config.unified import get_unified_config_manager\n"
+            "from kumihan_formatter.core.config.unified import "
+            "get_unified_config_manager\n"
             "manager = get_unified_config_manager()\n"
             "threshold = manager.get_parallel_config().parallel_threshold_lines"
         ),
@@ -497,7 +501,8 @@ def migrate_config_usage(old_config_type: str) -> str:
             "manager = ErrorConfigManager('config.yaml')\n"
             "graceful = manager.graceful_errors\n\n"
             "# 新コード:\n"
-            "from kumihan_formatter.core.config.unified import get_unified_config_manager\n"
+            "from kumihan_formatter.core.config.unified import "
+            "get_unified_config_manager\n"
             "manager = get_unified_config_manager()\n"
             "graceful = manager.get_error_config().graceful_errors"
         ),
@@ -506,7 +511,8 @@ def migrate_config_usage(old_config_type: str) -> str:
             "config = BaseConfig()\n"
             "width = config.max_width\n\n"
             "# 新コード:\n"
-            "from kumihan_formatter.core.config.unified import get_unified_config_manager\n"
+            "from kumihan_formatter.core.config.unified import "
+            "get_unified_config_manager\n"
             "manager = get_unified_config_manager()\n"
             "width = manager.get_rendering_config().max_width"
         ),

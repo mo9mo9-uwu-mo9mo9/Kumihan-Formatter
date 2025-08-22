@@ -249,7 +249,8 @@ class LearningBasedOptimizer:
             self._update_learning_metrics(cycle_result)
 
             self.logger.info(
-                f"Learning cycle completed: {len(applied_optimizations)} optimizations, "
+                f"Learning cycle completed: {len(applied_optimizations)} "
+                f"optimizations, "
                 f"{cycle_result['expected_improvement']:.1%} expected improvement"
             )
 

@@ -287,7 +287,9 @@ class BusinessMetrics:
                             "baseline_value": report.phase_b_effect.baseline_value,
                             "current_value": report.phase_b_effect.current_value,
                             "improvement": report.phase_b_effect.improvement,
-                            "improvement_percentage": report.phase_b_effect.improvement_percentage,
+                            "improvement_percentage": (
+                                report.phase_b_effect.improvement_percentage
+                            ),
                             "confidence_level": report.phase_b_effect.confidence_level,
                             "statistical_significance": (
                                 report.phase_b_effect.statistical_significance
@@ -298,19 +300,27 @@ class BusinessMetrics:
                             "baseline_value": report.ai_effect.baseline_value,
                             "current_value": report.ai_effect.current_value,
                             "improvement": report.ai_effect.improvement,
-                            "improvement_percentage": report.ai_effect.improvement_percentage,
+                            "improvement_percentage": (
+                                report.ai_effect.improvement_percentage
+                            ),
                             "confidence_level": report.ai_effect.confidence_level,
-                            "statistical_significance": report.ai_effect.statistical_significance,
+                            "statistical_significance": (
+                                report.ai_effect.statistical_significance
+                            ),
                         },
                         "integrated_effect": {
-                            "measurement_type": report.integrated_effect.measurement_type,
+                            "measurement_type": (
+                                report.integrated_effect.measurement_type
+                            ),
                             "baseline_value": report.integrated_effect.baseline_value,
                             "current_value": (report.integrated_effect.current_value),
                             "improvement": report.integrated_effect.improvement,
                             "improvement_percentage": (
                                 report.integrated_effect.improvement_percentage
                             ),
-                            "confidence_level": report.integrated_effect.confidence_level,
+                            "confidence_level": (
+                                report.integrated_effect.confidence_level
+                            ),
                             "statistical_significance": (
                                 report.integrated_effect.statistical_significance
                             ),

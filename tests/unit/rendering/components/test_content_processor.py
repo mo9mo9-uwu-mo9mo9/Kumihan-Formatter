@@ -103,16 +103,10 @@ class TestContentProcessorDelegate:
 
         # エラーサマリーとマーカー埋め込みメソッドをモック
         with (
-            patch.object(
-                self.content_processor, "_render_error_summary_optimized"
-            ) as mock_summary,
-            patch.object(
-                self.content_processor, "_embed_error_markers_optimized"
-            ) as mock_markers,
+            patch.object(self.content_processor, "_render_error_summary_optimized") as mock_summary,
+            patch.object(self.content_processor, "_embed_error_markers_optimized") as mock_markers,
         ):
-            mock_summary.return_value = (
-                "<div class='error-summary'>エラーサマリー</div>"
-            )
+            mock_summary.return_value = "<div class='error-summary'>エラーサマリー</div>"
             mock_markers.return_value = (
                 "<div class='error-summary'>エラーサマリー</div>\n<p>テスト段落</p>"
             )
@@ -136,9 +130,7 @@ class TestContentProcessorDelegate:
         self.main_renderer_mock.graceful_errors = [error1, error2]
 
         # _render_single_error_optimizedメソッドをモック
-        with patch.object(
-            self.content_processor, "_render_single_error_optimized"
-        ) as mock_single:
+        with patch.object(self.content_processor, "_render_single_error_optimized") as mock_single:
             mock_single.side_effect = [
                 '<div class="error-item">エラー1</div>',
                 '<div class="error-item">エラー2</div>',
@@ -201,9 +193,7 @@ class TestContentProcessorDelegate:
         self.main_renderer_mock.graceful_errors = [error_mock]
 
         # エラーマーカー作成メソッドをモック
-        with patch.object(
-            self.content_processor, "_create_error_marker_optimized"
-        ) as mock_marker:
+        with patch.object(self.content_processor, "_create_error_marker_optimized") as mock_marker:
             mock_marker.return_value = '<div class="error-marker">エラーマーカー</div>'
 
             # When: エラーマーカー埋め込み実行
@@ -264,9 +254,7 @@ class TestContentProcessorDelegate:
         error_mock.line_number = 5
         error_mock.html_class = "warning-class"
 
-        with patch(
-            "kumihan_formatter.core.rendering.html_escaping.escape_html"
-        ) as mock_escape:
+        with patch("kumihan_formatter.core.rendering.html_escaping.escape_html") as mock_escape:
             mock_escape.return_value = "警告メッセージ"
 
             # When: 警告エラーマーカー作成実行
@@ -356,12 +344,8 @@ class TestContentProcessorDelegate:
         ]
 
         # When: 統合エラー処理実行
-        with patch(
-            "kumihan_formatter.core.rendering.html_escaping.escape_html"
-        ) as mock_escape:
-            mock_escape.side_effect = lambda x: x.replace("<", "&lt;").replace(
-                ">", "&gt;"
-            )
+        with patch("kumihan_formatter.core.rendering.html_escaping.escape_html") as mock_escape:
+            mock_escape.side_effect = lambda x: x.replace("<", "&lt;").replace(">", "&gt;")
             result = self.content_processor.render_nodes_with_errors_optimized(nodes)
 
         # Then: エラーサマリーとマーカーが適切に埋め込まれる

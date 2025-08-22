@@ -232,7 +232,8 @@ class HTMLFormatter:
         """
         # 基本的な検証のみ実装
         if re.match(
-            r"^rgba?\s*\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(\s*,\s*[01]?\.?\d*)?\s*\)$",
+            r"^rgba?\s*\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}"
+            r"(\s*,\s*[01]?\.?\d*)?\s*\)$",
             rgb_color,
         ):
             return rgb_color
@@ -450,7 +451,8 @@ class HTMLFormatter:
                     validation_result["valid"] = False
                 elif tag_stack[-1] != tag_name:
                     validation_result["errors"].append(
-                        f"Mismatched tag: expected </{tag_stack[-1]}>, found </{tag_name}>"
+                        f"Mismatched tag: expected </{tag_stack[-1]}>, "
+                        f"found </{tag_name}>"
                     )
                     validation_result["valid"] = False
                 else:
@@ -635,7 +637,10 @@ class FootnoteManager:
             str: プレースホルダーHTML
         """
         footnote_number = footnote_id.split("-")[-1]
-        return f'<sup><a href="#{footnote_id}" id="ref-{footnote_id}">{footnote_number}</a></sup>'
+        return (
+            f'<sup><a href="#{footnote_id}" id="ref-{footnote_id}">'
+            f"{footnote_number}</a></sup>"
+        )
 
     def generate_footnote_list(self) -> str:
         """

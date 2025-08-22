@@ -123,7 +123,8 @@ class AlphaBetaCoordinator:
             self._determine_integration_mode()
 
             self.logger.info(
-                f"Systems initialized with integration mode: {self.coordination_mode.value}"
+                f"Systems initialized with integration mode: "
+                f"{self.coordination_mode.value}"
             )
 
         except Exception as e:

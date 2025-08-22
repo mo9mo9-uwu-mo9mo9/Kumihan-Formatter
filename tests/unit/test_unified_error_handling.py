@@ -73,9 +73,7 @@ class TestUnifiedErrorHandler:
 
         assert result.kumihan_error.category == ErrorCategory.SYNTAX
         assert result.kumihan_error.severity == ErrorSeverity.WARNING
-        assert any(
-            "構文" in suggestion for suggestion in result.kumihan_error.suggestions
-        )
+        assert any("構文" in suggestion for suggestion in result.kumihan_error.suggestions)
 
     def test_error_statistics(self):
         """エラー統計テスト"""
@@ -141,9 +139,7 @@ class TestUnifiedLogFormatter:
 
     def test_kumihan_error_formatting(self):
         """KumihanError専用フォーマッティングテスト"""
-        context = ErrorContext(
-            file_path=Path("test.txt"), line_number=42, operation="test_op"
-        )
+        context = ErrorContext(file_path=Path("test.txt"), line_number=42, operation="test_op")
 
         kumihan_error = KumihanError(
             message="Test error message",
@@ -240,9 +236,7 @@ class TestGracefulErrorHandler:
 
     def test_html_report_generation(self):
         """HTMLレポート生成テスト"""
-        error = KumihanError(
-            "Test error for HTML", ErrorSeverity.WARNING, ErrorCategory.SYNTAX
-        )
+        error = KumihanError("Test error for HTML", ErrorSeverity.WARNING, ErrorCategory.SYNTAX)
 
         self.handler.handle_gracefully(error)
         html_report = self.handler.generate_error_report_html()
@@ -260,9 +254,7 @@ class TestConvenienceFunctions:
         error = ValueError("Test unified handling")
         context = {"test_key": "test_value"}
 
-        result = handle_error_unified(
-            error, context, "test_operation", "test_component"
-        )
+        result = handle_error_unified(error, context, "test_operation", "test_component")
 
         assert isinstance(result, ErrorHandleResult)
         assert result.original_error == error
@@ -270,9 +262,7 @@ class TestConvenienceFunctions:
 
     def test_handle_gracefully_function(self):
         """Graceful handling便利関数テスト"""
-        error = KumihanError(
-            "Test graceful function", ErrorSeverity.INFO, ErrorCategory.UNKNOWN
-        )
+        error = KumihanError("Test graceful function", ErrorSeverity.INFO, ErrorCategory.UNKNOWN)
 
         result = handle_gracefully(error)
 
@@ -291,15 +281,11 @@ class TestIntegration:
         error = FileNotFoundError("Integration test file not found")
         context = {"file_path": "integration_test.txt", "operation": "integration_test"}
 
-        unified_result = unified_handler.handle_error(
-            error, context, "integration_test"
-        )
+        unified_result = unified_handler.handle_error(error, context, "integration_test")
 
         # 2. Graceful handlerでgraceful処理
         graceful_handler = GracefulErrorHandler()
-        graceful_result = graceful_handler.handle_gracefully(
-            unified_result.kumihan_error
-        )
+        graceful_result = graceful_handler.handle_gracefully(unified_result.kumihan_error)
 
         # 3. 結果検証
         assert unified_result.logged is True

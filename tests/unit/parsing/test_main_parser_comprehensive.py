@@ -168,9 +168,7 @@ class TestMainParserKumihanNotation:
         assert len(result) > 0
 
         # ブロック記法の解析結果確認
-        found_content = any(
-            "太字" in str(node) or "重要な情報" in str(node) for node in result
-        )
+        found_content = any("太字" in str(node) or "重要な情報" in str(node) for node in result)
         assert found_content
 
     def test_parse_inline_notation(self):
@@ -1059,9 +1057,7 @@ class TestMainParserConcurrencyAdvanced:
                 print(f"Thread {thread_id} error: {error}")
         # 大部分のスレッドが成功することを確認
         success_rate = (
-            len(results) / (len(results) + len(errors))
-            if (len(results) + len(errors)) > 0
-            else 0
+            len(results) / (len(results) + len(errors)) if (len(results) + len(errors)) > 0 else 0
         )
         assert success_rate > 0.5, "成功率が50%を超える必要がある"
 
@@ -1271,9 +1267,7 @@ class TestMainParserProtocolsComplete:
         ]
 
         for method_name in protocol_methods:
-            assert hasattr(
-                self.parser, method_name
-            ), f"メソッド {method_name} が存在しない"
+            assert hasattr(self.parser, method_name), f"メソッド {method_name} が存在しない"
             method = getattr(self.parser, method_name)
             assert callable(method), f"メソッド {method_name} が呼び出し可能でない"
 
@@ -1410,9 +1404,7 @@ class TestMainParserAdditionalCoverage:
         """Parser Factory ImportError パステスト"""
         # パーサーファクトリーのimport失敗をシミュレート
         mock_container = Mock()
-        with patch(
-            "kumihan_formatter.core.patterns.factories.get_parser_factory"
-        ) as mock_factory:
+        with patch("kumihan_formatter.core.patterns.factories.get_parser_factory") as mock_factory:
             mock_factory.side_effect = ImportError("Factory module not found")
 
             parser = MainParser(container=mock_container)
@@ -1455,9 +1447,7 @@ class TestMainParserAdditionalCoverage:
         results = list(self.parser.parse_streaming(error_generator()))
         # エラーが発生してもerror_nodeが生成される
         assert len(results) >= 1
-        error_found = any(
-            hasattr(node, "type") and node.type == "error" for node in results
-        )
+        error_found = any(hasattr(node, "type") and node.type == "error" for node in results)
         assert error_found
 
     def test_empty_parser_fallback_scenarios(self):

@@ -130,9 +130,7 @@ class TestStressScenarios:
         result = self.stress_test_parser(content)
 
         # エッジケースでもクラッシュしないこと
-        assert (
-            result["success"] or len(result["errors"]) > 0
-        ), "エッジケース処理が不明な状態"
+        assert result["success"] or len(result["errors"]) > 0, "エッジケース処理が不明な状態"
         assert result["elapsed"] < 1.0, f"処理時間超過: {result['elapsed']:.2f}秒"
 
         if result["errors"]:
@@ -168,9 +166,7 @@ class TestStressScenarios:
         avg_time = sum(r["elapsed"] for r in results) / total
 
         logger.info(
-            f"並行ストレステスト: "
-            f"成功 {success_count}/{total}, "
-            f"平均時間 {avg_time:.3f}秒"
+            f"並行ストレステスト: " f"成功 {success_count}/{total}, " f"平均時間 {avg_time:.3f}秒"
         )
 
         # 90%以上成功すること

@@ -423,9 +423,7 @@ class TestDecoratorChain:
         chain = DecoratorChain(self.base_parser)
 
         # When: デコレーターを追加
-        result_chain = chain.add_decorator(
-            lambda obj: MockParserDecorator(obj, "first")
-        )
+        result_chain = chain.add_decorator(lambda obj: MockParserDecorator(obj, "first"))
 
         # Then: チェーンが返され、デコレーターが追加される
         assert result_chain is chain

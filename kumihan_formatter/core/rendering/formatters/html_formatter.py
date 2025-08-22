@@ -137,7 +137,10 @@ class HtmlFormatter(HtmlRendererProtocol):
             indent_class = f"toc-level-{level}"
 
             if heading_id:
-                toc_item = f'<li class="{indent_class}"><a href="#{heading_id}">{title}</a></li>'
+                toc_item = (
+                    f'<li class="{indent_class}">'
+                    f'<a href="#{heading_id}">{title}</a></li>'
+                )
             else:
                 toc_item = f'<li class="{indent_class}">{title}</li>'
 
@@ -156,7 +159,8 @@ class HtmlFormatter(HtmlRendererProtocol):
         try:
             self.footnotes_data = footnotes_data
             self.logger.debug(
-                f"Set footnote data: {len(footnotes_data.get('footnotes', []))} footnotes"
+                f"Set footnote data: "
+                f"{len(footnotes_data.get('footnotes', []))} footnotes"
             )
         except Exception as e:
             self.logger.error(f"Failed to set footnote data: {e}")
@@ -400,7 +404,7 @@ class HtmlFormatter(HtmlRendererProtocol):
     <div class="error-indicator">
         <span class="error-icon">{error_icon}</span>
         <span class="error-message">{safe_message}</span>
-        {f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''}
+        {f'<div class="suggestion">💡{safe_suggestion}</div>' if safe_suggestion else ''}
     </div>
 </div>"""
                 modified_lines.insert(error.line_number - 1, error_marker)

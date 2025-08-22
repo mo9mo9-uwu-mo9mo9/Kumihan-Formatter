@@ -295,7 +295,8 @@ class ParallelChunkProcessor:
             pass  # psutil未利用環境では無視
 
         self.logger.info(
-            f"Calculated optimal workers: {optimal} (chunks: {chunk_count}, CPU: {cpu_count})"
+            f"Calculated optimal workers: {optimal} "
+            f"(chunks: {chunk_count}, CPU: {cpu_count})"
         )
         return optimal
 
@@ -368,7 +369,8 @@ class ParallelChunkProcessor:
         try:
             with self._lock:
                 self.logger.debug(
-                    f"Processing chunk {chunk.chunk_id}: lines {chunk.start_line}-{chunk.end_line}"
+                    f"Processing chunk {chunk.chunk_id}: "
+                    f"lines {chunk.start_line}-{chunk.end_line}"
                 )
 
             results = list(processing_func(chunk))

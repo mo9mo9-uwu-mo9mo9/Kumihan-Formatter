@@ -50,7 +50,9 @@ class ConfigManager:
             "ネタバレ": {"tag": "details", "summary": "ネタバレを表示"},
         },
         "theme": "default",
-        "font_family": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+        "font_family": (
+            "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif"
+        ),
         "css": {
             "max_width": "800px",
             "background_color": "#f9f9f9",

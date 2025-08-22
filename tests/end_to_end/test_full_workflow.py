@@ -173,9 +173,7 @@ class TestFullWorkflow:
         # Then: 結果検証
         assert result["success"], f"処理が失敗: {result.get('error', '不明')}"
         assert processing_time < 5.0, f"処理時間が長すぎます: {processing_time}秒"
-        assert (
-            result["output_quality"] > 0.9
-        ), f"出力品質が低い: {result['output_quality']}"
+        assert result["output_quality"] > 0.9, f"出力品質が低い: {result['output_quality']}"
 
         # 出力ファイルの存在確認
         assert result["output_file"].exists(), "出力ファイルが作成されていません"

@@ -1,6 +1,7 @@
 """Validators package for Kumihan-Formatter
 
-This package contains validation components split from the monolithic validation.py file.
+This package contains validation components split from the monolithic
+validation.py file.
 """
 
 from .document_validator import DocumentValidator

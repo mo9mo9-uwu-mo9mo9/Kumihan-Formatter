@@ -192,7 +192,8 @@ class ParallelProcessorHandler:
 
                     if memory_status["critical"]:
                         self.logger.warning(
-                            f"Critical memory usage: {memory_status['current_mb']:.1f}MB, "
+                            f"Critical memory usage: "
+                            f"{memory_status['current_mb']:.1f}MB, "
                             f"triggering aggressive cleanup"
                         )
 
@@ -393,16 +394,22 @@ class ParallelProcessorHandler:
             "system_info": {
                 "cpu_count": os.cpu_count() or 1,
                 "parallel_threshold_lines": self.parser.parallel_threshold_lines,
-                "parallel_threshold_size": self.parser.parallel_threshold_size,
-                "memory_limit_mb": self.parser.parallel_config.memory_critical_threshold_mb,
+                "parallel_threshold_size": (self.parser.parallel_threshold_size),
+                "memory_limit_mb": (
+                    self.parser.parallel_config.memory_critical_threshold_mb
+                ),
             },
             # 設定情報
             "configuration": {
-                "chunk_min_size": self.parser.parallel_config.min_chunk_size,
-                "chunk_max_size": self.parser.parallel_config.max_chunk_size,
-                "memory_monitoring": self.parser.parallel_config.enable_memory_monitoring,
+                "chunk_min_size": (self.parser.parallel_config.min_chunk_size),
+                "chunk_max_size": (self.parser.parallel_config.max_chunk_size),
+                "memory_monitoring": (
+                    self.parser.parallel_config.enable_memory_monitoring
+                ),
                 "gc_optimization": self.parser.parallel_config.enable_gc_optimization,
-                "timeout_seconds": self.parser.parallel_config.processing_timeout_seconds,
+                "timeout_seconds": (
+                    self.parser.parallel_config.processing_timeout_seconds
+                ),
             },
             # 実行時統計
             "runtime_stats": {
@@ -498,10 +505,12 @@ class ParallelProcessorHandler:
             f"処理時間: {processing_time:.2f}秒\n"
             f"処理行数: {total_lines:,}行\n"
             f"生成ノード数: {total_nodes:,}個\n"
-            f"処理速度: {lines_per_second:.0f}行/秒, {nodes_per_second:.0f}ノード/秒\n"
+            f"処理速度: {lines_per_second:.0f}行/秒, "
+            f"{nodes_per_second:.0f}ノード/秒\n"
             f"推定改善率: {improvement_percent:+.1f}%\n"
             f"メモリ使用量: {metrics['memory_stats'].get('current_mb', 'N/A')}MB\n"
-            f"並列処理: {'有効' if total_lines >= self.parser.parallel_threshold_lines else '無効'}\n"
+            f"並列処理: "
+            f"{'有効' if total_lines >= self.parser.parallel_threshold_lines else '無効'}\n"
             f"CPU数: {metrics['system_info']['cpu_count']}コア\n"
             f"エラー: {metrics['runtime_stats']['errors_count']}件\n"
             f"==============================="

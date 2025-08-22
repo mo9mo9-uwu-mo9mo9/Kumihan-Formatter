@@ -383,7 +383,9 @@ class TokenUsageAnalyzer:
                 "pattern_insights": {
                     "operation_efficiency": operation_efficiency,
                     "peak_usage_hours": self._get_peak_usage_hours(),
-                    "efficiency_by_complexity": self._get_complexity_efficiency_analysis(),
+                    "efficiency_by_complexity": (
+                        self._get_complexity_efficiency_analysis()
+                    ),
                 },
                 "optimization_status": {
                     "active_suggestions_count": len(self.optimization_suggestions),

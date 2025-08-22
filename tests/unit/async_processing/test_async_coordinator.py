@@ -67,9 +67,7 @@ class TestAsyncTask:
         def sample_func(a, b, c=None):
             return a + b
 
-        task = AsyncTask(
-            task_id="test_task_2", func=sample_func, args=(1, 2), kwargs={"c": 3}
-        )
+        task = AsyncTask(task_id="test_task_2", func=sample_func, args=(1, 2), kwargs={"c": 3})
 
         assert task.task_id == "test_task_2"
         assert task.args == (1, 2)
@@ -486,9 +484,7 @@ class TestAsyncCoordinatorEdgeCases:
                 return x**2 + x
 
             # 100個のタスクを作成
-            tasks = [
-                AsyncTask(f"perf_task_{i}", simple_calc, (i,), {}) for i in range(100)
-            ]
+            tasks = [AsyncTask(f"perf_task_{i}", simple_calc, (i,), {}) for i in range(100)]
 
             start_time = time.time()
             results = await coordinator.run_parallel(tasks)
@@ -501,9 +497,7 @@ class TestAsyncCoordinatorEdgeCases:
             assert elapsed_time < 1.0  # 1秒以内で完了
 
             # 結果の妥当性確認（いくつかサンプル）
-            assert all(
-                isinstance(r, int) for r in results if not isinstance(r, Exception)
-            )
+            assert all(isinstance(r, int) for r in results if not isinstance(r, Exception))
 
         finally:
             coordinator.cleanup()

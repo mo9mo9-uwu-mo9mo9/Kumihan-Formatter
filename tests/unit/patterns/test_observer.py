@@ -93,9 +93,7 @@ class TestEvent:
         data = {"content_length": 100, "format": "kumihan"}
 
         # When: データ付きイベントを作成
-        event = Event(
-            event_type=EventType.PARSING_COMPLETED, source="main_parser", data=data
-        )
+        event = Event(event_type=EventType.PARSING_COMPLETED, source="main_parser", data=data)
 
         # Then: データが正しく設定される
         assert event.data == data
@@ -217,9 +215,7 @@ class TestEventBus:
 
         # Then: 非同期オブザーバーが正しく登録される
         assert EventType.PARSING_STARTED in self.event_bus._async_observers
-        assert (
-            async_observer in self.event_bus._async_observers[EventType.PARSING_STARTED]
-        )
+        assert async_observer in self.event_bus._async_observers[EventType.PARSING_STARTED]
 
     def test_正常系_グローバルオブザーバー登録(self):
         """正常系: グローバルオブザーバー登録の確認"""
@@ -312,9 +308,7 @@ class TestEventBus:
 
         # Then: オブザーバーが正しく解除される
         assert result is True
-        assert observer not in self.event_bus._observers.get(
-            EventType.PARSING_STARTED, []
-        )
+        assert observer not in self.event_bus._observers.get(EventType.PARSING_STARTED, [])
 
         # イベント発行してもオブザーバーが呼ばれない
         event = Event(EventType.PARSING_STARTED, "test_source")
@@ -485,9 +479,7 @@ class TestThreadSafety:
         # When: 複数スレッドで同時にイベント発行
         def publish_events(thread_id):
             for i in range(10):
-                event = Event(
-                    EventType.PARSING_STARTED, f"thread_{thread_id}_event_{i}"
-                )
+                event = Event(EventType.PARSING_STARTED, f"thread_{thread_id}_event_{i}")
                 self.event_bus.publish(event)
 
         threads = []
@@ -520,9 +512,7 @@ class TestThreadSafety:
 
         threads = []
         for observer in observers:
-            thread = threading.Thread(
-                target=register_unregister_observer, args=(observer,)
-            )
+            thread = threading.Thread(target=register_unregister_observer, args=(observer,))
             threads.append(thread)
             thread.start()
 
@@ -531,9 +521,7 @@ class TestThreadSafety:
             thread.join()
 
         # Then: 最終的にオブザーバーが全て解除される
-        registered_observers = self.event_bus._observers.get(
-            EventType.PARSING_STARTED, []
-        )
+        registered_observers = self.event_bus._observers.get(EventType.PARSING_STARTED, [])
         assert len(registered_observers) == 0
 
 
@@ -546,9 +534,7 @@ class TestIntegration:
         event_bus = EventBus()
 
         # 同期オブザーバー
-        parse_observer = MockObserver(
-            [EventType.PARSING_STARTED, EventType.PARSING_COMPLETED]
-        )
+        parse_observer = MockObserver([EventType.PARSING_STARTED, EventType.PARSING_COMPLETED])
         render_observer = MockObserver([EventType.RENDERING_STARTED])
 
         # 非同期オブザーバー
@@ -578,9 +564,7 @@ class TestIntegration:
         asyncio.run(publish_all_events())
 
         # Then: 各オブザーバーが適切なイベントを受信する
-        assert (
-            len(parse_observer.received_events) == 2
-        )  # PARSING_STARTED, PARSING_COMPLETED
+        assert len(parse_observer.received_events) == 2  # PARSING_STARTED, PARSING_COMPLETED
         assert len(render_observer.received_events) == 1  # RENDERING_STARTED
         assert len(async_observer.received_events) == 1  # PARSING_STARTED (async)
         assert len(global_observer.received_events) == 3  # 全イベント

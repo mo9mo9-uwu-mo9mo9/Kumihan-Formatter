@@ -53,9 +53,7 @@ class TestKumihanSyntaxValidator:
                     for e in errors
                     if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
                 ]
-                assert (
-                    len(severe_errors) == 0
-                ), f"Unexpected errors for valid text: {text}"
+                assert len(severe_errors) == 0, f"Unexpected errors for valid text: {text}"
 
     def test_file_validation(self, sample_text_files):
         """Test validation of text files."""
@@ -131,9 +129,7 @@ class TestSyntaxErrors:
         expected_types = ["SYNTAX", "STRUCTURE", "VALIDATION", "PARSING"]
 
         # At least some error types should be defined
-        found_types = [
-            attr for attr in error_attrs if any(t in attr for t in expected_types)
-        ]
+        found_types = [attr for attr in error_attrs if any(t in attr for t in expected_types)]
         assert len(found_types) > 0
 
     def test_syntax_error_creation(self):
@@ -207,9 +203,7 @@ class TestSyntaxRules:
             assert isinstance(categories, (list, dict))
             # Should have different rule categories
             expected_categories = ["structure", "formatting", "nesting", "keywords"]
-            found_categories = [
-                cat for cat in expected_categories if cat in str(categories)
-            ]
+            found_categories = [cat for cat in expected_categories if cat in str(categories)]
         else:
             pytest.skip("Rule categories not implemented")
 
@@ -276,9 +270,7 @@ class TestSyntaxValidatorUtils:
         error_position = text.find("エラー")
 
         try:
-            context = self.utils.extract_error_context(
-                text, error_position, context_lines=1
-            )
+            context = self.utils.extract_error_context(text, error_position, context_lines=1)
 
             assert isinstance(context, str)
             assert "エラーのある行" in context

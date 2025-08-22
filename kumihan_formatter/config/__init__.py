@@ -5,7 +5,10 @@
 
 ⚠️  DEPRECATION NOTICE - Issue #880 Phase 3:
 この設定システムは非推奨です。新しい統一設定システムをご利用ください:
-from kumihan_formatter.core.config.unified import UnifiedConfigManager, get_unified_config_manager
+from kumihan_formatter.core.config.unified import (
+    UnifiedConfigManager,
+    get_unified_config_manager,
+)
 """
 
 import warnings

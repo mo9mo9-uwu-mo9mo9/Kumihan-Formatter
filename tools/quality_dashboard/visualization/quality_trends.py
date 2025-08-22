@@ -33,9 +33,7 @@ class QualityTrendAnalyzer:
         self.project_root = project_root or Path.cwd()
         os.makedirs("tmp", exist_ok=True)
 
-    def analyze_quality_trends(
-        self, history_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def analyze_quality_trends(self, history_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """品質トレンド総合分析"""
         if not history_data:
             return {"status": "no_data", "message": "履歴データが不足しています"}
@@ -90,16 +88,10 @@ class QualityTrendAnalyzer:
                     "date": date,
                     "quality_score": entry.get("quality_score", {}).get("score", 0),
                     "coverage": entry.get("coverage", {}).get("total_coverage", 0),
-                    "startup_time": entry.get("performance", {}).get(
-                        "startup_time_ms", 0
-                    ),
-                    "memory_usage": entry.get("performance", {}).get(
-                        "memory_usage_mb", 0
-                    ),
+                    "startup_time": entry.get("performance", {}).get("startup_time_ms", 0),
+                    "memory_usage": entry.get("performance", {}).get("memory_usage_mb", 0),
                     "lint_issues": entry.get("lint", {}).get("total_issues", 0),
-                    "complexity_count": entry.get("complexity", {}).get(
-                        "high_complexity_count", 0
-                    ),
+                    "complexity_count": entry.get("complexity", {}).get("high_complexity_count", 0),
                 }
 
                 records.append(record)
@@ -128,9 +120,7 @@ class QualityTrendAnalyzer:
 
         # トレンド計算
         days = (df["date"] - df["date"].min()).dt.days
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            days, df["quality_score"]
-        )
+        slope, intercept, r_value, p_value, std_err = stats.linregress(days, df["quality_score"])
 
         # トレンド方向判定
         if slope > 0.5:
@@ -166,9 +156,7 @@ class QualityTrendAnalyzer:
 
         # トレンド計算
         days = (df["date"] - df["date"].min()).dt.days
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            days, df["coverage"]
-        )
+        slope, intercept, r_value, p_value, std_err = stats.linregress(days, df["coverage"])
 
         # 目標達成状況
         target_achievement_rate = len(df[df["coverage"] >= 80]) / len(df) * 100
@@ -180,9 +168,7 @@ class QualityTrendAnalyzer:
             "mean_coverage": mean_coverage,
             "trend_slope": slope,
             "trend_direction": (
-                "improving"
-                if slope > 0.1
-                else "declining" if slope < -0.1 else "stable"
+                "improving" if slope > 0.1 else "declining" if slope < -0.1 else "stable"
             ),
             "target_achievement_rate": target_achievement_rate,
             "minimum_compliance_rate": minimum_compliance_rate,
@@ -203,13 +189,9 @@ class QualityTrendAnalyzer:
                 "mean_startup_time": df["startup_time"].mean(),
                 "trend_slope": slope,
                 "trend_direction": (
-                    "improving"
-                    if slope < -5
-                    else "declining" if slope > 5 else "stable"
+                    "improving" if slope < -5 else "declining" if slope > 5 else "stable"
                 ),
-                "target_compliance_rate": len(df[df["startup_time"] <= 600])
-                / len(df)
-                * 100,
+                "target_compliance_rate": len(df[df["startup_time"] <= 600]) / len(df) * 100,
             }
 
         if "memory_usage" in df.columns and not df["memory_usage"].empty:
@@ -221,13 +203,9 @@ class QualityTrendAnalyzer:
                 "mean_memory_usage": df["memory_usage"].mean(),
                 "trend_slope": slope,
                 "trend_direction": (
-                    "improving"
-                    if slope < -0.5
-                    else "declining" if slope > 0.5 else "stable"
+                    "improving" if slope < -0.5 else "declining" if slope > 0.5 else "stable"
                 ),
-                "target_compliance_rate": len(df[df["memory_usage"] <= 32])
-                / len(df)
-                * 100,
+                "target_compliance_rate": len(df[df["memory_usage"] <= 32]) / len(df) * 100,
             }
 
         return {
@@ -366,9 +344,7 @@ class QualityTrendAnalyzer:
             )
 
         if coverage_trend.get("trend_direction") == "declining":
-            recommendations.append(
-                "テストカバレッジの向上のため、単体テストを追加してください"
-            )
+            recommendations.append("テストカバレッジの向上のため、単体テストを追加してください")
 
         startup_trend = performance_trend.get("startup_time", {}).get("trend_direction")
         if startup_trend == "declining":
@@ -383,15 +359,11 @@ class QualityTrendAnalyzer:
             )
 
         if not recommendations:
-            recommendations.append(
-                "現在の品質レベルを維持し、継続的な改善を心がけてください"
-            )
+            recommendations.append("現在の品質レベルを維持し、継続的な改善を心がけてください")
 
         return recommendations
 
-    def generate_comprehensive_trend_chart(
-        self, history_data: List[Dict[str, Any]]
-    ) -> Path:
+    def generate_comprehensive_trend_chart(self, history_data: List[Dict[str, Any]]) -> Path:
         """包括的トレンドチャート生成"""
         try:
             df = self._prepare_dataframe(history_data)
@@ -416,9 +388,7 @@ class QualityTrendAnalyzer:
             ax1.axhline(y=80, color="green", linestyle="--", alpha=0.7)
 
             # カバレッジ推移
-            ax2.plot(
-                df["date"], df["coverage"], marker="s", color="#10B981", linewidth=2
-            )
+            ax2.plot(df["date"], df["coverage"], marker="s", color="#10B981", linewidth=2)
             ax2.set_title("カバレッジ推移", fontweight="bold")
             ax2.set_ylabel("カバレッジ (%)")
             ax2.grid(True, alpha=0.3)
@@ -426,18 +396,14 @@ class QualityTrendAnalyzer:
             ax2.axhline(y=80, color="green", linestyle="--", alpha=0.7)
 
             # 起動時間推移
-            ax3.plot(
-                df["date"], df["startup_time"], marker="^", color="#8B5CF6", linewidth=2
-            )
+            ax3.plot(df["date"], df["startup_time"], marker="^", color="#8B5CF6", linewidth=2)
             ax3.set_title("起動時間推移", fontweight="bold")
             ax3.set_ylabel("起動時間 (ms)")
             ax3.grid(True, alpha=0.3)
             ax3.axhline(y=600, color="green", linestyle="--", alpha=0.7)
 
             # メモリ使用量推移
-            ax4.plot(
-                df["date"], df["memory_usage"], marker="d", color="#06B6D4", linewidth=2
-            )
+            ax4.plot(df["date"], df["memory_usage"], marker="d", color="#06B6D4", linewidth=2)
             ax4.set_title("メモリ使用量推移", fontweight="bold")
             ax4.set_ylabel("メモリ (MB)")
             ax4.grid(True, alpha=0.3)
@@ -448,9 +414,7 @@ class QualityTrendAnalyzer:
                 ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
                 ax.tick_params(axis="x", rotation=45)
 
-            plt.suptitle(
-                "品質メトリクス包括的トレンド分析", fontsize=16, fontweight="bold"
-            )
+            plt.suptitle("品質メトリクス包括的トレンド分析", fontsize=16, fontweight="bold")
             plt.tight_layout()
 
             # 保存

@@ -57,9 +57,7 @@ class TestConfigModels:
     def test_parallel_config_validation(self):
         """並列処理設定の検証テスト"""
         # チャンクサイズの整合性チェック
-        with pytest.raises(
-            ValueError, match="max_chunk_size must be greater than min_chunk_size"
-        ):
+        with pytest.raises(ValueError, match="max_chunk_size must be greater than min_chunk_size"):
             ParallelConfig(min_chunk_size=100, max_chunk_size=50)
 
         # メモリしきい値の整合性チェック
@@ -67,9 +65,7 @@ class TestConfigModels:
             ValueError,
             match="memory_critical_threshold_mb must be greater than memory_warning_threshold_mb",
         ):
-            ParallelConfig(
-                memory_warning_threshold_mb=200, memory_critical_threshold_mb=150
-            )
+            ParallelConfig(memory_warning_threshold_mb=200, memory_critical_threshold_mb=150)
 
     def test_logging_config_defaults(self):
         """ログ設定のデフォルト値テスト"""
@@ -135,9 +131,7 @@ class TestConfigModels:
     def test_kumihan_config_validation(self):
         """統一設定の検証テスト"""
         # デバッグモードとログレベルの自動調整
-        config = KumihanConfig(
-            debug_mode=True, logging=LoggingConfig(log_level=LogLevel.ERROR)
-        )
+        config = KumihanConfig(debug_mode=True, logging=LoggingConfig(log_level=LogLevel.ERROR))
 
         # デバッグモード時は自動的にログレベルがDEBUGに調整される
         assert config.logging.log_level == LogLevel.DEBUG
@@ -466,9 +460,7 @@ class TestConfigAdapters:
         assert adapter.max_chunk_size > adapter.min_chunk_size
 
         # 旧API互換メソッドのテスト
-        should_parallel = adapter.should_use_parallel_processing(
-            20000, 20 * 1024 * 1024
-        )
+        should_parallel = adapter.should_use_parallel_processing(20000, 20 * 1024 * 1024)
         assert should_parallel is True
 
         chunk_count = adapter.calculate_chunk_count(10000)
@@ -597,9 +589,7 @@ class TestIntegration:
 
             shutil.rmtree(temp_dir, ignore_errors=True)
 
-    @pytest.mark.skip(
-        reason="環境変数オーバーライドテストは複雑な依存関係により一時的にスキップ"
-    )
+    @pytest.mark.skip(reason="環境変数オーバーライドテストは複雑な依存関係により一時的にスキップ")
     def test_environment_override_integration(self):
         """環境変数オーバーライド統合テスト"""
         temp_dir = Path(tempfile.mkdtemp())
@@ -608,9 +598,7 @@ class TestIntegration:
         try:
             # ベース設定ファイル
             base_config = {
-                "parallel": {
-                    "parallel_threshold_lines": 10000
-                },  # 実装デフォルト値に合わせて修正
+                "parallel": {"parallel_threshold_lines": 10000},  # 実装デフォルト値に合わせて修正
                 "logging": {"log_level": "INFO"},
             }
 
@@ -631,9 +619,7 @@ class TestIntegration:
                     get_unified_config_manager,
                 )
 
-                manager = get_unified_config_manager(
-                    config_file=config_file, force_reload=True
-                )
+                manager = get_unified_config_manager(config_file=config_file, force_reload=True)
                 config = manager.get_config()
 
                 # 環境変数による設定の確認

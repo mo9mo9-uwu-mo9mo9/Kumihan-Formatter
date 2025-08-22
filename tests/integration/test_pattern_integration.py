@@ -183,9 +183,7 @@ class TestPatternIntegration:
         rendering_strategy = strategy_manager.select_rendering_strategy("html")
         assert rendering_strategy is not None
 
-        render_command = RenderCommand(
-            parsed_data, rendering_strategy, {"format": "html"}
-        )
+        render_command = RenderCommand(parsed_data, rendering_strategy, {"format": "html"})
         result = command_processor.execute_command(render_command)
 
         # 結果検証
@@ -294,14 +292,10 @@ class TestPatternIntegration:
         )
 
         # Step 2: レンダリング処理
-        manager.publish_event(
-            EventType.RENDERING_STARTED, "pipeline_test", {"format": "html"}
-        )
+        manager.publish_event(EventType.RENDERING_STARTED, "pipeline_test", {"format": "html"})
 
         rendering_strategy = strategy_manager.select_rendering_strategy("html")
-        render_command = RenderCommand(
-            parse_result.result, rendering_strategy, {"format": "html"}
-        )
+        render_command = RenderCommand(parse_result.result, rendering_strategy, {"format": "html"})
         render_result = command_processor.execute_command(render_command)
 
         manager.publish_event(
@@ -392,9 +386,7 @@ class TestPatternIntegration:
         event_bus.subscribe(EventType.PARSING_ERROR, normal_observer)
 
         # エラーイベント発行
-        error_event = Event(
-            EventType.PARSING_ERROR, "error_test", {"error": "Test error"}
-        )
+        error_event = Event(EventType.PARSING_ERROR, "error_test", {"error": "Test error"})
 
         # エラーが発生してもシステムが停止しないことを確認
         event_bus.publish(error_event)

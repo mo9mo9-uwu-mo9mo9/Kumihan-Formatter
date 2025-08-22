@@ -98,9 +98,7 @@ class LoadTestScenario:
             "content_size_kb": len(content) / 1024,
         }
 
-    def simulate_processing(
-        self, workload: Dict[str, Any], task_id: int = 0
-    ) -> Dict[str, Any]:
+    def simulate_processing(self, workload: Dict[str, Any], task_id: int = 0) -> Dict[str, Any]:
         """処理シミュレート"""
         start_time = time.time()
         content = workload["content"]
@@ -247,9 +245,7 @@ class LoadTestScenario:
             "total_tasks": len(workloads),
             "successful_tasks": len(successful_results),
             "failed_tasks": failed_count,
-            "success_rate": (
-                len(successful_results) / len(workloads) if workloads else 0
-            ),
+            "success_rate": (len(successful_results) / len(workloads) if workloads else 0),
             "total_time": total_time,
             "avg_task_time": avg_task_time,
             "max_task_time": max_task_time,
@@ -299,9 +295,9 @@ class LoadTestScenario:
         # 統計計算
         successful_iterations = [r for r in stress_results if r["success"]]
         if successful_iterations:
-            avg_iteration_time = sum(
-                r["total_time"] for r in successful_iterations
-            ) / len(successful_iterations)
+            avg_iteration_time = sum(r["total_time"] for r in successful_iterations) / len(
+                successful_iterations
+            )
             throughput = len(successful_iterations) / total_duration
         else:
             avg_iteration_time = throughput = 0
@@ -313,9 +309,7 @@ class LoadTestScenario:
             "successful_iterations": len(successful_iterations),
             "failed_iterations": iteration_count - len(successful_iterations),
             "success_rate": (
-                len(successful_iterations) / iteration_count
-                if iteration_count > 0
-                else 0
+                len(successful_iterations) / iteration_count if iteration_count > 0 else 0
             ),
             "avg_iteration_time": avg_iteration_time,
             "throughput_per_second": throughput,
@@ -349,12 +343,8 @@ class TestLoadScenarios:
         result = self.scenario.run_concurrent_load_test(workloads, max_workers=3)
 
         # Then: 並列処理性能確認
-        assert (
-            result["success_rate"] >= 0.8
-        ), f"並列処理成功率が低い: {result['success_rate']:.2f}"
-        assert (
-            result["total_time"] < 10.0
-        ), f"並列処理時間超過: {result['total_time']:.3f}秒"
+        assert result["success_rate"] >= 0.8, f"並列処理成功率が低い: {result['success_rate']:.2f}"
+        assert result["total_time"] < 10.0, f"並列処理時間超過: {result['total_time']:.3f}秒"
         assert (
             result["memory_usage_mb"] < 100
         ), f"並列処理メモリ使用量超過: {result['memory_usage_mb']:.1f}MB"
@@ -382,12 +372,8 @@ class TestLoadScenarios:
         assert (
             result["success_rate"] >= 0.9
         ), f"10並列処理成功率基準未達: {result['success_rate']:.2f}"
-        assert (
-            result["total_time"] < 20.0
-        ), f"10並列処理時間超過: {result['total_time']:.3f}秒"
-        assert (
-            result["failed_tasks"] <= 1
-        ), f"10並列処理で過度な失敗: {result['failed_tasks']}件"
+        assert result["total_time"] < 20.0, f"10並列処理時間超過: {result['total_time']:.3f}秒"
+        assert result["failed_tasks"] <= 1, f"10並列処理で過度な失敗: {result['failed_tasks']}件"
 
         # 平均タスク時間の妥当性
         assert (
@@ -424,9 +410,7 @@ class TestLoadScenarios:
         total_time = sum(r["total_time"] for r in batch_results)
         overall_success_rate = total_successful / (total_successful + total_failed)
 
-        assert (
-            overall_success_rate >= 0.95
-        ), f"連続処理成功率基準未達: {overall_success_rate:.3f}"
+        assert overall_success_rate >= 0.95, f"連続処理成功率基準未達: {overall_success_rate:.3f}"
         assert total_time < 120.0, f"連続処理時間超過: {total_time:.1f}秒"
         assert total_failed <= 2, f"連続処理で過度な失敗: {total_failed}件"
 
@@ -519,17 +503,13 @@ class TestLoadScenarios:
 
         # Then: エラー回復力確認
         # 一部エラーがあっても全体は成功するはず
-        assert (
-            result["success_rate"] >= 0.6
-        ), f"エラー回復力が不足: {result['success_rate']:.2f}"
+        assert result["success_rate"] >= 0.6, f"エラー回復力が不足: {result['success_rate']:.2f}"
         assert (
             result["successful_tasks"] >= len(normal_workloads) * 0.8
         ), "正常ワークロードの処理失敗が多すぎる"
 
         # 全体の処理時間は妥当な範囲内
-        assert (
-            result["total_time"] < 25.0
-        ), f"エラー処理込み時間超過: {result['total_time']:.3f}秒"
+        assert result["total_time"] < 25.0, f"エラー処理込み時間超過: {result['total_time']:.3f}秒"
 
         logger.info(
             f"エラー回復力確認完了: 成功率{result['success_rate']:.2f}, "
@@ -565,12 +545,9 @@ class TestLoadScenarios:
 
         # 効率性の比較（完全な線形性は期待しない）
         efficiency_ratio = (
-            limited_result["throughput_per_second"]
-            / normal_result["throughput_per_second"]
+            limited_result["throughput_per_second"] / normal_result["throughput_per_second"]
         )
-        assert (
-            efficiency_ratio > 0.3
-        ), f"リソース制限下効率が低すぎる: {efficiency_ratio:.2f}"
+        assert efficiency_ratio > 0.3, f"リソース制限下効率が低すぎる: {efficiency_ratio:.2f}"
 
         logger.info(
             f"リソース制限下性能確認完了: 成功率{limited_result['success_rate']:.2f}, "
@@ -582,15 +559,9 @@ class TestLoadScenarios:
         """負荷シナリオ: 混合ワークロードでの性能"""
         # Given: 異なるサイズの混合ワークロード
         mixed_workloads = []
-        mixed_workloads.extend(
-            [self.scenario.generate_workload("small") for _ in range(4)]
-        )
-        mixed_workloads.extend(
-            [self.scenario.generate_workload("medium") for _ in range(4)]
-        )
-        mixed_workloads.extend(
-            [self.scenario.generate_workload("large") for _ in range(2)]
-        )
+        mixed_workloads.extend([self.scenario.generate_workload("small") for _ in range(4)])
+        mixed_workloads.extend([self.scenario.generate_workload("medium") for _ in range(4)])
+        mixed_workloads.extend([self.scenario.generate_workload("large") for _ in range(2)])
 
         # When: 混合ワークロード負荷テスト実行
         result = self.scenario.run_concurrent_load_test(mixed_workloads, max_workers=6)
@@ -612,9 +583,7 @@ class TestLoadScenarios:
             time_variance = max_time - min_time
 
             # 妥当な時間ばらつき範囲内
-            assert (
-                time_variance < 20.0
-            ), f"混合ワークロード時間ばらつき過大: {time_variance:.3f}秒"
+            assert time_variance < 20.0, f"混合ワークロード時間ばらつき過大: {time_variance:.3f}秒"
 
         logger.info(
             f"混合ワークロード確認完了: 成功率{result['success_rate']:.2f}, "
@@ -631,9 +600,7 @@ class TestLoadScenarios:
         result = self.scenario.run_stress_test(duration, "small")
 
         # Then: 長時間安定性確認
-        assert (
-            result["success_rate"] >= 0.85
-        ), f"長時間安定性不足: {result['success_rate']:.2f}"
+        assert result["success_rate"] >= 0.85, f"長時間安定性不足: {result['success_rate']:.2f}"
         assert (
             result["duration_seconds"] >= duration * 0.95
         ), f"長時間テスト時間不足: {result['duration_seconds']:.1f}秒"
@@ -647,9 +614,7 @@ class TestLoadScenarios:
         if result["memory_history"]:
             memory_values = [m[1] for m in result["memory_history"]]
             memory_growth = max(memory_values) - min(memory_values)
-            assert (
-                memory_growth < 100
-            ), f"長時間テストでメモリ増加過多: {memory_growth:.1f}MB"
+            assert memory_growth < 100, f"長時間テストでメモリ増加過多: {memory_growth:.1f}MB"
 
         logger.info(
             f"長時間安定性確認完了: {result['total_iterations']}回, "

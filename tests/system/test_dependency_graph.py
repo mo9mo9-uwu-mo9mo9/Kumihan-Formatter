@@ -203,21 +203,15 @@ class TestDependencyGraph:
             "density": density,
             "max_in_degree": max(in_degree.values()) if in_degree else 0,
             "max_out_degree": max(out_degree.values()) if out_degree else 0,
-            "avg_in_degree": (
-                sum(in_degree.values()) / node_count if node_count > 0 else 0
-            ),
-            "avg_out_degree": (
-                sum(out_degree.values()) / node_count if node_count > 0 else 0
-            ),
+            "avg_in_degree": (sum(in_degree.values()) / node_count if node_count > 0 else 0),
+            "avg_out_degree": (sum(out_degree.values()) / node_count if node_count > 0 else 0),
             "strongly_connected_components": len(strongly_connected),
             "largest_scc_size": (
                 max(len(scc) for scc in strongly_connected) if strongly_connected else 0
             ),
         }
 
-    def _find_strongly_connected_components(
-        self, graph: Dict[str, Any]
-    ) -> List[List[str]]:
+    def _find_strongly_connected_components(self, graph: Dict[str, Any]) -> List[List[str]]:
         """強結合成分を検出（Kosaraju's algorithm）"""
         nodes = list(graph["nodes"].keys())
         edges = graph["edges"]
@@ -319,9 +313,7 @@ class TestDependencyGraph:
         else:
             return "高結合（要注意）"
 
-    def export_graph_visualization(
-        self, graph: Dict[str, Any], output_path: Path
-    ) -> None:
+    def export_graph_visualization(self, graph: Dict[str, Any], output_path: Path) -> None:
         """グラフ可視化用データをエクスポート"""
         # DOT形式でエクスポート
         dot_content = ["digraph DependencyGraph {"]
@@ -364,9 +356,7 @@ class TestDependencyGraph:
         """依存関係グラフ: 基本構造の確認"""
         # Given: プロジェクトモジュール
         if not self.kumihan_root.exists():
-            pytest.skip(
-                f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}"
-            )
+            pytest.skip(f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}")
 
         # 主要モジュールを取得（パフォーマンス考慮で制限）
         module_paths = []
@@ -391,9 +381,7 @@ class TestDependencyGraph:
         # 基本的なクラスターの存在確認
         expected_clusters = ["core", "parsing", "rendering"]
         found_clusters = set(graph["clusters"].keys())
-        cluster_coverage = len(set(expected_clusters) & found_clusters) / len(
-            expected_clusters
-        )
+        cluster_coverage = len(set(expected_clusters) & found_clusters) / len(expected_clusters)
         assert cluster_coverage >= 0.5, f"必要なクラスターが不足: {found_clusters}"
 
         logger.info(
@@ -457,9 +445,7 @@ class TestDependencyGraph:
 
         # Then: 結合度確認
         coupling_ratio = coupling_analysis["coupling_ratio"]
-        assert (
-            coupling_ratio < 0.8
-        ), f"クラスター間結合度が高すぎます: {coupling_ratio:.3f}"
+        assert coupling_ratio < 0.8, f"クラスター間結合度が高すぎます: {coupling_ratio:.3f}"
 
         # 主要クラスター間の適切な分離確認
         inter_cluster = coupling_analysis["inter_cluster_edges"]
@@ -467,9 +453,7 @@ class TestDependencyGraph:
 
         if inter_cluster + intra_cluster > 0:
             cohesion_ratio = intra_cluster / (inter_cluster + intra_cluster)
-            assert (
-                cohesion_ratio >= 0.3
-            ), f"クラスター凝集度が低い: {cohesion_ratio:.3f}"
+            assert cohesion_ratio >= 0.3, f"クラスター凝集度が低い: {cohesion_ratio:.3f}"
 
         logger.info(
             f"クラスター結合度分析完了: 結合度{coupling_ratio:.3f}, "
@@ -498,14 +482,10 @@ class TestDependencyGraph:
 
         # Then: メトリクス確認
         # 密度チェック（適度な結合度）
-        assert (
-            0.05 <= metrics["density"] <= 0.5
-        ), f"グラフ密度が異常: {metrics['density']:.3f}"
+        assert 0.05 <= metrics["density"] <= 0.5, f"グラフ密度が異常: {metrics['density']:.3f}"
 
         # 入次数・出次数チェック
-        assert (
-            metrics["max_in_degree"] <= 10
-        ), f"最大入次数が高すぎます: {metrics['max_in_degree']}"
+        assert metrics["max_in_degree"] <= 10, f"最大入次数が高すぎます: {metrics['max_in_degree']}"
         assert (
             metrics["max_out_degree"] <= 15
         ), f"最大出次数が高すぎます: {metrics['max_out_degree']}"
@@ -592,16 +572,10 @@ class TestDependencyGraph:
 
         # 最下位レベルに過度に集中していないか確認
         if hierarchy_levels:
-            bottom_level_ratio = level_distribution.get(max_level, 0) / len(
-                hierarchy_levels
-            )
-            assert (
-                bottom_level_ratio < 0.7
-            ), f"最下位レベルに集中しすぎ: {bottom_level_ratio:.3f}"
+            bottom_level_ratio = level_distribution.get(max_level, 0) / len(hierarchy_levels)
+            assert bottom_level_ratio < 0.7, f"最下位レベルに集中しすぎ: {bottom_level_ratio:.3f}"
 
-        logger.info(
-            f"階層構造確認完了: {max_level}レベル階層、" f"分布: {level_distribution}"
-        )
+        logger.info(f"階層構造確認完了: {max_level}レベル階層、" f"分布: {level_distribution}")
 
     def _calculate_hierarchy_levels(self, graph: Dict[str, Any]) -> Dict[str, int]:
         """階層レベルを計算"""

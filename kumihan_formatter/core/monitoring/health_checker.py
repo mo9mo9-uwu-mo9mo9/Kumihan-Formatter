@@ -423,7 +423,8 @@ class HealthChecker:
             if current_version < min_version or current_version > max_version:
                 overall_status = HealthStatus.WARNING
                 suggestions.append(
-                    f"Python バージョン要確認: {current_version} (推奨: {min_version}-{max_version})"
+                    f"Python バージョン要確認: {current_version} "
+                    f"(推奨: {min_version}-{max_version})"
                 )
 
             # 必須モジュールチェック

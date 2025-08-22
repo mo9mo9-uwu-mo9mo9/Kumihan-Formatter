@@ -318,9 +318,7 @@ class TestCompatibilityTests:
 
             # Then: 警告が出力される（create_simple_configで）
             assert len(w) >= 1
-            assert any(
-                issubclass(warning.category, DeprecationWarning) for warning in w
-            )
+            assert any(issubclass(warning.category, DeprecationWarning) for warning in w)
 
     def test_正常系_BaseConfig移行互換性(self):
         """BaseConfig移行互換性の確認"""

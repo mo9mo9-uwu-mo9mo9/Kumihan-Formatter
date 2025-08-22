@@ -314,7 +314,8 @@ class PhaseBReportGenerator:
         # 効果測定に基づく提言
         if measurement.total_rate < self.config.target_reduction_rate:
             recommendations.append(
-                f"目標削減率{self.config.target_reduction_rate}%に対し{measurement.total_rate:.1f}%のため、"
+                f"目標削減率{self.config.target_reduction_rate}%に対し"
+                f"{measurement.total_rate:.1f}%のため、"
                 "Phase B.4での追加最適化が必要"
             )
 
@@ -411,7 +412,9 @@ class PhaseBReportGenerator:
                     "phase_b2_rate": report.effect_measurement.phase_b2_rate,
                     "total_rate": report.effect_measurement.total_rate,
                     "target_achievement": report.effect_measurement.target_achievement,
-                    "measurement_confidence": report.effect_measurement.measurement_confidence,
+                    "measurement_confidence": (
+                        report.effect_measurement.measurement_confidence
+                    ),
                     "baseline_tokens": report.effect_measurement.baseline_tokens,
                     "optimized_tokens": report.effect_measurement.optimized_tokens,
                     "samples_count": report.effect_measurement.samples_count,
@@ -419,11 +422,15 @@ class PhaseBReportGenerator:
                 "stability_validation": {
                     "timestamp": report.stability_validation.timestamp.isoformat(),
                     "system_stability": report.stability_validation.system_stability,
-                    "performance_impact": report.stability_validation.performance_impact,
+                    "performance_impact": (
+                        report.stability_validation.performance_impact
+                    ),
                     "error_rate": report.stability_validation.error_rate,
                     "memory_usage": report.stability_validation.memory_usage,
                     "processing_speed": report.stability_validation.processing_speed,
-                    "integration_health": report.stability_validation.integration_health,
+                    "integration_health": (
+                        report.stability_validation.integration_health
+                    ),
                     "validation_passed": report.stability_validation.validation_passed,
                 },
                 "goal_achievement": report.goal_achievement,

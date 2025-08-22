@@ -381,7 +381,9 @@ class MemoryProfiler:
                         }
                         for obj_type, history in self._leak_history.items()
                     },
-                    "optimization_recommendations": self._generate_optimization_recommendations(),
+                    "optimization_recommendations": (
+                        self._generate_optimization_recommendations()
+                    ),
                 }
 
             # レポート出力
@@ -412,7 +414,8 @@ class MemoryProfiler:
             if latest.process_memory_mb > self._config.memory_threshold_mb:
                 recommendations.append(
                     f"メモリ使用量が閾値を超過しています "
-                    f"({latest.process_memory_mb:.1f}MB > {self._config.memory_threshold_mb}MB)"
+                    f"({latest.process_memory_mb:.1f}MB > "
+                    f"{self._config.memory_threshold_mb}MB)"
                 )
 
             # 断片化チェック
@@ -753,8 +756,8 @@ class MemoryUsageAnalyzer:
                     "fragmentation_analysis": self._analyze_fragmentation(snapshots),
                     "object_distribution": self._analyze_object_distribution(snapshots),
                     "gc_efficiency": self._analyze_gc_efficiency(snapshots),
-                    "optimization_opportunities": self._identify_optimization_opportunities(
-                        snapshots
+                    "optimization_opportunities": (
+                        self._identify_optimization_opportunities(snapshots)
                     ),
                 }
 

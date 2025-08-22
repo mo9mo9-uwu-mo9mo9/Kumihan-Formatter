@@ -429,8 +429,8 @@ class Parser:
 
             elapsed_total = time.time() - start_time
             self.logger.info(
-                f"Streaming parse completed: {processed_nodes} nodes in {elapsed_total:.2f}s "
-                f"({total_lines / elapsed_total:.0f} lines/sec)"
+                f"Streaming parse completed: {processed_nodes} nodes in "
+                f"{elapsed_total:.2f}s ({total_lines / elapsed_total:.0f} lines/sec)"
             )
 
         except Exception as e:
@@ -612,9 +612,8 @@ class Parser:
             # エラー回復位置追跡情報を含むログ
             self.logger.debug(
                 f"Error recovery info: pos={original_position}->{self.current}, "
-                f"line='{original_line.strip()}', error={type(e).__name__}: {e}"
+                f"line='{original_line.strip()}'"
             )
-
             self.logger.warning(
                 f"Parsing error at line {original_position}: {e} "
                 f"(original: '{original_line.strip()}')"

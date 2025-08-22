@@ -140,7 +140,8 @@ class ErrorConfigManager:
         self._load_from_environment()
 
         self.logger.info(
-            f"Error handling configuration loaded: level={self.config.default_level.value}"
+            f"Error handling configuration loaded: "
+            f"level={self.config.default_level.value}"
         )
 
     def _find_config_file(self) -> Optional[Path]:
