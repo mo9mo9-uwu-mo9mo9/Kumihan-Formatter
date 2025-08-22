@@ -29,6 +29,7 @@ from ..mixins.event_mixin import EventEmitterMixin, with_events
 from ..utilities.logger import get_logger
 from .base import UnifiedParserBase
 from .base.parser_protocols import (
+    BaseParserProtocol,
     CompositeParserProtocol,
     ParseContext,
     ParseResult,
@@ -619,13 +620,13 @@ class MainParser(
             yield result
 
     # CompositeParserProtocolの抽象メソッド実装
-    def add_parser(self, parser: "BaseParserProtocol", priority: int = 0) -> None:
+    def add_parser(self, parser: BaseParserProtocol, priority: int = 0) -> None:
         """パーサーを追加（抽象メソッド実装）"""
         parser_name = f"{parser.__class__.__name__}_{priority}"
         self.parsers[parser_name] = parser
         self.logger.info(f"Added parser: {parser_name} with priority {priority}")
 
-    def remove_parser(self, parser: "BaseParserProtocol") -> bool:
+    def remove_parser(self, parser: BaseParserProtocol) -> bool:
         """パーサーを削除（抽象メソッド実装）"""
         for name, registered_parser in list(self.parsers.items()):
             if registered_parser is parser:
@@ -634,7 +635,7 @@ class MainParser(
                 return True
         return False
 
-    def get_parsers(self) -> list["BaseParserProtocol"]:
+    def get_parsers(self) -> list[BaseParserProtocol]:
         """登録されたパーサーリストを取得（抽象メソッド実装）"""
         return list(self.parsers.values())
 
