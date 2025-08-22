@@ -18,7 +18,7 @@ Issue #920: 大型ファイル分割リファクタリング
 - 後方互換性維持
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase

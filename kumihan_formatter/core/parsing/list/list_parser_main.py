@@ -1,6 +1,6 @@
 """統合リストパーサー - メインエントリーポイント（既存API互換性維持）"""
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 # ノードインポート
 from ...ast_nodes.node import Node

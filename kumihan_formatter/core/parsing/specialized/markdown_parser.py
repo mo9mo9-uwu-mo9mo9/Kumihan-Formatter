@@ -14,7 +14,7 @@ Issue #912: Parser系統合リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Match, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, PerformanceMixin, UnifiedParserBase

@@ -13,7 +13,7 @@ Issue #914: アーキテクチャ最適化リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ...ast_nodes import (
     Node,

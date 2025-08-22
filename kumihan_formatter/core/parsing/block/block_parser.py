@@ -12,12 +12,14 @@ from kumihan_formatter.core.parsing import (
 """
 
 import re
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ...ast_nodes import Node
 
 # 統一プロトコルインポート
 from ..base.parser_protocols import (
     ParseContext,
+    ParseError,
     ParseResult,
 )
 
