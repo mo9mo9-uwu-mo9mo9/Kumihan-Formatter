@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
 from ..base.parser_protocols import (
-    ListParserProtocol,
     ParseContext,
     ParseResult,
     create_parse_result,
@@ -17,7 +16,7 @@ from .parsers.ordered_parser import OrderedListParser
 from .parsers.unordered_parser import UnorderedListParser
 
 
-class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
+class UnifiedListParser(UnifiedParserBase, CompositeMixin):
     """統一リストパーサー - 各専用パーサーを統合してAPI互換性維持"""
 
     def __init__(self) -> None:
