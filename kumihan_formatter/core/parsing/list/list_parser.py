@@ -193,7 +193,11 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         for item in items:
             item_type = item.metadata.get("type", "unordered")
             type_counts[item_type] = type_counts.get(item_type, 0) + 1
-        return max(type_counts, key=type_counts.get) if type_counts else "unordered"
+        return (
+            max(type_counts, key=lambda x: type_counts.get(x, 0))
+            if type_counts
+            else "unordered"
+        )
 
     # 外部API メソッド（互換性維持）
     def parse_list_from_text(self, text: str, list_type: Optional[str] = None) -> Node:
@@ -298,6 +302,17 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             if pattern.match(line):
                 return True
         return False
+
+    def get_list_nesting_level(self, line: str) -> int:
+        """リストのネストレベルを取得（抽象メソッド実装）"""
+        # インデント数でネストレベル判定
+        stripped = line.lstrip()
+        if not stripped:
+            return 0
+        
+        indent_count = len(line) - len(stripped)
+        # 2スペースまたは1タブで1レベル
+        return max(0, indent_count // 2)
 
     # 継続互換性メソッド（プロトコル準拠のシグネチャに変更）
     def parse_nested_list(

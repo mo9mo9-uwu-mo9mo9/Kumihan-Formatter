@@ -490,8 +490,12 @@ class MemoryProfiler:
 
             result = {
                 "objects_collected": collected,
-                "before_counts": before_counts,
-                "after_counts": after_counts,
+                "before_gen0": before_counts[0] if before_counts else 0,
+                "before_gen1": before_counts[1] if len(before_counts) > 1 else 0,
+                "before_gen2": before_counts[2] if len(before_counts) > 2 else 0,
+                "after_gen0": after_counts[0] if after_counts else 0,
+                "after_gen1": after_counts[1] if len(after_counts) > 1 else 0,
+                "after_gen2": after_counts[2] if len(after_counts) > 2 else 0,
             }
 
             logger.info(f"強制GC実行: {collected}オブジェクト回収")

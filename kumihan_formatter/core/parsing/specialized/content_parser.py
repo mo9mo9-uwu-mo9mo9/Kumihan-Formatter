@@ -281,11 +281,12 @@ class UnifiedContentParser(UnifiedParserBase, CompositeMixin):
     def _analyze_semantic_structure(self, text: str) -> Dict[str, Any]:
         """意味構造解析"""
         # 簡単な意味構造解析
-        structure = {
+        structure: Dict[str, Any] = {
             "has_questions": bool(re.search(r"[？?]", text)),
             "has_exclamations": bool(re.search(r"[！!]", text)),
             "has_quotes": bool(re.search(r'[「」""\'\'"]', text)),
             "has_emphasis": bool(re.search(r"[*_**__]", text)),
+            "keywords": [],  # デフォルト値として空リスト
         }
 
         # キーワード密度の簡単な分析

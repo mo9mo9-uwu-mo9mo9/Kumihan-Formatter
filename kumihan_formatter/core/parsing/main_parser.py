@@ -162,7 +162,7 @@ class MainParser(
                         parser_class = parser_class_map[parser_type]
                         instance = self.container.resolve(parser_class)
                         self.logger.debug(f"DI resolution successful for {parser_type}")
-                        return instance
+                        return cast(ParserProtocol, instance)
                 except Exception as di_error:
                     self.logger.warning(
                         f"DI creation failed for {parser_type}: {di_error}"
@@ -173,7 +173,7 @@ class MainParser(
                 try:
                     instance = self.parser_factory.create(parser_type)
                     self.logger.debug(f"Factory creation successful for {parser_type}")
-                    return instance
+                    return cast(ParserProtocol, instance)
                 except Exception as factory_error:
                     self.logger.warning(
                         f"Factory creation failed for {parser_type}: {factory_error}"
@@ -590,10 +590,6 @@ class MainParser(
         """フォーマット対応判定（プロトコル準拠）"""
         return format_hint in ["kumihan", "markdown", "text", "auto"]
 
-    def get_parsers(self) -> list[ParserProtocol]:
-        """登録されているパーサー一覧を取得（プロトコル準拠）"""
-        return list(self.parsers.values())
-
     def register_parser(self, name: str, parser: ParserProtocol) -> None:
         """パーサーの登録（プロトコル準拠）"""
         self.parsers[name] = parser
@@ -623,7 +619,7 @@ class MainParser(
     def add_parser(self, parser: BaseParserProtocol, priority: int = 0) -> None:
         """パーサーを追加（抽象メソッド実装）"""
         parser_name = f"{parser.__class__.__name__}_{priority}"
-        self.parsers[parser_name] = parser
+        self.parsers[parser_name] = cast(ParserProtocol, parser)
         self.logger.info(f"Added parser: {parser_name} with priority {priority}")
 
     def remove_parser(self, parser: BaseParserProtocol) -> bool:
@@ -638,6 +634,27 @@ class MainParser(
     def get_parsers(self) -> list[BaseParserProtocol]:
         """登録されたパーサーリストを取得（抽象メソッド実装）"""
         return list(self.parsers.values())
+
+    # StreamingParserProtocolの抽象メソッド実装
+    def get_chunk_size(self) -> int:
+        """チャンクサイズを取得（抽象メソッド実装）"""
+        return self.chunk_size
+
+    def process_chunk(
+        self, chunk: str, context: Optional[ParseContext] = None
+    ) -> ParseResult:
+        """チャンクを処理（拽象メソッド実装）"""
+        try:
+            nodes = self._parse_sequential(chunk)
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"チャンク処理失敗: {e}")
+            return result
+
+    def supports_streaming(self) -> bool:
+        """ストリーミング対応判定（抽象メソッド実装）"""
+        return True
 
     def get_parser_count(self) -> int:
         """登録パーサー数を取得（抽象メソッド実装）"""

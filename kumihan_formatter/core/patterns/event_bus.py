@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, cast
 
 from ..utilities.logger import get_logger
 from .dependency_injection import DIContainer, get_container
@@ -56,6 +56,17 @@ class ExtendedEventType(Enum):
     CACHE_MISS = "cache_miss"
     ASYNC_TASK_STARTED = "async_task_started"
     ASYNC_TASK_COMPLETED = "async_task_completed"
+
+
+# 型エイリアスでユニオン型を簡略化
+UnifiedEventType = Union[EventType, ExtendedEventType]
+
+
+def normalize_event_type(event_type: UnifiedEventType) -> str:
+    """イベントタイプを文字列に正規化"""
+    if isinstance(event_type, str):
+        return event_type
+    return event_type.value
 
 
 class IntegratedEventBus:
@@ -169,22 +180,28 @@ def get_event_bus() -> IntegratedEventBus:
 
 
 def publish_event(
-    event_type: Union[EventType, ExtendedEventType],
+    event_type: UnifiedEventType,
     source: str,
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利なイベント発行関数"""
-    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-    event = Event(event_type=event_type, source=source, data=data or {})
+    # イベントタイプを正規化して使用
+    normalized_type = normalize_event_type(event_type)
+    event = Event(
+        event_type=cast(EventType, normalized_type), source=source, data=data or {}
+    )
     _global_event_bus.publish(event)
 
 
 async def publish_event_async(
-    event_type: Union[EventType, ExtendedEventType],
+    event_type: UnifiedEventType,
     source: str,
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利な非同期イベント発行関数"""
-    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-    event = Event(event_type=event_type, source=source, data=data or {})
+    # イベントタイプを正規化して使用
+    normalized_type = normalize_event_type(event_type)
+    event = Event(
+        event_type=cast(EventType, normalized_type), source=source, data=data or {}
+    )
     await _global_event_bus.publish_async(event)

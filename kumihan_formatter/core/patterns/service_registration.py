@@ -55,7 +55,8 @@ def register_default_services(container: DIContainer) -> None:
         container.register(
             MarkdownParserProtocol, UnifiedMarkdownParser, ServiceLifetime.SINGLETON
         )
-        container.register(BaseParserProtocol, MainParser, ServiceLifetime.SINGLETON)
+        # BaseParserProtocolは拽象クラスのため、具象クラスで登録
+        container.register(MainParser, MainParser, ServiceLifetime.SINGLETON)
 
     except ImportError as e:
         # プロトコルが利用できない場合はスキップ
@@ -73,15 +74,12 @@ def register_default_services(container: DIContainer) -> None:
             MarkdownRendererProtocol,
         )
 
-        container.register(
-            BaseRendererProtocol, MainRenderer, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            HtmlRendererProtocol, HtmlFormatter, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            MarkdownRendererProtocol, MarkdownFormatter, ServiceLifetime.SINGLETON
-        )
+        # BaseRendererProtocolは拽象クラスのため、具象クラスで登録
+        container.register(MainRenderer, MainRenderer, ServiceLifetime.SINGLETON)
+        # HtmlRendererProtocolは拽象クラスのため、具象クラスで登録
+        container.register(HtmlFormatter, HtmlFormatter, ServiceLifetime.SINGLETON)
+        # MarkdownRendererProtocolは拽象クラスのため、具象クラスで登録
+        container.register(MarkdownFormatter, MarkdownFormatter, ServiceLifetime.SINGLETON)
 
     except ImportError as e:
         # プロトコルが利用できない場合はスキップ
