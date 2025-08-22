@@ -66,12 +66,18 @@ setup:
 	@echo "✅ セットアップ完了"
 
 lint:
-	@echo "🔍 コード品質チェック中..."
+	@echo "🔍 標準ツール統合品質チェック実行中..."
+	@./scripts/quality_check.sh $(SRC_DIR)
+	@echo "✅ 品質チェック完了"
+
+# 従来の個別ツール実行（互換性維持）
+lint-legacy:
+	@echo "🔍 従来のコード品質チェック中..."
 	$(PYTHON) -m black --check $(SRC_DIR)
 	$(PYTHON) -m isort --check-only $(SRC_DIR)
 	$(PYTHON) -m flake8 $(SRC_DIR)
 	$(PYTHON) -m mypy $(SRC_DIR)
-	@echo "✅ リントチェック完了"
+	@echo "✅ 従来リントチェック完了"
 
 # テストコマンド実装
 test:
