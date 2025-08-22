@@ -26,9 +26,7 @@ from ..base.parser_protocols import (
 from ..protocols import ParserType
 
 
-class UnifiedMarkdownParser(
-    UnifiedParserBase, CompositeMixin, PerformanceMixin, MarkdownParserProtocol
-):
+class UnifiedMarkdownParser(UnifiedParserBase, CompositeMixin, PerformanceMixin):
     """統一Markdownパーサー
 
     標準Markdown記法の解析:
@@ -559,30 +557,24 @@ class UnifiedMarkdownParser(
                 metadata={"parser_type": "markdown"},
             )
 
-    # BaseParserProtocolインターフェース実装
-    @overload
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult: ...
-
-    @overload
-    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
-
+    # UnifiedParserBase互換のparseメソッド
     def parse(
         self,
         content: Union[str, List[str]],
-        context: Optional[ParseContext] = None,
         **kwargs: Any,
-    ) -> Union[ParseResult, Node]:
-        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+    ) -> Node:
+        """統一パースメソッド - UnifiedParserBase互換"""
+        context = kwargs.get("context", None)
+
         if isinstance(content, list):
-            # UnifiedParserBase互換: List[str] -> Node
+            # List[str] -> Node
             combined_content = "\n".join(content)
             result = self.parse_with_protocol(combined_content, context)
             return result.nodes[0] if result.nodes else create_node("empty", "")
         else:
-            # BaseParserProtocol互換: str -> ParseResult
-            return self.parse_with_protocol(content, context)
+            # str -> Node
+            result = self.parse_with_protocol(content, context)
+            return result.nodes[0] if result.nodes else create_node("empty", "")
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

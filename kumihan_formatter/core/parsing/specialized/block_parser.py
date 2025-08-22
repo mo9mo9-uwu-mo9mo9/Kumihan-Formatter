@@ -21,7 +21,7 @@ from ..base.parser_protocols import (
 from ..protocols import ParserType
 
 
-class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol):
+class UnifiedBlockParser(UnifiedParserBase, CompositeMixin):
     """統一ブロックパーサー
 
     Kumihan記法のブロック構文を解析:
@@ -394,28 +394,21 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
     # プロトコル準拠メソッド（BlockParserProtocol実装）
     # ==========================================
 
-    @overload
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult: ...
-
-    @overload
-    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
-
     def parse(
         self,
         content: Union[str, List[str]],
-        context: Optional[ParseContext] = None,
         **kwargs: Any,
-    ) -> Union[ParseResult, Node]:
-        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+    ) -> Node:
+        """統一パースメソッド - UnifiedParserBase互換"""
         if isinstance(content, list):
             # UnifiedParserBase互換: List[str] -> Node
             combined_content = "\n".join(content)
             return super().parse(combined_content, **kwargs)
         else:
-            # BaseParserProtocol互換: str -> ParseResult
-            return self.parse_with_result(content, context)
+            # str -> Node
+            context = kwargs.get("context", None)
+            result = self.parse_with_result(content, context)
+            return result.nodes[0] if result.nodes else create_node("empty", "")
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

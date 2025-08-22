@@ -31,7 +31,7 @@ from ..protocols import ParserType
 from .list_components import AdvancedListHandler, BasicListHandler, ListUtilities
 
 
-class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
+class UnifiedListParser(UnifiedParserBase, CompositeMixin):
     """統一リストパーサー - Issue #920 分割最適化版
 
     分割されたコンポーネントを統合し、既存API完全互換性を維持:
@@ -164,48 +164,27 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         primary_type = self.utilities.determine_primary_list_type(list_items)
         return self.utilities.create_list_node(list_items, primary_type)
 
-    @overload
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult: ...
-
-    @overload
-    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
-
     def parse(
         self,
         content: Union[str, List[str]],
-        context: Optional[ParseContext] = None,
         **kwargs: Any,
-    ) -> Union[ParseResult, Node]:
-        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+    ) -> Node:
+        """統一パースメソッド - UnifiedParserBase互換"""
         if isinstance(content, list):
             # UnifiedParserBase互換: List[str] -> Node
             combined_content = "\n".join(content)
             return self.parse_list_from_text(combined_content)
         else:
-            # BaseParserProtocol互換: str -> ParseResult
+            # str -> Node
             try:
                 self._clear_errors_warnings()
 
                 # 既存のparse_list_from_textメソッドを活用
                 node = self.parse_list_from_text(content)
-
-                return ParseResult(
-                    success=True,
-                    nodes=[node] if node else [],
-                    errors=self.get_errors(),
-                    warnings=self.get_warnings(),
-                    metadata={"parser_type": "list"},
-                )
+                return node if node else create_node("empty", "")
             except Exception as e:
-                return ParseResult(
-                    success=False,
-                    nodes=[],
-                    errors=[str(e)],
-                    warnings=[],
-                    metadata={"parser_type": "list"},
-                )
+                # エラー時は空のNodeを返す
+                return create_node("error", f"List parsing failed: {e}")
 
     def get_errors(self) -> List[str]:
         """エラー一覧取得"""

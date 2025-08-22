@@ -176,7 +176,9 @@ class KeywordParser(BaseParser):
         from ...ast_nodes.node import Node
 
         class SimpleNodeFactory:
-            def create_node(self, node_type: str, content: str = "", **kwargs) -> Node:
+            def create_node(
+                self, node_type: str, content: str = "", **kwargs: Any
+            ) -> Node:
                 return Node(type=node_type, content=content, **kwargs)
 
         return SimpleNodeFactory()

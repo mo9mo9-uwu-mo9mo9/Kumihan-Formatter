@@ -205,11 +205,11 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             ]
             return self._create_list_node([item for item in items if item], list_type)
         else:
-            result = self.parse(text)
-            if result.success and result.nodes:
+            parse_result = self.parse_with_result(text)
+            if parse_result.success and parse_result.nodes:
                 return (
-                    result.nodes[0]
-                    if result.nodes[0].children
+                    parse_result.nodes[0]
+                    if parse_result.nodes[0].children
                     else create_node("list", content="")
                 )
             else:
@@ -251,12 +251,12 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
             # 基底クラスのparseメソッドを使用
-            result = super().parse(content)
-            return create_parse_result(nodes=[result], success=True)
+            node_result = super().parse(content)
+            return create_parse_result(nodes=[node_result], success=True)
         except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"リストパース失敗: {e}")
-            return result
+            parse_result = create_parse_result(success=False)
+            parse_result.add_error(f"リストパース失敗: {e}")
+            return parse_result
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
@@ -316,7 +316,9 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             if line.strip():
                 list_type = self._detect_list_type(line.strip())
                 if list_type:
-                    items.append(self._parse_list_item(line.strip(), list_type))
+                    item = self._parse_list_item(line.strip(), list_type)
+                    if item is not None:
+                        items.append(item)
         return items
 
     def detect_list_type(self, line: str) -> Optional[str]:

@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
 # ノードインポート
-from ....ast_nodes.node import Node
+from ...ast_nodes.node import Node
 
 # 統一プロトコルインポート
 from ..base.parser_protocols import (
@@ -279,7 +279,17 @@ class ListParser:
         Returns:
             List[Node]: パースされたネストリストのノードリスト
         """
-        return self.nested_parser.parse_nested_list(content, level, context)
+        # ParseContextをDict[str, Any]に変換
+        context_dict = None
+        if context is not None:
+            context_dict = {
+                "source_file": context.source_file,
+                "line_number": context.line_number,
+                "column_number": context.column_number,
+                "parser_state": context.parser_state,
+                "config": context.config,
+            }
+        return self.nested_parser.parse_nested_list(content, level, context_dict)
 
     def detect_list_type(self, line: str) -> Optional[str]:
         """リストタイプ検出（bracket, json, etc.）
