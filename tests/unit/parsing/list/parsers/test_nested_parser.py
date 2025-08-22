@@ -236,7 +236,27 @@ class TestNestedListParser:
 
         # Then: エラーが検出されることを検証
         assert len(errors) > 0
-        assert "制限を超えています" in errors[0]
+        assert "ネストレベルが急激に変化" in errors[0]
+
+    def test_異常系_最大レベル制限超過_段階的(self):
+        """異常系: 最大レベル制限を超える構造（段階的）"""
+        # Given: 段階的に最大レベルを超える深いネスト
+        items = [
+            create_node("list_item", content="項目1", metadata={"relative_level": 0}),
+            create_node("list_item", content="項目2", metadata={"relative_level": 1}),
+            create_node("list_item", content="項目3", metadata={"relative_level": 2}),
+            create_node("list_item", content="項目4", metadata={"relative_level": 3}),
+            create_node(
+                "list_item", content="深すぎる", metadata={"relative_level": 4}
+            ),  # max_nest_level=3を超える
+        ]
+
+        # When: ネスト構造検証
+        errors = self.parser.validate_nesting_structure(items)
+
+        # Then: エラーが検出されることを検証
+        assert len(errors) > 0
+        assert "制限を超えています" in errors[-1]  # 最後のエラーメッセージをチェック
 
     def test_異常系_空のノードリスト処理(self):
         """異常系: 空のノードリストの処理"""
@@ -335,7 +355,7 @@ class TestNestedListParser:
         # CI環境での実行時間を考慮して削減
         from tests.conftest import get_test_data_size
         node_count = get_test_data_size(1000, 100)
-        
+
         # Given: 大量のノード
         large_items = []
         for i in range(node_count):
