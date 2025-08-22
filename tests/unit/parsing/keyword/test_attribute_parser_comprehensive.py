@@ -223,17 +223,17 @@ class TestAttributeParserCSS:
         # 基本スタイル
         content = 'style="color: red;"'
         attributes = self.parser.parse_attributes_from_content(content)
-        assert attributes["style"] == "color:"  # パターンマッチング結果
+        assert attributes["style"] == "color: red;"  # 完全なスタイル値
 
         # 複数プロパティ
         content = 'style="color: red; background: blue; margin: 10px;"'
         attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
+        assert attributes["style"] == "color: red; background: blue; margin: 10px;"
 
         # 複雑な値
         content = 'style="background: linear-gradient(45deg, red, blue);"'
         attributes = self.parser.parse_attributes_from_content(content)
-        assert "style" in attributes
+        assert attributes["style"] == "background: linear-gradient(45deg, red, blue);"
 
     def test_css_selector_compatibility(self):
         """CSSセレクター互換性テスト"""
