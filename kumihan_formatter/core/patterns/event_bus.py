@@ -84,15 +84,17 @@ class IntegratedEventBus:
         self, event_type: Union[EventType, ExtendedEventType], observer: Observer
     ) -> None:
         """同期オブザーバー登録"""
-        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-        self._base_bus.subscribe(event_type, observer)
+        # イベントタイプを正規化して使用
+        normalized_type = normalize_event_type(event_type)
+        self._base_bus.subscribe(cast(EventType, normalized_type), observer)
 
     def subscribe_async(
         self, event_type: Union[EventType, ExtendedEventType], observer: AsyncObserver
     ) -> None:
         """非同期オブザーバー登録"""
-        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-        self._base_bus.subscribe_async(event_type, observer)
+        # イベントタイプを正規化して使用
+        normalized_type = normalize_event_type(event_type)
+        self._base_bus.subscribe_async(cast(EventType, normalized_type), observer)
 
     def subscribe_with_di(
         self,

@@ -619,7 +619,7 @@ class MainParser(
     def add_parser(self, parser: BaseParserProtocol, priority: int = 0) -> None:
         """パーサーを追加（抽象メソッド実装）"""
         parser_name = f"{parser.__class__.__name__}_{priority}"
-        self.parsers[parser_name] = cast(ParserProtocol, parser)
+        self.parsers[parser_name] = parser
         self.logger.info(f"Added parser: {parser_name} with priority {priority}")
 
     def remove_parser(self, parser: BaseParserProtocol) -> bool:
@@ -642,15 +642,13 @@ class MainParser(
 
     def process_chunk(
         self, chunk: str, context: Optional[ParseContext] = None
-    ) -> ParseResult:
+    ) -> List[Node]:
         """チャンクを処理（拽象メソッド実装）"""
         try:
-            nodes = self._parse_sequential(chunk)
-            return create_parse_result(nodes=nodes, success=True)
+            return self._parse_sequential(chunk)
         except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"チャンク処理失敗: {e}")
-            return result
+            self.logger.error(f"チャンク処理失敗: {e}")
+            return [error_node(f"チャンク処理失敗: {e}")]
 
     def supports_streaming(self) -> bool:
         """ストリーミング対応判定（抽象メソッド実装）"""

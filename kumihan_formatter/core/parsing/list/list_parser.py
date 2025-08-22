@@ -296,6 +296,18 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             "definition",
         ]
 
+    def parse(self, content: str, context: Optional[ParseContext] = None) -> ParseResult:
+        """統一パースインターフェース（BaseParserProtocol準拠）"""
+        try:
+            # 既存の実装を使用
+            result = self._parse_implementation(content)
+            nodes = [result] if isinstance(result, Node) else result
+            return create_parse_result(nodes=nodes, success=True)
+        except Exception as e:
+            result = create_parse_result(success=False)
+            result.add_error(f"リストパースエラー: {e}")
+            return result
+
     def _is_valid_list_item(self, line: str) -> bool:
         """リスト項目の有効性チェック"""
         for pattern in self.list_patterns.values():
