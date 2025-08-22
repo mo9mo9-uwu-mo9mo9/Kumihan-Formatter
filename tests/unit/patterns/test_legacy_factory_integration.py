@@ -66,9 +66,7 @@ class TestLegacyFactoryAdapter:
         mock_file.assert_called_once()
         mock_markdown.assert_called_once()
         mock_list.assert_called_once()
-        mock_logger.info.assert_called_with(
-            "Legacy factory services registered successfully"
-        )
+        mock_logger.info.assert_called_with("Legacy factory services registered successfully")
 
     @patch.object(LegacyFactoryAdapter, "_register_file_operations")
     @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
@@ -216,9 +214,7 @@ class TestLegacyFactoryAdapter:
             "_register_file_operations",
             side_effect=Exception("File error"),
         ):
-            with patch.object(
-                LegacyFactoryAdapter, "_register_markdown_services"
-            ) as mock_markdown:
+            with patch.object(LegacyFactoryAdapter, "_register_markdown_services") as mock_markdown:
                 with patch.object(
                     LegacyFactoryAdapter, "_register_list_parser_services"
                 ) as mock_list:
@@ -234,9 +230,7 @@ class TestLegacyFactoryAdapter:
 class TestLegacyCompatibilityFunctions:
     """レガシー互換性関数のテスト"""
 
-    @patch(
-        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
-    )
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter")
     def test_正常系_create_legacy_file_operations(self, mock_adapter_class):
         """正常系: レガシーファイル操作作成"""
         # Given: モックアダプターとコンテナ
@@ -283,9 +277,7 @@ class TestLegacyCompatibilityFunctions:
                     mock_fallback.assert_called_once_with("test_ui")
                     mock_logger.warning.assert_called()
 
-    @patch(
-        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
-    )
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter")
     def test_正常系_create_legacy_markdown_converter(self, mock_adapter_class):
         """正常系: レガシーマークダウンコンバーター作成"""
         # Given: モックアダプターとコンテナ
@@ -338,9 +330,7 @@ class TestLegacyCompatibilityFunctions:
                     mock_fallback.assert_called_once()
                     mock_logger.warning.assert_called()
 
-    @patch(
-        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
-    )
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter")
     def test_正常系_create_legacy_list_parser(self, mock_adapter_class):
         """正常系: レガシーリストパーサー作成"""
         # Given: モックアダプターとコンテナ
@@ -454,13 +444,9 @@ class TestGlobalLegacyAdapter:
                 "Legacy integration system initialized successfully"
             )
 
-    @patch(
-        "kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter"
-    )
+    @patch("kumihan_formatter.core.patterns.legacy_factory_integration.LegacyFactoryAdapter")
     @patch("kumihan_formatter.core.patterns.legacy_factory_integration.logger")
-    def test_異常系_initialize_legacy_integration_失敗(
-        self, mock_logger, mock_adapter_class
-    ):
+    def test_異常系_initialize_legacy_integration_失敗(self, mock_logger, mock_adapter_class):
         """異常系: レガシー統合システム初期化失敗"""
         # Given: 初期化失敗するアダプター
         mock_adapter_class.side_effect = Exception("Init failed")

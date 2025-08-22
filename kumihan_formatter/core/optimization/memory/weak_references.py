@@ -773,7 +773,9 @@ class MemoryLeakPreventer:
                 return {
                     "leak_patterns": dict(self._leak_patterns),
                     "prevention_strategies": list(self._prevention_strategies.keys()),
-                    "total_leaks_prevented": self._weak_ref_manager._stats.memory_leaks_prevented,
+                    "total_leaks_prevented": (
+                        self._weak_ref_manager._stats.memory_leaks_prevented
+                    ),
                 }
 
         except Exception as e:

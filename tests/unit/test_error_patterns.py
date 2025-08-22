@@ -42,13 +42,9 @@ class TestSyntaxErrors:
 
             # Check error severity
             severe_errors = [
-                e
-                for e in errors
-                if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
+                e for e in errors if hasattr(e, "severity") and e.severity == ErrorSeverity.ERROR
             ]
-            assert (
-                len(severe_errors) > 0
-            ), f"Unclosed marker should be severe error: {text}"
+            assert len(severe_errors) > 0, f"Unclosed marker should be severe error: {text}"
 
     def test_unopened_marker_error(self):
         """Test detection of unopened closing markers."""

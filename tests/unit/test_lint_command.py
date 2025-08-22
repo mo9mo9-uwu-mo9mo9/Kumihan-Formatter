@@ -146,7 +146,10 @@ class TestFlake8AutoFixer:
 
     def test_fix_e501_line_too_long(self):
         """E501エラー修正テスト"""
-        content = 'result = some_very_long_function_name(arg1="very_long_value", arg2="another_very_long_value")\n'
+        content = 'result = some_very_long_function_name(
+            arg1="very_long_value",
+            arg2="another_very_long_value"
+{indent})\n'
 
         fixed_content = self.fixer.fix_e501_line_too_long(content, 1)
 

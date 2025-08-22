@@ -22,9 +22,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 logger = get_logger(__name__)
 
 # pytest-asyncioが無い場合は全体をスキップ
-pytestmark = pytest.mark.skipif(
-    not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed"
-)
+pytestmark = pytest.mark.skipif(not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed")
 
 
 class TestAsyncWorkflow:
@@ -98,9 +96,7 @@ class TestAsyncWorkflow:
 
             # レンダリング処理
             render_result = await self.async_render(parse_result["result"])
-            assert render_result[
-                "success"
-            ], f"レンダリング失敗: {render_result.get('error')}"
+            assert render_result["success"], f"レンダリング失敗: {render_result.get('error')}"
             return render_result
 
         render_result = asyncio.run(run_test())
@@ -111,9 +107,7 @@ class TestAsyncWorkflow:
         # 少なくともHTMLが正常に生成され、何らかのコンテンツがあることを確認
         assert len(html) > 100, "HTML出力が短すぎます"
         assert "<html" in html, "HTMLドキュメントとして正しく出力されていません"
-        assert (
-            "太字" in html or "keyword" in html
-        ), "期待されるコンテンツが含まれていません"
+        assert "太字" in html or "keyword" in html, "期待されるコンテンツが含まれていません"
 
     @pytest.mark.asyncio
     async def test_並行非同期処理(self) -> None:
@@ -155,9 +149,7 @@ class TestAsyncWorkflow:
                 tasks.append(self.async_parse(content))
             else:
                 # None の場合は手動でエラー結果を作成
-                tasks.append(
-                    asyncio.create_task(self._create_error_result("None content"))
-                )
+                tasks.append(asyncio.create_task(self._create_error_result("None content")))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -227,9 +219,7 @@ class TestAsyncWorkflow:
         initial_memory = tracemalloc.get_traced_memory()[0]
 
         # 大量の非同期タスクを実行
-        large_contents = [
-            f"# 見出し{i} #セクション{i}## # 太字 #内容{i}##" * 10 for i in range(50)
-        ]
+        large_contents = [f"# 見出し{i} #セクション{i}## # 太字 #内容{i}##" * 10 for i in range(50)]
 
         # バッチ処理でメモリ使用量を制御
         batch_size = 10

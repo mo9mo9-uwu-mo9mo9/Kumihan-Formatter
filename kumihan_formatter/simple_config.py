@@ -36,7 +36,8 @@ class SimpleConfig:
         """簡素化された設定を初期化（統合設定システムを使用）"""
         warnings.warn(
             "SimpleConfigは非推奨です。"
-            "kumihan_formatter.core.config.unified.get_unified_config_manager()を使用してください。",
+            "kumihan_formatter.core.config.unified.get_unified_config_manager()"
+            "を使用してください。",
             DeprecationWarning,
             stacklevel=2,
         )

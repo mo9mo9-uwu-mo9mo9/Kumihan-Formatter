@@ -43,10 +43,7 @@ class TestConcurrentRequests:
     def test_並行リクエスト_基本(self) -> None:
         """基本的な並行リクエスト処理"""
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = [
-                executor.submit(self.process_request, i)
-                for i in range(self.request_count)
-            ]
+            futures = [executor.submit(self.process_request, i) for i in range(self.request_count)]
 
             results = []
             for future in futures:

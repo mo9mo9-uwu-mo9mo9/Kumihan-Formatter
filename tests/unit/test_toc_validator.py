@@ -87,19 +87,13 @@ class TestTOCValidator:
         result = self.validator.validate_toc_structure(entries)
 
         assert len(result) > 0
-        assert any(
-            "level" in error.lower() and "invalid" in error.lower() for error in result
-        )
+        assert any("level" in error.lower() and "invalid" in error.lower() for error in result)
 
     def test_validate_invalid_level_range(self):
         """Test validation with invalid level range"""
         entries = [
-            self.create_mock_toc_entry(
-                "Chapter 1", 0, "chapter-1"
-            ),  # Level 0 (invalid)
-            self.create_mock_toc_entry(
-                "Chapter 2", 7, "chapter-2"
-            ),  # Level 7 (too high)
+            self.create_mock_toc_entry("Chapter 1", 0, "chapter-1"),  # Level 0 (invalid)
+            self.create_mock_toc_entry("Chapter 2", 7, "chapter-2"),  # Level 7 (too high)
             self.create_mock_toc_entry("Chapter 3", 1, "chapter-3"),
         ]
 
@@ -125,9 +119,7 @@ class TestTOCValidator:
         result = self.validator.validate_toc_structure(entries)
 
         assert len(result) > 0
-        assert any(
-            "title" in error.lower() and "empty" in error.lower() for error in result
-        )
+        assert any("title" in error.lower() and "empty" in error.lower() for error in result)
 
     def test_validate_empty_id(self):
         """Test validation with empty ID"""
@@ -139,9 +131,7 @@ class TestTOCValidator:
         result = self.validator.validate_toc_structure(entries)
 
         assert len(result) > 0
-        assert any(
-            "id" in error.lower() and "empty" in error.lower() for error in result
-        )
+        assert any("id" in error.lower() and "empty" in error.lower() for error in result)
 
     def test_validate_duplicate_ids(self):
         """Test validation with duplicate IDs"""
@@ -154,9 +144,7 @@ class TestTOCValidator:
         result = self.validator.validate_toc_structure(entries)
 
         assert len(result) > 0
-        assert any(
-            "duplicate" in error.lower() and "id" in error.lower() for error in result
-        )
+        assert any("duplicate" in error.lower() and "id" in error.lower() for error in result)
 
     def test_validate_invalid_id_format(self):
         """Test validation with invalid ID format"""
@@ -171,8 +159,7 @@ class TestTOCValidator:
 
         assert len(result) > 0
         assert any(
-            "id" in error.lower()
-            and ("format" in error.lower() or "invalid" in error.lower())
+            "id" in error.lower() and ("format" in error.lower() or "invalid" in error.lower())
             for error in result
         )
 
@@ -180,9 +167,7 @@ class TestTOCValidator:
         """Test validation with level sequence gaps"""
         entries = [
             self.create_mock_toc_entry("Chapter 1", 1, "chapter-1"),
-            self.create_mock_toc_entry(
-                "Subsection", 3, "subsection"
-            ),  # Gap: jumps from 1 to 3
+            self.create_mock_toc_entry("Subsection", 3, "subsection"),  # Gap: jumps from 1 to 3
             self.create_mock_toc_entry("Chapter 2", 1, "chapter-2"),
         ]
 
@@ -209,9 +194,7 @@ class TestTOCValidator:
     def test_validate_special_characters_in_title(self):
         """Test validation with special characters in titles"""
         entries = [
-            self.create_mock_toc_entry(
-                "Chapter with <HTML> & 特殊文字", 1, "chapter-special"
-            ),
+            self.create_mock_toc_entry("Chapter with <HTML> & 特殊文字", 1, "chapter-special"),
             self.create_mock_toc_entry("Normal Chapter", 1, "normal-chapter"),
         ]
 
@@ -220,18 +203,14 @@ class TestTOCValidator:
         # Should not produce errors for special characters in titles
         # (they should be properly escaped during rendering)
         title_errors = [
-            error
-            for error in result
-            if "special" in error.lower() or "character" in error.lower()
+            error for error in result if "special" in error.lower() or "character" in error.lower()
         ]
         assert len(title_errors) == 0
 
     def test_validate_unicode_in_ids(self):
         """Test validation with Unicode characters in IDs"""
         entries = [
-            self.create_mock_toc_entry(
-                "Japanese Title", 1, "日本語-id"
-            ),  # Unicode in ID
+            self.create_mock_toc_entry("Japanese Title", 1, "日本語-id"),  # Unicode in ID
             self.create_mock_toc_entry("English Title", 1, "english-id"),
         ]
 
@@ -240,18 +219,14 @@ class TestTOCValidator:
         # Unicode in IDs might be invalid depending on HTML standards
         # Check if validator catches this
         unicode_errors = [
-            error
-            for error in result
-            if "unicode" in error.lower() or "id" in error.lower()
+            error for error in result if "unicode" in error.lower() or "id" in error.lower()
         ]
 
     def test_validate_mixed_case_sensitivity(self):
         """Test validation with case sensitivity in IDs"""
         entries = [
             self.create_mock_toc_entry("Chapter 1", 1, "Chapter-1"),
-            self.create_mock_toc_entry(
-                "Chapter 2", 1, "chapter-1"
-            ),  # Same ID, different case
+            self.create_mock_toc_entry("Chapter 2", 1, "chapter-1"),  # Same ID, different case
             self.create_mock_toc_entry("Chapter 3", 1, "chapter-3"),
         ]
 
@@ -287,7 +262,4 @@ class TestTOCValidator:
         result = self.validator.validate_toc_structure(entries)
 
         assert len(result) >= 2  # Should catch both malformed entries
-        assert any(
-            "structure" in error.lower() or "format" in error.lower()
-            for error in result
-        )
+        assert any("structure" in error.lower() or "format" in error.lower() for error in result)

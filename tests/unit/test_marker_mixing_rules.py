@@ -59,10 +59,7 @@ class TestMarkerMixingRules:
         for text in invalid_texts:
             violations = SyntaxRules.check_marker_mixing(text)
             assert len(violations) > 0, f"混在を検出できませんでした: {text}"
-            assert (
-                "半角マーカー（#）と全角マーカー（＃）の混在は禁止されています"
-                in violations[0]
-            )
+            assert "半角マーカー（#）と全角マーカー（＃）の混在は禁止されています" in violations[0]
 
     def test_marker_mixing_validator_integration(self):
         """バリデーターとの統合テスト"""
@@ -153,10 +150,7 @@ class TestColorCaseMixingRules:
         for text in invalid_texts:
             violations = SyntaxRules.check_color_case_mixing(text)
             assert len(violations) > 0, f"色名混在を検出できませんでした: {text}"
-            assert (
-                "color属性で大文字・小文字・混在表記の混用は禁止されています"
-                in violations[0]
-            )
+            assert "color属性で大文字・小文字・混在表記の混用は禁止されています" in violations[0]
 
     def test_hex_colors_not_affected(self):
         """16進数カラーコードは大文字小文字混在チェック対象外"""
@@ -216,9 +210,7 @@ class TestMixingRulesComprehensive:
 
         # マーカー混在とcolor混在の両方が検出されることを確認
         marker_errors = [
-            e
-            for e in errors
-            if "マーカー" in str(e.message) and "混在" in str(e.message)
+            e for e in errors if "マーカー" in str(e.message) and "混在" in str(e.message)
         ]
         color_errors = [e for e in errors if "color属性" in str(e.message)]
 
@@ -270,9 +262,7 @@ class TestMixingRulesComprehensive:
         processing_time = end_time - start_time
 
         # 5秒以内に処理が完了することを確認
-        assert (
-            processing_time < 5.0
-        ), f"処理に{processing_time:.2f}秒かかりました（目標: 5秒以内）"
+        assert processing_time < 5.0, f"処理に{processing_time:.2f}秒かかりました（目標: 5秒以内）"
 
         # エラーが適切に処理されることを確認
         assert isinstance(errors, list), "エラーリストが返されませんでした"

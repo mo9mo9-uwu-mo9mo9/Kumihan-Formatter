@@ -1,6 +1,7 @@
 """Inline notation handling for Kumihan parser - Issue #813 refactoring
 
-This module contains inline notation parsing logic extracted from the monolithic parser.py.
+This module contains inline notation parsing logic extracted from the
+monolithic parser.py.
 Handles list processing and other inline elements.
 """
 

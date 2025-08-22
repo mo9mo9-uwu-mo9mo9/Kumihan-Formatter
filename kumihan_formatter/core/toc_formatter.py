@@ -122,7 +122,8 @@ class TOCFormatter:
 
         html_parts = [
             f'<div class="{self.css_classes.get("container", "toc-container")}">',
-            f'<h2 class="{self.css_classes.get("title", "toc-title")}">{self.title}</h2>',
+            f'<h2 class="{self.css_classes.get(
+                "title", "toc-title")}">{self.title}</h2>',
             '<ul class="toc-list">',
         ]
 

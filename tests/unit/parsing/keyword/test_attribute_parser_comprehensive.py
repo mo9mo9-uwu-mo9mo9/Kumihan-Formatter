@@ -79,9 +79,7 @@ class TestAttributeParserCore:
         assert "style" in attributes
 
         # 複雑なスタイル
-        content = (
-            'style="background: linear-gradient(to right, red, blue); margin: 10px;"'
-        )
+        content = 'style="background: linear-gradient(to right, red, blue); margin: 10px;"'
         attributes = self.parser.parse_attributes_from_content(content)
         assert "style" in attributes
 

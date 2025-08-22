@@ -314,7 +314,8 @@ class BasicMLSystem:
             self._update_prediction_cache(cache_key, final_result)
 
             self.logger.info(
-                f"Optimization opportunities predicted in {final_result['processing_time']:.3f}s"
+                f"Optimization opportunities predicted in "
+                f"{final_result['processing_time']:.3f}s"
             )
             return final_result
 
@@ -495,7 +496,8 @@ class BasicMLSystem:
             self.prediction_cache[cache_key] = cached_result
 
             self.logger.debug(
-                f"Cache updated: {len(self.prediction_cache)}/{self.cache_max_size} entries"
+                f"Cache updated: {len(
+                    self.prediction_cache)}/{self.cache_max_size} entries"
             )
 
         except Exception as e:

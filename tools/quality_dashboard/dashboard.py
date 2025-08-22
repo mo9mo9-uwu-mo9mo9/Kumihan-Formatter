@@ -99,9 +99,7 @@ class QualityDashboard:
         def generate_report():
             """品質レポート生成"""
             report_type = request.args.get("type", "html")
-            report_path = self.report_generator.generate_comprehensive_report(
-                format=report_type
-            )
+            report_path = self.report_generator.generate_comprehensive_report(format=report_type)
             return jsonify(
                 {
                     "status": "success",
@@ -157,8 +155,17 @@ class QualityDashboard:
         .header { background: #2d3748; color: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
         .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
         .header p { opacity: 0.8; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metrics-grid { display: grid; grid-template-columns: repeat(
+            auto-fit,
+            minmax(300px,
+            1fr)
+{indent}); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(
+            0,
+            0,
+            0,
+            0.1
+{indent}); }
         .metric-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #2d3748; }
         .metric-value { font-size: 2rem; font-weight: bold; margin-bottom: 10px; }
         .metric-status { padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; }
@@ -166,7 +173,12 @@ class QualityDashboard:
         .status-warning { background: #F59E0B; color: white; }
         .status-fail { background: #EF4444; color: white; }
         .charts-section { margin-top: 30px; }
-        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(
+            0,
+            0,
+            0,
+            0.1
+{indent}); margin-bottom: 20px; }
         .loading { text-align: center; padding: 40px; color: #64748b; }
         .refresh-btn { background: #3B82F6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-left: 10px; }
         .refresh-btn:hover { background: #2563EB; }
@@ -384,9 +396,7 @@ class QualityDashboard:
 </html>
         """
 
-    def run(
-        self, host: str = "127.0.0.1", port: int = 5000, debug: bool = False
-    ) -> None:
+    def run(self, host: str = "127.0.0.1", port: int = 5000, debug: bool = False) -> None:
         """ダッシュボード起動"""
         logger.info(f"Starting quality dashboard at http://{host}:{port}")
         self.app.run(host=host, port=port, debug=debug)

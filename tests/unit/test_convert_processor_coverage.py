@@ -111,9 +111,7 @@ class TestConvertProcessorCoverage:
         """Test processing file with parsing errors."""
         # Setup mock to simulate errors
         mock_parser_instance = Mock()
-        mock_parser_instance.parse_streaming_from_text.side_effect = Exception(
-            "Parse error"
-        )
+        mock_parser_instance.parse_streaming_from_text.side_effect = Exception("Parse error")
         mock_parser.return_value = mock_parser_instance
 
         result = self.processor.process_file(
@@ -352,9 +350,7 @@ class TestConvertWatcherCoverage:
 
 @pytest.mark.unit
 @pytest.mark.performance
-@pytest.mark.skipif(
-    PerformanceMetrics is None, reason="PerformanceMetrics not available"
-)
+@pytest.mark.skipif(PerformanceMetrics is None, reason="PerformanceMetrics not available")
 class TestPerformanceMetricsCoverage:
     """PerformanceMetrics comprehensive coverage tests."""
 

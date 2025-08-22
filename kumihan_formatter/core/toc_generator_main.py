@@ -342,7 +342,8 @@ class TOCGenerator:
             nodes: List of nodes to check
 
         Returns:
-            bool: True if TOC should be generated (automatic generation when 2+ headings)
+            bool: True if TOC should be generated
+                (automatic generation when 2+ headings)
         """
         try:
             # Check if there are multiple headings for automatic generation

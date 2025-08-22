@@ -21,7 +21,8 @@ class NestedListParser:
 
     def __init__(self, list_parser: ListParserCore):
         warnings.warn(
-            "NestedListParserは非推奨です。kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
+            "NestedListParserは非推奨です。"
+            "kumihan_formatter.core.parsing.UnifiedListParserを使用してください。",
             DeprecationWarning,
             stacklevel=2,
         )

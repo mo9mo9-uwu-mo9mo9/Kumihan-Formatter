@@ -56,9 +56,7 @@ class TestConfigEnvironmentHandlerInitialization:
 class TestConfigEnvironmentHandlerLoadFromEnv:
     """load_from_env メソッドのテスト"""
 
-    @patch.dict(
-        "os.environ", {"KUMIHAN_CSS_BACKGROUND": "#ffffff", "KUMIHAN_THEME": "light"}
-    )
+    @patch.dict("os.environ", {"KUMIHAN_CSS_BACKGROUND": "#ffffff", "KUMIHAN_THEME": "light"})
     def test_正常系_load_from_env_merge_config持つ設定(self):
         """merge_configメソッドを持つ設定オブジェクトのテスト"""
         # Given: merge_configメソッドを持つ設定オブジェクト
@@ -168,9 +166,7 @@ class TestConfigEnvironmentHandlerExtractEnvConfig:
         assert result["theme"] == "custom"
         assert "css" not in result
 
-    @patch.dict(
-        "os.environ", {"KUMIHAN_CSS_FONT_SIZE": "16px", "KUMIHAN_THEME": "dark"}
-    )
+    @patch.dict("os.environ", {"KUMIHAN_CSS_FONT_SIZE": "16px", "KUMIHAN_THEME": "dark"})
     def test_正常系_extract_env_config_CSS_テーマ混在(self):
         """CSS・テーマ変数が混在する場合のテスト"""
         # Given: CSS・テーマ変数が混在した環境

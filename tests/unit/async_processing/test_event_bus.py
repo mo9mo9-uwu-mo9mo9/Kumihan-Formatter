@@ -104,9 +104,7 @@ class TestExtendedEventType:
         assert ExtendedEventType.RENDERING_ERROR.value == "rendering_error"
 
         # 新規イベント
-        assert (
-            ExtendedEventType.PERFORMANCE_MEASUREMENT.value == "performance_measurement"
-        )
+        assert ExtendedEventType.PERFORMANCE_MEASUREMENT.value == "performance_measurement"
         assert ExtendedEventType.PLUGIN_LOADED.value == "plugin_loaded"
         assert ExtendedEventType.PLUGIN_UNLOADED.value == "plugin_unloaded"
         assert ExtendedEventType.DEPENDENCY_RESOLVED.value == "dependency_resolved"
@@ -167,12 +165,8 @@ class TestIntegratedEventBus:
         async_observer = MockAsyncObserver()
 
         # ベースバスのsubscribe_asyncが呼ばれることを確認
-        with patch.object(
-            self.event_bus._base_bus, "subscribe_async"
-        ) as mock_subscribe_async:
-            self.event_bus.subscribe_async(
-                ExtendedEventType.ASYNC_TASK_STARTED, async_observer
-            )
+        with patch.object(self.event_bus._base_bus, "subscribe_async") as mock_subscribe_async:
+            self.event_bus.subscribe_async(ExtendedEventType.ASYNC_TASK_STARTED, async_observer)
             mock_subscribe_async.assert_called_once_with(
                 ExtendedEventType.ASYNC_TASK_STARTED, async_observer
             )
@@ -186,20 +180,14 @@ class TestIntegratedEventBus:
         self.mock_container.resolve.return_value = mock_observer
 
         with patch.object(self.event_bus._base_bus, "subscribe") as mock_subscribe:
-            self.event_bus.subscribe_with_di(
-                EventType.RENDERING_STARTED, mock_observer_class
-            )
+            self.event_bus.subscribe_with_di(EventType.RENDERING_STARTED, mock_observer_class)
 
             self.mock_container.resolve.assert_called_once_with(mock_observer_class)
-            mock_subscribe.assert_called_once_with(
-                EventType.RENDERING_STARTED, mock_observer
-            )
+            mock_subscribe.assert_called_once_with(EventType.RENDERING_STARTED, mock_observer)
 
     def test_正常系_publish_同期イベント(self):
         """正常系: 同期イベントの発行"""
-        event = Event(
-            event_type=EventType.PARSING_STARTED, source="test", data={"test": "data"}
-        )
+        event = Event(event_type=EventType.PARSING_STARTED, source="test", data={"test": "data"})
 
         with patch.object(self.event_bus._base_bus, "publish") as mock_publish:
             self.event_bus.publish(event)
@@ -236,9 +224,7 @@ class TestIntegratedEventBus:
             data={"task_id": "test_task"},
         )
 
-        with patch.object(
-            self.event_bus._base_bus, "publish_async"
-        ) as mock_publish_async:
+        with patch.object(self.event_bus._base_bus, "publish_async") as mock_publish_async:
             mock_publish_async.return_value = asyncio.Future()
             mock_publish_async.return_value.set_result(None)
 
@@ -254,13 +240,9 @@ class TestIntegratedEventBus:
     @pytest.mark.anyio
     async def test_異常系_publish_async_エラー発生(self):
         """異常系: 非同期イベント発行時のエラー処理"""
-        event = Event(
-            event_type=ExtendedEventType.ASYNC_TASK_COMPLETED, source="test", data={}
-        )
+        event = Event(event_type=ExtendedEventType.ASYNC_TASK_COMPLETED, source="test", data={})
 
-        with patch.object(
-            self.event_bus._base_bus, "publish_async"
-        ) as mock_publish_async:
+        with patch.object(self.event_bus._base_bus, "publish_async") as mock_publish_async:
             # 非同期関数でエラーを発生させる
             mock_publish_async.side_effect = ValueError("非同期発行エラー")
 
@@ -303,12 +285,8 @@ class TestIntegratedEventBus:
     def test_正常系_get_metrics_全体取得(self):
         """正常系: 全メトリクスの取得"""
         # いくつかのメトリクスを事前に作成
-        self.event_bus._metrics["test_event_1"] = EventMetrics(
-            event_count=5, error_count=1
-        )
-        self.event_bus._metrics["test_event_2"] = EventMetrics(
-            event_count=10, error_count=0
-        )
+        self.event_bus._metrics["test_event_1"] = EventMetrics(event_count=5, error_count=1)
+        self.event_bus._metrics["test_event_2"] = EventMetrics(event_count=10, error_count=0)
 
         metrics = self.event_bus.get_metrics()
 
@@ -322,9 +300,7 @@ class TestIntegratedEventBus:
     def test_正常系_get_metrics_個別取得(self):
         """正常系: 特定イベントのメトリクス取得"""
         # 特定のメトリクスを作成
-        test_metrics = EventMetrics(
-            event_count=7, error_count=2, total_processing_time=3.5
-        )
+        test_metrics = EventMetrics(event_count=7, error_count=2, total_processing_time=3.5)
         self.event_bus._metrics["specific_event"] = test_metrics
 
         metrics = self.event_bus.get_metrics("specific_event")
@@ -505,9 +481,7 @@ class TestGlobalEventBusFunctions:
     def test_正常系_publish_event_便利関数(self):
         """正常系: 便利なイベント発行関数"""
         with patch.object(get_event_bus(), "publish") as mock_publish:
-            publish_event(
-                EventType.PARSING_STARTED, "test_source", {"test_key": "test_value"}
-            )
+            publish_event(EventType.PARSING_STARTED, "test_source", {"test_key": "test_value"})
 
             # publishが正しい引数で呼ばれる
             mock_publish.assert_called_once()
@@ -605,9 +579,7 @@ class TestEventBusIntegration:
     async def test_統合系_非同期イベント_エンドツーエンド(self):
         """統合系: 非同期イベントのエンドツーエンド処理"""
         # 非同期オブザーバー登録
-        self.event_bus.subscribe_async(
-            ExtendedEventType.ASYNC_TASK_STARTED, self.async_observer
-        )
+        self.event_bus.subscribe_async(ExtendedEventType.ASYNC_TASK_STARTED, self.async_observer)
 
         # 非同期イベント発行
         event = Event(
@@ -645,9 +617,7 @@ class TestEventBusIntegration:
         events = [
             Event(EventType.RENDERING_COMPLETED, "source1", {"id": 1}),
             Event(EventType.RENDERING_COMPLETED, "source2", {"id": 2}),
-            Event(
-                ExtendedEventType.PERFORMANCE_MEASUREMENT, "source3", {"metric": "test"}
-            ),
+            Event(ExtendedEventType.PERFORMANCE_MEASUREMENT, "source3", {"metric": "test"}),
         ]
 
         self.event_bus.publish_parallel(events)
@@ -673,10 +643,7 @@ class TestEventBusIntegration:
             self.event_bus.subscribe(EventType.PARSING_COMPLETED, observer)
 
         # 大量イベント作成
-        events = [
-            Event(EventType.PARSING_COMPLETED, f"source_{i}", {"id": i})
-            for i in range(100)
-        ]
+        events = [Event(EventType.PARSING_COMPLETED, f"source_{i}", {"id": i}) for i in range(100)]
 
         # 並列処理実行
         start_time = time.time()
@@ -710,9 +677,7 @@ class TestEventBusIntegration:
         self.event_bus.subscribe(ExtendedEventType.PLUGIN_LOADED, error_observer)
 
         # イベント発行（エラーが発生するが処理は継続）
-        event = Event(
-            ExtendedEventType.PLUGIN_LOADED, "test", {"plugin": "test_plugin"}
-        )
+        event = Event(ExtendedEventType.PLUGIN_LOADED, "test", {"plugin": "test_plugin"})
 
         # エラーが発生しても他の処理は継続される（実装依存）
         try:

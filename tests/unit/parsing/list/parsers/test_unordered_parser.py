@@ -165,15 +165,9 @@ class TestUnorderedListParser:
             metadata={
                 "type": "checklist",
                 "children": [
-                    create_node(
-                        "checklist_item", content="完了", metadata={"checked": True}
-                    ),
-                    create_node(
-                        "checklist_item", content="未完了", metadata={"checked": False}
-                    ),
-                    create_node(
-                        "checklist_item", content="完了2", metadata={"checked": True}
-                    ),
+                    create_node("checklist_item", content="完了", metadata={"checked": True}),
+                    create_node("checklist_item", content="未完了", metadata={"checked": False}),
+                    create_node("checklist_item", content="完了2", metadata={"checked": True}),
                 ],
             },
         )
@@ -297,9 +291,7 @@ class TestUnorderedListParser:
     def test_異常系_チェックリスト以外の状況抽出(self):
         """異常系: チェックリスト以外のノードの状況抽出"""
         # Given: チェックリスト以外のノード
-        non_checklist_node = create_node(
-            "list", content="", metadata={"type": "unordered"}
-        )
+        non_checklist_node = create_node("list", content="", metadata={"type": "unordered"})
 
         # When: 完了状況抽出
         status = self.parser.extract_checklist_status(non_checklist_node)
@@ -424,13 +416,9 @@ class TestUnorderedListParser:
         # Given: 様々な状態のチェックリスト
         checklist_items = [
             create_node("checklist_item", content="完了1", metadata={"checked": True}),
-            create_node(
-                "checklist_item", content="未完了1", metadata={"checked": False}
-            ),
+            create_node("checklist_item", content="未完了1", metadata={"checked": False}),
             create_node("checklist_item", content="完了2", metadata={"checked": True}),
-            create_node(
-                "checklist_item", content="未完了2", metadata={"checked": False}
-            ),
+            create_node("checklist_item", content="未完了2", metadata={"checked": False}),
             create_node("checklist_item", content="完了3", metadata={"checked": True}),
         ]
 
@@ -527,9 +515,7 @@ class TestUnorderedListParser:
             # Then: 日本語が正しく処理されることを検証
             assert result is not None
             assert (
-                "日本語" in result.content
-                or "完了" in result.content
-                or "説明" in result.content
+                "日本語" in result.content or "完了" in result.content or "説明" in result.content
             )
 
     def test_特殊_特殊文字とマークアップ(self):

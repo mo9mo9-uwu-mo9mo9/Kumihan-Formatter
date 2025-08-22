@@ -189,7 +189,8 @@ class PerformanceMetrics:
 
             self.logger.info(
                 f"Phase B preservation validated: {current_phase_b_effect:.1f}% "
-                f"(threshold: {self.success_criteria['phase_b_preservation_threshold']}%)"
+                f"(threshold: "
+                f"{self.success_criteria['phase_b_preservation_threshold']}%)"
             )
             return phase_b_measurement
 

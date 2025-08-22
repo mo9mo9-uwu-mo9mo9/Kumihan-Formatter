@@ -40,7 +40,8 @@ class ParallelStreamingParser:
         self._resource_cleanup_callbacks: list[Callable[[], None]] = []
 
         self.logger.info(
-            f"Thread-safe parallel streaming parser initialized with {max_workers} workers"
+            f"Thread-safe parallel streaming parser initialized with "
+            f"{max_workers} workers"
         )
 
     def parse_file_parallel(
@@ -88,7 +89,8 @@ class ParallelStreamingParser:
             Any: 解析済みノード
         """
         self.logger.info(
-            f"Starting thread-safe parallel streaming parse of text: {len(text)} characters"
+            f"Starting thread-safe parallel streaming parse of text: "
+            f"{len(text)} characters"
         )
 
         try:

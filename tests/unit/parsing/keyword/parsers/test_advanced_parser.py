@@ -102,9 +102,7 @@ class TestAdvancedKeywordParser:
 
     def test_正常系_マーカーキーワード解析_複合(self):
         """正常系: 複合キーワードのマーカー解析"""
-        keywords, attributes, errors = self.parser.parse_marker_keywords(
-            "太字+イタリック"
-        )
+        keywords, attributes, errors = self.parser.parse_marker_keywords("太字+イタリック")
 
         assert len(keywords) == 2
         assert "太字" in keywords
@@ -113,9 +111,7 @@ class TestAdvancedKeywordParser:
 
     def test_正常系_マーカーキーワード解析_ルビ(self):
         """正常系: ルビ記法のマーカー解析"""
-        keywords, attributes, errors = self.parser.parse_marker_keywords(
-            "ルビ 漢字|かんじ"
-        )
+        keywords, attributes, errors = self.parser.parse_marker_keywords("ルビ 漢字|かんじ")
 
         assert len(keywords) == 0
         assert "ruby" in attributes
@@ -144,9 +140,7 @@ class TestAdvancedKeywordParser:
 
     def test_正常系_複合ブロック作成_複数キーワード(self):
         """正常系: 複数キーワードでの複合ブロック作成"""
-        node = self.parser.create_compound_block(
-            ["太字", "イタリック"], "テスト内容", {}
-        )
+        node = self.parser.create_compound_block(["太字", "イタリック"], "テスト内容", {})
 
         assert isinstance(node, Node)
         # ネスト構造になっているか確認
@@ -232,9 +226,7 @@ class TestAdvancedKeywordParser:
             "split_compound_keywords",
             side_effect=Exception("テストエラー"),
         ):
-            keywords, attributes, errors = self.parser.parse_marker_keywords(
-                "太字+イタリック"
-            )
+            keywords, attributes, errors = self.parser.parse_marker_keywords("太字+イタリック")
 
             assert len(errors) == 1
             assert "マーカー解析エラー" in errors[0]

@@ -456,7 +456,11 @@ class TestRendererBaseCoverage:
                 self.config = config or {}
 
             def render_node(self, node):
-                return f"<{self.config.get('tag', 'div')}>{node.content}</{self.config.get('tag', 'div')}>"
+                return f"<{self.config.get(
+                    'tag',
+                    'div')}>{node.content}</{self.config.get('tag',
+                    'div'
+{indent})}>"
 
         config = {"tag": "span"}
         renderer = ConfigurableRenderer(config)

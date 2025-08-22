@@ -54,25 +54,15 @@ class CoverageChartGenerator:
             fig, ax = plt.subplots(figsize=(12, 8))
 
             # 棒グラフ
-            bars = ax.bar(
-                modules, coverages, color=self._get_coverage_colors(coverages)
-            )
+            bars = ax.bar(modules, coverages, color=self._get_coverage_colors(coverages))
 
             # 閾値ライン
-            ax.axhline(
-                y=70, color="red", linestyle="--", alpha=0.7, label="最小閾値 (70%)"
-            )
-            ax.axhline(
-                y=80, color="orange", linestyle="--", alpha=0.7, label="目標 (80%)"
-            )
-            ax.axhline(
-                y=90, color="green", linestyle="--", alpha=0.7, label="優秀 (90%)"
-            )
+            ax.axhline(y=70, color="red", linestyle="--", alpha=0.7, label="最小閾値 (70%)")
+            ax.axhline(y=80, color="orange", linestyle="--", alpha=0.7, label="目標 (80%)")
+            ax.axhline(y=90, color="green", linestyle="--", alpha=0.7, label="優秀 (90%)")
 
             # スタイリング
-            ax.set_title(
-                "モジュール別テストカバレッジ", fontsize=16, fontweight="bold", pad=20
-            )
+            ax.set_title("モジュール別テストカバレッジ", fontsize=16, fontweight="bold", pad=20)
             ax.set_xlabel("モジュール", fontsize=12)
             ax.set_ylabel("カバレッジ (%)", fontsize=12)
             ax.set_ylim(0, 100)
@@ -152,12 +142,8 @@ class CoverageChartGenerator:
             )
 
             # 閾値ライン
-            ax.axhline(
-                y=70, color="red", linestyle="--", alpha=0.7, label="最小閾値 (70%)"
-            )
-            ax.axhline(
-                y=80, color="green", linestyle="--", alpha=0.7, label="目標 (80%)"
-            )
+            ax.axhline(y=70, color="red", linestyle="--", alpha=0.7, label="最小閾値 (70%)")
+            ax.axhline(y=80, color="green", linestyle="--", alpha=0.7, label="目標 (80%)")
 
             # 範囲塗りつぶし
             ax.fill_between(df["date"], df["coverage"], alpha=0.3, color="#3B82F6")

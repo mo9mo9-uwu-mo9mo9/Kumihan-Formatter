@@ -23,7 +23,8 @@ def display_phase_info(advanced: bool, quality_monitoring: bool) -> None:
     if advanced:
         click.echo("🚀 Advanced mode enabled (Phase 3.2)")
         click.echo(
-            "Features: E704 (multiple statements), error dependency analysis, HTML reports"
+            "Features: E704 (multiple statements), error dependency analysis, "
+            "HTML reports"
         )
 
     if quality_monitoring:
@@ -67,7 +68,8 @@ def display_results(
         click.echo("📈 Processing statistics:")
         click.echo(f"  Files processed: {len(py_files)}")
         click.echo(
-            f"  Average fixes per file: {round(total_fixes['total'] / len(py_files), 1)}"
+            f"  Average fixes per file: "
+            f"{round(total_fixes['total'] / len(py_files), 1)}"
         )
         click.echo(f"  Success rate: {success_rate}%")
 
@@ -91,7 +93,8 @@ def display_quality_report(fixer: "Flake8AutoFixer") -> None:
     performance = quality_report["performance"]
     click.echo("\nPerformance Metrics:")
     click.echo(
-        f"  Avg Processing Time: {performance['avg_processing_time_per_file']:.3f}s per file"
+        f"  Avg Processing Time: "
+        f"{performance['avg_processing_time_per_file']:.3f}s per file"
     )
     click.echo(
         f"  Error Detection Rate: {performance['errors_per_second']:.1f} errors/sec"

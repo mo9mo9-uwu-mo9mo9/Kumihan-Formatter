@@ -139,9 +139,7 @@ class TestLargeFileProcessing:
         assert elapsed < 30.0, f"処理時間が遅すぎます: {elapsed:.2f}秒"
         assert output_size > 0, "出力ファイルが空です"
 
-        logger.info(
-            f"5MBファイル処理: {elapsed:.2f}秒, 出力: {output_size/1024/1024:.1f}MB"
-        )
+        logger.info(f"5MBファイル処理: {elapsed:.2f}秒, 出力: {output_size/1024/1024:.1f}MB")
 
     @pytest.mark.slow
     def test_大型ファイル処理_10MB(self) -> None:

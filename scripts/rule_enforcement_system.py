@@ -1492,7 +1492,11 @@ class BehavioralControlReportGenerator:
         if data["next_optimization_targets"]:
             report += f"\n\n🔧 【次回最適化対象】\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             for target in data["next_optimization_targets"]:
-                report += f"\n• {target['target']}: {target['current_value']:.1f}% → {target['target_value']:.1f}% ({target['optimization_method']})"
+                report += (
+                    (
+                        f"\n• {target['target']}: {target['current_value']:.1f}% → {target['target_value']:.1f}% ({target['optimization_method']})"
+                    )
+                )
 
         report += f"""
 

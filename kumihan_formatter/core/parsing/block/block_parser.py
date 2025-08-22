@@ -5,7 +5,10 @@ This module handles the parsing of basic block-level elements.
 
 ⚠️  DEPRECATION NOTICE - Issue #880 Phase 2C:
 このBlockParserは非推奨です。新しい統一パーサーシステムをご利用ください:
-from kumihan_formatter.core.parsing import get_global_coordinator, register_default_parsers
+from kumihan_formatter.core.parsing import (
+    get_global_coordinator,
+    register_default_parsers,
+)
 """
 
 import re

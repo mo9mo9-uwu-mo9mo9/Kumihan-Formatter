@@ -49,7 +49,14 @@ class WorkflowTester:
         tests = [
             ("Black formatting", "black --check --diff kumihan_formatter/", 60),
             ("isort imports", "isort --check-only --diff kumihan_formatter/", 60),
-            ("Fast flake8", "flake8 kumihan_formatter/ --max-line-length=88 --select=E9,F63,F7,F82", 60),
+            (
+                "Fast flake8",
+                "flake8 kumihan_formatter/ --max-line-length=88 --select=E9,
+                F63,
+                F7,
+                F82",
+                60
+{indent}),
             ("Core mypy", "mypy kumihan_formatter/core/ --ignore-missing-imports", 120)
         ]
         
@@ -73,9 +80,18 @@ class WorkflowTester:
         print("\\n=== 軽量テスト ===")
         
         test_suites = [
-            ("Unit Core", "pytest tests/unit/ast_nodes/ tests/unit/config/ --maxfail=3 --timeout=120 -n=2 --tb=short -v"),
-            ("Unit Parsing", "pytest tests/unit/parsing/ --maxfail=3 --timeout=120 -n=2 --tb=short -v"),
-            ("Unit Rendering", "pytest tests/unit/rendering/ --maxfail=3 --timeout=120 -n=2 --tb=short -v")
+            (
+                "Unit Core",
+                "pytest tests/unit/ast_nodes/ tests/unit/config/ --maxfail=3 --timeout=120 -n=2 --tb=short -v"
+{indent}),
+            (
+                "Unit Parsing",
+                "pytest tests/unit/parsing/ --maxfail=3 --timeout=120 -n=2 --tb=short -v"
+{indent}),
+            (
+                "Unit Rendering",
+                "pytest tests/unit/rendering/ --maxfail=3 --timeout=120 -n=2 --tb=short -v"
+{indent})
         ]
         
         results = {}

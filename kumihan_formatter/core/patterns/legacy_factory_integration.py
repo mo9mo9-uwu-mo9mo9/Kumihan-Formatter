@@ -183,7 +183,8 @@ def create_legacy_file_operations(ui: Any = None) -> Any:
         return adapter.container.resolve(FileOperationsCore)
     except Exception as e:
         logger.warning(
-            f"Legacy file operations creation failed, falling back to direct creation: {e}"
+            f"Legacy file operations creation failed, "
+            f"falling back to direct creation: {e}"
         )
         from ..file_operations_factory import create_file_operations
 
@@ -205,7 +206,8 @@ def create_legacy_markdown_converter() -> Any:
         return parser, processor, renderer
     except Exception as e:
         logger.warning(
-            f"Legacy markdown converter creation failed, falling back to direct creation: {e}"
+            f"Legacy markdown converter creation failed, "
+            f"falling back to direct creation: {e}"
         )
         from ..markdown_factory import create_markdown_converter
 

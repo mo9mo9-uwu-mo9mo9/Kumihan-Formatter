@@ -84,7 +84,8 @@ def log_task_usage(
 
         logger.info(
             f"Token使用量記録: {task_name} ({execution_method}) - "
-            f"実際:{actual_total}, 推定:{claude_solo_estimate}, 節約:{savings} ({savings_pct:.1f}%)"
+            f"実際:{actual_total}, 推定:{claude_solo_estimate}, "
+            f"節約:{savings} ({savings_pct:.1f}%)"
         )
 
     except Exception as e:

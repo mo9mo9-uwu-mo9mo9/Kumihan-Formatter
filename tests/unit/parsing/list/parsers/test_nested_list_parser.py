@@ -135,21 +135,11 @@ class TestNestedListParserExtended:
         """正常系: インデントレベルでのグループ化"""
         # Given: 様々なレベルのノード
         items = [
-            Node(
-                type="list_item", content="レベル0-1", attributes={"relative_level": 0}
-            ),
-            Node(
-                type="list_item", content="レベル1-1", attributes={"relative_level": 1}
-            ),
-            Node(
-                type="list_item", content="レベル1-2", attributes={"relative_level": 1}
-            ),
-            Node(
-                type="list_item", content="レベル0-2", attributes={"relative_level": 0}
-            ),
-            Node(
-                type="list_item", content="レベル2-1", attributes={"relative_level": 2}
-            ),
+            Node(type="list_item", content="レベル0-1", attributes={"relative_level": 0}),
+            Node(type="list_item", content="レベル1-1", attributes={"relative_level": 1}),
+            Node(type="list_item", content="レベル1-2", attributes={"relative_level": 1}),
+            Node(type="list_item", content="レベル0-2", attributes={"relative_level": 0}),
+            Node(type="list_item", content="レベル2-1", attributes={"relative_level": 2}),
         ]
 
         # When: インデントレベルグループ化
@@ -375,9 +365,7 @@ class TestNestedListParserExtended:
         invalid_items = [
             Node(type="list_item", content="項目1"),  # attributes なし
             Node(type="list_item", content="項目2", attributes={}),  # 空のattributes
-            Node(
-                type="list_item", content="項目3", attributes={"invalid": "data"}
-            ),  # 無関係なkey
+            Node(type="list_item", content="項目3", attributes={"invalid": "data"}),  # 無関係なkey
         ]
 
         # When: レベル別グループ化
@@ -437,9 +425,7 @@ class TestNestedListParserExtended:
         ]
 
         # When: インデント正規化
-        normalized = self.parser.normalize_indentation(
-            extreme_lines, spaces_per_level=4
-        )
+        normalized = self.parser.normalize_indentation(extreme_lines, spaces_per_level=4)
 
         # Then: 極端な値が適切に処理されることを検証
         assert len(normalized) == len(extreme_lines)
@@ -450,8 +436,9 @@ class TestNestedListParserExtended:
         """境界値: 大量ノードの処理"""
         # CI環境での実行時間を考慮して削減
         from tests.conftest import get_test_data_size
+
         node_count = get_test_data_size(1000, 100)
-        
+
         # Given: 大量のノード
         large_items = []
         for i in range(node_count):
@@ -551,9 +538,7 @@ class TestNestedListParserExtended:
 
         # When: 統合的なインデント処理
         # 1. インデント正規化
-        normalized = self.parser.normalize_indentation(
-            irregular_lines, spaces_per_level=4
-        )
+        normalized = self.parser.normalize_indentation(irregular_lines, spaces_per_level=4)
 
         # 2. 構造構築
         built = self.parser.build_nested_structure(normalized, base_level=0)
@@ -604,12 +589,8 @@ class TestNestedListParserExtended:
         # When: 堅牢な処理実行
         try:
             parsed = self.parser.parse_nested_list(problematic_input, level=0)
-            built = self.parser.build_nested_structure(
-                problematic_input.split("\n"), base_level=0
-            )
-            normalized = self.parser.normalize_indentation(
-                problematic_input.split("\n")
-            )
+            built = self.parser.build_nested_structure(problematic_input.split("\n"), base_level=0)
+            normalized = self.parser.normalize_indentation(problematic_input.split("\n"))
 
             results = [parsed, built, normalized]
         except Exception as e:

@@ -123,7 +123,8 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
                 self.logger.debug("Renderer factory initialized with DI support")
             except ImportError:
                 self.logger.debug(
-                    "Renderer factory not available, falling back to direct instantiation"
+                    "Renderer factory not available, "
+                    "falling back to direct instantiation"
                 )
 
         # レンダラーの初期化
@@ -324,7 +325,8 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         try:
             self.footnotes_data = footnotes_data
             self.logger.debug(
-                f"Set footnote data: {len(footnotes_data.get('footnotes', []))} footnotes"
+                f"Set footnote data: "
+                f"{len(footnotes_data.get('footnotes', []))} footnotes"
             )
         except Exception as e:
             self.logger.error(f"Failed to set footnote data: {e}")
@@ -371,7 +373,8 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
                         main_html = main_html.replace(placeholder, footnote_link)
 
                     self.logger.debug(
-                        f"Replaced {len(footnotes)} footnote placeholders with HTML links"
+                        f"Replaced {len(
+                            footnotes)} footnote placeholders with HTML links"
                     )
 
             except Exception as e:

@@ -87,7 +87,8 @@ class EffectMeasurementSystem:
 
             self.logger.info(
                 f"効果測定完了: 総合{total_rate:.1f}%削減 "
-                f"(A:{phase_a_rate:.1f}% B1:{phase_b1_rate:.1f}% B2:{phase_b2_rate:.1f}%)"
+                f"(A:{phase_a_rate:.1f}% B1:{phase_b1_rate:.1f}% "
+                f"B2:{phase_b2_rate:.1f}%)"
             )
 
             return result

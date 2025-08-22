@@ -97,9 +97,7 @@ class TestCLIComprehensiveCoverage:
         formats = ["html", "markdown", "pdf"]
 
         for fmt in formats:
-            result = self.runner.invoke(
-                cli, ["convert", str(self.test_file), "--format", fmt]
-            )
+            result = self.runner.invoke(cli, ["convert", str(self.test_file), "--format", fmt])
 
             # Should accept format option (may fail in execution)
             assert result.exit_code in [0, 1, 2]
@@ -316,9 +314,7 @@ class TestCLIConfiguration:
         test_file.write_text("#見出し1#\nテスト\n##")
 
         # Try with config file if supported
-        result = self.runner.invoke(
-            cli, ["convert", str(test_file), "--config", str(config_file)]
-        )
+        result = self.runner.invoke(cli, ["convert", str(test_file), "--config", str(config_file)])
 
         # Should handle config file (may not be implemented)
         assert result.exit_code in [0, 1, 2]
@@ -349,9 +345,7 @@ class TestCLIConfiguration:
         log_levels = ["DEBUG", "INFO", "WARNING", "ERROR"]
 
         for level in log_levels:
-            result = self.runner.invoke(
-                cli, ["convert", str(test_file), "--log-level", level]
-            )
+            result = self.runner.invoke(cli, ["convert", str(test_file), "--log-level", level])
 
             # Should handle log level options (may not be implemented)
             assert result.exit_code in [0, 1, 2]
@@ -408,17 +402,13 @@ class TestCLIOutputFormats:
 
     def test_html_output_format(self):
         """Test HTML output format."""
-        result = self.runner.invoke(
-            cli, ["convert", str(self.test_file), "--format", "html"]
-        )
+        result = self.runner.invoke(cli, ["convert", str(self.test_file), "--format", "html"])
 
         assert result.exit_code in [0, 1, 2]
 
     def test_markdown_output_format(self):
         """Test Markdown output format."""
-        result = self.runner.invoke(
-            cli, ["convert", str(self.test_file), "--format", "markdown"]
-        )
+        result = self.runner.invoke(cli, ["convert", str(self.test_file), "--format", "markdown"])
 
         assert result.exit_code in [0, 1, 2]
 

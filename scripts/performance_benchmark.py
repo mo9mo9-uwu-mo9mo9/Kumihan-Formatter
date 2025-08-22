@@ -710,10 +710,20 @@ def test_function():
         sys_info = self.results["system_info"]
         print(f"\n🖥️  System Info:")
         print(
-            f"   CPU Cores: {sys_info.get('cpu_physical_cores', 'N/A')} physical, {sys_info.get('cpu_logical_cores', 'N/A')} logical"
+            f"   CPU Cores: {sys_info.get(
+                'cpu_physical_cores',
+                'N/A')} physical,
+                {sys_info.get('cpu_logical_cores',
+                'N/A'
+{indent})} logical"
         )
         print(
-            f"   Memory: {sys_info.get('total_memory_gb', 'N/A')}GB total, {sys_info.get('available_memory_gb', 'N/A')}GB available"
+            f"   Memory: {sys_info.get(
+                'total_memory_gb',
+                'N/A')}GB total,
+                {sys_info.get('available_memory_gb',
+                'N/A'
+{indent})}GB available"
         )
         print(f"   Platform: {sys_info.get('platform', 'N/A')}")
 

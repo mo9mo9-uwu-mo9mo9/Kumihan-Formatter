@@ -43,9 +43,7 @@ class TestParsingObserver:
         observer = ParsingObserver()
 
         # Then: ロガーが適切に設定される
-        mock_get_logger.assert_called_once_with(
-            "kumihan_formatter.core.patterns.observers"
-        )
+        mock_get_logger.assert_called_once_with("kumihan_formatter.core.patterns.observers")
         assert observer.logger is mock_logger
 
     def test_正常系_対応イベント種別取得(self):
@@ -161,9 +159,7 @@ class TestParsingObserver:
         observer.handle_event(event)
 
         # Then: エラーログが出力される
-        mock_logger.error.assert_called_once_with(
-            "Parsing failed: Invalid syntax at line 10"
-        )
+        mock_logger.error.assert_called_once_with("Parsing failed: Invalid syntax at line 10")
 
     @patch("kumihan_formatter.core.patterns.observers.logging.getLogger")
     def test_正常系_パーシングエラーイベント処理_データなし(self, mock_get_logger):
@@ -237,9 +233,7 @@ class TestRenderingObserver:
         observer = RenderingObserver()
 
         # Then: ロガーが適切に設定される
-        mock_get_logger.assert_called_once_with(
-            "kumihan_formatter.core.patterns.observers"
-        )
+        mock_get_logger.assert_called_once_with("kumihan_formatter.core.patterns.observers")
         assert observer.logger is mock_logger
 
     def test_正常系_対応イベント種別取得(self):
@@ -355,9 +349,7 @@ class TestRenderingObserver:
         observer.handle_event(event)
 
         # Then: エラーログが出力される
-        mock_logger.error.assert_called_once_with(
-            "Rendering failed: Template not found: main.html"
-        )
+        mock_logger.error.assert_called_once_with("Rendering failed: Template not found: main.html")
 
     @patch("kumihan_formatter.core.patterns.observers.logging.getLogger")
     def test_正常系_レンダリングエラーイベント処理_データなし(self, mock_get_logger):

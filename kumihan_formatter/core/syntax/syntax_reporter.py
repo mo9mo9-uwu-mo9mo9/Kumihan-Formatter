@@ -118,7 +118,8 @@ class SyntaxReporter:
             counts = SyntaxReporter.get_error_counts(results)
             print(f"🔍 {len(results)} ファイルで {counts['TOTAL']} 個の問題を発見")
             print(
-                f"   エラー: {counts['ERROR']}, 警告: {counts['WARNING']}, 情報: {counts['INFO']}"
+                f"   エラー: {counts['ERROR']}, 警告: {counts['WARNING']}, "
+                f"情報: {counts['INFO']}"
             )
 
 

@@ -78,7 +78,26 @@ class TestDataGenerator:
         for i in range(count):
             # 時間分散（営業時間重視）
             day_offset = random.uniform(0, days)
-            hour_offset = random.choices([8, 9, 10, 11, 13, 14, 15, 16, 17], weights=[1, 2, 3, 3, 2, 3, 3, 2, 1])[0]
+            hour_offset = random.choices(
+                [8,
+                9,
+                10,
+                11,
+                13,
+                14,
+                15,
+                16,
+                17],
+                weights=[1,
+                2,
+                3,
+                3,
+                2,
+                3,
+                3,
+                2,
+                1]
+{indent})[0]
             minute_offset = random.randint(0, 59)
 
             start_time = base_time + timedelta(
@@ -143,7 +162,14 @@ class TestDataGenerator:
             # メタデータ生成
             metadata = {
                 "version": "1.0",
-                "branch": random.choices(["main", "develop", "feature/*"], weights=[0.6, 0.3, 0.1])[0],
+                "branch": random.choices(
+                    ["main",
+                    "develop",
+                    "feature/*"],
+                    weights=[0.6,
+                    0.3,
+                    0.1]
+{indent})[0],
                 "user": random.choice(["claude", "gemini", "auto"]),
                 "environment": "development",
                 "retry_count": random.randint(0, 3) if not success else 0,

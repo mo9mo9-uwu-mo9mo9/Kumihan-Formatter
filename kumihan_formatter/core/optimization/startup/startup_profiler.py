@@ -542,11 +542,13 @@ def main() -> None:
 
         print("Comparison Results:")
         print(
-            f"Time improvement: {comparison['time_improvement']['improvement_ms']:.2f}ms "
+            f"Time improvement: "
+            f"{comparison['time_improvement']['improvement_ms']:.2f}ms "
             f"({comparison['time_improvement']['improvement_percent']:.1f}%)"
         )
         print(
-            f"Memory improvement: {comparison['memory_improvement']['improvement_mb']:.2f}MB "
+            f"Memory improvement: "
+            f"{comparison['memory_improvement']['improvement_mb']:.2f}MB "
             f"({comparison['memory_improvement']['improvement_percent']:.1f}%)"
         )
 

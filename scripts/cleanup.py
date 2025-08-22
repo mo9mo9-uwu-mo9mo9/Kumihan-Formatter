@@ -508,7 +508,8 @@ def main():
 
     if not any([args.dry_run, args.interactive, args.auto]):
         print(
-            "エラー: --dry-run, --interactive, --auto, --check-tmp-rule, --enforce-tmp-rule, --enforce-tmp-rule-auto のいずれかを指定してください"
+            "エラー: --dry-run, --interactive, --auto, --check-tmp-rule, "
+            "--enforce-tmp-rule, --enforce-tmp-rule-auto のいずれかを指定してください"
         )
         parser.print_help()
         sys.exit(1)

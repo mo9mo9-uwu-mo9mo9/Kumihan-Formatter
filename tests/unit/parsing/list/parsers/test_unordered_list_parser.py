@@ -184,25 +184,19 @@ class TestUnorderedListParserExtended:
             type="list",
             content="",
             children=[
-                Node(
-                    type="checklist_item", content="完了1", attributes={"checked": True}
-                ),
+                Node(type="checklist_item", content="完了1", attributes={"checked": True}),
                 Node(
                     type="checklist_item",
                     content="未完了1",
                     attributes={"checked": False},
                 ),
-                Node(
-                    type="checklist_item", content="完了2", attributes={"checked": True}
-                ),
+                Node(type="checklist_item", content="完了2", attributes={"checked": True}),
                 Node(
                     type="checklist_item",
                     content="未完了2",
                     attributes={"checked": False},
                 ),
-                Node(
-                    type="checklist_item", content="完了3", attributes={"checked": True}
-                ),
+                Node(type="checklist_item", content="完了3", attributes={"checked": True}),
             ],
         )
 
@@ -551,9 +545,7 @@ class TestUnorderedListParserExtended:
                     all_results.append(result)
 
         # マーカー正規化
-        normalized_lines = self.parser.normalize_marker(
-            lines[:4], "-"
-        )  # 定義リスト以外
+        normalized_lines = self.parser.normalize_marker(lines[:4], "-")  # 定義リスト以外
 
         # Then: 完全ワークフローが正常に動作することを検証
         assert len(all_results) == 6
@@ -618,9 +610,7 @@ class TestUnorderedListParserExtended:
             # Then: 日本語が正しく処理されることを検証
             assert result is not None
             assert (
-                "日本語" in result.content
-                or "完了" in result.content
-                or "説明" in result.content
+                "日本語" in result.content or "完了" in result.content or "説明" in result.content
             )
 
     def test_特殊_複雑な定義リスト(self):

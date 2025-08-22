@@ -345,11 +345,7 @@ class TestFactoriesIntegration:
         """統合: NodeBuilderとの連携確認"""
         # 手動でNodeBuilderを使用
         manual_node = (
-            NodeBuilder("div")
-            .content("Manual content")
-            .css_class("manual")
-            .id("manual-id")
-            .build()
+            NodeBuilder("div").content("Manual content").css_class("manual").id("manual-id").build()
         )
 
         # ファクトリー関数を使用
@@ -409,9 +405,7 @@ class TestFactoriesIntegration:
     def test_境界値_ファクトリー_型混在(self):
         """境界値: ファクトリー関数での型混在コンテンツ"""
         # 文字列とNodeを混在させたコンテンツ
-        mixed_content = paragraph(
-            ["Start ", strong("bold"), " middle ", 42, " end"]  # 数値
-        )
+        mixed_content = paragraph(["Start ", strong("bold"), " middle ", 42, " end"])  # 数値
 
         # ファクトリーは型チェックを行わず、そのまま格納
         assert len(mixed_content.content) == 5

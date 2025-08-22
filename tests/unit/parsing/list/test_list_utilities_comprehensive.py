@@ -16,9 +16,7 @@ from kumihan_formatter.core.parsing.list.utilities.list_utilities import ListUti
 class MockNode:
     """テスト用Nodeモック"""
 
-    def __init__(
-        self, type: str, content: Any, attributes: Optional[Dict[str, Any]] = None
-    ):
+    def __init__(self, type: str, content: Any, attributes: Optional[Dict[str, Any]] = None):
         self.type = type
         self.content = content
         self.attributes = attributes or {}

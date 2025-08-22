@@ -193,9 +193,7 @@ class TestNestedListParser:
         deep_content = "項目"
 
         # When: 制限を超えるレベルでの解析
-        result = self.parser.parse_nested_list(
-            deep_content, level=4
-        )  # max_nest_level=3を超える
+        result = self.parser.parse_nested_list(deep_content, level=4)  # max_nest_level=3を超える
 
         # Then: 空のリストが返されることを検証
         assert result == []
@@ -334,12 +332,8 @@ class TestNestedListParser:
         # Given: 極端なインデント値のノード
         extreme_items = [
             create_node("list_item", content="項目1", metadata={"indent": 0}),
-            create_node(
-                "list_item", content="項目2", metadata={"indent": 1000}
-            ),  # 極端に大きい
-            create_node(
-                "list_item", content="項目3", metadata={"indent": -5}
-            ),  # 負の値
+            create_node("list_item", content="項目2", metadata={"indent": 1000}),  # 極端に大きい
+            create_node("list_item", content="項目3", metadata={"indent": -5}),  # 負の値
         ]
 
         # When: 相対レベル計算
@@ -354,15 +348,14 @@ class TestNestedListParser:
         """境界値: 大量ノードの処理"""
         # CI環境での実行時間を考慮して削減
         from tests.conftest import get_test_data_size
+
         node_count = get_test_data_size(1000, 100)
 
         # Given: 大量のノード
         large_items = []
         for i in range(node_count):
             level = i % 4  # 0-3のレベル循環
-            item = create_node(
-                "list_item", content=f"項目{i}", metadata={"relative_level": level}
-            )
+            item = create_node("list_item", content=f"項目{i}", metadata={"relative_level": level})
             large_items.append(item)
 
         # When: 統計情報取得
@@ -452,11 +445,7 @@ class TestNestedListParser:
                         create_node(
                             "list_item",
                             content="レベル1",
-                            metadata={
-                                "children": [
-                                    create_node("list_item", content="レベル2")
-                                ]
-                            },
+                            metadata={"children": [create_node("list_item", content="レベル2")]},
                         )
                     ]
                 },
@@ -486,22 +475,16 @@ class TestNestedListParser:
         assert result is not None
         assert isinstance(result, Node)
         # ネスト構造の検証
-        if hasattr(result, 'children'):
+        if hasattr(result, "children"):
             assert len(result.children) > 0
 
     def test_統合_エラーハンドリング総合(self):
         """統合: エラーハンドリングの総合テスト"""
         # Given: 様々な問題を含むノードリスト
         problematic_items = [
-            create_node(
-                "list_item", content="正常項目", metadata={"relative_level": 0}
-            ),
-            create_node(
-                "list_item", content="急激ジャンプ", metadata={"relative_level": 3}
-            ),
-            create_node(
-                "list_item", content="制限超過", metadata={"relative_level": 5}
-            ),
+            create_node("list_item", content="正常項目", metadata={"relative_level": 0}),
+            create_node("list_item", content="急激ジャンプ", metadata={"relative_level": 3}),
+            create_node("list_item", content="制限超過", metadata={"relative_level": 5}),
         ]
 
         # When: 検証とその他の処理

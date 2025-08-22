@@ -52,7 +52,8 @@ class FileIOHandler:
                         f.write(content)
                 except Exception as fallback_error:
                     logger.error(
-                        f"Failed to write file {path} after OS error fallback: {fallback_error}"
+                        f"Failed to write file {path} after OS error fallback: "
+                        f"{fallback_error}"
                     )
                     raise OSError(
                         f"ファイル書き込み中にOSエラーが発生しました: {path} - {e}"
@@ -80,7 +81,8 @@ class FileIOHandler:
                             f.write(content)
                     except Exception:
                         logger.error(
-                            f"Failed to write file {path} after all fallbacks: {fallback_error}"
+                            f"Failed to write file {path} after all fallbacks: "
+                            f"{fallback_error}"
                         )
                         raise UnicodeEncodeError(
                             encoding,

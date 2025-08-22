@@ -599,7 +599,8 @@ class AIOptimizerCore:
                 self.logger.debug(f"Learning data trimmed to {keep_size} records")
 
             self.logger.debug(
-                f"Learning data updated: {len(self.learning_data)}/{max_learning_data} records"
+                f"Learning data updated: {len(self.learning_data)}/"
+                f"{max_learning_data} records"
             )
 
         except Exception as e:
@@ -739,7 +740,9 @@ class AIOptimizerCore:
                 "expected_improvement": min(
                     2.0, max(0.1, content_size / 1000)
                 ),  # 0.1-2.0%
-                "recommendation_reason": f"Optimized for {operation_type} with size {content_size}",
+                "recommendation_reason": (
+                    f"Optimized for {operation_type} with size {content_size}"
+                ),
             }
 
             self.logger.info(f"Optimal settings predicted: {prediction_result}")

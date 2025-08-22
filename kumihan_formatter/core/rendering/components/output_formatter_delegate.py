@@ -119,8 +119,9 @@ class OutputFormatterDelegate:
                 </div>
                 <div class="error-content">
                     {safe_content}
-                    {(f'<div class="error-context-highlighted">{highlighted_context}</div>'
-                      if highlighted_context != error.context else '')}
+                    {(f'<div class="error-context-highlighted">'
+                      f'{highlighted_context}</div>')
+                     if highlighted_context != error.context else ''}
                     {correction_suggestions_html
                      and f'<div class="correction-suggestions">'
                          f'<h4>修正提案:</h4>{correction_suggestions_html}</div>' or ''}
@@ -166,7 +167,7 @@ class OutputFormatterDelegate:
     <div class="error-indicator">
         <span class="error-icon">{error_icon}</span>
         <span class="error-message">{safe_message}</span>
-        {f'<div class="error-suggestion">💡 {safe_suggestion}</div>' if safe_suggestion else ''}
+        {f'<div class="suggestion">💡{safe_suggestion}</div>' if safe_suggestion else ''}
     </div>
 </div>"""
                 modified_lines.insert(error.line_number - 1, error_marker)

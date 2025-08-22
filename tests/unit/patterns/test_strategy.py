@@ -168,16 +168,12 @@ class TestStrategyManager:
         strategy = MockRenderingStrategy("test_renderer")
 
         # When: 戦略を登録
-        self.manager.register_rendering_strategy(
-            "test", strategy, StrategyPriority.NORMAL
-        )
+        self.manager.register_rendering_strategy("test", strategy, StrategyPriority.NORMAL)
 
         # Then: 戦略が正しく登録される
         assert "test" in self.manager._rendering_strategies
         assert self.manager._rendering_strategies["test"] is strategy
-        assert (
-            self.manager._strategy_priorities["test"] == StrategyPriority.NORMAL.value
-        )
+        assert self.manager._strategy_priorities["test"] == StrategyPriority.NORMAL.value
 
     def test_正常系_パーシング戦略選択_単一戦略(self):
         """正常系: 単一パーシング戦略選択の確認"""
@@ -197,12 +193,8 @@ class TestStrategyManager:
         low_strategy = MockParsingStrategy("low", 0.2)
         high_strategy = MockParsingStrategy("high", 0.8)
 
-        self.manager.register_parsing_strategy(
-            "low", low_strategy, StrategyPriority.NORMAL
-        )
-        self.manager.register_parsing_strategy(
-            "high", high_strategy, StrategyPriority.NORMAL
-        )
+        self.manager.register_parsing_strategy("low", low_strategy, StrategyPriority.NORMAL)
+        self.manager.register_parsing_strategy("high", high_strategy, StrategyPriority.NORMAL)
 
         # When: コンテンツに対して戦略を選択
         selected = self.manager.select_parsing_strategy("regular content")
@@ -216,9 +208,7 @@ class TestStrategyManager:
         normal_strategy = MockParsingStrategy("normal", 0.6)
         high_priority_strategy = MockParsingStrategy("high_priority", 0.5)
 
-        self.manager.register_parsing_strategy(
-            "normal", normal_strategy, StrategyPriority.NORMAL
-        )
+        self.manager.register_parsing_strategy("normal", normal_strategy, StrategyPriority.NORMAL)
         self.manager.register_parsing_strategy(
             "high_priority", high_priority_strategy, StrategyPriority.HIGH
         )
@@ -353,12 +343,8 @@ class TestStrategyManager:
         strategy1 = MockParsingStrategy("first", 0.5)
         strategy2 = MockParsingStrategy("second", 0.5)
 
-        self.manager.register_parsing_strategy(
-            "first", strategy1, StrategyPriority.NORMAL
-        )
-        self.manager.register_parsing_strategy(
-            "second", strategy2, StrategyPriority.NORMAL
-        )
+        self.manager.register_parsing_strategy("first", strategy1, StrategyPriority.NORMAL)
+        self.manager.register_parsing_strategy("second", strategy2, StrategyPriority.NORMAL)
 
         # When: 戦略選択
         selected = self.manager.select_parsing_strategy("content")
@@ -433,13 +419,9 @@ class TestStrategyIntegration:
         pdf_strategy = MockRenderingStrategy("pdf", ["pdf"])
         markdown_strategy = MockRenderingStrategy("markdown", ["md", "markdown"])
 
-        manager.register_rendering_strategy(
-            "html", html_strategy, StrategyPriority.NORMAL
-        )
+        manager.register_rendering_strategy("html", html_strategy, StrategyPriority.NORMAL)
         manager.register_rendering_strategy("pdf", pdf_strategy, StrategyPriority.HIGH)
-        manager.register_rendering_strategy(
-            "markdown", markdown_strategy, StrategyPriority.LOW
-        )
+        manager.register_rendering_strategy("markdown", markdown_strategy, StrategyPriority.LOW)
 
         # When: 異なるフォーマットでレンダリング実行
         data = {"title": "テストドキュメント", "content": "内容"}

@@ -81,9 +81,7 @@ class MemoryMonitor:
                 "memory_growth_mb": memory_growth / 1024 / 1024,
                 "snapshots": len(self.snapshots),
                 "duration": (
-                    self.snapshots[-1][0] - self.snapshots[0][0]
-                    if len(self.snapshots) > 1
-                    else 0
+                    self.snapshots[-1][0] - self.snapshots[0][0] if len(self.snapshots) > 1 else 0
                 ),
             }
 
@@ -153,9 +151,7 @@ class TestMemoryUsage:
         size_bytes = int(size_mb * 1024 * 1024)
         return "x" * size_bytes
 
-    def simulate_file_processing(
-        self, data: str, iterations: int = 1
-    ) -> Dict[str, Any]:
+    def simulate_file_processing(self, data: str, iterations: int = 1) -> Dict[str, Any]:
         """ファイル処理のシミュレート"""
         results = []
 
@@ -163,9 +159,7 @@ class TestMemoryUsage:
             # データ処理シミュレート
             processed_data = data.upper()
             processed_data = processed_data.replace("X", "O")
-            processed_data = processed_data[
-                : len(processed_data) // 2
-            ]  # データサイズ削減
+            processed_data = processed_data[: len(processed_data) // 2]  # データサイズ削減
 
             # メモリスナップショット
             snapshot = self.monitor.take_snapshot(f"iteration_{i}")
@@ -257,9 +251,7 @@ class TestMemoryUsage:
         # 処理が完了していることを確認
         assert processing_result["iterations"] == 10, "処理が完了していない"
 
-        logger.info(
-            f"小規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
-        )
+        logger.info(f"小規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -311,9 +303,7 @@ class TestMemoryUsage:
         # 処理完了確認
         assert processing_result["iterations"] == 2, "大規模データ処理が完了していない"
 
-        logger.info(
-            f"大規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
-        )
+        logger.info(f"大規模データ処理完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -335,17 +325,11 @@ class TestMemoryUsage:
         final_stats = self.monitor.stop_monitoring()
 
         # リークによるメモリ増加の検出
-        memory_increase = (
-            leak_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
-        )
-        assert (
-            memory_increase > 1
-        ), f"メモリリークが検出されていない: {memory_increase:.1f}MB"
+        memory_increase = leak_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
+        assert memory_increase > 1, f"メモリリークが検出されていない: {memory_increase:.1f}MB"
 
         # 継続的なメモリ保持の確認
-        retention_increase = (
-            retention_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
-        )
+        retention_increase = retention_snapshot["memory_delta"] - initial_snapshot["memory_delta"]
         assert retention_increase > 1, "メモリリークが解放されている"
 
         # リークデータのクリーンアップ
@@ -353,8 +337,7 @@ class TestMemoryUsage:
         gc.collect()
 
         logger.info(
-            f"メモリリーク検出完了: 増加{memory_increase:.1f}MB, "
-            f"保持{retention_increase:.1f}MB"
+            f"メモリリーク検出完了: 増加{memory_increase:.1f}MB, " f"保持{retention_increase:.1f}MB"
         )
 
     @pytest.mark.system
@@ -396,9 +379,7 @@ class TestMemoryUsage:
         # スナップショット数の確認
         assert final_stats["snapshots"] >= 6, "並列処理のスナップショットが不足"
 
-        logger.info(
-            f"並列処理シミュレート完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB"
-        )
+        logger.info(f"並列処理シミュレート完了: メモリ増加{final_stats['memory_growth_mb']:.1f}MB")
 
     @pytest.mark.system
     @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
@@ -508,7 +489,4 @@ class TestMemoryUsage:
         assert gc_recovery > 0, f"GCによるメモリ回収が確認できない: {gc_recovery:.1f}MB"
         assert collected >= 0, "GCによる回収オブジェクト数が負の値"
 
-        logger.info(
-            f"GC効果確認完了: 回収{gc_recovery:.1f}MB, "
-            f"オブジェクト{collected}個回収"
-        )
+        logger.info(f"GC効果確認完了: 回収{gc_recovery:.1f}MB, " f"オブジェクト{collected}個回収")

@@ -104,18 +104,14 @@ class TestCompoundElementValidation:
         """正常系: validate_keyword_combination()確認"""
         # 有効なキーワード組み合わせ
         valid_keywords = ["太字", "イタリック"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            valid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(valid_keywords)
         assert is_valid is True
         assert error_message == ""
 
     def test_正常系_単一キーワード検証(self) -> None:
         """正常系: 単一キーワードの検証確認"""
         single_keyword = ["太字"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            single_keyword
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(single_keyword)
         assert is_valid is True
         assert error_message == ""
 
@@ -123,9 +119,7 @@ class TestCompoundElementValidation:
         """異常系: 複数見出しレベル指定時のエラー確認"""
         # 複数の見出しレベルを指定
         invalid_keywords = ["見出し1", "見出し2"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            invalid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(invalid_keywords)
         assert is_valid is False
         assert "Multiple heading levels not allowed" in error_message
         assert "見出し1" in error_message
@@ -135,9 +129,7 @@ class TestCompoundElementValidation:
         """異常系: 複数details要素指定時のエラー確認"""
         # 折りたたみとネタバレの重複指定
         invalid_keywords = ["折りたたみ", "ネタバレ"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            invalid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(invalid_keywords)
         assert is_valid is False
         assert "Multiple details types not allowed" in error_message
         assert "折りたたみ" in error_message
@@ -147,9 +139,7 @@ class TestCompoundElementValidation:
         """異常系: 未知キーワード指定時のエラー確認"""
         # 存在しないキーワードを指定
         invalid_keywords = ["未知キーワード1", "未知キーワード2"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            invalid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(invalid_keywords)
         assert is_valid is False
         assert "Unknown keywords" in error_message
         assert "未知キーワード1" in error_message
@@ -159,9 +149,7 @@ class TestCompoundElementValidation:
         """異常系: 複数エラー条件の混合確認"""
         # 見出し重複 + 未知キーワード
         invalid_keywords = ["見出し1", "見出し2", "未知キーワード"]
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            invalid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(invalid_keywords)
         # 最初に検出されたエラーが報告される
         assert is_valid is False
         assert error_message != ""
@@ -249,9 +237,7 @@ class TestCompoundElementKeywordWrapping:
         """正常系: 未認識キーワードのフォールバック確認"""
         content = "未認識キーワードテスト"
         attributes: Dict[str, Any] = {}
-        result = self.renderer._wrap_with_keyword(
-            content, "未認識キーワード", attributes
-        )
+        result = self.renderer._wrap_with_keyword(content, "未認識キーワード", attributes)
         # 未認識キーワードはそのまま返される
         assert result == "未認識キーワードテスト"
 
@@ -333,9 +319,7 @@ class TestCompoundElementIntegration:
         """統合: 実際のKeywordDefinitionsとの連携確認"""
         # 実際に定義されているキーワードを使用
         valid_keywords = ["太字"]  # 実装で対応しているキーワード
-        is_valid, error_message = self.renderer.validate_keyword_combination(
-            valid_keywords
-        )
+        is_valid, error_message = self.renderer.validate_keyword_combination(valid_keywords)
         # キーワード定義との整合性確認
         assert is_valid is True or error_message != ""  # 実装状況に応じて調整
 
@@ -348,9 +332,7 @@ class TestCompoundElementIntegration:
         is_valid, error_msg = self.renderer.validate_keyword_combination(keywords)
         if is_valid:
             # 2. レンダリング
-            result = self.renderer.render_compound_element(
-                keywords, content, attributes
-            )
+            result = self.renderer.render_compound_element(keywords, content, attributes)
             # 3. 結果確認
             assert isinstance(result, str)
             assert "統合フローテスト" in result
@@ -365,15 +347,11 @@ class TestCompoundElementIntegration:
         content = "エラー統合テスト"
         attributes: Dict[str, Any] = {}
         # 検証でエラーが検出されることを確認
-        is_valid, error_msg = self.renderer.validate_keyword_combination(
-            invalid_keywords
-        )
+        is_valid, error_msg = self.renderer.validate_keyword_combination(invalid_keywords)
         assert is_valid is False
         assert error_msg != ""
         # エラーがあってもレンダリング自体は実行可能
-        result = self.renderer.render_compound_element(
-            invalid_keywords, content, attributes
-        )
+        result = self.renderer.render_compound_element(invalid_keywords, content, attributes)
         assert isinstance(result, str)
 
 
@@ -390,9 +368,7 @@ class TestCompoundElementPerformance:
         keywords = ["太字"]
         large_content = "大量データテスト" * 1000  # 長いコンテンツ
         attributes: Dict[str, Any] = {}
-        result = self.renderer.render_compound_element(
-            keywords, large_content, attributes
-        )
+        result = self.renderer.render_compound_element(keywords, large_content, attributes)
         assert isinstance(result, str)
         assert len(result) > len(large_content)  # タグが追加されるため長くなる
         assert "大量データテスト" in result
@@ -405,9 +381,7 @@ class TestCompoundElementPerformance:
         # 複数回レンダリングして結果の一貫性を確認
         results = []
         for _ in range(10):
-            result = self.renderer.render_compound_element(
-                keywords, content, attributes
-            )
+            result = self.renderer.render_compound_element(keywords, content, attributes)
             results.append(result)
         # すべての結果が同一であることを確認
         assert len(set(results)) == 1  # 重複なし = 全て同じ結果

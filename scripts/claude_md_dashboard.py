@@ -98,9 +98,7 @@ class CLAUDEmdDashboard:
         # 過去30日のデータ
         cutoff_date = datetime.now() - timedelta(days=30)
         recent_history = [
-            entry
-            for entry in history
-            if datetime.fromisoformat(entry["timestamp"]) > cutoff_date
+            entry for entry in history if datetime.fromisoformat(entry["timestamp"]) > cutoff_date
         ]
 
         if not recent_history:
@@ -118,9 +116,7 @@ class CLAUDEmdDashboard:
                 "min": min(sizes) if sizes else 0,
                 "max": max(sizes) if sizes else 0,
                 "trend_direction": (
-                    "increasing"
-                    if len(sizes) > 1 and sizes[-1] > sizes[0]
-                    else "stable"
+                    "increasing" if len(sizes) > 1 and sizes[-1] > sizes[0] else "stable"
                 ),
             },
             "line_trend": {
@@ -151,11 +147,7 @@ class CLAUDEmdDashboard:
                 body = sections[i + 1]
 
                 # ヘッダーレベル判定
-                level = (
-                    len(re.match(r"^#+", title).group())
-                    if re.match(r"^#+", title)
-                    else 0
-                )
+                level = len(re.match(r"^#+", title).group()) if re.match(r"^#+", title) else 0
 
                 section_stats.append(
                     {
@@ -178,15 +170,9 @@ class CLAUDEmdDashboard:
                 f"level_{i}": len([s for s in section_stats if s["level"] == i])
                 for i in range(1, 6)
             },
-            "largest_sections": sorted(
-                section_stats, key=lambda x: x["lines"], reverse=True
-            )[:5],
-            "average_section_size": (
-                total_lines / len(section_stats) if section_stats else 0
-            ),
-            "sections_over_20_lines": len(
-                [s for s in section_stats if s["lines"] > 20]
-            ),
+            "largest_sections": sorted(section_stats, key=lambda x: x["lines"], reverse=True)[:5],
+            "average_section_size": (total_lines / len(section_stats) if section_stats else 0),
+            "sections_over_20_lines": len([s for s in section_stats if s["lines"] > 20]),
         }
 
     def _calculate_quality_metrics(self) -> Dict:
@@ -260,12 +246,8 @@ class CLAUDEmdDashboard:
         if len(sections) > 1:
             section_lengths = [len(section) for section in sections]
             avg_length = sum(section_lengths) / len(section_lengths)
-            variance = sum((l - avg_length) ** 2 for l in section_lengths) / len(
-                section_lengths
-            )
-            balance_score = max(
-                0, 1 - (variance / (avg_length**2)) if avg_length > 0 else 0
-            )
+            variance = sum((l - avg_length) ** 2 for l in section_lengths) / len(section_lengths)
+            balance_score = max(0, 1 - (variance / (avg_length**2)) if avg_length > 0 else 0)
         else:
             balance_score = 0.5
 
@@ -357,24 +339,15 @@ class CLAUDEmdDashboard:
             "sections_over_20_lines" in section_analysis
             and section_analysis["sections_over_20_lines"] > 3
         ):
-            recommendations.append(
-                "✂️ セクション分割: 20行を超える長大セクションが複数あります"
-            )
+            recommendations.append("✂️ セクション分割: 20行を超える長大セクションが複数あります")
 
         # 品質メトリクスベース推奨
         quality_metrics = self._calculate_quality_metrics()
-        if (
-            "overall_quality" in quality_metrics
-            and quality_metrics["overall_quality"] < 70
-        ):
-            recommendations.append(
-                "🔧 品質改善: 総合品質スコアが70%未満。重複削除・構造改善が必要"
-            )
+        if "overall_quality" in quality_metrics and quality_metrics["overall_quality"] < 70:
+            recommendations.append("🔧 品質改善: 総合品質スコアが70%未満。重複削除・構造改善が必要")
 
         if not recommendations:
-            recommendations.append(
-                "✅ 現在の状態は良好です。定期的な監視を継続してください"
-            )
+            recommendations.append("✅ 現在の状態は良好です。定期的な監視を継続してください")
 
         return recommendations
 
@@ -412,15 +385,9 @@ class CLAUDEmdDashboard:
 
         # サイズ推移（段階制限システム対応）
         ax1.plot(dates, sizes, "b-", marker="o", linewidth=2, markersize=4)
-        ax1.axhline(
-            y=8, color="green", linestyle=":", alpha=0.7, label="推奨限界 (8KB)"
-        )
-        ax1.axhline(
-            y=12, color="orange", linestyle="--", alpha=0.7, label="警告限界 (12KB)"
-        )
-        ax1.axhline(
-            y=15, color="red", linestyle="--", alpha=0.7, label="注意限界 (15KB)"
-        )
+        ax1.axhline(y=8, color="green", linestyle=":", alpha=0.7, label="推奨限界 (8KB)")
+        ax1.axhline(y=12, color="orange", linestyle="--", alpha=0.7, label="警告限界 (12KB)")
+        ax1.axhline(y=15, color="red", linestyle="--", alpha=0.7, label="注意限界 (15KB)")
         ax1.axhline(
             y=20,
             color="darkred",
@@ -435,15 +402,9 @@ class CLAUDEmdDashboard:
 
         # 行数推移（段階制限システム対応）
         ax2.plot(dates, lines, "g-", marker="s", linewidth=2, markersize=4)
-        ax2.axhline(
-            y=150, color="green", linestyle=":", alpha=0.7, label="推奨限界 (150行)"
-        )
-        ax2.axhline(
-            y=250, color="orange", linestyle="--", alpha=0.7, label="警告限界 (250行)"
-        )
-        ax2.axhline(
-            y=300, color="red", linestyle="--", alpha=0.7, label="注意限界 (300行)"
-        )
+        ax2.axhline(y=150, color="green", linestyle=":", alpha=0.7, label="推奨限界 (150行)")
+        ax2.axhline(y=250, color="orange", linestyle="--", alpha=0.7, label="警告限界 (250行)")
+        ax2.axhline(y=300, color="red", linestyle="--", alpha=0.7, label="注意限界 (300行)")
         ax2.axhline(
             y=400,
             color="darkred",
@@ -460,9 +421,7 @@ class CLAUDEmdDashboard:
         # 日付軸フォーマット
         for ax in [ax1, ax2]:
             ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
-            ax.xaxis.set_major_locator(
-                mdates.DayLocator(interval=max(1, len(dates) // 10))
-            )
+            ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(dates) // 10)))
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
 
         plt.tight_layout()
@@ -518,9 +477,7 @@ class CLAUDEmdDashboard:
             ax2.set_xlabel("行数")
 
         plt.tight_layout()
-        plt.savefig(
-            self.output_dir / "section_distribution.png", dpi=150, bbox_inches="tight"
-        )
+        plt.savefig(self.output_dir / "section_distribution.png", dpi=150, bbox_inches="tight")
         plt.close()
 
     def _generate_quality_overview_chart(self):
@@ -562,9 +519,7 @@ class CLAUDEmdDashboard:
         ax.set_ylim(0, 100)
         ax.set_title("CLAUDE.md 品質メトリクス", pad=20)
 
-        plt.savefig(
-            self.output_dir / "quality_overview.png", dpi=150, bbox_inches="tight"
-        )
+        plt.savefig(self.output_dir / "quality_overview.png", dpi=150, bbox_inches="tight")
         plt.close()
 
     def _generate_html_dashboard(self, dashboard_data: Dict):
@@ -587,15 +542,51 @@ class CLAUDEmdDashboard:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLAUDE.md 監視ダッシュボード</title>
     <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; }}
-        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
         .header {{ text-align: center; margin-bottom: 30px; }}
-        .status-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }}
-        .status-card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; }}
-        .status-value {{ font-size: 24px; font-weight: bold; color: #007bff; }}
-        .recommendations {{ background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; }}
+        .status-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        .status-card {{
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }}
+        .status-value {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }}
+        .recommendations {{
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }}
         .chart-section {{ margin: 30px 0; }}
-        .chart-section img {{ max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }}
+        .chart-section img {{
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }}
         .alert-critical {{ color: #dc3545; font-weight: bold; }}
         .alert-warning {{ color: #fd7e14; font-weight: bold; }}
         .alert-good {{ color: #28a745; font-weight: bold; }}
@@ -634,9 +625,7 @@ class CLAUDEmdDashboard:
 
         for rec in dashboard_data.get("recommendations", []):
             css_class = (
-                "alert-critical"
-                if "🚨" in rec
-                else "alert-warning" if "⚠️" in rec else "alert-good"
+                "alert-critical" if "🚨" in rec else "alert-warning" if "⚠️" in rec else "alert-good"
             )
             html_content += f'<li class="{css_class}">{rec}</li>'
 
@@ -672,12 +661,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="CLAUDE.md Dashboard Generator")
-    parser.add_argument(
-        "--output-dir", default="dashboard_output", help="出力ディレクトリ"
-    )
-    parser.add_argument(
-        "--claude-md", default="CLAUDE.md", help="CLAUDE.mdファイルパス"
-    )
+    parser.add_argument("--output-dir", default="dashboard_output", help="出力ディレクトリ")
+    parser.add_argument("--claude-md", default="CLAUDE.md", help="CLAUDE.mdファイルパス")
 
     args = parser.parse_args()
 
@@ -689,9 +674,7 @@ def main():
 
         print("✅ ダッシュボード生成完了")
         print(f"📁 出力先: {dashboard.output_dir}/dashboard.html")
-        print(
-            f"📊 品質スコア: {result.get('quality_metrics', {}).get('overall_quality', 0):.1f}%"
-        )
+        print(f"📊 品質スコア: {result.get('quality_metrics', {}).get('overall_quality', 0):.1f}%")
 
         # 推奨事項表示
         print("\n💡 推奨事項:")

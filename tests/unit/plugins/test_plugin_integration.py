@@ -43,9 +43,7 @@ class TestPluginEventIntegration:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -85,9 +83,7 @@ class EventPlugin:
             events_captured.append((event_type, sender, data))
 
         # When: イベントリスナーを設定してプラグインをロード
-        with patch(
-            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
-        ) as mock_publish:
+        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
             mock_publish.side_effect = event_listener
             result = self.manager.load_plugin(plugin_path, plugin_info)
 
@@ -131,9 +127,7 @@ class UnloadEventPlugin:
             self.manager.load_plugin(plugin_path, plugin_info)
 
         # When: プラグインをアンロード
-        with patch(
-            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
-        ) as mock_publish:
+        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
             result = self.manager.unload_plugin("unload_event_plugin")
 
         # Then: アンロードが成功し、イベントが発行される
@@ -160,9 +154,7 @@ class TestPluginDIIntegration:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -292,9 +284,7 @@ class TestPluginComplexScenarios:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -566,9 +556,7 @@ class TestPluginErrorRecovery:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -697,9 +685,7 @@ class TestPluginProtocolValidation:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:

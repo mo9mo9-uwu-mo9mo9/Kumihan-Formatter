@@ -150,7 +150,8 @@ class ParallelConfig(BaseModel):
             and v <= info.data["memory_warning_threshold_mb"]
         ):
             raise ValueError(
-                "memory_critical_threshold_mb must be greater than memory_warning_threshold_mb"
+                "memory_critical_threshold_mb must be greater than "
+                "memory_warning_threshold_mb"
             )
         return v
 
@@ -233,7 +234,9 @@ class RenderingConfig(BaseModel):
     text_color: str = Field(default="#333", description="テキスト色")
     line_height: str = Field(default="1.8", description="行の高さ")
     font_family: str = Field(
-        default="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+        default=(
+            "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
+        ),
         description="フォントファミリー",
     )
 

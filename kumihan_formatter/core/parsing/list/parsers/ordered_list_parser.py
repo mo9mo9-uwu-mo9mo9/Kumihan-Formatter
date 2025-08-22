@@ -19,7 +19,8 @@ class OrderedListParser:
             (
                 "roman",
                 re.compile(
-                    r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x|xi{0,3}|xiv|xv|xvi{0,3}|xix|xx)\.\s+(.+)$",
+                    r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x|xi{0,3}|xiv|xv|xvi{0,3}|xix|xx)"
+                    r"\.\s+(.+)$",
                     re.IGNORECASE,
                 ),
             ),

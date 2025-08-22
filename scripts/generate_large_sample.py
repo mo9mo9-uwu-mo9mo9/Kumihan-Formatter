@@ -241,7 +241,11 @@ def generate_trpg_scenario():
             f"- {marker2}イタリック{marker2} 特技: {random.choice(['魔法詠唱', '剣術', '隠密'])}"
         )
         sections.append(
-            f"- {marker2}ハイライト color={get_random_color()}{marker2} 装備: {random.choice(['魔法の杖', '銀の剣', '影の短剣'])}"
+            f"- {marker2}ハイライト color={get_random_color(
+                )}{marker2} 装備: {random.choice(['魔法の杖',
+                '銀の剣',
+                '影の短剣']
+{indent})}"
         )
         sections.append("")
 

@@ -69,9 +69,7 @@ class TechDebtMonitor:
 
             try:
                 result_data = json.loads(result.stdout)
-                complexity_dict = (
-                    dict(result_data) if isinstance(result_data, dict) else {}
-                )
+                complexity_dict = dict(result_data) if isinstance(result_data, dict) else {}
                 logger.info(f"認知複雑度測定成功: {len(complexity_dict)}ファイルを解析")
                 return complexity_dict
 
@@ -93,9 +91,7 @@ class TechDebtMonitor:
         except subprocess.CalledProcessError as e:
             logger.error(f"radon ccコマンド実行失敗: return_code={e.returncode}")
             logger.error(
-                f"stderr: {e.stderr}"
-                if hasattr(e, "stderr") and e.stderr
-                else "stderrなし"
+                f"stderr: {e.stderr}" if hasattr(e, "stderr") and e.stderr else "stderrなし"
             )
             logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
@@ -130,12 +126,8 @@ class TechDebtMonitor:
 
             try:
                 result_data = json.loads(result.stdout)
-                maintainability_dict = (
-                    dict(result_data) if isinstance(result_data, dict) else {}
-                )
-                logger.info(
-                    f"保守性指標計算成功: {len(maintainability_dict)}ファイルを解析"
-                )
+                maintainability_dict = dict(result_data) if isinstance(result_data, dict) else {}
+                logger.info(f"保守性指標計算成功: {len(maintainability_dict)}ファイルを解析")
                 return maintainability_dict
 
             except json.JSONDecodeError as e:
@@ -156,9 +148,7 @@ class TechDebtMonitor:
         except subprocess.CalledProcessError as e:
             logger.error(f"radon miコマンド実行失敗: return_code={e.returncode}")
             logger.error(
-                f"stderr: {e.stderr}"
-                if hasattr(e, "stderr") and e.stderr
-                else "stderrなし"
+                f"stderr: {e.stderr}" if hasattr(e, "stderr") and e.stderr else "stderrなし"
             )
             logger.warning("graceful degradation: 空の結果を返して処理継続")
             return {}
@@ -224,9 +214,7 @@ class TechDebtMonitor:
             if result.stderr:
                 logger.warning(f"vulture stderr: {result.stderr}")
 
-            dead_code_lines = [
-                line for line in result.stdout.splitlines() if line.strip()
-            ]
+            dead_code_lines = [line for line in result.stdout.splitlines() if line.strip()]
             logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
             return dead_code_lines
 
@@ -244,9 +232,7 @@ class TechDebtMonitor:
             # vultureはデッドコードを発見した場合にreturn_codeが0以外になることがある
             logger.debug(f"vultureコマンド結果: return_code={e.returncode}")
             if hasattr(e, "stdout") and e.stdout:
-                dead_code_lines = [
-                    line for line in e.stdout.splitlines() if line.strip()
-                ]
+                dead_code_lines = [line for line in e.stdout.splitlines() if line.strip()]
                 logger.info(f"デッドコード検出成功: {len(dead_code_lines)}件を検出")
                 return dead_code_lines
             else:
@@ -383,9 +369,7 @@ class TechDebtMonitor:
         except (ValueError, ZeroDivisionError):
             return None
 
-    def check_quality_thresholds(
-        self, all_metrics: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def check_quality_thresholds(self, all_metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         品質しきい値をチェックし、違反項目を返す。
 
@@ -414,11 +398,7 @@ class TechDebtMonitor:
                                     "metric": metric_name,
                                     "value": value,
                                     "threshold": threshold,
-                                    "severity": (
-                                        "WARNING"
-                                        if value < threshold * 1.5
-                                        else "ERROR"
-                                    ),
+                                    "severity": ("WARNING" if value < threshold * 1.5 else "ERROR"),
                                 }
                             )
 
@@ -538,9 +518,7 @@ class TechDebtMonitor:
                 for _, _, files in os.walk(self.target_directory)
                 if any(f.endswith(".py") for f in files)
             )
-            duplication_rate = (
-                (duplication_count / total_files * 100) if total_files > 0 else 0
-            )
+            duplication_rate = (duplication_count / total_files * 100) if total_files > 0 else 0
 
             if duplication_rate > self.thresholds["code_duplication"]:
                 violations.append(
@@ -570,9 +548,7 @@ class TechDebtMonitor:
 
         return is_valid
 
-    def generate_improvement_report(
-        self, output_path: str, format_type: str = "html"
-    ) -> str:
+    def generate_improvement_report(self, output_path: str, format_type: str = "html") -> str:
         """
         改善提案レポートをHTMLまたはMarkdown形式で出力する。
 
@@ -599,13 +575,9 @@ class TechDebtMonitor:
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
             if format_type == "html":
-                content = self._generate_html_improvement_report(
-                    suggestions, all_metrics
-                )
+                content = self._generate_html_improvement_report(suggestions, all_metrics)
             else:  # markdown
-                content = self._generate_markdown_improvement_report(
-                    suggestions, all_metrics
-                )
+                content = self._generate_markdown_improvement_report(suggestions, all_metrics)
 
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -636,7 +608,8 @@ class TechDebtMonitor:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>コード品質改善提案レポート</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+          \n          rel="stylesheet">
     <style>
         .priority-high { border-left: 5px solid #dc3545; }
         .priority-medium { border-left: 5px solid #ffc107; }
@@ -652,11 +625,18 @@ class TechDebtMonitor:
 """
         from datetime import datetime
 
-        html += f'                <p class="text-muted">生成日時: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>\n'
+        html += (
+            f'                <p class="text-muted">生成日時: '
+            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>\n'
+        )
         html += f"                <p><strong>検出された問題:</strong> {len(suggestions)}件</p>\n"
 
         if not suggestions:
-            html += '                <div class="alert alert-success">✅ 主要な品質問題は検出されませんでした。素晴らしいコードです！</div>\n'
+            html += (
+                '                <div class="alert alert-success">'
+                "✅ 主要な品質問題は検出されませんでした。素晴らしいコードです！"
+                "</div>\n"
+            )
         else:
             # 優先度別グループ化
             high_priority = [s for s in suggestions if s["priority"] >= 0.7]
@@ -669,15 +649,12 @@ class TechDebtMonitor:
                 ("低優先度（余裕がある時に対応）", low_priority, "priority-low"),
             ]:
                 if suggestions_group:
-                    html += (
-                        f'                <h2 class="mt-4">🔴 {priority_level}</h2>\n'
-                        if "高" in priority_level
-                        else (
-                            f'                <h2 class="mt-4">🟡 {priority_level}</h2>\n'
-                            if "中" in priority_level
-                            else f'                <h2 class="mt-4">🟢 {priority_level}</h2>\n'
-                        )
-                    )
+                    if "高" in priority_level:
+                        html += f'                <h2 class="mt-4">🔴 {priority_level}</h2>\n'
+                    elif "中" in priority_level:
+                        html += f'                <h2 class="mt-4">🟡 {priority_level}</h2>\n'
+                    else:
+                        html += f'                <h2 class="mt-4">🟢 {priority_level}</h2>\n'
                     for suggestion in suggestions_group:
                         html += f"""                <div class="card metric-card {color_class}">
                     <div class="card-body">
@@ -704,10 +681,18 @@ class TechDebtMonitor:
 """
 
         # メトリクス概要を追加
-        html += f'                <div class="card"><div class="card-body"><h6>Cognitive Complexity</h6><p>{len(all_metrics.get("cognitive_complexity", {}))}ファイル分析</p></div></div>\n'
-        html += f'                <div class="card"><div class="card-body"><h6>Maintainability Index</h6><p>{len(all_metrics.get("maintainability_index", {}))}ファイル分析</p></div></div>\n'
-        html += f'                <div class="card"><div class="card-body"><h6>Halstead Metrics</h6><p>{len(all_metrics.get("halstead_metrics", {}))}ファイル分析</p></div></div>\n'
-        html += f'                <div class="card"><div class="card-body"><h6>Dead Code</h6><p>{len(all_metrics.get("dead_code", []))}件検出</p></div></div>\n'
+        html+= (
+            f'                <div class="card"><div class="card-body"><h6>Cognitive Complexity</h6><p>{len(all_metrics.get("cognitive_complexity", {}))}ファイル分析</p></div></div>\n'
+        )
+        html+= (
+            f'                <div class="card"><div class="card-body"><h6>Maintainability Index</h6><p>{len(all_metrics.get("maintainability_index", {}))}ファイル分析</p></div></div>\n'
+        )
+        html+= (
+            f'                <div class="card"><div class="card-body"><h6>Halstead Metrics</h6><p>{len(all_metrics.get("halstead_metrics", {}))}ファイル分析</p></div></div>\n'
+        )
+        html+= (
+            f'                <div class="card"><div class="card-body"><h6>Dead Code</h6><p>{len(all_metrics.get("dead_code", []))}件検出</p></div></div>\n'
+        )
 
         html += """            </div>
         </div>
@@ -795,9 +780,7 @@ class QualityImprovementEngine:
 
         # Cognitive Complexity問題検出
         if "cognitive_complexity" in self.all_metrics:
-            for file_path, complexity in self.all_metrics[
-                "cognitive_complexity"
-            ].items():
+            for file_path, complexity in self.all_metrics["cognitive_complexity"].items():
                 if isinstance(complexity, (int, float)) and complexity > 15:
                     issues.append(
                         {
@@ -841,7 +824,9 @@ class QualityImprovementEngine:
                                 "metric": "halstead_volume",
                                 "value": volume,
                                 "severity": "medium",
-                                "description": f"Halstead Volumeが高いです（{volume:.2f}）。コード分割を検討してください。",
+                                "description": (
+                                    f"Halstead Volumeが高いです（{volume:.2f}）。コード分割を検討してください。",
+                                ),
                             }
                         )
 
@@ -853,7 +838,9 @@ class QualityImprovementEngine:
                                 "metric": "halstead_difficulty",
                                 "value": difficulty,
                                 "severity": "medium",
-                                "description": f"Halstead Difficultyが高いです（{difficulty:.2f}）。コード簡略化を検討してください。",
+                                "description": (
+                                    f"Halstead Difficultyが高いです（{difficulty:.2f}）。コード簡略化を検討してください。",
+                                ),
                             }
                         )
 
@@ -1011,15 +998,11 @@ class QualityImprovementEngine:
         suggestions = self.generate_improvement_suggestions()
 
         action_plan = "# 🎯 コード品質改善アクションプラン\n\n"
-        action_plan += (
-            f"**生成日時:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        )
+        action_plan += f"**生成日時:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         action_plan += f"**検出された問題:** {len(suggestions)}件\n\n"
 
         if not suggestions:
-            action_plan += (
-                "✅ **素晴らしいニュース！** 主要な品質問題は検出されませんでした。\n"
-            )
+            action_plan += "✅ **素晴らしいニュース！** 主要な品質問題は検出されませんでした。\n"
             return action_plan
 
         # 優先度別グループ化
@@ -1032,7 +1015,9 @@ class QualityImprovementEngine:
             for suggestion in high_priority:
                 action_plan += f"### {suggestion['file']}\n"
                 action_plan += f"**問題:** {suggestion['description']}\n\n"
-                action_plan += f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                action_plan +=(
+                    f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                )
                 action_plan += "**推奨アクション:**\n"
                 for action in suggestion["actions"]:
                     action_plan += f"- [ ] {action}\n"
@@ -1043,7 +1028,9 @@ class QualityImprovementEngine:
             for suggestion in medium_priority:
                 action_plan += f"### {suggestion['file']}\n"
                 action_plan += f"**問題:** {suggestion['description']}\n\n"
-                action_plan += f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                action_plan +=(
+                    f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                )
                 action_plan += "**推奨アクション:**\n"
                 for action in suggestion["actions"]:
                     action_plan += f"- [ ] {action}\n"
@@ -1054,20 +1041,20 @@ class QualityImprovementEngine:
             for suggestion in low_priority:
                 action_plan += f"### {suggestion['file']}\n"
                 action_plan += f"**問題:** {suggestion['description']}\n\n"
-                action_plan += f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                action_plan +=(
+                    f"**優先度:** {suggestion['priority']:.2f} | **工数:** {suggestion['effort_estimate']} | **影響度:** {suggestion['impact']}\n\n"
+                )
                 action_plan += "**推奨アクション:**\n"
                 for action in suggestion["actions"]:
                     action_plan += f"- [ ] {action}\n"
                 action_plan += "\n---\n\n"
 
         action_plan += "## 📊 改善効果予測\n\n"
-        action_plan += (
-            f"- **高優先度対応:** コード品質 +{len(high_priority) * 15}%向上見込み\n"
+        action_plan += f"- **高優先度対応:** コード品質 +{len(high_priority) * 15}%向上見込み\n"
+        action_plan += f"- **中優先度対応:** コード品質 +{len(medium_priority) * 10}%向上見込み\n"
+        action_plan +=(
+            f"- **全対応完了:** コード品質 +{(len(high_priority) * 15) + (len(medium_priority) * 10) + (len(low_priority) * 5)}%向上見込み\n\n"
         )
-        action_plan += (
-            f"- **中優先度対応:** コード品質 +{len(medium_priority) * 10}%向上見込み\n"
-        )
-        action_plan += f"- **全対応完了:** コード品質 +{(len(high_priority) * 15) + (len(medium_priority) * 10) + (len(low_priority) * 5)}%向上見込み\n\n"
 
         return action_plan
 
@@ -1091,15 +1078,9 @@ def main() -> None:
     parser.add_argument("--ci", action="store_true", help="CI/CDモード（品質ゲート）")
     parser.add_argument("--threshold-config", help="カスタムしきい値設定ファイルパス")
     # Phase 3: 自動改善提案システムのCLI引数
-    parser.add_argument(
-        "--improvement", action="store_true", help="改善提案レポート生成モード"
-    )
-    parser.add_argument(
-        "--action-plan", action="store_true", help="アクションプラン生成モード"
-    )
-    parser.add_argument(
-        "--quality-score", action="store_true", help="品質スコア表示のみ"
-    )
+    parser.add_argument("--improvement", action="store_true", help="改善提案レポート生成モード")
+    parser.add_argument("--action-plan", action="store_true", help="アクションプラン生成モード")
+    parser.add_argument("--quality-score", action="store_true", help="品質スコア表示のみ")
     parser.add_argument(
         "--report-format",
         choices=["html", "markdown"],
@@ -1127,9 +1108,7 @@ def main() -> None:
         if not output_path.startswith("tmp/"):
             output_path = f"tmp/{os.path.basename(output_path)}"
 
-        result_path = monitor.generate_improvement_report(
-            output_path, args.report_format
-        )
+        result_path = monitor.generate_improvement_report(output_path, args.report_format)
         if result_path:
             print(f"改善提案レポートを生成しました: {result_path}")
         else:

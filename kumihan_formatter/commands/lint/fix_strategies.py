@@ -345,8 +345,12 @@ class Flake8FixStrategies:
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 20px;
         }}
-        .header {{ background: #2c3e50; color: white; padding: 20px; border-radius: 5px; }}
-        .summary {{ background: #ecf0f1; padding: 15px; margin: 20px 0; border-radius: 5px; }}
+        .header {{
+            background: #2c3e50; color: white; padding: 20px; border-radius: 5px;
+        }}
+        .summary {{
+            background: #ecf0f1; padding: 15px; margin: 20px 0; border-radius: 5px;
+        }}
         .file-report {{ border: 1px solid #ddd; margin: 15px 0; border-radius: 5px; }}
         .file-header {{ background: #3498db; color: white; padding: 10px; }}
         .file-content {{ padding: 15px; }}
@@ -401,7 +405,9 @@ class Flake8FixStrategies:
             <div class="file-report">
                 <div class="file-header">
                     <strong>{report['file']}</strong>
-                    <span style="float: right;">{report['total_fixes']} fixes applied</span>
+                    <span style="float: right;">
+                        {report['total_fixes']} fixes applied
+                    </span>
                 </div>
                 <div class="file-content">
                     {self._generate_fixes_html(report.get('details', []))}

@@ -387,7 +387,9 @@ class AutoFormatter:
                     diff_output.append("=== isort Import Sorting Issues Detected ===")
                     diff_output.append("isortが不正確にソートされたimportを検出しました。")
                     diff_output.append("詳細な差分を表示するには以下を実行してください:")
-                    diff_output.append(f"python3 -m isort --diff {' '.join(str(p) for p in target_paths)}")
+                    diff_output.append((
+                        f"python3 -m isort --diff {' '.join(str(p) for p in target_paths)}")
+                    )
                     diff_output.append("")
                     has_any_diff = True
                     logger.info("isort formatting issues detected")
@@ -420,7 +422,11 @@ class AutoFormatter:
 
                 summary_lines.append("")
                 summary_lines.append("💡 以下のコマンドで自動修正できます:")
-                summary_lines.append(f"   python3 tools/automation/auto_formatter.py --path {' '.join(str(p) for p in target_paths)}")
+                summary_lines.append((
+                    (
+                        f"   python3 tools/automation/auto_formatter.py --path {' '.join(str(p) for p in target_paths)}")
+                    )
+                )
             else:
                 summary_lines.append("✅ コードフォーマットは正常です")
                 summary_lines.append("")

@@ -146,16 +146,12 @@ class TestValidatorRules:
     def test_kumihan_notation_rules(self):
         """Kumihan記法ルールテスト"""
         # 新記法からのキーワード抽出
-        keywords = self.validator._extract_keywords_from_new_format(
-            "# 太字 #内容 # 下線 #追加"
-        )
+        keywords = self.validator._extract_keywords_from_new_format("# 太字 #内容 # 下線 #追加")
         assert "太字" in keywords
         assert "下線" in keywords
 
         # 全角記法
-        keywords = self.validator._extract_keywords_from_new_format(
-            "＃ イタリック ＃内容"
-        )
+        keywords = self.validator._extract_keywords_from_new_format("＃ イタリック ＃内容")
         assert "イタリック" in keywords
 
         # 混在記法
@@ -221,9 +217,7 @@ class TestValidatorRules:
 
         # 複雑な組み合わせ検証
         complex_combination = ["太字", "下線", "イタリック", "コード", "引用"]
-        is_valid, errors = self.validator.validate_keyword_combination(
-            complex_combination
-        )
+        is_valid, errors = self.validator.validate_keyword_combination(complex_combination)
         # 性能劣化なしの確認
 
 
@@ -339,9 +333,7 @@ class TestValidatorSuggestions:
         suggestions = self.validator.get_keyword_suggestions("太文字")  # 太字の誤記
         assert "太字" in suggestions
 
-        suggestions = self.validator.get_keyword_suggestions(
-            "アンダーライン"
-        )  # 下線の英語
+        suggestions = self.validator.get_keyword_suggestions("アンダーライン")  # 下線の英語
         assert "下線" in suggestions
 
         suggestions = self.validator.get_keyword_suggestions("みだし1")  # ひらがな
@@ -350,20 +342,14 @@ class TestValidatorSuggestions:
     def test_suggestions_max_limit(self):
         """サジェスト最大数制限テスト"""
         # デフォルト最大3件
-        suggestions = self.validator.get_keyword_suggestions(
-            "テスト", max_suggestions=3
-        )
+        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=3)
         assert len(suggestions) <= 3
 
         # カスタム最大数
-        suggestions = self.validator.get_keyword_suggestions(
-            "テスト", max_suggestions=1
-        )
+        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=1)
         assert len(suggestions) <= 1
 
-        suggestions = self.validator.get_keyword_suggestions(
-            "テスト", max_suggestions=5
-        )
+        suggestions = self.validator.get_keyword_suggestions("テスト", max_suggestions=5)
         assert len(suggestions) <= 5
 
     def test_suggestions_cutoff_threshold(self):
@@ -431,22 +417,16 @@ class TestValidatorUtilityMethods:
         assert keywords == ["太字"]
 
         # 複数キーワード
-        keywords = self.validator._extract_keywords_from_new_format(
-            "# 太字 #内容1 # 下線 #内容2"
-        )
+        keywords = self.validator._extract_keywords_from_new_format("# 太字 #内容1 # 下線 #内容2")
         assert "太字" in keywords
         assert "下線" in keywords
 
         # 属性付きキーワード
-        keywords = self.validator._extract_keywords_from_new_format(
-            "# 太字 color=red #内容"
-        )
+        keywords = self.validator._extract_keywords_from_new_format("# 太字 color=red #内容")
         assert "太字" in keywords
 
         # 全角記法
-        keywords = self.validator._extract_keywords_from_new_format(
-            "＃ イタリック ＃内容"
-        )
+        keywords = self.validator._extract_keywords_from_new_format("＃ イタリック ＃内容")
         assert "イタリック" in keywords
 
         # 記法なし

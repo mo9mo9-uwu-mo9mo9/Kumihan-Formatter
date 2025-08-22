@@ -542,11 +542,7 @@ class TestHTMLRenderingStrategy:
             {"invalid": "structure"},
             {"blocks": "not_a_list"},
             {"blocks": [{"invalid": "block"}]},
-            {
-                "blocks": [
-                    {"type": "wrong_type", "decoration": "太字", "content": "テスト"}
-                ]
-            },
+            {"blocks": [{"type": "wrong_type", "decoration": "太字", "content": "テスト"}]},
         ]
 
         for invalid_data in invalid_data_cases:
@@ -611,11 +607,7 @@ class TestHTMLRenderingStrategy:
         """異常系: 不正なコンテキストでの処理確認"""
         # Given: 不正なコンテキスト
         invalid_contexts = [None, "string", 123, []]
-        data = {
-            "blocks": [
-                {"type": "kumihan_block", "decoration": "太字", "content": "テスト"}
-            ]
-        }
+        data = {"blocks": [{"type": "kumihan_block", "decoration": "太字", "content": "テスト"}]}
 
         for invalid_context in invalid_contexts:
             # When: 不正コンテキストでレンダリング

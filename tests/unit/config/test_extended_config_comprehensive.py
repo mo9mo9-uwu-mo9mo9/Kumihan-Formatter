@@ -599,9 +599,7 @@ class TestExtendedConfig設定統合:
         original_config = {"level1": {"level2": {"level3": {"key": "original"}}}}
         config = ExtendedConfig(original_config)
 
-        other_config = {
-            "level1": {"level2": {"level3": {"key": "updated", "new_key": "added"}}}
-        }
+        other_config = {"level1": {"level2": {"level3": {"key": "updated", "new_key": "added"}}}}
         config.merge_config(other_config)
 
         level3 = config.get("level1")["level2"]["level3"]

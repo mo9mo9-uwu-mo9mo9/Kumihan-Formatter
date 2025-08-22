@@ -161,7 +161,8 @@ class AIEffectMeasurement:
 
             generation_time = time.time() - report_start
             self.logger.info(
-                f"Comprehensive report generated: {report_id} (time: {generation_time:.3f}s)"
+                f"Comprehensive report generated: {report_id} "
+                f"(time: {generation_time:.3f}s)"
             )
 
             return effect_report
@@ -259,7 +260,8 @@ class AIEffectMeasurement:
                         )
 
                         self.logger.info(
-                            f"Monitoring iteration {iteration + 1}/{max_iterations} completed"
+                            f"Monitoring iteration {iteration + 1}/"
+                            f"{max_iterations} completed"
                         )
 
                         # 成功基準未達時の警告

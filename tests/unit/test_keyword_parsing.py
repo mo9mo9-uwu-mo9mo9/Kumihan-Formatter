@@ -123,9 +123,7 @@ class TestKeywordDefinitions:
 
             # Test keyword definition
             keyword_info = self.definitions.get_keyword_info(keyword)
-            assert (
-                keyword_info is not None
-            ), f"キーワード '{keyword}' の定義が見つかりません"
+            assert keyword_info is not None, f"キーワード '{keyword}' の定義が見つかりません"
             assert (
                 keyword_info["tag"] == expected_def["tag"]
             ), f"キーワード '{keyword}' のタグが期待値と異なります"
@@ -143,9 +141,7 @@ class TestKeywordDefinitions:
         new_tags = ["del", "code", "blockquote", "pre"]
 
         for tag in new_tags:
-            assert (
-                tag in nesting_order
-            ), f"新しいタグ '{tag}' がネスト順序に含まれていません"
+            assert tag in nesting_order, f"新しいタグ '{tag}' がネスト順序に含まれていません"
 
     def test_compound_keywords_compatibility(self):
         """Test that new keywords work in compound scenarios."""
@@ -163,9 +159,7 @@ class TestKeywordDefinitions:
         for keyword in test_keywords:
             tag = self.definitions.get_tag_for_keyword(keyword)
             assert tag is not None, f"キーワード '{keyword}' のタグが取得できません"
-            assert isinstance(
-                tag, str
-            ), f"キーワード '{keyword}' のタグが文字列ではありません"
+            assert isinstance(tag, str), f"キーワード '{keyword}' のタグが文字列ではありません"
 
 
 @pytest.mark.unit
@@ -287,11 +281,7 @@ class TestMarkerParser:
         text = "前置き#太字 中身#後置き"
         result = self.parser.parse(text)
 
-        if (
-            hasattr(result, "position")
-            or hasattr(result, "start")
-            or hasattr(result, "end")
-        ):
+        if hasattr(result, "position") or hasattr(result, "start") or hasattr(result, "end"):
             # Position tracking is implemented
             assert result is not None
         else:

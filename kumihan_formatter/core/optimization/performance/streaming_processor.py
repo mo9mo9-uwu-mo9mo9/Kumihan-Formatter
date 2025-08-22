@@ -132,7 +132,8 @@ class OptimizedStreamingProcessor:
 
         self.logger.info(
             f"Streaming processor initialized: buffer_size={self.config.buffer_size}, "
-            f"chunk_size={self.config.chunk_size}, memory_limit={self.config.memory_limit}"
+            f"chunk_size={self.config.chunk_size}, "
+            f"memory_limit={self.config.memory_limit}"
         )
 
     def stream_file_lines(
@@ -336,8 +337,8 @@ class OptimizedStreamingProcessor:
         finally:
             processing_time = time.time() - start_time
             self.logger.info(
-                f"Memory-mapped streaming completed: {self.metrics.items_processed} chunks "
-                f"in {processing_time:.2f}s"
+                f"Memory-mapped streaming completed: "
+                f"{self.metrics.items_processed} chunks in {processing_time:.2f}s"
             )
 
     async def stream_async(
@@ -482,8 +483,9 @@ class OptimizedStreamingProcessor:
         finally:
             processing_time = time.time() - start_time
             self.logger.info(
-                f"Backpressure streaming completed: {self.metrics.items_processed} items "
-                f"in {processing_time:.2f}s, {self.metrics.backpressure_events} backpressure events"
+                f"Backpressure streaming completed: "
+                f"{self.metrics.items_processed} items in {processing_time:.2f}s, "
+                f"{self.metrics.backpressure_events} backpressure events"
             )
 
     def _handle_backpressure(self) -> None:

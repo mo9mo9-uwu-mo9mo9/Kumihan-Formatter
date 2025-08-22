@@ -84,9 +84,7 @@ class TestMainRendererRendering:
         """各テストメソッド実行前の初期化"""
         self.renderer = MainRenderer()
         # テスト用ノードを作成
-        self.test_node = Node(
-            type="p", content="テストコンテンツ", attributes={}, children=[]
-        )
+        self.test_node = Node(type="p", content="テストコンテンツ", attributes={}, children=[])
 
     def test_正常系_HTML出力(self) -> None:
         """正常系: HTMLフォーマット出力確認"""
@@ -148,19 +146,13 @@ class TestMainRendererNodeRendering:
                 type="ul",
                 content="",
                 attributes={},
-                children=[
-                    Node(type="li", content="リスト項目", attributes={}, children=[])
-                ],
+                children=[Node(type="li", content="リスト項目", attributes={}, children=[])],
             ),
             Node(
                 type="ol",
                 content="",
                 attributes={},
-                children=[
-                    Node(
-                        type="li", content="順序リスト項目", attributes={}, children=[]
-                    )
-                ],
+                children=[Node(type="li", content="順序リスト項目", attributes={}, children=[])],
             ),
         ]
         for node in test_nodes:
@@ -289,9 +281,7 @@ class TestMainRendererDI:
         # モックファクトリーを設定
         mock_factory = Mock()
         mock_get_factory.return_value = mock_factory
-        with patch(
-            "kumihan_formatter.core.patterns.dependency_injection.get_container"
-        ):
+        with patch("kumihan_formatter.core.patterns.dependency_injection.get_container"):
             renderer = MainRenderer()
             # ファクトリーが適切に統合されることを確認
             # 実際の統合は複雑なのでファクトリー設定の存在確認
@@ -373,9 +363,7 @@ class TestMainRendererOptimization:
         """正常系: Issue #727 パフォーマンス最適化確認"""
         # 大量のノードでパフォーマンステスト
         large_node_list = [
-            Node(
-                type="p", content=f"パフォーマンステスト{i}", attributes={}, children=[]
-            )
+            Node(type="p", content=f"パフォーマンステスト{i}", attributes={}, children=[])
             for i in range(100)
         ]
         # 最適化レンダリング実行
@@ -439,9 +427,7 @@ class TestMainRendererFileOperations:
 
     def test_正常系_複数フォーマット出力(self) -> None:
         """正常系: 複数フォーマット同時出力確認"""
-        test_node = Node(
-            type="h1", content="マルチフォーマットテスト", attributes={}, children=[]
-        )
+        test_node = Node(type="h1", content="マルチフォーマットテスト", attributes={}, children=[])
         with tempfile.TemporaryDirectory() as temp_dir:
             html_path = Path(temp_dir) / "output.html"
             md_path = Path(temp_dir) / "output.md"

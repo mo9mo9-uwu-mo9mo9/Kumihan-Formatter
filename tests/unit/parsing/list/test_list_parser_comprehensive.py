@@ -409,9 +409,7 @@ class TestListParserMocking:
         """専用パーサー統合テスト"""
         # OrderedListParserのモック
         with patch.object(self.parser, "ordered_parser") as mock_ordered:
-            mock_ordered.handle_ordered_list.return_value = create_node(
-                "list_item", "テスト"
-            )
+            mock_ordered.handle_ordered_list.return_value = create_node("list_item", "テスト")
 
             content = "1. テスト項目"
             result = self.parser._parse_implementation(content)
@@ -485,9 +483,7 @@ def create_test_list_content(type_name: str, count: int = 3) -> str:
     elif type_name == "ordered":
         return "\n".join([f"{i+1}. 項目{i+1}" for i in range(count)])
     elif type_name == "checklist":
-        return "\n".join(
-            [f"- [{'x' if i % 2 == 0 else ' '}] 項目{i+1}" for i in range(count)]
-        )
+        return "\n".join([f"- [{'x' if i % 2 == 0 else ' '}] 項目{i+1}" for i in range(count)])
     else:
         return f"- テスト項目"
 

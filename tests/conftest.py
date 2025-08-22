@@ -103,11 +103,11 @@ def _get_optimal_worker_count() -> int:
 def get_test_data_size(default_size: int = 1000, ci_size: int = 100) -> int:
     """
     CI環境とローカル環境でテストデータサイズを調整する共通ヘルパー
-    
+
     Args:
         default_size: ローカル環境でのデータサイズ
         ci_size: CI環境でのデータサイズ（軽量化）
-    
+
     Returns:
         環境に応じたデータサイズ
     """
@@ -145,9 +145,7 @@ def pytest_configure(config):
     try:
         import pytest_benchmark
 
-        if config.getoption("--numprocesses", default=None) or getattr(
-            config.option, "dist", None
-        ):
+        if config.getoption("--numprocesses", default=None) or getattr(config.option, "dist", None):
             config.addinivalue_line("addopts", "--benchmark-disable")
             logger.debug("Benchmark disabled for parallel execution")
     except ImportError:
@@ -172,12 +170,14 @@ def pytest_configure(config):
         try:
             memory_gb = psutil.virtual_memory().total / (1024**3)
             logger.debug(
-                f"Environment: CI={is_ci}, CPU={cpu_count}, Memory={memory_gb:.1f}GB, Workers={optimal_workers}"
+                (
+                    (
+                        f"Environment: CI={is_ci}, CPU={cpu_count}, Memory={memory_gb:.1f}GB, Workers={optimal_workers}"
+                    )
+                )
             )
         except:
-            logger.debug(
-                f"Environment: CI={is_ci}, CPU={cpu_count}, Workers={optimal_workers}"
-            )
+            logger.debug(f"Environment: CI={is_ci}, CPU={cpu_count}, Workers={optimal_workers}")
     else:
         logger.info(f"Using explicitly specified worker count: {explicit_workers}")
 

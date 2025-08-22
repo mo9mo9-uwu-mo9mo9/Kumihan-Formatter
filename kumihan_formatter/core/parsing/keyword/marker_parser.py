@@ -65,7 +65,8 @@ class MarkerParser:
     def parse_footnotes(self, text: str) -> list[dict[str, Any]]:
         """廃止済み脚注パーサー - 新記法ブロック形式に移行"""
         self.logger.warning(
-            "parse_footnotes() is deprecated. Use new block format '# 脚注 #内容##' instead."
+            "parse_footnotes() is deprecated. "
+            "Use new block format '# 脚注 #内容##' instead."
         )
         return []
 

@@ -107,9 +107,7 @@ class TestDIContainer:
             return MockService("factory_created")
 
         # When: ファクトリーを登録
-        self.container.register_factory(
-            IMockService, factory, ServiceLifetime.TRANSIENT
-        )
+        self.container.register_factory(IMockService, factory, ServiceLifetime.TRANSIENT)
 
         # Then: ファクトリー経由でインスタンスが生成される
         resolved = self.container.resolve(IMockService)
@@ -183,9 +181,7 @@ class TestDIContainer:
 
         # When: 循環参照状態でサービス解決を試行
         # Then: CircularDependencyErrorが発生
-        with pytest.raises(
-            CircularDependencyError, match="Circular dependency detected"
-        ):
+        with pytest.raises(CircularDependencyError, match="Circular dependency detected"):
             self.container.resolve(CircularDependencyA)
 
     def test_境界値_大量サービス登録(self):
@@ -194,9 +190,7 @@ class TestDIContainer:
         services = {}
         for i in range(100):
             class_name = f"Service{i}"
-            service_class = type(
-                class_name, (), {"value": i, "get_value": lambda self: self.value}
-            )
+            service_class = type(class_name, (), {"value": i, "get_value": lambda self: self.value})
             services[class_name] = service_class
             self.container.register(service_class, service_class)
 
@@ -445,12 +439,8 @@ class TestIntegration:
             def __init__(self, singleton: SingletonService):
                 self.singleton = singleton
 
-        container.register(
-            SingletonService, SingletonService, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            TransientService, TransientService, ServiceLifetime.TRANSIENT
-        )
+        container.register(SingletonService, SingletonService, ServiceLifetime.SINGLETON)
+        container.register(TransientService, TransientService, ServiceLifetime.TRANSIENT)
 
         # When: 複数回解決
         transient1 = container.resolve(TransientService)

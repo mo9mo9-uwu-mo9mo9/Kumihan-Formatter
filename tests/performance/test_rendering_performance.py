@@ -49,9 +49,7 @@ class RenderingPerformanceTester:
         if complexity == "simple":
             # シンプルなテキスト要素のみ
             for i in range(element_count):
-                elements.append(
-                    {"type": "text", "content": f"テキスト要素 {i}", "attributes": {}}
-                )
+                elements.append({"type": "text", "content": f"テキスト要素 {i}", "attributes": {}})
 
         elif complexity == "medium":
             # 中程度の複雑さ（様々な要素）
@@ -293,9 +291,7 @@ class RenderingPerformanceTester:
             render_result = self.mock_render_full_document(parsed_data)
             iteration_time = time.time() - iteration_start
 
-            results.append(
-                {"iteration": i, "time": iteration_time, "render_result": render_result}
-            )
+            results.append({"iteration": i, "time": iteration_time, "render_result": render_result})
 
         total_time = time.time() - total_start_time
 
@@ -506,9 +502,7 @@ class TestRenderingPerformance:
         html_size_kb = len(html_output) / 1024
         assert html_size_kb > 5, f"HTML出力が小さすぎる: {html_size_kb:.1f}KB"
 
-        logger.info(
-            f"HTML出力品質確認完了: {html_size_kb:.1f}KB, " f"文字数{len(html_output)}"
-        )
+        logger.info(f"HTML出力品質確認完了: {html_size_kb:.1f}KB, " f"文字数{len(html_output)}")
 
     @pytest.mark.performance
     def test_レンダリング性能_スケーラビリティ(self) -> None:
@@ -518,9 +512,7 @@ class TestRenderingPerformance:
         scale_factors = [1, 2, 5, 10]
 
         # When: スケーラビリティテスト実行
-        scalability_result = self.tester.run_scalability_test(
-            base_element_count, scale_factors
-        )
+        scalability_result = self.tester.run_scalability_test(base_element_count, scale_factors)
 
         # Then: スケーラビリティ確認
         results = scalability_result["results"]
@@ -607,22 +599,14 @@ class TestRenderingPerformance:
         total_parallel_time = time.time() - start_time
 
         # Then: 並列処理性能確認
-        total_processing_time = sum(
-            r["result"]["average_time"] for r in parallel_results
-        )
+        total_processing_time = sum(r["result"]["average_time"] for r in parallel_results)
 
         # 並列処理効率性確認
-        efficiency = (
-            total_processing_time / total_parallel_time
-            if total_parallel_time > 0
-            else 0
-        )
+        efficiency = total_processing_time / total_parallel_time if total_parallel_time > 0 else 0
         assert efficiency >= 0.7, f"並列レンダリング効率が低い: {efficiency:.2f}"
 
         # 全体の処理時間確認
-        assert (
-            total_parallel_time < 5.0
-        ), f"並列レンダリング時間超過: {total_parallel_time:.3f}秒"
+        assert total_parallel_time < 5.0, f"並列レンダリング時間超過: {total_parallel_time:.3f}秒"
 
         # HTML出力品質確認
         for result in parallel_results:
@@ -648,14 +632,10 @@ class TestRenderingPerformance:
         # HTML構造の効率性
         tag_count = html_output.count("<")
         content_ratio = (len(html_output) - tag_count * 10) / len(html_output)  # 概算
-        assert (
-            content_ratio > 0.3
-        ), f"HTML構造効率が低い: コンテンツ比{content_ratio:.2f}"
+        assert content_ratio > 0.3, f"HTML構造効率が低い: コンテンツ比{content_ratio:.2f}"
 
         # 重複スタイルがないこと
-        style_section = html_output[
-            html_output.find("<style>") : html_output.find("</style>")
-        ]
+        style_section = html_output[html_output.find("<style>") : html_output.find("</style>")]
         style_lines = style_section.split("\n")
         unique_styles = set(line.strip() for line in style_lines if line.strip())
         assert len(unique_styles) == len(

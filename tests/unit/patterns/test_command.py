@@ -97,9 +97,7 @@ class MockCommand(Command):
             self.status = CommandStatus.COMPLETED
             self.completed_at = datetime.now()
 
-            return CommandResult(
-                success=True, result=result, execution_time=execution_time
-            )
+            return CommandResult(success=True, result=result, execution_time=execution_time)
 
         except Exception as e:
             self.status = CommandStatus.FAILED
@@ -107,9 +105,7 @@ class MockCommand(Command):
             return CommandResult(
                 success=False,
                 error=e,
-                execution_time=(
-                    time.time() - start_time if hasattr(self, "started_at") else 0.0
-                ),
+                execution_time=(time.time() - start_time if hasattr(self, "started_at") else 0.0),
             )
 
 
@@ -179,9 +175,7 @@ class TestCommandResult:
         execution_time = 0.2
 
         # When: 失敗結果を作成
-        result = CommandResult(
-            success=False, error=error, execution_time=execution_time
-        )
+        result = CommandResult(success=False, error=error, execution_time=execution_time)
 
         # Then: 正しく作成される
         assert result.success is False
@@ -749,9 +743,7 @@ class TestIntegration:
         parse_command = ParseCommand("workflow content", parser, {"format": "test"})
         parse_result = processor.execute_command(parse_command)
 
-        render_command = RenderCommand(
-            parse_result.result, renderer, {"format": "html"}
-        )
+        render_command = RenderCommand(parse_result.result, renderer, {"format": "html"})
         render_result = processor.execute_command(render_command)
 
         # Then: 全ワークフローが正常に実行される

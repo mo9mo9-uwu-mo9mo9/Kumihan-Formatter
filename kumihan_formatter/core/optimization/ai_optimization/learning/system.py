@@ -79,7 +79,8 @@ class LearningSystem:
 
             if quality_result.get("quality_score", 0.0) < 0.4:
                 self.logger.warning(
-                    f"Low data quality detected: {quality_result.get('quality_score', 0.0):.3f}"
+                    f"Low data quality detected: "
+                    f"{quality_result.get('quality_score', 0.0):.3f}"
                 )
                 return {
                     "training_success": False,
@@ -139,7 +140,8 @@ class LearningSystem:
 
             self.logger.info(
                 f"Incremental training completed: "
-                f"{final_result['models_updated']} models updated in {training_time:.2f}s"
+                f"{final_result['models_updated']} models updated in "
+                f"{training_time:.2f}s"
             )
             return final_result
         except Exception as e:
@@ -239,7 +241,8 @@ class LearningSystem:
                     # 各サブモデル最適化
                     model_optimization_results = {}
                     for model_type in set(model_types):
-                        result = self.hyperparameter_optimizer.optimize_model_hyperparameters(
+                        optimizer = self.hyperparameter_optimizer
+                        result = optimizer.optimize_model_hyperparameters(
                             f"{model_name}_{model_type}",
                             model_type,
                             training_data,

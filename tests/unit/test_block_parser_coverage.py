@@ -20,9 +20,7 @@ from kumihan_formatter.core.parsing.block.special_block_parser import SpecialBlo
 
 @pytest.mark.unit
 @pytest.mark.parser
-@pytest.mark.skipif(
-    True, reason="BlockParser tests causing CI failures - skip for stable coverage"
-)
+@pytest.mark.skipif(True, reason="BlockParser tests causing CI failures - skip for stable coverage")
 class TestBlockParserCoverage:
     """Block parser comprehensive coverage tests."""
 

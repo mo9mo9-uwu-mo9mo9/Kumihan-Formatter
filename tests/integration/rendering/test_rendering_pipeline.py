@@ -100,9 +100,7 @@ class TestRenderingPipeline:
 
         # 期待されるタグの存在確認
         for expected_tag in test_case["expected_tags"]:
-            assert (
-                expected_tag in html
-            ), f"期待されるタグが見つかりません: {expected_tag}"
+            assert expected_tag in html, f"期待されるタグが見つかりません: {expected_tag}"
 
         # ファイル出力確認
         assert result["output_file"].exists(), "出力ファイルが作成されていません"
@@ -128,9 +126,7 @@ class TestRenderingPipeline:
 
         html = result["html"]
         # ネスト構造の正しい表現確認（実際のレンダラー出力形式に合わせて更新）
-        assert (
-            "# 太字 ## イタリック #ネスト##" in html
-        ), "ネスト構造が正しく表現されていません"
+        assert "# 太字 ## イタリック #ネスト##" in html, "ネスト構造が正しく表現されていません"
 
     def test_リスト構造パイプライン(self) -> None:
         """リスト構造でのパイプライン"""
@@ -228,9 +224,7 @@ class TestRenderingPipeline:
 
         # 出力形式の検証（実際のレンダラー出力形式に合わせて更新）
         html = html_result["html"]
-        assert (
-            "# 太字 #マルチフォーマットテスト##" in html
-        ), "HTML形式が正しくありません"
+        assert "# 太字 #マルチフォーマットテスト##" in html, "HTML形式が正しくありません"
         assert "# イタリック #出力確認##" in html, "HTML形式が正しくありません"
 
         # ファイルサイズ適正性確認

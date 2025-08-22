@@ -569,9 +569,7 @@ class TestKeywordRegistryIntegration:
         content_count = len(registry.get_keywords_by_type(KeywordType.CONTENT))
 
         # 全体数がタイプ別の合計と一致することを確認
-        total_by_type = (
-            decoration_count + layout_count + structure_count + content_count
-        )
+        total_by_type = decoration_count + layout_count + structure_count + content_count
         assert total_by_type == len(all_keywords)
 
         # 各タイプに少なくとも1つのキーワードがあることを確認

@@ -542,8 +542,10 @@ class ConcurrentToolCallLimiter:
                 self._semaphore = threading.Semaphore(self.max_concurrent_calls)
 
                 self.logger.info(
-                    f"Concurrent call limit adjusted: {old_limit} -> {self.max_concurrent_calls} "
-                    f"(response_time: {avg_response_time:.1f}s, resource_usage: {resource_usage}%)"
+                    f"Concurrent call limit adjusted: {old_limit} -> "
+                    f"{self.max_concurrent_calls} "
+                    f"(response_time: {avg_response_time:.1f}s, "
+                    f"resource_usage: {resource_usage}%)"
                 )
 
     def get_concurrency_statistics(self) -> Dict[str, Any]:

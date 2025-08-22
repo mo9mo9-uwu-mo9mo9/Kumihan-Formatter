@@ -93,7 +93,7 @@ class KeywordValidator:
             list[str]: 修正候補のリスト
         """
         all_keywords = self.definitions.get_all_keywords()
-        
+
         # 特別な対応：英語-日本語キーワード対応
         english_to_japanese = {
             "アンダーライン": "下線",
@@ -103,24 +103,24 @@ class KeywordValidator:
             "ストライク": "取り消し線",
             "クォート": "引用",
         }
-        
+
         # 特別対応のキーワードがあるかチェック
         if invalid_keyword in english_to_japanese:
             japanese_equivalent = english_to_japanese[invalid_keyword]
             if japanese_equivalent in all_keywords:
                 return [japanese_equivalent]
-        
+
         # まず標準的なcutoffで試行
         suggestions = get_close_matches(
             invalid_keyword, all_keywords, n=max_suggestions, cutoff=0.6
         )
-        
+
         # 候補が見つからない場合は、より寛容なcutoffで再試行
         if not suggestions:
             suggestions = get_close_matches(
                 invalid_keyword, all_keywords, n=max_suggestions, cutoff=0.3
             )
-        
+
         return suggestions
 
     def validate_single_keyword(self, keyword: str) -> tuple[bool, str | None]:
@@ -220,7 +220,8 @@ class KeywordValidator:
 
         if heading_keywords and details_keywords:
             errors.append(
-                f"見出しとdetails型の組み合わせは推奨されません: 見出し={heading_keywords}, details={details_keywords}"
+                f"見出しとdetails型の組み合わせは推奨されません: "
+                f"見出し={heading_keywords}, details={details_keywords}"
             )
 
         # 同じタグの重複チェック（警告レベル）

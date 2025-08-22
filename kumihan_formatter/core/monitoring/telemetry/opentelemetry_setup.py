@@ -21,13 +21,13 @@ try:
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import-not-found]  # noqa: E501
         OTLPSpanExporter,
     )
-    from opentelemetry.instrumentation.logging import (  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.logging import (  # type: ignore[import-not-found]  # noqa: E501
         LoggingInstrumentor,
     )
     from opentelemetry.instrumentation.psutil import (  # type: ignore[import-not-found]
         PsutilInstrumentor,
     )
-    from opentelemetry.instrumentation.threading import (  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.threading import (  # type: ignore[import-not-found]  # noqa: E501
         ThreadingInstrumentor,
     )
     from opentelemetry.propagate import (  # type: ignore[import-not-found]

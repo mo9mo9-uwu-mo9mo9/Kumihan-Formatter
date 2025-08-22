@@ -49,72 +49,56 @@ class TestElementRendererDelegate:
         # Given: 段落ノード
         node = Node(type="p", content="テスト段落")
         expected_html = "<p>テスト段落</p>"
-        self.main_renderer_mock.element_renderer.render_paragraph.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
 
         # Then: 期待するHTML出力
         assert result == expected_html
-        self.main_renderer_mock.element_renderer.render_paragraph.assert_called_once_with(
-            node
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.assert_called_once_with(node)
 
     def test_render_node_正常系_見出し要素(self) -> None:
         """正常系: 見出しノードのレンダリング"""
         # Given: h1見出しノード
         node = Node(type="h1", content="メインタイトル")
         expected_html = "<h1>メインタイトル</h1>"
-        self.main_renderer_mock.element_renderer.render_heading.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_heading.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
 
         # Then: 期待するHTML出力と適切なメソッド呼び出し
         assert result == expected_html
-        self.main_renderer_mock.element_renderer.render_heading.assert_called_once_with(
-            node, 1
-        )
+        self.main_renderer_mock.element_renderer.render_heading.assert_called_once_with(node, 1)
 
     def test_render_node_正常系_太字要素(self) -> None:
         """正常系: 太字ノードのレンダリング"""
         # Given: 太字ノード
         node = Node(type="strong", content="重要な文字")
         expected_html = "<strong>重要な文字</strong>"
-        self.main_renderer_mock.element_renderer.render_strong.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_strong.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
 
         # Then: 期待するHTML出力
         assert result == expected_html
-        self.main_renderer_mock.element_renderer.render_strong.assert_called_once_with(
-            node
-        )
+        self.main_renderer_mock.element_renderer.render_strong.assert_called_once_with(node)
 
     def test_render_node_正常系_リスト要素(self) -> None:
         """正常系: 無順序リストノードのレンダリング"""
         # Given: 無順序リストノード
         node = Node(type="ul", content=[], children=[])
         expected_html = "<ul></ul>"
-        self.main_renderer_mock.element_renderer.render_unordered_list.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_unordered_list.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
 
         # Then: 期待するHTML出力
         assert result == expected_html
-        self.main_renderer_mock.element_renderer.render_unordered_list.assert_called_once_with(
-            node
-        )
+        self.main_renderer_mock.element_renderer.render_unordered_list.assert_called_once_with(node)
 
     def test_render_node_異常系_不正なノードタイプ(self) -> None:
         """異常系: Nodeインスタンスでない場合のTypeError"""
@@ -130,27 +114,21 @@ class TestElementRendererDelegate:
         # Given: 未定義のノードタイプ
         node = Node(type="unknown_type", content="未知の要素")
         expected_html = "<div>未知の要素</div>"
-        self.main_renderer_mock.element_renderer.render_generic.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_generic.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
 
         # Then: 汎用レンダラーが呼び出されることを確認
         assert result == expected_html
-        self.main_renderer_mock.element_renderer.render_generic.assert_called_once_with(
-            node
-        )
+        self.main_renderer_mock.element_renderer.render_generic.assert_called_once_with(node)
 
     def test_render_node_optimized_正常系_キャッシュ利用(self) -> None:
         """正常系: 最適化レンダリングでメソッドキャッシュが利用される"""
         # Given: 段落ノード
         node = Node(type="p", content="キャッシュテスト")
         expected_html = "<p>キャッシュテスト</p>"
-        self.main_renderer_mock.element_renderer.render_paragraph.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.return_value = expected_html
 
         # When: 最適化レンダリングを2回実行
         result1 = self.element_renderer.render_node_optimized(node)
@@ -201,9 +179,9 @@ class TestElementRendererDelegate:
             expected_html = f"<{node_type}>test</{node_type}>"
 
             # モック設定
-            getattr(
-                self.main_renderer_mock.element_renderer, expected_method
-            ).return_value = expected_html
+            getattr(self.main_renderer_mock.element_renderer, expected_method).return_value = (
+                expected_html
+            )
 
             # When: レンダリング実行
             result = self.element_renderer.render_node(node)
@@ -224,9 +202,7 @@ class TestElementRendererDelegate:
         # Then: エスケープされた安全なテキストが返される
         assert result == safe_text
         assert "<script>" not in result
-        self.main_renderer_mock._process_text_content.assert_called_once_with(
-            malicious_text
-        )
+        self.main_renderer_mock._process_text_content.assert_called_once_with(malicious_text)
 
     def test_contains_html_tags_正常系(self) -> None:
         """正常系: HTMLタグ含有チェック"""
@@ -261,9 +237,7 @@ class TestElementRendererDelegate:
         content = [Node(type="strong", content="太字"), "通常テキスト"]
         depth = 1
         expected_html = "<strong>太字</strong>通常テキスト"
-        self.main_renderer_mock.content_processor.render_content.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.content_processor.render_content.return_value = expected_html
 
         # When: コンテンツレンダリング実行
         result = self.element_renderer._render_content(content, depth)
@@ -298,9 +272,7 @@ class TestElementRendererDelegate:
         # Given: 空のコンテンツを持つノード
         node = Node(type="p", content="")
         expected_html = "<p></p>"
-        self.main_renderer_mock.element_renderer.render_paragraph.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
@@ -313,9 +285,7 @@ class TestElementRendererDelegate:
         # Given: 日本語を含むノード
         node = Node(type="p", content="これは日本語のテストです。絵文字も→😀")
         expected_html = "<p>これは日本語のテストです。絵文字も→😀</p>"
-        self.main_renderer_mock.element_renderer.render_paragraph.return_value = (
-            expected_html
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.return_value = expected_html
 
         # When: レンダリング実行
         result = self.element_renderer.render_node(node)
@@ -329,9 +299,7 @@ class TestElementRendererDelegate:
         """パフォーマンス: 大量ノードの処理性能"""
         # Given: 大量の段落ノード
         nodes = [Node(type="p", content=f"段落{i}") for i in range(100)]
-        self.main_renderer_mock.element_renderer.render_paragraph.return_value = (
-            "<p>test</p>"
-        )
+        self.main_renderer_mock.element_renderer.render_paragraph.return_value = "<p>test</p>"
 
         # When: 大量ノードのレンダリング実行
         results = []

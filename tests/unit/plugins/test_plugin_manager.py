@@ -98,9 +98,7 @@ class TestPluginManager:
         for plugin_name in list(self.manager._plugins.keys()):
             self.manager.unload_plugin(plugin_name)
 
-    def _create_plugin_file(
-        self, content: str, filename: str = "test_plugin.py"
-    ) -> str:
+    def _create_plugin_file(self, content: str, filename: str = "test_plugin.py") -> str:
         """テスト用プラグインファイルを作成"""
         plugin_path = os.path.join(self.temp_dir, filename)
         with open(plugin_path, "w", encoding="utf-8") as f:
@@ -135,9 +133,7 @@ class TestPlugin:
         )
 
         # When: プラグインをロード
-        with patch(
-            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
-        ) as mock_publish:
+        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
             result = self.manager.load_plugin(plugin_path, plugin_info)
 
         # Then: ロードが成功する
@@ -166,9 +162,7 @@ class TestPlugin:
         )
 
         # When: プラグインをアンロード
-        with patch(
-            "kumihan_formatter.core.plugins.plugin_manager.publish_event"
-        ) as mock_publish:
+        with patch("kumihan_formatter.core.plugins.plugin_manager.publish_event") as mock_publish:
             result = self.manager.unload_plugin("test_plugin")
 
         # Then: アンロードが成功する
@@ -624,9 +618,7 @@ class DependentPlugin:
         self.cleaned_up = True
 """
         base_path = self._create_plugin_file(base_plugin_content, "base.py")
-        dependent_path = self._create_plugin_file(
-            dependent_plugin_content, "dependent.py"
-        )
+        dependent_path = self._create_plugin_file(dependent_plugin_content, "dependent.py")
 
         base_info = PluginInfo(
             name="base_plugin",
@@ -708,9 +700,7 @@ class TestPluginInfo:
     def test_プラグイン情報デフォルト値(self) -> None:
         """プラグイン情報のデフォルト値テスト"""
         # When: 最小限のパラメータでプラグイン情報を作成
-        info = PluginInfo(
-            name="test", version="1.0.0", description="テスト", entry_point="Test"
-        )
+        info = PluginInfo(name="test", version="1.0.0", description="テスト", entry_point="Test")
 
         # Then: デフォルト値が設定される
         assert info.dependencies is None

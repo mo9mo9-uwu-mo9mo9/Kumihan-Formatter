@@ -64,13 +64,10 @@ class TestArchitectureIntegrity:
                         {
                             "name": node.name,
                             "methods": [
-                                n.name
-                                for n in node.body
-                                if isinstance(n, ast.FunctionDef)
+                                n.name for n in node.body if isinstance(n, ast.FunctionDef)
                             ],
                             "bases": [
-                                b.id if isinstance(b, ast.Name) else str(b)
-                                for b in node.bases
+                                b.id if isinstance(b, ast.Name) else str(b) for b in node.bases
                             ],
                             "line_number": node.lineno,
                         }
@@ -81,10 +78,7 @@ class TestArchitectureIntegrity:
                     if not any(
                         node.lineno >= cls["line_number"]
                         for cls in analysis["classes"]
-                        if any(
-                            node.lineno >= cls["line_number"]
-                            for cls in analysis["classes"]
-                        )
+                        if any(node.lineno >= cls["line_number"] for cls in analysis["classes"])
                     ):
                         analysis["functions"].append(
                             {
@@ -137,17 +131,13 @@ class TestArchitectureIntegrity:
         # クラス名チェック（PascalCase）
         for cls in analysis["classes"]:
             if not cls["name"][0].isupper():
-                violations.append(
-                    f"クラス名 '{cls['name']}' はPascalCaseではありません"
-                )
+                violations.append(f"クラス名 '{cls['name']}' はPascalCaseではありません")
 
         # 関数名チェック（snake_case）
         for func in analysis["functions"]:
             if not func["name"].islower() or " " in func["name"]:
                 if not func["name"].startswith("_"):  # プライベート関数は除外
-                    violations.append(
-                        f"関数名 '{func['name']}' はsnake_caseではありません"
-                    )
+                    violations.append(f"関数名 '{func['name']}' はsnake_caseではありません")
 
         return violations
 
@@ -234,9 +224,7 @@ class TestArchitectureIntegrity:
         else:
             return "要改善"
 
-    def check_layer_separation(
-        self, modules: List[Dict[str, Any]]
-    ) -> Dict[str, List[str]]:
+    def check_layer_separation(self, modules: List[Dict[str, Any]]) -> Dict[str, List[str]]:
         """レイヤー分離チェック"""
         layers = {
             "core": [],
@@ -274,9 +262,7 @@ class TestArchitectureIntegrity:
         """アーキテクチャ整合性: 全体構造の確認"""
         # Given: プロジェクト全体
         if not self.kumihan_root.exists():
-            pytest.skip(
-                f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}"
-            )
+            pytest.skip(f"Kumihanルートディレクトリが見つかりません: {self.kumihan_root}")
 
         # When: モジュール発見と解析
         modules = self.discover_modules(self.kumihan_root)
@@ -312,9 +298,7 @@ class TestArchitectureIntegrity:
 
         # Then: 命名規則確認
         violation_ratio = len(total_violations) / max(len(core_modules), 1)
-        assert (
-            violation_ratio < 0.3
-        ), f"命名規則違反が多すぎます: {len(total_violations)}件"
+        assert violation_ratio < 0.3, f"命名規則違反が多すぎます: {len(total_violations)}件"
 
         if total_violations:
             logger.warning(f"命名規則違反: {total_violations[:5]}")  # 最初の5件のみログ
@@ -351,9 +335,7 @@ class TestArchitectureIntegrity:
         pattern_coverage = len(set(expected_patterns) & set(found_patterns)) / len(
             expected_patterns
         )
-        assert (
-            pattern_coverage >= 0.5
-        ), f"設計パターンカバレッジが低い: {pattern_coverage:.2f}"
+        assert pattern_coverage >= 0.5, f"設計パターンカバレッジが低い: {pattern_coverage:.2f}"
 
         logger.info(f"設計パターン確認完了: {len(found_patterns)}パターン実装")
 
@@ -361,9 +343,7 @@ class TestArchitectureIntegrity:
     def test_アーキテクチャ整合性_モジュール凝集度(self) -> None:
         """アーキテクチャ整合性: モジュール凝集度の確認"""
         # Given: 主要モジュール
-        core_modules = self.discover_modules(self.kumihan_root / "core")[
-            :15
-        ]  # 最初の15モジュール
+        core_modules = self.discover_modules(self.kumihan_root / "core")[:15]  # 最初の15モジュール
 
         if not core_modules:
             pytest.skip("coreモジュールが見つかりません")
@@ -401,9 +381,7 @@ class TestArchitectureIntegrity:
         # 主要レイヤーの存在確認
         essential_layers = ["core", "parsing", "rendering"]
         for layer in essential_layers:
-            assert (
-                len(layers[layer]) > 0
-            ), f"必須レイヤー '{layer}' にモジュールがありません"
+            assert len(layers[layer]) > 0, f"必須レイヤー '{layer}' にモジュールがありません"
 
         # レイヤー分散の確認
         total_modules = sum(len(modules) for modules in layers.values())
@@ -412,9 +390,7 @@ class TestArchitectureIntegrity:
         # コアレイヤーが支配的でないことを確認
         assert layer_distribution.get("core", 0) < 0.7, "coreレイヤーが支配的すぎます"
 
-        logger.info(
-            f"レイヤー分離確認完了: {len(layers)}レイヤー、{total_modules}モジュール"
-        )
+        logger.info(f"レイヤー分離確認完了: {len(layers)}レイヤー、{total_modules}モジュール")
 
     @pytest.mark.system
     def test_アーキテクチャ整合性_依存関係循環(self) -> None:
@@ -430,9 +406,7 @@ class TestArchitectureIntegrity:
         for module in core_modules:
             analysis = self.analyze_module_structure(module)
             module_name = (
-                str(module.relative_to(self.kumihan_root))
-                .replace("/", ".")
-                .replace(".py", "")
+                str(module.relative_to(self.kumihan_root)).replace("/", ".").replace(".py", "")
             )
 
             imports = []
@@ -487,9 +461,7 @@ class TestArchitectureIntegrity:
     def test_アーキテクチャ整合性_コードメトリクス(self) -> None:
         """アーキテクチャ整合性: コードメトリクスの確認"""
         # Given: 全モジュール
-        all_modules = self.discover_modules(self.kumihan_root)[
-            :20
-        ]  # 最初の20モジュール
+        all_modules = self.discover_modules(self.kumihan_root)[:20]  # 最初の20モジュール
 
         # When: メトリクス収集
         metrics = {
@@ -518,29 +490,21 @@ class TestArchitectureIntegrity:
 
                 # 複雑なファイルの検出
                 if class_count > 5 or function_count > 15:
-                    metrics["complex_files"].append(
-                        (str(module), class_count, function_count)
-                    )
+                    metrics["complex_files"].append((str(module), class_count, function_count))
 
         # Then: メトリクス確認
         avg_lines = (
-            metrics["total_lines"] / metrics["total_files"]
-            if metrics["total_files"] > 0
-            else 0
+            metrics["total_lines"] / metrics["total_files"] if metrics["total_files"] > 0 else 0
         )
         assert avg_lines < 250, f"平均ファイルサイズが大きすぎます: {avg_lines:.1f}行"
 
         # 大きなファイルの割合確認
         large_file_ratio = len(metrics["large_files"]) / metrics["total_files"]
-        assert (
-            large_file_ratio < 0.2
-        ), f"大きなファイルの割合が高い: {large_file_ratio:.2f}"
+        assert large_file_ratio < 0.2, f"大きなファイルの割合が高い: {large_file_ratio:.2f}"
 
         # 複雑なファイルの割合確認
         complex_file_ratio = len(metrics["complex_files"]) / metrics["total_files"]
-        assert (
-            complex_file_ratio < 0.3
-        ), f"複雑なファイルの割合が高い: {complex_file_ratio:.2f}"
+        assert complex_file_ratio < 0.3, f"複雑なファイルの割合が高い: {complex_file_ratio:.2f}"
 
         logger.info(
             f"コードメトリクス確認完了: {metrics['total_files']}ファイル、"

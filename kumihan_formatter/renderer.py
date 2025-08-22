@@ -75,7 +75,8 @@ class Renderer:
             source_text: Source text for toggle feature (footnotes already removed)
             source_filename: Source filename for toggle feature
             navigation_html: Navigation HTML
-            original_source_text: Original source text with footnotes for footnote processing
+            original_source_text: Original source text with footnotes for footnote
+                processing
 
         Returns:
             str: Complete HTML document
@@ -134,7 +135,8 @@ class Renderer:
                     footnotes_html = footnote_html
                     has_footnotes = True
                     self.logger.debug(
-                        f"Added footnotes HTML to context: {len(footnote_html)} characters"
+                        f"Added footnotes HTML to context: "
+                        f"{len(footnote_html)} characters"
                     )
 
             except Exception as e:

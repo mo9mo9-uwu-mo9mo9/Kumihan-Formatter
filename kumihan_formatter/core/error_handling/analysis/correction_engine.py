@@ -114,7 +114,8 @@ class CorrectionEngine:
         unique_suggestions = list(dict.fromkeys(suggestions))  # 順序を保持して重複除去
 
         self.logger.debug(
-            f"Generated {len(unique_suggestions)} suggestions for error: {error.error_type}"
+            f"Generated {len(unique_suggestions)} suggestions for error: "
+            f"{error.error_type}"
         )
 
         return unique_suggestions[:5]  # 最大5つの提案

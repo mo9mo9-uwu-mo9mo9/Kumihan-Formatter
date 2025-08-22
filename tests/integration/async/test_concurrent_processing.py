@@ -130,13 +130,9 @@ class TestConcurrentProcessing:
         assert (
             success_count >= len(contents) * 0.8
         ), f"成功率が低い: {success_count}/{len(contents)}"
-        assert (
-            len(thread_ids) <= max_workers
-        ), f"スレッド数が制限を超過: {len(thread_ids)}"
+        assert len(thread_ids) <= max_workers, f"スレッド数が制限を超過: {len(thread_ids)}"
 
-    @pytest.mark.skipif(
-        not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed"
-    )
+    @pytest.mark.skipif(not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed")
     @pytest.mark.asyncio
     async def test_非同期並行処理(self) -> None:
         """asyncioを使用した非同期並行処理"""
@@ -144,9 +140,7 @@ class TestConcurrentProcessing:
         async def async_process(content: str, worker_id: int) -> Dict[str, Any]:
             """非同期処理ラッパー"""
             loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(
-                None, self.process_content_sync, content, worker_id
-            )
+            return await loop.run_in_executor(None, self.process_content_sync, content, worker_id)
 
         # テストデータ準備
         contents = []
@@ -177,9 +171,7 @@ class TestConcurrentProcessing:
             else:
                 error_results.append(result)
 
-        logger.info(
-            f"非同期並行処理: 成功 {len(success_results)}, エラー {len(error_results)}"
-        )
+        logger.info(f"非同期並行処理: 成功 {len(success_results)}, エラー {len(error_results)}")
         logger.info(f"総処理時間: {total_time:.3f}秒")
 
         # 検証
@@ -208,8 +200,7 @@ class TestConcurrentProcessing:
 
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             futures = [
-                executor.submit(worker_with_shared_data, content, i)
-                for i in range(worker_count)
+                executor.submit(worker_with_shared_data, content, i) for i in range(worker_count)
             ]
 
             for future in futures:
@@ -221,9 +212,7 @@ class TestConcurrentProcessing:
 
         # 全て成功していることを確認
         success_count = sum(1 for r in shared_data["results"] if r["success"])
-        assert (
-            success_count == worker_count
-        ), f"失敗した処理: {worker_count - success_count}"
+        assert success_count == worker_count, f"失敗した処理: {worker_count - success_count}"
 
     def test_リソース競合回避(self) -> None:
         """リソース競合の回避テスト"""
@@ -333,8 +322,7 @@ class TestConcurrentProcessing:
 
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             futures = [
-                executor.submit(worker_with_multiple_locks, content, i)
-                for i in range(worker_count)
+                executor.submit(worker_with_multiple_locks, content, i) for i in range(worker_count)
             ]
 
             # タイムアウト付きで結果を取得（デッドロックしないことを確認）
@@ -352,9 +340,7 @@ class TestConcurrentProcessing:
                     )
 
         # 検証
-        assert (
-            len(completed_results) == worker_count
-        ), "タイムアウトでデッドロックが疑われます"
+        assert len(completed_results) == worker_count, "タイムアウトでデッドロックが疑われます"
         assert len(results) == worker_count, "結果数が正しくない"
 
         success_count = sum(1 for r in results if r.get("success"))

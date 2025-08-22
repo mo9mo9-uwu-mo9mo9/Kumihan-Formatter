@@ -152,7 +152,8 @@ class ObjectRecycler:
                     self.stats["memory_saved_bytes"] += obj_size
 
                 logger.debug(
-                    f"Recycled {obj_type.__name__} object (pool size: {current_pool_size + 1})"
+                    f"Recycled {obj_type.__name__} object "
+                    f"(pool size: {current_pool_size + 1})"
                 )
             else:
                 # プール満杯時は破棄
@@ -538,10 +539,12 @@ def main() -> None:
                     f"  Time improvement: {improvement.get('time_improvement', 0):.2f}x"
                 )
                 print(
-                    f"  Memory improvement: {improvement.get('memory_improvement', 0):.2f}x"
+                    f"  Memory improvement: "
+                    f"{improvement.get('memory_improvement', 0):.2f}x"
                 )
                 print(
-                    f"  Throughput improvement: {improvement.get('throughput_improvement', 0):.2f}x"
+                    f"  Throughput improvement: "
+                    f"{improvement.get('throughput_improvement', 0):.2f}x"
                 )
 
         print(f"\nResults saved: {benchmark_path}")

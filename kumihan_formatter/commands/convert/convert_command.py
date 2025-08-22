@@ -243,7 +243,8 @@ class ConvertCommand:
     ) -> None:
         """継続可能な構文エラーの処理"""
         self.logger.warning(
-            f"Syntax errors found but continuing (level={error_level}): {len(errors)} errors"
+            f"Syntax errors found but continuing (level={error_level}): "
+            f"{len(errors)} errors"
         )
         get_console_ui().warning(
             f"記法エラーが検出されましたが、処理を継続します (レベル: {error_level})。"

@@ -89,9 +89,7 @@ class TestKeywordParserCore:
         definitions = KeywordDefinitions()
         parser = KeywordParser(definitions)
 
-        keywords, attributes, errors = parser.parse_marker_keywords(
-            "ルビ 日本語（にほんご）"
-        )
+        keywords, attributes, errors = parser.parse_marker_keywords("ルビ 日本語（にほんご）")
 
         assert "ruby" in attributes
         assert attributes["ruby"]["base_text"] == "日本語"
@@ -151,9 +149,7 @@ class TestKeywordParserKumihanNotation:
         definitions = KeywordDefinitions()
         parser = KeywordParser(definitions)
 
-        keywords, attributes, errors = parser.parse_marker_keywords(
-            "太字+イタリック+下線"
-        )
+        keywords, attributes, errors = parser.parse_marker_keywords("太字+イタリック+下線")
 
         assert "太字" in keywords
         assert "イタリック" in keywords
@@ -211,9 +207,7 @@ class TestKeywordParserValidation:
         definitions = KeywordDefinitions()
         parser = KeywordParser(definitions)
 
-        keywords, attributes, errors = parser.parse_marker_keywords(
-            "存在しないキーワード"
-        )
+        keywords, attributes, errors = parser.parse_marker_keywords("存在しないキーワード")
 
         # 未定義キーワードは除外される
         assert keywords == []
@@ -253,9 +247,7 @@ class TestKeywordParserProtocol:
         parser = KeywordParser(definitions)
 
         # 例外を発生させる
-        with patch.object(
-            parser, "parse_marker_keywords", side_effect=Exception("Test error")
-        ):
+        with patch.object(parser, "parse_marker_keywords", side_effect=Exception("Test error")):
             result = parser.parse("テスト")
 
             assert result.success is False
@@ -567,9 +559,7 @@ class TestKeywordParserErrorHandling:
         definitions = KeywordDefinitions()
         parser = KeywordParser(definitions)
 
-        with patch.object(
-            parser, "parse_marker_keywords", side_effect=Exception("Test error")
-        ):
+        with patch.object(parser, "parse_marker_keywords", side_effect=Exception("Test error")):
             errors = parser.validate("テスト")
 
             assert len(errors) > 0

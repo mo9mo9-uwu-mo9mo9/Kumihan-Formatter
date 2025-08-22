@@ -94,7 +94,8 @@ class HyperparameterOptimizer:
             )
 
             self.logger.info(
-                f"Hyperparameter optimization completed for {model_name}: score={best_value:.4f}"
+                f"Hyperparameter optimization completed for {model_name}: "
+                f"score={best_value:.4f}"
             )
             return optimization_result
         except Exception as e:

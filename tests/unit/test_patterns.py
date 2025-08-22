@@ -180,9 +180,7 @@ class TestStrategyPattern:
         manager = StrategyManager()
 
         html_strategy = Mock(spec=RenderingStrategy)
-        html_strategy.supports_format = Mock(
-            side_effect=lambda fmt: fmt.lower() == "html"
-        )
+        html_strategy.supports_format = Mock(side_effect=lambda fmt: fmt.lower() == "html")
 
         manager.register_rendering_strategy("html", html_strategy)
 
@@ -199,16 +197,12 @@ class TestStrategyPattern:
         # 異なる対応度を持つ戦略を登録
         kumihan_strategy = Mock(spec=ParsingStrategy)
         kumihan_strategy.supports_content = Mock(
-            side_effect=lambda content: (
-                0.9 if "# " in content and "##" in content else 0.1
-            )
+            side_effect=lambda content: (0.9 if "# " in content and "##" in content else 0.1)
         )
 
         markdown_strategy = Mock(spec=ParsingStrategy)
         markdown_strategy.supports_content = Mock(
-            side_effect=lambda content: (
-                0.8 if "##" in content and "# " not in content else 0.2
-            )
+            side_effect=lambda content: (0.8 if "##" in content and "# " not in content else 0.2)
         )
 
         manager.register_parsing_strategy("kumihan", kumihan_strategy)
@@ -405,9 +399,7 @@ class TestPatternIntegration:
         event_bus.subscribe(EventType.PARSING_STARTED, observer)
 
         # イベント発行
-        manager.publish_event(
-            EventType.PARSING_STARTED, "test_parser", {"content_length": 100}
-        )
+        manager.publish_event(EventType.PARSING_STARTED, "test_parser", {"content_length": 100})
 
         observer.handle_event.assert_called_once()
         call_args = observer.handle_event.call_args[0]

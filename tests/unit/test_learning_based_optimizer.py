@@ -161,9 +161,7 @@ class TestLearningBasedOptimizerInitialization:
         }
         assert optimizer.learning_metrics == expected_metrics
 
-    def test_initialization_with_adaptive_manager(
-        self, mock_config, mock_adaptive_manager
-    ):
+    def test_initialization_with_adaptive_manager(self, mock_config, mock_adaptive_manager):
         """AdaptiveSettingsManagerありの初期化テスト"""
         optimizer = LearningBasedOptimizer(mock_config, mock_adaptive_manager)
 
@@ -208,9 +206,7 @@ class TestLearningBasedOptimizerLearningCycle:
     """LearningBasedOptimizer 学習サイクルテスト"""
 
     @pytest.fixture
-    def optimizer_with_mocks(
-        self, mock_config, mock_adaptive_manager, mock_efficiency_analyzer
-    ):
+    def optimizer_with_mocks(self, mock_config, mock_adaptive_manager, mock_efficiency_analyzer):
         """モック付きオプティマイザー"""
         optimizer = LearningBasedOptimizer(mock_config, mock_adaptive_manager)
         optimizer.integrate_efficiency_analyzer(mock_efficiency_analyzer)
@@ -222,18 +218,14 @@ class TestLearningBasedOptimizerLearningCycle:
 
         with (
             patch.object(optimizer, "_integrate_learning_data") as mock_integrate,
-            patch.object(
-                optimizer, "_generate_optimization_proposals"
-            ) as mock_generate,
+            patch.object(optimizer, "_generate_optimization_proposals") as mock_generate,
             patch.object(optimizer, "_apply_automatic_optimizations") as mock_apply,
             patch.object(optimizer, "_setup_ab_tests") as mock_setup_ab,
         ):
 
             # モックの戻り値設定
             mock_integrate.return_value = {"integrated": "data"}
-            mock_generate.return_value = [
-                {"pattern": "test", "expected_improvement": 0.05}
-            ]
+            mock_generate.return_value = [{"pattern": "test", "expected_improvement": 0.05}]
 
             from kumihan_formatter.core.config.optimization.manager import (
                 ConfigAdjustment,
@@ -350,9 +342,7 @@ class TestLearningBasedOptimizerDataIntegration:
         }
 
         # データ統合実行
-        result = optimizer._integrate_learning_data(
-            learning_summary, efficiency_insights
-        )
+        result = optimizer._integrate_learning_data(learning_summary, efficiency_insights)
 
         # 統合結果の検証
         assert "high_priority_patterns" in result
@@ -396,9 +386,7 @@ class TestLearningBasedOptimizerDataIntegration:
         efficiency_insights = {}
 
         # データ統合実行
-        result = optimizer._integrate_learning_data(
-            learning_summary, efficiency_insights
-        )
+        result = optimizer._integrate_learning_data(learning_summary, efficiency_insights)
 
         # 基本的な統合が行われることを確認
         assert "high_priority_patterns" in result
@@ -456,10 +444,7 @@ class TestLearningBasedOptimizerProposalGeneration:
 
         # 閾値以上の提案のみ含まれることを確認
         for proposal in proposals:
-            assert (
-                proposal["expected_improvement"]
-                >= optimizer.auto_optimization_threshold
-            )
+            assert proposal["expected_improvement"] >= optimizer.auto_optimization_threshold
             assert "pattern" in proposal
             assert "type" in proposal
             assert "confidence" in proposal
@@ -502,9 +487,7 @@ class TestLearningBasedOptimizerProposalGeneration:
         proposals = optimizer._generate_optimization_proposals(integrated_analysis)
 
         # 自動適用フラグの確認
-        high_improvement_proposal = next(
-            p for p in proposals if p["pattern"] == "high_improvement"
-        )
+        high_improvement_proposal = next(p for p in proposals if p["pattern"] == "high_improvement")
         assert high_improvement_proposal["auto_apply"] is True
         assert high_improvement_proposal["ab_test_candidate"] is False
 
@@ -583,9 +566,7 @@ class TestLearningBasedOptimizerAutomaticOptimizations:
             # AdaptiveSettingsManagerの_apply_adjustmentが呼ばれることを確認
             optimizer.adaptive_manager._apply_adjustment.assert_called_once()
 
-    def test_apply_automatic_optimizations_max_answer_chars_logic(
-        self, optimizer_with_manager
-    ):
+    def test_apply_automatic_optimizations_max_answer_chars_logic(self, optimizer_with_manager):
         """max_answer_chars削減ロジックテスト"""
         optimizer = optimizer_with_manager
 
@@ -780,9 +761,7 @@ class TestLearningBasedOptimizerStatus:
 
         # 総合削減率計算の検証
         assert "total_reduction_achieved" in status
-        expected_total = 0.618 + min(
-            0.12, 0.1
-        )  # 統合設定最適化 + 学習追加分（上限10%）
+        expected_total = 0.618 + min(0.12, 0.1)  # 統合設定最適化 + 学習追加分（上限10%）
         assert status["total_reduction_achieved"] == expected_total
 
         # 目標進捗の検証
@@ -799,9 +778,7 @@ class TestLearningBasedOptimizerStatus:
     def test_get_learning_status_no_recent_activity(self, optimizer_with_history):
         """最近の学習活動なしの場合のテスト"""
         optimizer = optimizer_with_history
-        optimizer.learning_metrics["last_learning_session"] = (
-            time.time() - 7200
-        )  # 2時間前
+        optimizer.learning_metrics["last_learning_session"] = time.time() - 7200  # 2時間前
 
         status = optimizer.get_learning_status()
 
@@ -843,22 +820,12 @@ class TestLearningBasedOptimizerStatus:
 
         # 更新結果の確認
         updated_metrics = optimizer.learning_metrics
+        assert updated_metrics["patterns_learned"] == initial_metrics["patterns_learned"] + 3
         assert (
-            updated_metrics["patterns_learned"]
-            == initial_metrics["patterns_learned"] + 3
+            updated_metrics["optimizations_applied"] == initial_metrics["optimizations_applied"] + 2
         )
-        assert (
-            updated_metrics["optimizations_applied"]
-            == initial_metrics["optimizations_applied"] + 2
-        )
-        assert (
-            updated_metrics["ab_tests_completed"]
-            == initial_metrics["ab_tests_completed"] + 1
-        )
-        assert (
-            updated_metrics["total_improvement"]
-            == initial_metrics["total_improvement"] + 0.06
-        )
+        assert updated_metrics["ab_tests_completed"] == initial_metrics["ab_tests_completed"] + 1
+        assert updated_metrics["total_improvement"] == initial_metrics["total_improvement"] + 0.06
         assert updated_metrics["last_learning_session"] == cycle_result["timestamp"]
 
 
@@ -876,9 +843,7 @@ class TestLearningBasedOptimizerErrorHandling:
         optimizer = LearningBasedOptimizer(mock_config, failing_manager)
         return optimizer
 
-    def test_run_learning_cycle_with_manager_error(
-        self, optimizer_with_failing_dependencies
-    ):
+    def test_run_learning_cycle_with_manager_error(self, optimizer_with_failing_dependencies):
         """AdaptiveSettingsManagerエラー時の学習サイクルテスト"""
         optimizer = optimizer_with_failing_dependencies
 
@@ -891,9 +856,7 @@ class TestLearningBasedOptimizerErrorHandling:
         assert "timestamp" in result
         assert "duration" in result
 
-    def test_get_learning_status_with_manager_error(
-        self, optimizer_with_failing_dependencies
-    ):
+    def test_get_learning_status_with_manager_error(self, optimizer_with_failing_dependencies):
         """AdaptiveSettingsManagerエラー時のステータス取得テスト"""
         optimizer = optimizer_with_failing_dependencies
 
@@ -940,9 +903,7 @@ class TestLearningBasedOptimizerPerformance:
     """LearningBasedOptimizer パフォーマンステスト"""
 
     @pytest.fixture
-    def performance_optimizer(
-        self, mock_config, mock_adaptive_manager, mock_efficiency_analyzer
-    ):
+    def performance_optimizer(self, mock_config, mock_adaptive_manager, mock_efficiency_analyzer):
         """パフォーマンステスト用オプティマイザー"""
         optimizer = LearningBasedOptimizer(mock_config, mock_adaptive_manager)
         optimizer.integrate_efficiency_analyzer(mock_efficiency_analyzer)
@@ -1026,9 +987,7 @@ class TestLearningBasedOptimizerPerformance:
         }
 
         large_efficiency_insights = {
-            "pattern_rankings": {
-                f"pattern_{i}": 0.3 + (i % 10) * 0.07 for i in range(100)
-            }
+            "pattern_rankings": {f"pattern_{i}": 0.3 + (i % 10) * 0.07 for i in range(100)}
         }
 
         start_time = time.time()
@@ -1042,9 +1001,7 @@ class TestLearningBasedOptimizerPerformance:
         processing_time = end_time - start_time
 
         # 処理時間の確認（1秒以内）
-        assert (
-            processing_time < 1.0
-        ), f"Large data processing took too long: {processing_time:.3f}s"
+        assert processing_time < 1.0, f"Large data processing took too long: {processing_time:.3f}s"
 
         # 結果の基本検証
         assert isinstance(result, dict)

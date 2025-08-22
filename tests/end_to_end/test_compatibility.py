@@ -416,15 +416,9 @@ class TestCompatibility:
         ), "ハイブリッドモードの機能検出数が不足"
 
         # 出力ファイルの存在確認
-        assert legacy_result[
-            "output_file"
-        ].exists(), "レガシー出力ファイルが作成されていない"
-        assert current_result[
-            "output_file"
-        ].exists(), "現在出力ファイルが作成されていない"
-        assert hybrid_result[
-            "output_file"
-        ].exists(), "ハイブリッド出力ファイルが作成されていない"
+        assert legacy_result["output_file"].exists(), "レガシー出力ファイルが作成されていない"
+        assert current_result["output_file"].exists(), "現在出力ファイルが作成されていない"
+        assert hybrid_result["output_file"].exists(), "ハイブリッド出力ファイルが作成されていない"
 
         logger.info(
             f"バージョン間比較完了 - レガシー:{legacy_features}, "
@@ -458,18 +452,14 @@ class TestCompatibility:
         assert migration_info_available, "移行情報が生成されていない"
 
         # 自動変換の確認
-        auto_converted = [
-            f for f in result["features_detected"] if "auto_converted" in f
-        ]
+        auto_converted = [f for f in result["features_detected"] if "auto_converted" in f]
         assert len(auto_converted) > 0, "自動変換が実行されていない"
 
         # 出力内容の移行情報確認
         output_content = result["output"]
         assert "移行提案" in output_content, "移行提案セクションが出力されていない"
         # 「変換」または「auto_converted」があることを確認
-        has_conversion_info = (
-            "変換" in output_content or "auto_converted" in output_content
-        )
+        has_conversion_info = "変換" in output_content or "auto_converted" in output_content
         assert has_conversion_info, "変換情報が出力されていない"
 
         logger.info(
@@ -493,15 +483,9 @@ class TestCompatibility:
 """
 
         # When: 各モードで処理
-        legacy_result = self.process_with_compatibility_check(
-            problematic_content, "legacy"
-        )
-        current_result = self.process_with_compatibility_check(
-            problematic_content, "current"
-        )
-        hybrid_result = self.process_with_compatibility_check(
-            problematic_content, "hybrid"
-        )
+        legacy_result = self.process_with_compatibility_check(problematic_content, "legacy")
+        current_result = self.process_with_compatibility_check(problematic_content, "current")
+        hybrid_result = self.process_with_compatibility_check(problematic_content, "hybrid")
 
         # Then: エラー耐性の確認
         # 少なくとも1つのモードは成功すべき

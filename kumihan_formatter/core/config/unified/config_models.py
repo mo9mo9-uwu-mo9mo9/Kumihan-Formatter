@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional  # List, Union removed - unused imports (
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-# from ..common.error_types import ErrorCategory, ErrorSeverity  # removed - unused imports (F401)
+# from ..common.error_types import ErrorCategory, ErrorSeverity
 
 
 class ConfigFormat(str, Enum):
@@ -117,7 +117,8 @@ class ParallelConfig(BaseModel):
             and v <= info.data["memory_warning_threshold_mb"]
         ):
             raise ValueError(
-                "memory_critical_threshold_mb must be greater than memory_warning_threshold_mb"
+                "memory_critical_threshold_mb must be greater than "
+                "memory_warning_threshold_mb"
             )
         return v
 
@@ -154,7 +155,9 @@ class LoggingConfig(BaseModel):
         default=True, description="パフォーマンスログ有効"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_LOG_")  # type: ignore[typeddict-unknown-key]
+    model_config = ConfigDict(
+        env_prefix="KUMIHAN_LOG_"
+    )  # type: ignore[typeddict-unknown-key]
 
 
 class ErrorConfig(BaseModel):
@@ -184,7 +187,9 @@ class ErrorConfig(BaseModel):
         default_factory=dict, description="カテゴリ別エラー設定"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_ERROR_")  # type: ignore[typeddict-unknown-key]
+    model_config = ConfigDict(
+        env_prefix="KUMIHAN_ERROR_"
+    )  # type: ignore[typeddict-unknown-key]
 
 
 class RenderingConfig(BaseModel):
@@ -200,7 +205,9 @@ class RenderingConfig(BaseModel):
     text_color: str = Field(default="#333", description="テキスト色")
     line_height: str = Field(default="1.8", description="行の高さ")
     font_family: str = Field(
-        default="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+        default=(
+            "Hiragino Kaku Gothic ProN, Hiragino Sans, " "Yu Gothic, Meiryo, sans-serif"
+        ),
         description="フォントファミリー",
     )
 
@@ -214,7 +221,9 @@ class RenderingConfig(BaseModel):
         default=True, description="構文ハイライト有効"
     )
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_RENDER_")  # type: ignore[typeddict-unknown-key]
+    model_config = ConfigDict(
+        env_prefix="KUMIHAN_RENDER_"
+    )  # type: ignore[typeddict-unknown-key]
 
 
 class UIConfig(BaseModel):
@@ -249,7 +258,9 @@ class UIConfig(BaseModel):
     watch_enabled: bool = Field(default=False, description="ファイル監視有効")
     watch_interval: float = Field(default=1.0, ge=0.1, description="監視間隔(秒)")
 
-    model_config = ConfigDict(env_prefix="KUMIHAN_UI_")  # type: ignore[typeddict-unknown-key]
+    model_config = ConfigDict(
+        env_prefix="KUMIHAN_UI_"
+    )  # type: ignore[typeddict-unknown-key]
 
 
 class KumihanConfig(BaseModel):

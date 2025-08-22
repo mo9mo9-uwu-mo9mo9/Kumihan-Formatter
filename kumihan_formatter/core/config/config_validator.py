@@ -87,7 +87,10 @@ class ConfigValidator:
         "font_family": {
             "type": str,
             "required": False,
-            "default": "Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif",
+            "default": (
+                "Hiragino Kaku Gothic ProN, Hiragino Sans, "
+                "Yu Gothic, Meiryo, sans-serif"
+            ),
         },
         "css": {
             "type": dict,
@@ -276,7 +279,8 @@ class ConfigValidator:
                     f"(CPU{cpu_count}コア, {config.target_chunks_per_core}チャンク/コア)"
                 )
                 result.add_suggestion(
-                    f"target_chunks_per_core を {max_reasonable_chunks // cpu_count} 以下に設定することを推奨"
+                    f"target_chunks_per_core を "
+                    f"{max_reasonable_chunks // cpu_count} 以下に設定することを推奨"
                 )
 
         except Exception:

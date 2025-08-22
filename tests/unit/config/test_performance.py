@@ -60,9 +60,7 @@ class TestConfigPerformance:
 
         # Then: 0.5秒以内で完了
         elapsed = end_time - start_time
-        assert (
-            elapsed < 0.5
-        ), f"100個マーカー追加が{elapsed:.3f}秒かかりました（目標: 0.5秒以内）"
+        assert elapsed < 0.5, f"100個マーカー追加が{elapsed:.3f}秒かかりました（目標: 0.5秒以内）"
 
         # 取得性能も確認
         start_time = time.time()
@@ -71,9 +69,7 @@ class TestConfigPerformance:
 
         elapsed = end_time - start_time
         assert len(markers) >= 100
-        assert (
-            elapsed < 0.1
-        ), f"マーカー取得が{elapsed:.3f}秒かかりました（目標: 0.1秒以内）"
+        assert elapsed < 0.1, f"マーカー取得が{elapsed:.3f}秒かかりました（目標: 0.1秒以内）"
 
     def test_性能_大量テーマ管理_50個処理0_3秒以内(self):
         """大量テーマ管理の性能テスト"""
@@ -94,9 +90,7 @@ class TestConfigPerformance:
 
         # Then: 0.3秒以内で完了
         elapsed = end_time - start_time
-        assert (
-            elapsed < 0.3
-        ), f"50個テーマ追加が{elapsed:.3f}秒かかりました（目標: 0.3秒以内）"
+        assert elapsed < 0.3, f"50個テーマ追加が{elapsed:.3f}秒かかりました（目標: 0.3秒以内）"
 
         # テーマ取得性能も確認
         start_time = time.time()
@@ -105,9 +99,7 @@ class TestConfigPerformance:
 
         elapsed = end_time - start_time
         assert len(themes) >= 50
-        assert (
-            elapsed < 0.1
-        ), f"テーマ取得が{elapsed:.3f}秒かかりました（目標: 0.1秒以内）"
+        assert elapsed < 0.1, f"テーマ取得が{elapsed:.3f}秒かかりました（目標: 0.1秒以内）"
 
     def test_性能_繰り返し設定更新_1000回1秒以内(self):
         """繰り返し設定更新の性能テスト"""
@@ -122,9 +114,7 @@ class TestConfigPerformance:
 
         # Then: 1秒以内で完了
         elapsed = end_time - start_time
-        assert (
-            elapsed < 1.0
-        ), f"1000回設定更新が{elapsed:.3f}秒かかりました（目標: 1秒以内）"
+        assert elapsed < 1.0, f"1000回設定更新が{elapsed:.3f}秒かかりました（目標: 1秒以内）"
 
     def test_性能_深いネスト構造マージ_10階層0_2秒以内(self):
         """深いネスト構造マージの性能テスト"""
@@ -145,13 +135,9 @@ class TestConfigPerformance:
 
         # Then: 0.2秒以内で完了
         elapsed = end_time - start_time
-        assert (
-            elapsed < 0.2
-        ), f"10階層ネストマージが{elapsed:.3f}秒かかりました（目標: 0.2秒以内）"
+        assert elapsed < 0.2, f"10階層ネストマージが{elapsed:.3f}秒かかりました（目標: 0.2秒以内）"
 
-    @patch.dict(
-        "os.environ", {f"KUMIHAN_CSS_VAR_{i}": f"value_{i}" for i in range(100)}
-    )
+    @patch.dict("os.environ", {f"KUMIHAN_CSS_VAR_{i}": f"value_{i}" for i in range(100)})
     def test_性能_環境変数大量読み込み_100変数0_1秒以内(self):
         """環境変数大量読み込みの性能テスト"""
         # Given: 100個の環境変数（patch.dictで設定済み）
@@ -195,12 +181,8 @@ class TestConfigPerformance:
 
         # 複雑な設定を追加
         for i in range(100):
-            manager.add_marker(
-                f"marker_{i}", {"tag": "div", "attributes": {"class": f"test-{i}"}}
-            )
-            manager.add_theme(
-                f"theme_{i}", {"name": f"テーマ{i}", "css": {"color": f"#{i:06x}"}}
-            )
+            manager.add_marker(f"marker_{i}", {"tag": "div", "attributes": {"class": f"test-{i}"}})
+            manager.add_theme(f"theme_{i}", {"name": f"テーマ{i}", "css": {"color": f"#{i:06x}"}})
 
         # When: validate実行時間計測
         start_time = time.time()
@@ -279,7 +261,5 @@ class TestConfigPerformance:
         # Then: エラーなく完了し、性能も良好
         elapsed = end_time - start_time
         assert len(errors) == 0, f"並行アクセス中にエラー発生: {errors}"
-        assert (
-            elapsed < 1.0
-        ), f"並行アクセスが{elapsed:.3f}秒かかりました（目標: 1秒以内）"
+        assert elapsed < 1.0, f"並行アクセスが{elapsed:.3f}秒かかりました（目標: 1秒以内）"
         assert len(results) == 10, f"期待される結果数: 10, 実際: {len(results)}"

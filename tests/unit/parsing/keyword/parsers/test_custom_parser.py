@@ -302,6 +302,7 @@ class TestCustomKeywordParser:
     def test_境界値_大量のカスタムキーワード登録(self):
         """境界値: 大量のカスタムキーワード登録"""
         from tests.conftest import get_test_data_size
+
         count = get_test_data_size(1000, 100)
         for i in range(count):
             keyword = f"カスタム{i}"
@@ -425,6 +426,7 @@ class TestCustomKeywordParser:
 
         # 大量のキーワードを登録
         from tests.conftest import get_test_data_size
+
         count = get_test_data_size(1000, 100)
         for i in range(count):
             self.parser.register_keyword(f"キーワード{i}", {"type": "test", "index": i})
@@ -460,6 +462,7 @@ class TestCustomKeywordParser:
 
         # 大量データの追加
         from tests.conftest import get_test_data_size
+
         count = get_test_data_size(1000, 100)
         for i in range(count):
             self.parser.register_keyword(f"カスタム{i}", {"type": "custom"})
