@@ -73,15 +73,29 @@ class IntegratedEventBus:
         self, event_type: Union[EventType, ExtendedEventType], observer: Observer
     ) -> None:
         """同期オブザーバー登録"""
-        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-        self._base_bus.subscribe(event_type, observer)
+        # ExtendedEventTypeをEventTypeに変換
+        if isinstance(event_type, ExtendedEventType):
+            try:
+                converted_type = EventType(event_type.value)
+            except ValueError:
+                converted_type = EventType.CUSTOM
+            self._base_bus.subscribe(converted_type, observer)
+        else:
+            self._base_bus.subscribe(event_type, observer)
 
     def subscribe_async(
         self, event_type: Union[EventType, ExtendedEventType], observer: AsyncObserver
     ) -> None:
         """非同期オブザーバー登録"""
-        # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-        self._base_bus.subscribe_async(event_type, observer)
+        # ExtendedEventTypeをEventTypeに変換
+        if isinstance(event_type, ExtendedEventType):
+            try:
+                converted_type = EventType(event_type.value)
+            except ValueError:
+                converted_type = EventType.CUSTOM
+            self._base_bus.subscribe_async(converted_type, observer)
+        else:
+            self._base_bus.subscribe_async(event_type, observer)
 
     def subscribe_with_di(
         self,
@@ -174,8 +188,17 @@ def publish_event(
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利なイベント発行関数"""
-    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-    event = Event(event_type=event_type, source=source, data=data or {})
+    # ExtendedEventTypeをEventTypeに変換して使用
+    if isinstance(event_type, ExtendedEventType):
+        # ExtendedEventTypeの値でEventTypeを作成（値が同じものは問題ない）
+        try:
+            converted_type = EventType(event_type.value)
+        except ValueError:
+            # ExtendedEventType固有の値の場合はCUSTOMとして扱う
+            converted_type = EventType.CUSTOM
+        event = Event(event_type=converted_type, source=source, data=data or {})
+    else:
+        event = Event(event_type=event_type, source=source, data=data or {})
     _global_event_bus.publish(event)
 
 
@@ -185,6 +208,15 @@ async def publish_event_async(
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利な非同期イベント発行関数"""
-    # ExtendedEventTypeはそのまま使用（EventTypeに対応するイベントが存在するため）
-    event = Event(event_type=event_type, source=source, data=data or {})
+    # ExtendedEventTypeをEventTypeに変換して使用
+    if isinstance(event_type, ExtendedEventType):
+        # ExtendedEventTypeの値でEventTypeを作成（値が同じものは問題ない）
+        try:
+            converted_type = EventType(event_type.value)
+        except ValueError:
+            # ExtendedEventType固有の値の場合はCUSTOMとして扱う
+            converted_type = EventType.CUSTOM
+        event = Event(event_type=converted_type, source=source, data=data or {})
+    else:
+        event = Event(event_type=event_type, source=source, data=data or {})
     await _global_event_bus.publish_async(event)
