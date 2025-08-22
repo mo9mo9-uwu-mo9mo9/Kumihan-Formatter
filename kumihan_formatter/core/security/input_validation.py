@@ -135,7 +135,6 @@ class SecureConfigManager:
         """環境変数からシークレットを安全に読み込み"""
         secret_keys = [
             "KUMIHAN_API_KEY",
-            "GEMINI_API_KEY",
             "CLAUDE_API_KEY",
             "DATABASE_URL",
         ]

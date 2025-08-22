@@ -191,9 +191,6 @@ ai_collaboration/monitoring/decision_history.json
 ai_collaboration/monitoring/*.json
 ai_collaboration/completed/*.json
 
-# Gemini協業履歴（旧gemini_reports）
-.gemini_history/
-gemini_history/
 
 # HTMLカバレッジレポート（自動生成）
 htmlcov/
