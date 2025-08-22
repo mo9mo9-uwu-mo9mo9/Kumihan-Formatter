@@ -14,41 +14,41 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 try:
     # OpenTelemetry core imports
-    from opentelemetry import metrics, trace  # type: ignore[import-not-found]
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (  # type: ignore[import-not-found]  # noqa: E501
+    from opentelemetry import metrics, trace
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (  # noqa: E501
         OTLPMetricExporter,
     )
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import-not-found]  # noqa: E501
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # noqa: E501
         OTLPSpanExporter,
     )
-    from opentelemetry.instrumentation.logging import (  # type: ignore[import-not-found]  # noqa: E501
+    from opentelemetry.instrumentation.logging import (  # noqa: E501
         LoggingInstrumentor,
     )
-    from opentelemetry.instrumentation.psutil import (  # type: ignore[import-not-found]
+    from opentelemetry.instrumentation.psutil import (
         PsutilInstrumentor,
     )
-    from opentelemetry.instrumentation.threading import (  # type: ignore[import-not-found]  # noqa: E501
+    from opentelemetry.instrumentation.threading import (  # noqa: E501
         ThreadingInstrumentor,
     )
-    from opentelemetry.propagate import (  # type: ignore[import-not-found]
+    from opentelemetry.propagate import (
         set_global_textmap,
     )
-    from opentelemetry.propagators.b3 import (  # type: ignore[import-not-found]
+    from opentelemetry.propagators.b3 import (
         B3MultiFormat,
     )
-    from opentelemetry.sdk.metrics import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics import (
         MeterProvider,
     )
-    from opentelemetry.sdk.metrics.export import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics.export import (
         PeriodicExportingMetricReader,
     )
-    from opentelemetry.sdk.resources import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.resources import (
         SERVICE_NAME,
         SERVICE_VERSION,
         Resource,
     )
-    from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import-not-found]
-    from opentelemetry.sdk.trace.export import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import (
         BatchSpanProcessor,
         SimpleSpanProcessor,
     )

@@ -18,7 +18,7 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 try:
     # Prometheus client imports
-    from prometheus_client import (  # type: ignore[import-not-found]
+    from prometheus_client import (
         CONTENT_TYPE_LATEST,
         REGISTRY,
         CollectorRegistry,

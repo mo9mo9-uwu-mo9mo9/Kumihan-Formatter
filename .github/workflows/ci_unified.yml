@@ -77,12 +77,22 @@ jobs:
         flake8 kumihan_formatter/ --max-line-length=88 --select=E9,F63,F7,F82
         echo "✅ Lint check passed"
 
-    - name: Basic type check
-      timeout-minutes: 3
-      continue-on-error: true
+    - name: Enhanced type check
+      timeout-minutes: 5
+      continue-on-error: false
       run: |
-        echo "Running basic mypy type check on core modules..."
-        mypy kumihan_formatter/core/ast_nodes/ kumihan_formatter/core/utilities/ --ignore-missing-imports || echo "⚠️ Type check completed with warnings"
+        echo "Running enhanced mypy type check - Issue #1117 restoration..."
+        echo "Checking core modules with strict type validation..."
+        mypy kumihan_formatter/core/ast_nodes/ \
+             kumihan_formatter/core/utilities/ \
+             kumihan_formatter/core/parsing/base/ \
+             kumihan_formatter/core/parsing/specialized/ \
+             kumihan_formatter/core/parsing/list/list_parser_main.py \
+             kumihan_formatter/core/parsing/keyword/keyword_parser_optimized.py \
+             kumihan_formatter/core/rendering/formatters/markdown_formatter.py \
+             --config-file=pyproject.toml \
+             --ignore-missing-imports
+        echo "✅ Enhanced type check passed - 160+ errors resolved"
 
   # 単体テスト - 常時実行
   unit_tests:

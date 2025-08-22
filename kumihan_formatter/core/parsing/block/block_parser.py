@@ -17,49 +17,13 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from ...ast_nodes import Node
 
 # 統一プロトコルインポート
-try:
-    from ..base.parser_protocols import BaseParserProtocol as BaseProtocol
-    from ..base.parser_protocols import BlockParserProtocol as BlockProtocol
-    from ..base.parser_protocols import (
-        ParseContext,
-        ParseError,
-        ParseResult,
-    )
-except ImportError:
-    # フォールバック: 型安全性のため
-    from dataclasses import dataclass
-    from typing import Protocol
-
-    class BaseProtocol(Protocol):
-        def parse(self, content: str, context: Any = None) -> Any: ...
-        def validate(self, content: str, context: Any = None) -> List[str]: ...
-        def get_parser_info(self) -> Dict[str, Any]: ...
-        def supports_format(self, format_hint: str) -> bool: ...
-
-    class BlockProtocol(Protocol):
-        def parse_block(self, block: str, context: Any = None) -> Any: ...
-        def extract_blocks(self, text: str, context: Any = None) -> List[str]: ...
-        def detect_block_type(self, block: str) -> Optional[str]: ...
-
-    @dataclass
-    class ParseResult:
-        success: bool
-        nodes: List[Any]
-        errors: List[str]
-        warnings: List[str]
-        metadata: Dict[str, Any]
-
-    @dataclass
-    class ParseContext:
-        source_file: Optional[str] = None
-        line_number: int = 1
-        column_number: int = 1
-        parser_state: Optional[Dict[str, Any]] = None
-        config: Optional[Dict[str, Any]] = None
-
-    class ParseError(Exception):
-        pass
-
+from ..base.parser_protocols import (
+    BaseParserProtocol,
+    BlockParserProtocol,
+    ParseContext,
+    ParseError,
+    ParseResult,
+)
 
 if TYPE_CHECKING:
     from ..base.parser_protocols import KeywordParserProtocol

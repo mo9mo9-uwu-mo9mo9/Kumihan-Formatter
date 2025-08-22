@@ -618,6 +618,35 @@ class MainParser(
             result.add_error(f"ストリーミングパース失敗: {e}")
             yield result
 
+    # CompositeParserProtocolの抽象メソッド実装
+    def add_parser(self, parser: "BaseParserProtocol", priority: int = 0) -> None:
+        """パーサーを追加（抽象メソッド実装）"""
+        parser_name = f"{parser.__class__.__name__}_{priority}"
+        self.parsers[parser_name] = parser
+        self.logger.info(f"Added parser: {parser_name} with priority {priority}")
+
+    def remove_parser(self, parser: "BaseParserProtocol") -> bool:
+        """パーサーを削除（抽象メソッド実装）"""
+        for name, registered_parser in list(self.parsers.items()):
+            if registered_parser is parser:
+                del self.parsers[name]
+                self.logger.info(f"Removed parser: {name}")
+                return True
+        return False
+
+    def get_parsers(self) -> list["BaseParserProtocol"]:
+        """登録されたパーサーリストを取得（抽象メソッド実装）"""
+        return list(self.parsers.values())
+
+    def get_parser_count(self) -> int:
+        """登録パーサー数を取得（抽象メソッド実装）"""
+        return len(self.parsers)
+
+    def clear_parsers(self) -> None:
+        """全パーサーをクリア（抽象メソッド実装）"""
+        self.parsers.clear()
+        self.logger.info("Cleared all parsers")
+
 
 # 後方互換性エイリアス
 Parser = MainParser

@@ -19,17 +19,17 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 try:
     # Jaeger/OpenTelemetry imports
-    from opentelemetry import trace  # type: ignore[import-not-found]
-    from opentelemetry.exporter.jaeger.thrift import (  # type: ignore[import-not-found]
+    from opentelemetry import trace
+    from opentelemetry.exporter.jaeger.thrift import (
         JaegerExporter,
     )
-    from opentelemetry.sdk.resources import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.resources import (
         SERVICE_NAME,
         SERVICE_VERSION,
         Resource,
     )
-    from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import-not-found]
-    from opentelemetry.sdk.trace.export import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import (
         BatchSpanProcessor,
     )
 

@@ -429,7 +429,7 @@ class RecycleEffectMeasurer:
         end_time = time.time()
         end_memory = self._get_memory_usage()
 
-        recycling_result = {
+        recycling_result: Dict[str, Any] = {
             "operations": operations,
             "recycling_time": end_time - start_time,
             "peak_memory_mb": (end_memory - start_memory) / (1024 * 1024),

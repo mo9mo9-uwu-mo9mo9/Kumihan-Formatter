@@ -14,7 +14,7 @@ Issue #912: Parser系統合リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Match, Optional, Union
+from typing import Any, Dict, List, Match, Optional, Union, overload
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, PerformanceMixin, UnifiedParserBase
@@ -560,11 +560,29 @@ class UnifiedMarkdownParser(
             )
 
     # BaseParserProtocolインターフェース実装
-    def parse(  # type: ignore[override]
+    @overload
+    def parse(
         self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult:
-        """BaseParserProtocol準拠のメインパースメソッド"""
-        return self.parse_with_protocol(content, context)
+    ) -> ParseResult: ...
+
+    @overload
+    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
+
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional[ParseContext] = None,
+        **kwargs: Any,
+    ) -> Union[ParseResult, Node]:
+        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+        if isinstance(content, list):
+            # UnifiedParserBase互換: List[str] -> Node
+            combined_content = "\n".join(content)
+            result = self.parse_with_protocol(combined_content, context)
+            return result.nodes[0] if result.nodes else create_node("empty", "")
+        else:
+            # BaseParserProtocol互換: str -> ParseResult
+            return self.parse_with_protocol(content, context)
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

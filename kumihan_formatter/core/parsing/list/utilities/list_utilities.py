@@ -10,7 +10,7 @@ except ImportError:
         from ....ast_nodes import Node
     except ImportError:
         # フォールバック実装
-        class Node:  # type: ignore[no-redef]
+        class Node:  # type: ignore
             def __init__(
                 self,
                 type: str,
