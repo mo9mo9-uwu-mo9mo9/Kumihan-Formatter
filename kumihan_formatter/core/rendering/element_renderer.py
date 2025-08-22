@@ -1,4 +1,6 @@
-"""Element renderer for Kumihan-Formatter - 完全統合版 (Issue #590 - Phase 0-2完了)
+"""Element renderer for Kumihan-Formatter - 完全統合版
+
+Issue #590 - Phase 0-2完了
 
 全てのHTML要素レンダリング機能を統合実装。
 人為的分割を解消し、開発効率を向上。

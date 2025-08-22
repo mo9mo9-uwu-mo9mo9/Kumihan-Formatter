@@ -180,7 +180,10 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
             self._initialize_fallback_renderers()
 
     def _create_renderer_with_fallback(self, renderer_type: str) -> Any:
-        """DI失敗時のフォールバック付きレンダラー生成（Issue #914 Phase 2）"""
+        """DI失敗時のフォールバック付きレンダラー生成
+
+        Issue #914 Phase 2対応
+        """
         try:
             # 1. DIコンテナ経由で解決を試行
             if self.container is not None:
@@ -398,7 +401,9 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
 
     def render_nodes_optimized(self, nodes: list[Node]) -> str:
         """
-        最適化されたノードリストのHTML生成（Issue #727 パフォーマンス最適化対応）
+        最適化されたノードリストのHTML生成
+
+        Issue #727 パフォーマンス最適化対応
 
         改善点:
         - StringBuilder パターンでガベージコレクション負荷軽減
@@ -427,7 +432,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         return self._element_delegate.render_node_optimized(node)
 
     def render_nodes_with_errors_optimized(self, nodes: list[Node]) -> str:
-        """Issue #700: 最適化されたエラー情報埋め込みレンダリング"""
+        """Issue #700: 最適化エラー情報埋め込みレンダリング"""
         return self._content_delegate.render_nodes_with_errors_optimized(nodes)
 
     def _render_error_summary_optimized(self) -> str:
@@ -621,7 +626,7 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         self.embed_errors_in_html = embed_in_html
 
     def render_nodes_with_errors(self, nodes: list[Node]) -> str:
-        """Issue #700: エラー情報を埋め込みながらノードをレンダリング"""
+        """Issue #700: エラー情報埋め込みノードレンダリング"""
         return self._output_delegate.render_nodes_with_errors(nodes)
 
     def _render_error_summary(self) -> str:
@@ -705,7 +710,10 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
     def render(
         self, nodes: List[Node], context: Optional[RenderContext] = None
     ) -> RenderResult:
-        """統一レンダリングインターフェース（BaseRendererProtocol準拠）"""
+        """統一レンダリングインターフェース
+
+        BaseRendererProtocol準拠
+        """
         try:
             if not nodes:
                 return create_render_result(content="", success=True)
@@ -724,7 +732,10 @@ class MainRenderer(BaseRendererProtocol, EventEmitterMixin):
         return cast(str, self.render_nodes(nodes, format))
 
     def get_supported_formats(self) -> list[str]:
-        """サポートする出力形式のリストを返す（抽象メソッド実装）"""
+        """サポートする出力形式のリストを返す
+
+        抽象メソッド実装
+        """
         return ["html", "markdown"]
 
     def validate_options(self, options: Dict[str, Any]) -> List[str]:

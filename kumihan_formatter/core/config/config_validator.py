@@ -192,7 +192,8 @@ class ConfigValidator:
                 self.logger.info("設定検証完了: 問題なし")
             else:
                 self.logger.warning(
-                    f"設定検証完了: {len(result.errors)}個のエラー、{len(result.warnings)}個の警告"
+                    f"設定検証完了: {len(result.errors)}個のエラー、"
+                    f"{len(result.warnings)}個の警告"
                 )
 
         except ValidationError as e:
@@ -276,11 +277,13 @@ class ConfigValidator:
             if config.target_chunks_per_core * cpu_count > max_reasonable_chunks:
                 result.add_warning(
                     f"チャンク数が多すぎる可能性があります "
-                    f"(CPU{cpu_count}コア, {config.target_chunks_per_core}チャンク/コア)"
+                    f"(CPU{cpu_count}コア, "
+                    f"{config.target_chunks_per_core}チャンク/コア)"
                 )
                 result.add_suggestion(
                     f"target_chunks_per_core を "
-                    f"{max_reasonable_chunks // cpu_count} 以下に設定することを推奨"
+                    f"{max_reasonable_chunks // cpu_count} "
+                    f"以下に設定することを推奨"
                 )
 
         except Exception:
@@ -310,7 +313,7 @@ class ConfigValidator:
 
         except PermissionError:
             result.add_error(
-                f"ログディレクトリに書き込み権限がありません: {config.log_dir}"
+                f"ログディレクトリに書き込み権限がありません: " f"{config.log_dir}"
             )
             result.add_suggestion(
                 "ログディレクトリを書き込み可能な場所に変更してください"
@@ -341,7 +344,8 @@ class ConfigValidator:
         # graceful_errorsとcontinue_on_errorの組み合わせ
         if config.graceful_errors and not config.continue_on_error:
             result.add_suggestion(
-                "graceful_errorsを有効にする場合、continue_on_errorも有効にすることを推奨"
+                "graceful_errorsを有効にする場合、"
+                "continue_on_errorも有効にすることを推奨"
             )
 
         # カテゴリ別設定の検証
@@ -388,10 +392,11 @@ class ConfigValidator:
         if config.preview_browser:
             if not self._is_valid_browser_command(config.preview_browser):
                 result.add_warning(
-                    f"指定されたブラウザが見つからない可能性があります: {config.preview_browser}"
+                    f"指定されたブラウザが見つからない可能性があります: "
+                    f"{config.preview_browser}"
                 )
                 result.add_suggestion(
-                    "システムにインストールされているブラウザを指定してください"
+                    "システムにインストールされている" "ブラウザを指定してください"
                 )
 
         # 監視間隔の妥当性
@@ -414,13 +419,13 @@ class ConfigValidator:
             "INFO",
         ]:
             result.add_suggestion(
-                "デバッグモード時はログレベルをDEBUGまたはINFOに設定することを推奨"
+                "デバッグモード時はログレベルを" "DEBUGまたはINFOに設定することを推奨"
             )
 
         # エラー処理とログ設定の整合性
         if config.error.graceful_errors and config.logging.log_level.value == "ERROR":
             result.add_suggestion(
-                "graceful_errorsを使用する場合、詳細なログのためINFOレベルを推奨"
+                "graceful_errorsを使用する場合、" "詳細なログのためINFOレベルを推奨"
             )
 
         # 並列処理とメモリ設定の整合性
@@ -433,7 +438,8 @@ class ConfigValidator:
         if estimated_memory_mb > config.parallel.memory_warning_threshold_mb:
             result.add_warning("並列処理設定がメモリ制限を超える可能性があります")
             result.add_suggestion(
-                f"メモリしきい値を{estimated_memory_mb}MB以上に設定するか、チャンクサイズを小さくしてください"
+                f"メモリしきい値を{estimated_memory_mb}MB以上に設定するか、"
+                f"チャンクサイズを小さくしてください"
             )
 
     def _validate_system_compatibility(
@@ -453,15 +459,16 @@ class ConfigValidator:
 
             if config.parallel.memory_critical_threshold_mb > available_memory_mb * 0.8:
                 result.add_warning(
-                    "メモリクリティカルしきい値がシステムメモリに対して高すぎます"
+                    "メモリクリティカルしきい値が" "システムメモリに対して高すぎます"
                 )
                 result.add_suggestion(
-                    f"利用可能メモリ{available_memory_mb}MBに対してより低い値を設定してください"
+                    f"利用可能メモリ{available_memory_mb}MBに対して"
+                    f"より低い値を設定してください"
                 )
 
         except ImportError:
             result.add_suggestion(
-                "より正確なメモリ検証のためpsutilのインストールを推奨"
+                "より正確なメモリ検証のため" "psutilのインストールを推奨"
             )
 
     def _apply_auto_fixes(
@@ -566,8 +573,8 @@ class ConfigValidator:
         field = error.get("loc", [""])[-1] if error.get("loc") else ""
 
         suggestions = {
-            "value_error.number.not_ge": f"{field}にはより大きな値を設定してください",
-            "value_error.number.not_le": f"{field}にはより小さな値を設定してください",
+            "value_error.number.not_ge": (f"{field}にはより大きな値を設定してください"),
+            "value_error.number.not_le": (f"{field}にはより小さな値を設定してください"),
             "type_error.bool": f"{field}にはtrue/falseを設定してください",
             "type_error.integer": f"{field}には整数を設定してください",
             "type_error.float": f"{field}には数値を設定してください",
@@ -579,4 +586,5 @@ class ConfigValidator:
 
 
 # 後方互換性のためのエイリアス
-UnifiedConfigValidator = ConfigValidator  # 統一後のConfigValidatorへのエイリアス
+# 統一後のConfigValidatorへのエイリアス
+UnifiedConfigValidator = ConfigValidator

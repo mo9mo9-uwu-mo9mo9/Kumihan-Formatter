@@ -460,7 +460,7 @@ class TestRendererBaseCoverage:
                     'tag',
                     'div')}>{node.content}</{self.config.get('tag',
                     'div'
-{indent})}>"
+                )}>"
 
         config = {"tag": "span"}
         renderer = ConfigurableRenderer(config)
