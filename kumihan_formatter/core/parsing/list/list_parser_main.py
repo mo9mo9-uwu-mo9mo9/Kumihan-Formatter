@@ -1,16 +1,13 @@
 """統合リストパーサー - メインエントリーポイント（既存API互換性維持）"""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # ノードインポート
 from ...ast_nodes.node import Node
 
 # 統一プロトコルインポート
 from ..base.parser_protocols import (
-    BaseParserProtocol,
-    ListParserProtocol,
     ParseContext,
-    ParseError,
     ParseResult,
 )
 from .parsers.nested_list_parser import NestedListParser

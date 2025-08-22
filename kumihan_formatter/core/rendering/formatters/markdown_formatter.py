@@ -6,12 +6,11 @@ Markdown出力に特化した統合フォーマッタークラス
 
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional
 
 from ...ast_nodes import Node
 from ...utilities.logger import get_logger
 from ..base.renderer_protocols import (
-    MarkdownRendererProtocol,
     RenderContext,
     RenderResult,
     create_render_result,

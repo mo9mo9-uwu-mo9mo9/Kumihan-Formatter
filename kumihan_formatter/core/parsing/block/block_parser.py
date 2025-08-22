@@ -12,25 +12,20 @@ from kumihan_formatter.core.parsing import (
 """
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ...ast_nodes import Node
 
 # 統一プロトコルインポート
 from ..base.parser_protocols import (
-    BaseParserProtocol,
-    BlockParserProtocol,
     ParseContext,
-    ParseError,
     ParseResult,
 )
 
 if TYPE_CHECKING:
-    from ..base.parser_protocols import KeywordParserProtocol
     from ..keyword.keyword_parser import KeywordParser
 else:
     try:
-        from ..base.parser_protocols import KeywordParserProtocol
+        pass  # プロトコルは既にインポート済み
     except ImportError:
         from typing import Protocol
 

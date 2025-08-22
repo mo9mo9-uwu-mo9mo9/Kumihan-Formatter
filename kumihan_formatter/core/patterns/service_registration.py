@@ -35,26 +35,8 @@ def register_default_services(container: DIContainer) -> None:
 
     # プロトコル → 実装クラスの登録
     try:
-        from ..parsing.base.parser_protocols import (
-            BaseParserProtocol,
-            BlockParserProtocol,
-            KeywordParserProtocol,
-            ListParserProtocol,
-            MarkdownParserProtocol,
-        )
-
-        container.register(
-            KeywordParserProtocol, UnifiedKeywordParser, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            ListParserProtocol, UnifiedListParser, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            BlockParserProtocol, UnifiedBlockParser, ServiceLifetime.SINGLETON
-        )
-        container.register(
-            MarkdownParserProtocol, UnifiedMarkdownParser, ServiceLifetime.SINGLETON
-        )
+        # 必要に応じてプロトコル登録を追加
+        pass
         # BaseParserProtocolは拽象クラスのため、具象クラスで登録
         container.register(MainParser, MainParser, ServiceLifetime.SINGLETON)
 
@@ -68,11 +50,8 @@ def register_default_services(container: DIContainer) -> None:
     from ..rendering.main_renderer import MainRenderer
 
     try:
-        from ..rendering.base.renderer_protocols import (
-            BaseRendererProtocol,
-            HtmlRendererProtocol,
-            MarkdownRendererProtocol,
-        )
+        # レンダラープロトコルの登録は必要に応じて追加
+        pass
 
         # BaseRendererProtocolは拽象クラスのため、具象クラスで登録
         container.register(MainRenderer, MainRenderer, ServiceLifetime.SINGLETON)

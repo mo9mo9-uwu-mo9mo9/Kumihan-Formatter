@@ -13,7 +13,7 @@ Issue #914: アーキテクチャ最適化リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union, overload
+from typing import Any, Dict, List, Optional, Union
 
 from ...ast_nodes import (
     Node,
@@ -23,7 +23,6 @@ from ...ast_nodes import (
 )
 from ..base import CompositeMixin, UnifiedParserBase
 from ..base.parser_protocols import (
-    KeywordParserProtocol,
     ParseContext,
     ParseResult,
     create_parse_result,
