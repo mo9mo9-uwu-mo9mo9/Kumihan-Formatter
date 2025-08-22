@@ -246,8 +246,15 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
     ) -> ParseResult:
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
-            # 新しいparseメソッドを使用
-            return self.parse(text, context)
+            # 新しいparseメソッドを使用してNodeを取得
+            node = self.parse(text, context=context)
+            return ParseResult(
+                success=True,
+                nodes=[node],
+                errors=[],
+                warnings=[],
+                metadata={"parser_type": "list"},
+            )
         except Exception as e:
             return ParseResult(
                 success=False,
@@ -297,7 +304,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin):
             return self.utilities.create_list_node(items, list_type)
         else:
             # 自動判定での解析
-            result = self.parse(text)
+            result = self.parse_with_result(text)
             if result.success and result.nodes:
                 return result.nodes[0]
             return create_node("list", content="")

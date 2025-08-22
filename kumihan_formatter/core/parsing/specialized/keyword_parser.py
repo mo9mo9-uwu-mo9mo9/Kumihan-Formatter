@@ -305,10 +305,14 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
         stats = {}
         stats.update(basic_stats)
         stats.update(custom_stats)
+        default_count = stats.get("default_keywords", 0)
+        custom_count = stats.get("custom_keywords", 0)
+        extension_count = stats.get("extension_keywords", 0)
+
         stats["total_keywords"] = (
-            stats["default_keywords"]
-            + stats["custom_keywords"]
-            + stats["extension_keywords"]
+            (default_count if isinstance(default_count, int) else 0)
+            + (custom_count if isinstance(custom_count, int) else 0)
+            + (extension_count if isinstance(extension_count, int) else 0)
         )
 
         return stats
@@ -340,12 +344,12 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
         """ParseResultを返す解析インターフェース（プロトコル準拠）"""
         try:
             # 基底クラスのparseメソッドを使用
-            result = super().parse(content)
-            return create_parse_result(nodes=[result], success=True)
+            node_result = super().parse(content)
+            return create_parse_result(nodes=[node_result], success=True)
         except Exception as e:
-            result = create_parse_result(success=False)
-            result.add_error(f"キーワードパース失敗: {e}")
-            return result
+            parse_result = create_parse_result(success=False)
+            parse_result.add_error(f"キーワードパース失敗: {e}")
+            return parse_result
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
@@ -355,8 +359,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
         try:
             keywords = self.parse_keywords(content)
             for keyword in keywords:
-                validation_result = self.validate_keyword(keyword)
-                if not validation_result["valid"]:
+                is_valid = self.validate_keyword(keyword)
+                if not is_valid:
                     errors.append(f"無効なキーワード: {keyword}")
         except Exception as e:
             errors.append(f"バリデーションエラー: {e}")
