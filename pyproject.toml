@@ -222,3 +222,55 @@ filterwarnings = [
     # pytest-benchmark警告は設定ファイルでは条件付き設定が困難なため、
     # Issue #1004: --benchmark-disableオプションで対応
 ]
+
+# tox設定 - Issue #1107: pyenv + tox環境構築
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py312,py313,lint
+skip_missing_interpreters = true
+
+[testenv]
+deps =
+    -e .[dev]
+commands =
+    # 単体テスト（CI並行実行同等）
+    pytest tests/unit/ -n=auto --dist=worksteal -v --maxfail=5 --timeout=300
+    # 結合テスト（シーケンシャル実行）
+    pytest tests/integration/ -v --maxfail=3 --timeout=600
+
+[testenv:unit]
+deps =
+    -e .[dev]
+commands =
+    pytest tests/unit/ -n=auto --dist=worksteal -v --maxfail=10 --timeout=300
+
+[testenv:integration]
+deps =
+    -e .[dev]
+commands =
+    pytest tests/integration/ -v --maxfail=5 --timeout=600
+
+[testenv:lint]
+deps =
+    -e .[dev]
+commands =
+    black --check kumihan_formatter
+    isort --check-only kumihan_formatter
+    flake8 kumihan_formatter
+    mypy kumihan_formatter
+
+[testenv:format]
+deps =
+    -e .[dev]
+commands =
+    black kumihan_formatter tests
+    isort kumihan_formatter tests
+
+[testenv:clean]
+deps =
+commands =
+    python -c "import shutil; shutil.rmtree('.tox', ignore_errors=True)"
+    python -c "import shutil; shutil.rmtree('htmlcov', ignore_errors=True)"
+    python -c "import shutil; shutil.rmtree('.pytest_cache', ignore_errors=True)"
+"""
