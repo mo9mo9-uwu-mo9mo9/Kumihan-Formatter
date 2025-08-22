@@ -7,7 +7,7 @@ import asyncio
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, TypeVar, cast
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
 
 from ..patterns.event_bus import ExtendedEventType, get_event_bus, publish_event
 from ..utilities.logger import get_logger
@@ -40,7 +40,9 @@ class AsyncCoordinator:
         self.use_process_pool = use_process_pool
 
         if use_process_pool:
-            self._executor = ProcessPoolExecutor(max_workers=max_workers)
+            self._executor: Union[ProcessPoolExecutor, ThreadPoolExecutor] = (
+                ProcessPoolExecutor(max_workers=max_workers)
+            )
         else:
             self._executor = ThreadPoolExecutor(max_workers=max_workers)
 

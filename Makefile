@@ -8,7 +8,7 @@ PIP = $(PYTHON) -m pip
 PROJECT_NAME = kumihan_formatter
 SRC_DIR = $(PROJECT_NAME)
 
-.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci gemini-mypy gemini-status gemini-fix gemini-config gemini-report gemini-test enterprise-check performance-benchmark security-audit release-candidate
+.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci gemini-mypy gemini-status gemini-fix gemini-config gemini-report gemini-test enterprise-check performance-benchmark security-audit release-candidate tox tox-py312 tox-py313 tox-unit tox-integration tox-lint tox-format tox-clean tox-parallel tox-install
 
 # デフォルトターゲット
 help:
@@ -24,6 +24,15 @@ help:
 	@echo "  make test-coverage - カバレッジ付きテスト実行"
 	@echo "  make clean         - 一時ファイル削除"
 	@echo "  make claude-check  - CLAUDE.md管理・検証"
+	@echo ""
+	@echo "🧪 tox環境 (複数Python版並行テスト):"
+	@echo "  make tox           - Python 3.12/3.13両方でテスト実行"
+	@echo "  make tox-py312     - Python 3.12でのみテスト実行"
+	@echo "  make tox-py313     - Python 3.13でのみテスト実行"
+	@echo "  make tox-unit      - 単体テストのみ実行"
+	@echo "  make tox-integration - 結合テストのみ実行"
+	@echo "  make tox-lint      - コード品質チェック"
+	@echo "  make tox-parallel  - 高速並行実行"
 	@echo "  make pre-commit    - pre-commitフック実行"
 	@echo "  make check-tmp-rule - tmp/配下強制ルール違反チェック"
 	@echo "  make enforce-tmp-rule - tmp/配下強制ルール適用（対話的）"
@@ -675,3 +684,59 @@ release-candidate:
 	@echo "🚀 リリース候補準備実行中..."
 	$(PYTHON) scripts/release_prepare.py
 	@echo "✅ リリース準備完了"
+
+# 🧪 tox環境コマンド群 (Issue #1107: pyenv + tox導入)
+tox-install:
+	@echo "📦 tox環境セットアップ中..."
+	$(PIP) install tox
+	@echo "✅ tox環境セットアップ完了"
+
+tox:
+	@echo "🧪 tox全環境テスト実行中（Python 3.12/3.13）..."
+	tox
+	@echo "✅ tox全環境テスト完了"
+
+tox-py312:
+	@echo "🐍 Python 3.12環境テスト実行中..."
+	tox -e py312
+	@echo "✅ Python 3.12環境テスト完了"
+
+tox-py313:
+	@echo "🐍 Python 3.13環境テスト実行中..."
+	tox -e py313
+	@echo "✅ Python 3.13環境テスト完了"
+
+tox-unit:
+	@echo "🔬 tox単体テスト実行中..."
+	tox -e unit
+	@echo "✅ tox単体テスト完了"
+
+tox-integration:
+	@echo "🔗 tox結合テスト実行中..."
+	tox -e integration
+	@echo "✅ tox結合テスト完了"
+
+tox-lint:
+	@echo "🔍 tox品質チェック実行中..."
+	tox -e lint
+	@echo "✅ tox品質チェック完了"
+
+tox-format:
+	@echo "✨ toxフォーマット実行中..."
+	tox -e format
+	@echo "✅ toxフォーマット完了"
+
+tox-parallel:
+	@echo "⚡ tox並行実行中..."
+	tox --parallel auto
+	@echo "✅ tox並行実行完了"
+
+tox-clean:
+	@echo "🧹 tox環境クリーンアップ中..."
+	tox -e clean
+	@echo "✅ tox環境クリーンアップ完了"
+
+tox-recreate:
+	@echo "🔄 tox環境再構築中..."
+	tox --recreate
+	@echo "✅ tox環境再構築完了"

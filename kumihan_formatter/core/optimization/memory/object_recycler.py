@@ -502,7 +502,7 @@ def benchmark_recycling_performance(iterations: int = 5000) -> Dict[str, Any]:
     return results
 
 
-def main() -> None:
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
     import json

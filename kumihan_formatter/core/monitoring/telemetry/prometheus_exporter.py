@@ -39,13 +39,13 @@ except ImportError as e:
 
     # フォールバック実装（型チェック対応）
     CONTENT_TYPE_LATEST = "text/plain; version=0.0.4; charset=utf-8"
-    REGISTRY = None  # type: ignore
-    CollectorRegistry = None  # type: ignore
-    Counter = None  # type: ignore
-    Gauge = None  # type: ignore
-    Histogram = None  # type: ignore
-    Info = None  # type: ignore
-    generate_latest = None  # type: ignore
+    REGISTRY = None
+    CollectorRegistry = None
+    Counter = None
+    Gauge = None
+    Histogram = None
+    Info = None
+    generate_latest = None
 
 
 class CustomCollector:

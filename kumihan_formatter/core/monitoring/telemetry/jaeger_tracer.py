@@ -42,13 +42,13 @@ except ImportError as e:
     IMPORT_ERROR = str(e)
 
     # フォールバック実装（型チェック対応）
-    trace = None  # type: ignore
-    JaegerExporter = None  # type: ignore
+    trace = None
+    JaegerExporter = None
     SERVICE_NAME = "service.name"
     SERVICE_VERSION = "service.version"
-    Resource = None  # type: ignore
-    TracerProvider = None  # type: ignore
-    BatchSpanProcessor = None  # type: ignore
+    Resource = None
+    TracerProvider = None
+    BatchSpanProcessor = None
 
 
 @dataclass
