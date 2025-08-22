@@ -276,20 +276,30 @@ class KeywordDefinitions:
         # 有効なHTMLタグのチェック
         valid_tags = {
             "strong",
+            "b",          # 太字 (代替表記)
             "em",
+            "i",          # イタリック (代替表記)
             "div",
+            "span",
+            "p",
             "h1",
             "h2",
             "h3",
             "h4",
             "h5",
-            "details",
-            "u",
+            "h6",
+            "blockquote", # 引用
+            "pre",        # コードブロック
             "code",
+            "details",
+            "summary",    # details要素の子要素
+            "u",
             "del",
+            "ins",        # 挿入テキスト
+            "mark",       # ハイライト
             "ruby",
-            "span",
-            "p",
+            "rt",         # ruby text
+            "rp",         # ruby parentheses
         }
 
         if tag not in valid_tags:
