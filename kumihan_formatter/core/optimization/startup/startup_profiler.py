@@ -470,7 +470,7 @@ def profile_application_startup(app_entry_point: str) -> StartupProfile:
         raise
 
 
-def main() -> None:
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
 
