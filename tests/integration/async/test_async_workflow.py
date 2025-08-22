@@ -9,9 +9,22 @@ from typing import Any, Dict, List
 
 import pytest
 
+# pytest-asyncio が無い環境でテストをスキップ
+try:
+    import pytest_asyncio
+
+    HAS_PYTEST_ASYNCIO = True
+except ImportError:
+    HAS_PYTEST_ASYNCIO = False
+
 from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
+
+# pytest-asyncioが無い場合は全体をスキップ
+pytestmark = pytest.mark.skipif(
+    not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed"
+)
 
 
 class TestAsyncWorkflow:

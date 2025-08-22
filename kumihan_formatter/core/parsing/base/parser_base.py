@@ -39,6 +39,14 @@ class UnifiedParserBase:
         self._errors: List[str] = []
         self._warnings: List[str] = []
 
+        # パフォーマンス統計（Issue #1082: CI対応）
+        self._performance_stats: Dict[str, Any] = {
+            "parse_count": 0,
+            "total_time": 0.0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+        }
+
     def _setup_common_patterns(self) -> None:
         """共通正規表現パターンの設定"""
         # Kumihan記法パターン（BaseParserから）

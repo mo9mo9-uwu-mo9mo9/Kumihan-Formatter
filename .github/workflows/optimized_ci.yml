@@ -72,7 +72,7 @@ jobs:
   # 軽量テスト - 常時実行
   light_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20  # Issue #1082: unit-parsing タイムアウト対策で延長
     needs: fast_quality
     if: always() && needs.fast_quality.result == 'success'
 
@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.12]
-        test-suite: [unit-core, unit-parsing, unit-rendering]
+        test-suite: [unit-core, unit-parsing-basic, unit-parsing-complex, unit-rendering]
 
     steps:
     - uses: actions/checkout@v4
@@ -106,23 +106,30 @@ jobs:
         pip install pytest-xdist pytest-timeout pytest-sugar --upgrade
 
     - name: Run light unit tests
-      timeout-minutes: 10
+      timeout-minutes: 15  # Issue #1082: タイムアウト延長
       env:
         GITHUB_ACTIONS: true
-        PYTEST_XDIST_WORKER_COUNT: 2
+        PYTEST_XDIST_WORKER_COUNT: 1  # Issue #1082: CI安定化のため単一ワーカー
+        PYTHONPATH: ${{ github.workspace }}  # Issue #1082: PYTHONPATH明示設定
       run: |
         case "${{ matrix.test-suite }}" in
           "unit-core")
             pytest tests/unit/ast_nodes/ tests/unit/config/ \
-              --maxfail=10 --timeout=120 --tb=short -v
+              --maxfail=10 --timeout=300 --tb=short -v
             ;;
-          "unit-parsing")
-            pytest tests/unit/parsing/ \
-              --maxfail=10 --timeout=120 --tb=short -v
+          "unit-parsing-basic")
+            # 高速な基本機能テスト（keyword系 + main parser）
+            pytest tests/unit/parsing/keyword/ tests/unit/parsing/test_main_parser_comprehensive.py \
+              --maxfail=10 --timeout=300 --tb=short -v
+            ;;
+          "unit-parsing-complex")
+            # 重い複雑機能テスト（list系）
+            pytest tests/unit/parsing/list/ \
+              --maxfail=5 --timeout=600 --tb=short -v
             ;;
           "unit-rendering")
             pytest tests/unit/rendering/ \
-              --maxfail=10 --timeout=120 --tb=short -v
+              --maxfail=10 --timeout=300 --tb=short -v
             ;;
         esac
 

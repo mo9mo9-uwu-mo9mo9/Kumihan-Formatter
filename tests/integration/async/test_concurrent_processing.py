@@ -11,6 +11,14 @@ from typing import Any, Dict, List
 
 import pytest
 
+# pytest-asyncio が無い環境でテストをスキップ
+try:
+    import pytest_asyncio
+
+    HAS_PYTEST_ASYNCIO = True
+except ImportError:
+    HAS_PYTEST_ASYNCIO = False
+
 from kumihan_formatter.core.utilities.logger import get_logger
 
 logger = get_logger(__name__)
@@ -126,6 +134,9 @@ class TestConcurrentProcessing:
             len(thread_ids) <= max_workers
         ), f"スレッド数が制限を超過: {len(thread_ids)}"
 
+    @pytest.mark.skipif(
+        not HAS_PYTEST_ASYNCIO, reason="pytest-asyncio is not installed"
+    )
     @pytest.mark.asyncio
     async def test_非同期並行処理(self) -> None:
         """asyncioを使用した非同期並行処理"""

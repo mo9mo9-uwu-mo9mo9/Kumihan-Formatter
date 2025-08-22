@@ -27,15 +27,40 @@ try:
 except ImportError:
     trio_available = False
 
+# pytest-asyncio利用可能性チェック
+try:
+    import pytest_asyncio
+
+    pytest_asyncio_available = True
+except ImportError:
+    pytest_asyncio_available = False
+    # pytest-asyncioが使えない場合は警告を出力
+    import warnings
+
+    warnings.warn(
+        "pytest-asyncio is not installed. Async tests will be skipped.",
+        ImportWarning,
+        stacklevel=2,
+    )
+
 
 def _get_optimal_worker_count() -> int:
     """
     環境に応じて最適なワーカー数を決定
     Issue #1049: pytest-xdist並列実行設定最適化
+    Issue #1082: Python 3.12 CI失敗対策強化
     """
     # CI環境の判定
     is_ci = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
     is_ci_generic = os.getenv("CI", "").lower() == "true"
+
+    # Issue #1082: CI環境では強制的に単一ワーカー（安定性優先）
+    ci_worker_override = os.getenv("PYTEST_XDIST_WORKER_COUNT")
+    if ci_worker_override and (is_ci or is_ci_generic):
+        try:
+            return max(1, int(ci_worker_override))
+        except ValueError:
+            pass
 
     # CPU数とメモリ情報の取得
     cpu_count = multiprocessing.cpu_count()
@@ -51,15 +76,15 @@ def _get_optimal_worker_count() -> int:
     test_markers = os.getenv("PYTEST_CURRENT_TEST", "")
 
     if is_ci or is_ci_generic:
-        # GitHub Actions環境（2コア想定）での最適化
+        # Issue #1082: GitHub Actions環境では保守的設定
         if "performance" in test_markers or "benchmark" in test_markers:
             return 1  # パフォーマンステストは単一ワーカー
         elif "system" in test_markers:
             return 1  # システムテストは慎重に
         elif "end_to_end" in test_markers:
-            return min(2, cpu_count)  # E2Eテストは最大2
+            return 1  # Issue #1082: E2Eテストも単一ワーカー
         else:
-            return 2  # CI環境では固定2並列
+            return 1  # Issue #1082: CI環境では単一ワーカーで安定化
     else:
         # ローカル環境での最適化
         if "performance" in test_markers or "benchmark" in test_markers:
