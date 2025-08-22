@@ -158,37 +158,3 @@ def generate_report() -> str:
     except Exception as e:
         logger.error(f"レポート生成エラー: {e}")
         return ""
-
-
-def get_latest_savings() -> Optional[Dict[str, Any]]:
-    """最新のToken節約効果取得
-
-    Returns:
-        最新の節約効果サマリー
-    """
-    data = load_usage_data()
-    if not data:
-        return None
-
-    # Gemini協業のみの集計
-    gemini_data = [
-        entry for entry in data if entry["execution_method"] == "gemini_collaboration"
-    ]
-    if not gemini_data:
-        return None
-
-    total_actual = sum(entry["actual_total"] for entry in gemini_data)
-    total_estimate = sum(entry["claude_solo_estimate"] for entry in gemini_data)
-    total_savings = total_estimate - total_actual
-
-    avg_savings_pct = (
-        (total_savings / total_estimate * 100) if total_estimate > 0 else 0
-    )
-
-    return {
-        "gemini_tasks": len(gemini_data),
-        "total_actual_tokens": total_actual,
-        "total_claude_estimate": total_estimate,
-        "total_savings": total_savings,
-        "avg_savings_pct": round(avg_savings_pct, 1),
-    }
