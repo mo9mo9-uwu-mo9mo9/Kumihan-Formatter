@@ -17,7 +17,7 @@ Performance targets:
 - 処理遅延0.1ms以下/operation
 - 正確性97%以上
 
-Author: Gemini-Claude協業チーム
+Author: Claude Code Team
 Version: 1.0.0
 """
 

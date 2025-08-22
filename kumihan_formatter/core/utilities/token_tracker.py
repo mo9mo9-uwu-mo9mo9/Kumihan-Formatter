@@ -1,6 +1,6 @@
 """
 Token使用量追跡システム
-Claude単体 vs Claude+Gemini協業のToken節約効果を自動追跡
+Claude単体でのToken使用量を追跡
 
 シンプル実装・オーバーエンジニアリングなし
 """
@@ -34,8 +34,6 @@ def log_task_usage(
     task_name: str,
     prompt_text: str,
     response_text: str,
-    execution_method: str = "claude_solo",  # "gemini_collaboration" | "claude_solo"
-    claude_solo_estimate: Optional[int] = None,
 ) -> None:
     """Task使用量をログ記録
 
@@ -43,35 +41,17 @@ def log_task_usage(
         task_name: タスク名
         prompt_text: プロンプトテキスト
         response_text: レスポンステキスト
-        execution_method: 実行方式
-        claude_solo_estimate: Claude単体での推定Token数
     """
     actual_prompt_tokens = estimate_tokens(prompt_text)
     actual_response_tokens = estimate_tokens(response_text)
     actual_total = actual_prompt_tokens + actual_response_tokens
 
-    # Claude単体推定（指定されていない場合は実際の1.5-2倍と仮定）
-    if claude_solo_estimate is None:
-        if execution_method == "gemini_collaboration":
-            claude_solo_estimate = int(actual_total * 2.0)  # 2倍と仮定
-        else:
-            claude_solo_estimate = actual_total
-
-    savings = claude_solo_estimate - actual_total
-    savings_pct = (
-        (savings / claude_solo_estimate * 100) if claude_solo_estimate > 0 else 0
-    )
-
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "task_name": task_name,
-        "execution_method": execution_method,
         "actual_prompt_tokens": actual_prompt_tokens,
         "actual_response_tokens": actual_response_tokens,
         "actual_total": actual_total,
-        "claude_solo_estimate": claude_solo_estimate,
-        "savings": savings,
-        "savings_pct": round(savings_pct, 1),
     }
 
     # tmp/token_usage.jsonl に追記
@@ -83,9 +63,9 @@ def log_task_usage(
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
         logger.info(
-            f"Token使用量記録: {task_name} ({execution_method}) - "
-            f"実際:{actual_total}, 推定:{claude_solo_estimate}, "
-            f"節約:{savings} ({savings_pct:.1f}%)"
+            f"Token使用量記録: {task_name} - "
+            f"プロンプト:{actual_prompt_tokens}, レスポンス:{actual_response_tokens}, "
+            f"合計:{actual_total}"
         )
 
     except Exception as e:
@@ -131,57 +111,36 @@ def generate_report() -> str:
         f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "## 作業別Token使用量",
-        "| 作業名 | 実行方式 | Claude単体推定 | 実際使用 | 節約量 | 節約率 |",
-        "|--------|----------|----------------|----------|--------|--------|",
+        "| 作業名 | プロンプト | レスポンス | 合計 |",
+        "|--------|-----------|-----------|------|",
     ]
 
-    total_claude_estimate = 0
-    total_actual = 0
-    gemini_tasks = 0
-    claude_tasks = 0
+    total_tokens = 0
+    total_tasks = 0
 
     for entry in data:
         task_name = entry["task_name"]
-        method = entry["execution_method"]
-        claude_est = entry["claude_solo_estimate"]
-        actual = entry["actual_total"]
-        savings = entry["savings"]
-        savings_pct = entry["savings_pct"]
-
-        method_display = (
-            "Gemini協業" if method == "gemini_collaboration" else "Claude単体"
-        )
+        prompt_tokens = entry["actual_prompt_tokens"]
+        response_tokens = entry["actual_response_tokens"]
+        total = entry["actual_total"]
 
         report_lines.append(
-            f"| {task_name} | {method_display} | {claude_est:,} | "
-            f"{actual:,} | {savings:,} | {savings_pct}% |"
+            f"| {task_name} | {prompt_tokens:,} | " f"{response_tokens:,} | {total:,} |"
         )
 
-        total_claude_estimate += claude_est
-        total_actual += actual
-
-        if method == "gemini_collaboration":
-            gemini_tasks += 1
-        else:
-            claude_tasks += 1
+        total_tokens += total
+        total_tasks += 1
 
     # サマリー計算
-    total_savings = total_claude_estimate - total_actual
-    avg_savings_pct = (
-        (total_savings / total_claude_estimate * 100)
-        if total_claude_estimate > 0
-        else 0
-    )
+    avg_tokens_per_task = total_tokens / total_tasks if total_tasks > 0 else 0
 
     report_lines.extend(
         [
             "",
             "## サマリー",
-            f"- 総作業数: {len(data)} (Gemini協業: {gemini_tasks}, Claude単体: {claude_tasks})",
-            f"- Claude単体推定総Token: {total_claude_estimate:,}",
-            f"- 実際使用総Token: {total_actual:,}",
-            f"- 総節約Token: {total_savings:,}",
-            f"- 平均節約率: {avg_savings_pct:.1f}%",
+            f"- 総作業数: {total_tasks}",
+            f"- 使用総Token: {total_tokens:,}",
+            f"- 平均Token/作業: {avg_tokens_per_task:.1f}",
         ]
     )
 

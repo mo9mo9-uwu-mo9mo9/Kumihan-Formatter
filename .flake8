@@ -17,8 +17,6 @@ exclude =
     *.egg-info,
     .test_backups,
     .test_backups/**,
-    .gemini_history,
-    .gemini_history/**
 
 # AI開発で無視する低優先度エラー
 ignore = E203,W503,E226,E704

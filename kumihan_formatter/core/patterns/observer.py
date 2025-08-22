@@ -23,7 +23,7 @@ class EventType(Enum):
     VALIDATION_FAILED = "validation_failed"
     PLUGIN_LOADED = "plugin_loaded"
     PLUGIN_UNLOADED = "plugin_unloaded"
-    
+
     # ExtendedEventType互換性のために追加
     PERFORMANCE_MEASUREMENT = "performance_measurement"
     DEPENDENCY_RESOLVED = "dependency_resolved"
@@ -31,7 +31,7 @@ class EventType(Enum):
     CACHE_MISS = "cache_miss"
     ASYNC_TASK_STARTED = "async_task_started"
     ASYNC_TASK_COMPLETED = "async_task_completed"
-    
+
     CUSTOM = "custom"
 
 
