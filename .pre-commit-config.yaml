@@ -10,11 +10,12 @@ repos:
 
 
       - id: python-lint
-        name: Python Linting (Black, isort, flake8)
-        entry: bash -c 'python3 -m black --check kumihan_formatter && python3 -m isort --check-only kumihan_formatter && python3 -m flake8 kumihan_formatter'
+        name: Python Linting (Standard Tools)
+        entry: ./scripts/quality_check.sh kumihan_formatter
         language: system
         files: '\.py$'
         pass_filenames: false
+        description: "Integrated quality check using Black, isort, flake8"
 
       - id: mypy-type-check
         name: MyPy Type Checking
