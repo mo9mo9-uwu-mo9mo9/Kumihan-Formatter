@@ -428,7 +428,7 @@ def benchmark_pool_performance(iterations: int = 1000) -> dict[str, Any]:
     }
 
 
-def main() -> None:
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
     import json

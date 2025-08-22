@@ -208,7 +208,9 @@ class ImportAnalyzer:
         else:
             return 1  # サードパーティ
 
-    def analyze_project(self, file_patterns: List[str] = None) -> Dict[str, Any]:
+    def analyze_project(
+        self, file_patterns: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
         """プロジェクト全体のインポート分析"""
         if file_patterns is None:
             file_patterns = ["**/*.py"]
@@ -384,7 +386,7 @@ class ImportAnalyzer:
 
 def benchmark_import_performance(module_names: List[str]) -> Dict[str, Any]:
     """インポートパフォーマンスベンチマーク"""
-    results = {}
+    results: Dict[str, Any] = {}
 
     for module_name in module_names:
         times = []
@@ -414,7 +416,7 @@ def benchmark_import_performance(module_names: List[str]) -> Dict[str, Any]:
     return results
 
 
-def main() -> None:
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
     import json

@@ -195,7 +195,7 @@ def benchmark_import_time(module_name: str, iterations: int = 10) -> dict[str, A
     }
 
 
-def main() -> None:
+def main() -> int:
     """CLI エントリーポイント"""
     import argparse
     import json

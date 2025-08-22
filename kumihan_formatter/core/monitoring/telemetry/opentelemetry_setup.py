@@ -61,23 +61,23 @@ except ImportError as e:
     IMPORT_ERROR = str(e)
 
     # フォールバック実装（型チェック対応）
-    metrics = None  # type: ignore
-    trace = None  # type: ignore
-    OTLPMetricExporter = None  # type: ignore
-    OTLPSpanExporter = None  # type: ignore
-    LoggingInstrumentor = None  # type: ignore
-    PsutilInstrumentor = None  # type: ignore
-    ThreadingInstrumentor = None  # type: ignore
-    set_global_textmap = None  # type: ignore
-    B3MultiFormat = None  # type: ignore
-    MeterProvider = None  # type: ignore
-    PeriodicExportingMetricReader = None  # type: ignore
+    metrics = None
+    trace = None
+    OTLPMetricExporter = None
+    OTLPSpanExporter = None
+    LoggingInstrumentor = None
+    PsutilInstrumentor = None
+    ThreadingInstrumentor = None
+    set_global_textmap = None
+    B3MultiFormat = None
+    MeterProvider = None
+    PeriodicExportingMetricReader = None
     SERVICE_NAME = "service.name"
     SERVICE_VERSION = "service.version"
-    Resource = None  # type: ignore
-    TracerProvider = None  # type: ignore
-    BatchSpanProcessor = None  # type: ignore
-    SimpleSpanProcessor = None  # type: ignore
+    Resource = None
+    TracerProvider = None
+    BatchSpanProcessor = None
+    SimpleSpanProcessor = None
 
 
 class OpenTelemetrySetup:
