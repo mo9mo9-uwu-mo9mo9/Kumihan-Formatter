@@ -165,3 +165,29 @@ class UnorderedListParser:
     def get_supported_types(self) -> List[str]:
         """サポートするリストタイプを取得"""
         return list(self.patterns.keys())
+    
+    def toggle_checklist_item(self, node: Node) -> Node:
+        """チェックリスト項目の状態切り替え"""
+        if node.metadata.get("type") == "checklist_item":
+            current_checked = node.metadata.get("checked", False)
+            node.metadata["checked"] = not current_checked
+        return node
+    
+    def convert_to_bullet_list(self, node: Node, bullet_marker: str = "-") -> Node:
+        """チェックリストを通常の箇条書きに変換"""
+        if node.metadata.get("type") == "checklist_item":
+            node.metadata["type"] = "list_item"
+            node.metadata["marker"] = bullet_marker
+            if "checked" in node.metadata:
+                del node.metadata["checked"]
+        return node
+    
+    def get_marker_from_line(self, line: str) -> str | None:
+        """行からリストマーカーを抽出"""
+        for pattern in self.patterns.values():
+            match = pattern.match(line)
+            if match:
+                if "[-*+]" in str(pattern.pattern):
+                    # 非順序リストのマーカーを抽出
+                    return line.strip()[0] if line.strip() and line.strip()[0] in "-*+" else None
+        return None
