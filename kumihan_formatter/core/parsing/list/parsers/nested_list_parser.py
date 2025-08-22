@@ -163,7 +163,7 @@ class NestedListParser:
     def attach_children(
         self, parent_node: Node, level_groups: Dict[int, List[Node]], target_level: int
     ) -> None:
-        """親ノードに子要素を追加
+        """親ノードに子要素を追加（最適化版）
 
         Args:
             parent_node: 親ノード
@@ -176,17 +176,83 @@ class NestedListParser:
         children = []
         parent_index = parent_node.metadata.get("index", 0)
 
-        # 同じ親の下にある子要素を特定
-        for child_node in level_groups[target_level]:
-            # 簡単な親子関係の判定（実際の実装では更に詳細な判定が必要）
-            child_index = child_node.metadata.get("index", 0)
-            if child_index > parent_index:
+        # バイナリサーチで最初の候補を特定（O(log n)）
+        child_candidates = level_groups[target_level]
+        start_idx = self._binary_search_first_greater(child_candidates, parent_index)
+
+        if start_idx < len(child_candidates):
+            # 次の同レベル親ノードのインデックスを取得して範囲を制限
+            next_parent_index = self._get_next_parent_index(
+                parent_node, level_groups, target_level - 1
+            )
+
+            # 有効な範囲の子ノードのみを処理
+            for i in range(start_idx, len(child_candidates)):
+                child_node = child_candidates[i]
+                child_index = child_node.metadata.get("index", 0)
+
+                # 次の親ノードの範囲を超えた場合は終了
+                if next_parent_index is not None and child_index >= next_parent_index:
+                    break
+
                 children.append(child_node)
                 # 再帰的に子要素の子要素も追加
                 self.attach_children(child_node, level_groups, target_level + 1)
 
         if children:
             parent_node.children = children
+
+    def _binary_search_first_greater(self, nodes: List[Node], target_index: int) -> int:
+        """指定されたインデックスより大きい最初のノードの位置をバイナリサーチで特定
+
+        Args:
+            nodes: ソートされたノードリスト
+            target_index: 検索対象のインデックス
+
+        Returns:
+            int: 最初の該当ノードの位置
+        """
+        left, right = 0, len(nodes)
+
+        while left < right:
+            mid = (left + right) // 2
+            node_index = nodes[mid].metadata.get("index", 0)
+
+            if node_index <= target_index:
+                left = mid + 1
+            else:
+                right = mid
+
+        return left
+
+    def _get_next_parent_index(
+        self,
+        current_parent: Node,
+        level_groups: Dict[int, List[Node]],
+        parent_level: int,
+    ) -> Optional[int]:
+        """次の同レベル親ノードのインデックスを取得
+
+        Args:
+            current_parent: 現在の親ノード
+            level_groups: レベル別グループ
+            parent_level: 親ノードのレベル
+
+        Returns:
+            Optional[int]: 次の親ノードのインデックス、なければNone
+        """
+        if parent_level not in level_groups:
+            return None
+
+        current_index = current_parent.metadata.get("index", 0)
+        parent_candidates = level_groups[parent_level]
+
+        for parent_node in parent_candidates:
+            parent_index = parent_node.metadata.get("index", 0)
+            if parent_index > current_index:
+                return parent_index
+
+        return None
 
     def get_indent_level(self, line: str) -> int:
         """行のインデントレベルを取得
