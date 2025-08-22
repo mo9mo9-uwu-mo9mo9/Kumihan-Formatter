@@ -79,7 +79,9 @@ def register_default_services(container: DIContainer) -> None:
         # HtmlRendererProtocolは拽象クラスのため、具象クラスで登録
         container.register(HtmlFormatter, HtmlFormatter, ServiceLifetime.SINGLETON)
         # MarkdownRendererProtocolは拽象クラスのため、具象クラスで登録
-        container.register(MarkdownFormatter, MarkdownFormatter, ServiceLifetime.SINGLETON)
+        container.register(
+            MarkdownFormatter, MarkdownFormatter, ServiceLifetime.SINGLETON
+        )
 
     except ImportError as e:
         # プロトコルが利用できない場合はスキップ

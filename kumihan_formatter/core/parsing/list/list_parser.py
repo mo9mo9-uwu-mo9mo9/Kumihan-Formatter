@@ -309,7 +309,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         stripped = line.lstrip()
         if not stripped:
             return 0
-        
+
         indent_count = len(line) - len(stripped)
         # 2スペースまたは1タブで1レベル
         return max(0, indent_count // 2)
