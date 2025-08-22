@@ -834,7 +834,7 @@ if __name__ == "__main__":
         def __init__(self, name: str) -> None:
             self.name = name
             self.children: List["Node"] = []
-            self.parent = None
+            self.parent: Optional["Node"] = None
 
         def add_child(self, child: "Node") -> None:
             child.parent = self

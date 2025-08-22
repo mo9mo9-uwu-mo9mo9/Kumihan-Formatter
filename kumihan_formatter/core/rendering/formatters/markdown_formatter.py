@@ -572,7 +572,7 @@ class MarkdownFormatter(MarkdownRendererProtocol):
     ) -> str:
         """Kumihan記法からMarkdownに変換（プロトコル準拠）"""
         # 基本的な変換実装
-        return cast(str, self._convert_from_html(kumihan_text))
+        return self._convert_from_html(kumihan_text)
 
     def _convert_from_html(self, html_content: str) -> str:
         """HTMLからMarkdownに変換（内部メソッド）"""

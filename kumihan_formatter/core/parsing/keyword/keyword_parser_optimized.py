@@ -15,14 +15,14 @@ Issue #914: アーキテクチャ最適化リファクタリング
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-from ....ast_nodes import (  # type: ignore[import-not-found]
+from ....ast_nodes import (
     Node,
     NodeBuilder,
     create_node,
     error_node,
 )
-from ...base import CompositeMixin, UnifiedParserBase  # type: ignore[import-not-found]
-from ...base.parser_protocols import (  # type: ignore[import-not-found]
+from ...base import CompositeMixin, UnifiedParserBase
+from ...base.parser_protocols import (
     KeywordParserProtocol,
     ParseContext,
     ParseResult,
@@ -86,7 +86,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ....keyword import (  # type: ignore[import-not-found]
+            from ....keyword import (
                 KeywordDefinitions,
                 KeywordValidator,
                 MarkerParser,

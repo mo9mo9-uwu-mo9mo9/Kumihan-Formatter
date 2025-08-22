@@ -18,7 +18,7 @@ Issue #920: 大型ファイル分割リファクタリング
 - 後方互換性維持
 """
 
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast, overload
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -164,31 +164,48 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         primary_type = self.utilities.determine_primary_list_type(list_items)
         return self.utilities.create_list_node(list_items, primary_type)
 
-    def parse(  # type: ignore[override]
+    @overload
+    def parse(
         self, content: str, context: Optional[ParseContext] = None
-    ) -> ParseResult:
-        """BaseParserProtocol準拠の統一パースインターフェース"""
-        try:
-            self._clear_errors_warnings()
+    ) -> ParseResult: ...
 
-            # 既存のparse_list_from_textメソッドを活用
-            node = self.parse_list_from_text(content)
+    @overload
+    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
 
-            return ParseResult(
-                success=True,
-                nodes=[node] if node else [],
-                errors=self.get_errors(),
-                warnings=self.get_warnings(),
-                metadata={"parser_type": "list"},
-            )
-        except Exception as e:
-            return ParseResult(
-                success=False,
-                nodes=[],
-                errors=[str(e)],
-                warnings=[],
-                metadata={"parser_type": "list"},
-            )
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional[ParseContext] = None,
+        **kwargs: Any,
+    ) -> Union[ParseResult, Node]:
+        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+        if isinstance(content, list):
+            # UnifiedParserBase互換: List[str] -> Node
+            combined_content = "\n".join(content)
+            return self.parse_list_from_text(combined_content)
+        else:
+            # BaseParserProtocol互換: str -> ParseResult
+            try:
+                self._clear_errors_warnings()
+
+                # 既存のparse_list_from_textメソッドを活用
+                node = self.parse_list_from_text(content)
+
+                return ParseResult(
+                    success=True,
+                    nodes=[node] if node else [],
+                    errors=self.get_errors(),
+                    warnings=self.get_warnings(),
+                    metadata={"parser_type": "list"},
+                )
+            except Exception as e:
+                return ParseResult(
+                    success=False,
+                    nodes=[],
+                    errors=[str(e)],
+                    warnings=[],
+                    metadata={"parser_type": "list"},
+                )
 
     def get_errors(self) -> List[str]:
         """エラー一覧取得"""

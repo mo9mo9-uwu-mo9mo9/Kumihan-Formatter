@@ -2,75 +2,17 @@
 
 from typing import Any, Dict, List, Optional, Tuple
 
-# 統一プロトコルインポート（重複定義を避けるため、純粋にtry-except分岐）
-try:
-    from ..base.parser_protocols import BaseParserProtocol as BaseProtocol
-    from ..base.parser_protocols import ListParserProtocol as ListProtocol
-    from ..base.parser_protocols import (
-        ParseContext,
-        ParseError,
-        ParseResult,
-    )
-except ImportError:
-    # フォールバック: 型安全性のため
-    from dataclasses import dataclass
-    from typing import Protocol
-
-    class BaseProtocol(Protocol):  # type: ignore[no-redef]
-        def parse(self, content: str, context: Any = None) -> Any: ...
-        def validate(self, content: str, context: Any = None) -> List[str]: ...
-        def get_parser_info(self) -> Dict[str, Any]: ...
-        def supports_format(self, format_hint: str) -> bool: ...
-
-    class ListProtocol(Protocol):  # type: ignore[no-redef]
-        def parse_list_items(self, content: str, context: Any = None) -> List[Any]: ...
-
-        def parse_nested_list(
-            self, content: str, level: int = 0, context: Any = None
-        ) -> List[Any]: ...
-        def detect_list_type(self, line: str) -> Optional[str]: ...
-        def get_list_nesting_level(self, line: str) -> int: ...
-
-    @dataclass
-    class ParseResult:  # type: ignore[no-redef]
-        success: bool
-        nodes: List[Any]
-        errors: List[str]
-        warnings: List[str]
-        metadata: Dict[str, Any]
-
-    @dataclass
-    class ParseContext:  # type: ignore[no-redef]
-        source_file: Optional[str] = None
-        line_number: int = 1
-        column_number: int = 1
-        parser_state: Optional[Dict[str, Any]] = None
-        config: Optional[Dict[str, Any]] = None
-
-    class ParseError(Exception):  # type: ignore[no-redef]
-        pass
-
-
 # ノードインポート
-try:
-    from ....ast_nodes.node import Node  # type: ignore[import-not-found]
-except ImportError:
-    try:
-        from ....ast_nodes import Node  # type: ignore[import-not-found]
-    except ImportError:
-        # フォールバック実装
-        class Node:  # type: ignore[no-redef]
-            def __init__(
-                self,
-                type: str,
-                content: Any,
-                attributes: Optional[Dict[str, Any]] = None,
-            ):
-                self.type = type
-                self.content = content
-                self.attributes = attributes or {}
+from ....ast_nodes.node import Node
 
-
+# 統一プロトコルインポート
+from ..base.parser_protocols import (
+    BaseParserProtocol,
+    ListParserProtocol,
+    ParseContext,
+    ParseError,
+    ParseResult,
+)
 from .parsers.nested_list_parser import NestedListParser
 
 # 専用パーサーのインポート
@@ -201,18 +143,18 @@ class ListParser:
                     },
                 )
             else:
-                # フォールバック: 辞書で返却
-                return {  # type: ignore
-                    "success": True,
-                    "nodes": nodes,
-                    "errors": [],
-                    "warnings": [],
-                    "metadata": {
+                # フォールバック: ParseResultで返却
+                return ParseResult(
+                    success=True,
+                    nodes=nodes,
+                    errors=[],
+                    warnings=[],
+                    metadata={
                         "parser": "ListParser",
                         "list_depth": self.utilities.calculate_list_depth(parsed_data),
                         "total_items": self.utilities.count_total_items(parsed_data),
                     },
-                }
+                )
         except Exception as e:
             if hasattr(ParseResult, "__dataclass_fields__"):
                 return ParseResult(
@@ -223,13 +165,13 @@ class ListParser:
                     metadata={"parser": "ListParser"},
                 )
             else:
-                return {  # type: ignore
-                    "success": False,
-                    "nodes": [],
-                    "errors": [f"List parsing failed: {str(e)}"],
-                    "warnings": [],
-                    "metadata": {"parser": "ListParser"},
-                }
+                return ParseResult(
+                    success=False,
+                    nodes=[],
+                    errors=[f"List parsing failed: {str(e)}"],
+                    warnings=[],
+                    metadata={"parser": "ListParser"},
+                )
 
     def validate(
         self, content: str, context: Optional[ParseContext] = None
@@ -367,7 +309,7 @@ class ListParser:
         return self.nested_parser.get_list_nesting_level(line)
 
 
-class ListParserProtocol(ListParser):
+class UnifiedListParser(ListParser):
     """統一プロトコル対応ListParser"""
 
     def parse(

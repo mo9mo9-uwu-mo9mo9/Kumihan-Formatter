@@ -13,7 +13,7 @@ Issue #914: アーキテクチャ最適化リファクタリング
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, overload
 
 from ...ast_nodes import (
     Node,
@@ -86,7 +86,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ...keyword import (  # type: ignore[import-not-found]
+            from ...keyword import (
                 KeywordDefinitions,
                 KeywordValidator,
                 MarkerParser,
@@ -316,6 +316,29 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
     # ==========================================
     # プロトコル準拠メソッド（KeywordParserProtocol実装）
     # ==========================================
+
+    @overload
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult: ...
+
+    @overload
+    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
+
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional[ParseContext] = None,
+        **kwargs: Any,
+    ) -> Union[ParseResult, Node]:
+        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+        if isinstance(content, list):
+            # UnifiedParserBase互換: List[str] -> Node
+            combined_content = "\n".join(content)
+            return super().parse(combined_content, **kwargs)
+        else:
+            # BaseParserProtocol互換: str -> ParseResult
+            return self.parse_with_result(content, context)
 
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(

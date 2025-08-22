@@ -8,7 +8,7 @@ Issue #880 Phase 2B: 既存のBlockParser系統を統合
 """
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, overload
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
@@ -394,7 +394,29 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
     # プロトコル準拠メソッド（BlockParserProtocol実装）
     # ==========================================
 
-    # UnifiedParserBase.parseメソッドを使用（オーバーライドしない）
+    @overload
+    def parse(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> ParseResult: ...
+
+    @overload
+    def parse(self, content: List[str], **kwargs: Any) -> Node: ...
+
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional[ParseContext] = None,
+        **kwargs: Any,
+    ) -> Union[ParseResult, Node]:
+        """統一パースメソッド - BaseParserProtocol と UnifiedParserBase両対応"""
+        if isinstance(content, list):
+            # UnifiedParserBase互換: List[str] -> Node
+            combined_content = "\n".join(content)
+            return super().parse(combined_content, **kwargs)
+        else:
+            # BaseParserProtocol互換: str -> ParseResult
+            return self.parse_with_result(content, context)
+
     # ParseResultを返すプロトコル用のエイリアスメソッド
     def parse_with_result(
         self, content: str, context: Optional[ParseContext] = None
@@ -457,3 +479,47 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
     def parse_block(self, block: str, context: Optional[ParseContext] = None) -> Node:
         """ブロック固有パースメソッド（プロトコル準拠）"""
         return self._parse_implementation(block)
+
+    def extract_blocks(
+        self, text: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
+        """テキストからブロックを抽出（抽象メソッド実装）"""
+        blocks = []
+        current_block = ""
+        in_block = False
+
+        lines = text.split("\n")
+        for line in lines:
+            if self.block_patterns["start"].search(line):
+                if in_block and current_block.strip():
+                    blocks.append(current_block.strip())
+                current_block = line
+                in_block = True
+            elif self.block_patterns["end"].search(line) and in_block:
+                current_block += "\n" + line
+                blocks.append(current_block.strip())
+                current_block = ""
+                in_block = False
+            elif in_block:
+                current_block += "\n" + line
+
+        # 未閉じブロックがあれば追加
+        if in_block and current_block.strip():
+            blocks.append(current_block.strip())
+
+        return blocks
+
+    def detect_block_type(self, block: str) -> Optional[str]:
+        """ブロックタイプを検出（抽象メソッド実装）"""
+        if not block.strip():
+            return None
+
+        # Kumihan記法のパターンマッチング
+        if self.inline_pattern.search(block):
+            return "inline"
+        elif self.multiline_pattern.search(block):
+            return "multiline"
+        elif self.special_pattern.search(block):
+            return "special"
+        else:
+            return "unknown"
