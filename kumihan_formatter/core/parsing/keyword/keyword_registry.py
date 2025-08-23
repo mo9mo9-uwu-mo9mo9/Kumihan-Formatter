@@ -276,7 +276,9 @@ class KeywordRegistry:
                 definition = {}
 
             # より堅牢な実装
-            display_names = definition.get("display_names", {"en": keyword_id, "ja": keyword_id})
+            display_names = definition.get(
+                "display_names", {"en": keyword_id, "ja": keyword_id}
+            )
             if not display_names:
                 display_names = {"en": keyword_id, "ja": keyword_id}
 
@@ -297,6 +299,7 @@ class KeywordRegistry:
         except Exception as e:
             # デバッグ情報をログ出力（本番では削除）
             import logging
+
             logging.debug(f"KeywordRegistry.register failed: {e}")
             return "error"
 
