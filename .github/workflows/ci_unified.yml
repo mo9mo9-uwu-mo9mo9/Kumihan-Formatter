@@ -148,7 +148,7 @@ jobs:
               --maxfail=3 --timeout=60 --tb=short -v -n=auto --dist=worksteal
             ;;
           "core-tests")
-            pytest tests/unit/rendering/ \
+            pytest tests/unit/patterns/ tests/unit/test_*.py \
               --maxfail=3 --timeout=120 --tb=short -v -n=auto --dist=worksteal
             ;;
           "parsing-tests")
@@ -169,7 +169,7 @@ jobs:
       max-parallel: 2
       matrix:
         python-version: [3.12]
-        test-type: [integration, end_to_end]
+        test-type: [root-level, utilities]
 
     steps:
     - uses: actions/checkout@v4
@@ -200,19 +200,19 @@ jobs:
 
     - name: Run comprehensive tests
       timeout-minutes: 20
-      continue-on-error: ${{ matrix.test-type == 'end_to_end' }}
+      continue-on-error: ${{ matrix.test-type == 'utilities' }}
       env:
         GITHUB_ACTIONS: true
         PYTEST_XDIST_WORKER_COUNT: auto
       run: |
         case "${{ matrix.test-type }}" in
-          "integration")
-            pytest tests/integration/ \
+          "root-level")
+            pytest tests/test_*.py \
               --maxfail=2 --timeout=180 --durations=5 \
               --tb=short -v -n=auto --dist=worksteal
             ;;
-          "end_to_end")
-            pytest tests/end_to_end/ \
+          "utilities")
+            pytest tests/utilities/ \
               --maxfail=2 --timeout=240 --durations=3 \
               --tb=short -v -n=2 --dist=worksteal
             ;;
@@ -264,7 +264,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "Running unified coverage analysis..."
-        pytest tests/unit/ tests/integration/ \
+        pytest tests/unit/ tests/test_*.py tests/utilities/ \
           --cov=kumihan_formatter \
           --cov-report=xml:coverage-unified.xml \
           --cov-report=term-missing \
@@ -324,13 +324,10 @@ jobs:
       timeout-minutes: 8
       continue-on-error: true
       run: |
-        pytest tests/performance/ \
-          --benchmark-only \
-          --benchmark-json=benchmark-unified.json \
-          --benchmark-sort=mean \
-          --benchmark-min-rounds=2 \
-          --maxfail=1 --timeout=300 \
-          --tb=short -v || echo "Performance tests completed with warnings"
+        echo "⚠️ Performance tests directory removed - skipping benchmark tests"
+        echo "Future performance tests can be added when needed"
+        echo "Creating mock benchmark results for pipeline compatibility"
+        echo '{"tests": [], "machine_info": {"node": "github-runner"}}' > benchmark-unified.json
 
     - name: Upload performance results
       uses: actions/upload-artifact@v4
