@@ -147,7 +147,11 @@ class AIEffectMeasurement:
                     "error_rate": quality_metrics.error_rate,
                     "availability": quality_metrics.availability,
                 },
-                stability_score=float(stability_assessment.overall_score if hasattr(stability_assessment, 'overall_score') else 0.0),
+                stability_score=float(
+                    stability_assessment.overall_score
+                    if hasattr(stability_assessment, "overall_score")
+                    else 0.0
+                ),
                 success_criteria_met=success_criteria_met,
                 recommendations=recommendations,
             )
@@ -303,6 +307,7 @@ class AIEffectMeasurement:
     def export_measurements(self, output_path: Optional[str] = None) -> bool:
         """測定データエクスポート委譲"""
         from pathlib import Path
+
         path_obj = Path(output_path) if output_path else None
         return self.business_metrics.export_measurements(path_obj)
 

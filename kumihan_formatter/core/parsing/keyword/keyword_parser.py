@@ -44,7 +44,7 @@ class KeywordParser(BaseParser):
         self.definitions = definitions
 
     def parse_marker_keywords(
-        self, marker_content: Any
+        self, marker_content: str, context: Optional[ParseContext] = None
     ) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """Parse keywords from marker content.
 

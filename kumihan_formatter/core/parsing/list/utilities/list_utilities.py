@@ -50,7 +50,12 @@ class ListUtilities:
                     node = Node(
                         type="list_item",
                         content=child_nodes,
-                        attributes={"index": i, "level": 0, "is_nested": True, "item_count": len(child_nodes)},
+                        attributes={
+                            "index": i,
+                            "level": 0,
+                            "is_nested": True,
+                            "item_count": len(child_nodes),
+                        },
                     )
                     nodes.append(node)
                 else:
@@ -192,7 +197,11 @@ class ListUtilities:
         Returns:
             Optional[List[str]]: 変換結果（None=変換失敗）
         """
-        if source_data is None or not isinstance(source_data, list) or len(source_data) == 0:
+        if (
+            source_data is None
+            or not isinstance(source_data, list)
+            or len(source_data) == 0
+        ):
             return None
 
         result = []
@@ -205,7 +214,7 @@ class ListUtilities:
             clean_content = item
             for marker in ["- ", "+ ", "* ", "1. ", "2. ", "3. ", "a. ", "b. ", "c. "]:
                 if clean_content.startswith(marker):
-                    clean_content = clean_content[len(marker):].strip()
+                    clean_content = clean_content[len(marker) :].strip()
                     break
 
             # ターゲットタイプに応じてマーカーを追加

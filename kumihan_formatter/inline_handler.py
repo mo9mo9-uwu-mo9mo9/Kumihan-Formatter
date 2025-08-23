@@ -81,11 +81,16 @@ class InlineHandler:
 
     def parse_ordered_list(self, lines: list[str], current: int) -> tuple[Node, int]:
         """順序付きリスト解析の委譲メソッド"""
-        result_node, next_index = self.parser.list_parser.parse_ordered_list(lines, current)
+        result_node, next_index = self.parser.list_parser.parse_ordered_list(
+            lines, current
+        )
         if result_node is None:
             # Create a fallback node if parsing fails
             from kumihan_formatter.core.ast_nodes import Node
-            result_node = Node(type="error", content="Failed to parse ordered list", attributes={})
+
+            result_node = Node(
+                type="error", content="Failed to parse ordered list", attributes={}
+            )
         return result_node, next_index
 
     def handle_list_with_graceful_errors(

@@ -86,8 +86,9 @@ class BaseBlockParser:
             self.logger.warning(f"KeywordParser取得失敗、フォールバック使用: {e}")
             # フォールバック: specialized/keyword_parser.pyから直接インポート
             try:
-                from ..specialized.keyword_parser import UnifiedKeywordParser
                 from typing import cast
+
+                from ..specialized.keyword_parser import UnifiedKeywordParser
 
                 parser = UnifiedKeywordParser()
                 # Cast to protocol type since UnifiedKeywordParser should implement the interface
