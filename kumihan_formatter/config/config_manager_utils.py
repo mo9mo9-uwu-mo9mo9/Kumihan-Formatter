@@ -21,15 +21,27 @@ def create_config_instance(
 
     Returns:
         BaseConfig | ExtendedConfig: 設定オブジェクト
+
+    Raises:
+        FileNotFoundError: 指定されたファイルが存在しない場合
+        ValueError: 無効な設定タイプが指定された場合
     """
+    # 無効な設定タイプのチェック
+    valid_types = {"base", "extended"}
+    if config_type not in valid_types:
+        raise ValueError(f"無効な設定タイプ: {config_type}. 有効な値: {valid_types}")
+
     config_class = ExtendedConfig if config_type == "extended" else BaseConfig
 
-    if config_path and Path(config_path).exists():
+    if config_path:
+        if not Path(config_path).exists():
+            raise FileNotFoundError(f"設定ファイルが見つかりません: {config_path}")
+
         try:
             return config_class.from_file(config_path)
-        except Exception:
-            # ファイル読み込みエラー時はデフォルト設定を使用
-            pass
+        except Exception as e:
+            # ファイル読み込みエラーは再発生
+            raise e
 
     return config_class()
 

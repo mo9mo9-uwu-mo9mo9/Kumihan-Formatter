@@ -78,6 +78,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         self.custom_keywords = self.custom_parser.custom_keywords
         self.deprecated_keywords = self.custom_parser.deprecated_keywords
 
+        # 強制的に '色指定' キーワードを確保（環境差異対策）
+        if "色指定" not in self.default_keywords:
+            self.default_keywords["色指定"] = {"type": "color", "color": "custom"}
+
         # レガシー互換性のためのプロパティ
         self.DEFAULT_BLOCK_KEYWORDS = self.advanced_parser.DEFAULT_BLOCK_KEYWORDS
         self.BLOCK_KEYWORDS = self.advanced_parser.BLOCK_KEYWORDS
@@ -254,6 +258,12 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             for keyword in plain_keywords:
                 if self._is_valid_keyword(keyword):
                     keywords.append(keyword)
+
+        # 色指定の特殊形式 ("色 赤", "色 青" など)
+        if not keywords and content.startswith("色 "):
+            color_value = content[2:].strip()  # "色 " の後の部分
+            if self._is_valid_keyword(color_value):
+                keywords.append(color_value)
 
         return keywords
 

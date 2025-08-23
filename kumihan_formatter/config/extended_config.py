@@ -104,8 +104,10 @@ class ExtendedConfig(BaseConfig):
             name: マーカー名
             definition: マーカー定義
         """
-        if not isinstance(definition, dict) or "tag" not in definition:
+        if not isinstance(definition, dict):
             raise ValueError(f"マーカー定義が不正です: {name}")
+
+        # 空辞書も有効な設定として許可 (tagが指定されていない場合も有効)
 
         self._markers[name] = definition
 

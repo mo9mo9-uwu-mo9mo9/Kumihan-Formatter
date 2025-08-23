@@ -275,16 +275,29 @@ class KeywordRegistry:
             if definition is None:
                 definition = {}
 
+            # より堅牢な実装
+            display_names = definition.get("display_names", {"en": keyword_id, "ja": keyword_id})
+            if not display_names:
+                display_names = {"en": keyword_id, "ja": keyword_id}
+
             keyword_def = KeywordDefinition(
                 keyword_id=keyword_id,
-                display_names=definition.get("display_names", {"en": keyword_id}),
+                display_names=display_names,
                 tag=definition.get("tag", "span"),
                 keyword_type=definition.get("type", KeywordType.DECORATION),
             )
 
             self.register_keyword(keyword_def)
-            return "success"
-        except Exception:
+
+            # 確実に登録されているかチェック
+            if keyword_id in self.keywords:
+                return "success"
+            else:
+                return "error"
+        except Exception as e:
+            # デバッグ情報をログ出力（本番では削除）
+            import logging
+            logging.debug(f"KeywordRegistry.register failed: {e}")
             return "error"
 
     def get(self, keyword_id: str) -> str:
