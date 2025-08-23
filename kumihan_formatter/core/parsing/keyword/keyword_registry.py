@@ -45,6 +45,7 @@ class KeywordRegistry:
         self._language_mappings: Dict[str, Dict[str, str]] = (
             {}
         )  # 言語 -> {表示名: keyword_id}
+        self._values: Dict[str, Any] = {}  # 実際の値を保存（テスト互換用）
 
         # Phase 2キーワードの登録
         self._register_advanced_keywords()
@@ -265,21 +266,29 @@ class KeywordRegistry:
 
         Args:
             keyword_id: キーワードID
-            definition: キーワード定義辞書
+            definition: キーワード定義辞書や値
 
         Returns:
             str: 登録結果 ("success" または "error")
         """
         try:
+            # 実際の値を保存（テストで使用される値）
+            self._values[keyword_id] = definition
+
             # テスト互換のため、文字列値も受け入れる
             if isinstance(definition, str):
                 # 文字列の場合は空辞書とする
-                definition = {}
+                definition_dict = {}
+            elif isinstance(definition, dict):
+                definition_dict = definition
             elif definition is None:
-                definition = {}
+                definition_dict = {}
+            else:
+                # その他の型（テストではdict, list等）はそのまま値として保存
+                definition_dict = {}
 
             # より堅牢な実装
-            display_names = definition.get(
+            display_names = definition_dict.get(
                 "display_names", {"en": keyword_id, "ja": keyword_id}
             )
             if not display_names:
@@ -288,8 +297,8 @@ class KeywordRegistry:
             keyword_def = KeywordDefinition(
                 keyword_id=keyword_id,
                 display_names=display_names,
-                tag=definition.get("tag", "span"),
-                keyword_type=definition.get("type", KeywordType.DECORATION),
+                tag=definition_dict.get("tag", "span"),
+                keyword_type=definition_dict.get("type", KeywordType.DECORATION),
             )
 
             self.register_keyword(keyword_def)
@@ -306,16 +315,19 @@ class KeywordRegistry:
             logging.debug(f"KeywordRegistry.register failed: {e}")
             return "error"
 
-    def get(self, keyword_id: str) -> str:
+    def get(self, keyword_id: str) -> Any:
         """キーワードを取得（テスト互換用エイリアス）
 
         Args:
             keyword_id: キーワードID
 
         Returns:
-            str: 取得結果（登録されている場合は "value_{keyword_id}"、なければ "not_found"）
+            Any: 登録されている実際の値、なければ "not_found"
         """
-        if self.is_registered(keyword_id):
+        if keyword_id in self._values:
+            return self._values[keyword_id]
+        elif self.is_registered(keyword_id):
+            # 従来の動作との互換性のため、KeywordDefinitionが存在するがvalueがない場合
             return f"value_{keyword_id}"
         else:
             return "not_found"

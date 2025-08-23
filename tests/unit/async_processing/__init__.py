@@ -1,1 +1,0 @@
-"""async_processing モジュールのテスト"""

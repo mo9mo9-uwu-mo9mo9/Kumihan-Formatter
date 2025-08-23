@@ -1,1 +1,0 @@
-"""Integration tests for Kumihan-Formatter workflows."""
