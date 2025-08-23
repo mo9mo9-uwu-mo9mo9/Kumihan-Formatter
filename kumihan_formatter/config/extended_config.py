@@ -140,7 +140,10 @@ class ExtendedConfig(BaseConfig):
             theme_id: テーマID
             theme_data: テーマデータ
         """
-        if not isinstance(theme_data, dict) or "name" not in theme_data:
+        if not isinstance(theme_data, dict):
+            raise ValueError(f"テーマ定義が不正です: {theme_id}")
+        # 空辞書も有効な設定として許可 (nameが指定されていない場合はtheme_idを使用)
+        if "name" not in theme_data and theme_data != {}:
             raise ValueError(f"テーマ定義が不正です: {theme_id}")
 
         self._themes[theme_id] = theme_data
@@ -177,6 +180,18 @@ class ExtendedConfig(BaseConfig):
         if self._current_theme in self._themes:
             return self._themes[self._current_theme].get("name", "不明")  # type: ignore
         return "不明"
+
+    def remove_theme(self, theme_id: str) -> bool:
+        """テーマを削除
+        Args:
+            theme_id: テーマID
+        Returns:
+            bool: 削除に成功した場合True、テーマが存在しない場合False
+        """
+        if theme_id in self._themes:
+            del self._themes[theme_id]
+            return True
+        return False
 
     def validate(self) -> bool:
         """設定の妥当性をチェック

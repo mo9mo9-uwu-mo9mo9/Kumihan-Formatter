@@ -111,6 +111,12 @@ class ConfigManager:
         if hasattr(self._config, "add_theme"):
             self._config.add_theme(theme_id, theme_data)
 
+    def remove_theme(self, theme_id: str) -> bool:
+        """テーマを削除（ExtendedConfigのみ）"""
+        if hasattr(self._config, "remove_theme"):
+            return self._config.remove_theme(theme_id)
+        return False
+
     def set_theme(self, theme_id: str) -> bool:
         """テーマを設定（ExtendedConfigのみ）"""
         if hasattr(self._config, "set_theme"):
@@ -185,5 +191,18 @@ def load_config(
 
     Returns:
         ConfigManager: 設定管理オブジェクト
+
+    Raises:
+        FileNotFoundError: 指定されたファイルが存在しない場合
+        ValueError: 無効な設定タイプが指定された場合
     """
+    from pathlib import Path
+
+    # テストでの期待動作に合わせ、例外を発生させる
+    if config_path and not Path(config_path).exists():
+        raise FileNotFoundError(f"設定ファイルが見つかりません: {config_path}")
+
+    if config_type not in {"base", "extended"}:
+        raise ValueError(f"無効な設定タイプ: {config_type}")
+
     return create_config_manager(config_type=config_type, config_path=config_path)
