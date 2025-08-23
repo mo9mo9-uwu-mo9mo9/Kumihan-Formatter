@@ -258,7 +258,9 @@ class KeywordRegistry:
         self.keywords[definition.keyword_id] = definition
         self._update_language_mappings(definition)
 
-    def register(self, keyword_id: str, definition: Optional[Dict[str, Any]] = None) -> str:
+    def register(
+        self, keyword_id: str, definition: Optional[Dict[str, Any]] = None
+    ) -> str:
         """キーワードを登録（テスト互換用エイリアス）
 
         Args:
@@ -277,7 +279,7 @@ class KeywordRegistry:
                 keyword_id=keyword_id,
                 display_names=definition.get("display_names", {"en": keyword_id}),
                 tag=definition.get("tag", "span"),
-                keyword_type=definition.get("type", KeywordType.DECORATION)
+                keyword_type=definition.get("type", KeywordType.DECORATION),
             )
 
             self.register_keyword(keyword_def)
