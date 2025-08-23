@@ -297,6 +297,17 @@ class KeywordRegistry:
         """
         return self.keywords.get(keyword_id)
 
+    def is_registered(self, keyword_id: str) -> bool:
+        """キーワードが登録済みかチェック
+
+        Args:
+            keyword_id: キーワードID
+
+        Returns:
+            bool: 登録済みの場合True
+        """
+        return keyword_id in self.keywords
+
     def get_all_display_names(self, language: Optional[str] = None) -> List[str]:
         """指定言語の全表示名を取得
 

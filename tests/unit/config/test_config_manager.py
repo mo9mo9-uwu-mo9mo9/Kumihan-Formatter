@@ -273,10 +273,10 @@ class TestConfigFactoryFunctions:
         try:
             with (
                 patch(
-                    "kumihan_formatter.config.config_manager.BaseConfig"
+                    "kumihan_formatter.config.config_manager_utils.BaseConfig"
                 ) as mock_base_class,
                 patch(
-                    "kumihan_formatter.config.config_manager.ExtendedConfig"
+                    "kumihan_formatter.config.config_manager_utils.ExtendedConfig"
                 ) as mock_ext_class,
             ):
                 mock_config = Mock()
