@@ -261,16 +261,18 @@ class TestIntegration:
         assert rendered == "rendered:parsed:test content"
 
     @patch("kumihan_formatter.core.patterns.legacy_factory_integration.create_legacy_list_parser")
-    def test_統合_legacy_modern_連携(self, mock_legacy_parser):
+    @patch("kumihan_formatter.core.list_parser_factory.create_list_parser")
+    def test_統合_legacy_modern_連携(self, mock_create_list_parser, mock_legacy_parser):
         """Legacy FactoryとModern Factoryの連携テスト"""
         # Modern Factory初期化
         initialize_factories()
         get_renderer_factory().register("modern_renderer", MockRenderer)
 
-        # Legacy Parser Mock設定
+        # Legacy Parser Mock設定（フォールバック対応）
         mock_parser = Mock()
         mock_parser.parse.return_value = "legacy_parsed:content"
         mock_legacy_parser.return_value = mock_parser
+        mock_create_list_parser.return_value = mock_parser
 
         # Legacy-Modern連携
         legacy_parser = create_legacy_list_parser("legacy_type")

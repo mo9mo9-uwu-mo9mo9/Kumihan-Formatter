@@ -3,6 +3,7 @@
 import logging
 from typing import List
 
+from ..utilities.logger import get_logger
 from .observer import Event, EventType, Observer
 
 
@@ -10,7 +11,7 @@ class ParsingObserver(Observer):
     """パーシング監視オブザーバー"""
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
 
     def handle_event(self, event: Event) -> None:
         if event.event_type == EventType.PARSING_STARTED:
@@ -38,7 +39,7 @@ class RenderingObserver(Observer):
     """レンダリング監視オブザーバー"""
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
 
     def handle_event(self, event: Event) -> None:
         if event.event_type == EventType.RENDERING_STARTED:

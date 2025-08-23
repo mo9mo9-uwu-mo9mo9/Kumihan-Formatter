@@ -169,6 +169,15 @@ class IntegratedEventBus:
                 return self._metrics.get(event_type, EventMetrics())
             return self._metrics.copy()
 
+    @property
+    def metrics(self) -> Dict[str, EventMetrics]:
+        """メトリクスへのアクセスプロパティ（下位互換性のため）"""
+        result = self.get_metrics()
+        if isinstance(result, dict):
+            return result
+        else:
+            return {}
+
     def _update_metrics(
         self, event_type: str, start_time: datetime, success: bool
     ) -> None:
