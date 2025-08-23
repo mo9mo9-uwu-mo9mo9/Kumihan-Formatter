@@ -248,6 +248,13 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             if self._is_valid_keyword(keyword_text):
                 keywords.append(keyword_text)
 
+        # プレーンテキスト形式のキーワード抽出 ("+" 区切り)
+        if "+" in content and not keywords:
+            plain_keywords = [kw.strip() for kw in content.split("+")]
+            for keyword in plain_keywords:
+                if self._is_valid_keyword(keyword):
+                    keywords.append(keyword)
+
         return keywords
 
     def _is_valid_keyword(self, keyword: str) -> bool:

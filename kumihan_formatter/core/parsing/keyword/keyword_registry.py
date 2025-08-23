@@ -301,6 +301,40 @@ class KeywordRegistry:
         else:
             return "not_found"
 
+    def bulk_register(self, keywords: List[Dict[str, Any]]) -> bool:
+        """複数キーワードの一括登録（テスト互換用）
+
+        Args:
+            keywords: キーワード定義のリスト
+
+        Returns:
+            bool: 全ての登録が成功した場合True
+        """
+        try:
+            for keyword_data in keywords:
+                keyword_id = keyword_data.get("id", keyword_data.get("keyword_id", ""))
+                if keyword_id:
+                    result = self.register(keyword_id, keyword_data)
+                    if result != "success":
+                        return False
+            return True
+        except Exception:
+            return False
+
+    def bulk_get(self, keyword_ids: List[str]) -> Dict[str, str]:
+        """複数キーワードの一括取得（テスト互換用）
+
+        Args:
+            keyword_ids: キーワードIDのリスト
+
+        Returns:
+            Dict[str, str]: キーワードID -> 取得結果のマッピング
+        """
+        results = {}
+        for keyword_id in keyword_ids:
+            results[keyword_id] = self.get(keyword_id)
+        return results
+
     def _update_language_mappings(self, definition: KeywordDefinition) -> None:
         """言語別マッピングを更新
 
