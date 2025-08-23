@@ -185,6 +185,8 @@ jobs:
           echo ""
           echo "🔗 詳細: https://github.com/${{ github.repository }}/blob/main/docs/TESTING_GUIDELINES.md"
           echo "✅ CI/CDは継続（警告モード）"
+          # 警告モードでは成功終了
+          exit 0
         else
           echo "✅ 全品質基準をクリア"
           echo ""
@@ -194,6 +196,8 @@ jobs:
           echo "💡 継続改善:"
           echo "- 月次: テスト品質指標レビュー"
           echo "- 四半期: ガイドライン基準見直し"
+          # 成功時も明示的に成功終了
+          exit 0
         fi
 
     - name: Weekly Quality Summary (Schedule only)
