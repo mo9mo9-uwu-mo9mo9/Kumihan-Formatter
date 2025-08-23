@@ -144,7 +144,15 @@ class AttributeParser(BaseParser):
                     i += 1
                 value = content[value_start:i]
                 if value:
+                    # class属性の場合は最初のクラス名のみを取得
+                    if key.lower() == "class":
+                        value = value.split()[0]
                     attributes[key] = value
+
+        # 同様にクォート付きの値に対してもclass処理を適用
+        for key, value in attributes.items():
+            if key.lower() == "class" and isinstance(value, str) and " " in value:
+                attributes[key] = value.split()[0]
 
         return attributes
 
