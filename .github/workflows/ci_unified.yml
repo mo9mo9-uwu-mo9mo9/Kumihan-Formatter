@@ -92,7 +92,7 @@ jobs:
              kumihan_formatter/core/rendering/formatters/markdown_formatter.py \
              --config-file=pyproject.toml \
              --ignore-missing-imports
-        echo "✅ Enhanced type check passed - 160+ errors resolved"
+        echo "✅ Enhanced type check completed - All critical import and type errors resolved"
 
   # 単体テスト - 常時実行（最適化版）
   unit_tests:

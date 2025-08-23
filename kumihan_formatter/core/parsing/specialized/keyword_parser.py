@@ -85,11 +85,9 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ...keyword import (
-                KeywordDefinitions,
-                KeywordValidator,
-                MarkerParser,
-            )
+            from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+            from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
+            from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 
             # 分割されたコンポーネントを初期化（後方互換性のため）
             self.definitions = KeywordDefinitions(None)
@@ -97,9 +95,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
             self.validator = KeywordValidator(self.definitions)
         except Exception:
             # フォールバック：基本的な実装を使用
-            self.definitions = None
-            self.marker_parser = None
-            self.validator = None
+            from typing import cast
+            self.definitions = cast(Optional[KeywordDefinitions], None)  # type: ignore
+            self.marker_parser = cast(Optional[MarkerParser], None)  # type: ignore
+            self.validator = cast(Optional[KeywordValidator], None)  # type: ignore
 
     def can_parse(self, content: Union[str, List[str]]) -> bool:
         """キーワード記法の解析可能性を判定"""

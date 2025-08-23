@@ -110,9 +110,13 @@ class IntegratedEventBus:
         start_time = datetime.now()
         try:
             self._base_bus.publish(event)
-            self._update_metrics(str(event.event_type.value), start_time, success=True)
+            self._update_metrics(
+                normalize_event_type(event.event_type), start_time, success=True
+            )
         except Exception as e:
-            self._update_metrics(str(event.event_type.value), start_time, success=False)
+            self._update_metrics(
+                normalize_event_type(event.event_type), start_time, success=False
+            )
             logger.error(f"イベント発行エラー: {e}")
             raise
 
@@ -121,9 +125,13 @@ class IntegratedEventBus:
         start_time = datetime.now()
         try:
             await self._base_bus.publish_async(event)
-            self._update_metrics(str(event.event_type.value), start_time, success=True)
+            self._update_metrics(
+                normalize_event_type(event.event_type), start_time, success=True
+            )
         except Exception as e:
-            self._update_metrics(str(event.event_type.value), start_time, success=False)
+            self._update_metrics(
+                normalize_event_type(event.event_type), start_time, success=False
+            )
             logger.error(f"非同期イベント発行エラー: {e}")
             raise
 

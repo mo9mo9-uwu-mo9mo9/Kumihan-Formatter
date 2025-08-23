@@ -70,6 +70,17 @@ ai_optimization = [
     "lightgbm>=4.0.0",  # 高精度予測モデル
     "xgboost>=2.0.0",   # 補完的高精度学習
 ]
+telemetry = [
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-jaeger-thrift>=1.20.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.20.0",
+    "opentelemetry-instrumentation-logging>=0.41b0",
+    "opentelemetry-instrumentation-psutil>=0.41b0",
+    "opentelemetry-instrumentation-threading>=0.41b0",
+    "opentelemetry-propagator-b3>=1.20.0",
+    "prometheus_client>=0.18.0",
+]
 
 [tool.setuptools.packages.find]
 exclude = ["dev*", "tools*"]
@@ -163,7 +174,9 @@ module = [
     "joblib.*",
     "lightgbm.*",
     "xgboost.*",
-    "tomli.*"
+    "tomli.*",
+    "opentelemetry.*",
+    "prometheus_client.*"
 ]
 ignore_missing_imports = true
 

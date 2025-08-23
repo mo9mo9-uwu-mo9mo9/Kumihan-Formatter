@@ -15,14 +15,14 @@ Issue #914: アーキテクチャ最適化リファクタリング
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-from ....ast_nodes import (
+from kumihan_formatter.core.ast_nodes import (
     Node,
     NodeBuilder,
     create_node,
     error_node,
 )
-from ...base import CompositeMixin, UnifiedParserBase
-from ...base.parser_protocols import (
+from kumihan_formatter.core.parsing.base import CompositeMixin, UnifiedParserBase
+from kumihan_formatter.core.parsing.base.parser_protocols import (
     KeywordParserProtocol,
     ParseContext,
     ParseResult,
@@ -86,11 +86,9 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ....keyword import (
-                KeywordDefinitions,
-                KeywordValidator,
-                MarkerParser,
-            )
+            from kumihan_formatter.core.parsing.keyword.definitions import KeywordDefinitions
+            from kumihan_formatter.core.parsing.keyword.validator import KeywordValidator
+            from kumihan_formatter.core.parsing.keyword.marker_parser import MarkerParser
 
             # 分割されたコンポーネントを初期化（後方互換性のため）
             self.definitions = KeywordDefinitions(None)
@@ -98,9 +96,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             self.validator = KeywordValidator(self.definitions)
         except Exception:
             # フォールバック：基本的な実装を使用
-            self.definitions = None
-            self.marker_parser = None
-            self.validator = None
+            from typing import cast
+            self.definitions = cast(Optional[KeywordDefinitions], None)  # type: ignore
+            self.marker_parser = cast(Optional[MarkerParser], None)  # type: ignore
+            self.validator = cast(Optional[KeywordValidator], None)  # type: ignore
 
     def can_parse(self, content: Union[str, List[str]]) -> bool:
         """キーワード記法の解析可能性を判定"""
