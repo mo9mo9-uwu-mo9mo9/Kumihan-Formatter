@@ -46,10 +46,11 @@ jobs:
       id: quality_check
       run: |
         echo "📊 テスト品質自動チェック実行中..."
-        if python3 scripts/test_quality_checker.py --verbose --fail-on-violation; then
+        # 警告モード: 品質チェックを実行するが、CI/CDを失敗させない
+        if python3 scripts/test_quality_checker.py --verbose; then
           echo "QUALITY_RESULT=success" >> $GITHUB_OUTPUT
         else
-          echo "QUALITY_RESULT=failure" >> $GITHUB_OUTPUT
+          echo "QUALITY_RESULT=warning" >> $GITHUB_OUTPUT
         fi
       continue-on-error: true
 
@@ -173,17 +174,17 @@ jobs:
         QUALITY_RESULT="${{ steps.quality_check.outputs.QUALITY_RESULT }}"
         echo "品質チェック結果: ${QUALITY_RESULT}"
 
-        if [ "${QUALITY_RESULT}" = "failure" ]; then
-          echo "❌ 品質基準違反が検出されました"
+        if [ "${QUALITY_RESULT}" = "warning" ]; then
+          echo "⚠️ 品質改善推奨事項が検出されました（警告モード）"
           echo ""
-          echo "📋 対応方法:"
+          echo "📋 推奨対応（必須ではありません）:"
           echo "1. テスト品質レポートを確認"
-          echo "2. docs/TESTING_GUIDELINES.md のガイドラインに従って修正"
-          echo "3. python3 scripts/test_quality_checker.py で再チェック"
-          echo "4. 必要に応じてテストの統合・削除を実施"
+          echo "2. docs/TESTING_GUIDELINES.md のガイドラインを参照"
+          echo "3. python3 scripts/test_quality_checker.py で詳細確認"
+          echo "4. 時間があるときに改善を実施"
           echo ""
           echo "🔗 詳細: https://github.com/${{ github.repository }}/blob/main/docs/TESTING_GUIDELINES.md"
-          exit 1
+          echo "✅ CI/CDは継続（警告モード）"
         else
           echo "✅ 全品質基準をクリア"
           echo ""

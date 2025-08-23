@@ -107,6 +107,25 @@ class EventBus:
                     pass
             return False
 
+    def remove_observer(self, observer: Observer) -> None:
+        """オブザーバー削除（下位互換性のため）
+
+        全てのイベントタイプからオブザーバーを削除
+        """
+        with self._lock:
+            # 全イベントタイプから削除
+            for event_type in list(self._observers.keys()):
+                try:
+                    self._observers[event_type].remove(observer)
+                except ValueError:
+                    continue
+
+            # グローバルオブザーバーからも削除
+            try:
+                self._global_observers.remove(observer)
+            except ValueError:
+                pass
+
     def publish(self, event: Event) -> None:
         """イベント発行"""
         with self._lock:

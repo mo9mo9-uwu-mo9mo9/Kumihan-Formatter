@@ -45,8 +45,10 @@ class MockObserver(Observer):
 
     def handle_event(self, event: Event) -> None:
         """イベント処理"""
-        self.received_events.append(event)
-        self.handle_event_calls += 1
+        # サポートするイベントタイプかチェック
+        if event.event_type in self.supported_events:
+            self.received_events.append(event)
+            self.handle_event_calls += 1
 
     def get_supported_events(self):
         """対応イベント種別取得"""

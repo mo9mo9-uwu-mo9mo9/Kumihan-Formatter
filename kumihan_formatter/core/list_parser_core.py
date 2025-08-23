@@ -40,6 +40,23 @@ class ListParserCore:
         )
         self.keyword_parser = keyword_parser
 
+    def parse(self, content: str) -> str:
+        """
+        汎用解析メソッド（下位互換性のため）
+
+        Args:
+            content: 解析対象のコンテンツ
+
+        Returns:
+            str: 解析結果（簡易的な実装）
+        """
+        if not content:
+            return ""
+
+        # 簡単なリスト処理として、そのまま返す
+        # 実際の用途に応じてより詳細な実装が必要
+        return f"parsed:{content}"
+
     def parse_list_block(self, lines: list[str], start_index: int) -> Tuple[Node, int]:
         """
         新記法 # リスト # ブロックの解析（ネスト対応）

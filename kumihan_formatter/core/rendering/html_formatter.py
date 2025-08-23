@@ -610,16 +610,20 @@ class HTMLFormatter:
         if not footnotes:
             return ""
 
+        import html
+
         html_lines = ['<div class="footnotes">', "<ol>"]
 
         for footnote in footnotes:
             number = footnote.get("number", 1)
             content = footnote.get("content", "")
+            # HTMLエスケープを適用
+            escaped_content = html.escape(content)
 
             # 脚注のリストアイテム
             html_lines.append(
                 f'<li id="footnote-{number}">'
-                f"{content} "
+                f"{escaped_content} "
                 f'<a href="#footnote-ref-{number}" class="footnote-backref">↩</a>'
                 f"</li>"
             )
