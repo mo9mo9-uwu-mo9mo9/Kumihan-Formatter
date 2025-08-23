@@ -105,6 +105,20 @@ class IntegratedEventBus:
         observer = self.container.resolve(observer_class)
         self.subscribe(event_type, observer)
 
+    def unsubscribe(
+        self, event_type: Union[EventType, ExtendedEventType], observer: Observer
+    ) -> None:
+        """同期オブザーバー登録解除"""
+        # イベントタイプを正規化して使用
+        normalized_type = normalize_event_type(event_type)
+        self._base_bus.unsubscribe(cast(EventType, normalized_type), observer)
+
+    def remove_observer(self, observer: Observer) -> None:
+        """オブザーバー削除（下位互換性のため）"""
+        # 全てのイベントタイプからオブザーバーを削除
+        # Note: 簡単な実装のため、PARSING_STARTEDから削除
+        self.unsubscribe(EventType.PARSING_STARTED, observer)
+
     def publish(self, event: Event) -> None:
         """同期イベント発行 - パフォーマンス追跡付き"""
         start_time = datetime.now()

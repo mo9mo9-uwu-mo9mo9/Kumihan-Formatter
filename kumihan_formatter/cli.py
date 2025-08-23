@@ -54,7 +54,6 @@ def cli() -> None:
     pass
 
 
-# Register commands using lazy loading
 def register_commands() -> None:
     """Register all CLI commands with lazy loading"""
     logger = get_logger(__name__)
@@ -428,6 +427,10 @@ def interactive_repl() -> None:
             logger.error(f"Unexpected error: {e}")
 
     input("\nEnterキーを押して終了...")
+
+
+# Register commands when module is imported (for tests and CLI usage)
+register_commands()
 
 
 if __name__ == "__main__":

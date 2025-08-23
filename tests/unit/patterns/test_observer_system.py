@@ -76,10 +76,10 @@ class TestObserverCore:
     def test_基本_observer_登録_通知(self):
         """Observer基本的な登録と通知"""
         observer = MockObserver([EventType.PARSING_STARTED])
-        self.event_bus.add_observer(observer)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer)
 
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        self.event_bus.notify(event)
+        self.event_bus.publish(event)
 
         assert len(observer.received_events) == 1
         assert observer.received_events[0].event_type == EventType.PARSING_STARTED
@@ -89,12 +89,12 @@ class TestObserverCore:
         observer1 = MockObserver([EventType.PARSING_STARTED])
         observer2 = MockObserver([EventType.RENDERING_STARTED])
 
-        self.event_bus.add_observer(observer1)
-        self.event_bus.add_observer(observer2)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer1)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer2)
 
         # PARSING_STARTEDイベント送信
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        self.event_bus.notify(event)
+        self.event_bus.publish(event)
 
         assert len(observer1.received_events) == 1
         assert len(observer2.received_events) == 0
@@ -102,11 +102,11 @@ class TestObserverCore:
     def test_基本_observer_削除(self):
         """Observer削除機能"""
         observer = MockObserver([EventType.PARSING_STARTED])
-        self.event_bus.add_observer(observer)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer)
         self.event_bus.remove_observer(observer)
 
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        self.event_bus.notify(event)
+        self.event_bus.publish(event)
 
         assert len(observer.received_events) == 0
 
@@ -131,20 +131,20 @@ class TestObserverCore:
                 return [EventType.PARSING_STARTED]
 
         error_observer = ErrorObserver()
-        self.event_bus.add_observer(error_observer)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, error_observer)
 
         # エラーが発生してもシステムは継続
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        self.event_bus.notify(event)  # 例外で停止しない
+        self.event_bus.publish(event)  # 例外で停止しない
 
     def test_エラー_無効event_type(self):
         """無効なEventTypeの処理"""
         observer = MockObserver([EventType.PARSING_STARTED])
-        self.event_bus.add_observer(observer)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer)
 
         # 無効なEventTypeでも例外は発生しない
         event = Event("INVALID_EVENT", {"content": "test"})
-        self.event_bus.notify(event)
+        self.event_bus.publish(event)
 
         assert len(observer.received_events) == 0
 
@@ -216,10 +216,10 @@ class TestIntegratedEventBus:
     def test_基本_metrics_集計(self):
         """イベントメトリクス集計機能"""
         observer = MockObserver([EventType.PARSING_STARTED])
-        self.event_bus.add_observer(observer)
+        self.event_bus.subscribe(EventType.PARSING_STARTED, observer)
 
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        self.event_bus.notify(event)
+        self.event_bus.publish(event)
 
         metrics = self.event_bus.get_metrics()
         assert metrics["total_events"] >= 1
@@ -280,8 +280,8 @@ class TestSystemIntegration:
         parsing_observer = ParsingObserver()
         rendering_observer = RenderingObserver()
 
-        event_bus.add_observer(parsing_observer)
-        event_bus.add_observer(rendering_observer)
+        event_bus.subscribe(EventType.PARSING_STARTED, parsing_observer)
+        event_bus.subscribe(EventType.RENDERING_STARTED, rendering_observer)
 
         # イベント発火
         parse_event = Event(EventType.PARSING_STARTED, {"file": "test.md"})
@@ -303,11 +303,11 @@ class TestSystemIntegration:
         sync_observer = MockObserver([EventType.PARSING_STARTED])
         async_observer = MockAsyncObserver()
 
-        event_bus.add_observer(sync_observer)
+        event_bus.subscribe(EventType.PARSING_STARTED, sync_observer)
 
         # 同期・非同期イベント処理
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        event_bus.notify(event)
+        event_bus.publish(event)
         await async_observer.handle_event_async(event)
 
         # 両方のObserverが処理完了
@@ -330,12 +330,12 @@ class TestSystemIntegration:
 
         error_observer = ErrorObserver()
 
-        event_bus.add_observer(normal_observer)
-        event_bus.add_observer(error_observer)
+        event_bus.subscribe(EventType.PARSING_STARTED, normal_observer)
+        event_bus.subscribe(EventType.PARSING_STARTED, error_observer)
 
         # エラーが発生しても他のObserverは動作継続
         event = Event(EventType.PARSING_STARTED, {"content": "test"})
-        event_bus.notify(event)
+        event_bus.publish(event)
 
         assert len(normal_observer.received_events) == 1
 
@@ -347,12 +347,12 @@ class TestSystemIntegration:
         # 50個のObserver登録
         observers = [MockObserver([EventType.PARSING_STARTED]) for _ in range(50)]
         for observer in observers:
-            event_bus.add_observer(observer)
+            event_bus.subscribe(EventType.PARSING_STARTED, observer)
 
         # イベント処理時間測定
         start_time = time.time()
         event = Event(EventType.PARSING_STARTED, {"content": "performance_test"})
-        event_bus.notify(event)
+        event_bus.publish(event)
         processing_time = time.time() - start_time
 
         # 全Observerが通知を受信

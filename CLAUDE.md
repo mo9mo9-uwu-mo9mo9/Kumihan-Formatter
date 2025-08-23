@@ -46,6 +46,28 @@ gh pr create --title "タイトル" --body "詳細説明"
 ```bash
 make lint       # Black, isort, flake8, mypy
 make test       # pytest
+
+# tox環境での品質管理（推奨）
+tox -e lint     # 品質チェック専用環境
+tox -e py312    # Python 3.12環境でのフルテスト
+tox -e py313    # Python 3.13環境でのフルテスト
+```
+
+### tox環境管理（複数Python環境対応）
+```bash
+# 環境別テスト実行
+tox -e unit         # 単体テスト専用（並列実行最適化）
+tox -e integration  # 結合テスト専用（シーケンシャル実行）
+tox -e lint         # 品質チェック（black, isort, flake8, mypy）
+
+# コードフォーマット
+tox -e format       # black + isort自動適用
+
+# 環境クリーンアップ
+tox -e clean        # .tox, htmlcov, .pytest_cache削除
+
+# 全環境一括実行
+tox                 # py312, py313, lint環境を順次実行
 ```
 
 ---
@@ -64,6 +86,11 @@ make test       # pytest
 ```bash
 make lint        # Black, isort, flake8 通過必須
 make test        # 既存テスト全通過必須
+
+# tox環境での複数Python版検証（CI/CD対応）
+tox -e lint      # 品質チェック完全版
+tox -e py312     # Python 3.12環境でのテスト
+tox -e py313     # Python 3.13環境でのテスト（推奨）
 ```
 
 ### Layer 3: Claude最終承認（手動）
@@ -143,9 +170,17 @@ make test        # 既存テスト全通過必須
 ## 🚀 品質保証コマンド
 
 ```bash
+# 基本品質チェック
 make claude-check            # CLAUDE.mdサイズ・構造チェック
 make lint                   # Black, isort, flake8, mypy
 make test                   # pytest全テスト実行
+
+# tox環境での品質保証（推奨）
+tox -e lint                 # 品質チェック専用環境
+tox -e unit                 # 単体テスト（並列実行）
+tox -e integration          # 結合テスト（順次実行）
+tox -e format               # コードフォーマット自動修正
+tox                         # 全環境（py312, py313, lint）実行
 ```
 
 ---

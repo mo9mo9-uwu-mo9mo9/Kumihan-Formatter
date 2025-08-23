@@ -121,10 +121,9 @@ class TOCFormatter:
             return ""
 
         html_parts = [
-            f'<div class="{self.css_classes.get("container", "toc-container")}">',
-            f'<h2 class="{self.css_classes.get(
-                "title", "toc-title")}">{self.title}</h2>',
-            '<ul class="toc-list">',
+            f'<div class="{self.css_classes.get("container", "toc")}">',
+            f'<h2 class="toc-title">{self.title}</h2>',
+            f'<ul class="{self.css_classes.get("list", "toc-list")}">',
         ]
 
         def add_entry(entry: TOCEntry) -> None:

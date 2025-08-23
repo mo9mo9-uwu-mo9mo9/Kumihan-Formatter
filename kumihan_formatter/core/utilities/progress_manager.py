@@ -33,7 +33,8 @@ class ProgressState:
         """進捗率を取得（0-100）"""
         if self.total == 0:
             return 100.0
-        return (self.current / self.total) * 100.0
+        progress = (self.current / self.total) * 100.0
+        return min(progress, 100.0)  # 100%を超えないように制限
 
     @property
     def elapsed_time(self) -> float:

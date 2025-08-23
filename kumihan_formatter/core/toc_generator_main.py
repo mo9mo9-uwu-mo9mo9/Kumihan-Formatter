@@ -79,10 +79,26 @@ class TOCGenerator:
                 self.logger.warning("No nodes provided for TOC generation")
                 return self._empty_toc_result()
 
+            # 見出しを収集
+            headings = self._collect_headings(nodes)
+
+            if not headings:
+                self.logger.info("No headings found, returning empty TOC")
+                return self._empty_toc_result()
+
+            # TOC構造を構築
+            toc_entries = self._build_toc_structure(headings)
+
+            # HTML生成
+            toc_html = self._generate_toc_html(toc_entries)
+
             # TOC生成処理
             result = {
-                "toc_structure": [],
-                "heading_count": 0,
+                "entries": toc_entries,
+                "html": toc_html,
+                "has_toc": len(toc_entries) > 0,
+                "heading_count": len(headings),
+                "toc_structure": toc_entries,  # 下位互換のため
                 "processing_time": 0.0,
                 "status": "success",
             }
@@ -284,7 +300,7 @@ class TOCGenerator:
         if not entries:
             return ""
 
-        html_parts = ['<ul class="toc">']
+        html_parts = ['<div class="toc">', '<ul class="toc-list">']
 
         for entry in entries:
             try:
@@ -292,7 +308,7 @@ class TOCGenerator:
             except Exception as e:
                 self.logger.warning(f"Error rendering TOC entry: {e}")
 
-        html_parts.append("</ul>")
+        html_parts.extend(["</ul>", "</div>"])
         result = "\n".join(html_parts)
         self.logger.info("TOC HTML generated successfully")
         return result
@@ -315,10 +331,13 @@ class TOCGenerator:
 
             # TOCエントリのHTMLレンダリング
             html_parts = []
-            html_parts.append(f'<li><a href="#{entry.heading_id}">{entry.title}</a>')
+            css_class = f'class="toc-level-{entry.level}"'
+            html_parts.append(
+                f'<li {css_class}><a href="#{entry.heading_id}">{entry.title}</a>'
+            )
 
             if entry.children:
-                html_parts.append("<ul>")
+                html_parts.append('<ul class="toc-list">')
                 for child in entry.children:
                     try:
                         html_parts.append(self._render_toc_entry(child, depth + 1))
