@@ -91,7 +91,7 @@ class AttributeParser(BaseParser):
         i = 0
         while i < len(content):
             # 属性名を探す
-            attr_match = re.match(r'([\w\-]+)=', content[i:])
+            attr_match = re.match(r"([\w\-]+)=", content[i:])
             if not attr_match:
                 i += 1
                 continue
@@ -117,7 +117,7 @@ class AttributeParser(BaseParser):
 
                     if escaped:
                         escaped = False
-                    elif char == '\\':
+                    elif char == "\\":
                         escaped = True
                     elif char == quote and depth == 0:
                         # 終了クォートを発見
@@ -125,16 +125,22 @@ class AttributeParser(BaseParser):
                         attributes[key] = value
                         i += 1  # 終了クォートをスキップ
                         break
-                    elif char in ['{', '[']:
+                    elif char in ["{", "["]:
                         depth += 1
-                    elif char in ['}', ']']:
+                    elif char in ["}", "]"]:
                         depth -= 1
 
                     i += 1
             else:
                 # クォートなしの値
                 value_start = i
-                while i < len(content) and content[i] not in [' ', '\t', '\n', '>', '<']:
+                while i < len(content) and content[i] not in [
+                    " ",
+                    "\t",
+                    "\n",
+                    ">",
+                    "<",
+                ]:
                     i += 1
                 value = content[value_start:i]
                 if value:

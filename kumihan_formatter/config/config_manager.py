@@ -174,7 +174,9 @@ def create_config_manager(
     )
 
 
-def load_config(config_path: str | None = None, config_type: str = "extended") -> ConfigManager:
+def load_config(
+    config_path: str | None = None, config_type: str = "extended"
+) -> ConfigManager:
     """設定を読み込む便利関数（既存コードとの互換性用）
 
     Args:
