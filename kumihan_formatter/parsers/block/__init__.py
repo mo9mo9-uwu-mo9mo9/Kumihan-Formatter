@@ -8,7 +8,7 @@ from .block_handlers import (
     ContentBlockHandler,
     ListBlockHandler,
     BlockValidatorCollection,
-    BlockHandlerCollection
+    BlockHandlerCollection,
 )
 from .block_utils import (
     setup_block_patterns,
@@ -16,14 +16,14 @@ from .block_utils import (
     BlockTypeDetector,
     BlockProcessor,
     BlockCache,
-    BlockLineProcessor
+    BlockLineProcessor,
 )
 
 __all__ = [
     "UnifiedBlockParser",
     "KumihanBlockHandler",
     "TextBlockHandler",
-    "ImageBlockHandler", 
+    "ImageBlockHandler",
     "SpecialBlockHandler",
     "MarkerBlockHandler",
     "ContentBlockHandler",
@@ -33,7 +33,7 @@ __all__ = [
     "setup_block_patterns",
     "BlockExtractor",
     "BlockTypeDetector",
-    "BlockProcessor", 
+    "BlockProcessor",
     "BlockCache",
-    "BlockLineProcessor"
+    "BlockLineProcessor",
 ]

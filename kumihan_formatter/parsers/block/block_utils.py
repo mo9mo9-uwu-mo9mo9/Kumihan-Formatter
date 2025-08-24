@@ -32,36 +32,33 @@ def setup_block_patterns() -> Dict[str, re.Pattern]:
         # Kumihanブロック記法パターン
         "kumihan": re.compile(r"^#\s*([^#]+)\s*#([^#]*)##$"),
         "kumihan_opening": re.compile(r"^#\s*([^#]+)\s*#"),
-        
         # テキストブロックパターン
         "list": re.compile(r"^\s*[*+-]\s+|^\s*\d+\.\s+"),
         "empty_line": re.compile(r"^\s*$"),
-        
         # 画像ブロックパターン
         "image": re.compile(r"!\[([^\]]*)\]\(([^)]+)\)"),
-        
         # 特殊ブロックパターン
         "code_block": re.compile(r"^```(\w+)?"),
         "quote_block": re.compile(r"^>\s+"),
-        
         # マーカーブロックパターン
         "marker": re.compile(r"^#\s*[^#]+\s*#[^#]*##"),
-        
         # コメントパターン
-        "comment": re.compile(r"^\s*#")
+        "comment": re.compile(r"^\s*#"),
     }
-    
+
     return patterns
 
 
 class BlockExtractor:
     """ブロック抽出クラス"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.patterns = setup_block_patterns()
-    
-    def extract_blocks(self, text: str, context: Optional["ParseContext"] = None) -> List[str]:
+
+    def extract_blocks(
+        self, text: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """テキストからブロックを抽出"""
         if not text.strip():
             return []
@@ -102,7 +99,7 @@ class BlockExtractor:
             blocks.append("\n".join(current_block))
 
         return [block.strip() for block in blocks if block.strip()]
-    
+
     def _is_kumihan_opening(self, line: str) -> bool:
         """Kumihan開始行かチェック"""
         return bool(self.patterns["kumihan_opening"].match(line))
@@ -110,11 +107,11 @@ class BlockExtractor:
 
 class BlockTypeDetector:
     """ブロックタイプ検出クラス"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.patterns = setup_block_patterns()
-    
+
     def detect_block_type(self, block: str) -> Optional[str]:
         """ブロックタイプを検出"""
         if not block.strip():
@@ -124,7 +121,9 @@ class BlockTypeDetector:
         first_line = lines[0].strip()
 
         # Kumihanブロック記法
-        if self.patterns["kumihan"].match(first_line) or self._is_kumihan_opening(first_line):
+        if self.patterns["kumihan"].match(first_line) or self._is_kumihan_opening(
+            first_line
+        ):
             return "kumihan"
 
         # 画像ブロック
@@ -149,11 +148,11 @@ class BlockTypeDetector:
 
         # デフォルトはテキストブロック
         return "text"
-    
+
     def _is_kumihan_opening(self, line: str) -> bool:
         """Kumihan開始行かチェック"""
         return bool(self.patterns["kumihan_opening"].match(line))
-    
+
     def _is_marker_line(self, line: str) -> bool:
         """マーカー行かチェック"""
         return bool(self.patterns["marker"].match(line))
@@ -161,16 +160,16 @@ class BlockTypeDetector:
 
 class BlockProcessor:
     """ブロック処理・変換クラス"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
-    
+
     def normalize_content(self, content: Union[str, List[str]]) -> str:
         """コンテンツを正規化して文字列として返す"""
         if isinstance(content, list):
             return "\n".join(str(line) for line in content)
         return str(content)
-    
+
     def finalize_block_parsing(self, block_nodes: List["Node"]) -> "Node":
         """ブロック解析の最終処理"""
         if len(block_nodes) == 1:
@@ -183,8 +182,10 @@ class BlockProcessor:
             attributes={"block_count": len(block_nodes)},
             children=block_nodes,
         )
-    
-    def parse_content_lines(self, lines: List[str], extractor: BlockExtractor, parse_single_block_func) -> List["Node"]:
+
+    def parse_content_lines(
+        self, lines: List[str], extractor: BlockExtractor, parse_single_block_func
+    ) -> List["Node"]:
         """行リストから複数ブロックを解析"""
         text = "\n".join(lines)
         blocks = extractor.extract_blocks(text)
@@ -200,33 +201,33 @@ class BlockProcessor:
 
 class BlockCache:
     """ブロック解析キャッシュ管理クラス"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
-        
+
         # キャッシュとパフォーマンス最適化
         self._block_end_indices: Dict[int, int] = {}
         self._lines_cache: List[str] = []
         self._is_marker_cache: Dict[str, bool] = {}
         self._is_list_cache: Dict[str, bool] = {}
         self._processed_content_cache: Dict[str, Any] = {}
-    
+
     def get_processed_content_cache(self, cache_key: str) -> Optional[Any]:
         """処理済みコンテンツキャッシュから取得"""
         return self._processed_content_cache.get(cache_key)
-    
+
     def set_processed_content_cache(self, cache_key: str, result: Any) -> None:
         """処理済みコンテンツキャッシュに保存"""
         self._processed_content_cache[cache_key] = result
-    
+
     def get_marker_cache(self, line: str) -> Optional[bool]:
         """マーカーキャッシュから取得"""
         return self._is_marker_cache.get(line)
-    
+
     def set_marker_cache(self, line: str, is_marker: bool) -> None:
         """マーカーキャッシュに保存"""
         self._is_marker_cache[line] = is_marker
-    
+
     def clear_all_caches(self) -> None:
         """全キャッシュクリア"""
         self._block_end_indices.clear()
@@ -238,22 +239,22 @@ class BlockCache:
 
 class BlockLineProcessor:
     """ブロック行処理ヘルパークラス"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.patterns = setup_block_patterns()
-    
+
     def is_closing_marker(self, line: str) -> bool:
         """終了マーカー判定"""
         return line.strip() == "##"
-    
+
     def skip_empty_lines(self, lines: List[str], start_index: int) -> int:
         """空行をスキップ"""
         for i in range(start_index, len(lines)):
             if lines[i].strip():
                 return i
         return len(lines)
-    
+
     def find_next_significant_line(self, lines: List[str], start_index: int) -> int:
         """次の意味のある行を検索"""
         for i in range(start_index, len(lines)):
@@ -261,8 +262,10 @@ class BlockLineProcessor:
             if line.strip() and not self.patterns["comment"].match(line):
                 return i
         return len(lines)
-    
-    def is_block_marker_line(self, line: str, cache: BlockCache, detector: BlockTypeDetector) -> bool:
+
+    def is_block_marker_line(
+        self, line: str, cache: BlockCache, detector: BlockTypeDetector
+    ) -> bool:
         """ブロックマーカー行判定（キャッシュ付き）"""
         cached = cache.get_marker_cache(line)
         if cached is not None:
@@ -271,13 +274,15 @@ class BlockLineProcessor:
         result = detector._is_marker_line(line.strip())
         cache.set_marker_cache(line, result)
         return result
-    
+
     def is_opening_marker(self, line: str) -> bool:
         """開始マーカー判定"""
         return bool(self.patterns["kumihan_opening"].match(line.strip()))
 
 
-def create_cache_key(content: Union[str, List[str]], context: Optional["ParseContext"] = None) -> str:
+def create_cache_key(
+    content: Union[str, List[str]], context: Optional["ParseContext"] = None
+) -> str:
     """キャッシュキー生成"""
     content_str = str(content) if isinstance(content, str) else str(content)
     context_id = id(context) if context else 0
@@ -287,12 +292,12 @@ def create_cache_key(content: Union[str, List[str]], context: Optional["ParseCon
 def get_parser_info() -> Dict[str, Any]:
     """ブロックパーサー情報取得"""
     return {
-        "name": "UnifiedBlockParser", 
+        "name": "UnifiedBlockParser",
         "version": "3.0.0",
         "supported_formats": ["kumihan", "block", "markdown", "text"],
         "capabilities": [
             "kumihan_block_parsing",
-            "text_block_parsing", 
+            "text_block_parsing",
             "image_block_parsing",
             "special_block_parsing",
             "marker_block_parsing",

@@ -2,7 +2,7 @@
 
 責任分離による構造:
 - BasicKeywordHandler: 基本キーワード処理（太字・イタリック・見出し等）
-- AdvancedKeywordHandler: 高度キーワード処理（リスト・表・引用等） 
+- AdvancedKeywordHandler: 高度キーワード処理（リスト・表・引用等）
 - CustomKeywordHandler: カスタムキーワード処理・拡張機能
 - AttributeProcessor: 属性処理・スタイル適用
 """
@@ -26,11 +26,11 @@ from ...core.utilities.logger import get_logger
 
 class BasicKeywordHandler:
     """基本キーワード処理ハンドラー - BasicKeywordParser相当"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self._setup_basic_handlers()
-    
+
     def _setup_basic_handlers(self) -> None:
         """基本キーワードハンドラー辞書の設定"""
         self.handlers = {
@@ -47,8 +47,10 @@ class BasicKeywordHandler:
             "下線": self.handle_underline,
             "underline": self.handle_underline,
         }
-    
-    def handle_bold(self, content: str, keywords: List[str], format_type: str) -> "Node":
+
+    def handle_bold(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """太字キーワード処理"""
         return create_node(
             "bold",
@@ -56,7 +58,9 @@ class BasicKeywordHandler:
             attributes={"style": "font-weight: bold", "format": format_type},
         )
 
-    def handle_italic(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_italic(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """イタリックキーワード処理"""
         return create_node(
             "italic",
@@ -64,7 +68,9 @@ class BasicKeywordHandler:
             attributes={"style": "font-style: italic", "format": format_type},
         )
 
-    def handle_heading(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_heading(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """見出しキーワード処理"""
         # レベル決定（キーワードから推定）
         level = 1
@@ -82,7 +88,9 @@ class BasicKeywordHandler:
             attributes={"level": level, "format": format_type},
         )
 
-    def handle_code(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_code(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """コードキーワード処理"""
         # 言語決定
         language = "text"
@@ -97,7 +105,9 @@ class BasicKeywordHandler:
             attributes={"language": language, "format": format_type},
         )
 
-    def handle_strikethrough(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_strikethrough(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """打消線キーワード処理"""
         return create_node(
             "strikethrough",
@@ -108,7 +118,9 @@ class BasicKeywordHandler:
             },
         )
 
-    def handle_underline(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_underline(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """下線キーワード処理"""
         return create_node(
             "underline",
@@ -119,11 +131,11 @@ class BasicKeywordHandler:
 
 class AdvancedKeywordHandler:
     """高度キーワード処理ハンドラー - AdvancedKeywordParser相当"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self._setup_advanced_handlers()
-    
+
     def _setup_advanced_handlers(self) -> None:
         """高度キーワードハンドラー辞書の設定"""
         self.handlers = {
@@ -141,7 +153,9 @@ class AdvancedKeywordHandler:
             "image": self.handle_image,
         }
 
-    def handle_list(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_list(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """リストキーワード処理"""
         list_type = "unordered"
         for keyword in keywords:
@@ -155,39 +169,51 @@ class AdvancedKeywordHandler:
             attributes={"list_type": list_type, "format": format_type},
         )
 
-    def handle_table(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_table(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """表キーワード処理"""
         return create_node("table", content=content, attributes={"format": format_type})
 
-    def handle_blockquote(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_blockquote(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """引用キーワード処理"""
         return create_node(
             "blockquote", content=content, attributes={"format": format_type}
         )
 
-    def handle_footnote(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_footnote(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """脚注キーワード処理"""
         return create_node(
             "footnote", content=content, attributes={"format": format_type}
         )
 
-    def handle_link(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_link(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """リンクキーワード処理"""
         return create_node("link", content=content, attributes={"format": format_type})
 
-    def handle_image(self, content: str, keywords: List[str], format_type: str) -> "Node":
+    def handle_image(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """画像キーワード処理"""
         return create_node("image", content=content, attributes={"format": format_type})
 
 
 class CustomKeywordHandler:
     """カスタムキーワード処理ハンドラー - CustomKeywordParser相当"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self.custom_handlers: Dict[str, Any] = {}
-    
-    def handle_unknown_keyword(self, content: str, keywords: List[str], format_type: str) -> "Node":
+
+    def handle_unknown_keyword(
+        self, content: str, keywords: List[str], format_type: str
+    ) -> "Node":
         """未知キーワード処理（フォールバック）"""
         return create_node(
             "custom_keyword",
@@ -214,11 +240,11 @@ class CustomKeywordHandler:
 
 class AttributeProcessor:
     """属性処理・スタイル適用 - AttributeParser相当"""
-    
+
     def __init__(self):
         self.logger = get_logger(__name__)
         self._setup_attribute_definitions()
-    
+
     def _setup_attribute_definitions(self) -> None:
         """キーワード属性定義"""
         self.keyword_attributes = {
@@ -226,7 +252,7 @@ class AttributeProcessor:
             "class": {"highlight", "emphasis", "note", "warning", "info"},
             "data": {"id", "ref", "target", "source"},
         }
-    
+
     def apply_keyword_attributes(self, node: "Node", keywords: List[str]) -> None:
         """キーワードに基づいて属性を適用"""
         if not hasattr(node, "attributes") or node.attributes is None:
@@ -245,19 +271,24 @@ class AttributeProcessor:
 
 class KeywordValidatorCollection:
     """キーワードバリデーター集合 - BaseParser相当"""
-    
-    def __init__(self, basic_keywords: set, advanced_keywords: set, custom_handler: CustomKeywordHandler):
+
+    def __init__(
+        self,
+        basic_keywords: set,
+        advanced_keywords: set,
+        custom_handler: CustomKeywordHandler,
+    ):
         self.logger = get_logger(__name__)
         self.basic_keywords = basic_keywords
         self.advanced_keywords = advanced_keywords
         self.custom_handler = custom_handler
-        
+
         self.validators = {
             "syntax": self._validate_keyword_syntax,
             "semantics": self._validate_keyword_semantics,
             "attributes": self._validate_keyword_attributes,
         }
-    
+
     def _validate_keyword_syntax(self, keyword_info: Dict[str, Any]) -> List[str]:
         """キーワード構文検証"""
         errors = []
@@ -287,7 +318,7 @@ class KeywordValidatorCollection:
         errors = []
         # 属性バリデーション（将来の拡張用）
         return errors
-    
+
     def _is_valid_keyword(self, keyword: str) -> bool:
         """キーワードの妥当性チェック"""
         return (
