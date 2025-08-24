@@ -2,24 +2,24 @@
 統合Manager システム - Issue #1146 アーキテクチャ簡素化
 ========================================================
 
-従来の27個のManagerクラスを5個に統合:
-1. CoreManager - コア設定・IO管理
-2. ParsingManager - 解析処理統括
-3. OptimizationManager - 最適化機能
-4. PluginManager - プラグイン機能
-5. DistributionManager - 配布処理
+Issue #1171対応 - 27個のManagerクラスを5個に統合:
+1. ParseManager - 一般的な解析処理
+2. RenderManager - 一般的なレンダリング処理
+3. ConfigManager - 設定管理
+4. ValidationManager - バリデーション処理
+5. ResourceManager - リソース管理
 """
 
-from .core_manager import CoreManager
-from .parsing_manager import ParsingManager
-from .optimization_manager import OptimizationManager
-from .plugin_manager import PluginManager
-from .distribution_manager import DistributionManager
+from .parse_manager import ParseManager
+from .render_manager import RenderManager
+from .config_manager import ConfigManager
+from .validation_manager import ValidationManager
+from .resource_manager import ResourceManager
 
 __all__ = [
-    "CoreManager",
-    "ParsingManager",
-    "OptimizationManager",
-    "PluginManager",
-    "DistributionManager",
+    "ParseManager",
+    "RenderManager",
+    "ConfigManager",
+    "ValidationManager",
+    "ResourceManager",
 ]
