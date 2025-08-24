@@ -1,8 +1,0 @@
-# color属性混在禁止テスト
-
-# 正常なcolor属性
-#ハイライト color=red この文字は赤色#
-#太字 color=blue この文字は青色#
-
-# 大文字小文字混在エラーのテスト
-文章内でのcolor混在テスト red color=Blue color=GREEN

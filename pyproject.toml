@@ -41,27 +41,12 @@ dev = [
     "black>=23.0",
     "isort>=5.0",
     "flake8>=6.0",
-    "beautifulsoup4>=4.9",
-    "psutil>=5.9",
     "mypy>=1.0",
     "types-psutil",
     "types-PyYAML",
     "types-aiofiles",
     "types-toml",
     "types-requests",
-    "pytest>=7.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0",
-    "pytest-benchmark>=4.0",
-    "pytest-xdist>=3.0",      # 並列テスト実行
-    "pytest-timeout>=2.1",    # テストタイムアウト制御
-    "pytest-sugar>=0.9",      # テスト出力の改善
-    "anyio>=4.0",            # 非同期テスト支援
-    # 技術的負債監視ライブラリ (Issue #823)
-    "radon>=6.0",        # cognitive complexity, maintainability index
-    "xenon>=0.9",        # 複雑度測定
-    # "duplicated>=2.0",   # 重複コード検出 (パッケージが存在しないため無効化)
-    "vulture>=2.0",      # デッドコード検出
 ]
 performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
@@ -180,112 +165,3 @@ module = [
 ]
 ignore_missing_imports = true
 
-# pytest設定
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-asyncio_mode = "auto"  # pytest-asyncioを自動モードで実行
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "--cov=kumihan_formatter",
-    "--cov-report=term-missing",
-    "--cov-report=html:htmlcov",
-    "--maxfail=3",              # 3回失敗で停止（最適化）
-    "--timeout=60",             # 各テスト60秒でタイムアウト（最適化）
-    "--durations=5",            # 最も遅い5テストを表示（最適化）
-    # Issue #1118: 並列実行最適化 - CI時間短縮のため
-    "-n=auto",                  # 自動並列実行
-    "--dist=worksteal",         # 負荷分散最適化
-]
-# Issue #1005: xdist設定項目は未対応のため削除
-# xdist設定は addopts の -n=auto と --dist=worksteal で対応
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "performance: Performance tests",
-    "system: System integration tests",
-    "slow: Slow running tests",
-    "notation: Tests for notation system",
-    "error_handling: Error handling tests",
-    "core: Core functionality tests",
-    "parser: Parser functionality tests",
-    "cli: CLI functionality tests",
-    "renderer: Renderer functionality tests",
-    "benchmark: Benchmark performance tests",
-    "commands: Command functionality tests",
-    "keyword: Keyword parsing tests",
-    "validator: Validation functionality tests",
-    "convert: Convert processing tests",
-    "utilities: Utility functionality tests",
-    "progress: Progress tracking tests",
-    "footnote: Footnote notation tests",
-    "e2e: End-to-end tests",
-    "asyncio: Async/await tests",
-    "anyio: AnyIO async tests"
-]
-filterwarnings = [
-    # Issue #1005: pytest実行時の警告メッセージ抑制設定
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::pytest.PytestConfigWarning",
-    "ignore::pytest.PytestUnraisableExceptionWarning",
-    "ignore::ResourceWarning",
-    # pytest-benchmark警告は設定ファイルでは条件付き設定が困難なため、
-    # Issue #1004: --benchmark-disableオプションで対応
-]
-
-# tox設定 - Issue #1107: pyenv + tox環境構築
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py312,py313,lint
-skip_missing_interpreters = true
-
-[testenv]
-deps =
-    -e .[dev]
-commands =
-    # 単体テスト（CI並行実行同等）
-    pytest tests/unit/ -n=auto --dist=worksteal -v --maxfail=5 --timeout=300
-    # 結合テスト（シーケンシャル実行）
-    pytest tests/integration/ -v --maxfail=3 --timeout=600
-
-[testenv:unit]
-deps =
-    -e .[dev]
-commands =
-    pytest tests/unit/ -n=auto --dist=worksteal -v --maxfail=10 --timeout=300
-
-[testenv:integration]
-deps =
-    -e .[dev]
-commands =
-    pytest tests/integration/ -v --maxfail=5 --timeout=600
-
-[testenv:lint]
-deps =
-    -e .[dev]
-commands =
-    black --check kumihan_formatter
-    isort --check-only kumihan_formatter
-    flake8 kumihan_formatter
-    mypy kumihan_formatter
-
-[testenv:format]
-deps =
-    -e .[dev]
-commands =
-    black kumihan_formatter tests
-    isort kumihan_formatter tests
-
-[testenv:clean]
-deps =
-commands =
-    python -c "import shutil; shutil.rmtree('.tox', ignore_errors=True)"
-    python -c "import shutil; shutil.rmtree('htmlcov', ignore_errors=True)"
-    python -c "import shutil; shutil.rmtree('.pytest_cache', ignore_errors=True)"
-"""

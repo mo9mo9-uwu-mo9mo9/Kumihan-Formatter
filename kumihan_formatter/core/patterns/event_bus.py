@@ -62,11 +62,24 @@ class ExtendedEventType(Enum):
 UnifiedEventType = Union[EventType, ExtendedEventType]
 
 
-def normalize_event_type(event_type: UnifiedEventType) -> str:
-    """イベントタイプを文字列に正規化"""
-    if isinstance(event_type, str):
+def normalize_event_type(event_type: UnifiedEventType) -> EventType:
+    """イベントタイプをEventTypeに正規化"""
+    if isinstance(event_type, EventType):
         return event_type
-    return event_type.value
+    if isinstance(event_type, ExtendedEventType):
+        # ExtendedEventTypeからEventTypeを見つける
+        for et in EventType:
+            if et.value == event_type.value:
+                return et
+        # 見つからない場合はCUSTOMを返す
+        return EventType.CUSTOM
+    if isinstance(event_type, str):
+        # 文字列からEventTypeを見つける
+        for et in EventType:
+            if et.value == event_type:
+                return et
+        return EventType.CUSTOM
+    return EventType.CUSTOM
 
 
 class IntegratedEventBus:
@@ -92,7 +105,7 @@ class IntegratedEventBus:
         """同期オブザーバー登録"""
         # イベントタイプを正規化して使用
         normalized_type = normalize_event_type(event_type)
-        self._base_bus.subscribe(cast(EventType, normalized_type), observer)
+        self._base_bus.subscribe(normalized_type, observer)
 
     def subscribe_async(
         self, event_type: Union[EventType, ExtendedEventType], observer: AsyncObserver
@@ -100,7 +113,7 @@ class IntegratedEventBus:
         """非同期オブザーバー登録"""
         # イベントタイプを正規化して使用
         normalized_type = normalize_event_type(event_type)
-        self._base_bus.subscribe_async(cast(EventType, normalized_type), observer)
+        self._base_bus.subscribe_async(normalized_type, observer)
 
     def subscribe_with_di(
         self,
@@ -117,7 +130,7 @@ class IntegratedEventBus:
         """同期オブザーバー登録解除"""
         # イベントタイプを正規化して使用
         normalized_type = normalize_event_type(event_type)
-        self._base_bus.unsubscribe(cast(EventType, normalized_type), observer)
+        self._base_bus.unsubscribe(normalized_type, observer)
 
     def remove_observer(self, observer: Observer) -> None:
         """オブザーバー削除（下位互換性のため）"""
@@ -131,11 +144,11 @@ class IntegratedEventBus:
         try:
             self._base_bus.publish(event)
             self._update_metrics(
-                normalize_event_type(event.event_type), start_time, success=True
+                normalize_event_type(event.event_type).value, start_time, success=True
             )
         except Exception as e:
             self._update_metrics(
-                normalize_event_type(event.event_type), start_time, success=False
+                normalize_event_type(event.event_type).value, start_time, success=False
             )
             logger.error(f"イベント発行エラー: {e}")
             raise
@@ -150,11 +163,11 @@ class IntegratedEventBus:
         try:
             await self._base_bus.publish_async(event)
             self._update_metrics(
-                normalize_event_type(event.event_type), start_time, success=True
+                normalize_event_type(event.event_type).value, start_time, success=True
             )
         except Exception as e:
             self._update_metrics(
-                normalize_event_type(event.event_type), start_time, success=False
+                normalize_event_type(event.event_type).value, start_time, success=False
             )
             logger.error(f"非同期イベント発行エラー: {e}")
             raise
@@ -269,7 +282,7 @@ def publish_event(
     # イベントタイプを正規化して使用
     normalized_type = normalize_event_type(event_type)
     event = Event(
-        event_type=cast(EventType, normalized_type),
+        event_type=normalized_type,
         source="publish_event",
         data=data or {},
     )
@@ -285,7 +298,7 @@ async def publish_event_async(
     # イベントタイプを正規化して使用
     normalized_type = normalize_event_type(event_type)
     event = Event(
-        event_type=cast(EventType, normalized_type),
+        event_type=normalized_type,
         source="publish_event_async",
         data=data or {},
     )
