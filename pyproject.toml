@@ -24,10 +24,6 @@ dependencies = [
     "watchdog>=3.0",
     "pyyaml>=6.0",
     "pydantic>=2.0",
-    "scikit-learn>=1.3.0",
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-    "scipy>=1.11.0",
     "aiofiles>=23.0",
     "toml>=0.10",
     "tomli>=1.2.0",
@@ -50,8 +46,10 @@ performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
 ]
 ai_optimization = [
-    "lightgbm>=4.0.0",  # 高精度予測モデル
-    "xgboost>=2.0.0",   # 補完的高精度学習
+    # ML/AI依存関係削除完了 (Issue #1145)
+    # 過剰な依存関係によるインストール肥大化問題を解決
+    # 削除対象: scikit-learn, numpy, pandas, scipy, lightgbm, xgboost
+    # 効果: 約206MB削減、セキュリティリスク軽減、保守性向上
 ]
 telemetry = [
     "opentelemetry-api>=1.20.0",

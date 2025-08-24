@@ -2,8 +2,18 @@
 
 import time
 
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+# ML依存関係削除対応 (Issue #1145)
+try:
+    import numpy as np
+    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+
+    ML_LIBRARIES_AVAILABLE = True
+except ImportError:
+    # フォールバック: ML機能無効化
+    ML_LIBRARIES_AVAILABLE = False
+    np = None
+    RandomForestClassifier = None
+    RandomForestRegressor = None
 
 from .ml_base import BaseMLModel, PredictionResponse, TrainingData
 

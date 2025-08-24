@@ -13,9 +13,17 @@ from collections import defaultdict, deque
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, cast
 
-import numpy as np
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import cross_val_score
+# ML依存関係削除対応 (Issue #1145)
+try:
+    import numpy as np
+    from sklearn.metrics import mean_squared_error
+    from sklearn.model_selection import cross_val_score
+
+    ML_LIBRARIES_AVAILABLE = True
+except ImportError:
+    # フォールバック: ML機能無効化
+    ML_LIBRARIES_AVAILABLE = False
+    np = None  # type: ignore
 
 from kumihan_formatter.core.utilities.logger import get_logger
 
@@ -145,7 +153,10 @@ class HyperparameterOptimizer:
                     cv=min(5, len(X_train) // 10),
                     scoring="neg_mean_squared_error",
                 )
-                score = -np.mean(cv_scores)
+                if ML_LIBRARIES_AVAILABLE and np is not None:
+                    score = -np.mean(cv_scores)
+                else:
+                    score = -sum(cv_scores) / len(cv_scores) if cv_scores else 0.0
 
             return cast(float, score)
         except Exception as e:
