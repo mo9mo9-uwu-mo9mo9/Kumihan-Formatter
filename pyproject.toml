@@ -177,4 +177,11 @@ addopts = [
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+# Issue #1139: カスタムマーク定義（警告修正）
+markers = [
+    "integration: 統合テスト用マーク",
+    "slow: 実行時間が長いテスト用マーク",
+    "e2e: エンドツーエンドテスト用マーク",
+    "unit: 単体テスト用マーク"
+]
 
