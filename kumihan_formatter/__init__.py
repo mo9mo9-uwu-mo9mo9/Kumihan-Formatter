@@ -1,6 +1,6 @@
 """Kumihan-Formatter - テキストファイルをHTMLに自動組版するCLIツール
 
-Issue #1146 アーキテクチャ簡素化対応:
+Issue #1171 Manager統合最適化対応:
 - 統合Manager/Parserシステム
 - シンプルな統合API提供
 """
@@ -12,11 +12,11 @@ from .unified_api import KumihanFormatter, quick_convert, quick_parse
 
 # 統合システム公開
 from .managers import (
-    CoreManager,
-    ParsingManager,
-    OptimizationManager,
-    PluginManager,
-    DistributionManager,
+    ParseManager,
+    RenderManager,
+    ConfigManager,
+    ValidationManager,
+    ResourceManager,
 )
 
 from .parsers import (
@@ -33,12 +33,12 @@ __all__ = [
     "KumihanFormatter",
     "quick_convert",
     "quick_parse",
-    # 統合Managerシステム
-    "CoreManager",
-    "ParsingManager",
-    "OptimizationManager",
-    "PluginManager",
-    "DistributionManager",
+    # Issue #1171対応 - 統合Managerシステム
+    "ParseManager",
+    "RenderManager",
+    "ConfigManager",
+    "ValidationManager",
+    "ResourceManager",
     # 統合Parserシステム
     "MainParser",
     "BlockParser",

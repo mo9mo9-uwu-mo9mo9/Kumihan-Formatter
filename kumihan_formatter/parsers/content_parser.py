@@ -5,7 +5,7 @@
 
 責任分離による改善:
 - content/content_parser.py: メインクラス
-- content/content_handlers.py: 処理ロジック 
+- content/content_handlers.py: 処理ロジック
 - content/content_utils.py: ユーティリティ関数
 """
 

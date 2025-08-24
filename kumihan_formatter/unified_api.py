@@ -16,11 +16,11 @@ from typing import Any, Dict, Optional, Union
 from pathlib import Path
 
 from .managers import (
-    CoreManager,
-    ParsingManager,
-    OptimizationManager,
-    PluginManager,
-    DistributionManager,
+    ParseManager,
+    RenderManager,
+    ConfigManager,
+    ValidationManager,
+    ResourceManager,
 )
 from .parsers import MainParser
 from .core.utilities.logger import get_logger
@@ -32,14 +32,12 @@ class KumihanFormatter:
     def __init__(self, config_path: Optional[Union[str, Path]] = None):
         self.logger = get_logger(__name__)
 
-        # 統合Managerシステム初期化
-        self.core = CoreManager(config_path)
-        self.parser = ParsingManager()
-        self.optimization = OptimizationManager(
-            self.core.config if hasattr(self.core, "config") else None
-        )
-        self.plugins = PluginManager()
-        self.distribution = DistributionManager()
+        # Issue #1171対応 - 新しい統合Managerシステム初期化
+        self.config = ConfigManager(config_path)
+        self.parser = ParseManager()
+        self.renderer = RenderManager()
+        self.validator = ValidationManager()
+        self.resource = ResourceManager()
 
         # メインパーサー初期化
         self.main_parser = MainParser()
@@ -56,7 +54,7 @@ class KumihanFormatter:
         """ファイル変換のメインエントリーポイント"""
         try:
             # ファイル読み込み
-            content = self.core.read_file(input_file)
+            content = self.resource.read_file(input_file)
 
             # 解析
             parsed_result = self.parser.parse(content)
@@ -65,12 +63,10 @@ class KumihanFormatter:
             if not output_file:
                 output_file = Path(input_file).with_suffix(".html")
 
-            rendered_content = self.core.render_template(
-                template, {"content": parsed_result, "options": options or {}}
-            )
+            rendered_content = self.renderer.render(parsed_result, "html")
 
             # ファイル出力
-            self.core.write_file(output_file, rendered_content)
+            self.resource.write_file(output_file, rendered_content)
 
             return {
                 "status": "success",

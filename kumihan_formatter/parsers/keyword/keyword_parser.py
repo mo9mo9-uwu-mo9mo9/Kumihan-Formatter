@@ -14,11 +14,19 @@
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ...core.parsing.base.parser_protocols import ParseResult, ParseContext, KeywordParserProtocol
+    from ...core.parsing.base.parser_protocols import (
+        ParseResult,
+        ParseContext,
+        KeywordParserProtocol,
+    )
     from ...core.ast_nodes import Node
 else:
     try:
-        from ...core.parsing.base.parser_protocols import ParseResult, ParseContext, KeywordParserProtocol
+        from ...core.parsing.base.parser_protocols import (
+            ParseResult,
+            ParseContext,
+            KeywordParserProtocol,
+        )
         from ...core.ast_nodes import Node, create_node
     except ImportError:
         KeywordParserProtocol = object
@@ -31,24 +39,24 @@ from ...core.parsing.protocols import ParserType
 from ...core.utilities.logger import get_logger
 
 from .keyword_handlers import (
-    BasicKeywordHandler, 
-    AdvancedKeywordHandler, 
+    BasicKeywordHandler,
+    AdvancedKeywordHandler,
     CustomKeywordHandler,
     AttributeProcessor,
-    KeywordValidatorCollection
+    KeywordValidatorCollection,
 )
 from .keyword_utils import (
     setup_keyword_definitions,
     KeywordExtractor,
-    KeywordInfoProcessor, 
+    KeywordInfoProcessor,
     KeywordCache,
-    create_cache_key
+    create_cache_key,
 )
 
 
 class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProtocol):
     """統合キーワードパーサー - 分割最適化版
-    
+
     分割されたコンポーネントを統合し、既存API完全互換性を維持:
     - BasicKeywordHandler: 基本キーワード（太字・イタリック・見出し・コード）
     - AdvancedKeywordHandler: 高度キーワード（リスト・表・引用・脚注）
@@ -56,7 +64,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
     - AttributeProcessor: 属性解析・スタイル適用・CSSクラス処理
     - KeywordExtractor: キーワード抽出・解析ロジック
     - KeywordCache: パフォーマンス最適化キャッシュ
-    
+
     機能:
     - Kumihanキーワード全種類（太字・イタリック・見出し・コード・リスト等）
     - カスタムキーワード定義・拡張
@@ -67,18 +75,18 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
     def __init__(self) -> None:
         super().__init__(parser_type=ParserType.KEYWORD)
-        
+
         self.logger = get_logger(__name__)
-        
+
         # キーワード定義・レジストリ
         self.keyword_definitions = setup_keyword_definitions()
         self.basic_keywords = self.keyword_definitions["basic"]
-        self.advanced_keywords = self.keyword_definitions["advanced"] 
+        self.advanced_keywords = self.keyword_definitions["advanced"]
         self.all_keywords = self.keyword_definitions["all"]
-        
+
         # 分割されたコンポーネント初期化
         self._setup_modular_components()
-        
+
         # キャッシュ・パフォーマンス最適化
         self.cache = KeywordCache()
 
@@ -88,30 +96,32 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         self.basic_handler = BasicKeywordHandler()
         self.advanced_handler = AdvancedKeywordHandler()
         self.custom_handler = CustomKeywordHandler()
-        
+
         # 属性処理
         self.attribute_processor = AttributeProcessor()
-        
+
         # キーワード抽出
         self.keyword_extractor = KeywordExtractor()
-        
+
         # キーワード情報処理
-        self.info_processor = KeywordInfoProcessor(self.basic_keywords, self.advanced_keywords)
-        
+        self.info_processor = KeywordInfoProcessor(
+            self.basic_keywords, self.advanced_keywords
+        )
+
         # バリデーター
         self.validator_collection = KeywordValidatorCollection(
-            self.basic_keywords, 
-            self.advanced_keywords, 
-            self.custom_handler
+            self.basic_keywords, self.advanced_keywords, self.custom_handler
         )
-        
+
         # 統合ハンドラー辞書
         self.keyword_handlers = {}
         self.keyword_handlers.update(self.basic_handler.handlers)
         self.keyword_handlers.update(self.advanced_handler.handlers)
         self.keyword_handlers.update(self.custom_handler.custom_handlers)
 
-    def _parse_implementation(self, content: Union[str, List[str]], **kwargs: Any) -> "Node":
+    def _parse_implementation(
+        self, content: Union[str, List[str]], **kwargs: Any
+    ) -> "Node":
         """基底クラス用の解析実装（UnifiedParserBase準拠）"""
         text = self.info_processor.normalize_content(content)
 
@@ -139,7 +149,9 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             return create_node("text", content=content)
 
         main_keyword = keywords[0]
-        handler = self.keyword_handlers.get(main_keyword, self.custom_handler.handle_unknown_keyword)
+        handler = self.keyword_handlers.get(
+            main_keyword, self.custom_handler.handle_unknown_keyword
+        )
 
         # ハンドラー実行
         node = handler(content, keywords, format_type)
@@ -149,7 +161,12 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
         return node
 
-    def parse(self, content: Union[str, List[str]], context: Optional["ParseContext"] = None, **kwargs: Any) -> "ParseResult":
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional["ParseContext"] = None,
+        **kwargs: Any,
+    ) -> "ParseResult":
         """統一パースメソッド - KeywordParserProtocol準拠"""
         try:
             # キャッシュ確認
@@ -210,7 +227,9 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """警告一覧取得"""
         return getattr(self, "_warnings", [])
 
-    def validate(self, content: str, context: Optional["ParseContext"] = None) -> List[str]:
+    def validate(
+        self, content: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """キーワード構文チェック"""
         # キャッシュ確認
         cache_key = create_cache_key(content, context, "validate")
@@ -237,7 +256,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
                 return errors  # キーワードなしは有効
 
             # 各バリデーター実行
-            for validator_name, validator in self.validator_collection.validators.items():
+            for (
+                validator_name,
+                validator,
+            ) in self.validator_collection.validators.items():
                 try:
                     validator_errors = validator(keyword_info)
                     for error in validator_errors:
@@ -281,14 +303,18 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
     # === KeywordParserProtocol実装 ===
 
-    def parse_keywords(self, text: str, context: Optional["ParseContext"] = None) -> List[str]:
+    def parse_keywords(
+        self, text: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """テキストからキーワードを抽出（プロトコル準拠）"""
         keyword_info = self.keyword_extractor.extract_keyword_info(text)
         if keyword_info:
             return keyword_info["keywords"]
         return []
 
-    def validate_keyword(self, keyword: str, context: Optional["ParseContext"] = None) -> bool:
+    def validate_keyword(
+        self, keyword: str, context: Optional["ParseContext"] = None
+    ) -> bool:
         """単一キーワードの妥当性チェック（プロトコル準拠）"""
         # キャッシュ確認
         cache_key = f"validate_{keyword}_{id(context) if context else 0}"
@@ -304,10 +330,14 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         )
 
         # キャッシュ保存
-        self.cache.set_keyword_cache(cache_key, {"valid": is_valid} if is_valid else None)
+        self.cache.set_keyword_cache(
+            cache_key, {"valid": is_valid} if is_valid else None
+        )
         return is_valid
 
-    def get_keyword_info(self, keyword: str, context: Optional["ParseContext"] = None) -> Optional[Dict[str, Any]]:
+    def get_keyword_info(
+        self, keyword: str, context: Optional["ParseContext"] = None
+    ) -> Optional[Dict[str, Any]]:
         """キーワード情報を取得（プロトコル準拠）"""
         return self.info_processor.get_keyword_info(keyword, context)
 

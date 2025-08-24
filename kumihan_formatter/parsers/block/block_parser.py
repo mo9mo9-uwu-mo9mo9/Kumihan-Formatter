@@ -16,11 +16,19 @@
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ...core.parsing.base.parser_protocols import ParseResult, ParseContext, BlockParserProtocol
+    from ...core.parsing.base.parser_protocols import (
+        ParseResult,
+        ParseContext,
+        BlockParserProtocol,
+    )
     from ...core.ast_nodes import Node
 else:
     try:
-        from ...core.parsing.base.parser_protocols import ParseResult, ParseContext, BlockParserProtocol
+        from ...core.parsing.base.parser_protocols import (
+            ParseResult,
+            ParseContext,
+            BlockParserProtocol,
+        )
         from ...core.ast_nodes import Node, create_node
     except ImportError:
         BlockParserProtocol = object
@@ -41,7 +49,7 @@ from .block_utils import (
     BlockLineProcessor,
     create_cache_key,
     get_parser_info,
-    supports_format
+    supports_format,
 )
 
 
@@ -85,6 +93,7 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         """KeywordParserを取得（フォールバック付き）"""
         try:
             from ..keyword_parser import KeywordParser
+
             return KeywordParser()
         except Exception as e:
             self.logger.warning(f"KeywordParser取得失敗、None使用: {e}")
@@ -94,22 +103,24 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         """分割されたコンポーネントのセットアップ"""
         # ブロックハンドラー集合
         self.handler_collection = BlockHandlerCollection()
-        
+
         # ブロック処理コンポーネント
         self.block_extractor = BlockExtractor()
         self.block_detector = BlockTypeDetector()
         self.block_processor = BlockProcessor()
         self.block_cache = BlockCache()
         self.line_processor = BlockLineProcessor()
-        
+
         # 基本設定
         self.heading_counter = 0
-        
+
         # ハンドラー辞書への参照
         self.block_handlers = self.handler_collection.handlers
         self.validators = self.handler_collection.validator_collection.validators
 
-    def _parse_implementation(self, content: Union[str, List[str]], **kwargs: Any) -> "Node":
+    def _parse_implementation(
+        self, content: Union[str, List[str]], **kwargs: Any
+    ) -> "Node":
         """基底クラス用の解析実装（UnifiedParserBase準拠）"""
         text = self.block_processor.normalize_content(content)
 
@@ -150,7 +161,12 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         handler = self.handler_collection.get_handler(block_type)
         return handler(block)
 
-    def parse(self, content: Union[str, List[str]], context: Optional["ParseContext"] = None, **kwargs: Any) -> "ParseResult":
+    def parse(
+        self,
+        content: Union[str, List[str]],
+        context: Optional["ParseContext"] = None,
+        **kwargs: Any,
+    ) -> "ParseResult":
         """統一パースメソッド - BlockParserProtocol準拠"""
         try:
             # キャッシュ確認
@@ -203,7 +219,9 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
         """警告一覧取得"""
         return getattr(self, "_warnings", [])
 
-    def validate(self, content: str, context: Optional["ParseContext"] = None) -> List[str]:
+    def validate(
+        self, content: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """ブロック構文チェック"""
         errors = []
 
@@ -247,7 +265,9 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
 
     # === BlockParserProtocol実装 ===
 
-    def parse_block(self, block: str, context: Optional["ParseContext"] = None) -> "Node":
+    def parse_block(
+        self, block: str, context: Optional["ParseContext"] = None
+    ) -> "Node":
         """単一ブロックをパース（プロトコル準拠）"""
         try:
             return self._parse_single_block(block) or create_node("empty", content="")
@@ -255,7 +275,9 @@ class UnifiedBlockParser(UnifiedParserBase, CompositeMixin, BlockParserProtocol)
             self.logger.error(f"Single block parsing error: {e}")
             return create_node("error", content=f"Block parsing failed: {e}")
 
-    def extract_blocks(self, text: str, context: Optional["ParseContext"] = None) -> List[str]:
+    def extract_blocks(
+        self, text: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """テキストからブロックを抽出（プロトコル準拠）"""
         return self.block_extractor.extract_blocks(text, context)
 

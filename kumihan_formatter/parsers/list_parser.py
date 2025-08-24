@@ -5,7 +5,7 @@
 
 責任分離による改善:
 - list/list_parser.py: メインクラス
-- list/list_handlers.py: 処理ロジック 
+- list/list_handlers.py: 処理ロジック
 - list/list_utils.py: ユーティリティ関数
 """
 
