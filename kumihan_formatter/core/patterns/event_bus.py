@@ -73,6 +73,12 @@ class IntegratedEventBus:
     """統合イベントバス - 高性能・スケーラブル設計"""
 
     def __init__(self, container: Optional[DIContainer] = None) -> None:
+        # 型検証: containerがNoneでもDIContainerでもない場合はエラー
+        if container is not None and not isinstance(container, DIContainer):
+            raise TypeError(
+                f"container must be DIContainer instance or None, got {type(container)}"
+            )
+
         self.container = container or get_container()
         self._base_bus = BaseEventBus()
         self._metrics: Dict[str, EventMetrics] = {}
@@ -134,6 +140,10 @@ class IntegratedEventBus:
             logger.error(f"イベント発行エラー: {e}")
             raise
 
+    def notify(self, event: Event) -> None:
+        """イベント通知（publishのエイリアス - テスト互換性のため）"""
+        self.publish(event)
+
     async def publish_async(self, event: Event) -> None:
         """非同期イベント発行"""
         start_time = datetime.now()
@@ -149,6 +159,10 @@ class IntegratedEventBus:
             logger.error(f"非同期イベント発行エラー: {e}")
             raise
 
+    async def notify_async(self, event: Event) -> None:
+        """非同期イベント通知（publish_asyncのエイリアス - テスト互換性のため）"""
+        await self.publish_async(event)
+
     def publish_parallel(self, events: List[Event]) -> None:
         """並列イベント発行"""
         futures = []
@@ -162,21 +176,56 @@ class IntegratedEventBus:
 
     def get_metrics(
         self, event_type: Optional[str] = None
-    ) -> Union[EventMetrics, Dict[str, EventMetrics]]:
-        """メトリクス取得"""
+    ) -> Union[EventMetrics, Dict[str, Any]]:
+        """メトリクス取得 - 集約された統計を含む辞書を返す"""
         with self._lock:
             if event_type:
                 return self._metrics.get(event_type, EventMetrics())
-            return self._metrics.copy()
+
+            # 集約統計を計算
+            total_events = sum(
+                metrics.event_count for metrics in self._metrics.values()
+            )
+            total_errors = sum(
+                metrics.error_count for metrics in self._metrics.values()
+            )
+            total_processing_time = sum(
+                metrics.total_processing_time for metrics in self._metrics.values()
+            )
+
+            return {
+                "total_events": total_events,
+                "total_errors": total_errors,
+                "total_processing_time": total_processing_time,
+                "average_processing_time": (
+                    total_processing_time / total_events if total_events > 0 else 0.0
+                ),
+                "by_event_type": self._metrics.copy(),
+            }
 
     @property
-    def metrics(self) -> Dict[str, EventMetrics]:
-        """メトリクスへのアクセスプロパティ（下位互換性のため）"""
-        result = self.get_metrics()
-        if isinstance(result, dict):
-            return result
-        else:
-            return {}
+    def metrics(self) -> EventMetrics:
+        """メトリクスへのアクセスプロパティ - 集約されたEventMetricsインスタンスを返す"""
+        with self._lock:
+            # 全イベントタイプの統計を集約
+            total_events = sum(
+                metrics.event_count for metrics in self._metrics.values()
+            )
+            total_errors = sum(
+                metrics.error_count for metrics in self._metrics.values()
+            )
+            total_processing_time = sum(
+                metrics.total_processing_time for metrics in self._metrics.values()
+            )
+
+            return EventMetrics(
+                event_count=total_events,
+                total_processing_time=total_processing_time,
+                error_count=total_errors,
+                average_processing_time=(
+                    total_processing_time / total_events if total_events > 0 else 0.0
+                ),
+            )
 
     def _update_metrics(
         self, event_type: str, start_time: datetime, success: bool
@@ -214,27 +263,31 @@ def get_event_bus() -> IntegratedEventBus:
 
 def publish_event(
     event_type: UnifiedEventType,
-    source: str,
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利なイベント発行関数"""
     # イベントタイプを正規化して使用
     normalized_type = normalize_event_type(event_type)
     event = Event(
-        event_type=cast(EventType, normalized_type), source=source, data=data or {}
+        event_type=cast(EventType, normalized_type),
+        source="publish_event",
+        data=data or {},
     )
-    _global_event_bus.publish(event)
+    # テスト互換性のため、get_event_bus()経由でイベントバスを取得
+    get_event_bus().notify(event)
 
 
 async def publish_event_async(
     event_type: UnifiedEventType,
-    source: str,
     data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """便利な非同期イベント発行関数"""
     # イベントタイプを正規化して使用
     normalized_type = normalize_event_type(event_type)
     event = Event(
-        event_type=cast(EventType, normalized_type), source=source, data=data or {}
+        event_type=cast(EventType, normalized_type),
+        source="publish_event_async",
+        data=data or {},
     )
-    await _global_event_bus.publish_async(event)
+    # テスト互換性のため、get_event_bus()経由でイベントバスを取得
+    await get_event_bus().notify_async(event)
