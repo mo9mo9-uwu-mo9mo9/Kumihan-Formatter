@@ -3,13 +3,14 @@
 Issue #914: 既存ファクトリーの統合と拡張
 """
 
+import inspect
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, cast
 
 from ..parsing.base.parser_protocols import BaseParserProtocol
 from ..rendering.base.renderer_protocols import BaseRendererProtocol
 from ..utilities.logger import get_logger
-from .dependency_injection import DIContainer, get_container
+from .dependency_injection import DIContainer, ServiceLifetime, get_container
 
 logger = get_logger(__name__)
 
@@ -55,20 +56,24 @@ class ParserFactory(AbstractFactory[BaseParserProtocol]):
         self._register_default_parsers()
 
     def _register_default_parsers(self) -> None:
-        """標準パーサー登録"""
+        """標準パーサー登録（更新版）"""
         try:
-            # 既存のパーサーを動的にインポートして登録
+            # Phase 2で分割されたパーサーパスを使用
             parser_mappings = {
                 "keyword": (
-                    "kumihan_formatter.core.parsing.keyword."
-                    "keyword_parser.KeywordParser"
+                    "kumihan_formatter.parsers.keyword.keyword_parser.UnifiedKeywordParser"
                 ),
                 "block": (
-                    "kumihan_formatter.core.parsing.block.block_parser.BlockParser"
+                    "kumihan_formatter.parsers.block.block_parser.UnifiedBlockParser"
                 ),
-                "list": "kumihan_formatter.core.list_parser.ListParser",
-                "markdown": "kumihan_formatter.core.markdown_parser.MarkdownParser",
-                "main": "kumihan_formatter.core.parsing.main_parser.MainParser",
+                "list": (
+                    "kumihan_formatter.parsers.list.list_parser.UnifiedListParser"
+                ),
+                "content": (
+                    "kumihan_formatter.parsers.content.content_parser.UnifiedContentParser"
+                ),
+                "markdown": "kumihan_formatter.parsers.markdown_parser.MarkdownParser",
+                "main": "kumihan_formatter.parsers.main_parser.MainParser",
             }
 
             for parser_type, class_path in parser_mappings.items():
@@ -76,13 +81,64 @@ class ParserFactory(AbstractFactory[BaseParserProtocol]):
                     module_path, class_name = class_path.rsplit(".", 1)
                     module = __import__(module_path, fromlist=[class_name])
                     parser_class = getattr(module, class_name)
-                    self._parsers[parser_type] = parser_class
-                    logger.debug(f"Registered parser: {parser_type} -> {class_name}")
+
+                    # 型安全性チェック
+                    if self._validate_parser_class(parser_class):
+                        self._parsers[parser_type] = parser_class
+
+                        # DIコンテナーに自動登録
+                        if self.container:
+                            self._register_with_di_container(parser_type, parser_class)
+
+                        logger.debug(
+                            f"Registered parser: {parser_type} -> {class_name}"
+                        )
+                    else:
+                        logger.warning(f"Parser validation failed: {parser_type}")
+
                 except (ImportError, AttributeError) as e:
                     logger.warning(f"Could not register parser {parser_type}: {e}")
 
         except Exception as e:
             logger.error(f"Failed to register default parsers: {e}")
+
+    def _validate_parser_class(self, parser_class: Type[Any]) -> bool:
+        """パーサークラスの妥当性検証"""
+        try:
+            # 基本的なクラスチェック
+            if not inspect.isclass(parser_class):
+                return False
+
+            # 必要なメソッドの存在チェック
+            required_methods = ["parse"]
+            for method in required_methods:
+                if not hasattr(parser_class, method):
+                    logger.warning(f"Parser missing required method: {method}")
+                    return False
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Parser validation error: {e}")
+            return False
+
+    def _register_with_di_container(
+        self, parser_type: str, parser_class: Type[Any]
+    ) -> None:
+        """DIコンテナーへの自動登録"""
+        try:
+            # Protocol準拠チェック
+            from ..parsing.base.parser_protocols import BaseParserProtocol
+
+            # プロトコル準拠の場合のみ登録
+            if hasattr(parser_class, "__dict__"):
+                self.container.register(
+                    BaseParserProtocol, parser_class, lifetime=ServiceLifetime.SINGLETON
+                )
+                logger.debug(f"Registered {parser_type} with DI container")
+
+        except Exception as e:
+            logger.debug(f"DI registration skipped for {parser_type}: {e}")
 
     def create(self, type_name: str, **kwargs: Any) -> BaseParserProtocol:
         """パーサー生成"""

@@ -14,6 +14,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Set,
     Type,
     TypeVar,
     Union,
@@ -71,6 +72,10 @@ class DIContainer:
         self._services: Dict[Type[Any], ServiceDescriptor] = {}
         self._singletons: Dict[Type[Any], Any] = {}
         self._resolving: List[Type[Any]] = []  # 循環参照検出用
+        self._dependency_graph: Dict[Type[Any], Set[Type[Any]]] = {}  # 依存関係グラフ
+        self._initialization_callbacks: List[Callable[[], None]] = (
+            []
+        )  # 初期化コールバック  # 循環参照検出用
 
     def register(
         self,
@@ -230,8 +235,126 @@ class DIContainer:
             raise
 
     def _detect_circular_dependency(self, service_type: Type[Any]) -> bool:
-        """循環参照検出"""
-        return service_type in self._resolving
+        """循環参照検出（強化版）
+
+        より詳細な循環依存の検出と報告を行う
+        """
+        if service_type in self._resolving:
+            # 循環依存チェインを構築
+            chain_start_index = self._resolving.index(service_type)
+            circular_chain = self._resolving[chain_start_index:] + [service_type]
+            chain_names = [t.__name__ for t in circular_chain]
+
+            logger.error(f"Circular dependency detected: {' → '.join(chain_names)}")
+            return True
+        return False
+
+    def add_initialization_callback(self, callback: Callable[[], None]) -> None:
+        """初期化コールバックを追加"""
+        self._initialization_callbacks.append(callback)
+
+    def initialize(self) -> None:
+        """コンテナーの初期化実行"""
+        try:
+            for callback in self._initialization_callbacks:
+                callback()
+            logger.debug("DI Container initialization completed")
+        except Exception as e:
+            logger.error(f"DI Container initialization failed: {e}")
+            raise
+
+    def build_dependency_graph(self) -> Dict[Type[Any], Set[Type[Any]]]:
+        """サービス依存関係グラフを構築"""
+        try:
+            dependency_graph: Dict[Type[Any], Set[Type[Any]]] = {}
+
+            for service_type, descriptor in self._services.items():
+                dependencies = set()
+
+                if inspect.isclass(descriptor.implementation):
+                    # コンストラクター引数から依存関係を抽出
+                    init_signature = inspect.signature(
+                        descriptor.implementation.__init__
+                    )
+                    parameters = list(init_signature.parameters.values())[
+                        1:
+                    ]  # selfを除く
+
+                    for param in parameters:
+                        if (
+                            param.annotation != inspect.Parameter.empty
+                            and param.annotation in self._services
+                        ):
+                            dependencies.add(param.annotation)
+
+                dependency_graph[service_type] = dependencies
+
+            self._dependency_graph = dependency_graph
+            return dependency_graph
+
+        except Exception as e:
+            logger.error(f"Dependency graph building failed: {e}")
+            raise
+
+    def validate_dependencies(self) -> List[str]:
+        """依存関係の検証"""
+        issues = []
+
+        try:
+            # 依存関係グラフを構築
+            self.build_dependency_graph()
+
+            # 未登録の依存関係をチェック
+            for service_type, dependencies in self._dependency_graph.items():
+                for dep in dependencies:
+                    if dep not in self._services:
+                        issues.append(
+                            f"Service {service_type.__name__} depends on "
+                            f"unregistered service {dep.__name__}"
+                        )
+
+            # 循環依存をチェック
+            visited = set()
+            rec_stack = set()
+
+            def has_cycle(node: Type[Any]) -> bool:
+                if node in rec_stack:
+                    return True
+                if node in visited:
+                    return False
+
+                visited.add(node)
+                rec_stack.add(node)
+
+                for neighbor in self._dependency_graph.get(node, set()):
+                    if has_cycle(neighbor):
+                        issues.append(f"Circular dependency involving {node.__name__}")
+                        return True
+
+                rec_stack.remove(node)
+                return False
+
+            for service_type in self._services:
+                if service_type not in visited:
+                    has_cycle(service_type)
+
+        except Exception as e:
+            logger.error(f"Dependency validation failed: {e}")
+            issues.append(f"Validation error: {e}")
+
+        return issues
+
+    def get_dependency_info(self) -> Dict[str, Any]:
+        """依存関係情報の取得"""
+        return {
+            "registered_services": len(self._services),
+            "singleton_instances": len(self._singletons),
+            "dependency_graph": {
+                k.__name__: [v.__name__ for v in deps]
+                for k, deps in self._dependency_graph.items()
+            },
+            "validation_issues": self.validate_dependencies(),
+        }
 
 
 class ServiceScope:
