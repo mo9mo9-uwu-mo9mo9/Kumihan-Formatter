@@ -181,6 +181,12 @@ venv*/
 # .claude/ already covered in external tools section
 .mcp.json*
 
+# Claude個人設定ファイル（個人の開発環境設定のため除外）
+.claude*.yml
+.claude*.yaml
+.claude*.json
+.cleanup.yml
+
 # AI collaboration関連の動的生成ファイル（旧postbox）
 ai_collaboration/todo/*.json
 ai_collaboration/monitoring/session_*.json
