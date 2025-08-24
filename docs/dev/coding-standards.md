@@ -246,5 +246,246 @@ except Exception as e:
     raise
 ```
 
+## 🎓 新規開発者向けガイド
+
+### セットアップチェックリスト
+
+#### 1. 開発環境準備
+```bash
+# Python バージョン確認
+python3 --version  # 3.12以上必須
+
+# 仮想環境作成・アクティベート
+python3 -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+# または
+.venv\Scripts\activate     # Windows
+
+# 依存関係インストール
+pip install -e .[dev]
+```
+
+#### 2. 品質ツール確認
+```bash
+# フォーマッタ・リンタのインストール確認
+black --version
+mypy --version
+pytest --version
+
+# 初回品質チェック実行
+make lint      # Black + mypy実行
+make test      # pytest実行
+```
+
+#### 3. tmp/ディレクトリ確認
+```bash
+# tmp/ディレクトリの存在確認
+ls -la tmp/
+
+# 存在しない場合は作成
+mkdir -p tmp
+```
+
+### 開発の基本ワークフロー
+
+#### 1. 新機能・修正の開始
+```bash
+# イシューベースでブランチ作成
+git checkout -b feat/issue-123-description
+
+# または
+git checkout -b fix/issue-456-bugfix
+```
+
+#### 2. コード変更
+```python
+# 必須: ログ使用パターン
+from kumihan_formatter.core.utilities.logger import get_logger
+
+class NewFeature:
+    def __init__(self):
+        self.logger = get_logger(__name__)  # 必須
+    
+    def process_data(self, data: str) -> str:
+        """新機能の実装例"""
+        self.logger.info("処理開始")
+        
+        # tmp/配下への出力例
+        from pathlib import Path
+        tmp_dir = Path("tmp")
+        tmp_dir.mkdir(exist_ok=True)
+        
+        debug_file = tmp_dir / "debug_output.json"
+        with debug_file.open("w") as f:
+            # デバッグ情報の出力
+            pass
+        
+        self.logger.info("処理完了")
+        return processed_data
+```
+
+#### 3. 品質チェック
+```bash
+# 必須: 変更前に品質チェック
+make lint      # コードフォーマット + 型チェック
+make test      # テスト実行
+
+# エラーがある場合は修正後に再実行
+```
+
+#### 4. コミット・プッシュ
+```bash
+# 変更をコミット
+git add .
+git commit -m "feat: 新機能実装 - Issue #123"
+
+# プッシュ
+git push origin feat/issue-123-description
+```
+
+### よくある間違いと対策
+
+#### 1. ファイル出力エラー
+```python
+# ❌ 間違い: ルート直下に出力
+with open("output.log", "w") as f:
+    f.write(log_content)
+
+# ✅ 正解: tmp/配下に出力
+from pathlib import Path
+tmp_dir = Path("tmp")
+tmp_dir.mkdir(exist_ok=True)
+with (tmp_dir / "output.log").open("w") as f:
+    f.write(log_content)
+```
+
+#### 2. ログ使用エラー
+```python
+# ❌ 間違い: 標準printの使用
+print("デバッグ情報")
+
+# ✅ 正解: 統一ロガーの使用
+from kumihan_formatter.core.utilities.logger import get_logger
+logger = get_logger(__name__)
+logger.debug("デバッグ情報")
+```
+
+#### 3. 型注釈の漏れ
+```python
+# ❌ 間違い: 型注釈なし
+def process_text(text):
+    return text.upper()
+
+# ✅ 正解: 完全な型注釈
+def process_text(text: str) -> str:
+    return text.upper()
+```
+
+### コードレビュー観点
+
+#### 1. 必須チェック項目
+- [ ] tmp/配下への出力遵守
+- [ ] 統一ロガーの使用
+- [ ] 型注釈の完備
+- [ ] テストの追加・更新
+- [ ] ドキュメントの更新
+
+#### 2. 品質チェック
+- [ ] `make lint` 成功
+- [ ] `make test` 成功
+- [ ] 新機能のテストカバレッジ追加
+
+#### 3. セキュリティチェック
+- [ ] 秘密情報のログ出力なし
+- [ ] 外部入力の適切な検証
+- [ ] パス操作の安全性確保
+
+### デバッグ・トラブルシューティング
+
+#### 1. よくあるエラーと解決法
+
+**エラー: ModuleNotFoundError**
+```bash
+# 原因: 依存関係の不足
+# 解決: 再インストール
+pip install -e .[dev]
+```
+
+**エラー: mypy型チェック失敗**
+```bash
+# 原因: 型注釈の不足・誤り
+# 解決: 型注釈の追加・修正
+mypy kumihan_formatter/  # 詳細エラー確認
+```
+
+**エラー: テスト失敗**
+```bash
+# 原因: 既存テストとの衝突
+# 解決: テストの更新
+pytest -v  # 詳細な失敗情報確認
+```
+
+#### 2. デバッグ用出力
+```python
+# デバッグ情報をtmp/配下に出力
+import json
+from pathlib import Path
+
+def debug_output(data: dict, tag: str = "debug"):
+    """デバッグ用データ出力"""
+    tmp_dir = Path("tmp")
+    tmp_dir.mkdir(exist_ok=True)
+    
+    debug_file = tmp_dir / f"{tag}_output.json"
+    with debug_file.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    logger.debug(f"デバッグ出力: {debug_file}")
+```
+
+### パフォーマンス最適化
+
+#### 1. 大容量データ処理
+```python
+# ストリーミング処理の活用
+def process_large_file(file_path: Path) -> Iterator[str]:
+    """大容量ファイルのストリーミング処理"""
+    with file_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            yield process_line(line)
+```
+
+#### 2. メモリ管理
+```python
+# 明示的なリソース解放
+import gc
+
+def memory_intensive_task():
+    """メモリ集約的タスク"""
+    try:
+        # 重い処理
+        process_data()
+    finally:
+        # 明示的なガベージコレクション
+        gc.collect()
+```
+
+### コントリビューション準備
+
+#### 1. プルリクエスト作成前
+```bash
+# 必須チェック実行
+make lint && make test
+
+# コミットメッセージの確認
+git log --oneline -5
+```
+
+#### 2. ドキュメント更新
+- 新機能: APIドキュメントの追加
+- 修正: 変更点の記録
+- 重要な変更: アーキテクチャドキュメントの更新
+
 ---
+*📚 新規開発者向けガイド追加 - Issue #1147対応*
 *✨ Generated by Claude Code for Kumihan-Formatter (Development)*
