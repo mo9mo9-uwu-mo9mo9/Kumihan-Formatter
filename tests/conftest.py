@@ -89,3 +89,10 @@ def output_file_path(temp_dir: Path) -> Path:
     return temp_dir / "test_output.html"
 
 
+@pytest.fixture
+def parser_instance():
+    """Parserインスタンス提供（Issue #1138対応）"""
+    from kumihan_formatter.parser import Parser
+    return Parser()
+
+
