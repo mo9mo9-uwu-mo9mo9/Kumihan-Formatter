@@ -160,7 +160,7 @@ class MemoryOptimizationManager:
                 "weak_references": self._weak_ref_manager.get_statistics(),
                 "memory_profiler": self._profiler.get_current_stats(),
                 "leak_detector": get_leak_detector().get_leak_summary(),
-                "usage_analyzer": get_usage_analyzer().analyze_usage_patterns(),
+                "usage_analyzer": get_usage_analyzer().analyze_usage_patterns([]),
                 "is_initialized": self._is_initialized,
             }
 

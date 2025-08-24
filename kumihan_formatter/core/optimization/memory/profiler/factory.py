@@ -13,8 +13,8 @@ logger = get_logger(__name__)
 
 # グローバルインスタンス
 _global_profiler = MemoryProfiler()
-_global_leak_detector = MemoryLeakDetector(_global_profiler)
-_global_usage_analyzer = MemoryUsageAnalyzer(_global_profiler)
+_global_leak_detector = MemoryLeakDetector(_global_profiler._monitor)
+_global_usage_analyzer = MemoryUsageAnalyzer(_global_profiler._monitor)
 _global_effect_reporter = OptimizationEffectReporter()
 
 
@@ -78,9 +78,12 @@ def test_usage_analysis() -> None:
     """使用量分析のテストを実行します。"""
     try:
         analyzer = get_usage_analyzer()
+        profiler = get_memory_profiler()
         logger.info("使用量分析テスト開始")
 
-        analysis = analyzer.analyze_usage_patterns()
+        # サンプルスナップショットでテスト
+        snapshots = [profiler._monitor.take_memory_snapshot()]
+        analysis = analyzer.analyze_usage_patterns(snapshots)
         logger.info(f"使用量分析テスト完了: {len(analysis)} 項目")
 
     except Exception as e:

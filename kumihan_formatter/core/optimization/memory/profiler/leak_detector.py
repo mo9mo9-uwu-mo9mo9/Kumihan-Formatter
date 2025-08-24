@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections import defaultdict
 from threading import Lock
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
@@ -23,16 +24,17 @@ class MemoryLeakDetector:
     より高度なメモリリーク検出とパターン分析を提供します。
     """
 
-    def __init__(self, profiler: MemoryProfiler) -> None:
+    def __init__(self, memory_monitor: Optional[Any] = None) -> None:
         """
         メモリリーク検出器を初期化します。
 
         Args:
-            profiler: メモリプロファイラー
+            memory_monitor: メモリ監視インスタンス（オプション）
         """
         try:
-            self._profiler = profiler
+            self._memory_monitor = memory_monitor
             self._detected_leaks: Dict[str, MemoryLeakInfo] = {}
+            self._leak_history: Dict[str, List[float]] = defaultdict(list)
             self._lock = Lock()
 
             logger.info("MemoryLeakDetector初期化完了")
@@ -41,11 +43,14 @@ class MemoryLeakDetector:
             logger.error(f"MemoryLeakDetector初期化エラー: {str(e)}")
             raise
 
-    def detect_leaks(self, confidence_threshold: float = 0.7) -> List[MemoryLeakInfo]:
+    def detect_leaks_from_snapshots(
+        self, snapshots: List[MemorySnapshot], confidence_threshold: float = 0.7
+    ) -> List[MemoryLeakInfo]:
         """
-        高度なメモリリーク検出を実行します。
+        スナップショットリストからリーク検出を実行します。
 
         Args:
+            snapshots: メモリスナップショットのリスト
             confidence_threshold: 信頼度閾値
 
         Returns:
@@ -53,8 +58,6 @@ class MemoryLeakDetector:
         """
         try:
             with self._lock:
-                snapshots = list(self._profiler._snapshots)
-
                 if len(snapshots) < 5:
                     return []
 
@@ -75,6 +78,104 @@ class MemoryLeakDetector:
         except Exception as e:
             logger.error(f"メモリリーク検出エラー: {str(e)}")
             return []
+
+    def detect_leaks(self, confidence_threshold: float = 0.7) -> List[MemoryLeakInfo]:
+        """
+        高度なメモリリーク検出を実行します。
+
+        Args:
+            confidence_threshold: 信頼度閾値
+
+        Returns:
+            検出されたメモリリーク情報
+        """
+        try:
+            if self._memory_monitor:
+                snapshots = list(self._memory_monitor.snapshots)
+                return self.detect_leaks_from_snapshots(snapshots, confidence_threshold)
+            else:
+                logger.warning("メモリ監視インスタンスが設定されていません")
+                return []
+
+        except Exception as e:
+            logger.error(f"メモリリーク検出エラー: {str(e)}")
+            return []
+
+    def detect_memory_leaks_simple(self, snapshots: List[MemorySnapshot]) -> None:
+        """
+        シンプルなメモリリーク検出処理（旧コアプロファイラーから移植）
+        """
+        try:
+            if len(snapshots) < 3:
+                return
+
+            # 最近のスナップショットから成長パターンを分析
+            recent_snapshots = snapshots[-10:]
+
+            for obj_type in set().union(
+                *[s.object_counts.keys() for s in recent_snapshots]
+            ):
+                counts = [s.object_counts.get(obj_type, 0) for s in recent_snapshots]
+
+                # 継続的な増加パターンをチェック
+                if self._is_growing_pattern(counts):
+                    self._leak_history[obj_type].extend(counts)
+
+                    # リーク率計算
+                    leak_rate = self._calculate_leak_rate_simple(obj_type)
+                    if leak_rate > 0.1:  # 0.1MB/秒以上の増加
+                        logger.warning(
+                            f"メモリリーク検出: {obj_type} - {leak_rate:.3f}MB/秒"
+                        )
+
+        except Exception as e:
+            logger.error(f"メモリリーク検出エラー: {str(e)}")
+
+    def _is_growing_pattern(self, values: List[int], threshold: float = 0.1) -> bool:
+        """継続的な増加パターンかチェックします。"""
+        try:
+            if len(values) < 3:
+                return False
+
+            # 線形回帰による傾き計算
+            n = len(values)
+            x_mean = (n - 1) / 2
+            y_mean = sum(values) / n
+
+            numerator = sum((i - x_mean) * (values[i] - y_mean) for i in range(n))
+            denominator = sum((i - x_mean) ** 2 for i in range(n))
+
+            if denominator == 0:
+                return False
+
+            slope = numerator / denominator
+            return slope > threshold
+
+        except Exception as e:
+            logger.debug(f"増加パターン判定エラー: {str(e)}")
+            return False
+
+    def _calculate_leak_rate_simple(
+        self, obj_type: str, snapshot_interval: float = 1.0
+    ) -> float:
+        """シンプルなリーク率を計算します（MB/秒）。"""
+        try:
+            history = self._leak_history[obj_type]
+            if len(history) < 2:
+                return 0.0
+
+            # 簡易計算：オブジェクト数増加 × 推定サイズ
+            count_increase = history[-1] - history[0]
+            time_span = len(history) * snapshot_interval
+
+            # 推定オブジェクトサイズ（1KB仮定）
+            estimated_size_mb = count_increase * 0.001
+
+            return estimated_size_mb / time_span
+
+        except Exception as e:
+            logger.error(f"リーク率計算エラー: {str(e)}")
+            return 0.0
 
     def _analyze_object_type(
         self, obj_type: str, snapshots: List[MemorySnapshot]
@@ -228,3 +329,9 @@ class MemoryLeakDetector:
         except Exception as e:
             logger.error(f"リークサマリー取得エラー: {str(e)}")
             return {}
+
+    @property
+    def leak_history(self) -> Dict[str, List[float]]:
+        """リーク履歴データ"""
+        with self._lock:
+            return self._leak_history.copy()
