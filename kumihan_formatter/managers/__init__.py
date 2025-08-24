@@ -4,7 +4,7 @@
 
 従来の27個のManagerクラスを5個に統合:
 1. CoreManager - コア設定・IO管理
-2. ParsingManager - 解析処理統括  
+2. ParsingManager - 解析処理統括
 3. OptimizationManager - 最適化機能
 4. PluginManager - プラグイン機能
 5. DistributionManager - 配布処理
@@ -18,7 +18,7 @@ from .distribution_manager import DistributionManager
 
 __all__ = [
     "CoreManager",
-    "ParsingManager", 
+    "ParsingManager",
     "OptimizationManager",
     "PluginManager",
     "DistributionManager",

@@ -28,7 +28,7 @@ from .parser_protocols import ParserProtocols
 
 __all__ = [
     "MainParser",
-    "BlockParser", 
+    "BlockParser",
     "KeywordParser",
     "ListParser",
     "ContentParser",

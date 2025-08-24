@@ -12,39 +12,49 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 from ..core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
-    from ..core.parsing.base.parser_protocols import ParseResult, ParseContext, BaseParserProtocol
+    from ..core.parsing.base.parser_protocols import (
+        ParseResult,
+        ParseContext,
+        BaseParserProtocol,
+    )
     from ..core.ast_nodes.node import Node
 else:
     BaseParserProtocol = object
 
+
 class UnifiedContentParser(BaseParserProtocol):
     """統合コンテンツ解析エンジン - BaseParserProtocol実装
-    
+
     機能統合:
     - プロトコル準拠インターface (BaseParserProtocol)
     - 高度コンテンツ解析・分類・エンティティ抽出
     - 脚注・インラインコンテンツ処理
     - ブロック処理・エラー回復機能
     """
-    
+
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        
+
         # Core parser initialization (fallback)
         self.core_parser = None
         try:
-            from ..core.parsing.specialized.content_parser import UnifiedContentParser as CoreContentParser
+            from ..core.parsing.specialized.content_parser import (
+                UnifiedContentParser as CoreContentParser,
+            )
+
             self.core_parser = CoreContentParser()
         except ImportError:
-            self.logger.warning("Core content parser not available, using built-in implementation")
-        
+            self.logger.warning(
+                "Core content parser not available, using built-in implementation"
+            )
+
         # Content analysis patterns
         self._setup_content_patterns()
         self._setup_content_classifiers()
         self._setup_structure_analyzers()
-        
+
         self.logger.info("UnifiedContentParser initialized with full functionality")
-    
+
     def _setup_content_patterns(self) -> None:
         """コンテンツ解析パターンの設定"""
         self.content_patterns = {
@@ -93,12 +103,14 @@ class UnifiedContentParser(BaseParserProtocol):
             "entity": self._analyze_entities,
             "semantic": self._analyze_semantic_structure,
         }
-    
-    def parse(self, content: str, context: Optional["ParseContext"] = None) -> "ParseResult":
+
+    def parse(
+        self, content: str, context: Optional["ParseContext"] = None
+    ) -> "ParseResult":
         """統一コンテンツ解析 - BaseParserProtocol準拠"""
         from ..core.parsing.base.parser_protocols import ParseResult
         from ..core.ast_nodes.node import Node
-        
+
         try:
             # Core parser がある場合は優先使用
             if self.core_parser:
@@ -107,41 +119,40 @@ class UnifiedContentParser(BaseParserProtocol):
                     return self._convert_to_parse_result(legacy_result)
                 except Exception as e:
                     self.logger.warning(f"Core parser failed, using built-in: {e}")
-            
+
             # 統合解析実装
             all_nodes = []
-            
+
             # 1. コンテンツ分類
             classification = self._classify_content(content)
-            
+
             # 2. 構造解析
             structure = self._analyze_content_structure(content)
-            
+
             # 3. エンティティ抽出
             entities = self._extract_entities(content)
-            
+
             # 4. 脚注抽出
             footnotes = self.extract_footnotes_from_text(content)
-            
+
             # 5. インラインコンテンツ処理
             inline_processed = self._process_inline_content(content)
-            
+
             # 6. 段落構造化
-            structured_nodes = self._structure_content(content, classification, structure)
+            structured_nodes = self._structure_content(
+                content, classification, structure
+            )
             all_nodes.extend(structured_nodes)
-            
+
             # 7. 脚注ノード追加
             if footnotes:
                 footnote_node = Node(
                     type="footnotes",
                     content="",
-                    attributes={
-                        "footnotes": footnotes,
-                        "count": len(footnotes)
-                    }
+                    attributes={"footnotes": footnotes, "count": len(footnotes)},
                 )
                 all_nodes.append(footnote_node)
-            
+
             return ParseResult(
                 success=True,
                 nodes=all_nodes,
@@ -153,19 +164,21 @@ class UnifiedContentParser(BaseParserProtocol):
                     "entities": entities,
                     "footnotes_count": len(footnotes),
                     "parser_type": "unified_content",
-                    "inline_processed": inline_processed
-                }
+                    "inline_processed": inline_processed,
+                },
             )
-            
+
         except Exception as e:
             self.logger.error(f"Content parsing error: {e}")
             return self._create_error_parse_result(str(e), content)
-    
-    def validate(self, content: str, context: Optional["ParseContext"] = None) -> List[str]:
+
+    def validate(
+        self, content: str, context: Optional["ParseContext"] = None
+    ) -> List[str]:
         """バリデーション - エラーリスト返却"""
         try:
             errors = []
-            
+
             # 基本的なコンテンツ検証
             if not content:
                 errors.append("Empty content")
@@ -173,41 +186,49 @@ class UnifiedContentParser(BaseParserProtocol):
             elif len(content.strip()) == 0:
                 errors.append("Content contains only whitespace")
                 return errors
-            
+
             # 制御文字のチェック
             for i, char in enumerate(content):
-                if ord(char) < 32 and char not in ['\n', '\r', '\t']:
-                    errors.append(f"Invalid control character at position {i}: {repr(char)}")
-            
+                if ord(char) < 32 and char not in ["\n", "\r", "\t"]:
+                    errors.append(
+                        f"Invalid control character at position {i}: {repr(char)}"
+                    )
+
             # 脚注の検証
             footnotes = self.extract_footnotes_from_text(content)
             footnote_errors = self._validate_footnote_structure(footnotes)
             errors.extend(footnote_errors)
-            
+
             # インライン記法の検証
-            lines = content.split('\n')
+            lines = content.split("\n")
             for i, line in enumerate(lines):
                 if self.is_new_marker_format(line):
                     if not self._validate_new_format_structure(line):
                         errors.append(f"Invalid inline format at line {i+1}: {line}")
-            
+
             # ブロック構造の検証
             block_errors = self._validate_block_structure_in_content(content)
             errors.extend(block_errors)
-            
+
             return errors
         except Exception as e:
             return [f"Validation failed: {e}"]
-    
+
     def get_parser_info(self) -> Dict[str, Any]:
         """パーサー情報取得"""
         return {
-            "name": "UnifiedContentParser", 
+            "name": "UnifiedContentParser",
             "version": "3.0.0",
-            "supported_formats": ["text", "content", "kumihan", "mixed_content", "footnotes"],
+            "supported_formats": [
+                "text",
+                "content",
+                "kumihan",
+                "mixed_content",
+                "footnotes",
+            ],
             "capabilities": [
                 "content_parsing",
-                "text_processing", 
+                "text_processing",
                 "content_validation",
                 "control_character_detection",
                 "content_classification",
@@ -217,26 +238,26 @@ class UnifiedContentParser(BaseParserProtocol):
                 "inline_content_extraction",
                 "block_error_recovery",
                 "structure_analysis",
-                "mixed_format_parsing"
-            ]
+                "mixed_format_parsing",
+            ],
         }
-    
+
     def supports_format(self, format_hint: str) -> bool:
         """対応フォーマット判定"""
         supported = self.get_parser_info()["supported_formats"]
         return format_hint.lower() in supported
-    
+
     def _convert_to_parse_result(self, legacy_result: Any) -> "ParseResult":
         """Dict結果をParseResultに変換"""
         from ..core.parsing.base.parser_protocols import ParseResult
-        
+
         if isinstance(legacy_result, dict):
             return ParseResult(
                 success=not legacy_result.get("error"),
                 nodes=[],  # TODO: 適切なNode変換
                 errors=[legacy_result["error"]] if legacy_result.get("error") else [],
                 warnings=[],
-                metadata=legacy_result
+                metadata=legacy_result,
             )
         else:
             return ParseResult(
@@ -244,13 +265,15 @@ class UnifiedContentParser(BaseParserProtocol):
                 nodes=[],
                 errors=[],
                 warnings=[],
-                metadata={"raw_result": legacy_result}
+                metadata={"raw_result": legacy_result},
             )
-    
-    def _create_error_parse_result(self, error_msg: str, original_content: str) -> "ParseResult":
+
+    def _create_error_parse_result(
+        self, error_msg: str, original_content: str
+    ) -> "ParseResult":
         """エラー結果作成"""
         from ..core.parsing.base.parser_protocols import ParseResult
-        
+
         return ParseResult(
             success=False,
             nodes=[],
@@ -258,16 +281,16 @@ class UnifiedContentParser(BaseParserProtocol):
             warnings=[],
             metadata={
                 "original_content": original_content,
-                "parser_type": "unified_content"
-            }
+                "parser_type": "unified_content",
+            },
         )
-    
+
     # === コンテンツ分類メソッド ===
-    
+
     def _classify_content(self, text: str) -> Dict[str, Any]:
         """コンテンツの分類"""
         classification = {}
-        
+
         for classifier_name, classifier_func in self.content_classifiers.items():
             try:
                 result = classifier_func(text)
@@ -275,7 +298,7 @@ class UnifiedContentParser(BaseParserProtocol):
             except Exception as e:
                 self.logger.warning(f"分類エラー ({classifier_name}): {e}")
                 classification[classifier_name] = "unknown"
-        
+
         return classification
 
     def _classify_text_type(self, text: str) -> str:
@@ -351,13 +374,13 @@ class UnifiedContentParser(BaseParserProtocol):
             return "medium"
         else:
             return "low"
-    
+
     # === 構造解析メソッド ===
-    
+
     def _analyze_content_structure(self, text: str) -> Dict[str, Any]:
         """コンテンツ構造の解析"""
         structure = {}
-        
+
         for analyzer_name, analyzer_func in self.structure_analyzers.items():
             try:
                 result = analyzer_func(text)
@@ -365,7 +388,7 @@ class UnifiedContentParser(BaseParserProtocol):
             except Exception as e:
                 self.logger.warning(f"構造解析エラー ({analyzer_name}): {e}")
                 structure[analyzer_name] = {}
-        
+
         return structure
 
     def _analyze_paragraphs(self, text: str) -> Dict[str, Any]:
@@ -453,9 +476,9 @@ class UnifiedContentParser(BaseParserProtocol):
             structure["keywords"] = high_freq_words[:10]
 
         return structure
-    
+
     # === エンティティ抽出メソッド ===
-    
+
     def _extract_entities(self, text: str) -> Dict[str, List[str]]:
         """エンティティ抽出"""
         entities = {}
@@ -467,17 +490,17 @@ class UnifiedContentParser(BaseParserProtocol):
                     entities[pattern_name] = matches
 
         return entities
-    
+
     # === コンテンツ構造化メソッド ===
-    
+
     def _structure_content(
         self, text: str, classification: Dict[str, Any], structure: Dict[str, Any]
     ) -> List["Node"]:
         """コンテンツの構造化"""
         from ..core.ast_nodes.node import Node
-        
+
         nodes = []
-        
+
         # 段落ベースの分割
         paragraphs = self.content_patterns["paragraph_break"].split(text)
         paragraphs = [p.strip() for p in paragraphs if p.strip()]
@@ -490,32 +513,36 @@ class UnifiedContentParser(BaseParserProtocol):
                     "index": i,
                     "length": len(paragraph),
                     "word_count": len(paragraph.split()),
-                }
+                },
             )
 
             # 段落内エンティティの抽出
             para_entities = self._extract_entities(paragraph)
-            if para_entities and hasattr(para_node, "attributes") and para_node.attributes is not None:
+            if (
+                para_entities
+                and hasattr(para_node, "attributes")
+                and para_node.attributes is not None
+            ):
                 para_node.attributes["entities"] = para_entities
 
             nodes.append(para_node)
 
         return nodes
-    
+
     def _process_inline_content(self, content: str) -> bool:
         """インラインコンテンツ処理"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         processed = False
-        
+
         for line in lines:
             if self.is_new_marker_format(line):
                 processed = True
                 break
-        
+
         return processed
-    
+
     # === 脚注処理メソッド ===
-    
+
     def extract_footnotes_from_text(self, text: str) -> List[Dict[str, Any]]:
         """テキストから脚注抽出"""
         if not isinstance(text, str):
@@ -536,7 +563,7 @@ class UnifiedContentParser(BaseParserProtocol):
             footnotes.append(footnote)
 
         return footnotes
-    
+
     def parse_footnotes(self, text: Any) -> List[Dict[str, Any]]:
         """脚注解析"""
         if not isinstance(text, str):
@@ -548,7 +575,7 @@ class UnifiedContentParser(BaseParserProtocol):
         for match in matches:
             footnotes.append({"id": match, "content": ""})
         return footnotes
-    
+
     def _sanitize_footnote_content(self, content: Any) -> str:
         """脚注コンテンツのサニタイズ"""
         if not isinstance(content, str):
@@ -558,11 +585,12 @@ class UnifiedContentParser(BaseParserProtocol):
         sanitized = content.strip()
         # HTMLエスケープ
         import html
+
         sanitized = html.escape(sanitized, quote=True)
         return sanitized
-    
+
     # === インラインコンテンツ処理メソッド ===
-    
+
     def extract_inline_content(self, line: Any) -> Optional[str]:
         """インラインコンテンツ抽出"""
         if not isinstance(line, str):
@@ -613,9 +641,9 @@ class UnifiedContentParser(BaseParserProtocol):
             return ""
 
         return marker_content.strip()
-    
+
     # === バリデーション補助メソッド ===
-    
+
     def _validate_footnote_structure(self, footnotes: Any) -> List[str]:
         """脚注構造の検証"""
         errors: List[str] = []
@@ -657,7 +685,7 @@ class UnifiedContentParser(BaseParserProtocol):
         """新フォーマット構造の検証"""
         if not isinstance(line, str):
             return False
-            
+
         # 基本構造検証
         if line.count("#") < 3:  # 最低 # keyword # content ## が必要
             return False
@@ -667,31 +695,31 @@ class UnifiedContentParser(BaseParserProtocol):
     def _validate_block_structure_in_content(self, content: str) -> List[str]:
         """コンテンツ内のブロック構造検証"""
         errors = []
-        lines = content.split('\n')
-        
+        lines = content.split("\n")
+
         open_blocks = 0
         for i, line in enumerate(lines):
             stripped = line.strip()
-            
+
             # ブロック開始マーカー
             if re.match(r"^#\s*[^#]+\s*#", stripped):
                 if not stripped.endswith("##"):
                     open_blocks += 1
-            
+
             # ブロック終了マーカー
             elif stripped == "##":
                 if open_blocks > 0:
                     open_blocks -= 1
                 else:
                     errors.append(f"Unexpected closing marker at line {i+1}")
-        
+
         if open_blocks > 0:
             errors.append(f"{open_blocks} unclosed block(s) found")
-        
+
         return errors
-    
+
     # === 高度API メソッド（specialized統合） ===
-    
+
     def parse_mixed_content(
         self, content: str, prefer_format: Optional[str] = None
     ) -> "ParseResult":
@@ -735,7 +763,7 @@ class UnifiedContentParser(BaseParserProtocol):
 
         for node in parse_result.nodes:
             count_from_node(node)
-            
+
         return summary
 
     def suggest_improvements(self, parse_result: "ParseResult") -> List[str]:
@@ -775,7 +803,13 @@ class UnifiedContentParser(BaseParserProtocol):
             "structure_analyzers": list(self.structure_analyzers.keys()),
             "parser_type": "unified_content",
             "version": "3.0.0",
-            "features": ["classification", "entity_extraction", "footnotes", "inline_content", "validation"]
+            "features": [
+                "classification",
+                "entity_extraction",
+                "footnotes",
+                "inline_content",
+                "validation",
+            ],
         }
         return stats
 
