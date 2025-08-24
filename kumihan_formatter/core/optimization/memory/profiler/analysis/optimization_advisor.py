@@ -377,7 +377,7 @@ class MemoryOptimizationAdvisor:
             def _get_priority(item: Dict[str, Any]) -> float:
                 priority = item.get("priority", 0.0)
                 return float(priority) if isinstance(priority, (int, float)) else 0.0
-            
+
             prioritized.sort(key=_get_priority, reverse=True)
 
             return prioritized
