@@ -30,7 +30,7 @@ from .memory_pool import (
     create_object_pool,
     get_pool_manager,
 )
-from .memory_profiler import (
+from .profiler import (
     MemoryLeakDetector,
     MemoryProfiler,
     MemoryUsageAnalyzer,
