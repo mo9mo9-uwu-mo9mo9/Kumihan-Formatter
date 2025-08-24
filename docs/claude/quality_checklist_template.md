@@ -13,8 +13,6 @@
 # 1. Linting チェック
 [ ] make lint
     → Black formatting: ✅ PASS / ❌ FAIL
-    → isort import ordering: ✅ PASS / ❌ FAIL  
-    → flake8 style check: ✅ PASS / ❌ FAIL
     → エラー件数: [X] 件
 
 # 2. テスト実行
@@ -141,7 +139,7 @@
 ### 問題分類・対応方針
 
 #### 🔴 Critical（即座対応必須）
-- lint/flake8エラー
+- lint/mypyエラー
 - テスト失敗
 - API破壊的変更
 - セキュリティ問題

@@ -188,7 +188,7 @@ flowchart LR
 ### プログラミング環境
 - **Python**: 3.12+（型ヒント完全対応・mypy strict mode）
 - **パッケージ管理**: uv (高速パッケージ管理)
-- **品質管理**: Black・isort・flake8・mypy
+- **品質管理**: Black・mypy
 
 ### 主要依存関係
 ```python

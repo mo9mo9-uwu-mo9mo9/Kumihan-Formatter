@@ -29,14 +29,12 @@ MANIFEST
 
 # Unit tests / coverage reports
 htmlcov/
-.tox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
-.hypothesis/
 .pytest_cache/
 
 # Virtual environments

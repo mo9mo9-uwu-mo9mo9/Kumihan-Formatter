@@ -110,7 +110,7 @@ kumihan --help
 ### 4.1 MVP技術スタック
 - **言語**: Python 3.12+
 - **必須依存**: 最小限に抑える（Jinja2のみ）
-- **開発ツール**: Black, isort, mypy, pytest
+- **開発ツール**: Black, mypy, pytest
 
 ### 4.2 パフォーマンス目標
 - **変換速度**: 10ページ/秒以上
