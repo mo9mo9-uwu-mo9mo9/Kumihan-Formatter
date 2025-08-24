@@ -55,7 +55,6 @@ class AsyncCoordinator:
         # 開始イベント
         publish_event(
             ExtendedEventType.ASYNC_TASK_STARTED,
-            "AsyncCoordinator",
             {"task_id": task_id, "func_name": func.__name__},
         )
 
@@ -73,7 +72,6 @@ class AsyncCoordinator:
             # 完了イベント
             publish_event(
                 ExtendedEventType.ASYNC_TASK_COMPLETED,
-                "AsyncCoordinator",
                 {"task_id": task_id, "success": True},
             )
 
@@ -83,7 +81,6 @@ class AsyncCoordinator:
             # エラーイベント
             publish_event(
                 ExtendedEventType.ASYNC_TASK_COMPLETED,
-                "AsyncCoordinator",
                 {"task_id": task_id, "success": False, "error": str(e)},
             )
             raise

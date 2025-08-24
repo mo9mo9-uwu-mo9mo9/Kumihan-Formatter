@@ -15,19 +15,20 @@ Issue #914: アーキテクチャ最適化リファクタリング
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-from ....ast_nodes import (
+from kumihan_formatter.core.ast_nodes import (
     Node,
     NodeBuilder,
     create_node,
     error_node,
 )
-from ...base import CompositeMixin, UnifiedParserBase
-from ...base.parser_protocols import (
+from kumihan_formatter.core.parsing.base import CompositeMixin, UnifiedParserBase
+from kumihan_formatter.core.parsing.base.parser_protocols import (
     KeywordParserProtocol,
     ParseContext,
     ParseResult,
     create_parse_result,
 )
+
 from ..protocols import ParserType
 from .parsers.advanced_parser import AdvancedKeywordParser
 
@@ -77,6 +78,10 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         self.custom_keywords = self.custom_parser.custom_keywords
         self.deprecated_keywords = self.custom_parser.deprecated_keywords
 
+        # 強制的に '色指定' キーワードを確保（環境差異対策）
+        if "色指定" not in self.default_keywords:
+            self.default_keywords["色指定"] = {"type": "color", "color": "custom"}
+
         # レガシー互換性のためのプロパティ
         self.DEFAULT_BLOCK_KEYWORDS = self.advanced_parser.DEFAULT_BLOCK_KEYWORDS
         self.BLOCK_KEYWORDS = self.advanced_parser.BLOCK_KEYWORDS
@@ -86,10 +91,14 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """レガシー互換性の設定"""
         # 統合機能: core/keyword_parser.py からの機能
         try:
-            from ....keyword import (
+            from kumihan_formatter.core.parsing.keyword.definitions import (
                 KeywordDefinitions,
-                KeywordValidator,
+            )
+            from kumihan_formatter.core.parsing.keyword.marker_parser import (
                 MarkerParser,
+            )
+            from kumihan_formatter.core.parsing.keyword.validator import (
+                KeywordValidator,
             )
 
             # 分割されたコンポーネントを初期化（後方互換性のため）
@@ -98,9 +107,11 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             self.validator = KeywordValidator(self.definitions)
         except Exception:
             # フォールバック：基本的な実装を使用
-            self.definitions = None
-            self.marker_parser = None
-            self.validator = None
+            from typing import cast
+
+            self.definitions = cast(Optional[KeywordDefinitions], None)  # type: ignore
+            self.marker_parser = cast(Optional[MarkerParser], None)  # type: ignore
+            self.validator = cast(Optional[KeywordValidator], None)  # type: ignore
 
     def can_parse(self, content: Union[str, List[str]]) -> bool:
         """キーワード記法の解析可能性を判定"""
@@ -145,7 +156,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
             for keyword_info in keywords_found:
                 keyword_node = self.basic_parser.create_keyword_node(keyword_info)
-                root_node.children.append(keyword_node)
+                if root_node.children is not None:
+                    root_node.children.append(keyword_node)
 
             self._end_timer("keyword_parsing")
             return root_node
@@ -201,24 +213,21 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         custom_suggestions = self.custom_parser.get_keyword_suggestions(partial)
         return sorted(set(basic_suggestions + custom_suggestions))
 
-    def validate_keyword(self, keyword: str) -> Dict[str, Any]:
+    def validate_keyword(
+        self, keyword: str, context: Optional[ParseContext] = None
+    ) -> bool:
         """キーワードの妥当性を検証"""
         # 基本キーワードを先にチェック
         definition = self.basic_parser.get_keyword_definition(keyword)
         if definition:
-            return {
-                "valid": True,
-                "type": definition.get("type"),
-                "definition": definition,
-                "deprecated": keyword in self.deprecated_keywords,
-                "suggestions": [],
-            }
+            return True
 
         # カスタムキーワードをチェック
-        return self.custom_parser.validate_keyword(keyword)
+        result = self.custom_parser.validate_keyword(keyword)
+        return bool(result) if result else False
 
     def parse_marker_keywords(
-        self, marker_content: str
+        self, marker_content: str, context: Optional[ParseContext] = None
     ) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """マーカーからキーワードと属性を解析"""
         return self.advanced_parser.parse_marker_keywords(marker_content)
@@ -227,7 +236,9 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """複合キーワードを個別のキーワードに分割"""
         return self.advanced_parser.split_compound_keywords(keyword_content)
 
-    def parse_keywords(self, content: str) -> List[str]:
+    def parse_keywords(
+        self, content: str, context: Optional[ParseContext] = None
+    ) -> List[str]:
         """コンテンツからキーワードを抽出"""
         if not content:
             return []
@@ -240,6 +251,19 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             keyword_text = match.group(1).strip()
             if self._is_valid_keyword(keyword_text):
                 keywords.append(keyword_text)
+
+        # プレーンテキスト形式のキーワード抽出 ("+" 区切り)
+        if "+" in content and not keywords:
+            plain_keywords = [kw.strip() for kw in content.split("+")]
+            for keyword in plain_keywords:
+                if self._is_valid_keyword(keyword):
+                    keywords.append(keyword)
+
+        # 色指定の特殊形式 ("色 赤", "色 青" など)
+        if not keywords and content.startswith("色 "):
+            color_value = content[2:].strip()  # "色 " の後の部分
+            if self._is_valid_keyword(color_value):
+                keywords.append(color_value)
 
         return keywords
 
@@ -291,19 +315,21 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
             + stats["extension_keywords"]
         )
 
-        return cast(Dict[str, Any], stats)
+        return stats
 
     # ==========================================
     # プロトコル準拠メソッド（KeywordParserProtocol実装）
     # ==========================================
 
-    def parse(
-        self, content: str, context: Optional[ParseContext] = None
+    def parse(  # type: ignore[override]
+        self, content: Union[str, List[str]], context: Optional[ParseContext] = None
     ) -> ParseResult:
         """統一パースインターフェース（プロトコル準拠）"""
         try:
+            # Union[str, List[str]]を文字列に変換
+            content_str = content if isinstance(content, str) else "\n".join(content)
             # 既存の parse_keywords ロジックを活用
-            keywords = self.parse_keywords(content)
+            keywords = self.parse_keywords(content_str)
             nodes = [self._create_keyword_node_from_text(kw) for kw in keywords]
             return create_parse_result(nodes=nodes, success=True)
         except Exception as e:
@@ -319,8 +345,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         try:
             keywords = self.parse_keywords(content)
             for keyword in keywords:
-                validation_result = self.validate_keyword(keyword)
-                if not validation_result["valid"]:
+                is_valid = self.validate_keyword(keyword)
+                if not is_valid:
                     errors.append(f"無効なキーワード: {keyword}")
         except Exception as e:
             errors.append(f"バリデーションエラー: {e}")
@@ -353,7 +379,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         """新形式マーカーの解析（後方互換用）"""
         return {"keywords": [], "content": line, "attributes": {}}
 
-    def get_node_factory(self, keywords: Union[str, Tuple[Any, ...]]) -> Any:
+    def get_node_factory(self) -> Any:
         """ノードファクトリーの取得（後方互換用）"""
         return NodeBuilder(node_type="div")
 

@@ -8,7 +8,7 @@
 ## 🎯 プロジェクト概要
 
 - **言語**: 日本語メインプロジェクト
-- **技術スタック**: Python 3.12+, Black, isort, mypy (strict)
+- **技術スタック**: Python 3.12+, Black, isort, mypy (strict), Serena MCP
 - **記法**: Kumihan独自ブロック記法 (`# 装飾名 #内容##`)
 
 ## 📋 開発原則
@@ -23,6 +23,8 @@
 - **一時ファイル**: 全て `tmp/` 配下に出力（絶対遵守）
 - **日本語使用**: コメント・レビュー・ドキュメントは日本語
 - **ログ使用**: `from kumihan_formatter.core.utilities.logger import get_logger`
+- **効率的コード探索**: Serenaツール優先、ファイル全読み込み最小化
+- **セマンティック編集**: シンボル単位での精密な編集実行
 
 ---
 
@@ -44,11 +46,38 @@ gh pr create --title "タイトル" --body "詳細説明"
 ```bash
 make lint       # Black, isort, flake8, mypy
 make test       # pytest
+
+# tox環境での品質管理（推奨）
+tox -e lint     # 品質チェック専用環境
+tox -e py312    # Python 3.12環境でのフルテスト
+tox -e py313    # Python 3.13環境でのフルテスト
+```
+
+### tox環境管理（複数Python環境対応）
+```bash
+# 環境別テスト実行
+tox -e unit         # 単体テスト専用（並列実行最適化）
+tox -e integration  # 結合テスト専用（シーケンシャル実行）
+tox -e lint         # 品質チェック（black, isort, flake8, mypy）
+
+# コードフォーマット
+tox -e format       # black + isort自動適用
+
+# 環境クリーンアップ
+tox -e clean        # .tox, htmlcov, .pytest_cache削除
+
+# 全環境一括実行
+tox                 # py312, py313, lint環境を順次実行
 ```
 
 ---
 
 ## 🛡️ 品質保証システム
+
+### Layer 0: セマンティック解析（Serena MCP）
+- シンボル関係性の事前検証、影響範囲の正確な特定
+- 型安全性の事前確保、mypy strictモードとの統合検証
+- リファクタリング前の依存関係マップ生成
 
 ### Layer 1: 構文検証（自動）
 - AST解析による構文エラー検出、型注釈パターン自動修正
@@ -57,11 +86,38 @@ make test       # pytest
 ```bash
 make lint        # Black, isort, flake8 通過必須
 make test        # 既存テスト全通過必須
+
+# tox環境での複数Python版検証（CI/CD対応）
+tox -e lint      # 品質チェック完全版
+tox -e py312     # Python 3.12環境でのテスト
+tox -e py313     # Python 3.13環境でのテスト（推奨）
 ```
 
 ### Layer 3: Claude最終承認（手動）
 - **コードレビュー**: 成果物の詳細確認・品質責任
 - **統合確認**: 全体システムとの整合性検証
+
+---
+
+## 🧠 コード解析・編集ツール
+
+### Serena MCP活用方針
+- **セマンティック解析優先**: `find_symbol`, `find_referencing_symbols`による精密な検索
+- **効率的探索**: ファイル全体読み込み回避、シンボル単位での対象解析
+- **関係性追跡**: パーサー・レンダラー間の依存関係の正確な把握
+- **型安全編集**: mypy strictモードとの連携による安全なリファクタリング
+
+### コード探索戦略
+1. **概要把握**: `get_symbols_overview` でファイル構造理解
+2. **シンボル検索**: `find_symbol` で対象の特定・詳細取得
+3. **影響範囲調査**: `find_referencing_symbols` で変更影響の事前確認
+4. **精密編集**: `replace_symbol_body`, `insert_after_symbol` での安全な変更
+
+### 適用場面
+- **大規模リファクタリング**: パーサーエンジンの改修時
+- **新機能実装**: レンダラーとパーサーの統合処理追加
+- **バグ修正**: 複雑な依存関係を持つモジュール間の問題解決
+- **型安全性向上**: mypy strict準拠のための段階的修正
 
 ---
 
@@ -114,9 +170,17 @@ make test        # 既存テスト全通過必須
 ## 🚀 品質保証コマンド
 
 ```bash
+# 基本品質チェック
 make claude-check            # CLAUDE.mdサイズ・構造チェック
 make lint                   # Black, isort, flake8, mypy
 make test                   # pytest全テスト実行
+
+# tox環境での品質保証（推奨）
+tox -e lint                 # 品質チェック専用環境
+tox -e unit                 # 単体テスト（並列実行）
+tox -e integration          # 結合テスト（順次実行）
+tox -e format               # コードフォーマット自動修正
+tox                         # 全環境（py312, py313, lint）実行
 ```
 
 ---

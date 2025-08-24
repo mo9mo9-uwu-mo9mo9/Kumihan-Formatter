@@ -8,7 +8,7 @@ Claude単体でのToken使用量を追跡
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .logger import get_logger
 

@@ -58,17 +58,102 @@ class AttributeParser(BaseParser):
 
         # 引用符で囲まれた属性と引用符なし属性の両方に対応
         # ハイフンを含む属性名（data-*など）にも対応
-        attr_pattern = r'([\w\-]+)=(?:["\']([^"\']*)["\']|([^\s>]+))'
-        matches = re.findall(attr_pattern, content)
-        for key, quoted_value, unquoted_value in matches:
-            # 引用符ありの値を優先、なければ引用符なしの値を使用
-            value = quoted_value if quoted_value else unquoted_value
+        # JSON値を適切に処理する
+        attributes = self._parse_complex_attributes(content)
 
-            # class属性の場合は最初のクラス名のみを取得
-            if key.lower() == "class" and value:
-                value = value.split()[0]
+        # Fallback: 基本的な属性解析
+        if not attributes:
+            attr_pattern = r'([\w\-]+)=(?:["\']([^"\']*)["\']|([^\s>]+))'
+            matches = re.findall(attr_pattern, content)
+            for key, quoted_value, unquoted_value in matches:
+                # 引用符ありの値を優先、なければ引用符なしの値を使用
+                value = quoted_value if quoted_value else unquoted_value
 
-            attributes[key] = value
+                # class属性の場合は最初のクラス名のみを取得
+                if key.lower() == "class" and value:
+                    value = value.split()[0]
+
+                attributes[key] = value
+        return attributes
+
+    def _parse_complex_attributes(self, content: str) -> Dict[str, Any]:
+        """Parse complex attributes including JSON values.
+
+        Args:
+            content: Content to parse
+
+        Returns:
+            Dictionary of parsed attributes
+        """
+        attributes = {}
+
+        # より堅牢な属性解析: JSON値に対応
+        i = 0
+        while i < len(content):
+            # 属性名を探す
+            attr_match = re.match(r"([\w\-]+)=", content[i:])
+            if not attr_match:
+                i += 1
+                continue
+
+            key = attr_match.group(1)
+            i += len(attr_match.group(0))  # '=' まで進める
+
+            if i >= len(content):
+                break
+
+            # 値を取得
+            if content[i] in ['"', "'"]:
+                quote = content[i]
+                i += 1  # 開始クォートをスキップ
+
+                # 対応するクォートを探す（JSON内のクォートを考慮）
+                value_start = i
+                depth = 0
+                escaped = False
+
+                while i < len(content):
+                    char = content[i]
+
+                    if escaped:
+                        escaped = False
+                    elif char == "\\":
+                        escaped = True
+                    elif char == quote and depth == 0:
+                        # 終了クォートを発見
+                        value = content[value_start:i]
+                        attributes[key] = value
+                        i += 1  # 終了クォートをスキップ
+                        break
+                    elif char in ["{", "["]:
+                        depth += 1
+                    elif char in ["}", "]"]:
+                        depth -= 1
+
+                    i += 1
+            else:
+                # クォートなしの値
+                value_start = i
+                while i < len(content) and content[i] not in [
+                    " ",
+                    "\t",
+                    "\n",
+                    ">",
+                    "<",
+                ]:
+                    i += 1
+                value = content[value_start:i]
+                if value:
+                    # class属性の場合は最初のクラス名のみを取得
+                    if key.lower() == "class":
+                        value = value.split()[0]
+                    attributes[key] = value
+
+        # 同様にクォート付きの値に対してもclass処理を適用
+        for key, value in attributes.items():
+            if key.lower() == "class" and isinstance(value, str) and " " in value:
+                attributes[key] = value.split()[0]
+
         return attributes
 
     def _extract_size_attributes(self, content: Any) -> Dict[str, Any]:

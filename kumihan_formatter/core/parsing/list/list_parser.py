@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
 from ..base.parser_protocols import (
-    ListParserProtocol,
     ParseContext,
     ParseResult,
     create_parse_result,
@@ -17,7 +16,7 @@ from .parsers.ordered_parser import OrderedListParser
 from .parsers.unordered_parser import UnorderedListParser
 
 
-class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
+class UnifiedListParser(UnifiedParserBase, CompositeMixin):
     """統一リストパーサー - 各専用パーサーを統合してAPI互換性維持"""
 
     def __init__(self) -> None:
@@ -34,14 +33,14 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
     def _setup_patterns_and_handlers(self) -> None:
         """パターンとハンドラーの設定"""
         self.list_patterns = {
-            "unordered": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
-            "ordered": re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
-            "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
-            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([x\s])\]\s*(.+)$"),
+            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([ xX])\]\s*(.+)$"),
+            "ordered": re.compile(r"^(\s*)(\d+)[.)]\s+(.+)$"),
             "alpha": re.compile(r"^(\s*)([a-zA-Z])\.\s+(.+)$"),
             "roman": re.compile(
                 r"^(\s*)(i{1,3}|iv|v|vi{0,3}|ix|x)\.\s+(.+)$", re.IGNORECASE
             ),
+            "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
+            "unordered": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
             "indent": re.compile(r"^(\s*)"),
         }
 
@@ -65,7 +64,7 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
 
     def _detect_list_type(self, line: str) -> Optional[str]:
         """行のリストタイプを検出"""
-        if not line.strip():
+        if not line or not isinstance(line, str) or not line.strip():
             return None
 
         for list_type, pattern in self.list_patterns.items():
@@ -193,7 +192,11 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
         for item in items:
             item_type = item.metadata.get("type", "unordered")
             type_counts[item_type] = type_counts.get(item_type, 0) + 1
-        return max(type_counts, key=type_counts.get) if type_counts else "unordered"
+        return (
+            max(type_counts, key=lambda x: type_counts.get(x, 0))
+            if type_counts
+            else "unordered"
+        )
 
     # 外部API メソッド（互換性維持）
     def parse_list_from_text(self, text: str, list_type: Optional[str] = None) -> Node:
@@ -292,6 +295,9 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
             "definition",
         ]
 
+    # BaseParserProtocol準拠が必要な場合はparse_with_resultを使用
+    # UnifiedParserBaseのparseメソッド（Node返却）を継承し、型競合を回避
+
     def _is_valid_list_item(self, line: str) -> bool:
         """リスト項目の有効性チェック"""
         for pattern in self.list_patterns.values():
@@ -299,12 +305,30 @@ class UnifiedListParser(UnifiedParserBase, CompositeMixin, ListParserProtocol):
                 return True
         return False
 
+    def get_list_nesting_level(self, line: str) -> int:
+        """リストのネストレベルを取得（抽象メソッド実装）"""
+        # インデント数でネストレベル判定
+        stripped = line.lstrip()
+        if not stripped:
+            return 0
+
+        indent_count = len(line) - len(stripped)
+        # 2スペースまたは1タブで1レベル
+        return max(0, indent_count // 2)
+
     # 継続互換性メソッド（プロトコル準拠のシグネチャに変更）
     def parse_nested_list(
-        self, content: str, level: int = 0, context: Optional[ParseContext] = None
+        self,
+        content: Union[str, List[str]],
+        level: int = 0,
+        context: Optional[ParseContext] = None,
     ) -> List[Node]:
         """ネストリストをパース（プロトコル準拠）"""
-        return self.nested_parser.parse_nested_list(content, level)
+        if isinstance(content, list):
+            content_str = "\n".join(content)
+        else:
+            content_str = content
+        return self.nested_parser.parse_nested_list(content_str, level)
 
     def parse_list_items(
         self, content: str, context: Optional[ParseContext] = None

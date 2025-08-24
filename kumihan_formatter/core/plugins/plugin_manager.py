@@ -94,7 +94,6 @@ class PluginManager:
             # イベント発行
             publish_event(
                 ExtendedEventType.PLUGIN_LOADED,
-                "PluginManager",
                 {"plugin_name": plugin_info.name, "version": plugin_info.version},
             )
 
@@ -123,7 +122,6 @@ class PluginManager:
             # イベント発行
             publish_event(
                 ExtendedEventType.PLUGIN_UNLOADED,
-                "PluginManager",
                 {"plugin_name": plugin_name},
             )
 

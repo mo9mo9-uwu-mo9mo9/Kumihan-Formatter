@@ -55,6 +55,7 @@ class BasicKeywordParser:
             "青": {"type": "color", "color": "blue"},
             "緑": {"type": "color", "color": "green"},
             "黄": {"type": "color", "color": "yellow"},
+            "色指定": {"type": "color", "color": "custom"},
             # 特殊ブロック
             "重要": {"type": "block", "class": "important"},
             "注意": {"type": "block", "class": "warning"},

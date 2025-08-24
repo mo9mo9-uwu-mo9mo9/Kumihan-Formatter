@@ -5,7 +5,7 @@ Issue #770対応: 分散したエラー処理を統一し、
 """
 
 from logging import Logger
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from ..common.error_base import KumihanError
 from ..common.error_types import ErrorCategory, ErrorContext, ErrorSeverity
@@ -121,12 +121,17 @@ class UnifiedErrorHandler:
                 user_input=context.get("user_input"),
                 system_info=context.get("system_info", {}),
             )
+
+        # エラータイプに応じた提案を生成
+        suggestions = self._generate_suggestions(error, category)
+
         return KumihanError(
             message=str(error),
             severity=severity,
             category=category,
             context=error_context,
             original_error=error,
+            suggestions=suggestions,
         )
 
     def _classify_error(self, error: Exception) -> tuple[ErrorSeverity, ErrorCategory]:
@@ -142,81 +147,67 @@ class UnifiedErrorHandler:
         if isinstance(error, (FileNotFoundError, PermissionError, OSError)):
             return ErrorSeverity.ERROR, ErrorCategory.FILE_SYSTEM
 
+        # バリデーションエラー
+        if isinstance(error, (ValueError, TypeError)):
+            return ErrorSeverity.WARNING, ErrorCategory.VALIDATION
+
+        # 構文エラー
+        if isinstance(error, SyntaxError):
+            return ErrorSeverity.WARNING, ErrorCategory.SYNTAX
+
+        # メモリ・システム系エラー
+        if isinstance(error, (MemoryError, SystemError, RuntimeError)):
+            return ErrorSeverity.CRITICAL, ErrorCategory.SYSTEM
+
         # デフォルト分類
-        return ErrorSeverity.WARNING, ErrorCategory.SYSTEM
+        return ErrorSeverity.WARNING, ErrorCategory.VALIDATION
 
     def _generate_suggestions(
         self, error: Exception, category: ErrorCategory
-    ) -> list[str]:
-        """エラーカテゴリに基づく提案生成
+    ) -> List[str]:
+        """エラータイプに応じた修正提案を生成
 
         Args:
             error: 例外オブジェクト
             category: エラーカテゴリ
 
         Returns:
-            list[str]: 提案リスト
+            List[str]: 修正提案のリスト
         """
         suggestions = []
-        error_message = str(error).lower()
 
         if category == ErrorCategory.FILE_SYSTEM:
-            if "not found" in error_message:
+            if isinstance(error, FileNotFoundError):
                 suggestions.extend(
                     [
-                        "ファイルパスが正しいことを確認してください",
-                        "ファイルが存在し、読み取り可能であることを確認してください",
-                        "相対パスではなく絶対パスを試してみてください",
+                        "ファイルパスが正しいかどうかを確認してください",
+                        "ファイルが存在することを確認してください",
+                        "ファイルの権限を確認してください",
                     ]
                 )
-            elif "permission" in error_message:
+            elif isinstance(error, PermissionError):
                 suggestions.extend(
                     [
-                        "ファイルの読み取り権限を確認してください",
+                        "ファイルアクセス権限を確認してください",
                         "管理者権限で実行してみてください",
-                        "ファイルが他のプロセスで使用されていないか確認してください",
-                    ]
-                )
-            else:
-                # 一般的なファイルシステムエラー
-                suggestions.extend(
-                    [
-                        "ディスク容量を確認してください",
-                        "ファイルパスに無効な文字が含まれていないか確認してください",
                     ]
                 )
 
         elif category == ErrorCategory.SYNTAX:
             suggestions.extend(
                 [
-                    "記法の構文を確認してください",
-                    "マーカーが正しく閉じられているか確認してください",
-                    "特殊文字が正しくエスケープされているか確認してください",
+                    "構文エラーを確認してください",
+                    "記法の形式が正しいかチェックしてください",
+                    "括弧やクォートの対応を確認してください",
                 ]
             )
 
         elif category == ErrorCategory.VALIDATION:
             suggestions.extend(
                 [
-                    "入力値の形式を確認してください",
-                    "設定ファイルの内容を確認してください",
-                ]
-            )
-
-        elif category == ErrorCategory.SYSTEM:
-            suggestions.extend(
-                [
-                    "システムリソースを確認してください",
-                    "大きなファイルの場合、分割処理を検討してください",
-                ]
-            )
-
-        # 一般的な提案を追加
-        if not suggestions:
-            suggestions.extend(
-                [
-                    "エラーの詳細については、ログファイルを確認してください",
-                    "問題が解決しない場合は、開発者にお問い合わせください",
+                    "入力データの形式を確認してください",
+                    "データの型や値の範囲を確認してください",
+                    "必要な値が設定されているか確認してください",
                 ]
             )
 

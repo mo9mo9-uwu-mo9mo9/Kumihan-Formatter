@@ -171,7 +171,7 @@ class MemoryOptimizationManager:
     def optimize_memory_usage(self) -> Dict[str, Any]:
         """メモリ使用量最適化を実行します。"""
         try:
-            optimization_results = {}
+            optimization_results: Dict[str, Any] = {}
 
             # 強制ガベージコレクション
             gc_result = self._profiler.force_garbage_collection()

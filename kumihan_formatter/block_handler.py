@@ -67,7 +67,23 @@ class BlockHandler:
         """
         if current >= len(self.parser.lines):
             return None
-        # 最適化されたライン処理を実装
+
+        # 基本的なテキストノード作成（最低限の実装）
+        line = self.parser.lines[current].strip()
+        if line:
+            from kumihan_formatter.core.ast_nodes import Node
+
+            # テキストノードとして処理（行番号情報を属性として追加）
+            node = Node(
+                type="text",
+                content=line,
+                attributes={"line_number": current + 1, "column": 0},
+            )
+            self.parser.current = current + 1
+            return node
+
+        # 空行をスキップ
+        self.parser.current = current + 1
         return None
 
     def _parse_block_marker_fast_internal(self) -> "Node":

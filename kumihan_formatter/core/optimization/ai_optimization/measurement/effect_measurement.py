@@ -147,7 +147,11 @@ class AIEffectMeasurement:
                     "error_rate": quality_metrics.error_rate,
                     "availability": quality_metrics.availability,
                 },
-                stability_score=stability_assessment,
+                stability_score=float(
+                    stability_assessment.overall_score
+                    if hasattr(stability_assessment, "overall_score")
+                    else 0.0
+                ),
                 success_criteria_met=success_criteria_met,
                 recommendations=recommendations,
             )
@@ -294,7 +298,7 @@ class AIEffectMeasurement:
 
     def evaluate_quality(self, results: Any) -> Dict[str, Any]:
         """品質評価委譲"""
-        return cast(Dict[str, Any], self.quality_metrics.evaluate_quality(results))
+        return self.quality_metrics.evaluate_quality(results)
 
     def analyze_trend(self, metric_name: str, days: int = 7) -> Dict[str, Any]:
         """トレンド分析委譲"""
@@ -302,7 +306,10 @@ class AIEffectMeasurement:
 
     def export_measurements(self, output_path: Optional[str] = None) -> bool:
         """測定データエクスポート委譲"""
-        return self.business_metrics.export_measurements(output_path)
+        from pathlib import Path
+
+        path_obj = Path(output_path) if output_path else None
+        return self.business_metrics.export_measurements(path_obj)
 
     def calculate_roi(
         self, investment_cost: float, benefit_value: float

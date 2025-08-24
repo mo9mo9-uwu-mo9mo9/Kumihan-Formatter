@@ -18,7 +18,7 @@ Issue #912: Parser系統合リファクタリング
 
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING, Any, Iterator, Optional, cast
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, cast
 
 if TYPE_CHECKING:
     from ..patterns.dependency_injection import DIContainer
@@ -162,7 +162,7 @@ class MainParser(
                         parser_class = parser_class_map[parser_type]
                         instance = self.container.resolve(parser_class)
                         self.logger.debug(f"DI resolution successful for {parser_type}")
-                        return instance
+                        return cast(ParserProtocol, instance)
                 except Exception as di_error:
                     self.logger.warning(
                         f"DI creation failed for {parser_type}: {di_error}"
@@ -171,9 +171,9 @@ class MainParser(
             # 2. ファクトリー経由での生成を試行
             if self.parser_factory is not None:
                 try:
-                    instance = self.parser_factory.create(parser_type)
+                    factory_instance = self.parser_factory.create(parser_type)
                     self.logger.debug(f"Factory creation successful for {parser_type}")
-                    return instance
+                    return factory_instance
                 except Exception as factory_error:
                     self.logger.warning(
                         f"Factory creation failed for {parser_type}: {factory_error}"
@@ -590,10 +590,6 @@ class MainParser(
         """フォーマット対応判定（プロトコル準拠）"""
         return format_hint in ["kumihan", "markdown", "text", "auto"]
 
-    def get_parsers(self) -> list[ParserProtocol]:
-        """登録されているパーサー一覧を取得（プロトコル準拠）"""
-        return list(self.parsers.values())
-
     def register_parser(self, name: str, parser: ParserProtocol) -> None:
         """パーサーの登録（プロトコル準拠）"""
         self.parsers[name] = parser
@@ -638,6 +634,25 @@ class MainParser(
     def get_parsers(self) -> list[BaseParserProtocol]:
         """登録されたパーサーリストを取得（抽象メソッド実装）"""
         return list(self.parsers.values())
+
+    # StreamingParserProtocolの抽象メソッド実装
+    def get_chunk_size(self) -> int:
+        """チャンクサイズを取得（抽象メソッド実装）"""
+        return self.chunk_size
+
+    def process_chunk(
+        self, chunk: str, context: Optional[ParseContext] = None
+    ) -> List[Node]:
+        """チャンクを処理（拽象メソッド実装）"""
+        try:
+            return self._parse_sequential(chunk)
+        except Exception as e:
+            self.logger.error(f"チャンク処理失敗: {e}")
+            return [error_node(f"チャンク処理失敗: {e}")]
+
+    def supports_streaming(self) -> bool:
+        """ストリーミング対応判定（抽象メソッド実装）"""
+        return True
 
     def get_parser_count(self) -> int:
         """登録パーサー数を取得（抽象メソッド実装）"""

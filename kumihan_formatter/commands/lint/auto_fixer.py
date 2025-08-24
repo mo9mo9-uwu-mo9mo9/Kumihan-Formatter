@@ -126,6 +126,60 @@ class Flake8AutoFixer:
         """HTML形式の修正レポートを生成"""
         self.strategies.generate_html_report(reports, output_path)
 
+    # ================================
+    # 下位互換性メソッド (テスト用)
+    # ================================
+
+    def _get_max_line_length(self) -> int:
+        """行長制限を取得（下位互換性のため）"""
+        return self.max_line_length
+
+    def _split_function_call(self, line: str) -> str:
+        """関数呼び出し分割（下位互換性のため）"""
+        # 基本的な関数呼び出し分割ロジック
+        if len(line) <= self.max_line_length:
+            return line
+
+        # 関数呼び出しパターンを検出
+        import re
+
+        func_call_pattern = r"(\w+)\s*\((.*)\)"
+        match = re.search(func_call_pattern, line)
+
+        if not match:
+            return line
+
+        func_name = match.group(1)
+        args = match.group(2)
+
+        # 簡単な分割: 引数を改行で分割
+        if "," in args:
+            split_args = [arg.strip() for arg in args.split(",")]
+            formatted_args = ",\n    ".join(split_args)
+            return f"{func_name}(\n    {formatted_args}\n)"
+
+        return line
+
+    def _extract_import_names(self, import_line: str) -> List[str]:
+        """import名抽出（下位互換性のため）"""
+        import re
+
+        names = []
+
+        # import module
+        if import_line.strip().startswith("import "):
+            # 'import os, sys' -> ['os', 'sys']
+            modules = import_line.replace("import ", "").strip()
+            names.extend([mod.strip() for mod in modules.split(",")])
+
+        # from module import name
+        elif import_line.strip().startswith("from ") and " import " in import_line:
+            # 'from pathlib import Path, os' -> ['Path', 'os']
+            import_part = import_line.split(" import ")[1].strip()
+            names.extend([name.strip() for name in import_part.split(",")])
+
+        return names
+
 
 # 後方互換性のため、元のクラス名もエクスポート
 __all__ = ["Flake8AutoFixer"]

@@ -8,7 +8,7 @@ PIP = $(PYTHON) -m pip
 PROJECT_NAME = kumihan_formatter
 SRC_DIR = $(PROJECT_NAME)
 
-.PHONY: help setup clean lint test test-unit test-integration test-performance test-coverage claude-check pre-commit tech-debt-check tech-debt-report tech-debt-json tech-debt-ci enterprise-check performance-benchmark security-audit release-candidate tox tox-py312 tox-py313 tox-unit tox-integration tox-lint tox-format tox-clean tox-parallel tox-install
+.PHONY: help setup clean lint claude-check
 
 # デフォルトターゲット
 help:
@@ -17,28 +17,8 @@ help:
 	@echo "基本コマンド:"
 	@echo "  make setup         - 開発環境セットアップ"
 	@echo "  make lint          - コード品質チェック"
-	@echo "  make test          - 全テスト実行"
-	@echo "  make test-unit     - ユニットテスト実行"
-	@echo "  make test-integration - 統合テスト実行"
-	@echo "  make test-performance - パフォーマンステスト実行"
-	@echo "  make test-coverage - カバレッジ付きテスト実行"
 	@echo "  make clean         - 一時ファイル削除"
 	@echo "  make claude-check  - CLAUDE.md管理・検証"
-	@echo ""
-	@echo "🧪 tox環境 (複数Python版並行テスト):"
-	@echo "  make tox           - Python 3.12/3.13両方でテスト実行"
-	@echo "  make tox-py312     - Python 3.12でのみテスト実行"
-	@echo "  make tox-py313     - Python 3.13でのみテスト実行"
-	@echo "  make tox-unit      - 単体テストのみ実行"
-	@echo "  make tox-integration - 結合テストのみ実行"
-	@echo "  make tox-lint      - コード品質チェック"
-	@echo "  make tox-parallel  - 高速並行実行"
-	@echo "  make pre-commit    - pre-commitフック実行"
-	@echo "  make check-tmp-rule - tmp/配下強制ルール違反チェック"
-	@echo "  make enforce-tmp-rule - tmp/配下強制ルール適用（対話的）"
-	@echo "  make enforce-tmp-rule-auto - tmp/配下強制ルール適用（自動）"
-	@echo "  make tech-debt-check - 技術的負債監視チェック実行"
-	@echo "  make tech-debt-report - 技術的負債詳細レポート生成"
 	@echo ""
 	@echo ""
 	@echo "🚀 品質保証強化システム (Issue #845):"
@@ -79,40 +59,13 @@ lint-legacy:
 	$(PYTHON) -m mypy $(SRC_DIR)
 	@echo "✅ 従来リントチェック完了"
 
-# テストコマンド実装
-test:
-	@echo "🧪 全テスト実行中..."
-	$(PYTHON) -m pytest
-	@echo "✅ テスト完了"
-
-test-unit:
-	@echo "🔬 ユニットテスト実行中..."
-	$(PYTHON) -m pytest tests/unit -m unit
-	@echo "✅ ユニットテスト完了"
-
-test-integration:
-	@echo "🔗 統合テスト実行中..."
-	$(PYTHON) -m pytest tests/integration -m integration
-	@echo "✅ 統合テスト完了"
-
-test-performance:
-	@echo "⚡ パフォーマンステスト実行中..."
-	$(PYTHON) -m pytest tests/performance -m performance --benchmark-only
-	@echo "✅ パフォーマンステスト完了"
-
-test-coverage:
-	@echo "📊 カバレッジ付きテスト実行中..."
-	$(PYTHON) -m pytest --cov=$(SRC_DIR) --cov-report=html --cov-report=term-missing
-	@echo "✅ カバレッジテスト完了"
 
 clean:
 	@echo "🧹 一時ファイル削除中..."
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
-	rm -rf htmlcov/
-	rm -rf .coverage
-	rm -rf .pytest_cache/
+	rm -rf tmp/
 	@echo "✅ クリーンアップ完了"
 
 # CLAUDE.md管理システム
@@ -158,16 +111,10 @@ deep-clean:
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
-	rm -rf htmlcov/
-	rm -rf .coverage
-	rm -rf .pytest_cache/
-	rm -rf .tox/
+	rm -rf tmp/
 	rm -rf build/
 	rm -rf dist/
 	rm -rf .cache/
-	rm -rf .performance_cache/
-	rm -rf .quality_data/
-	rm -rf .benchmarks/
 	@echo "✅ 完全クリーンアップ完了"
 
 organize:
@@ -380,58 +327,3 @@ release-candidate:
 	$(PYTHON) scripts/release_prepare.py
 	@echo "✅ リリース準備完了"
 
-# 🧪 tox環境コマンド群 (Issue #1107: pyenv + tox導入)
-tox-install:
-	@echo "📦 tox環境セットアップ中..."
-	$(PIP) install tox
-	@echo "✅ tox環境セットアップ完了"
-
-tox:
-	@echo "🧪 tox全環境テスト実行中（Python 3.12/3.13）..."
-	tox
-	@echo "✅ tox全環境テスト完了"
-
-tox-py312:
-	@echo "🐍 Python 3.12環境テスト実行中..."
-	tox -e py312
-	@echo "✅ Python 3.12環境テスト完了"
-
-tox-py313:
-	@echo "🐍 Python 3.13環境テスト実行中..."
-	tox -e py313
-	@echo "✅ Python 3.13環境テスト完了"
-
-tox-unit:
-	@echo "🔬 tox単体テスト実行中..."
-	tox -e unit
-	@echo "✅ tox単体テスト完了"
-
-tox-integration:
-	@echo "🔗 tox結合テスト実行中..."
-	tox -e integration
-	@echo "✅ tox結合テスト完了"
-
-tox-lint:
-	@echo "🔍 tox品質チェック実行中..."
-	tox -e lint
-	@echo "✅ tox品質チェック完了"
-
-tox-format:
-	@echo "✨ toxフォーマット実行中..."
-	tox -e format
-	@echo "✅ toxフォーマット完了"
-
-tox-parallel:
-	@echo "⚡ tox並行実行中..."
-	tox --parallel auto
-	@echo "✅ tox並行実行完了"
-
-tox-clean:
-	@echo "🧹 tox環境クリーンアップ中..."
-	tox -e clean
-	@echo "✅ tox環境クリーンアップ完了"
-
-tox-recreate:
-	@echo "🔄 tox環境再構築中..."
-	tox --recreate
-	@echo "✅ tox環境再構築完了"

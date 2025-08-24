@@ -29,7 +29,12 @@ class SyntaxValidator:
         self.list_parser = ListParser()
         self.block_parser = BlockParser(self.keyword_parser)
         self.marker_validator = KeywordValidator(definitions)
-        self.list_validator = ListValidator(self.list_parser)
+        from typing import cast
+
+        from ..list_parser_core import ListParserCore
+
+        # Cast to expected type - ListParser should be compatible with ListParserCore
+        self.list_validator = ListValidator(cast(ListParserCore, self.list_parser))
         self.block_validator = BlockValidator(self.block_parser)
 
     def validate_encoding(self, text: str) -> list[ValidationIssue]:

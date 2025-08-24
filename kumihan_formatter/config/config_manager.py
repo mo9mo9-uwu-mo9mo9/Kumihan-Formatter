@@ -61,9 +61,17 @@ class ConfigManager:
         """設定値を取得"""
         return self._config.get(key, default)
 
+    def get_config(self, key: str, default: Any = None) -> Any:
+        """設定値を取得（テスト互換用エイリアス）"""
+        return self.get(key, default)
+
     def set(self, key: str, value: Any) -> None:
         """設定値を設定"""
         self._config.set(key, value)
+
+    def set_config(self, key: str, value: Any) -> None:
+        """設定値を設定（テスト互換用エイリアス）"""
+        self.set(key, value)
 
     def validate(self) -> bool:
         """設定の妥当性をチェック"""
@@ -102,6 +110,12 @@ class ConfigManager:
         """テーマを追加（ExtendedConfigのみ）"""
         if hasattr(self._config, "add_theme"):
             self._config.add_theme(theme_id, theme_data)
+
+    def remove_theme(self, theme_id: str) -> bool:
+        """テーマを削除（ExtendedConfigのみ）"""
+        if hasattr(self._config, "remove_theme"):
+            return self._config.remove_theme(theme_id)
+        return False
 
     def set_theme(self, theme_id: str) -> bool:
         """テーマを設定（ExtendedConfigのみ）"""
@@ -166,13 +180,29 @@ def create_config_manager(
     )
 
 
-def load_config(config_path: str | None = None) -> ConfigManager:
+def load_config(
+    config_path: str | None = None, config_type: str = "extended"
+) -> ConfigManager:
     """設定を読み込む便利関数（既存コードとの互換性用）
 
     Args:
         config_path: 設定ファイルパス
+        config_type: 設定タイプ ("base" または "extended")
 
     Returns:
         ConfigManager: 設定管理オブジェクト
+
+    Raises:
+        FileNotFoundError: 指定されたファイルが存在しない場合
+        ValueError: 無効な設定タイプが指定された場合
     """
-    return create_config_manager(config_path=config_path)
+    from pathlib import Path
+
+    # テストでの期待動作に合わせ、例外を発生させる
+    if config_path and not Path(config_path).exists():
+        raise FileNotFoundError(f"設定ファイルが見つかりません: {config_path}")
+
+    if config_type not in {"base", "extended"}:
+        raise ValueError(f"無効な設定タイプ: {config_type}")
+
+    return create_config_manager(config_type=config_type, config_path=config_path)

@@ -21,15 +21,24 @@ def create_config_instance(
 
     Returns:
         BaseConfig | ExtendedConfig: 設定オブジェクト
+
+    Note:
+        無効な設定タイプの場合はBaseConfigにフォールバック
+        ファイルが存在しない場合やロードに失敗した場合もデフォルト設定にフォールバック
     """
+    # テストとの互換性のため、無効なタイプはBaseConfigにフォールバック
     config_class = ExtendedConfig if config_type == "extended" else BaseConfig
 
-    if config_path and Path(config_path).exists():
+    if config_path:
+        if not Path(config_path).exists():
+            # ファイルが存在しない場合はデフォルト設定にフォールバック
+            return config_class()
+
         try:
             return config_class.from_file(config_path)
         except Exception:
-            # ファイル読み込みエラー時はデフォルト設定を使用
-            pass
+            # ファイル読み込みエラーの場合もデフォルト設定にフォールバック
+            return config_class()
 
     return config_class()
 

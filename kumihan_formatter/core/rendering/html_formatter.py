@@ -596,6 +596,68 @@ class HTMLFormatter:
 
         return template
 
+    def generate_footnotes_html(self, footnotes: List[Dict[str, Any]]) -> str:
+        """
+        脚注のHTML生成
+
+        Args:
+            footnotes: 脚注データのリスト
+                      [{"content": "内容", "number": 番号}, ...]
+
+        Returns:
+            str: 脚注のHTML文字列
+        """
+        if not footnotes:
+            return ""
+
+        import html
+
+        html_lines = ['<div class="footnotes">', "<ol>"]
+
+        for footnote in footnotes:
+            number = footnote.get("number", 1)
+            content = footnote.get("content", "")
+            # HTMLエスケープを適用
+            escaped_content = html.escape(content)
+
+            # 脚注のリストアイテム
+            html_lines.append(
+                f'<li id="footnote-{number}">'
+                f"{escaped_content} "
+                f'<a href="#footnote-ref-{number}" class="footnote-backref">↩</a>'
+                f"</li>"
+            )
+
+        html_lines.extend(["</ol>", "</div>"])
+        return "\n".join(html_lines)
+
+    def process_footnote_links(self, text: str, footnotes: List[Dict[str, Any]]) -> str:
+        """
+        テキスト内の脚注リンクを処理
+
+        Args:
+            text: 処理対象のテキスト
+            footnotes: 脚注データのリスト
+
+        Returns:
+            str: 脚注リンクが処理されたテキスト
+        """
+        # 脚注パターン ((内容)) を検索して置換
+        import re
+
+        pattern = r"\(\(([^)]+)\)\)"
+
+        def replace_footnote(match: re.Match[str]) -> str:
+            footnote_content = match.group(1)
+            # 対応する脚注番号を見つける
+            for footnote in footnotes:
+                if footnote.get("content") == footnote_content:
+                    number = footnote.get("number", 1)
+                    return f'<sup><a href="#footnote-{number}" id="footnote-ref-{number}">[{number}]</a></sup>'
+            return match.group(0)  # 見つからない場合は元のまま
+
+        return re.sub(pattern, replace_footnote, text)
+
 
 class FootnoteManager:
     """
@@ -680,6 +742,52 @@ class FootnoteManager:
         """
         self.footnotes.clear()
         self.footnote_counter = 0
+
+    def register_footnotes(
+        self, footnotes: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        脚注リストを登録し、グローバル番号を割り当て
+
+        Args:
+            footnotes: 脚注データのリスト
+
+        Returns:
+            List[Dict[str, Any]]: グローバル番号が割り当てられた脚注リスト
+        """
+        processed_footnotes = []
+
+        for footnote in footnotes:
+            # 新しい脚注データを作成（既存データをコピー）
+            processed_footnote = footnote.copy()
+
+            # グローバル番号を割り当て
+            self.footnote_counter += 1
+            processed_footnote["global_number"] = self.footnote_counter
+
+            # 内部ストレージに保存
+            footnote_id = f"footnote-{self.footnote_counter}"
+            self.footnotes[footnote_id] = processed_footnote
+
+            processed_footnotes.append(processed_footnote)
+
+        return processed_footnotes
+
+    def get_all_footnotes(self) -> List[Dict[str, Any]]:
+        """
+        登録されている全脚注を取得
+
+        Returns:
+            List[Dict[str, Any]]: 全脚注データのリスト
+        """
+        return list(self.footnotes.values())
+
+    def reset_counter(self) -> None:
+        """
+        脚注カウンターをリセット
+        """
+        self.footnote_counter = 0
+        self.footnotes.clear()
 
 
 # Utility functions for backward compatibility

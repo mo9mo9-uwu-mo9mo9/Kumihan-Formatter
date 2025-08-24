@@ -8,12 +8,11 @@ Issue #880 Phase 2B: 既存のBlockParser系統を統合
 """
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Union, overload
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ...ast_nodes import Node, create_node
 from ..base import CompositeMixin, UnifiedParserBase
 from ..base.parser_protocols import (
-    BlockParserProtocol,
     ParseContext,
     ParseResult,
     create_parse_result,

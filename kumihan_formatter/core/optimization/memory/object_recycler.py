@@ -461,13 +461,9 @@ class RecycleEffectMeasurer:
             return 0.0
 
 
-# グローバル型別リサイクラー
-_global_type_recycler = TypeBasedRecycler()
-
-
 def get_type_recycler() -> TypeBasedRecycler:
     """グローバル型別リサイクラー取得"""
-    return _global_type_recycler
+    return get_global_recycler()
 
 
 def benchmark_recycling_performance(iterations: int = 5000) -> Dict[str, Any]:
@@ -601,7 +597,7 @@ def get_effect_measurer() -> "RecycleEffectMeasurer":
     global _global_effect_measurer
     if _global_effect_measurer is None:
         recycler = get_global_recycler()
-        _global_effect_measurer = RecycleEffectMeasurer(recycler)
+        _global_effect_measurer = RecycleEffectMeasurer(cast(ObjectRecycler, recycler))
     return _global_effect_measurer
 
 

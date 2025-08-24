@@ -37,7 +37,7 @@ class EventEmitterMixin:
             "context": context or {},
         }
 
-        publish_event(event_type, self._source_name, data)
+        publish_event(event_type, data)
         logger.debug(f"{self._source_name}: {operation} 開始")
 
     def emit_completed(
@@ -60,7 +60,7 @@ class EventEmitterMixin:
             "metrics": metrics or {},
         }
 
-        publish_event(event_type, self._source_name, data)
+        publish_event(event_type, data)
         logger.debug(f"{self._source_name}: {operation} 完了")
 
     def emit_error(
@@ -81,7 +81,7 @@ class EventEmitterMixin:
             "context": context or {},
         }
 
-        publish_event(event_type, self._source_name, data)
+        publish_event(event_type, data)
         logger.error(f"{self._source_name}: {operation} エラー - {error}")
 
 

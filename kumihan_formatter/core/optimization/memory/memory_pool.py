@@ -379,8 +379,7 @@ class PoolManager:
         return self.get_all_stats()
 
 
-# グローバルプールマネージャー
-_global_pool_manager = PoolManager()
+# 直接インスタンス化を削除（下部のget_pool_manager()を使用）
 
 
 def benchmark_pool_performance(iterations: int = 1000) -> dict[str, Any]:

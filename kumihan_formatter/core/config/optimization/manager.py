@@ -176,6 +176,10 @@ class AdaptiveSettingsManager:
         """設定更新"""
         return self.core.update_settings(settings)
 
+    def _apply_adjustment(self, adjustment: ConfigAdjustment) -> None:
+        """設定調整を適用（内部メソッド）"""
+        return self.core._apply_adjustment(adjustment)
+
 
 # 分割されたファイルをエクスポートして後方互換性を維持
 __all__ = ["AdaptiveSettingsManager", "ConfigAdjustment", "WorkContext"]

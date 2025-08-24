@@ -44,7 +44,7 @@ class KeywordParser(BaseParser):
         self.definitions = definitions
 
     def parse_marker_keywords(
-        self, marker_content: Any
+        self, marker_content: str, context: Optional[ParseContext] = None
     ) -> Tuple[List[str], Dict[str, Any], List[str]]:
         """Parse keywords from marker content.
 
@@ -77,13 +77,20 @@ class KeywordParser(BaseParser):
         if "+" in marker_content or "＋" in marker_content:
             compound_keywords = self.split_compound_keywords(marker_content)
             for part in compound_keywords:
-                if part and self._is_valid_keyword(part):
-                    keywords.append(part)
+                part_keywords, part_attributes, part_errors = (
+                    self._process_single_keyword(part.strip())
+                )
+                keywords.extend(part_keywords)
+                attributes.update(part_attributes)
+                errors.extend(part_errors)
         else:
             # Single keyword
-            keyword = marker_content.strip()
-            if keyword and self._is_valid_keyword(keyword):
-                keywords.append(keyword)
+            single_keywords, single_attributes, single_errors = (
+                self._process_single_keyword(marker_content)
+            )
+            keywords.extend(single_keywords)
+            attributes.update(single_attributes)
+            errors.extend(single_errors)
 
         return keywords, attributes, errors
 
@@ -129,12 +136,14 @@ class KeywordParser(BaseParser):
             parts = re.split(r"[+＋]", keyword_content)
             for part in parts:
                 part = part.strip()
-                if part and self._is_valid_keyword(part):
+                if (
+                    part
+                ):  # 分割された部分をそのまま返す（バリデーションは_process_single_keywordで行う）
                     keywords.append(part)
         else:
             # Single keyword
             keyword = keyword_content.strip()
-            if keyword and self._is_valid_keyword(keyword):
+            if keyword:  # バリデーションを簡素化
                 keywords.append(keyword)
 
         return keywords
@@ -207,6 +216,90 @@ class KeywordParser(BaseParser):
                 return {"base_text": base_text, "ruby_text": ruby_text}
 
         return {}
+
+    def _process_single_keyword(
+        self, keyword: str
+    ) -> Tuple[List[str], Dict[str, Any], List[str]]:
+        """単一キーワードを処理（属性解析含む）
+
+        Args:
+            keyword: 処理するキーワード文字列
+
+        Returns:
+            Tuple[List[str], Dict[str, Any], List[str]]: (keywords, attributes, errors)
+        """
+        keywords: List[str] = []
+        attributes: Dict[str, Any] = {}
+        errors: List[str] = []
+
+        if not keyword:
+            return keywords, attributes, errors
+
+        # 色属性の処理: "色 赤", "色 #FF0000", "color red" など
+        color_patterns = [r"^色\s+(.+)$", r"^color\s+(.+)$"]
+        for pattern in color_patterns:
+            match = re.match(pattern, keyword, re.IGNORECASE)
+            if match:
+                color_value = match.group(1).strip()
+                attributes["color"] = color_value
+                # 日本語か英語かに応じてキーワード追加
+                if keyword.lower().startswith("color"):
+                    keywords.append("color")
+                else:
+                    keywords.append("色")
+                return keywords, attributes, errors
+
+        # サイズ属性の処理: "サイズ 16px", "size 16px" など
+        size_patterns = [r"^サイズ\s+(.+)$", r"^size\s+(.+)$"]
+        for pattern in size_patterns:
+            match = re.match(pattern, keyword, re.IGNORECASE)
+            if match:
+                size_value = match.group(1).strip()
+                attributes["size"] = size_value
+                # 日本語か英語かに応じてキーワード追加
+                if keyword.lower().startswith("size"):
+                    keywords.append("size")
+                else:
+                    keywords.append("サイズ")
+                return keywords, attributes, errors
+
+        # スタイル属性の処理: "スタイル bold", "style bold" など
+        style_patterns = [r"^スタイル\s+(.+)$", r"^style\s+(.+)$"]
+        for pattern in style_patterns:
+            match = re.match(pattern, keyword, re.IGNORECASE)
+            if match:
+                style_value = match.group(1).strip()
+                attributes["style"] = style_value
+                # 日本語か英語かに応じてキーワード追加
+                if keyword.lower().startswith("style"):
+                    keywords.append("style")
+                else:
+                    keywords.append("スタイル")
+                return keywords, attributes, errors
+
+        # 基本キーワードの多言語マッピング
+        basic_keyword_mapping = {
+            # 日本語キーワード
+            "太字": "bold",
+            "イタリック": "italic",
+            "斜体": "italic",
+            "下線": "underline",
+            "色": "color",
+            "色指定": "color_specification",  # 単純キーワードとして処理
+            "サイズ": "size",
+            # 英語キーワード
+            "bold": "bold",
+            "italic": "italic",
+            "underline": "underline",
+            "color": "color",
+            "size": "size",
+        }
+
+        # 基本キーワード処理（多言語対応）
+        if keyword in basic_keyword_mapping or self._is_valid_keyword(keyword):
+            keywords.append(keyword)
+
+        return keywords, attributes, errors
 
     # Issue #914 Phase 1: 統一プロトコル実装
 
