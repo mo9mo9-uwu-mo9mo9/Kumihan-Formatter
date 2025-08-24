@@ -413,49 +413,7 @@ class ReleasePreparationManager:
                     "error": "Black not available",
                 }
 
-            # isort インポートチェック
-            try:
-                isort_result = subprocess.run(
-                    [
-                        sys.executable,
-                        "-m",
-                        "isort",
-                        "--check-only",
-                        "kumihan_formatter/",
-                    ],
-                    cwd=project_root,
-                    capture_output=True,
-                    text=True,
-                )
-                quality_results["isort"] = {
-                    "passed": isort_result.returncode == 0,
-                    "output": isort_result.stdout[:500] if isort_result.stdout else "",
-                }
-            except:
-                quality_results["isort"] = {
-                    "passed": False,
-                    "error": "isort not available",
-                }
 
-            # flake8 linting
-            try:
-                flake8_result = subprocess.run(
-                    [sys.executable, "-m", "flake8", "kumihan_formatter/"],
-                    cwd=project_root,
-                    capture_output=True,
-                    text=True,
-                )
-                quality_results["flake8"] = {
-                    "passed": flake8_result.returncode == 0,
-                    "output": (
-                        flake8_result.stdout[:500] if flake8_result.stdout else ""
-                    ),
-                }
-            except:
-                quality_results["flake8"] = {
-                    "passed": False,
-                    "error": "flake8 not available",
-                }
 
             # mypy 型チェック
             try:

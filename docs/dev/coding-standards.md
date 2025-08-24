@@ -221,7 +221,7 @@ jobs:
 ### Python基本規約
 - **バージョン**: Python 3.12以上
 - **フォーマッタ**: Black（自動適用）
-- **import整理**: isort（自動適用）  
+  
 - **型チェック**: mypy strict mode
 - **エンコーディング**: UTF-8統一
 

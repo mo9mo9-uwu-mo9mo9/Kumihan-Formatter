@@ -83,7 +83,7 @@ DOCUMENT_INTEGRATION_REPORT.md (統合確認)
 ### 5.1 技術仕様との整合性
 - ✅ **Python 3.12+**: 全ドキュメントで統一
 - ✅ **依存関係**: Jinja2のみ（MVP）→段階的拡張
-- ✅ **コード品質**: Black, isort, mypy strict準拠
+- ✅ **コード品質**: Black, mypy strict準拠
 
 ### 5.2 機能スコープの整合性
 - ✅ **基本記法**: NOTATION_SPEC.mdのα-dev記法に準拠

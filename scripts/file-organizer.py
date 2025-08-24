@@ -89,7 +89,6 @@ class FileOrganizer:
             ".venv",
             "__pycache__",
             ".pytest_cache",
-            ".tox",
             "build",
             "dist",
             "kumihan_formatter",
@@ -108,7 +107,6 @@ class FileOrganizer:
             "CHANGELOG.md",
             "CONTRIBUTING.md",
             "SPEC.md",
-            ".flake8",
             ".pre-commit-config.yaml",
         }
 

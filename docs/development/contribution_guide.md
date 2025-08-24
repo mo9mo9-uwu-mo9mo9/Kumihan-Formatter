@@ -28,7 +28,7 @@ Kumihan-Formatterは、独自の記法システム（Kumihan記法）を用い�
 
 ### プロジェクト特徴
 
-- **技術スタック**: Python 3.12+, Black, isort, mypy (strict)
+- **技術スタック**: Python 3.12+, Black, mypy (strict)
 - **記法システム**: Kumihan独自ブロック記法 (`# 装飾名 #内容##`)
 - **品質重視**: 3層品質検証システム（構文→品質→人的レビュー）
 - **日本語メイン**: コメント・ドキュメント・レビューは日本語
@@ -145,9 +145,7 @@ make lint
     "python.defaultInterpreter": "python3",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
     "python.formatting.provider": "black",
-    "python.sortImports.provider": "isort",
     "editor.formatOnSave": true,
     "python.testing.pytestEnabled": true
 }
@@ -192,7 +190,6 @@ python3 tools/monitor_performance.py
 
 #### 基本スタイル
 - **フォーマット**: Black (line-length=88, 自動適用)
-- **インポート**: isort設定準拠（自動適用）
 - **型注釈**: mypy strict mode必須
 - **エンコーディング**: UTF-8統一
 - **Python版**: 3.12以上使用
@@ -200,14 +197,12 @@ python3 tools/monitor_performance.py
 #### コード品質チェック
 ```bash
 # 必須実行コマンド
-make lint      # Black, isort, flake8, mypy
+make lint      # Black, mypy
 make test      # pytest全テスト
 make typecheck # 型チェック
 
 # 個別実行
 black .        # コードフォーマット
-isort .        # インポート整理
-flake8         # コード品質
 mypy .         # 型チェック
 ```
 
@@ -732,7 +727,7 @@ def optimized_process(items):
    - L45でHTMLエスケープされていません → XSS脆弱性の可能性
    
 2. **品質問題**:
-   - `make lint`でflake8エラーが発生しています
+   - `make lint`でmypyエラーが発生しています
    - 型注釈が不足しています（L12, L34）
    
 3. **テスト**:

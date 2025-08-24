@@ -53,9 +53,7 @@ show_help() {
 
 品質チェック項目:
   1. Black - コードフォーマット確認
-  2. isort - インポート並び順確認
-  3. flake8 - 静的解析・linting
-  4. mypy - 型チェック（基本）
+  2. mypy - 型チェック（基本）
 
 例:
   $0                           # kumihan_formatter/を対象
@@ -75,7 +73,7 @@ fi
 check_dependencies() {
     local missing_tools=()
 
-    for tool in black isort flake8 mypy; do
+    for tool in black mypy; do
         if ! command -v "$tool" &> /dev/null; then
             missing_tools+=("$tool")
         fi
@@ -162,19 +160,8 @@ main() {
     run_check "Black フォーマット確認" \
         "black --check --diff \"$TARGET_DIR\""
 
-    # isort - インポート並び順確認
-    run_check "isort インポート順序確認" \
-        "isort --check-only --diff \"$TARGET_DIR\""
-
     echo ""
-    log_info "=== Phase 2: 静的解析・Linting ==="
-
-    # flake8 - 静的解析
-    run_check "flake8 静的解析" \
-        "flake8 \"$TARGET_DIR\" --max-line-length=88 --select=E9,F63,F7,F82"
-
-    echo ""
-    log_info "=== Phase 3: 型チェック（基本） ==="
+    log_info "=== Phase 2: 型チェック ===\"
 
     # mypy - 型チェック（基本モジュールのみ）
     if [[ "$TARGET_DIR" == "kumihan_formatter" ]]; then

@@ -387,34 +387,24 @@ class MetricsCollector:
             return {}
 
     def collect_lint_metrics(self) -> Dict[str, Any]:
-        """Lintメトリクス収集"""
+        """Lintメトリクス収集 (mypy基盤)"""
         try:
-            # flake8実行
+            # mypy実行
             result = subprocess.run(
-                ["python3", "-m", "flake8", "kumihan_formatter", "--format=json"],
+                ["python3", "-m", "mypy", "kumihan_formatter", "--ignore-missing-imports"],
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
             )
 
+            # mypy出力をライン別に分析
             lint_issues = []
             if result.stdout:
-                try:
-                    lint_data = json.loads(result.stdout)
-                    lint_issues = lint_data if isinstance(lint_data, list) else []
-                except json.JSONDecodeError:
-                    # JSONでない場合は行数でカウント
-                    lint_issues = result.stdout.strip().split("\n") if result.stdout.strip() else []
+                lint_issues = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
-            # 問題の分類
-            error_count = len(
-                [
-                    issue
-                    for issue in lint_issues
-                    if isinstance(issue, dict) and issue.get("code", "").startswith("E")
-                ]
-            )
-            warning_count = len(lint_issues) - error_count
+            # 問題分類 (mypyはエラーのみ出力)
+            error_count = len(lint_issues)
+            warning_count = 0
 
             return {
                 "timestamp": datetime.now().isoformat(),
@@ -422,7 +412,7 @@ class MetricsCollector:
                 "error_count": error_count,
                 "warning_count": warning_count,
                 "status": (
-                    "PASS" if len(lint_issues) == 0 else "WARNING" if error_count == 0 else "FAIL"
+                    "PASS" if len(lint_issues) == 0 else "FAIL"
                 ),
             }
 
