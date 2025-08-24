@@ -6,7 +6,14 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Type, TypeVar
+
+from ..utilities.logger import get_logger
+
+if TYPE_CHECKING:
+    from .dependency_injection import DIContainer
+
+logger = get_logger(__name__)
 
 T = TypeVar("T")
 
@@ -69,13 +76,17 @@ class AsyncObserver(Protocol):
 class EventBus:
     """イベントバス - Observer Pattern実装"""
 
-    def __init__(self) -> None:
+    def __init__(self, container: Optional["DIContainer"] = None) -> None:
         self._observers: Dict[EventType, List[Observer]] = {}
         self._async_observers: Dict[EventType, List[AsyncObserver]] = {}
         self._global_observers: List[Observer] = []
         self._lock = threading.RLock()
         self._event_history: List[Event] = []
         self._max_history = 1000
+        self._container = container
+        self._observer_registry: Dict[str, Type[Observer]] = (
+            {}
+        )  # オブザーバークラス登録
 
     def subscribe(self, event_type: EventType, observer: Observer) -> None:
         """オブザーバー登録"""
@@ -183,3 +194,71 @@ class EventBus:
         """オブザーバーエラー処理"""
         # ログ記録やエラー通知の実装
         pass
+
+    def register_observer_class(
+        self, name: str, observer_class: Type[Observer]
+    ) -> None:
+        """オブザーバークラスの登録"""
+        try:
+            self._observer_registry[name] = observer_class
+
+            if self._container:
+                # DIコンテナーに登録
+                self._container.register(observer_class, observer_class)
+
+        except Exception as e:
+            logger.error(f"Observer class registration failed: {name}, error: {e}")
+
+    def create_observer_instance(self, name: str) -> Optional[Observer]:
+        """オブザーバーインスタンス作成"""
+        try:
+            if name not in self._observer_registry:
+                return None
+
+            observer_class = self._observer_registry[name]
+
+            if self._container:
+                # DIコンテナー経由で作成
+                return self._container.resolve(observer_class)
+            else:
+                # 直接作成
+                return observer_class()
+
+        except Exception as e:
+            logger.error(f"Observer instance creation failed: {name}, error: {e}")
+            return None
+
+    def auto_subscribe_from_container(self, event_type: EventType) -> int:
+        """DIコンテナーからオブザーバーを自動登録"""
+        count = 0
+
+        try:
+            if not self._container:
+                return count
+
+            for name, observer_class in self._observer_registry.items():
+                observer = self.create_observer_instance(name)
+                if observer:
+                    self.subscribe(event_type, observer)
+                    count += 1
+
+        except Exception as e:
+            logger.error(f"Auto subscription failed: {e}")
+
+        return count
+
+    def get_observer_info(self) -> Dict[str, Any]:
+        """オブザーバー情報の取得"""
+        return {
+            "registered_observers": {
+                event_type.name: len(observers)
+                for event_type, observers in self._observers.items()
+            },
+            "async_observers": {
+                event_type.name: len(observers)
+                for event_type, observers in self._async_observers.items()
+            },
+            "global_observers": len(self._global_observers),
+            "observer_classes": list(self._observer_registry.keys()),
+            "event_history_size": len(self._event_history),
+        }

@@ -1,7 +1,23 @@
 """Strategy Pattern Implementation"""
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    runtime_checkable,
+)
+
+from ..utilities.logger import get_logger
+
+if TYPE_CHECKING:
+    from .dependency_injection import DIContainer
+
+logger = get_logger(__name__)
 
 
 @runtime_checkable
@@ -50,12 +66,14 @@ class StrategyPriority(Enum):
 class StrategyManager:
     """戦略管理システム"""
 
-    def __init__(self) -> None:
+    def __init__(self, container: Optional["DIContainer"] = None) -> None:
         self._parsing_strategies: Dict[str, ParsingStrategy] = {}
         self._rendering_strategies: Dict[str, RenderingStrategy] = {}
         self._strategy_priorities: Dict[str, int] = {}
         self._default_parsing_strategy: Optional[str] = None
         self._default_rendering_strategy: Optional[str] = None
+        self._container = container
+        self._strategy_registry: Dict[str, Type[Any]] = {}  # 戦略クラス登録
 
     def register_parsing_strategy(
         self,
@@ -122,3 +140,67 @@ class StrategyManager:
             "parsing": list(self._parsing_strategies.keys()),
             "rendering": list(self._rendering_strategies.keys()),
         }
+
+    def register_strategy_class(
+        self, name: str, strategy_class: Type[Any], strategy_type: str = "parsing"
+    ) -> None:
+        """戦略クラスの登録"""
+        try:
+            self._strategy_registry[f"{strategy_type}:{name}"] = strategy_class
+
+            if self._container:
+                # DIコンテナーに登録
+                self._container.register(strategy_class, strategy_class)
+
+        except Exception as e:
+            logger.error(f"Strategy class registration failed: {name}, error: {e}")
+
+    def create_strategy_instance(
+        self, name: str, strategy_type: str = "parsing"
+    ) -> Optional[Any]:
+        """戦略インスタンス作成"""
+        try:
+            key = f"{strategy_type}:{name}"
+            if key not in self._strategy_registry:
+                return None
+
+            strategy_class = self._strategy_registry[key]
+
+            if self._container:
+                # DIコンテナー経由で作成
+                return self._container.resolve(strategy_class)
+            else:
+                # 直接作成
+                return strategy_class()
+
+        except Exception as e:
+            logger.error(f"Strategy instance creation failed: {name}, error: {e}")
+            return None
+
+    def validate_strategies(self) -> List[str]:
+        """戦略の妥当性検証"""
+        issues = []
+
+        try:
+            # パーシング戦略の検証
+            for name, strategy in self._parsing_strategies.items():
+                if not hasattr(strategy, "supports_content"):
+                    issues.append(
+                        f"Parsing strategy {name} missing supports_content method"
+                    )
+                if not hasattr(strategy, "parse"):
+                    issues.append(f"Parsing strategy {name} missing parse method")
+
+            # レンダリング戦略の検証
+            for name, strategy in self._rendering_strategies.items():
+                if not hasattr(strategy, "supports_format"):
+                    issues.append(
+                        f"Rendering strategy {name} missing supports_format method"
+                    )
+                if not hasattr(strategy, "render"):
+                    issues.append(f"Rendering strategy {name} missing render method")
+
+        except Exception as e:
+            issues.append(f"Strategy validation error: {e}")
+
+        return issues
