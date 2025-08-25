@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 # Import specialized handlers
 from .block_handler import BlockHandler
 from .core.ast_nodes import Node, error_node
-from .core.parsing.block import BlockParser
+from .parsers.block import BlockParser
 from .core.parsing.keyword.keyword_parser import KeywordParser
 from .core.utilities.logger import get_logger
 from .inline_handler import InlineHandler

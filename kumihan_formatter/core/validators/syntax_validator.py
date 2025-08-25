@@ -8,7 +8,8 @@ from typing import Any, Union
 
 from ..list_parser import ListParser
 from ..list_validator import ListValidator
-from ..parsing.block import BlockParser, BlockValidator
+from ...parsers.block import BlockParser
+from ..parsing.block import BlockValidator
 from ..parsing.keyword.keyword_parser import KeywordParser
 from ..parsing.keyword.validator import KeywordValidator
 from .validation_issue import ValidationIssue
