@@ -73,8 +73,11 @@ class TestBasicFunctionality:
         """BlockHandlerの基本機能テスト"""
         try:
             from kumihan_formatter.block_handler import BlockHandler
+            from kumihan_formatter.parser import Parser
             
-            handler = BlockHandler()
+            # パーサーインスタンスを作成してBlockHandlerに渡す
+            parser = Parser()
+            handler = BlockHandler(parser)
             assert handler is not None
             
             # 基本的なブロック処理

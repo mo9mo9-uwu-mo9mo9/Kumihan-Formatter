@@ -413,7 +413,7 @@ class BlockProcessingEngine:
         self.logger = get_logger(__name__)
 
         # ハンドラーコレクション
-        from ..block_handlers import BlockHandlerCollection
+        from .block_handlers import BlockHandlerCollection
 
         self.handler_collection = BlockHandlerCollection()
 
