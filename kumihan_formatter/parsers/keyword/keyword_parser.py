@@ -38,20 +38,8 @@ from ...core.parsing.base.parser_protocols import create_parse_result
 from ...core.parsing.protocols import ParserType
 from ...core.utilities.logger import get_logger
 
-from .keyword_handlers import (
-    BasicKeywordHandler,
-    AdvancedKeywordHandler,
-    CustomKeywordHandler,
-    AttributeProcessor,
-    KeywordValidatorCollection,
-)
-from .keyword_utils import (
-    setup_keyword_definitions,
-    KeywordExtractor,
-    KeywordInfoProcessor,
-    KeywordCache,
-    create_cache_key,
-)
+from .keyword_config import KeywordParserConfig
+from .keyword_validation import KeywordValidator
 
 
 class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProtocol):
@@ -78,46 +66,30 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
 
         self.logger = get_logger(__name__)
 
-        # キーワード定義・レジストリ
-        self.keyword_definitions = setup_keyword_definitions()
-        self.basic_keywords = self.keyword_definitions["basic"]
-        self.advanced_keywords = self.keyword_definitions["advanced"]
-        self.all_keywords = self.keyword_definitions["all"]
+        # 設定管理の委譲
+        self.config = KeywordParserConfig()
 
-        # 分割されたコンポーネント初期化
-        self._setup_modular_components()
+        # 設定からの値取得
+        self.keyword_definitions = self.config.keyword_definitions
+        self.basic_keywords = self.config.get_basic_keywords()
+        self.advanced_keywords = self.config.get_advanced_keywords()
+        self.all_keywords = self.config.get_all_keywords()
 
-        # キャッシュ・パフォーマンス最適化
-        self.cache = KeywordCache()
+        # ハンドラー群の取得
+        self.keyword_handlers = self.config.get_handlers()
 
-    def _setup_modular_components(self) -> None:
-        """分割されたコンポーネントのセットアップ"""
-        # キーワードハンドラー群
-        self.basic_handler = BasicKeywordHandler()
-        self.advanced_handler = AdvancedKeywordHandler()
-        self.custom_handler = CustomKeywordHandler()
+        # コンポーネントの取得
+        self.basic_handler = self.config.basic_handler
+        self.advanced_handler = self.config.advanced_handler
+        self.custom_handler = self.config.custom_handler
+        self.attribute_processor = self.config.attribute_processor
+        self.keyword_extractor = self.config.keyword_extractor
+        self.info_processor = self.config.info_processor
+        self.validator_collection = self.config.validator_collection
+        self.cache = self.config.cache
 
-        # 属性処理
-        self.attribute_processor = AttributeProcessor()
-
-        # キーワード抽出
-        self.keyword_extractor = KeywordExtractor()
-
-        # キーワード情報処理
-        self.info_processor = KeywordInfoProcessor(
-            self.basic_keywords, self.advanced_keywords
-        )
-
-        # バリデーター
-        self.validator_collection = KeywordValidatorCollection(
-            self.basic_keywords, self.advanced_keywords, self.custom_handler
-        )
-
-        # 統合ハンドラー辞書
-        self.keyword_handlers = {}
-        self.keyword_handlers.update(self.basic_handler.handlers)
-        self.keyword_handlers.update(self.advanced_handler.handlers)
-        self.keyword_handlers.update(self.custom_handler.custom_handlers)
+        # バリデーター初期化
+        self.validator = KeywordValidator(self.config)
 
     def _parse_implementation(
         self, content: Union[str, List[str]], **kwargs: Any
@@ -231,48 +203,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         self, content: str, context: Optional["ParseContext"] = None
     ) -> List[str]:
         """キーワード構文チェック"""
-        # キャッシュ確認
-        cache_key = create_cache_key(content, context, "validate")
-        cached_errors = self.cache.get_validation_cache(cache_key)
-        if cached_errors is not None:
-            return cached_errors
-
-        errors = []
-
-        if not isinstance(content, str):
-            errors.append("Content must be a string")
-            self.cache.set_validation_cache(cache_key, errors)
-            return errors
-
-        if not content.strip():
-            self.cache.set_validation_cache(cache_key, errors)
-            return errors  # 空コンテンツは有効
-
-        try:
-            # キーワード抽出
-            keyword_info = self.keyword_extractor.extract_keyword_info(content)
-            if not keyword_info:
-                self.cache.set_validation_cache(cache_key, errors)
-                return errors  # キーワードなしは有効
-
-            # 各バリデーター実行
-            for (
-                validator_name,
-                validator,
-            ) in self.validator_collection.validators.items():
-                try:
-                    validator_errors = validator(keyword_info)
-                    for error in validator_errors:
-                        errors.append(f"{validator_name}: {error}")
-                except Exception as e:
-                    errors.append(f"Validation error ({validator_name}): {e}")
-
-        except Exception as e:
-            errors.append(f"Validation failed: {e}")
-
-        # キャッシュ保存
-        self.cache.set_validation_cache(cache_key, errors)
-        return errors
+        return self.validator.validate(content, context)
 
     def get_parser_info(self) -> Dict[str, Any]:
         """パーサー情報（プロトコル準拠）"""
@@ -316,24 +247,7 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin, KeywordParserProto
         self, keyword: str, context: Optional["ParseContext"] = None
     ) -> bool:
         """単一キーワードの妥当性チェック（プロトコル準拠）"""
-        # キャッシュ確認
-        cache_key = f"validate_{keyword}_{id(context) if context else 0}"
-        cached_result = self.cache.get_keyword_cache(cache_key)
-        if cached_result is not None:
-            return cached_result.get("valid", False)
-
-        # キーワード妥当性チェック
-        is_valid = (
-            keyword in self.all_keywords
-            or keyword in self.custom_handler.custom_handlers
-            or self.custom_handler.is_valid_custom_keyword(keyword)
-        )
-
-        # キャッシュ保存
-        self.cache.set_keyword_cache(
-            cache_key, {"valid": is_valid} if is_valid else None
-        )
-        return is_valid
+        return self.validator.validate_keyword(keyword, context)
 
     def get_keyword_info(
         self, keyword: str, context: Optional["ParseContext"] = None
