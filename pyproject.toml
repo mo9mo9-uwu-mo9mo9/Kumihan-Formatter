@@ -30,6 +30,7 @@ dependencies = [
     "customtkinter>=5.2.0",
     "pillow>=10.0.0",
     "tkinterdnd2>=0.4.3",
+    "pyqt6>=6.9.1",
 ]
 
 [project.scripts]
