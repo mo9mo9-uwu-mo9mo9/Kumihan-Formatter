@@ -501,20 +501,20 @@ class Parser:
         # Parse block markers first
         if self.block_parser.is_opening_marker(line):
             self.logger.debug(f"Found block marker at line {self.current}")
-            node, next_index = self.block_parser.parse_block_marker(
-                self.lines, self.current
-            )
-            self.current = next_index
-            return node
+            # 新しいAPIを使用してブロックを解析
+            result = self.block_parser.parse([line])
+            if result.success and result.nodes:
+                self.current += 1
+                return result.nodes[0]
 
         # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
         if hasattr(self, "block_handler") and self.block_handler:
-            result, next_index = self.block_handler.parse_line_fallback(
+            node_result, next_index = self.block_handler.parse_line_fallback(
                 self.lines, self.current
             )
-            if result:
+            if node_result:
                 self.current = next_index
-                return result
+                return node_result
 
         # フォールバック: インライン記法処理を含むテキストノード作成
         if line:
@@ -561,20 +561,20 @@ class Parser:
             # Parse block markers first
             if self.block_parser.is_opening_marker(line):
                 self.logger.debug(f"Found block marker at line {self.current}")
-                node, next_index = self.block_parser.parse_block_marker(
-                    self.lines, self.current
-                )
-                self.current = next_index
-                return node
+                # 新しいAPIを使用してブロックを解析
+                result = self.block_parser.parse([line])
+                if result.success and result.nodes:
+                    self.current += 1
+                    return result.nodes[0]
 
             # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
             if hasattr(self, "block_handler") and self.block_handler:
-                result, next_index = self.block_handler.parse_line_fallback(
+                node_result, next_index = self.block_handler.parse_line_fallback(
                     self.lines, self.current
                 )
-                if result:
+                if node_result:
                     self.current = next_index
-                    return result
+                    return node_result
 
             # フォールバック: インライン記法処理を含むテキストノード作成
             if line:
