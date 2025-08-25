@@ -71,5 +71,9 @@ def main_with_logging():
         
         sys.exit(1)
 
+def main() -> None:
+    """GUIアプリケーションのメインエントリーポイント"""
+    main_with_logging()
+
 if __name__ == "__main__":
     main_with_logging()
