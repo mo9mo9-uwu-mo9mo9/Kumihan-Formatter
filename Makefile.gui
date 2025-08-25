@@ -1,0 +1,77 @@
+# Kumihan-Formatter GUI Build Makefile
+#
+# GUIアプリケーションのビルド・テスト用Makefile
+
+.PHONY: gui-test gui-build-mac gui-build-windows gui-clean gui-install-deps gui-logs gui-logs-tail
+
+# GUI関連依存関係インストール
+gui-install-deps:
+	@echo "📦 GUI関連依存関係をインストール中..."
+	uv add customtkinter pillow tkinterdnd2
+	uv add pyinstaller --group dev
+
+# GUI開発テスト起動
+gui-test:
+	@echo "🎨 GUIテスト起動中..."
+	uv run kumihan-gui
+
+# Mac用.appビルド
+gui-build-mac:
+	@echo "🍎 Mac用.appビルド中..."
+	uv run python3 build/build_mac.py
+
+# Windows用.exeビルド（Windows環境でのみ実行）
+gui-build-windows:
+	@echo "🪟 Windows用.exeビルド中..."
+	@if [ "$(shell uname)" = "Darwin" ]; then \
+		echo "⚠️  Windows用ビルドはWindows環境で実行してください"; \
+		exit 1; \
+	fi
+	uv run python3 build/build_windows.py
+
+# ビルド成果物をクリア
+gui-clean:
+	@echo "🧹 ビルド成果物をクリア中..."
+	rm -rf dist/
+	rm -rf build/Kumihan-Formatter/
+	rm -f *.spec
+
+# アプリテスト起動（Mac）
+gui-run-app:
+	@echo "🚀 ビルド済みアプリを起動中..."
+	@if [ -d "dist/Kumihan-Formatter.app" ]; then \
+		open dist/Kumihan-Formatter.app; \
+	else \
+		echo "❌ アプリが見つかりません。先にgui-build-macを実行してください"; \
+	fi
+
+# 統合ビルド・テスト
+gui-full-build: gui-clean gui-build-mac
+	@echo "✅ GUI完全ビルド完了！"
+	@echo "📱 アプリサイズ: $(shell du -sh dist/Kumihan-Formatter.app | cut -f1)"
+	@echo "🎯 テスト: make gui-run-app"
+
+# ログ確認
+gui-logs:
+	@echo "🔍 GUIログファイル確認中..."
+	python3 scripts/check_gui_logs.py
+
+# ログリアルタイム監視
+gui-logs-tail:
+	@echo "👀 GUIログリアルタイム監視開始..."
+	python3 scripts/check_gui_logs.py tail
+
+# ヘルプ
+gui-help:
+	@echo "🎨 Kumihan-Formatter GUI ビルドコマンド:"
+	@echo ""
+	@echo "  gui-install-deps  📦 GUI依存関係インストール"
+	@echo "  gui-test         🎨 開発環境でGUIテスト起動"
+	@echo "  gui-build-mac    🍎 Mac用.appビルド"
+	@echo "  gui-build-windows 🪟 Windows用.exeビルド"
+	@echo "  gui-run-app      🚀 ビルド済みアプリ起動"
+	@echo "  gui-clean        🧹 ビルド成果物クリア"
+	@echo "  gui-full-build   ✅ 完全ビルド（クリア→ビルド）"
+	@echo "  gui-logs         🔍 ログファイル確認"
+	@echo "  gui-logs-tail    👀 ログリアルタイム監視"
+	@echo ""
