@@ -509,12 +509,12 @@ class Parser:
 
         # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
         if hasattr(self, "block_handler") and self.block_handler:
-            result, next_index = self.block_handler.parse_line_fallback(
+            node_result, next_index = self.block_handler.parse_line_fallback(
                 self.lines, self.current
             )
-            if result:
+            if node_result:
                 self.current = next_index
-                return result
+                return node_result
 
         # フォールバック: インライン記法処理を含むテキストノード作成
         if line:
@@ -569,12 +569,12 @@ class Parser:
 
             # Issue #880修正: 通常テキストの処理を追加（フォールバック方式）
             if hasattr(self, "block_handler") and self.block_handler:
-                result, next_index = self.block_handler.parse_line_fallback(
+                node_result, next_index = self.block_handler.parse_line_fallback(
                     self.lines, self.current
                 )
-                if result:
+                if node_result:
                     self.current = next_index
-                    return result
+                    return node_result
 
             # フォールバック: インライン記法処理を含むテキストノード作成
             if line:
