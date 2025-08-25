@@ -27,10 +27,14 @@ dependencies = [
     "aiofiles>=23.0",
     "toml>=0.10",
     "tomli>=1.2.0",
+    "customtkinter>=5.2.0",
+    "pillow>=10.0.0",
+    "tkinterdnd2>=0.4.3",
 ]
 
 [project.scripts]
 kumihan = "kumihan_formatter.cli:main"
+kumihan-gui = "kumihan_formatter.gui_main:main"
 
 [project.optional-dependencies]
 dev = [
@@ -41,6 +45,7 @@ dev = [
     "types-aiofiles",
     "types-toml",
     "types-requests",
+    "pyinstaller>=6.0.0",
 ]
 performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
@@ -57,7 +62,7 @@ telemetry = [
     "opentelemetry-exporter-jaeger-thrift>=1.20.0",
     "opentelemetry-exporter-otlp-proto-grpc>=1.20.0",
     "opentelemetry-instrumentation-logging>=0.41b0",
-    "opentelemetry-instrumentation-psutil>=0.41b0",
+    # "opentelemetry-instrumentation-psutil>=0.41b0",  # 一時的にコメントアウト（GUI実装のため）
     "opentelemetry-instrumentation-threading>=0.41b0",
     "opentelemetry-propagator-b3>=1.20.0",
     "prometheus_client>=0.18.0",
@@ -183,5 +188,10 @@ markers = [
     "slow: 実行時間が長いテスト用マーク",
     "e2e: エンドツーエンドテスト用マーク",
     "unit: 単体テスト用マーク"
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.15.0",
 ]
 
