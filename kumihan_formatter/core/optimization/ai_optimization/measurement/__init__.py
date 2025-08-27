@@ -1,25 +1,15 @@
 """
-AI効果測定パッケージ
+AI効果測定メトリクスモジュール
 
-AI専用効果分離測定・Phase B基盤保護確認・統計分析機能
+パフォーマンス・品質・ビジネス指標の専門測定モジュール群
 """
 
-from .effect_measurement import AIEffectMeasurement
-from .measurement_core import (
-    BaselineMeasurement,
-    EffectReport,
-    MeasurementResult,
-    QualityMetrics,
-    StabilityAssessment,
-)
-from .statistical_analyzer import StatisticalAnalyzer
+from .business_metrics import BusinessMetrics
+from .performance_metrics import PerformanceMetrics
+from .quality_metrics import QualityMetrics
 
 __all__ = [
-    "MeasurementResult",
-    "EffectReport",
+    "PerformanceMetrics",
     "QualityMetrics",
-    "StabilityAssessment",
-    "BaselineMeasurement",
-    "StatisticalAnalyzer",
-    "AIEffectMeasurement",
+    "BusinessMetrics",
 ]

@@ -4,194 +4,362 @@
 """
 
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ....ast_nodes import Node, create_node
 
 
 class UnorderedListParser:
-    """非順序リスト解析専用クラス
-
-    担当機能:
-    - 非順序リスト (-, *, +)
-    - チェックリスト ([ ], [x])
-    - 定義リスト (term :: definition)
+    """無序リストパーサー - 統合版
+    
+    unordered_list_parser.py の詳細実装を統合
+    機能: -, *, +マーカー、チェックリスト、定義リストの解析
     """
 
     def __init__(self) -> None:
-        """初期化"""
-        self._setup_patterns()
-
-    def _setup_patterns(self) -> None:
-        """非順序リスト用パターンの設定"""
-        self.patterns = {
-            # 順序なしリスト: - item, * item, + item
-            "unordered": re.compile(r"^(\s*)[-*+]\s+(.+)$"),
-            # 定義リスト: term :: definition
-            "definition": re.compile(r"^(\s*)(.+?)\s*::\s*(.+)$"),
-            # チェックリスト: - [ ] item, - [x] item
-            "checklist": re.compile(r"^(\s*)[-*+]\s*\[([x\s])\]\s*(.+)$"),
+        """初期化: 無序リストパターンを設定"""
+        from kumihan_formatter.core.utilities.logger import get_logger
+        
+        self.logger = get_logger(__name__)
+        self.unordered_patterns = {
+            "bullet": re.compile(r"^([-*+])\s+(.*)$"),
+            "checklist": re.compile(r"^([-*+])\s+\[([ xX])\]\s+(.*)$"),
+            "definition": re.compile(r"^([^:]+):\s+(.*)$"),
         }
 
-    def can_handle(self, line: str, list_type: str) -> bool:
-        """指定された行とリストタイプを処理可能か判定"""
-        return list_type in ["unordered", "definition", "checklist"] and bool(
-            self.patterns[list_type].match(line)
-        )
-
-    def handle_unordered_list(self, line: str) -> Node:
-        """順序なしリストの処理"""
-        match = self.patterns["unordered"].match(line)
-        if match:
-            indent = match.group(1)
-            content = match.group(2)
-
-            node = create_node("list_item", content=content)
-            node.metadata.update(
-                {
-                    "type": "unordered",
-                    "marker": line.strip()[0],  # -, *, +
-                    "indent": len(indent),
-                }
-            )
-            return node
-
-        return create_node("list_item", content=line.strip())
-
-    def handle_definition_list(self, line: str) -> Node:
-        """定義リストの処理"""
-        match = self.patterns["definition"].match(line)
-        if match:
-            indent = match.group(1)
-            term = match.group(2)
-            definition = match.group(3)
-
-            node = create_node("definition_item", content=definition)
-            node.metadata.update(
-                {
-                    "type": "definition",
-                    "term": term,
-                    "definition": definition,
-                    "indent": len(indent),
-                }
-            )
-            return node
-
-        return create_node("list_item", content=line.strip())
-
-    def handle_checklist(self, line: str) -> Node:
-        """チェックリストの処理"""
-        match = self.patterns["checklist"].match(line)
-        if match:
-            indent = match.group(1)
-            checked = match.group(2).lower() == "x"
-            content = match.group(3)
-
-            node = create_node("checklist_item", content=content)
-            node.metadata.update(
-                {"type": "checklist", "checked": checked, "indent": len(indent)}
-            )
-            return node
-
-        return create_node("list_item", content=line.strip())
-
-    def extract_item_content(self, line: str, list_type: str) -> str:
-        """非順序リストアイテムからコンテンツを抽出"""
-        pattern = self.patterns.get(list_type)
-        if pattern:
-            match = pattern.match(line)
-            if match:
-                if list_type == "unordered":
-                    return match.group(2)
-                elif list_type == "definition":
-                    return match.group(3)  # definition部分
-                elif list_type == "checklist":
-                    return match.group(3)
-
-        return line.strip()
-
-    def extract_checklist_status(self, list_node: Node) -> Dict[str, Any]:
-        """チェックリストの完了状況を抽出"""
-        if list_node.metadata.get("type") != "checklist":
-            return {"error": "Not a checklist"}
-
-        total_items = 0
-        checked_items = 0
-
-        def count_items(node: Node) -> None:
-            nonlocal total_items, checked_items
-
-            if node.node_type == "checklist_item":
-                total_items += 1
-                if node.metadata.get("checked", False):
-                    checked_items += 1
-
-            # ネストした項目もカウント
-            for child in node.metadata.get("children", []):
-                count_items(child)
-
-        count_items(list_node)
-
-        completion_rate = (checked_items / total_items * 100) if total_items > 0 else 0
-
-        return {
-            "total_items": total_items,
-            "checked_items": checked_items,
-            "unchecked_items": total_items - checked_items,
-            "completion_rate": completion_rate,
-            "completed": checked_items == total_items and total_items > 0,
-        }
-
-    def validate_marker_consistency(self, items: List[Node]) -> List[str]:
-        """マーカーの一貫性チェック"""
-        errors = []
-        markers_by_level = {}
-
-        for i, item in enumerate(items):
-            if item.metadata.get("type") == "unordered":
-                marker = item.metadata.get("marker", "-")
-                level = item.metadata.get("indent", 0)
-
-                if level not in markers_by_level:
-                    markers_by_level[level] = marker
-                elif markers_by_level[level] != marker:
-                    errors.append(
-                        f"項目{i+1}: レベル{level}のマーカーが不一致 "
-                        f"(期待: {markers_by_level[level]}, 実際: {marker})"
-                    )
-
-        return errors
-
-    def get_supported_types(self) -> List[str]:
-        """サポートするリストタイプを取得"""
-        return list(self.patterns.keys())
-
-    def toggle_checklist_item(self, node: Node) -> Node:
-        """チェックリスト項目の状態切り替え"""
-        if node.metadata.get("type") == "checklist_item":
-            current_checked = node.metadata.get("checked", False)
-            node.metadata["checked"] = not current_checked
-        return node
-
-    def convert_to_bullet_list(self, node: Node, bullet_marker: str = "-") -> Node:
-        """チェックリストを通常の箇条書きに変換"""
-        if node.metadata.get("type") == "checklist_item":
-            node.metadata["type"] = "list_item"
-            node.metadata["marker"] = bullet_marker
-            if "checked" in node.metadata:
-                del node.metadata["checked"]
-        return node
-
-    def get_marker_from_line(self, line: str) -> str | None:
-        """行からリストマーカーを抽出"""
-        for pattern in self.patterns.values():
-            match = pattern.match(line)
-            if match:
-                if "[-*+]" in str(pattern.pattern):
-                    # 非順序リストのマーカーを抽出
-                    return (
-                        line.strip()[0]
-                        if line.strip() and line.strip()[0] in "-*+"
-                        else None
-                    )
+    def detect_unordered_type(self, line: str) -> str | None:
+        """行から無序リストタイプを検出
+        
+        Args:
+            line: 検査対象の行
+            
+        Returns:
+            検出されたリストタイプ、検出されない場合はNone
+        """
+        line = line.strip()
+        if not line:
+            return None
+        
+        # チェックリストの優先検査
+        if self.unordered_patterns["checklist"].match(line):
+            return "checklist"
+        
+        # 通常のブレットリスト
+        if self.unordered_patterns["bullet"].match(line):
+            return "bullet"
+        
+        # 定義リスト
+        if self.unordered_patterns["definition"].match(line):
+            return "definition"
+        
         return None
+
+    def parse_unordered_list(self, lines: list[str]) -> dict[str, Any]:
+        """無序リストを解析
+        
+        Args:
+            lines: 解析対象の行リスト
+            
+        Returns:
+            解析結果辞書
+        """
+        if not lines:
+            return {"items": [], "type": "bullet", "valid": False}
+        
+        list_type = self.detect_unordered_type(lines[0])
+        if not list_type:
+            return {"items": [], "type": "bullet", "valid": False}
+        
+        return self.handle_unordered_list(lines, list_type)
+
+    def parse_unordered_item(self, line: str, expected_marker: Optional[str] = None) -> dict[str, Any] | None:
+        """個別の無序リストアイテムを解析
+        
+        Args:
+            line: 解析対象の行
+            expected_marker: 期待されるマーカー
+            
+        Returns:
+            解析結果、解析失敗時はNone
+        """
+        line = line.strip()
+        if not line:
+            return None
+
+        # チェックリストアイテムの解析
+        checklist_match = self.unordered_patterns["checklist"].match(line)
+        if checklist_match:
+            marker = checklist_match.group(1)
+            status = checklist_match.group(2)
+            content = checklist_match.group(3).strip()
+            
+            if expected_marker and marker != expected_marker:
+                return None
+            
+            return {
+                "marker": marker,
+                "content": content,
+                "type": "checklist",
+                "status": status.lower() == 'x',
+                "raw_line": line,
+                "valid": True
+            }
+
+        # 通常のブレットリストアイテムの解析
+        bullet_match = self.unordered_patterns["bullet"].match(line)
+        if bullet_match:
+            marker = bullet_match.group(1)
+            content = bullet_match.group(2).strip()
+            
+            if expected_marker and marker != expected_marker:
+                return None
+            
+            return {
+                "marker": marker,
+                "content": content,
+                "type": "bullet",
+                "raw_line": line,
+                "valid": True
+            }
+
+        # 定義リストアイテムの解析
+        definition_match = self.unordered_patterns["definition"].match(line)
+        if definition_match:
+            term = definition_match.group(1).strip()
+            definition = definition_match.group(2).strip()
+            
+            return {
+                "term": term,
+                "definition": definition,
+                "type": "definition",
+                "raw_line": line,
+                "valid": True
+            }
+        
+        return None
+
+    def handle_unordered_list(self, lines: list[str], list_type: str) -> dict[str, Any]:
+        """指定されたタイプの無序リストを処理
+        
+        Args:
+            lines: 処理対象の行リスト  
+            list_type: リストタイプ
+            
+        Returns:
+            処理結果辞書
+        """
+        if list_type == "bullet":
+            return self._handle_bullet_list(lines)
+        elif list_type == "checklist":
+            return self.handle_checklist(lines)
+        elif list_type == "definition":
+            return self.handle_definition_list(lines)
+        
+        return {"items": [], "type": list_type, "valid": False}
+
+    def _handle_bullet_list(self, lines: list[str]) -> dict[str, Any]:
+        """ブレットリストの処理"""
+        items = []
+        for line in lines:
+            item = self.parse_unordered_item(line)
+            if item and item["type"] == "bullet":
+                items.append(item)
+            else:
+                break
+        
+        return {
+            "items": items,
+            "type": "bullet",
+            "valid": len(items) == len(lines)
+        }
+
+    def handle_checklist(self, lines: list[str]) -> dict[str, Any]:
+        """チェックリストの処理
+        
+        Args:
+            lines: 処理対象の行リスト
+            
+        Returns:
+            処理結果辞書
+        """
+        items = []
+        checked_count = 0
+        
+        for line in lines:
+            item = self.parse_unordered_item(line)
+            if item and item["type"] == "checklist":
+                items.append(item)
+                if item.get("status", False):
+                    checked_count += 1
+            else:
+                break
+        
+        return {
+            "items": items,
+            "type": "checklist",
+            "checked_count": checked_count,
+            "total_count": len(items),
+            "completion_rate": checked_count / len(items) if items else 0.0,
+            "valid": len(items) == len(lines)
+        }
+
+    def handle_definition_list(self, lines: list[str]) -> dict[str, Any]:
+        """定義リストの処理
+        
+        Args:
+            lines: 処理対象の行リスト
+            
+        Returns:
+            処理結果辞書
+        """
+        items = []
+        
+        for line in lines:
+            item = self.parse_unordered_item(line)
+            if item and item["type"] == "definition":
+                items.append(item)
+            else:
+                break
+        
+        return {
+            "items": items,
+            "type": "definition",
+            "valid": len(items) == len(lines)
+        }
+
+    def extract_checklist_status(self, line: str) -> tuple[str, bool]:
+        """チェックリスト行からステータスを抽出
+        
+        Args:
+            line: チェックリスト行
+            
+        Returns:
+            (内容, チェック状態) のタプル
+        """
+        match = self.unordered_patterns["checklist"].match(line.strip())
+        if match:
+            content = match.group(3).strip()
+            status = match.group(2).lower() == 'x'
+            return content, status
+        
+        # チェックリスト形式でない場合
+        return line.strip(), False
+
+    def toggle_checklist_item(self, line: str) -> str:
+        """チェックリストアイテムの状態をトグル
+        
+        Args:
+            line: 元のチェックリスト行
+            
+        Returns:
+            状態をトグルした行
+        """
+        match = self.unordered_patterns["checklist"].match(line.strip())
+        if match:
+            marker = match.group(1)
+            current_status = match.group(2)
+            content = match.group(3)
+            
+            # ステータスをトグル
+            new_status = ' ' if current_status.lower() == 'x' else 'x'
+            return f"{marker} [{new_status}] {content}"
+        
+        # チェックリスト形式でない場合はそのまま返す
+        return line
+
+    def convert_to_bullet_list(self, lines: list[str]) -> list[str]:
+        """チェックリストを通常のブレットリストに変換
+        
+        Args:
+            lines: 変換対象の行リスト
+            
+        Returns:
+            変換された行リスト
+        """
+        converted = []
+        for line in lines:
+            match = self.unordered_patterns["checklist"].match(line.strip())
+            if match:
+                marker = match.group(1)
+                content = match.group(3)
+                converted.append(f"{marker} {content}")
+            else:
+                # チェックリスト形式でなければそのまま保持
+                converted.append(line)
+        
+        return converted
+
+    def get_marker_from_line(self, line: str) -> str:
+        """行からマーカーを抽出
+        
+        Args:
+            line: 抽出対象の行
+            
+        Returns:
+            抽出されたマーカー、見つからない場合は'-'
+        """
+        line = line.strip()
+        
+        # チェックリストマーカー
+        checklist_match = self.unordered_patterns["checklist"].match(line)
+        if checklist_match:
+            return checklist_match.group(1)
+        
+        # 通常のブレットマーカー
+        bullet_match = self.unordered_patterns["bullet"].match(line)
+        if bullet_match:
+            return bullet_match.group(1)
+        
+        return '-'  # デフォルトマーカー
+
+    def normalize_marker(self, marker: str) -> str:
+        """マーカーを正規化
+        
+        Args:
+            marker: 正規化対象のマーカー
+            
+        Returns:
+            正規化されたマーカー
+        """
+        # 有効なマーカーリスト
+        valid_markers = ['-', '*', '+']
+        
+        if marker in valid_markers:
+            return marker
+        
+        # 全角文字の正規化
+        marker_mapping = {
+            '－': '-',
+            '＊': '*',
+            '＋': '+',
+            '・': '*',
+        }
+        
+        normalized = marker_mapping.get(marker, marker)
+        
+        # 正規化後も無効な場合は '-' をデフォルトとする
+        return normalized if normalized in valid_markers else '-'
+
+    # API互換性メソッド（簡素版からの移行用）
+    def can_handle(self, line: str) -> bool:
+        """行が処理可能かどうかを判定"""
+        return self.detect_unordered_type(line) is not None
+
+    def extract_item_content(self, line: str) -> str:
+        """アイテム内容を抽出"""
+        item = self.parse_unordered_item(line)
+        if item:
+            return item.get("content", item.get("definition", ""))
+        return ""
+
+    def validate_marker_consistency(self, lines: list[str]) -> bool:
+        """マーカーの一貫性を検証"""
+        if not lines:
+            return True
+        
+        first_marker = self.get_marker_from_line(lines[0])
+        return all(self.get_marker_from_line(line) == first_marker for line in lines)
+
+    def get_supported_types(self) -> list[str]:
+        """サポート対象のタイプリストを返す"""
+        return list(self.unordered_patterns.keys())

@@ -11,7 +11,7 @@ from .content_parser import ContentParser
 from .definitions import DEFAULT_BLOCK_KEYWORDS, NESTING_ORDER, KeywordDefinitions
 from .parsers.basic_parser import BasicKeywordParser as KeywordParser
 from .keyword_registry import KeywordDefinition, KeywordRegistry, KeywordType
-from .marker_parser import MarkerParser
+from ..base.core_marker_parser import CoreMarkerParser as MarkerParser
 
 # modelsサブモジュールから
 from .parse_result import ParseResult

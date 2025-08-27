@@ -68,7 +68,6 @@ from .protocols import (
 # 特化パーサー（Phase 2B完了）
 from .specialized import (
     UnifiedBlockParser,
-    UnifiedContentParser,
     UnifiedKeywordParser,
     UnifiedListParser,
     UnifiedMarkdownParser,
@@ -95,7 +94,6 @@ __all__ = [
     "UnifiedListParser",  # リスト解析（4重複統合）
     "UnifiedBlockParser",  # ブロック解析（2重複統合）
     "UnifiedMarkdownParser",  # Markdown解析（2重複統合）
-    "UnifiedContentParser",  # コンテンツ解析
     # === プロトコル・型定義 ===
     "KeywordParserProtocol",  # キーワード専用
     "ListParserProtocol",  # リスト専用
