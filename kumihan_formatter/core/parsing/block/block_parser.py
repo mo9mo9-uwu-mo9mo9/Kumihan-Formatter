@@ -25,7 +25,8 @@ from ..base.parser_protocols import (
 )
 
 if TYPE_CHECKING:
-    from ..keyword.keyword_parser import KeywordParser
+    # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+    from ..specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
 
 class BlockParser:

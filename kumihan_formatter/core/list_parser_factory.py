@@ -10,7 +10,8 @@ from typing import Optional
 from .list_parser_core import ListParserCore
 from .list_validator import ListValidator
 from .nested_list_parser import NestedListParser
-from .parsing.keyword.keyword_parser import KeywordParser
+# 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
 
 def create_list_parser(keyword_parser: KeywordParser) -> ListParserCore:

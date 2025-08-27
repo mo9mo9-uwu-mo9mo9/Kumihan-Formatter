@@ -28,7 +28,8 @@ class MarkerParser:
         # Initialize component parsers
         from .attribute_parser import AttributeParser
         from .content_parser import ContentParser
-        from .keyword_parser import KeywordParser
+        # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+        from ..specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
         self.keyword_parser = KeywordParser(definitions)
         self.attribute_parser = AttributeParser()

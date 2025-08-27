@@ -14,7 +14,8 @@ import warnings
 from typing import Tuple
 
 from .ast_nodes import Node, list_item, ordered_list, unordered_list
-from .parsing.keyword.keyword_parser import KeywordParser
+# 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
 
 class ListParserCore:

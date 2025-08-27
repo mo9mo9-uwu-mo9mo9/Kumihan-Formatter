@@ -52,7 +52,8 @@ class LegacyFactoryAdapter:
         """KeywordParserサービスの登録"""
         try:
             from ..parsing.keyword.definitions import KeywordDefinitions
-            from ..parsing.keyword.keyword_parser import KeywordParser
+            # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from ..parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
             # KeywordParser用のファクトリー関数
             def keyword_parser_factory(container: DIContainer) -> KeywordParser:
@@ -160,7 +161,8 @@ class LegacyFactoryAdapter:
             )
             from ..list_validator import ListValidator
             from ..nested_list_parser import NestedListParser
-            from ..parsing.keyword.keyword_parser import KeywordParser
+            # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from ..parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
             # 依存関係を考慮したファクトリー関数
             def list_parser_factory(container: DIContainer) -> ListParserCore:

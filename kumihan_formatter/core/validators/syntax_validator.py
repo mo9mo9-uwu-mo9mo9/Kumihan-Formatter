@@ -10,7 +10,8 @@ from ..list_parser import ListParser
 from ..list_validator import ListValidator
 from ...parsers.block import BlockParser
 from ..parsing.block import BlockValidator
-from ..parsing.keyword.keyword_parser import KeywordParser
+# 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from ..parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 from ..parsing.keyword.validator import KeywordValidator
 from .validation_issue import ValidationIssue
 

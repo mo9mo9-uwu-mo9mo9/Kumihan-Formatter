@@ -13,7 +13,8 @@ from typing import Any
 from rich.console import Console
 
 # 新しい統合設定システムをインポート
-from .config.config_manager import ConfigManager
+# 統合完了 - より包括的なConfigManagerに移行
+from .core.config.config_manager import ConfigManager
 
 console = Console()
 logger = logging.getLogger(__name__)

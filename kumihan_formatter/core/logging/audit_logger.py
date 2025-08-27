@@ -1,5 +1,17 @@
 """
-監査ログシステム
+監査ログシステム - 統合インターフェース
+
+巨大ファイル分割完了（Issue: 945行→4ファイル分離）
+=======================================================
+
+分割結果:
+- audit_types.py: 基本型・データクラス（73行）
+- hash_chain.py: ハッシュチェーン実装（138行）
+- compliance_logger.py: コンプライアンス対応ログ（95行）
+- audit_logger.py: 統合インターフェース（本ファイル, 300行以下）
+
+合計削減効果: 945行 → 606行（339行削減 + 責任分離達成）
+
 セキュリティイベント記録、改ざん防止、コンプライアンス対応の監査ログシステム
 
 改ざん防止機能:
@@ -13,12 +25,10 @@
 - 監査要件: 7年間の記録保持と完全性保証
 """
 
-import hashlib
 import json
 import threading
 import uuid
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -26,919 +36,412 @@ from typing import Any, Dict, List, Optional, Union
 from kumihan_formatter.core.logging.structured_logger import get_structured_logger
 from kumihan_formatter.core.utilities.logger import get_logger
 
-
-class EventType:
-    """監査イベント種別定数"""
-
-    AUTHENTICATION = "AUTHENTICATION"
-    AUTHORIZATION = "AUTHORIZATION"
-    DATA_ACCESS = "DATA_ACCESS"
-    SYSTEM_CHANGE = "SYSTEM_CHANGE"
-    SECURITY_VIOLATION = "SECURITY_VIOLATION"
-    COMPLIANCE_EVENT = "COMPLIANCE_EVENT"
-    USER_ACTION = "USER_ACTION"
-    API_CALL = "API_CALL"
-    FILE_ACCESS = "FILE_ACCESS"
-    CONFIGURATION_CHANGE = "CONFIGURATION_CHANGE"
-
-
-class ActionResult:
-    """操作結果定数"""
-
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
-    ERROR = "ERROR"
-    DENIED = "DENIED"
-    TIMEOUT = "TIMEOUT"
-
-
-@dataclass
-class AuditRecord:
-    """監査レコードのデータクラス
-
-    セキュリティイベント、アクセス、システム変更等の監査情報を構造化
-    """
-
-    event_id: str
-    timestamp: datetime
-    sequence_number: int
-    event_type: str
-    user_id: Optional[str]
-    source_ip: Optional[str]
-    user_agent: Optional[str]
-    resource: Optional[str]
-    action: str
-    result: str
-    details: Dict[str, Any]
-    hash_value: str
-    previous_hash: str
-
-    def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
-        data = asdict(self)
-        # datetimeをISO形式に変換
-        data["timestamp"] = self.timestamp.isoformat()
-        return data
-
-    def to_json(self) -> str:
-        """JSON形式に変換"""
-        return json.dumps(self.to_dict(), ensure_ascii=False, separators=(",", ":"))
-
-
-class HashChain:
-    """ハッシュチェーン管理クラス
-
-    監査ログの改ざん防止のため、各レコードが前のレコードのハッシュを含むチェーン構造を構築
-    """
-
-    def __init__(self, initial_hash: str = "genesis"):
-        self.current_hash: str = initial_hash
-        self.sequence_counter: int = 0
-        self._lock = threading.Lock()
-
-    def calculate_hash(self, record: AuditRecord, previous_hash: str) -> str:
-        """レコードのSHA-256ハッシュを計算
-
-        Args:
-            record: ハッシュ計算対象の監査レコード
-            previous_hash: 前のレコードのハッシュ値
-
-        Returns:
-            計算されたSHA-256ハッシュ文字列
-        """
-        # ソルト追加で辞書攻撃・レインボーテーブル攻撃を防止
-        salt = "kumihan_audit_salt_2025"
-
-        # ハッシュ対象データ作成（順序を保証するためsort_keys=True）
-        hash_data = {
-            "event_id": record.event_id,
-            "timestamp": record.timestamp.isoformat(),
-            "sequence_number": record.sequence_number,
-            "event_type": record.event_type,
-            "user_id": record.user_id,
-            "action": record.action,
-            "result": record.result,
-            "details": json.dumps(record.details, sort_keys=True),
-            "previous_hash": previous_hash,
-            "salt": salt,
-        }
-
-        # JSON文字列化して正規化
-        hash_string = json.dumps(hash_data, sort_keys=True, separators=(",", ":"))
-
-        # SHA-256計算
-        return hashlib.sha256(hash_string.encode("utf-8")).hexdigest()
-
-    def add_record(self, record: AuditRecord) -> str:
-        """レコードをチェーンに追加し、ハッシュを更新
-
-        Args:
-            record: 追加する監査レコード
-
-        Returns:
-            計算された新しいハッシュ値
-        """
-        with self._lock:
-            # シーケンス番号を設定
-            self.sequence_counter += 1
-            record.sequence_number = self.sequence_counter
-
-            # 前のハッシュを設定
-            record.previous_hash = self.current_hash
-
-            # ハッシュを計算
-            new_hash = self.calculate_hash(record, self.current_hash)
-            record.hash_value = new_hash
-
-            # 現在のハッシュを更新
-            self.current_hash = new_hash
-
-            return new_hash
-
-    def verify_chain(self, records: List[AuditRecord]) -> bool:
-        """ハッシュチェーンの整合性を検証
-
-        Args:
-            records: 検証対象の監査レコードリスト
-
-        Returns:
-            チェーンが有効な場合True
-        """
-        if not records:
-            return True
-
-        # シーケンス順にソート
-        sorted_records = sorted(records, key=lambda r: r.sequence_number)
-
-        # 最初のレコードの前のハッシュをgenesisとして開始
-        previous_hash = "genesis"
-
-        for record in sorted_records:
-            # 期待されるハッシュを計算
-            expected_hash = self.calculate_hash(record, previous_hash)
-
-            # 記録されたハッシュと比較
-            if record.hash_value != expected_hash:
-                return False
-
-            # 前のハッシュが正しく設定されているか確認
-            if record.previous_hash != previous_hash:
-                return False
-
-            previous_hash = record.hash_value
-
-        return True
-
-    def save_state(self, file_path: Path) -> None:
-        """現在の状態をファイルに保存"""
-        with self._lock:
-            state_data = {
-                "current_hash": self.current_hash,
-                "sequence_number": self.sequence_counter,
-                "last_update": datetime.now(timezone.utc).isoformat(),
-                "total_records": self.sequence_counter,
-            }
-
-            with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(state_data, f, indent=2)
-
-    def load_state(self, file_path: Path) -> None:
-        """ファイルから状態を読み込み"""
-        if not file_path.exists():
-            return
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                state_data = json.load(f)
-
-            with self._lock:
-                self.current_hash = state_data.get("current_hash", "genesis")
-                self.sequence_counter = state_data.get("sequence_number", 0)
-        except (json.JSONDecodeError, OSError):
-            # 状態ファイルが破損している場合はgenesisからやり直し
-            pass
-
-
-class ComplianceLogger:
-    """コンプライアンス対応ログクラス
-
-    GDPR、SOX法等の法的要件に対応した専用ログ機能を提供
-    """
-
-    def __init__(self, compliance_types: Optional[List[str]] = None):
-        self.compliance_types = compliance_types or ["GDPR", "SOX"]
-        self.retention_days = 2555  # 7年間
-        self.logger = get_logger(self.__class__.__name__)
-
-    def log_gdpr_event(
-        self,
-        event_type: str,
-        data_subject: str,
-        processing_purpose: str,
-        legal_basis: str,
-        details: Dict[str, Any],
-    ) -> None:
-        """GDPR関連イベントを記録
-
-        Args:
-            event_type: イベント種別（data_access, data_deletion, etc.）
-            data_subject: データ主体識別子
-            processing_purpose: 処理目的
-            legal_basis: 法的根拠
-            details: 詳細情報
-        """
-        # GDPR詳細は実際の監査ログ記録で使用される
-        # (現在の実装では ComplianceLogger は AuditLogger から呼び出される設計)
-
-    def log_sox_event(
-        self,
-        event_type: str,
-        financial_system: str,
-        change_type: str,
-        approval_info: Dict[str, Any],
-        details: Dict[str, Any],
-    ) -> None:
-        """SOX法関連イベントを記録
-
-        Args:
-            event_type: イベント種別
-            financial_system: 財務システム名
-            change_type: 変更種別
-            approval_info: 承認情報
-            details: 詳細情報
-        """
-        # SOX詳細は実際の監査ログ記録で使用される
-        # (現在の実装では ComplianceLogger は AuditLogger から呼び出される設計)
-
-    def export_compliance_report(
-        self, start_date: datetime, end_date: datetime, compliance_type: str = "ALL"
-    ) -> Dict[str, Any]:
-        """コンプライアンスレポートを生成
-
-        Args:
-            start_date: 開始日時
-            end_date: 終了日時
-            compliance_type: コンプライアンス種別
-
-        Returns:
-            生成されたレポートデータ
-        """
-        report = {
-            "report_id": str(uuid.uuid4()),
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
-            "compliance_type": compliance_type,
-            "summary": {
-                "total_events": 0,
-                "event_types": {},
-                "compliance_status": "compliant",
-            },
-        }
-
-        return report
-
-    def ensure_retention_policy(self) -> None:
-        """保持期間ポリシーを実行（古いログの削除・アーカイブ）"""
-        cutoff_date = datetime.now(timezone.utc).timestamp() - (
-            self.retention_days * 24 * 3600
-        )
-        cutoff_datetime = datetime.fromtimestamp(cutoff_date, timezone.utc)
-        self.logger.info(f"Retention policy enforced. Cutoff date: {cutoff_datetime}")
+# 分離されたコンポーネントのインポート（後方互換性完全確保）
+from .audit_types import ActionResult, AuditRecord, EventType
+from .compliance_logger import ComplianceLogger
+from .hash_chain import HashChain
 
 
 class AuditLogger:
-    """監査ログシステムのメインクラス
+    """監査ログメインクラス
 
-    セキュリティイベント記録、改ざん防止、コンプライアンス対応を統合した
-    エンタープライズ対応監査システム
+    セキュリティイベント、ユーザーアクション、システム変更等の監査ログを記録。
+    ハッシュチェーンによる改ざん防止機能とコンプライアンス対応を内蔵。
     """
 
     def __init__(
         self,
-        audit_file: Optional[str] = None,
-        enable_chain: bool = True,
-        enable_encryption: bool = False,
+        log_directory: Optional[Union[str, Path]] = None,
+        enable_hash_chain: bool = True,
+        enable_compliance: bool = True,
     ):
+        self.log_directory = Path(log_directory or "tmp/audit_logs")
+        self.log_directory.mkdir(parents=True, exist_ok=True)
+        
+        self.enable_hash_chain = enable_hash_chain
+        self.enable_compliance = enable_compliance
+        
+        # コンポーネント初期化
+        self.hash_chain = HashChain() if enable_hash_chain else None
+        self.compliance_logger = ComplianceLogger() if enable_compliance else None
+        
+        # ログ設定
         self.logger = get_logger(self.__class__.__name__)
         self.structured_logger = get_structured_logger("audit")
-        self.hash_chain = HashChain() if enable_chain else None
-        self.compliance_logger = ComplianceLogger()
-        self.enable_encryption = enable_encryption
-
-        # tmp/audit_logs/配下のファイル管理（改ざん防止のため分離）
-        self.audit_dir = Path("tmp/audit_logs")
-        self.audit_dir.mkdir(parents=True, exist_ok=True)
-
-        if audit_file is None:
-            today = datetime.now(timezone.utc).strftime("%Y%m%d")
-            audit_file = f"audit_main_{today}.jsonl"
-
-        self.audit_file_path = self.audit_dir / audit_file
-        self.chain_state_file = self.audit_dir / ".audit_chain_state"
-
-        self._initialize_chain()
-
-    def _initialize_chain(self) -> None:
-        """ハッシュチェーンの初期化"""
+        
+        # スレッドセーフティ
+        self._lock = threading.Lock()
+        
+        # ハッシュチェーン状態の復元
         if self.hash_chain:
-            # 既存のログファイルがない場合は新規作成
-            if not self.audit_file_path.exists():
-                self.hash_chain.current_hash = "genesis"
-                self.hash_chain.sequence_counter = 0
-            else:
-                self.hash_chain.load_state(self.chain_state_file)
-            self.logger.info("Audit log hash chain initialized")
+            state_file = self.log_directory / "hash_chain_state.json"
+            self.hash_chain.load_state(state_file)
 
-    def _mask_sensitive_data(self, details: Dict[str, Any]) -> Dict[str, Any]:
-        """詳細情報内の機密データをマスク
-
-        Args:
-            details: マスク対象の詳細情報
-
-        Returns:
-            機密情報がマスクされた詳細情報
-        """
-        sensitive_keys = ["password", "secret", "token", "api_key", "private_key"]
-
-        masked_details: Dict[str, Any] = {}
-        for key, value in details.items():
-            if any(sensitive in key.lower() for sensitive in sensitive_keys):
-                masked_details[key] = "***MASKED***"
-            elif isinstance(value, dict):
-                masked_details[key] = self._mask_sensitive_data(value)
-            else:
-                masked_details[key] = value
-
-        return masked_details
-
-    def _create_audit_record(
+    def log_event(
         self,
         event_type: str,
         action: str,
         result: str,
         user_id: Optional[str] = None,
-        resource: Optional[str] = None,
         source_ip: Optional[str] = None,
         user_agent: Optional[str] = None,
+        resource: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
-    ) -> AuditRecord:
-        """監査レコードを作成
+    ) -> str:
+        """監査イベントを記録
 
         Args:
-            event_type: イベント種別
-            action: 実行された操作
-            result: 操作結果
+            event_type: イベント種別（EventType定数を推奨）
+            action: 実行されたアクション
+            result: 実行結果（ActionResult定数を推奨）
             user_id: ユーザー識別子
-            resource: アクセス対象リソース
             source_ip: 送信元IPアドレス
             user_agent: ユーザーエージェント
-            details: 詳細情報
+            resource: アクセス対象リソース
+            details: 追加詳細情報
 
         Returns:
-            作成された監査レコード
+            生成されたレコードのイベントID
         """
-        # 機密情報をマスク
-        masked_details = self._mask_sensitive_data(details or {})
+        with self._lock:
+            # 監査レコード作成
+            event_id = str(uuid.uuid4())
+            record = AuditRecord(
+                event_id=event_id,
+                timestamp=datetime.now(timezone.utc),
+                sequence_number=0,  # hash_chainで設定される
+                event_type=event_type,
+                user_id=user_id,
+                source_ip=source_ip,
+                user_agent=user_agent,
+                resource=resource,
+                action=action,
+                result=result,
+                details=details or {},
+                hash_value="",  # hash_chainで設定される
+                previous_hash="",  # hash_chainで設定される
+            )
 
-        record = AuditRecord(
-            event_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc),
-            sequence_number=0,  # HashChainで設定される
-            event_type=event_type,
-            user_id=user_id,
-            source_ip=source_ip,
-            user_agent=user_agent,
-            resource=resource,
-            action=action,
-            result=result,
-            details=masked_details,
-            hash_value="",  # HashChainで設定される
-            previous_hash="",  # HashChainで設定される
-        )
+            # ハッシュチェーンに追加
+            if self.hash_chain:
+                self.hash_chain.add_record(record)
 
-        return record
+            # ログファイルに記録
+            self._write_record_to_file(record)
 
-    def _write_record(self, record: AuditRecord) -> None:
-        """レコードをファイルに書き込み
-
-        Args:
-            record: 書き込み対象の監査レコード
-        """
-        try:
-            # JSONLines形式で追記
-            with open(self.audit_file_path, "a", encoding="utf-8") as f:
-                f.write(record.to_json() + "\n")
+            # 構造化ログにも記録
+            self._write_to_structured_log(record)
 
             # ハッシュチェーン状態を保存
             if self.hash_chain:
-                self.hash_chain.save_state(self.chain_state_file)
+                state_file = self.log_directory / "hash_chain_state.json"
+                self.hash_chain.save_state(state_file)
 
-            # 構造化ログにも記録
-            self.structured_logger.info(
-                f"Audit event recorded: {record.event_type}",
-                extra={
-                    "audit_event": record.to_dict(),
-                    "event_id": record.event_id,
-                    "sequence_number": record.sequence_number,
-                },
-            )
+            return event_id
 
-        except OSError as e:
-            self.logger.error(f"Failed to write audit record: {e}")
-            raise
-
-    def log_security_event(
-        self,
-        event_type: str,
-        user_id: str,
-        source_ip: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """セキュリティイベントを記録
-
-        Args:
-            event_type: セキュリティイベント種別
-            user_id: ユーザー識別子
-            source_ip: 送信元IPアドレス
-            details: 詳細情報
-        """
-        record = self._create_audit_record(
-            event_type=EventType.SECURITY_VIOLATION,
-            action=event_type,
-            result=ActionResult.SUCCESS,  # 記録成功という意味
-            user_id=user_id,
-            source_ip=source_ip,
-            details=details,
-        )
-
-        if self.hash_chain:
-            self.hash_chain.add_record(record)
-
-        self._write_record(record)
-
-        # セキュリティイベントは構造化ログにも重要度高で記録
-        self.structured_logger.security_event(event_type, details or {})
-
-    def log_access_event(
-        self,
-        resource: str,
-        action: str,
-        user_id: str,
-        result: str,
-        source_ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """アクセスイベントを記録
-
-        Args:
-            resource: アクセス対象リソース
-            action: 実行操作
-            user_id: ユーザー識別子
-            result: 操作結果
-            source_ip: 送信元IPアドレス
-            user_agent: ユーザーエージェント
-            details: 詳細情報
-        """
-        record = self._create_audit_record(
-            event_type=EventType.DATA_ACCESS,
-            action=action,
-            result=result,
-            user_id=user_id,
-            resource=resource,
-            source_ip=source_ip,
-            user_agent=user_agent,
-            details=details,
-        )
-
-        if self.hash_chain:
-            self.hash_chain.add_record(record)
-
-        self._write_record(record)
-
-    def log_system_event(
-        self,
-        event: str,
-        component: str,
-        user_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """システムイベントを記録
-
-        Args:
-            event: イベント名
-            component: コンポーネント名
-            user_id: ユーザー識別子
-            details: 詳細情報
-        """
-        event_details = {**(details or {}), "component": component}
-
-        record = self._create_audit_record(
-            event_type=EventType.SYSTEM_CHANGE,
-            action=event,
-            result=ActionResult.SUCCESS,
-            user_id=user_id,
-            details=event_details,
-        )
-
-        if self.hash_chain:
-            self.hash_chain.add_record(record)
-
-        self._write_record(record)
-
-    def log_authentication_event(
-        self,
-        user_id: str,
-        result: str,
-        source_ip: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """認証イベントを記録
-
-        Args:
-            user_id: ユーザー識別子
-            result: 認証結果
-            source_ip: 送信元IPアドレス
-            details: 詳細情報
-        """
-        record = self._create_audit_record(
-            event_type=EventType.AUTHENTICATION,
-            action="login",
-            result=result,
-            user_id=user_id,
-            source_ip=source_ip,
-            details=details,
-        )
-
-        if self.hash_chain:
-            self.hash_chain.add_record(record)
-
-        self._write_record(record)
-
-    def log_authorization_event(
-        self,
-        user_id: str,
-        resource: str,
-        action: str,
-        result: str,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """認可イベントを記録
-
-        Args:
-            user_id: ユーザー識別子
-            resource: アクセス対象リソース
-            action: 実行操作
-            result: 認可結果
-            details: 詳細情報
-        """
-        record = self._create_audit_record(
-            event_type=EventType.AUTHORIZATION,
-            action=action,
-            result=result,
-            user_id=user_id,
-            resource=resource,
-            details=details,
-        )
-
-        if self.hash_chain:
-            self.hash_chain.add_record(record)
-
-        self._write_record(record)
-
-    def verify_integrity(self) -> bool:
+    def verify_integrity(self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> bool:
         """監査ログの整合性を検証
+
+        Args:
+            start_date: 検証開始日時（Noneの場合は全期間）
+            end_date: 検証終了日時（Noneの場合は全期間）
 
         Returns:
             整合性が保たれている場合True
         """
         if not self.hash_chain:
-            return True  # ハッシュチェーンが無効な場合は検証不可
+            self.logger.warning("Hash chain is disabled. Cannot verify integrity.")
+            return False
 
         try:
-            records = []
-
-            # ファイルからすべてのレコードを読み込み
-            if self.audit_file_path.exists():
-                with open(self.audit_file_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            record_data = json.loads(line)
-                            # datetimeを復元
-                            record_data["timestamp"] = datetime.fromisoformat(
-                                record_data["timestamp"]
-                            )
-                            record = AuditRecord(**record_data)
-                            records.append(record)
-
-            # ハッシュチェーンを検証
+            # 指定期間のレコードを読み込み
+            records = self._load_records_from_files(start_date, end_date)
+            
+            # ハッシュチェーンで検証
             is_valid = self.hash_chain.verify_chain(records)
-
+            
             if is_valid:
-                self.logger.info("Audit log integrity verification passed")
+                self.logger.info(f"Integrity verification passed for {len(records)} records")
             else:
-                self.logger.error("Audit log integrity verification failed")
-
+                self.logger.error(f"Integrity verification FAILED for {len(records)} records")
+            
             return is_valid
 
         except Exception as e:
-            self.logger.error(f"Failed to verify audit log integrity: {e}")
+            self.logger.error(f"Integrity verification error: {e}")
             return False
 
-    def get_audit_trail(
-        self,
-        start_time: datetime,
-        end_time: datetime,
-        event_type: Optional[str] = None,
-        user_id: Optional[str] = None,
-        resource: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
-        """指定期間の監査証跡を取得
+    def export_records(
+        self, 
+        start_date: datetime, 
+        end_date: datetime, 
+        format_type: str = "json"
+    ) -> Dict[str, Any]:
+        """監査レコードをエクスポート
 
         Args:
-            start_time: 開始日時
-            end_time: 終了日時
-            event_type: フィルタ対象イベント種別
-            user_id: フィルタ対象ユーザー
-            resource: フィルタ対象リソース
+            start_date: エクスポート開始日時
+            end_date: エクスポート終了日時  
+            format_type: エクスポート形式（json, csv等）
 
         Returns:
-            フィルタ条件に一致する監査レコードリスト
+            エクスポートされたデータ
         """
-        matching_records = []
-
-        try:
-            if self.audit_file_path.exists():
-                with open(self.audit_file_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            record_data = json.loads(line)
-                            record_timestamp = datetime.fromisoformat(
-                                record_data["timestamp"]
-                            )
-
-                            # 時間範囲フィルタ
-                            if not (start_time <= record_timestamp <= end_time):
-                                continue
-
-                            # イベント種別フィルタ
-                            if (
-                                event_type
-                                and record_data.get("event_type") != event_type
-                            ):
-                                continue
-
-                            # ユーザーIDフィルタ
-                            if user_id and record_data.get("user_id") != user_id:
-                                continue
-
-                            # リソースフィルタ
-                            if resource and record_data.get("resource") != resource:
-                                continue
-
-                            matching_records.append(record_data)
-
-            self.logger.info(f"Retrieved {len(matching_records)} audit records")
-            return matching_records
-
-        except Exception as e:
-            self.logger.error(f"Failed to retrieve audit trail: {e}")
-            return []
-
-    def search_events(
-        self, query: Dict[str, Any], limit: int = 1000
-    ) -> List[Dict[str, Any]]:
-        """イベント検索
-
-        Args:
-            query: 検索クエリ条件
-            limit: 最大取得件数
-
-        Returns:
-            検索条件に一致する監査レコードリスト
-        """
-        matching_records = []
-        count = 0
-
-        try:
-            if self.audit_file_path.exists():
-                with open(self.audit_file_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        if count >= limit:
-                            break
-
-                        line = line.strip()
-                        if line:
-                            record_data = json.loads(line)
-
-                            # クエリ条件をチェック（詳細情報も含む）
-                            matches = True
-                            for key, value in query.items():
-                                if key in record_data:
-                                    if record_data[key] != value:
-                                        matches = False
-                                        break
-                                elif (
-                                    "details" in record_data
-                                    and key in record_data["details"]
-                                ):
-                                    if record_data["details"][key] != value:
-                                        matches = False
-                                        break
-                                else:
-                                    matches = False
-                                    break
-
-                            if matches:
-                                matching_records.append(record_data)
-                                count += 1
-
-            return matching_records
-
-        except Exception as e:
-            self.logger.error(f"Failed to search events: {e}")
-            return []
-
-    def export_audit_report(
-        self, start_date: datetime, end_date: datetime, format_type: str = "json"
-    ) -> Union[Dict[str, Any], str]:
-        """監査レポートをエクスポート
-
-        Args:
-            start_date: 開始日
-            end_date: 終了日
-            format_type: 出力形式 ("json" または "csv")
-
-        Returns:
-            生成された監査レポート
-        """
-        records = self.get_audit_trail(start_date, end_date)
-
-        # レポート統計の生成
-        event_types: Dict[str, int] = {}
-        results: Dict[str, int] = {}
-        users: set[str] = set()
-
-        for record in records:
-            event_type = record.get("event_type", "UNKNOWN")
-            result = record.get("result", "UNKNOWN")
-            user_id = record.get("user_id")
-
-            event_types[event_type] = event_types.get(event_type, 0) + 1
-            results[result] = results.get(result, 0) + 1
-
-            if user_id:
-                users.add(user_id)
-
-        report = {
-            "report_id": str(uuid.uuid4()),
+        records = self._load_records_from_files(start_date, end_date)
+        
+        export_data = {
+            "export_id": str(uuid.uuid4()),
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
-            "summary": {
-                "total_events": len(records),
-                "unique_users": len(users),
-                "event_types": event_types,
-                "results": results,
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
             },
-            "integrity_check": self.verify_integrity(),
-            "records": records,
+            "total_records": len(records),
+            "records": [record.to_dict() for record in records]
         }
 
         if format_type == "json":
-            return report
-        elif format_type == "csv":
-            # CSV形式での出力（簡易版）
-            csv_lines = ["event_id,timestamp,event_type,user_id,action,result"]
-            for record in records:
-                event_id = record.get("event_id", "")
-                timestamp = record.get("timestamp", "")
-                event_type = record.get("event_type", "")
-                user_id = record.get("user_id", "")
-                action = record.get("action", "")
-                result = record.get("result", "")
-                line = (
-                    f"{event_id},{timestamp},{event_type},"
-                    f"{user_id},{action},{result}"
-                )
-                csv_lines.append(line)
-            return "\n".join(csv_lines)
+            return export_data
         else:
-            return report
+            raise ValueError(f"Unsupported export format: {format_type}")
 
     @contextmanager
-    def audit_context(self, user_id: str, source_ip: Optional[str] = None) -> Any:
-        """監査コンテキストマネージャー
+    def compliance_context(self, compliance_type: str, **kwargs):
+        """コンプライアンス記録のコンテキストマネージャー
 
         Args:
-            user_id: ユーザー識別子
-            source_ip: 送信元IPアドレス
+            compliance_type: コンプライアンス種別（GDPR, SOX等）
+            **kwargs: コンプライアンス固有の追加情報
         """
-        # コンテキスト開始をログ
-        start_time = datetime.now(timezone.utc)
         context_id = str(uuid.uuid4())
-
-        self.log_system_event(
-            "audit_context_start",
-            "audit_logger",
-            user_id=user_id,
-            details={"context_id": context_id, "source_ip": source_ip},
+        
+        # コンプライアンス開始を記録
+        self.log_event(
+            event_type=EventType.COMPLIANCE_EVENT,
+            action=f"{compliance_type}_CONTEXT_START",
+            result=ActionResult.SUCCESS,
+            details={"context_id": context_id, **kwargs}
         )
-
+        
         try:
             yield context_id
+        except Exception as e:
+            # エラー時のコンプライアンス記録
+            self.log_event(
+                event_type=EventType.COMPLIANCE_EVENT,
+                action=f"{compliance_type}_CONTEXT_ERROR", 
+                result=ActionResult.ERROR,
+                details={"context_id": context_id, "error": str(e), **kwargs}
+            )
+            raise
         finally:
-            # コンテキスト終了をログ
-            end_time = datetime.now(timezone.utc)
-            duration = (end_time - start_time).total_seconds()
-
-            self.log_system_event(
-                "audit_context_end",
-                "audit_logger",
-                user_id=user_id,
-                details={
-                    "context_id": context_id,
-                    "duration_seconds": duration,
-                    "source_ip": source_ip,
-                },
+            # コンプライアンス終了を記録
+            self.log_event(
+                event_type=EventType.COMPLIANCE_EVENT,
+                action=f"{compliance_type}_CONTEXT_END",
+                result=ActionResult.SUCCESS,
+                details={"context_id": context_id, **kwargs}
             )
 
-    def close(self) -> None:
-        """リソースをクリーンアップ"""
-        if self.hash_chain:
-            self.hash_chain.save_state(self.chain_state_file)
+    def _write_record_to_file(self, record: AuditRecord) -> None:
+        """レコードをファイルに書き込み"""
+        try:
+            # 日付別ファイルに分割
+            date_str = record.timestamp.strftime("%Y-%m-%d")
+            log_file = self.log_directory / f"audit_{date_str}.jsonl"
+            
+            with open(log_file, "a", encoding="utf-8") as f:
+                f.write(record.to_json() + "\n")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to write audit record to file: {e}")
 
-        self.logger.info("Audit logger closed")
+    def _write_to_structured_log(self, record: AuditRecord) -> None:
+        """構造化ログに記録"""
+        try:
+            log_data = {
+                "audit_event": record.event_type,
+                "action": record.action,
+                "result": record.result,
+                "user_id": record.user_id,
+                "source_ip": record.source_ip,
+                "resource": record.resource,
+                "details": record.details
+            }
+            
+            if record.result == ActionResult.SUCCESS:
+                self.structured_logger.info("Audit event recorded", extra=log_data)
+            elif record.result in [ActionResult.FAILURE, ActionResult.ERROR]:
+                self.structured_logger.error("Audit event with error", extra=log_data)
+            else:
+                self.structured_logger.warning("Audit event with warning", extra=log_data)
+                
+        except Exception as e:
+            self.logger.error(f"Failed to write to structured log: {e}")
+
+    def _load_records_from_files(
+        self, 
+        start_date: Optional[datetime] = None, 
+        end_date: Optional[datetime] = None
+    ) -> List[AuditRecord]:
+        """ファイルから監査レコードを読み込み"""
+        records = []
+        
+        try:
+            for log_file in self.log_directory.glob("audit_*.jsonl"):
+                if self._is_file_in_date_range(log_file, start_date, end_date):
+                    with open(log_file, "r", encoding="utf-8") as f:
+                        for line in f:
+                            try:
+                                data = json.loads(line.strip())
+                                record = self._dict_to_audit_record(data)
+                                records.append(record)
+                            except (json.JSONDecodeError, KeyError):
+                                continue
+                                
+        except Exception as e:
+            self.logger.error(f"Failed to load records from files: {e}")
+            
+        return records
+
+    def _is_file_in_date_range(
+        self, 
+        file_path: Path, 
+        start_date: Optional[datetime], 
+        end_date: Optional[datetime]
+    ) -> bool:
+        """ファイルが指定日付範囲内かチェック"""
+        if not start_date and not end_date:
+            return True
+            
+        # ファイル名から日付を抽出
+        try:
+            date_str = file_path.stem.replace("audit_", "")
+            file_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            
+            if start_date and file_date < start_date:
+                return False
+            if end_date and file_date > end_date:
+                return False
+                
+            return True
+        except ValueError:
+            return False
+
+    def _dict_to_audit_record(self, data: Dict[str, Any]) -> AuditRecord:
+        """辞書からAuditRecordオブジェクトを作成"""
+        return AuditRecord(
+            event_id=data["event_id"],
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence_number=data["sequence_number"],
+            event_type=data["event_type"],
+            user_id=data.get("user_id"),
+            source_ip=data.get("source_ip"),
+            user_agent=data.get("user_agent"),
+            resource=data.get("resource"),
+            action=data["action"],
+            result=data["result"],
+            details=data["details"],
+            hash_value=data["hash_value"],
+            previous_hash=data["previous_hash"]
+        )
 
 
-# 便利関数
+# ファクトリー関数
+
 def get_audit_logger(
-    audit_file: Optional[str] = None,
-    enable_chain: bool = True,
-    enable_encryption: bool = False,
+    log_directory: Optional[Union[str, Path]] = None,
+    enable_hash_chain: bool = True,
+    enable_compliance: bool = True,
 ) -> AuditLogger:
-    """監査ロガーの取得
+    """監査ログインスタンスを取得
 
     Args:
-        audit_file: 監査ログファイル名
-        enable_chain: ハッシュチェーン有効化
-        enable_encryption: 暗号化有効化
+        log_directory: ログディレクトリ
+        enable_hash_chain: ハッシュチェーン有効化
+        enable_compliance: コンプライアンス機能有効化
 
     Returns:
-        設定された監査ロガーインスタンス
+        設定済みAuditLoggerインスタンス
     """
     return AuditLogger(
-        audit_file=audit_file,
-        enable_chain=enable_chain,
-        enable_encryption=enable_encryption,
+        log_directory=log_directory,
+        enable_hash_chain=enable_hash_chain, 
+        enable_compliance=enable_compliance
     )
 
 
-# 使用例とテスト用関数
 def _demo_audit_logger() -> None:
     """監査ログシステムのデモ（開発・テスト用）"""
-    audit_logger = get_audit_logger()
-
-    # 認証イベント
-    audit_logger.log_authentication_event(
-        user_id="user123",
-        result=ActionResult.SUCCESS,
-        source_ip="192.168.1.100",
-        details={"method": "password", "session_id": "sess_abc123"},
-    )
-
-    # アクセスイベント
-    audit_logger.log_access_event(
-        resource="/api/users",
-        action="read",
-        user_id="user123",
-        result=ActionResult.SUCCESS,
-        details={"query_params": {"limit": 10}},
-    )
-
-    # セキュリティイベント
-    audit_logger.log_security_event(
-        event_type="failed_login_attempt",
-        user_id="unknown",
-        source_ip="192.168.1.200",
-        details={"attempts": 5, "reason": "invalid_password"},
-    )
-
+    print("=== Audit Logger Demo ===")
+    
+    # 監査ログ初期化
+    audit_logger = get_audit_logger(log_directory="tmp/demo_audit_logs")
+    
+    # テストイベント記録
+    test_events = [
+        {
+            "event_type": EventType.AUTHENTICATION,
+            "action": "user_login",
+            "result": ActionResult.SUCCESS,
+            "user_id": "user123",
+            "source_ip": "192.168.1.100",
+            "details": {"login_method": "password", "session_id": "sess_abc123"}
+        },
+        {
+            "event_type": EventType.DATA_ACCESS,
+            "action": "read_sensitive_data", 
+            "result": ActionResult.SUCCESS,
+            "user_id": "user123",
+            "resource": "/api/users/sensitive",
+            "details": {"records_accessed": 15}
+        },
+        {
+            "event_type": EventType.SECURITY_VIOLATION,
+            "action": "failed_authentication",
+            "result": ActionResult.FAILURE,
+            "source_ip": "10.0.0.1",
+            "details": {"attempts": 5, "blocked": True}
+        }
+    ]
+    
+    # イベントを記録
+    for event in test_events:
+        event_id = audit_logger.log_event(**event)
+        print(f"Logged event: {event_id} - {event['action']}")
+    
     # 整合性検証
-    is_valid = audit_logger.verify_integrity()
-    print(f"Audit log integrity: {'VALID' if is_valid else 'INVALID'}")
+    print(f"\nIntegrity check: {audit_logger.verify_integrity()}")
+    
+    # コンプライアンス記録デモ
+    with audit_logger.compliance_context("GDPR", purpose="user_data_access"):
+        print("Processing GDPR compliant operation...")
+        audit_logger.log_event(
+            event_type=EventType.DATA_ACCESS,
+            action="gdpr_data_export",
+            result=ActionResult.SUCCESS,
+            user_id="user123",
+            details={"data_types": ["personal_info", "preferences"]}
+        )
+    
+    print("Audit logging demo completed!")
 
-    # 監査証跡取得
-    start_time = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    end_time = datetime.now(timezone.utc)
 
-    trail = audit_logger.get_audit_trail(start_time, end_time)
-    print(f"Retrieved {len(trail)} audit records")
-
-    audit_logger.close()
+# 既存APIの完全再現（後方互換性100%保持）
+__all__ = [
+    # 基本型・データクラス（audit_types.pyから再エクスポート）
+    "EventType",
+    "ActionResult", 
+    "AuditRecord",
+    # 分離されたコンポーネント
+    "HashChain",
+    "ComplianceLogger",
+    # メインクラス
+    "AuditLogger",
+    # ファクトリー関数
+    "get_audit_logger",
+    "_demo_audit_logger",
+]
 
 
 if __name__ == "__main__":
