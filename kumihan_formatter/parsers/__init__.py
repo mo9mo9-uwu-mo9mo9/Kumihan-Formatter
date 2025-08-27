@@ -17,7 +17,7 @@
 
 from .main_parser import UnifiedMainParser as MainParser
 from .block_parser import UnifiedBlockParser as BlockParser
-from .keyword_parser import UnifiedKeywordParser as KeywordParser
+from .keyword_parser import CoreKeywordParser as KeywordParser
 from .list_parser import UnifiedListParser as ListParser
 from .content_parser import UnifiedContentParser as ContentParser
 from .markdown_parser import UnifiedMarkdownParser as MarkdownParser
