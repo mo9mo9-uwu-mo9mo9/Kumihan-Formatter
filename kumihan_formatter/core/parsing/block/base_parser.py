@@ -16,7 +16,8 @@ from kumihan_formatter.core.utilities.logger import get_logger
 
 if TYPE_CHECKING:
     from ..base.parser_protocols import KeywordParserProtocol
-    from ..keyword.keyword_parser import KeywordParser
+    # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+    from ..specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 else:
     try:
         from ..base.parser_protocols import KeywordParserProtocol

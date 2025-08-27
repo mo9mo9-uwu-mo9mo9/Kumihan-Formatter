@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 from .block_handler import BlockHandler
 from .core.ast_nodes import Node, error_node
 from .parsers.block import BlockParser
-from .core.parsing.keyword.keyword_parser import KeywordParser
+# 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
+from .core.parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 from .core.utilities.logger import get_logger
 from .inline_handler import InlineHandler
 from .parallel_processor import ParallelProcessorHandler

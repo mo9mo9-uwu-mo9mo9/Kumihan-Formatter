@@ -9,7 +9,7 @@ from .attribute_parser import AttributeParser
 from .base_parser import BaseParser
 from .content_parser import ContentParser
 from .definitions import DEFAULT_BLOCK_KEYWORDS, NESTING_ORDER, KeywordDefinitions
-from .keyword_parser import KeywordParser
+from .parsers.basic_parser import BasicKeywordParser as KeywordParser
 from .keyword_registry import KeywordDefinition, KeywordRegistry, KeywordType
 from .marker_parser import MarkerParser
 
