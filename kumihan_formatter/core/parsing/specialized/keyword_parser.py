@@ -88,8 +88,8 @@ class UnifiedKeywordParser(UnifiedParserBase, CompositeMixin):
             from kumihan_formatter.core.parsing.keyword.definitions import (
                 KeywordDefinitions,
             )
-            from kumihan_formatter.core.parsing.keyword.marker_parser import (
-                MarkerParser,
+            from kumihan_formatter.core.parsing.base.core_marker_parser import (
+                CoreMarkerParser as MarkerParser,
             )
             from kumihan_formatter.core.parsing.keyword.validator import (
                 KeywordValidator,

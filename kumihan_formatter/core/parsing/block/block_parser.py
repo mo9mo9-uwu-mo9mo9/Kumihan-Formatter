@@ -64,7 +64,7 @@ class BlockParser:
 
         from .base_parser import BaseBlockParser
         from .content_parser import ContentParser
-        from .marker_parser import MarkerBlockParser
+        from ..base.core_marker_parser import CoreMarkerParser as MarkerBlockParser
         from .text_parser import TextBlockParser
 
         self.logger = get_logger(__name__)

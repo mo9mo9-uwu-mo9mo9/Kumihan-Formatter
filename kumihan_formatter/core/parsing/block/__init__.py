@@ -10,7 +10,7 @@ from .block_parser import BlockParser
 from .block_validator import BlockValidator
 from .content_parser import ContentParser
 from .image_block_parser import ImageBlockParser
-from .marker_parser import MarkerBlockParser
+from ..base.core_marker_parser import CoreMarkerParser as MarkerBlockParser
 from .special_block_parser import SpecialBlockParser
 from .text_parser import TextBlockParser
 

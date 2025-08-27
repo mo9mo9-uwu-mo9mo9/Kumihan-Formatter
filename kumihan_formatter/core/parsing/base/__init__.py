@@ -14,9 +14,11 @@ from .mixins import (
     ValidationMixin,
 )
 from .parser_base import UnifiedParserBase
+from .core_marker_parser import CoreMarkerParser
 
 __all__ = [
     "UnifiedParserBase",
+    "CoreMarkerParser",
     "CachingMixin",
     "ValidationMixin",
     "PatternMatchingMixin",
