@@ -189,7 +189,7 @@ class Parser:
         definitions = KeywordDefinitions()
         self.keyword_parser = KeywordParser(definitions)
         # Issue #947: UnifiedListParserを使用してinline_handler.py互換性を確保
-        from .core.parsing.list.list_parser import UnifiedListParser
+        from .core.parsing.list import UnifiedListParser
 
         self.list_parser = UnifiedListParser()
         self.block_parser = BlockParser(self.keyword_parser)
