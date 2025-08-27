@@ -53,7 +53,7 @@ class LegacyFactoryAdapter:
         try:
             from ..parsing.keyword.definitions import KeywordDefinitions
             # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
-from ..parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
+            from ..parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 
             # KeywordParser用のファクトリー関数
             def keyword_parser_factory(container: DIContainer) -> KeywordParser:
