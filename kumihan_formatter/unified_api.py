@@ -75,6 +75,22 @@ class KumihanFormatter:
             self.logger.error(f"Conversion error: {e}")
             return {"status": "error", "error": str(e), "input_file": str(input_file)}
 
+    def convert_text(self, text: str, template: str = "default") -> str:
+        """テキスト→HTML変換 (APIドキュメント対応)"""
+        try:
+            # テキスト解析
+            parsed_result = self.parser.parse(text)
+            
+            # HTML生成
+            html_content = self.renderer.render(parsed_result)
+            
+            self.logger.debug(f"Text conversion completed: {len(text)} chars → {len(html_content)} chars")
+            return html_content
+            
+        except Exception as e:
+            self.logger.error(f"Text conversion error: {e}")
+            return f"<p>Conversion Error: {e}</p>"
+
     def parse_text(self, text: str, parser_type: str = "auto") -> Dict[str, Any]:
         """テキスト解析"""
         try:
@@ -173,3 +189,30 @@ def get_parser_system_info() -> Dict[str, Any]:
 # 後方互換性のためのエイリアス
 parse = unified_parse
 validate = validate_kumihan_syntax
+
+
+def main() -> None:
+    """CLI エントリーポイント - シンプル実装"""
+    import sys
+    
+    if len(sys.argv) < 2:
+        print("使用方法: kumihan <入力ファイル> [出力ファイル]")
+        sys.exit(1)
+    
+    input_file = sys.argv[1]
+    output_file = sys.argv[2] if len(sys.argv) > 2 else None
+    
+    try:
+        result = quick_convert(input_file, output_file)
+        if result["status"] == "success":
+            print(f"変換完了: {result['output_file']}")
+        else:
+            print(f"変換エラー: {result['error']}")
+            sys.exit(1)
+    except Exception as e:
+        print(f"実行エラー: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
