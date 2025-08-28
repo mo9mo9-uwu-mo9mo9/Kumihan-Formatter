@@ -12,7 +12,7 @@ from typing import Any, Optional, Tuple
 
 from .file_path_utilities import FilePathUtilities
 from .file_protocol import UIProtocol
-from .utilities.logger import get_logger
+import logging
 
 
 class FileOperationsCore:
@@ -21,7 +21,7 @@ class FileOperationsCore:
     def __init__(self, ui: Optional[UIProtocol] = None):
         """Initialize with optional UI instance for dependency injection"""
         self.ui = ui
-        self.logger = get_logger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.logger.debug("FileOperationsCore initialized")
 
     def copy_images(self, input_path: Path, output_path: Path, ast: list[Any]) -> None:

@@ -1,40 +1,18 @@
-"""統合ファイル操作モジュール
+"""
+配布管理モジュール
 
-Issue #880 Phase 1: 分散していたファイル操作機能を統合
-- file_operations*.py系統
-- file_io_handler.py
-- file_ops.py
-- file_validators.py
-- file_path_utilities.py
-- utilities/file_system.py
+Distribution Structure Manager の責任分離実装
+Issue #319対応 - 単一責任原則に基づくリファクタリング
 
-すべてをこのモジュールに統合し、明確なインターフェースを提供
+元ファイル: core/distribution_manager.py (371行) → 4つのモジュールに分割
 """
 
-from .manager import FileManager
-from .operations import FileOperations
-from .protocols import FileProtocol, PathProtocol
-from .validators import FileValidator, PathValidator
-
-# Distribution機能 (Issue #913 移行) - 明示的インポートに変更
-try:
-    from .distribution import (
-        DistributionConverter,
-        DistributionManager,
-        DistributionProcessor,
-        DistributionStructure,
-    )
-except ImportError:
-    pass
+from .distribution_converter import DistributionConverter
+from .distribution_manager import DistributionManager
+from .distribution_processor import DistributionProcessor
+from .distribution_structure import DistributionStructure
 
 __all__ = [
-    "FileManager",
-    "FileOperations",
-    "FileProtocol",
-    "PathProtocol",
-    "FileValidator",
-    "PathValidator",
-    # Distribution機能
     "DistributionStructure",
     "DistributionConverter",
     "DistributionProcessor",

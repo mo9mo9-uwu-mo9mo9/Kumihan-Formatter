@@ -7,8 +7,8 @@ Issue #880 Phase 2C: 既存パーサーから新統一パーサーへの移行�
 import warnings
 from typing import Any, Dict, List, Optional, Union, cast
 
-from ..ast_nodes import Node
-from ..utilities.logger import get_logger
+from ...core.ast_nodes import Node
+import logging
 from .coordinator import get_global_coordinator, register_default_parsers
 
 

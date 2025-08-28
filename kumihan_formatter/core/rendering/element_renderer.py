@@ -108,7 +108,8 @@ class ElementRenderer:
 
         if keyword:
             # KeywordDefinitionsから設定を取得
-            from kumihan_formatter.core.parsing.keyword.definitions import (
+            # Using parsers instead of parsing directory (removed in Phase2 optimization)
+            from ...parsers.keyword.keyword_definitions import (
                 KeywordDefinitions,
             )
 
@@ -318,7 +319,8 @@ class ElementRenderer:
         keyword = node.get_attribute("keyword")
         if keyword:
             # KeywordDefinitionsからspecial_handlerを確認
-            from kumihan_formatter.core.parsing.keyword.definitions import (
+            # Using parsers instead of parsing directory (removed in Phase2 optimization)
+            from ...parsers.keyword.keyword_definitions import (
                 KeywordDefinitions,
             )
 

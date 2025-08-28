@@ -8,7 +8,7 @@ Issue #492 Phase 5A - file_operations.py分割
 from pathlib import Path
 from typing import Any, Dict, List
 
-from .utilities.logger import get_logger
+import logging
 
 
 class FilePathUtilities:
@@ -22,7 +22,7 @@ class FilePathUtilities:
         Returns:
             list: List of exclusion patterns
         """
-        logger = get_logger(__name__)
+        logger = logging.getLogger(__name__)
         patterns = []
         distignore_path = Path(".distignore")
 

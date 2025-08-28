@@ -11,7 +11,7 @@ from typing import Optional
 from .markdown_parser import MarkdownParser
 from .markdown_processor import MarkdownProcessor
 from .markdown_renderer import MarkdownRenderer
-from .utilities.logger import get_logger
+import logging
 
 
 class SimpleMarkdownConverter:
@@ -146,7 +146,7 @@ def convert_markdown_file(
 
         return True
     except Exception as e:
-        logger = get_logger(__name__)
+        logger = logging.getLogger(__name__)
         logger.error(f"Markdown conversion failed: {e}")
         return False
 

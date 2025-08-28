@@ -10,6 +10,13 @@
 - **言語**: 日本語メインプロジェクト
 - **技術スタック**: Python 3.12+, Black, mypy (strict), pytest, Serena MCP
 - **記法**: Kumihan独自ブロック記法 (`# 装飾名 #内容##`)
+- **最適化状況**: 5Phase統合最適化完了 (2025年版アーキテクチャ)
+
+### 🏆 統合最適化成果 (Phase1-5完了)
+- **パーサー統合**: 58個→3個の統合パーサー (95%削減)
+- **ディレクトリ簡素化**: 10層→3層 (70%削減) 
+- **テスト強化**: 17テストファイル、テストピラミッド構築
+- **レガシー削除**: 不要コード・重複ファイル削除完了
 
 ## 📋 開発原則
 
@@ -269,4 +276,39 @@ make test          # <60秒: 全体テスト（CI用）
 
 ---
 
-*🎯 Claude Code最適化済み - シンプル版（個人開発特化）*
+## 🚀 統合API使用方法 (2025年版)
+
+### 基本的な使用
+```python
+from kumihan_formatter.unified_api import KumihanFormatter, quick_convert
+
+# 統合エントリーポイント
+with KumihanFormatter() as formatter:
+    result = formatter.convert("input.kumihan", "output.html")
+    
+# クイック変換
+result = quick_convert("document.kumihan")
+```
+
+### パーサー個別使用
+```python
+from kumihan_formatter.unified_api import unified_parse
+
+# 自動パーサー選択
+result = unified_parse(content, "auto")
+
+# 個別パーサー指定
+result = unified_parse(content, "content")  # ContentParser
+result = unified_parse(content, "block")    # BlockParser  
+result = unified_parse(content, "list")     # ListParser
+```
+
+### 統合パーサーシステム
+- **ContentParser**: `UnifiedContentParser` - 4→1統合
+- **BlockParser**: `UnifiedBlockParser` - 4→1統合  
+- **ListParser**: `UnifiedListParser` - 5→1統合
+- **MainParser**: 全パーサーの協調制御
+
+---
+
+*🎯 Claude Code最適化済み - 統合最適化版（2025年アーキテクチャ）*

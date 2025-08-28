@@ -60,3 +60,7 @@ class ValidatorProtocol(Protocol):
     def get_errors(self) -> list[str]:
         """エラーメッセージの取得"""
         ...
+
+
+# IOProtocolはFileProtocolのエイリアス（後方互換性のため）
+IOProtocol = FileProtocol

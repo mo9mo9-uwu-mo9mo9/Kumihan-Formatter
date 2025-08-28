@@ -1,5 +1,8 @@
-"""Core module for Kumihan-Formatter CLI
-
-This module contains core business logic and utilities that are shared
-across different commands and UI components.
 """
+コア機能パッケージ
+
+Kumihan-Formatterのコア機能を提供するパッケージ
+"""
+
+# 簡素化版では最小限のエクスポート
+__all__ = []

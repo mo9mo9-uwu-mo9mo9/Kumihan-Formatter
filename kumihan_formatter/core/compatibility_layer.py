@@ -1,17 +1,53 @@
-"""後方互換性レイヤー
+"""
+互換性レイヤー - Phase3最適化版
 
-Issue #914 Phase 2: 既存コードが動作し続けるための互換レイヤー
+MainParser→MasterParser統合により更新
+レガシーAPIとの互換性を保持しつつ、最新アーキテクチャに対応
 """
 
-from typing import Any
+from typing import Any, Dict, List, Optional
 
-from .parsing.main_parser import MainParser
+from .parsing.master_parser import MasterParser
 from .parsing.specialized.block_parser import UnifiedBlockParser as BlockParser
 from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
 from .parsing.specialized.list_parser import UnifiedListParser as ListParser
 from .rendering.formatters.html_formatter import HtmlFormatter
 from .rendering.formatters.markdown_formatter import MarkdownFormatter
 from .rendering.main_renderer import MainRenderer as HTMLRenderer
+from .ast_nodes import Node, create_node, error_node
+
+
+class LegacyParserAdapter:
+    """レガシーParser互換性アダプター"""
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        self._master_parser = MasterParser(config)
+
+    def parse(self, text: str, **kwargs) -> List[Node]:
+        """MainParser互換parse - Nodeリスト返却"""
+        return self._master_parser.parse(text, return_nodes=True, **kwargs)
+
+    def parse_streaming(self, text: str, **kwargs) -> List[Node]:
+        """ストリーミング解析 (MainParser互換)"""
+        return self._master_parser.parse_streaming(text, **kwargs)
+
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """パフォーマンス統計 (MainParser互換)"""
+        return self._master_parser.get_performance_stats()
+
+    def reset_statistics(self):
+        """統計リセット (MainParser互換)"""
+        self._master_parser.reset_statistics()
+
+
+# MainParser互換性エイリアス
+MainParser = LegacyParserAdapter
+
+# Parser(core)互換性エイリアス
+Parser = LegacyParserAdapter
+
+# StreamingParser互換性
+StreamingParser = LegacyParserAdapter
 
 
 # 旧ファクトリー関数の互換版
@@ -53,19 +89,53 @@ def create_markdown_renderer(**kwargs: Any) -> MarkdownFormatter:
     return MarkdownFormatter(**kwargs)
 
 
-# 旧インポートパス互換性のための__all__設定
+def parse_text(text: str, config: Optional[Dict[str, Any]] = None) -> List[Node]:
+    """テキストを解析する便利関数"""
+    parser = MasterParser(config)
+    return parser.parse(text, return_nodes=True)
+
+
+def parse_file(file_path: str, config: Optional[Dict[str, Any]] = None) -> List[Node]:
+    """ファイルを解析する便利関数"""
+    parser = MasterParser(config)
+    result = parser.parse_file(file_path)
+    return result.elements if result.elements else []
+
+
+def parse_stream(stream, config: Optional[Dict[str, Any]] = None):
+    """ストリームを解析する便利関数"""
+    parser = MasterParser(config)
+    return parser.parse_streaming(stream)
+
+
+# エクスポート対象
 __all__ = [
+    # === Issue #912: 統合メインパーサー（最優先） ===
+    "MasterParser",  # 新しい統合パーサー
+    "MainParser",  # 後方互換性エイリアス
+    "Parser",  # 後方互換性エイリアス
+    "StreamingParser",  # 後方互換性エイリアス
+    # === 特殊パーサー ===
     "KeywordParser",
     "ListParser",
     "BlockParser",
-    "MainParser",
+    # === レンダラー ===
     "HTMLRenderer",
     "HtmlFormatter",
     "MarkdownFormatter",
+    # === ファクトリー関数 ===
     "create_keyword_parser",
     "create_list_parser",
     "create_block_parser",
     "create_markdown_parser",
     "create_html_renderer",
     "create_markdown_renderer",
+    # === ユーティリティ関数 ===
+    "parse_text",
+    "parse_file",
+    "parse_stream",
+    # === AST関連 ===
+    "Node",
+    "create_node",
+    "error_node",
 ]
