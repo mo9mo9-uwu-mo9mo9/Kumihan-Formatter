@@ -206,4 +206,5 @@ class Node:
         """エラーメッセージのリストを取得"""
         if self.attributes is None:
             return []
-        return self.attributes.get("errors", [])
+        errors = self.attributes.get("errors", [])
+        return [str(error) for error in errors] if isinstance(errors, list) else []

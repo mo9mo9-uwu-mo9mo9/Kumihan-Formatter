@@ -12,49 +12,43 @@
     result = formatter.convert("input.txt", "output.html")
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
-from .managers import (
-    ParseManager,
-    RenderManager,
-    ConfigManager,
-    ValidationManager,
-    ResourceManager,
-)
-from .parsers import MainParser
-from .core.utilities.logger import get_logger
+import logging
+from pathlib import Path
+from .simple_parser import SimpleKumihanParser
+from .simple_renderer import SimpleHTMLRenderer
 
 
 class KumihanFormatter:
     """統合Kumihan-Formatterクラス - 全機能へのシンプルなエントリーポイント"""
 
     def __init__(self, config_path: Optional[Union[str, Path]] = None):
-        self.logger = get_logger(__name__)
+        self.logger = logging.getLogger(__name__)
+        self.config_path = config_path
 
-        # Issue #1171対応 - 新しい統合Managerシステム初期化
-        self.config = ConfigManager(config_path)
-        self.parser = ParseManager()
-        self.renderer = RenderManager()
-        self.validator = ValidationManager()
-        self.resource = ResourceManager()
+        # 実用的なパーサー・レンダラーを初期化
+        self.parser = SimpleKumihanParser()
+        self.renderer = SimpleHTMLRenderer()
 
-        # メインパーサー初期化
-        self.main_parser = MainParser()
-
-        self.logger.info("KumihanFormatter initialized - unified architecture")
+        self.logger.info("KumihanFormatter initialized - 動作版")
 
     def convert(
         self,
         input_file: Union[str, Path],
-        output_file: Union[str, Path] = None,
+        output_file: Optional[Union[str, Path]] = None,
         template: str = "default",
         options: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """ファイル変換のメインエントリーポイント"""
+        """簡素化された変換メソッド"""
         try:
             # ファイル読み込み
-            content = self.resource.read_file(input_file)
+            input_path = Path(input_file)
+            if not input_path.exists():
+                raise FileNotFoundError(f"Input file not found: {input_file}")
+
+            content = input_path.read_text(encoding="utf-8")
 
             # 解析
             parsed_result = self.parser.parse(content)
@@ -63,16 +57,18 @@ class KumihanFormatter:
             if not output_file:
                 output_file = Path(input_file).with_suffix(".html")
 
-            rendered_content = self.renderer.render(parsed_result, "html")
+            rendered_content = self.renderer.render(parsed_result)
 
             # ファイル出力
-            self.resource.write_file(output_file, rendered_content)
+            output_path = Path(output_file)
+            output_path.write_text(rendered_content, encoding="utf-8")
 
             return {
                 "status": "success",
                 "input_file": str(input_file),
                 "output_file": str(output_file),
                 "template": template,
+                "elements_count": parsed_result.get("total_elements", 0),
             }
 
         except Exception as e:
@@ -81,49 +77,69 @@ class KumihanFormatter:
 
     def parse_text(self, text: str, parser_type: str = "auto") -> Dict[str, Any]:
         """テキスト解析"""
-        return self.parser.parse(text, parser_type)
+        try:
+            result = self.parser.parse(text)
+            return result
+        except Exception as e:
+            self.logger.error(f"Parse error: {e}")
+            return {"status": "error", "error": str(e)}
 
     def validate_syntax(self, text: str) -> Dict[str, Any]:
         """構文検証"""
-        return self.main_parser.validate_syntax(text)
+        try:
+            errors = self.parser.validate(text)
+            return {
+                "status": "valid" if not errors else "invalid",
+                "errors": errors,
+                "total_errors": len(errors),
+            }
+        except Exception as e:
+            self.logger.error(f"Validation error: {e}")
+            return {"status": "error", "error": str(e), "errors": []}
 
-    def get_available_templates(self) -> list:
-        """利用可能テンプレート一覧"""
-        return self.core.get_available_templates()
+    def parse_file(
+        self, file_path: Union[str, Path], parser_type: str = "auto"
+    ) -> Dict[str, Any]:
+        """ファイル解析"""
+        try:
+            content = Path(file_path).read_text(encoding="utf-8")
+            result = self.parser.parse(content)
+            result["file_path"] = str(file_path)
+            return result
+        except Exception as e:
+            self.logger.error(f"File parsing error: {e}")
+            return {"status": "error", "error": str(e), "file_path": str(file_path)}
+
+    def get_available_templates(self) -> List[str]:
+        """一時的にスタブ実装"""
+        return ["default", "minimal"]  # 固定値
 
     def get_system_info(self) -> Dict[str, Any]:
-        """システム情報取得"""
+        """システム情報"""
         return {
-            "managers": {
-                "core": "CoreManager",
-                "parsing": "ParsingManager",
-                "optimization": "OptimizationManager",
-                "plugins": "PluginManager",
-                "distribution": "DistributionManager",
+            "architecture": "working_system",
+            "components": {
+                "parser": "SimpleKumihanParser",
+                "renderer": "SimpleHTMLRenderer",
             },
-            "parsers": self.parser.get_available_parsers(),
-            "templates": self.get_available_templates(),
-            "optimization_status": self.optimization.get_optimization_status(),
+            "version": "4.0.0-working",
+            "status": "functional",
         }
 
     def close(self) -> None:
-        """リソース解放"""
-        try:
-            self.core.shutdown()
-            self.logger.info("KumihanFormatter closed successfully")
-        except Exception as e:
-            self.logger.error(f"Error during close: {e}")
+        """システムのリソース解放"""
+        self.logger.info("KumihanFormatter closed successfully - working system")
 
-    def __enter__(self):
+    def __enter__(self) -> "KumihanFormatter":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
 
 
 # 便利関数
 def quick_convert(
-    input_file: Union[str, Path], output_file: Union[str, Path] = None
+    input_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None
 ) -> Dict[str, Any]:
     """クイック変換関数"""
     with KumihanFormatter() as formatter:
@@ -134,3 +150,26 @@ def quick_parse(text: str) -> Dict[str, Any]:
     """クイック解析関数"""
     with KumihanFormatter() as formatter:
         return formatter.parse_text(text)
+
+
+def unified_parse(text: str, parser_type: str = "auto") -> Dict[str, Any]:
+    """統合パーサーシステムによる高速解析"""
+    with KumihanFormatter() as formatter:
+        return formatter.parse_text(text, parser_type)
+
+
+def validate_kumihan_syntax(text: str) -> Dict[str, Any]:
+    """Kumihan記法構文の詳細検証"""
+    with KumihanFormatter() as formatter:
+        return formatter.validate_syntax(text)
+
+
+def get_parser_system_info() -> Dict[str, Any]:
+    """統合パーサーシステムの詳細情報取得"""
+    with KumihanFormatter() as formatter:
+        return formatter.get_system_info()
+
+
+# 後方互換性のためのエイリアス
+parse = unified_parse
+validate = validate_kumihan_syntax

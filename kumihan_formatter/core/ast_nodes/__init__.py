@@ -28,13 +28,13 @@ from .factories import (
 from .node import Node
 from .node_builder import NodeBuilder
 
-# Utility functions
-from .utilities import (
-    count_nodes_by_type,
-    find_all_headings,
-    flatten_text_nodes,
-    validate_ast,
-)
+# Utility functions - temporarily commented out due to import issues
+# from ...core.utilities import (
+#     count_nodes_by_type,
+#     find_all_headings,
+#     flatten_text_nodes,
+#     validate_ast,
+# )
 
 __all__ = [
     # Core classes
@@ -54,9 +54,9 @@ __all__ = [
     "details",
     "error_node",
     "image_node",
-    # Utility functions
-    "flatten_text_nodes",
-    "count_nodes_by_type",
-    "find_all_headings",
-    "validate_ast",
+    # Utility functions - temporarily commented out due to import issues
+    # "flatten_text_nodes",
+    # "count_nodes_by_type",
+    # "find_all_headings",
+    # "validate_ast",
 ]

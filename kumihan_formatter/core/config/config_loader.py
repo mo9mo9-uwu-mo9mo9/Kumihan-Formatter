@@ -1,15 +1,14 @@
-"""統合設定ローダー
+"""統一設定ローダー
 
-Issue #912対応: 2つのConfigLoaderを統合
-- core/config/config_loader.py (基本ファイル読み込み・環境変数処理)
-- core/unified_config/config_loader.py (YAML/JSON/TOML対応・包括的機能)
+Issue #771対応: YAML/JSON/TOML設定ファイル対応
+環境変数・CLI引数・設定ファイルの優先順位制御
 """
 
 import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 
 try:
     import yaml
@@ -26,10 +25,11 @@ except ImportError:
     tomli = None
     HAS_TOML = False
 
-from ...core.utilities.logger import get_logger
-from .config_types import ConfigFormat, KumihanConfig
+from ...error_handling import handle_error_unified
+import logging
+from .config_models import ConfigFormat, KumihanConfig
 
-logger = get_logger(__name__)
+__all__ = ["ConfigLoader", "ConfigLoadError", "ConfigFormat"]
 
 
 class ConfigLoadError(Exception):
@@ -39,24 +39,16 @@ class ConfigLoadError(Exception):
 
 
 class ConfigLoader:
-    """統合設定ローダー
+    """統一設定ローダー
 
     設定の読み込み優先順位:
     1. CLI引数 (最優先)
     2. 環境変数
     3. 設定ファイル
     4. デフォルト値
-
-    サポート形式: JSON, YAML, TOML
     """
 
-    def __init__(self, validator: Any = None, logger_name: str = __name__):
-        """
-        Args:
-            validator: ConfigValidator インスタンス（後方互換性のため）
-            logger_name: ロガー名
-        """
-        self.validator = validator
+    def __init__(self, logger_name: str = __name__):
         self.logger = get_logger(logger_name)
         self.supported_formats = self._get_supported_formats()
 
@@ -65,7 +57,7 @@ class ConfigLoader:
         formats = [ConfigFormat.JSON]  # JSONは標準ライブラリなので常にサポート
 
         if HAS_YAML:
-            formats.append(ConfigFormat.YAML)
+            formats.extend([ConfigFormat.YAML])
         if HAS_TOML:
             formats.append(ConfigFormat.TOML)
 
@@ -86,7 +78,6 @@ class ConfigLoader:
         config_file = Path(config_path)
 
         if not config_file.exists():
-            # 従来版との互換性のため、Noneではなく例外を投げる
             raise ConfigLoadError(f"設定ファイルが見つかりません: {config_path}")
 
         if not config_file.is_file():
@@ -125,22 +116,24 @@ class ConfigLoader:
             if not isinstance(config_data, dict):
                 raise ConfigLoadError("設定ファイルは辞書形式である必要があります")
 
-            # 従来版の検証処理との互換性
-            if self.validator:
-                validation_result = self.validator.validate(config_data)
-                if not validation_result.is_valid:
-                    self.logger.error(f"設定検証に失敗: {config_path}")
-                    self.logger.error(f"エラー: {validation_result.errors}")
-                    raise ConfigLoadError(f"設定検証に失敗: {config_path}")
-
             self.logger.info(
                 f"設定ファイル読み込み成功: {config_path} ({file_format.value})"
             )
             return config_data
 
         except Exception as e:
-            error_msg = f"設定ファイル読み込みエラー: {config_path}: {e}"
-            self.logger.error(error_msg)
+            # result = handle_error_unified(  # removed - unused variable (F841)
+            handle_error_unified(
+                e,
+                context={
+                    "config_path": str(config_path),
+                    "file_format": file_format.value,
+                    "operation": "config_file_loading",
+                },
+                operation="load_config_file",
+                component_name="ConfigLoader",
+            )
+            error_msg = f"設定ファイル読み込みエラー: {config_path}"
             raise ConfigLoadError(error_msg) from e
 
     def _detect_format(self, config_file: Path) -> ConfigFormat:
@@ -196,38 +189,10 @@ class ConfigLoader:
                         config_data, keys, self._convert_env_value(value)
                     )
                 else:
-                    # 従来版の特定設定値処理との互換性
-                    if config_key == "theme":
-                        config_data["theme"] = value
-                    elif config_key == "font_family":
-                        config_data["font_family"] = value
-                    elif config_key == "max_file_size_mb":
-                        try:
-                            # validationキーが存在しない場合は辞書で初期化
-                            if "validation" not in config_data:
-                                config_data["validation"] = {}
-                            validation_config = config_data["validation"]
-                            if isinstance(validation_config, dict):
-                                validation_config["max_file_size_mb"] = int(value)
-                        except ValueError:
-                            self.logger.warning(f"Invalid value for {key}: {value}")
-                    elif config_key == "strict_mode":
-                        # validationキーが存在しない場合は辞書で初期化
-                        if "validation" not in config_data:
-                            config_data["validation"] = {}
-                        validation_config = config_data["validation"]
-                        if isinstance(validation_config, dict):
-                            validation_config["strict_mode"] = value.lower() in (
-                                "true",
-                                "1",
-                                "yes",
-                            )
-                    else:
-                        # 新版の汎用処理
-                        config_data[config_key] = self._convert_env_value(value)
+                    config_data[config_key] = self._convert_env_value(value)
 
         if config_data:
-            self.logger.info(f"環境変数から設定読み込み: {len(config_data)}項目")
+            self.logger.debug(f"環境変数から設定読み込み: {len(config_data)}項目")
 
         return config_data
 
@@ -333,14 +298,6 @@ class ConfigLoader:
         Returns:
             Dict[str, Any]: マージされた設定
         """
-        if len(configs) == 2:
-            # 従来版のAPIとの互換性（2引数の場合）
-            base_config, override_config = configs
-            result = self._deep_copy(base_config)
-            self._merge_dict(result, override_config)
-            return cast(Dict[str, Any], result)
-
-        # 新版の複数設定マージ
         merged: Dict[str, Any] = {}
 
         for config in configs:
@@ -352,7 +309,7 @@ class ConfigLoader:
     def _deep_merge(
         self, base: Dict[str, Any], update: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """辞書の深いマージ（新版）
+        """辞書の深いマージ
 
         Args:
             base: ベース辞書
@@ -375,30 +332,9 @@ class ConfigLoader:
 
         return result
 
-    def _deep_copy(self, obj: Any) -> Any:
-        """深いコピーユーティリティ（従来版互換）"""
-        if isinstance(obj, dict):
-            return {k: self._deep_copy(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [self._deep_copy(item) for item in obj]
-        else:
-            return obj
-
-    def _merge_dict(self, target: Dict[str, Any], source: Dict[str, Any]) -> None:
-        """辞書を再帰的にマージ（従来版互換）"""
-        for key, value in source.items():
-            if (
-                key in target
-                and isinstance(target[key], dict)
-                and isinstance(value, dict)
-            ):
-                self._merge_dict(target[key], value)
-            else:
-                target[key] = self._deep_copy(value)
-
     def save_config(
         self,
-        config: Union[KumihanConfig, Dict[str, Any]],
+        config: KumihanConfig,
         config_path: Union[str, Path],
         format: Optional[ConfigFormat] = None,
     ) -> None:
@@ -421,11 +357,7 @@ class ConfigLoader:
         config_file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            # KumihanConfigの場合はmodel_dump、辞書の場合はそのまま使用
-            if isinstance(config, KumihanConfig):
-                config_data = config.model_dump(mode="json")
-            else:
-                config_data = config
+            config_data = config.model_dump(mode="json")
 
             with open(config_file, "w", encoding="utf-8") as f:
                 if format == ConfigFormat.YAML:
@@ -452,9 +384,3 @@ class ConfigLoader:
             error_msg = f"設定保存エラー: {config_path}: {e}"
             self.logger.error(error_msg)
             raise ConfigLoadError(error_msg) from e
-
-
-# 後方互換性のためのエイリアス
-UnifiedConfigLoader = ConfigLoader  # 統一後のConfigLoaderへのエイリアス
-
-__all__ = ["ConfigLoader", "ConfigLoadError", "ConfigFormat"]

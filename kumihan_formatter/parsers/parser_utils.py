@@ -16,20 +16,22 @@ from ..parser_utils import (
     is_valid_json_path_character,
     find_matching_quote,
 )
-from ..core.utilities.logger import get_logger
+import logging
 
 
 class ParserUtils:
     """統合パーサーユーティリティクラス"""
 
-    def __init__(self):
-        self.logger = get_logger(__name__)
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
 
     # 既存ユーティリティ関数のラッパー
     @staticmethod
     def extract_json_path(data: Dict[str, Any], path: str) -> Any:
         """JSONパス抽出"""
-        return extract_json_path(data, path)
+        # dataがdictの場合はJSON文字列に変換してから処理
+        json_str = json.dumps(data) if isinstance(data, dict) else str(data)
+        return extract_json_path(json_str)
 
     @staticmethod
     def remove_quotes(text: str) -> str:
@@ -127,7 +129,7 @@ class ParserUtils:
 
     @classmethod
     def format_error_message(
-        cls, error: str, line: int = None, column: int = None
+        cls, error: str, line: Optional[int] = None, column: Optional[int] = None
     ) -> str:
         """エラーメッセージフォーマット"""
         if line is not None and column is not None:

@@ -5,11 +5,11 @@ Issue #880 Phase 2: パーサー階層整理
 既存のParsingCoordinatorを強化・統合
 """
 
+import logging
 from typing import Any, Dict, List, Optional, Union
 
-from ..ast_nodes import error_node
-from ..utilities.logger import get_logger
-from .base import UnifiedParserBase
+from kumihan_formatter.core.ast_nodes import error_node
+from .parser_base import UnifiedParserBase
 from .protocols import ParseResult, ParserProtocol
 
 
@@ -22,7 +22,7 @@ class UnifiedParsingCoordinator:
 
     def __init__(self) -> None:
         """コーディネーターの初期化"""
-        self.logger = get_logger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         # 登録済みパーサーの管理
         self._parsers: Dict[str, ParserProtocol] = {}
@@ -321,3 +321,7 @@ def register_default_parsers() -> None:
     coordinator.register_parser(UnifiedContentParser(), priority=10)  # フォールバック
 
     coordinator.logger.info("Default parsers registered successfully")
+
+
+# 後方互換性のためのエイリアス
+ParsingCoordinator = UnifiedParsingCoordinator

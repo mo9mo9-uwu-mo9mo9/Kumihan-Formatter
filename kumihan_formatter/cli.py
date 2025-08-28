@@ -10,12 +10,12 @@ from typing import Any
 
 import click
 
-from .core.utilities.logger import get_logger
+import logging
 
 
 def setup_encoding() -> None:
     """Setup encoding for Windows and macOS compatibility"""
-    logger = get_logger(__name__)
+    logger = logging.getLogger(__name__)
     import sys
 
     # Windows specific encoding setup
@@ -56,7 +56,7 @@ def cli() -> None:
 
 def register_commands() -> None:
     """Register all CLI commands with lazy loading"""
-    logger = get_logger(__name__)
+    logger = logging.getLogger(__name__)
     # convert コマンドを最初に登録（最重要）
     logger.info("Registering CLI commands")
     try:
@@ -233,7 +233,7 @@ def register_commands() -> None:
 
 def main() -> None:
     """Main entry point with enhanced error handling"""
-    logger = get_logger(__name__)
+    logger = logging.getLogger(__name__)
     # エンコーディング設定を初期化
     logger.info("Kumihan-Formatter CLI starting")
     setup_encoding()
@@ -377,13 +377,13 @@ def interactive_repl() -> None:
     sys.path.insert(0, str(project_root))
 
     try:
-        from kumihan_formatter.core.utilities.logger import get_logger
+        import logging
     except ImportError as e:
         print(f"❌ インポートエラー: {e}")
         input("Enterキーを押して終了...")
         return
 
-    logger = get_logger(__name__)
+    logger = logging.getLogger(__name__)
     setup_encoding()
 
     print("🚀 Kumihan-Formatter 対話型変換ツール")

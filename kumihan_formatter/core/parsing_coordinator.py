@@ -7,7 +7,7 @@ Issue #616対応 - CI/CDテスト修正用の基本実装
 
 from typing import Any, Dict, List, Optional, Union
 
-from kumihan_formatter.core.utilities.logger import get_logger
+import logging
 
 
 class ParsingCoordinator:
@@ -31,7 +31,7 @@ class ParsingCoordinator:
         Args:
             config: 設定オプション辞書
         """
-        self.logger = get_logger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.config = config or {}
 
         # パーサー優先順位設定

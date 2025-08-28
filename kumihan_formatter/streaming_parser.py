@@ -1,6 +1,9 @@
 from typing import Any, List, Union
 
-from kumihan_formatter.core.list_parser import ListParser
+# Using parsers instead of specialized directory (removed in Phase2 optimization)
+from kumihan_formatter.parsers.list.unified_list_parser import (
+    UnifiedListParser as ListParser,
+)
 from kumihan_formatter.parser_utils import (
     extract_json_path,
     remove_quotes,

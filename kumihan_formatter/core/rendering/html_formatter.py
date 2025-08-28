@@ -1,835 +1,349 @@
-"""HTML formatting utilities for Kumihan-Formatter
-
-This module provides utilities for HTML formatting, pretty-printing,
-and validation of generated HTML.
+"""
+統合HTML フォーマッター
+分割されたモジュールを統合する新しいHTMLFormatter
 """
 
-import re
-from pathlib import Path
-from typing import Any, Dict, List
+import logging
+from typing import Any, Dict, List, Optional
+
+from kumihan_formatter.core.ast_nodes.node import Node
+from .css_processor import CSSProcessor
+from .html_utilities import HTMLUtilities
 
 
-class HTMLFormatter:
-    """
-    HTML整形・フォーマット（Pretty-print、バリデーション、セマンティック改善）
+class HtmlFormatter:
+    """統合HTML フォーマッター（分割版統合）"""
 
-    Phase 4対応:
-    - セマンティックHTML生成の改善
-    - アクセシビリティ対応
-    - CSSクラス名統一化
-    - カラー属性処理
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """統合フォーマッター初期化"""
+        self.logger = logging.getLogger(__name__)
+        self.config = config or {}
 
-    設計ドキュメント:
-    - 仕様: /SPEC.md#出力形式オプション
-    - アーキテクチャ: /CONTRIBUTING.md#アーキテクチャ概要
-    - レンダリング詳細: /docs/rendering.md
+        # 分割されたコンポーネントを初期化
+        self.core = HTMLFormatterCore(config)
+        self.validator = HTMLValidator(config)
+        self.css_processor = CSSProcessor(config)
+        self.footnote_manager = FootnoteManager(config)
+        self.utilities = HTMLUtilities(config)
 
-    関連クラス:
-    - Renderer: このクラスを使用してHTML出力を整形
-    - Node: 整形対象のASTノード
-    - TemplateManager: テンプレートベースの整形と連携
+        # 状態管理（互換性維持）
+        self.graceful_errors: List[Dict[str, Any]] = []
+        self.embed_errors_in_html = True
+        self.footnotes_data: Optional[Dict[str, Any]] = None
 
-    責務:
-    - HTML文字列のインデント整形
-    - タグの改行・圧縮制御
-    - 空白文字の正規化
-    - HTML妥当性チェック
-    - セマンティックHTML生成
-    - アクセシビリティ属性管理
-    """
+    # コア機能の委譲
+    def format(self, nodes: List[Node]) -> str:
+        """ノードリストをHTMLにフォーマット"""
+        return self.core.format(nodes)
 
-    def __init__(self, indent_size: int = 2, semantic_mode: bool = True):
-        """
-        Initialize HTML formatter
+    def format_node(self, node: Node) -> str:
+        """単一ノードをHTMLにフォーマット"""
+        return self.core.format_node(node)
 
-        Args:
-            indent_size: Number of spaces per indentation level
-            semantic_mode: Enable semantic HTML generation
-        """
-        self.indent_size = indent_size
-        self.semantic_mode = semantic_mode
-        # Initialize tag stack with proper type
-        self.tag_stack: List[str] = []
-
-        # CSS class naming conventions (Issue #665 Phase 4)
-        self.css_class_prefix = "kumihan"
-
-        # Color processing support
-        self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "hsla", "named"]
-
-    def handle_special_element(
-        self, keyword: str, content: str, attributes: dict[str, Any] | None = None
+    def render(
+        self, nodes: List[Node], context: Optional[Dict[str, Any]] = None
     ) -> str:
-        """
-        特殊キーワード（special_handler指定）の処理
+        """ノードリストをレンダリング"""
+        return self.core.render(nodes, context)
 
-        Args:
-            keyword: キーワード名
-            content: コンテンツ
-            attributes: 属性辞書
-
-        Returns:
-            str: 処理済みHTML
-        """
-        if attributes is None:
-            attributes = {}
-
-        # footnoteキーワードの処理
-        if keyword == "脚注":
-            return self._handle_footnote(content, attributes)
-
-        # 未知のspecial_handlerキーワードの場合はデフォルト処理
-        return f'<span class="{self.generate_css_class(keyword)}">{content}</span>'
-
-    def _handle_footnote(self, content: str, attributes: dict[str, Any]) -> str:
-        """
-        脚注キーワードの処理
-
-        Args:
-            content: 脚注内容
-            attributes: 属性辞書
-
-        Returns:
-            str: 脚注プレースホルダーHTML
-        """
-        # FootnoteManagerの共有インスタンスを取得または作成
-        if not hasattr(self, "_footnote_manager"):
-            self._footnote_manager = FootnoteManager()
-
-        footnote_manager = self._footnote_manager
-
-        # 脚注データを作成
-        footnote_data = {
-            "content": content,
-            "attributes": attributes,
-        }
-
-        # 脚注を登録し、プレースホルダーを取得
-        footnote_id = footnote_manager.add_footnote(footnote_data)
-        placeholder = footnote_manager.create_placeholder(footnote_id)
-
-        return placeholder
-
-    def generate_css_class(
-        self, keyword: str, modifiers: List[str] | None = None
+    def render_html(
+        self, nodes: List[Node], context: Optional[Dict[str, Any]] = None
     ) -> str:
-        """
-        CSS class名を生成（CSS-naming統一対応）
+        """HTML特化レンダリング"""
+        return self.core.render_html(nodes, context)
 
-        Args:
-            keyword: キーワード名
-            modifiers: モディファイアー（オプション）
+    def render_node(self, node: Node, context: Optional[Dict[str, Any]] = None) -> str:
+        """単一ノードレンダリング"""
+        return self.core.render_node(node, context)
 
-        Returns:
-            str: 統一化されたCSSクラス名
-        """
-        if modifiers is None:
-            modifiers = []
+    # 検証機能の委譲
+    def validate(
+        self, node: Node, context: Optional[Dict[str, Any]] = None
+    ) -> List[str]:
+        """ノード検証"""
+        return self.validator.validate(node, context)
 
-        # ベースクラス名の生成
-        base_class = f"{self.css_class_prefix}-{self._normalize_keyword(keyword)}"
+    def validate_options(self, options: Dict[str, Any]) -> List[str]:
+        """オプション検証"""
+        return self.validator.validate_options(options)
 
-        # モディファイアーがある場合は追加
-        if modifiers:
-            modifier_classes = [
-                f"{base_class}--{self._normalize_keyword(mod)}" for mod in modifiers
-            ]
-            return f"{base_class} " + " ".join(modifier_classes)
+    # CSS機能の委譲
+    def get_css_classes(self) -> Dict[str, List[str]]:
+        """CSSクラス一覧取得"""
+        return self.css_processor.get_css_classes()
 
-        return base_class
+    # 脚注機能の委譲
+    def set_footnote_data(self, footnotes_data: Dict[str, Any]) -> None:
+        """脚注データ設定"""
+        self.footnotes_data = footnotes_data
+        self.footnote_manager.set_footnote_data(footnotes_data)
 
-    def _normalize_keyword(self, keyword: str) -> str:
-        """
-        キーワードをCSS class名として正規化
+    def set_graceful_errors(
+        self, errors: List[Dict[str, Any]], embed_in_html: bool = True
+    ) -> None:
+        """グレースフル エラー設定"""
+        self.graceful_errors = errors
+        self.embed_errors_in_html = embed_in_html
+        self.core.graceful_errors = errors
+        self.core.embed_errors_in_html = embed_in_html
 
-        Args:
-            keyword: 正規化対象の文字列
+    def reset_counters(self) -> None:
+        """カウンタリセット"""
+        self.core.reset_counters()
+        self.utilities.heading_counter(0)
 
-        Returns:
-            str: 正規化されたクラス名
-        """
-        # 日本語文字の翻訳・英語変換ロジック
-        translation_map = {
-            "太字": "bold",
-            "イタリック": "italic",
-            "下線": "underline",
-            "見出し1": "h1",
-            "見出し2": "h2",
-            "見出し3": "h3",
-            "見出し4": "h4",
-            "見出し5": "h5",
-            "見出し6": "h6",
-            "ハイライト": "highlight",
-            "目次": "toc",
-            "脚注": "footnote",
-        }
+    # ユーティリティ機能の委譲
+    def escape_html(self, text: str) -> str:
+        """HTML エスケープ"""
+        return self.utilities.escape_html(text)
 
-        normalized = translation_map.get(keyword, keyword)
-        # 英数字・ハイフンのみに制限
-        normalized = re.sub(r"[^a-zA-Z0-9\-]", "-", normalized).lower()
-        # 連続ハイフンを削除
-        normalized = re.sub(r"-+", "-", normalized).strip("-")
+    def heading_counter(self, value: Optional[int] = None) -> int:
+        """見出しカウンター"""
+        return self.utilities.heading_counter(value)
 
-        return normalized
+    # 目次生成
+    def generate_toc(self, nodes: List[Node]) -> str:
+        """目次生成"""
+        headings = []
 
-    def process_color_attribute(self, color_value: str) -> str:
-        """
-        カラー属性の処理・正規化
+        # ノードから見出し要素を抽出
+        for node in nodes:
+            if hasattr(node, "tag") and node.tag.lower() in [
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "h6",
+            ]:
+                level = int(node.tag[1])
+                title = getattr(node, "content", "")
+                heading_id = self.utilities.generate_heading_id(title)
 
-        Args:
-            color_value: カラー値（16進数、名前、RGB等）
+                headings.append({"level": level, "title": title, "id": heading_id})
 
-        Returns:
-            str: 正規化されたカラー値
-        """
-        # 16進数カラーの処理
-        if color_value.startswith("#"):
-            return self._normalize_hex_color(color_value)
+        return self.utilities.generate_toc_from_headings(headings)
 
-        # RGB/RGBA形式の処理
-        if color_value.startswith(("rgb(", "rgba(")):
-            return self._normalize_rgb_color(color_value)
+    # 拡張機能
+    def render_with_template(
+        self,
+        nodes: List[Node],
+        template_path: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """テンプレート使用レンダリング"""
+        try:
+            if not nodes:
+                return ""
 
-        # 色名の処理
-        if color_value in self._get_named_colors():
-            return color_value.lower()
+            context = context or {}
 
-        # 不正な色値の場合はデフォルトに
-        return "#000000"
+            # 基本コンテンツ生成
+            content = self.render_html(nodes, context)
 
-    def _normalize_hex_color(self, hex_color: str) -> str:
-        """
-        16進数カラー値の正規化
+            # テンプレート適用（簡易版）
+            if template_path:
+                try:
+                    with open(template_path, "r", encoding="utf-8") as f:
+                        template = f.read()
 
-        Args:
-            hex_color: 16進数カラー値
+                    # 基本的な変数置換
+                    template = template.replace("{{content}}", content)
+                    template = template.replace(
+                        "{{title}}", context.get("title", "ドキュメント")
+                    )
 
-        Returns:
-            str: 正規化された16進数カラー値
-        """
-        # # を除去して正規化
-        color = hex_color.strip("#").upper()
+                    return template
 
-        # 3桁の場合は6桁に拡張
-        if len(color) == 3:
-            color = "".join([c + c for c in color])
+                except Exception as e:
+                    self.logger.error(f"テンプレート読み込みエラー: {e}")
+                    return content
 
-        # 6桁以外は無効として黒を返す
-        if len(color) != 6 or not re.match(r"^[0-9A-F]{6}$", color):
-            return "#000000"
+            return content
 
-        return f"#{color}"
+        except Exception as e:
+            self.logger.error(f"テンプレートレンダリングエラー: {e}")
+            return f'<div class="error">テンプレートエラー: {str(e)}</div>'
 
-    def _normalize_rgb_color(self, rgb_color: str) -> str:
-        """
-        RGB/RGBA カラー値の正規化
-
-        Args:
-            rgb_color: RGB/RGBAカラー値
-
-        Returns:
-            str: 正規化されたRGBカラー値
-        """
-        # 基本的な検証のみ実装
-        if re.match(
-            r"^rgba?\s*\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}"
-            r"(\s*,\s*[01]?\.?\d*)?\s*\)$",
-            rgb_color,
-        ):
-            return rgb_color
-
-        return "rgb(0,0,0)"
-
-    def _get_named_colors(self) -> set[Any]:
-        """
-        サポートされている色名の一覧を取得
-
-        Returns:
-            set: サポートされている色名のセット
-        """
+    def get_renderer_info(self) -> Dict[str, Any]:
+        """レンダラー情報"""
         return {
-            "black",
-            "white",
-            "red",
-            "green",
-            "blue",
-            "yellow",
-            "orange",
-            "purple",
-            "pink",
-            "brown",
-            "gray",
-            "grey",
+            "name": "HtmlFormatter (Integrated)",
+            "version": "2.0.0",
+            "components": {
+                "core": self.core.get_renderer_info(),
+                "validator": "HTMLValidator v1.0.0",
+                "css_processor": "CSSProcessor v1.0.0",
+                "footnote_manager": "FootnoteManager v1.0.0",
+                "utilities": self.utilities.get_utility_info(),
+            },
+            "formats": self.get_supported_formats(),
+            "features": [
+                "advanced_formatting",
+                "validation",
+                "css_processing",
+                "footnote_management",
+                "template_support",
+                "accessibility_features",
+            ],
         }
 
-    def format_html(self, html: str, options: dict[str, Any] | None = None) -> str:
-        """
-        HTML文字列を整形
-
-        Args:
-            html: 整形対象のHTML文字列
-            options: 整形オプション
-
-        Returns:
-            str: 整形済みHTML文字列
-        """
-        if options is None:
-            options = {}
-
-        # 基本的なPretty-print処理
-        formatted = self._apply_indentation(html)
-
-        # セマンティックモードが有効な場合の処理
-        if self.semantic_mode:
-            formatted = self._apply_semantic_improvements(formatted)
-
-        # 最終的な空白文字正規化
-        formatted = self._normalize_whitespace(formatted)
-
-        return formatted
-
-    def _apply_indentation(self, html: str) -> str:
-        """
-        インデント処理を適用
-
-        Args:
-            html: HTML文字列
-
-        Returns:
-            str: インデント適用済みHTML
-        """
-        lines = html.split("\n")
-        formatted_lines = []
-        indent_level = 0
-        indent_str = " " * self.indent_size
-
-        for line in lines:
-            stripped = line.strip()
-            if not stripped:
-                continue
-
-            # 終了タグの場合はインデントレベルを下げる
-            if stripped.startswith("</"):
-                indent_level = max(0, indent_level - 1)
-
-            # インデント適用
-            formatted_line = indent_str * indent_level + stripped
-            formatted_lines.append(formatted_line)
-
-            # 開始タグの場合はインデントレベルを上げる（自己完結タグは除く）
-            if (
-                stripped.startswith("<")
-                and not stripped.startswith("</")
-                and not stripped.endswith("/>")
-                and not self._is_inline_tag(stripped)
-            ):
-                indent_level += 1
-
-        return "\n".join(formatted_lines)
-
-    def _is_inline_tag(self, tag_line: str) -> bool:
-        """
-        インライン要素かどうかを判定
-
-        Args:
-            tag_line: タグを含む行
-
-        Returns:
-            bool: インライン要素の場合True
-        """
-        inline_tags = {"span", "a", "em", "strong", "code", "small", "sup", "sub"}
-
-        # タグ名を抽出
-        tag_match = re.match(r"<(\w+)", tag_line.strip())
-        if tag_match:
-            tag_name = tag_match.group(1).lower()
-            return tag_name in inline_tags
-
-        return False
-
-    def _apply_semantic_improvements(self, html: str) -> str:
-        """
-        セマンティックHTML改善の適用
-
-        Args:
-            html: HTML文字列
-
-        Returns:
-            str: セマンティック改善済みHTML
-        """
-
-        improved_html = html
-
-        # 見出しタグの変換を先に実行（開始タグ）
-        improved_html = re.sub(
-            r'<div class="kumihan-h([1-6])">', r"<h\1>", improved_html
-        )
-
-        # 見出しタグの終了タグを個別に処理
-        for i in range(1, 7):
-            improved_html = re.sub(
-                f"</div><!--/kumihan-h{i}-->", f"</h{i}>", improved_html
-            )
-
-        # その他のセマンティック変換を実行
-        other_rules = [
-            (r'<span class="kumihan-bold">', r"<strong>"),
-            (r"</span><!--/kumihan-bold-->", r"</strong>"),
-            (r'<span class="kumihan-italic">', r"<em>"),
-            (r"</span><!--/kumihan-italic-->", r"</em>"),
-        ]
-
-        for pattern, replacement in other_rules:
-            improved_html = re.sub(pattern, replacement, improved_html)
-
-        return improved_html
-
-    def _normalize_whitespace(self, html: str) -> str:
-        """
-        空白文字の正規化
-
-        Args:
-            html: HTML文字列
-
-        Returns:
-            str: 正規化済みHTML
-        """
-        # 空行の削除
-        normalized = re.sub(r"\n\s*\n", "\n", html)
-
-        # 行末空白の削除
-        normalized = re.sub(r"[ \t]+$", "", normalized, flags=re.MULTILINE)
-
-        return normalized.strip()
-
-    def validate_html(self, html: str) -> dict[str, Any]:
-        """
-        HTML妥当性チェック
-
-        Args:
-            html: チェック対象のHTML文字列
-
-        Returns:
-            dict: バリデーション結果
-        """
-        validation_result: Dict[str, Any] = {
-            "valid": True,
-            "errors": [],
-            "warnings": [],
-        }
-
-        # 基本的なタグ閉じチェック
-        tag_stack: list[str] = []
-        self_closing_tags = {
-            "br",
-            "hr",
-            "img",
-            "input",
-            "meta",
-            "link",
-            "area",
-            "base",
-            "col",
-            "embed",
-            "source",
-            "track",
-            "wbr",
-        }
-
-        # タグをすべて抽出
-        tag_pattern = r"<(/?)(\w+)[^>]*/?>"
-        for match in re.finditer(tag_pattern, html):
-            is_closing = bool(match.group(1))
-            tag_name = match.group(2).lower()
-
-            if is_closing:
-                # 閉じタグの処理
-                if not tag_stack:
-                    validation_result["errors"].append(
-                        f"Unexpected closing tag: </{tag_name}>"
-                    )
-                    validation_result["valid"] = False
-                elif tag_stack[-1] != tag_name:
-                    validation_result["errors"].append(
-                        f"Mismatched tag: expected </{tag_stack[-1]}>, "
-                        f"found </{tag_name}>"
-                    )
-                    validation_result["valid"] = False
-                else:
-                    tag_stack.pop()
-            elif tag_name not in self_closing_tags:
-                # 開始タグの処理（自己完結タグ以外）
-                tag_stack.append(tag_name)
-
-        # 未閉じタグのチェック
-        if tag_stack:
-            for unclosed_tag in tag_stack:
-                validation_result["errors"].append(f"Unclosed tag: <{unclosed_tag}>")
-                validation_result["valid"] = False
-
-        return validation_result
-
-    def _generate_alt_text(self, filename: str) -> str:
-        """
-        画像ファイル名からalt属性用のテキストを生成
-
-        Args:
-            filename: 画像ファイル名
-
-        Returns:
-            str: alt属性用テキスト
-        """
-        if not filename:
-            return "Image"
-
-        # ファイル拡張子を除去
-        name = Path(filename).stem
-
-        # アンダースコアやハイフンをスペースに変換
-        alt_text = re.sub(r"[_-]", " ", name)
-
-        # 数字の後にアルファベットが来る場合にスペースを挿入
-        alt_text = re.sub(r"(\d)([a-zA-Z])", r"\1 \2", alt_text)
-
-        # 大文字小文字の境界にスペースを挿入
-        alt_text = re.sub(r"([a-z])([A-Z])", r"\1 \2", alt_text)
-
-        # 先頭を大文字にし、余分なスペースを削除
-        alt_text = " ".join(alt_text.split()).capitalize()
-
-        return alt_text if alt_text else "Image"
-
-    def add_accessibility_attributes(self, html: str) -> str:
-        """
-        アクセシビリティ属性の追加
-
-        Args:
-            html: HTML文字列
-
-        Returns:
-            str: アクセシビリティ改善済みHTML
-        """
-        accessibility_rules = [
-            # 画像にalt属性が無い場合の警告・追加
-            (
-                r"<img(?![^>]*alt=)",
-                r'<img alt=""',
-            ),
-            # 見出しレベルのスキップチェック（警告のみ）
-            # リンクにtitle属性追加（外部リンクの場合）
-            (
-                r'<a href="http[s]?://[^"]+">([^<]+)</a>',
-                r'<a href="\1" title="\1 (外部サイト)">\1</a>',
-            ),
-        ]
-
-        improved_html = html
-        for pattern, replacement in accessibility_rules:
-            improved_html = re.sub(pattern, replacement, improved_html)
-
-        return improved_html
-
-    def compress_html(self, html: str) -> str:
-        """
-        HTML圧縮（改行・空白削除）
-
-        Args:
-            html: HTML文字列
-
-        Returns:
-            str: 圧縮済みHTML
-        """
-        # コメントの削除
-        compressed = re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)
-
-        # 不要な空白・改行の削除
-        compressed = re.sub(r"\s+", " ", compressed)
-        compressed = re.sub(r">\s+<", "><", compressed)
-
-        return compressed.strip()
-
-    def create_document_structure(
-        self, content: str, options: dict[str, Any] | None = None
-    ) -> str:
-        """
-        完全なHTMLドキュメント構造の生成
-
-        Args:
-            content: ボディ部分のコンテンツ
-            options: ドキュメントオプション
-
-        Returns:
-            str: 完全なHTMLドキュメント
-        """
-        if options is None:
-            options = {}
-
-        title = options.get("title", "Kumihan-Formatter Generated Document")
-        lang = options.get("lang", "ja")
-        charset = options.get("charset", "UTF-8")
-        css_files = options.get("css_files", [])
-        js_files = options.get("js_files", [])
-
-        # CSS link要素の生成
-        css_links = "\n".join(
-            [f'  <link rel="stylesheet" href="{css}">' for css in css_files]
-        )
-
-        # JavaScript script要素の生成
-        js_scripts = "\n".join([f'  <script src="{js}"></script>' for js in js_files])
-
-        # HTMLテンプレート
-        template = f"""<!DOCTYPE html>
-<html lang="{lang}">
-<head>
-  <meta charset="{charset}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="generator" content="Kumihan-Formatter">
-{css_links}
-</head>
-<body>
-{content}
-{js_scripts}
-</body>
-</html>"""
-
-        return template
-
-    def generate_footnotes_html(self, footnotes: List[Dict[str, Any]]) -> str:
-        """
-        脚注のHTML生成
-
-        Args:
-            footnotes: 脚注データのリスト
-                      [{"content": "内容", "number": 番号}, ...]
-
-        Returns:
-            str: 脚注のHTML文字列
-        """
-        if not footnotes:
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応確認"""
+        return self.core.supports_format(format_hint)
+
+    def get_supported_formats(self) -> List[str]:
+        """対応フォーマット一覧"""
+        return self.core.get_supported_formats()
+
+    # プライベートメソッド（内部実装）
+    def _format_with_errors(self, nodes: List[Node]) -> str:
+        """エラー付きフォーマット"""
+        html_parts = []
+
+        for node in nodes:
+            html = self.format_node(node)
+            if html:
+                html_parts.append(html)
+
+        main_html = "\n".join(html_parts)
+
+        # エラー情報を埋め込み
+        if self.graceful_errors and self.embed_errors_in_html:
+            error_summary_html = self._render_error_summary()
+            if error_summary_html:
+                main_html = f"{error_summary_html}\n{main_html}"
+
+            # エラーマーカーを埋め込み
+            html_with_markers = self._embed_error_markers(main_html)
+            return html_with_markers
+
+        return main_html
+
+    def _render_error_summary(self) -> str:
+        """エラーサマリーレンダリング"""
+        if not self.graceful_errors:
             return ""
 
-        import html
+        error_count = len(self.graceful_errors)
+        summary_html = f"""
+<div class="error-summary" role="alert">
+    <h3>⚠️ 解析エラー ({error_count}件)</h3>
+    <details>
+        <summary>詳細を表示</summary>
+        <ol class="error-list">
+"""
 
-        html_lines = ['<div class="footnotes">', "<ol>"]
+        for i, error in enumerate(self.graceful_errors, 1):
+            safe_title = self.escape_html(error.get("title", f"エラー {i}"))
+            safe_severity = self.escape_html(error.get("severity", "warning"))
+            safe_content = self.escape_html(error.get("content", ""))
 
-        for footnote in footnotes:
-            number = footnote.get("number", 1)
-            content = footnote.get("content", "")
-            # HTMLエスケープを適用
-            escaped_content = html.escape(content)
+            error_html = f"""
+            <li class="error-item severity-{safe_severity}">
+                <strong>{safe_title}</strong>: {safe_content}
+            </li>"""
 
-            # 脚注のリストアイテム
-            html_lines.append(
-                f'<li id="footnote-{number}">'
-                f"{escaped_content} "
-                f'<a href="#footnote-ref-{number}" class="footnote-backref">↩</a>'
-                f"</li>"
-            )
+            summary_html += error_html
 
-        html_lines.extend(["</ol>", "</div>"])
-        return "\n".join(html_lines)
+        summary_html += """
+        </ol>
+    </details>
+</div>
+"""
+        return summary_html
 
-    def process_footnote_links(self, text: str, footnotes: List[Dict[str, Any]]) -> str:
-        """
-        テキスト内の脚注リンクを処理
+    def _embed_error_markers(self, html: str) -> str:
+        """エラーマーカー埋め込み"""
+        if not self.graceful_errors:
+            return html
 
-        Args:
-            text: 処理対象のテキスト
-            footnotes: 脚注データのリスト
+        modified_lines = html.split("\n")
 
-        Returns:
-            str: 脚注リンクが処理されたテキスト
-        """
-        # 脚注パターン ((内容)) を検索して置換
-        import re
+        for error in self.graceful_errors:
+            if "line_number" in error:
+                line_num = error.get("line_number", 1) - 1
+                if 0 <= line_num < len(modified_lines):
+                    safe_message = self.escape_html(error.get("message", ""))
+                    safe_suggestion = self.escape_html(error.get("suggestion", ""))
 
-        pattern = r"\(\(([^)]+)\)\)"
+                    # エラーアイコン
+                    error_icon = "⚠️" if error.get("severity") == "warning" else "❌"
 
-        def replace_footnote(match: re.Match[str]) -> str:
-            footnote_content = match.group(1)
-            # 対応する脚注番号を見つける
-            for footnote in footnotes:
-                if footnote.get("content") == footnote_content:
-                    number = footnote.get("number", 1)
-                    return f'<sup><a href="#footnote-{number}" id="footnote-ref-{number}">[{number}]</a></sup>'
-            return match.group(0)  # 見つからない場合は元のまま
+                    error_marker = f"""
+                    <span class="inline-error" title="{safe_message}">
+                        {error_icon} {safe_suggestion}
+                    </span>"""
 
-        return re.sub(pattern, replace_footnote, text)
+                    modified_lines[line_num] += error_marker
 
+        return "\n".join(modified_lines)
 
-class FootnoteManager:
-    """
-    脚注管理クラス
+    def _process_footnote_placeholders(self, html: str) -> str:
+        """脚注プレースホルダー処理"""
+        return self.footnote_manager.process_footnote_placeholders(html)
 
-    責務:
-    - 脚注の登録・管理
-    - プレースホルダーの生成
-    - 脚注リストの出力
-    """
+    def _append_footnotes_section(self, html: str) -> str:
+        """脚注セクション追加"""
+        return self.footnote_manager.append_footnotes_section(html)
 
-    def __init__(self) -> None:
-        self.footnotes: dict[str, dict[str, Any]] = {}  # footnote_id -> footnote_data
-        self.footnote_counter = 0
+    # 互換性維持のための個別フォーマッターメソッド
+    def _format_generic(self, node: Node) -> str:
+        return self.core._format_generic(node)
 
-    def add_footnote(self, footnote_data: dict[str, Any]) -> str:
-        """
-        脚注を追加
+    def _format_p(self, node: Node) -> str:
+        return self.core._format_p(node)
 
-        Args:
-            footnote_data: 脚注データ
+    def _format_strong(self, node: Node) -> str:
+        return self.core._format_strong(node)
 
-        Returns:
-            str: 脚注ID
-        """
-        self.footnote_counter += 1
-        footnote_id = f"footnote-{self.footnote_counter}"
-        self.footnotes[footnote_id] = footnote_data
-        return footnote_id
+    def _format_em(self, node: Node) -> str:
+        return self.core._format_em(node)
 
-    def create_placeholder(self, footnote_id: str) -> str:
-        """
-        脚注プレースホルダーの生成
+    def _format_div(self, node: Node) -> str:
+        return self.core._format_div(node)
 
-        Args:
-            footnote_id: 脚注ID
+    def _format_h1(self, node: Node) -> str:
+        return self.core._format_h1(node)
 
-        Returns:
-            str: プレースホルダーHTML
-        """
-        footnote_number = footnote_id.split("-")[-1]
-        return (
-            f'<sup><a href="#{footnote_id}" class="footnote-ref">'
-            f"[{footnote_number}]</a></sup>"
-        )
+    def _format_h2(self, node: Node) -> str:
+        return self.core._format_h2(node)
 
-    def generate_footnote_list(self) -> str:
-        """
-        脚注リストのHTML生成
+    def _format_h3(self, node: Node) -> str:
+        return self.core._format_h3(node)
 
-        Returns:
-            str: 脚注リストHTML
-        """
-        if not self.footnotes:
-            return ""
+    def _format_h4(self, node: Node) -> str:
+        return self.core._format_h4(node)
 
-        footnote_items = []
-        for footnote_id, footnote_data in self.footnotes.items():
-            # TODO: 脚注番号付けシステムの実装 (Issue #921で対応予定)
-            # 複雑な脚注システム全体の設計が必要なため、別途Issue化して対応
-            content = footnote_data["content"]
-            footnote_item = (
-                f'<li id="{footnote_id}">'
-                f"{content} "
-                f'<a href="#ref-{footnote_id}">↩</a>'
-                f"</li>"
-            )
-            footnote_items.append(footnote_item)
+    def _format_h5(self, node: Node) -> str:
+        return self.core._format_h5(node)
 
-        footnote_list = (
-            '<div class="footnotes">\n'
-            "<h3>脚注</h3>\n"
-            "<ol>\n" + "\n".join(footnote_items) + "\n</ol>\n"
-            "</div>"
-        )
+    def _format_ul(self, node: Node) -> str:
+        return self.core._format_ul(node)
 
-        return footnote_list
+    def _format_ol(self, node: Node) -> str:
+        return self.core._format_ol(node)
 
-    def clear_footnotes(self) -> None:
-        """
-        脚注データのクリア
-        """
-        self.footnotes.clear()
-        self.footnote_counter = 0
+    def _format_li(self, node: Node) -> str:
+        return self.core._format_li(node)
 
-    def register_footnotes(
-        self, footnotes: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """
-        脚注リストを登録し、グローバル番号を割り当て
+    def _format_details(self, node: Node) -> str:
+        return self.core._format_details(node)
 
-        Args:
-            footnotes: 脚注データのリスト
+    def _format_pre(self, node: Node) -> str:
+        return self.core._format_pre(node)
 
-        Returns:
-            List[Dict[str, Any]]: グローバル番号が割り当てられた脚注リスト
-        """
-        processed_footnotes = []
+    def _format_code(self, node: Node) -> str:
+        return self.core._format_code(node)
 
-        for footnote in footnotes:
-            # 新しい脚注データを作成（既存データをコピー）
-            processed_footnote = footnote.copy()
+    def _format_image(self, node: Node) -> str:
+        return self.core._format_image(node)
 
-            # グローバル番号を割り当て
-            self.footnote_counter += 1
-            processed_footnote["global_number"] = self.footnote_counter
+    def _format_error(self, node: Node) -> str:
+        return self.core._format_error(node)
 
-            # 内部ストレージに保存
-            footnote_id = f"footnote-{self.footnote_counter}"
-            self.footnotes[footnote_id] = processed_footnote
+    def _format_toc(self, node: Node) -> str:
+        return self.core._format_toc(node)
 
-            processed_footnotes.append(processed_footnote)
-
-        return processed_footnotes
-
-    def get_all_footnotes(self) -> List[Dict[str, Any]]:
-        """
-        登録されている全脚注を取得
-
-        Returns:
-            List[Dict[str, Any]]: 全脚注データのリスト
-        """
-        return list(self.footnotes.values())
-
-    def reset_counter(self) -> None:
-        """
-        脚注カウンターをリセット
-        """
-        self.footnote_counter = 0
-        self.footnotes.clear()
-
-
-# Utility functions for backward compatibility
-def format_html(html: str, indent_size: int = 2) -> str:
-    """
-    HTML整形のユーティリティ関数
-
-    Args:
-        html: 整形対象のHTML
-        indent_size: インデントサイズ
-
-    Returns:
-        str: 整形済みHTML
-    """
-    formatter = HTMLFormatter(indent_size=indent_size)
-    return formatter.format_html(html)
-
-
-def validate_html_string(html: str) -> dict[str, Any]:
-    """
-    HTMLバリデーションのユーティリティ関数
-
-    Args:
-        html: バリデーション対象のHTML
-
-    Returns:
-        dict: バリデーション結果
-    """
-    formatter = HTMLFormatter()
-    return formatter.validate_html(html)
-
-
-def create_full_html_document(content: str, **options: Any) -> str:
-    """
-    完全なHTMLドキュメント生成のユーティリティ関数
-
-    Args:
-        content: コンテンツ
-        **options: ドキュメントオプション
-
-    Returns:
-        str: 完全なHTMLドキュメント
-    """
-    formatter = HTMLFormatter()
-    return formatter.create_document_structure(content, options)
+    def _format_ruby(self, node: Node) -> str:
+        return self.core._format_ruby(node)
