@@ -1,0 +1,89 @@
+# Kumihan-Formatter クイックスタートガイド
+
+**最新版**: 2025年統合最適化版  
+**対象**: 初回利用者・基本操作習得
+
+---
+
+## 🚀 インストール・基本利用
+
+### インストール
+```bash
+git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
+cd Kumihan-Formatter
+pip install -e .
+```
+
+### 基本的な使い方
+```python
+# 統合API使用 (推奨)
+from kumihan_formatter.unified_api import KumihanFormatter, quick_convert
+
+# 簡単変換
+result = quick_convert("input.kumihan")
+
+# 詳細制御
+with KumihanFormatter() as formatter:
+    result = formatter.convert("input.kumihan", "output.html")
+```
+
+### CLI使用
+```bash
+# 基本変換
+kumihan-formatter convert input.kumihan output.html
+
+# バッチ処理
+kumihan-formatter convert *.kumihan --output-dir ./html/
+```
+
+---
+
+## 📝 Kumihan記法基本
+
+### ブロック記法
+```
+# 太字 #テキスト##          → <strong>テキスト</strong>
+# イタリック #テキスト##     → <em>テキスト</em>
+# 見出し1 #タイトル##        → <h1>タイトル</h1>
+# 見出し2 #タイトル##        → <h2>タイトル</h2>
+```
+
+### リスト記法
+```
+- 項目1
+- 項目2
+  - サブ項目1
+  - サブ項目2
+
+1. 順序リスト1
+2. 順序リスト2
+```
+
+---
+
+## 🔧 開発・カスタマイズ
+
+### 品質チェック
+```bash
+make lint       # コード品質チェック
+make test       # テスト実行
+make test-unit  # 高速単体テスト
+```
+
+### 設定カスタマイズ
+```python
+from kumihan_formatter.unified_api import KumihanFormatter
+
+formatter = KumihanFormatter()
+formatter.config.set_template('modern')  # テンプレート切り替え
+result = formatter.convert_text(content)
+```
+
+---
+
+## 📚 さらに詳しく
+
+- **統合API詳細**: API.md
+- **アーキテクチャ**: ARCHITECTURE.md
+- **開発ガイド**: CLAUDE.md
+- **変更履歴**: CHANGELOG.md
