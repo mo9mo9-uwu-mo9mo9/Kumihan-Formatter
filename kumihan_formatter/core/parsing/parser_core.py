@@ -212,6 +212,7 @@ class Parser:
         try:
             # create_nodeのインポートを使用
             from ..ast_nodes import create_node
+
             # シンプルなテキストノード作成（統合最適化後）
             return create_node("text", line)
 

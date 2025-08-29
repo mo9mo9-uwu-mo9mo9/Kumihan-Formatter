@@ -21,6 +21,7 @@ from .error_base import (
     SyntaxError,
     ValidationError,
 )
+
 # エラーハンドラーは簡素化のため除去
 
 # 後方互換性のため、全てのクラスと関数を再エクスポート
