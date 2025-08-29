@@ -17,11 +17,15 @@
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
 cd Kumihan-Formatter
 
-# 開発環境のセットアップ
-pip install -e ".[dev]"
+# Python依存関係インストール
+python3 -m pip install -e .
+python3 -m pip install -r requirements-dev.txt
 
-# pre-commitフックの設定
-pre-commit install
+# または一括インストール
+python3 -m pip install -e ".[dev]"
+
+# Git hooks セットアップ（必須）
+./scripts/install-hooks.sh
 ```
 
 ## ブランチ戦略

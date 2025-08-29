@@ -5,35 +5,37 @@
 
 ---
 
-## 🎯 統合API概要
+## 🎯 統合API概要 (2025年版アーキテクチャ)
 
 ### KumihanFormatter (メインクラス)
 ```python
 from kumihan_formatter.unified_api import KumihanFormatter
 
 class KumihanFormatter:
-    """統合フォーマッター - 単一エントリーポイント"""
+    """統合フォーマッター - 新統合Managerシステム対応"""
     
-    def __init__(self, config_path: Optional[Path] = None)
-    def convert(self, input_path: Path, output_path: Path) -> bool
-    def convert_text(self, text: str) -> str
-    def parse_text(self, text: str) -> ParseResult
-    def validate_syntax(self, text: str) -> ValidationResult
+    def __init__(self, config_path: Optional[Union[str, Path]] = None)
+    def convert(
+        self,
+        input_file: Union[str, Path],
+        output_file: Optional[Union[str, Path]] = None,
+        template: str = "default",
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]
 ```
 
-### クイック関数群
+### 統合Managerシステム (5つのManager)
 ```python
-# 高速変換
-quick_convert(input_path: str, output_path: str = None) -> str
+# 初期化時に自動構築される内部システム
+self.core_manager = CoreManager(config)           # ファイル入出力・基盤機能
+self.parsing_manager = ParsingManager(config)     # 解析処理制御
+self.optimization_manager = OptimizationManager(config)  # 最適化処理
+self.plugin_manager = PluginManager(config)       # プラグインシステム
+self.distribution_manager = DistributionManager(config)  # 配布・出力管理
 
-# 高速パース
-quick_parse(text: str) -> ParseResult
-
-# 統合パース (自動パーサー選択)
-unified_parse(content: str, parser_type: str = "auto") -> ParseResult
-
-# 構文検証
-validate_kumihan_syntax(text: str) -> ValidationResult
+# メインコンポーネント
+self.main_parser = MainParser(config)             # 統合パーサー
+self.main_renderer = MainRenderer(config)         # 統合レンダラー
 ```
 
 ---
@@ -116,39 +118,41 @@ except KumihanProcessingError as e:
 
 ---
 
-## 🚀 使用例
+## 🚀 使用例 (2025年版アーキテクチャ)
 
 ### 基本的な使用パターン
 ```python
-# パターン1: ワンライン変換
-html = quick_convert("document.kumihan")
+from kumihan_formatter.unified_api import KumihanFormatter
 
-# パターン2: 詳細制御
-with KumihanFormatter() as formatter:
-    # 構文検証
-    validation = formatter.validate_syntax(text)
-    if validation.is_valid:
-        # パース
-        parsed = formatter.parse_text(text)
-        # レンダリング (自動実行)
-        result = formatter.convert_text(text)
-
-# パターン3: ファイル処理
+# パターン1: 基本変換
 formatter = KumihanFormatter()
-success = formatter.convert("input.kumihan", "output.html")
+result = formatter.convert("input.txt", "output.html")
+
+# パターン2: 設定ファイル指定
+formatter = KumihanFormatter(config_path="config.json")
+result = formatter.convert("input.txt", "output.html", template="custom")
+
+# パターン3: オプション指定
+options = {"enable_toc": True, "style": "modern"}
+result = formatter.convert("input.txt", "output.html", options=options)
+
+# パターン4: 出力パス自動決定
+result = formatter.convert("input.txt")  # → input.html
 ```
 
 ### バッチ処理
 ```python
 from pathlib import Path
+from kumihan_formatter.unified_api import KumihanFormatter
 
 formatter = KumihanFormatter()
 input_dir = Path("documents/")
 output_dir = Path("html/")
 
-for kumihan_file in input_dir.glob("*.kumihan"):
-    output_file = output_dir / f"{kumihan_file.stem}.html"
-    formatter.convert(kumihan_file, output_file)
+for text_file in input_dir.glob("*.txt"):
+    output_file = output_dir / f"{text_file.stem}.html"
+    result = formatter.convert(text_file, output_file)
+    print(f"変換完了: {text_file} → {output_file}")
 ```
 
 ---

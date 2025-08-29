@@ -12,11 +12,11 @@
 - **記法**: Kumihan独自ブロック記法 (`# 装飾名 #内容##`)
 - **最適化状況**: 5Phase統合最適化進行中 (2025年版アーキテクチャ)
 
-### 🏆 統合最適化成果 (Phase1-5進行中)
-- **パーサー統合**: 統合パーサーシステム構築中 (95個のPythonファイル)
-- **ディレクトリ簡素化**: モジュール構造最適化進行中
+### 🏆 統合最適化成果 (Phase1-5完了済み)
+- **パーサー統合**: 統合パーサーシステム構築完了 (unified_api.py)
+- **ディレクトリ簡素化**: モジュール構造最適化完了 (14層構造)
 - **テスト強化**: 17テストファイル、テストピラミッド構築完了
-- **レガシー削除**: 継続的リファクタリング実施中
+- **アーキテクチャ統合**: 2025年版アーキテクチャ統合完了
 
 ## 📋 開発原則
 
@@ -141,9 +141,21 @@ make test        # pytest 全通過必須
 
 ## 📊 プロジェクト構造
 
-### 主要コンポーネント
-- **パーサー**: `core/` - 記法解析エンジン  
+### 主要コンポーネント (2025年版アーキテクチャ)
+- **パーサー**: `core/parsing/` - 記法解析エンジン  
+- **処理**: `core/processing/` - ドキュメント変換・処理ロジック
 - **レンダラー**: `core/rendering/` - HTML出力・テンプレート処理
+- **テンプレート**: `core/templates/` - HTML テンプレートシステム
+- **型定義**: `core/types/` - 型定義・データクラス
+- **ユーティリティ**: `core/utilities/` - 共通ユーティリティ
+- **バリデーション**: `core/validation/` - データ検証・エラー処理
+- **AST**: `core/ast_nodes/` - 抽象構文木ノード
+- **エラー処理**: `core/error_handling/` - エラーハンドリング
+- **共通基盤**: `core/common/` - 基盤クラス・機能
+- **設定管理**: `core/config/` - 設定管理システム
+- **入出力**: `core/io/` - ファイル入出力処理
+- **パターン**: `core/patterns/` - デザインパターン実装
+- **構文**: `core/syntax/` - 構文定義・ルール
 - **CLI**: `cli.py + commands/` - コマンドライン interface
 
 ---
@@ -276,38 +288,35 @@ make test          # <60秒: 全体テスト（CI用）
 
 ---
 
-## 🚀 統合API使用方法 (2025年版)
+## 🚀 統合API使用方法 (2025年版アーキテクチャ)
 
 ### 基本的な使用
 ```python
-from kumihan_formatter.unified_api import KumihanFormatter, quick_convert
+from kumihan_formatter.unified_api import KumihanFormatter
 
-# 統合エントリーポイント
-with KumihanFormatter() as formatter:
-    result = formatter.convert("input.kumihan", "output.html")
-    
-# クイック変換
-result = quick_convert("document.kumihan")
+# 基本的な変換
+formatter = KumihanFormatter()
+result = formatter.convert("input.txt", "output.html")
+
+# 設定ファイル指定
+formatter = KumihanFormatter(config_path="config.json")
+result = formatter.convert("input.txt", "output.html", template="custom")
+
+# オプション指定
+options = {"enable_toc": True, "style": "modern"}
+result = formatter.convert("input.txt", options=options)
 ```
 
-### パーサー個別使用
-```python
-from kumihan_formatter.unified_api import unified_parse
+### 統合Managerシステム (5つのManager)
+- **CoreManager**: ファイル入出力・基盤機能
+- **ParsingManager**: 解析処理制御
+- **OptimizationManager**: 最適化処理
+- **PluginManager**: プラグインシステム
+- **DistributionManager**: 配布・出力管理
 
-# 自動パーサー選択
-result = unified_parse(content, "auto")
-
-# 個別パーサー指定
-result = unified_parse(content, "content")  # ContentParser
-result = unified_parse(content, "block")    # BlockParser  
-result = unified_parse(content, "list")     # ListParser
-```
-
-### 統合パーサーシステム
-- **ContentParser**: `UnifiedContentParser` - 4→1統合
-- **BlockParser**: `UnifiedBlockParser` - 4→1統合  
-- **ListParser**: `UnifiedListParser` - 5→1統合
-- **MainParser**: 全パーサーの協調制御
+### メインコンポーネント
+- **MainParser**: 統合パーサー（自動パーサー選択）
+- **MainRenderer**: 統合レンダラー（HTML出力）
 
 ---
 
