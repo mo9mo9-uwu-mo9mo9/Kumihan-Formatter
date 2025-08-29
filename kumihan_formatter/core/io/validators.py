@@ -25,22 +25,22 @@ class FileValidator(ValidatorProtocol):
     def validate_readable(self, path: Path) -> bool:
         """ファイルが読み込み可能かどうかを検証"""
         self._errors.clear()
-        
+
         try:
             if not path.exists():
                 self._errors.append(f"ファイルが存在しません: {path}")
                 return False
-            
+
             if not path.is_file():
                 self._errors.append(f"ファイルではありません: {path}")
                 return False
-            
+
             if not os.access(path, os.R_OK):
                 self._errors.append(f"読み込み権限がありません: {path}")
                 return False
-            
+
             return True
-            
+
         except Exception as e:
             self._errors.append(f"ファイル検証中にエラー: {e}")
             return False
@@ -48,7 +48,7 @@ class FileValidator(ValidatorProtocol):
     def validate_writable(self, path: Path) -> bool:
         """ファイルが書き込み可能かどうかを検証"""
         self._errors.clear()
-        
+
         try:
             # ファイルが存在する場合は書き込み権限をチェック
             if path.exists():
@@ -56,7 +56,7 @@ class FileValidator(ValidatorProtocol):
                     self._errors.append(f"書き込み権限がありません: {path}")
                     return False
                 return True
-            
+
             # ファイルが存在しない場合は親ディレクトリの書き込み権限をチェック
             parent = path.parent
             if not parent.exists():
@@ -67,13 +67,15 @@ class FileValidator(ValidatorProtocol):
                 except Exception as e:
                     self._errors.append(f"親ディレクトリを作成できません: {e}")
                     return False
-            
+
             if not os.access(parent, os.W_OK):
-                self._errors.append(f"親ディレクトリに書き込み権限がありません: {parent}")
+                self._errors.append(
+                    f"親ディレクトリに書き込み権限がありません: {parent}"
+                )
                 return False
-            
+
             return True
-            
+
         except Exception as e:
             self._errors.append(f"書き込み検証中にエラー: {e}")
             return False
@@ -98,40 +100,59 @@ class PathValidator(ValidatorProtocol):
     def validate_path(self, path: Path) -> bool:
         """パスの有効性を検証"""
         self._errors.clear()
-        
+
         try:
             # パス文字列の基本チェック
             path_str = str(path)
-            
+
             if not path_str.strip():
                 self._errors.append("パスが空です")
                 return False
-            
+
             # 無効な文字のチェック（基本的なもの）
-            invalid_chars = ['<', '>', '"', '|', '?', '*']
+            invalid_chars = ["<", ">", '"', "|", "?", "*"]
             for char in invalid_chars:
                 if char in path_str:
                     self._errors.append(f"無効な文字が含まれています: {char}")
                     return False
-            
+
             # パスの長さチェック（システム制限）
             if len(path_str) > 260:  # Windows制限を考慮
                 self._errors.append(f"パスが長すぎます: {len(path_str)} 文字")
                 return False
-            
+
             # 予約語チェック（Windows）
             reserved_names = [
-                'CON', 'PRN', 'AUX', 'NUL',
-                'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-                'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+                "CON",
+                "PRN",
+                "AUX",
+                "NUL",
+                "COM1",
+                "COM2",
+                "COM3",
+                "COM4",
+                "COM5",
+                "COM6",
+                "COM7",
+                "COM8",
+                "COM9",
+                "LPT1",
+                "LPT2",
+                "LPT3",
+                "LPT4",
+                "LPT5",
+                "LPT6",
+                "LPT7",
+                "LPT8",
+                "LPT9",
             ]
-            
+
             if path.name.upper() in reserved_names:
                 self._errors.append(f"予約語が使用されています: {path.name}")
                 return False
-            
+
             return True
-            
+
         except Exception as e:
             self._errors.append(f"パス検証中にエラー: {e}")
             return False

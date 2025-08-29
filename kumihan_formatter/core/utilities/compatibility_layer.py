@@ -7,41 +7,65 @@ MainParser→MasterParser統合により更新
 
 from typing import Any, Dict, List, Optional
 
-from .parsing.master_parser import MasterParser
-from .parsing.specialized.block_parser import UnifiedBlockParser as BlockParser
-from .parsing.specialized.keyword_parser import UnifiedKeywordParser as KeywordParser
-from .parsing.specialized.list_parser import UnifiedListParser as ListParser
-from .rendering.formatters.html_formatter import HtmlFormatter
-from .rendering.formatters.markdown_formatter import MarkdownFormatter
-from .rendering.main_renderer import MainRenderer as HTMLRenderer
-from .ast_nodes import Node, create_node, error_node
+from ...parsers.unified_keyword_parser import UnifiedKeywordParser as KeywordParser
+from ...parsers.unified_list_parser import UnifiedListParser as ListParser
+from ...parsers.unified_markdown_parser import UnifiedMarkdownParser as MarkdownParser
+from ...parsers.main_parser import MainParser as ActualMainParser
+from ..ast_nodes.node import Node
+from ..rendering.markdown_renderer import MarkdownRenderer as HTMLRenderer
+
+
+class HtmlFormatter:
+    """HTML フォーマッター - 互換性用簡易実装"""
+
+    def __init__(self, **kwargs):
+        self.config = kwargs
+
+    def format(self, content: str) -> str:
+        return content
+
+
+class MarkdownFormatter:
+    """Markdown フォーマッター - 互換性用簡易実装"""
+
+    def __init__(self, **kwargs):
+        self.config = kwargs
+
+    def format(self, content: str) -> str:
+        return content
 
 
 class LegacyParserAdapter:
     """レガシーParser互換性アダプター"""
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self._master_parser = MasterParser(config)
+        self._main_parser = ActualMainParser(config)
 
     def parse(self, text: str, **kwargs) -> List[Node]:
         """MainParser互換parse - Nodeリスト返却"""
-        return self._master_parser.parse(text, return_nodes=True, **kwargs)
+        return self._main_parser.parse(text, **kwargs)
 
     def parse_streaming(self, text: str, **kwargs) -> List[Node]:
         """ストリーミング解析 (MainParser互換)"""
-        return self._master_parser.parse_streaming(text, **kwargs)
+        # 簡易実装: 通常のparseを呼び出し
+        return self._main_parser.parse(text, **kwargs)
 
     def get_performance_stats(self) -> Dict[str, Any]:
         """パフォーマンス統計 (MainParser互換)"""
-        return self._master_parser.get_performance_stats()
+        # 簡易実装: 基本的な統計情報を返す
+        return {"calls": 0, "total_time": 0.0}
 
     def reset_statistics(self):
         """統計リセット (MainParser互換)"""
-        self._master_parser.reset_statistics()
+        # 簡易実装: 何もしない
+        pass
 
 
 # MainParser互換性エイリアス
 MainParser = LegacyParserAdapter
+
+# MasterParser互換性エイリアス
+MasterParser = LegacyParserAdapter
 
 # Parser(core)互換性エイリアス
 Parser = LegacyParserAdapter
@@ -49,34 +73,46 @@ Parser = LegacyParserAdapter
 # StreamingParser互換性
 StreamingParser = LegacyParserAdapter
 
+# パーサーエイリアス
+BlockParser = MarkdownParser
+ContentParser = MarkdownParser
+
+
+# Node作成関数（互換性用）
+def create_node(node_type: str = "text", content: str = "", **kwargs) -> Node:
+    """Node作成関数 - 互換性用簡易実装"""
+    from ..ast_nodes.node import Node
+
+    return Node(node_type=node_type, content=content, **kwargs)
+
+
+def error_node(message: str = "Error", **kwargs) -> Node:
+    """エラーNode作成関数 - 互換性用簡易実装"""
+    from ..ast_nodes.node import Node
+
+    return Node(node_type="error", content=message, **kwargs)
+
 
 # 旧ファクトリー関数の互換版
 def create_keyword_parser(**kwargs: Any) -> Any:
     """後方互換: 旧式キーワードパーサー作成"""
-    from .patterns.factories import create_parser
-
-    return create_parser("keyword", **kwargs)
+    return KeywordParser()
 
 
 def create_list_parser(**kwargs: Any) -> Any:
     """後方互換: 旧式リストパーサー作成"""
-    from .patterns.factories import create_parser
-
-    return create_parser("list", **kwargs)
+    return ListParser()
 
 
 def create_block_parser(**kwargs: Any) -> Any:
     """後方互換: 旧式ブロックパーサー作成"""
-    from .patterns.factories import create_parser
-
-    return create_parser("block", **kwargs)
+    # ブロックパーサーは統合されたMarkdownパーサーを使用
+    return MarkdownParser()
 
 
 def create_markdown_parser(**kwargs: Any) -> Any:
     """後方互換: 旧式Markdownパーサー作成"""
-    from .patterns.factories import create_parser
-
-    return create_parser("markdown", **kwargs)
+    return MarkdownParser()
 
 
 def create_html_renderer(**kwargs: Any) -> HtmlFormatter:

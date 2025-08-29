@@ -13,7 +13,7 @@ from kumihan_formatter.parsers.unified_keyword_parser import UnifiedKeywordParse
 from kumihan_formatter.parsers.unified_markdown_parser import UnifiedMarkdownParser
 from kumihan_formatter.simple_parser import SimpleKumihanParser
 from kumihan_formatter.core.parsing.core_marker_parser import CoreMarkerParser
-from kumihan_formatter.core.parsing_coordinator import ParsingCoordinator
+from kumihan_formatter.core.processing.parsing_coordinator import ParsingCoordinator
 
 
 class MainParser:

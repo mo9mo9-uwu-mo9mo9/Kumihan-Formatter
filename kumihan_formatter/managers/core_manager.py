@@ -11,8 +11,8 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from kumihan_formatter.core.io.operations import FileOperations, PathOperations
-from kumihan_formatter.core.template_context import TemplateContext
-from kumihan_formatter.core.template_selector import TemplateSelector
+from kumihan_formatter.core.templates.template_context import TemplateContext
+from kumihan_formatter.core.templates.template_selector import TemplateSelector
 
 
 @dataclass

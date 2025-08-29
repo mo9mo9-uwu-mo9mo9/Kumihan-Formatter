@@ -7,11 +7,11 @@ import logging
 from typing import Dict, Any, List, Optional, Union
 
 from kumihan_formatter.core.ast_nodes.node import Node
-from kumihan_formatter.core.parsing_coordinator import ParsingCoordinator
+from kumihan_formatter.core.processing.parsing_coordinator import ParsingCoordinator
 from kumihan_formatter.parsers.unified_list_parser import UnifiedListParser
 from kumihan_formatter.parsers.unified_keyword_parser import UnifiedKeywordParser
 from kumihan_formatter.parsers.unified_markdown_parser import UnifiedMarkdownParser
-from kumihan_formatter.core.validation_reporter import ValidationReporter
+from kumihan_formatter.core.validation.validation_reporter import ValidationReporter
 
 
 class ParsingManager:
