@@ -10,20 +10,14 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional
 if TYPE_CHECKING:
     from .core.common.error_base import GracefulSyntaxError
 
-# Import specialized handlers
-from .block_handler import BlockHandler
+# 統合最適化後のインポート（削除されたハンドラー・モジュールを除去）
 from .core.ast_nodes import Node, error_node
-from .parsers.block import BlockParser
 
 # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
-# Using parsers instead of specialized directory (removed in Phase2 optimization)
-from .parsers.keyword.unified_keyword_parser import (
+from .parsers.unified_keyword_parser import (
     UnifiedKeywordParser as KeywordParser,
 )
 import logging
-from .inline_handler import InlineHandler
-from .parallel_processor import ParallelProcessorHandler
-from .streaming_parser import StreamingParser
 
 
 # Issue #759対応: カスタム例外クラス定義
@@ -139,24 +133,9 @@ Phase3最適化により大幅分割: 753行 → 150行以下
 
 from typing import Any, Dict, Iterator, List, Optional
 
-# Phase3で分割されたモジュールから統合インポート
-from .core.processing.parallel_processing_errors import (
-    ParallelProcessingError,
-    ChunkProcessingError,
-    MemoryMonitoringError,
-    WorkerTimeoutError,
-    ResourceExhaustionError,
-)
-from .core.processing.parallel_processing_config import ParallelProcessingConfig
+# 統合最適化後：削除されたモジュールのインポートを除去
+# 上記で定義済みのクラス・設定を使用
 from .core.parsing.parser_core import Parser as CoreParser
-from .core.parsing.parser_functions import (
-    parse,
-    parse_with_error_config,
-    parse_file,
-    parse_streaming,
-    validate_parse_config,
-    create_default_config,
-)
 
 # 後方互換性のためのエイリアス
 Parser = CoreParser
