@@ -40,6 +40,7 @@ class BlockTypeDetector:
 
     def __init__(self):
         self.patterns = BlockPatterns()
+
     def detect_block_type(self, line: str) -> str:
         """ブロックタイプを検出"""
         # 基本実装は元ファイルから移動
@@ -59,6 +60,7 @@ class BlockCache:
     def set(self, key: str, value: Dict[str, Any]) -> None:
         """キャッシュに設定"""
         self._cache[key] = value
+
     def clear(self) -> None:
         """キャッシュクリア"""
         self._cache.clear()

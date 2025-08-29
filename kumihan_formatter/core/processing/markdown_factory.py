@@ -5,7 +5,8 @@
 Issue #492 Phase 5A - markdown_converter.py分割
 """
 
-from ..parsing.markdown_parser import MarkdownParser
+# 統合版MarkdownParserを使用 (Phase2最適化済み)
+from ...parsers.unified_markdown_parser import UnifiedMarkdownParser as MarkdownParser
 from .markdown_processor import MarkdownProcessor
 from ..rendering.markdown_renderer import MarkdownRenderer
 

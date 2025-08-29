@@ -8,7 +8,7 @@ import logging
 import threading
 from typing import Any, Callable, Dict, Iterator, List, Optional
 
-from .chunk_manager import ChunkManager
+# Delayed import to avoid circular dependency
 from ..types import ChunkInfo
 from .processing_optimized import ProcessingOptimized
 
@@ -31,7 +31,10 @@ class ParallelChunkProcessor:
         self._results_lock = threading.RLock()
 
         # 分離されたモジュールの初期化
-        self.chunk_manager = ChunkManager(chunk_size=chunk_size)
+        # Delayed import to avoid circular dependency
+        from ...managers.core_manager import CoreManager
+
+        self.core_manager = CoreManager({})  # TODO: config should be passed from parent
         self.processing_optimized = ProcessingOptimized(max_workers=max_workers)
 
     # ===== 基本的な並列処理メソッド =====
@@ -148,40 +151,40 @@ class ParallelChunkProcessor:
     # ===== チャンク管理へのデリゲーション =====
 
     def create_chunks_from_lines(
-        self, lines: List[str], chunk_size: int = None
+        self, lines: List[str], chunk_size: Optional[int] = None
     ) -> List[ChunkInfo]:
         """行リストからチャンク作成（委譲）"""
-        return self.chunk_manager.create_chunks_from_lines(lines, chunk_size)
+        return self.core_manager.create_chunks_from_lines(lines, chunk_size)
 
     def create_chunks_adaptive(
-        self, lines: List[str], target_chunk_count: int = None
+        self, lines: List[str], target_chunk_count: Optional[int] = None
     ) -> List[ChunkInfo]:
         """適応的チャンク作成（委譲）"""
-        return self.chunk_manager.create_chunks_adaptive(lines, target_chunk_count)
+        return self.core_manager.create_chunks_adaptive(lines, target_chunk_count)
 
     def create_chunks_from_file(
         self, file_path, encoding: str = "utf-8"
     ) -> List[ChunkInfo]:
         """ファイルからチャンク作成（委譲）"""
-        return self.chunk_manager.create_chunks_from_file(file_path, encoding)
+        return self.core_manager.create_chunks_from_file(file_path, encoding)
 
-    def merge_chunks(self, chunks: List[ChunkInfo]) -> List[str]:
+    def merge_chunks(self, chunks: List[ChunkInfo]) -> ChunkInfo:
         """チャンクマージ（委譲）"""
-        return self.chunk_manager.merge_chunks(chunks)
+        return self.core_manager.merge_chunks(chunks)
 
-    def get_chunk_info(self, chunks: List[ChunkInfo]) -> dict:
+    def get_chunk_info(self, chunks: List[ChunkInfo]) -> Dict[str, Any]:
         """チャンク情報取得（委譲）"""
-        return self.chunk_manager.get_chunk_info(chunks)
+        return self.core_manager.get_chunk_info(chunks)
 
-    def validate_chunks(self, chunks: List[ChunkInfo]) -> List[str]:
+    def validate_chunks(self, chunks: List[ChunkInfo]) -> bool:
         """チャンク検証（委譲）"""
-        return self.chunk_manager.validate_chunks(chunks)
+        return self.core_manager.validate_chunks(chunks)
 
     # ===== 互換性メソッド =====
 
     def _get_cpu_count(self) -> int:
         """CPU数取得（互換性のため残存）"""
-        return self.chunk_manager._get_cpu_count()
+        return self.core_manager._get_cpu_count()
 
     def _calculate_optimal_workers(self, chunk_count: int) -> int:
         """最適ワーカー数計算（委譲）"""

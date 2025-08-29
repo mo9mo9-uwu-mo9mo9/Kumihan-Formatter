@@ -11,15 +11,33 @@ from typing import Any, Dict, List, Optional
 
 
 class MarkdownParser:
-    """Markdown解析クラス - 基本実装"""
+    """Markdown解析クラス - 基本実装
+
+    ⚠️ DEPRECATED: このクラスは非推奨です
+    代わりに kumihan_formatter.parsers.unified_markdown_parser.UnifiedMarkdownParser を使用してください
+
+    統合版では以下の機能が追加されています:
+    - Node型インターフェース対応
+    - MainParserとの完全互換性
+    - より詳細なエラーハンドリング
+    - パフォーマンス最適化
+    """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         MarkdownParser初期化
 
-        Args:
-            config: 設定オプション辞書
+        ⚠️ DEPRECATED: このクラスは非推奨です
         """
+        import warnings
+
+        warnings.warn(
+            "MarkdownParser (core.parsing.markdown_parser) is deprecated. "
+            "Use kumihan_formatter.parsers.unified_markdown_parser.UnifiedMarkdownParser instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.logger = logging.getLogger(__name__)
         self.config = config or {}
 
@@ -39,12 +57,23 @@ class MarkdownParser:
         """
         Markdownコンテンツを解析
 
+        ⚠️ DEPRECATED: このメソッドは非推奨です
+
         Args:
             content: 解析対象Markdownテキスト
 
         Returns:
             解析結果辞書
         """
+        import warnings
+
+        warnings.warn(
+            "MarkdownParser.parse() is deprecated. "
+            "Use UnifiedMarkdownParser.parse() for Node-based results.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         try:
             lines = content.split("\n")
             elements = []
@@ -59,6 +88,7 @@ class MarkdownParser:
                 "elements": elements,
                 "total_elements": len(elements),
                 "parser_type": "markdown",
+                "deprecated_notice": "Use UnifiedMarkdownParser for new implementations",
             }
 
         except Exception as e:
@@ -68,10 +98,11 @@ class MarkdownParser:
                 "error": str(e),
                 "elements": [],
                 "total_elements": 0,
+                "deprecated_notice": "Use UnifiedMarkdownParser for new implementations",
             }
 
     def _parse_line(self, line: str, line_num: int) -> Optional[Dict[str, Any]]:
-        """行単位の解析"""
+        """行単位の解析 (レガシー実装)"""
         line = line.strip()
 
         if not line:
@@ -119,7 +150,7 @@ class MarkdownParser:
         }
 
     def _process_inline_elements(self, text: str) -> str:
-        """インライン要素の処理"""
+        """インライン要素の処理 (レガシー実装)"""
         # 太字
         text = self.patterns["bold"].sub(r"<strong>\1</strong>", text)
 
