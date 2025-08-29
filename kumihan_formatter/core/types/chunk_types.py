@@ -7,7 +7,7 @@ from typing import List
 @dataclass
 class ChunkInfo:
     """チャンク情報"""
-    
+
     chunk_id: int
     start_line: int
     end_line: int

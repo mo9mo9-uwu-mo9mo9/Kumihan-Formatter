@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from .syntax_errors import ErrorSeverity, SyntaxError
+
 # NOTE: 実装が必要なモジュール - Issue #1217対応
 # from .syntax_validator import KumihanSyntaxValidator
 

@@ -275,6 +275,64 @@ class CoreManager:
             self.logger.error(f"Error creating chunks from file {file_path}: {e}")
             raise
 
+    def merge_chunks(self, chunks: List[ChunkInfo]) -> ChunkInfo:
+        """チャンクをマージ"""
+        if not chunks:
+            return ChunkInfo(0, 0, 0, [], 0)
+
+        all_lines = []
+        for chunk in chunks:
+            all_lines.extend(chunk.lines)
+
+        return ChunkInfo(
+            chunk_id=0,
+            start_line=chunks[0].start_line,
+            end_line=chunks[-1].end_line,
+            lines=all_lines,
+            file_position=chunks[0].file_position,
+        )
+
+    def get_chunk_info(self, chunks: List[ChunkInfo]) -> dict:
+        """チャンク情報を取得"""
+        return {
+            "chunk_count": len(chunks),
+            "total_lines": sum(len(chunk.lines) for chunk in chunks),
+            "chunk_sizes": [len(chunk.lines) for chunk in chunks],
+        }
+
+    def validate_chunks(self, chunks: List[ChunkInfo]) -> bool:
+        """チャンクを検証"""
+        if not chunks:
+            return True
+
+        # 基本的な検証
+        for i, chunk in enumerate(chunks):
+            if chunk.chunk_id != i:
+                self.logger.warning(
+                    f"Chunk ID mismatch: expected {i}, got {chunk.chunk_id}"
+                )
+                return False
+            if chunk.start_line >= chunk.end_line:
+                self.logger.warning(
+                    f"Invalid chunk range: {chunk.start_line} >= {chunk.end_line}"
+                )
+                return False
+
+        return True
+
+    def ensure_directory(self, directory_path):
+        """ディレクトリを作成（FileManager機能統合）"""
+        import os
+        from pathlib import Path
+
+        path = Path(directory_path)
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            self.logger.debug(f"Directory ensured: {path}")
+        except Exception as e:
+            self.logger.error(f"Failed to ensure directory {path}: {e}")
+            raise
+
     # ========== ユーティリティ機能 ==========
 
     def ensure_output_directory(self, output_path: Union[str, Path]) -> bool:

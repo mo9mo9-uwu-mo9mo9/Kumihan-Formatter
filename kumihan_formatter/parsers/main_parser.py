@@ -98,11 +98,13 @@ class MainParser:
             self.logger.error(f"パーシング中にエラー: {e}")
             return self._emergency_fallback(content)
 
-    def _auto_parse(self, content: Union[str, List[str]]) -> Optional[Union[Node, Dict[str, Any]]]:
+    def _auto_parse(
+        self, content: Union[str, List[str]]
+    ) -> Optional[Union[Node, Dict[str, Any]]]:
         """自動パーサー選択"""
         try:
             # Kumihanブロックの存在チェック（優先）
-            content_str = content if isinstance(content, str) else '\n'.join(content)
+            content_str = content if isinstance(content, str) else "\n".join(content)
             if "##" in content_str and "#" in content_str:
                 # Kumihanブロック記法を検出した場合は直接SimpleKumihanParserを試行
                 try:
@@ -110,15 +112,17 @@ class MainParser:
                     if result and result.get("elements"):
                         # Kumihanブロックが含まれている場合は辞書結果を返す
                         has_kumihan_blocks = any(
-                            elem.get("type") == "kumihan_block" 
+                            elem.get("type") == "kumihan_block"
                             for elem in result.get("elements", [])
                         )
                         if has_kumihan_blocks:
-                            self.logger.info("Auto-parse: SimpleKumihanParser成功 - Kumihanブロックを検出")
+                            self.logger.info(
+                                "Auto-parse: SimpleKumihanParser成功 - Kumihanブロックを検出"
+                            )
                             return result
                 except Exception as e:
                     self.logger.debug(f"Auto-parse SimpleKumihanParser試行失敗: {e}")
-            
+
             # コーディネーターによる自動選択（Kumihanブロックが検出されなかった場合）
             result = self.coordinator.parse_document(content)
             if result and "parser_type" in result:
@@ -136,10 +140,12 @@ class MainParser:
             self.logger.error(f"自動パーシング中にエラー: {e}")
             return self._sequential_try_parsing(content)
 
-    def _sequential_try_parsing(self, content: Union[str, List[str]]) -> Optional[Union[Node, Dict[str, Any]]]:
+    def _sequential_try_parsing(
+        self, content: Union[str, List[str]]
+    ) -> Optional[Union[Node, Dict[str, Any]]]:
         """順次パーサー試行"""
         # Kumihanブロックの存在チェック
-        content_str = content if isinstance(content, str) else '\n'.join(content)
+        content_str = content if isinstance(content, str) else "\n".join(content)
         if "##" in content_str and "#" in content_str:
             # Kumihanブロック記法を検出した場合は直接SimpleKumihanParserを試行
             try:
@@ -147,15 +153,17 @@ class MainParser:
                 if result and result.get("elements"):
                     # Kumihanブロックが含まれている場合は辞書結果を返す
                     has_kumihan_blocks = any(
-                        elem.get("type") == "kumihan_block" 
+                        elem.get("type") == "kumihan_block"
                         for elem in result.get("elements", [])
                     )
                     if has_kumihan_blocks:
-                        self.logger.info("SimpleKumihanParser成功: Kumihanブロックを検出")
+                        self.logger.info(
+                            "SimpleKumihanParser成功: Kumihanブロックを検出"
+                        )
                         return result
             except Exception as e:
                 self.logger.debug(f"SimpleKumihanParser試行失敗: {e}")
-        
+
         # 通常の順次試行（Kumihanブロックが検出されなかった場合）
         try_order = ["keyword", "list", "markdown", "marker", "simple"]
 

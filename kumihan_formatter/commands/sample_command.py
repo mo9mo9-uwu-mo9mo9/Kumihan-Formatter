@@ -14,8 +14,8 @@ from ..parser import parse
 from ..renderer import render
 from ..sample_content import SAMPLE_IMAGES, SHOWCASE_SAMPLE
 from ..ui.console_ui import get_console_ui
-from ..core.io import FileManager
-from ..core.io.protocols import PathValidator
+from ..managers.core_manager import CoreManager
+from ..core.io.validators import PathValidator
 
 
 class SampleCommand:
@@ -23,10 +23,8 @@ class SampleCommand:
 
     def __init__(self) -> None:
         # 新しい統合ファイルマネージャーを使用（廃止予定のfile_opsから移行）
-        from ..core.io import FileManager
-
-        self.file_manager = FileManager()
-        from ..core.io.protocols import PathValidator
+        self.core_manager = CoreManager({})
+        from ..core.io.validators import PathValidator
 
         self.path_validator = PathValidator()
 
@@ -54,22 +52,22 @@ class SampleCommand:
             shutil.rmtree(output_path)
 
         # Create output directory using new FileManager
-        self.file_manager.ensure_directory(output_path)
+        self.core_manager.ensure_directory(output_path)
 
         # Create sample text file using new FileManager
         sample_txt = output_path / "showcase.txt"
-        self.file_manager.write_file(sample_txt, SHOWCASE_SAMPLE)
+        self.core_manager.write_file(sample_txt, SHOWCASE_SAMPLE)
 
         # Create images directory and sample images using new FileManager
         images_dir = output_path / "images"
-        self.file_manager.ensure_directory(images_dir)
+        self.core_manager.ensure_directory(images_dir)
         # Sample images creation - simplified implementation
         for i, image_info in enumerate(SAMPLE_IMAGES):
             if isinstance(image_info, dict) and "filename" in image_info:
                 image_path = images_dir / image_info["filename"]
                 # Create placeholder image content for sample
                 placeholder_content = f"<!-- Sample Image {i+1}: {image_info.get('description', 'No description')} -->"
-                self.file_manager.write_file(
+                self.core_manager.write_file(
                     image_path.with_suffix(".txt"), placeholder_content
                 )
 
@@ -78,7 +76,7 @@ class SampleCommand:
 
         # Save HTML file using new FileManager
         html_path = output_path / "showcase.html"
-        self.file_manager.write_file(html_path, html)
+        self.core_manager.write_file(html_path, html)
 
         # Show completion message
         get_console_ui().sample_complete(

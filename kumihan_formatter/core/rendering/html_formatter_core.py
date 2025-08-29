@@ -191,16 +191,3 @@ class CSSProcessor:
             "text": ["paragraph", "heading", "emphasis"],
             "structure": ["section", "article", "aside"],
         }
-
-
-class FootnoteManager:
-    """脚注管理クラス - 基本実装"""
-
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
-        self.footnotes: Dict[str, str] = {}
-
-    def set_footnote_data(self, footnotes_data: Dict[str, Any]) -> None:
-        """脚注データ設定"""
-        if isinstance(footnotes_data, dict):
-            self.footnotes.update(footnotes_data)

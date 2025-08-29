@@ -5,18 +5,17 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class FootnoteManager:
     """脚注管理クラス"""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+        self.config = config or {}
         self.footnotes: Dict[str, str] = {}
         self.footnote_counter = 0
-        self.footnote_links: List[Tuple[str, str]] = (
-            []
-        )  # (id, text)のペア  # (id, text)のペア
+        self.footnote_links: List[Tuple[str, str]] = []
 
     def add_footnote(self, footnote_id: str, content: str) -> str:
         """脚注を追加して参照リンクを返す"""
@@ -24,10 +23,7 @@ class FootnoteManager:
             self.footnote_counter += 1
             self.footnotes[footnote_id] = content
 
-        # 脚注リンクを記録
         self.footnote_links.append((footnote_id, content))
-
-        # 脚注参照リンクを生成
         return f'<a href="#{footnote_id}" class="footnote-ref" id="ref-{footnote_id}">{self.footnote_counter}</a>'
 
     def get_footnotes_html(self) -> str:
@@ -36,14 +32,16 @@ class FootnoteManager:
             return ""
 
         html_parts = ['<div class="footnotes">', "<ol>"]
-
         for footnote_id, content in self.footnotes.items():
             backlink = f'<a href="#ref-{footnote_id}" class="footnote-backlink">↩</a>'
             html_parts.append(f'<li id="{footnote_id}">{content} {backlink}</li>')
-
         html_parts.extend(["</ol>", "</div>"])
-
         return "\n".join(html_parts)
+
+    def set_footnote_data(self, footnotes_data: Dict[str, Any]) -> None:
+        """脚注データ設定"""
+        if isinstance(footnotes_data, dict):
+            self.footnotes.update(footnotes_data)
 
     def clear(self) -> None:
         """脚注データをクリア"""
