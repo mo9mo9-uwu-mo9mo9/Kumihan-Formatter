@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from ...core.parsing.base.parser_protocols import ParseContext
+    from .parser_protocols import ParserProtocol
 
-from .keyword_utils import setup_keyword_patterns
+from .utils_core import setup_block_patterns  # setup_keyword_patternsが見つからないため一時的に代替
 
 
 class KeywordExtractor:

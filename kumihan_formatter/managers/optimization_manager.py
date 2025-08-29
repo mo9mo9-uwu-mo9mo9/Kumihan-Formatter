@@ -192,7 +192,7 @@ class OptimizationManager:
         """
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             if not self.performance_monitoring:
                 return func(*args, **kwargs)
 

@@ -14,7 +14,7 @@ Issue #770対応: エラー処理とログ出力の統合・標準化
 # from .log_formatter import ErrorHandleResult, UnifiedLogFormatter
 # from .unified_handler import UnifiedErrorHandler, handle_error_unified
 
-__all__ = [
+__all__: list[str] = [
     # NOTE: 実装が必要なクラス・関数 - Issue #1217対応
     # "UnifiedErrorHandler",
     # "UnifiedLogFormatter",

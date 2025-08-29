@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import re
 
-from .ast_nodes import Node
+from ..ast_nodes import Node
 
 # Re-export for compatibility
-from .toc_generator_main import TOCGenerator
+# TODO: toc_generator_main.pyが存在しないため一時コメントアウト - Issue #1227対応
+# from .toc_generator_main import TOCGenerator
 
-__all__ = ["TOCGenerator"]
+__all__: list[str] = ["TOCEntry"]  # TOCGeneratorは実装待ち - Issue #1227対応
 
 
 class TOCEntry:

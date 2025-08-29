@@ -43,7 +43,7 @@ Issue #771対応: 分散した設定クラスを統合し、
 #     return MasterConfigManager()
 
 
-__all__ = [
+__all__: list[str] = [
     # NOTE: 実装が必要なクラス・関数 - Issue #1217対応
     # "MasterConfigManager",
     # "get_unified_config_manager",

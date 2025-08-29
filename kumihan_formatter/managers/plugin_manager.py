@@ -265,6 +265,11 @@ class PluginManager:
                     spec = importlib.util.spec_from_file_location(
                         plugin_name, plugin_file
                     )
+                    if spec is None or spec.loader is None:
+                        self.logger.warning(f"プラグイン {plugin_name} の読み込みに失敗: spec/loader is None")
+                        load_results[plugin_name] = False
+                        continue
+                    
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
 

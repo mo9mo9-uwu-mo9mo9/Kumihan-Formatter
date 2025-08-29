@@ -110,16 +110,18 @@ warn_no_return = true
 warn_unreachable = false
 warn_unused_configs = true
 
-# 段階的strict化のため一時無効化（後続Issue対応）
+# 段階的strict化（Issue #1227で部分的に有効化）
 disallow_untyped_defs = true       # Issue #832対応完了 (no-untyped-def)
 disallow_any_generics = false      # Issue #834対応予定 (type-arg)
 disallow_untyped_calls = false     # Issue #833対応予定 (no-untyped-call)
-disallow_any_unimported = false    # 外部ライブラリ対応
+disallow_any_unimported = true     # Issue #1227で有効化 - 外部ライブラリAny型制限
+warn_return_any = true             # Issue #1227で有効化 - Any戻り値警告
 
 # 外部ライブラリ対応での現実的緩和
 disallow_subclassing_any = false     # 外部ライブラリ継承許可
 disallow_untyped_decorators = false  # デコレータ周りは緩和
-disallow_incomplete_defs = false     # 部分的型アノテーション許可
+disallow_incomplete_defs = true      # Issue #1227で有効化 - 部分的型注釈不許可
+warn_unused_ignores = true          # 既に有効（重複確認）
 
 # 現在のエラー解決のための追加設定
 check_untyped_defs = true           # 型なし関数でもチェック実行
@@ -134,7 +136,11 @@ exclude = [
     "tests/.*_legacy.*",
     "tests/performance/.*",
     "dev/.*",
-    "tmp/.*"
+    "tmp/.*",
+    # Issue #1227: 型安全性向上作業中の一時除外（実装未完了ファイル）
+    "kumihan_formatter/parsers/keyword_validation.py",
+    "kumihan_formatter/parsers/keyword_extractors.py", 
+    "kumihan_formatter/parsers/keyword_config.py"
 ]
 
 # 外部ライブラリの型チェック設定

@@ -4,14 +4,14 @@ Phase2最適化により作成された統合パーサー
 """
 
 from typing import Any, List, Optional
-from kumihan_formatter.core.ast_nodes import Node, create_node
+from ..core.ast_nodes import Node, create_node
 import logging
 
 
 class UnifiedListParser:
     """統合リストパーサー - 全リスト解析を統合"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
     def parse(self, content: str, context: Optional[Any] = None) -> Node:

@@ -7,9 +7,9 @@ main_renderer.pyから分離されたコンテンツ処理・最適化機能
 from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
-    from ..main_renderer import MainRenderer
+    from .main_renderer import MainRenderer
 
-from ....core.ast_nodes import Node
+from ..ast_nodes import Node
 import logging
 
 
