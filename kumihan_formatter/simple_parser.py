@@ -88,7 +88,7 @@ class SimpleKumihanParser:
                 if not line:
                     continue
 
-                # リストアイテム  
+                # リストアイテム
                 list_match = self.patterns["list_item"].match(line)
                 if list_match:
                     element = ParsedElement(
