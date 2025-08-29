@@ -1,6 +1,6 @@
 """モジュールエントリポイント"""
 
-from .cli import main
+from .unified_api import main
 
 if __name__ == "__main__":
     main()
