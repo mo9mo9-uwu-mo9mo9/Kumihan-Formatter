@@ -110,10 +110,10 @@ class RenderContext:
 
 class TemplateContext(RenderContext):
     """Template context wrapper for backwards compatibility"""
-    
+
     def __init__(self) -> None:
         super().__init__()
-        
+
     def get_context(self) -> dict[str, Any]:
         """Get template context dictionary"""
         return self.build()
