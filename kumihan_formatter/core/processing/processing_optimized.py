@@ -9,7 +9,7 @@ import os
 import threading
 from typing import Any, Callable, Dict, Iterator, List, Optional
 
-from .chunk_manager import ChunkInfo
+from ..types import ChunkInfo
 
 
 class ProcessingOptimized:

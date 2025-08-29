@@ -6,7 +6,7 @@
 from pathlib import Path
 
 from .classification_rules import build_classification_rules, get_conversion_strategies
-from .document_types import DocumentType, get_type_display_names
+from ..types.document_types import DocumentType, get_type_display_names
 
 __all__ = ["DocumentClassifier", "DocumentType"]
 
@@ -98,7 +98,7 @@ class DocumentClassifier:
     ) -> bool:
         """除外パターンによるチェック"""
         # 統合モジュール経由で実行
-        from .file_path_utilities import FilePathUtilities
+        from ..utilities.file_path_utilities import FilePathUtilities
 
         return FilePathUtilities.should_exclude(file_path, patterns, base_path)
 

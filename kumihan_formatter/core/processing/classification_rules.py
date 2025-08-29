@@ -4,7 +4,7 @@
 
 from typing import Dict
 
-from .document_types import DocumentType
+from ..types.document_types import DocumentType
 
 
 def build_classification_rules() -> Dict[DocumentType, dict[str, list[str]]]:

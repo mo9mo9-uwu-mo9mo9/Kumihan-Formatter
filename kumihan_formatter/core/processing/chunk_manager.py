@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from kumihan_formatter.core.utilities.logger import get_logger
-from ...managers.core_manager import ChunkInfo
+from ..types import ChunkInfo
 
 
 class ChunkManager:

@@ -12,52 +12,54 @@ Issue #771対応: 分散した設定クラスを統合し、
 - 既存設定クラスとの互換性
 """
 
-from .config_adapters import (
-    BaseConfigAdapter,
-    EnhancedConfigAdapter,
-    ErrorConfigManagerAdapter,
-    ParallelProcessingConfigAdapter,
-)
-from .config_loader import ConfigFormat, ConfigLoader
-from .config_models import (
-    ErrorConfig,
-    KumihanConfig,
-    LoggingConfig,
-    ParallelConfig,
-    RenderingConfig,
-    UIConfig,
-)
-from .config_validator import ConfigValidator
-from .unified_config_manager import MasterConfigManager, get_unified_config_manager
+# NOTE: 実装が必要なモジュール - Issue #1217対応
+# from .config_adapters import (
+#     BaseConfigAdapter,
+#     EnhancedConfigAdapter,
+#     ErrorConfigManagerAdapter,
+#     ParallelProcessingConfigAdapter,
+# )
+# from .config_loader import ConfigFormat, ConfigLoader
+# from .config_models import (
+#     ErrorConfig,
+#     KumihanConfig,
+#     LoggingConfig,
+#     ParallelConfig,
+#     RenderingConfig,
+#     UIConfig,
+# )
+# from .config_validator import ConfigValidator
+# from .unified_config_manager import MasterConfigManager, get_unified_config_manager
 
 
-# 便利関数のエクスポート
-def get_global_config_manager() -> MasterConfigManager:
-    """グローバル統一設定マネージャーを取得（旧API互換性）"""
-    return get_unified_config_manager()
+# 便利関数のエクスポート - 実装待ち
+# def get_global_config_manager() -> MasterConfigManager:
+#     """グローバル統一設定マネージャーを取得（旧API互換性）"""
+#     return get_unified_config_manager()
 
 
-def create_unified_config() -> MasterConfigManager:
-    """統一設定を作成（旧API互換性）"""
-    return MasterConfigManager()
+# def create_unified_config() -> MasterConfigManager:
+#     """統一設定を作成（旧API互換性）"""
+#     return MasterConfigManager()
 
 
 __all__ = [
-    "MasterConfigManager",
-    "get_unified_config_manager",
-    "get_global_config_manager",
-    "create_unified_config",
-    "KumihanConfig",
-    "ParallelConfig",
-    "LoggingConfig",
-    "ErrorConfig",
-    "RenderingConfig",
-    "UIConfig",
-    "ConfigLoader",
-    "ConfigFormat",
-    "ConfigValidator",
-    "ParallelProcessingConfigAdapter",
-    "ErrorConfigManagerAdapter",
-    "BaseConfigAdapter",
-    "EnhancedConfigAdapter",
+    # NOTE: 実装が必要なクラス・関数 - Issue #1217対応
+    # "MasterConfigManager",
+    # "get_unified_config_manager",
+    # "get_global_config_manager",
+    # "create_unified_config",
+    # "KumihanConfig",
+    # "ParallelConfig",
+    # "LoggingConfig",
+    # "ErrorConfig",
+    # "RenderingConfig",
+    # "UIConfig",
+    # "ConfigLoader",
+    # "ConfigFormat",
+    # "ConfigValidator",
+    # "ParallelProcessingConfigAdapter",
+    # "ErrorConfigManagerAdapter",
+    # "BaseConfigAdapter",
+    # "EnhancedConfigAdapter",
 ]
