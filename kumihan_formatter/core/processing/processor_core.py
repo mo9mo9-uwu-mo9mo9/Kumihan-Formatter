@@ -33,6 +33,7 @@ class ParallelChunkProcessor:
         # 分離されたモジュールの初期化
         # Delayed import to avoid circular dependency
         from ...managers.core_manager import CoreManager
+
         self.core_manager = CoreManager({})  # TODO: config should be passed from parent
         self.processing_optimized = ProcessingOptimized(max_workers=max_workers)
 
