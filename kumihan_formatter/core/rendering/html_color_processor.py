@@ -10,7 +10,7 @@ from typing import Dict, Optional, Tuple
 class HTMLColorProcessor:
     """HTML色処理専用クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.supported_color_formats = ["hex", "rgb", "rgba", "hsl", "named"]
 
     def process_color_attribute(

@@ -30,7 +30,7 @@ class ParsedElement:
 class SimpleKumihanParser:
     """シンプルKumihanパーサー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
         # 基本パターン定義
@@ -88,47 +88,46 @@ class SimpleKumihanParser:
                 if not line:
                     continue
 
-                # リストアイテム
-                if self.patterns["list_item"].match(line):
-                    match = self.patterns["list_item"].match(line)
-                    if match:
-                        element = ParsedElement(
-                            type="list_item",
-                            content=match.group(1).strip(),
-                            attributes={"list_type": "unordered"},
-                            children=[],
-                        )
-                        elements.append(element)
+                # リストアイテム  
+                list_match = self.patterns["list_item"].match(line)
+                if list_match:
+                    element = ParsedElement(
+                        type="list_item",
+                        content=list_match.group(1).strip(),
+                        attributes={"list_type": "unordered"},
+                        children=[],
+                    )
+                    elements.append(element)
 
                 # 番号付きリスト
-                elif self.patterns["numbered_list"].match(line):
-                    match = self.patterns["numbered_list"].match(line)
-                    if match:
+                else:
+                    numbered_match = self.patterns["numbered_list"].match(line)
+                    if numbered_match:
                         element = ParsedElement(
                             type="list_item",
-                            content=match.group(1).strip(),
+                            content=numbered_match.group(1).strip(),
                             attributes={"list_type": "ordered"},
                             children=[],
                         )
                         elements.append(element)
-
-                # 通常のテキスト
-                elif not any(
-                    pattern.search(line)
-                    for pattern in [
-                        self.patterns["decorated_block"],
-                        self.patterns["heading"],
-                    ]
-                ):
-                    # 強調の処理
-                    processed_content = self._process_inline_formatting(line)
-                    element = ParsedElement(
-                        type="paragraph",
-                        content=processed_content,
-                        attributes={},
-                        children=[],
-                    )
-                    elements.append(element)
+                    # 通常のテキスト
+                    else:
+                        if not any(
+                            pattern.search(line)
+                            for pattern in [
+                                self.patterns["decorated_block"],
+                                self.patterns["heading"],
+                            ]
+                        ):
+                            # 強調の処理
+                            processed_content = self._process_inline_formatting(line)
+                            element = ParsedElement(
+                                type="paragraph",
+                                content=processed_content,
+                                attributes={},
+                                children=[],
+                            )
+                            elements.append(element)
 
             return {
                 "status": "success",

@@ -11,8 +11,8 @@ from typing import Dict, List, Optional, Tuple
 class HTMLAccessibilityProcessor:
     """HTMLアクセシビリティ処理専用クラス"""
 
-    def __init__(self):
-        self.validation_errors = []
+    def __init__(self) -> None:
+        self.validation_errors: List[str] = []
 
     def add_accessibility_attributes(
         self, tag: str, attributes: Dict[str, str], content: str = ""

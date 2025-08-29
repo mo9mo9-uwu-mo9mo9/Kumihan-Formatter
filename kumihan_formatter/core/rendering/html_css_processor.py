@@ -4,17 +4,20 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 CSS関連の処理をすべて統合
 """
 
-from typing import Optional
+from typing import Optional, Dict, Any
 
 
 class HTMLCSSProcessor:
     """HTML CSS処理専用クラス"""
 
-    def __init__(self, css_class_prefix: str = "kf"):
+    def __init__(self, css_class_prefix: str = "kf") -> None:
         self.css_class_prefix = css_class_prefix
 
     def generate_css_class(
-        self, keyword: str, content: str = "", attributes: dict = None
+        self,
+        keyword: str,
+        content: str = "",
+        attributes: Optional[Dict[Any, Any]] = None,
     ) -> str:
         """キーワードに基づいてCSSクラス名を生成"""
         if not keyword:

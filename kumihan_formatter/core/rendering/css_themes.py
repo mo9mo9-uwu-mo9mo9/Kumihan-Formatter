@@ -10,7 +10,7 @@ from typing import Dict
 class CSSThemes:
     """CSS テーマ生成クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """CSS テーマ生成初期化"""
         self.logger = logging.getLogger(__name__)
 

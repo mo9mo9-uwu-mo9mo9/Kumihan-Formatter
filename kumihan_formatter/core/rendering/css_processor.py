@@ -155,13 +155,13 @@ body {
         return self.utilities.validate_css(css)
 
     def apply_css_classes(
-        self, element_type: str, additional_classes: List[str] = None
+        self, element_type: str, additional_classes: Optional[List[str]] = None
     ) -> str:
         """CSSクラス適用（委譲）"""
         return self.utilities.apply_css_classes(element_type, additional_classes)
 
     def get_inline_styles(
-        self, element_type: str, custom_props: Dict[str, str] = None
+        self, element_type: str, custom_props: Optional[Dict[str, str]] = None
     ) -> str:
         """インラインスタイル取得（委譲）"""
         return self.utilities.get_inline_styles(element_type, custom_props)
@@ -170,7 +170,7 @@ body {
         self,
         theme: str = "default",
         include_responsive: bool = True,
-        custom_styles: Union[str, Dict[str, str]] = None,
+        custom_styles: Optional[Union[str, Dict[str, str]]] = None,
         minify: bool = False,
     ) -> str:
         """完全なCSS生成（統合メソッド）"""

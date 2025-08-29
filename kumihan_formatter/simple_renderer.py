@@ -11,7 +11,7 @@ from datetime import datetime
 class SimpleHTMLRenderer:
     """シンプルHTMLレンダラー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self.css_styles = self._get_default_styles()
 
