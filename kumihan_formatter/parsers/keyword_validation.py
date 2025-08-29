@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from ...core.parsing.base.parser_protocols import ParseContext
+    from .parser_protocols import ParserProtocol
 
-from .keyword_utils import create_cache_key
+from .utils_core import create_cache_key
 
 
 class KeywordValidator:

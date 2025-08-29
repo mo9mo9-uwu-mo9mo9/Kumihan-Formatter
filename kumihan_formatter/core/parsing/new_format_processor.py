@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 class NewFormatProcessor:
     """新記法処理専用クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self._initialize_patterns()
 
-    def _initialize_patterns(self):
+    def _initialize_patterns(self) -> None:
         """新記法パターンを初期化"""
         # 新記法のパターン定義
         self.new_format_pattern = re.compile(

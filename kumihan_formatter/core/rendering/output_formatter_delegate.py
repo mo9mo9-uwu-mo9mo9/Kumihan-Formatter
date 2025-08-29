@@ -7,9 +7,9 @@ main_renderer.pyから分離された出力フォーマット・エラーハン�
 from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
-    from ..main_renderer import MainRenderer
+    from .main_renderer import MainRenderer
 
-from ...ast_nodes import Node
+from ..ast_nodes import Node
 import logging
 
 
@@ -97,11 +97,11 @@ class OutputFormatterDelegate:
 
         # 各エラーの詳細を追加
         for i, error in enumerate(self.main_renderer.graceful_errors, 1):
-            from ..html_escaping import escape_html
+            import html
 
-            # XSS対策: エラー情報のエスケープ処理
-            safe_title = escape_html(error.display_title)
-            safe_severity = escape_html(error.severity.upper())
+            # XSS対策: エラー情報のエスケープ処理  
+            safe_title = html.escape(error.display_title)
+            safe_severity = html.escape(error.severity.upper())
             safe_content = (
                 error.html_content
             )  # html_contentプロパティ内で既にエスケープ済み

@@ -13,11 +13,11 @@ import logging
 class RubyFormatProcessor:
     """ルビ記法処理専用クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self._initialize_patterns()
 
-    def _initialize_patterns(self):
+    def _initialize_patterns(self) -> None:
         """ルビ記法パターンを初期化"""
         # 基本ルビパターン: 漢字(ひらがな)
         self.ruby_pattern = re.compile(r"([^\s\(\)]+)\(([^\)]+)\)", re.UNICODE)
