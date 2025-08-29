@@ -52,6 +52,7 @@ class SimpleKumihanParser:
         """テキストを解析してパース結果を返す"""
         try:
             elements = []
+            processed_ranges = []  # 処理済み範囲の追跡
 
             # Kumihan装飾ブロックの解析
             decorated_matches = list(self.patterns["decorated_block"].finditer(text))
@@ -67,58 +68,73 @@ class SimpleKumihanParser:
                         children=[],
                     )
                     elements.append(element)
+                    # 処理済み範囲を記録
+                    processed_ranges.append((match.start(), match.end()))
 
-            # 見出しの解析
+            # 見出しの解析（処理済み範囲を除外）
             for match in self.patterns["heading"].finditer(text):
-                level = len(match.group(1))
-                title = match.group(2).strip()
-
-                element = ParsedElement(
-                    type=f"heading_{level}",
-                    content=title,
-                    attributes={"level": str(level)},
-                    children=[],
+                # 重複チェック: この見出しがすでにKumihanブロックとして処理済みか確認
+                is_overlapping = any(
+                    start <= match.start() < end or start < match.end() <= end
+                    for start, end in processed_ranges
                 )
-                elements.append(element)
 
-            # 基本的なマークダウン要素
-            lines = text.split("\n")
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
+                if not is_overlapping:
+                    level = len(match.group(1))
+                    title = match.group(2).strip()
 
-                # リストアイテム
-                list_match = self.patterns["list_item"].match(line)
-                if list_match:
                     element = ParsedElement(
-                        type="list_item",
-                        content=list_match.group(1).strip(),
-                        attributes={"list_type": "unordered"},
+                        type=f"heading_{level}",
+                        content=title,
+                        attributes={"level": str(level)},
                         children=[],
                     )
                     elements.append(element)
+                    processed_ranges.append((match.start(), match.end()))
 
-                # 番号付きリスト
-                else:
-                    numbered_match = self.patterns["numbered_list"].match(line)
-                    if numbered_match:
+            # 基本的なマークダウン要素
+            lines = text.split("\n")
+            current_position = 0
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    current_position += 1
+                    continue
+
+                # この行がすでに処理済みかチェック
+                line_start = text.find(line, current_position)
+                line_end = line_start + len(line)
+
+                is_processed = any(
+                    start <= line_start < end or start < line_end <= end
+                    for start, end in processed_ranges
+                )
+
+                if not is_processed:
+                    # リストアイテム
+                    list_match = self.patterns["list_item"].match(line)
+                    if list_match:
                         element = ParsedElement(
                             type="list_item",
-                            content=numbered_match.group(1).strip(),
-                            attributes={"list_type": "ordered"},
+                            content=list_match.group(1).strip(),
+                            attributes={"list_type": "unordered"},
                             children=[],
                         )
                         elements.append(element)
-                    # 通常のテキスト
+
+                    # 番号付きリスト
                     else:
-                        if not any(
-                            pattern.search(line)
-                            for pattern in [
-                                self.patterns["decorated_block"],
-                                self.patterns["heading"],
-                            ]
-                        ):
+                        numbered_match = self.patterns["numbered_list"].match(line)
+                        if numbered_match:
+                            element = ParsedElement(
+                                type="list_item",
+                                content=numbered_match.group(1).strip(),
+                                attributes={"list_type": "ordered"},
+                                children=[],
+                            )
+                            elements.append(element)
+                        # 通常のテキスト
+                        else:
                             # 強調の処理
                             processed_content = self._process_inline_formatting(line)
                             element = ParsedElement(
@@ -128,6 +144,8 @@ class SimpleKumihanParser:
                                 children=[],
                             )
                             elements.append(element)
+
+                current_position = line_end + 1
 
             return {
                 "status": "success",
