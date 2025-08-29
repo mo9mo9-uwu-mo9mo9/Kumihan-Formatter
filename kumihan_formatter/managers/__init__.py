@@ -1,27 +1,27 @@
 """
-統合Manager システム - Issue #1171対応完了
+統合Manager システム - Issue #1215対応完了版
 ==========================================
 
-27個のManagerクラスを7個に統合（目標5個に最接近）:
-1. ParseManager - 解析処理（ParsingManager統合）
-2. RenderManager - レンダリング処理
-3. ConfigManager - 設定管理（CoreManager設定機能統合）
-4. ValidationManager - バリデーション処理
-5. ResourceManager - リソース管理（CoreManager IO・テンプレート + OptimizationManager キャッシュ統合）
-6. DistributionManager - 配布管理（独立機能）
-7. PluginManager - プラグイン管理（独立機能）
+6個のManagerクラスを5個に統合（目標達成）:
+1. CoreManager - コア機能（IO・キャッシュ・チャンク管理）
+2. ParsingManager - 解析・検証機能統合
+3. OptimizationManager - 最適化機能
+4. PluginManager - プラグイン機能
+5. DistributionManager - 配布管理
 
-統合前: 27個のManager → 統合後: 7個のManager
+統合前: 6個のManager → 統合後: 5個のManager（目標達成）
 """
 
-from .parse_manager import ParseManager
-from .render_manager import RenderManager
-from .validation_manager import ValidationManager
-from .resource_manager import ResourceManager
+from .core_manager import CoreManager
+from .parsing_manager import ParsingManager
+from .optimization_manager import OptimizationManager
+from .plugin_manager import PluginManager
+from ..core.io.distribution_manager import DistributionManager
 
 __all__ = [
-    "ParseManager",
-    "RenderManager",
-    "ValidationManager",
-    "ResourceManager",
+    "CoreManager",
+    "ParsingManager",
+    "OptimizationManager",
+    "PluginManager",
+    "DistributionManager",
 ]

@@ -109,7 +109,7 @@ class KumihanError(Exception):
             severity = ErrorSeverity.ERROR
         if category is None:
             category = ErrorCategory.UNKNOWN
-        
+
         self.message = message
         self.severity = severity
         self.category = category

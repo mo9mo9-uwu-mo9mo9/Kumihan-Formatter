@@ -8,9 +8,9 @@ Issue #319対応 - 単一責任原則に基づくリファクタリング
 """
 
 from .distribution_converter import DistributionConverter
-from .distribution_manager import DistributionManager
 from .distribution_processor import DistributionProcessor
 from .distribution_structure import DistributionStructure
+from .distribution_manager import DistributionManager
 
 __all__ = [
     "DistributionStructure",

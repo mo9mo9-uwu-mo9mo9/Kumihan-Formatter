@@ -24,8 +24,10 @@ class SampleCommand:
     def __init__(self) -> None:
         # 新しい統合ファイルマネージャーを使用（廃止予定のfile_opsから移行）
         from ..core.io import FileManager
+
         self.file_manager = FileManager()
         from ..core.io.protocols import PathValidator
+
         self.path_validator = PathValidator()
 
     def execute(
@@ -67,7 +69,9 @@ class SampleCommand:
                 image_path = images_dir / image_info["filename"]
                 # Create placeholder image content for sample
                 placeholder_content = f"<!-- Sample Image {i+1}: {image_info.get('description', 'No description')} -->"
-                self.file_manager.write_file(image_path.with_suffix('.txt'), placeholder_content)
+                self.file_manager.write_file(
+                    image_path.with_suffix(".txt"), placeholder_content
+                )
 
         # Convert to HTML
         html = self._generate_html(use_source_toggle)
