@@ -277,7 +277,6 @@ def main() -> None:
 
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
-
     try:
         result = quick_convert(input_file, output_file)
         if result["status"] == "success":
