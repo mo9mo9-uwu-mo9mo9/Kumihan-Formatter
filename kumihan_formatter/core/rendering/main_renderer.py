@@ -1,0 +1,197 @@
+"""MainRenderer - 統合レンダラーシステム緊急実装 (Issue #1221対応)"""
+
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+from ...core.utilities.logger import get_logger
+from .markdown_renderer import MarkdownRenderer
+from .html_formatter import HtmlFormatter
+
+
+class MainRenderer:
+    """統合MainRendererクラス - 緊急対応版"""
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """
+        MainRenderer初期化
+
+        Args:
+            config: 設定オプション辞書
+        """
+        self.logger = get_logger(__name__)
+        self.config = config or {}
+        
+        # 既存レンダラーコンポーネント統合
+        self.markdown_renderer = MarkdownRenderer(config)
+        self.html_formatter = HtmlFormatter(config)
+        
+        self.logger.info("MainRenderer initialized - 統合レンダラーシステム")
+
+    def render(self, parsed_result: Any, context: Optional[Dict[str, Any]] = None) -> str:
+        """
+        メインレンダリング処理 - 複数レンダラー統合対応
+
+        Args:
+            parsed_result: パーサーからの解析結果
+                - str: Markdownテキスト → MarkdownRenderer使用
+                - list: ASTノードリスト → HtmlFormatter使用  
+                - その他: 文字列変換後MarkdownRenderer使用
+            context: レンダリングコンテキスト
+                - template: テンプレート名 (default, minimal, docs等)
+                - その他レンダリングオプション
+
+        Returns:
+            HTML文字列 (UTF-8エンコード済み)
+            
+        Raises:
+            レンダリングエラー時はエラーHTMLを返却（例外なし）
+        """
+        try:
+            context = context or {}
+            parsed_type = type(parsed_result).__name__
+            
+            self.logger.debug(f"Rendering started: type={parsed_type}, context_keys={list(context.keys())}")
+            
+            # 解析結果の型判定・適切なレンダラー選択
+            if isinstance(parsed_result, str):
+                # 文字列の場合: MarkdownRenderer使用
+                self.logger.debug("Using MarkdownRenderer for string input")
+                html_content = self.markdown_renderer.render(parsed_result)
+                
+            elif isinstance(parsed_result, list):
+                # Nodeリストの場合: HtmlFormatter使用
+                template = context.get("template", "default")
+                self.logger.debug(f"Using HtmlFormatter for list input, template={template}")
+                
+                if template and template != "default":
+                    html_content = self.html_formatter.render_with_template(
+                        parsed_result, None, context
+                    )
+                else:
+                    html_content = self.html_formatter.render(parsed_result, context)
+                    
+            elif hasattr(parsed_result, '__iter__') and not isinstance(parsed_result, str):
+                # 反復可能オブジェクトの場合: HtmlFormatter使用
+                self.logger.debug(f"Converting iterable to list: type={parsed_type}")
+                html_content = self.html_formatter.render(list(parsed_result), context)
+                
+            else:
+                # その他の場合: 文字列化してMarkdownRenderer使用
+                self.logger.warning(f"Fallback to string conversion: type={parsed_type}")
+                str_content = str(parsed_result) if parsed_result is not None else ""
+                html_content = self.markdown_renderer.render(str_content)
+            
+            # 結果検証
+            if not html_content:
+                html_content = "<p>（空のコンテンツ）</p>"
+                self.logger.warning("Empty rendering result, using fallback")
+            
+            self.logger.info(f"Rendering completed successfully: {len(html_content)} chars, type={parsed_type}")
+            return html_content
+            
+        except Exception as e:
+            error_msg = f"Rendering failed for type {type(parsed_result).__name__}: {str(e)}"
+            self.logger.error(error_msg, exc_info=True)
+            return f'<div class="error" role="alert">⚠️ {error_msg}</div>'
+
+    def render_to_file(
+        self, 
+        parsed_result: Any, 
+        output_file: Union[str, Path], 
+        template: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        ファイル出力レンダリング - tmp配下強制出力対応
+
+        Args:
+            parsed_result: パーサーからの解析結果（renderメソッドと同様）
+            output_file: 出力ファイルパス（パス・ファイル名のみ使用）
+            template: テンプレート名（contextに統合、後方互換性維持）
+            context: レンダリングコンテキスト
+                - template: テンプレート名
+                - その他レンダリングオプション
+
+        Returns:
+            bool: 成功時True、失敗時False
+            
+        Notes:
+            - CLAUDE.md要件により全てtmp/配下に出力
+            - 出力パスは自動的にtmp/ディレクトリに変更
+            - ディレクトリは自動作成
+        """
+        try:
+            # 入力検証
+            if not output_file:
+                raise ValueError("output_file is required")
+                
+            # tmp/ 配下に強制出力（CLAUDE.md要件）
+            output_path = Path("tmp") / Path(output_file).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            self.logger.debug(f"Output path resolved: {output_file} → {output_path}")
+            
+            # コンテキスト準備
+            context = context or {}
+            if template:
+                context["template"] = template
+                self.logger.debug(f"Template specified: {template}")
+                
+            # メインレンダリング処理実行
+            self.logger.debug("Starting file rendering process")
+            html_content = self.render(parsed_result, context)
+            
+            # 結果検証
+            if not html_content:
+                raise ValueError("レンダリング結果が空またはNullです")
+                
+            if not html_content.strip():
+                self.logger.warning("レンダリング結果が空白のみです - 出力継続")
+            
+            # ファイル出力実行
+            with open(output_path, "w", encoding="utf-8", newline='') as f:
+                f.write(html_content)
+            
+            # 出力検証
+            if not output_path.exists():
+                raise IOError(f"出力ファイルが作成されませんでした: {output_path}")
+                
+            file_size = output_path.stat().st_size
+            
+            self.logger.info(
+                f"File output completed successfully: {output_path} "
+                f"({file_size} bytes, {len(html_content)} chars)"
+            )
+            return True
+            
+        except Exception as e:
+            error_detail = f"File output failed: {str(e)} [output_file={output_file}]"
+            self.logger.error(error_detail, exc_info=True)
+            return False
+
+    def get_renderer_info(self) -> Dict[str, Any]:
+        """レンダラー情報取得"""
+        return {
+            "name": "MainRenderer (Integrated)",
+            "version": "1.0.0-emergency",
+            "components": {
+                "markdown_renderer": "MarkdownRenderer v1.0.0",
+                "html_formatter": "HtmlFormatter v2.0.0",
+            },
+            "status": "emergency_implementation",
+            "supported_types": ["string", "list", "nodes"],
+            "emergency_fix": "Issue #1221 - Critical import error resolved"
+        }
+
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応確認"""
+        supported_formats = ["html", "markdown", "kumihan", "auto"]
+        return format_hint.lower() in supported_formats
+
+    def close(self) -> None:
+        """リソース解放（将来拡張用）"""
+        try:
+            self.logger.debug("MainRenderer resources released")
+        except Exception as e:
+            self.logger.error(f"Resource cleanup error: {e}")
