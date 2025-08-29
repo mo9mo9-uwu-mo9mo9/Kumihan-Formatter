@@ -8,9 +8,9 @@ Issue #492 Phase 5A - markdown_converter.py分割
 from pathlib import Path
 from typing import Optional
 
-from .markdown_parser import MarkdownParser
+from ..parsing.markdown_parser import MarkdownParser
 from .markdown_processor import MarkdownProcessor
-from .markdown_renderer import MarkdownRenderer
+from ..rendering.markdown_renderer import MarkdownRenderer
 import logging
 
 

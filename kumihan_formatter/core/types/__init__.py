@@ -6,6 +6,7 @@ Issue #1217対応: ディレクトリ構造最適化による型定義系統合�
 # 型定義関連クラス・関数の公開
 from .document_types import *
 from .toc_types import *
+from .chunk_types import ChunkInfo
 
 __all__ = [
     # 文書型定義
@@ -15,4 +16,6 @@ __all__ = [
     "TocTypes",
     "TocEntry",
     "TocLevel",
+    # チャンク型定義
+    "ChunkInfo",
 ]

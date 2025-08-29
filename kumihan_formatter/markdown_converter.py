@@ -6,7 +6,7 @@ Issue #1215対応: 不足していたmarkdown_converterモジュールの作成
 core/markdown_converter.py へのエントリーポイント
 """
 
-from .core.markdown_converter import SimpleMarkdownConverter
+from .core.processing.markdown_converter import SimpleMarkdownConverter
 
 
 def convert_markdown_file(file_path: str, **kwargs) -> str:

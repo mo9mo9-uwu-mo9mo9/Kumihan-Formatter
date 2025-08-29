@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from ..doc_classifier import DocumentType
+from ..processing.doc_classifier import DocumentType
 
 
 class DistributionProcessor:

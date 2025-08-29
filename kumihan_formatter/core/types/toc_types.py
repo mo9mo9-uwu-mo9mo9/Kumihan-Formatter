@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from .ast_nodes import Node
+from ..ast_nodes import Node
 
 
 class TOCEntry:

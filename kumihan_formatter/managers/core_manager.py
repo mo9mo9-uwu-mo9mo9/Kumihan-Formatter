@@ -13,17 +13,7 @@ from dataclasses import dataclass
 from kumihan_formatter.core.io.operations import FileOperations, PathOperations
 from kumihan_formatter.core.templates.template_context import TemplateContext
 from kumihan_formatter.core.templates.template_selector import TemplateSelector
-
-
-@dataclass
-class ChunkInfo:
-    """チャンク情報"""
-
-    chunk_id: int
-    start_line: int
-    end_line: int
-    lines: List[str]
-    file_position: int
+from kumihan_formatter.core.types import ChunkInfo
 
 
 class CoreManager:

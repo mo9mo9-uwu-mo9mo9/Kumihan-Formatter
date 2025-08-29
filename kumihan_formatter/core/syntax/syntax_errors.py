@@ -6,7 +6,7 @@ for syntax errors in Kumihan markup.
 
 from dataclasses import dataclass
 
-from ..common.error_types import ErrorSeverity
+from ..common.error_base import ErrorSeverity
 
 __all__ = ["ErrorSeverity", "SyntaxError", "ErrorTypes"]
 

@@ -9,10 +9,11 @@ better maintainability and organization.
 from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
 from .syntax_reporter import SyntaxReporter
 from .syntax_rules import SyntaxRules
-from .syntax_validator import KumihanSyntaxValidator
+# NOTE: 実装が必要なモジュール - Issue #1217対応
+# from .syntax_validator import KumihanSyntaxValidator
 
-# Backward compatibility aliases
-KumihanSyntaxChecker = KumihanSyntaxValidator
+# Backward compatibility aliases - 一時的に無効化
+# KumihanSyntaxChecker = KumihanSyntaxValidator
 check_files = SyntaxReporter.check_files
 format_error_report = SyntaxReporter.format_error_report
 
@@ -24,10 +25,10 @@ __all__ = [
     "ErrorTypes",
     # Rules and validation
     "SyntaxRules",
-    "KumihanSyntaxValidator",
+    # "KumihanSyntaxValidator",  # 実装待ち
     "SyntaxReporter",
     # Backward compatibility
-    "KumihanSyntaxChecker",
+    # "KumihanSyntaxChecker",  # 実装待ち
     "check_files",
     "format_error_report",
 ]
