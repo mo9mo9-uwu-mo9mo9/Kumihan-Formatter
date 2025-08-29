@@ -36,22 +36,23 @@ class UnifiedMarkdownParser:
         try:
             # 詳細解析実行 (core版ロジック統合)
             elements = self._parse_detailed(content)
-            
+
             # Node型で結果構築 (MainParserとの互換性維持)
             # metadataパラメータで適切にメタデータ設定
             metadata = {
                 "parser_type": "markdown",
                 "total_elements": len(elements),
-                "elements": elements
+                "elements": elements,
             }
-            
+
             node = create_node("markdown_document", content, metadata=metadata)
-            
+
             return node
-            
+
         except Exception as e:
             self.logger.error(f"Unified Markdown parsing error: {e}")
             from ..core.ast_nodes import error_node
+
             return error_node(f"Markdown parse error: {e}")
 
     def _parse_detailed(self, content: str) -> List[Dict[str, Any]]:
