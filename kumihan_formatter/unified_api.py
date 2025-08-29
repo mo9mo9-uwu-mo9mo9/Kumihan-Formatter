@@ -80,13 +80,15 @@ class KumihanFormatter:
         try:
             # テキスト解析
             parsed_result = self.parser.parse(text)
-            
+
             # HTML生成
             html_content = self.renderer.render(parsed_result)
-            
-            self.logger.debug(f"Text conversion completed: {len(text)} chars → {len(html_content)} chars")
+
+            self.logger.debug(
+                f"Text conversion completed: {len(text)} chars → {len(html_content)} chars"
+            )
             return html_content
-            
+
         except Exception as e:
             self.logger.error(f"Text conversion error: {e}")
             return f"<p>Conversion Error: {e}</p>"
@@ -194,14 +196,14 @@ validate = validate_kumihan_syntax
 def main() -> None:
     """CLI エントリーポイント - シンプル実装"""
     import sys
-    
+
     if len(sys.argv) < 2:
         print("使用方法: kumihan <入力ファイル> [出力ファイル]")
         sys.exit(1)
-    
+
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
-    
+
     try:
         result = quick_convert(input_file, output_file)
         if result["status"] == "success":

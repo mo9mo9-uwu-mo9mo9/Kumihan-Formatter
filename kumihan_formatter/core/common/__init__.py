@@ -4,7 +4,6 @@ This package contains shared functionality used across the entire codebase.
 """
 
 from .error_framework import (
-    BaseErrorHandler,
     ConfigurationError,
     ErrorCategory,
     ErrorContext,
@@ -21,7 +20,6 @@ from .validation_mixin import ValidationMixin, ValidationRule
 
 __all__ = [
     "KumihanError",
-    "BaseErrorHandler",
     "ErrorSeverity",
     "ErrorCategory",
     "ErrorContext",
