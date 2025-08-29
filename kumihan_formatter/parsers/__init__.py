@@ -1,14 +1,30 @@
-"""List Parser Module - リスト解析専用パーサー
+"""Parser Module - 統合パーサーシステム
 
-責任分離により以下の構造で分割:
-- list_parser.py: メインクラスとパブリックインターフェース
-- list_handlers.py: リスト処理・分析ロジック
-- list_item_handlers.py: 個別アイテム処理ハンドラ
-- list_utils.py: ユーティリティ関数群
+Issue #1215対応完了版：11個のParserを統合管理
 """
 
-from .unified_list_parser import UnifiedListParser
-from .list_handlers import ListHandler
-from .list_item_handlers import ListItemHandler
+# 統合パーサーシステム
+from .main_parser import MainParser
 
-__all__ = ["UnifiedListParser", "ListHandler", "ListItemHandler"]
+# 個別パーサー（必要時直接アクセス用）
+from .unified_list_parser import UnifiedListParser
+from .unified_keyword_parser import UnifiedKeywordParser
+from .unified_markdown_parser import UnifiedMarkdownParser
+
+# プロトコル・ユーティリティ
+from .parser_protocols import ParserProtocol
+
+__all__ = [
+    "MainParser",
+    "UnifiedListParser",
+    "UnifiedKeywordParser",
+    "UnifiedMarkdownParser",
+    "ParserProtocol",
+]
+
+
+# 便利な統合関数
+def parse(content, parser_type="auto", config=None):
+    """統合パーシング関数（簡易アクセス）"""
+    main_parser = MainParser(config)
+    return main_parser.parse(content, parser_type)

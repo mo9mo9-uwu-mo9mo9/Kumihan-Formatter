@@ -1,317 +1,168 @@
-"""Inline Marker Processor - インラインマーカー処理専用モジュール
+"""Inline Marker Processor - インライン記法処理専用モジュール
 
 core_marker_parser.py分割により抽出 (Phase3最適化)
 インラインマーカー処理関連の機能をすべて統合
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
-
-from ...ast_nodes import Node, create_node, error_node
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 import logging
+
+from ..ast_nodes import Node, create_node, error_node
+
+if TYPE_CHECKING:
+    from ..base.parser_protocols import ParseResult
 
 
 class InlineMarkerProcessor:
-    """インラインマーカー処理専用クラス"""
+    """インラインマーカー処理クラス - インライン記法の解析と処理"""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """インラインマーカープロセッサーを初期化"""
         self.logger = logging.getLogger(__name__)
-        self._initialize_patterns()
 
-    def _initialize_patterns(self):
-        """インラインマーカーパターンを初期化"""
-        # インラインマーカー基本パターン
-        self.inline_pattern = re.compile(r"(?:^|\s)([^\s#]+)#([^#\n]*?)#", re.MULTILINE)
-
-        # 強調マーカーパターン
-        self.emphasis_patterns = {
-            "bold": re.compile(r"\*\*([^*]+)\*\*"),
-            "italic": re.compile(r"\*([^*]+)\*"),
-            "underline": re.compile(r"_([^_]+)_"),
-            "strikethrough": re.compile(r"~~([^~]+)~~"),
-            "code": re.compile(r"`([^`]+)`"),
+        # インライン記法パターン
+        self.inline_patterns = {
+            "strong": re.compile(r"\*\*(.*?)\*\*"),
+            "emphasis": re.compile(r"\*(.*?)\*"),
+            "code": re.compile(r"`(.*?)`"),
+            "link": re.compile(r"\[([^\]]*)\]\(([^)]+)\)"),
+            "marker": re.compile(r"#([^#\s]+)#([^#]*?)##"),
         }
 
-        # キーワード分離パターン
-        self.keyword_separator = re.compile(r"[,\s]+")
-
-        # 属性パターン
-        self.attribute_pattern = re.compile(
-            r'(\w+)[:=](["\']?)([^"\'\s]*)\2', re.IGNORECASE
-        )
-
-    def extract_inline_content(self, line: str, keywords: List[str]) -> str:
-        """行からインラインコンテンツを抽出
+    def process_inline_markers(self, text: str) -> List[Node]:
+        """インラインマーカーを処理してノードリストを生成
 
         Args:
-            line: 処理対象行
-            keywords: 対象キーワードリスト
+            text: 処理対象テキスト
 
         Returns:
-            抽出されたコンテンツ
+            処理結果ノードリスト
         """
-        if not line or not keywords:
-            return ""
+        try:
+            if not text or not text.strip():
+                return []
 
-        # 各キーワードでコンテンツ抽出を試行
-        for keyword in keywords:
-            content = self._extract_content_for_keyword(line, keyword)
-            if content:
-                return content
+            nodes = []
+            remaining_text = text
 
-        return ""
+            # 各パターンを順次処理
+            for marker_type, pattern in self.inline_patterns.items():
+                matches = list(pattern.finditer(remaining_text))
 
-    def _extract_content_for_keyword(self, line: str, keyword: str) -> str:
-        """特定キーワードでコンテンツを抽出"""
-        # キーワード後の#区切りパターンを検索
-        pattern = rf"{re.escape(keyword)}\s*#([^#]*?)#"
-        match = re.search(pattern, line, re.IGNORECASE)
-
-        if match:
-            return match.group(1).strip()
-
-        # フォールバック: キーワード後のテキスト
-        keyword_pos = line.lower().find(keyword.lower())
-        if keyword_pos >= 0:
-            after_keyword = line[keyword_pos + len(keyword) :].strip()
-            # 最初の区切り文字まで
-            for separator in ["#", "\n", "\t"]:
-                if separator in after_keyword:
-                    after_keyword = after_keyword.split(separator)[0]
-            return after_keyword.strip()
-
-        return ""
-
-    def parse_inline_format(
-        self, content: str, keyword: str, context: Optional[Dict[str, Any]] = None
-    ) -> Optional[Node]:
-        """インライン形式を解析
-
-        Args:
-            content: コンテンツ
-            keyword: キーワード
-            context: 解析コンテキスト
-
-        Returns:
-            解析結果ノードまたはNone
-        """
-        if not content or not keyword:
-            return None
-
-        context = context or {}
-
-        # コンテンツの前処理
-        processed_content = self._preprocess_inline_content(content)
-
-        # 強調マーカーの処理
-        processed_content = self._process_emphasis_markers(processed_content)
-
-        # 属性の抽出
-        attributes = self._extract_inline_attributes(processed_content)
-        clean_content = self._remove_attributes_from_content(processed_content)
-
-        # ノード作成
-        node = create_node(keyword.lower(), clean_content)
-
-        # 属性設定
-        if attributes:
-            node.attributes.update(attributes)
-
-        # インライン形式フラグ
-        node.attributes["format_type"] = "inline"
-        node.attributes["original_keyword"] = keyword
-
-        # コンテキスト情報追加
-        if context:
-            node.attributes["context"] = context
-
-        self.logger.debug(f"インライン解析完了: {keyword} -> {len(clean_content)}文字")
-        return node
-
-    def _preprocess_inline_content(self, content: str) -> str:
-        """インラインコンテンツを前処理"""
-        # 前後の空白除去
-        content = content.strip()
-
-        # 連続する空白を単一に
-        content = re.sub(r"\s+", " ", content)
-
-        # エスケープシーケンス処理
-        content = content.replace("\\#", "#")
-        content = content.replace("\\*", "*")
-        content = content.replace("\\_", "_")
-
-        return content
-
-    def _process_emphasis_markers(self, content: str) -> str:
-        """強調マーカーを処理"""
-        processed = content
-
-        # 各強調パターンを処理
-        for marker_type, pattern in self.emphasis_patterns.items():
-            processed = pattern.sub(
-                lambda m: f"<{marker_type}>{m.group(1)}</{marker_type}>", processed
-            )
-
-        return processed
-
-    def _extract_inline_attributes(self, content: str) -> Dict[str, str]:
-        """インラインコンテンツから属性を抽出"""
-        attributes = {}
-
-        for match in self.attribute_pattern.finditer(content):
-            attr_name = match.group(1).lower()
-            attr_value = match.group(3)
-            attributes[attr_name] = attr_value
-
-        return attributes
-
-    def _remove_attributes_from_content(self, content: str) -> str:
-        """コンテンツから属性を除去"""
-        return self.attribute_pattern.sub("", content).strip()
-
-    def create_node_for_keyword(self, keyword: str, content: str) -> Optional[Node]:
-        """キーワードに対応するノードを作成
-
-        Args:
-            keyword: キーワード
-            content: コンテンツ
-
-        Returns:
-            作成されたノードまたはNone
-        """
-        if not keyword:
-            return None
-
-        # キーワード正規化
-        normalized_keyword = self._normalize_keyword(keyword)
-
-        # ノード作成
-        node = create_node(normalized_keyword, content)
-
-        # メタデータ追加
-        node.attributes["original_keyword"] = keyword
-        node.attributes["processor"] = "inline_marker"
-
-        return node
-
-    def _normalize_keyword(self, keyword: str) -> str:
-        """キーワードを正規化"""
-        # 基本正規化
-        normalized = keyword.strip().lower()
-
-        # 日本語キーワードマッピング
-        jp_mappings = {
-            "太字": "bold",
-            "ボールド": "bold",
-            "イタリック": "italic",
-            "斜体": "italic",
-            "下線": "underline",
-            "取消線": "strikethrough",
-            "コード": "code",
-            "強調": "emphasis",
-            "マーク": "mark",
-        }
-
-        return jp_mappings.get(normalized, normalized)
-
-    def find_matching_marker(
-        self, text: str, start_pos: int = 0, marker_types: Optional[List[str]] = None
-    ) -> Optional[Tuple[str, int, int]]:
-        """マッチするマーカーを検索
-
-        Args:
-            text: 検索対象テキスト
-            start_pos: 開始位置
-            marker_types: 検索対象マーカータイプ
-
-        Returns:
-            (マーカータイプ, 開始位置, 終了位置)またはNone
-        """
-        marker_types = marker_types or list(self.emphasis_patterns.keys())
-
-        earliest_match = None
-        earliest_pos = len(text)
-
-        # 各マーカータイプで検索
-        for marker_type in marker_types:
-            if marker_type in self.emphasis_patterns:
-                pattern = self.emphasis_patterns[marker_type]
-                match = pattern.search(text, start_pos)
-
-                if match and match.start() < earliest_pos:
-                    earliest_pos = match.start()
-                    earliest_match = (marker_type, match.start(), match.end())
-
-        # インラインパターンでも検索
-        inline_match = self.inline_pattern.search(text, start_pos)
-        if inline_match and inline_match.start() < earliest_pos:
-            keyword = inline_match.group(1)
-            earliest_match = ("inline", inline_match.start(), inline_match.end())
-
-        return earliest_match
-
-    def is_valid_marker_content(self, content: str) -> bool:
-        """マーカーコンテンツが有効かチェック
-
-        Args:
-            content: チェック対象コンテンツ
-
-        Returns:
-            有効性
-        """
-        if not content or not content.strip():
-            return False
-
-        # 長さチェック
-        if len(content) > 1000:
-            return False
-
-        # 不正文字チェック
-        if re.search(r"[<>{}]", content):
-            return False
-
-        return True
-
-    def process_line_markers(self, line: str) -> List[Node]:
-        """行内のすべてのマーカーを処理
-
-        Args:
-            line: 処理対象行
-
-        Returns:
-            処理結果ノードのリスト
-        """
-        nodes = []
-        pos = 0
-
-        while pos < len(line):
-            match = self.find_matching_marker(line, pos)
-            if not match:
-                break
-
-            marker_type, start, end = match
-
-            if marker_type == "inline":
-                # インラインマーカー処理
-                match_obj = self.inline_pattern.search(line, pos)
-                if match_obj:
-                    keyword = match_obj.group(1)
-                    content = match_obj.group(2)
-
-                    node = self.parse_inline_format(content, keyword)
+                for match in matches:
+                    node = self._create_inline_node(marker_type, match)
                     if node:
                         nodes.append(node)
+
+            # 残りのテキストをプレーンテキストノードとして追加
+            if remaining_text.strip():
+                text_node = create_node("text", content=remaining_text.strip())
+                nodes.append(text_node)
+
+            return nodes
+
+        except Exception as e:
+            self.logger.error(f"インラインマーカー処理中にエラー: {e}")
+            return [error_node(f"インライン処理エラー: {e}")]
+
+    def _create_inline_node(self, marker_type: str, match: re.Match) -> Optional[Node]:
+        """マッチした内容からインラインノードを作成
+
+        Args:
+            marker_type: マーカータイプ
+            match: 正規表現マッチオブジェクト
+
+        Returns:
+            作成されたノード
+        """
+        try:
+            if marker_type == "strong":
+                return create_node("strong", content=match.group(1))
+            elif marker_type == "emphasis":
+                return create_node("em", content=match.group(1))
+            elif marker_type == "code":
+                return create_node("code", content=match.group(1))
+            elif marker_type == "link":
+                text, url = match.groups()
+                return create_node("a", content=text, attributes={"href": url})
+            elif marker_type == "marker":
+                marker_name, content = match.groups()
+                return create_node(f"marker-{marker_name}", content=content)
             else:
-                # 強調マーカー処理
-                pattern = self.emphasis_patterns[marker_type]
-                match_obj = pattern.search(line, pos)
-                if match_obj:
-                    content = match_obj.group(1)
-                    node = create_node(marker_type, content)
-                    node.attributes["format_type"] = "emphasis"
-                    nodes.append(node)
+                return create_node("span", content=match.group(0))
 
-            pos = end
+        except Exception as e:
+            self.logger.error(f"インラインノード作成中にエラー: {e}")
+            return error_node(f"ノード作成エラー: {e}")
 
-        return nodes
+    def extract_inline_markers(self, text: str) -> List[Dict[str, Any]]:
+        """テキストからインラインマーカーを抽出
+
+        Args:
+            text: 解析対象テキスト
+
+        Returns:
+            抽出されたマーカー情報のリスト
+        """
+        try:
+            markers = []
+
+            for marker_type, pattern in self.inline_patterns.items():
+                for match in pattern.finditer(text):
+                    marker_info = {
+                        "type": marker_type,
+                        "start": match.start(),
+                        "end": match.end(),
+                        "content": match.group(0),
+                        "groups": match.groups(),
+                    }
+                    markers.append(marker_info)
+
+            # 開始位置でソート
+            markers.sort(key=lambda x: x["start"])
+            return markers
+
+        except Exception as e:
+            self.logger.error(f"インラインマーカー抽出中にエラー: {e}")
+            return []
+
+    def validate_inline_syntax(self, text: str) -> List[str]:
+        """インライン記法の構文検証
+
+        Args:
+            text: 検証対象テキスト
+
+        Returns:
+            エラーメッセージリスト
+        """
+        try:
+            errors = []
+
+            # 未閉じマーカーのチェック
+            open_markers = ["**", "*", "`"]
+            for marker in open_markers:
+                count = text.count(marker)
+                if count % 2 != 0:
+                    errors.append(f"未閉じのマーカー: {marker}")
+
+            # リンク記法のチェック
+            link_opens = text.count("[")
+            link_closes = text.count("]")
+            if link_opens != link_closes:
+                errors.append("リンク記法の括弧が対応していません")
+
+            return errors
+
+        except Exception as e:
+            self.logger.error(f"インライン構文検証中にエラー: {e}")
+            return [f"検証エラー: {e}"]
+
+    def get_processor_info(self) -> Dict[str, Any]:
+        """プロセッサー情報を取得"""
+        return {
+            "name": "InlineMarkerProcessor",
+            "version": "1.0.0",
+            "supported_patterns": list(self.inline_patterns.keys()),
+            "description": "インライン記法処理専用プロセッサー",
+        }

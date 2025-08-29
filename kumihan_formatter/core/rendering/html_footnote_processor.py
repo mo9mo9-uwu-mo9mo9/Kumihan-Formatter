@@ -4,16 +4,19 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 脚注関連の処理をすべて統合
 """
 
+import re
 from typing import Dict, List, Optional, Tuple
 
 
 class FootnoteManager:
     """脚注管理クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.footnotes: Dict[str, str] = {}
         self.footnote_counter = 0
-        self.footnote_links: List[Tuple[str, str]] = []  # (id, text)のペア
+        self.footnote_links: List[Tuple[str, str]] = (
+            []
+        )  # (id, text)のペア  # (id, text)のペア
 
     def add_footnote(self, footnote_id: str, content: str) -> str:
         """脚注を追加して参照リンクを返す"""
@@ -42,7 +45,7 @@ class FootnoteManager:
 
         return "\n".join(html_parts)
 
-    def clear(self):
+    def clear(self) -> None:
         """脚注データをクリア"""
         self.footnotes.clear()
         self.footnote_links.clear()
@@ -52,7 +55,7 @@ class FootnoteManager:
 class HTMLFootnoteProcessor:
     """HTML脚注処理専用クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._footnote_manager = FootnoteManager()
 
     def handle_footnote(self, content: str, footnote_id: Optional[str] = None) -> str:
@@ -81,7 +84,7 @@ class HTMLFootnoteProcessor:
         # 脚注記法を検出して変換 [^footnote-id] → 脚注リンク
         footnote_pattern = r"\[\^([^\]]+)\]"
 
-        def replace_footnote(match):
+        def replace_footnote(match: re.Match[str]) -> str:
             footnote_id = match.group(1)
             # 脚注内容を取得（この実装では簡略化）
             content = f"脚注: {footnote_id}"
@@ -96,7 +99,7 @@ class HTMLFootnoteProcessor:
 
         return processed_html
 
-    def clear_footnotes(self):
+    def clear_footnotes(self) -> None:
         """脚注データをリセット"""
         self._footnote_manager.clear()
 

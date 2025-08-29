@@ -23,11 +23,13 @@ class BlockPatterns:
 
 class BlockExtractor:
     """ブロック抽出の基本機能"""
-    
+
     def __init__(self):
         self.patterns = BlockPatterns()
-    
-    def extract_block_content(self, lines: List[str], start_index: int) -> Dict[str, Any]:
+
+    def extract_block_content(
+        self, lines: List[str], start_index: int
+    ) -> Dict[str, Any]:
         """ブロック内容を抽出"""
         # 基本実装は元ファイルから移動
         return {"content": "", "end_index": start_index + 1}
@@ -35,10 +37,9 @@ class BlockExtractor:
 
 class BlockTypeDetector:
     """ブロックタイプ検出機能"""
-    
+
     def __init__(self):
         self.patterns = BlockPatterns()
-    
     def detect_block_type(self, line: str) -> str:
         """ブロックタイプを検出"""
         # 基本実装は元ファイルから移動
@@ -47,18 +48,17 @@ class BlockTypeDetector:
 
 class BlockCache:
     """ブロック処理キャッシュ管理"""
-    
+
     def __init__(self):
         self._cache = {}
-    
+
     def get(self, key: str) -> Optional[Dict[str, Any]]:
         """キャッシュから取得"""
         return self._cache.get(key)
-    
+
     def set(self, key: str, value: Dict[str, Any]) -> None:
         """キャッシュに設定"""
         self._cache[key] = value
-    
     def clear(self) -> None:
         """キャッシュクリア"""
         self._cache.clear()
@@ -72,6 +72,7 @@ def setup_block_patterns() -> BlockPatterns:
 def create_cache_key(content: str, parser_type: str) -> str:
     """キャッシュキーを作成"""
     import hashlib
+
     content_hash = hashlib.md5(content.encode()).hexdigest()[:8]
     return f"{parser_type}:{content_hash}"
 

@@ -106,3 +106,14 @@ class RenderContext:
     def __repr__(self) -> str:
         """String representation of the context"""
         return f"RenderContext({self._context})"
+
+
+class TemplateContext(RenderContext):
+    """Template context wrapper for backwards compatibility"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def get_context(self) -> dict[str, Any]:
+        """Get template context dictionary"""
+        return self.build()

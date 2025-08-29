@@ -3,7 +3,7 @@
 Phase2最適化により作成された統合キーワード定義
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 
 # デフォルトのブロックキーワード
@@ -26,7 +26,7 @@ DEFAULT_BLOCK_KEYWORDS = [
 class KeywordDefinitions:
     """キーワード定義管理クラス"""
 
-    def __init__(self, custom_keywords: Dict[str, Any] = None):
+    def __init__(self, custom_keywords: Optional[Dict[str, Any]] = None) -> None:
         self.keywords = custom_keywords or {}
         self.default_keywords = DEFAULT_BLOCK_KEYWORDS
 
@@ -34,7 +34,7 @@ class KeywordDefinitions:
         """キーワード定義を取得"""
         return self.keywords.get(keyword, keyword)
 
-    def add_keyword(self, keyword: str, definition: Any):
+    def add_keyword(self, keyword: str, definition: Any) -> None:
         """キーワード定義を追加"""
         self.keywords[keyword] = definition
 

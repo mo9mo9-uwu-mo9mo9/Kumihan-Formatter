@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from kumihan_formatter.core.ast_nodes.node import Node
 from .css_processor import CSSProcessor
 from .html_utilities import HTMLUtilities
+from .html_formatter_core import HTMLFormatterCore, HTMLValidator, FootnoteManager
 
 
 class HtmlFormatter:

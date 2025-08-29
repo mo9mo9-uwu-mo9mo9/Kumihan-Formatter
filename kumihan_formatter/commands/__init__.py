@@ -1,15 +1,11 @@
 """
 変換コマンドモジュール
 
-Convert command の責任分離実装
-Issue #319対応 - 単一責任原則に基づくリファクタリング
-
-元ファイル: commands/convert.py (375行) → 4つのモジュールに分割
+Issue #1207対応: 技術的負債削除・存在するモジュールのみインポート
+過度なファイル分割による参照エラーを解消
 """
 
-from .convert_command import ConvertCommand
-from .convert_processor import ConvertProcessor
-from .convert_validator import ConvertValidator
-from .convert_watcher import ConvertWatcher
+# Issue #1207: 安全なモジュールのみインポート
+from .sample_command import SampleCommand
 
-__all__ = ["ConvertCommand", "ConvertValidator", "ConvertProcessor", "ConvertWatcher"]
+__all__ = ["SampleCommand"]

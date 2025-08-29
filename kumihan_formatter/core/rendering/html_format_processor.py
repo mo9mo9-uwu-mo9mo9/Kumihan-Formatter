@@ -11,9 +11,9 @@ from typing import List, Optional
 class HTMLFormatProcessor:
     """HTMLフォーマット処理専用クラス"""
 
-    def __init__(self, indent_size: int = 2):
+    def __init__(self, indent_size: int = 2) -> None:
         self.indent_size = indent_size
-        self.tag_stack = []
+        self.tag_stack: List[str] = []
         self.semantic_mode = True
 
     def format_html(self, html_content: str, compress: bool = False) -> str:

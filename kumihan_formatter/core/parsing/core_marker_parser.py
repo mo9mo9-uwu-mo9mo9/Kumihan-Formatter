@@ -42,9 +42,9 @@ class CoreMarkerParser:
         self.logger = logging.getLogger(__name__)
 
         # 専用プロセッサーを初期化
-        from ..processors.new_format_processor import NewFormatProcessor
-        from ..processors.ruby_format_processor import RubyFormatProcessor
-        from ..processors.inline_marker_processor import InlineMarkerProcessor
+        from .new_format_processor import NewFormatProcessor
+        from .ruby_format_processor import RubyFormatProcessor
+        from .inline_marker_processor import InlineMarkerProcessor
 
         self.new_format_processor = NewFormatProcessor()
         self.ruby_format_processor = RubyFormatProcessor()

@@ -5,13 +5,13 @@ CSSProcessor分割版 - CSS最適化・検証・レスポンシブ機能
 
 import logging
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 
 class CSSUtilities:
     """CSS ユーティリティクラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """CSS ユーティリティ初期化"""
         self.logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class CSSUtilities:
         return ""
 
     def apply_css_classes(
-        self, element_type: str, additional_classes: List[str] = None
+        self, element_type: str, additional_classes: Optional[List[str]] = None
     ) -> str:
         """CSS クラス適用"""
         base_classes = self._get_base_classes(element_type)
@@ -119,7 +119,7 @@ class CSSUtilities:
         return " ".join(base_classes)
 
     def get_inline_styles(
-        self, element_type: str, custom_props: Dict[str, str] = None
+        self, element_type: str, custom_props: Optional[Dict[str, str]] = None
     ) -> str:
         """インライン スタイル取得"""
         base_styles = self._get_base_styles(element_type)

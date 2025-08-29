@@ -1,28 +1,32 @@
 """Unified error handling framework for Kumihan-Formatter - 統合モジュール
 
+Issue #1207対応: エラーシステム統合完了
+過度なファイル分割を解消し、一元化されたエラーフレームワークを提供
+
 This module provides a consistent error handling approach across all components.
 All error classes in the system should inherit from KumihanError for consistency.
 
-分割されたモジュール:
-- error_types: エラー種別・重要度・コンテキスト定義
-- error_base: 基底エラークラス・具体的エラー型
-- error_handler: エラーハンドラー基底クラス・チェーン
+統合されたモジュール:
+- error_base: エラー種別・基底クラス・具体的エラー型（統合済み）
 """
 
-# 分割されたモジュールからインポート
+# 統合されたモジュールからインポート
 from .error_base import (
     ConfigurationError,
+    ErrorCategory,
+    ErrorContext,
+    ErrorSeverity,
     FileSystemError,
     KumihanError,
     SyntaxError,
     ValidationError,
 )
-from .error_handler import BaseErrorHandler, DefaultErrorHandler, ErrorHandlerChain
-from .error_types import ErrorCategory, ErrorContext, ErrorSeverity
+
+# エラーハンドラーは簡素化のため除去
 
 # 後方互換性のため、全てのクラスと関数を再エクスポート
 __all__ = [
-    # エラー種別・重要度
+    # エラー種別・重要度（統合済み）
     "ErrorSeverity",
     "ErrorCategory",
     "ErrorContext",
@@ -33,10 +37,11 @@ __all__ = [
     "SyntaxError",
     "ValidationError",
     "ConfigurationError",
-    # エラーハンドラー
-    "BaseErrorHandler",
-    "DefaultErrorHandler",
-    "ErrorHandlerChain",
+    # エラーハンドラー（簡素化のため除去）
+    # 便利関数
+    "create_error_with_context",
+    "create_file_error",
+    "create_syntax_error",
 ]
 
 
