@@ -42,19 +42,13 @@ dev = [
 performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
 ]
-ai_optimization = [
-    # ML/AI依存関係削除完了 (Issue #1145)
-    # 過剰な依存関係によるインストール肥大化問題を解決
-    # 削除対象: scikit-learn, numpy, pandas, scipy, lightgbm, xgboost
-    # 効果: 約206MB削減、セキュリティリスク軽減、保守性向上
-]
 telemetry = [
     "opentelemetry-api>=1.20.0",
     "opentelemetry-sdk>=1.20.0",
     "opentelemetry-exporter-jaeger-thrift>=1.20.0",
     "opentelemetry-exporter-otlp-proto-grpc>=1.20.0",
     "opentelemetry-instrumentation-logging>=0.41b0",
-    # "opentelemetry-instrumentation-psutil>=0.41b0",  # 一時的にコメントアウト（GUI実装のため）
+    # "opentelemetry-instrumentation-psutil>=0.41b0",  # パッケージが見つからないため一時コメントアウト
     "opentelemetry-instrumentation-threading>=0.41b0",
     "opentelemetry-propagator-b3>=1.20.0",
     "prometheus_client>=0.18.0",
@@ -83,11 +77,9 @@ kumihan_formatter = [
 line-length = 88
 target-version = ['py312']
 
-
-
 # バージョン管理設定
 [tool.bumpversion]
-current_version = "0.3.0-alpha.1"
+current_version = "0.9.0-alpha.8"
 commit = true
 tag = true
 tag_name = "v{new_version}"
@@ -181,9 +173,3 @@ markers = [
     "e2e: エンドツーエンドテスト用マーク",
     "unit: 単体テスト用マーク"
 ]
-
-[dependency-groups]
-dev = [
-    "pyinstaller>=6.15.0",
-]
-
