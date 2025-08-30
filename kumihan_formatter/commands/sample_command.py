@@ -152,3 +152,7 @@ def create_sample_command() -> Any:
         command.execute(output, use_source_toggle)
 
     return generate_sample
+
+
+# Re-export for backward compatibility (統合: sample.py → sample_command.py)
+__all__ = ["create_sample_command", "SampleCommand"]

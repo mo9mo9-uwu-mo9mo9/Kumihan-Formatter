@@ -15,10 +15,8 @@ from . import patterns
 from . import parsing
 from . import rendering
 from . import io
-from . import config
 from . import ast_nodes
 from . import common
-from . import error_handling
 from . import syntax
 
 # 主要コンポーネントの公開
@@ -34,9 +32,7 @@ __all__ = [
     "parsing",
     "rendering",
     "io",
-    "config",
     "ast_nodes",
     "common",
-    "error_handling",
     "syntax",
 ]

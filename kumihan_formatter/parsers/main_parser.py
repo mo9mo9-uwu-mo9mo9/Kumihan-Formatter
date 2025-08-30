@@ -11,7 +11,6 @@ from kumihan_formatter.core.ast_nodes.node import Node
 from kumihan_formatter.parsers.unified_list_parser import UnifiedListParser
 from kumihan_formatter.parsers.unified_keyword_parser import UnifiedKeywordParser
 from kumihan_formatter.parsers.unified_markdown_parser import UnifiedMarkdownParser
-from kumihan_formatter.simple_parser import SimpleKumihanParser
 from kumihan_formatter.core.parsing.core_marker_parser import CoreMarkerParser
 from kumihan_formatter.core.processing.parsing_coordinator import ParsingCoordinator
 
@@ -33,7 +32,6 @@ class MainParser:
         self.list_parser = UnifiedListParser()
         self.keyword_parser = UnifiedKeywordParser()
         self.markdown_parser = UnifiedMarkdownParser()
-        self.simple_parser = SimpleKumihanParser()
         self.marker_parser = CoreMarkerParser()
 
         # パーシング統合管理
@@ -44,7 +42,7 @@ class MainParser:
             "list": self.list_parser.parse,
             "keyword": self.keyword_parser.parse,
             "markdown": self.markdown_parser.parse,
-            "simple": self.simple_parser.parse,
+            "simple": self.marker_parser.parse_simple_kumihan,
             "marker": self.marker_parser.parse,
             "auto": self._auto_parse,
         }
@@ -108,7 +106,7 @@ class MainParser:
             if "##" in content_str and "#" in content_str:
                 # Kumihanブロック記法を検出した場合は直接SimpleKumihanParserを試行
                 try:
-                    result = self.simple_parser.parse(content_str)
+                    result = self.marker_parser.parse_simple_kumihan(content_str)
                     if result and result.get("elements"):
                         # Kumihanブロックが含まれている場合は辞書結果を返す
                         has_kumihan_blocks = any(
@@ -149,7 +147,7 @@ class MainParser:
         if "##" in content_str and "#" in content_str:
             # Kumihanブロック記法を検出した場合は直接SimpleKumihanParserを試行
             try:
-                result = self.simple_parser.parse(content_str)
+                result = self.marker_parser.parse_simple_kumihan(content_str)
                 if result and result.get("elements"):
                     # Kumihanブロックが含まれている場合は辞書結果を返す
                     has_kumihan_blocks = any(
@@ -184,7 +182,7 @@ class MainParser:
         """緊急時フォールバック"""
         try:
             self.logger.warning("緊急時フォールバック実行")
-            return self.simple_parser.parse(content)
+            return self.marker_parser.parse_simple_kumihan(content)
         except Exception as e:
             self.logger.error(f"緊急時フォールバックも失敗: {e}")
             return None
