@@ -36,11 +36,82 @@ class MemoryMonitoringError(Exception):
 
 
 class ParallelProcessingConfig:
-    """並列処理の設定管理（簡易版）"""
+    """並列処理の設定管理"""
 
-    def __init__(self):
-        self.parallel_threshold_lines = 1000
-        self.parallel_threshold_size = 50000
+    def __init__(self) -> None:
+        # 並列処理しきい値設定
+        self.parallel_threshold_lines = 10000  # 10K行以上で並列化
+        self.parallel_threshold_size = 10 * 1024 * 1024  # 10MB以上で並列化
+
+        # チャンク設定
+        self.min_chunk_size = 50
+        self.max_chunk_size = 2000
+        self.target_chunks_per_core = 2  # CPUコアあたりのチャンク数
+
+        # メモリ監視設定
+        self.memory_warning_threshold_mb = 150
+        self.memory_critical_threshold_mb = 250
+        self.memory_check_interval = 10  # チャンク数
+
+        # タイムアウト設定
+        self.processing_timeout_seconds = 300  # 5分
+        self.chunk_timeout_seconds = 30  # 30秒
+
+        # パフォーマンス設定
+        self.enable_progress_callbacks = True
+        self.progress_update_interval = 100  # 行数
+        self.enable_memory_monitoring = True
+        self.enable_gc_optimization = True
+
+    @classmethod
+    def from_environment(cls) -> "ParallelProcessingConfig":
+        """環境変数から設定を読み込み"""
+        import os
+
+        config = cls()
+
+        # 環境変数からの設定上書き
+        if threshold_lines := os.getenv("KUMIHAN_PARALLEL_THRESHOLD_LINES"):
+            try:
+                config.parallel_threshold_lines = int(threshold_lines)
+            except ValueError:
+                pass
+
+        if threshold_size := os.getenv("KUMIHAN_PARALLEL_THRESHOLD_SIZE"):
+            try:
+                config.parallel_threshold_size = int(threshold_size)
+            except ValueError:
+                pass
+
+        if memory_limit := os.getenv("KUMIHAN_MEMORY_LIMIT_MB"):
+            try:
+                memory_limit_int = int(memory_limit)
+                config.memory_critical_threshold_mb = memory_limit_int
+                config.memory_warning_threshold_mb = int(memory_limit_int * 0.6)
+            except ValueError:
+                pass
+
+        if timeout := os.getenv("KUMIHAN_PROCESSING_TIMEOUT"):
+            try:
+                config.processing_timeout_seconds = int(timeout)
+            except ValueError:
+                pass
+
+        return config
+
+    def validate(self) -> bool:
+        """設定値の検証"""
+        try:
+            assert self.parallel_threshold_lines > 0
+            assert self.parallel_threshold_size > 0
+            assert self.min_chunk_size > 0
+            assert self.max_chunk_size > self.min_chunk_size
+            assert self.memory_warning_threshold_mb > 0
+            assert self.memory_critical_threshold_mb > self.memory_warning_threshold_mb
+            assert self.processing_timeout_seconds > 0
+            return True
+        except AssertionError:
+            return False
 
 
 from ...parsers.unified_keyword_parser import (

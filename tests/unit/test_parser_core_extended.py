@@ -135,13 +135,16 @@ class TestParserCoreExtended:
         """依存関係をモックしたparser処理テスト"""
         parser = Parser()
 
-        # 内部メソッドをモックして処理をテスト
-        with patch.object(parser, "_preprocess_text", return_value="preprocessed"):
-            with patch.object(parser, "_tokenize", return_value=[]):
-                result = parser.parse("Test text")
+        # 実際に存在する内部メソッドをモックして処理をテスト
+        from kumihan_formatter.core.ast_nodes.node import Node
+        mock_node = Node("text", "Test text")
+        
+        with patch.object(parser, "_parse_line_with_graceful_errors", return_value=mock_node):
+            result = parser.parse("Test text")
 
-                # モックが呼ばれたことを確認（メソッドが存在する場合）
-                assert result is not None
+            # モックが呼ばれ、結果が返されることを確認
+            assert result is not None
+            assert len(result) > 0
 
     def test_parser_memory_monitoring(self):
         """パーサーのメモリ監視機能テスト"""

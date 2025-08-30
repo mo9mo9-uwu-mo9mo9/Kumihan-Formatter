@@ -283,7 +283,9 @@ class OptimizationManager:
         except Exception:
             return 0
 
-    def _estimate_input_size(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> int:
+    def _estimate_input_size(
+        self, args: tuple[Any, ...], kwargs: dict[str, Any]
+    ) -> int:
         """入力サイズの推定"""
         try:
             total_size = 0

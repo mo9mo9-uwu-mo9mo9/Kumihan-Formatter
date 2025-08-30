@@ -167,7 +167,11 @@ class PathOperations(PathProtocol):
             if not self._validator.validate_path(Path(path)):
                 # エラーメッセージ取得の試み
                 try:
-                    errors = self._validator.get_errors() if hasattr(self._validator, 'get_errors') else ["パス検証失敗"]
+                    errors = (
+                        self._validator.get_errors()
+                        if hasattr(self._validator, "get_errors")
+                        else ["パス検証失敗"]
+                    )
                     raise ValueError(f"無効なパス形式: {'; '.join(errors)}")
                 except AttributeError:
                     raise ValueError(f"無効なパス形式: {path}")
@@ -189,7 +193,7 @@ class PathOperations(PathProtocol):
         """パスの有効性検証"""
         # 循環参照を避けるため、基本的な検証を実行
         try:
-            if hasattr(self._validator, 'validate_path'):
+            if hasattr(self._validator, "validate_path"):
                 return self._validator.validate_path(path)
             else:
                 # フォールバック: 基本的なパス検証

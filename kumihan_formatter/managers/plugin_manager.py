@@ -15,6 +15,7 @@ from kumihan_formatter.core.ast_nodes.node import Node
 
 import importlib.util
 
+
 @dataclass
 class PluginInfo:
     """プラグイン情報"""
@@ -195,12 +196,14 @@ class PluginManager:
 
             parser_func = self._parser_plugins[plugin_name]
             result = parser_func(content)
-            
+
             # 型安全性チェック: Nodeオブジェクトかどうか確認
             if result is not None and not isinstance(result, Node):
-                self.logger.warning(f"パーサープラグイン {plugin_name} の戻り値が Node 型ではありません")
+                self.logger.warning(
+                    f"パーサープラグイン {plugin_name} の戻り値が Node 型ではありません"
+                )
                 return None
-                
+
             return result
 
         except Exception as e:
@@ -234,12 +237,14 @@ class PluginManager:
                 result = filter_func(content)
             else:
                 result = filter_func(content, context or {})
-            
+
             # 型安全性チェック: str型かどうか確認
             if result is not None and not isinstance(result, str):
-                self.logger.warning(f"フィルタープラグイン {plugin_name} の戻り値が str 型ではありません")
+                self.logger.warning(
+                    f"フィルタープラグイン {plugin_name} の戻り値が str 型ではありません"
+                )
                 return None
-                
+
             return result
 
         except Exception as e:

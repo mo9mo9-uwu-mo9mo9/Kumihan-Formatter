@@ -28,7 +28,7 @@ class KeywordValidator:
     ) -> List[str]:
         """キーワード構文チェック"""
         # キャッシュ確認
-        cache_key = create_cache_key(content, context, "validate")
+        cache_key = create_cache_key(content, "validate")
         cached_errors = self.cache.get_validation_cache(cache_key)
         if cached_errors is not None:
             return cached_errors

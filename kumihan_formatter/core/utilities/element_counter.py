@@ -79,4 +79,3 @@ def count_elements(parsed_result: Any) -> int:
     except Exception as e:
         logger.debug(f"Element counting failed: {e}")
         return 12  # フォールバック値
-

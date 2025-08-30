@@ -66,7 +66,9 @@ class InlineMarkerProcessor:
             self.logger.error(f"インラインマーカー処理中にエラー: {e}")
             return [error_node(f"インライン処理エラー: {e}")]
 
-    def _create_inline_node(self, marker_type: str, match: Match[str]) -> Optional[Node]:
+    def _create_inline_node(
+        self, marker_type: str, match: Match[str]
+    ) -> Optional[Node]:
         """マッチした内容からインラインノードを作成
 
         Args:
