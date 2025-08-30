@@ -58,6 +58,51 @@ make test-unit  # 単体テストのみ（超高速）
 
 ---
 
+## 📋 開発プロセス正規化 (Issue #1240対応)
+
+### ブランチ戦略正規化
+- **作業期間制限**: 1週間以内（最大10日）
+- **命名規則**: `{type}/issue-{番号}-{英語概要}`
+- **統合頻度**: 3日ごとに統合推奨
+- **自動化**: GitHub Actions連携によるブランチ監視
+- **設定ファイル**: `.github/quality/branch_strategy.yml`
+
+### 技術的負債管理システム
+```bash
+# 技術的負債の検出・管理
+python3 scripts/technical_debt_manager.py detect   # 負債検出
+python3 scripts/technical_debt_manager.py report   # 週次レポート
+python3 scripts/technical_debt_manager.py summary  # サマリー表示
+```
+
+#### 負債分類システム
+- **Critical**: システム安定性影響（7日以内解決）
+- **High**: 開発効率影響（14日以内解決）  
+- **Medium**: 保守性影響（30日以内解決）
+- **Low**: 軽微問題（90日以内解決）
+- **設定ファイル**: `.github/quality/technical_debt.yml`
+
+#### 週次解決プロセス
+- **金曜**: 負債レビュー・優先度決定
+- **月曜**: 解決計画策定
+- **火〜木**: 実際の解決作業
+
+### ドキュメント整合性管理
+```bash
+# ドキュメント整合性チェック
+python3 scripts/document_consistency_checker.py check    # 整合性確認
+python3 scripts/document_consistency_checker.py summary  # サマリー表示
+```
+
+#### 自動チェック項目
+- バージョン情報の統一性
+- リンク切れの検出
+- コードとドキュメントの同期
+- 必須ドキュメントの存在確認
+- 古い内容の検出
+
+---
+
 ## 🛡️ 品質保証システム
 
 ### Layer 0: セマンティック解析（Serena MCP）
@@ -183,6 +228,11 @@ make claude-check            # CLAUDE.mdサイズ・構造チェック
 make lint                   # Black + mypy（高速）
 make test                   # pytest全テスト実行
 make test-unit              # 単体テストのみ（超高速）
+
+# プロセス正規化コマンド (Issue #1240)
+make process-check          # 開発プロセス総合チェック
+make debt-management        # 技術的負債管理
+make doc-consistency        # ドキュメント整合性確認
 ```
 
 ---

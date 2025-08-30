@@ -12,7 +12,7 @@ MYPY_ERRORS_THRESHOLD = 150  # 現在186から段階的削減
 IMPORT_COUNT_TARGET = 300    # 現在423から削減目標
 BUILD_TIME_LIMIT = 60        # 秒
 
-.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit claude-check
+.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit claude-check process-check debt-management doc-consistency
 
 # デフォルトターゲット
 help:
@@ -29,6 +29,11 @@ help:
 	@echo "  make test              - 全テスト実行（カバレッジ付き）"
 	@echo "  make test-unit         - 単体テスト（高速）"
 	@echo "  make test-integration  - 統合テスト"
+	@echo ""
+	@echo "📋 開発プロセス正規化 (Issue #1240):"
+	@echo "  make process-check     - 開発プロセス総合チェック"
+	@echo "  make debt-management   - 技術的負債管理"
+	@echo "  make doc-consistency   - ドキュメント整合性確認"
 	@echo ""
 	@echo "🔧 開発支援:"
 	@echo "  make setup             - 開発環境セットアップ"
@@ -191,3 +196,30 @@ claude-check:
 	print(f'📊 Overall Status: {status}'); \
 	sys.exit(exit_code)"
 	@echo "✅ CLAUDE.md検証完了"
+
+# 開発プロセス正規化コマンド (Issue #1240)
+# 開発プロセス総合チェック
+process-check:
+	@echo "📋 開発プロセス総合チェック開始 - Issue #1240"
+	@echo "================================================="
+	@$(MAKE) debt-management
+	@echo ""
+	@$(MAKE) doc-consistency
+	@echo ""
+	@echo "📊 開発プロセスチェック完了サマリー:"
+	@echo "  - 技術的負債: 分析・報告完了"
+	@echo "  - ドキュメント整合性: 確認完了"
+
+# 技術的負債管理
+debt-management:
+	@echo "🔍 技術的負債管理システム実行中..."
+	@$(PYTHON) scripts/technical_debt_manager.py detect
+	@$(PYTHON) scripts/technical_debt_manager.py summary
+	@echo "✅ 技術的負債管理完了"
+
+# ドキュメント整合性確認
+doc-consistency:
+	@echo "📚 ドキュメント整合性チェック中..."
+	@$(PYTHON) scripts/document_consistency_checker.py check
+	@$(PYTHON) scripts/document_consistency_checker.py summary
+	@echo "✅ ドキュメント整合性チェック完了"
