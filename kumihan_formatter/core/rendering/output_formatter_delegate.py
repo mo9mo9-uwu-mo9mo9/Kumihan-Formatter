@@ -99,7 +99,7 @@ class OutputFormatterDelegate:
         for i, error in enumerate(self.main_renderer.graceful_errors, 1):
             import html
 
-            # XSS対策: エラー情報のエスケープ処理  
+            # XSS対策: エラー情報のエスケープ処理
             safe_title = html.escape(error.display_title)
             safe_severity = html.escape(error.severity.upper())
             safe_content = (

@@ -121,7 +121,7 @@ warn_return_any = true             # Issue #1227で有効化 - Any戻り値警�
 disallow_subclassing_any = false     # 外部ライブラリ継承許可
 disallow_untyped_decorators = false  # デコレータ周りは緩和
 disallow_incomplete_defs = true      # Issue #1227で有効化 - 部分的型注釈不許可
-warn_unused_ignores = true          # 既に有効（重複確認）
+# warn_unused_ignores = true は既に108行目で設定済み
 
 # 現在のエラー解決のための追加設定
 check_untyped_defs = true           # 型なし関数でもチェック実行

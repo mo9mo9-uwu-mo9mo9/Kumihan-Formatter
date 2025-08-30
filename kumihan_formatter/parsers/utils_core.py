@@ -7,7 +7,9 @@ import re
 from typing import List, Dict, Any, Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core.parsing.protocols import ParseResult  # ParseContextが見つからないため一時的にParseResultを使用
+    from ..core.parsing.protocols import (
+        ParseResult,
+    )  # ParseContextが見つからないため一時的にParseResultを使用
 
 
 class BlockPatterns:
