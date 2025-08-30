@@ -76,15 +76,18 @@ class ParsingManager:
     ) -> Optional[Node]:
         """指定された種類のパーサーで解析実行"""
         try:
+            # コンテンツを文字列に正規化
+            content_str = content if isinstance(content, str) else "\n".join(content)
+
             if parser_type == "list":
-                return self.list_parser.parse(content)
+                return self.list_parser.parse(content_str)
             elif parser_type == "keyword":
-                return self.keyword_parser.parse(content)
+                return self.keyword_parser.parse(content_str)
             elif parser_type == "markdown":
-                return self.markdown_parser.parse(content)
+                return self.markdown_parser.parse(content_str)
             elif parser_type == "kumihan":
                 # kumihanパーサーはMarkdownParserでサポート
-                return self.markdown_parser.parse(content)
+                return self.markdown_parser.parse(content_str)
             else:
                 self.logger.warning(f"未知のパーサー種類: {parser_type}")
                 return None
@@ -130,7 +133,7 @@ class ParsingManager:
         """
         try:
             context = context or {}
-            result = {
+            result: Dict[str, Any] = {
                 "valid": True,
                 "errors": [],
                 "warnings": [],
@@ -139,6 +142,8 @@ class ParsingManager:
                     "content": getattr(node, "content", "")[:100],  # 最初の100文字
                 },
             }
+            errors: List[str] = result["errors"]
+            warnings: List[str] = result["warnings"]
 
             # 基本構造検証
             self._validate_node_structure(node, result)
@@ -147,7 +152,7 @@ class ParsingManager:
             self._validate_node_content(node, result, context)
 
             # 最終判定
-            result["valid"] = len(result["errors"]) == 0
+            result["valid"] = len(errors) == 0
 
             return result
 
@@ -174,7 +179,7 @@ class ParsingManager:
             統合バリデーション結果
         """
         try:
-            overall_result = {
+            overall_result: Dict[str, Any] = {
                 "valid": True,
                 "total_nodes": len(nodes),
                 "valid_nodes": 0,
@@ -190,18 +195,20 @@ class ParsingManager:
                 if node_result["valid"]:
                     overall_result["valid_nodes"] += 1
                 else:
+                    node_errors = node_result.get("errors", [])
                     overall_result["errors"].extend(
-                        [f"ノード{i}: {error}" for error in node_result["errors"]]
+                        [f"ノード{i}: {error}" for error in node_errors]
                     )
 
+                node_warnings = node_result.get("warnings", [])
                 overall_result["warnings"].extend(
-                    [f"ノード{i}: {warning}" for warning in node_result["warnings"]]
+                    [f"ノード{i}: {warning}" for warning in node_warnings]
                 )
 
             # 全体の妥当性判定
+            error_count = len(overall_result["errors"])
             overall_result["valid"] = (
-                len(overall_result["errors"]) == 0
-                and len(overall_result["errors"]) <= self.error_threshold
+                error_count == 0 and error_count <= self.error_threshold
             )
 
             return overall_result
@@ -231,7 +238,7 @@ class ParsingManager:
             else:
                 lines = content
 
-            result = {
+            result: Dict[str, Any] = {
                 "valid": True,
                 "syntax_errors": [],
                 "syntax_warnings": [],
@@ -242,7 +249,8 @@ class ParsingManager:
             for i, line in enumerate(lines, 1):
                 self._check_line_syntax(line, i, result)
 
-            result["valid"] = len(result["syntax_errors"]) == 0
+            syntax_errors: List[str] = result["syntax_errors"]
+            result["valid"] = len(syntax_errors) == 0
             return result
 
         except Exception as e:

@@ -79,7 +79,11 @@ class ContentProcessorDelegate:
         html_parts_append = html_parts.append
 
         for node in nodes:
-            html = self.main_renderer._element_delegate.render_node_optimized(node)
+            # Handle case where _element_delegate is None
+            if self.main_renderer._element_delegate:
+                html = self.main_renderer._element_delegate.render_node_optimized(node)
+            else:
+                html = self.main_renderer.render_node(node)
             if html:
                 html_parts_append(html)
 
@@ -154,7 +158,7 @@ class ContentProcessorDelegate:
         """
 
         # HTMLエスケープ関数の直接実装
-        def escape_html(text):
+        def escape_html(text: str) -> str:
             return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
         # XSS対策: エラー情報のエスケープ処理（最適化）
@@ -221,7 +225,7 @@ class ContentProcessorDelegate:
         """
 
         # HTMLエスケープ関数の直接実装
-        def escape_html(text):
+        def escape_html(text: str) -> str:
             return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
         safe_message = escape_html(error.message)

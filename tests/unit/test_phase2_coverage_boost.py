@@ -195,7 +195,7 @@ class TestUnifiedApiBoost:
         """KumihanFormatter初期化バリエーションテスト"""
         if KumihanFormatter is None:
             pytest.skip("KumihanFormatter not available")
-            
+
         # デフォルト初期化
         formatter1 = KumihanFormatter()
         assert formatter1 is not None
@@ -343,15 +343,17 @@ class TestKeywordModulesBoost:
             class MockCache:
                 def __init__(self):
                     self._cache = {}
+
                 def get_validation_cache(self, key):
                     return self._cache.get(key)
+
                 def set_validation_cache(self, key, value):
                     self._cache[key] = value
-                    
+
             class MockConfig:
                 def __init__(self):
                     self.cache = MockCache()
-            
+
             config = MockConfig()
             validator = KeywordValidator(config)
 

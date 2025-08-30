@@ -86,9 +86,12 @@ class NewFormatProcessor:
 
         result = ParseResult(
             node=node,
-            consumed_length=match.end() - match.start(),
-            start_position=match.start(),
-            end_position=match.end(),
+            parser_type="new_format",
+            metadata={
+                "consumed_length": match.end() - match.start(),
+                "start_position": match.start(),
+                "end_position": match.end(),
+            },
         )
 
         self.logger.debug(f"新記法解析成功: {keyword} -> {primary_keyword}")

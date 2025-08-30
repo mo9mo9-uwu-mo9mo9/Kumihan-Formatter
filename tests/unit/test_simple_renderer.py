@@ -219,7 +219,9 @@ class TestSimpleHTMLRenderer:
 
         # _render_simple_elementsでエラーを発生させる
         with mock.patch.object(
-            self.renderer, "_render_simple_elements", side_effect=Exception("Rendering error")
+            self.renderer,
+            "_render_simple_elements",
+            side_effect=Exception("Rendering error"),
         ):
             result = self.renderer.render_simple_parsed_data(parsed_result)
 

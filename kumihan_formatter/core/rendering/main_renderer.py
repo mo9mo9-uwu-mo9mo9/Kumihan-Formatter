@@ -13,20 +13,66 @@ class MainRenderer:
     """統合MainRendererクラス - 緊急対応版"""
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """
-        MainRenderer初期化
-
-        Args:
-            config: 設定オプション辞書
-        """
+        """MainRenderer初期化"""
         self.logger = get_logger(__name__)
         self.config = config or {}
 
-        # 既存レンダラーコンポーネント統合
-        self.markdown_renderer = MarkdownRenderer(config)
-        self.html_formatter = HtmlFormatter(config)
+        # テンプレート管理
+        from ..templates import TemplateSelector
 
-        self.logger.info("MainRenderer initialized - 統合レンダラーシステム")
+        self.template_selector = TemplateSelector()
+
+        # レンダラー初期化
+        from .markdown_renderer import MarkdownRenderer
+        from ..processing.markdown_converter import SimpleMarkdownConverter
+        from ..processing.markdown_factory import MarkdownFactory
+
+        self.markdown_renderer = MarkdownRenderer()
+        self.markdown_converter = SimpleMarkdownConverter()
+        self.markdown_factory = MarkdownFactory()
+
+        # HTML関連 - use functions instead of class
+        from ..utilities import css_utils
+
+        self.css_utils = css_utils
+
+        # HTML formatter - create a simple placeholder
+        self.html_formatter = self._create_html_formatter()
+
+        # Fix for delegate compatibility
+        from ..common.error_base import GracefulSyntaxError
+
+        self.graceful_errors: List[GracefulSyntaxError] = []
+        self.embed_errors_in_html: bool = False
+        self.heading_counter: int = 0
+        self._element_delegate: Optional[Any] = None
+
+    def _create_html_formatter(self) -> Any:
+        """HTML formatter placeholder for compatibility"""
+
+        class SimpleHtmlFormatter:
+            def render(
+                self, elements: List[Any], context: Optional[Dict[str, Any]] = None
+            ) -> str:
+                # Simple HTML rendering fallback
+                html_parts = []
+                for element in elements:
+                    if hasattr(element, "type") and element.type:
+                        if element.type == "p":
+                            html_parts.append(f"<p>{str(element.content)}</p>")
+                        elif element.type.startswith("h"):
+                            html_parts.append(
+                                f"<{element.type}>{str(element.content)}</{element.type}>"
+                            )
+                        else:
+                            html_parts.append(
+                                f"<div class='{element.type}'>{str(element.content)}</div>"
+                            )
+                    else:
+                        html_parts.append(f"<p>{str(element)}</p>")
+                return "\n".join(html_parts)
+
+        return SimpleHtmlFormatter()
 
     def render(
         self, parsed_result: Any, context: Optional[Dict[str, Any]] = None
@@ -684,3 +730,21 @@ class MainRenderer:
             self.logger.debug("MainRenderer resources released")
         except Exception as e:
             self.logger.error(f"Resource cleanup error: {e}")
+
+    def render_node(self, node: Any) -> str:
+        """単一ノードをレンダリング (delegate compatibility)"""
+        try:
+            if hasattr(node, "type"):
+                if node.type == "error":
+                    return f"<div class='error'>{self._escape_html(str(node.content))}</div>"
+                elif node.type in ["h1", "h2", "h3", "h4", "h5"]:
+                    level = node.type[1]
+                    return f"<{node.type}>{self._escape_html(str(node.content))}</{node.type}>"
+                elif node.type == "p":
+                    return f"<p>{self._escape_html(str(node.content))}</p>"
+                else:
+                    return f"<div class='{node.type}'>{self._escape_html(str(node.content))}</div>"
+            return f"<div>{self._escape_html(str(node.content))}</div>"
+        except Exception as e:
+            self.logger.error(f"ノードレンダリングエラー: {e}")
+            return f"<div class='error'>レンダリングエラー: {e}</div>"

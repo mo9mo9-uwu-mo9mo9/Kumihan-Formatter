@@ -1,6 +1,6 @@
 """ParserProtocols - パーサーインターフェース定義"""
 
-from typing import Any, Dict, Protocol, runtime_checkable
+from typing import Any, Dict, Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -10,6 +10,16 @@ class ParserProtocol(Protocol):
     def parse(self, text: str) -> Dict[str, Any]:
         """テキスト解析"""
         ...
+
+
+@runtime_checkable
+class ParseContext(Protocol):
+    """パースコンテキスト情報プロトコル"""
+
+    line_number: int
+    file_path: Optional[str]
+    parent_context: Optional["ParseContext"]
+    metadata: Dict[str, Any]
 
 
 class ParserProtocols:

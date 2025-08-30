@@ -5,7 +5,7 @@ Issue #1217対応: ディレクトリ構造最適化によるチャンク管理�
 
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from kumihan_formatter.core.utilities.logger import get_logger
 from ..types import ChunkInfo
@@ -29,7 +29,7 @@ class ChunkManager:
     ) -> List[ChunkInfo]:
         """行リストからチャンクを作成"""
         chunk_size = chunk_size or self.chunk_size
-        chunks = []
+        chunks: List[ChunkInfo] = []
 
         for i in range(0, len(lines), chunk_size):
             end_idx = min(i + chunk_size, len(lines))
@@ -84,7 +84,7 @@ class ChunkManager:
             file_position=chunks[0].file_position,
         )
 
-    def get_chunk_info(self, chunks: List[ChunkInfo]) -> dict:
+    def get_chunk_info(self, chunks: List[ChunkInfo]) -> Dict[str, Any]:
         """チャンク情報を取得"""
         return {
             "chunk_count": len(chunks),

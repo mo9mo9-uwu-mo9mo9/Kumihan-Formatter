@@ -108,11 +108,11 @@ class InlineMarkerProcessor:
             抽出されたマーカー情報のリスト
         """
         try:
-            markers = []
+            markers: List[Dict[str, Any]] = []
 
             for marker_type, pattern in self.inline_patterns.items():
                 for match in pattern.finditer(text):
-                    marker_info = {
+                    marker_info: Dict[str, Any] = {
                         "type": marker_type,
                         "start": match.start(),
                         "end": match.end(),
@@ -122,7 +122,7 @@ class InlineMarkerProcessor:
                     markers.append(marker_info)
 
             # 開始位置でソート
-            markers.sort(key=lambda x: int(x["start"]))
+            markers.sort(key=lambda x: x["start"])
             return markers
 
         except Exception as e:

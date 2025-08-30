@@ -137,9 +137,12 @@ class TestParserCoreExtended:
 
         # 実際に存在する内部メソッドをモックして処理をテスト
         from kumihan_formatter.core.ast_nodes.node import Node
+
         mock_node = Node("text", "Test text")
-        
-        with patch.object(parser, "_parse_line_with_graceful_errors", return_value=mock_node):
+
+        with patch.object(
+            parser, "_parse_line_with_graceful_errors", return_value=mock_node
+        ):
             result = parser.parse("Test text")
 
             # モックが呼ばれ、結果が返されることを確認

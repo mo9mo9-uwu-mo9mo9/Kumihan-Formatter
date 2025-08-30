@@ -128,4 +128,3 @@ class TestSimpleKumihanParser:
         assert "heading_2" in types
         assert "paragraph" in types
         assert "list_item" in types
-

@@ -88,10 +88,11 @@ class OptimizationManager:
                 return cached_result
 
             # 最適化されたパーシング実行
+            content_str = content if isinstance(content, str) else "\n".join(content)
             if input_size > 50000:  # 大きなコンテンツの場合
-                result = self._optimize_large_parsing(content, parser_func)
+                result = self._optimize_large_parsing(content_str, parser_func)
             else:
-                result = parser_func(content)
+                result = parser_func(content_str)
 
             # キャッシュ保存
             if self.enable_caching:
@@ -112,7 +113,8 @@ class OptimizationManager:
         except Exception as e:
             self.logger.error(f"パーシング最適化中にエラー: {e}")
             # フォールバック: 通常のパーシング
-            return parser_func(content)
+            content_str = content if isinstance(content, str) else "\n".join(content)
+            return parser_func(content_str)
 
     def _optimize_large_parsing(
         self, content: Union[str, List[str]], parser_func: Callable[[str], Any]
@@ -132,7 +134,8 @@ class OptimizationManager:
 
             results = []
             for chunk in chunks:
-                chunk_result = parser_func(chunk)
+                chunk_str = "\n".join(chunk)
+                chunk_result = parser_func(chunk_str)
                 if chunk_result:
                     results.append(chunk_result)
 
@@ -144,7 +147,8 @@ class OptimizationManager:
 
         except Exception as e:
             self.logger.warning(f"大容量パーシング最適化に失敗、フォールバック: {e}")
-            return parser_func(content)
+            content_str = content if isinstance(content, str) else "\n".join(content)
+            return parser_func(content_str)
 
     # ========== メモリ最適化 ==========
 

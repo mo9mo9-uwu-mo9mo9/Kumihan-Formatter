@@ -153,12 +153,12 @@ class OutputFormatterDelegate:
 
         for error in self.main_renderer.graceful_errors:
             if error.line_number and error.line_number <= len(modified_lines):
-                from ..html_escaping import escape_html
+                import html as html_lib
 
                 # XSS対策: エラー情報のエスケープ処理
-                safe_message = escape_html(error.message)
+                safe_message = html_lib.escape(error.message)
                 safe_suggestion = (
-                    escape_html(error.suggestion) if error.suggestion else ""
+                    html_lib.escape(error.suggestion) if error.suggestion else ""
                 )
                 error_icon = "❌" if error.severity == "error" else "⚠️"
 

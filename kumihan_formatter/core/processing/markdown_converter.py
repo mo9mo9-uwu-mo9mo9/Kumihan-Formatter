@@ -90,7 +90,12 @@ class SimpleMarkdownConverter:
 
     def _extract_title_from_content(self, content: str) -> Optional[str]:
         """コンテンツから最初のH1見出しを抽出"""
-        return self.renderer._extract_title_from_content(content, self.patterns)
+        import re
+
+        h1_match = re.search(r"^#\s+(.+)", content, re.MULTILINE)
+        if h1_match:
+            return h1_match.group(1).strip()
+        return None
 
     def _convert_code_blocks(self, text: str) -> str:
         """コードブロック（```）を変換"""
@@ -110,15 +115,39 @@ class SimpleMarkdownConverter:
 
     def _convert_inline_elements(self, text: str) -> str:
         """インライン要素を変換"""
-        return self.parser._convert_inline_elements(text)
+        return self.parser._process_inline_elements(text)
 
     def _convert_paragraphs(self, text: str) -> str:
         """段落を作成"""
-        return self.renderer._convert_paragraphs(text)
+        import re
+
+        # 空行で段落を分割
+        paragraphs = re.split(r"\n\s*\n", text.strip())
+        html_paragraphs = []
+
+        for para in paragraphs:
+            para = para.strip()
+            if para and not para.startswith("<"):
+                para = f"<p>{para}</p>"
+            if para:
+                html_paragraphs.append(para)
+
+        return "\n\n".join(html_paragraphs)
 
     def _create_full_html(self, title: str, content: str, source_filename: str) -> str:
         """完全なHTMLページを作成"""
-        return self.renderer._create_full_html(title, content, source_filename)
+        return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <!-- Generated from {source_filename} -->
+</head>
+<body>
+{content}
+</body>
+</html>"""
 
 
 def convert_markdown_file(

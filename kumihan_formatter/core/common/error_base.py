@@ -104,12 +104,6 @@ class KumihanError(Exception):
             original_error: Original exception that caused this error
         """
         super().__init__(message)
-        # Use integrated enums
-        if severity is None:
-            severity = ErrorSeverity.ERROR
-        if category is None:
-            category = ErrorCategory.UNKNOWN
-
         self.message = message
         self.severity = severity
         self.category = category

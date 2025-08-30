@@ -3,6 +3,8 @@
 Issue #1215対応完了版：11個のParserを統合管理
 """
 
+from typing import Any, Dict, List, Optional, Union
+
 # 統合パーサーシステム
 from .main_parser import MainParser
 
@@ -24,7 +26,11 @@ __all__ = [
 
 
 # 便利な統合関数
-def parse(content, parser_type="auto", config=None):
+def parse(
+    content: Union[str, List[str]],
+    parser_type: str = "auto",
+    config: Optional[Dict[str, Any]] = None,
+) -> Optional[Union[Any, Dict[str, Any]]]:
     """統合パーシング関数（簡易アクセス）"""
     main_parser = MainParser(config)
     return main_parser.parse(content, parser_type)

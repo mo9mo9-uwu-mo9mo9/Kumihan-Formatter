@@ -48,7 +48,9 @@ class PluginManager:
         # 登録されたプラグイン
         self._registered_plugins: Dict[str, PluginInfo] = {}
         self._parser_plugins: Dict[str, Callable[[str], Any]] = {}
-        self._filter_plugins: Dict[str, Callable[[str], Any]] = {}
+        self._filter_plugins: Dict[
+            str, Union[Callable[[str], Any], Callable[[str, Dict[str, Any]], Any]]
+        ] = {}
         self._renderer_plugins: Dict[str, Callable[[str], Any]] = {}
 
     # ========== プラグイン登録機能 ==========
@@ -99,7 +101,10 @@ class PluginManager:
             return False
 
     def register_filter_plugin(
-        self, name: str, filter_func: Callable[[str], Any], description: str = ""
+        self,
+        name: str,
+        filter_func: Union[Callable[[str], Any], Callable[[str, Dict[str, Any]], Any]],
+        description: str = "",
     ) -> bool:
         """
         コンテンツフィルタープラグインの登録
@@ -118,7 +123,6 @@ class PluginManager:
 
             self._filter_plugins[name] = filter_func
 
-            # プラグイン情報登録
             plugin_info = PluginInfo(
                 name=name,
                 version="1.0.0",
@@ -195,7 +199,9 @@ class PluginManager:
                 return None
 
             parser_func = self._parser_plugins[plugin_name]
-            result = parser_func(content)
+            # コンテンツを文字列に正規化
+            content_str = content if isinstance(content, str) else "\n".join(content)
+            result = parser_func(content_str)
 
             # 型安全性チェック: Nodeオブジェクトかどうか確認
             if result is not None and not isinstance(result, Node):
@@ -232,11 +238,18 @@ class PluginManager:
             filter_func = self._filter_plugins[plugin_name]
 
             # 関数シグネチャに応じて実行
-            sig = inspect.signature(filter_func)
-            if len(sig.parameters) == 1:
-                result = filter_func(content)
-            else:
-                result = filter_func(content, context or {})
+            try:
+                sig = inspect.signature(filter_func)
+                if len(sig.parameters) == 1:
+                    result = filter_func(content)  # type: ignore
+                elif len(sig.parameters) == 2:
+                    result = filter_func(content, context or {})  # type: ignore
+                else:
+                    # デフォルトケース: contentのみで実行
+                    result = filter_func(content)  # type: ignore
+            except Exception:
+                # シグネチャ取得に失敗した場合のフォールバック
+                result = filter_func(content)  # type: ignore
 
             # 型安全性チェック: str型かどうか確認
             if result is not None and not isinstance(result, str):

@@ -18,7 +18,7 @@ from ..rendering.markdown_renderer import MarkdownRenderer as HTMLRenderer
 class HtmlFormatter:
     """HTML フォーマッター - 互換性用簡易実装"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self.config = kwargs
 
     def format(self, content: str) -> str:
@@ -28,7 +28,7 @@ class HtmlFormatter:
 class MarkdownFormatter:
     """Markdown フォーマッター - 互換性用簡易実装"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self.config = kwargs
 
     def format(self, content: str) -> str:
@@ -41,21 +41,51 @@ class LegacyParserAdapter:
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self._main_parser = ActualMainParser(config)
 
-    def parse(self, text: str, **kwargs) -> List[Node]:
+    def parse(self, text: str, **kwargs: Any) -> List[Node]:
         """MainParser互換parse - Nodeリスト返却"""
-        return self._main_parser.parse(text, **kwargs)
+        result = self._main_parser.parse(text, **kwargs)
+        if result is None:
+            return []
+        elif isinstance(result, dict):
+            # Dict結果からNodeリストを抽出
+            elements = result.get("elements", [])
+            return [elem for elem in elements if hasattr(elem, "type")]
+        elif hasattr(result, "type"):  # Nodeインスタンス
+            return [result]
+        else:
+            return []
 
-    def parse_streaming(self, text: str, **kwargs) -> List[Node]:
+    def parse_streaming(self, text: str, **kwargs: Any) -> List[Node]:
         """ストリーミング解析 (MainParser互換)"""
         # 簡易実装: 通常のparseを呼び出し
-        return self._main_parser.parse(text, **kwargs)
+        result = self._main_parser.parse(text, **kwargs)
+        if result is None:
+            return []
+        elif isinstance(result, dict):
+            # Dict結果からNodeリストを抽出
+            elements = result.get("elements", [])
+            return [elem for elem in elements if hasattr(elem, "type")]
+        elif hasattr(result, "type"):  # Nodeインスタンス
+            return [result]
+        else:
+            return []
+
+    def parse_file(self, file_path: str, **kwargs: Any) -> List[Node]:
+        """ファイル解析 (MainParser互換)"""
+        result = self._main_parser.parse_file(file_path, **kwargs)
+        if result is None:
+            return []
+        elif hasattr(result, "type"):  # Nodeインスタンス
+            return [result]
+        else:
+            return []
 
     def get_performance_stats(self) -> Dict[str, Any]:
         """パフォーマンス統計 (MainParser互換)"""
         # 簡易実装: 基本的な統計情報を返す
         return {"calls": 0, "total_time": 0.0}
 
-    def reset_statistics(self):
+    def reset_statistics(self) -> None:
         """統計リセット (MainParser互換)"""
         # 簡易実装: 何もしない
         pass
@@ -79,18 +109,18 @@ ContentParser = MarkdownParser
 
 
 # Node作成関数（互換性用）
-def create_node(node_type: str = "text", content: str = "", **kwargs) -> Node:
+def create_node(node_type: str = "text", content: str = "", **kwargs: Any) -> Node:
     """Node作成関数 - 互換性用簡易実装"""
     from ..ast_nodes.node import Node
 
-    return Node(node_type=node_type, content=content, **kwargs)
+    return Node(type=node_type, content=content, **kwargs)
 
 
-def error_node(message: str = "Error", **kwargs) -> Node:
+def error_node(message: str = "Error", **kwargs: Any) -> Node:
     """エラーNode作成関数 - 互換性用簡易実装"""
     from ..ast_nodes.node import Node
 
-    return Node(node_type="error", content=message, **kwargs)
+    return Node(type="error", content=message, **kwargs)
 
 
 # 旧ファクトリー関数の互換版
@@ -135,10 +165,11 @@ def parse_file(file_path: str, config: Optional[Dict[str, Any]] = None) -> List[
     """ファイルを解析する便利関数"""
     parser = MasterParser(config)
     result = parser.parse_file(file_path)
-    return result.elements if result.elements else []
+    # resultはList[Node]なのでelementsアクセスは不要
+    return result if result else []
 
 
-def parse_stream(stream, config: Optional[Dict[str, Any]] = None):
+def parse_stream(stream: Any, config: Optional[Dict[str, Any]] = None) -> List[Node]:
     """ストリームを解析する便利関数"""
     parser = MasterParser(config)
     return parser.parse_streaming(stream)

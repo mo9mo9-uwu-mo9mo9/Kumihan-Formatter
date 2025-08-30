@@ -89,7 +89,7 @@ class CSSUtilities:
 }
 """
 
-    def process_custom_styles(self, custom_css: Union[str, Dict[str, str]]) -> str:
+    def process_custom_styles(self, custom_css: Union[str, Dict[str, Any]]) -> str:
         """カスタムスタイル処理"""
         if isinstance(custom_css, str):
             return custom_css
@@ -105,7 +105,8 @@ class CSSUtilities:
 
             return "\n".join(css_rules)
 
-        return ""
+        # この行は到達しないがtype checkerのために残す
+        # return ""
 
     def apply_css_classes(
         self, element_type: str, additional_classes: Optional[List[str]] = None
