@@ -171,6 +171,153 @@ class CoreMarkerParser:
                 end_position=len(text),
             )
 
+    def parse_simple_kumihan(self, text: str) -> Dict[str, Any]:
+        """シンプルKumihan記法の解析（SimpleKumihanParserとの互換性確保）"""
+        try:
+            elements = []
+            processed_ranges = []
+
+            # Kumihan装飾ブロックの解析 - よりゆるいパターンを使用
+            # パターン: # 装飾名 #内容##
+            kumihan_pattern = re.compile(r"#\s*([^#]+?)\s*#([^#]+?)##")
+            decorated_matches = list(kumihan_pattern.finditer(text))
+
+            for match in decorated_matches:
+                decoration = match.group(1).strip()
+                content = match.group(2).strip()
+
+                elements.append(
+                    {
+                        "type": "kumihan_block",
+                        "content": content,
+                        "attributes": {"decoration": decoration},
+                        "children": [],
+                    }
+                )
+                processed_ranges.append((match.start(), match.end()))
+
+            # 見出しの解析（処理済み範囲を除外）
+            heading_pattern = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
+            for match in heading_pattern.finditer(text):
+                is_overlapping = any(
+                    start <= match.start() < end or start < match.end() <= end
+                    for start, end in processed_ranges
+                )
+
+                if not is_overlapping:
+                    level = len(match.group(1))
+                    title = match.group(2).strip()
+
+                    elements.append(
+                        {
+                            "type": f"heading_{level}",
+                            "content": title,
+                            "attributes": {"level": str(level)},
+                            "children": [],
+                        }
+                    )
+                    processed_ranges.append((match.start(), match.end()))
+
+            # 基本的なマークダウン要素の処理
+            lines = text.split("\n")
+            current_position = 0
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    current_position += 1
+                    continue
+
+                # この行がすでに処理済みかチェック
+                line_start = text.find(line, current_position)
+                line_end = line_start + len(line)
+
+                is_processed = any(
+                    start <= line_start < end or start < line_end <= end
+                    for start, end in processed_ranges
+                )
+
+                if not is_processed:
+                    # リストアイテム
+                    list_pattern = re.compile(r"^\s*[-*+]\s+(.+)$")
+                    list_match = list_pattern.match(line)
+                    if list_match:
+                        elements.append(
+                            {
+                                "type": "list_item",
+                                "content": list_match.group(1).strip(),
+                                "attributes": {"list_type": "unordered"},
+                                "children": [],
+                            }
+                        )
+                    # 番号付きリスト
+                    else:
+                        numbered_pattern = re.compile(r"^\s*\d+\.\s+(.+)$")
+                        numbered_match = numbered_pattern.match(line)
+                        if numbered_match:
+                            elements.append(
+                                {
+                                    "type": "list_item",
+                                    "content": numbered_match.group(1).strip(),
+                                    "attributes": {"list_type": "ordered"},
+                                    "children": [],
+                                }
+                            )
+                        # 通常のテキスト
+                        else:
+                            # インライン装飾の処理
+                            processed_content = self._process_inline_formatting(line)
+                            elements.append(
+                                {
+                                    "type": "paragraph",
+                                    "content": processed_content,
+                                    "attributes": {},
+                                    "children": [],
+                                }
+                            )
+
+                current_position = line_end + 1
+
+            return {
+                "status": "success",
+                "elements": elements,
+                "parser": "CoreMarkerParser-SimpleMode",
+                "total_elements": len(elements),
+            }
+
+        except Exception as e:
+            self.logger.error(f"Simple parse error: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "elements": [],
+                "parser": "CoreMarkerParser-SimpleMode",
+            }
+
+    def validate(self, text: str) -> List[str]:
+        """基本的な構文検証（SimpleKumihanParser互換）"""
+        errors = []
+
+        # Kumihan記法の基本構文チェック
+        decorated_blocks = self.marker_pattern.findall(text)
+        for decoration, content in decorated_blocks:
+            if not decoration.strip():
+                errors.append("装飾名が空です")
+            if not content.strip():
+                errors.append("内容が空です")
+
+        return errors
+
+    def _process_inline_formatting(self, text: str) -> str:
+        """インライン装飾の処理（SimpleKumihanParser互換）"""
+        # 太字
+        bold_pattern = re.compile(r"\*\*(.+?)\*\*")
+        text = bold_pattern.sub(r"<strong>\1</strong>", text)
+        # イタリック
+        italic_pattern = re.compile(r"\*(.+?)\*")
+        text = italic_pattern.sub(r"<em>\1</em>", text)
+        return text
+
     # === プロセッサーへの委譲メソッド（後方互換性） ===
 
     def parse_new_format_marker(self, text: str, start_index: int = 0):

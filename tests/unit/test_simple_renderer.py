@@ -3,14 +3,14 @@ SimpleHTMLRenderer テスト
 """
 
 import pytest
-from kumihan_formatter.simple_renderer import SimpleHTMLRenderer
+from kumihan_formatter.core.rendering.main_renderer import MainRenderer
 
 
 class TestSimpleHTMLRenderer:
     """SimpleHTMLRenderer テストクラス"""
 
     def setup_method(self):
-        self.renderer = SimpleHTMLRenderer()
+        self.renderer = MainRenderer()
 
     def test_render_success_result(self):
         """正常な解析結果のレンダリングテスト"""
@@ -26,7 +26,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
 
         assert "<!DOCTYPE html>" in html
         assert '<html lang="ja">' in html
@@ -48,7 +48,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert '<h2 class="heading-2">見出し2</h2>' in html
 
     def test_render_paragraph(self):
@@ -65,7 +65,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert '<p class="paragraph">段落のテキスト</p>' in html
 
     def test_render_list_items(self):
@@ -82,7 +82,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert '<ul class="list-unordered"><li>リスト項目</li></ul>' in html
 
     def test_render_kumihan_block_decorations(self):
@@ -107,7 +107,7 @@ class TestSimpleHTMLRenderer:
                 ],
             }
 
-            html = self.renderer.render(parsed_data)
+            html = self.renderer.render_simple_parsed_data(parsed_data)
             assert f"kumihan-block {expected_class}" in html
 
     def test_html_escaping(self):
@@ -116,14 +116,14 @@ class TestSimpleHTMLRenderer:
         escaped = self.renderer._escape_html(test_text)
 
         assert "&lt;script&gt;" in escaped
-        assert "alert(&#x27;xss&#x27;)" in escaped
+        assert "alert(&#39;xss&#39;)" in escaped
         assert "<script>" not in escaped
 
     def test_render_error_result(self):
         """エラー結果のレンダリングテスト"""
         parsed_data = {"status": "error", "error": "テストエラー"}
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert "エラーが発生しました" in html
         assert "テストエラー" in html
         assert "error" in html  # CSSクラス
@@ -132,7 +132,7 @@ class TestSimpleHTMLRenderer:
         """空の結果のレンダリングテスト"""
         parsed_data = {"status": "success", "elements": []}
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert "空の文書" in html
 
     def test_render_unknown_element(self):
@@ -149,7 +149,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         # 不明な要素は段落として処理される
         assert '<p class="paragraph">不明な要素</p>' in html
 
@@ -167,7 +167,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
         assert "<style>" in html
         assert ".kumihan-block" in html
         assert "font-family" in html
@@ -186,7 +186,7 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        html = self.renderer.render(parsed_data)
+        html = self.renderer.render_simple_parsed_data(parsed_data)
 
         # 基本的なHTML文書構造
         assert "<!DOCTYPE html>" in html
@@ -217,11 +217,11 @@ class TestSimpleHTMLRenderer:
             ],
         }
 
-        # _render_elementsでエラーを発生させる
+        # _render_simple_elementsでエラーを発生させる
         with mock.patch.object(
-            self.renderer, "_render_elements", side_effect=Exception("Rendering error")
+            self.renderer, "_render_simple_elements", side_effect=Exception("Rendering error")
         ):
-            result = self.renderer.render(parsed_result)
+            result = self.renderer.render_simple_parsed_data(parsed_result)
 
         # エラーページが返されることを確認（実際の日本語エラーメッセージを使用）
         assert "エラーが発生しました" in result

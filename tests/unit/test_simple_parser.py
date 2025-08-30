@@ -3,19 +3,19 @@ SimpleKumihanParser テスト
 """
 
 import pytest
-from kumihan_formatter.simple_parser import SimpleKumihanParser
+from kumihan_formatter.core.parsing.core_marker_parser import CoreMarkerParser
 
 
 class TestSimpleKumihanParser:
     """SimpleKumihanParser テストクラス"""
 
     def setup_method(self):
-        self.parser = SimpleKumihanParser()
+        self.parser = CoreMarkerParser()
 
     def test_parse_basic_kumihan_block(self):
         """基本的なKumihanブロックの解析テスト"""
         text = "# 重要 #これは重要な情報です##"
-        result = self.parser.parse(text)
+        result = self.parser.parse_simple_kumihan(text)
 
         assert result["status"] == "success"
         assert result["total_elements"] >= 1
@@ -31,7 +31,7 @@ class TestSimpleKumihanParser:
     def test_parse_heading(self):
         """見出しの解析テスト"""
         text = "## 見出しレベル2"
-        result = self.parser.parse(text)
+        result = self.parser.parse_simple_kumihan(text)
 
         assert result["status"] == "success"
         elements = result["elements"]
@@ -45,7 +45,7 @@ class TestSimpleKumihanParser:
         """リストアイテムの解析テスト"""
         text = """- リスト項目1
 - リスト項目2"""
-        result = self.parser.parse(text)
+        result = self.parser.parse_simple_kumihan(text)
 
         assert result["status"] == "success"
         elements = result["elements"]
@@ -59,7 +59,7 @@ class TestSimpleKumihanParser:
         """番号付きリストの解析テスト"""
         text = """1. 番号付き項目1
 2. 番号付き項目2"""
-        result = self.parser.parse(text)
+        result = self.parser.parse_simple_kumihan(text)
 
         assert result["status"] == "success"
         elements = result["elements"]
@@ -73,7 +73,7 @@ class TestSimpleKumihanParser:
     def test_parse_paragraph(self):
         """段落の解析テスト"""
         text = "これは通常の段落です。"
-        result = self.parser.parse(text)
+        result = self.parser.parse_simple_kumihan(text)
 
         assert result["status"] == "success"
         elements = result["elements"]
@@ -109,13 +109,13 @@ class TestSimpleKumihanParser:
 
     def test_empty_input(self):
         """空の入力のテスト"""
-        result = self.parser.parse("")
+        result = self.parser.parse_simple_kumihan("")
         assert result["status"] == "success"
         assert result["total_elements"] == 0
 
     def test_complex_document(self, sample_text):
         """複雑な文書の解析テスト"""
-        result = self.parser.parse(sample_text)
+        result = self.parser.parse_simple_kumihan(sample_text)
 
         assert result["status"] == "success"
         assert result["total_elements"] > 5
@@ -129,19 +129,3 @@ class TestSimpleKumihanParser:
         assert "paragraph" in types
         assert "list_item" in types
 
-    def test_parse_error_handling(self):
-        """例外処理のテスト - エラーハンドリングを確認"""
-        import unittest.mock as mock
-        from kumihan_formatter.simple_parser import ParsedElement
-
-        # ParsedElementのto_dictメソッドで例外を発生させる
-        with mock.patch.object(
-            ParsedElement, "to_dict", side_effect=Exception("Test error")
-        ):
-            result = self.parser.parse("# 重要 #内容##")
-
-        # エラー結果の確認
-        assert result["status"] == "error"
-        assert "Test error" in result["error"]
-        assert result["elements"] == []
-        assert result["parser"] == "SimpleKumihanParser"

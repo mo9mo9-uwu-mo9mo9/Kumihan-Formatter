@@ -210,7 +210,7 @@ class TestParserUtilsCoverage:
     def test_import_parser_utils_basic(self):
         """parser_utils.py 基本インポートテスト"""
         try:
-            import kumihan_formatter.parser_utils as parser_utils
+            import kumihan_formatter.core.utilities.api_utils as parser_utils
 
             assert parser_utils is not None
         except ImportError:
@@ -219,7 +219,7 @@ class TestParserUtilsCoverage:
     def test_parser_utils_functions_exist(self):
         """parser_utils内の関数存在確認"""
         try:
-            import kumihan_formatter.parser_utils as parser_utils
+            import kumihan_formatter.core.utilities.api_utils as parser_utils
 
             # モジュール内の関数・クラスの存在確認
             members = dir(parser_utils)
@@ -235,7 +235,7 @@ class TestParserUtilsCoverage:
         """parser_utils実行時の安全性確認"""
         try:
             # インポート時にエラーが発生しないことを確認
-            import kumihan_formatter.parser_utils
+            import kumihan_formatter.core.utilities.api_utils
 
             # モジュールレベル実行が安全に完了することを確認
             assert True  # インポートが成功すれば合格

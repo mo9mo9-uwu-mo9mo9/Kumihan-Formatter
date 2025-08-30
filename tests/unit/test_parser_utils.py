@@ -8,7 +8,7 @@ JSONパス処理と文字列操作ユーティリティ関数をテストしま�
 import pytest
 from typing import List
 
-from kumihan_formatter.parser_utils import (
+from kumihan_formatter.core.utilities.api_utils import (
     extract_json_path,
     find_closing_brace,
     find_matching_quote,

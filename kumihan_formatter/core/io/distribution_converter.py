@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from ...markdown_converter import convert_markdown_file
+from ..processing.markdown_converter import convert_markdown_file
 
 
 class DistributionConverter:
