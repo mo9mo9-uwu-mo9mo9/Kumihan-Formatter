@@ -73,6 +73,17 @@ def setup_block_patterns() -> BlockPatterns:
     return BlockPatterns()
 
 
+def setup_keyword_patterns() -> Dict[str, Any]:
+    """キーワード抽出用のパターンを初期化"""
+    import re
+
+    return {
+        "kumihan": re.compile(r"^#\s*([^#]*)\s*#\s*(.*?)\s*##$"),
+        "kumihan_opening": re.compile(r"^#\s*([^#]*)\s*#\s*$"),
+        "keyword": re.compile(r"(\w+)"),
+    }
+
+
 def create_cache_key(content: str, parser_type: str) -> str:
     """キャッシュキーを作成"""
     import hashlib

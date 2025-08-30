@@ -104,4 +104,3 @@ def main() -> None:
     except Exception as e:
         print(f"実行エラー: {e}")
         sys.exit(1)
-

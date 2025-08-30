@@ -22,7 +22,7 @@ class UnifiedListParser:
         except Exception as e:
             self.logger.error(f"List parsing error: {e}")
             from ..core.ast_nodes import error_node
-            
+
             return error_node(f"List parse error: {e}")
 
     def parse_list_items(self, items: List[str]) -> List[Node]:

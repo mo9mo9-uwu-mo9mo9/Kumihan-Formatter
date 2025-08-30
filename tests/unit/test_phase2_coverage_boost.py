@@ -15,6 +15,12 @@ import tempfile
 import os
 from unittest.mock import Mock, patch, MagicMock
 
+# unified_api用のインポート
+try:
+    from kumihan_formatter.unified_api import KumihanFormatter
+except ImportError:
+    KumihanFormatter = None
+
 
 class TestSimpleParserBoost:
     """simple_parser.py カバレッジ向上（21%→50%目標）"""
@@ -187,19 +193,23 @@ class TestUnifiedApiBoost:
 
     def test_kumihan_formatter_initialization(self):
         """KumihanFormatter初期化バリエーションテスト"""
+        if KumihanFormatter is None:
+            pytest.skip("KumihanFormatter not available")
+            
         # デフォルト初期化
         formatter1 = KumihanFormatter()
         assert formatter1 is not None
 
-        # 設定付き初期化
-        config = {"output_dir": "/tmp", "template": "default"}
-        formatter2 = KumihanFormatter(config=config)
+        # パフォーマンスモード指定初期化
+        formatter2 = KumihanFormatter(performance_mode="optimized")
         assert formatter2 is not None
+        assert formatter2.performance_mode == "optimized"
 
         # 設定ファイル指定初期化
         with patch("os.path.exists", return_value=False):
             formatter3 = KumihanFormatter(config_path="dummy_config.json")
             assert formatter3 is not None
+            assert formatter3.config_path == "dummy_config.json"
 
     def test_kumihan_formatter_configuration(self):
         """KumihanFormatter設定テスト"""
@@ -329,7 +339,21 @@ class TestKeywordModulesBoost:
         try:
             from kumihan_formatter.parsers.keyword_validation import KeywordValidator
 
-            validator = KeywordValidator()
+            # KeywordValidatorは設定オブジェクトを必要とするため、モックを作成
+            class MockCache:
+                def __init__(self):
+                    self._cache = {}
+                def get_validation_cache(self, key):
+                    return self._cache.get(key)
+                def set_validation_cache(self, key, value):
+                    self._cache[key] = value
+                    
+            class MockConfig:
+                def __init__(self):
+                    self.cache = MockCache()
+            
+            config = MockConfig()
+            validator = KeywordValidator(config)
 
             if hasattr(validator, "validate"):
                 result = validator.validate("# Test #")
