@@ -50,7 +50,7 @@ class OptimizationManager:
     # ========== パフォーマンス最適化 ==========
 
     def optimize_parsing(
-        self, content: Union[str, List[str]], parser_func: Callable
+        self, content: Union[str, List[str]], parser_func: Callable[[str], Any]
     ) -> Any:
         """
         パーシング処理の最適化
@@ -115,7 +115,7 @@ class OptimizationManager:
             return parser_func(content)
 
     def _optimize_large_parsing(
-        self, content: Union[str, List[str]], parser_func: Callable
+        self, content: Union[str, List[str]], parser_func: Callable[[str], Any]
     ) -> Any:
         """大きなコンテンツの最適化パーシング"""
         try:
@@ -180,7 +180,7 @@ class OptimizationManager:
 
     # ========== パフォーマンス監視 ==========
 
-    def performance_monitor(self, func: Callable) -> Callable:
+    def performance_monitor(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """
         関数実行パフォーマンス監視デコレーター
 
@@ -192,7 +192,7 @@ class OptimizationManager:
         """
 
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             if not self.performance_monitoring:
                 return func(*args, **kwargs)
 
@@ -283,7 +283,7 @@ class OptimizationManager:
         except Exception:
             return 0
 
-    def _estimate_input_size(self, args: tuple, kwargs: dict) -> int:
+    def _estimate_input_size(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> int:
         """入力サイズの推定"""
         try:
             total_size = 0

@@ -7,7 +7,7 @@ Issue #1215対応: 不足していたmarkdown_parserモジュールの基本実�
 
 import re
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Match
 
 
 class MarkdownParser:
@@ -171,7 +171,7 @@ class MarkdownParser:
     def _convert_headings(self, text: str) -> str:
         """見出し変換（互換性のため）"""
 
-        def replace_heading(match):
+        def replace_heading(match: Match[str]) -> str:
             level = len(match.group(1))
             content = match.group(2)
             return f"<h{level}>{content}</h{level}>"

@@ -31,10 +31,10 @@ class ExtendedEventType(Enum):
 class EventBus:
     """軽量イベントバス - 基本機能のみ"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """EventBus初期化"""
         self.logger = get_logger(__name__)
-        self._listeners: Dict[ExtendedEventType, List[Callable]] = {}
+        self._listeners: Dict[ExtendedEventType, List[Callable[..., Any]]] = {}
         self._lock = threading.RLock()
 
     def subscribe(

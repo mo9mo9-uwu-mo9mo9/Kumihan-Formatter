@@ -14,8 +14,8 @@ import logging
 from .protocols import ParseResult
 
 if TYPE_CHECKING:
-    from ..base.parser_protocols import KeywordParserProtocol
-    from ..keyword.attribute_parser import AttributeParser
+    from ...parsers.parser_protocols import KeywordParserProtocol
+    from ...parsers.keyword.attribute_parser import AttributeParser
     from ...parsers.content.content_parser import ContentParser
 
 

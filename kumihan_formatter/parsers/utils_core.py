@@ -26,7 +26,7 @@ class BlockPatterns:
 class BlockExtractor:
     """ブロック抽出の基本機能"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.patterns = BlockPatterns()
 
     def extract_block_content(
@@ -40,7 +40,7 @@ class BlockExtractor:
 class BlockTypeDetector:
     """ブロックタイプ検出機能"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.patterns = BlockPatterns()
 
     def detect_block_type(self, line: str) -> str:
@@ -52,8 +52,8 @@ class BlockTypeDetector:
 class BlockCache:
     """ブロック処理キャッシュ管理"""
 
-    def __init__(self):
-        self._cache = {}
+    def __init__(self) -> None:
+        self._cache: Dict[str, Dict[str, Any]] = {}
 
     def get(self, key: str) -> Optional[Dict[str, Any]]:
         """キャッシュから取得"""

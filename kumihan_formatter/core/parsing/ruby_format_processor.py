@@ -47,7 +47,7 @@ class RubyFormatProcessor:
         if not content or not content.strip():
             return None
 
-        ruby_info = {
+        ruby_info: Dict[str, Any] = {
             "base_text": content,
             "ruby_annotations": [],
             "format_type": None,
