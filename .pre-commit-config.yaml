@@ -1,0 +1,73 @@
+# Pre-commit hooks設定 - Issue #1239: 品質保証システム再構築
+# ローカル品質保証に特化した軽量設定
+
+repos:
+  # 1. ローカルMakefileベース品質チェック（メイン）
+  - repo: local
+    hooks:
+      - id: kumihan-quality-check
+        name: 🛡️ Kumihan品質チェック
+        entry: make
+        args: [quality-check]
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      - id: kumihan-dependency-audit
+        name: 📋 依存関係監査
+        entry: make
+        args: [dependency-audit]
+        language: system
+        pass_filenames: false
+        stages: [push]
+
+  # 2. 基本コードフォーマット（高速）
+  - repo: https://github.com/psf/black
+    rev: '23.12.1'
+    hooks:
+      - id: black
+        name: 🎨 Black フォーマット
+        args: [--line-length=88]
+
+  # 3. Import整理（依存関係最適化支援）
+  - repo: https://github.com/pycqa/isort
+    rev: '5.13.2'
+    hooks:
+      - id: isort
+        name: 📦 Import整理
+        args: [--profile, black]
+
+  # 4. 基本構文チェック
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 'v4.5.0'
+    hooks:
+      - id: check-yaml
+        name: ✅ YAML構文チェック
+      - id: check-toml
+        name: ✅ TOML構文チェック
+      - id: check-merge-conflict
+        name: 🔍 マージコンフリクト検出
+      - id: trailing-whitespace
+        name: 🧹 末尾空白削除
+      - id: end-of-file-fixer
+        name: 📝 EOF修正
+
+# 実行設定
+default_stages: [commit]
+fail_fast: false  # 全チェック実行（問題箇所特定のため）
+
+# 除外設定
+exclude: |
+  (?x)(
+      ^tmp/|
+      ^build/|
+      ^dist/|
+      \.egg-info/|
+      __pycache__/
+  )
+
+# Issue #1239対応メモ:
+# - GitHub Actions無効のため、ローカル品質チェックに特化
+# - Makefileベースの統合品質管理を活用
+# - 軽量設定で開発効率を維持
+# - 依存関係監査をpush時に実行（頻度制御）
