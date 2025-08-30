@@ -154,6 +154,117 @@ class HTMLFormatterCore:
             "graceful_errors_count": len(self.graceful_errors),
         }
 
+    def supports_format(self, format_hint: str) -> bool:
+        """フォーマット対応確認"""
+        supported_formats = ["html", "xhtml", "xml"]
+        return format_hint.lower() in supported_formats
+
+    def get_supported_formats(self) -> List[str]:
+        """対応フォーマット一覧"""
+        return ["html", "xhtml", "xml"]
+
+    # 基本フォーマッターメソッド群
+    def _format_generic(self, node: Node) -> str:
+        """汎用フォーマット"""
+        return self.format_node(node)
+
+    def _format_p(self, node: Node) -> str:
+        """段落フォーマット"""
+        content = getattr(node, "content", "")
+        return f"<p>{self._escape_html(str(content))}</p>"
+
+    def _format_strong(self, node: Node) -> str:
+        """太字フォーマット"""
+        content = getattr(node, "content", "")
+        return f"<strong>{self._escape_html(str(content))}</strong>"
+
+    def _format_em(self, node: Node) -> str:
+        """イタリックフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<em>{self._escape_html(str(content))}</em>"
+
+    def _format_div(self, node: Node) -> str:
+        """div要素フォーマット"""
+        content = getattr(node, "content", "")
+        return f"<div>{self._escape_html(str(content))}</div>"
+
+    def _format_h1(self, node: Node) -> str:
+        """H1見出しフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<h1>{self._escape_html(str(content))}</h1>"
+
+    def _format_h2(self, node: Node) -> str:
+        """H2見出しフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<h2>{self._escape_html(str(content))}</h2>"
+
+    def _format_h3(self, node: Node) -> str:
+        """H3見出しフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<h3>{self._escape_html(str(content))}</h3>"
+
+    def _format_h4(self, node: Node) -> str:
+        """H4見出しフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<h4>{self._escape_html(str(content))}</h4>"
+
+    def _format_h5(self, node: Node) -> str:
+        """H5見出しフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<h5>{self._escape_html(str(content))}</h5>"
+
+    def _format_ul(self, node: Node) -> str:
+        """箇条書きリストフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<ul>{content}</ul>"
+
+    def _format_ol(self, node: Node) -> str:
+        """番号付きリストフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<ol>{content}</ol>"
+
+    def _format_li(self, node: Node) -> str:
+        """リスト項目フォーマット"""
+        content = getattr(node, "content", "")
+        return f"<li>{self._escape_html(str(content))}</li>"
+
+    def _format_details(self, node: Node) -> str:
+        """詳細要素フォーマット"""
+        content = getattr(node, "content", "")
+        return f"<details>{content}</details>"
+
+    def _format_pre(self, node: Node) -> str:
+        """整形済みテキストフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<pre>{self._escape_html(str(content))}</pre>"
+
+    def _format_code(self, node: Node) -> str:
+        """コードフォーマット"""
+        content = getattr(node, "content", "")
+        return f"<code>{self._escape_html(str(content))}</code>"
+
+    def _format_image(self, node: Node) -> str:
+        """画像フォーマット"""
+        src = getattr(node, "src", "")
+        alt = getattr(node, "alt", "")
+        return f'<img src="{src}" alt="{alt}">'
+
+    def _format_error(self, node: Node) -> str:
+        """エラーフォーマット"""
+        content = getattr(node, "content", "Error")
+        return f'<div class="error">{self._escape_html(str(content))}</div>'
+
+    def _format_toc(self, node: Node) -> str:
+        """目次フォーマット"""
+        content = getattr(node, "content", "")
+        return f'<nav class="toc">{content}</nav>'
+
+    def _format_ruby(self, node: Node) -> str:
+        """ルビフォーマット"""
+        content = getattr(node, "content", "")
+        ruby = getattr(node, "ruby", "")
+        return f"<ruby>{self._escape_html(str(content))}<rt>{self._escape_html(str(ruby))}</rt></ruby>"
+
 
 class HTMLValidator:
     """HTML検証クラス - 基本実装"""

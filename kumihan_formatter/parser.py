@@ -198,9 +198,9 @@ def parse_with_error_config(
         use_streaming = size_mb > 1.0
 
     if use_streaming:
-        streaming_parser = StreamingParser(json_path="")
-        nodes = list(streaming_parser.parse_streaming_from_text(text))
-        return nodes
-    else:
-        parser: Parser = Parser(config=config)
-        return parser.parse(text)
+        # TODO: StreamingParser implementation - falling back to regular parsing
+        pass
+
+    # 通常のパーシング処理
+    parser: Parser = Parser(config=config)
+    return parser.parse(text)

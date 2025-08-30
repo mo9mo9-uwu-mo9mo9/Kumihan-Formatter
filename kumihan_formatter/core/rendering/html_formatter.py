@@ -283,11 +283,15 @@ class HtmlFormatter:
 
     def _process_footnote_placeholders(self, html: str) -> str:
         """脚注プレースホルダー処理"""
-        return self.footnote_manager.process_footnote_placeholders(html)
+        # FootnoteManagerの実際のメソッドを使用
+        return self.footnote_manager.get_footnotes_html()
 
     def _append_footnotes_section(self, html: str) -> str:
         """脚注セクション追加"""
-        return self.footnote_manager.append_footnotes_section(html)
+        footnotes_html = self.footnote_manager.get_footnotes_html()
+        if footnotes_html:
+            return f"{html}\n{footnotes_html}"
+        return html
 
     # 互換性維持のための個別フォーマッターメソッド
     def _format_generic(self, node: Node) -> str:

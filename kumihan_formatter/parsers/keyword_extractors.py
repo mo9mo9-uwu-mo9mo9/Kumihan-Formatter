@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from .parser_protocols import ParserProtocol
+    from .parser_protocols import ParserProtocol, ParseContext
 
 from .utils_core import (
     setup_keyword_patterns,

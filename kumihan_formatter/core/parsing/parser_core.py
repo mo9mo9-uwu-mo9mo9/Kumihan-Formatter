@@ -143,7 +143,7 @@ class Parser:
 
         # パーサー初期化（統合最適化後：利用可能なもののみ）
         try:
-            self.keyword_parser = KeywordParser()
+            self.keyword_parser: Optional[KeywordParser] = KeywordParser()
         except Exception:
             self.keyword_parser = None
 

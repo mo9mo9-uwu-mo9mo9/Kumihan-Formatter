@@ -435,25 +435,29 @@ class TestKeywordModulesExtended:
             class MockCache:
                 def __init__(self):
                     self._cache = {}
+
                 def get_validation_cache(self, key):
                     return self._cache.get(key)
+
                 def set_validation_cache(self, key, value):
                     self._cache[key] = value
+
                 def get_keyword_cache(self, key):
                     return self._cache.get(key)
+
                 def set_keyword_cache(self, key, value):
                     self._cache[key] = value
-                    
+
             class MockConfig:
                 def __init__(self):
                     self.cache = MockCache()
                     self.all_keywords = set()
                     self.custom_handler = self
                     self.custom_handlers = {}
-                    
+
                 def is_valid_custom_keyword(self, keyword):
                     return False
-            
+
             config = MockConfig()
             validator = KeywordValidator(config)
             assert validator is not None

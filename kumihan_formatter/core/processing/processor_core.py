@@ -6,7 +6,8 @@
 import concurrent.futures
 import logging
 import threading
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 # Delayed import to avoid circular dependency
 from ..types import ChunkInfo
@@ -163,10 +164,12 @@ class ParallelChunkProcessor:
         return self.core_manager.create_chunks_adaptive(lines, target_chunk_count)
 
     def create_chunks_from_file(
-        self, file_path, encoding: str = "utf-8"
+        self, file_path: Union[str, Path], encoding: str = "utf-8"
     ) -> List[ChunkInfo]:
         """ファイルからチャンク作成（委譲）"""
-        return self.core_manager.create_chunks_from_file(file_path, encoding)
+        # Union[str, Path]をPathに変換
+        path_obj = Path(file_path) if isinstance(file_path, str) else file_path
+        return self.core_manager.create_chunks_from_file(path_obj, encoding)
 
     def merge_chunks(self, chunks: List[ChunkInfo]) -> ChunkInfo:
         """チャンクマージ（委譲）"""

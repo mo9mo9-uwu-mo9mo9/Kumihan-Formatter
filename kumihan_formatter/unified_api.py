@@ -66,7 +66,8 @@ class KumihanFormatter:
                 import json
 
                 with open(config_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    result = json.load(f)
+                    return result  # type: ignore[no-any-return]
             except Exception as e:
                 self.logger.warning(f"設定ファイル読み込み失敗: {e}")
 
@@ -435,3 +436,21 @@ from .core.utilities.api_utils import (
     validate,
     main,
 )
+
+# Export everything for external use
+__all__ = [
+    "KumihanFormatter",
+    "DummyParser",
+    "DummyRenderer",
+    "quick_convert",
+    "quick_parse",
+    "unified_parse",
+    "validate_kumihan_syntax",
+    "get_parser_system_info",
+    "optimized_quick_convert",
+    "optimized_quick_parse",
+    "optimized_convert_text",
+    "parse",
+    "validate",
+    "main",
+]

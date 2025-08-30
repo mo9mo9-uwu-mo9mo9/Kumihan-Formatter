@@ -189,13 +189,13 @@ class CoreManager:
     # ========== チャンク管理機能（旧ChunkManager） ==========
 
     def create_chunks_from_lines(
-        self, lines: List[str], chunk_size: int = None
+        self, lines: List[str], chunk_size: Optional[int] = None
     ) -> List[ChunkInfo]:
         """行リストからチャンク作成"""
         if chunk_size is None:
             chunk_size = self.chunk_size
 
-        chunks = []
+        chunks: List[ChunkInfo] = []
         total_lines = len(lines)
 
         for i in range(0, total_lines, chunk_size):
@@ -215,7 +215,7 @@ class CoreManager:
         return chunks
 
     def create_chunks_adaptive(
-        self, lines: List[str], target_chunk_count: int = None
+        self, lines: List[str], target_chunk_count: Optional[int] = None
     ) -> List[ChunkInfo]:
         """適応的チャンク作成（処理量に応じてサイズ調整）"""
         total_lines = len(lines)
@@ -224,12 +224,13 @@ class CoreManager:
 
         # チャンクサイズの決定
         cpu_count = self._get_cpu_count()
-        if total_lines <= 100:
-            target_chunk_count = 1
-        elif total_lines <= 1000:
-            target_chunk_count = min(4, cpu_count)
-        else:
-            target_chunk_count = min(cpu_count * 2, 16)  # 最大16チャンク
+        if target_chunk_count is None:
+            if total_lines <= 100:
+                target_chunk_count = 1
+            elif total_lines <= 1000:
+                target_chunk_count = min(4, cpu_count)
+            else:
+                target_chunk_count = min(cpu_count * 2, 16)  # 最大16チャンク
 
         # 適応的チャンクサイズ計算
         adaptive_chunk_size = max(1, total_lines // target_chunk_count)
@@ -292,7 +293,7 @@ class CoreManager:
             file_position=chunks[0].file_position,
         )
 
-    def get_chunk_info(self, chunks: List[ChunkInfo]) -> dict:
+    def get_chunk_info(self, chunks: List[ChunkInfo]) -> Dict[str, Any]:
         """チャンク情報を取得"""
         return {
             "chunk_count": len(chunks),
@@ -320,7 +321,7 @@ class CoreManager:
 
         return True
 
-    def ensure_directory(self, directory_path):
+    def ensure_directory(self, directory_path: Union[str, Path]) -> None:
         """ディレクトリを作成（FileManager機能統合）"""
         import os
         from pathlib import Path

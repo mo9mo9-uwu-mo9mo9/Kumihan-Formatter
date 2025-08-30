@@ -96,15 +96,19 @@ class TestZeroCoverageEmergency:
             class MockCache:
                 def __init__(self):
                     self._cache = {}
+
                 def get_validation_cache(self, key):
                     return self._cache.get(key)
+
                 def set_validation_cache(self, key, value):
                     self._cache[key] = value
+
                 def get_keyword_cache(self, key):
                     return self._cache.get(key)
+
                 def set_keyword_cache(self, key, value):
                     self._cache[key] = value
-                    
+
             class MockConfig:
                 def __init__(self):
                     self.cache = MockCache()
@@ -112,7 +116,7 @@ class TestZeroCoverageEmergency:
                     self.custom_handler = self
                     self.custom_handlers = {}
                     self.validate_keywords = True
-                    
+
                 def is_valid_custom_keyword(self, keyword):
                     return False
 

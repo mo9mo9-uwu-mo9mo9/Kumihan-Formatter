@@ -100,33 +100,26 @@ replace = '__version__ = "{new_version}"'
 
 python_version = "3.12"
 
-# 基本設定 - 54件エラー基準の実用的設定
-strict = false  # strict全体無効化、個別設定で制御
+# Issue #1247: mypy strict mode完全準拠設定
+strict = true
 
-# 現在有効化可能な厳密性設定
+# 厳密性設定（strict mode有効化）
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
-warn_unreachable = false
+warn_unreachable = true
 warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_any_unimported = true
+warn_return_any = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
 
-# 段階的strict化（Issue #1227で部分的に有効化）
-disallow_untyped_defs = true       # Issue #832対応完了 (no-untyped-def)
-disallow_any_generics = false      # Issue #834対応予定 (type-arg)
-disallow_untyped_calls = false     # Issue #833対応予定 (no-untyped-call)
-disallow_any_unimported = true     # Issue #1227で有効化 - 外部ライブラリAny型制限
-warn_return_any = true             # Issue #1227で有効化 - Any戻り値警告
-
-# 外部ライブラリ対応での現実的緩和
-disallow_subclassing_any = false     # 外部ライブラリ継承許可
-disallow_untyped_decorators = false  # デコレータ周りは緩和
-disallow_incomplete_defs = true      # Issue #1227で有効化 - 部分的型注釈不許可
-# warn_unused_ignores = true は既に108行目で設定済み
-
-# 現在のエラー解決のための追加設定
-check_untyped_defs = true           # 型なし関数でもチェック実行
-
-# 除外設定を拡張
+# 除外設定（型注釈完了ファイルを除外から削除）
 exclude = [
     "dist/.*",
     "build/.*",
@@ -136,11 +129,7 @@ exclude = [
     "tests/.*_legacy.*",
     "tests/performance/.*",
     "dev/.*",
-    "tmp/.*",
-    # Issue #1227: 型安全性向上作業中の一時除外（実装未完了ファイル）
-    "kumihan_formatter/parsers/keyword_validation.py",
-    "kumihan_formatter/parsers/keyword_extractors.py", 
-    "kumihan_formatter/parsers/keyword_config.py"
+    "tmp/.*"
 ]
 
 # 外部ライブラリの型チェック設定

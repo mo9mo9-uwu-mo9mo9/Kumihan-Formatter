@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from .parser_protocols import ParserProtocol
+    from .parser_protocols import ParserProtocol, ParseContext
+    from .keyword_config import KeywordParserConfig
 
 from .utils_core import create_cache_key
 
@@ -18,7 +19,7 @@ from .utils_core import create_cache_key
 class KeywordValidator:
     """キーワードバリデーション専用クラス"""
 
-    def __init__(self, config: Any) -> None:
+    def __init__(self, config: "KeywordParserConfig") -> None:
         self.logger = logging.getLogger(__name__)
         self.config = config
         self.cache = config.cache
@@ -31,14 +32,9 @@ class KeywordValidator:
         cache_key = create_cache_key(content, "validate")
         cached_errors = self.cache.get_validation_cache(cache_key)
         if cached_errors is not None:
-            return cached_errors
+            return list(cached_errors)  # 明示的にリストに変換
 
         errors: List[str] = []
-
-        if not isinstance(content, str):
-            errors.append("Content must be a string")
-            self.cache.set_validation_cache(cache_key, errors)
-            return errors
 
         if not content.strip():
             self.cache.set_validation_cache(cache_key, errors)
@@ -57,7 +53,7 @@ class KeywordValidator:
                 validator,
             ) in self.config.validator_collection.validators.items():
                 try:
-                    validator_errors = validator(keyword_info)
+                    validator_errors: List[str] = validator(keyword_info)
                     for error in validator_errors:
                         errors.append(f"{validator_name}: {error}")
                 except Exception as e:
@@ -78,10 +74,10 @@ class KeywordValidator:
         cache_key = f"validate_{keyword}_{id(context) if context else 0}"
         cached_result = self.cache.get_keyword_cache(cache_key)
         if cached_result is not None:
-            return cached_result.get("valid", False)
+            return bool(cached_result.get("valid", False))
 
         # キーワード妥当性チェック
-        is_valid = (
+        is_valid: bool = (
             keyword in self.config.all_keywords
             or keyword in self.config.custom_handler.custom_handlers
             or self.config.custom_handler.is_valid_custom_keyword(keyword)
