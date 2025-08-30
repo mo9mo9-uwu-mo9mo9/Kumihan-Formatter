@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from kumihan_formatter.core.ast_nodes.node import Node
 
 
+import importlib.util
+
 @dataclass
 class PluginInfo:
     """プラグイン情報"""
@@ -44,14 +46,14 @@ class PluginManager:
 
         # 登録されたプラグイン
         self._registered_plugins: Dict[str, PluginInfo] = {}
-        self._parser_plugins: Dict[str, Callable] = {}
-        self._filter_plugins: Dict[str, Callable] = {}
-        self._renderer_plugins: Dict[str, Callable] = {}
+        self._parser_plugins: Dict[str, Callable[[str], Any]] = {}
+        self._filter_plugins: Dict[str, Callable[[str], Any]] = {}
+        self._renderer_plugins: Dict[str, Callable[[str], Any]] = {}
 
     # ========== プラグイン登録機能 ==========
 
     def register_parser_plugin(
-        self, name: str, parser_func: Callable, description: str = ""
+        self, name: str, parser_func: Callable[[str], Any], description: str = ""
     ) -> bool:
         """
         カスタムパーサープラグインの登録
@@ -96,7 +98,7 @@ class PluginManager:
             return False
 
     def register_filter_plugin(
-        self, name: str, filter_func: Callable, description: str = ""
+        self, name: str, filter_func: Callable[[str], Any], description: str = ""
     ) -> bool:
         """
         コンテンツフィルタープラグインの登録
@@ -134,7 +136,7 @@ class PluginManager:
             return False
 
     def register_renderer_plugin(
-        self, name: str, renderer_func: Callable, description: str = ""
+        self, name: str, renderer_func: Callable[[str], Any], description: str = ""
     ) -> bool:
         """
         カスタムレンダラープラグインの登録
@@ -192,7 +194,14 @@ class PluginManager:
                 return None
 
             parser_func = self._parser_plugins[plugin_name]
-            return parser_func(content)
+            result = parser_func(content)
+            
+            # 型安全性チェック: Nodeオブジェクトかどうか確認
+            if result is not None and not isinstance(result, Node):
+                self.logger.warning(f"パーサープラグイン {plugin_name} の戻り値が Node 型ではありません")
+                return None
+                
+            return result
 
         except Exception as e:
             self.logger.error(f"パーサープラグイン実行中にエラー: {plugin_name}, {e}")
@@ -222,9 +231,16 @@ class PluginManager:
             # 関数シグネチャに応じて実行
             sig = inspect.signature(filter_func)
             if len(sig.parameters) == 1:
-                return filter_func(content)
+                result = filter_func(content)
             else:
-                return filter_func(content, context or {})
+                result = filter_func(content, context or {})
+            
+            # 型安全性チェック: str型かどうか確認
+            if result is not None and not isinstance(result, str):
+                self.logger.warning(f"フィルタープラグイン {plugin_name} の戻り値が str 型ではありません")
+                return None
+                
+            return result
 
         except Exception as e:
             self.logger.error(f"フィルタープラグイン実行中にエラー: {plugin_name}, {e}")

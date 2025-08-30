@@ -5,7 +5,7 @@
 
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from .protocols import FileProtocol, PathProtocol
 from .validators import FileValidator, PathValidator
@@ -161,12 +161,16 @@ class PathOperations(PathProtocol):
     def __init__(self) -> None:
         self._validator = PathValidator()
 
-    def resolve_path(self, path: str | Path) -> Path:
+    def resolve_path(self, path: Union[str, Path]) -> Path:
         """パスの正規化・解決"""
         if isinstance(path, str):
-            if not self._validator.validate_path_format(path):
-                errors = self._validator.get_errors()
-                raise ValueError(f"無効なパス形式: {'; '.join(errors)}")
+            if not self._validator.validate_path(Path(path)):
+                # エラーメッセージ取得の試み
+                try:
+                    errors = self._validator.get_errors() if hasattr(self._validator, 'get_errors') else ["パス検証失敗"]
+                    raise ValueError(f"無効なパス形式: {'; '.join(errors)}")
+                except AttributeError:
+                    raise ValueError(f"無効なパス形式: {path}")
             path = Path(path)
 
         try:
@@ -183,7 +187,15 @@ class PathOperations(PathProtocol):
 
     def validate_path(self, path: Path) -> bool:
         """パスの有効性検証"""
-        return self._validator.validate_path_format(str(path))
+        # 循環参照を避けるため、基本的な検証を実行
+        try:
+            if hasattr(self._validator, 'validate_path'):
+                return self._validator.validate_path(path)
+            else:
+                # フォールバック: 基本的なパス検証
+                return path.is_absolute() or len(str(path)) > 0
+        except Exception:
+            return False
 
     def get_relative_path(self, path: Path, base: Path) -> Path:
         """相対パスの取得"""

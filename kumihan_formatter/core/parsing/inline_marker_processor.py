@@ -5,13 +5,13 @@ core_marker_parser.py分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Match
 import logging
 
 from ..ast_nodes import Node, create_node, error_node
 
 if TYPE_CHECKING:
-    from ..base.parser_protocols import ParseResult
+    from .protocols import ParseResult
 
 
 class InlineMarkerProcessor:
@@ -66,7 +66,7 @@ class InlineMarkerProcessor:
             self.logger.error(f"インラインマーカー処理中にエラー: {e}")
             return [error_node(f"インライン処理エラー: {e}")]
 
-    def _create_inline_node(self, marker_type: str, match: re.Match) -> Optional[Node]:
+    def _create_inline_node(self, marker_type: str, match: Match[str]) -> Optional[Node]:
         """マッチした内容からインラインノードを作成
 
         Args:
@@ -120,7 +120,7 @@ class InlineMarkerProcessor:
                     markers.append(marker_info)
 
             # 開始位置でソート
-            markers.sort(key=lambda x: x["start"])
+            markers.sort(key=lambda x: int(x["start"]))
             return markers
 
         except Exception as e:

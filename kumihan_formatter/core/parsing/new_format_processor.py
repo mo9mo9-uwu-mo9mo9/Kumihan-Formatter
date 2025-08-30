@@ -11,7 +11,7 @@ from ..ast_nodes import Node, create_node, error_node
 import logging
 
 if TYPE_CHECKING:
-    from ..base.parser_protocols import ParseResult
+    from .protocols import ParseResult
 
 
 class NewFormatProcessor:
@@ -71,16 +71,18 @@ class NewFormatProcessor:
 
         # 複合キーワード属性追加
         if len(keywords) > 1:
-            node.attributes["compound_keywords"] = keywords[1:]
+            if node.attributes is not None:
+                node.attributes["compound_keywords"] = keywords[1:]
 
         # 色属性処理
         color_content, remaining_content = self.extract_color_attribute(content)
         if color_content:
-            node.attributes["color"] = color_content
+            if node.attributes is not None:
+                node.attributes["color"] = color_content
             node.content = remaining_content
 
         # 結果構築
-        from ..base.parser_protocols import ParseResult
+        from .protocols import ParseResult
 
         result = ParseResult(
             node=node,
@@ -243,7 +245,7 @@ class NewFormatProcessor:
         return jp_mappings.get(normalized, normalized.lower())
 
     def create_new_format_node(
-        self, keyword: str, content: str, attributes: Dict[str, Any] = None
+        self, keyword: str, content: str, attributes: Optional[Dict[str, Any]] = None
     ) -> Node:
         """新記法用のノードを作成
 
@@ -259,12 +261,13 @@ class NewFormatProcessor:
         node = create_node(keyword.lower(), content)
 
         # 属性追加
-        if attributes:
+        if attributes is not None and node.attributes is not None:
             node.attributes.update(attributes)
 
         # 新記法フラグ
-        node.attributes["format_type"] = "new_format"
-        node.attributes["original_keyword"] = keyword
+        if node.attributes is not None:
+            node.attributes["format_type"] = "new_format"
+            node.attributes["original_keyword"] = keyword
 
         return node
 

@@ -13,7 +13,7 @@ from .logger import get_logger
 class FileIOHandler:
     """ファイルI/Oハンドラクラス - 基本的なファイル操作"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """FileIOHandler初期化"""
         self.logger = get_logger(__name__)
 

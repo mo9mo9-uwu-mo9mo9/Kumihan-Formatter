@@ -73,7 +73,7 @@ class KumihanFormatter:
         return {}
 
     # クラスレベルキャッシュ（パフォーマンス最適化用）
-    _config_cache = {}
+    _config_cache: Dict[str, Dict[str, Any]] = {}
 
     def _load_config_cached(
         self, config_path: Optional[Union[str, Path]]
@@ -92,7 +92,7 @@ class KumihanFormatter:
 
         return config
 
-    def _initialize_optimized_mode(self):
+    def _initialize_optimized_mode(self) -> None:
         """最適化モード用の初期化（遅延初期化）"""
         import time
 
@@ -106,7 +106,7 @@ class KumihanFormatter:
 
         self.logger.debug("Optimized mode initialized with lazy loading")
 
-    def _initialize_standard_mode(self):
+    def _initialize_standard_mode(self) -> None:
         """標準モード用の初期化（従来通り）"""
         # 新統合Managerシステム初期化
         self.core_manager = CoreManager(self.config)
@@ -121,7 +121,7 @@ class KumihanFormatter:
 
         self.logger.debug("Standard mode initialized with full initialization")
 
-    def _ensure_managers_initialized(self):
+    def _ensure_managers_initialized(self) -> None:
         """Managerの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._managers_initialized:
             try:
@@ -144,9 +144,9 @@ class KumihanFormatter:
 
             except Exception as e:
                 self.logger.error(f"Manager lazy initialization failed: {e}")
-                self._initialize_standard_mode()  # フォールバック
+                self._initialize_standard_mode()  # フォールバック  # フォールバック
 
-    def _ensure_parser_initialized(self):
+    def _ensure_parser_initialized(self) -> None:
         """MainParserの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._main_parser_initialized:
             try:
@@ -161,9 +161,9 @@ class KumihanFormatter:
                 )
             except Exception as e:
                 self.logger.error(f"MainParser initialization failed: {e}")
-                self.main_parser = DummyParser()
+                self.main_parser = DummyParser()  # type: ignore
 
-    def _ensure_renderer_initialized(self):
+    def _ensure_renderer_initialized(self) -> None:
         """MainRendererの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._main_renderer_initialized:
             try:
@@ -178,7 +178,7 @@ class KumihanFormatter:
                 )
             except Exception as e:
                 self.logger.error(f"MainRenderer initialization failed: {e}")
-                self.main_renderer = DummyRenderer()
+                self.main_renderer = DummyRenderer()  # type: ignore
 
     def convert(
         self,
@@ -456,27 +456,27 @@ class KumihanFormatter:
 class DummyParser:
     """パーサー初期化失敗時のフォールバック"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def parse(self, content, parser_type="auto"):
+    def parse(self, content: str, parser_type: str = "auto") -> Dict[str, Any]:
         return {"elements": [], "status": "fallback", "parser_used": "fallback"}
 
 
 class DummyRenderer:
     """レンダラー初期化失敗時のフォールバック"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def render(self, parsed_result, context):
+    def render(self, parsed_result: Any, context: Dict[str, Any]) -> str:
         return "<html><body><p>Fallback rendering</p></body></html>"
 
-    def render_to_file(self, parsed_result, output_file, template, context):
+    def render_to_file(self, parsed_result: Any, output_file: Union[str, Path], template: Optional[str], context: Dict[str, Any]) -> bool:
         try:
             Path(output_file).write_text(self.render(parsed_result, context))
             return True
-        except:
+        except Exception:
             return False
 
 
