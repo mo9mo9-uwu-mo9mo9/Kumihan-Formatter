@@ -1,0 +1,218 @@
+# Kumihan-Formatter Technical Debt Management Configuration
+# Issue #1240: Development Process Normalization
+
+# 技術的負債分類システム
+debt_categories:
+  # 重要度レベル
+  severity:
+    critical:
+      description: "システム安定性に直接影響"
+      max_debt_days: 7
+      auto_escalation: true
+      examples:
+        - "セキュリティ脆弱性"
+        - "メモリリーク"
+        - "データ破損リスク"
+    
+    high:
+      description: "開発効率に大きな影響"
+      max_debt_days: 14
+      auto_escalation: false
+      examples:
+        - "複雑な循環依存"
+        - "巨大な関数（500行以上）"
+        - "テストカバレッジ不足"
+    
+    medium:
+      description: "保守性・可読性に影響"
+      max_debt_days: 30
+      auto_escalation: false
+      examples:
+        - "命名規則違反"
+        - "重複コード"
+        - "不適切なデザインパターン"
+    
+    low:
+      description: "軽微な品質問題"
+      max_debt_days: 90
+      auto_escalation: false
+      examples:
+        - "コメント不足"
+        - "軽微なスタイル違反"
+        - "TODO/FIXMEコメント"
+
+  # 負債タイプ別分類
+  types:
+    code_quality:
+      patterns:
+        - "複雑度が高い関数・クラス"
+        - "長すぎるメソッド"
+        - "深いネスト構造"
+      detection_tools:
+        - "pylint"
+        - "radon"
+        - "mypy"
+    
+    architecture:
+      patterns:
+        - "循環import依存"
+        - "不適切な責任分散"
+        - "抽象化レベル不統一"
+      detection_tools:
+        - "custom_dependency_analysis"
+    
+    documentation:
+      patterns:
+        - "docstring不足"
+        - "型注釈欠如"
+        - "READMEの古い情報"
+      detection_tools:
+        - "pydocstyle"
+        - "mypy"
+    
+    testing:
+      patterns:
+        - "低テストカバレッジ"
+        - "脆弱なテスト"
+        - "E2Eテスト不足"
+      detection_tools:
+        - "pytest-cov"
+        - "mutation testing"
+    
+    performance:
+      patterns:
+        - "O(n²)以上のアルゴリズム"
+        - "メモリ使用量過多"
+        - "不要な処理"
+      detection_tools:
+        - "cProfile"
+        - "memory_profiler"
+
+# 自動追跡システム
+tracking:
+  # 検出方法
+  detection:
+    static_analysis:
+      enabled: true
+      tools:
+        - name: "mypy"
+          threshold: 150  # エラー上限
+        - name: "pylint"
+          threshold: 8.0  # 品質スコア下限
+        - name: "radon"
+          complexity_threshold: 15
+    
+    dynamic_analysis:
+      enabled: true
+      performance_regression: true
+      memory_leak_detection: true
+    
+    manual_reporting:
+      enabled: true
+      template_file: ".github/ISSUE_TEMPLATE/technical-debt.yml"
+  
+  # 自動分類ルール
+  auto_classification:
+    complexity_rules:
+      - condition: "cyclomatic_complexity > 20"
+        category: "critical"
+        type: "code_quality"
+      - condition: "function_length > 100"
+        category: "high"
+        type: "code_quality"
+      - condition: "import_count > 50"
+        category: "medium"
+        type: "architecture"
+    
+    test_coverage_rules:
+      - condition: "coverage < 30%"
+        category: "critical"
+        type: "testing"
+      - condition: "coverage < 60%"
+        category: "high"
+        type: "testing"
+      - condition: "coverage < 80%"
+        category: "medium"
+        type: "testing"
+
+# 週次解決プロセス
+weekly_process:
+  # 解決目標
+  resolution_targets:
+    critical: 100%  # 全て解決
+    high: 80%      # 80%解決
+    medium: 50%    # 50%解決
+    low: 20%       # 20%解決
+  
+  # プロセススケジュール
+  schedule:
+    debt_review_day: "friday"
+    planning_day: "monday"
+    resolution_days: ["tuesday", "wednesday", "thursday"]
+  
+  # 自動レポート生成
+  reporting:
+    weekly_summary: true
+    trend_analysis: true
+    resolution_metrics: true
+    recommendation_generation: true
+
+# 統合設定
+integration:
+  # GitHub統合
+  github:
+    issue_auto_creation: true
+    label_management: true
+    milestone_tracking: true
+    pr_debt_check: true
+  
+  # CI/CD統合
+  cicd:
+    pre_commit_debt_check: true
+    build_failure_on_critical: true
+    debt_metrics_collection: true
+  
+  # 開発ツール統合
+  development:
+    ide_integration: true
+    code_review_integration: true
+    automated_fix_suggestions: true
+
+# メトリクス・KPI
+metrics:
+  # 追跡指標
+  kpis:
+    - name: "debt_resolution_rate"
+      target: "> 70%"
+      period: "weekly"
+    - name: "average_debt_age"
+      target: "< 14 days"
+      period: "monthly"
+    - name: "critical_debt_count"
+      target: "= 0"
+      period: "daily"
+    - name: "debt_introduction_rate"
+      target: "< 5 per week"
+      period: "weekly"
+  
+  # 品質向上指標
+  improvement_metrics:
+    code_quality_score: "pylint score"
+    maintainability_index: "radon mi"
+    test_coverage: "pytest-cov"
+    documentation_coverage: "pydocstyle"
+
+# 緊急対応
+emergency_procedures:
+  critical_debt_escalation:
+    immediate_notification: true
+    auto_issue_creation: true
+    priority_assignment: "P0"
+    max_resolution_time: "24 hours"
+  
+  debt_overflow:
+    condition: "total_debt > 100 items"
+    actions:
+      - "freeze_new_features"
+      - "mandatory_debt_sprint"
+      - "team_alert"
