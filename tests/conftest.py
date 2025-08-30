@@ -36,12 +36,14 @@ def sample_text():
 @pytest.fixture
 def temp_file():
     """一時ファイル"""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.kumihan', delete=False, encoding='utf-8') as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".kumihan", delete=False, encoding="utf-8"
+    ) as f:
         f.write("# テスト #一時ファイルテスト##\n\nテスト内容です。")
         temp_path = Path(f.name)
-    
+
     yield temp_path
-    
+
     # クリーンアップ
     if temp_path.exists():
         temp_path.unlink()

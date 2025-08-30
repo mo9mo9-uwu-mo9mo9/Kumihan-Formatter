@@ -12,7 +12,9 @@ import logging
 if TYPE_CHECKING:
     from .parser_protocols import ParserProtocol
 
-from .utils_core import setup_block_patterns  # setup_keyword_patternsが見つからないため一時的に代替
+from .utils_core import (
+    setup_block_patterns,
+)  # setup_keyword_patternsが見つからないため一時的に代替
 
 
 class KeywordExtractor:

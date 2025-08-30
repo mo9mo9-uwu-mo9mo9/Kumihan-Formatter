@@ -82,6 +82,9 @@ class ParsingManager:
                 return self.keyword_parser.parse(content)
             elif parser_type == "markdown":
                 return self.markdown_parser.parse(content)
+            elif parser_type == "kumihan":
+                # kumihanパーサーはMarkdownParserでサポート
+                return self.markdown_parser.parse(content)
             else:
                 self.logger.warning(f"未知のパーサー種類: {parser_type}")
                 return None

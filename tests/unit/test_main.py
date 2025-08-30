@@ -19,8 +19,8 @@ class TestMainModule:
         """__main__.py の直接実行テスト"""
         import unittest.mock as mock
 
-        # cli.mainをmockして、importのテスト
-        with mock.patch("kumihan_formatter.cli.main"):
+        # unified_api.mainをmockして、importのテスト（cliは存在しないため）
+        with mock.patch("kumihan_formatter.unified_api.main"):
             from kumihan_formatter.__main__ import main
 
             # main関数が正しくimportされることを確認
