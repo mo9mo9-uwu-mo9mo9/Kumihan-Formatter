@@ -352,75 +352,10 @@ class KumihanFormatter:
             return {"status": "error", "error": str(e)}
 
     def _count_elements(self, parsed_result: Any) -> int:
-        """要素数カウント（テスト互換性対応）"""
-        try:
-            if isinstance(parsed_result, dict) and "elements" in parsed_result:
-                # パーサー辞書結果の場合：elements配列の要素数をカウント
-                elements = parsed_result.get("elements", [])
-                # 各要素の重みを考慮してカウント
-                element_count = 0
-                for element in elements:
-                    element_type = element.get("type", "")
-                    if element_type in [
-                        "kumihan_block",
-                        "heading_1",
-                        "heading_2",
-                        "heading_3",
-                        "paragraph",
-                        "list_item",
-                    ]:
-                        element_count += 1
-                        # 複雑な要素には追加ポイント
-                        if element_type == "kumihan_block":
-                            element_count += (
-                                1  # Kumihanブロックは重要なので追加ポイント
-                            )
+        """要素数カウント（テスト互換性対応） - element_counter モジュールに移譲"""
+        from .core.utilities.element_counter import count_elements
 
-                # コンテンツの行数も考慮（より現実的なカウント）
-                content_lines = 0
-                if (
-                    isinstance(parsed_result, dict)
-                    and "total_elements" in parsed_result
-                ):
-                    content_lines = parsed_result.get("total_elements", 0)
-
-                return max(
-                    element_count, content_lines, 10
-                )  # テストが期待する最小値10を保証
-
-            elif isinstance(parsed_result, str):
-                # 文字列の場合：行数ベースでカウント
-                lines = [
-                    line.strip() for line in parsed_result.split("\n") if line.strip()
-                ]
-                # 見出し、リスト項目、段落などを推定カウント
-                element_count = 0
-                for line in lines:
-                    if (
-                        line.startswith("#")
-                        or line.startswith("-")
-                        or line.startswith("*")
-                    ):
-                        element_count += 1
-                    elif len(line) > 10:  # 段落と推定
-                        element_count += 1
-                return max(element_count, len(lines) // 2, 10)  # 最小でも10
-
-            elif isinstance(parsed_result, list):
-                # リスト（ASTノード等）の場合：要素数をカウント
-                return max(len(parsed_result), 10)
-
-            elif hasattr(parsed_result, "__len__"):
-                # 長さを持つオブジェクトの場合
-                return max(len(parsed_result), 10)
-
-            else:
-                # その他：デフォルト値
-                return 12  # テストが期待する >= 10 を満たす値
-
-        except Exception as e:
-            self.logger.debug(f"Element counting failed: {e}")
-            return 12  # フォールバック値  # フォールバック値
+        return count_elements(parsed_result)
 
     def _get_actual_output_path(self, output_file: Union[str, Path]) -> Path:
         """実際の出力パス決定（MainRendererと同じロジック）"""
@@ -472,7 +407,13 @@ class DummyRenderer:
     def render(self, parsed_result: Any, context: Dict[str, Any]) -> str:
         return "<html><body><p>Fallback rendering</p></body></html>"
 
-    def render_to_file(self, parsed_result: Any, output_file: Union[str, Path], template: Optional[str], context: Dict[str, Any]) -> bool:
+    def render_to_file(
+        self,
+        parsed_result: Any,
+        output_file: Union[str, Path],
+        template: Optional[str],
+        context: Dict[str, Any],
+    ) -> bool:
         try:
             Path(output_file).write_text(self.render(parsed_result, context))
             return True
@@ -480,86 +421,17 @@ class DummyRenderer:
             return False
 
 
-# 便利関数（統合Managerシステム対応）
-def quick_convert(
-    input_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None
-) -> Dict[str, Any]:
-    """クイック変換関数（統合システム）"""
-    with KumihanFormatter() as formatter:
-        return formatter.convert(input_file, output_file)
-
-
-def quick_parse(text: str) -> Dict[str, Any]:
-    """クイック解析関数（統合ParsingManager）"""
-    with KumihanFormatter() as formatter:
-        return formatter.parse_text(text)
-
-
-def unified_parse(text: str, parser_type: str = "auto") -> Dict[str, Any]:
-    """統合パーサーシステムによる最適化解析"""
-    with KumihanFormatter() as formatter:
-        return formatter.parse_text(text, parser_type)
-
-
-def validate_kumihan_syntax(text: str) -> Dict[str, Any]:
-    """Kumihan記法構文の詳細検証（統合検証システム）"""
-    with KumihanFormatter() as formatter:
-        return formatter.validate_syntax(text)
-
-
-def get_parser_system_info() -> Dict[str, Any]:
-    """統合Managerシステムの詳細情報取得"""
-    with KumihanFormatter() as formatter:
-        return formatter.get_system_info()
-
-
-# パフォーマンス最適化版関数（Issue #1229対応）
-def optimized_quick_convert(
-    input_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None
-) -> Dict[str, Any]:
-    """最適化クイック変換関数（高性能版）"""
-    with KumihanFormatter(performance_mode="optimized") as formatter:
-        return formatter.convert(input_file, output_file)
-
-
-def optimized_quick_parse(text: str) -> Dict[str, Any]:
-    """最適化クイック解析関数（高性能版）"""
-    with KumihanFormatter(performance_mode="optimized") as formatter:
-        return formatter.parse_text(text)
-
-
-def optimized_convert_text(text: str, template: str = "default") -> str:
-    """最適化テキスト変換関数（高性能版）"""
-    with KumihanFormatter(performance_mode="optimized") as formatter:
-        return formatter.convert_text(text, template)
-
-
-# 後方互換性のためのエイリアス
-parse = unified_parse
-validate = validate_kumihan_syntax
-
-
-def main() -> None:
-    """CLI エントリーポイント - シンプル実装"""
-    import sys
-
-    if len(sys.argv) < 2:
-        print("使用方法: kumihan <入力ファイル> [出力ファイル]")
-        sys.exit(1)
-
-    input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else None
-    try:
-        result = quick_convert(input_file, output_file)
-        if result["status"] == "success":
-            print(f"変換完了: {result['output_file']}")
-        else:
-            print(f"変換エラー: {result['error']}")
-            sys.exit(1)
-    except Exception as e:
-        print(f"実行エラー: {e}")
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
+# 統合API便利関数のインポート（ファイルサイズ最適化のため分離）
+from .core.utilities.api_utils import (
+    quick_convert,
+    quick_parse,
+    unified_parse,
+    validate_kumihan_syntax,
+    get_parser_system_info,
+    optimized_quick_convert,
+    optimized_quick_parse,
+    optimized_convert_text,
+    parse,
+    validate,
+    main,
+)
