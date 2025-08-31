@@ -170,34 +170,10 @@ def parse_stream(stream: Any, config: Optional[Dict[str, Any]] = None) -> List[N
     return parser.parse_streaming(stream)
 
 
-# エクスポート対象
+# エクスポート対象（Phase 2: 公開APIの最小化）
 __all__ = [
-    # === Issue #912: 統合メインパーサー（最優先） ===
-    "MasterParser",  # 新しい統合パーサー
-    "MainParser",  # 後方互換性エイリアス
-    "Parser",  # 後方互換性エイリアス
-    "StreamingParser",  # 後方互換性エイリアス
-    # === 特殊パーサー ===
-    "KeywordParser",
-    "ListParser",
-    "BlockParser",
-    # === レンダラー ===
-    "HTMLRenderer",
-    "HtmlFormatter",
-    "MarkdownFormatter",
-    # === ファクトリー関数 ===
-    "create_keyword_parser",
-    "create_list_parser",
-    "create_block_parser",
-    "create_markdown_parser",
-    "create_html_renderer",
-    "create_markdown_renderer",
-    # === ユーティリティ関数 ===
+    "MasterParser",
     "parse_text",
     "parse_file",
     "parse_stream",
-    # === AST関連 ===
-    "Node",
-    "create_node",
-    "error_node",
 ]
