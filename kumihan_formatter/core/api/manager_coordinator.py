@@ -11,8 +11,7 @@ import time
 
 from ...managers import (
     CoreManager,
-    ParsingManager,
-    OptimizationManager,
+    ProcessingManager,
     PluginManager,
 )
 from ...parsers.main_parser import MainParser
@@ -50,8 +49,7 @@ class ManagerCoordinator:
         """標準モード用の初期化（従来通り）"""
         # 新統合Managerシステム初期化
         self.core_manager = CoreManager(self.config)
-        self.parsing_manager = ParsingManager(self.config)
-        self.optimization_manager = OptimizationManager(self.config)
+        self.processing_manager = ProcessingManager(self.config)
         self.plugin_manager = PluginManager(self.config)
 
         # メインコンポーネント
@@ -73,8 +71,7 @@ class ManagerCoordinator:
                 start_time = time.perf_counter()
 
                 self.core_manager = CoreManager(self.config)
-                self.parsing_manager = ParsingManager(self.config)
-                self.optimization_manager = OptimizationManager(self.config)
+                self.processing_manager = ProcessingManager(self.config)
                 self.plugin_manager = PluginManager(self.config)
 
                 self._managers_initialized = True
@@ -86,7 +83,7 @@ class ManagerCoordinator:
 
             except Exception as e:
                 self.logger.error(f"Manager lazy initialization failed: {e}")
-                self._initialize_standard_mode()  # フォールバック
+                self._initialize_standard_mode()  # フォールバック  # フォールバック
 
     def ensure_parser_initialized(self) -> None:
         """MainParserの遅延初期化（最適化モード用）"""
@@ -125,16 +122,15 @@ class ManagerCoordinator:
                 "architecture": "integrated_manager_system",
                 "components": {
                     "core_manager": "CoreManager",
-                    "parsing_manager": "ParsingManager",
-                    "optimization_manager": "OptimizationManager",
+                    "processing_manager": "ProcessingManager",
                     "plugin_manager": "PluginManager",
                     "main_parser": "MainParser",
                     "main_renderer": "MainRenderer",
                 },
-                "version": "5.0.0-integrated",
+                "version": "3.0.0-integrated",
                 "status": "production_ready",
-                "optimization_stats": getattr(self, "optimization_manager", None)
-                and self.optimization_manager.get_optimization_statistics(),
+                "optimization_stats": getattr(self, "processing_manager", None)
+                and self.processing_manager.get_optimization_statistics(),
                 "core_stats": getattr(self, "core_manager", None)
                 and self.core_manager.get_core_statistics(),
             }
@@ -147,8 +143,8 @@ class ManagerCoordinator:
         try:
             if hasattr(self, "core_manager"):
                 self.core_manager.clear_cache()
-            if hasattr(self, "optimization_manager"):
-                self.optimization_manager.clear_optimization_cache()
+            if hasattr(self, "processing_manager"):
+                self.processing_manager.clear_optimization_cache()
 
             self.logger.info("ManagerCoordinator closed - 統合Managerシステム")
         except Exception as e:
