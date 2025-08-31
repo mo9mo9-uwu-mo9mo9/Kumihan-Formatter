@@ -1,7 +1,7 @@
 """
 Manager間連携の統合テスト
 
-このモジュールでは、CoreManager ↔ ParsingManager ↔ OptimizationManager間の
+このモジュールでは、CoreManager ↔ ProcessingManager間の
 連携を検証する統合テストを実装します。
 """
 
@@ -13,8 +13,7 @@ from unittest.mock import Mock, patch
 
 from kumihan_formatter.core.utilities.logger import get_logger
 from kumihan_formatter.managers.core_manager import CoreManager
-from kumihan_formatter.managers.parsing_manager import ParsingManager
-from kumihan_formatter.managers.optimization_manager import OptimizationManager
+from kumihan_formatter.managers.processing_manager import ProcessingManager
 from kumihan_formatter.core.ast_nodes.node import Node
 
 
@@ -37,8 +36,7 @@ class TestManagerIntegration:
 
         # Manager instances
         self.core_manager = CoreManager(self.config)
-        self.parsing_manager = ParsingManager(self.config)
-        self.optimization_manager = OptimizationManager(self.config)
+        self.processing_manager = ProcessingManager(self.config)
 
     def teardown_method(self):
         """テスト後片付け"""
@@ -47,8 +45,8 @@ class TestManagerIntegration:
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
-    def test_core_parsing_integration(self):
-        """CoreManager ↔ ParsingManager連携テスト"""
+    def test_core_processing_integration(self):
+        """CoreManager ↔ ProcessingManager連携テスト"""
         # テストデータ
         test_content = """
         # テスト見出し #
@@ -68,17 +66,15 @@ class TestManagerIntegration:
         content = self.core_manager.read_file(test_file)
         assert content == test_content
 
-        # ParsingManagerで解析
-        parsed_result = self.parsing_manager.parse(content, parser_type="kumihan")
-        assert parsed_result is not None
+        # ProcessingManagerで処理
+        processed_result = self.processing_manager.parse(content)
+        assert processed_result is not None
 
         # 結果検証
-        assert parsed_result is not None
-        assert isinstance(parsed_result, Node)
-        assert parsed_result.type is not None
+        assert processed_result is not None
 
-    def test_parsing_optimization_integration(self):
-        """ParsingManager ↔ OptimizationManager連携テスト"""
+    def test_processing_core_integration(self):
+        """ProcessingManager ↔ CoreManager連携テスト"""
         # テストデータ
         test_content = (
             """
@@ -87,19 +83,17 @@ class TestManagerIntegration:
             + "テスト内容 " * 100
         )
 
-        # 解析
-        parsed_result = self.parsing_manager.parse(test_content, parser_type="kumihan")
+        # ProcessingManagerで処理
+        processed_result = self.processing_manager.parse(test_content)
 
-        # 最適化処理（パーサー関数を渡す）
-        def simple_parser(content):
-            return self.parsing_manager.markdown_parser.parse(content)
-
-        optimized_result = self.optimization_manager.optimize_parsing(
-            test_content, simple_parser
+        # CoreManagerでチャンク作成
+        chunks = self.core_manager.create_chunks_from_lines(
+            test_content.split("\n"), chunk_size=500
         )
 
         # 結果検証
-        assert optimized_result is not None
+        assert processed_result is not None
+        assert chunks is not None
 
     def test_full_manager_chain_integration(self):
         """全Manager連携の統合テスト"""
@@ -126,16 +120,8 @@ class TestManagerIntegration:
         # 1. CoreManagerでファイル読み込み
         content = self.core_manager.read_file(test_file)
 
-        # 2. ParsingManagerで解析
-        parsed_result = self.parsing_manager.parse(content, parser_type="kumihan")
-
-        # 3. OptimizationManagerで最適化（パーサー関数を渡す）
-        def simple_parser(content):
-            return self.parsing_manager.markdown_parser.parse(content)
-
-        optimized_result = self.optimization_manager.optimize_parsing(
-            content, simple_parser
-        )
+        # 2. ProcessingManagerで処理
+        processed_result = self.processing_manager.parse(content)
 
         # 4. CoreManagerでChunk処理
         chunks = self.core_manager.create_chunks_from_lines(
@@ -144,8 +130,7 @@ class TestManagerIntegration:
 
         # 結果検証
         assert content is not None
-        assert parsed_result is not None
-        assert optimized_result is not None
+        assert processed_result is not None
         assert chunks is not None
         assert len(chunks) > 0
 
@@ -158,10 +143,10 @@ class TestManagerIntegration:
         content = self.core_manager.read_file(non_existent_file)
         assert content is None
 
-        # 不正なデータでParsingManagerテスト（ErrorノードまたはNoneを返す）
-        result = self.parsing_manager.parse(None, parser_type="kumihan")
-        # エラー時はErrorノードまたはNoneを返す
-        assert result is None or (hasattr(result, "type") and result.type == "error")
+        # 不正なデータでProcessingManagerテスト（Noneを返す）
+        result = self.processing_manager.parse(None)
+        # エラー時はNoneを返す
+        assert result is None
 
     def test_manager_configuration_consistency(self):
         """Manager間設定一貫性テスト"""
@@ -174,16 +159,14 @@ class TestManagerIntegration:
 
         # 全Managerの設定更新
         self.core_manager.config.update(new_config)
-        self.parsing_manager.config.update(new_config)
-        self.optimization_manager.config.update(new_config)
+        self.processing_manager.config.update(new_config)
 
         # CoreManagerのプロパティも直接更新
         self.core_manager.chunk_size = new_config["chunk_size"]
 
         # 設定一貫性検証
         assert self.core_manager.chunk_size == 2000
-        assert self.parsing_manager.config["chunk_size"] == 2000
-        assert self.optimization_manager.config["chunk_size"] == 2000
+        assert self.processing_manager.config["chunk_size"] == 2000
 
     def test_concurrent_manager_operations(self):
         """Manager並行操作テスト"""
@@ -195,8 +178,8 @@ class TestManagerIntegration:
         def worker(manager_type: str, content: str):
             """ワーカー関数"""
             try:
-                if manager_type == "parsing":
-                    result = self.parsing_manager.parse(content, parser_type="kumihan")
+                if manager_type == "processing":
+                    result = self.processing_manager.parse(content)
                 elif manager_type == "core_chunks":
                     result = self.core_manager.create_chunks_from_lines(
                         content.split("\n")
@@ -226,7 +209,7 @@ class TestManagerIntegration:
 
         # 複数スレッドで並行実行
         threads = [
-            threading.Thread(target=worker, args=("parsing", test_content)),
+            threading.Thread(target=worker, args=("processing", test_content)),
             threading.Thread(target=worker, args=("core_chunks", test_content)),
         ]
 
@@ -253,10 +236,8 @@ class TestManagerIntegration:
         large_content = "# 大量データテスト #\n" + ("テストデータ " * 1000)
 
         # 各Managerで処理
-        content = (
-            self.core_manager.read_file if os.path.exists else lambda x: large_content
-        )
-        parsed = self.parsing_manager.parse(large_content, parser_type="kumihan")
+        content = large_content
+        processed = self.processing_manager.parse(large_content)
         chunks = self.core_manager.create_chunks_from_lines(large_content.split("\n"))
 
         final_memory = process.memory_info().rss
@@ -270,20 +251,15 @@ class TestManagerIntegration:
         # CoreManager状態変更
         self.core_manager._file_cache = {"test": "data"}
 
-        # ParsingManager状態変更
-        self.parsing_manager.strict_mode = True
-
-        # OptimizationManager状態変更
-        self.optimization_manager.config["test_flag"] = True
+        # ProcessingManager状態変更
+        self.processing_manager.config["test_flag"] = True
 
         # 状態分離検証
         assert hasattr(self.core_manager, "_file_cache")
-        assert hasattr(self.parsing_manager, "strict_mode")
-        assert "test_flag" in self.optimization_manager.config
+        assert "test_flag" in self.processing_manager.config
 
         # 他のManagerに影響しないことを確認
-        assert not hasattr(self.parsing_manager, "_file_cache")
-        assert not hasattr(self.core_manager, "strict_mode")
+        assert not hasattr(self.processing_manager, "_file_cache")
 
 
 class TestManagerErrorHandling:
@@ -295,8 +271,7 @@ class TestManagerErrorHandling:
         self.config = {"output_dir": self.temp_dir}
 
         self.core_manager = CoreManager(self.config)
-        self.parsing_manager = ParsingManager(self.config)
-        self.optimization_manager = OptimizationManager(self.config)
+        self.processing_manager = ProcessingManager(self.config)
 
     def teardown_method(self):
         """テスト後片付け"""
@@ -310,14 +285,14 @@ class TestManagerErrorHandling:
         # ファイルシステムエラーをシミュレート
         invalid_path = "/invalid/path/file.txt"
 
-        # CoreManager → ParsingManager エラー連鎖テスト
+        # CoreManager → ProcessingManager エラー連鎖テスト
         # Managerはエラー時にNoneを返す（例外は投げない）
         content = self.core_manager.read_file(invalid_path)
         assert content is None
 
-        # Noneコンテンツの解析はErrorノードまたはNoneを返す
-        result = self.parsing_manager.parse(content, parser_type="kumihan")
-        assert result is None or (hasattr(result, "type") and result.type == "error")
+        # Noneコンテンツの処理はNoneを返す
+        result = self.processing_manager.parse(content)
+        assert result is None
 
     def test_partial_failure_recovery(self):
         """部分的失敗からの回復テスト"""
@@ -325,17 +300,15 @@ class TestManagerErrorHandling:
         valid_content = "# 有効なコンテンツ #"
 
         # 有効なコンテンツは正常処理
-        result = self.parsing_manager.parse(valid_content, parser_type="kumihan")
+        result = self.processing_manager.parse(valid_content)
         assert result is not None
 
-        # 無効なコンテンツはErrorノードまたはNoneを返す
-        invalid_result = self.parsing_manager.parse(None, parser_type="kumihan")
-        assert invalid_result is None or (
-            hasattr(invalid_result, "type") and invalid_result.type == "error"
-        )
+        # 無効なコンテンツはNoneを返す
+        invalid_result = self.processing_manager.parse(None)
+        assert invalid_result is None
 
         # エラー後も他の処理は継続可能
-        result2 = self.parsing_manager.parse(valid_content, parser_type="kumihan")
+        result2 = self.processing_manager.parse(valid_content)
         assert result2 is not None
 
     def test_resource_cleanup_on_error(self):
@@ -351,10 +324,10 @@ class TestManagerErrorHandling:
 
             # 意図的にエラーを発生させる
             with patch.object(
-                self.parsing_manager, "parse", side_effect=Exception("Simulated error")
+                self.processing_manager, "parse", side_effect=Exception("Simulated error")
             ):
                 with pytest.raises(Exception):
-                    self.parsing_manager.parse(content, parser_type="kumihan")
+                    self.processing_manager.parse(content)
 
             # リソースがクリーンアップされていることを確認
             # (ファイルハンドルやメモリリークがないこと)

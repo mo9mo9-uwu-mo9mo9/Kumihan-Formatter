@@ -40,8 +40,8 @@ class FormatterCore:
             if not content:
                 raise FileNotFoundError(f"Input file not found or empty: {input_file}")
 
-            # 最適化解析（OptimizationManager + MainParser使用）
-            parsed_result = self.coordinator.optimization_manager.optimize_parsing(
+            # 最適化解析（ProcessingManager + MainParser使用）
+            parsed_result = self.coordinator.processing_manager.optimize_parsing(
                 content, lambda c: self.coordinator.main_parser.parse(c, "auto")
             )
 
@@ -123,7 +123,7 @@ class FormatterCore:
         try:
             self.coordinator.ensure_managers_initialized()
             # 統合解析・検証実行
-            result = self.coordinator.parsing_manager.parse_and_validate(
+            result = self.coordinator.processing_manager.parse_and_validate(
                 text, parser_type
             )
             return result
@@ -135,7 +135,9 @@ class FormatterCore:
         """構文検証（統合ParsingManager対応）"""
         try:
             self.coordinator.ensure_managers_initialized()
-            validation_result = self.coordinator.parsing_manager.validate_syntax(text)
+            validation_result = self.coordinator.processing_manager.validate_syntax(
+                text
+            )
             return {
                 "status": "valid" if validation_result["valid"] else "invalid",
                 "errors": validation_result.get("syntax_errors", []),
@@ -158,7 +160,7 @@ class FormatterCore:
                 raise FileNotFoundError(f"File not found or empty: {file_path}")
 
             # 統合解析実行
-            result = self.coordinator.parsing_manager.parse_and_validate(
+            result = self.coordinator.processing_manager.parse_and_validate(
                 content, parser_type
             )
             result["file_path"] = str(file_path)

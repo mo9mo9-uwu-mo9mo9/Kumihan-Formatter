@@ -1,0 +1,156 @@
+name: Technical Debt Monitoring
+# Issue #1258: 技術的負債管理システム - 継続監視・自動報告
+
+on:
+  # 毎週金曜日 10:00 JST に実行
+  schedule:
+    - cron: '0 1 * * FRI'  # UTC 1:00 = JST 10:00
+  
+  # 手動実行可能
+  workflow_dispatch:
+  
+  # PRマージ時にも実行
+  push:
+    branches:
+      - main
+
+jobs:
+  technical-debt-detection:
+    name: 技術的負債検出・報告
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+      
+    - name: Python セットアップ
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: 依存関係インストール
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov mypy black
+        
+    - name: 技術的負債検出実行
+      run: |
+        python3 scripts/technical_debt_manager.py detect
+        
+    - name: 週次レポート生成
+      run: |
+        python3 scripts/technical_debt_manager.py report
+        
+    - name: サマリー表示
+      run: |
+        python3 scripts/technical_debt_manager.py summary
+        
+    - name: レポートファイルをアーティファクトとして保存
+      uses: actions/upload-artifact@v3
+      with:
+        name: technical-debt-reports
+        path: tmp/technical_debt_report_*.md
+        retention-days: 90
+        
+    - name: Issue作成 (Critical負債発見時)
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // 技術的負債データを読み込み
+          try {
+            const debtData = JSON.parse(fs.readFileSync('tmp/technical_debt.json', 'utf8'));
+            const criticalDebts = debtData.filter(debt => debt.severity === 'critical' && debt.resolution_status === 'open');
+            
+            if (criticalDebts.length > 0) {
+              const issueTitle = `🔴 Critical技術的負債 ${criticalDebts.length}件 - 緊急対応必要`;
+              const issueBody = `## 🚨 Critical技術的負債が検出されました
+              
+**検出件数**: ${criticalDebts.length}件
+**検出日時**: ${new Date().toISOString().split('T')[0]}
+**総見積工数**: ${criticalDebts.reduce((sum, debt) => sum + debt.estimated_effort_hours, 0).toFixed(1)}時間
+
+### 検出された負債
+
+${criticalDebts.map(debt => `
+- **${debt.title}**
+  - ファイル: ${debt.file_path}
+  - 見積工数: ${debt.estimated_effort_hours}時間
+  - 説明: ${debt.description}
+`).join('\n')}
+
+### 推奨アクション
+1. **7日以内の解決**を強く推奨
+2. 開発チームでの即座の対応計画策定
+3. 他の作業の優先度調整の検討
+
+### 関連
+- 技術的負債管理システム: scripts/technical_debt_manager.py
+- 設定ファイル: .github/quality/technical_debt.yml
+- Issue #1258: 技術的負債管理システム
+
+---
+*自動生成 - Technical Debt Monitoring System*`;
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['technical-debt', 'critical', 'automated']
+              });
+              
+              console.log('Critical技術的負債のIssueを作成しました');
+            }
+          } catch (error) {
+            console.log('技術的負債データファイルが見つかりません:', error.message);
+          }
+
+  branch-monitoring:
+    name: ブランチ戦略監視
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: チェックアウト
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: 長期間のブランチをチェック
+      run: |
+        echo "## 🌿 ブランチ戦略チェック"
+        
+        # 10日以上古いブランチを検出
+        OLD_BRANCHES=$(git for-each-ref --format='%(refname:short) %(committerdate:relative)' refs/remotes/origin | grep -E '(week|month)' | head -10)
+        
+        if [ -n "$OLD_BRANCHES" ]; then
+          echo "⚠️ 古いブランチが検出されました:"
+          echo "$OLD_BRANCHES"
+          
+          # コメントでも警告
+          echo "BRANCH_WARNING<<EOF" >> $GITHUB_ENV
+          echo "古いブランチが検出されました。ブランチ戦略(.github/quality/branch_strategy.yml)の確認をお願いします。" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        else
+          echo "✅ 全てのブランチが適切な期間内です"
+        fi
+
+  notification:
+    name: 通知
+    needs: [technical-debt-detection, branch-monitoring]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 結果通知
+      run: |
+        echo "## 📊 技術的負債監視結果"
+        echo "- 技術的負債検出: ${{ needs.technical-debt-detection.result }}"
+        echo "- ブランチ監視: ${{ needs.branch-monitoring.result }}"
+        echo ""
+        echo "詳細は各ジョブのログとアーティファクトを確認してください。"
