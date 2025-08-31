@@ -6,12 +6,15 @@
 - キーワード情報の変換と正規化
 """
 
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
 import logging
 
 from .utils_core import (
     setup_keyword_patterns,
 )
+
+if TYPE_CHECKING:
+    from .parser_protocols import ParseContext
 
 
 class KeywordExtractor:

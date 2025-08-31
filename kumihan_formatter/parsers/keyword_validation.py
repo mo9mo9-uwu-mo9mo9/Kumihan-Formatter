@@ -6,10 +6,14 @@
 - バリデーションキャッシュ管理
 """
 
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 import logging
 
 from .utils_core import create_cache_key
+
+if TYPE_CHECKING:
+    from .keyword_config import KeywordParserConfig
+    from .parser_protocols import ParseContext
 
 
 class KeywordValidator:

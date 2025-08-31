@@ -7,6 +7,7 @@ HTML・CSS・テンプレート処理の統合API提供
 from typing import Any, Dict, List, Optional
 
 # 統合レンダリングシステム（推奨）
+from .main_renderer import MainRenderer
 
 # 個別コンポーネント（必要時直接アクセス用）
 
@@ -26,5 +27,5 @@ def render(
     config: Optional[Dict[str, Any]] = None,
 ) -> str:
     """統合レンダリング関数（簡易アクセス）"""
-    main_renderer = MainRenderer(config)
+    main_renderer: MainRenderer = MainRenderer(config)
     return main_renderer.render(nodes, context)

@@ -5,6 +5,8 @@
 Issue #492 Phase 5A - markdown_converter.py分割
 """
 
+import re
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -12,7 +14,6 @@ from typing import Optional
 from ...parsers.unified_markdown_parser import UnifiedMarkdownParser as MarkdownParser
 from .markdown_processor import MarkdownProcessor
 from ..rendering.markdown_renderer import MarkdownRenderer
-import logging
 
 
 class SimpleMarkdownConverter:

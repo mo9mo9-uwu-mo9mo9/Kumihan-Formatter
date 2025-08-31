@@ -4,10 +4,14 @@ Issue #912 Renderer系統合リファクタリング対応
 main_renderer.pyから分離された出力フォーマット・エラーハンドリング機能
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
+import html
+import logging
 
 from ..ast_nodes import Node
-import logging
+
+if TYPE_CHECKING:
+    from .main_renderer import MainRenderer
 
 
 class OutputFormatterDelegate:

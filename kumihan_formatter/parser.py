@@ -20,8 +20,19 @@ from .core.parsing.legacy_parser import (
     Parser,
     parse,
     parse_with_error_config,
-    __all__,
+    __all__ as legacy_all,
 )
+
+# 明示的エクスポート
+__all__ = [
+    "ParallelProcessingError",
+    "ChunkProcessingError",
+    "MemoryMonitoringError",
+    "ParallelProcessingConfig",
+    "Parser",
+    "parse",
+    "parse_with_error_config",
+]
 
 # 非推奨警告を発行
 warnings.warn(
