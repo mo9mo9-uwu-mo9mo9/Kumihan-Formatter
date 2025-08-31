@@ -1,18 +1,10 @@
-name: Technical Debt Monitoring
-# Issue #1258: 技術的負債管理システム - 継続監視・自動報告
+name: Technical Debt Monitoring (disabled)
+# 方針: GitHub Actionsは導入しない（ローカル運用）。必要時のみ手動実行。
+# 参考: Issue #1258 / AGENTS.md Automation Workflow
 
 on:
-  # 毎週金曜日 10:00 JST に実行
-  schedule:
-    - cron: '0 1 * * FRI'  # UTC 1:00 = JST 10:00
-  
-  # 手動実行可能
+  # 手動実行のみ許可（自動トリガー無効化）
   workflow_dispatch:
-  
-  # PRマージ時にも実行
-  push:
-    branches:
-      - main
 
 jobs:
   technical-debt-detection:
@@ -24,7 +16,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Python セットアップ
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
         
@@ -47,10 +39,11 @@ jobs:
         python3 scripts/technical_debt_manager.py summary
         
     - name: レポートファイルをアーティファクトとして保存
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: technical-debt-reports
         path: tmp/technical_debt_report_*.md
+        if-no-files-found: warn
         retention-days: 90
         
     - name: Issue作成 (Critical負債発見時)
