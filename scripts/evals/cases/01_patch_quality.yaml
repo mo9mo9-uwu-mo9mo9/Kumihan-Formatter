@@ -1,0 +1,8 @@
+name: patch-quality-diff
+objective: Ensure small patch suggestions are syntactically valid and minimal.
+evaluator:
+  type: stub
+  criteria:
+    requires_minimal_diff: true
+    no_syntax_errors: true
+

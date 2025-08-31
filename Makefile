@@ -11,7 +11,7 @@ SRC_DIR = $(PROJECT_NAME)
 IMPORT_COUNT_TARGET = 300    # 現在423から削減目標
 BUILD_TIME_LIMIT = 60        # 秒
 
-.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit claude-check process-check debt-management doc-consistency
+.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit claude-check process-check debt-management doc-consistency evals
 
 # デフォルトターゲット
 help:
@@ -96,6 +96,11 @@ performance-check:
 	echo "  - Lint実行時間: $${lint_time}秒"; \
 	echo "  - テスト実行時間: $${test_time}秒"; \
 	echo "  - 合計ビルド時間: $$((lint_time + test_time))秒 (目標: <$(BUILD_TIME_LIMIT)秒)"
+
+# Evals (lightweight, local-only)
+evals:
+	@echo "🧪 Running minimal Evals (local, stub evaluator)..."
+	$(PYTHON) scripts/evals/run_evals.py
 
 # テスト実行システム
 test:
