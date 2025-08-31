@@ -6,11 +6,9 @@ import pytest
 from pathlib import Path
 from kumihan_formatter import KumihanFormatter
 from kumihan_formatter.unified_api import (
-    quick_convert,
-    quick_parse,
-    unified_parse,
-    validate_kumihan_syntax,
-    get_parser_system_info,
+    KumihanFormatter as UnifiedKumihanFormatter,
+    DummyParser,
+    DummyRenderer,
 )
 
 
@@ -185,9 +183,11 @@ class TestKumihanFormatter:
 
         formatter = KumihanFormatter()
 
-        # main_rendererでエラーを発生させる
+        # 新しい責任分離アーキテクチャに対応：_api経由でアクセス
         with mock.patch.object(
-            formatter.main_renderer, "render", side_effect=Exception("Render error")
+            formatter._api.coordinator.main_renderer, 
+            "render", 
+            side_effect=Exception("Render error")
         ):
             result = formatter.convert_text("# テスト #内容##")
 
@@ -199,9 +199,9 @@ class TestKumihanFormatter:
 
         formatter = KumihanFormatter()
 
-        # parsing_managerでエラーを発生させる
+        # 新しい責任分離アーキテクチャに対応：_api経由でアクセス
         with mock.patch.object(
-            formatter.parsing_manager,
+            formatter._api.coordinator.parsing_manager,
             "parse_and_validate",
             side_effect=Exception("Parse error"),
         ):
@@ -223,9 +223,9 @@ class TestKumihanFormatter:
 
         formatter = KumihanFormatter()
 
-        # parsing_manager.validate_syntax呼び出し時にエラーを発生させる
+        # 新しい責任分離アーキテクチャに対応：_api経由でアクセス
         with mock.patch.object(
-            formatter.parsing_manager,
+            formatter._api.coordinator.parsing_manager,
             "validate_syntax",
             side_effect=Exception("Validate error"),
         ):
@@ -251,161 +251,20 @@ class TestKumihanFormatter:
         assert "nonexistent_file.kumihan" in result["file_path"]
 
 
-class TestStandaloneFunctions:
-    """スタンドアロン関数のテストクラス"""
-
-    def test_quick_convert(self, tmp_path):
-        """quick_convert関数のテスト"""
-        # テストファイルの作成
-        input_file = tmp_path / "test.kumihan"
-        input_file.write_text("# テスト #内容##", encoding="utf-8")
-        output_file = tmp_path / "test.html"
-
-        result = quick_convert(str(input_file), str(output_file))
-
-        assert result["status"] == "success"
-        assert result["input_file"] == str(input_file)
-        assert (
-            result["output_file"] == "tmp/test.html"
-        )  # 新しい実装では tmp/ 配下に出力
-        # 実際の出力ファイルの存在を確認
-        actual_output_path = Path(result["output_file"])
-        assert actual_output_path.exists()
-
-    def test_quick_convert_auto_output(self, tmp_path):
-        """quick_convert関数（出力ファイル自動指定）のテスト"""
-        input_file = tmp_path / "test.kumihan"
-        input_file.write_text("# テスト #内容##", encoding="utf-8")
-
-        result = quick_convert(str(input_file))
-
-        assert result["status"] == "success"
-        assert result["input_file"] == str(input_file)
-        assert result["output_file"].endswith(".html")
-
-    def test_quick_parse(self):
-        """quick_parse関数のテスト"""
-        text = "# 重要 #これは重要な情報です##"
-        result = quick_parse(text)
-
-        # 新しいParsingManagerの戻り値構造に対応
-        assert result["parsing_success"] is True
-        assert "parsed_node" in result
-
-    def test_unified_parse(self):
-        """unified_parse関数のテスト"""
-        text = "# 重要 #これは重要な情報です##"
-        result = unified_parse(text, "auto")
-
-        # 新しいParsingManagerの戻り値構造に対応
-        assert result["parsing_success"] is True
-        assert "parsed_node" in result
-
-    def test_validate_kumihan_syntax(self):
-        """validate_kumihan_syntax関数のテスト"""
-        valid_text = "# 重要 #内容##"
-        invalid_text = "#  #内容##"
-
-        valid_result = validate_kumihan_syntax(valid_text)
-        assert valid_result["status"] == "valid"
-
-        invalid_result = validate_kumihan_syntax(invalid_text)
-        # 新しい実装では空の装飾名でもvalidと判定される場合がある
-        if invalid_result["status"] == "valid":
-            # warningsがあるか確認
-            assert "warnings" in invalid_result
-        else:
-            assert invalid_result["status"] == "invalid"
-            assert len(invalid_result["errors"]) > 0
-
-    def test_get_parser_system_info(self):
-        """get_parser_system_info関数のテスト"""
-        info = get_parser_system_info()
-
-        assert "components" in info
-        assert "version" in info
-        assert "architecture" in info
-        assert "status" in info
+# 旧バージョンのスタンドアロン関数テストクラス（削除された関数のテスト）
+# Issue #1249対応: 責任分離リファクタリングにより削除
+# 
+# class TestStandaloneFunctions:
+#     """スタンドアロン関数のテストクラス（削除済み）"""
+#     pass
 
 
-class TestMainFunction:
-    """main関数のテストクラス"""
-
-    def test_main_with_no_arguments(self, capsys):
-        """引数なしでmain関数を呼び出すテスト"""
-        import sys
-        import unittest.mock as mock
-        from kumihan_formatter.unified_api import main
-
-        with (
-            mock.patch.object(sys, "argv", ["kumihan"]),
-            pytest.raises(SystemExit) as exc_info,
-        ):
-            main()
-
-        captured = capsys.readouterr()
-        assert "使用方法: kumihan <入力ファイル>" in captured.out
-        assert exc_info.value.code == 1
-
-    def test_main_successful_conversion(self, tmp_path, capsys):
-        """main関数での正常変換テスト"""
-        import sys
-        import unittest.mock as mock
-        from kumihan_formatter.unified_api import main
-
-        # テストファイルの作成
-        input_file = tmp_path / "test.kumihan"
-        input_file.write_text("# テスト #内容##", encoding="utf-8")
-        output_file = tmp_path / "test.html"
-
-        with mock.patch.object(
-            sys, "argv", ["kumihan", str(input_file), str(output_file)]
-        ):
-            main()
-
-        captured = capsys.readouterr()
-        assert "変換完了" in captured.out
-        # 新しい実装ではtmp/配下に出力されるため、実際のファイルを確認
-        actual_output_file = Path("tmp") / "test.html"
-        assert actual_output_file.exists()
-
-    def test_main_conversion_error(self, capsys):
-        """main関数でのエラーハンドリングテスト"""
-        import sys
-        import unittest.mock as mock
-        from kumihan_formatter.unified_api import main
-
-        with (
-            mock.patch.object(sys, "argv", ["kumihan", "nonexistent.kumihan"]),
-            pytest.raises(SystemExit) as exc_info,
-        ):
-            main()
-
-        captured = capsys.readouterr()
-        assert "変換エラー" in captured.out
-        assert exc_info.value.code == 1
-
-    def test_main_exception_handling(self, capsys):
-        """main関数での例外処理テスト"""
-        import sys
-        import unittest.mock as mock
-        from kumihan_formatter.unified_api import main, quick_convert
-
-        # quick_convertでエラーを発生させる
-        with (
-            mock.patch(
-                "kumihan_formatter.unified_api.quick_convert",
-                side_effect=Exception("Unexpected error"),
-            ),
-            mock.patch.object(sys, "argv", ["kumihan", "test.kumihan"]),
-            pytest.raises(SystemExit) as exc_info,
-        ):
-            main()
-
-        captured = capsys.readouterr()
-        # 実際の実装では変換エラーとして処理される
-        assert "変換エラー:" in captured.out
-        assert exc_info.value.code == 1
+# 旧バージョンのmain関数テストクラス（削除された関数のテスト）
+# Issue #1249対応: 責任分離リファクタリングによりmain関数削除
+#
+# class TestMainFunction:
+#     """main関数のテストクラス（削除済み）"""
+#     pass
 
 
 class TestConvertTextDebugging:
@@ -426,25 +285,9 @@ class TestConvertTextDebugging:
         assert any("chars →" in record.message for record in caplog.records)
 
 
-class TestModuleExecution:
-    """モジュール実行テスト"""
-
-    def test_unified_api_module_execution(self):
-        """unified_api.py の if __name__ == "__main__" 分岐テスト"""
-        import sys
-        import unittest.mock as mock
-        import kumihan_formatter.unified_api as unified_api_module
-
-        # __name__を"__main__"に設定してmain関数を呼び出すことをテスト
-        with (
-            mock.patch.object(sys, "argv", ["kumihan"]),
-            mock.patch.object(unified_api_module, "__name__", "__main__"),
-            mock.patch.object(unified_api_module, "main") as mock_main,
-        ):
-
-            # モジュールの実行をシミュレート
-            if unified_api_module.__name__ == "__main__":
-                unified_api_module.main()
-
-            # main()が呼ばれることを確認
-            mock_main.assert_called_once()
+# 旧バージョンのモジュール実行テストクラス（削除された機能のテスト）
+# Issue #1249対応: 責任分離リファクタリングによりmain関数・モジュール実行削除  
+#
+# class TestModuleExecution:
+#     """モジュール実行テスト（削除済み）"""
+#     pass
