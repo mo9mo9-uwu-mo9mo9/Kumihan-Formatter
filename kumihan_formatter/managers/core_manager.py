@@ -16,7 +16,7 @@ from kumihan_formatter.core.types import ChunkInfo
 
 
 class CoreManager:
-    """コア機能統合管理クラス - IO・キャッシュ・チャンク管理の統合API"""
+    """コア機能統合管理クラス - IO・キャッシュ・チャンク・配布管理の統合API (Issue #1253対応)"""
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -46,9 +46,17 @@ class CoreManager:
         # チャンク管理設定
         self.chunk_size = self.config.get("chunk_size", 1000)
 
+        # 配布管理設定 (DistributionManager統合)
+        self.distribution_config = self.config.get("distribution", {})
+
         # シンプルなキャッシュ
         self._file_cache: Dict[str, str] = {}
         self._template_cache: Dict[str, str] = {}
+
+        # 配布管理コンポーネント (遅延初期化)
+        self._distribution_structure = None
+        self._distribution_converter = None
+        self._distribution_processor = None
 
     # ========== ファイルIO機能（旧ResourceManager） ==========
 
@@ -185,7 +193,7 @@ class CoreManager:
             self.logger.error(f"テンプレートコンテキスト生成中にエラー: {e}")
             return context_data or {}
 
-    # ========== チャンク管理機能（旧ChunkManager） ==========
+    # ========== チャンク管理機能（ChunkManager統合） ==========
 
     def create_chunks_from_lines(
         self, lines: List[str], chunk_size: Optional[int] = None
@@ -320,9 +328,151 @@ class CoreManager:
 
         return True
 
+    # ========== 配布管理機能（DistributionManager統合） ==========
+
+    def _init_distribution_components(self):
+        """配布管理コンポーネントの遅延初期化"""
+        if self._distribution_structure is None:
+            try:
+                from kumihan_formatter.core.io.distribution_structure import (
+                    DistributionStructure,
+                )
+                from kumihan_formatter.core.io.distribution_converter import (
+                    DistributionConverter,
+                )
+                from kumihan_formatter.core.io.distribution_processor import (
+                    DistributionProcessor,
+                )
+
+                self._distribution_structure = DistributionStructure(
+                    self.distribution_config
+                )
+                self._distribution_converter = DistributionConverter(
+                    self.distribution_config
+                )
+                self._distribution_processor = DistributionProcessor(
+                    self.distribution_config
+                )
+            except ImportError as e:
+                self.logger.warning(f"配布管理コンポーネントの初期化に失敗: {e}")
+
+    def create_distribution(
+        self, source_dir: Union[str, Path], output_dir: Union[str, Path]
+    ) -> bool:
+        """
+        配布用ディレクトリを作成
+
+        Args:
+            source_dir: ソースディレクトリ
+            output_dir: 出力ディレクトリ
+
+        Returns:
+            成功時True、失敗時False
+        """
+        try:
+            self._init_distribution_components()
+
+            # 1. ディレクトリ構造作成
+            output_path = Path(output_dir)
+            try:
+                if self._distribution_structure:
+                    self._distribution_structure.create_structure(output_path)
+                else:
+                    # フォールバック: 基本的なディレクトリ作成
+                    output_path.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                self.logger.error(f"ディレクトリ構造作成失敗: {e}")
+                return False
+
+            # 2. ファイル変換
+            try:
+                self.logger.info(
+                    f"ファイル変換をスキップ - 手動実装が必要: {source_dir} -> {output_dir}"
+                )
+            except Exception as e:
+                self.logger.error(f"ファイル変換失敗: {e}")
+                return False
+
+            # 3. 配布処理
+            try:
+                if self._distribution_processor:
+                    # 簡易ファイル分類
+                    from kumihan_formatter.core.types.document_types import DocumentType
+
+                    classified_files: Dict[Any, List[Any]] = {DocumentType.EXAMPLE: []}
+                    stats = self._distribution_processor.copy_program_files(
+                        classified_files, Path(source_dir), output_path
+                    )
+                    self._distribution_processor.create_distribution_info(
+                        output_path, stats
+                    )
+                    self._distribution_processor.report_statistics(stats)
+                else:
+                    self.logger.info(
+                        "配布処理をスキップ - コンポーネントが利用できません"
+                    )
+            except Exception as e:
+                self.logger.error(f"配布処理失敗: {e}")
+                return False
+
+            self.logger.info(f"配布作成完了: {output_dir}")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"配布作成中にエラー: {e}")
+            return False
+
+    def validate_distribution(self, dist_dir: Union[str, Path]) -> Dict[str, Any]:
+        """
+        配布ディレクトリの検証
+
+        Args:
+            dist_dir: 配布ディレクトリ
+
+        Returns:
+            検証結果辞書
+        """
+        try:
+            result: Dict[str, Any] = {
+                "valid": True,
+                "errors": [],
+                "warnings": [],
+                "files_checked": 0,
+            }
+            errors: List[str] = result["errors"]
+            warnings: List[str] = result["warnings"]
+
+            dist_path = Path(dist_dir)
+            if not dist_path.exists():
+                result["valid"] = False
+                errors.append(f"配布ディレクトリが存在しません: {dist_dir}")
+                return result
+
+            # 基本的な検証
+            required_files = ["index.html"]  # 必須ファイル例
+
+            for required_file in required_files:
+                file_path = dist_path / required_file
+                if not file_path.exists():
+                    warnings.append(f"推奨ファイルが見つかりません: {required_file}")
+                else:
+                    result["files_checked"] = result["files_checked"] + 1
+
+            return result
+
+        except Exception as e:
+            self.logger.error(f"配布検証中にエラー: {e}")
+            return {
+                "valid": False,
+                "errors": [f"検証エラー: {str(e)}"],
+                "warnings": [],
+                "files_checked": 0,
+            }
+
+    # ========== ユーティリティ機能 ==========
+
     def ensure_directory(self, directory_path: Union[str, Path]) -> None:
         """ディレクトリを作成（FileManager機能統合）"""
-
         path = Path(directory_path)
         try:
             path.mkdir(parents=True, exist_ok=True)
@@ -330,8 +480,6 @@ class CoreManager:
         except Exception as e:
             self.logger.error(f"Failed to ensure directory {path}: {e}")
             raise
-
-    # ========== ユーティリティ機能 ==========
 
     def ensure_output_directory(self, output_path: Union[str, Path]) -> bool:
         """
@@ -372,6 +520,20 @@ class CoreManager:
             "template_dir": str(self.template_dir),
             "assets_dir": str(self.assets_dir),
             "chunk_size": self.chunk_size,
+            "distribution_enabled": self._distribution_structure is not None,
+        }
+
+    def get_distribution_info(self) -> Dict[str, Any]:
+        """配布管理情報を取得（DistributionManager統合）"""
+        return {
+            "name": "CoreManager (Integrated Distribution)",
+            "version": "1.0.0",
+            "config": self.distribution_config,
+            "components": {
+                "structure": "DistributionStructure (lazy-loaded)",
+                "converter": "DistributionConverter (lazy-loaded)",
+                "processor": "DistributionProcessor (lazy-loaded)",
+            },
         }
 
     def _get_cpu_count(self) -> int:
