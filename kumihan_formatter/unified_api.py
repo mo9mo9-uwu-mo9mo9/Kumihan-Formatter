@@ -99,14 +99,38 @@ class KumihanFormatter:
 
 # 後方互換性のためのダミークラス（廃止予定）
 class DummyParser:
-    """Dummy parser for compatibility"""
+    """Dummy parser for compatibility (deprecated).
+
+    Use `KumihanFormatter.parse_text()` or `FormatterAPI.parse_text()` instead.
+    """
+
+    def __init__(self) -> None:
+        import warnings
+
+        warnings.warn(
+            "DummyParser is deprecated. Use KumihanFormatter.parse_text() or FormatterAPI.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     def parse(self, text: str, parser_type: str = "auto") -> List[Any]:
         return []
 
 
 class DummyRenderer:
-    """Dummy renderer for compatibility"""
+    """Dummy renderer for compatibility (deprecated).
+
+    Use `KumihanFormatter.convert_text()` or `FormatterAPI` renderers instead.
+    """
+
+    def __init__(self) -> None:
+        import warnings
+
+        warnings.warn(
+            "DummyRenderer is deprecated. Use KumihanFormatter.convert_text() or FormatterAPI.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     def render(self, parsed_result: Any, context: Dict[str, Any]) -> str:
         return "<p>Rendering not available</p>"

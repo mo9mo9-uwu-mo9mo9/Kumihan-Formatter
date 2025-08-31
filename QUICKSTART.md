@@ -81,6 +81,13 @@ result = formatter.convert_text(content)
 
 ---
 
+## Deprecation Notice (Phase 1 until 2025-09-15)
+- The compatibility classes `DummyParser` / `DummyRenderer` in `kumihan_formatter.unified_api` are deprecated.
+- Instantiate them only if you must; they now emit DeprecationWarning.
+- Migrate to:
+  - `KumihanFormatter().parse_text(text)` instead of `DummyParser().parse(text)`
+  - `KumihanFormatter().convert_text(text)` instead of `DummyRenderer().render(node, ctx)`
+
 ## 📚 さらに詳しく
 
 - **統合API詳細**: API.md
