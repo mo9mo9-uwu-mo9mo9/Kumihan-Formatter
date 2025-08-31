@@ -31,21 +31,19 @@
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
 cd Kumihan-Formatter
 
-# 開発環境セットアップ
-python -m pip install -e .
-python -m pip install -r requirements-dev.txt
+# 開発環境セットアップ（ローカル）
+make setup
 
-# Git hooks セットアップ（必須）
-./scripts/install-hooks.sh
+# 開発用CLI使用例（サブコマンドなし）
+kumihan input.txt [output.html]
+# または
+python -m kumihan_formatter input.txt [output.html]
 
-# 開発用CLI使用例
-python -m kumihan_formatter convert input.txt
+# 開発ログの有効化（任意）
+KUMIHAN_DEV_LOG=true kumihan input.txt
 
-# 開発ログの有効化（Claude Code向け）
-KUMIHAN_DEV_LOG=true python -m kumihan_formatter convert input.txt
-
-# 品質チェック
-make lint           # コード品質チェック
+# 品質チェック（pyproject準拠のmypy strict）
+make lint
 ```
 
 ### 🌟 開発参加者向け重要事項
@@ -63,10 +61,9 @@ feature-branch                    # Issue番号なし
 ```
 
 **システム的制約**:
-- 日本語ブランチ名は **Git hooks・GitHub Actions で自動検出・拒否**
-- **初回セットアップ時は必ず** `./scripts/install-hooks.sh` を実行
+- 日本語ブランチ名は禁止（運用ルールで厳守）
 - **一時ファイル出力は `tmp/` 配下必須** - プロジェクトルート直下への出力は禁止
-- 詳細は [CLAUDE.md](./CLAUDE.md) と [コーディング規約](./docs/dev/coding-standards.md) を参照
+- 詳細は [CLAUDE.md](./CLAUDE.md) と [AGENTS.md](./AGENTS.md) を参照
 
 ### 🚀 初回セットアップガイド
 
@@ -77,9 +74,8 @@ feature-branch                    # Issue番号なし
 git clone https://github.com/mo9mo9-uwu-mo9mo9/Kumihan-Formatter.git
 cd Kumihan-Formatter
 
-# 2. Python依存関係インストール
-python -m pip install -e .
-python -m pip install -r requirements-dev.txt
+# 2. 依存関係インストール
+make setup
 
 # 3. Git hooks インストール（重要！）
 ./scripts/install-hooks.sh
@@ -146,40 +142,31 @@ kumihan convert input.txt --progress-log progress.json
 
 ```
 Kumihan-Formatter/
-├── kumihan_formatter/      # メインパッケージ
-├── tests/                  # テストファイル
-│   └── debug/             # デバッグ用テストファイル
-├── docs/                   # ドキュメント
-│   ├── reports/           # テストレポート
-│   └── specs/    # 詳細仕様書
-├── scripts/               # ユーティリティスクリプト
-├── samples/               # サンプルファイル
-├── output/                # 出力ファイル（gitignore対象）
-├── tools/                 # 開発ツール
-├── archive/               # アーカイブファイル
-└── [設定ファイル]         # .gitignore, pyproject.toml等
+├── kumihan_formatter/   # メインパッケージ
+├── tests/               # テスト
+├── scripts/             # ユーティリティスクリプト
+├── examples/            # 使用例
+├── output/              # 出力（gitignore対象）
+├── tmp/                 # 一時生成物（git管理外）
+├── AGENTS.md            # コントリビュータ向けガイド
+├── README.md            # 本ファイル
+├── CONTRIBUTING.md      # 貢献ガイド
+├── ARCHITECTURE.md      # 概要アーキテクチャ
+├── API.md               # APIの概要
+├── API_GUIDELINES.md    # API設計方針
+└── pyproject.toml       # プロジェクト設定
 ```
 
 ## 📖 ドキュメント
 
-### ユーザー向け
-- **[🚀 クイックスタート](docs/user/getting-started.md)** - 30分で始める
-- **[📚 ユーザーガイド](docs/user/user-guide.md)** - 詳細な使い方
-- **[📝 記法リファレンス](docs/user/notation-reference.md)** - 記法のクイックリファレンス
-- **[❓ FAQ](docs/user/faq.md)** - よくある質問
-
-### 開発者向け
-- **[🏗️ アーキテクチャ](docs/dev/architecture.md)** - システム設計
-- **[🚀 デプロイガイド](docs/dev/deployment.md)** - パッケージング・配布
-
-### 仕様書
-- **[📝 記法仕様概要](SPEC.md)** - 基本的な記法仕様
-- **[📋 記法仕様詳細](docs/specs/notation.md)** - 完全な記法仕様
-- **[⚙️ 機能仕様](docs/specs/functional.md)** - システム機能仕様
-- **[❗ エラーメッセージ仕様](docs/specs/error-messages.md)** - エラー仕様
-
-### Claude Code向け
-- **[🔧 Claude Code リファレンス](docs/claude/reference.md)** - Claude Code効率化ガイド
+### クイックリファレンス（存在するもののみ）
+- [QUICKSTART.md](./QUICKSTART.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [API.md](./API.md)
+- [API_GUIDELINES.md](./API_GUIDELINES.md)
+- [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [AGENTS.md](./AGENTS.md)
+- [CHANGELOG.md](./CHANGELOG.md)
 
 ## 🔧 開発者向け機能
 
