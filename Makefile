@@ -8,7 +8,6 @@ PROJECT_NAME = kumihan_formatter
 SRC_DIR = $(PROJECT_NAME)
 
 # 品質基準設定
-MYPY_ERRORS_THRESHOLD = 150  # 現在186から段階的削減
 IMPORT_COUNT_TARGET = 300    # 現在423から削減目標
 BUILD_TIME_LIMIT = 60        # 秒
 
@@ -67,30 +66,15 @@ quality-check:
 
 # 基本lint（既存互換）
 lint:
-	@echo "🔍 基本品質チェック実行中..."
-	@start_time=$$(date +%s); \
-	$(PYTHON) -m black --check $(SRC_DIR) && \
-	error_count=$$($(PYTHON) -m mypy $(SRC_DIR) --ignore-missing-imports 2>&1 | grep -c "error:" || echo 0); \
-	end_time=$$(date +%s); \
-	duration=$$((end_time - start_time)); \
-	echo ""; \
-	echo "📊 品質チェック結果:"; \
-	echo "  - Black: ✅ フォーマット準拠"; \
-	echo "  - mypy エラー: $$error_count 個 (目標: <$(MYPY_ERRORS_THRESHOLD))"; \
-	echo "  - 実行時間: $${duration}秒 (目標: <$(BUILD_TIME_LIMIT)秒)"; \
-	if [ $$error_count -gt $(MYPY_ERRORS_THRESHOLD) ]; then \
-		echo "⚠️  mypy エラーが基準値を超過しています"; \
-		exit 1; \
-	fi; \
-	if [ $$duration -gt $(BUILD_TIME_LIMIT) ]; then \
-		echo "⚠️  実行時間が制限を超過しています"; \
-	fi
+	@echo "🔍 基本品質チェック実行中... (Black + mypy:pyproject)"
+	$(PYTHON) -m black --check $(SRC_DIR)
+	$(PYTHON) -m mypy --config-file=pyproject.toml $(SRC_DIR)
+	@echo "✅ 基本品質チェック完了"
 
 # 厳格品質チェック
 lint-strict:
-	@echo "🔬 厳格品質チェック実行中..."
-	$(PYTHON) -m black --check $(SRC_DIR)
-	$(PYTHON) -m mypy $(SRC_DIR) --strict
+	@echo "🔬 厳格品質チェック（lintと同一設定: pyproject.toml）"
+	@$(MAKE) lint
 	@echo "✅ 厳格品質チェック完了"
 
 # 依存関係分析（Issue #1239の重要機能）
