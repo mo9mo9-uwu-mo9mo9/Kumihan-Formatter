@@ -15,6 +15,7 @@ class ParallelProcessingError(Exception):
     Examples:
         >>> raise ParallelProcessingError("プロセス間でのデータ競合が発生")
     """
+
     pass
 
 
@@ -27,6 +28,7 @@ class ChunkProcessingError(Exception):
     Examples:
         >>> raise ChunkProcessingError("チャンクサイズが制限を超過")
     """
+
     pass
 
 
@@ -39,6 +41,7 @@ class MemoryMonitoringError(Exception):
     Examples:
         >>> raise MemoryMonitoringError("メモリ使用量が制限値250MBを超過")
     """
+
     pass
 
 
@@ -75,7 +78,7 @@ class ExtractionError(Exception):
 
 __all__ = [
     "ParallelProcessingError",
-    "ChunkProcessingError", 
+    "ChunkProcessingError",
     "MemoryMonitoringError",
     "SpecializedParsingError",
     "MarkerValidationError",

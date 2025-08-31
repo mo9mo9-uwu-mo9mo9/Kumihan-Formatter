@@ -29,6 +29,7 @@ def get_type_display_names() -> dict[DocumentType, str]:
         DocumentType.GENERAL: "📄 一般文書",
     }
 
+
 # チャンク関連型定義（chunk_types.pyから統合）
 from dataclasses import dataclass
 from typing import List
