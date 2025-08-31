@@ -17,14 +17,46 @@ from kumihan_formatter.core.processing.parsing_coordinator import ParsingCoordin
 
 
 class MainParser:
-    """統合パーサーシステム - 全パーサーの中央管理"""
+    """統合パーサーシステム - 全パーサーの中央管理
+
+    Kumihan-Formatterの中核となる統合パーサーシステム。
+    複数の専用パーサー（リスト、キーワード、マークダウン等）を統合し、
+    自動パーサー選択、フォールバック機能、カスタムパーサー登録を提供。
+
+    Attributes:
+        logger (Logger): ロガーインスタンス
+        config (Dict[str, Any]): パーサー設定辞書
+        list_parser (UnifiedListParser): リスト専用パーサー
+        keyword_parser (UnifiedKeywordParser): キーワード専用パーサー
+        markdown_parser (UnifiedMarkdownParser): マークダウン専用パーサー
+        marker_parser (CoreMarkerParser): マーカー専用パーサー
+        coordinator (ParsingCoordinator): パーシング統合管理
+        default_parser (str): デフォルトパーサー種類
+        fallback_parser (str): フォールバックパーサー種類
+
+    Examples:
+        >>> parser = MainParser()
+        >>> result = parser.parse("# 見出し #内容##")
+        >>> print(result)
+
+        >>> # カスタムパーサー登録
+        >>> parser.register_custom_parser("custom", custom_func)
+        >>> result = parser.parse(content, "custom")
+    """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """
-        MainParser初期化
+        """MainParser初期化
+
+        統合パーサーシステムを初期化し、各種専用パーサーと
+        統合管理機能を設定する。
 
         Args:
-            config: 設定オプション辞書
+            config (Optional[Dict[str, Any]]): パーサー設定辞書。
+                Noneの場合はデフォルト設定を使用。
+
+        Config Options:
+            - default_parser (str): デフォルトパーサー種類（デフォルト: "auto"）
+            - fallback_parser (str): フォールバックパーサー種類（デフォルト: "simple"）
         """
         self.logger = logging.getLogger(__name__)
         self.config = config or {}
@@ -55,15 +87,27 @@ class MainParser:
     def parse(
         self, content: Union[str, List[str]], parser_type: Optional[str] = None
     ) -> Optional[Union[Node, Dict[str, Any]]]:
-        """
-        統合パーシング実行
+        """統合パーシング実行
+
+        指定されたパーサー種類でコンテンツを解析し、ASTノードまたは
+        解析結果辞書を返す。エラー時はフォールバック機能が動作。
 
         Args:
-            content: 解析対象コンテンツ
-            parser_type: パーサー種類（None=デフォルト使用）
+            content (Union[str, List[str]]): 解析対象コンテンツ。
+                文字列または行のリスト形式
+            parser_type (Optional[str]): パーサー種類。
+                None=デフォルト使用。利用可能: "auto", "list", "keyword",
+                "markdown", "simple", "marker", およびカスタム登録済み
 
         Returns:
-            解析結果AST、エラー時はNone
+            Optional[Union[Node, Dict[str, Any]]]: 解析結果。
+                成功時: ASTノードまたは解析結果辞書
+                エラー時: None
+
+        Examples:
+            >>> parser = MainParser()
+            >>> result = parser.parse("# 見出し #内容##")
+            >>> result = parser.parse(content, "keyword")
         """
         try:
             # パーサー種類決定
@@ -102,7 +146,17 @@ class MainParser:
     def _auto_parse(
         self, content: Union[str, List[str]]
     ) -> Optional[Union[Node, Dict[str, Any]]]:
-        """自動パーサー選択"""
+        """自動パーサー選択
+
+        コンテンツを解析し、最適なパーサーを自動選択して実行。
+        Kumihanブロック検出 → コーディネーター推奨 → 順次試行の順序で動作。
+
+        Args:
+            content (Union[str, List[str]]): 解析対象コンテンツ
+
+        Returns:
+            Optional[Union[Node, Dict[str, Any]]]: 解析結果
+        """
         try:
             # Kumihanブロックの存在チェック（優先）
             content_str = content if isinstance(content, str) else "\n".join(content)
@@ -148,7 +202,16 @@ class MainParser:
     def _sequential_try_parsing(
         self, content: Union[str, List[str]]
     ) -> Optional[Union[Node, Dict[str, Any]]]:
-        """順次パーサー試行"""
+        """順次パーサー試行
+
+        利用可能な全パーサーを優先度順に試行し、最初に成功したものを返す。
+
+        Args:
+            content (Union[str, List[str]]): 解析対象コンテンツ
+
+        Returns:
+            Optional[Union[Node, Dict[str, Any]]]: 最初に成功した解析結果
+        """
         # Kumihanブロックの存在チェック
         content_str = content if isinstance(content, str) else "\n".join(content)
         if "##" in content_str and "#" in content_str:
@@ -186,7 +249,17 @@ class MainParser:
         return None
 
     def _emergency_fallback(self, content: Union[str, List[str]]) -> Optional[Node]:
-        """緊急時フォールバック"""
+        """緊急時フォールバック
+
+        全パーサーが失敗した際の最終的なフォールバック処理。
+        SimpleKumihanParserで基本的な解析を試行。
+
+        Args:
+            content (Union[str, List[str]]): 解析対象コンテンツ
+
+        Returns:
+            Optional[Node]: 緊急フォールバック解析結果
+        """
         try:
             self.logger.warning("緊急時フォールバック実行")
             content_str = content if isinstance(content, str) else "\n".join(content)
@@ -209,15 +282,21 @@ class MainParser:
     def parse_file(
         self, file_path: Union[str, Path], parser_type: Optional[str] = None
     ) -> Optional[Node]:
-        """
-        ファイルパーシング
+        """ファイルパーシング
+
+        指定されたファイルを読み込み、パーシングを実行。
+        結果はNode形式のみ返す（Dict結果は変換またはNone）。
 
         Args:
-            file_path: ファイルパス
-            parser_type: パーサー種類
+            file_path (Union[str, Path]): 解析対象ファイルのパス
+            parser_type (Optional[str]): 使用するパーサー種類
 
         Returns:
-            解析結果AST（Nodeのみ）
+            Optional[Node]: 解析結果のASTノード
+
+        Raises:
+            FileNotFoundError: ファイルが存在しない場合
+            UnicodeDecodeError: ファイルエンコーディングエラー
         """
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -244,15 +323,23 @@ class MainParser:
     def register_custom_parser(
         self, name: str, parser_func: Callable[..., Any]
     ) -> bool:
-        """
-        カスタムパーサー登録
+        """カスタムパーサー登録
+
+        独自のパーサー関数を登録し、parse()メソッドで使用可能にする。
 
         Args:
-            name: パーサー名
-            parser_func: パーサー関数
+            name (str): パーサー名（一意である必要あり）
+            parser_func (Callable[..., Any]): パーサー関数。
+                content引数を受け取り、NodeまたはDict[str, Any]を返す
 
         Returns:
-            登録成功フラグ
+            bool: 登録成功フラグ
+
+        Examples:
+            >>> def custom_parser(content):
+            ...     return {"type": "custom", "content": content}
+            >>> parser.register_custom_parser("custom", custom_parser)
+            True
         """
         try:
             if name in self._parsers:
@@ -267,21 +354,32 @@ class MainParser:
             return False
 
     def get_available_parsers(self) -> List[str]:
-        """利用可能パーサー一覧取得"""
+        """利用可能パーサー一覧取得
+
+        Returns:
+            List[str]: 登録済みパーサー名のリスト
+        """
         return list(self._parsers.keys())
 
     def validate_content_for_parser(
         self, content: Union[str, List[str]], parser_type: str
     ) -> Dict[str, Any]:
-        """
-        パーサー適性検証
+        """パーサー適性検証
+
+        指定されたコンテンツが特定のパーサーに適しているかを検証し、
+        適性スコアと推奨事項を返す。
 
         Args:
-            content: コンテンツ
-            parser_type: パーサー種類
+            content (Union[str, List[str]]): 検証対象コンテンツ
+            parser_type (str): 検証対象パーサー種類
 
         Returns:
-            検証結果
+            Dict[str, Any]: 検証結果辞書
+                - suitable (bool): 適性判定
+                - score (float): 適性スコア（0.0-1.0）
+                - total_lines (int): 総行数
+                - non_empty_lines (int): 非空行数
+                - recommendation (str): 推奨パーサー
         """
         try:
             if parser_type not in self._parsers:
@@ -333,7 +431,11 @@ class MainParser:
             return {"suitable": False, "reason": f"検証エラー: {e}"}
 
     def get_parser_statistics(self) -> Dict[str, Any]:
-        """パーサー統計情報取得"""
+        """パーサー統計情報取得
+
+        Returns:
+            Dict[str, Any]: パーサーシステムの統計情報
+        """
         return {
             "available_parsers": self.get_available_parsers(),
             "default_parser": self.default_parser,
@@ -344,14 +446,17 @@ class MainParser:
     def benchmark_parsers(
         self, sample_content: Union[str, List[str]]
     ) -> Dict[str, Any]:
-        """
-        パーサーベンチマーク実行
+        """パーサーベンチマーク実行
+
+        サンプルコンテンツを使用して各パーサーの性能を測定し、
+        実行時間と成功率を比較する。
 
         Args:
-            sample_content: ベンチマーク用コンテンツ
+            sample_content (Union[str, List[str]]): ベンチマーク用コンテンツ
 
         Returns:
-            ベンチマーク結果
+            Dict[str, Any]: ベンチマーク結果
+                各パーサーごとに success, execution_time, result_type を含む
         """
         import time
 
