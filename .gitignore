@@ -220,3 +220,24 @@ tmp/**/*.db
 logs/*.log
 logs/*.log.*
 *.log.[0-9]*
+
+# 追加: プロジェクト整理で削除した不要ファイルパターン
+# mypy cache（既存の.mypy_cache/に加えて）
+*.mypy_cache/
+
+# 重複レポートファイル（日時付き）
+document_consistency_report_*.json
+document_consistency_report_*.md
+*_report_[0-9]*.json
+*_report_[0-9]*.md
+
+# 一時的な最適化・分析スクリプト
+*_optimizer.py
+*_analysis.py
+*_reducer.py
+*_checker.py
+import_optimizer.py
+typing_optimizer.py
+large_file_optimizer.py
+aggressive_import_reducer.py
+final_aggressive_reduction.py
