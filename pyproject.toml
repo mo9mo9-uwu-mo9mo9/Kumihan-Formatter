@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kumihan = "kumihan_formatter.unified_api:main"
+kumihan = "kumihan_formatter.core.utilities.api_utils:main"
 
 [project.optional-dependencies]
 dev = [
