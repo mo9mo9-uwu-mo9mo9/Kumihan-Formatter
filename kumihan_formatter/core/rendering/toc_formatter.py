@@ -1,3 +1,5 @@
+from typing import Any, TYPE_CHECKING
+
 """TOC Formatter class for Kumihan-Formatter
 
 This module contains the TOC formatting logic.

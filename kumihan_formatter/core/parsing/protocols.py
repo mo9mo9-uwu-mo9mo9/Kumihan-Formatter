@@ -1,10 +1,10 @@
+from typing import Any, Dict, List, Optional, Protocol, Union, runtime_checkable
+
 """統一パーサープロトコル定義
 
 Issue #880 Phase 2: パーサー階層整理
 すべてのパーサーの統一インターフェース定義
 """
-
-from typing import Any, Dict, List, Optional, Union, runtime_checkable
 
 from ..ast_nodes import Node
 

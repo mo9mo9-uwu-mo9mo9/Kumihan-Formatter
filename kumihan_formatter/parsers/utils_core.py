@@ -4,7 +4,7 @@
 """
 
 import re
-from typing import List, Dict, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..core.parsing.protocols import (

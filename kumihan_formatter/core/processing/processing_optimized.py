@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, Iterator, List, Optional
+
 """
 並列処理最適化機能
 processor_core.py分割版 - 高度なパフォーマンス最適化専用モジュール
@@ -7,7 +9,6 @@ import concurrent.futures
 import logging
 import os
 import threading
-from typing import Any, Callable, Dict, Iterator, List, Optional
 
 from ..types import ChunkInfo
 

@@ -3,7 +3,7 @@
 Issue #1215対応完了版：11個のParserを統合管理
 """
 
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 # 統合パーサーシステム
 from .main_parser import MainParser

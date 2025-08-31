@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, List, Optional, Union
+
 """
 OptimizationManager - 最適化機能統合管理クラス
 パフォーマンス最適化・メモリ管理・処理効率化の統合
@@ -5,7 +7,6 @@ OptimizationManager - 最適化機能統合管理クラス
 
 import logging
 import time
-from typing import Dict, Any, List, Optional, Union, Callable
 from dataclasses import dataclass
 from functools import wraps
 

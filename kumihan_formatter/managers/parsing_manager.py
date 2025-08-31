@@ -4,7 +4,7 @@ ParseManager + ValidationManager の機能を統合
 """
 
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from kumihan_formatter.core.ast_nodes.node import Node
 from kumihan_formatter.core.processing.parsing_coordinator import ParsingCoordinator

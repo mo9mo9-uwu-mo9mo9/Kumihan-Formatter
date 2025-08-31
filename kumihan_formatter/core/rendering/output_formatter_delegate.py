@@ -4,10 +4,7 @@ Issue #912 Renderer系統合リファクタリング対応
 main_renderer.pyから分離された出力フォーマット・エラーハンドリング機能
 """
 
-from typing import Dict, List
-
-if TYPE_CHECKING:
-    pass
+from typing import Any, Dict, List
 
 from ..ast_nodes import Node
 import logging
@@ -97,7 +94,6 @@ class OutputFormatterDelegate:
 
         # 各エラーの詳細を追加
         for i, error in enumerate(self.main_renderer.graceful_errors, 1):
-            import html
 
             # XSS対策: エラー情報のエスケープ処理
             safe_title = html.escape(error.display_title)

@@ -9,9 +9,6 @@
 from typing import List, Optional
 import logging
 
-if TYPE_CHECKING:
-    pass
-
 from .utils_core import create_cache_key
 
 

@@ -5,7 +5,7 @@ CSSProcessor分割版 - CSS最適化・検証・レスポンシブ機能
 
 import logging
 import re
-from typing import Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 
 class CSSUtilities:

@@ -1,3 +1,5 @@
+from typing import Dict
+
 """
 CSSテーマ生成機能
 CSSProcessor分割版 - テーマシステム専用モジュール

@@ -5,7 +5,7 @@ MainParser→MasterParser統合により更新
 レガシーAPIとの互換性を保持しつつ、最新アーキテクチャに対応
 """
 
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from ...parsers.unified_keyword_parser import UnifiedKeywordParser as KeywordParser
 from ...parsers.unified_list_parser import UnifiedListParser as ListParser
@@ -110,15 +110,11 @@ ContentParser = MarkdownParser
 # Node作成関数（互換性用）
 def create_node(node_type: str = "text", content: str = "", **kwargs: Any) -> Node:
     """Node作成関数 - 互換性用簡易実装"""
-    from ..ast_nodes.node import Node
-
     return Node(type=node_type, content=content, **kwargs)
 
 
 def error_node(message: str = "Error", **kwargs: Any) -> Node:
     """エラーNode作成関数 - 互換性用簡易実装"""
-    from ..ast_nodes.node import Node
-
     return Node(type="error", content=message, **kwargs)
 
 

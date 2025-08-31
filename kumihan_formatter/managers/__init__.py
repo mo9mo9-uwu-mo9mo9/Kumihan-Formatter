@@ -16,12 +16,13 @@ from .core_manager import CoreManager
 from .parsing_manager import ParsingManager
 from .optimization_manager import OptimizationManager
 from .plugin_manager import PluginManager
-from .distribution_manager import DistributionManager
+
+# from .distribution_manager import DistributionManager  # 移動済み: core.io.distribution_manager
 
 __all__ = [
     "CoreManager",
-    "ParsingManager", 
+    "ParsingManager",
     "OptimizationManager",
     "PluginManager",
-    "DistributionManager",
+    # "DistributionManager",  # 移動済み
 ]

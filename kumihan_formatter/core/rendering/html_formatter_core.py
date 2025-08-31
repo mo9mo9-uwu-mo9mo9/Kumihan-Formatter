@@ -6,7 +6,7 @@ Issue #1215対応: 不足していたHTMLFormatterCoreクラスの実装
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ..ast_nodes import Node
 

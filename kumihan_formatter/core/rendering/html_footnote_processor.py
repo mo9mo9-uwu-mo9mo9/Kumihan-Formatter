@@ -5,7 +5,7 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class FootnoteManager:

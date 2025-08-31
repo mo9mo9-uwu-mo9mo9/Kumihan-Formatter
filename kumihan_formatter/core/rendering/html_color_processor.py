@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 """HTML Color Processing - 色処理専用モジュール
 
 HTMLFormatter分割により抽出 (Phase3最適化)

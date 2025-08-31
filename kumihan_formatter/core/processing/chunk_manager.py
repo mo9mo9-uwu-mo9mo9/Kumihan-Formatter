@@ -5,7 +5,7 @@ Issue #1217対応: ディレクトリ構造最適化によるチャンク管理�
 
 import os
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import Any, Dict, List, Optional
 
 from kumihan_formatter.core.utilities.logger import get_logger
 from ..types import ChunkInfo

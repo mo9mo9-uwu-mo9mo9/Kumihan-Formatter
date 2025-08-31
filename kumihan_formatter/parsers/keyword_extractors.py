@@ -6,11 +6,8 @@
 - キーワード情報の変換と正規化
 """
 
-from typing import Dict, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 import logging
-
-if TYPE_CHECKING:
-    pass
 
 from .utils_core import (
     setup_keyword_patterns,

@@ -5,7 +5,7 @@ core_marker_parser.py分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import logging
 

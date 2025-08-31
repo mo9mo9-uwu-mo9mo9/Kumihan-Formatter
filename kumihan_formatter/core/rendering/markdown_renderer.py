@@ -6,7 +6,7 @@ Issue #1215対応: markdown_rendererの基本実装
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 
 class MarkdownRenderer:

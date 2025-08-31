@@ -6,10 +6,7 @@ parser.py分割により抽出 (Phase3最適化)
 
 import threading
 import time
-from typing import List, Optional
-
-if TYPE_CHECKING:
-    pass
+from typing import Any, Dict, List, Optional
 
 from ..ast_nodes import Node, error_node
 import logging

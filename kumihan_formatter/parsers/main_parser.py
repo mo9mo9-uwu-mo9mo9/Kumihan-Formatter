@@ -1,10 +1,11 @@
+from typing import Any, Callable, Dict, List, Optional, Union
+
 """
 MainParser - 統合パーサーシステム
 全てのパーサーを統合管理する中央インターフェース
 """
 
 import logging
-from typing import Dict, List, Optional, Union, Callable
 from pathlib import Path
 
 from kumihan_formatter.core.ast_nodes.node import Node

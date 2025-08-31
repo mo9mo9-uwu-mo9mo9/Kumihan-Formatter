@@ -4,7 +4,7 @@ This module handles heading collection for TOC generation
 to reduce the size of main_renderer.py and maintain the 300-line limit.
 """
 
-from typing import List
+from typing import Any, List
 
 from ..ast_nodes import Node
 

@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, List, Optional, Union
+
 """
 PluginManager - プラグイン機能統合管理クラス
 拡張機能・カスタムパーサー・フィルターの統合管理
@@ -6,12 +8,10 @@ PluginManager - プラグイン機能統合管理クラス
 import logging
 import importlib
 import inspect
-from typing import Dict, List, Optional, Union, Callable
 from pathlib import Path
 from dataclasses import dataclass
 
 from kumihan_formatter.core.ast_nodes.node import Node
-
 
 import importlib.util
 

@@ -6,7 +6,7 @@ Issue #492 Phase 5A - file_operations.py分割
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import logging
 
