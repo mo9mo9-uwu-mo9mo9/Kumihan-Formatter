@@ -387,45 +387,7 @@ class SpecializedParser:
 
 
 # レガシー互換関数
-def parse_marker(content: str) -> Node:
-    """マーカー解析（レガシー互換）
-
-    Warning:
-        この関数は後方互換性のために提供されています。
-        新しいコードではSpecializedParserクラスを使用してください。
-    """
-    warnings.warn(
-        "parse_marker() is deprecated. Use SpecializedParser instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    parser = SpecializedParser()
-    return parser.parse_marker_content(content)
-
-
-def parse_new_format(content: str) -> Node:
-    """新フォーマット解析（レガシー互換）"""
-    warnings.warn(
-        "parse_new_format() is deprecated. Use SpecializedParser instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    parser = SpecializedParser()
-    return parser.parse_new_format_content(content)
-
-
-def parse_ruby_format(content: str) -> Node:
-    """ルビフォーマット解析（レガシー互換）"""
-    warnings.warn(
-        "parse_ruby_format() is deprecated. Use SpecializedParser instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    parser = SpecializedParser()
-    return parser.parse_ruby_content(content)
+# Phase 3: レガシー互換関数は削除しました（#1306）
 
 
 # エクスポート定義
@@ -436,8 +398,5 @@ __all__ = [
     "FormatProcessingError",
     # メインクラス
     "SpecializedParser",
-    # レガシー互換関数
-    "parse_marker",
-    "parse_new_format",
-    "parse_ruby_format",
+    # 互換関数はPhase 3で削除済み
 ]
