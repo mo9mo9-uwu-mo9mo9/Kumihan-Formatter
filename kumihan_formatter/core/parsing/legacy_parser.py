@@ -1,12 +1,23 @@
-"""Legacy parser module - 後方互換性のためのレガシーインターフェース
+"""Legacy parser module - 後方互換性のためのレガシーインターフェース（Deprecated）
 
 このモジュールは統合最適化前のparser.pyの後方互換性を保つためのものです。
 新しいAPIはunified_api.pyまたは対応するManagerを使用してください。
 
 アーキテクチャ統合完了後（Issue #1249）は段階的に削除予定。
+\n注意: 本モジュールは非推奨です（#1279 Phase 1）。
+新しいコードでは `kumihan_formatter.parsers` 配下、または
+`unified_api.KumihanFormatter` の利用に移行してください。
 """
 
 from typing import Any, Optional
+import warnings
+
+# Import時に一度だけ警告（過剰発火を避ける）
+warnings.warn(
+    "core.parsing.legacy_parser is deprecated. Use parsers/* or unified_api instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 # 統合最適化後のインポート（削除されたハンドラー・モジュールを除去）
 from ..ast_nodes import Node
@@ -168,6 +179,11 @@ def parse(text: str, config: Any = None) -> list[Node]:
     Returns:
         list[Node]: Parsed AST nodes
     """
+    warnings.warn(
+        "legacy_parser.parse() is deprecated. Use unified_api or parsers.MainParser.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     parser = Parser(config)
     return parser.parse(text)
 
@@ -186,6 +202,11 @@ def parse_with_error_config(
     Returns:
         list[Node]: 解析済みAST nodes
     """
+    warnings.warn(
+        "legacy_parser.parse_with_error_config() is deprecated.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     # ストリーミング使用判定
     if use_streaming is None:
         # テキストサイズが大きい場合はストリーミングを使用
