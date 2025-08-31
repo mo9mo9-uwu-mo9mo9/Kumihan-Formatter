@@ -7,7 +7,7 @@ Issue #1215対応: 不足していたHTMLUtilitiesクラスの基本実装
 
 import html
 import re
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 class HTMLUtilities:

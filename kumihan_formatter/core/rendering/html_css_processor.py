@@ -4,7 +4,7 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 CSS関連の処理をすべて統合
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 
 
 class HTMLCSSProcessor:

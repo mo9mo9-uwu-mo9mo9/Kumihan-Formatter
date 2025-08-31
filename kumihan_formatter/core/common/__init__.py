@@ -16,7 +16,6 @@ from .error_framework import (
 
 # smart_cache import temporaily removed to fix circular import
 # Use: from kumihan_formatter.core.caching import SmartCache, CacheStrategy, etc.
-from .validation_mixin import ValidationMixin, ValidationRule
 
 __all__ = [
     "KumihanError",

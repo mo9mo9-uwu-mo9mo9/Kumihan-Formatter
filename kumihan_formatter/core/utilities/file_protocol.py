@@ -3,8 +3,6 @@
 循環依存を避けるためのプロトコル定義モジュール。
 """
 
-from typing import Protocol
-
 
 class UIProtocol(Protocol):
     """UI interface protocol to avoid circular dependency"""

@@ -23,7 +23,6 @@ import logging
 #     setup_keyword_patterns,
 #     KeywordCache,
 # )
-from .keyword_extractors import KeywordExtractor, KeywordInfoProcessor
 
 
 class KeywordParserConfig:

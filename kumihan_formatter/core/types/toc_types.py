@@ -3,8 +3,6 @@
 目次のデータ構造とエントリー管理クラス。
 """
 
-from __future__ import annotations
-
 from ..ast_nodes import Node
 
 

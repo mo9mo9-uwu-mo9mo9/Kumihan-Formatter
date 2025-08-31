@@ -1,12 +1,9 @@
 """MainRenderer - 統合レンダラーシステム緊急実装 (Issue #1221対応)"""
 
-import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-
 from ...core.utilities.logger import get_logger
 from .markdown_renderer import MarkdownRenderer
-from .html_formatter import HtmlFormatter
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 
 class MainRenderer:

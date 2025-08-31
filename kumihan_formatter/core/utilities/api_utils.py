@@ -6,7 +6,7 @@ KumihanFormatterクラスの便利関数とラッパー関数を提供します�
 unified_api.pyから分離してファイルサイズ最適化に貢献します。
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 from pathlib import Path
 
 

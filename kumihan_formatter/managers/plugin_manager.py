@@ -6,7 +6,7 @@ PluginManager - プラグイン機能統合管理クラス
 import logging
 import importlib
 import inspect
-from typing import Dict, Any, List, Optional, Union, Callable, Type
+from typing import Dict, List, Optional, Union, Callable
 from pathlib import Path
 from dataclasses import dataclass
 

@@ -6,11 +6,10 @@ parser.py分割により抽出 (Phase3最適化)
 
 import threading
 import time
-from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from typing import Any, Dict, Iterator, List, Optional, TYPE_CHECKING
+from typing import List, Optional
 
 if TYPE_CHECKING:
-    from ..common.error_base import GracefulSyntaxError
+    pass
 
 from ..ast_nodes import Node, error_node
 import logging

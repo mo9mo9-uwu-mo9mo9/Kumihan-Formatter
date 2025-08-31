@@ -5,7 +5,7 @@ HTMLフォーマット関連の処理をすべて統合
 """
 
 import re
-from typing import List, Optional
+from typing import List
 
 
 class HTMLFormatProcessor:

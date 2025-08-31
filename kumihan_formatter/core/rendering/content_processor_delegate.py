@@ -4,10 +4,10 @@ Issue #912 Renderer系統合リファクタリング対応
 main_renderer.pyから分離されたコンテンツ処理・最適化機能
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 
 if TYPE_CHECKING:
-    from .main_renderer import MainRenderer
+    pass
 
 from ..ast_nodes import Node
 import logging

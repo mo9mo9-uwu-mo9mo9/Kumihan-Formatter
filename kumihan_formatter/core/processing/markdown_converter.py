@@ -119,7 +119,6 @@ class SimpleMarkdownConverter:
 
     def _convert_paragraphs(self, text: str) -> str:
         """段落を作成"""
-        import re
 
         # 空行で段落を分割
         paragraphs = re.split(r"\n\s*\n", text.strip())

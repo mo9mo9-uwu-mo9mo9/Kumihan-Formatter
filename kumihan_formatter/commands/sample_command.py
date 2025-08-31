@@ -11,7 +11,6 @@ from rich.progress import Progress
 
 # Issue #1207: Migrated from deprecated file_ops to new io system
 from ..parser import parse
-from ..core.rendering.main_renderer import MainRenderer
 from ..sample_content import SAMPLE_IMAGES, SHOWCASE_SAMPLE
 
 # from ..ui.console_ui import get_console_ui  # TODO: console_ui module not found

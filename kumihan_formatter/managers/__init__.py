@@ -16,11 +16,11 @@ from .core_manager import CoreManager
 from .parsing_manager import ParsingManager
 from .optimization_manager import OptimizationManager
 from .plugin_manager import PluginManager
-from ..core.io.distribution_manager import DistributionManager
+from .distribution_manager import DistributionManager
 
 __all__ = [
     "CoreManager",
-    "ParsingManager",
+    "ParsingManager", 
     "OptimizationManager",
     "PluginManager",
     "DistributionManager",
