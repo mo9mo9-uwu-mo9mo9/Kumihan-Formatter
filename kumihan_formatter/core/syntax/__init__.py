@@ -19,18 +19,9 @@ from .syntax_reporter import SyntaxReporter
 check_files = SyntaxReporter.check_files
 format_error_report = SyntaxReporter.format_error_report
 
-# Export public API
+# Export public API (Phase 2: 後方互換APIの表面積を縮小)
 __all__ = [
-    # Error types
-    "SyntaxError",
-    "ErrorSeverity",
-    "ErrorTypes",
-    # Rules and validation
-    "SyntaxRules",
-    # "KumihanSyntaxValidator",  # 実装待ち
     "SyntaxReporter",
-    # Backward compatibility
-    # "KumihanSyntaxChecker",  # 実装待ち
     "check_files",
     "format_error_report",
 ]
