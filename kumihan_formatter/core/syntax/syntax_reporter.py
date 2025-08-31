@@ -7,8 +7,9 @@ formats (text, JSON), and managing error presentation.
 import json
 import sys
 from pathlib import Path
+import io
 
-from .syntax_errors import ErrorSeverity, SyntaxError
+from .syntax_errors import ErrorSeverity, SyntaxError, ErrorTypes
 
 # NOTE: 実装が必要なモジュール - Issue #1217対応
 # from .syntax_validator import KumihanSyntaxValidator
@@ -21,21 +22,152 @@ class SyntaxReporter:
     def check_files(
         file_paths: list[Path], verbose: bool = False
     ) -> dict[str, list[SyntaxError]]:
-        """Check multiple files for syntax errors"""
-        # NOTE: 実装が必要 - KumihanSyntaxValidator未実装のため一時的に無効化
-        # validator = KumihanSyntaxValidator()
-        # results = {}
+        """指定ファイル群の最小構文検証を実行し、エラー一覧を返す。
 
-        # for file_path in file_paths:
-        #     if verbose:
-        #         print(f"Checking {file_path}...")
+        ルール（最小実装）:
+        - ブロック記法: 開始行（例: "#見出し1#" など）と終了行（"##"）の対応を検証。
+          未対応の終了（UNMATCHED_BLOCK_END）/未クローズ（UNCLOSED_BLOCK）を検出。
+        - 行内バッククォート: 逆数個（奇数）の場合はWARNING（INVALID_SYNTAX）。
+        - 空のキーワード: "# #" のように中身が空の場合はWARNING（EMPTY_KEYWORD）。
+        - タブ文字: INFO として通知（改善提案）。
+        """
+        results: dict[str, list[SyntaxError]] = {}
 
-        #     errors = validator.validate_file(file_path)
-        #     if errors:
-        #         results[str(file_path)] = errors
+        for file_path in file_paths:
+            if verbose:
+                print(f"Checking {file_path}...")
 
-        # return results
-        return {}  # 一時的に空の辞書を返す
+            try:
+                text = Path(file_path).read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                results[str(file_path)] = [
+                    SyntaxError(
+                        line_number=1,
+                        column=1,
+                        severity=ErrorSeverity.ERROR,
+                        error_type=ErrorTypes.ENCODING,
+                        message="UTF-8として読み込めませんでした",
+                        context="encoding",
+                        suggestion="ファイルのエンコーディングをUTF-8に変換してください",
+                    )
+                ]
+                continue
+            except Exception as e:
+                results[str(file_path)] = [
+                    SyntaxError(
+                        line_number=1,
+                        column=1,
+                        severity=ErrorSeverity.ERROR,
+                        error_type=ErrorTypes.FILE_NOT_FOUND,
+                        message=f"ファイルを読み込めません: {e}",
+                        context=str(file_path),
+                    )
+                ]
+                continue
+
+            errors = SyntaxReporter._validate_text(text)
+            if errors:
+                results[str(file_path)] = errors
+
+        return results
+
+    @staticmethod
+    def _validate_text(text: str) -> list[SyntaxError]:
+        errors: list[SyntaxError] = []
+        open_stack: list[tuple[int, str]] = []  # (line_no, line_text)
+
+        lines = text.splitlines()
+        for idx, raw in enumerate(lines, start=1):
+            line = raw.rstrip("\n")
+
+            # タブ文字（情報）
+            if "\t" in line:
+                errors.append(
+                    SyntaxError(
+                        line_number=idx,
+                        column=line.find("\t") + 1,
+                        severity=ErrorSeverity.INFO,
+                        error_type=ErrorTypes.SYNTAX_ERROR,
+                        message="タブ文字が含まれています",
+                        context=line.strip(),
+                        suggestion="スペースに置き換えることを推奨します",
+                    )
+                )
+
+            s = line.strip()
+
+            # 空のキーワード（例: "# #"）
+            if s.startswith("#") and s.endswith("#") and len(s) >= 2:
+                inner = s.strip("#").strip()
+                if inner == "":
+                    errors.append(
+                        SyntaxError(
+                            line_number=idx,
+                            column=1,
+                            severity=ErrorSeverity.WARNING,
+                            error_type=ErrorTypes.EMPTY_KEYWORD,
+                            message="空のキーワード行です",
+                            context=s,
+                            suggestion="キーワード名を指定するか、この行を削除してください",
+                        )
+                    )
+
+            # ブロック開始（例: "#見出し1#" など、閉じ行は"##"）
+            if (
+                s.startswith("#")
+                and not s.startswith("##")
+                and s.endswith("#")
+                and s != "#"
+            ):
+                open_stack.append((idx, s))
+                continue
+
+            # ブロック終了
+            if s == "##":
+                if not open_stack:
+                    errors.append(
+                        SyntaxError(
+                            line_number=idx,
+                            column=1,
+                            severity=ErrorSeverity.ERROR,
+                            error_type=ErrorTypes.UNMATCHED_BLOCK_END,
+                            message="対応する開始行のない終了マーカーです",
+                            context=s,
+                            suggestion="直前の開始行（#...#）を確認してください",
+                        )
+                    )
+                else:
+                    open_stack.pop()
+
+            # 行内バッククォートの未対応（奇数個）
+            if line.count("`") % 2 == 1:
+                errors.append(
+                    SyntaxError(
+                        line_number=idx,
+                        column=line.find("`") + 1 if "`" in line else 1,
+                        severity=ErrorSeverity.WARNING,
+                        error_type=ErrorTypes.INVALID_SYNTAX,
+                        message="バッククォートの対応が取れていません",
+                        context=line.strip(),
+                        suggestion="` をもう一つ追加するか削除してください",
+                    )
+                )
+
+        # 未クローズのブロックを報告
+        for ln, opener in open_stack:
+            errors.append(
+                SyntaxError(
+                    line_number=ln,
+                    column=1,
+                    severity=ErrorSeverity.ERROR,
+                    error_type=ErrorTypes.UNCLOSED_BLOCK,
+                    message="ブロックが閉じられていません（対応する '##' が必要）",
+                    context=opener,
+                    suggestion="対応する終了行 '##' を追加してください",
+                )
+            )
+
+        return errors
 
     @staticmethod
     def format_error_report(
