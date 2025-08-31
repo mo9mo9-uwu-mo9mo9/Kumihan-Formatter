@@ -48,31 +48,37 @@ class MemoryMonitoringError(Exception):
 # パーサー系エラー
 class SpecializedParsingError(Exception):
     """特殊化パーサー固有のエラー"""
+
     pass
 
 
 class MarkerValidationError(Exception):
     """マーカー検証エラー"""
+
     pass
 
 
 class FormatProcessingError(Exception):
     """フォーマット処理エラー"""
+
     pass
 
 
 class ParserUtilsError(Exception):
     """パーサーユーティリティ固有のエラー"""
+
     pass
 
 
 class KeywordValidationError(Exception):
     """キーワード検証エラー"""
+
     pass
 
 
 class ExtractionError(Exception):
     """抽出処理エラー"""
+
     pass
 
 
