@@ -13,39 +13,16 @@ from rich.progress import Progress
 from ..parser import parse
 from ..sample_content import SAMPLE_IMAGES, SHOWCASE_SAMPLE
 
-# from ..ui.console_ui import get_console_ui  # TODO: console_ui module not found
+from ..ui.console_ui import get_console_ui
 
 from ..core.rendering import render
 
 
-def get_console_ui() -> Any:
-    """Dummy console UI for compatibility"""
+def get_console_ui() -> Any:  # type: ignore[no-redef]
+    # 旧ダミー関数との互換のため再定義し、新実装を委譲
+    from ..ui.console_ui import get_console_ui as _get
 
-    class DummyConsoleUI:
-        def print_success(self, msg: str) -> None:
-            print(f"✅ {msg}")
-
-        def print_error(self, msg: str) -> None:
-            print(f"❌ {msg}")
-
-        def print_warning(self, msg: str) -> None:
-            print(f"⚠️ {msg}")
-
-        def print_info(self, msg: str) -> None:
-            print(f"ℹ️ {msg}")
-
-        def sample_generation(self, output_path: str) -> None:
-            print(f"📁 サンプル生成開始: {output_path}")
-
-        def sample_complete(
-            self, output_path: str, txt_name: str, html_name: str, image_count: int
-        ) -> None:
-            print(f"✅ サンプル生成完了: {output_path}")
-            print(f"📄 テキスト: {txt_name}")
-            print(f"🌐 HTML: {html_name}")
-            print(f"🖼️ 画像: {image_count}個")
-
-    return DummyConsoleUI()
+    return _get()
 
 
 from ..managers.core_manager import CoreManager
@@ -139,10 +116,10 @@ class SampleCommand:
                         "source_text": SHOWCASE_SAMPLE,
                         "source_filename": "showcase.txt",
                     }
-                    html = render(ast, context)
+                    html = render([ast], context)
                 else:
                     context = {"template": "base.html.j2", "title": "showcase"}
-                    html = render(ast, context)
+                    html = render([ast], context)
                 progress.update(task, completed=100)
         except Exception:
             # Fallback for test environments
@@ -154,10 +131,10 @@ class SampleCommand:
                     "source_text": SHOWCASE_SAMPLE,
                     "source_filename": "showcase.txt",
                 }
-                html = render(ast, context)
+                html = render([ast], context)
             else:
                 context = {"template": "base.html.j2", "title": "showcase"}
-                html = render(ast, context)
+                html = render([ast], context)
 
         return html
 

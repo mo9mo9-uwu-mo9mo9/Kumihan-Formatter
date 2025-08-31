@@ -12,47 +12,7 @@ import click
 from ..core.common.error_base import ErrorSeverity
 from ..core.syntax import check_files, format_error_report
 
-# from ..ui.console_ui import get_console_ui  # TODO: console_ui module not found
-
-
-def get_console_ui() -> Any:
-    """Dummy console UI for compatibility"""
-
-    class DummyConsoleUI:
-        def print_success(self, msg: str) -> None:
-            print(f"✅ {msg}")
-
-        def print_error(self, msg: str) -> None:
-            print(f"❌ {msg}")
-
-        def print_warning(self, msg: str) -> None:
-            print(f"⚠️ {msg}")
-
-        def print_info(self, msg: str) -> None:
-            print(f"ℹ️ {msg}")
-
-        def error(self, msg: str) -> None:
-            print(f"❌ {msg}")
-
-        def info(self, msg: str, details: str = "") -> None:
-            if details:
-                print(f"ℹ️ {msg}: {details}")
-            else:
-                print(f"ℹ️ {msg}")
-
-        def warning(self, msg: str) -> None:
-            print(f"⚠️ {msg}")
-
-        def success(self, title: str, msg: str = "") -> None:
-            if msg:
-                print(f"✅ {title}: {msg}")
-            else:
-                print(f"✅ {title}")
-
-        def dim(self, msg: str) -> None:
-            print(f"💭 {msg}")
-
-    return DummyConsoleUI()
+from ..ui.console_ui import get_console_ui
 
 
 class CheckSyntaxCommand:

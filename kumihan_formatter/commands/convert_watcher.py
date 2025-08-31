@@ -9,30 +9,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
-
-# from ...ui.console_ui import get_console_ui  # TODO: console_ui module not found
-
-
-# Temporary fallback for get_console_ui
-class DummyConsoleUI:
-    def error(self, message: str) -> None:
-        print(f"ERROR: {message}")
-
-    def dim(self, message: str) -> None:
-        print(f"INFO: {message}")
-
-    def watch_start(self, path: str) -> None:
-        print(f"Starting watch on: {path}")
-
-    def watch_stopped(self) -> None:
-        print("Watch stopped")
-
-    def watch_file_changed(self, path: str) -> None:
-        print(f"File changed: {path}")
-
-
-def get_console_ui() -> DummyConsoleUI:
-    return DummyConsoleUI()
+from ..ui.console_ui import get_console_ui
 
 
 class ConvertWatcher:
