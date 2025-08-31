@@ -54,9 +54,21 @@ class CoreManager:
         self._template_cache: Dict[str, str] = {}
 
         # 配布管理コンポーネント (遅延初期化)
-        self._distribution_structure = None
-        self._distribution_converter = None
-        self._distribution_processor = None
+        from typing import TYPE_CHECKING
+
+        if TYPE_CHECKING:
+            from kumihan_formatter.core.io.distribution_structure import (
+                DistributionStructure,
+            )
+            from kumihan_formatter.core.io.distribution_converter import (
+                DistributionConverter,
+            )
+            from kumihan_formatter.core.io.distribution_processor import (
+                DistributionProcessor,
+            )
+        self._distribution_structure: Optional["DistributionStructure"] = None
+        self._distribution_converter: Optional["DistributionConverter"] = None
+        self._distribution_processor: Optional["DistributionProcessor"] = None
 
     # ========== ファイルIO機能（旧ResourceManager） ==========
 
@@ -330,7 +342,7 @@ class CoreManager:
 
     # ========== 配布管理機能（DistributionManager統合） ==========
 
-    def _init_distribution_components(self):
+    def _init_distribution_components(self) -> None:
         """配布管理コンポーネントの遅延初期化"""
         if self._distribution_structure is None:
             try:

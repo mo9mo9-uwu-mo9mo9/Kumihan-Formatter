@@ -12,7 +12,7 @@ __all__ = [
     # 文書型定義
     "DocumentType",
     # 目次型定義
-    "TOCEntry", 
+    "TOCEntry",
     # チャンク型定義（document_types.pyに統合済み）
     "ChunkInfo",
 ]

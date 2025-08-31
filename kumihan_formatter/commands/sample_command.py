@@ -139,10 +139,10 @@ class SampleCommand:
                         "source_text": SHOWCASE_SAMPLE,
                         "source_filename": "showcase.txt",
                     }
-                    html = render(ast, context)
+                    html = render([ast], context)
                 else:
                     context = {"template": "base.html.j2", "title": "showcase"}
-                    html = render(ast, context)
+                    html = render([ast], context)
                 progress.update(task, completed=100)
         except Exception:
             # Fallback for test environments
@@ -154,10 +154,10 @@ class SampleCommand:
                     "source_text": SHOWCASE_SAMPLE,
                     "source_filename": "showcase.txt",
                 }
-                html = render(ast, context)
+                html = render([ast], context)
             else:
                 context = {"template": "base.html.j2", "title": "showcase"}
-                html = render(ast, context)
+                html = render([ast], context)
 
         return html
 

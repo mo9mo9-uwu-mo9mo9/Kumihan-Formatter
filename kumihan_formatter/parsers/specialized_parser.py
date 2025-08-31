@@ -21,15 +21,7 @@ from .unified_keyword_parser import UnifiedKeywordParser
 
 
 # エラークラスは共通モジュールから使用
-# from kumihan_formatter.core.common.processing_errors import SpecializedParsingError
-
-
-# エラークラスは共通モジュールから使用
-# from kumihan_formatter.core.common.processing_errors import MarkerValidationError
-
-
-# エラークラスは共通モジュールから使用
-# from kumihan_formatter.core.common.processing_errors import FormatProcessingError
+from kumihan_formatter.core.common.processing_errors import SpecializedParsingError
 
 
 class SpecializedParser:
@@ -145,17 +137,18 @@ class SpecializedParser:
                 return error_node(f"Invalid decorator: {decorator}")
 
             # マーカーコンテンツ解析
-            return Node(
+            node = Node(
                 type="marker",
                 content=marker_content,
-                decorator=decorator,
-                line_number=1,
-                column=1,
                 attributes={
                     "keyword_type": keyword_result.type,
                     "processed_by": "specialized_parser",
+                    "decorator": decorator,
+                    "line_number": 1,
+                    "column": 1,
                 },
             )
+            return node
 
         except Exception as e:
             return error_node(f"Marker parsing error: {e}")
@@ -188,12 +181,12 @@ class SpecializedParser:
             return Node(
                 type="new_format",
                 content=processed_content,
-                line_number=1,
-                column=1,
                 attributes={
                     "format_data": format_data,
                     "original_formats": matches,
                     "processed_by": "specialized_parser",
+                    "line_number": 1,
+                    "column": 1,
                 },
             )
 
@@ -234,11 +227,11 @@ class SpecializedParser:
             return Node(
                 type="ruby_format",
                 content=processed_content,
-                line_number=1,
-                column=1,
                 attributes={
                     "ruby_data": ruby_data,
                     "processed_by": "specialized_parser",
+                    "line_number": 1,
+                    "column": 1,
                 },
             )
 
@@ -273,11 +266,11 @@ class SpecializedParser:
             return Node(
                 type="inline_format",
                 content=processed_content,
-                line_number=1,
-                column=1,
                 attributes={
                     "inline_data": inline_data,
                     "processed_by": "specialized_parser",
+                    "line_number": 1,
+                    "column": 1,
                 },
             )
 
@@ -297,9 +290,12 @@ class SpecializedParser:
         return Node(
             type="generic_special",
             content=content,
-            line_number=1,
-            column=1,
-            attributes={"processed_by": "specialized_parser", "format_type": "generic"},
+            attributes={
+                "processed_by": "specialized_parser",
+                "format_type": "generic",
+                "line_number": 1,
+                "column": 1,
+            },
         )
 
     def validate(self, content: str) -> bool:
@@ -328,7 +324,7 @@ class SpecializedParser:
             return False
 
     # プライベートヘルパーメソッド
-    def _init_new_format_patterns(self) -> Dict[str, re.Pattern]:
+    def _init_new_format_patterns(self) -> Dict[str, re.Pattern[str]]:
         """新フォーマットパターン初期化"""
         return {
             "variable": re.compile(r"\$([a-zA-Z_][a-zA-Z0-9_]*)"),
@@ -336,7 +332,7 @@ class SpecializedParser:
             "attribute": re.compile(r"@([a-zA-Z_][a-zA-Z0-9_]*)"),
         }
 
-    def _init_ruby_format_patterns(self) -> Dict[str, re.Pattern]:
+    def _init_ruby_format_patterns(self) -> Dict[str, re.Pattern[str]]:
         """ルビフォーマットパターン初期化"""
         return {
             "kanji": re.compile(r"[\u4e00-\u9faf]+"),
@@ -344,7 +340,7 @@ class SpecializedParser:
             "katakana": re.compile(r"[\u30a1-\u30f6]+"),
         }
 
-    def _init_inline_patterns(self) -> Dict[str, re.Pattern]:
+    def _init_inline_patterns(self) -> Dict[str, re.Pattern[str]]:
         """インラインパターン初期化"""
         return {
             "code": re.compile(r"code:([^`]+)"),
@@ -363,7 +359,8 @@ class SpecializedParser:
                 expr_type = pattern_name
                 match = pattern.search(expression)
                 if match:
-                    data["match_groups"] = match.groups()
+                    groups: Any = list(match.groups())
+                    data["match_groups"] = groups
                 break
 
         data["type"] = expr_type

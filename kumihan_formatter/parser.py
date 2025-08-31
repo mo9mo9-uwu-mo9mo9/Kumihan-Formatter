@@ -60,11 +60,23 @@ class Parser:
             パース結果ノード
         """
         # メインパーサーが判定・振り分け
-        return self.main_parser.parse(content)
+        result = self.main_parser.parse(content)
+        if result is None:
+            from .core.ast_nodes import error_node
+
+            return error_node("Parse failed: No result returned")
+        if isinstance(result, dict):
+            return Node(type="dict_result", content=result)
+        return result
 
     def parse_file(self, file_path: str) -> Node:
         """ファイルパース処理"""
-        return self.main_parser.parse_file(file_path)
+        result = self.main_parser.parse_file(file_path)
+        if result is None:
+            from .core.ast_nodes import error_node
+
+            return error_node(f"Parse file failed: {file_path}")
+        return result
 
     def validate(self, content: str) -> bool:
         """コンテンツ検証"""
