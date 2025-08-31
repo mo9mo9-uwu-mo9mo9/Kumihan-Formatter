@@ -1,0 +1,8 @@
+name: plan-granularity
+objective: Plans are short, ordered, and verifiable.
+evaluator:
+  type: stub
+  criteria:
+    steps_max: 7
+    steps_nontrivial: true
+

@@ -1,0 +1,8 @@
+name: tool-sequence
+objective: Tool usage is grouped and pre-announced; failures are handled.
+evaluator:
+  type: stub
+  criteria:
+    preamble_required: true
+    failure_handling: true
+

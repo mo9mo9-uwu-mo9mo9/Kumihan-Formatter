@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Codex CLI environment defaults (POSIX)
+# Copy as `.env` or `source` directly in your shell.
+
+# OpenAI API
+export OPENAI_API_KEY="YOUR_API_KEY_HERE"
+
+# Models
+export OPENAI_MODEL="gpt-5"            # std: gpt-5 | deep: gpt-5-thinking | fast: gpt-5-mini | batch: gpt-5-nano
+
+# Reasoning / Verbosity
+export OPENAI_REASONING_EFFORT="low"    # minimal | low | medium | high
+export OPENAI_VERBOSITY="low"           # low | medium | high
+
+# Stream responses
+export OPENAI_STREAMING="true"          # true | false
+
+# Optional: deterministic runs (when supported)
+# export OPENAI_SEED="42"
+
+# --- PowerShell (Windows) ---
+# $env:OPENAI_API_KEY = 'YOUR_API_KEY_HERE'
+# $env:OPENAI_MODEL = 'gpt-5'
+# $env:OPENAI_REASONING_EFFORT = 'low'
+# $env:OPENAI_VERBOSITY = 'low'
+# $env:OPENAI_STREAMING = 'true'
+# $env:OPENAI_SEED = '42'
+

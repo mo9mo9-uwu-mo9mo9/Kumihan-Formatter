@@ -1,0 +1,8 @@
+name: recency-citation
+objective: Time-varying info is cited with absolute dates.
+evaluator:
+  type: stub
+  criteria:
+    absolute_dates: true
+    citations_present: true
+
