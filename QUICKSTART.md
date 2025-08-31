@@ -29,11 +29,11 @@ with KumihanFormatter() as formatter:
 
 ### CLI使用
 ```bash
-# 基本変換
-kumihan-formatter convert input.kumihan output.html
+# 基本変換（エントリポイントは kumihan）
+kumihan input.kumihan [output.html]
 
-# バッチ処理
-kumihan-formatter convert *.kumihan --output-dir ./html/
+# Pythonモジュールとしての実行
+python -m kumihan_formatter input.kumihan [output.html]
 ```
 
 ---
