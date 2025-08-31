@@ -40,3 +40,11 @@
 - 既存スタイル（Black/mypy/pytest/Makefile）の遵守を最優先。
 - 新規ファイルは既存の配置ルールと命名に合わせ、最小限の差分で提案。
 - 提案前に `make lint` と `make test` をローカル実行して自己検証。
+
+## Automation Workflow (Fully Auto)
+- 手順: 1) Issue作成 → 2) Issueに基づく作業 → 3) セルフレビュー → 4) 改善実装 → 5) 最小差分PR作成 → 6) 3-5をループ → 問題がなくなったらPRをマージ（squash）→ ブランチ削除。
+- 権限/前提: gh認証済み、ブランチ保護で必須レビュー・必須CIを要求しない（またはセルフレビュー許可）。GitHub Actionsは導入しない。
+- 品質ゲート: `scripts/run_quality_check.sh` を用い、`make lint && make test` 成功を必須とする。
+- ラベル: `P0`/`P1`/`P2` を標準化。`scripts/set_issue_priorities.sh` で一括付与可能。
+- PR運用: 最小差分・1Issue=1PR。`scripts/create_minimal_pr.sh` でPR作成、`scripts/pr_merge_and_cleanup.sh` でsquashマージとブランチ掃除。
+- ログ: 自動化ログは `tmp/automation-logs/` に保存（git管理外）。
