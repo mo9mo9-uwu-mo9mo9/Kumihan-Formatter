@@ -1,10 +1,8 @@
-"""AST Node definitions for Kumihan-Formatter
+"""AST Node package
 
-This module contains the Abstract Syntax Tree node definitions
-used throughout the parsing and rendering pipeline.
-
-This package maintains backward compatibility by re-exporting
-all classes and functions from the original ast_nodes.py module.
+本パッケージはASTノード周辺の公開エントリです。後方互換のために
+工場関数・基本クラスを再エクスポートしていますが、今後は各モジュール
+（`.node`, `.factories` 等）からの直接importを推奨します（#1279）。
 """
 
 # Factory functions
@@ -26,6 +24,7 @@ from .factories import (
 
 # Core classes
 from .node import Node
+from .node_builder import NodeBuilder
 
 # Utility functions - temporarily commented out due to import issues
 # from ...core.utilities import (
