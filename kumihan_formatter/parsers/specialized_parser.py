@@ -353,7 +353,7 @@ class SpecializedParser:
     def _parse_new_format_expression(self, expression: str) -> Dict[str, Any]:
         """新フォーマット式解析"""
         expr_type = "unknown"
-        data = {"expression": expression}
+        data: Dict[str, Any] = {"expression": expression}
 
         # パターン判定
         for pattern_name, pattern in self._new_format_patterns.items():
@@ -362,7 +362,7 @@ class SpecializedParser:
                 match = pattern.search(expression)
                 if match:
                     groups: List[Any] = list(match.groups())
-                    data["match_groups"] = groups
+                    data["match_groups"] = groups  # store as list for JSON safety
                 break
 
         data["type"] = expr_type

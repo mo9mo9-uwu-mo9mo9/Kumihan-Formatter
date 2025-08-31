@@ -105,7 +105,7 @@ class Parser:
         try:
             from .unified_keyword_parser import UnifiedKeywordParser
 
-            self.keyword_parser = UnifiedKeywordParser()
+            self.keyword_parser: Optional[UnifiedKeywordParser] = UnifiedKeywordParser()
         except ImportError:
             self.logger.warning("UnifiedKeywordParserのインポートに失敗")
             self.keyword_parser = None
@@ -268,8 +268,7 @@ class Parser:
         return Node(
             type="parsed_content",
             content=f"Processed {processed_count} lines",
-            line_number=processed_count,
-            column=1,
+            attributes={"line_number": processed_count, "column": 1},
         )
 
 

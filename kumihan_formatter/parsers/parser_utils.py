@@ -392,8 +392,20 @@ class ParserUtils:
     # プライベートバリデーターメソッド
     def _validate_length(self, keyword: str) -> bool:
         """長さ検証"""
-        min_len = self.validation_rules["min_keyword_length"]
-        max_len = self.validation_rules["max_keyword_length"]
+        raw_min = self.validation_rules.get("min_keyword_length", 1)
+        raw_max = self.validation_rules.get("max_keyword_length", 255)
+        def _to_int(x: Any, default: int) -> int:
+            try:
+                if isinstance(x, (int,)):
+                    return int(x)
+                if isinstance(x, str) and x.isdigit():
+                    return int(x)
+            except Exception:
+                pass
+            return default
+
+        min_len: int = _to_int(raw_min, 1)
+        max_len: int = _to_int(raw_max, 255)
         return min_len <= len(keyword) <= max_len
 
     def _validate_characters(self, keyword: str) -> bool:
@@ -414,7 +426,8 @@ class ParserUtils:
 
     def _validate_reserved(self, keyword: str) -> bool:
         """予約語検証"""
-        return keyword not in self.validation_rules["reserved_keywords"]
+        reserved: set[str] | list[str] = self.validation_rules["reserved_keywords"]  # type: ignore[assignment]
+        return keyword not in set(reserved)
 
     def _validate_structure(self, keyword: str) -> bool:
         """構造検証（追加のルール）"""
