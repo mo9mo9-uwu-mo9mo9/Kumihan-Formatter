@@ -68,3 +68,10 @@
   - 1 Issue = 1 PR 原則で小分けに削除
   - 各PRで README/QUICKSTART の参照を追随
   - 影響範囲（public import）に変更が出る場合は minor version を上げる
+
+## 公開API（現時点）
+- パーサーファサード: `kumihan_formatter.parser.Parser`, `kumihan_formatter.parser.parse`
+- 統合API: `kumihan_formatter.unified_api.KumihanFormatter`
+- 構文チェック: `kumihan_formatter.core.syntax.SyntaxReporter`, `check_files`, `format_error_report`
+- ASTノード: `kumihan_formatter.core.ast_nodes.node.Node`, `...factories.*`（直接import推奨）
+- 互換レイヤ（最小）: `kumihan_formatter.core.utilities.compatibility_layer.MasterParser`, `parse_text`, `parse_file`, `parse_stream`
