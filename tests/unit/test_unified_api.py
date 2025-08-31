@@ -248,6 +248,21 @@ class TestKumihanFormatter:
 
         assert "nonexistent_file.kumihan" in result["file_path"]
 
+    def test_dummy_classes_emit_deprecation_warning(self):
+        """DummyParser/DummyRenderer はインスタンス化時に DeprecationWarning を出す"""
+        import warnings
+        from kumihan_formatter.unified_api import DummyParser, DummyRenderer
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always", DeprecationWarning)
+            _ = DummyParser()
+            assert any(isinstance(x.message, DeprecationWarning) for x in w), "DummyParser should warn"
+
+        with warnings.catch_warnings(record=True) as w2:
+            warnings.simplefilter("always", DeprecationWarning)
+            _ = DummyRenderer()
+            assert any(isinstance(x.message, DeprecationWarning) for x in w2), "DummyRenderer should warn"
+
 
 # 旧バージョンのスタンドアロン関数テストクラス（削除された関数のテスト）
 # Issue #1249対応: 責任分離リファクタリングにより削除

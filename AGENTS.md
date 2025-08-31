@@ -60,7 +60,7 @@
   - unified_api.py の DummyParser/DummyRenderer（互換目的）
 
 - フェーズ計画（目安）:
-  - Phase 1（〜2025-09-15）: RuntimeのDeprecationWarningを明示・Doc整備・移行案内
+  - Phase 1（〜2025-09-15）: RuntimeのDeprecationWarningを明示・Doc整備・移行案内（DummyParser/DummyRenderer はインスタンス化時に警告を発する）
   - Phase 2（〜2025-10-15）: 後方互換エイリアスを非公開化（内部用に限定）/ import時に一次ブロック可
   - Phase 3（〜2025-11-30）: レガシーAPIの削除（上記対象の段階削除）
 
