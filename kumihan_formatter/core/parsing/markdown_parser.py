@@ -1,8 +1,12 @@
 """
-MarkdownParser - Markdown解析クラス
-==================================
+MarkdownParser - Markdown解析クラス（Deprecated）
+================================================
 
 Issue #1215対応: 不足していたmarkdown_parserモジュールの基本実装
+
+注意: 本モジュールは非推奨です。新規コードでは
+`kumihan_formatter.parsers.unified_markdown_parser.UnifiedMarkdownParser`
+の使用へ移行してください。
 """
 
 import re
@@ -30,8 +34,6 @@ class MarkdownParser:
 
         ⚠️ DEPRECATED: このクラスは非推奨です
         """
-        import warnings
-
         warnings.warn(
             "MarkdownParser (core.parsing.markdown_parser) is deprecated. "
             "Use kumihan_formatter.parsers.unified_markdown_parser.UnifiedMarkdownParser instead.",
