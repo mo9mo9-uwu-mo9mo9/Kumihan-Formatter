@@ -1,8 +1,11 @@
 """Syntax validation module for Kumihan markup
 
-This module provides comprehensive syntax validation for Kumihan markup files.
-It has been refactored from a single large file into focused modules for
-better maintainability and organization.
+本パッケージは構文検証機能の公開エントリです。後方互換のために
+いくつかの関数を再エクスポートしていますが、将来的に整理予定です。
+
+移行ガイド（Deprecation Policy / #1279）:
+- 旧エイリアスは段階的に非公開化→削除。
+- 公開APIは `SyntaxReporter` と `check_files`/`format_error_report` を利用してください。
 """
 
 # Import main classes and functions for backward compatibility
