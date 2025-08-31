@@ -394,6 +394,7 @@ class ParserUtils:
         """長さ検証"""
         raw_min = self.validation_rules.get("min_keyword_length", 1)
         raw_max = self.validation_rules.get("max_keyword_length", 255)
+
         def _to_int(x: Any, default: int) -> int:
             try:
                 if isinstance(x, (int,)):
