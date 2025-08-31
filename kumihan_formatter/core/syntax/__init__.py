@@ -6,9 +6,7 @@ better maintainability and organization.
 """
 
 # Import main classes and functions for backward compatibility
-from .syntax_errors import ErrorSeverity, ErrorTypes, SyntaxError
 from .syntax_reporter import SyntaxReporter
-from .syntax_rules import SyntaxRules
 
 # NOTE: 実装が必要なモジュール - Issue #1217対応
 # from .syntax_validator import KumihanSyntaxValidator

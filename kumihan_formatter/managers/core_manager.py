@@ -4,11 +4,9 @@ ResourceManager + ChunkManager の機能を統合
 """
 
 import logging
-import json
 import os
-from typing import Dict, Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
-from dataclasses import dataclass
 
 from kumihan_formatter.core.io.operations import FileOperations, PathOperations
 from kumihan_formatter.core.templates.template_context import TemplateContext
@@ -323,8 +321,6 @@ class CoreManager:
 
     def ensure_directory(self, directory_path: Union[str, Path]) -> None:
         """ディレクトリを作成（FileManager機能統合）"""
-        import os
-        from pathlib import Path
 
         path = Path(directory_path)
         try:

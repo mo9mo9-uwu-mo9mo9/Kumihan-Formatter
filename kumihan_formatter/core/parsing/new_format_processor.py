@@ -5,7 +5,7 @@ core_marker_parser.py分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple
 
 from ..ast_nodes import Node, create_node, error_node
 import logging

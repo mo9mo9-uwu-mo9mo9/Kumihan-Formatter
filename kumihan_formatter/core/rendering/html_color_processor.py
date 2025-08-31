@@ -4,8 +4,6 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 色関連の処理をすべて統合
 """
 
-from typing import Dict, Optional, Tuple
-
 
 class HTMLColorProcessor:
     """HTML色処理専用クラス"""

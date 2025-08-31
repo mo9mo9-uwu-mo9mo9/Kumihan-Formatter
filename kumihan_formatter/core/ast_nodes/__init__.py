@@ -26,7 +26,6 @@ from .factories import (
 
 # Core classes
 from .node import Node
-from .node_builder import NodeBuilder
 
 # Utility functions - temporarily commented out due to import issues
 # from ...core.utilities import (

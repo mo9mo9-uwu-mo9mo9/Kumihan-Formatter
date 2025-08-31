@@ -6,11 +6,8 @@ OptimizationManager - 最適化機能統合管理クラス
 import logging
 import time
 from typing import Dict, Any, List, Optional, Union, Callable
-from pathlib import Path
 from dataclasses import dataclass
 from functools import wraps
-
-from kumihan_formatter.core.ast_nodes.node import Node
 
 
 @dataclass

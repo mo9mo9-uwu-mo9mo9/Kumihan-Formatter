@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
 import logging
-from pathlib import Path
 from .managers import (
     CoreManager,
     ParsingManager,
@@ -126,7 +125,6 @@ class KumihanFormatter:
         """Managerの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._managers_initialized:
             try:
-                import time
 
                 start_time = time.perf_counter()
 
@@ -151,7 +149,6 @@ class KumihanFormatter:
         """MainParserの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._main_parser_initialized:
             try:
-                import time
 
                 start_time = time.perf_counter()
                 self.main_parser = MainParser(self.config)
@@ -168,7 +165,6 @@ class KumihanFormatter:
         """MainRendererの遅延初期化（最適化モード用）"""
         if self.performance_mode == "optimized" and not self._main_renderer_initialized:
             try:
-                import time
 
                 start_time = time.perf_counter()
                 self.main_renderer = MainRenderer(self.config)

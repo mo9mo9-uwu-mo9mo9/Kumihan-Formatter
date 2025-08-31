@@ -4,7 +4,6 @@ CSSProcessor分割版 - テーマシステム専用モジュール
 """
 
 import logging
-from typing import Dict
 
 
 class CSSThemes:

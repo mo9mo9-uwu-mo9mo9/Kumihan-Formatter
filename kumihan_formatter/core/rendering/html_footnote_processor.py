@@ -5,7 +5,7 @@ HTMLFormatter分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 class FootnoteManager:
@@ -77,7 +77,6 @@ class HTMLFootnoteProcessor:
 
     def process_footnote_links(self, html_content: str) -> str:
         """HTMLコンテンツ内の脚注リンクを処理"""
-        import re
 
         # 脚注記法を検出して変換 [^footnote-id] → 脚注リンク
         footnote_pattern = r"\[\^([^\]]+)\]"

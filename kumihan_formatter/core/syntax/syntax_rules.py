@@ -179,7 +179,6 @@ class SyntaxRules:
         violations = []
 
         # 簡易的なキーワード抽出とチェック（新記法のみ）
-        import re
 
         # 新記法のみ対応
         pattern = r"[#＃]([^#＃]+?)[#＃]"  # 新記法
@@ -218,7 +217,6 @@ class SyntaxRules:
             list[str]: 検出された違反事項のリスト
         """
         violations = []
-        import re
 
         # 半角・全角マーカー混在チェック
         has_half_width = bool(re.search(r"[#]", text))
@@ -242,7 +240,6 @@ class SyntaxRules:
             list[str]: 検出された違反事項のリスト
         """
         violations = []
-        import re
 
         # color属性のパターンを抽出（16進数カラーコードを除外）
         color_patterns = re.findall(r"color=([a-zA-Z][a-zA-Z]*)", text)

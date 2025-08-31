@@ -1,6 +1,6 @@
 """ParserProtocols - パーサーインターフェース定義"""
 
-from typing import Any, Dict, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, Optional, runtime_checkable
 
 
 @runtime_checkable

@@ -4,7 +4,7 @@
 """
 
 import re
-from typing import List, Dict, Any, Union, Optional, TYPE_CHECKING
+from typing import List, Dict, Optional
 
 if TYPE_CHECKING:
     from ..core.parsing.protocols import (
@@ -75,7 +75,6 @@ def setup_block_patterns() -> BlockPatterns:
 
 def setup_keyword_patterns() -> Dict[str, Any]:
     """キーワード抽出用のパターンを初期化"""
-    import re
 
     return {
         "kumihan": re.compile(r"^#\s*([^#]*)\s*#\s*(.*?)\s*##$"),

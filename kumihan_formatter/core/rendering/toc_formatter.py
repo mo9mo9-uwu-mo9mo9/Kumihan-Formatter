@@ -3,10 +3,6 @@
 This module contains the TOC formatting logic.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Any
-
 if TYPE_CHECKING:
     from .toc_generator import TOCEntry
 

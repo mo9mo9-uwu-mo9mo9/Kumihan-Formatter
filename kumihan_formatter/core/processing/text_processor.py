@@ -77,7 +77,6 @@ class TextProcessor:
     @staticmethod
     def extract_markers(text: str, marker_pattern: str = r"#\s*\w+\s*#") -> List[str]:
         """Extract markers from text using regex pattern"""
-        import re
 
         markers = re.findall(marker_pattern, text)
         return [marker.strip() for marker in markers]

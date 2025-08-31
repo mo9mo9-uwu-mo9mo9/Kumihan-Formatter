@@ -10,7 +10,7 @@ import threading
 
 # from datetime import datetime  # Removed: unused import
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Union
 
 
 class LogFormatter(logging.Formatter):

@@ -2,8 +2,6 @@
 文書分類ルールの定義 - Issue #118対応
 """
 
-from typing import Dict
-
 from ..types.document_types import DocumentType
 
 

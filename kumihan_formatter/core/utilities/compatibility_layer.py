@@ -5,14 +5,13 @@ MainParser→MasterParser統合により更新
 レガシーAPIとの互換性を保持しつつ、最新アーキテクチャに対応
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from ...parsers.unified_keyword_parser import UnifiedKeywordParser as KeywordParser
 from ...parsers.unified_list_parser import UnifiedListParser as ListParser
 from ...parsers.unified_markdown_parser import UnifiedMarkdownParser as MarkdownParser
 from ...parsers.main_parser import MainParser as ActualMainParser
 from ..ast_nodes.node import Node
-from ..rendering.markdown_renderer import MarkdownRenderer as HTMLRenderer
 
 
 class HtmlFormatter:

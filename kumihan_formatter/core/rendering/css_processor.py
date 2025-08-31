@@ -4,7 +4,7 @@ HTMLFormatterの分割版 - CSS処理モジュール
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 
 class CSSProcessor:

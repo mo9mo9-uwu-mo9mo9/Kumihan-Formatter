@@ -5,8 +5,6 @@ This file now serves as a compatibility wrapper, with main classes moved to toc_
 to comply with the 300-line limit.
 """
 
-from __future__ import annotations
-
 import re
 
 from ..ast_nodes import Node

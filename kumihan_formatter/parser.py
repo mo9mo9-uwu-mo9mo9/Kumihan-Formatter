@@ -4,20 +4,18 @@ This is the main parser implementation that integrates specialized handlers.
 Issue #813: Split monolithic parser.py into modular components.
 """
 
-import time
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional
+from typing import Any, Optional
 
 if TYPE_CHECKING:
-    from .core.common.error_base import GracefulSyntaxError
+    pass
 
 # 統合最適化後のインポート（削除されたハンドラー・モジュールを除去）
-from .core.ast_nodes import Node, error_node
+from .core.ast_nodes import Node
 
 # 統合済みパーサーを使用 - Issue #1168 Parser Responsibility Separation
 from .parsers.unified_keyword_parser import (
     UnifiedKeywordParser as KeywordParser,
 )
-import logging
 
 
 # Issue #759対応: カスタム例外クラス定義
@@ -131,7 +129,6 @@ Phase3最適化により大幅分割: 753行 → 150行以下
 このファイルは後方互換性のための統合インターフェース
 """
 
-from typing import Any, Dict, Iterator, List, Optional
 
 # 統合最適化後：削除されたモジュールのインポートを除去
 # 上記で定義済みのクラス・設定を使用

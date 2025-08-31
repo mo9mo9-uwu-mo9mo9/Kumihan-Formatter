@@ -110,7 +110,7 @@ class KumihanError(Exception):
         self.context = context or ErrorContext()
         self.suggestions = suggestions or []
         self.original_error = original_error
-        self.traceback_info = traceback.format_exc() if original_error else None
+        self._info = traceback.format_exc() if original_error else None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary representation"""
@@ -121,7 +121,7 @@ class KumihanError(Exception):
             "context": self.context.to_dict(),
             "suggestions": self.suggestions,
             "original_error": str(self.original_error) if self.original_error else None,
-            "traceback": self.traceback_info,
+            "": self._info,
         }
 
     def __str__(self) -> str:

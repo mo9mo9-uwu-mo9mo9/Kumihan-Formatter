@@ -7,7 +7,7 @@ Issue #1215対応: 不足していたmarkdown_parserモジュールの基本実�
 
 import re
 import logging
-from typing import Any, Dict, List, Optional, Match
+from typing import Dict, Optional, Match
 
 
 class MarkdownParser:
@@ -65,7 +65,6 @@ class MarkdownParser:
         Returns:
             解析結果辞書
         """
-        import warnings
 
         warnings.warn(
             "MarkdownParser.parse() is deprecated. "

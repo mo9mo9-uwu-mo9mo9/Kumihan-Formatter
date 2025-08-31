@@ -8,7 +8,7 @@ Issue #492 Phase 5A - file_operations.py分割
 import base64
 import shutil
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 from .file_path_utilities import FilePathUtilities
 from .file_protocol import UIProtocol

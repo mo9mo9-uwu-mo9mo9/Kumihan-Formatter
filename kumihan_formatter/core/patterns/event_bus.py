@@ -6,7 +6,7 @@ Issue #1217対応: ディレクトリ構造最適化によるイベント管理�
 import threading
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 from ..utilities.logger import get_logger
 

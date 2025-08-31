@@ -233,7 +233,6 @@ class ProcessingOptimized:
     def _get_memory_info(self) -> Dict[str, Any]:
         """メモリ情報取得"""
         try:
-            import psutil
 
             memory = psutil.virtual_memory()
             return {
