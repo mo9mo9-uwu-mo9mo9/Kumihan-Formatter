@@ -1,12 +1,10 @@
-from .main_renderer import MainRenderer
-
 """統合レンダリングシステム
 
 Issue #1215対応完了版：15個のRenderingコンポーネントを統合管理
 HTML・CSS・テンプレート処理の統合API提供
 """
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 # 統合レンダリングシステム（推奨）
 

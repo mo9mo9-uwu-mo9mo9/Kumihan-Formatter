@@ -5,7 +5,6 @@ Phase2最適化により作成された統合キーワード定義
 
 from typing import Dict, List, Any, Optional
 
-
 # デフォルトのブロックキーワード
 DEFAULT_BLOCK_KEYWORDS = [
     "太字",

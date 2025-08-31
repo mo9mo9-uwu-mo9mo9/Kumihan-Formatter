@@ -1,3 +1,5 @@
+from typing import Dict
+
 """Document Classification Rules
 文書分類ルールの定義 - Issue #118対応
 """

@@ -11,6 +11,6 @@ from .core.utilities.api_utils import quick_convert, quick_parse
 
 __all__ = [
     "KumihanFormatter",
-    "quick_convert", 
+    "quick_convert",
     "quick_parse",
 ]

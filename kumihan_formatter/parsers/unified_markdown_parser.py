@@ -5,7 +5,7 @@ Phase2最適化により作成された統合パーサー
 
 import re
 import logging
-from typing import Optional, List, Dict
+from typing import Any, Dict, List, Optional
 from ..core.ast_nodes import Node, create_node
 
 

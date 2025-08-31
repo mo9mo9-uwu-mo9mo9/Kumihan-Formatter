@@ -6,9 +6,6 @@ main_renderer.pyから分離されたコンテンツ処理・最適化機能
 
 from typing import Any, Dict, List
 
-if TYPE_CHECKING:
-    pass
-
 from ..ast_nodes import Node
 import logging
 

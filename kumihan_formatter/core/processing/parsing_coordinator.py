@@ -5,7 +5,7 @@
 Issue #616対応 - CI/CDテスト修正用の基本実装
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import logging
 

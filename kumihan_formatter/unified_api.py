@@ -1,3 +1,5 @@
+from typing import Any, Dict, List, Optional, Union
+
 """
 統合API - Issue #1215 アーキテクチャ統合完了版
 ==========================================
@@ -12,7 +14,6 @@
     result = formatter.convert("input.txt", "output.html")
 """
 
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
 import logging
@@ -21,8 +22,9 @@ from .managers import (
     ParsingManager,
     OptimizationManager,
     PluginManager,
-    DistributionManager,
 )
+
+# DistributionManagerは core.io.distribution_manager に移動
 from .parsers.main_parser import MainParser
 from .core.rendering.main_renderer import MainRenderer
 
@@ -113,7 +115,7 @@ class KumihanFormatter:
         self.parsing_manager = ParsingManager(self.config)
         self.optimization_manager = OptimizationManager(self.config)
         self.plugin_manager = PluginManager(self.config)
-        self.distribution_manager = DistributionManager(self.config)
+        # self.distribution_manager = DistributionManager(self.config)  # 移動済み
 
         # メインコンポーネント
         self.main_parser = MainParser(self.config)
@@ -132,7 +134,7 @@ class KumihanFormatter:
                 self.parsing_manager = ParsingManager(self.config)
                 self.optimization_manager = OptimizationManager(self.config)
                 self.plugin_manager = PluginManager(self.config)
-                self.distribution_manager = DistributionManager(self.config)
+                # self.distribution_manager = DistributionManager(self.config)  # 移動済み
 
                 self._managers_initialized = True
                 end_time = time.perf_counter()
@@ -335,7 +337,7 @@ class KumihanFormatter:
                     "parsing_manager": "ParsingManager",
                     "optimization_manager": "OptimizationManager",
                     "plugin_manager": "PluginManager",
-                    "distribution_manager": "DistributionManager",
+                    # "distribution_manager": "DistributionManager",  # 移動済み
                     "main_parser": "MainParser",
                     "main_renderer": "MainRenderer",
                 },

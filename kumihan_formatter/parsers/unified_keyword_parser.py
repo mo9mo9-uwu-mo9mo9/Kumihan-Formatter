@@ -3,7 +3,7 @@
 Phase2最適化により作成された統合パーサー
 """
 
-from typing import Optional
+from typing import Any, Optional
 from ..core.ast_nodes import Node, create_node
 import logging
 

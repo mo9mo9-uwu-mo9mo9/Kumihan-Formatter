@@ -5,13 +5,10 @@ core_marker_parser.py分割により抽出 (Phase3最適化)
 """
 
 import re
-from typing import Dict, List, Match
+from typing import Any, Dict, List, Match, Optional
 import logging
 
 from ..ast_nodes import Node, create_node, error_node
-
-if TYPE_CHECKING:
-    pass
 
 
 class InlineMarkerProcessor:

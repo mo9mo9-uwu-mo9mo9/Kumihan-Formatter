@@ -1,3 +1,5 @@
+from typing import Any
+
 """Custom Jinja2 Template Filters
 
 カスタムフィルターとヘルパー機能を提供

@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
+
 """
 並列チャンク処理コア - 軽量化版
 分離されたモジュールを統合する軽量なファサードクラス
@@ -7,7 +9,6 @@ import concurrent.futures
 import logging
 import threading
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 # Delayed import to avoid circular dependency
 from ..types import ChunkInfo

@@ -7,7 +7,7 @@ Issue #1215対応: 不足していたmarkdown_parserモジュールの基本実�
 
 import re
 import logging
-from typing import Dict, Optional, Match
+from typing import Any, Dict, Match, Optional
 
 
 class MarkdownParser:

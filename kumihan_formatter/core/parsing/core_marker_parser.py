@@ -7,14 +7,11 @@ Phase2統合: MarkerParser + MarkerBlockParser の統合実装
 """
 
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 from kumihan_formatter.core.ast_nodes import Node, error_node
 from kumihan_formatter.core.ast_nodes.factories import create_node
 import logging
-
-if TYPE_CHECKING:
-    pass
 
 
 class CoreMarkerParser:

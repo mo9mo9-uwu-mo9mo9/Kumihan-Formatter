@@ -1,3 +1,5 @@
+from typing import Protocol
+
 """ファイル操作UI プロトコル定義
 
 循環依存を避けるためのプロトコル定義モジュール。

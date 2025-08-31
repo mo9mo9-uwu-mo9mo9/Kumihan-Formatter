@@ -4,7 +4,7 @@
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from kumihan_formatter.core.ast_nodes.node import Node
 from .css_processor import CSSProcessor

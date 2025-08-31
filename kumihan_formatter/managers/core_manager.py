@@ -1,3 +1,5 @@
+from typing import Any, Dict, List, Optional, Union
+
 """
 CoreManager - コア機能統合管理クラス
 ResourceManager + ChunkManager の機能を統合
@@ -5,7 +7,6 @@ ResourceManager + ChunkManager の機能を統合
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
 from kumihan_formatter.core.io.operations import FileOperations, PathOperations

@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 """
 Token使用量追跡システム
 Claude単体でのToken使用量を追跡
@@ -9,7 +11,6 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-
 
 logger = logging.getLogger(__name__)
 
