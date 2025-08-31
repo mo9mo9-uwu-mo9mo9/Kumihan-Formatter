@@ -19,10 +19,8 @@ class TestKumihanFormatter:
         """初期化テスト"""
         formatter = KumihanFormatter()
         assert formatter is not None
-        assert hasattr(formatter, "main_parser")
-        assert hasattr(formatter, "main_renderer")
-        assert hasattr(formatter, "core_manager")
-        assert hasattr(formatter, "parsing_manager")
+        assert hasattr(formatter, "_api")
+        assert formatter._api is not None
 
     def test_parse_text(self, formatter, sample_text):
         """テキスト解析テスト"""
@@ -201,7 +199,7 @@ class TestKumihanFormatter:
 
         # 新しい責任分離アーキテクチャに対応：_api経由でアクセス
         with mock.patch.object(
-            formatter._api.coordinator.parsing_manager,
+            formatter._api.coordinator.processing_manager,
             "parse_and_validate",
             side_effect=Exception("Parse error"),
         ):
@@ -225,7 +223,7 @@ class TestKumihanFormatter:
 
         # 新しい責任分離アーキテクチャに対応：_api経由でアクセス
         with mock.patch.object(
-            formatter._api.coordinator.parsing_manager,
+            formatter._api.coordinator.processing_manager,
             "validate_syntax",
             side_effect=Exception("Validate error"),
         ):
