@@ -79,20 +79,7 @@ lint-strict:
 
 # 依存関係分析（Issue #1239の重要機能）
 dependency-audit:
-	@echo "📋 依存関係分析中..."
-	@import_count=$$(grep -r "^import\|^from" $(SRC_DIR) --include="*.py" | wc -l); \
-	file_count=$$(find $(SRC_DIR) -name "*.py" | wc -l); \
-	avg_imports=$$(echo "scale=1; $$import_count / $$file_count" | bc -l); \
-	echo "📊 依存関係統計:"; \
-	echo "  - 総import文: $$import_count 個 (目標: <$(IMPORT_COUNT_TARGET))"; \
-	echo "  - Pythonファイル数: $$file_count 個"; \
-	echo "  - 平均import/ファイル: $$avg_imports 個"; \
-	if [ $$import_count -gt $(IMPORT_COUNT_TARGET) ]; then \
-		echo "⚠️  import文が目標値を超過 - 依存関係整理が必要"; \
-		echo "💡 提案: 未使用import削除、モジュール統合を検討"; \
-	else \
-		echo "✅ 依存関係は適正範囲内"; \
-	fi
+	@$(PYTHON) scripts/dependency_audit.py --target $(SRC_DIR) --import-threshold $(IMPORT_COUNT_TARGET)
 
 # パフォーマンス監視（Issue #1239の新機能）
 performance-check:
