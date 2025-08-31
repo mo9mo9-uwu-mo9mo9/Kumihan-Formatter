@@ -9,7 +9,8 @@ from typing import Any
 
 import click
 
-from ..core.syntax import ErrorSeverity, check_files, format_error_report
+from ..core.common.error_base import ErrorSeverity
+from ..core.syntax import check_files, format_error_report
 
 # from ..ui.console_ui import get_console_ui  # TODO: console_ui module not found
 

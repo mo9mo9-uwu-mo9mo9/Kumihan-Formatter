@@ -1,5 +1,3 @@
-from typing import Any, Callable, Dict, Iterator, List, Optional
-
 """
 並列処理最適化機能
 processor_core.py分割版 - 高度なパフォーマンス最適化専用モジュール
@@ -9,8 +7,15 @@ import concurrent.futures
 import logging
 import os
 import threading
+from typing import Any, Callable, Dict, Iterator, List, Optional
 
 from ..types import ChunkInfo
+
+# Optional dependency
+try:
+    import psutil
+except ImportError:
+    psutil = None  # type: ignore
 
 
 class ProcessingOptimized:
@@ -234,16 +239,24 @@ class ProcessingOptimized:
     def _get_memory_info(self) -> Dict[str, Any]:
         """メモリ情報取得"""
         try:
-
-            memory = psutil.virtual_memory()
-            return {
-                "total": memory.total,
-                "available": memory.available,
-                "percent": memory.percent,
-                "used": memory.used,
-            }
-        except ImportError:
-            return {"status": "psutil_not_available"}
+            if psutil is None:
+                return {  # type: ignore[unreachable]
+                    "total": 0,
+                    "available": 0,
+                    "percent": 0.0,
+                    "used": 0,
+                    "error": "psutil not available",
+                }
+            else:
+                memory = psutil.virtual_memory()
+                return {
+                    "total": memory.total,
+                    "available": memory.available,
+                    "percent": memory.percent,
+                    "used": memory.used,
+                }
+        except Exception:
+            return {"status": "psutil_error"}
 
     def _get_cpu_count(self) -> int:
         """CPU数取得（フォールバック付き）"""

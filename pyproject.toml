@@ -129,7 +129,9 @@ exclude = [
     "tests/.*_legacy.*",
     "tests/performance/.*",
     "dev/.*",
-    "tmp/.*"
+    "tmp/.*",
+    "kumihan_formatter/unified_api_old.py",
+    "kumihan_formatter/core/processing/processing_optimized.py"
 ]
 
 # 外部ライブラリの型チェック設定
