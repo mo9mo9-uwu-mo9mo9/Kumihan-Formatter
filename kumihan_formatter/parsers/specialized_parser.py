@@ -20,22 +20,16 @@ from .keyword_definitions import KeywordDefinitions
 from .unified_keyword_parser import UnifiedKeywordParser
 
 
-class SpecializedParsingError(Exception):
-    """特殊化パーサー固有のエラー"""
-
-    pass
+# エラークラスは共通モジュールから使用
+# from kumihan_formatter.core.common.processing_errors import SpecializedParsingError
 
 
-class MarkerValidationError(Exception):
-    """マーカー検証エラー"""
-
-    pass
+# エラークラスは共通モジュールから使用
+# from kumihan_formatter.core.common.processing_errors import MarkerValidationError
 
 
-class FormatProcessingError(Exception):
-    """フォーマット処理エラー"""
-
-    pass
+# エラークラスは共通モジュールから使用
+# from kumihan_formatter.core.common.processing_errors import FormatProcessingError
 
 
 class SpecializedParser:
