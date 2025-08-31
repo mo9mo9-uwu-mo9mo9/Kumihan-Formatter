@@ -54,9 +54,9 @@ class CoreManager:
         self._template_cache: Dict[str, str] = {}
 
         # 配布管理コンポーネント (遅延初期化)
-        self._distribution_structure = None
-        self._distribution_converter = None
-        self._distribution_processor = None
+        self._distribution_structure: Any | None = None
+        self._distribution_converter: Any | None = None
+        self._distribution_processor: Any | None = None
 
     # ========== ファイルIO機能（旧ResourceManager） ==========
 
@@ -330,7 +330,7 @@ class CoreManager:
 
     # ========== 配布管理機能（DistributionManager統合） ==========
 
-    def _init_distribution_components(self):
+    def _init_distribution_components(self) -> None:
         """配布管理コンポーネントの遅延初期化"""
         if self._distribution_structure is None:
             try:

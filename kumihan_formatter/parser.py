@@ -16,7 +16,7 @@ Issue #1252対応: パーサー統合最適化完了版
 import warnings
 from typing import Any, Dict, Optional
 
-from .core.ast_nodes import Node
+from .core.ast_nodes import Node, error_node
 
 # 統合パーサーコンポーネント（Issue #1252統合版）
 from .parsers.core_parser import (
@@ -60,11 +60,24 @@ class Parser:
             パース結果ノード
         """
         # メインパーサーが判定・振り分け
-        return self.main_parser.parse(content)
+        try:
+            result = self.main_parser.parse(content)
+            if isinstance(result, Node):
+                return result
+            # 念のための防御: 期待しない戻りはエラーノードに変換
+            return error_node("Parser returned unexpected result type")
+        except Exception as e:
+            return error_node(f"Parser facade error: {e}")
 
     def parse_file(self, file_path: str) -> Node:
         """ファイルパース処理"""
-        return self.main_parser.parse_file(file_path)
+        try:
+            result = self.main_parser.parse_file(file_path)
+            if isinstance(result, Node):
+                return result
+            return error_node("Parser returned unexpected result type (file)")
+        except Exception as e:
+            return error_node(f"Parser facade file error: {e}")
 
     def validate(self, content: str) -> bool:
         """コンテンツ検証"""
