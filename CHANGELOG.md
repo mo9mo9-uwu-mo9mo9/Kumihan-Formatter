@@ -10,11 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - tests: console_ui の軽量ユニットテストを追加（#1308）
 - docs: Deprecation Migration Guide を追加（docs/DEPRECATION_MIGRATION.md、#1309）
+- docs: 例外ポリシー設計（docs/EXCEPTION_POLICY.md、PR #1356）
+- core: 例外クラス（KumihanError系）を追加（実験フラグで段階導入）
 
 ### Changed
 - tooling: codex_env.example に使用方法コメントを追記（#1310）
 - quality: pytest カバレッジしきい値を 30% に引き上げ（#1307）
 - refactor: parsers/commands のトップレベル再エクスポートを停止（Phase 2、#1303）
+- refactor: MainRenderer の Simple 互換レンダリング切り出し（PR #1348）
+- refactor: ProcessingManager の Chunker 抽出（PR #1349）
+- refactor: CoreManager 型安全化 + get_manager_info 追加（PR #1350）
+- refactor: parser_utils を utils/ に分割（config/patterns/normalize、PR #1351）
+- refactor: parser import 時の警告を環境変数で制御（PR #1352）
+- refactor: sample_content を examples/ へ移設（後方互換ラッパー、PR #1353）
+- refactor: compatibility_layer の隔離（再エクスポート停止、PR #1354）
+- refactor: FileOperationsCore に progress_callback を追加（PR #1355）
+- docs: README に開発用環境変数の説明を追記（PR #1357）
 
 ### Removed
 - deprecations: legacy markdown_parser / legacy_parser を削除（Phase 3、#1304/#1305）
