@@ -26,6 +26,10 @@ class CoreManager:
             config: 設定オプション辞書
         """
         self.logger = logging.getLogger(__name__)
+        # 設定の型安全性を確保（テストで無効型が渡るケースに対応）
+        if config is not None and not isinstance(config, dict):
+            # テストは例外でも受容するため、明示的にValueErrorを送出
+            raise ValueError("config must be a dict or None")
         self.config = config or {}
 
         # 既存コンポーネント初期化
@@ -510,6 +514,17 @@ class CoreManager:
         self._file_cache.clear()
         self._template_cache.clear()
         self.logger.debug("リソースキャッシュをクリアしました")
+
+    # 追加: マネージャ情報（テスト互換のための軽量実装）
+    def get_manager_info(self) -> Dict[str, Any]:
+        """マネージャ基本情報を返す（後方互換用の簡易情報）。"""
+        return {
+            "name": "CoreManager",
+            "type": "core",
+            "cache_enabled": self.cache_enabled,
+            "template_dir": str(self.template_dir),
+            "assets_dir": str(self.assets_dir),
+        }
 
     def get_core_statistics(self) -> Dict[str, Any]:
         """コア統計情報を取得"""
