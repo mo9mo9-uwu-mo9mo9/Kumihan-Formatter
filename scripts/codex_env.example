@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Codex CLI environment defaults (POSIX)
-# Copy as `.env` or `source` directly in your shell.
+# 使い方: `source scripts/codex_env.example` で現在シェルに反映できます。
+# または内容を `~/.env` 等にコピーしてください。
 
 # OpenAI API
 export OPENAI_API_KEY="YOUR_API_KEY_HERE"
@@ -25,4 +26,3 @@ export OPENAI_STREAMING="true"          # true | false
 # $env:OPENAI_VERBOSITY = 'low'
 # $env:OPENAI_STREAMING = 'true'
 # $env:OPENAI_SEED = '42'
-
