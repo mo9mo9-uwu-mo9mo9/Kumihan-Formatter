@@ -56,24 +56,11 @@
 - ログ: 自動化ログは `tmp/automation-logs/` に保存（git管理外）。
 
 ## Deprecation Policy（段階的廃止方針）
-- 対象（棚卸し）:
-  - core/parsing/markdown_parser.py（Deprecated警告あり）
-  - core/parsing/legacy_parser.py（レガシー互換API）
-  - parsers/parser_utils.py（get_keyword_categories/validate_keyword_legacy のDeprecated）
-  - parsers/specialized_parser.py（parse_marker/new_format/ruby のDeprecated）
-  - parsers/core_parser.py（legacy parse系のDeprecated）
-  - core/syntax/__init__.py / core/ast_nodes/__init__.py（後方互換の再エクスポート）
-  - unified_api.py の DummyParser/DummyRenderer（互換目的）
-
-- フェーズ計画（目安）:
-  - Phase 1（〜2025-09-15）: RuntimeのDeprecationWarningを明示・Doc整備・移行案内（DummyParser/DummyRenderer はインスタンス化時に警告を発する）
-  - Phase 2（〜2025-10-15）: 後方互換エイリアスを非公開化（内部用に限定）/ import時に一次ブロック可
-  - Phase 3（〜2025-11-30）: レガシーAPIの削除（上記対象の段階削除）
-
-- 運用:
-  - 1 Issue = 1 PR 原則で小分けに削除
-  - 各PRで README/QUICKSTART の参照を追随
-- 影響範囲（public import）に変更が出る場合は minor version を上げる
+- フェーズ（目安）:
+  - Phase 1（〜2025-09-15）: DeprecationWarning 明示・移行案内［完了］
+  - Phase 2（〜2025-10-15）: 互換エイリアスを非公開化（トップレベル再エクスポート停止）［完了］
+  - Phase 3（〜2025-11-30）: レガシーAPIの削除（主要対象は完了）
+- 詳細ガイド: docs/DEPRECATION_MIGRATION.md（移行先・例・期日を明記）
 
 ## 公開API（現時点）
 - パーサーファサード: `kumihan_formatter.parser.Parser`, `kumihan_formatter.parser.parse`
