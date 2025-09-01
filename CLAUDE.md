@@ -64,7 +64,7 @@ make test-unit  # 単体テストのみ（超高速）
 - **作業期間制限**: 1週間以内（最大10日）
 - **命名規則**: `{type}/issue-{番号}-{英語概要}`
 - **統合頻度**: 3日ごとに統合推奨
-- **自動化**: GitHub Actions連携によるブランチ監視
+- **自動化**: ローカル運用（Makefile + pre-commit）を基本にブランチを管理（GitHub Actionsの追加は前提としない）
 - **設定ファイル**: `.github/quality/branch_strategy.yml`
 
 ### 技術的負債管理システム

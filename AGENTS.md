@@ -23,7 +23,7 @@
 ## Testing Guidelines
 - フレームワーク: pytest（`pyproject.toml`に設定）。
 - 実行: `pytest -q` も可。カバレッジは HTML を `tmp/htmlcov/` に出力。
-- しきい値: 現在 `--cov-fail-under=20`（段階的に引き上げ予定、#1280/#1307参照）。
+- しきい値: 現在 `--cov-fail-under=30`（段階的に引き上げ予定、#1280/#1307参照）。
 - 命名: ファイルは `test_*.py`、関数は `test_*`。`@pytest.mark.unit|integration|slow|e2e` を適切に付与。
 
 ## Commit & Pull Request Guidelines

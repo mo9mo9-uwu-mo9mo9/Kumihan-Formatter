@@ -40,43 +40,30 @@ self.main_renderer = MainRenderer(config)         # 統合レンダラー
 
 ---
 
-## 📋 主要パーサー
+## 📋 解析API（現行）
 
-### SimpleKumihanParser
+### 推奨: KumihanFormatter 経由
 ```python
-from kumihan_formatter.simple_parser import SimpleKumihanParser
+from kumihan_formatter.unified_api import KumihanFormatter
 
-parser = SimpleKumihanParser()
-result = parser.parse(text)  # ParseResult返却
+formatter = KumihanFormatter()
+parsed = formatter.parse_text(text)  # Dict[str, Any]
 ```
 
-**対応記法**:
-- ブロック記法: `# 装飾 #内容##`
-- 見出し記法: `# 見出し1 #タイトル##`
-- リスト記法: `-` `1.` 記法
-- インライン記法: 太字・イタリック
-
-### 統合パーサー群
+### 代替: Parserファサード
 ```python
-# 自動選択 (推奨)
-result = unified_parse(content, "auto")
-
-# 個別指定
-result = unified_parse(content, "content")  # ContentParser
-result = unified_parse(content, "block")    # BlockParser
-result = unified_parse(content, "list")     # ListParser
+from kumihan_formatter.parser import parse
+node = parse(text)  # core.ast_nodes.Node
 ```
 
 ---
 
-## 🎨 主要レンダラー
-
-### SimpleHTMLRenderer
+## 🎨 レンダリングAPI（現行）
 ```python
-from kumihan_formatter.simple_renderer import SimpleHTMLRenderer
+from kumihan_formatter.unified_api import KumihanFormatter
 
-renderer = SimpleHTMLRenderer()
-html = renderer.render(parse_result)  # HTML出力
+formatter = KumihanFormatter()
+html = formatter.convert_text(text)  # str (HTML)
 ```
 
 **出力特徴**:
@@ -104,16 +91,15 @@ print(info['version'], info['parsers'])
 
 ### エラーハンドリング
 ```python
+from kumihan_formatter.unified_api import KumihanFormatter
+
+formatter = KumihanFormatter()
 try:
-    result = formatter.convert_text(text)
-    if result.success:
-        print("変換成功:", result.html)
-    else:
-        print("変換エラー:", result.errors)
-except KumihanSyntaxError as e:
-    print("構文エラー:", e.message)
-except KumihanProcessingError as e:
-    print("処理エラー:", e.details)
+    html = formatter.convert_text(text)
+    print("変換成功")
+except Exception as e:
+    # 現行APIは標準例外で通知（専用例外は将来導入予定）
+    print("変換エラー:", e)
 ```
 
 ---

@@ -17,7 +17,8 @@ pip install -e .
 ### 基本的な使い方
 ```python
 # 統合API使用 (推奨)
-from kumihan_formatter.unified_api import KumihanFormatter, quick_convert
+from kumihan_formatter.unified_api import KumihanFormatter
+from kumihan_formatter.core.utilities.api_utils import quick_convert
 
 # 簡単変換
 result = quick_convert("input.kumihan")

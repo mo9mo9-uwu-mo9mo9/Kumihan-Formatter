@@ -179,12 +179,12 @@ Kumihan-Formatter/
 
 ## 🔧 開発者向け機能
 
-### デバッグ機能
-CLIツールで問題が発生した場合、詳細なデバッグ機能を利用できます：
+### デバッグ
+CLIはサブコマンド無しのシンプル構成です（convert等は未提供）。
 
 ```bash
-# CLI開発ログ
-KUMIHAN_DEV_LOG=true kumihan convert input.txt output.txt
+# 基本形式（サブコマンドなし）
+kumihan input.txt [output.html]
 ```
 
 
