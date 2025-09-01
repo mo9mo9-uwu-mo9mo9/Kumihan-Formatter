@@ -1,9 +1,23 @@
 """
-互換性レイヤー - Phase3最適化版
+互換性レイヤー - Phase3最適化版（隔離）
 
-MainParser→MasterParser統合により更新
-レガシーAPIとの互換性を保持しつつ、最新アーキテクチャに対応
+MainParser→MasterParser統合により更新。
+レガシーAPIとの互換性を保持しつつ、最新アーキテクチャに対応。
+
+注意: 本モジュールは段階的廃止の対象です（Phase 3）。
+既定ではインポート時警告を出しません。必要に応じて
+環境変数 `KUMIHAN_COMPAT_WARNINGS=1` で警告を有効化できます。
 """
+import os
+import warnings
+
+if os.getenv("KUMIHAN_COMPAT_WARNINGS", "0") in {"1", "true", "True"}:
+    warnings.warn(
+        "compatibility_layer is deprecated and will be removed in Phase 3."
+        " Migrate to unified_api or parser facade.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 from typing import Any, Dict, List, Optional
 
