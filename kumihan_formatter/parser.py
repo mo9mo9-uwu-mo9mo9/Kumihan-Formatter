@@ -14,6 +14,7 @@ Issue #1252対応: パーサー統合最適化完了版
 """
 
 import warnings
+import os
 from typing import Any, Dict, Optional
 
 from .core.ast_nodes import Node, error_node
@@ -150,11 +151,13 @@ __all__ = [
     "parse_with_error_config",
 ]
 
-# Issue #1252統合完了の通知
-warnings.warn(
-    "Parser integration completed (Issue #1252). "
-    "10 files → 5 files optimization finished. "
-    "Consider using unified_api.KumihanFormatter for new code.",
-    UserWarning,
-    stacklevel=2,
-)
+# Issue #1252統合完了の通知（デフォルト抑制）
+# 環境変数 KUMIHAN_DEV_WARNINGS=1 のときのみ警告を出す。
+if os.getenv("KUMIHAN_DEV_WARNINGS", "0") in {"1", "true", "True"}:
+    warnings.warn(
+        "Parser integration completed (Issue #1252). "
+        "10 files → 5 files optimization finished. "
+        "Consider using unified_api.KumihanFormatter for new code.",
+        UserWarning,
+        stacklevel=2,
+    )
