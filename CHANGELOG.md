@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - tests: console_ui の軽量ユニットテストを追加（#1308）
-- docs: 自走モード（Automation Mode）の運用ポリシーを AGENTS.md に追加（#1327）
 - docs: Deprecation Migration Guide を追加（docs/DEPRECATION_MIGRATION.md、#1309）
 
 ### Changed
