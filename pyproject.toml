@@ -157,7 +157,7 @@ addopts = [
     "--cov=kumihan_formatter",
     "--cov-report=term-missing",
     "--cov-report=html:tmp/htmlcov",
-    "--cov-fail-under=20",      # Coverage Phase 1: 20%（段階的に引き上げ）
+    "--cov-fail-under=30",      # Coverage Phase 2: 30%（段階的に引き上げ）
     "-v",
 ]
 testpaths = ["tests"]
