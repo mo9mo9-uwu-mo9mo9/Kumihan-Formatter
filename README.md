@@ -187,6 +187,14 @@ CLIはサブコマンド無しのシンプル構成です（convert等は未提�
 kumihan input.txt [output.html]
 ```
 
+### 環境変数（開発・実験）
+- `KUMIHAN_DEV_WARNINGS=1`:
+  - `parser` など一部モジュールの統合完了メッセージ（UserWarning）を有効化します（既定は非表示）。
+- `KUMIHAN_COMPAT_WARNINGS=1`:
+  - 互換レイヤ（compatibility_layer）利用時のDeprecationWarningを有効化します（既定は非表示）。
+- `KUMIHAN_RAISE_KUMIHAN_ERRORS=1`:
+  - I/O層の一部で、標準例外を `KumihanFileError` へラップして送出します（既定は従来どおり標準例外）。
+
 
 ## 🤝 サポート
 
