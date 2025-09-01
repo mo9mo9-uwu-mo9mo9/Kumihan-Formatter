@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- tests: console_ui の軽量ユニットテストを追加（#1308）
+- docs: 自走モード（Automation Mode）の運用ポリシーを AGENTS.md に追加（#1327）
+- docs: Deprecation Migration Guide を追加（docs/DEPRECATION_MIGRATION.md、#1309）
+
+### Changed
+- tooling: codex_env.example に使用方法コメントを追記（#1310）
+- quality: pytest カバレッジしきい値を 30% に引き上げ（#1307）
+- refactor: parsers/commands のトップレベル再エクスポートを停止（Phase 2、#1303）
+
+### Removed
+- deprecations: legacy markdown_parser / legacy_parser を削除（Phase 3、#1304/#1305）
+- deprecations: specialized_parser の互換関数（parse_marker / parse_new_format / parse_ruby_format）を撤去（Phase 3、#1306）
+
 ## [2.0.0-enterprise] - 2025-08-19
 
 ### ✨ Added - 新機能
