@@ -174,6 +174,7 @@ Kumihan-Formatter/
 - [CONTRIBUTING.md](./CONTRIBUTING.md)
 - [AGENTS.md](./AGENTS.md)
 - [CHANGELOG.md](./CHANGELOG.md)
+- [Deprecation Migration Guide](./docs/DEPRECATION_MIGRATION.md)
 
 ## 🔧 開発者向け機能
 

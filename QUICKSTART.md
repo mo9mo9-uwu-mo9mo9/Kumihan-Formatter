@@ -94,3 +94,4 @@ result = formatter.convert_text(content)
 - **アーキテクチャ**: ARCHITECTURE.md
 - **開発ガイド**: CLAUDE.md
 - **変更履歴**: CHANGELOG.md
+- **移行ガイド**: docs/DEPRECATION_MIGRATION.md
