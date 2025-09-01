@@ -26,7 +26,7 @@ from .parsers.core_parser import (
     ParallelProcessingConfig,
     Parser as CoreParser,
     parse as core_parse,
-    parse_with_error_config,
+    parse_with_error_config as _core_parse_with_error_config,
 )
 from .parsers.main_parser import MainParser
 from .parsers.specialized_parser import SpecializedParser
@@ -82,6 +82,35 @@ class Parser:
     def validate(self, content: str) -> bool:
         """コンテンツ検証"""
         return self.specialized_parser.validate(content)
+
+
+def parse_with_error_config(
+    text: str,
+    config: Optional[Dict[str, Any]] = None,
+    use_streaming: bool | None = None,
+) -> Any:
+    """レガシー互換: エラー設定対応パース（ストリーミング対応）
+
+    - `use_streaming` が True の場合、`StreamingParser`（モック想定）を利用
+    - None の場合はテキストサイズで簡易判定（>1MB で True）
+    - それ以外は通常の `Parser` を使用
+    """
+    if use_streaming is None:
+        size_mb = len(text.encode("utf-8")) / (1024 * 1024)
+        use_streaming = size_mb > 1.0
+
+    if use_streaming:
+        sp = globals().get("StreamingParser")
+        if sp is not None:
+            try:
+                parser = sp(json_path="")
+                return list(parser.parse_streaming_from_text(text))
+            except Exception:
+                # フォールバックして通常パース
+                pass
+
+    parser = Parser(config)
+    return parser.parse(text)
 
 
 def parse(content: str, config: Optional[Dict[str, Any]] = None) -> Node:
