@@ -8,7 +8,7 @@ Issue #492 Phase 5A - file_operations.py分割
 import base64
 import shutil
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Callable, Dict
 
 from .file_path_utilities import FilePathUtilities
 from .file_protocol import UIProtocol
@@ -18,11 +18,31 @@ import logging
 class FileOperationsCore:
     """File operations utility class"""
 
-    def __init__(self, ui: Optional[UIProtocol] = None):
-        """Initialize with optional UI instance for dependency injection"""
+    def __init__(
+        self,
+        ui: Optional[UIProtocol] = None,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    ):
+        """Initialize with optional UI instance and decoupled reporter.
+
+        Args:
+            ui: Optional UIProtocol implementation (legacy coupling)
+            progress_callback: Decoupled reporter (preferred). Receives
+                event dictionaries like {"event": str, ...}.
+        """
         self.ui = ui
+        self.progress_callback = progress_callback
         self.logger = logging.getLogger(__name__)
         self.logger.debug("FileOperationsCore initialized")
+
+    # --- internal reporting helper -------------------------------------
+    def _emit(self, event: str, **payload: Any) -> None:
+        if self.progress_callback:
+            try:
+                self.progress_callback({"event": event, **payload})
+            except Exception:
+                # reporting must never break core logic
+                self.logger.debug("progress_callback raised, ignored", exc_info=True)
 
     def copy_images(self, input_path: Path, output_path: Path, ast: list[Any]) -> None:
         """Copy image files to output directory"""
@@ -54,6 +74,9 @@ class FileOperationsCore:
             self.logger.warning(f"Images directory not found: {source_images_dir}")
             if self.ui:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
+            self._emit(
+                "images_dir_missing", path=str(source_images_dir)
+            )
             return None
 
         return source_images_dir
@@ -71,6 +94,9 @@ class FileOperationsCore:
                 self.ui.permission_error(
                     f"画像ディレクトリの作成に失敗しました: {dest_images_dir}"
                 )
+            self._emit(
+                "images_dir_permission_error", path=str(dest_images_dir)
+            )
             raise
         except OSError as e:
             self.logger.error(
@@ -80,6 +106,7 @@ class FileOperationsCore:
                 self.ui.unexpected_error(
                     f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}"
                 )
+            self._emit("images_dir_os_error", path=str(dest_images_dir))
             raise
         return dest_images_dir
 
@@ -147,11 +174,13 @@ class FileOperationsCore:
             self.logger.info(f"Successfully copied {len(copied_files)} image files")
             if self.ui:
                 self.ui.file_copied(len(copied_files))
+            self._emit("images_copied", count=len(copied_files))
 
         if missing_files:
             self.logger.warning(f"{len(missing_files)} image files were missing")
             if self.ui:
                 self.ui.files_missing(missing_files)
+            self._emit("images_missing", files=missing_files)
 
         if duplicate_files:
             self.logger.warning(
@@ -159,6 +188,7 @@ class FileOperationsCore:
             )
             if self.ui:
                 self.ui.duplicate_files(duplicate_files)
+            self._emit("images_duplicates", duplicates=duplicate_files)
 
     @staticmethod
     def create_sample_images(images_dir: Path, sample_images: dict[str, str]) -> None:
@@ -253,9 +283,14 @@ class FileOperationsCore:
                     f"大規模ファイルを検出: {size_info['size_mb']:.1f}MB",
                     f"処理に時間がかかる可能性があります（推奨: {max_size_mb}MB以下）",
                 )
-
                 # 自動的に続行（バッチ処理対応）
                 self.ui.info("大規模ファイル処理を開始します")
+            self._emit(
+                "large_file_detected",
+                path=str(path),
+                size_mb=float(size_info["size_mb"]),
+                threshold_mb=float(max_size_mb),
+            )
             return True
 
         # 小さなファイルは続行
