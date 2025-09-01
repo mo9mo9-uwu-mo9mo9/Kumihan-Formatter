@@ -19,10 +19,7 @@ __all__ = [
     "UIProtocol",
     # イベントミックスイン
     "EventEmitterMixin",
-    # 互換性レイヤー
-    "HtmlFormatter",
-    "MarkdownFormatter",
-    "LegacyParserAdapter",
+    # 互換性レイヤー（非公開化: compatibility_layer 直指定のみ許可）
     # ロガー
     "get_logger",
     # トークントラッカー
