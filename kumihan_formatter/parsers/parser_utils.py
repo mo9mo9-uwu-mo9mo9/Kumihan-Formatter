@@ -10,11 +10,19 @@ Issue #1252対応: パーサー関連ユーティリティの統合
 統合により重複処理を排除し、統一されたユーティリティ機能を提供
 """
 
-import re
 import warnings
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from ..core.utilities.logger import get_logger
+from .utils import (
+    DEFAULT_KEYWORD_CONFIG,
+    DEFAULT_VALIDATION_RULES,
+    DEFAULT_EXTRACTION_CONFIG,
+    build_keyword_patterns,
+    build_validation_patterns,
+    build_utility_patterns,
+    normalize_with_patterns,
+)
 
 
 class ParserUtilsError(Exception):
@@ -61,105 +69,17 @@ class ParserUtils:
 
     def _initialize_configurations(self) -> None:
         """設定初期化（keyword_config.py統合）"""
-        # キーワード設定
-        self.keyword_config = {
-            "basic_keywords": {
-                "太字",
-                "イタリック",
-                "見出し1",
-                "見出し2",
-                "見出し3",
-                "リスト",
-                "番号リスト",
-                "引用",
-                "コード",
-                "リンク",
-            },
-            "advanced_keywords": {
-                "テーブル",
-                "画像",
-                "注釈",
-                "脚注",
-                "数式",
-                "図表",
-                "キャプション",
-                "参照",
-                "索引",
-            },
-            "formatting_keywords": {
-                "中央",
-                "右寄せ",
-                "左寄せ",
-                "両端揃え",
-                "色",
-                "背景色",
-                "フォント",
-                "サイズ",
-            },
-            "structural_keywords": {
-                "章",
-                "節",
-                "項",
-                "段落",
-                "改ページ",
-                "セクション",
-                "ブロック",
-                "コンテナ",
-            },
-        }
-
-        # 検証ルール設定
-        self.validation_rules = {
-            "min_keyword_length": 1,
-            "max_keyword_length": 20,
-            "allow_numbers": True,
-            "allow_special_chars": False,
-            "reserved_keywords": {"エラー", "無効", "不明"},
-        }
-
-        # 抽出設定
-        self.extraction_config = {
-            "max_extraction_depth": 10,
-            "enable_nested_extraction": True,
-            "preserve_whitespace": False,
-            "case_sensitive": True,
-        }
+        # キーワード/検証/抽出の既定値を読み込み
+        self.keyword_config = {k: set(v) for k, v in DEFAULT_KEYWORD_CONFIG.items()}
+        self.validation_rules = dict(DEFAULT_VALIDATION_RULES)
+        self.extraction_config = dict(DEFAULT_EXTRACTION_CONFIG)
 
     def _initialize_patterns(self) -> None:
         """パターン初期化"""
-        # キーワード抽出パターン（keyword_extractors.py統合）
-        self.keyword_patterns = {
-            "basic": re.compile(r"[a-zA-Z\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+"),
-            "compound": re.compile(
-                r"[a-zA-Z\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf][\w\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]*"
-            ),
-            "numeric": re.compile(
-                r"\d+[a-zA-Z\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]*"
-            ),
-            "special": re.compile(
-                r"[a-zA-Z\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf][\w\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\-_]*"
-            ),
-        }
-
-        # 検証パターン（keyword_validation.py統合）
-        self.validation_patterns = {
-            "valid_chars": re.compile(
-                r"^[a-zA-Z\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\d\-_]*$"
-            ),
-            "invalid_start": re.compile(r"^[\d\-_]"),
-            "invalid_end": re.compile(r"[\-_]$"),
-            "consecutive_special": re.compile(r"[\-_]{2,}"),
-        }
-
-        # ユーティリティパターン（utils_core.py統合）
-        self.utility_patterns = {
-            "whitespace": re.compile(r"\s+"),
-            "line_break": re.compile(r"\r?\n"),
-            "tab": re.compile(r"\t+"),
-            "punctuation": re.compile(
-                r"[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]"
-            ),
-        }
+        # パターンはビルダーから生成
+        self.keyword_patterns = build_keyword_patterns()
+        self.validation_patterns = build_validation_patterns()
+        self.utility_patterns = build_utility_patterns()
 
     def _initialize_validators(self) -> None:
         """バリデーター初期化"""
@@ -275,19 +195,7 @@ class ParserUtils:
             return ""
 
         try:
-            # 改行統一
-            normalized = self.utility_patterns["line_break"].sub("\n", content)
-
-            # 連続空白の統一
-            normalized = self.utility_patterns["whitespace"].sub(" ", normalized)
-
-            # タブの統一
-            normalized = self.utility_patterns["tab"].sub("    ", normalized)
-
-            # 前後の空白除去
-            normalized = normalized.strip()
-
-            return normalized
+            return normalize_with_patterns(content, self.utility_patterns)
 
         except Exception as e:
             self.logger.error(f"コンテンツ正規化エラー: {e}")
@@ -427,7 +335,7 @@ class ParserUtils:
 
     def _validate_reserved(self, keyword: str) -> bool:
         """予約語検証"""
-        reserved: set[str] | list[str] = self.validation_rules["reserved_keywords"]  # type: ignore[assignment]
+        reserved: set[str] | list[str] = self.validation_rules["reserved_keywords"]
         return keyword not in set(reserved)
 
     def _validate_structure(self, keyword: str) -> bool:
