@@ -7,15 +7,13 @@
 
 ## 🏗️ 全体アーキテクチャ
 
-### 3層アーキテクチャ
+### 構成概要
 ```
 kumihan_formatter/
 ├── 🎯 unified_api.py        # 統合エントリーポイント
-├── 📝 simple_parser.py      # 軽量パーサー (96%カバレッジ)
-├── 🎨 simple_renderer.py    # 軽量レンダラー (95%カバレッジ)
-├── core/                    # コア機能群
-├── parsers/                 # パーサー統合群
-└── rendering/               # レンダリング群
+├── core/                    # コア機能群（api/ rendering/ utilities/ など）
+├── parsers/                 # パーサー群（unified_markdown_parser 等）
+└── ui/ / managers/          # UI補助・マネージャ群
 ```
 
 ### 統合設計思想
@@ -43,34 +41,11 @@ class KumihanFormatter:
 - 設定・状態管理
 - エラー統合処理
 
-### 2. SimpleParser (simple_parser.py)
-```python
-class SimpleKumihanParser:
-    """軽量パーサー - 169行, 96%カバレッジ"""
-    - ブロック記法解析
-    - 見出し記法処理
-    - リスト記法処理
-    - インライン記法処理
-```
+### 2. MainParser（parsers/main_parser.py）
+- 統合パーサー。入力テキストを解析し、内部ノード（Node）へ変換。
 
-**責任**:
-- Kumihan記法 → AST変換
-- 構文検証・エラー報告
-- パフォーマンス最適化
-
-### 3. SimpleRenderer (simple_renderer.py)
-```python
-class SimpleHTMLRenderer:
-    """軽量レンダラー - 62行, 95%カバレッジ"""
-    - HTML生成・出力
-    - CSS統合・スタイリング
-    - テンプレート適用
-```
-
-**責任**:
-- AST → HTML変換
-- スタイル適用・最適化
-- 出力フォーマット制御
+### 3. MainRenderer（core/rendering/main_renderer.py）
+- 解析結果（Dict/Node）からHTMLを組み立てる統合レンダラー。
 
 ---
 
@@ -87,24 +62,9 @@ class SimpleHTMLRenderer:
 📄 出力ファイル
 ```
 
-### データ構造
-```python
-# ParseResult
-@dataclass
-class ParseResult:
-    elements: List[Element]
-    success: bool
-    errors: List[str]
-    metadata: Dict[str, Any]
-
-# Element (AST Node)  
-@dataclass
-class Element:
-    type: str           # "heading", "paragraph", "block"
-    content: str
-    attributes: Dict[str, Any]
-    children: List[Element]
-```
+### データ構造（概要）
+- 解析結果は内部ノード（`core.ast_nodes.Node`）または辞書（Dict）で扱われます。
+  公開API（`KumihanFormatter`）経由ではDict形式を基本とし、レンダラーがHTML文字列を生成します。
 
 ---
 
@@ -166,13 +126,13 @@ rendering/
 ### 品質保証システム
 ```python
 # バリデーション
-core/validation_*.py
+core/validation/
 - 構文検証
 - データ整合性チェック
 - パフォーマンス監視
 
 # ログ・監視
-core/logger.py
+core/utilities/logger.py
 - 構造化ログ
 - パフォーマンス計測
 - エラー追跡
@@ -180,15 +140,7 @@ core/logger.py
 
 ### エラーハンドリング
 ```python
-# カスタム例外
-class KumihanSyntaxError(Exception):
-    """構文エラー専用"""
-
-class KumihanProcessingError(Exception):
-    """処理エラー専用"""
-
-class KumihanFileError(Exception):
-    """ファイル操作エラー専用"""
+※ 現行実装では専用例外は未導入。標準例外で通知（将来導入を検討）。
 ```
 
 ---

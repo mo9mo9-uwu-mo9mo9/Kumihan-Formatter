@@ -19,13 +19,12 @@ cd Kumihan-Formatter
 
 # Python依存関係インストール
 python3 -m pip install -e .
-python3 -m pip install -r requirements-dev.txt
 
-# または一括インストール
+# 開発用一括インストール（推奨）
 python3 -m pip install -e ".[dev]"
 
-# Git hooks セットアップ（必須）
-./scripts/install-hooks.sh
+# pre-commit 相当のローカル統合チェック（フック導入は任意）
+make pre-commit
 ```
 
 ## ブランチ戦略
@@ -76,7 +75,7 @@ pytest
 | **主要README** | `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md` | プロジェクトの顔となる文書 |
 | **Claude関連** | `CLAUDE.md`, `.claude_md_*` | Claude Code用設定 |
 | **ビルドツール** | `Makefile` | 開発コマンドの集約 |
-| **起動スクリプト** | `start-claude-with-serena.sh`, `setup-claude-alias.sh` | プロジェクト全体の起動用 |
+| **開発スクリプト** | `scripts/*.sh`, `scripts/*.py` | プロジェクトの各種ユーティリティ |
 | **Linter設定** | `.markdownlint.json` | ツールがルートを参照 |
 
 ### 🚫 ルートディレクトリに配置してはいけないファイル
