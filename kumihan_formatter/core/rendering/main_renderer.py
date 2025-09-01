@@ -2,6 +2,7 @@
 
 from ...core.utilities.logger import get_logger
 from .markdown_renderer import MarkdownRenderer
+from .simple_compat_renderer import SimpleCompatRenderer
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -43,6 +44,8 @@ class MainRenderer:
         self.embed_errors_in_html: bool = False
         self.heading_counter: int = 0
         self._element_delegate: Optional[Any] = None
+        # Simple互換出力を専用モジュールに委譲
+        self._simple_renderer = SimpleCompatRenderer()
 
     def _create_html_formatter(self) -> Any:
         """HTML formatter placeholder for compatibility"""
@@ -487,12 +490,15 @@ class MainRenderer:
         )
 
     def render_simple_parsed_data(self, parsed_data: Dict[str, Any]) -> str:
-        """SimpleHTMLRendererとの互換性確保（統合版）"""
+        """SimpleHTMLRendererとの互換性確保（統合版）
+
+        互換性のため、本メソッドは内部のラッパー経由で処理します。
+        テストが `self._render_simple_elements` をパッチできるように、
+        主要処理はラッパーを呼び出す構成にしています。
+        """
         try:
             if parsed_data.get("status") != "success":
-                return self._render_error_page(
-                    parsed_data.get("error", "Unknown error")
-                )
+                return self._render_error_page(parsed_data.get("error", "Unknown error"))
 
             elements = parsed_data.get("elements", [])
             if not elements:
@@ -500,226 +506,62 @@ class MainRenderer:
 
             html_body = self._render_simple_elements(elements)
             return self._wrap_in_simple_html_document(html_body)
-
         except Exception as e:
             self.logger.error(f"Simple render error: {e}")
             return self._render_error_page(str(e))
 
+    # --- Simple互換処理のラッパー（委譲） ------------------------------
     def _render_simple_elements(self, elements: List[Dict[str, Any]]) -> str:
-        """要素リストをHTML変換（Simple互換）"""
-        html_parts = []
-
-        for element in elements:
-            element_type = element.get("type", "")
-            content = element.get("content", "")
-            attributes = element.get("attributes", {})
-
-            if element_type == "kumihan_block":
-                html_parts.append(
-                    self._render_simple_kumihan_block(content, attributes)
-                )
-            elif element_type.startswith("heading_"):
-                level = element_type.split("_")[1]
-                html_parts.append(self._render_simple_heading(content, int(level)))
-            elif element_type == "paragraph":
-                html_parts.append(self._render_simple_paragraph(content))
-            elif element_type == "list_item":
-                list_type = attributes.get("list_type", "unordered")
-                html_parts.append(self._render_simple_list_item(content, list_type))
-            else:
-                html_parts.append(self._render_simple_paragraph(content))
-
-        return "\n".join(html_parts)
+        return self._simple_renderer._render_simple_elements(elements)
 
     def _render_simple_kumihan_block(
         self, content: str, attributes: Dict[str, str]
     ) -> str:
-        """Kumihan装飾ブロック（Simple互換）"""
-        decoration = attributes.get("decoration", "")
-        css_class = self._get_simple_decoration_class(decoration)
-
-        return f"""<div class="kumihan-block {css_class}">
-    <div class="decoration">{self._escape_html(decoration)}</div>
-    <div class="content">{self._escape_html(content)}</div>
-</div>"""
+        return self._simple_renderer._render_simple_kumihan_block(content, attributes)
 
     def _render_simple_heading(self, content: str, level: int) -> str:
-        """見出し（Simple互換）"""
-        level = max(1, min(6, level))
-        return (
-            f'<h{level} class="heading-{level}">{self._escape_html(content)}</h{level}>'
-        )
+        return self._simple_renderer._render_simple_heading(content, level)
 
     def _render_simple_paragraph(self, content: str) -> str:
-        """段落（Simple互換）"""
-        return f'<p class="paragraph">{content}</p>'
+        return self._simple_renderer._render_simple_paragraph(content)
 
     def _render_simple_list_item(self, content: str, list_type: str) -> str:
-        """リストアイテム（Simple互換）"""
-        tag = "ul" if list_type == "unordered" else "ol"
-        return f'<{tag} class="list-{list_type}"><li>{self._escape_html(content)}</li></{tag}>'
+        return self._simple_renderer._render_simple_list_item(content, list_type)
 
     def _get_simple_decoration_class(self, decoration: str) -> str:
-        """装飾名からCSSクラス（Simple互換）"""
-        decoration_map = {
-            "重要": "important",
-            "注意": "warning",
-            "情報": "info",
-            "引用": "quote",
-            "コード": "code",
-            "例": "example",
-        }
-        return decoration_map.get(decoration, "default")
+        return self._simple_renderer._get_simple_decoration_class(decoration)
 
     def _wrap_in_simple_html_document(self, body_content: str) -> str:
-        """完全HTML文書ラップ（Simple互換）"""
-        from datetime import datetime
-
-        return f"""<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumihan-Formatter 出力</title>
-    <style>
-{self._get_simple_default_styles()}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>Kumihan-Formatter</h1>
-            <p>Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        </header>
-        <main class="content">
-{body_content}
-        </main>
-        <footer class="footer">
-            <p>Generated by Kumihan-Formatter v4.0.0-minimal</p>
-        </footer>
-    </div>
-</body>
-</html>"""
+        return self._simple_renderer._wrap_in_simple_html_document(body_content)
 
     def _render_error_page(self, error_message: str) -> str:
-        """エラーページ生成（Simple互換）"""
-        return f"""<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>Kumihan-Formatter - エラー</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; }}
-        .error {{ background: #fee; border: 1px solid #faa; padding: 20px; border-radius: 5px; }}
-        .error h1 {{ color: #c33; }}
-    </style>
-</head>
-<body>
-    <div class="error">
-        <h1>エラーが発生しました</h1>
-        <p>{self._escape_html(error_message)}</p>
-    </div>
-</body>
-</html>"""
+        return self._simple_renderer._render_error_page(error_message)
 
     def _render_empty_page(self) -> str:
-        """空ページ生成（Simple互換）"""
-        return """<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>Kumihan-Formatter - 空の文書</title>
-</head>
-<body>
-    <h1>空の文書</h1>
-    <p>解析する内容がありません。</p>
-</body>
-</html>"""
+        return self._simple_renderer._render_empty_page()
 
     def _get_simple_default_styles(self) -> str:
-        """デフォルトCSSスタイル（Simple互換）"""
-        return """        body {
-            font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .header {
-            background: #4a90e2;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .kumihan-block {
-            margin: 20px 0;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .kumihan-block.important {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .kumihan-block.warning {
-            background: #f8d7da;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .kumihan-block.info {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-        }
-        
-        .kumihan-block.default {
-            background: #e9ecef;
-            border-left: 4px solid #6c757d;
-        }
-        
-        .decoration {
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 10px;
-        }
-        
-        .content {
-            color: #212529;
-        }
-        
-        .paragraph {
-            margin: 15px 0;
-        }
-        
-        .list-unordered, .list-ordered {
-            margin: 15px 0;
-        }
-        
-        .footer {
-            background: #6c757d;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 0.9em;
-        }"""
+        return self._simple_renderer._get_simple_default_styles()
+
+    # Simple互換詳細実装は simple_compat_renderer へ分離済み
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
+
+    # （委譲化）
 
     def close(self) -> None:
         """リソース解放（将来拡張用）"""
