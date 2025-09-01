@@ -153,3 +153,4 @@
   - 大規模プロジェクトは索引前提（初回だけ数分）。
   - ツール名は明示指定（クライアントがサーバー名を解決しない場合あり）。
   - ゾンビプロセス対策にWebダッシュボードを有効化可（`serena_config.yml` の `web_dashboard: true`）。
+  - 出力制御は `.serena/memories/serena_tool_output_limits.md` と `docs/SERENA_USAGE.md` を参照（必要ならその場で初期化/再インデックス）。

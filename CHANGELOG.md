@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - deprecations: legacy markdown_parser / legacy_parser を削除（Phase 3、#1304/#1305）
 - deprecations: specialized_parser の互換関数（parse_marker / parse_new_format / parse_ruby_format）を撤去（Phase 3、#1306）
 
+### Notes
+- Versioning policy for 0.x: 破壊的変更は Minor バンプで扱います（例: 0.9.x → 0.10.0）。
+- 公開インポート（トップレベル再エクスポート停止）は一部環境で破壊的変更となるため、次回リリースは Minor（0.10.0系）を想定します。詳細は Migration Guide を参照。
+
 ## [2.0.0-enterprise] - 2025-08-19
 
 ### ✨ Added - 新機能

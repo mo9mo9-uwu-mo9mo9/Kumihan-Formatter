@@ -157,9 +157,10 @@ Kumihan-Formatter/
 └── pyproject.toml       # プロジェクト設定
 ```
 
-## Deprecation Notice: DummyParser/DummyRenderer (Phase 1 until 2025-09-15)
-- `kumihan_formatter.unified_api.DummyParser` / `DummyRenderer` are deprecated and will be removed in a later phase.
-- On instantiation, they now emit a DeprecationWarning.
+## Deprecation Notice: DummyParser/DummyRenderer（Phase 1: 〜2025-09-15）
+- `kumihan_formatter.unified_api.DummyParser` / `DummyRenderer` は非推奨です（実行時に DeprecationWarning を出力）。
+- Phase 2（〜2025-10-15）ではトップレベル再エクスポートを停止済み、直接インポートへ移行してください。
+- Phase 3（〜2025-11-30）でレガシーAPIの削除を段階的に進めます。詳細と移行手順は [Deprecation Migration Guide](./docs/DEPRECATION_MIGRATION.md) を参照。
 - Migration examples:
   - Before: `DummyParser().parse(text)` → After: `KumihanFormatter().parse_text(text)`
   - Before: `DummyRenderer().render(node, ctx)` → After: `KumihanFormatter().convert_text(text)`
