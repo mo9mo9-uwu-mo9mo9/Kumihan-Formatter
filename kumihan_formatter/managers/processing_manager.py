@@ -16,6 +16,7 @@ from kumihan_formatter.parsers.unified_list_parser import UnifiedListParser
 from kumihan_formatter.parsers.unified_keyword_parser import UnifiedKeywordParser
 from kumihan_formatter.parsers.unified_markdown_parser import UnifiedMarkdownParser
 from kumihan_formatter.core.ast_nodes.node import Node
+from kumihan_formatter.core.processing.chunking import Chunker
 
 
 class PerformanceMetrics:
@@ -229,9 +230,7 @@ class ProcessingManager:
 
             # チャンク分割による並列処理（簡易版）
             chunk_size = self.config.get("large_parse_chunk_size", 1000)
-            chunks = [
-                lines[i : i + chunk_size] for i in range(0, len(lines), chunk_size)
-            ]
+            chunks = Chunker().create_chunks(lines, chunk_size)
 
             results = []
             for chunk in chunks:
