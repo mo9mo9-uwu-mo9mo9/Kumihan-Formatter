@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 
 from kumihan_formatter.core.ast_nodes.node import Node
+from typing import cast
 from kumihan_formatter.parsers.unified_list_parser import UnifiedListParser
 from kumihan_formatter.parsers.unified_keyword_parser import UnifiedKeywordParser
 from kumihan_formatter.parsers.unified_markdown_parser import UnifiedMarkdownParser
@@ -109,6 +110,9 @@ class MainParser:
             >>> result = parser.parse("# 見出し #内容##")
             >>> result = parser.parse(content, "keyword")
         """
+        # 型安全: None は受け付けない（テスト互換のため明示的にTypeError）
+        if content is None:
+            raise TypeError("content must be str or List[str]")
         try:
             # パーサー種類決定
             selected_parser = parser_type or self.default_parser
@@ -121,12 +125,14 @@ class MainParser:
 
             # パーシング実行
             parser_func = self._parsers[selected_parser]
-            result = parser_func(content)
+            result_any = cast(
+                Optional[Union[Node, Dict[str, Any]]], parser_func(content)
+            )
 
-            if result:
+            if result_any:
                 self.logger.debug(f"パーシング成功: {selected_parser}")
-                # 明示的な型キャスト
-                return result  # type: ignore[no-any-return]
+                # 返り値型は Node | Dict[str, Any] | None を満たす想定
+                return result_any
             else:
                 # フォールバック試行
                 if selected_parser != self.fallback_parser:
@@ -134,8 +140,10 @@ class MainParser:
                         f"パーシング失敗、フォールバック試行: {self.fallback_parser}"
                     )
                     fallback_func = self._parsers[self.fallback_parser]
-                    # 明示的な型キャスト
-                    return fallback_func(content)  # type: ignore[no-any-return]
+                    result_fb = cast(
+                        Optional[Union[Node, Dict[str, Any]]], fallback_func(content)
+                    )
+                    return result_fb
 
                 return None
 

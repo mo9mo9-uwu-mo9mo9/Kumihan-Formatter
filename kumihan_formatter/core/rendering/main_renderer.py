@@ -190,9 +190,7 @@ class MainRenderer:
             bool: 成功時True、失敗時False
 
         Notes:
-            - CLAUDE.md要件により全てtmp/配下に出力
-            - 出力パスは自動的にtmp/ディレクトリに変更
-            - ディレクトリは自動作成
+            - 出力パスは呼び出し元指定を基本的に尊重し、必要なディレクトリを自動作成します。
         """
         try:
             # 入力検証
@@ -202,16 +200,7 @@ class MainRenderer:
             # 出力パス決定（テスト環境対応）
             output_path = Path(output_file)
 
-            # テスト環境判定: 一時ディレクトリ内の場合は元パス使用
-            if "/tmp" in str(output_path) or "tmp/" in str(output_path):
-                # テスト用一時ディレクトリまたは既に tmp 配下の場合はそのまま使用
-                self.logger.debug(
-                    f"Test environment detected, using original path: {output_path}"
-                )
-            else:
-                # 通常環境：tmp/ 配下に強制出力（CLAUDE.md要件）
-                output_path = Path("tmp") / Path(output_file).name
-                self.logger.debug(f"Production mode: {output_file} → {output_path}")
+            # 以前は tmp/ 強制出力。現在は指定パスを尊重
 
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -498,7 +487,9 @@ class MainRenderer:
         """
         try:
             if parsed_data.get("status") != "success":
-                return self._render_error_page(parsed_data.get("error", "Unknown error"))
+                return self._render_error_page(
+                    parsed_data.get("error", "Unknown error")
+                )
 
             elements = parsed_data.get("elements", [])
             if not elements:

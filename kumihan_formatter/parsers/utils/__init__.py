@@ -25,4 +25,3 @@ __all__ = [
     "build_utility_patterns",
     "normalize_with_patterns",
 ]
-

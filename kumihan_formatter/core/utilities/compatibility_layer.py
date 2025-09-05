@@ -8,6 +8,7 @@ MainParser→MasterParser統合により更新。
 既定ではインポート時警告を出しません。必要に応じて
 環境変数 `KUMIHAN_COMPAT_WARNINGS=1` で警告を有効化できます。
 """
+
 import os
 import warnings
 

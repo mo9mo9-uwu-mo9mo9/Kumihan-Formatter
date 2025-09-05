@@ -31,6 +31,23 @@ class FormatterConfig:
         else:
             self.config = self._load_config(config_path)
 
+        # 環境変数によるランタイムプロファイル適用（非機能要件のみ）
+        try:
+            from ..config.runtime_profile import get_profile_overrides
+
+            overrides = get_profile_overrides()
+            if overrides:
+                self.config.update(overrides)
+                logging.getLogger(__name__).debug(
+                    "Runtime profile overrides applied: %s",
+                    ", ".join(sorted(overrides.keys())),
+                )
+        except Exception as e:
+            # プロファイル適用に失敗しても通常運用を継続
+            logging.getLogger(__name__).warning(
+                "Runtime profile detection failed: %s", e
+            )
+
         self.logger.info(f"FormatterConfig initialized - mode: {performance_mode}")
 
     def _load_config(self, config_path: Optional[Union[str, Path]]) -> Dict[str, Any]:

@@ -61,3 +61,7 @@ except KumihanFileError as e:
 2. I/O層→構文層→処理層の順に段階置換（小PR分割）
 3. ドキュメント/サンプル更新、移行ガイド追記
 
+実験フラグ（I/O層）:
+- `KUMIHAN_RAISE_KUMIHAN_ERRORS=1` を設定すると、一部のI/O例外を
+  `KumihanFileError` にラップして送出（現状: 画像ディレクトリ作成箇所）。
+  既定はオフ（互換性維持）。

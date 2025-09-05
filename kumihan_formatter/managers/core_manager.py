@@ -498,9 +498,7 @@ class CoreManager:
         try:
             path_obj = Path(output_path)
 
-            # tmpディレクトリ配下への強制（CLAUDE.md準拠）
-            if not str(path_obj).startswith("tmp/"):
-                path_obj = Path("tmp") / path_obj
+            # 出力先の存在を保証（パスは呼び出し元指定を尊重）
 
             path_obj.mkdir(parents=True, exist_ok=True)
             return True

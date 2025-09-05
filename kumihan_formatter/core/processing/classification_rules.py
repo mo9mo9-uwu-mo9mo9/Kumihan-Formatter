@@ -93,7 +93,6 @@ def build_classification_rules() -> Dict[DocumentType, dict[str, list[str]]]:
         },
         DocumentType.TECHNICAL: {
             "filenames": [
-                "CLAUDE.md",
                 "SPEC.md",
                 "spec.md",
                 "STYLE_GUIDE.md",
@@ -105,7 +104,6 @@ def build_classification_rules() -> Dict[DocumentType, dict[str, list[str]]]:
                 "SYNTAX_CHECKER_README.md",
             ],
             "patterns": [
-                r"claude\.md$",
                 r"spec\.md$",
                 r"style.*guide",
                 r"design",

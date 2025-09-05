@@ -118,6 +118,10 @@ class ProcessingManager:
                 return self.keyword_parser.parse(content_str)
             elif parser_type == "markdown":
                 return self.markdown_parser.parse(content_str)
+            elif parser_type == "block":
+                # コーディネーターが返す block はマーカー/シンプル互換。
+                # 現状はUnifiedMarkdownParserで処理（挙動互換）。
+                return self.markdown_parser.parse(content_str)
             elif parser_type == "kumihan":
                 # kumihanパーサーはMarkdownParserでサポート
                 return self.markdown_parser.parse(content_str)

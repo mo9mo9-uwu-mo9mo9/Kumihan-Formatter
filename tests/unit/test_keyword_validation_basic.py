@@ -22,3 +22,11 @@ def test_validate_keyword_cache_and_custom():
     # キャッシュにより2回目も安定
     assert v.validate_keyword("custom") is True
 
+
+def test_validate_invalid_keyword_characters():
+    cfg = KeywordParserConfig()
+    v = KeywordValidator(cfg)
+
+    # 先頭が数値や記号を含むキーワードはエラーになる想定
+    errors = v.validate("# 123invalid *bad* # content ##")
+    assert errors  # 何らかのエラーが検出される

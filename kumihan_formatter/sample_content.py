@@ -56,4 +56,9 @@ warnings.warn(
 SHOWCASE_SAMPLE: str = get_showcase_sample()
 SAMPLE_IMAGES: Dict[str, str] = get_sample_images()
 
-__all__ = ["SHOWCASE_SAMPLE", "SAMPLE_IMAGES", "get_showcase_sample", "get_sample_images"]
+__all__ = [
+    "SHOWCASE_SAMPLE",
+    "SAMPLE_IMAGES",
+    "get_showcase_sample",
+    "get_sample_images",
+]

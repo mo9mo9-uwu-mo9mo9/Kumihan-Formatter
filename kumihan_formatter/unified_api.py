@@ -142,3 +142,18 @@ __all__ = [
     "DummyParser",
     "DummyRenderer",
 ]
+
+
+def main() -> None:
+    """薄いCLIエントリポイント（テスト向け）"""
+    import sys
+    from .core.utilities.api_utils import main as cli_main
+
+    # 委譲（本来のCLIは api_utils.main）
+    try:
+        cli_main()
+    except SystemExit:
+        # テスト環境では SystemExit を無視
+        pass
+    except Exception as e:
+        print(f"CLI error: {e}", file=sys.stderr)

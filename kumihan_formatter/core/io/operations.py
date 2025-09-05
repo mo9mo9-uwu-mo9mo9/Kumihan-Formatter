@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Union
 
 from .protocols import FileProtocol, PathProtocol
+from ..common.exceptions import KumihanFileError
+import os
 from .validators import FileValidator, PathValidator
 
 
@@ -29,6 +31,8 @@ class FileOperations(FileProtocol):
         except UnicodeDecodeError as e:
             raise ValueError(f"エンコーディングエラー: {e}")
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"ファイル読み込み失敗: {e}")
 
     def write_text(self, path: Path, content: str, encoding: str = "utf-8") -> None:
@@ -43,6 +47,8 @@ class FileOperations(FileProtocol):
         try:
             path.write_text(content, encoding=encoding)
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"ファイル書き込み失敗: {e}")
 
     def read_binary(self, path: Path) -> bytes:
@@ -54,6 +60,8 @@ class FileOperations(FileProtocol):
         try:
             return path.read_bytes()
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"バイナリファイル読み込み失敗: {e}")
 
     def write_binary(self, path: Path, data: bytes) -> None:
@@ -68,6 +76,8 @@ class FileOperations(FileProtocol):
         try:
             path.write_bytes(data)
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"バイナリファイル書き込み失敗: {e}")
 
     def copy_file(self, src: Path, dst: Path) -> None:
@@ -82,6 +92,8 @@ class FileOperations(FileProtocol):
         try:
             shutil.copy2(src, dst)
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"ファイルコピー失敗: {e}")
 
     def move_file(self, src: Path, dst: Path) -> None:
@@ -96,6 +108,8 @@ class FileOperations(FileProtocol):
         try:
             shutil.move(str(src), str(dst))
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"ファイル移動失敗: {e}")
 
     def delete_file(self, path: Path) -> None:
@@ -109,6 +123,8 @@ class FileOperations(FileProtocol):
         try:
             path.unlink()
         except Exception as e:
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise IOError(f"ファイル削除失敗: {e}")
 
     def exists(self, path: Path) -> bool:
