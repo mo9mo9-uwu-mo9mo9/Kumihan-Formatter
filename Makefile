@@ -43,7 +43,7 @@ help:
 # 基本セットアップ
 setup:
 	@echo "🚀 開発環境セットアップ中..."
-	$(PIP) install -e ".[dev,test,performance,telemetry]"
+	$(PIP) install -e ".[dev,test,performance,telemetry,cli]"
 	@echo "✅ セットアップ完了"
 
 # 総合品質チェック（Issue #1239のメイン機能）
