@@ -121,7 +121,7 @@ class KumihanError(Exception):
             "context": self.context.to_dict(),
             "suggestions": self.suggestions,
             "original_error": str(self.original_error) if self.original_error else None,
-            "": self._info,
+            "traceback": self._info,
         }
 
     def __str__(self) -> str:
