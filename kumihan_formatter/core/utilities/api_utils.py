@@ -72,21 +72,66 @@ validate = validate_kumihan_syntax
 
 
 def main() -> None:
-    """CLI エントリーポイント - シンプル実装"""
+    """CLI エントリーポイント（argparse対応）"""
     import sys
+    import argparse
 
-    if len(sys.argv) < 2:
-        print("使用方法: kumihan <入力ファイル> [出力ファイル]")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        prog="kumihan",
+        description="Kumihan-Formatter: テキストをHTMLに自動組版するCLI",
+    )
+    parser.add_argument("input", nargs="?", help="入力ファイルパス")
+    parser.add_argument("output", nargs="?", help="出力ファイルパス（省略可）")
+    parser.add_argument(
+        "-t",
+        "--template",
+        default="default",
+        help="使用テンプレート名（既定: default）",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="詳細ログを有効化（将来拡張用）",
+    )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="バージョン情報を表示して終了",
+    )
 
-    input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else None
+    # ヘルプのみ（引数無し）も使用方法を0終了で表示
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+
+    args = parser.parse_args()
+
+    if args.version:
+        try:
+            from ... import __version__
+
+            print(__version__)
+        except Exception:
+            print("unknown")
+        finally:
+            sys.exit(0)
+
+    if not args.input:
+        parser.print_help()
+        sys.exit(2)
+
+    input_file = args.input
+    output_file = args.output
+
     try:
         result = quick_convert(input_file, output_file)
-        if result["status"] == "success":
+        if result.get("status") == "success":
             print(f"変換完了: {result['output_file']}")
+            sys.exit(0)
         else:
-            print(f"変換エラー: {result['error']}")
+            err = result.get("error", "unknown error")
+            print(f"変換エラー: {err}")
             sys.exit(1)
     except Exception as e:
         print(f"実行エラー: {e}")
