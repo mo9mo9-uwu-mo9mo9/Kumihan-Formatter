@@ -22,8 +22,15 @@ class ParallelChunkProcessor:
         self,
         max_workers: Optional[int] = None,
         chunk_size: int = 1000,
-    ):
-        """並列チャンク処理初期化"""
+        config: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """並列チャンク処理初期化
+
+        Args:
+            max_workers: ワーカー数
+            chunk_size: チャンクサイズ
+            config: 親から受け取った設定（CoreManagerに伝播）
+        """
         self.logger = logging.getLogger(__name__)
         self.max_workers = max_workers
         self.chunk_size = chunk_size
@@ -36,7 +43,8 @@ class ParallelChunkProcessor:
         # Delayed import to avoid circular dependency
         from ...managers.core_manager import CoreManager
 
-        self.core_manager = CoreManager({})  # TODO: config should be passed from parent
+        # P1: 親からの設定をCoreManagerへ伝播
+        self.core_manager = CoreManager(config or {})
         self.processing_optimized = ProcessingOptimized(max_workers=max_workers)
 
     # ===== 基本的な並列処理メソッド =====
