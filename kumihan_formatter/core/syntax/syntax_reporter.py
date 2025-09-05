@@ -185,19 +185,18 @@ class SyntaxReporter:
                     by_severity[error.severity] = []
                 by_severity[error.severity].append(error)
 
-        # Format output
-        output_lines = []
-        for severity in [
-            ErrorSeverity.ERROR,
-            ErrorSeverity.WARNING,
-            ErrorSeverity.INFO,
-        ]:
+        # Format output（severityの大文字小文字差を吸収）
+        output_lines: list[str] = []
+        icons = {
+            ErrorSeverity.ERROR: "❌",
+            ErrorSeverity.WARNING: "⚠️",
+            ErrorSeverity.INFO: "ℹ️",
+        }
+        for severity in [ErrorSeverity.ERROR, ErrorSeverity.WARNING, ErrorSeverity.INFO]:
             if severity in by_severity:
                 for error in by_severity[severity]:
-                    icon = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}[severity.value]
-                    output_lines.append(
-                        f"  {icon} Line {error.line_number}: {error.message}"
-                    )
+                    icon = icons.get(severity, "•")
+                    output_lines.append(f"  {icon} Line {error.line_number}: {error.message}")
                     if error.context:
                         output_lines.append(f"     Context: {error.context}")
 
@@ -229,7 +228,16 @@ class SyntaxReporter:
 
         for errors in results.values():
             for error in errors:
-                counts[error.severity.value] += 1
+                sev = error.severity
+                # Enum → 上位互換の大文字キー
+                key = (
+                    "ERROR"
+                    if sev == ErrorSeverity.ERROR
+                    else "WARNING"
+                    if sev == ErrorSeverity.WARNING
+                    else "INFO"
+                )
+                counts[key] += 1
                 counts["TOTAL"] += 1
 
         return counts
