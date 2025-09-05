@@ -17,12 +17,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
 ]
+# P1: runtime最小化（未使用依存を削除）
 dependencies = [
-    "jinja2>=3.0",
-    "pyyaml>=6.0",
-    "pydantic>=2.0",
-    "toml>=0.10",
-    "tomli>=1.2.0",
 ]
 
 [project.scripts]
@@ -41,6 +37,11 @@ dev = [
 ]
 performance = [
     "psutil>=5.9",  # メモリ使用量追跡用
+]
+cli = [
+    "watchdog>=4.0",
+    "rich>=13.0",
+    "click>=8.0",
 ]
 telemetry = [
     "opentelemetry-api>=1.20.0",
