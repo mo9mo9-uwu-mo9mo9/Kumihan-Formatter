@@ -185,6 +185,18 @@ CLIはサブコマンド無しのシンプル構成です（convert等は未提�
 ```bash
 # 基本形式（サブコマンドなし）
 kumihan input.txt [output.html]
+
+# ヘルプ / バージョン
+kumihan --help
+kumihan --version
+
+# 安全ガード（破壊的操作の抑止/許可）
+# 既存の出力がある場合は既定で削除しない
+kumihan input.txt output.html --dry-run   # ドライラン（削除/書き込みを行わない）
+kumihan input.txt output.html --force     # 既存出力を強制上書き
+
+# 環境変数でも強制可
+KUMIHAN_FORCE=1 kumihan input.txt output.html
 ```
 
 ### 環境変数（開発・実験）
@@ -198,6 +210,9 @@ kumihan input.txt [output.html]
 - `KUMIHAN_PROFILE=conservative|aggressive`:
   - 実行時プロファイル（非機能要件のチューニング）を切り替えます。デフォルトは未設定（従来挙動）。
     - `conservative`: `large_parse_chunk_size=600`、`performance_monitoring=false`
+
+- `KUMIHAN_FORCE=1`:
+  - 破壊的操作（既存出力の削除など）を強制許可します。CLIの `--force` と同等です。
     - `aggressive`: `large_parse_chunk_size=2000`、`performance_monitoring=true`
   - いずれのプロファイルも公開APIや出力仕様は変更しません（内部最適化のみ）。
 
