@@ -6,6 +6,7 @@ Issue #319対応 - distribution_manager.py から分離
 """
 
 import shutil
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -65,8 +66,13 @@ class DistributionProcessor:
         if kumihan_formatter_dir.exists():
             target_dir = output_dir / "kumihan_formatter"
 
-            # 既存ディレクトリを削除
-            if target_dir.exists():
+            # 既存ディレクトリがある場合の安全ガード
+            force = str(os.getenv("KUMIHAN_FORCE", "")).lower() in {"1", "true"}
+            if target_dir.exists() and not force:
+                # 上書き許可時のみ削除。許可がない場合は上書きコピー
+                shutil.copytree(kumihan_formatter_dir, target_dir, dirs_exist_ok=True)
+                return len(list(target_dir.rglob("*.py")))
+            elif target_dir.exists() and force:
                 shutil.rmtree(target_dir)
 
             # プログラムディレクトリをコピー

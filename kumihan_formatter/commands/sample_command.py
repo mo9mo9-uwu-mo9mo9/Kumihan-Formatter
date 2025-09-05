@@ -4,6 +4,7 @@ This module contains the sample generation functionality.
 """
 
 from pathlib import Path
+import os
 from typing import Any
 
 import click
@@ -40,7 +41,12 @@ class SampleCommand:
         self.path_validator = PathValidator()
 
     def execute(
-        self, output_dir: str = "kumihan_sample", use_source_toggle: bool = False
+        self,
+        output_dir: str = "kumihan_sample",
+        use_source_toggle: bool = False,
+        *,
+        dry_run: bool = False,
+        force: bool = False,
     ) -> Path:
         """
         Execute sample generation command
@@ -56,45 +62,62 @@ class SampleCommand:
 
         get_console_ui().sample_generation(str(output_path))
 
-        # Remove existing output directory if it exists
+        # Remove existing output directory if it exists（安全ガード）
         if output_path.exists():
-            import shutil
+            if force or str(os.getenv("KUMIHAN_FORCE", "")).lower() in {"1", "true"}:
+                import shutil
 
-            shutil.rmtree(output_path)
+                if not dry_run:
+                    shutil.rmtree(output_path)
+                else:
+                    get_console_ui().dim(
+                        f"[dry-run] 既存ディレクトリ削除をスキップ: {output_path}"
+                    )
+            else:
+                get_console_ui().warning(
+                    f"出力先が既に存在します。--force か KUMIHAN_FORCE=1 を指定してください: {output_path}"
+                )
+                return output_path
 
         # Create output directory using new FileManager
-        self.core_manager.ensure_directory(output_path)
+        if not dry_run:
+            self.core_manager.ensure_directory(output_path)
 
         # Create sample text file using new FileManager
         sample_txt = output_path / "showcase.txt"
-        self.core_manager.write_file(sample_txt, SHOWCASE_SAMPLE)
+        if not dry_run:
+            self.core_manager.write_file(sample_txt, SHOWCASE_SAMPLE)
 
         # Create images directory and sample images using new FileManager
         images_dir = output_path / "images"
-        self.core_manager.ensure_directory(images_dir)
+        if not dry_run:
+            self.core_manager.ensure_directory(images_dir)
         # Sample images creation - simplified implementation
         for filename, base64_data in SAMPLE_IMAGES.items():
             image_path = images_dir / filename
             # Create placeholder image content for sample
             placeholder_content = f"<!-- Sample Image: {filename} -->"
-            self.core_manager.write_file(
-                image_path.with_suffix(".txt"), placeholder_content
-            )
+            if not dry_run:
+                self.core_manager.write_file(
+                    image_path.with_suffix(".txt"), placeholder_content
+                )
 
         # Convert to HTML
         html = self._generate_html(use_source_toggle)
 
         # Save HTML file using new FileManager
         html_path = output_path / "showcase.html"
-        self.core_manager.write_file(html_path, html)
+        if not dry_run:
+            self.core_manager.write_file(html_path, html)
 
         # Show completion message
-        get_console_ui().sample_complete(
-            str(output_path.absolute()),
-            sample_txt.name,
-            html_path.name,
-            len(SAMPLE_IMAGES),
-        )
+        if not dry_run:
+            get_console_ui().sample_complete(
+                str(output_path.absolute()),
+                sample_txt.name,
+                html_path.name,
+                len(SAMPLE_IMAGES),
+            )
 
         return output_path
 
@@ -154,14 +177,18 @@ def create_sample_command() -> Any:
     @click.option(
         "--quiet", is_flag=True, help="対話的プロンプトを無効化（バッチ実行用）"
     )
-    def generate_sample(output: Any, with_source_toggle: Any, quiet: Any) -> None:
+    @click.option("--dry-run", is_flag=True, help="ファイル出力や削除を実行しない")
+    @click.option("--force", is_flag=True, help="既存出力の削除を強制実行")
+    def generate_sample(
+        output: Any, with_source_toggle: Any, quiet: Any, dry_run: Any, force: Any
+    ) -> None:
         """機能ショーケースサンプルを生成します"""
 
         # Determine source toggle usage
         use_source_toggle = with_source_toggle
 
         command = SampleCommand()
-        command.execute(output, use_source_toggle)
+        command.execute(output, use_source_toggle, dry_run=dry_run, force=force)
 
     return generate_sample
 
