@@ -35,6 +35,18 @@ kumihan input.kumihan [output.html]
 
 # Pythonモジュールとしての実行
 python -m kumihan_formatter input.kumihan [output.html]
+
+# ヘルプ / バージョン
+kumihan --help
+kumihan --version
+
+# 破壊的操作の安全ガード
+# 既存の output.html が存在する場合:
+kumihan input.kumihan output.html --dry-run   # 削除/書き込みを行わず確認
+kumihan input.kumihan output.html --force    # 強制上書き
+
+# 環境変数でも強制可能
+KUMIHAN_FORCE=1 kumihan input.kumihan output.html
 ```
 
 ---
