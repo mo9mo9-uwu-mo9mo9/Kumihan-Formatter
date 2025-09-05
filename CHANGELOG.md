@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CLI: `--help` / `--version` の実装（argparse化）。
+- 安全ガード: `--dry-run` / `--force` と `KUMIHAN_FORCE` を追加（破壊的操作の抑止）。
+- テスト: ユニットテストを多数追加し、カバレッジ閾値を 45% に引き上げ。
+- ドキュメント: README/QUICKSTART/CONTRIBUTING をCodex運用と安全ガードに合わせて更新。
+
+### Changed
+- 依存関係: ランタイム依存を最小化し、CLI機能を `extras[cli]` に分離（watchdog/rich/click）。
+- 出力ポリシー: `tmp/` 強制を撤廃し、指定パスを尊重する挙動に変更。
+
+### Removed
+- CLAUDE関連: `CLAUDE.md`、関連Makeターゲットと参照を削除。開発運用をCodexに統一。
+
+
+### Added
 - tests: console_ui の軽量ユニットテストを追加（#1308）
 - docs: Deprecation Migration Guide を追加（docs/DEPRECATION_MIGRATION.md、#1309）
 - docs: 例外ポリシー設計（docs/EXCEPTION_POLICY.md、PR #1356）

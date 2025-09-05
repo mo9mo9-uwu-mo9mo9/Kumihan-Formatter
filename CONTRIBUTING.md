@@ -127,6 +127,13 @@ PRレビュー時は以下を確認：
 
 ## テスト
 
+### テストポリシー（2025-09 時点）
+- カバレッジ閾値: `--cov-fail-under=45`（`pyproject.toml`に準拠）。段階的に引き上げます。
+- 破壊的操作は既定で禁止。必要な網羅は `--dry-run` または `KUMIHAN_FORCE=1` を用いて安全に行うこと。
+- 実ファイル書き込みが必要な場合は `tmp_path` 等の一時ディレクトリを使用し、リポジトリ直下に生成しないこと。
+- CLIテストは `kumihan --help/--version` と `--dry-run/--force` を中心にスモークする（副作用なし）。
+- 型チェックは `mypy --strict` を準拠。オプショナル依存（`watchdog`, `rich`等）は `pyproject.toml` の overrides で missing imports を無効化済み。
+
 ### テストの実行
 ```bash
 # 全テスト実行
