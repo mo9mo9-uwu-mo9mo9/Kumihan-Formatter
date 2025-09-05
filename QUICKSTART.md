@@ -93,6 +93,6 @@ result = formatter.convert_text(content)
 
 - **統合API詳細**: API.md
 - **アーキテクチャ**: ARCHITECTURE.md
-- **開発ガイド**: CLAUDE.md
+- **開発ガイド**: AGENTS.md（Codex運用）
 - **変更履歴**: CHANGELOG.md
 - **移行ガイド**: docs/DEPRECATION_MIGRATION.md

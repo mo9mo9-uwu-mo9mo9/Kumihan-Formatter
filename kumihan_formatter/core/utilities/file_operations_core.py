@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Any, Optional, Tuple, Callable, Dict
 
 from .file_path_utilities import FilePathUtilities
+from ..common.exceptions import KumihanFileError
+import os
 from .file_protocol import UIProtocol
 import logging
 
@@ -74,9 +76,7 @@ class FileOperationsCore:
             self.logger.warning(f"Images directory not found: {source_images_dir}")
             if self.ui:
                 self.ui.warning(f"images フォルダが見つかりません: {source_images_dir}")
-            self._emit(
-                "images_dir_missing", path=str(source_images_dir)
-            )
+            self._emit("images_dir_missing", path=str(source_images_dir))
             return None
 
         return source_images_dir
@@ -94,9 +94,9 @@ class FileOperationsCore:
                 self.ui.permission_error(
                     f"画像ディレクトリの作成に失敗しました: {dest_images_dir}"
                 )
-            self._emit(
-                "images_dir_permission_error", path=str(dest_images_dir)
-            )
+            self._emit("images_dir_permission_error", path=str(dest_images_dir))
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise
         except OSError as e:
             self.logger.error(
@@ -107,6 +107,8 @@ class FileOperationsCore:
                     f"画像ディレクトリの作成でOSエラーが発生しました: {dest_images_dir}"
                 )
             self._emit("images_dir_os_error", path=str(dest_images_dir))
+            if os.getenv("KUMIHAN_RAISE_KUMIHAN_ERRORS", "0") in {"1", "true", "True"}:
+                raise KumihanFileError(str(e)) from e
             raise
         return dest_images_dir
 

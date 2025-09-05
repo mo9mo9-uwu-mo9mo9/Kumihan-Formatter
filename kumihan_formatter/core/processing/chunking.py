@@ -23,8 +23,9 @@ class Chunker:
 
         # Materialize to support slicing in a deterministic way
         line_list = list(lines)
-        return [line_list[i : i + chunk_size] for i in range(0, len(line_list), chunk_size)]
+        return [
+            line_list[i : i + chunk_size] for i in range(0, len(line_list), chunk_size)
+        ]
 
 
 __all__ = ["Chunker"]
-

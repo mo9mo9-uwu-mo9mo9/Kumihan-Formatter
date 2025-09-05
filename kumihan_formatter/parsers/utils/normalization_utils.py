@@ -8,7 +8,9 @@ from __future__ import annotations
 from typing import Dict, Pattern
 
 
-def normalize_with_patterns(text: str, utility_patterns: Dict[str, Pattern[str]]) -> str:
+def normalize_with_patterns(
+    text: str, utility_patterns: Dict[str, Pattern[str]]
+) -> str:
     if not text:
         return ""
 
@@ -19,4 +21,3 @@ def normalize_with_patterns(text: str, utility_patterns: Dict[str, Pattern[str]]
 
 
 __all__ = ["normalize_with_patterns"]
-

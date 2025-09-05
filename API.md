@@ -191,4 +191,4 @@ parsed = formatter.parse_text(text)
 print("Parse result:", parsed.elements)
 ```
 
-**詳細**: CLAUDE.md開発ガイド参照
+**詳細**: AGENTS.md（Codex開発ガイド）参照

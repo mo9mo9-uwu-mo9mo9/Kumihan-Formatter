@@ -78,4 +78,3 @@ __all__ = [
     "DEFAULT_VALIDATION_RULES",
     "DEFAULT_EXTRACTION_CONFIG",
 ]
-

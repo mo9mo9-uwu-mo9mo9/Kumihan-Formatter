@@ -73,7 +73,7 @@ pytest
 | **CI/CD設定** | `.pre-commit-config.yaml`, `.github/` | 自動化ツールがルートを参照 |
 | **ライセンス** | `LICENSE` | GitHubが自動認識 |
 | **主要README** | `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md` | プロジェクトの顔となる文書 |
-| **Claude関連** | `CLAUDE.md`, `.claude_md_*` | Claude Code用設定 |
+| **Codex関連** | `AGENTS.md` | Codex CLI 用ガイド |
 | **ビルドツール** | `Makefile` | 開発コマンドの集約 |
 | **開発スクリプト** | `scripts/*.sh`, `scripts/*.py` | プロジェクトの各種ユーティリティ |
 | **Linter設定** | `.markdownlint.json` | ツールがルートを参照 |

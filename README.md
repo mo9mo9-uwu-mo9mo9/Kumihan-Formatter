@@ -63,7 +63,7 @@ feature-branch                    # Issue番号なし
 **システム的制約**:
 - 日本語ブランチ名は禁止（運用ルールで厳守）
 - **一時ファイル出力は `tmp/` 配下必須** - プロジェクトルート直下への出力は禁止
-- 詳細は [CLAUDE.md](./CLAUDE.md) と [AGENTS.md](./AGENTS.md) を参照
+- 詳細は [AGENTS.md](./AGENTS.md) を参照（CLAUDE.md は廃止）
 
 ### 🚀 初回セットアップガイド
 
@@ -194,6 +194,12 @@ kumihan input.txt [output.html]
   - 互換レイヤ（compatibility_layer）利用時のDeprecationWarningを有効化します（既定は非表示）。
 - `KUMIHAN_RAISE_KUMIHAN_ERRORS=1`:
   - I/O層の一部で、標準例外を `KumihanFileError` へラップして送出します（既定は従来どおり標準例外）。
+
+- `KUMIHAN_PROFILE=conservative|aggressive`:
+  - 実行時プロファイル（非機能要件のチューニング）を切り替えます。デフォルトは未設定（従来挙動）。
+    - `conservative`: `large_parse_chunk_size=600`、`performance_monitoring=false`
+    - `aggressive`: `large_parse_chunk_size=2000`、`performance_monitoring=true`
+  - いずれのプロファイルも公開APIや出力仕様は変更しません（内部最適化のみ）。
 
 
 ## 🤝 サポート

@@ -11,7 +11,7 @@ SRC_DIR = $(PROJECT_NAME)
 IMPORT_COUNT_TARGET = 300    # 現在423から削減目標
 BUILD_TIME_LIMIT = 60        # 秒
 
-.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit claude-check process-check debt-management doc-consistency evals
+.PHONY: help setup clean lint lint-strict test test-unit test-integration quality-check dependency-audit performance-check pre-commit process-check debt-management doc-consistency evals
 
 # デフォルトターゲット
 help:
@@ -122,8 +122,7 @@ test-integration:
 pre-commit:
 	@echo "🔒 統合pre-commitフック実行中..."
 	@$(PYTHON) -c "import subprocess, sys; \
-	checks = [('CLAUDE.md検証', ['make', 'claude-check']), \
-		  ('品質チェック', ['make', 'lint']), \
+	checks = [('品質チェック', ['make', 'lint']), \
 		  ('単体テスト', ['make', 'test-unit'])]; \
 	results = []; \
 	for name, cmd in checks: \
@@ -147,31 +146,7 @@ clean:
 	rm -rf tmp/
 	@echo "✅ クリーンアップ完了"
 
-# CLAUDE.md管理システム（既存維持）
-claude-check:
-	@echo "📋 CLAUDE.md管理・検証中..."
-	@$(PYTHON) -c "import os, sys; \
-	CLAUDE_MD = 'CLAUDE.md'; \
-	RECOMMENDED_LINES = 150; RECOMMENDED_BYTES = 8192; \
-	WARNING_LINES = 250; WARNING_BYTES = 12288; \
-	CAUTION_LINES = 300; CAUTION_BYTES = 15360; \
-	CRITICAL_LINES = 400; CRITICAL_BYTES = 20480; \
-	content = open(CLAUDE_MD, 'r', encoding='utf-8').read() if os.path.exists(CLAUDE_MD) else ''; \
-	lines = len(content.splitlines()); bytes_count = len(content.encode('utf-8')); \
-	sections = content.count('#'); deep_nesting = content.count('####'); \
-	print(f'📊 CLAUDE.md Statistics (段階制限システム):'); \
-	print(f'   Lines: {lines} (推奨≤{RECOMMENDED_LINES}, 警告≤{WARNING_LINES}, 注意≤{CAUTION_LINES}, 限界≤{CRITICAL_LINES})'); \
-	print(f'   Bytes: {bytes_count} ({bytes_count/1024:.1f}KB) (推奨≤{RECOMMENDED_BYTES/1024:.1f}KB, 警告≤{WARNING_BYTES/1024:.1f}KB, 注意≤{CAUTION_BYTES/1024:.1f}KB, 限界≤{CRITICAL_BYTES/1024:.1f}KB)'); \
-	print(f'   Sections: {sections}, Deep nesting: {deep_nesting}'); \
-	status = '✅ GOOD'; exit_code = 0; \
-	(print(f'🚨 CRITICAL: Critical limit exceeded! Immediate action required.'), globals().update(status='🚨 CRITICAL', exit_code=1)) if lines > CRITICAL_LINES or bytes_count > CRITICAL_BYTES else None; \
-	(print(f'⚠️ CAUTION: Caution limit exceeded. Consider content reduction.'), globals().update(status='⚠️ CAUTION')) if (lines > CAUTION_LINES or bytes_count > CAUTION_BYTES) and exit_code == 0 else None; \
-	(print(f'💡 WARNING: Warning limit exceeded. Review recommended.'), globals().update(status='💡 WARNING')) if (lines > WARNING_LINES or bytes_count > WARNING_BYTES) and exit_code == 0 else None; \
-	(print(f'📝 INFO: Recommended limit exceeded. Consider optimization.'), globals().update(status='📝 INFO')) if (lines > RECOMMENDED_LINES or bytes_count > RECOMMENDED_BYTES) and status == '✅ GOOD' else None; \
-	print(f'⚠️ WARNING: Too much nesting') if deep_nesting > 10 else None; \
-	print(f'📊 Overall Status: {status}'); \
-	sys.exit(exit_code)"
-	@echo "✅ CLAUDE.md検証完了"
+# CLAUDE.md関連ターゲットは廃止（Codex運用へ移行）
 
 # 開発プロセス正規化コマンド (Issue #1240)
 # 開発プロセス総合チェック

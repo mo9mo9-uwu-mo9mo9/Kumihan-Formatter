@@ -56,6 +56,52 @@ class ParallelProcessingConfig:
         self.memory_critical_threshold_mb = 250
         self.memory_check_interval = 10  # チャンク数
 
+        # 追加: タイムアウト（レガシー互換）
+        self.processing_timeout_seconds = 300
+        self.chunk_timeout_seconds = 30
+
+        # 進捗・最適化設定（レガシー互換）
+        self.enable_progress_callbacks = True
+        self.progress_update_interval = 100
+        self.enable_memory_monitoring = True
+        self.enable_gc_optimization = True
+
+    @classmethod
+    def from_environment(cls) -> "ParallelProcessingConfig":
+        """環境変数から設定を構築（レガシー互換）。"""
+        import os
+
+        cfg = cls()
+        try:
+            if v := os.getenv("KUMIHAN_PARALLEL_THRESHOLD_LINES"):
+                cfg.parallel_threshold_lines = int(v)
+            if v := os.getenv("KUMIHAN_PARALLEL_THRESHOLD_SIZE"):
+                cfg.parallel_threshold_size = int(v)
+            if v := os.getenv("KUMIHAN_MEMORY_LIMIT_MB"):
+                mem = int(v)
+                cfg.memory_critical_threshold_mb = mem
+                cfg.memory_warning_threshold_mb = max(1, int(mem * 0.6))
+            if v := os.getenv("KUMIHAN_PROCESSING_TIMEOUT"):
+                cfg.processing_timeout_seconds = int(v)
+        except ValueError:
+            # 無効値は無視（デフォルト維持）
+            pass
+        return cfg
+
+    def validate(self) -> bool:
+        """設定値の妥当性検証（レガシー互換）。"""
+        try:
+            assert self.parallel_threshold_lines > 0
+            assert self.parallel_threshold_size > 0
+            assert self.min_chunk_size > 0
+            assert self.max_chunk_size > self.min_chunk_size
+            assert self.memory_warning_threshold_mb > 0
+            assert self.memory_critical_threshold_mb > self.memory_warning_threshold_mb
+            assert self.processing_timeout_seconds > 0
+            return True
+        except AssertionError:
+            return False
+
     def should_use_parallel_processing(
         self, line_count: int, content_size: int
     ) -> bool:
