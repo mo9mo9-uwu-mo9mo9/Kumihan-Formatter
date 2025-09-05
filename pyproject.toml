@@ -124,7 +124,6 @@ exclude = [
     "dist/.*",
     "build/.*",
     ".*/.egg-info/.*",
-    "serena/.*",
     "scripts/.*",
     "tests/.*_legacy.*",
     "tests/performance/.*",
@@ -144,9 +143,20 @@ module = [
     "xgboost.*",
     "tomli.*",
     "opentelemetry.*",
-    "prometheus_client.*"
+    "prometheus_client.*",
+    # P0: CLIオプション機能はオプショナル依存のため型を追跡しない
+    "watchdog.*",
+    "rich.*",
 ]
 ignore_missing_imports = true
+
+# P0: commands 配下は外部ツール依存により Any が発生するため、厳格設定を局所的に緩和
+[[tool.mypy.overrides]]
+module = [
+    "kumihan_formatter.commands.convert_watcher",
+]
+disallow_subclassing_any = false
+disallow_any_unimported = false
 
 # pytest設定 - 個人開発最適化（シンプル版）
 # テストカバレッジ段階的向上計画（Issue #1140）:
